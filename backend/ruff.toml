@@ -1,0 +1,23 @@
+line-length = 100
+
+lint.select = [
+    "E",
+    "F",
+    "I",
+    "UP",
+    "B",
+    "SIM",
+    "DJ"
+    ]
+# select = ["E", "F", "I", "D"]
+target-version = "py314"
+lint.ignore = ["E501", "F403", "F405", "DJ008",]
+# ignore = ["E501", "D100", "D101", "D102"]
+exclude = [
+    ".venv",
+    "migrations",
+    "node_modules",
+]
+
+[format]
+quote-style = "double"

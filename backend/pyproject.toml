@@ -1,0 +1,171 @@
+[project]
+name = "studiohub-backend"
+version = "0.1.0"
+description = "Enterprise VFX/CG Studio Management Platform"
+readme = "README.md"
+requires-python = ">=3.14"
+
+authors = [
+    { name = "Prafull Sakharkar" }
+]
+
+license = { text = "Proprietary" }
+
+dependencies = [
+    # Django
+    "django>=6.0",
+    "djangorestframework>=3.16",
+    "django-filter>=25.1",
+    "drf-spectacular>=0.28",
+    # PostgreSQL
+    "psycopg[binary]>=3.2",
+    # Configuration
+    "django-environ>=0.12",
+    # Redis / Cache
+    "redis>=6.2",
+    "django-redis>=6.0",
+    # Celery
+    "celery>=5.5",
+    "django-celery-results>=2.6",
+    "django-celery-beat>=2.8",
+    # Images
+    "pillow>=11.3",
+    # Storage
+    "minio>=7.2",
+    # JSON
+    "orjson>=3.11",
+    # Authentication
+    "argon2-cffi>=25.1",
+    # API
+    "markdown>=3.8",
+    # CORS
+    "django-cors-headers>=4.8",
+    # Utilities
+    "python-dateutil>=2.9",
+    # Logging
+    "structlog>=25.4",
+    # Monitoring
+    "django-health-check>=3.20",
+    # Extensions
+    "django-extensions>=4.1",
+    # OpenAPI
+    "pyyaml>=6.0",
+    # Typing
+    "typing-extensions>=4.15",
+    # Background scheduling
+    "croniter",
+    # File watching
+    "watchfiles",
+    # Retry logic
+    "tenacity",
+    # Data validation
+    "pydantic>=2",
+    # Metrics
+    "prometheus-client",
+    # Tracing
+    "opentelemetry-api",
+    "opentelemetry-sdk",
+    "pydantic-settings>=2.14.2",
+    "whitenoise>=6.12.0",
+]
+
+[dependency-groups]
+
+dev = [
+    # Testing
+    "pytest>=8.4",
+    "pytest-django>=4.11",
+    "pytest-cov>=7.0",
+    "factory-boy>=3.3",
+    "faker>=37.5",
+    # Debugging
+    "django-debug-toolbar>=6.0",
+    "ipython>=9.4",
+    # Lint
+    "ruff>=0.12",
+    # Formatting
+    "black>=25.1",
+    # Typing
+    "basedpyright>=1.31",
+    "django-stubs>=5.2",
+    # Git
+    "pre-commit>=4.2",
+    # HTTP
+    "httpie>=3.2",
+    # Shell
+    "rich>=14.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.black]
+
+line-length = 100
+target-version = ["py314"]
+
+[tool.basedpyright]
+
+pythonVersion = "3.14"
+typeCheckingMode = "recommended"
+
+reportMissingImports = true
+reportMissingTypeStubs = false
+
+include = [
+    "apps",
+    "config",
+]
+
+exclude = [
+    "**/migrations",
+    ".venv",
+]
+
+[tool.pytest.ini_options]
+
+DJANGO_SETTINGS_MODULE = "config.settings.testing"
+
+python_files = [
+    "test_*.py",
+    "*_test.py",
+]
+
+addopts = [
+    "--reuse-db",
+    "--strict-markers",
+    "--cov=apps",
+]
+
+testpaths = [
+    "tests",
+    "apps",
+]
+
+[tool.coverage.run]
+
+source = [
+    "apps",
+]
+
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+]
+
+[tool.hatch.build.targets.wheel]
+
+packages = [
+    "apps",
+    "config",
+]
+
+[tool.uv]
+
+package = true
+
+[tool.uv.workspace]
+members = [
+    "backend",
+]
