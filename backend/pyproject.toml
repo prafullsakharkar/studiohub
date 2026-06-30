@@ -5,9 +5,7 @@ description = "Enterprise VFX/CG Studio Management Platform"
 readme = "README.md"
 requires-python = ">=3.14"
 
-authors = [
-    { name = "Prafull Sakharkar" }
-]
+authors = [{ name = "Prafull Sakharkar" }]
 
 license = { text = "Proprietary" }
 
@@ -26,6 +24,8 @@ dependencies = [
     "django-redis>=6.0",
     # Celery
     "celery>=5.5",
+    "celery[redis]>=5.5",
+    "flower>=2.0",
     "django-celery-results>=2.6",
     "django-celery-beat>=2.8",
     # Images
@@ -113,59 +113,33 @@ typeCheckingMode = "recommended"
 reportMissingImports = true
 reportMissingTypeStubs = false
 
-include = [
-    "apps",
-    "config",
-]
+include = ["apps", "config"]
 
-exclude = [
-    "**/migrations",
-    ".venv",
-]
+exclude = ["**/migrations", ".venv"]
 
 [tool.pytest.ini_options]
 
 DJANGO_SETTINGS_MODULE = "config.settings.testing"
 
-python_files = [
-    "test_*.py",
-    "*_test.py",
-]
+python_files = ["test_*.py", "*_test.py"]
 
-addopts = [
-    "--reuse-db",
-    "--strict-markers",
-    "--cov=apps",
-]
+addopts = ["--reuse-db", "--strict-markers", "--cov=apps"]
 
-testpaths = [
-    "tests",
-    "apps",
-]
+testpaths = ["tests", "apps"]
 
 [tool.coverage.run]
 
-source = [
-    "apps",
-]
+source = ["apps"]
 
-omit = [
-    "*/migrations/*",
-    "*/tests/*",
-]
+omit = ["*/migrations/*", "*/tests/*"]
 
 [tool.hatch.build.targets.wheel]
 
-packages = [
-    "apps",
-    "config",
-]
+packages = ["apps", "config"]
 
 [tool.uv]
 
 package = true
 
 [tool.uv.workspace]
-members = [
-    "backend",
-]
+members = ["backend"]

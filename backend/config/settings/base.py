@@ -54,7 +54,7 @@ from .components.security import (
     SESSION_COOKIE_HTTPONLY,
     X_FRAME_OPTIONS,
 )
-from .components.static import STATIC_ROOT, STATIC_URL, STATICFILES_DIRS
+from .components.static import STATIC_ROOT, STATIC_URL
 from .components.storage import MEDIA_ROOT, MEDIA_URL
 from .components.templates import TEMPLATES
 

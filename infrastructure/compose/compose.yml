@@ -1,0 +1,80 @@
+name: vfx-platform
+
+services:
+
+  postgres:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/postgres/Dockerfile
+
+    env_file:
+      - .env
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: [ "CMD-SHELL", "/healthcheck.sh" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - backend
+
+  redis:
+    image: redis:8-alpine
+
+    command:
+      - redis-server
+      - /usr/local/etc/redis/redis.conf
+
+    volumes:
+      - redis_data:/data
+      - ../docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    networks:
+      - backend
+
+  minio:
+    image: quay.io/minio/minio
+
+    command:
+      - server
+      - /data
+      - --console-address
+      - ":9001"
+
+    env_file:
+      - .env
+
+    volumes:
+      - minio_data:/data
+
+    networks:
+      - backend
+
+  mailpit:
+    image: axllent/mailpit
+
+    networks:
+      - backend
+
+volumes:
+
+  postgres_data:
+
+  redis_data:
+
+  minio_data:
+
+networks:
+
+  backend:

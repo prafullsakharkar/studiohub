@@ -1,0 +1,21 @@
+services:
+
+  django:
+
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4 --threads 4 --timeout 300
+
+    restart: always
+
+  nginx:
+
+    build:
+      context: ..
+      dockerfile: docker/nginx/Dockerfile
+
+    restart: always
+
+    ports:
+      - "80:80"
+
+    depends_on:
+      - django

@@ -1,0 +1,114 @@
+services:
+
+  django:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/django/Dockerfile
+
+    volumes:
+      - ../../backend:/app
+      - static_volume:/app/static
+      - media_volume:/app/media
+
+    expose:
+      - "8000"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    networks:
+      - backend
+
+  nginx:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/nginx/Dockerfile
+
+    ports:
+      - "80:80"
+
+    depends_on:
+      - django
+
+    volumes:
+      - static_volume:/static
+      - media_volume:/media
+
+    networks:
+      - backend
+
+  celery:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/django/Dockerfile
+
+    command: /start-celery.sh
+
+    env_file:
+      - .env
+
+    volumes:
+      - ../../backend:/app
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    networks:
+      - backend
+
+  celery-beat:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/django/Dockerfile
+
+    command: /start-beat.sh
+
+    env_file:
+      - .env
+
+    volumes:
+      - ../../backend:/app
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    networks:
+      - backend
+
+  flower:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/django/Dockerfile
+
+    command: /start-flower.sh
+
+    env_file:
+      - .env
+
+    ports:
+      - "5555:5555"
+
+    volumes:
+      - ../../backend:/app
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    networks:
+      - backend
+
+volumes:
+  static_volume:
+  media_volume:
