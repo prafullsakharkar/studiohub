@@ -25,3 +25,8 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "strict-origin"
 
 ALLOWED_HOSTS = settings.allowed_hosts
+
+REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = (
+    "apps.core.api.renderers.StandardJSONRenderer",
+)
+LOGGING["handlers"]["console"]["formatter"] = "json"

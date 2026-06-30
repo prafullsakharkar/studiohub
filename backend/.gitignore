@@ -2,3 +2,5 @@
 .env.*
 !.env.example
 !.env.test
+logs/
+*.log

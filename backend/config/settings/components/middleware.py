@@ -3,6 +3,7 @@ Middleware configuration.
 """
 
 MIDDLEWARE = [
+    "apps.core.middleware.RequestIDMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",

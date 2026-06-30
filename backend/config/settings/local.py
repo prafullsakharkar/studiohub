@@ -20,3 +20,4 @@ MIDDLEWARE.insert(
     0,
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 )
+LOGGING["handlers"]["console"]["formatter"] = "verbose"

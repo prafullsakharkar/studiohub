@@ -57,6 +57,7 @@ from .components.security import (
 from .components.static import STATIC_ROOT, STATIC_URL
 from .components.storage import MEDIA_ROOT, MEDIA_URL
 from .components.templates import TEMPLATES
+from .logging import LOGGING
 
 # ------------------------------------------------------------------------------
 # Core Django Settings
