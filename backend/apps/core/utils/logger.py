@@ -1,5 +1,9 @@
+"""
+Logging helpers.
+"""
+
 import logging
 
 
-def get_logger(name: str) -> logging.Logger:
+def get_logger(name: str):
     return logging.getLogger(name)

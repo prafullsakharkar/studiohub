@@ -1,17 +1,24 @@
-class SerializerContextMixin:
+"""
+Serializer context mixin.
+"""
+
+from __future__ import annotations
+
+
+class ContextMixin:
     """
-    Common serializer context helpers.
+    Extend serializer context.
     """
 
-    @property
-    def request(self):
-        return self.context.get("request")
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
 
-    @property
-    def user(self):
-        request = self.request
-        return getattr(request, "user", None)
+        context.update(
+            {
+                "request": self.request,
+                "view": self,
+                "user": self.request.user,
+            }
+        )
 
-    @property
-    def view(self):
-        return self.context.get("view")
+        return context

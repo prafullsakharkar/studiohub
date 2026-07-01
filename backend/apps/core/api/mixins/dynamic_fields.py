@@ -1,26 +1,29 @@
+"""
+Dynamic serializer fields.
+"""
+
+from __future__ import annotations
+
+
 class DynamicFieldsMixin:
     """
-    Supports:
-
-    ?fields=id,name,email
+    Allow ?fields=id,name,status
     """
 
     def __init__(self, *args, **kwargs):
+
+        fields = kwargs.pop(
+            "fields",
+            None,
+        )
+
         super().__init__(*args, **kwargs)
 
-        request = self.context.get("request")
+        if fields:
 
-        if not request:
-            return
+            allowed = set(fields)
 
-        fields = request.query_params.get("fields")
+            existing = set(self.fields)
 
-        if not fields:
-            return
-
-        allowed = {field.strip() for field in fields.split(",") if field.strip()}
-
-        existing = set(self.fields)
-
-        for field in existing - allowed:
-            self.fields.pop(field)
+            for field in existing - allowed:
+                self.fields.pop(field)

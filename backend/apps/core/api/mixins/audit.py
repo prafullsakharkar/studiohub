@@ -1,21 +1,28 @@
-class AuditSerializerMixin:
+"""
+Audit mixin.
+"""
+
+from __future__ import annotations
+
+
+class AuditMixin:
     """
     Automatically populate audit fields.
     """
 
-    def create(self, validated_data):
-        user = self.user
+    def perform_create(
+        self,
+        serializer,
+    ):
+        serializer.save(
+            created_by=self.request.user,
+            updated_by=self.request.user,
+        )
 
-        if user and user.is_authenticated:
-            validated_data.setdefault("created_by", user)
-            validated_data.setdefault("updated_by", user)
-
-        return super().create(validated_data)
-
-    def update(self, instance, validated_data):
-        user = self.user
-
-        if user and user.is_authenticated:
-            validated_data["updated_by"] = user
-
-        return super().update(instance, validated_data)
+    def perform_update(
+        self,
+        serializer,
+    ):
+        serializer.save(
+            updated_by=self.request.user,
+        )

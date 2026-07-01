@@ -1,10 +1,21 @@
-class ErrorMessageMixin:
+"""
+Error handling mixin.
+"""
+
+from __future__ import annotations
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class ErrorMixin:
     """
-    Shared serializer error messages.
+    Central error logging.
     """
 
-    default_error_messages = {
-        "not_found": "Object not found.",
-        "permission_denied": "Permission denied.",
-        "validation_error": "Validation failed.",
-    }
+    def log_exception(
+        self,
+        exception: Exception,
+    ):
+        logger.exception(exception)

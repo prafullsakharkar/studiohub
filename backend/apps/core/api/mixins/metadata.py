@@ -1,7 +1,21 @@
-class MetadataSerializerMixin:
+"""
+Metadata mixin.
+"""
+
+from __future__ import annotations
+
+
+class MetadataMixin:
     """
-    Shared metadata validation.
+    Serializer metadata helper.
     """
 
-    def validate_metadata(self, value):
-        return value or {}
+    def get_metadata(
+        self,
+        instance,
+    ):
+        return getattr(
+            instance,
+            "metadata",
+            {},
+        )

@@ -1,9 +1,21 @@
+"""
+Validation mixin.
+"""
+
+from __future__ import annotations
+
+
 class ValidationMixin:
     """
-    Common validation hooks.
+    Common validation helpers.
     """
 
-    def validate(self, attrs):
-        attrs = super().validate(attrs)
+    def perform_validation(
+        self,
+        serializer,
+    ):
+        serializer.is_valid(
+            raise_exception=True,
+        )
 
-        return attrs
+        return serializer
