@@ -5,7 +5,6 @@ Soft delete base model.
 from __future__ import annotations
 
 from django.db import models
-from django.utils import timezone
 
 from apps.core.choices import RecordStatus
 from apps.core.models.managers import (

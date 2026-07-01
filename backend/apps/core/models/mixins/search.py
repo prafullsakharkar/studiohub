@@ -1,24 +1,17 @@
 """
-Reusable search queryset mixin.
+Search mixin.
 """
 
-from django.db.models import Q
+from __future__ import annotations
+
+from apps.core.services import SearchService
 
 
-class SearchQuerySetMixin:
+class SearchMixin:
     """
-    Adds generic search capability.
+    Search helper methods.
     """
 
-    search_fields: tuple[str, ...] = ()
-
-    def search(self, value: str):
-        if not value:
-            return self
-
-        query = Q()
-
-        for field in self.search_fields:
-            query |= Q(**{f"{field}__icontains": value})
-
-        return self.filter(query)
+    @staticmethod
+    def normalize_search(value: str):
+        return SearchService.normalize(value)
