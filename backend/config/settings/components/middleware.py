@@ -3,14 +3,22 @@ Middleware configuration.
 """
 
 MIDDLEWARE = [
-    "apps.core.middleware.RequestIDMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "apps.core.middleware.RequestIDMiddleware",
+    "apps.core.logging.middleware.LoggingContextMiddleware",
+    "apps.core.middleware.SecurityHeadersMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "apps.core.middleware.LocaleMiddleware",
+    "apps.core.middleware.TimezoneMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "apps.core.middleware.AuthenticationMiddleware",
+    "apps.core.middleware.OrganizationMiddleware",
+    "apps.core.middleware.AuditMiddleware",
+    "apps.core.middleware.MaintenanceMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]

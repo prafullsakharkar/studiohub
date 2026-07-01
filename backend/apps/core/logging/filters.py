@@ -1,17 +1,28 @@
-from __future__ import annotations
+"""
+Logging filters.
+"""
 
 import logging
 
+from . import context
 
-class RequestIDFilter(logging.Filter):
+
+class RequestContextFilter(
+    logging.Filter,
+):
     """
-    Inject request_id into log records.
-
-    If unavailable, use '-'.
+    Inject request context.
     """
 
-    def filter(self, record):
-        if not hasattr(record, "request_id"):
-            record.request_id = "-"
+    def filter(
+        self,
+        record,
+    ):
+
+        record.request_id = context.request_id.get()
+
+        record.organization = context.organization.get()
+
+        record.user = context.user.get()
 
         return True

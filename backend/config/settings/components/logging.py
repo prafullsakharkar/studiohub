@@ -2,6 +2,6 @@
 Logging configuration.
 """
 
-from config.logging import LOGGING
+from apps.core.logging import LOGGING
 
 LOGGING_CONFIG = None
