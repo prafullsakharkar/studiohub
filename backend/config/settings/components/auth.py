@@ -2,7 +2,7 @@
 Authentication settings.
 """
 
-# AUTH_USER_MODEL = "identity.User"
+AUTH_USER_MODEL = "identity.User"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
