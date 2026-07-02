@@ -1,3 +1,4 @@
+from .lifecycle import LifecycleQuerySetMixin
 from .ordering import OrderingQuerySetMixin
 from .publishable import PublishableQuerySetMixin
 from .search import SearchQuerySetMixin
@@ -8,4 +9,5 @@ __all__ = [
     "PublishableQuerySetMixin",
     "SearchQuerySetMixin",
     "SoftDeleteQuerySetMixin",
+    "LifecycleQuerySetMixin",
 ]

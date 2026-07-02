@@ -1,6 +1,7 @@
 from .base import BaseChoices
 from .department import Department
 from .file import FileType
+from .lifecycle import LifecycleStatus
 from .priority import Priority
 from .publish import PublishStatus
 from .record import RecordStatus
@@ -14,4 +15,5 @@ __all__ = [
     "PublishStatus",
     "RecordStatus",
     "Visibility",
+    "LifecycleStatus",
 ]

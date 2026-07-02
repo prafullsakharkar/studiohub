@@ -67,6 +67,7 @@ dependencies = [
     "opentelemetry-sdk",
     "pydantic-settings>=2.14.2",
     "whitenoise>=6.12.0",
+    "django-countries>=9.0.0",
 ]
 
 [dependency-groups]

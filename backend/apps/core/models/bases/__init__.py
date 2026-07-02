@@ -1,8 +1,14 @@
 from .audit import AuditModel
+from .branding import BrandingModel
 from .color import ColorModel
+from .entity import EntityModel
+from .lifecycle import LifecycleModel
 from .metadata import MetadataModel
+from .named import NamedEntityModel
 from .orderable import OrderableModel
+from .organization import OrganizationEntityModel
 from .ownership import OrganizationOwnedModel, ProjectOwnedModel, UserOwnedModel
+from .project import ProjectEntityModel
 from .publishable import PublishableModel
 from .scopes import (
     OrganizationScopedModel,
@@ -15,6 +21,7 @@ from .scopes import (
 )
 from .soft_delete import SoftDeleteModel
 from .timestamp import TimeStampedModel
+from .user import UserEntityModel
 from .uuid import UUIDModel
 
 __all__ = [
@@ -37,4 +44,11 @@ __all__ = [
     "ShotScopedModel",
     "TaskScopedModel",
     "UserScopedModel",
+    "EntityModel",
+    "NamedEntityModel",
+    "OrganizationEntityModel",
+    "ProjectEntityModel",
+    "UserEntityModel",
+    "BrandingModel",
+    "LifecycleModel",
 ]

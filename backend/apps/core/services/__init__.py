@@ -2,6 +2,7 @@ from .audit import AuditService
 from .base import BaseService
 from .color import ColorService
 from .email import EmailService
+from .lifecycle import LifecycleService
 from .metadata import MetadataService
 from .notifications import NotificationService
 from .ordering import OrderingService
@@ -24,4 +25,5 @@ __all__ = [
     "SlugService",
     "SoftDeleteService",
     "StorageService",
+    "LifecycleService",
 ]

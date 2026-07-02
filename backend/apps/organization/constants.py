@@ -1,0 +1,1 @@
+MAX_CODE_LENGTH = 32
