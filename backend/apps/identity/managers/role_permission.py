@@ -1,21 +1,6 @@
-from django.db import models
-
-from apps.identity.querysets import (
+from apps.core.models.managers.base import BaseManager
+from apps.identity.querysets.role_permission import (
     RolePermissionQuerySet,
 )
 
-
-class RolePermissionManager(models.Manager.from_queryset(RolePermissionQuerySet)):
-
-    def grant(
-        self,
-        role,
-        permission,
-        granted_by=None,
-    ):
-
-        return self.create(
-            role=role,
-            permission=permission,
-            granted_by=granted_by,
-        )
+RolePermissionManager = BaseManager.from_queryset(RolePermissionQuerySet)

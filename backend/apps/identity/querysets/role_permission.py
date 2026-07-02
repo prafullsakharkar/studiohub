@@ -1,19 +1,16 @@
-from apps.core.models.querysets.base import BaseQuerySet
-from apps.identity.choices import timezone
+from apps.identity.querysets.base import IdentityQuerySet
 
 
-class RolePermissionQuerySet(
-    BaseQuerySet,
-):
+class RolePermissionQuerySet(IdentityQuerySet):
 
-    def active(self):
-        return self.filter(granted=True)
-
-    def expired(self):
-        return self.filter(expires_at__lt=timezone.now())
-
-    def by_role(self, role):
+    def for_role(self, role):
         return self.filter(role=role)
 
-    def by_permission(self, permission):
+    def for_permission(self, permission):
         return self.filter(permission=permission)
+
+    def with_related(self):
+        return self.select_related(
+            "role",
+            "permission",
+        )

@@ -1,13 +1,13 @@
+from .base import IdentityManager
 from .permission import PermissionManager
-from .profile import ProfileManager
 from .role import RoleManager
 from .role_permission import RolePermissionManager
 from .user import UserManager
 
-__all__ = [
-    "UserManager",
-    "ProfileManager",
+__all__ = (
+    "IdentityManager",
     "PermissionManager",
-    "RolePermissionManager",
     "RoleManager",
-]
+    "RolePermissionManager",
+    "UserManager",
+)

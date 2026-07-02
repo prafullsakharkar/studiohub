@@ -1,4 +1,6 @@
+from .employment_type import *
 from .language import *
+from .membership_status import *
 from .permission_action import *
 from .permission_category import *
 from .permission_module import *

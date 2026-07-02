@@ -1,28 +1,7 @@
-"""
-Permission QuerySet.
-"""
-
-from django.db.models import Q
-
-from apps.core.models.querysets.base import BaseQuerySet
+from apps.identity.querysets.base import IdentityQuerySet
 
 
-class PermissionQuerySet(BaseQuerySet):
-    """
-    Permission QuerySet.
-    """
-
-    def active(self):
-        return self.filter(is_active=True)
-
-    def inactive(self):
-        return self.filter(is_active=False)
-
-    def system(self):
-        return self.filter(is_system=True)
-
-    def custom(self):
-        return self.filter(is_system=False)
+class PermissionQuerySet(IdentityQuerySet):
 
     def by_module(self, module):
         return self.filter(module=module)
@@ -33,12 +12,5 @@ class PermissionQuerySet(BaseQuerySet):
     def by_category(self, category):
         return self.filter(category=category)
 
-    def by_code(self, code):
-        return self.filter(code=code)
-
-    def search(self, value):
-        return self.filter(
-            Q(name__icontains=value)
-            | Q(code__icontains=value)
-            | Q(description__icontains=value)
-        )
+    def system_permissions(self):
+        return self.system()

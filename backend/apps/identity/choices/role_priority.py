@@ -2,17 +2,26 @@ from django.db import models
 
 
 class RolePriority(models.IntegerChoices):
+    """
+    Higher priority roles inherit greater authority.
+    """
 
-    OWNER = 1000, "Owner"
+    SUPER_ADMIN = 1000, "Super Admin"
+    PLATFORM_ADMIN = 900, "Platform Admin"
 
-    ADMIN = 900, "Administrator"
+    STUDIO_OWNER = 800, "Studio Owner"
+    STUDIO_ADMIN = 700, "Studio Administrator"
 
-    SUPERVISOR = 700, "Supervisor"
+    PRODUCER = 600, "Producer"
 
-    LEAD = 600, "Lead"
+    SUPERVISOR = 500, "Supervisor"
 
-    ARTIST = 500, "Artist"
+    LEAD = 400, "Lead"
 
-    REVIEWER = 300, "Reviewer"
+    SENIOR_ARTIST = 300, "Senior Artist"
 
-    VIEWER = 100, "Viewer"
+    ARTIST = 200, "Artist"
+
+    REVIEWER = 100, "Reviewer"
+
+    CLIENT = 50, "Client"
