@@ -1,22 +1,25 @@
-"""
-Search filter mixin.
-"""
-
-from __future__ import annotations
-
-from django.db.models import Q
+import django_filters
 
 
 class SearchFilterMixin:
     """
-    Generic search across configured fields.
+    Generic search support.
     """
+
+    search = django_filters.CharFilter(method="filter_search")
 
     search_fields = ()
 
-    def filter_search(self, queryset, name, value):
+    def filter_search(
+        self,
+        queryset,
+        name,
+        value,
+    ):
         if not value or not self.search_fields:
             return queryset
+
+        from django.db.models import Q
 
         query = Q()
 

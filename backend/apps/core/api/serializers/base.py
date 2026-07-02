@@ -53,3 +53,49 @@ class BaseModelSerializer(serializers.ModelSerializer):
     def user(self):
         request = self.request
         return getattr(request, "user", None)
+
+
+class BaseReadSerializer(BaseModelSerializer):
+    """
+    Read-only serializer.
+
+    Used for GET endpoints.
+    """
+
+    class Meta:
+        abstract = True
+
+
+class BaseWriteSerializer(BaseModelSerializer):
+    """
+    Write serializer.
+
+    Validation only.
+
+    Persistence is delegated to the service layer.
+    """
+
+    class Meta:
+        abstract = True
+
+    def create(self, validated_data):
+        raise NotImplementedError(
+            "Serializer.create() is disabled. " "Use the service layer instead."
+        )
+
+    def update(self, instance, validated_data):
+        raise NotImplementedError(
+            "Serializer.update() is disabled. " "Use the service layer instead."
+        )
+
+
+class BaseNestedSerializer(BaseReadSerializer):
+    """
+    Lightweight serializer intended for nested relationships.
+
+    Applications should override Meta.fields with the minimal
+    representation required by the parent serializer.
+    """
+
+    class Meta:
+        abstract = True

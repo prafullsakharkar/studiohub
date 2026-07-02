@@ -21,4 +21,6 @@ class BaseModelViewSet(
     Full CRUD ViewSet.
     """
 
+    lookup_field = "uuid"
+    lookup_url_kwarg = "uuid"
     pass

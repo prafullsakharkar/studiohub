@@ -4,20 +4,11 @@ Ownership filters.
 
 from __future__ import annotations
 
+import django_filters
+
 
 class OwnershipFilterMixin:
-    """
-    Restrict queryset to the current user.
-    """
 
-    owner_field = "created_by"
+    created_by = django_filters.UUIDFilter()
 
-    def filter_by_owner(self, queryset, user):
-        if user is None or not user.is_authenticated:
-            return queryset.none()
-
-        return queryset.filter(
-            **{
-                self.owner_field: user,
-            }
-        )
+    updated_by = django_filters.UUIDFilter()

@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import QuerySet
 
 
 class BaseSelector:
@@ -9,8 +12,18 @@ class BaseSelector:
     model = None
 
     @classmethod
-    def queryset(cls):
-        return cls.model.objects.all()
+    def get_queryset(
+        cls,
+        *,
+        request=None,
+        view=None,
+    ) -> QuerySet:
+        """
+        Return the base queryset.
+
+        Applications should override.
+        """
+        raise NotImplementedError
 
     @classmethod
     def get(cls, **filters):
@@ -27,6 +40,10 @@ class BaseSelector:
     @classmethod
     def first(cls, **filters):
         return cls.queryset().filter(**filters).first()
+
+    @classmethod
+    def last(cls, **filters):
+        return cls.filter(**filters).last()
 
     @classmethod
     def count(cls, **filters):

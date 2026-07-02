@@ -8,8 +8,16 @@ import django_filters
 
 
 class SoftDeleteFilterMixin:
-    """
-    Filter deleted records.
-    """
 
-    is_deleted = django_filters.BooleanFilter()
+    deleted = django_filters.BooleanFilter(method="filter_deleted")
+
+    def filter_deleted(
+        self,
+        queryset,
+        name,
+        value,
+    ):
+        if value:
+            return queryset.deleted()
+
+        return queryset.active()

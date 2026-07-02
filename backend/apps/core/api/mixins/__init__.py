@@ -8,6 +8,7 @@ from .pagination import PaginationMixin
 from .permissions import PermissionMixin
 from .queryset import QuerysetMixin
 from .response import ResponseMixin
+from .service import ServiceMixin
 from .validation import ValidationMixin
 
 __all__ = [
@@ -22,4 +23,5 @@ __all__ = [
     "QuerysetMixin",
     "ResponseMixin",
     "ValidationMixin",
+    "ServiceMixin",
 ]

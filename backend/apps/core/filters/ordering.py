@@ -1,15 +1,6 @@
-"""
-Ordering filter mixin.
-"""
-
-from __future__ import annotations
+import django_filters
 
 
 class OrderingFilterMixin:
-    """
-    Default ordering configuration.
-    """
 
-    ordering_fields = "__all__"
-
-    ordering = ("-created_at",)
+    ordering = django_filters.OrderingFilter()
