@@ -1,27 +1,58 @@
+"""
+Lifecycle service.
+"""
+
+from django.db import transaction
+
 from apps.core.choices.lifecycle import LifecycleStatus
 
 
 class LifecycleService:
     """
-    Generic lifecycle operations.
+    Handles business lifecycle state transitions.
     """
 
-    @staticmethod
-    def activate(instance):
-        instance.status = LifecycleStatus.ACTIVE
-        instance.save(update_fields=["status"])
+    @classmethod
+    @transaction.atomic
+    def change_status(
+        cls,
+        instance,
+        status,
+    ):
+        instance.status = status
 
-    @staticmethod
-    def deactivate(instance):
-        instance.status = LifecycleStatus.INACTIVE
-        instance.save(update_fields=["status"])
+        instance.save(
+            update_fields=[
+                "status",
+            ]
+        )
 
-    @staticmethod
-    def archive(instance):
-        instance.status = LifecycleStatus.ARCHIVED
-        instance.save(update_fields=["status"])
+        return instance
 
-    @staticmethod
-    def draft(instance):
-        instance.status = LifecycleStatus.DRAFT
-        instance.save(update_fields=["status"])
+    @classmethod
+    def draft(cls, instance):
+        return cls.change_status(
+            instance,
+            LifecycleStatus.DRAFT,
+        )
+
+    @classmethod
+    def activate(cls, instance):
+        return cls.change_status(
+            instance,
+            LifecycleStatus.ACTIVE,
+        )
+
+    @classmethod
+    def deactivate(cls, instance):
+        return cls.change_status(
+            instance,
+            LifecycleStatus.INACTIVE,
+        )
+
+    @classmethod
+    def archive(cls, instance):
+        return cls.change_status(
+            instance,
+            LifecycleStatus.ARCHIVED,
+        )

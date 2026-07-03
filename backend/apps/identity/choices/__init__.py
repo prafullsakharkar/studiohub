@@ -2,6 +2,7 @@ from .employment_type import *
 from .invitation_status import *
 from .invitation_type import *
 from .language import *
+from .login import *
 from .membership_status import *
 from .permission_action import *
 from .permission_category import *

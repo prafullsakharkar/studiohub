@@ -6,69 +6,44 @@ from __future__ import annotations
 
 from django.db import transaction
 
-from apps.core.events import EventBus
+from apps.core.services.business import BusinessService
 from apps.organization.events import (
+    DepartmentActivated,
     DepartmentArchived,
     DepartmentCreated,
+    DepartmentDeactivated,
     DepartmentDeleted,
     DepartmentManagerAssigned,
     DepartmentMoved,
+    DepartmentRestored,
     DepartmentUpdated,
 )
 from apps.organization.models import Department
+from apps.organization.validators.department import (
+    DepartmentValidator,
+)
 
-from .base import OrganizationBaseService
 
-
-class DepartmentService(OrganizationBaseService):
+class DepartmentService(BusinessService):
     """
     Handles all write operations for Department.
     """
 
     model = Department
 
-    @classmethod
-    @transaction.atomic
-    def create(cls, **validated_data):
-        department = cls.model.objects.create(**validated_data)
+    validator_class = DepartmentValidator
 
-        EventBus.publish(
-            DepartmentCreated(instance=department),
-        )
-
-        return department
-
-    @classmethod
-    @transaction.atomic
-    def update(cls, instance, **validated_data):
-        for field, value in validated_data.items():
-            setattr(instance, field, value)
-
-        instance.save()
-
-        EventBus.publish(
-            DepartmentUpdated(instance=instance),
-        )
-
-        return instance
-
-    @classmethod
-    @transaction.atomic
-    def archive(cls, instance):
-        instance.archive()
-
-        EventBus.publish(DepartmentArchived(instance=instance))
-
-        return instance
-
-    @classmethod
-    @transaction.atomic
-    def delete(cls, instance):
-        instance.delete()
-
-        EventBus.publish(
-            DepartmentDeleted(instance=instance),
-        )
+    event_map = {
+        "create": DepartmentCreated,
+        "update": DepartmentUpdated,
+        "delete": DepartmentDeleted,
+        "restore": DepartmentRestored,
+        "activate": DepartmentActivated,
+        "deactivate": DepartmentDeactivated,
+        "archive": DepartmentArchived,
+        "manager_assigned": DepartmentManagerAssigned,
+        "moved": DepartmentMoved,
+    }
 
     @classmethod
     @transaction.atomic
@@ -77,14 +52,21 @@ class DepartmentService(OrganizationBaseService):
         instance,
         manager,
     ):
+        """
+        Assign department manager.
+        """
         instance.manager = manager
-        instance.save(update_fields=["manager"])
 
-        EventBus.publish(
-            DepartmentManagerAssigned(
-                instance=instance,
-                manager=manager,
-            )
+        instance.save(
+            update_fields=[
+                "manager",
+            ]
+        )
+
+        cls.publish_event(
+            "assign_manager",
+            instance=instance,
+            manager=manager,
         )
 
         return instance
@@ -96,14 +78,21 @@ class DepartmentService(OrganizationBaseService):
         instance,
         parent,
     ):
+        """
+        Move department under another parent department.
+        """
         instance.parent = parent
-        instance.save(update_fields=["parent"])
 
-        EventBus.publish(
-            DepartmentMoved(
-                instance=instance,
-                parent=parent,
-            )
+        instance.save(
+            update_fields=[
+                "parent",
+            ]
+        )
+
+        cls.publish_event(
+            "move",
+            instance=instance,
+            parent=parent,
         )
 
         return instance

@@ -1,106 +1,108 @@
+"""
+Team write service.
+"""
+
+from __future__ import annotations
+
 from django.db import transaction
 
-from apps.core.events import EventBus
-from apps.organization.events.team import (
+from apps.core.services.business import BusinessService
+from apps.organization.events import (
+    TeamActivated,
     TeamArchived,
     TeamCreated,
+    TeamDeactivated,
     TeamDeleted,
-    TeamDepartmentChanged,
     TeamLeadAssigned,
+    TeamMoved,
+    TeamRestored,
     TeamUpdated,
 )
-from apps.organization.models.team import Team
-from apps.organization.services.base import OrganizationBaseService
+from apps.organization.models import Team
+from apps.organization.validators.team import TeamValidator
 
 
-class TeamService(OrganizationBaseService):
+class TeamService(BusinessService):
     """
-    Write operations for Team entity.
+    Handles all write operations for Team.
     """
 
     model = Team
 
-    # -----------------------------
-    # Create
-    # -----------------------------
+    validator_class = TeamValidator
+
+    event_map = {
+        "create": TeamCreated,
+        "update": TeamUpdated,
+        "delete": TeamDeleted,
+        "restore": TeamRestored,
+        "activate": TeamActivated,
+        "deactivate": TeamDeactivated,
+        "archive": TeamArchived,
+        "assign_lead": TeamLeadAssigned,
+        "move": TeamMoved,
+    }
+
     @classmethod
     @transaction.atomic
-    def create(cls, **validated_data):
-        team = cls.model.objects.create(**validated_data)
+    def assign_lead(
+        cls,
+        instance,
+        lead,
+    ):
+        """
+        Assign team lead.
+        """
 
-        EventBus.publish(TeamCreated(instance=team))
+        cls.validator_class.validate_assign_lead(
+            instance,
+            lead,
+        )
 
-        return team
+        instance.lead = lead
 
-    # -----------------------------
-    # Update
-    # -----------------------------
-    @classmethod
-    @transaction.atomic
-    def update(cls, instance, **validated_data):
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+        instance.save(
+            update_fields=[
+                "lead",
+            ]
+        )
 
-        instance.save()
-
-        EventBus.publish(TeamUpdated(instance=instance))
-
-        return instance
-
-    # -----------------------------
-    # Assign Lead
-    # -----------------------------
-    @classmethod
-    @transaction.atomic
-    def assign_lead(cls, instance, user):
-        instance.lead = user
-        instance.save(update_fields=["lead"])
-
-        EventBus.publish(
-            TeamLeadAssigned(
-                instance=instance,
-                user=user,
-            )
+        cls.publish_event(
+            "assign_lead",
+            instance=instance,
+            lead=lead,
         )
 
         return instance
 
-    # -----------------------------
-    # Change Department
-    # -----------------------------
     @classmethod
     @transaction.atomic
-    def change_department(cls, instance, department):
+    def move(
+        cls,
+        instance,
+        department,
+    ):
+        """
+        Move team to another department.
+        """
+
+        cls.validator_class.validate_move(
+            instance,
+            department,
+        )
+
         instance.department = department
-        instance.save(update_fields=["department"])
 
-        EventBus.publish(
-            TeamDepartmentChanged(
-                instance=instance,
-                department=department,
-            )
+        instance.save(
+            update_fields=[
+                "department",
+            ]
+        )
+
+        cls.publish_event(
+            "move",
+            instance=instance,
+            department=department,
         )
 
         return instance
-
-    # -----------------------------
-    # Archive
-    # -----------------------------
-    @classmethod
-    @transaction.atomic
-    def archive(cls, instance):
-        instance.archive()
-
-        EventBus.publish(TeamArchived(instance=instance))
-
-        return instance
-
-    # -----------------------------
-    # Delete
-    # -----------------------------
-    @classmethod
-    @transaction.atomic
-    def delete(cls, instance):
-        instance.delete()
-
-        EventBus.publish(TeamDeleted(instance=instance))

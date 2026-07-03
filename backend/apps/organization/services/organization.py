@@ -1,64 +1,40 @@
-from django.db import transaction
+"""
+Organization write service.
+"""
 
-from apps.core.events import EventBus
+from __future__ import annotations
+
+from apps.core.services.business import BusinessService
 from apps.organization.events import (
-    OrganizationArchivedEvent,
-    OrganizationCreatedEvent,
-    OrganizationUpdatedEvent,
+    OrganizationActivated,
+    OrganizationArchived,
+    OrganizationCreated,
+    OrganizationDeactivated,
+    OrganizationDeleted,
+    OrganizationRestored,
+    OrganizationUpdated,
 )
 from apps.organization.models import Organization
+from apps.organization.validators.organization import (
+    OrganizationValidator,
+)
 
 
-class OrganizationService:
+class OrganizationService(BusinessService):
+    """
+    Handles all write operations for Organization.
+    """
 
-    @classmethod
-    @transaction.atomic
-    def create(cls, **data) -> Organization:
+    model = Organization
 
-        organization = Organization.objects.create(**data)
+    validator_class = OrganizationValidator
 
-        EventBus.publish(
-            OrganizationCreatedEvent(
-                organization=organization,
-            )
-        )
-
-        return organization
-
-    @classmethod
-    @transaction.atomic
-    def update(
-        cls,
-        organization: Organization,
-        **data,
-    ) -> Organization:
-
-        for field, value in data.items():
-            setattr(organization, field, value)
-
-        organization.save()
-
-        EventBus.publish(
-            OrganizationUpdatedEvent(
-                organization=organization,
-            )
-        )
-
-        return organization
-
-    @classmethod
-    @transaction.atomic
-    def archive(
-        cls,
-        organization: Organization,
-    ) -> Organization:
-
-        organization.archive()
-
-        EventBus.publish(
-            OrganizationArchivedEvent(
-                organization=organization,
-            )
-        )
-
-        return organization
+    event_map = {
+        "create": OrganizationCreated,
+        "update": OrganizationUpdated,
+        "delete": OrganizationDeleted,
+        "restore": OrganizationRestored,
+        "activate": OrganizationActivated,
+        "deactivate": OrganizationDeactivated,
+        "archive": OrganizationArchived,
+    }

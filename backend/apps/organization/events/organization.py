@@ -23,3 +23,15 @@ class OrganizationManagerAssigned(BaseEvent):
 
 class OrganizationMoved(BaseEvent):
     event_type = "organization.moved"
+
+
+class OrganizationRestored(BaseEvent):
+    event_type = "organization.restored"
+
+
+class OrganizationActivated(BaseEvent):
+    event_type = "organization.activated"
+
+
+class OrganizationDeactivated(BaseEvent):
+    event_type = "organization.deactivated"

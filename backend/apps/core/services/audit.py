@@ -4,40 +4,72 @@ Audit service.
 
 from __future__ import annotations
 
-from .base import BaseService
+from .crud import CRUDService
 
 
-class AuditService(BaseService):
+class AuditService(CRUDService):
     """
-    Service for audit fields.
+    CRUD service with audit support.
     """
 
     @classmethod
-    def mark_created(cls, instance, user):
-        instance.created_by = user
-        instance.updated_by = user
+    def create(
+        cls,
+        *,
+        user=None,
+        **validated_data,
+    ):
 
-        instance.save(
-            update_fields=[
-                "created_by",
-                "updated_by",
-            ]
+        if user:
+
+            validated_data["created_by"] = user
+
+            validated_data["updated_by"] = user
+
+        return super().create(
+            **validated_data,
         )
 
-        return instance
+    @classmethod
+    def update(
+        cls,
+        instance,
+        *,
+        user=None,
+        **validated_data,
+    ):
+
+        if user:
+
+            validated_data["updated_by"] = user
+
+        return super().update(
+            instance,
+            **validated_data,
+        )
 
     @classmethod
-    def mark_updated(cls, instance, user):
-        instance.updated_by = user
+    def delete(
+        cls,
+        instance,
+        *,
+        user=None,
+    ):
 
-        instance.save(update_fields=["updated_by"])
+        if (
+            hasattr(
+                instance,
+                "deleted_by",
+            )
+            and user
+        ):
 
-        return instance
+            instance.deleted_by = user
 
-    @classmethod
-    def mark_deleted(cls, instance, user):
-        instance.deleted_by = user
+            instance.save(
+                update_fields=[
+                    "deleted_by",
+                ]
+            )
 
-        instance.save(update_fields=["deleted_by"])
-
-        return instance
+        return super().delete(instance)

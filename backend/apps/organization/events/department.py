@@ -23,3 +23,15 @@ class DepartmentManagerAssigned(BaseEvent):
 
 class DepartmentMoved(BaseEvent):
     event_type = "organization.department.moved"
+
+
+class DepartmentRestored(BaseEvent):
+    event_type = "organization.department.restored"
+
+
+class DepartmentActivated(BaseEvent):
+    event_type = "organization.department.activated"
+
+
+class DepartmentDeactivated(BaseEvent):
+    event_type = "organization.department.deactivated"

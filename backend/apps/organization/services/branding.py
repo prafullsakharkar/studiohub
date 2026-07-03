@@ -1,30 +1,34 @@
-class BrandingService:
+from apps.core.services.business import BusinessService
+from apps.organization.events import (
+    BrandingActivated,
+    BrandingArchived,
+    BrandingCreated,
+    BrandingDeactivated,
+    BrandingDeleted,
+    BrandingRestored,
+    BrandingUpdated,
+)
+from apps.organization.models import Branding
+from apps.organization.validators.branding import (
+    BrandingValidator,
+)
 
-    @classmethod
-    def update_logo(
-        cls,
-        organization,
-        logo,
-    ):
-        organization.logo = logo
-        organization.save(update_fields=["logo"])
-        return organization
 
-    @classmethod
-    def update_colors(
-        cls,
-        organization,
-        *,
-        primary_color,
-        secondary_color,
-    ):
-        organization.primary_color = primary_color
-        organization.secondary_color = secondary_color
-        organization.save(
-            update_fields=[
-                "primary_color",
-                "secondary_color",
-            ]
-        )
+class BrandingService(BusinessService):
+    """
+    Branding write service.
+    """
 
-        return organization
+    model = Branding
+
+    validator_class = BrandingValidator
+
+    event_map = {
+        "create": BrandingCreated,
+        "update": BrandingUpdated,
+        "delete": BrandingDeleted,
+        "restore": BrandingRestored,
+        "archive": BrandingArchived,
+        "activate": BrandingActivated,
+        "deactivate": BrandingDeactivated,
+    }

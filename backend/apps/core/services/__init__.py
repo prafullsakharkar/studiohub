@@ -1,6 +1,7 @@
 from .audit import AuditService
 from .base import BaseService
 from .color import ColorService
+from .crud import CRUDService
 from .email import EmailService
 from .lifecycle import LifecycleService
 from .metadata import MetadataService
@@ -26,4 +27,5 @@ __all__ = [
     "SoftDeleteService",
     "StorageService",
     "LifecycleService",
+    "CRUDService",
 ]

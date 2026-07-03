@@ -13,6 +13,14 @@ class OfficeArchived(BaseEvent):
     event_type = "organization.office.archived"
 
 
+class OfficeActivated(BaseEvent):
+    event_type = "organization.office.activated"
+
+
+class OfficeDeactivated(BaseEvent):
+    event_type = "organization.office.deactivated"
+
+
 class OfficeRestored(BaseEvent):
     event_type = "organization.office.restored"
 

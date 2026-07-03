@@ -7,7 +7,7 @@ from __future__ import annotations
 from rest_framework.exceptions import ImproperlyConfigured
 
 from ..mixins.service import ServiceMixin
-from .base import BaseModelViewSet
+from .generic import BaseModelViewSet
 
 
 class ServiceModelViewSet(

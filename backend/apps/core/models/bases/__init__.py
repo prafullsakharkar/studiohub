@@ -1,10 +1,13 @@
 from .audit import AuditModel
 from .branding import BrandingModel
 from .color import ColorModel
+from .device import DeviceInformationModel
 from .entity import EntityModel
 from .lifecycle import LifecycleModel
+from .location import GeoLocationModel
 from .metadata import MetadataModel
 from .named import NamedEntityModel
+from .network import NetworkInformationModel
 from .orderable import OrderableModel
 from .organization import OrganizationEntityModel
 from .ownership import OrganizationOwnedModel, ProjectOwnedModel, UserOwnedModel
@@ -51,4 +54,7 @@ __all__ = [
     "UserEntityModel",
     "BrandingModel",
     "LifecycleModel",
+    "DeviceInformationModel",
+    "GeoLocationModel",
+    "NetworkInformationModel",
 ]

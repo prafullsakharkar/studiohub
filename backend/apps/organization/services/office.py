@@ -1,68 +1,40 @@
-from django.db import transaction
+"""
+Office write service.
+"""
 
-from apps.core.events import EventBus
-from apps.organization.events.office import (
+from __future__ import annotations
+
+from apps.core.services.business import BusinessService
+from apps.organization.events import (
+    OfficeActivated,
     OfficeArchived,
     OfficeCreated,
+    OfficeDeactivated,
     OfficeDeleted,
-    OfficeHeadquartersChanged,
-    OfficeManagerAssigned,
     OfficeRestored,
     OfficeUpdated,
 )
-from apps.organization.models.office import Office
-from apps.organization.services.base import OrganizationBaseService
+from apps.organization.models import Office
+from apps.organization.validators.office import (
+    OfficeValidator,
+)
 
 
-class OfficeService(OrganizationBaseService):
+class OfficeService(BusinessService):
     """
-    Business operations for Office.
+    Handles all write operations for Office.
     """
 
     model = Office
 
-    @classmethod
-    @transaction.atomic
-    def create(cls, **validated_data):
-        office = cls.create_instance(**validated_data)
+    validator_class = OfficeValidator
 
-        EventBus.publish(OfficeCreated(instance=office))
-
-        return office
-
-    @classmethod
-    @transaction.atomic
-    def update(cls, instance, **validated_data):
-        office = cls.update_instance(
-            instance,
-            **validated_data,
-        )
-
-        EventBus.publish(OfficeUpdated(instance=office))
-
-        return office
-
-    @classmethod
-    @transaction.atomic
-    def archive(cls, instance):
-        cls.archive_instance(instance)
-
-        EventBus.publish(OfficeArchived(instance=instance))
-
-        return instance
-
-    @classmethod
-    @transaction.atomic
-    def restore(cls, instance):
-        cls.restore_instance(instance)
-
-        EventBus.publish(OfficeRestored(instance=instance))
-
-        return instance
-
-    @classmethod
-    @transaction.atomic
-    def delete(cls, instance):
-        cls.delete_instance(instance)
-
-        EventBus.publish(OfficeDeleted(instance=instance))
+    event_map = {
+        "create": OfficeCreated,
+        "update": OfficeUpdated,
+        "delete": OfficeDeleted,
+        "restore": OfficeRestored,
+        "archive": OfficeArchived,
+        "activate": OfficeActivated,
+        "deactivate": OfficeDeactivated,
+    }

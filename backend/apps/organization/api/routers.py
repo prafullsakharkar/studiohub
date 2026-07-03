@@ -1,8 +1,10 @@
 from rest_framework.routers import DefaultRouter
 
 from apps.organization.api.viewsets import (
+    BrandingViewSet,
     DepartmentViewSet,
     OfficeViewSet,
+    OrganizationSettingsViewSet,
     OrganizationViewSet,
     TeamViewSet,
 )
@@ -13,6 +15,12 @@ router.register(
     "organizations",
     OrganizationViewSet,
     basename="organization",
+)
+
+router.register(
+    "organization-settings",
+    OrganizationSettingsViewSet,
+    basename="organization_settings",
 )
 
 router.register(
@@ -31,6 +39,12 @@ router.register(
     "offices",
     OfficeViewSet,
     basename="office",
+)
+
+router.register(
+    "brandings",
+    OfficeViewSet,
+    basename="branding",
 )
 
 urlpatterns = router.urls

@@ -1,20 +1,48 @@
 """
-Base service class.
+Base service.
 """
 
 from __future__ import annotations
 
 
 class BaseService:
+    """
+    Base service class.
+    """
+
+    model = None
+
+    validator_class = None
+
+    selector_class = None
 
     @classmethod
-    def create(cls, **kwargs):
-        raise NotImplementedError
+    def validate(cls, **kwargs):
+        """
+        Execute validator hooks.
+        """
+        return
 
     @classmethod
-    def update(cls, instance, **kwargs):
-        raise NotImplementedError
+    def before_create(cls, **kwargs):
+        return
 
     @classmethod
-    def delete(cls, instance):
-        raise NotImplementedError
+    def after_create(cls, instance):
+        return instance
+
+    @classmethod
+    def before_update(cls, instance, **kwargs):
+        return
+
+    @classmethod
+    def after_update(cls, instance):
+        return instance
+
+    @classmethod
+    def before_delete(cls, instance):
+        return
+
+    @classmethod
+    def after_delete(cls, instance):
+        return

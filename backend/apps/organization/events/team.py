@@ -23,3 +23,19 @@ class TeamLeadAssigned(BaseEvent):
 
 class TeamDepartmentChanged(BaseEvent):
     event_type = "organization.team.department_changed"
+
+
+class TeamMoved(BaseEvent):
+    event_type = "organization.team.moved"
+
+
+class TeamRestored(BaseEvent):
+    event_type = "organization.team.restored"
+
+
+class TeamActivated(BaseEvent):
+    event_type = "organization.team.activated"
+
+
+class TeamDeactivated(BaseEvent):
+    event_type = "organization.team.deactivated"
