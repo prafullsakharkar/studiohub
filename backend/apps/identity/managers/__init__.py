@@ -1,4 +1,5 @@
 from .base import IdentityManager
+from .invitation import InvitationManager
 from .permission import PermissionManager
 from .role import RoleManager
 from .role_permission import RolePermissionManager
@@ -10,4 +11,5 @@ __all__ = (
     "RoleManager",
     "RolePermissionManager",
     "UserManager",
+    "InvitationManager",
 )

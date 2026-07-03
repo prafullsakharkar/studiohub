@@ -9,6 +9,12 @@ from .api import (
     ResourceLockedException,
     ServiceUnavailableException,
 )
+from .authentication import (
+    EmailNotVerified,
+    InvalidCredentials,
+    PasswordExpired,
+    UserInactive,
+)
 from .handlers import custom_exception_handler
 from .permissions import (
     OrganizationPermissionException,
@@ -34,4 +40,8 @@ __all__ = [
     "ServiceUnavailableException",
     "ValidationException",
     "custom_exception_handler",
+    "EmailNotVerified",
+    "InvalidCredentials",
+    "PasswordExpired",
+    "UserInactive",
 ]

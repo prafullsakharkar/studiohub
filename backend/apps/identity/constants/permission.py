@@ -41,3 +41,20 @@ class ProjectPermissions:
     UPDATE = "production.project.update"
 
     DELETE = "production.project.delete"
+
+
+class InvitationPermissions:
+
+    VIEW = "identity.invitation.view"
+
+    CREATE = "identity.invitation.create"
+
+    UPDATE = "identity.invitation.update"
+
+    DELETE = "identity.invitation.delete"
+
+    ACCEPT = "identity.invitation.accept"
+
+    CANCEL = "identity.invitation.cancel"
+
+    RESEND = "identity.invitation.resend"

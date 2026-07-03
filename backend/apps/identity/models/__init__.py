@@ -1,3 +1,4 @@
+from .invitation import Invitation
 from .membership import OrganizationMembership
 from .permission import Permission
 from .role import Role
@@ -10,4 +11,5 @@ __all__ = (
     "Role",
     "RolePermission",
     "OrganizationMembership",
+    "Invitation",
 )

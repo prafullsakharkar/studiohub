@@ -1,4 +1,5 @@
 from .base import IdentityQuerySet
+from .invitation import InvitationQuerySet
 from .permission import PermissionQuerySet
 from .role import RoleQuerySet
 from .role_permission import RolePermissionQuerySet
@@ -10,4 +11,5 @@ __all__ = (
     "RoleQuerySet",
     "RolePermissionQuerySet",
     "UserQuerySet",
+    "InvitationQuerySet",
 )
