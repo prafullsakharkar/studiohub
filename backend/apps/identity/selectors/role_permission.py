@@ -1,15 +1,27 @@
-from apps.identity.models.role_permission import RolePermission
+from django.db.models import QuerySet
+
+from apps.identity.models import (
+    RolePermission,
+)
+from apps.identity.selectors.base import (
+    IdentityBaseSelector,
+)
 
 
-class RolePermissionSelector:
+class RolePermissionSelector(
+    IdentityBaseSelector,
+):
 
-    @staticmethod
-    def permissions(role):
+    model = RolePermission
 
-        return (
-            RolePermission.objects.active()
-            .by_role(role)
-            .select_related(
-                "permission",
-            )
+    @classmethod
+    def get_queryset(
+        cls,
+        *,
+        request=None,
+        view=None,
+    ) -> QuerySet:
+        return RolePermission.objects.select_related(
+            "role",
+            "permission",
         )

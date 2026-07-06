@@ -1,14 +1,20 @@
-from rest_framework import serializers
+from apps.identity.services.login_history import (
+    LoginHistoryService,
+)
 
-from apps.identity.models import UserSession
+from .base import LoginHistoryBaseSerializer
 
 
-class UserSessionUpdateSerializer(
-    serializers.ModelSerializer,
+class LoginHistoryUpdateSerializer(
+    LoginHistoryBaseSerializer,
 ):
 
-    class Meta:
-
-        model = UserSession
-
-        fields = ("is_trusted",)
+    def update(
+        self,
+        instance,
+        validated_data,
+    ):
+        return LoginHistoryService.update(
+            instance,
+            **validated_data,
+        )

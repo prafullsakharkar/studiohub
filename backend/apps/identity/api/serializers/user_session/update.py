@@ -1,14 +1,20 @@
-from rest_framework import serializers
+from apps.identity.services.user_session import (
+    UserSessionService,
+)
 
-from apps.identity.models import UserSession
+from .base import UserSessionBaseSerializer
 
 
 class UserSessionUpdateSerializer(
-    serializers.ModelSerializer,
+    UserSessionBaseSerializer,
 ):
 
-    class Meta:
-
-        model = UserSession
-
-        fields = ("is_trusted",)
+    def update(
+        self,
+        instance,
+        validated_data,
+    ):
+        return UserSessionService.update(
+            instance,
+            **validated_data,
+        )

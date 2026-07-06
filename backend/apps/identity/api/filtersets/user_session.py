@@ -1,42 +1,51 @@
-from django_filters import rest_framework as filters
+from django_filters import BooleanFilter, CharFilter
 
-from apps.identity.models import UserSession
+from apps.core.filters.base import BaseFilterSet
+from apps.core.filters.ordering import OrderingFilterMixin
+from apps.identity.models.user_session import UserSession
 
 
-class UserSessionFilterSet(filters.FilterSet):
+class UserSessionFilterSet(
+    OrderingFilterMixin,
+    BaseFilterSet,
+):
+    """
+    FilterSet for UserSession.
+    """
 
-    user = filters.UUIDFilter(
+    user = CharFilter(
         field_name="user__uuid",
     )
 
-    is_current = filters.BooleanFilter()
-
-    is_trusted = filters.BooleanFilter()
-
-    is_revoked = filters.BooleanFilter()
-
-    device_type = filters.CharFilter(
-        lookup_expr="iexact",
-    )
-
-    browser = filters.CharFilter(
+    device = CharFilter(
+        field_name="device",
         lookup_expr="icontains",
     )
 
-    operating_system = filters.CharFilter(
+    browser = CharFilter(
+        field_name="browser",
         lookup_expr="icontains",
     )
+
+    operating_system = CharFilter(
+        field_name="operating_system",
+        lookup_expr="icontains",
+    )
+
+    ip_address = CharFilter(
+        field_name="ip_address",
+    )
+
+    is_active = BooleanFilter()
 
     class Meta:
-
         model = UserSession
 
         fields = (
             "user",
-            "is_current",
-            "is_trusted",
-            "is_revoked",
-            "device_type",
+            "device",
             "browser",
             "operating_system",
+            "ip_address",
+            "is_active",
         )

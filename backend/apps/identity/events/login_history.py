@@ -11,3 +11,11 @@ class LoginFailed(BaseEvent):
 
 class UserLoggedOut(BaseEvent):
     event_type = "identity.logout.completed"
+
+
+class LoginHistoryCreated(BaseEvent):
+    event_type = "identity.login_history.created"
+
+
+class LoginHistoryDeleted(BaseEvent):
+    event_type = "identity.login_history.deleted"

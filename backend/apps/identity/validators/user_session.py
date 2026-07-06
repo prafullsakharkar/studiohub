@@ -1,8 +1,14 @@
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
+from apps.identity.validators.base import (
+    IdentityBaseValidator,
+)
 
-class UserSessionValidator:
+
+class UserSessionValidator(
+    IdentityBaseValidator,
+):
 
     @staticmethod
     def validate_not_expired(session):

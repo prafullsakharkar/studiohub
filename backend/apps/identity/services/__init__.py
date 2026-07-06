@@ -2,6 +2,7 @@ from .authentication import AuthenticationService
 from .base import IdentityBaseService
 from .invitation import InvitationService
 from .membership import MembershipService
+from .permission_cache import PermissionCacheService
 from .user_session import UserSessionService
 
 __all__ = [
@@ -10,4 +11,5 @@ __all__ = [
     "InvitationService",
     "AuthenticationService",
     "UserSessionService",
+    "PermissionCacheService",
 ]

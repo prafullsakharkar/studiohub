@@ -1,60 +1,147 @@
-class OrganizationPermissions:
-
-    VIEW = "organization.view"
-    CREATE = "organization.create"
-    UPDATE = "organization.update"
-    DELETE = "organization.delete"
+"""
+Identity permission constants.
+"""
 
 
-class DepartmentPermissions:
+class UserPermissions:
+    VIEW = "identity.user.view"
+    CREATE = "identity.user.create"
+    UPDATE = "identity.user.update"
+    DELETE = "identity.user.delete"
 
-    VIEW = "organization.department.view"
-    CREATE = "organization.department.create"
-    UPDATE = "organization.department.update"
-    DELETE = "organization.department.delete"
+    ACTIVATE = "identity.user.activate"
+    DEACTIVATE = "identity.user.deactivate"
+    RESTORE = "identity.user.restore"
+    ARCHIVE = "identity.user.archive"
 
+    CHANGE_PASSWORD = "identity.user.change_password"
+    RESET_PASSWORD = "identity.user.reset_password"
 
-class TeamPermissions:
-
-    VIEW = "organization.team.view"
-    CREATE = "organization.team.create"
-    UPDATE = "organization.team.update"
-    DELETE = "organization.team.delete"
-
-
-class OfficePermissions:
-
-    VIEW = "organization.office.view"
-    CREATE = "organization.office.create"
-    UPDATE = "organization.office.update"
-    DELETE = "organization.office.delete"
+    EXPORT = "identity.user.export"
+    IMPORT = "identity.user.import"
 
 
-# ------------------------------------------------------
+class GroupPermissions:
+    VIEW = "identity.group.view"
+    CREATE = "identity.group.create"
+    UPDATE = "identity.group.update"
+    DELETE = "identity.group.delete"
+
+    ACTIVATE = "identity.group.activate"
+    DEACTIVATE = "identity.group.deactivate"
+    RESTORE = "identity.group.restore"
+    ARCHIVE = "identity.group.archive"
+
+    EXPORT = "identity.group.export"
 
 
-class ProjectPermissions:
+class GroupMemberPermissions:
+    VIEW = "identity.group_member.view"
+    CREATE = "identity.group_member.create"
+    UPDATE = "identity.group_member.update"
+    DELETE = "identity.group_member.delete"
 
-    VIEW = "production.project.view"
-    CREATE = "production.project.create"
+    ACTIVATE = "identity.group_member.activate"
+    DEACTIVATE = "identity.group_member.deactivate"
+    RESTORE = "identity.group_member.restore"
+    ARCHIVE = "identity.group_member.archive"
 
-    UPDATE = "production.project.update"
-
-    DELETE = "production.project.delete"
+    EXPORT = "identity.group_member.export"
 
 
-class InvitationPermissions:
+class RolePermissions:
+    VIEW = "identity.role.view"
+    CREATE = "identity.role.create"
+    UPDATE = "identity.role.update"
+    DELETE = "identity.role.delete"
 
-    VIEW = "identity.invitation.view"
+    ACTIVATE = "identity.role.activate"
+    DEACTIVATE = "identity.role.deactivate"
+    RESTORE = "identity.role.restore"
+    ARCHIVE = "identity.role.archive"
 
-    CREATE = "identity.invitation.create"
+    ASSIGN = "identity.role.assign"
+    UNASSIGN = "identity.role.unassign"
 
-    UPDATE = "identity.invitation.update"
+    EXPORT = "identity.role.export"
+    IMPORT = "identity.role.import"
 
-    DELETE = "identity.invitation.delete"
 
-    ACCEPT = "identity.invitation.accept"
+class PermissionPermissions:
+    VIEW = "identity.permission.view"
+    CREATE = "identity.permission.create"
+    UPDATE = "identity.permission.update"
+    DELETE = "identity.permission.delete"
 
-    CANCEL = "identity.invitation.cancel"
+    ACTIVATE = "identity.permission.activate"
+    DEACTIVATE = "identity.permission.deactivate"
+    RESTORE = "identity.permission.restore"
+    ARCHIVE = "identity.permission.archive"
 
-    RESEND = "identity.invitation.resend"
+    EXPORT = "identity.permission.export"
+    IMPORT = "identity.permission.import"
+
+
+class GroupPermissions:
+    VIEW = "identity.group.view"
+    CREATE = "identity.group.create"
+    UPDATE = "identity.group.update"
+    DELETE = "identity.group.delete"
+
+    ACTIVATE = "identity.group.activate"
+    DEACTIVATE = "identity.group.deactivate"
+    RESTORE = "identity.group.restore"
+    ARCHIVE = "identity.group.archive"
+
+    ASSIGN = "identity.group.assign"
+    UNASSIGN = "identity.group.unassign"
+
+    EXPORT = "identity.group.export"
+    IMPORT = "identity.group.import"
+
+
+class UserPreferencePermissions:
+    VIEW = "identity.user_preference.view"
+    CREATE = "identity.user_preference.create"
+    UPDATE = "identity.user_preference.update"
+    DELETE = "identity.user_preference.delete"
+
+    EXPORT = "identity.user_preference.export"
+
+
+class UserSessionPermissions:
+    VIEW = "identity.user_session.view"
+    CREATE = "identity.user_session.create"
+    UPDATE = "identity.user_session.update"
+    DELETE = "identity.user_session.delete"
+
+    REVOKE = "identity.user_session.revoke"
+    REVOKE_ALL = "identity.user_session.revoke_all"
+    REVOKE_OTHERS = "identity.user_session.revoke_others"
+
+    EXPORT = "identity.user_session.export"
+    CLEANUP = "identity.user_session.cleanup"
+
+
+class LoginHistoryPermissions:
+    VIEW = "identity.login_history.view"
+    DELETE = "identity.login_history.delete"
+
+    EXPORT = "identity.login_history.export"
+
+
+class APIKeyPermissions:
+    VIEW = "identity.api_key.view"
+    CREATE = "identity.api_key.create"
+    UPDATE = "identity.api_key.update"
+    DELETE = "identity.api_key.delete"
+
+    REGENERATE = "identity.api_key.regenerate"
+
+
+class PersonalAccessTokenPermissions:
+    VIEW = "identity.personal_access_token.view"
+    CREATE = "identity.personal_access_token.create"
+    DELETE = "identity.personal_access_token.delete"
+
+    REVOKE = "identity.personal_access_token.revoke"

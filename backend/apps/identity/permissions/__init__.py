@@ -1,5 +1,23 @@
-from .login_history import LoginHistoryPermissions
-from .membership import MembershipPermissions
-from .user_session import UserSessionPermissions
+from .department import IsDepartmentManager
+from .organization import (
+    IsOrganizationMember,
+    IsOrganizationOwner,
+)
+from .ownership import (
+    IsOwner,
+    IsSelf,
+)
+from .permission import HasPermission
+from .role import HasRole
+from .team import IsTeamLead
 
-__all__ = ("MembershipPermissions", "LoginHistoryPermissions", "UserSessionPermissions")
+__all__ = (
+    "IsDepartmentManager",
+    "IsOrganizationMember",
+    "IsOrganizationOwner",
+    "HasPermission",
+    "IsOwner",
+    "IsSelf",
+    "HasRole",
+    "IsTeamLead",
+)

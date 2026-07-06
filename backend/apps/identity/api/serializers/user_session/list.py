@@ -1,28 +1,22 @@
-from rest_framework import serializers
-
-from apps.identity.models import UserSession
+from .base import UserSessionBaseSerializer
 
 
 class UserSessionListSerializer(
-    serializers.ModelSerializer,
+    UserSessionBaseSerializer,
 ):
 
-    class Meta:
-
-        model = UserSession
-
+    class Meta(
+        UserSessionBaseSerializer.Meta,
+    ):
         fields = (
+            "id",
             "uuid",
-            "device_name",
-            "device_type",
+            "device",
             "browser",
             "operating_system",
             "ip_address",
-            "country",
-            "city",
-            "last_activity_at",
+            "login_at",
+            "last_activity",
             "expires_at",
-            "is_current",
-            "is_trusted",
-            "is_revoked",
+            "is_active",
         )

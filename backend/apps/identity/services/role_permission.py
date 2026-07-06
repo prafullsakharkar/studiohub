@@ -1,28 +1,38 @@
-from apps.identity.models.role_permission import RolePermission
+from apps.core.services.business import (
+    BusinessService,
+)
+from apps.identity.events import (
+    RolePermissionCreated,
+    RolePermissionDeleted,
+)
+from apps.identity.models import (
+    RolePermission,
+)
+from apps.identity.services.permission_cache import (
+    PermissionCacheService,
+)
+from apps.identity.validators.role_permission import (
+    RolePermissionValidator,
+)
 
 
-class RolePermissionService:
+class RolePermissionService(
+    BusinessService,
+):
 
-    @staticmethod
-    def grant(
-        role,
-        permission,
-        user=None,
+    model = RolePermission
+
+    validator_class = RolePermissionValidator
+
+    event_map = {
+        "create": RolePermissionCreated,
+        "delete": RolePermissionDeleted,
+    }
+
+    @classmethod
+    def invalidate_cache(
+        cls,
+        instance,
     ):
-
-        return RolePermission.objects.grant(
-            role,
-            permission,
-            user,
-        )
-
-    @staticmethod
-    def revoke(
-        role_permission,
-    ):
-
-        role_permission.granted = False
-
-        role_permission.save()
-
-        return role_permission
+        # Invalidate all users having this role (implement lookup as needed)
+        pass

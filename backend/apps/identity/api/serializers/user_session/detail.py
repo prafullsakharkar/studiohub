@@ -1,16 +1,7 @@
-from apps.identity.api.serializers.user_session import UserSessionListSerializer
+from .base import UserSessionBaseSerializer
 
 
 class UserSessionDetailSerializer(
-    UserSessionListSerializer,
+    UserSessionBaseSerializer,
 ):
-
-    class Meta(UserSessionListSerializer.Meta):
-
-        fields = UserSessionListSerializer.Meta.fields + (
-            "user_agent",
-            "session_key",
-            "refresh_token_jti",
-            "created_at",
-            "updated_at",
-        )
+    pass

@@ -1,21 +1,37 @@
 from apps.core.events import BaseEvent
 
 
-class SessionCreated(BaseEvent):
-    event_type = "identity.session.created"
+class UserSessionCreated(BaseEvent):
+    event_type = "identity.user_session.created"
 
 
-class SessionUpdated(BaseEvent):
-    event_type = "identity.session.updated"
+class UserSessionUpdated(BaseEvent):
+    event_type = "identity.user_session.updated"
 
 
-class SessionRevoked(BaseEvent):
-    event_type = "identity.session.revoked"
+class UserSessionArchived(BaseEvent):
+    event_type = "identity.user_session.archived"
 
 
-class SessionExpired(BaseEvent):
-    event_type = "identity.session.expired"
+class UserSessionActivated(BaseEvent):
+    event_type = "identity.user_session.activated"
 
 
-class SessionActivityUpdated(BaseEvent):
-    event_type = "identity.session.activity.updated"
+class UserSessionDeactivated(BaseEvent):
+    event_type = "identity.user_session.deactivated"
+
+
+class UserSessionRestored(BaseEvent):
+    event_type = "identity.user_session.restored"
+
+
+class UserSessionDeleted(BaseEvent):
+    event_type = "identity.user_session.deleted"
+
+
+class UserSessionRevoked(BaseEvent):
+    event_type = "identity.user_session.revoked"
+
+
+class UserSessionExpired(BaseEvent):
+    event_type = "identity.user_session.expired"

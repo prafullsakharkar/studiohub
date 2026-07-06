@@ -1,23 +1,18 @@
-from rest_framework import serializers
-
-from apps.identity.models import UserSession
-from apps.identity.services.user_session import (
-    UserSessionService,
+from apps.identity.services.login_history import (
+    LoginHistoryService,
 )
 
+from .base import LoginHistoryBaseSerializer
 
-class UserSessionCreateSerializer(
-    serializers.ModelSerializer,
+
+class LoginHistoryCreateSerializer(
+    LoginHistoryBaseSerializer,
 ):
 
-    class Meta:
-
-        model = UserSession
-
-        exclude = ()
-
-    def create(self, validated_data):
-
-        return UserSessionService.create(
+    def create(
+        self,
+        validated_data,
+    ):
+        return LoginHistoryService.create(
             **validated_data,
         )

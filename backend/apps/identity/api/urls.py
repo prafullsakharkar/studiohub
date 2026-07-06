@@ -1,5 +1,8 @@
-from django.urls import path
+from django.urls import include, path
 
+from apps.identity.api.routers import (
+    urlpatterns as router_urls,
+)
 from apps.identity.api.views.authentication import (
     ChangePasswordAPIView,
     ForgotPasswordAPIView,
@@ -12,6 +15,10 @@ from apps.identity.api.views.authentication import (
 )
 
 urlpatterns = [
+    path(
+        "identity/",
+        include(router_urls),
+    ),
     path(
         "login/",
         LoginAPIView.as_view(),

@@ -49,3 +49,30 @@ class UserSessionQuerySet(IdentityQuerySet):
             "user",
             "revoked_by",
         )
+
+    def inactive(self):
+        return self.filter(
+            is_active=False,
+        )
+
+    def by_device(
+        self,
+        device,
+    ):
+        return self.filter(
+            device=device,
+        )
+
+    def by_ip(
+        self,
+        ip,
+    ):
+        return self.filter(
+            ip_address=ip,
+        )
+
+    def online(self):
+        return self.active()
+
+    def offline(self):
+        return self.inactive()
