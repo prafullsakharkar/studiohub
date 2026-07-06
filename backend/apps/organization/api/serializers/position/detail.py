@@ -1,10 +1,7 @@
-from .base import TeamBaseSerializer
+from .base import PositionBaseSerializer
 
 
-class TeamDetailSerializer(TeamBaseSerializer):
-    """
-    Full representation of Team.
-    """
-
-    class Meta(TeamBaseSerializer.Meta):
-        pass
+class PositionDetailSerializer(
+    PositionBaseSerializer,
+):
+    pass

@@ -1,17 +1,19 @@
-from .base import DepartmentSerializer
-from .create import DepartmentCreateSerializer
-from .detail import DepartmentDetailSerializer
-from .list import DepartmentListSerializer
-from .nested import DepartmentNestedSerializer
-from .summary import DepartmentSummarySerializer
-from .update import DepartmentUpdateSerializer
+from .base import PositionBaseSerializer
+from .bulk import PositionBulkSerializer
+from .create import PositionCreateSerializer
+from .detail import PositionDetailSerializer
+from .list import PositionListSerializer
+from .nested import PositionNestedSerializer
+from .summary import PositionSummarySerializer
+from .update import PositionUpdateSerializer
 
 __all__ = [
-    "DepartmentSerializer",
-    "DepartmentCreateSerializer",
-    "DepartmentUpdateSerializer",
-    "DepartmentNestedSerializer",
-    "DepartmentSummarySerializer",
-    "DepartmentListSerializer",
-    "DepartmentDetailSerializer",
+    "PositionBaseSerializer",
+    "PositionCreateSerializer",
+    "PositionUpdateSerializer",
+    "PositionNestedSerializer",
+    "PositionSummarySerializer",
+    "PositionListSerializer",
+    "PositionDetailSerializer",
+    "PositionBulkSerializer",
 ]

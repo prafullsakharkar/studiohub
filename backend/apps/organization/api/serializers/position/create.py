@@ -1,21 +1,15 @@
-from .base import TeamBaseSerializer
+from apps.organization.services.position import (
+    PositionService,
+)
+
+from .base import PositionBaseSerializer
 
 
-class TeamCreateSerializer(TeamBaseSerializer):
-    """
-    Input serializer for creating Team.
-    """
-
-    class Meta(TeamBaseSerializer.Meta):
-        read_only_fields = (
-            "id",
-            "uuid",
-            "created_at",
-            "updated_at",
-            "status",
-        )
+class PositionCreateSerializer(
+    PositionBaseSerializer,
+):
 
     def create(self, validated_data):
-        from apps.organization.services.team import TeamService
-
-        return TeamService.create(**validated_data)
+        return PositionService.create(
+            **validated_data,
+        )

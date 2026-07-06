@@ -1,29 +1,25 @@
-from rest_framework import serializers
+from apps.organization.api.serializers.base import (
+    OrganizationEntitySerializer,
+)
+from apps.organization.models.work_hours import WorkHours
 
-from apps.organization.models.team import Team
 
+class WorkHoursBaseSerializer(
+    OrganizationEntitySerializer,
+):
 
-class TeamBaseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Team
+    class Meta(
+        OrganizationEntitySerializer.Meta,
+    ):
+        model = WorkHours
+
         fields = (
-            "id",
-            "uuid",
-            "code",
-            "name",
-            "description",
-            "organization",
-            "department",
-            "lead",
-            "color",
-            "capacity",
-            "status",
-            "created_at",
-            "updated_at",
-        )
-        read_only_fields = (
-            "id",
-            "uuid",
-            "created_at",
-            "updated_at",
+            *OrganizationEntitySerializer.Meta.fields,
+            "work_calendar",
+            "day",
+            "start_time",
+            "end_time",
+            "break_start",
+            "break_end",
+            "is_working_day",
         )

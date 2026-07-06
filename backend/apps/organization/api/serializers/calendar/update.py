@@ -1,23 +1,20 @@
-from .base import TeamBaseSerializer
+from apps.organization.services.calendar import (
+    CalendarService,
+)
+
+from .base import CalendarBaseSerializer
 
 
-class TeamUpdateSerializer(TeamBaseSerializer):
-    """
-    Input serializer for updating Team.
-    """
+class CalendarUpdateSerializer(
+    CalendarBaseSerializer,
+):
 
-    class Meta(TeamBaseSerializer.Meta):
-        read_only_fields = (
-            "id",
-            "uuid",
-            "created_at",
-            "updated_at",
-        )
-
-    def update(self, instance, validated_data):
-        from apps.organization.services.team import TeamService
-
-        return TeamService.update(
-            instance=instance,
+    def update(
+        self,
+        instance,
+        validated_data,
+    ):
+        return CalendarService.update(
+            instance,
             **validated_data,
         )

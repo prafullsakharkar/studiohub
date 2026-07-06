@@ -1,18 +1,17 @@
-from .base import DepartmentSerializer
+from .base import CalendarBaseSerializer
 
 
-class DepartmentSummarySerializer(
-    DepartmentSerializer,
+class CalendarSummarySerializer(
+    CalendarBaseSerializer,
 ):
 
-    class Meta(DepartmentSerializer.Meta):
-
+    class Meta(
+        CalendarBaseSerializer.Meta,
+    ):
         fields = (
             "id",
             "uuid",
-            "name",
             "code",
-            "organization_type",
+            "name",
             "status",
-            "logo",
         )

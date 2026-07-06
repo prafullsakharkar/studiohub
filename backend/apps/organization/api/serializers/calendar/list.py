@@ -1,17 +1,21 @@
-from .base import TeamBaseSerializer
+from .base import CalendarBaseSerializer
 
 
-class TeamListSerializer(TeamBaseSerializer):
-    """
-    Lightweight serializer for list views.
-    """
+class CalendarListSerializer(
+    CalendarBaseSerializer,
+):
 
-    class Meta(TeamBaseSerializer.Meta):
+    class Meta(
+        CalendarBaseSerializer.Meta,
+    ):
         fields = (
+            "id",
             "uuid",
             "code",
             "name",
-            "department",
-            "lead",
+            "organization",
+            "color",
+            "is_default",
+            "is_public",
             "status",
         )

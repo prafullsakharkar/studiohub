@@ -1,17 +1,17 @@
-from .base import DepartmentSerializer
-from .create import DepartmentCreateSerializer
-from .detail import DepartmentDetailSerializer
-from .list import DepartmentListSerializer
-from .nested import DepartmentNestedSerializer
-from .summary import DepartmentSummarySerializer
-from .update import DepartmentUpdateSerializer
+from .base import CalendarBaseSerializer
+from .create import CalendarCreateSerializer
+from .detail import CalendarDetailSerializer
+from .list import CalendarListSerializer
+from .nested import CalendarNestedSerializer
+from .summary import CalendarSummarySerializer
+from .update import CalendarUpdateSerializer
 
 __all__ = [
-    "DepartmentSerializer",
-    "DepartmentCreateSerializer",
-    "DepartmentUpdateSerializer",
-    "DepartmentNestedSerializer",
-    "DepartmentSummarySerializer",
-    "DepartmentListSerializer",
-    "DepartmentDetailSerializer",
+    "CalendarBaseSerializer",
+    "CalendarCreateSerializer",
+    "CalendarUpdateSerializer",
+    "CalendarNestedSerializer",
+    "CalendarSummarySerializer",
+    "CalendarListSerializer",
+    "CalendarDetailSerializer",
 ]

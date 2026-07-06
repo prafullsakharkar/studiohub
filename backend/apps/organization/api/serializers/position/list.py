@@ -1,17 +1,21 @@
-from .base import TeamBaseSerializer
+from .base import PositionBaseSerializer
 
 
-class TeamListSerializer(TeamBaseSerializer):
-    """
-    Lightweight serializer for list views.
-    """
+class PositionListSerializer(
+    PositionBaseSerializer,
+):
 
-    class Meta(TeamBaseSerializer.Meta):
+    class Meta(
+        PositionBaseSerializer.Meta,
+    ):
         fields = (
+            "id",
             "uuid",
             "code",
             "name",
+            "organization",
             "department",
-            "lead",
+            "level",
+            "is_managerial",
             "status",
         )

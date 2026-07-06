@@ -1,23 +1,20 @@
-from .base import TeamBaseSerializer
+from apps.organization.services.work_hours import (
+    WorkHoursService,
+)
+
+from .base import WorkHoursBaseSerializer
 
 
-class TeamUpdateSerializer(TeamBaseSerializer):
-    """
-    Input serializer for updating Team.
-    """
+class WorkHoursUpdateSerializer(
+    WorkHoursBaseSerializer,
+):
 
-    class Meta(TeamBaseSerializer.Meta):
-        read_only_fields = (
-            "id",
-            "uuid",
-            "created_at",
-            "updated_at",
-        )
-
-    def update(self, instance, validated_data):
-        from apps.organization.services.team import TeamService
-
-        return TeamService.update(
-            instance=instance,
+    def update(
+        self,
+        instance,
+        validated_data,
+    ):
+        return WorkHoursService.update(
+            instance,
             **validated_data,
         )

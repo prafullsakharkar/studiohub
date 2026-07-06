@@ -1,17 +1,23 @@
-from .base import TeamBaseSerializer
+from .base import WorkHoursBaseSerializer
 
 
-class TeamListSerializer(TeamBaseSerializer):
-    """
-    Lightweight serializer for list views.
-    """
+class WorkHoursListSerializer(
+    WorkHoursBaseSerializer,
+):
 
-    class Meta(TeamBaseSerializer.Meta):
+    class Meta(
+        WorkHoursBaseSerializer.Meta,
+    ):
         fields = (
+            "id",
             "uuid",
             "code",
             "name",
-            "department",
-            "lead",
+            "organization",
+            "work_calendar",
+            "day",
+            "start_time",
+            "end_time",
+            "is_working_day",
             "status",
         )

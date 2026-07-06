@@ -1,18 +1,18 @@
-from .base import DepartmentSerializer
+from .base import WorkHoursBaseSerializer
 
 
-class DepartmentSummarySerializer(
-    DepartmentSerializer,
+class WorkHoursSummarySerializer(
+    WorkHoursBaseSerializer,
 ):
 
-    class Meta(DepartmentSerializer.Meta):
-
+    class Meta(
+        WorkHoursBaseSerializer.Meta,
+    ):
         fields = (
             "id",
             "uuid",
-            "name",
             "code",
-            "organization_type",
+            "name",
+            "day",
             "status",
-            "logo",
         )

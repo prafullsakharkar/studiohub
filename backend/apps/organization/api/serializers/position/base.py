@@ -1,29 +1,24 @@
-from rest_framework import serializers
+from apps.organization.api.serializers.base import (
+    OrganizationEntitySerializer,
+)
+from apps.organization.models.position import (
+    Position,
+)
 
-from apps.organization.models.team import Team
 
+class PositionBaseSerializer(
+    OrganizationEntitySerializer,
+):
 
-class TeamBaseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Team
+    class Meta(
+        OrganizationEntitySerializer.Meta,
+    ):
+        model = Position
+
         fields = (
-            "id",
-            "uuid",
-            "code",
-            "name",
-            "description",
-            "organization",
+            *OrganizationEntitySerializer.Meta.fields,
             "department",
-            "lead",
-            "color",
-            "capacity",
-            "status",
-            "created_at",
-            "updated_at",
-        )
-        read_only_fields = (
-            "id",
-            "uuid",
-            "created_at",
-            "updated_at",
+            "parent",
+            "level",
+            "is_managerial",
         )

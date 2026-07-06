@@ -1,15 +1,7 @@
-from .base import TeamBaseSerializer
+from .summary import PositionSummarySerializer
 
 
-class TeamNestedSerializer(TeamBaseSerializer):
-    """
-    Lightweight nested representation.
-    """
-
-    class Meta(TeamBaseSerializer.Meta):
-        fields = (
-            "uuid",
-            "code",
-            "name",
-            "lead",
-        )
+class PositionNestedSerializer(
+    PositionSummarySerializer,
+):
+    pass

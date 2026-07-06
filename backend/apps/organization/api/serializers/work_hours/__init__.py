@@ -1,17 +1,17 @@
-from .base import DepartmentSerializer
-from .create import DepartmentCreateSerializer
-from .detail import DepartmentDetailSerializer
-from .list import DepartmentListSerializer
-from .nested import DepartmentNestedSerializer
-from .summary import DepartmentSummarySerializer
-from .update import DepartmentUpdateSerializer
+from .base import WorkHoursBaseSerializer
+from .create import WorkHoursCreateSerializer
+from .detail import WorkHoursDetailSerializer
+from .list import WorkHoursListSerializer
+from .nested import WorkHoursNestedSerializer
+from .summary import WorkHoursSummarySerializer
+from .update import WorkHoursUpdateSerializer
 
 __all__ = [
-    "DepartmentSerializer",
-    "DepartmentCreateSerializer",
-    "DepartmentUpdateSerializer",
-    "DepartmentNestedSerializer",
-    "DepartmentSummarySerializer",
-    "DepartmentListSerializer",
-    "DepartmentDetailSerializer",
+    "WorkHoursBaseSerializer",
+    "WorkHoursCreateSerializer",
+    "WorkHoursUpdateSerializer",
+    "WorkHoursNestedSerializer",
+    "WorkHoursSummarySerializer",
+    "WorkHoursListSerializer",
+    "WorkHoursDetailSerializer",
 ]

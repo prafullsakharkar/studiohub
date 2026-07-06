@@ -1,18 +1,17 @@
-from .base import DepartmentSerializer
+from .base import PositionBaseSerializer
 
 
-class DepartmentSummarySerializer(
-    DepartmentSerializer,
+class PositionSummarySerializer(
+    PositionBaseSerializer,
 ):
 
-    class Meta(DepartmentSerializer.Meta):
-
+    class Meta(
+        PositionBaseSerializer.Meta,
+    ):
         fields = (
             "id",
             "uuid",
-            "name",
             "code",
-            "organization_type",
+            "name",
             "status",
-            "logo",
         )

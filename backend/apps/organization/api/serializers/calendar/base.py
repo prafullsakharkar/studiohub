@@ -1,29 +1,24 @@
-from rest_framework import serializers
+from apps.organization.api.serializers.base import (
+    OrganizationEntitySerializer,
+)
+from apps.organization.models.calendar import (
+    Calendar,
+)
 
-from apps.organization.models.team import Team
 
+class CalendarBaseSerializer(
+    OrganizationEntitySerializer,
+):
 
-class TeamBaseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Team
+    class Meta(
+        OrganizationEntitySerializer.Meta,
+    ):
+        model = Calendar
+
         fields = (
-            "id",
-            "uuid",
-            "code",
-            "name",
+            *OrganizationEntitySerializer.Meta.fields,
             "description",
-            "organization",
-            "department",
-            "lead",
             "color",
-            "capacity",
-            "status",
-            "created_at",
-            "updated_at",
-        )
-        read_only_fields = (
-            "id",
-            "uuid",
-            "created_at",
-            "updated_at",
+            "is_default",
+            "is_public",
         )
