@@ -1,26 +1,32 @@
-from django.utils import timezone
+from django.db import models
 
 from apps.core.models import BaseQuerySet
 
 
 class UserMFAQuerySet(BaseQuerySet):
-
     def enabled(self):
-        return self.filter(
-            status="enabled",
-        )
+        return self.filter(enabled=True)
+
+    def disabled(self):
+        return self.filter(enabled=False)
 
     def verified(self):
-        return self.filter(
-            is_verified=True,
-        )
+        return self.filter(verified=True)
+
+    def pending(self):
+        return self.filter(verified=False)
+
+    def active(self):
+        return self.filter(status="active")
 
     def locked(self):
-        return self.filter(
-            locked_until__gt=timezone.now(),
-        )
+        return self.exclude(locked_until=None)
 
-    def unlocked(self):
-        return self.filter(
-            models.Q(locked_until__isnull=True) | models.Q(locked_until__lte=timezone.now())
-        )
+    def by_user(self, user):
+        return self.filter(user=user)
+
+    def by_method(self, method):
+        return self.filter(method=method)
+
+    def select_related_all(self):
+        return self.select_related("user")

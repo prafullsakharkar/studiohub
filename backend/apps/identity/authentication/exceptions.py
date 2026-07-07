@@ -47,3 +47,11 @@ class TooManyLoginAttempts(AuthenticationException):
 
 class AuthenticationRequired(AuthenticationException):
     default_detail = "Authentication required."
+
+
+class AccountLocked(AuthenticationException):
+    default_detail = "Account Locked."
+
+
+class MFARequired(AuthenticationException):
+    default_detail = "Multi-factor Authentication Required."

@@ -14,6 +14,16 @@ from apps.identity.api.views.authentication import (
     VerifyEmailAPIView,
 )
 
+from .views.authentication import (
+    MFADisableAPIView,
+    MFAEnrollAPIView,
+    MFARecoveryCodesAPIView,
+    MFARecoveryVerifyAPIView,
+    MFAVerifyAPIView,
+    TrustedDeviceListAPIView,
+    TrustedDeviceRevokeAPIView,
+)
+
 urlpatterns = [
     path(
         "identity/",
@@ -58,5 +68,40 @@ urlpatterns = [
         "email/resend/",
         ResendVerificationAPIView.as_view(),
         name="resend-verification",
+    ),
+    path(
+        "auth/mfa/enroll/",
+        MFAEnrollAPIView.as_view(),
+        name="mfa-enroll",
+    ),
+    path(
+        "auth/mfa/verify/",
+        MFAVerifyAPIView.as_view(),
+        name="mfa-verify",
+    ),
+    path(
+        "auth/mfa/disable/",
+        MFADisableAPIView.as_view(),
+        name="mfa-disable",
+    ),
+    path(
+        "auth/mfa/recovery/",
+        MFARecoveryCodesAPIView.as_view(),
+        name="mfa-recovery",
+    ),
+    path(
+        "auth/mfa/recovery/verify/",
+        MFARecoveryVerifyAPIView.as_view(),
+        name="mfa-recovery-verify",
+    ),
+    path(
+        "auth/mfa/devices/",
+        TrustedDeviceListAPIView.as_view(),
+        name="trusted-devices",
+    ),
+    path(
+        "auth/mfa/devices/revoke/",
+        TrustedDeviceRevokeAPIView.as_view(),
+        name="trusted-device-revoke",
     ),
 ]
