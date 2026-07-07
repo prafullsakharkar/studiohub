@@ -5,10 +5,15 @@ from apps.identity.services.authentication import (
 )
 
 
-class RefreshTokenSerializer(serializers.Serializer):
+class RefreshSerializer(
+    serializers.Serializer,
+):
     refresh = serializers.CharField()
 
-    def save(self, **kwargs):
+    def create(
+        self,
+        validated_data,
+    ):
         return AuthenticationService.refresh(
-            refresh_token=self.validated_data["refresh"],
+            refresh_token=validated_data["refresh"],
         )

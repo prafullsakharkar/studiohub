@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.conf import settings
 from django.db import models
 
 from apps.core.models import (
@@ -9,10 +10,13 @@ from apps.core.models import (
     TimeStampedModel,
     UUIDModel,
 )
-from apps.core.models.bases import (
-    DeviceInformationModel,
-    GeoLocationModel,
-    NetworkInformationModel,
+from apps.identity.choices import (
+    AuthenticationMethod,
+    Browser,
+    DeviceType,
+    LogoutReason,
+    OperatingSystem,
+    SessionStatus,
 )
 from apps.identity.managers.user_session import (
     UserSessionManager,
@@ -25,29 +29,187 @@ class UserSession(
     AuditModel,
     SoftDeleteModel,
     MetadataModel,
-    DeviceInformationModel,
-    NetworkInformationModel,
-    GeoLocationModel,
 ):
     """
-    Tracks authenticated user sessions across devices.
+    Enterprise user session.
+
+    Tracks authenticated user sessions, devices, activity,
+    security information, and organization context.
     """
 
+    # ------------------------------------------------------------------
+    # User
+    # ------------------------------------------------------------------
+
     user = models.ForeignKey(
-        "identity.User",
-        on_delete=models.CASCADE,
+        settings.AUTH_USER_MODEL,
         related_name="sessions",
+        on_delete=models.CASCADE,
     )
 
-    refresh_token_jti = models.CharField(
+    # ------------------------------------------------------------------
+    # Organization Context
+    # ------------------------------------------------------------------
+
+    organization = models.ForeignKey(
+        "organization.Organization",
+        related_name="sessions",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    office = models.ForeignKey(
+        "organization.Office",
+        related_name="sessions",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    department = models.ForeignKey(
+        "organization.Department",
+        related_name="sessions",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    team = models.ForeignKey(
+        "organization.Team",
+        related_name="sessions",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    # ------------------------------------------------------------------
+    # Session Identity
+    # ------------------------------------------------------------------
+
+    session_key = models.CharField(
         max_length=255,
         unique=True,
         db_index=True,
     )
 
-    session_key = models.CharField(
+    access_token_jti = models.CharField(
         max_length=255,
         blank=True,
+        db_index=True,
+    )
+
+    refresh_token_jti = models.CharField(
+        max_length=255,
+        blank=True,
+        db_index=True,
+    )
+
+    authentication_method = models.CharField(
+        max_length=30,
+        choices=AuthenticationMethod.choices,
+        default=AuthenticationMethod.PASSWORD,
+    )
+
+    # ------------------------------------------------------------------
+    # Device
+    # ------------------------------------------------------------------
+
+    device_name = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    device_type = models.CharField(
+        max_length=20,
+        choices=DeviceType.choices,
+        default=DeviceType.UNKNOWN,
+    )
+
+    browser = models.CharField(
+        max_length=30,
+        choices=Browser.choices,
+        default=Browser.UNKNOWN,
+    )
+
+    browser_version = models.CharField(
+        max_length=30,
+        blank=True,
+    )
+
+    operating_system = models.CharField(
+        max_length=30,
+        choices=OperatingSystem.choices,
+        default=OperatingSystem.UNKNOWN,
+    )
+
+    os_version = models.CharField(
+        max_length=30,
+        blank=True,
+    )
+
+    user_agent = models.TextField(
+        blank=True,
+    )
+
+    # ------------------------------------------------------------------
+    # Network
+    # ------------------------------------------------------------------
+
+    ip_address = models.GenericIPAddressField()
+
+    country = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+
+    region = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+
+    city = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+
+    timezone = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+
+    # ------------------------------------------------------------------
+    # Activity
+    # ------------------------------------------------------------------
+
+    last_activity_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    last_request_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    expires_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    ended_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    # ------------------------------------------------------------------
+    # Status
+    # ------------------------------------------------------------------
+
+    status = models.CharField(
+        max_length=20,
+        choices=SessionStatus.choices,
+        default=SessionStatus.ACTIVE,
+        db_index=True,
     )
 
     is_current = models.BooleanField(
@@ -58,42 +220,66 @@ class UserSession(
         default=False,
     )
 
-    is_revoked = models.BooleanField(
-        default=False,
-        db_index=True,
+    # ------------------------------------------------------------------
+    # Logout
+    # ------------------------------------------------------------------
+
+    logout_reason = models.CharField(
+        max_length=30,
+        choices=LogoutReason.choices,
+        blank=True,
     )
 
-    last_activity_at = models.DateTimeField()
+    # ------------------------------------------------------------------
+    # Refresh Tracking
+    # ------------------------------------------------------------------
 
-    expires_at = models.DateTimeField()
+    refresh_count = models.PositiveIntegerField(
+        default=0,
+    )
 
-    revoked_at = models.DateTimeField(
+    failed_refresh_count = models.PositiveIntegerField(
+        default=0,
+    )
+
+    last_refresh_at = models.DateTimeField(
         null=True,
         blank=True,
     )
 
-    revoked_by = models.ForeignKey(
-        "identity.User",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="revoked_sessions",
-    )
+    # ------------------------------------------------------------------
+    # Manager
+    # ------------------------------------------------------------------
 
     objects = UserSessionManager()
 
     class Meta:
-
-        db_table = "identity_user_sessions"
+        db_table = "identity_user_session"
 
         ordering = ("-last_activity_at",)
 
         indexes = [
-            models.Index(fields=["user"]),
-            models.Index(fields=["is_revoked"]),
-            models.Index(fields=["expires_at"]),
-            models.Index(fields=["last_activity_at"]),
+            models.Index(
+                fields=("user", "status"),
+            ),
+            models.Index(
+                fields=("organization", "status"),
+            ),
+            models.Index(
+                fields=("refresh_token_jti",),
+            ),
+            models.Index(
+                fields=("access_token_jti",),
+            ),
+            models.Index(
+                fields=("expires_at",),
+            ),
+            models.Index(
+                fields=("ip_address",),
+            ),
         ]
 
     def __str__(self):
-        return f"{self.user.email} - {self.device_name}"
+        return (
+            f"{self.user} - " f"{self.device_name or self.device_type} " f"({self.status})"
+        )

@@ -1,43 +1,42 @@
-from apps.identity.api.serializers.base import (
-    IdentitySerializer,
-)
-from apps.identity.models import (
-    UserSession,
-)
+from rest_framework import serializers
+
+from apps.identity.models import UserSession
 
 
 class UserSessionBaseSerializer(
-    IdentitySerializer,
+    serializers.ModelSerializer,
 ):
 
-    class Meta(
-        IdentitySerializer.Meta,
-    ):
+    class Meta:
         model = UserSession
 
         fields = (
-            "id",
             "uuid",
             "user",
+            "organization",
+            "office",
+            "department",
+            "team",
             "session_key",
-            "device",
+            "authentication_method",
+            "device_name",
+            "device_type",
             "browser",
+            "browser_version",
             "operating_system",
+            "os_version",
+            "user_agent",
             "ip_address",
-            "location",
-            "login_at",
-            "last_activity",
+            "country",
+            "region",
+            "city",
+            "timezone",
+            "status",
+            "is_current",
+            "is_trusted",
             "expires_at",
-            "revoked_at",
-            "is_active",
+            "ended_at",
             "metadata",
-            "created_at",
-            "updated_at",
         )
 
-        read_only_fields = (
-            "id",
-            "uuid",
-            "created_at",
-            "updated_at",
-        )
+        read_only_fields = ("uuid",)

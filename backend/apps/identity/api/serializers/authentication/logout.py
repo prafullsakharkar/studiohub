@@ -5,14 +5,26 @@ from apps.identity.services.authentication import (
 )
 
 
-class LogoutSerializer(serializers.Serializer):
-    """
-    Logout serializer.
-    """
+class LogoutSerializer(
+    serializers.Serializer,
+):
+    refresh = serializers.CharField(
+        required=False,
+        allow_blank=True,
+    )
 
-    refresh = serializers.CharField()
+    def save(
+        self,
+        **kwargs,
+    ):
+        request = self.context["request"]
 
-    def save(self, **kwargs):
         AuthenticationService.logout(
-            refresh_token=self.validated_data["refresh"],
+            request=request,
+            session=request.user.current_session,
+            refresh_token=self.validated_data.get(
+                "refresh",
+            ),
         )
+
+        return {}

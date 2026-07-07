@@ -1,19 +1,27 @@
+from __future__ import annotations
+
 from django.utils import timezone
 
-from apps.core.events import EventBus
-from apps.core.services.business import BusinessService
-from apps.identity.events import (
-    UserSessionActivated,
-    UserSessionArchived,
-    UserSessionCreated,
-    UserSessionDeactivated,
-    UserSessionDeleted,
-    UserSessionExpired,
-    UserSessionRestored,
-    UserSessionRevoked,
-    UserSessionUpdated,
+from apps.core.services.base import BusinessService
+from apps.identity.choices import (
+    LogoutReason,
+    SessionStatus,
+)
+from apps.identity.events.user_session import (
+    SessionCreated,
+    SessionCurrentChanged,
+    SessionExpired,
+    SessionLoggedOut,
+    SessionRefreshed,
+    SessionRevoked,
+    SessionTouched,
+    SessionTrusted,
+    SessionUpdated,
 )
 from apps.identity.models import UserSession
+from apps.identity.selectors.user_session import (
+    UserSessionSelector,
+)
 from apps.identity.validators.user_session import (
     UserSessionValidator,
 )
@@ -23,188 +31,324 @@ class UserSessionService(
     BusinessService,
 ):
     """
-    Write operations for UserSession.
+    Enterprise User Session Service.
     """
 
     model = UserSession
 
-    validator_class = UserSessionValidator
+    selector_class = UserSessionSelector
 
-    event_map = {
-        "create": UserSessionCreated,
-        "update": UserSessionUpdated,
-        "delete": UserSessionDeleted,
-        "restore": UserSessionRestored,
-        "archive": UserSessionArchived,
-        "activate": UserSessionActivated,
-        "deactivate": UserSessionDeactivated,
-    }
+    # ---------------------------------------------------------
+    # CRUD
+    # ---------------------------------------------------------
 
     @classmethod
-    def revoke(
+    def create(
         cls,
-        instance,
+        **validated_data,
     ):
-        instance.is_active = False
-        instance.revoked_at = timezone.now()
-
-        instance.save(
-            update_fields=[
-                "is_active",
-                "revoked_at",
-            ]
+        instance = super().create(
+            **validated_data,
         )
 
-        EventBus.publish(
-            UserSessionRevoked(
-                instance=instance,
-            )
+        SessionCreated.dispatch(
+            instance=instance,
         )
 
         return instance
 
     @classmethod
-    def expire(
+    def update(
         cls,
         instance,
+        **validated_data,
     ):
-        instance.is_active = False
-
-        instance.save(
-            update_fields=[
-                "is_active",
-            ]
+        instance = super().update(
+            instance,
+            **validated_data,
         )
 
-        EventBus.publish(
-            UserSessionExpired(
-                instance=instance,
-            )
+        SessionUpdated.dispatch(
+            instance=instance,
         )
 
         return instance
+
+    # ---------------------------------------------------------
+    # Login
+    # ---------------------------------------------------------
+
+    @classmethod
+    def create_login_session(
+        cls,
+        **validated_data,
+    ):
+        validated_data.setdefault(
+            "status",
+            SessionStatus.ACTIVE,
+        )
+
+        validated_data.setdefault(
+            "is_current",
+            True,
+        )
+
+        return cls.create(
+            **validated_data,
+        )
+
+    # ---------------------------------------------------------
+    # Activity
+    # ---------------------------------------------------------
 
     @classmethod
     def touch(
         cls,
-        instance,
+        session,
     ):
-        instance.last_activity = timezone.now()
+        session.last_activity_at = timezone.now()
 
-        instance.save(
+        session.last_request_at = timezone.now()
+
+        session.save(
             update_fields=[
-                "last_activity",
-            ]
+                "last_activity_at",
+                "last_request_at",
+            ],
         )
 
-        return instance
+        SessionTouched.dispatch(
+            instance=session,
+        )
+
+        return session
+
+    # ---------------------------------------------------------
+    # Refresh
+    # ---------------------------------------------------------
 
     @classmethod
-    def revoke_all_for_user(
+    def refresh(
         cls,
-        user,
+        session,
+        *,
+        access_token_jti,
+        refresh_token_jti,
     ):
-        """
-        Revoke every active session for a user.
-        """
-
-        sessions = cls.model.objects.filter(
-            user=user,
-            is_active=True,
-            revoked_at__isnull=True,
+        UserSessionValidator.validate_refresh(
+            session,
         )
 
-        now = timezone.now()
+        session.access_token_jti = access_token_jti
 
-        sessions.update(
-            is_active=False,
-            revoked_at=now,
+        session.refresh_token_jti = refresh_token_jti
+
+        session.refresh_count += 1
+
+        session.last_refresh_at = timezone.now()
+
+        session.save(
+            update_fields=[
+                "access_token_jti",
+                "refresh_token_jti",
+                "refresh_count",
+                "last_refresh_at",
+            ],
         )
 
-        for session in sessions:
-            EventBus.publish(
-                UserSessionRevoked(
-                    instance=session,
-                )
-            )
+        SessionRefreshed.dispatch(
+            instance=session,
+        )
 
-        return sessions
+        return session
+
+    # ---------------------------------------------------------
+    # Logout
+    # ---------------------------------------------------------
 
     @classmethod
-    def revoke_other_sessions(
+    def logout(
+        cls,
+        session,
+        *,
+        reason=LogoutReason.USER,
+    ):
+        UserSessionValidator.validate_logout(
+            session,
+        )
+
+        session.status = SessionStatus.LOGGED_OUT
+
+        session.logout_reason = reason
+
+        session.ended_at = timezone.now()
+
+        session.is_current = False
+
+        session.save(
+            update_fields=[
+                "status",
+                "logout_reason",
+                "ended_at",
+                "is_current",
+            ],
+        )
+
+        SessionLoggedOut.dispatch(
+            instance=session,
+        )
+
+        return session
+
+    @classmethod
+    def logout_all(
         cls,
         *,
         user,
+        reason=LogoutReason.USER,
+    ):
+        sessions = UserSessionSelector.active_sessions(
+            user=user,
+        )
+
+        for session in sessions:
+            cls.logout(
+                session,
+                reason=reason,
+            )
+
+        return sessions.count()
+
+    @classmethod
+    def logout_other_devices(
+        cls,
+        *,
         current_session,
     ):
-        """
-        Revoke every session except the current one.
-        """
-
-        sessions = cls.model.objects.filter(
-            user=user,
-            is_active=True,
-            revoked_at__isnull=True,
-        ).exclude(
-            pk=current_session.pk,
-        )
-
-        now = timezone.now()
-
-        sessions.update(
-            is_active=False,
-            revoked_at=now,
+        sessions = (
+            UserSession.objects.active()
+            .for_user(current_session.user)
+            .exclude(
+                pk=current_session.pk,
+            )
         )
 
         for session in sessions:
-            EventBus.publish(
-                UserSessionRevoked(
-                    instance=session,
-                )
+            cls.logout(
+                session,
+                reason=LogoutReason.USER,
             )
 
-        return sessions
+        return sessions.count()
+
+    # ---------------------------------------------------------
+    # Security
+    # ---------------------------------------------------------
 
     @classmethod
-    def cleanup_expired(cls):
-        """
-        Mark expired sessions inactive.
-        """
+    def revoke(
+        cls,
+        session,
+    ):
+        session.status = SessionStatus.REVOKED
 
-        sessions = cls.model.objects.filter(
-            is_active=True,
-            expires_at__lte=timezone.now(),
+        session.is_current = False
+
+        session.ended_at = timezone.now()
+
+        session.save(
+            update_fields=[
+                "status",
+                "is_current",
+                "ended_at",
+            ],
         )
 
-        sessions.update(
-            is_active=False,
+        SessionRevoked.dispatch(
+            instance=session,
         )
+
+        return session
+
+    @classmethod
+    def expire(
+        cls,
+        session,
+    ):
+        session.status = SessionStatus.EXPIRED
+
+        session.ended_at = timezone.now()
+
+        session.save(
+            update_fields=[
+                "status",
+                "ended_at",
+            ],
+        )
+
+        SessionExpired.dispatch(
+            instance=session,
+        )
+
+        return session
+
+    @classmethod
+    def mark_current(
+        cls,
+        session,
+    ):
+        UserSession.objects.filter(
+            user=session.user,
+        ).update(
+            is_current=False,
+        )
+
+        session.is_current = True
+
+        session.save(
+            update_fields=[
+                "is_current",
+            ],
+        )
+
+        SessionCurrentChanged.dispatch(
+            instance=session,
+        )
+
+        return session
+
+    @classmethod
+    def trust(
+        cls,
+        session,
+    ):
+        session.is_trusted = True
+
+        session.save(
+            update_fields=[
+                "is_trusted",
+            ],
+        )
+
+        SessionTrusted.dispatch(
+            instance=session,
+        )
+
+        return session
+
+    # ---------------------------------------------------------
+    # Maintenance
+    # ---------------------------------------------------------
+
+    @classmethod
+    def cleanup(
+        cls,
+    ):
+        sessions = UserSessionSelector.cleanup_queryset()
 
         for session in sessions:
-            EventBus.publish(
-                UserSessionExpired(
-                    instance=session,
-                )
+            cls.expire(
+                session,
             )
 
-        return sessions
-
-    @classmethod
-    def cleanup_revoked(cls):
-        """
-        Permanently remove revoked sessions.
-        """
-
-        return cls.model.objects.filter(
-            revoked_at__isnull=False,
-        ).delete()
-
-    @classmethod
-    def cleanup_deleted_users(cls):
-        """
-        Remove orphaned sessions.
-        """
-
-        return cls.model.objects.filter(
-            user__isnull=True,
-        ).delete()
+        return sessions.count()

@@ -1,23 +1,28 @@
-from rest_framework.permissions import AllowAny
+from apps.core.api.views import BaseAPIView
+from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from apps.identity.api.serializers.authentication import (
-    RefreshTokenSerializer,
+    RefreshSerializer,
 )
 
 
-class RefreshAPIView(APIView):
-
-    permission_classes = (AllowAny,)
-
+class RefreshAPIView(
+    BaseAPIView,
+):
     authentication_classes = ()
 
-    serializer_class = RefreshTokenSerializer
+    permission_classes = ()
 
-    def post(self, request):
+    serializer_class = RefreshSerializer
 
-        serializer = self.serializer_class(
+    def post(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
+        serializer = self.get_serializer(
             data=request.data,
         )
 
@@ -25,6 +30,9 @@ class RefreshAPIView(APIView):
             raise_exception=True,
         )
 
+        data = serializer.save()
+
         return Response(
-            serializer.save(),
+            data,
+            status=status.HTTP_200_OK,
         )

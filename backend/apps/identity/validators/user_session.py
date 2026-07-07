@@ -1,6 +1,6 @@
-from django.core.exceptions import ValidationError
 from django.utils import timezone
 
+from apps.identity.choices import SessionStatus
 from apps.identity.validators.base import (
     IdentityBaseValidator,
 )
@@ -9,15 +9,47 @@ from apps.identity.validators.base import (
 class UserSessionValidator(
     IdentityBaseValidator,
 ):
+    """
+    Validator for UserSession.
+    """
 
-    @staticmethod
-    def validate_not_expired(session):
+    @classmethod
+    def validate_active(
+        cls,
+        session,
+    ):
+        if session.status != SessionStatus.ACTIVE:
+            raise ValueError(
+                "Session is not active.",
+            )
 
-        if session.expires_at <= timezone.now():
-            raise ValidationError("Session has expired.")
+    @classmethod
+    def validate_not_expired(
+        cls,
+        session,
+    ):
+        if session.expires_at and session.expires_at <= timezone.now():
+            raise ValueError(
+                "Session has expired.",
+            )
 
-    @staticmethod
-    def validate_not_revoked(session):
+    @classmethod
+    def validate_refresh(
+        cls,
+        session,
+    ):
+        cls.validate_active(
+            session,
+        )
+        cls.validate_not_expired(
+            session,
+        )
 
-        if session.is_revoked:
-            raise ValidationError("Session has already been revoked.")
+    @classmethod
+    def validate_logout(
+        cls,
+        session,
+    ):
+        cls.validate_active(
+            session,
+        )

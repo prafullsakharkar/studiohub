@@ -1,16 +1,24 @@
+from apps.core.api.views import BaseAPIView
+from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from apps.identity.api.serializers.authentication import LogoutSerializer
+from apps.identity.api.serializers.authentication import (
+    LogoutSerializer,
+)
 
 
-class LogoutAPIView(APIView):
-
+class LogoutAPIView(
+    BaseAPIView,
+):
     serializer_class = LogoutSerializer
 
-    def post(self, request):
-
-        serializer = self.serializer_class(
+    def post(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
+        serializer = self.get_serializer(
             data=request.data,
         )
 
@@ -18,4 +26,11 @@ class LogoutAPIView(APIView):
             raise_exception=True,
         )
 
-        return Response(status=204)
+        serializer.save()
+
+        return Response(
+            {
+                "detail": "Logged out successfully.",
+            },
+            status=status.HTTP_200_OK,
+        )

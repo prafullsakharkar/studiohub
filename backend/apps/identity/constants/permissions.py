@@ -111,16 +111,16 @@ class UserPreferencePermissions:
 
 class UserSessionPermissions:
     VIEW = "identity.user_session.view"
-    CREATE = "identity.user_session.create"
-    UPDATE = "identity.user_session.update"
-    DELETE = "identity.user_session.delete"
+
+    LOGOUT = "identity.user_session.logout"
+
+    LOGOUT_ALL = "identity.user_session.logout_all"
 
     REVOKE = "identity.user_session.revoke"
-    REVOKE_ALL = "identity.user_session.revoke_all"
-    REVOKE_OTHERS = "identity.user_session.revoke_others"
 
-    EXPORT = "identity.user_session.export"
-    CLEANUP = "identity.user_session.cleanup"
+    TRUST = "identity.user_session.trust"
+
+    REFRESH = "identity.user_session.refresh"
 
 
 class LoginHistoryPermissions:

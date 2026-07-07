@@ -1,39 +1,138 @@
-from django.contrib.auth import authenticate
-from rest_framework_simplejwt.tokens import RefreshToken
+from __future__ import annotations
 
-from apps.core.api.exceptions import (
-    InvalidCredentials,
-    UserInactive,
+from django.contrib.auth import (
+    login as django_login,
+)
+from django.contrib.auth import (
+    logout as django_logout,
+)
+
+from apps.core.services.base import BusinessService
+from apps.identity.authentication.token import (
+    TokenService,
+)
+from apps.identity.authentication.utils import (
+    AuthenticationUtils,
+)
+from apps.identity.events.authentication import (
+    UserLoggedIn,
+    UserLoggedOut,
+    UserTokenRefreshed,
+)
+from apps.identity.selectors.authentication import (
+    AuthenticationSelector,
+)
+from apps.identity.services.login_attempt import (
+    LoginAttemptService,
+)
+from apps.identity.validators.authentication import (
+    AuthenticationValidator,
 )
 
 
-class AuthenticationService:
+class AuthenticationService(
+    BusinessService,
+):
+    """
+    Enterprise Authentication Service.
+    """
+
+    selector_class = AuthenticationSelector
+
+    validator_class = AuthenticationValidator
+
+    # ---------------------------------------------------------
+    # Login
+    # ---------------------------------------------------------
 
     @classmethod
     def login(
         cls,
         *,
-        email: str,
+        request,
+        username: str,
         password: str,
+        organization=None,
+        office=None,
+        department=None,
+        team=None,
     ):
-        user = authenticate(
-            username=email,
-            password=password,
+        ip_address = AuthenticationUtils.get_client_ip(
+            request,
         )
 
-        if user is None:
-            raise InvalidCredentials()
+        user = cls.selector_class.get_user(
+            username=username,
+        )
 
-        if not user.is_active:
-            raise UserInactive()
+        cls.validator_class.validate_login(
+            username=username,
+            password=password,
+            user=user,
+            ip_address=ip_address,
+        )
 
-        refresh = RefreshToken.for_user(user)
+        django_login(
+            request,
+            user,
+        )
 
-        return {
-            "user": user,
-            "access": str(refresh.access_token),
-            "refresh": str(refresh),
-        }
+        LoginAttemptService.success(
+            username=username,
+            ip_address=ip_address,
+            request=request,
+            user=user,
+        )
+
+        tokens = TokenService.create_session(
+            request=request,
+            user=user,
+            organization=organization,
+            office=office,
+            department=department,
+            team=team,
+        )
+
+        UserLoggedIn.dispatch(
+            user=user,
+            request=request,
+        )
+
+        return tokens
+
+    # ---------------------------------------------------------
+    # Logout
+    # ---------------------------------------------------------
+
+    @classmethod
+    def logout(
+        cls,
+        *,
+        request,
+        session,
+        refresh_token=None,
+    ):
+        cls.validator_class.validate_logout(
+            session,
+        )
+
+        TokenService.logout(
+            session=session,
+            refresh_token=refresh_token,
+        )
+
+        django_logout(
+            request,
+        )
+
+        UserLoggedOut.dispatch(
+            user=session.user,
+            request=request,
+        )
+
+    # ---------------------------------------------------------
+    # Refresh
+    # ---------------------------------------------------------
 
     @classmethod
     def refresh(
@@ -41,8 +140,73 @@ class AuthenticationService:
         *,
         refresh_token: str,
     ):
-        refresh = RefreshToken(refresh_token)
+        token = TokenService.validate_refresh(
+            refresh_token,
+        )
 
+        session = cls.selector_class.get_session_by_refresh_jti(
+            refresh_token_jti=token["jti"],
+        )
+
+        cls.validator_class.validate_refresh(
+            session,
+        )
+
+        tokens = TokenService.refresh(
+            session=session,
+            refresh_token=refresh_token,
+        )
+
+        UserTokenRefreshed.dispatch(
+            user=session.user,
+            session=session,
+        )
+
+        return tokens
+
+    # ---------------------------------------------------------
+    # Sessions
+    # ---------------------------------------------------------
+
+    @classmethod
+    def logout_all(
+        cls,
+        *,
+        user,
+    ):
+        return TokenService.logout_all(
+            user=user,
+        )
+
+    @classmethod
+    def logout_other_devices(
+        cls,
+        *,
+        current_session,
+    ):
+        return TokenService.logout_other_devices(
+            current_session=current_session,
+        )
+
+    # ---------------------------------------------------------
+    # User
+    # ---------------------------------------------------------
+
+    @classmethod
+    def me(
+        cls,
+        *,
+        user,
+    ):
         return {
-            "access": str(refresh.access_token),
+            "user": user,
+            "current_session": cls.selector_class.get_active_session(
+                user=user,
+            ),
+            "sessions": cls.selector_class.get_user_sessions(
+                user=user,
+            ),
+            "trusted_devices": cls.selector_class.get_trusted_devices(
+                user=user,
+            ),
         }
