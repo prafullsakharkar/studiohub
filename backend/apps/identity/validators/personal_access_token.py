@@ -1,78 +1,107 @@
 from __future__ import annotations
 
-from django.utils import timezone
+from django.core.exceptions import ValidationError
 
-from apps.identity.selectors import (
-    PersonalAccessTokenSelector,
+from apps.identity.models import (
+    PersonalAccessToken,
 )
-from apps.identity.validators.base import (
-    IdentityBaseValidator,
-)
+
+from .base import IdentityBaseValidator
 
 
 class PersonalAccessTokenValidator(
     IdentityBaseValidator,
 ):
-    selector = PersonalAccessTokenSelector
+    model = PersonalAccessToken
 
     @classmethod
-    def validate_name_unique(
+    def validate_create(
         cls,
-        *,
-        user,
-        name: str,
+        **validated_data,
     ):
-        cls.ensure(
-            not cls.selector.get_by_user(user).filter(name=name).exists(),
-            "Token with this name already exists.",
+        user = validated_data.get(
+            "user",
         )
 
-    @classmethod
-    def validate_prefix_unique(
-        cls,
-        prefix: str,
-    ):
-        cls.ensure(
-            cls.selector.get_by_prefix(prefix) is None,
-            "Token prefix already exists.",
+        name = validated_data.get(
+            "name",
         )
 
-    @classmethod
-    def validate_active(
-        cls,
-        token,
-    ):
-        cls.ensure(
-            token.is_active,
-            "Token has been revoked.",
-        )
-
-    @classmethod
-    def validate_not_expired(
-        cls,
-        token,
-    ):
-        if token.expires_at:
-            cls.ensure(
-                token.expires_at > timezone.now(),
-                "Token has expired.",
+        if PersonalAccessToken.objects.filter(
+            user=user,
+            name=name,
+        ).exists():
+            raise ValidationError(
+                {
+                    "name": "Token with this name already exists.",
+                },
             )
 
     @classmethod
-    def validate_scope(
+    def validate_update(
         cls,
-        token,
-        scope: str,
+        instance,
+        **validated_data,
     ):
-        cls.ensure(
-            scope in token.scopes,
-            "Insufficient token scope.",
+        name = validated_data.get(
+            "name",
         )
 
+        if not name:
+            return
+
+        exists = (
+            PersonalAccessToken.objects.filter(
+                user=instance.user,
+                name=name,
+            )
+            .exclude(
+                pk=instance.pk,
+            )
+            .exists()
+        )
+
+        if exists:
+            raise ValidationError(
+                {
+                    "name": "Token with this name already exists.",
+                },
+            )
+
     @classmethod
-    def validate(
+    def validate_activate(
         cls,
-        token,
+        instance,
+        **kwargs,
     ):
-        cls.validate_active(token)
-        cls.validate_not_expired(token)
+        if instance.expired:
+            raise ValidationError(
+                "Cannot activate an expired token.",
+            )
+
+    @classmethod
+    def validate_regenerate(
+        cls,
+        instance,
+        **kwargs,
+    ):
+        if not instance.is_active:
+            raise ValidationError(
+                "Token is inactive.",
+            )
+
+    @classmethod
+    def validate_use(
+        cls,
+        instance,
+        **kwargs,
+    ):
+        if not instance.is_active:
+            raise ValidationError(
+                "Token is inactive.",
+            )
+
+        if instance.expired:
+            raise ValidationError(
+                "Token has expired.",
+            )

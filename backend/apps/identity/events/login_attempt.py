@@ -1,19 +1,19 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
 class LoginAttemptSucceeded(
-    BaseEvent,
+    DomainEvent,
 ):
     event_type = "identity.login_attempt.succeeded"
 
 
 class LoginAttemptFailed(
-    BaseEvent,
+    DomainEvent,
 ):
     event_type = "identity.login_attempt.failed"
 
 
 class AccountLocked(
-    BaseEvent,
+    DomainEvent,
 ):
     event_type = "identity.account.locked"

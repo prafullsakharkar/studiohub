@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from apps.core.events.base import BaseEvent
+from apps.core.events.base import DomainEvent
 
 
 class EventHandlerProtocol(Protocol):
@@ -14,4 +14,4 @@ class EventHandlerProtocol(Protocol):
     Protocol for event handlers.
     """
 
-    def handle(self, event: BaseEvent) -> None: ...
+    def handle(self, event: DomainEvent) -> None: ...

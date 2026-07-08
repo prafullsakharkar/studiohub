@@ -1,13 +1,13 @@
-from apps.core.events.base import BaseEvent
+from apps.core.events.base import DomainEvent
 
 
-class OrganizationCreatedEvent(BaseEvent):
+class OrganizationCreatedEvent(DomainEvent):
     event_type = "organization.created"
 
 
-class OrganizationUpdatedEvent(BaseEvent):
+class OrganizationUpdatedEvent(DomainEvent):
     event_type = "organization.updated"
 
 
-class OrganizationArchivedEvent(BaseEvent):
+class OrganizationArchivedEvent(DomainEvent):
     event_type = "organization.archived"

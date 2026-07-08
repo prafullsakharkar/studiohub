@@ -1,8 +1,8 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
 class UserAuthenticationEvent(
-    BaseEvent,
+    DomainEvent,
 ):
     """
     Base authentication event.

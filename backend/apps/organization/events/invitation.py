@@ -1,49 +1,49 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class InvitationCreated(BaseEvent):
+class InvitationCreated(DomainEvent):
     event_type = "organization.invitation.created"
 
 
-class InvitationUpdated(BaseEvent):
+class InvitationUpdated(DomainEvent):
     event_type = "organization.invitation.updated"
 
 
-class InvitationDeleted(BaseEvent):
+class InvitationDeleted(DomainEvent):
     event_type = "organization.invitation.deleted"
 
 
-class InvitationArchived(BaseEvent):
+class InvitationArchived(DomainEvent):
     event_type = "organization.invitation.archived"
 
 
-class InvitationActivated(BaseEvent):
+class InvitationActivated(DomainEvent):
     event_type = "organization.invitation.activated"
 
 
-class InvitationDeactivated(BaseEvent):
+class InvitationDeactivated(DomainEvent):
     event_type = "organization.invitation.deactivated"
 
 
-class InvitationRestored(BaseEvent):
+class InvitationRestored(DomainEvent):
     event_type = "organization.invitation.restored"
 
 
-class InvitationAccepted(BaseEvent):
+class InvitationAccepted(DomainEvent):
     event_type = "organization.invitation.accepted"
 
 
-class InvitationDeclined(BaseEvent):
+class InvitationDeclined(DomainEvent):
     event_type = "organization.invitation.declined"
 
 
-class InvitationCancelled(BaseEvent):
+class InvitationCancelled(DomainEvent):
     event_type = "organization.invitation.cancelled"
 
 
-class InvitationExpired(BaseEvent):
+class InvitationExpired(DomainEvent):
     event_type = "organization.invitation.expired"
 
 
-class InvitationResent(BaseEvent):
+class InvitationResent(DomainEvent):
     event_type = "organization.invitation.resent"

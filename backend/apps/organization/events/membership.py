@@ -1,49 +1,49 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class MembershipCreated(BaseEvent):
+class MembershipCreated(DomainEvent):
     event_type = "organization.membership.created"
 
 
-class MembershipUpdated(BaseEvent):
+class MembershipUpdated(DomainEvent):
     event_type = "organization.membership.updated"
 
 
-class MembershipDeleted(BaseEvent):
+class MembershipDeleted(DomainEvent):
     event_type = "organization.membership.deleted"
 
 
-class MembershipArchived(BaseEvent):
+class MembershipArchived(DomainEvent):
     event_type = "organization.membership.archived"
 
 
-class MembershipActivated(BaseEvent):
+class MembershipActivated(DomainEvent):
     event_type = "organization.membership.activated"
 
 
-class MembershipDeactivated(BaseEvent):
+class MembershipDeactivated(DomainEvent):
     event_type = "organization.membership.deactivated"
 
 
-class MembershipReactivated(BaseEvent):
+class MembershipReactivated(DomainEvent):
     event_type = "organization.membership.reactivated"
 
 
-class MembershipRestored(BaseEvent):
+class MembershipRestored(DomainEvent):
     event_type = "organization.membership.restored"
 
 
-class MembershipAccepted(BaseEvent):
+class MembershipAccepted(DomainEvent):
     event_type = "organization.membership.accepted"
 
 
-class MembershipDeclined(BaseEvent):
+class MembershipDeclined(DomainEvent):
     event_type = "organization.membership.declined"
 
 
-class MembershipSuspended(BaseEvent):
+class MembershipSuspended(DomainEvent):
     event_type = "organization.membership.suspended"
 
 
-class MembershipExpired(BaseEvent):
+class MembershipExpired(DomainEvent):
     event_type = "organization.membership.expired"

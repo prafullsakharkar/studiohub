@@ -15,7 +15,7 @@ from apps.core.events.constants import (
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class BaseEvent:
+class DomainEvent:
     """
     Base class for all domain events.
     """

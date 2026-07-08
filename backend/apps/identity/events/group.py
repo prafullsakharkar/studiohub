@@ -1,37 +1,37 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class GroupCreated(BaseEvent):
+class GroupCreated(DomainEvent):
     event_type = "identity.group.created"
 
 
-class GroupUpdated(BaseEvent):
+class GroupUpdated(DomainEvent):
     event_type = "identity.group.updated"
 
 
-class GroupArchived(BaseEvent):
+class GroupArchived(DomainEvent):
     event_type = "identity.group.archived"
 
 
-class GroupActivated(BaseEvent):
+class GroupActivated(DomainEvent):
     event_type = "identity.group.activated"
 
 
-class GroupDeactivated(BaseEvent):
+class GroupDeactivated(DomainEvent):
     event_type = "identity.group.deactivated"
 
 
-class GroupRestored(BaseEvent):
+class GroupRestored(DomainEvent):
     event_type = "identity.group.restored"
 
 
-class GroupDeleted(BaseEvent):
+class GroupDeleted(DomainEvent):
     event_type = "identity.group.deleted"
 
 
-class GroupUserAdded(BaseEvent):
+class GroupUserAdded(DomainEvent):
     event_type = "identity.group.user_added"
 
 
-class GroupUserRemoved(BaseEvent):
+class GroupUserRemoved(DomainEvent):
     event_type = "identity.group.user_removed"

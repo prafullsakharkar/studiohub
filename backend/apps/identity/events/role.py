@@ -1,25 +1,25 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class RoleCreated(BaseEvent):
+class RoleCreated(DomainEvent):
     event_type = "identity.role.created"
 
 
-class RoleUpdated(BaseEvent):
+class RoleUpdated(DomainEvent):
     event_type = "identity.role.updated"
 
 
-class RoleArchived(BaseEvent):
+class RoleArchived(DomainEvent):
     event_type = "identity.role.archived"
 
 
-class RoleRestored(BaseEvent):
+class RoleRestored(DomainEvent):
     event_type = "identity.role.restored"
 
 
-class RoleDeleted(BaseEvent):
+class RoleDeleted(DomainEvent):
     event_type = "identity.role.deleted"
 
 
-class RolePermissionsUpdated(BaseEvent):
+class RolePermissionsUpdated(DomainEvent):
     event_type = "identity.role.permissions_updated"

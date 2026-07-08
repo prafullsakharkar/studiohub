@@ -1,33 +1,33 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class CalendarCreated(BaseEvent):
+class CalendarCreated(DomainEvent):
     event_type = "organization.calendar.created"
 
 
-class CalendarUpdated(BaseEvent):
+class CalendarUpdated(DomainEvent):
     event_type = "organization.calendar.updated"
 
 
-class CalendarArchived(BaseEvent):
+class CalendarArchived(DomainEvent):
     event_type = "organization.calendar.archived"
 
 
-class CalendarActivated(BaseEvent):
+class CalendarActivated(DomainEvent):
     event_type = "organization.calendar.activated"
 
 
-class CalendarDeactivated(BaseEvent):
+class CalendarDeactivated(DomainEvent):
     event_type = "organization.calendar.deactivated"
 
 
-class CalendarRestored(BaseEvent):
+class CalendarRestored(DomainEvent):
     event_type = "organization.calendar.restored"
 
 
-class CalendarDeleted(BaseEvent):
+class CalendarDeleted(DomainEvent):
     event_type = "organization.calendar.deleted"
 
 
-class CalendarDefaultChanged(BaseEvent):
+class CalendarDefaultChanged(DomainEvent):
     event_type = "organization.calendar.default_changed"

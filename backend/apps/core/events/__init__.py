@@ -1,4 +1,4 @@
-from .base import BaseEvent
+from .base import DomainEvent
 from .bus import EventBus
 from .constants import EventSource, EventVersion
 from .decorators import listens_to
@@ -8,13 +8,13 @@ from .exceptions import (
     EventRegistrationError,
     InvalidEventError,
 )
-from .handlers import BaseEventHandler
+from .handlers import DomainEventHandler
 from .publisher import publish
 from .subscriber import subscribe
 
 __all__ = [
-    "BaseEvent",
-    "BaseEventHandler",
+    "DomainEvent",
+    "DomainEventHandler",
     "EventDispatchError",
     "EventError",
     "EventRegistrationError",

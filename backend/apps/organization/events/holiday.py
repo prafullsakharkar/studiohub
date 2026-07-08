@@ -1,29 +1,29 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class HolidayCreated(BaseEvent):
+class HolidayCreated(DomainEvent):
     event_type = "organization.holiday.created"
 
 
-class HolidayUpdated(BaseEvent):
+class HolidayUpdated(DomainEvent):
     event_type = "organization.holiday.updated"
 
 
-class HolidayArchived(BaseEvent):
+class HolidayArchived(DomainEvent):
     event_type = "organization.holiday.archived"
 
 
-class HolidayActivated(BaseEvent):
+class HolidayActivated(DomainEvent):
     event_type = "organization.holiday.activated"
 
 
-class HolidayDeactivated(BaseEvent):
+class HolidayDeactivated(DomainEvent):
     event_type = "organization.holiday.deactivated"
 
 
-class HolidayRestored(BaseEvent):
+class HolidayRestored(DomainEvent):
     event_type = "organization.holiday.restored"
 
 
-class HolidayDeleted(BaseEvent):
+class HolidayDeleted(DomainEvent):
     event_type = "organization.holiday.deleted"

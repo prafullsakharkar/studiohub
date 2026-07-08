@@ -1,37 +1,37 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class SessionCreated(BaseEvent):
+class SessionCreated(DomainEvent):
     event_type = "identity.session.created"
 
 
-class SessionUpdated(BaseEvent):
+class SessionUpdated(DomainEvent):
     event_type = "identity.session.updated"
 
 
-class SessionTouched(BaseEvent):
+class SessionTouched(DomainEvent):
     event_type = "identity.session.touched"
 
 
-class SessionRefreshed(BaseEvent):
+class SessionRefreshed(DomainEvent):
     event_type = "identity.session.refreshed"
 
 
-class SessionExpired(BaseEvent):
+class SessionExpired(DomainEvent):
     event_type = "identity.session.expired"
 
 
-class SessionRevoked(BaseEvent):
+class SessionRevoked(DomainEvent):
     event_type = "identity.session.revoked"
 
 
-class SessionLoggedOut(BaseEvent):
+class SessionLoggedOut(DomainEvent):
     event_type = "identity.session.logged_out"
 
 
-class SessionCurrentChanged(BaseEvent):
+class SessionCurrentChanged(DomainEvent):
     event_type = "identity.session.current_changed"
 
 
-class SessionTrusted(BaseEvent):
+class SessionTrusted(DomainEvent):
     event_type = "identity.session.trusted"

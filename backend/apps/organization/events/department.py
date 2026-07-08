@@ -1,37 +1,37 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class DepartmentCreated(BaseEvent):
+class DepartmentCreated(DomainEvent):
     event_type = "organization.department.created"
 
 
-class DepartmentUpdated(BaseEvent):
+class DepartmentUpdated(DomainEvent):
     event_type = "organization.department.updated"
 
 
-class DepartmentArchived(BaseEvent):
+class DepartmentArchived(DomainEvent):
     event_type = "organization.department.archived"
 
 
-class DepartmentDeleted(BaseEvent):
+class DepartmentDeleted(DomainEvent):
     event_type = "organization.department.deleted"
 
 
-class DepartmentManagerAssigned(BaseEvent):
+class DepartmentManagerAssigned(DomainEvent):
     event_type = "organization.department.manager_assigned"
 
 
-class DepartmentMoved(BaseEvent):
+class DepartmentMoved(DomainEvent):
     event_type = "organization.department.moved"
 
 
-class DepartmentRestored(BaseEvent):
+class DepartmentRestored(DomainEvent):
     event_type = "organization.department.restored"
 
 
-class DepartmentActivated(BaseEvent):
+class DepartmentActivated(DomainEvent):
     event_type = "organization.department.activated"
 
 
-class DepartmentDeactivated(BaseEvent):
+class DepartmentDeactivated(DomainEvent):
     event_type = "organization.department.deactivated"

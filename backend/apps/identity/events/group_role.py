@@ -1,9 +1,9 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class GroupRoleCreated(BaseEvent):
+class GroupRoleCreated(DomainEvent):
     event_type = "identity.group_role.created"
 
 
-class GroupRoleDeleted(BaseEvent):
+class GroupRoleDeleted(DomainEvent):
     event_type = "identity.group_role.deleted"

@@ -1,37 +1,37 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class OrganizationCreated(BaseEvent):
+class OrganizationCreated(DomainEvent):
     event_type = "organization.created"
 
 
-class OrganizationUpdated(BaseEvent):
+class OrganizationUpdated(DomainEvent):
     event_type = "organization.updated"
 
 
-class OrganizationArchived(BaseEvent):
+class OrganizationArchived(DomainEvent):
     event_type = "organization.archived"
 
 
-class OrganizationDeleted(BaseEvent):
+class OrganizationDeleted(DomainEvent):
     event_type = "organization.deleted"
 
 
-class OrganizationManagerAssigned(BaseEvent):
+class OrganizationManagerAssigned(DomainEvent):
     event_type = "organization.manager_assigned"
 
 
-class OrganizationMoved(BaseEvent):
+class OrganizationMoved(DomainEvent):
     event_type = "organization.moved"
 
 
-class OrganizationRestored(BaseEvent):
+class OrganizationRestored(DomainEvent):
     event_type = "organization.restored"
 
 
-class OrganizationActivated(BaseEvent):
+class OrganizationActivated(DomainEvent):
     event_type = "organization.activated"
 
 
-class OrganizationDeactivated(BaseEvent):
+class OrganizationDeactivated(DomainEvent):
     event_type = "organization.deactivated"

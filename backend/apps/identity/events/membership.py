@@ -1,29 +1,29 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class MembershipCreated(BaseEvent):
+class MembershipCreated(DomainEvent):
     event_type = "identity.membership.created"
 
 
-class MembershipUpdated(BaseEvent):
+class MembershipUpdated(DomainEvent):
     event_type = "identity.membership.updated"
 
 
-class MembershipArchived(BaseEvent):
+class MembershipArchived(DomainEvent):
     event_type = "identity.membership.archived"
 
 
-class MembershipRestored(BaseEvent):
+class MembershipRestored(DomainEvent):
     event_type = "identity.membership.restored"
 
 
-class MembershipDeleted(BaseEvent):
+class MembershipDeleted(DomainEvent):
     event_type = "identity.membership.deleted"
 
 
-class MembershipActivated(BaseEvent):
+class MembershipActivated(DomainEvent):
     event_type = "identity.membership.activated"
 
 
-class MembershipSuspended(BaseEvent):
+class MembershipSuspended(DomainEvent):
     event_type = "identity.membership.suspended"

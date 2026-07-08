@@ -1,41 +1,41 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class TeamCreated(BaseEvent):
+class TeamCreated(DomainEvent):
     event_type = "organization.team.created"
 
 
-class TeamUpdated(BaseEvent):
+class TeamUpdated(DomainEvent):
     event_type = "organization.team.updated"
 
 
-class TeamArchived(BaseEvent):
+class TeamArchived(DomainEvent):
     event_type = "organization.team.archived"
 
 
-class TeamDeleted(BaseEvent):
+class TeamDeleted(DomainEvent):
     event_type = "organization.team.deleted"
 
 
-class TeamLeadAssigned(BaseEvent):
+class TeamLeadAssigned(DomainEvent):
     event_type = "organization.team.lead_assigned"
 
 
-class TeamDepartmentChanged(BaseEvent):
+class TeamDepartmentChanged(DomainEvent):
     event_type = "organization.team.department_changed"
 
 
-class TeamMoved(BaseEvent):
+class TeamMoved(DomainEvent):
     event_type = "organization.team.moved"
 
 
-class TeamRestored(BaseEvent):
+class TeamRestored(DomainEvent):
     event_type = "organization.team.restored"
 
 
-class TeamActivated(BaseEvent):
+class TeamActivated(DomainEvent):
     event_type = "organization.team.activated"
 
 
-class TeamDeactivated(BaseEvent):
+class TeamDeactivated(DomainEvent):
     event_type = "organization.team.deactivated"

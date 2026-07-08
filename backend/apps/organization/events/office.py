@@ -1,37 +1,37 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class OfficeCreated(BaseEvent):
+class OfficeCreated(DomainEvent):
     event_type = "organization.office.created"
 
 
-class OfficeUpdated(BaseEvent):
+class OfficeUpdated(DomainEvent):
     event_type = "organization.office.updated"
 
 
-class OfficeArchived(BaseEvent):
+class OfficeArchived(DomainEvent):
     event_type = "organization.office.archived"
 
 
-class OfficeActivated(BaseEvent):
+class OfficeActivated(DomainEvent):
     event_type = "organization.office.activated"
 
 
-class OfficeDeactivated(BaseEvent):
+class OfficeDeactivated(DomainEvent):
     event_type = "organization.office.deactivated"
 
 
-class OfficeRestored(BaseEvent):
+class OfficeRestored(DomainEvent):
     event_type = "organization.office.restored"
 
 
-class OfficeDeleted(BaseEvent):
+class OfficeDeleted(DomainEvent):
     event_type = "organization.office.deleted"
 
 
-class OfficeManagerAssigned(BaseEvent):
+class OfficeManagerAssigned(DomainEvent):
     event_type = "organization.office.manager_assigned"
 
 
-class OfficeHeadquartersChanged(BaseEvent):
+class OfficeHeadquartersChanged(DomainEvent):
     event_type = "organization.office.headquarters_changed"

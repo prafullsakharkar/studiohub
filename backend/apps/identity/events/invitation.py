@@ -1,25 +1,25 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class InvitationCreated(BaseEvent):
+class InvitationCreated(DomainEvent):
     event_type = "identity.invitation.created"
 
 
-class InvitationAccepted(BaseEvent):
+class InvitationAccepted(DomainEvent):
     event_type = "identity.invitation.accepted"
 
 
-class InvitationDeclined(BaseEvent):
+class InvitationDeclined(DomainEvent):
     event_type = "identity.invitation.declined"
 
 
-class InvitationExpired(BaseEvent):
+class InvitationExpired(DomainEvent):
     event_type = "identity.invitation.expired"
 
 
-class InvitationCancelled(BaseEvent):
+class InvitationCancelled(DomainEvent):
     event_type = "identity.invitation.cancelled"
 
 
-class InvitationResent(BaseEvent):
+class InvitationResent(DomainEvent):
     event_type = "identity.invitation.resent"

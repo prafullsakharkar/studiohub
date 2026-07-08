@@ -210,3 +210,27 @@ class AuthenticationService(
                 user=user,
             ),
         }
+
+    @classmethod
+    def get_user(cls, **lookup):
+        return cls.user_model.objects.filter(
+            **lookup,
+        ).first()
+
+    @classmethod
+    def get_active_user(cls, **lookup):
+        return cls.user_model.objects.filter(
+            is_active=True,
+            **lookup,
+        ).first()
+
+    @classmethod
+    def user_exists(cls, **lookup):
+        return cls.user_model.objects.filter(
+            **lookup,
+        ).exists()
+
+    @classmethod
+    def update_last_login(cls, user):
+        user.update_last_login()
+        return user

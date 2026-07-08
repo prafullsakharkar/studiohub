@@ -1,33 +1,33 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class WorkCalendarCreated(BaseEvent):
+class WorkCalendarCreated(DomainEvent):
     event_type = "organization.work_calendar.created"
 
 
-class WorkCalendarUpdated(BaseEvent):
+class WorkCalendarUpdated(DomainEvent):
     event_type = "organization.work_calendar.updated"
 
 
-class WorkCalendarArchived(BaseEvent):
+class WorkCalendarArchived(DomainEvent):
     event_type = "organization.work_calendar.archived"
 
 
-class WorkCalendarActivated(BaseEvent):
+class WorkCalendarActivated(DomainEvent):
     event_type = "organization.work_calendar.activated"
 
 
-class WorkCalendarDeactivated(BaseEvent):
+class WorkCalendarDeactivated(DomainEvent):
     event_type = "organization.work_calendar.deactivated"
 
 
-class WorkCalendarRestored(BaseEvent):
+class WorkCalendarRestored(DomainEvent):
     event_type = "organization.work_calendar.restored"
 
 
-class WorkCalendarDeleted(BaseEvent):
+class WorkCalendarDeleted(DomainEvent):
     event_type = "organization.work_calendar.deleted"
 
 
-class WorkCalendarDefaultChanged(BaseEvent):
+class WorkCalendarDefaultChanged(DomainEvent):
     event_type = "organization.work_calendar.default_changed"

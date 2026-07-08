@@ -22,9 +22,25 @@ class BusinessService(
     Base class for all business services.
     """
 
+    # ------------------------------------------------------------------
+    # Configuration
+    # ------------------------------------------------------------------
+
+    model = None
+
+    selector_class = None
+
     validator_class = None
 
     event_map = {}
+
+    CREATE = "create"
+    UPDATE = "update"
+    DELETE = "delete"
+    RESTORE = "restore"
+    ARCHIVE = "archive"
+    ACTIVATE = "activate"
+    DEACTIVATE = "deactivate"
 
     # ------------------------------------------------------------------
     # Validation
@@ -36,9 +52,6 @@ class BusinessService(
         operation: str,
         **kwargs,
     ):
-        """
-        Execute operation specific validator.
-        """
         if cls.validator_class is None:
             return
 
@@ -61,12 +74,9 @@ class BusinessService(
         operation: str,
         **kwargs,
     ):
-        """
-        Publish configured event.
-        """
         event = cls.event_map.get(operation)
 
-        if event:
+        if event is not None:
             EventBus.publish(
                 event(**kwargs),
             )
@@ -107,9 +117,92 @@ class BusinessService(
         return instance
 
     @classmethod
-    def invalidate_cache(cls, instance):
+    def before_delete(
+        cls,
+        instance,
+        **kwargs,
+    ):
+        return instance
+
+    @classmethod
+    def after_delete(
+        cls,
+        instance,
+        **kwargs,
+    ):
+        return instance
+
+    @classmethod
+    def before_restore(
+        cls,
+        instance,
+        **kwargs,
+    ):
+        return instance
+
+    @classmethod
+    def after_restore(
+        cls,
+        instance,
+        **kwargs,
+    ):
+        return instance
+
+    @classmethod
+    def before_archive(
+        cls,
+        instance,
+        **kwargs,
+    ):
+        return instance
+
+    @classmethod
+    def after_archive(
+        cls,
+        instance,
+        **kwargs,
+    ):
+        return instance
+
+    @classmethod
+    def before_activate(
+        cls,
+        instance,
+        **kwargs,
+    ):
+        return instance
+
+    @classmethod
+    def after_activate(
+        cls,
+        instance,
+        **kwargs,
+    ):
+        return instance
+
+    @classmethod
+    def before_deactivate(
+        cls,
+        instance,
+        **kwargs,
+    ):
+        return instance
+
+    @classmethod
+    def after_deactivate(
+        cls,
+        instance,
+        **kwargs,
+    ):
+        return instance
+
+    @classmethod
+    def invalidate_cache(
+        cls,
+        instance,
+    ):
         """
-        Override in subclasses if required.
+        Override in subclasses.
         """
         return
 
@@ -126,7 +219,7 @@ class BusinessService(
         **validated_data,
     ):
         cls.validate(
-            "create",
+            cls.CREATE,
             **validated_data,
         )
 
@@ -145,7 +238,7 @@ class BusinessService(
         )
 
         cls.publish_event(
-            "create",
+            cls.CREATE,
             instance=instance,
             user=user,
         )
@@ -164,7 +257,7 @@ class BusinessService(
         **validated_data,
     ):
         cls.validate(
-            "update",
+            cls.UPDATE,
             instance=instance,
             **validated_data,
         )
@@ -186,7 +279,175 @@ class BusinessService(
         )
 
         cls.publish_event(
-            "update",
+            cls.UPDATE,
+            instance=instance,
+            user=user,
+        )
+
+        cls.invalidate_cache(instance)
+
+        return instance
+
+    @classmethod
+    @transaction.atomic
+    def delete(
+        cls,
+        instance,
+        *,
+        user=None,
+    ):
+        cls.validate(
+            cls.DELETE,
+            instance=instance,
+        )
+
+        instance = cls.before_delete(
+            instance,
+            user=user,
+        )
+
+        super().delete(
+            instance,
+            user=user,
+        )
+
+        cls.after_delete(
+            instance,
+            user=user,
+        )
+
+        cls.publish_event(
+            cls.DELETE,
+            instance=instance,
+            user=user,
+        )
+
+        cls.invalidate_cache(instance)
+
+    @classmethod
+    @transaction.atomic
+    def restore(
+        cls,
+        instance,
+        *,
+        user=None,
+    ):
+        instance = cls.before_restore(
+            instance,
+            user=user,
+        )
+
+        instance = super().restore(
+            instance,
+            user=user,
+        )
+
+        instance = cls.after_restore(
+            instance,
+            user=user,
+        )
+
+        cls.publish_event(
+            cls.RESTORE,
+            instance=instance,
+            user=user,
+        )
+
+        cls.invalidate_cache(instance)
+
+        return instance
+
+    @classmethod
+    @transaction.atomic
+    def archive(
+        cls,
+        instance,
+        *,
+        user=None,
+    ):
+        instance = cls.before_archive(
+            instance,
+            user=user,
+        )
+
+        instance = super().archive(
+            instance,
+            user=user,
+        )
+
+        instance = cls.after_archive(
+            instance,
+            user=user,
+        )
+
+        cls.publish_event(
+            cls.ARCHIVE,
+            instance=instance,
+            user=user,
+        )
+
+        cls.invalidate_cache(instance)
+
+        return instance
+
+    @classmethod
+    @transaction.atomic
+    def activate(
+        cls,
+        instance,
+        *,
+        user=None,
+    ):
+        instance = cls.before_activate(
+            instance,
+            user=user,
+        )
+
+        instance = super().activate(
+            instance,
+            user=user,
+        )
+
+        instance = cls.after_activate(
+            instance,
+            user=user,
+        )
+
+        cls.publish_event(
+            cls.ACTIVATE,
+            instance=instance,
+            user=user,
+        )
+
+        cls.invalidate_cache(instance)
+
+        return instance
+
+    @classmethod
+    @transaction.atomic
+    def deactivate(
+        cls,
+        instance,
+        *,
+        user=None,
+    ):
+        instance = cls.before_deactivate(
+            instance,
+            user=user,
+        )
+
+        instance = super().deactivate(
+            instance,
+            user=user,
+        )
+
+        instance = cls.after_deactivate(
+            instance,
+            user=user,
+        )
+
+        cls.publish_event(
+            cls.DEACTIVATE,
             instance=instance,
             user=user,
         )

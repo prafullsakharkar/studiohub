@@ -1,29 +1,29 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class PositionCreated(BaseEvent):
+class PositionCreated(DomainEvent):
     event_type = "organization.position.created"
 
 
-class PositionUpdated(BaseEvent):
+class PositionUpdated(DomainEvent):
     event_type = "organization.position.updated"
 
 
-class PositionArchived(BaseEvent):
+class PositionArchived(DomainEvent):
     event_type = "organization.position.archived"
 
 
-class PositionActivated(BaseEvent):
+class PositionActivated(DomainEvent):
     event_type = "organization.position.activated"
 
 
-class PositionDeactivated(BaseEvent):
+class PositionDeactivated(DomainEvent):
     event_type = "organization.position.deactivated"
 
 
-class PositionRestored(BaseEvent):
+class PositionRestored(DomainEvent):
     event_type = "organization.position.restored"
 
 
-class PositionDeleted(BaseEvent):
+class PositionDeleted(DomainEvent):
     event_type = "organization.position.deleted"

@@ -1,9 +1,9 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class UserRoleCreated(BaseEvent):
+class UserRoleCreated(DomainEvent):
     event_type = "identity.user_role.created"
 
 
-class UserRoleDeleted(BaseEvent):
+class UserRoleDeleted(DomainEvent):
     event_type = "identity.user_role.deleted"

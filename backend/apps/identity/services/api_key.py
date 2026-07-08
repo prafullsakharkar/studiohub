@@ -1,110 +1,143 @@
+# apps/identity/services/api_key.py
+
 from __future__ import annotations
 
 from django.db import transaction
 from django.utils import timezone
 
+from apps.core.services.business import BusinessService
 from apps.identity.api_keys import APIKeyUtils
+from apps.identity.events import (
+    APIKeyActivated,
+    APIKeyCreated,
+    APIKeyRegenerated,
+    APIKeyRevoked,
+    APIKeyUsed,
+)
 from apps.identity.models import APIKey
 from apps.identity.selectors import APIKeySelector
-from apps.identity.services.base import IdentityBaseService
 from apps.identity.validators import APIKeyValidator
 
 
-class APIKeyService(IdentityBaseService):
+class APIKeyService(BusinessService):
+    """
+    Business service for API Keys.
+    """
+
     model = APIKey
 
-    selector = APIKeySelector
+    selector_class = APIKeySelector
 
-    validator = APIKeyValidator
+    validator_class = APIKeyValidator
+
+    event_map = {
+        BusinessService.CREATE: APIKeyCreated,
+        BusinessService.ACTIVATE: APIKeyActivated,
+        BusinessService.DEACTIVATE: APIKeyRevoked,
+        "regenerate": APIKeyRegenerated,
+        "use": APIKeyUsed,
+    }
 
     @classmethod
     @transaction.atomic
     def create(
         cls,
         *,
-        organization,
-        created_by,
-        name,
-        scopes=None,
-        expires_at=None,
-        description="",
+        user=None,
+        **validated_data,
     ):
-        scopes = scopes or []
+        generated = APIKeyUtils.generate()
 
-        token = APIKeyUtils.generate()
-
-        cls.validator.validate_name_unique(
-            organization=organization,
-            name=name,
+        instance = super().create(
+            user=user,
+            prefix=generated["prefix"],
+            hashed_key=generated["hashed"],
+            **validated_data,
         )
 
-        instance = cls.create_instance(
-            organization=organization,
-            created_by=created_by,
-            name=name,
-            description=description,
-            prefix=token["prefix"],
-            hashed_key=token["hashed"],
-            scopes=scopes,
-            expires_at=expires_at,
-            is_active=True,
-        )
+        instance.plain_token = generated["token"]
 
-        return instance, token["token"]
-
-    @classmethod
-    @transaction.atomic
-    def revoke(
-        cls,
-        api_key,
-    ):
-        return cls.update_instance(
-            api_key,
-            is_active=False,
-        )
-
-    @classmethod
-    @transaction.atomic
-    def activate(
-        cls,
-        api_key,
-    ):
-        return cls.update_instance(
-            api_key,
-            is_active=True,
-        )
-
-    @classmethod
-    @transaction.atomic
-    def touch(
-        cls,
-        api_key,
-        ip_address=None,
-    ):
-        return cls.update_instance(
-            api_key,
-            last_used_at=timezone.now(),
-            last_used_ip=ip_address,
-        )
+        return instance
 
     @classmethod
     def verify(
         cls,
         token: str,
     ):
-        prefix = token.split(".", 1)[0]
-
-        api_key = cls.selector.get_by_prefix(prefix)
-
-        if api_key is None:
+        try:
+            prefix, _ = token.split(".", 1)
+        except ValueError:
             return None
 
-        cls.validator.validate(api_key)
+        instance = cls.selector_class.get_by_prefix(prefix)
+
+        if instance is None:
+            return None
+
+        if not instance.is_active:
+            return None
+
+        if instance.expired:
+            return None
 
         if not APIKeyUtils.verify(
-            token,
-            api_key.hashed_key,
+            token=token,
+            hashed=instance.hashed_key,
         ):
             return None
 
-        return api_key
+        return instance
+
+    @classmethod
+    @transaction.atomic
+    def regenerate(
+        cls,
+        instance,
+        *,
+        user=None,
+    ):
+        generated = APIKeyUtils.generate()
+
+        instance = super().update(
+            instance,
+            user=user,
+            prefix=generated["prefix"],
+            hashed_key=generated["hashed"],
+        )
+
+        instance.plain_token = generated["token"]
+
+        cls.publish_event(
+            "regenerate",
+            instance=instance,
+            user=user,
+        )
+
+        return instance
+
+    @classmethod
+    @transaction.atomic
+    def touch(
+        cls,
+        instance,
+        *,
+        ip_address=None,
+        user=None,
+    ):
+        instance.last_used_at = timezone.now()
+        instance.last_used_ip = ip_address
+
+        instance.save(
+            update_fields=[
+                "last_used_at",
+                "last_used_ip",
+            ],
+        )
+
+        cls.publish_event(
+            "use",
+            instance=instance,
+            user=user,
+        )
+
+        return instance

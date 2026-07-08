@@ -1,3 +1,5 @@
+# apps/identity/api_keys/utils.py
+
 from __future__ import annotations
 
 from .generator import APIKeyGenerator
@@ -6,11 +8,11 @@ from .hashing import APIKeyHasher
 
 class APIKeyUtils:
     """
-    Convenience helpers.
+    High-level helper for API Keys and Personal Access Tokens.
     """
 
     @classmethod
-    def generate(cls):
+    def generate(cls) -> dict:
         prefix, secret, token = APIKeyGenerator.api_key()
 
         return {
@@ -21,15 +23,19 @@ class APIKeyUtils:
         }
 
     @classmethod
-    def hash(cls, token: str):
+    def hash(
+        cls,
+        token: str,
+    ) -> str:
         return APIKeyHasher.hash(token)
 
     @classmethod
     def verify(
         cls,
+        *,
         token: str,
         hashed: str,
-    ):
+    ) -> bool:
         return APIKeyHasher.verify(
             plain=token,
             hashed=hashed,

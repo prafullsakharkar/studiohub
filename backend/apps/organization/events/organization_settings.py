@@ -1,29 +1,29 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class OrganizationSettingsCreated(BaseEvent):
+class OrganizationSettingsCreated(DomainEvent):
     event_type = "organization.settings.created"
 
 
-class OrganizationSettingsUpdated(BaseEvent):
+class OrganizationSettingsUpdated(DomainEvent):
     event_type = "organization.settings.updated"
 
 
-class OrganizationSettingsDeleted(BaseEvent):
+class OrganizationSettingsDeleted(DomainEvent):
     event_type = "organization.settings.deleted"
 
 
-class OrganizationSettingsRestored(BaseEvent):
+class OrganizationSettingsRestored(DomainEvent):
     event_type = "organization.settings.restored"
 
 
-class OrganizationSettingsArchived(BaseEvent):
+class OrganizationSettingsArchived(DomainEvent):
     event_type = "organization.settings.archived"
 
 
-class OrganizationSettingsActivated(BaseEvent):
+class OrganizationSettingsActivated(DomainEvent):
     event_type = "organization.settings.activated"
 
 
-class OrganizationSettingsDeactivated(BaseEvent):
+class OrganizationSettingsDeactivated(DomainEvent):
     event_type = "organization.settings.deactivated"

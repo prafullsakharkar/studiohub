@@ -1,80 +1,106 @@
 from __future__ import annotations
 
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from apps.identity.selectors import APIKeySelector
-from apps.identity.validators.base import (
+from apps.identity.models import APIKey
+
+from .base import IdentityBaseValidator
+
+
+class APIKeyValidator(
     IdentityBaseValidator,
-)
-
-
-class APIKeyValidator(IdentityBaseValidator):
-    selector = APIKeySelector
+):
+    model = APIKey
 
     @classmethod
-    def validate_name_unique(
+    def validate_create(
         cls,
-        *,
-        organization,
-        name: str,
+        **validated_data,
     ):
-        cls.ensure(
-            not cls.selector.get_by_organization(
-                organization,
+        organization = validated_data.get(
+            "organization",
+        )
+
+        name = validated_data.get(
+            "name",
+        )
+
+        if APIKey.objects.filter(
+            organization=organization,
+            name=name,
+        ).exists():
+            raise ValidationError(
+                {
+                    "name": "API Key with this name already exists.",
+                },
             )
-            .filter(
+
+    @classmethod
+    def validate_update(
+        cls,
+        instance,
+        **validated_data,
+    ):
+        name = validated_data.get(
+            "name",
+        )
+
+        if not name:
+            return
+
+        exists = (
+            APIKey.objects.filter(
+                organization=instance.organization,
                 name=name,
             )
-            .exists(),
-            "API key with this name already exists.",
+            .exclude(
+                pk=instance.pk,
+            )
+            .exists()
         )
 
-    @classmethod
-    def validate_prefix_unique(
-        cls,
-        prefix: str,
-    ):
-        cls.ensure(
-            cls.selector.get_by_prefix(prefix) is None,
-            "API key prefix already exists.",
-        )
-
-    @classmethod
-    def validate_active(
-        cls,
-        api_key,
-    ):
-        cls.ensure(
-            api_key.is_active,
-            "API key has been revoked.",
-        )
-
-    @classmethod
-    def validate_not_expired(
-        cls,
-        api_key,
-    ):
-        if api_key.expires_at:
-            cls.ensure(
-                api_key.expires_at > timezone.now(),
-                "API key has expired.",
+        if exists:
+            raise ValidationError(
+                {
+                    "name": "API Key with this name already exists.",
+                },
             )
 
     @classmethod
-    def validate_scope(
+    def validate_activate(
         cls,
-        api_key,
-        scope: str,
+        instance,
+        **kwargs,
     ):
-        cls.ensure(
-            scope in api_key.scopes,
-            "API key does not have the required scope.",
-        )
+        if instance.expired:
+            raise ValidationError(
+                "Cannot activate an expired API Key.",
+            )
 
     @classmethod
-    def validate(
+    def validate_regenerate(
         cls,
-        api_key,
+        instance,
+        **kwargs,
     ):
-        cls.validate_active(api_key)
-        cls.validate_not_expired(api_key)
+        if not instance.is_active:
+            raise ValidationError(
+                "API Key is inactive.",
+            )
+
+    @classmethod
+    def validate_use(
+        cls,
+        instance,
+        **kwargs,
+    ):
+        if not instance.is_active:
+            raise ValidationError(
+                "API Key is inactive.",
+            )
+
+        if instance.expired:
+            raise ValidationError(
+                "API Key has expired.",
+            )

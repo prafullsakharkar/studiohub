@@ -1,37 +1,37 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class BrandingCreated(BaseEvent):
+class BrandingCreated(DomainEvent):
     event_type = "organization.branding.created"
 
 
-class BrandingUpdated(BaseEvent):
+class BrandingUpdated(DomainEvent):
     event_type = "organization.branding.updated"
 
 
-class BrandingArchived(BaseEvent):
+class BrandingArchived(DomainEvent):
     event_type = "organization.branding.archived"
 
 
-class BrandingActivated(BaseEvent):
+class BrandingActivated(DomainEvent):
     event_type = "organization.branding.activated"
 
 
-class BrandingDeactivated(BaseEvent):
+class BrandingDeactivated(DomainEvent):
     event_type = "organization.branding.deactivated"
 
 
-class BrandingRestored(BaseEvent):
+class BrandingRestored(DomainEvent):
     event_type = "organization.branding.restored"
 
 
-class BrandingDeleted(BaseEvent):
+class BrandingDeleted(DomainEvent):
     event_type = "organization.branding.deleted"
 
 
-class BrandingLogoUpdated(BaseEvent):
+class BrandingLogoUpdated(DomainEvent):
     event_type = "organization.branding.logo_updated"
 
 
-class BrandingThemeChanged(BaseEvent):
+class BrandingThemeChanged(DomainEvent):
     event_type = "organization.branding.theme_changed"

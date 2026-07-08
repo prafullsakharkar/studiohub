@@ -1,29 +1,29 @@
-from apps.core.events import BaseEvent
+from apps.core.events import DomainEvent
 
 
-class WorkHoursCreated(BaseEvent):
+class WorkHoursCreated(DomainEvent):
     event_type = "organization.work_hours.created"
 
 
-class WorkHoursUpdated(BaseEvent):
+class WorkHoursUpdated(DomainEvent):
     event_type = "organization.work_hours.updated"
 
 
-class WorkHoursArchived(BaseEvent):
+class WorkHoursArchived(DomainEvent):
     event_type = "organization.work_hours.archived"
 
 
-class WorkHoursActivated(BaseEvent):
+class WorkHoursActivated(DomainEvent):
     event_type = "organization.work_hours.activated"
 
 
-class WorkHoursDeactivated(BaseEvent):
+class WorkHoursDeactivated(DomainEvent):
     event_type = "organization.work_hours.deactivated"
 
 
-class WorkHoursRestored(BaseEvent):
+class WorkHoursRestored(DomainEvent):
     event_type = "organization.work_hours.restored"
 
 
-class WorkHoursDeleted(BaseEvent):
+class WorkHoursDeleted(DomainEvent):
     event_type = "organization.work_hours.deleted"
