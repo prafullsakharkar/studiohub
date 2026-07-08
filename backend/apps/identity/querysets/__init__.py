@@ -1,3 +1,4 @@
+from .api_key import APIKeyQuerySet
 from .backup_code import BackupCodeQuerySet
 from .group import GroupQuerySet
 from .group_member import GroupMemberQuerySet
@@ -7,6 +8,7 @@ from .login_attempt import LoginAttemptQuerySet
 from .login_history import LoginHistoryQuerySet
 from .membership import MembershipQuerySet
 from .permission import PermissionQuerySet
+from .personal_access_token import PersonalAccessTokenQuerySet
 from .profile import ProfileQuerySet
 from .role import RoleQuerySet
 from .role_permission import RolePermissionQuerySet
@@ -36,4 +38,6 @@ __all__ = [
     "UserPreferenceQuerySet",
     "UserRoleQuerySet",
     "UserSessionQuerySet",
+    "APIKeyQuerySet",
+    "PersonalAccessTokenQuerySet",
 ]

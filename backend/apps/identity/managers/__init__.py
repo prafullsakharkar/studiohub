@@ -1,3 +1,4 @@
+from .api_key import APIKeyManager
 from .backup_code import BackupCodeManager
 from .group import GroupManager
 from .group_member import GroupMemberManager
@@ -7,6 +8,7 @@ from .login_attempt import LoginAttemptManager
 from .login_history import LoginHistoryManager
 from .membership import MembershipManager
 from .permission import PermissionManager
+from .personal_access_token import PersonalAccessTokenManager
 from .profile import ProfileManager
 from .role import RoleManager
 from .role_permission import RolePermissionManager
@@ -36,4 +38,6 @@ __all__ = [
     "UserPreferenceManager",
     "UserRoleManager",
     "UserSessionManager",
+    "PersonalAccessTokenManager",
+    "APIKeyManager",
 ]

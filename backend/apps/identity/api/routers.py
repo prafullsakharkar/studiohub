@@ -1,6 +1,3 @@
-from apps.identity.api.viewsets.group import (
-    GroupViewSet,
-)
 from apps.identity.api.viewsets.permission import (
     PermissionViewSet,
 )
@@ -9,9 +6,14 @@ from apps.identity.api.viewsets.user import (
 )
 from rest_framework.routers import DefaultRouter
 
+from apps.identity.api.viewsets.api_key import APIKeyViewSet
+from apps.identity.api.viewsets.group import (
+    GroupViewSet,
+)
 from apps.identity.api.viewsets.login_history import (
     LoginHistoryViewSet,
 )
+from apps.identity.api.viewsets.personal_access_token import PersonalAccessTokenViewSet
 from apps.identity.api.viewsets.role import (
     RoleViewSet,
 )
@@ -65,5 +67,15 @@ router.register(
     LoginHistoryViewSet,
     basename="login-history",
 )
+router.register(
+    "api-keys",
+    APIKeyViewSet,
+    basename="identity-api-key",
+)
 
+router.register(
+    "personal-access-tokens",
+    PersonalAccessTokenViewSet,
+    basename="identity-personal-access-token",
+)
 urlpatterns = router.urls

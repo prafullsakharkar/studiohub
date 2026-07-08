@@ -1,3 +1,4 @@
+from .api_key import APIKeySelector
 from .authentication import AuthenticationSelector
 from .backup_code import BackupCodeSelector
 from .base import IdentityBaseSelector
@@ -9,6 +10,7 @@ from .login_attempt import LoginAttemptSelector
 from .login_history import LoginHistorySelector
 from .membership import MembershipSelector
 from .permission import PermissionSelector
+from .personal_access_token import PersonalAccessTokenSelector
 from .profile import ProfileSelector
 from .role import RoleSelector
 from .role_permission import RolePermissionSelector
@@ -38,4 +40,6 @@ __all__ = [
     "UserMFASelector",
     "UserPreferenceSelector",
     "UserRoleSelector",
+    "APIKeySelector",
+    "PersonalAccessTokenSelector",
 ]

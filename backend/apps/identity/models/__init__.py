@@ -1,9 +1,11 @@
+from .api_key import APIKey
 from .backup_code import BackupCode
 from .invitation import Invitation
 from .login_attempt import LoginAttempt
 from .login_history import LoginHistory
 from .membership import OrganizationMembership
 from .permission import Permission
+from .personal_access_token import PersonalAccessToken
 from .role import Role
 from .role_permission import RolePermission
 from .trusted_device import TrustedDevice
@@ -24,4 +26,6 @@ __all__ = (
     "UserMFA",
     "BackupCode",
     "TrustedDevice",
+    "APIKey",
+    "PersonalAccessToken",
 )

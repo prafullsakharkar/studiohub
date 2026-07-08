@@ -1,3 +1,4 @@
+from .api_key import APIKeyValidator
 from .authentication import AuthenticationValidator
 from .backup_code import BackupCodeValidator
 from .base import IdentityBaseValidator
@@ -8,6 +9,7 @@ from .invitation import InvitationValidator
 from .login_attempt import LoginAttemptValidator
 from .login_history import LoginHistoryValidator
 from .membership import MembershipValidator
+from .personal_access_token import PersonalAccessTokenValidator
 from .role import RoleValidator
 from .role_permission import RolePermissionValidator
 from .trusted_device import TrustedDeviceValidator
@@ -34,4 +36,6 @@ __all__ = [
     "UserMFAValidator",
     "UserPreferenceValidator",
     "UserRoleValidator",
+    "APIKeyValidator",
+    "PersonalAccessTokenValidator",
 ]

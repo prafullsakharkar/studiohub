@@ -1,3 +1,4 @@
+from .api_key import *
 from .department import IsDepartmentManager
 from .organization import (
     IsOrganizationMember,
@@ -8,6 +9,7 @@ from .ownership import (
     IsSelf,
 )
 from .permission import HasPermission
+from .personal_access_token import *
 from .role import HasRole
 from .team import IsTeamLead
 

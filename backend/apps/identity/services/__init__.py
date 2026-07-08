@@ -1,3 +1,4 @@
+from .api_key import APIKeyService
 from .authentication import AuthenticationService
 from .base import IdentityBaseService
 from .invitation import InvitationService
@@ -9,6 +10,7 @@ from .mfa import (
     MFAVerificationService,
 )
 from .permission_cache import PermissionCacheService
+from .personal_access_token import PersonalAccessTokenService
 from .user_session import UserSessionService
 
 __all__ = [
@@ -22,4 +24,6 @@ __all__ = [
     "MFAEnrollmentService",
     "MFAVerificationService",
     "MFATrustedDeviceService",
+    "APIKeyService",
+    "PersonalAccessTokenService",
 ]

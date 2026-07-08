@@ -10,10 +10,12 @@ from apps.core.models import (
     TimeStampedModel,
     UUIDModel,
 )
-from apps.identity.managers.api_key import APIKeyManager
+from apps.identity.managers.personal_access_token import (
+    PersonalAccessTokenManager,
+)
 
 
-class APIKey(
+class PersonalAccessToken(
     UUIDModel,
     TimeStampedModel,
     AuditModel,
@@ -21,17 +23,19 @@ class APIKey(
     SoftDeleteModel,
 ):
     """
-    Organization / Service API Key.
+    User Personal Access Token.
     """
 
-    objects = APIKeyManager()
+    objects = PersonalAccessTokenManager()
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="personal_access_tokens",
+    )
 
     name = models.CharField(
         max_length=255,
-    )
-
-    description = models.TextField(
-        blank=True,
     )
 
     prefix = models.CharField(
@@ -39,21 +43,9 @@ class APIKey(
         db_index=True,
     )
 
-    hashed_key = models.CharField(
+    hashed_token = models.CharField(
         max_length=255,
         unique=True,
-    )
-
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="api_keys",
-    )
-
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="created_api_keys",
     )
 
     scopes = models.JSONField(
@@ -81,7 +73,7 @@ class APIKey(
     )
 
     class Meta:
-        db_table = "identity_api_key"
+        db_table = "identity_personal_access_token"
 
         ordering = ("name",)
 
@@ -92,13 +84,4 @@ class APIKey(
         ]
 
     def __str__(self):
-        return self.name
-
-    @property
-    def expired(self):
-        if not self.expires_at:
-            return False
-
-        from django.utils import timezone
-
-        return self.expires_at <= timezone.now()
+        return f"{self.user} - {self.name}"
