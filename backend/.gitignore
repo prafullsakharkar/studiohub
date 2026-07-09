@@ -1,6 +1,161 @@
+# ── Environment & Secrets ──────────────────────────────
 .env
 .env.*
 !.env.example
 !.env.test
+
+# ── Logs ────────────────────────────────────────────────
 logs/
 *.log
+
+# ── Python ──────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ── Virtual environments / uv ───────────────────────────
+.venv/
+venv/
+env/
+ENV/
+.uv/
+# Keep uv.lock tracked (remove the line below if you don't want it in VCS)
+# uv.lock
+
+# ── Django ──────────────────────────────────────────────
+*.sqlite3
+*.sqlite3-journal
+db.sqlite3
+staticfiles/
+static_root/
+mediafiles/
+media/
+media_root/
+/backend/staticfiles/
+/backend/media/
+local_settings.py
+celerybeat-schedule
+celerybeat.pid
+celerybeat-schedule.db
+
+# ── Django migrations (uncomment ONLY if you intentionally exclude them) ─
+# apps/**/migrations/*.py
+# !apps/**/migrations/__init__.py
+
+# ── Testing / Coverage ──────────────────────────────────
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+.tox/
+htmlcov/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+test-results/
+junit.xml
+
+# ── Type checking / linting ─────────────────────────────
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+.pytype/
+
+# ── Jupyter ──────────────────────────────────────────────
+.ipynb_checkpoints
+
+# ── Docker ──────────────────────────────────────────────
+*.pid
+docker-compose.override.yml
+compose.override.yml
+.docker/
+
+# ── PostgreSQL ───────────────────────────────────────────
+*.dump
+*.sql.gz
+pgdata/
+postgres-data/
+
+# ── Redis ────────────────────────────────────────────────
+dump.rdb
+appendonly.aof
+redis-data/
+
+# ── MinIO / Object storage ──────────────────────────────
+minio-data/
+.minio/
+
+# ── Nginx ────────────────────────────────────────────────
+*.access.log
+*.error.log
+
+# ── Celery ───────────────────────────────────────────────
+celerybeat-schedule
+celerybeat.pid
+
+# ── IDEs & Editors ───────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# ── OS files ─────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ── Node (if you add a frontend later) ──────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ── Secrets / Keys ───────────────────────────────────────
+*.pem
+*.key
+*.crt
+secrets/
+credentials.json
+
+# ── Backup files ─────────────────────────────────────────
+*.bak
+*.tmp
+*.orig
+
+# ── Misc project-specific ───────────────────────────────
+.DS_Store
+*.pot
+*.mo
