@@ -1,38 +1,27 @@
-# Atom 4
+# StudioHub
 
-## Enterprise VFX Production Management System
+## Enterprise VFX Production Management Platform
 
-Atom 4 is an enterprise-grade **VFX Production Management Platform** designed to manage the complete lifecycle of visual effects production — from studio organization and user access management to projects, shots, tasks, reviews, publishing, and production workflows.
+StudioHub is an enterprise-grade **Visual Effects (VFX) Production Management Platform** built to manage the complete lifecycle of VFX and animation production. It provides a scalable foundation for studios to organize teams, manage production pipelines, track assets and shots, automate workflows, and integrate with existing studio tools.
 
-The system is built using a **modular Django architecture** following Domain Driven Design (DDD) principles, providing a scalable foundation suitable for large VFX studios.
+Built using **Python**, **Django**, **Django REST Framework**, **PostgreSQL**, **React**, and **Docker**, StudioHub follows **Domain-Driven Design (DDD)**, **Clean Architecture**, and a **Modular Monolith** architecture.
 
 ---
 
-# Architecture Overview
+# Vision
 
-Atom 4 follows a **modular monolith architecture** with clear domain boundaries.
+StudioHub aims to become a self-hosted enterprise production management platform comparable to ShotGrid, ftrack, and Kitsu while remaining fully customizable.
 
-```
-backend/
-│
-├── apps/
-│   │
-│   ├── core/
-│   │
-│   ├── identity/
-│   │
-│   ├── organization/
-│   │
-│   └── production/
-│
-├── config/
-│
-├── infrastructure/
-│
-└── manage.py
-```
+## Goals
 
-Each application represents an independent business domain while sharing common enterprise infrastructure through the Core framework.
+- Studio & Organization Management
+- Identity & Security
+- Production Tracking
+- Asset & Shot Management
+- Review & Approval Pipelines
+- Workflow Automation
+- Analytics & Reporting
+- AI-assisted Production
 
 ---
 
@@ -40,585 +29,396 @@ Each application represents an independent business domain while sharing common 
 
 ## Backend
 
-* Python
-* Django
-* Django REST Framework
-* PostgreSQL
-* Redis
-* Celery
-* Docker
+- Python
+- Django
+- Django REST Framework
+- PostgreSQL
+- Redis
+- Celery
 
-## Architecture Patterns
+## Frontend
 
-* Domain Driven Design
-* Service Layer Pattern
-* Selector Pattern
-* Event Driven Architecture
-* Modular Monolith
-* API First Development
+- React
+- TypeScript
+- Vite
+- Material UI
+
+## Infrastructure
+
+- Docker
+- Docker Compose
+- Nginx
 
 ---
 
-# Core Architecture
+# Repository Structure
 
-The `core` application provides the enterprise foundation used by all modules.
-
+```text
+studiohub/
+├── backend/
+│   ├── apps/
+│   │   ├── core/
+│   │   ├── identity/
+│   │   ├── organization/
+│   │   └── production/
+│   ├── config/
+│   ├── infrastructure/
+│   ├── tests/
+│   └── manage.py
+├── frontend/
+├── docs/
+├── scripts/
+└── docker-compose.yml
 ```
-apps/core/
 
+---
+
+# Domain Architecture
+
+```text
+apps/<domain>/
+├── admin/
 ├── api/
+├── authentication/
 ├── choices/
 ├── constants/
 ├── events/
+├── exceptions/
+├── filters/
 ├── managers/
 ├── middleware/
-├── models/
-├── selectors/
-├── services/
-├── validators/
-└── utils/
-```
-
----
-
-# Core Features
-
-## Base Models
-
-All major entities inherit reusable enterprise models.
-
-Implemented:
-
-```
-UUIDModel
-TimeStampedModel
-AuditModel
-SoftDeleteModel
-MetadataModel
-```
-
-Provides:
-
-* UUID primary keys
-* Created/updated timestamps
-* User activity tracking
-* Soft deletion
-* Metadata storage
-
-Example:
-
-```python
-class Project(
-    UUIDModel,
-    TimeStampedModel,
-    AuditModel,
-    MetadataModel,
-    SoftDeleteModel,
-):
-    pass
-```
-
----
-
-# Query Architecture
-
-Atom 4 separates database logic from business logic.
-
-Architecture:
-
-```
-Model
- |
-QuerySet
- |
-Manager
- |
-Selector
- |
-Service
- |
-API
-```
-
-Benefits:
-
-* Cleaner models
-* Reusable queries
-* Better testing
-* Maintainable business logic
-
----
-
-# Event Architecture
-
-Atom 4 includes an internal event system.
-
-Example:
-
-```
-User Created
-
-      |
-      v
-
-UserCreatedEvent
-
-      |
-      |
- ----------------
- |              |
-Audit        Notification
-```
-
-Used for:
-
-* Audit logging
-* Notifications
-* Workflow automation
-* Background processing
-
----
-
-# Identity Module
-
-The Identity module manages authentication, authorization, and user access.
-
-Structure:
-
-```
-apps/identity/
-
-├── authentication/
+├── migrations/
 ├── models/
 ├── permissions/
+├── querysets/
 ├── selectors/
 ├── serializers/
 ├── services/
 ├── signals/
 ├── tasks/
-└── validators/
+├── validators/
+└── views/
+```
+
+Every business domain follows the same architecture, making the codebase consistent and maintainable.
+
+---
+
+# Core Framework ✅
+
+The Core module provides reusable enterprise building blocks.
+
+## Base Models
+
+- UUIDModel
+- TimeStampedModel
+- AuditModel
+- SoftDeleteModel
+- MetadataModel
+
+## Enterprise Components
+
+- Base Models
+- QuerySets
+- Managers
+- Selectors
+- Services
+- Validators
+- Event Framework
+- API Foundation
+- Utilities
+- Constants
+- Choices
+
+## Layered Architecture
+
+```text
+Model
+  ↓
+QuerySet
+  ↓
+Manager
+  ↓
+Selector
+  ↓
+Service
+  ↓
+API
 ```
 
 ---
 
-# Identity Features
+# Service Layer
 
-## Custom User System
-
-Implemented using Django custom authentication.
-
-Features:
-
-* UUID based users
-* Enterprise audit support
-* Soft deletion
-* Permission integration
-
-Architecture:
-
-```
-AbstractBaseUser
-        +
-PermissionsMixin
-        +
-Core Enterprise Models
-```
-
----
-
-# Authentication System
-
-Supports:
-
-* Login
-* Logout
-* JWT authentication
-* Access tokens
-* Refresh tokens
-* Token validation
-* Token rotation
-
-Authentication flow:
-
-```
+```text
 Client
+  ↓
+APIView
+  ↓
+Serializer
+  ↓
+Business Service
+  ↓
+Validator
+  ↓
+Selector
+  ↓
+Manager
+  ↓
+QuerySet
+  ↓
+Model
+  ↓
+Database
+```
 
- |
- v
+| Layer | Responsibility |
+|--------|----------------|
+| Model | Database representation |
+| QuerySet | Query logic |
+| Manager | Query entry point |
+| Selector | Read operations |
+| Validator | Business validation |
+| Service | Business logic |
+| Event | Domain events |
+| API | HTTP interface |
 
-Authentication Service
+---
 
- |
- v
+# Event Driven Architecture
 
-JWT Service
-
- |
- +-------------+
- |             |
-Access       Refresh
-Token        Token
+```text
+Entity Created
+      ↓
+Domain Event
+      ↓
+Audit Log
+Notification
+Activity Feed
+Celery Tasks
+Analytics
+Webhooks
 ```
 
 ---
 
-# Permission System
+# Identity Module ✅
 
-Atom 4 uses a flexible permission model.
+## Features
 
-Permission structure:
+### User Management
 
-```
-Module
- |
-Category
- |
-Action
-```
+- Custom User Model
+- UUID Users
+- Audit Tracking
+- Soft Delete
 
-Example:
+### Authentication
 
-```
-Production
+- JWT Authentication
+- Login / Logout
+- Access & Refresh Tokens
+- Token Rotation
 
- ├── Project
- ├── Shot
- └── Asset
+### Authorization
 
+- Roles
+- Permissions
+- Permission Groups
+- Module & Action Based Permissions
 
-Actions:
+### Security
 
-CREATE
-READ
-UPDATE
-DELETE
-APPROVE
-EXPORT
+- Multi-Factor Authentication (MFA)
+- Trusted Devices
+- Backup Codes
+- Password Policies
+- Login Auditing
+
+---
+
+# Organization Module ✅
+
+## Features
+
+- Organizations
+- Departments
+- Offices
+- Teams
+- Positions
+- Memberships
+- Invitations
+- Branding
+- Calendars
+- Holidays
+- Work Hours
+- Organization Settings
+
+```text
+Organization
+├── Departments
+├── Offices
+├── Teams
+├── Positions
+└── Members
 ```
 
 ---
 
-# Organization Module
+# Production Module 🚧
 
-The Organization module manages studio structure.
+## Planned Modules
 
-Example:
-
-```
-Studio
-
- |
- +-- Departments
- |
- +-- Teams
- |
- +-- Locations
- |
- +-- Members
-```
-
-Designed for VFX studios with multiple departments:
-
-```
-Studio
-
- ├── Animation
- |
- ├── Lighting
- |
- ├── FX
- |
- ├── Compositing
- |
- └── Production
+```text
+Project
+   ↓
+Sequence
+   ↓
+Shot
+   ↓
+Task
+   ↓
+Version
+   ↓
+Review
+   ↓
+Publish
 ```
 
----
+### Planned Features
 
-# Production Module
-
-The Production module manages the complete VFX pipeline.
-
-Planned structure:
-
-```
-apps/production/
-
-├── projects/
-├── assets/
-├── sequences/
-├── shots/
-├── tasks/
-├── versions/
-├── publishes/
-├── reviews/
-└── workflows/
-```
-
----
-
-# Production Pipeline
-
-Core hierarchy:
-
-```
-Studio
-
- |
- +-- Project
-
-       |
-       +-- Sequence
-
-              |
-              +-- Shot
-
-                    |
-                    +-- Task
-
-                          |
-                          +-- Version
-```
-
-Example:
-
-```
-Feature Film
-
-Sequence 010
-
-Shot 010_020
-
-Animation
-
-Version v003
-```
+- Projects
+- Assets
+- Sequences
+- Shots
+- Tasks
+- Versions
+- Reviews
+- Publishing
+- Deliveries
+- Playlists
+- Notes
+- Attachments
+- Time Logs
+- Workflow Engine
 
 ---
 
 # API Architecture
 
-All domains expose APIs following the same pattern.
-
-```
-apps/<domain>/api/
-
-├── serializers/
-├── views/
-├── filters/
-├── permissions/
-└── urls.py
-```
-
-Request flow:
-
-```
-Request
-
- |
- v
-
-API View
-
- |
- v
-
+```text
+HTTP Request
+      ↓
+APIView
+      ↓
 Serializer
-
- |
- v
-
-Service
-
- |
- v
-
+      ↓
+Business Service
+      ↓
 Selector
-
- |
- v
-
+      ↓
 Model
-
- |
- v
-
+      ↓
 Database
 ```
+
+Features:
+
+- Pagination
+- Filtering
+- Ordering
+- Search
+- Validation
+- Authentication
+- Authorization
+
+---
+
+# Security
+
+- JWT Authentication
+- Role Based Access Control
+- MFA
+- Trusted Devices
+- Secure Password Policies
+- Login Auditing
+- Soft Delete
+- Token Rotation
+
+---
+
+# Database Principles
+
+- UUID Primary Keys
+- Audit History
+- Metadata Support
+- Soft Delete
+- Indexed Relationships
+- Transactional Services
+- Domain Isolation
 
 ---
 
 # Infrastructure
 
-Docker based development environment.
-
-Structure:
-
+```text
+Docker
+   ↓
+Nginx
+   ↓
+Django
+   ↓
+Redis
+   ↓
+Celery
+   ↓
+PostgreSQL
 ```
-infrastructure/
-
-├── docker/
-├── nginx/
-└── scripts/
-```
-
-Includes:
-
-* Django container
-* PostgreSQL container
-* Redis support
-* Static/media configuration
-* Production deployment foundation
-
----
-
-# Development Roadmap
-
-## Completed
-
-### Phase 1
-
-Bootstrap & Configuration
-
-Status:
-
-✅ Completed
-
-### Phase 2
-
-Docker Infrastructure
-
-Status:
-
-✅ Completed
-
-### Phase 3
-
-Core Framework
-
-Status:
-
-✅ Completed
-
-Includes:
-
-* Base models
-* Managers
-* Querysets
-* Services
-* Selectors
-* Events
-
-### Phase 4
-
-Identity System
-
-Status:
-
-🚧 In Progress
-
-Includes:
-
-* User management
-* Authentication
-* Permissions
-* Security layer
-
-### Phase 5
-
-Organization
-
-Status:
-
-✅ Completed
-
-### Phase 6
-
-Production Management
-
-Status:
-
-⏳ Upcoming
-
-Includes:
-
-* Projects
-* Assets
-* Sequences
-* Shots
-* Tasks
-* Versions
-* Reviews
-* Publishing
-
----
-
-# Future Capabilities
-
-Planned enterprise features:
-
-## Production
-
-* Shot tracking
-* Asset management
-* Task workflows
-* Version management
-* Review sessions
-* Approval pipeline
-
-## Collaboration
-
-* Comments
-* Notes
-* Notifications
-* Activity feeds
-
-## Automation
-
-* Event driven workflows
-* Background jobs
-* Pipeline integrations
-
-## AI Integration
-
-Future support for:
-
-* AI assisted reviews
-* Smart search
-* Production analytics
-* Automated tagging
 
 ---
 
 # Development Principles
 
-Atom 4 follows:
+- Domain Driven Design
+- Clean Architecture
+- SOLID Principles
+- Modular Monolith
+- Service Layer Pattern
+- Selector Pattern
+- Event Driven Design
+- API First Development
 
-✅ Clean Architecture
-✅ Domain Separation
-✅ Reusable Components
-✅ Explicit Business Logic
-✅ Testable Services
-✅ Scalable Database Design
-✅ Production Pipeline Thinking
+---
+
+# Development Roadmap
+
+| Phase | Status |
+|------|--------|
+| Bootstrap | ✅ |
+| Docker Infrastructure | ✅ |
+| Core Framework | ✅ |
+| Identity | ✅ |
+| Organization | ✅ |
+| Production | 🚧 |
+| Reviews | ⏳ |
+| Automation | ⏳ |
+| AI | ⏳ |
+
+---
+
+# Current Status
+
+| Module | Status |
+|---------|--------|
+| Core | ✅ Completed |
+| Identity | ✅ Completed |
+| Organization | ✅ Completed |
+| Production | 🚧 In Progress |
 
 ---
 
 # License
 
-Private Enterprise Software.
+**Private Enterprise Software**
 
----
-
-# Project Status
-
-Current Status:
-
-```
-Core Framework       ✅
-Identity             🚧
-Organization         ✅
-Production           ⏳
-```
-
-Atom 4 is being developed as a long-term enterprise VFX production platform.
+StudioHub is proprietary software intended for enterprise VFX production management.
