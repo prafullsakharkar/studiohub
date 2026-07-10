@@ -83,7 +83,9 @@ class User(
         return self.full_name
 
     def get_short_name(self):
-        return self.full_name.split()[0]
+        parts = (self.full_name or "").split()
+
+        return parts[0] if parts else self.email
 
     @property
     def display_name(self):

@@ -19,11 +19,10 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    "apps.common",
-    # "apps.core",
+    "apps.core",
     # Business Apps
-    # "apps.identity",
-    # "apps.organizations",
+    "apps.identity",
+    "apps.organization",
     # "apps.projects",
     # "apps.assets",
     # "apps.shots",

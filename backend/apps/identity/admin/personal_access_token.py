@@ -22,7 +22,7 @@ class PersonalAccessTokenAdmin(admin.ModelAdmin):
     )
 
     readonly_fields = (
-        "uuid",
+        "id",
         "prefix",
         "hashed_token",
         "last_used_at",

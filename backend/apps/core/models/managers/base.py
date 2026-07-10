@@ -9,4 +9,8 @@ class BaseManager(models.Manager):
     BaseManager.from_queryset().
     """
 
-    use_in_migrations = True
+    # NOTE: Kept False because several managers are created dynamically via
+    # ``BaseManager.from_queryset(...)`` at module level. Enabling migration
+    # serialization for such dynamically generated managers requires them to be
+    # importable by their generated class name, which they are not.
+    use_in_migrations = False

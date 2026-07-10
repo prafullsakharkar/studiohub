@@ -20,7 +20,7 @@ class GroupAdmin(admin.ModelAdmin):
     )
 
     readonly_fields = (
-        "uuid",
+        "id",
         "created_at",
         "updated_at",
     )

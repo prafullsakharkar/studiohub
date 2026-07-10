@@ -7,7 +7,7 @@ from django.contrib.auth import (
     logout as django_logout,
 )
 
-from apps.core.services.base import BusinessService
+from apps.core.services.business import BusinessService
 from apps.identity.authentication.token import (
     TokenService,
 )

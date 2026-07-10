@@ -21,7 +21,7 @@ class SessionAdmin(admin.ModelAdmin):
     )
 
     readonly_fields = (
-        "uuid",
+        "id",
         "session_key",
         "created_at",
         "updated_at",

@@ -8,7 +8,6 @@ class UserRoleAdmin(admin.ModelAdmin):
     list_display = (
         "user",
         "role",
-        "organization",
         "created_at",
     )
 
@@ -20,7 +19,7 @@ class UserRoleAdmin(admin.ModelAdmin):
     )
 
     readonly_fields = (
-        "uuid",
+        "id",
         "created_at",
         "updated_at",
     )

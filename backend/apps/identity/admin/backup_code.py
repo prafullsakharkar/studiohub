@@ -17,7 +17,7 @@ class BackupCodeAdmin(admin.ModelAdmin):
     search_fields = ("user__email",)
 
     readonly_fields = (
-        "uuid",
+        "id",
         "code_hash",
         "used_at",
         "created_at",

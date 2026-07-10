@@ -1,12 +1,5 @@
 from django.contrib.auth.backends import ModelBackend
 
-from apps.identity.selectors.authentication import (
-    AuthenticationSelector,
-)
-from apps.identity.validators.authentication import (
-    AuthenticationValidator,
-)
-
 
 class EnterpriseAuthenticationBackend(
     ModelBackend,
@@ -24,6 +17,14 @@ class EnterpriseAuthenticationBackend(
     ):
         if not username or not password:
             return None
+
+        # Imported lazily to avoid circular imports at app-load time.
+        from apps.identity.selectors.authentication import (
+            AuthenticationSelector,
+        )
+        from apps.identity.validators.authentication import (
+            AuthenticationValidator,
+        )
 
         user = AuthenticationSelector.get_user(
             username=username,

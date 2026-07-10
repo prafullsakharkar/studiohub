@@ -21,7 +21,7 @@ class APIKeyAdmin(admin.ModelAdmin):
     )
 
     readonly_fields = (
-        "uuid",
+        "id",
         "prefix",
         "hashed_key",
         "last_used_at",

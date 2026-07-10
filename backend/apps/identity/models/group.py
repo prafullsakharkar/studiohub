@@ -50,6 +50,7 @@ class Group(
     users = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         through="GroupMember",
+        through_fields=("group", "user"),
         related_name="identity_groups",
     )
 

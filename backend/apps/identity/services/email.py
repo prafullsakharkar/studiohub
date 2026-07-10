@@ -1,5 +1,3 @@
-from django.utils import timezone
-
 from apps.core.events import EventBus
 from apps.identity.events.authentication import (
     EmailVerified,
@@ -28,14 +26,11 @@ class EmailService:
     @classmethod
     def verify_email(cls, user):
 
-        user.email_verified = True
-
-        user.email_verified_at = timezone.now()
+        user.is_email_verified = True
 
         user.save(
             update_fields=[
-                "email_verified",
-                "email_verified_at",
+                "is_email_verified",
             ]
         )
 

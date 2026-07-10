@@ -29,7 +29,6 @@ from .uuid import UUIDModel
 
 __all__ = [
     "AuditModel",
-    "BaseModel",
     "ColorModel",
     "MetadataModel",
     "OrderableModel",

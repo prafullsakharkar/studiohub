@@ -4,7 +4,7 @@ Declarative service-driven ViewSet.
 
 from __future__ import annotations
 
-from rest_framework.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured
 
 from ..mixins.service import ServiceMixin
 from .generic import BaseModelViewSet

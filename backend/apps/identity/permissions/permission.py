@@ -1,9 +1,6 @@
 from apps.identity.permissions.base import (
     IdentityPermission,
 )
-from apps.identity.services.permission_cache import (
-    PermissionCacheService,
-)
 
 
 class HasPermission(
@@ -19,6 +16,11 @@ class HasPermission(
 
         if not permissions:
             return True
+
+        # Imported lazily to avoid circular imports at app-load time.
+        from apps.identity.services.permission_cache import (
+            PermissionCacheService,
+        )
 
         organization = getattr(
             request,

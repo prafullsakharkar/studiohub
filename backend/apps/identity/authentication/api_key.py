@@ -3,8 +3,6 @@ from __future__ import annotations
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
-from apps.identity.services import APIKeyService
-
 
 class APIKeyAuthentication(
     BaseAuthentication,
@@ -38,6 +36,10 @@ class APIKeyAuthentication(
 
         if keyword != self.keyword:
             return None
+
+        # Imported lazily to avoid a circular import between
+        # apps.identity.services and apps.identity.authentication.
+        from apps.identity.services import APIKeyService
 
         api_key = APIKeyService.verify(
             token,

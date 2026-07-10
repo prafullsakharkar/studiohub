@@ -25,7 +25,7 @@ from apps.core.validators.currency import validate_currency
 from apps.core.validators.language import validate_language
 from apps.core.validators.timezone import validate_timezone
 from apps.organization.choices import OrganizationType
-from apps.organization.constants import MAX_CODE_LENGTH
+from apps.organization.constants import MAX_CODE_LENGTH, MAX_NAME_LENGTH
 from apps.organization.managers import OrganizationManager
 
 
@@ -47,6 +47,14 @@ class Organization(
         unique=True,
         db_index=True,
         help_text=_("Unique organization code."),
+    )
+
+    slug = models.SlugField(
+        _("Slug"),
+        max_length=MAX_NAME_LENGTH,
+        unique=True,
+        db_index=True,
+        help_text=_("URL-friendly organization identifier."),
     )
 
     organization_type = models.CharField(

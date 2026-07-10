@@ -25,7 +25,7 @@ class MFADeviceAdmin(admin.ModelAdmin):
     )
 
     readonly_fields = (
-        "uuid",
+        "id",
         "secret",
         "created_at",
         "updated_at",

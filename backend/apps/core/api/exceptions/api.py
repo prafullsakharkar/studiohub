@@ -8,6 +8,12 @@ class BaseAPIException(APIException):
     default_code = "request_failed"
 
 
+class BadRequestException(BaseAPIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "Bad request."
+    default_code = "bad_request"
+
+
 class ValidationException(BaseAPIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = "Validation failed."

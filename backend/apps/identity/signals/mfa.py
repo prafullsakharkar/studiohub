@@ -1,12 +1,12 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from apps.identity.models import MFADevice
+from apps.identity.models import UserMFA
 
 
 @receiver(
     post_save,
-    sender=MFADevice,
+    sender=UserMFA,
 )
 def mfa_device_post_save(
     sender,

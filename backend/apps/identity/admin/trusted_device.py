@@ -7,19 +7,19 @@ from apps.identity.models import TrustedDevice
 class TrustedDeviceAdmin(admin.ModelAdmin):
     list_display = (
         "user",
-        "device_name",
+        "platform",
         "expires_at",
-        "last_used_at",
+        "last_login_at",
     )
 
     search_fields = (
         "user__email",
-        "device_name",
+        "platform",
     )
 
     readonly_fields = (
-        "uuid",
-        "token",
+        "id",
+        "fingerprint",
         "created_at",
         "updated_at",
     )

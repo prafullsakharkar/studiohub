@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.utils import timezone
 
-from apps.core.services.base import BusinessService
+from apps.core.services.business import BusinessService
 from apps.identity.choices import (
     LogoutReason,
     SessionStatus,

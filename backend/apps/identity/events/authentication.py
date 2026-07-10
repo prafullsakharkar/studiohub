@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+from typing import Any
+
 from apps.core.events import DomainEvent
 
 
@@ -9,6 +12,32 @@ class UserAuthenticationEvent(
     """
 
     category = "authentication"
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class VerificationEmailSent(DomainEvent):
+    """
+    Raised when a verification email should be delivered to a user.
+    """
+
+    event_type = "identity.user.verification_email_sent"
+
+    category = "authentication"
+
+    instance: Any
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class EmailVerified(DomainEvent):
+    """
+    Raised when a user's email address has been verified.
+    """
+
+    event_type = "identity.user.email_verified"
+
+    category = "authentication"
+
+    instance: Any
 
 
 class UserLoggedIn(

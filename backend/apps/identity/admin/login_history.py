@@ -8,11 +8,11 @@ class LoginHistoryAdmin(admin.ModelAdmin):
     list_display = (
         "user",
         "ip_address",
-        "success",
+        "status",
         "created_at",
     )
 
-    list_filter = ("success",)
+    list_filter = ("status",)
 
     search_fields = (
         "user__email",
@@ -20,6 +20,6 @@ class LoginHistoryAdmin(admin.ModelAdmin):
     )
 
     readonly_fields = (
-        "uuid",
+        "id",
         "created_at",
     )

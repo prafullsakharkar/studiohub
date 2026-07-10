@@ -72,6 +72,8 @@ dependencies = [
     "user-agents>=2.2.0",
     "pyotp>=2.10.0",
     "qrcode[pil]>=8.2",
+    "pycountry>=24.6.1",
+    "openpyxl>=3.1.5",
 ]
 
 [dependency-groups]

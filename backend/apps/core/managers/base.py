@@ -16,7 +16,8 @@ class BaseManager(models.Manager.from_queryset(BaseQuerySet)):
     Extend this class to implement specialized managers.
     """
 
-    use_in_migrations = True
+    # See apps.core.models.managers.base.BaseManager for rationale.
+    use_in_migrations = False
 
     def get_queryset(self) -> BaseQuerySet:
         return super().get_queryset()

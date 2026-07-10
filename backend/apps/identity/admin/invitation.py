@@ -22,7 +22,7 @@ class InvitationAdmin(admin.ModelAdmin):
     )
 
     readonly_fields = (
-        "uuid",
+        "id",
         "token",
         "accepted_at",
         "created_at",

@@ -81,6 +81,11 @@ class Role(
         blank=True,
     )
 
+    is_system = models.BooleanField(
+        default=False,
+        db_index=True,
+    )
+
     is_default = models.BooleanField(
         default=False,
         db_index=True,

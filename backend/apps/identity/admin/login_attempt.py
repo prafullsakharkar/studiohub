@@ -6,20 +6,22 @@ from apps.identity.models import LoginAttempt
 @admin.register(LoginAttempt)
 class LoginAttemptAdmin(admin.ModelAdmin):
     list_display = (
-        "email",
+        "username",
         "ip_address",
-        "attempts",
+        "successful",
         "locked_until",
-        "created_at",
+        "attempted_at",
     )
 
+    list_filter = ("successful",)
+
     search_fields = (
-        "email",
+        "username",
         "ip_address",
     )
 
     readonly_fields = (
-        "uuid",
+        "id",
         "created_at",
         "updated_at",
     )
