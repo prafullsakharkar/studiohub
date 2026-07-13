@@ -207,6 +207,126 @@ class BusinessService(
         return
 
     # ------------------------------------------------------------------
+    # Query Helpers
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def get_queryset(cls):
+        """
+        Return the default queryset.
+        """
+        if cls.selector_class:
+            return cls.selector_class.get_queryset()
+
+        return cls.model.objects.all()
+
+    @classmethod
+    def get(
+        cls,
+        **filters,
+    ):
+        return cls.get_queryset().get(
+            **filters,
+        )
+
+    @classmethod
+    def filter(
+        cls,
+        **filters,
+    ):
+        return cls.get_queryset().filter(
+            **filters,
+        )
+
+    @classmethod
+    def first(
+        cls,
+        **filters,
+    ):
+        return cls.filter(
+            **filters,
+        ).first()
+
+    @classmethod
+    def last(
+        cls,
+        **filters,
+    ):
+        return cls.filter(
+            **filters,
+        ).last()
+
+    @classmethod
+    def exists(
+        cls,
+        **filters,
+    ):
+        return cls.filter(
+            **filters,
+        ).exists()
+
+    @classmethod
+    def count(
+        cls,
+        **filters,
+    ):
+        return cls.filter(
+            **filters,
+        ).count()
+
+    # ------------------------------------------------------------------
+    # Bulk Query Helpers
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def bulk_get(
+        cls,
+        ids,
+        *,
+        field="id",
+    ):
+        """
+        Retrieve multiple objects by a field.
+        """
+        return cls.filter(
+            **{
+                f"{field}__in": ids,
+            },
+        )
+
+    @classmethod
+    def bulk_exists(
+        cls,
+        ids,
+        *,
+        field="id",
+    ):
+        """
+        Check whether all supplied identifiers exist.
+        """
+        queryset = cls.bulk_get(
+            ids,
+            field=field,
+        )
+
+        return queryset.count() == len(set(ids))
+
+    @classmethod
+    def in_bulk(
+        cls,
+        ids,
+        *,
+        field_name="id",
+    ):
+        """
+        Return a mapping of field value -> object.
+        """
+        return cls.get_queryset().in_bulk(
+            ids,
+            field_name=field_name,
+        )
+
+    # ------------------------------------------------------------------
     # CRUD
     # ------------------------------------------------------------------
 

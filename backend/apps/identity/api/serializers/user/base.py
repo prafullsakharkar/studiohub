@@ -1,21 +1,39 @@
-from rest_framework import serializers
+from apps.identity.models import User
 
-from apps.identity.api.serializers.base import IdentitySerializer
-from apps.identity.models import OrganizationMembership
+from ..base import IdentitySerializer
 
 
-class MembershipBaseSerializer(IdentitySerializer):
+class UserBaseSerializer(
+    IdentitySerializer,
+):
 
-    class Meta(IdentitySerializer.Meta):
-
-        model = OrganizationMembership
+    class Meta(
+        IdentitySerializer.Meta,
+    ):
+        model = User
 
         fields = (
-            *IdentitySerializer.Meta.fields,
-            "employee_id",
-            "employment_type",
-            "status",
-            "joined_at",
-            "left_at",
-            "is_primary",
+            "id",
+            "uuid",
+            "email",
+            "is_active",
+            "is_staff",
+            "is_email_verified",
+            "last_seen",
+            "display_name",
+            "full_name",
+            "metadata",
+            "created_at",
+            "updated_at",
+        )
+
+        read_only_fields = (
+            "id",
+            "uuid",
+            "is_email_verified",
+            "last_seen",
+            "display_name",
+            "full_name",
+            "created_at",
+            "updated_at",
         )

@@ -1,21 +1,21 @@
 from django.db.models import QuerySet
 
 from apps.identity.models import (
-    GroupMember,
+    User,
 )
 from apps.identity.selectors.base import (
     IdentityBaseSelector,
 )
 
 
-class GroupMemberSelector(
+class UserSelector(
     IdentityBaseSelector,
 ):
     """
-    Read operations for GroupMember.
+    Read operations for User.
     """
 
-    model = GroupMember
+    model = User
 
     @classmethod
     def get_queryset(
@@ -24,49 +24,46 @@ class GroupMemberSelector(
         request=None,
         view=None,
     ) -> QuerySet:
-        return GroupMember.objects.select_related(
-            "group",
-            "user",
-        )
+        return User.objects.all()
 
     @classmethod
-    def for_group(
+    def get_by_email(
         cls,
-        group,
+        email,
     ):
         return cls.filter(
-            group=group,
-        )
+            email=email,
+        ).first()
 
     @classmethod
-    def for_user(
+    def active(
         cls,
-        user,
     ):
         return cls.filter(
-            user=user,
+            is_active=True,
         )
 
     @classmethod
-    def owners(cls):
+    def verified(
+        cls,
+    ):
         return cls.filter(
-            is_owner=True,
+            is_email_verified=True,
         )
 
     @classmethod
-    def managers(cls):
+    def staff(
+        cls,
+    ):
         return cls.filter(
-            is_manager=True,
+            is_staff=True,
         )
 
     @classmethod
-    def active(cls):
+    def for_email_search(
+        cls,
+        value,
+    ):
         return cls.filter(
-            left_at__isnull=True,
-        )
-
-    @classmethod
-    def inactive(cls):
-        return cls.filter(
-            left_at__isnull=False,
+            email__icontains=value,
         )

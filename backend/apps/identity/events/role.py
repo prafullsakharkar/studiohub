@@ -13,6 +13,14 @@ class RoleArchived(DomainEvent):
     event_type = "identity.role.archived"
 
 
+class RoleActivated(DomainEvent):
+    event_type = "identity.role.activated"
+
+
+class RoleDeactivated(DomainEvent):
+    event_type = "identity.role.deactivated"
+
+
 class RoleRestored(DomainEvent):
     event_type = "identity.role.restored"
 

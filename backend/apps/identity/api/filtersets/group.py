@@ -23,6 +23,14 @@ class GroupFilterSet(
         "description",
     )
 
+    organization = CharFilter(
+        field_name="organization__uuid",
+    )
+
+    parent = CharFilter(
+        field_name="parent__uuid",
+    )
+
     code = CharFilter(
         field_name="code",
         lookup_expr="icontains",
@@ -41,6 +49,8 @@ class GroupFilterSet(
         model = Group
 
         fields = (
+            "organization",
+            "parent",
             "code",
             "name",
             "status",

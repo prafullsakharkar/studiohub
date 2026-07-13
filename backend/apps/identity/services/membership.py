@@ -1,121 +1,40 @@
-from django.db import transaction
-
-from apps.core.events import EventBus
-from apps.identity.choices import MembershipStatus
-from apps.identity.events.membership import (
+from apps.core.services.business import (
+    BusinessService,
+)
+from apps.identity.events import (
     MembershipActivated,
     MembershipArchived,
     MembershipCreated,
+    MembershipDeactivated,
     MembershipDeleted,
     MembershipRestored,
-    MembershipSuspended,
     MembershipUpdated,
 )
-from apps.identity.models import OrganizationMembership
-from apps.identity.services.base import IdentityBaseService
+from apps.identity.models import (
+    OrganizationMembership,
+)
+from apps.identity.validators.membership import (
+    MembershipValidator,
+)
 
 
-class MembershipService(IdentityBaseService):
+class MembershipService(
+    BusinessService,
+):
+    """
+    Write operations for OrganizationMembership.
+    """
 
     model = OrganizationMembership
 
-    @classmethod
-    @transaction.atomic
-    def create(cls, **validated_data):
+    validator_class = MembershipValidator
 
-        membership = cls.create_instance(
-            **validated_data,
-        )
-
-        EventBus.publish(
-            MembershipCreated(
-                instance=membership,
-            )
-        )
-
-        return membership
-
-    @classmethod
-    @transaction.atomic
-    def update(
-        cls,
-        instance,
-        **validated_data,
-    ):
-
-        membership = cls.update_instance(
-            instance,
-            **validated_data,
-        )
-
-        EventBus.publish(
-            MembershipUpdated(
-                instance=membership,
-            )
-        )
-
-        return membership
-
-    @classmethod
-    @transaction.atomic
-    def activate(
-        cls,
-        instance,
-    ):
-
-        instance.status = MembershipStatus.ACTIVE
-        instance.save(update_fields=["status"])
-
-        EventBus.publish(
-            MembershipActivated(
-                instance=instance,
-            )
-        )
-
-        return instance
-
-    @classmethod
-    @transaction.atomic
-    def suspend(
-        cls,
-        instance,
-    ):
-
-        instance.status = MembershipStatus.SUSPENDED
-        instance.save(update_fields=["status"])
-
-        EventBus.publish(
-            MembershipSuspended(
-                instance=instance,
-            )
-        )
-
-        return instance
-
-    @classmethod
-    @transaction.atomic
-    def archive(cls, instance):
-
-        cls.archive_instance(instance)
-
-        EventBus.publish(MembershipArchived(instance=instance))
-
-        return instance
-
-    @classmethod
-    @transaction.atomic
-    def restore(cls, instance):
-
-        cls.restore_instance(instance)
-
-        EventBus.publish(MembershipRestored(instance=instance))
-
-        return instance
-
-    @classmethod
-    @transaction.atomic
-    def delete(cls, instance):
-
-        cls.delete_instance(instance)
-
-        EventBus.publish(MembershipDeleted(instance=instance))
+    event_map = {
+        "create": MembershipCreated,
+        "update": MembershipUpdated,
+        "delete": MembershipDeleted,
+        "restore": MembershipRestored,
+        "archive": MembershipArchived,
+        "activate": MembershipActivated,
+        "deactivate": MembershipDeactivated,
+    }

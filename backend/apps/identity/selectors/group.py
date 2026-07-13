@@ -11,6 +11,9 @@ from apps.identity.selectors.base import (
 class GroupSelector(
     IdentityBaseSelector,
 ):
+    """
+    Read operations for Group.
+    """
 
     model = Group
 
@@ -21,15 +24,55 @@ class GroupSelector(
         request=None,
         view=None,
     ) -> QuerySet:
-        return Group.objects.prefetch_related(
-            "users",
-            "group_roles__role",
+        return Group.objects.select_related(
+            "organization",
+            "parent",
+        ).prefetch_related(
+            "roles",
+            "members",
         )
 
     @classmethod
-    def system(cls):
-        return cls.get_queryset().system()
+    def active(cls):
+        return cls.filter(
+            is_active=True,
+        )
 
     @classmethod
-    def custom(cls):
-        return cls.get_queryset().custom()
+    def system_groups(cls):
+        return cls.filter(
+            is_system=True,
+        )
+
+    @classmethod
+    def organization_groups(
+        cls,
+        organization,
+    ):
+        return cls.filter(
+            organization=organization,
+        )
+
+    @classmethod
+    def root_groups(cls):
+        return cls.filter(
+            parent__isnull=True,
+        )
+
+    @classmethod
+    def children(
+        cls,
+        parent,
+    ):
+        return cls.filter(
+            parent=parent,
+        )
+
+    @classmethod
+    def by_name(
+        cls,
+        name,
+    ):
+        return cls.filter(
+            name__icontains=name,
+        )

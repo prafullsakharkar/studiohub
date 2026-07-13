@@ -1,55 +1,79 @@
-from django_filters import filters
+from django_filters import (
+    BooleanFilter,
+    CharFilter,
+    ChoiceFilter,
+)
 
 from apps.core.filters.base import BaseFilterSet
-from apps.identity.models import OrganizationMembership
+from apps.core.filters.ordering import OrderingFilterMixin
+from apps.identity.choices import (
+    EmploymentType,
+    MembershipStatus,
+)
+from apps.identity.models import (
+    OrganizationMembership,
+)
 
 
-class MembershipFilterSet(BaseFilterSet):
+class MembershipFilterSet(
+    OrderingFilterMixin,
+    BaseFilterSet,
+):
     """
-    Filters for Organization Membership.
+    FilterSet for OrganizationMembership.
     """
 
-    organization = filters.UUIDFilter(
-        field_name="organization__uuid",
-    )
-
-    department = filters.UUIDFilter(
-        field_name="department__uuid",
-    )
-
-    team = filters.UUIDFilter(
-        field_name="team__uuid",
-    )
-
-    office = filters.UUIDFilter(
-        field_name="office__uuid",
-    )
-
-    role = filters.UUIDFilter(
-        field_name="role__uuid",
-    )
-
-    user = filters.UUIDFilter(
+    user = CharFilter(
         field_name="user__uuid",
     )
 
-    status = filters.CharFilter()
+    organization = CharFilter(
+        field_name="organization__uuid",
+    )
 
-    employment_type = filters.CharFilter()
+    department = CharFilter(
+        field_name="department__uuid",
+    )
 
-    is_primary = filters.BooleanFilter()
+    team = CharFilter(
+        field_name="team__uuid",
+    )
+
+    office = CharFilter(
+        field_name="office__uuid",
+    )
+
+    role = CharFilter(
+        field_name="role__uuid",
+    )
+
+    employee_id = CharFilter(
+        field_name="employee_id",
+        lookup_expr="icontains",
+    )
+
+    employment_type = ChoiceFilter(
+        choices=EmploymentType.choices,
+    )
+
+    status = ChoiceFilter(
+        choices=MembershipStatus.choices,
+    )
+
+    is_primary = BooleanFilter()
 
     class Meta:
         model = OrganizationMembership
 
         fields = (
+            "user",
             "organization",
             "department",
             "team",
             "office",
             "role",
-            "user",
-            "status",
+            "employee_id",
             "employment_type",
+            "status",
             "is_primary",
         )

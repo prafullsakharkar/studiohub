@@ -2,20 +2,24 @@ from django_filters import BooleanFilter, CharFilter
 
 from apps.core.filters.base import BaseFilterSet
 from apps.core.filters.ordering import OrderingFilterMixin
-from apps.core.filters.status import StatusFilterMixin
-from apps.identity.models.group_member import (
-    GroupMember,
-)
+from apps.core.filters.search import SearchFilterMixin
+from apps.identity.models import GroupMember
 
 
 class GroupMemberFilterSet(
+    SearchFilterMixin,
     OrderingFilterMixin,
-    StatusFilterMixin,
     BaseFilterSet,
 ):
     """
     FilterSet for GroupMember.
     """
+
+    search_fields = (
+        "user__email",
+        "user__profile__full_name",
+        "group__name",
+    )
 
     group = CharFilter(
         field_name="group__uuid",
@@ -25,9 +29,13 @@ class GroupMemberFilterSet(
         field_name="user__uuid",
     )
 
-    is_owner = BooleanFilter()
+    is_owner = BooleanFilter(
+        field_name="is_owner",
+    )
 
-    is_manager = BooleanFilter()
+    is_manager = BooleanFilter(
+        field_name="is_manager",
+    )
 
     class Meta:
         model = GroupMember
@@ -35,7 +43,6 @@ class GroupMemberFilterSet(
         fields = (
             "group",
             "user",
-            "status",
             "is_owner",
             "is_manager",
         )

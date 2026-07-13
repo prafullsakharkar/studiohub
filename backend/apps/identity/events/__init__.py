@@ -10,6 +10,7 @@ from .membership import *
 from .personal_access_token import *
 from .role import *
 from .role_permission import *
+from .user import *
 from .user_preference import *
 from .user_role import *
 from .user_session import *

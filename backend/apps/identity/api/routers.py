@@ -1,9 +1,3 @@
-from apps.identity.api.viewsets.permission import (
-    PermissionViewSet,
-)
-from apps.identity.api.viewsets.user import (
-    UserViewSet,
-)
 from rest_framework.routers import DefaultRouter
 
 from apps.identity.api.viewsets.api_key import APIKeyViewSet
@@ -13,9 +7,15 @@ from apps.identity.api.viewsets.group import (
 from apps.identity.api.viewsets.login_history import (
     LoginHistoryViewSet,
 )
+from apps.identity.api.viewsets.permission import (
+    PermissionViewSet,
+)
 from apps.identity.api.viewsets.personal_access_token import PersonalAccessTokenViewSet
 from apps.identity.api.viewsets.role import (
     RoleViewSet,
+)
+from apps.identity.api.viewsets.user import (
+    UserViewSet,
 )
 from apps.identity.api.viewsets.user_preference import (
     UserPreferenceViewSet,

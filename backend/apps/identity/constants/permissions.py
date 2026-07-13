@@ -21,20 +21,6 @@ class UserPermissions:
     IMPORT = "identity.user.import"
 
 
-class GroupPermissions:
-    VIEW = "identity.group.view"
-    CREATE = "identity.group.create"
-    UPDATE = "identity.group.update"
-    DELETE = "identity.group.delete"
-
-    ACTIVATE = "identity.group.activate"
-    DEACTIVATE = "identity.group.deactivate"
-    RESTORE = "identity.group.restore"
-    ARCHIVE = "identity.group.archive"
-
-    EXPORT = "identity.group.export"
-
-
 class GroupMemberPermissions:
     VIEW = "identity.group_member.view"
     CREATE = "identity.group_member.create"
@@ -145,3 +131,18 @@ class PersonalAccessTokenPermissions:
     DELETE = "identity.personal_access_token.delete"
 
     REVOKE = "identity.personal_access_token.revoke"
+
+
+class MembershipPermissions:
+    VIEW = "identity.membership.view"
+    CREATE = "identity.membership.create"
+    UPDATE = "identity.membership.update"
+    DELETE = "identity.membership.delete"
+
+    ACTIVATE = "identity.membership.activate"
+    DEACTIVATE = "identity.membership.deactivate"
+    RESTORE = "identity.membership.restore"
+    ARCHIVE = "identity.membership.archive"
+
+    EXPORT = "identity.membership.export"
+    IMPORT = "identity.membership.import"

@@ -1,10 +1,16 @@
 from django.db.models import QuerySet
 
-from apps.identity.models.role import Role
-from apps.identity.selectors.base import IdentityBaseSelector
+from apps.identity.models import (
+    Role,
+)
+from apps.identity.selectors.base import (
+    IdentityBaseSelector,
+)
 
 
-class RoleSelector(IdentityBaseSelector):
+class RoleSelector(
+    IdentityBaseSelector,
+):
     """
     Read operations for Role.
     """
@@ -18,27 +24,61 @@ class RoleSelector(IdentityBaseSelector):
         request=None,
         view=None,
     ) -> QuerySet:
-        return cls.model.objects.select_related("organization").prefetch_related(
-            "permissions"
+        return Role.objects.select_related(
+            "organization",
+            "parent",
         )
 
     @classmethod
-    def for_organization(
+    def active(cls):
+        return cls.filter(
+            is_active=True,
+        )
+
+    @classmethod
+    def system_roles(cls):
+        return cls.filter(
+            is_system=True,
+        )
+
+    @classmethod
+    def organization_roles(
         cls,
         organization,
     ):
-        return cls.get_queryset().for_organization(
-            organization,
+        return cls.filter(
+            organization=organization,
         )
 
     @classmethod
     def default_roles(cls):
-        return cls.get_queryset().default()
+        return cls.filter(
+            is_default=True,
+        )
 
     @classmethod
-    def assignable(cls):
-        return cls.get_queryset().assignable()
+    def by_scope(
+        cls,
+        scope,
+    ):
+        return cls.filter(
+            scope=scope,
+        )
 
     @classmethod
-    def with_permissions(cls):
-        return cls.get_queryset().with_permissions()
+    def by_priority(
+        cls,
+        priority,
+    ):
+        return cls.filter(
+            priority=priority,
+        )
+
+    @classmethod
+    def children(
+        cls,
+        parent,
+    ):
+        return cls.filter(
+            parent=parent,
+        )

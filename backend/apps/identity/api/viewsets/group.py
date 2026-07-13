@@ -1,6 +1,5 @@
-from apps.identity.constants.permissions import (
-    GroupPermissions,
-)
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from apps.identity.api.filtersets.group import (
     GroupFilterSet,
@@ -13,6 +12,9 @@ from apps.identity.api.serializers.group import (
 )
 from apps.identity.api.viewsets.base import (
     IdentityViewSet,
+)
+from apps.identity.constants.permissions import (
+    GroupPermissions,
 )
 from apps.identity.models import (
     Group,
@@ -28,9 +30,6 @@ from apps.identity.services.group import (
 class GroupViewSet(
     IdentityViewSet,
 ):
-    """
-    API endpoint for Group.
-    """
 
     queryset = Group.objects.all()
 
@@ -55,4 +54,92 @@ class GroupViewSet(
         "update": (GroupPermissions.UPDATE,),
         "partial_update": (GroupPermissions.UPDATE,),
         "destroy": (GroupPermissions.DELETE,),
+        "activate": (GroupPermissions.ACTIVATE,),
+        "deactivate": (GroupPermissions.DEACTIVATE,),
+        "archive": (GroupPermissions.ARCHIVE,),
+        "restore": (GroupPermissions.RESTORE,),
     }
+
+    @action(
+        detail=True,
+        methods=["post"],
+    )
+    def activate(
+        self,
+        request,
+        uuid=None,
+    ):
+        instance = self.get_object()
+
+        self.service_class.activate(
+            instance,
+        )
+
+        return Response(
+            {
+                "detail": "Group activated successfully.",
+            },
+        )
+
+    @action(
+        detail=True,
+        methods=["post"],
+    )
+    def deactivate(
+        self,
+        request,
+        uuid=None,
+    ):
+        instance = self.get_object()
+
+        self.service_class.deactivate(
+            instance,
+        )
+
+        return Response(
+            {
+                "detail": "Group deactivated successfully.",
+            },
+        )
+
+    @action(
+        detail=True,
+        methods=["post"],
+    )
+    def archive(
+        self,
+        request,
+        uuid=None,
+    ):
+        instance = self.get_object()
+
+        self.service_class.archive(
+            instance,
+        )
+
+        return Response(
+            {
+                "detail": "Group archived successfully.",
+            },
+        )
+
+    @action(
+        detail=True,
+        methods=["post"],
+    )
+    def restore(
+        self,
+        request,
+        uuid=None,
+    ):
+        instance = self.get_object()
+
+        self.service_class.restore(
+            instance,
+        )
+
+        return Response(
+            {
+                "detail": "Group restored successfully.",
+            },
+        )

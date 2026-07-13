@@ -1,7 +1,7 @@
-from apps.identity.api.serializers.membership.read import MembershipReadSerializer
+from .base import UserBaseSerializer
 
 
-class MembershipListSerializer(
-    MembershipReadSerializer,
+class UserListSerializer(
+    UserBaseSerializer,
 ):
     pass

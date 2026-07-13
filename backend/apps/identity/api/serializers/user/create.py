@@ -1,21 +1,41 @@
-from apps.identity.api.serializers.membership.write import MembershipWriteSerializer
-from apps.identity.validators.membership import MembershipValidator
+from apps.identity.services.user import (
+    UserService,
+)
+
+from .base import UserBaseSerializer
 
 
-class MembershipCreateSerializer(
-    MembershipWriteSerializer,
+class UserCreateSerializer(
+    UserBaseSerializer,
 ):
 
-    def validate(self, attrs):
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+    )
 
-        attrs = super().validate(attrs)
+    class Meta(
+        UserBaseSerializer.Meta,
+    ):
+        fields = UserBaseSerializer.Meta.fields + ("password",)
 
-        MembershipValidator.validate(attrs)
+    def create(
+        self,
+        validated_data,
+    ):
+        password = validated_data.pop(
+            "password",
+            None,
+        )
 
-        return attrs
-
-    def create(self, validated_data):
-
-        return self.context["view"].service_class.create(
+        user = UserService.create(
             **validated_data,
         )
+
+        if password:
+            UserService.set_password(
+                user=user,
+                password=password,
+            )
+
+        return user

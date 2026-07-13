@@ -25,5 +25,9 @@ class MembershipActivated(DomainEvent):
     event_type = "identity.membership.activated"
 
 
+class MembershipDeactivated(DomainEvent):
+    event_type = "identity.membership.deactivated"
+
+
 class MembershipSuspended(DomainEvent):
     event_type = "identity.membership.suspended"

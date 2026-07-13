@@ -1,8 +1,12 @@
-from apps.identity.api.serializers.membership.write import MembershipWriteSerializer
+from apps.identity.services.user import (
+    UserService,
+)
+
+from .base import UserBaseSerializer
 
 
-class MembershipUpdateSerializer(
-    MembershipWriteSerializer,
+class UserUpdateSerializer(
+    UserBaseSerializer,
 ):
 
     def update(
@@ -10,7 +14,7 @@ class MembershipUpdateSerializer(
         instance,
         validated_data,
     ):
-        return self.context["view"].service_class.update(
+        return UserService.update(
             instance,
             **validated_data,
         )
