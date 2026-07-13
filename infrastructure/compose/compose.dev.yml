@@ -48,7 +48,7 @@ services:
     command: /start-celery.sh
 
     env_file:
-      - .env
+      - ../../backend/.env.local
 
     volumes:
       - ../../backend:/app
@@ -70,7 +70,7 @@ services:
     command: /start-beat.sh
 
     env_file:
-      - .env
+      - ../../backend/.env.local
 
     volumes:
       - ../../backend:/app
@@ -92,7 +92,7 @@ services:
     command: /start-flower.sh
 
     env_file:
-      - .env
+      - ../../backend/.env.local
 
     ports:
       - "5555:5555"
