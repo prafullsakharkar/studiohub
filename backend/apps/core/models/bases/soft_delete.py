@@ -33,6 +33,7 @@ class SoftDeleteModel(models.Model):
     deleted_at = models.DateTimeField(
         null=True,
         blank=True,
+        db_index=True,
     )
 
     objects = SoftDeleteManager()
