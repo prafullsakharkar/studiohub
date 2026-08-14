@@ -1,0 +1,466 @@
+# ============================================================
+
+# Python
+
+# ============================================================
+
+**pycache**/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Python build / packaging
+
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+wheels/
+MANIFEST
+
+# Python cache / tooling
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+.hypothesis/
+.tox/
+.nox/
+
+# Coverage
+
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.pytest_cache/
+
+# ============================================================
+
+# Virtual Environments
+
+# ============================================================
+
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# uv
+
+.uv/
+uv.lock.bak
+
+# ============================================================
+
+# Django
+
+# ============================================================
+
+# Local Django database
+
+db.sqlite3
+db.sqlite3-journal
+*.sqlite3
+
+# Django generated files
+
+staticfiles/
+static_root/
+media/
+media_root/
+
+# Django migrations
+
+# NOTE:
+
+# Do NOT ignore migrations in a production Django project.
+
+# migrations/
+
+# */migrations/
+
+# ============================================================
+
+# Environment / Secrets
+
+# ============================================================
+
+.env
+.env.*
+!.env.example
+!.env.template
+!.env.sample
+
+# Local secrets
+
+*.secret
+secrets/
+.secrets/
+
+# ============================================================
+
+# Node / React / TypeScript
+
+# ============================================================
+
+node_modules/
+
+# Package manager logs
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Package manager files
+
+.npm/
+.yarn/
+.pnpm-store/
+
+# Build outputs
+
+dist/
+build/
+out/
+.next/
+.nuxt/
+.vite/
+.vite-temp/
+
+# TypeScript
+
+*.tsbuildinfo
+
+# React / Vite
+
+coverage/
+storybook-static/
+
+# ============================================================
+
+# Frontend Environment Files
+
+# ============================================================
+
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ============================================================
+
+# Docker
+
+# ============================================================
+
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Docker local data
+
+.docker/
+docker-data/
+docker-volumes/
+
+# ============================================================
+
+# Celery
+
+# ============================================================
+
+celerybeat.pid
+celerybeat-schedule
+
+# ============================================================
+
+# Redis
+
+# ============================================================
+
+*.rdb
+dump.rdb
+
+# ============================================================
+
+# PostgreSQL
+
+# ============================================================
+
+*.sql.gz
+
+# ============================================================
+
+# Logs
+
+# ============================================================
+
+*.log
+logs/
+log/
+*.log.*
+
+# ============================================================
+
+# Temporary Files
+
+# ============================================================
+
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+*.backup
+*~
+.#*
+*.orig
+
+tmp/
+temp/
+
+# ============================================================
+
+# IDE / Editors
+
+# ============================================================
+
+# VS Code
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# JetBrains
+
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Cursor
+
+.cursor/
+
+# Zed
+
+.zed/
+
+# Roo Code
+
+.roo/
+
+# Claude Code
+
+.claude/
+
+# Continue
+
+.continue/
+
+# ============================================================
+
+# Jupyter
+
+# ============================================================
+
+.ipynb_checkpoints/
+
+# ============================================================
+
+# OS Files
+
+# ============================================================
+
+# macOS
+
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+
+# Linux
+
+.directory
+.Trash-*
+
+# ============================================================
+
+# Generated Documentation
+
+# ============================================================
+
+site/
+docs/_build/
+
+# ============================================================
+
+# Playwright
+
+# ============================================================
+
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# ============================================================
+
+# Cypress
+
+# ============================================================
+
+cypress/videos/
+cypress/screenshots/
+
+# ============================================================
+
+# Storybook
+
+# ============================================================
+
+storybook-static/
+
+# ============================================================
+
+# Local Development Tools
+
+# ============================================================
+
+*.pid
+*.seed
+
+# ============================================================
+
+# Generated API / Codegen
+
+# ============================================================
+
+.openapi/
+.openapi-generated/
+generated/
+
+# ============================================================
+
+# Local AI / LLM
+
+# ============================================================
+
+# Local model/cache directories
+
+.models/
+.model-cache/
+.llm-cache/
+
+# Hindsight local data
+
+.hindsight/
+
+# Ollama local configuration/cache
+
+.ollama/
+
+# ============================================================
+
+# Security / Certificates
+
+# ============================================================
+
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+
+# Keep example certificates
+
+!*.example.pem
+!*.example.key
+!*.example.crt
+
+# ============================================================
+
+# Infrastructure / Local State
+
+# ============================================================
+
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Ansible
+
+*.retry
+
+# Kubernetes local files
+
+.kube/
+
+# ============================================================
+
+# Generated Archives
+
+# ============================================================
+
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+
+# ============================================================
+
+# Backups
+
+# ============================================================
+
+backup/
+backups/
+*.dump
+*.bak.sql
+
+# ============================================================
+
+# Local Project Files
+
+# ============================================================
+
+.local/
+.local-data/
+.runtime/
+.cache/
+
+# ============================================================
+
+# Keep Important Example Files
+
+# ============================================================
+
+!.gitkeep
+!.env.example
+!.env.template
+!.env.sample
+!requirements/*.txt
+!package-lock.json
+!yarn.lock
+!pnpm-lock.yaml
+!uv.lock
