@@ -14,22 +14,10 @@ class BadRequestException(BaseAPIException):
     default_code = "bad_request"
 
 
-class ValidationException(BaseAPIException):
-    status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = "Validation failed."
-    default_code = "validation_error"
-
-
 class AuthenticationException(BaseAPIException):
     status_code = status.HTTP_401_UNAUTHORIZED
     default_detail = "Authentication failed."
     default_code = "authentication_failed"
-
-
-class PermissionDeniedException(BaseAPIException):
-    status_code = status.HTTP_403_FORBIDDEN
-    default_detail = "Permission denied."
-    default_code = "permission_denied"
 
 
 class NotFoundException(BaseAPIException):

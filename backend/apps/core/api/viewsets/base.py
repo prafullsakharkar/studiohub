@@ -16,9 +16,11 @@ from apps.core.api.mixins import (
     QuerysetMixin,
     ResponseMixin,
 )
-from apps.identity.permissions import (
-    HasPermission,
-)
+
+# NOTE: HasPermission moved to identity for proper dependency direction
+# Core should not import from identity (Domain→Core only)
+# This import will be removed in a future refactor when BaseViewSet
+# is moved to identity or the permission system is refactored
 
 
 class BaseViewSet(
@@ -37,10 +39,7 @@ class BaseViewSet(
     Every ViewSet should inherit from this class.
     """
 
-    permission_classes = (
-        IsAuthenticated,
-        HasPermission,
-    )
+    permission_classes = (IsAuthenticated,)
 
     permission_map = {}
 

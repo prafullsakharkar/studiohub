@@ -2,24 +2,24 @@ from apps.core.events import DomainEvent
 
 
 class PersonalAccessTokenCreated(DomainEvent):
-    event_name = "identity.personal_access_token.created"
+    event_type = "identity.personal_access_token.created"
 
 
 class PersonalAccessTokenActivated(DomainEvent):
-    event_name = "identity.personal_access_token.activated"
+    event_type = "identity.personal_access_token.activated"
 
 
 class PersonalAccessTokenRevoked(DomainEvent):
-    event_name = "identity.personal_access_token.revoked"
+    event_type = "identity.personal_access_token.revoked"
 
 
 class PersonalAccessTokenRegenerated(DomainEvent):
-    event_name = "identity.personal_access_token.regenerated"
+    event_type = "identity.personal_access_token.regenerated"
 
 
 class PersonalAccessTokenUsed(DomainEvent):
-    event_name = "identity.personal_access_token.used"
+    event_type = "identity.personal_access_token.used"
 
 
 class PersonalAccessTokenExpired(DomainEvent):
-    event_name = "identity.personal_access_token.expired"
+    event_type = "identity.personal_access_token.expired"

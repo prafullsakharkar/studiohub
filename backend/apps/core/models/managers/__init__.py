@@ -3,6 +3,8 @@ Model managers.
 
 Re-exports the manager classes defined in :mod:`apps.core.managers`
 so they can be imported from ``apps.core.models.managers``.
+
+Managers are thin and delegate query construction to their QuerySet.
 """
 
 from apps.core.managers.active import ActiveManager

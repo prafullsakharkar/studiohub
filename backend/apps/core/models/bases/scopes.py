@@ -1,16 +1,29 @@
 """
-Common ownership/scope abstract models.
+Domain-scoped models - DEPRECATED.
 
-These models provide reusable tenant and hierarchy boundaries
-throughout the platform.
+These models have been moved to their respective domain applications.
+This file is kept for backward compatibility during migration.
+
+For new code, use the domain-specific scoped models:
+- organization.OrganizationScopedModel
+- production.ProjectScopedModel
+- production.SequenceScopedModel
+- production.ShotScopedModel
+- production.TaskScopedModel
+- review.ReviewScopedModel
+- identity.UserScopedModel
 """
+
+from __future__ import annotations
 
 from django.db import models
 
 
 class OrganizationScopedModel(models.Model):
     """
-    Base model for organization owned records.
+    DEPRECATED: Use organization.OrganizationScopedModel instead.
+
+    Adds organization scoping to a model.
     """
 
     organization = models.ForeignKey(
@@ -26,7 +39,9 @@ class OrganizationScopedModel(models.Model):
 
 class ProjectScopedModel(models.Model):
     """
-    Base model for project owned records.
+    DEPRECATED: Use production.ProjectScopedModel instead.
+
+    Adds project scoping to a model.
     """
 
     project = models.ForeignKey(
@@ -42,7 +57,9 @@ class ProjectScopedModel(models.Model):
 
 class SequenceScopedModel(models.Model):
     """
-    Base model for sequence owned records.
+    DEPRECATED: Use production.SequenceScopedModel instead.
+
+    Adds sequence scoping to a model.
     """
 
     sequence = models.ForeignKey(
@@ -58,7 +75,9 @@ class SequenceScopedModel(models.Model):
 
 class ShotScopedModel(models.Model):
     """
-    Base model for shot owned records.
+    DEPRECATED: Use production.ShotScopedModel instead.
+
+    Adds shot scoping to a model.
     """
 
     shot = models.ForeignKey(
@@ -74,7 +93,9 @@ class ShotScopedModel(models.Model):
 
 class TaskScopedModel(models.Model):
     """
-    Base model for task owned records.
+    DEPRECATED: Use production.TaskScopedModel instead.
+
+    Adds task scoping to a model.
     """
 
     task = models.ForeignKey(
@@ -90,7 +111,9 @@ class TaskScopedModel(models.Model):
 
 class ReviewScopedModel(models.Model):
     """
-    Base model for review owned records.
+    DEPRECATED: Use review.ReviewScopedModel instead.
+
+    Adds review scoping to a model.
     """
 
     review = models.ForeignKey(
@@ -106,13 +129,15 @@ class ReviewScopedModel(models.Model):
 
 class UserScopedModel(models.Model):
     """
-    Base model for user owned records.
+    DEPRECATED: Use identity.UserScopedModel instead.
+
+    Adds user scoping to a model.
     """
 
-    owner = models.ForeignKey(
+    user = models.ForeignKey(
         "identity.User",
         on_delete=models.CASCADE,
-        related_name="owned_%(app_label)s_%(class)ss",
+        related_name="%(app_label)s_%(class)ss",
         db_index=True,
     )
 

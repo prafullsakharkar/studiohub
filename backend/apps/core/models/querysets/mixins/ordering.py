@@ -8,18 +8,10 @@ from __future__ import annotations
 class OrderingQuerySetMixin:
     """
     Reusable ordering helpers.
+
+    ``ordered()`` is provided by :class:`apps.core.models.querysets.base.BaseQuerySet`
+    and is intentionally not duplicated here.
     """
-
-    def ordered(self):
-        """
-        Apply the model's default ordering.
-        """
-        ordering = getattr(self.model._meta, "ordering", None)
-
-        if ordering:
-            return self.order_by(*ordering)
-
-        return self
 
     def newest(self):
         """

@@ -41,8 +41,16 @@ class BaseQuerySet(models.QuerySet):
     def ordered(self):
         """
         Respect model ordering.
+
+        Falls back to the queryset unchanged when the model declares no
+        default ordering.
         """
-        return self.order_by(*self.model._meta.ordering)
+        ordering = getattr(self.model._meta, "ordering", None)
+
+        if ordering:
+            return self.order_by(*ordering)
+
+        return self
 
     def latest_first(self):
         """

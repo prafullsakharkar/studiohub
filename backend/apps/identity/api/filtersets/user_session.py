@@ -1,9 +1,9 @@
-from apps.core.api.filtersets.base import BaseFilterSet
 from django_filters import (
     BooleanFilter,
     CharFilter,
 )
 
+from apps.core.filters.base import BaseFilterSet
 from apps.identity.models import UserSession
 
 

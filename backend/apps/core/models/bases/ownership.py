@@ -1,9 +1,25 @@
+"""
+Domain-scoped ownership models - DEPRECATED.
+
+These models have been moved to their respective domain applications.
+This file is kept for backward compatibility during migration.
+
+For new code, use the domain-specific ownership models:
+- organization.OrganizationOwnedModel
+- production.ProjectOwnedModel
+- identity.UserOwnedModel
+"""
+
+from __future__ import annotations
+
 from django.db import models
 
 
 class OrganizationOwnedModel(models.Model):
     """
-    Abstract model for organization-scoped records.
+    DEPRECATED: Use organization.OrganizationOwnedModel instead.
+
+    Adds organization ownership to a model.
     """
 
     organization = models.ForeignKey(
@@ -19,7 +35,9 @@ class OrganizationOwnedModel(models.Model):
 
 class ProjectOwnedModel(models.Model):
     """
-    Abstract model for project-scoped records.
+    DEPRECATED: Use production.ProjectOwnedModel instead.
+
+    Adds project ownership to a model.
     """
 
     project = models.ForeignKey(
@@ -35,13 +53,15 @@ class ProjectOwnedModel(models.Model):
 
 class UserOwnedModel(models.Model):
     """
-    Abstract model for user-owned records.
+    DEPRECATED: Use identity.UserOwnedModel instead.
+
+    Adds user ownership to a model.
     """
 
-    owner = models.ForeignKey(
+    user = models.ForeignKey(
         "identity.User",
         on_delete=models.CASCADE,
-        related_name="owned_%(class)ss",
+        related_name="%(class)ss",
         db_index=True,
     )
 

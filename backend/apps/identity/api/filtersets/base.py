@@ -1,4 +1,4 @@
-from apps.core.api.filters.base import BaseFilterSet
+from apps.core.filters.base import BaseFilterSet
 
 
 class IdentityFilterSet(BaseFilterSet):

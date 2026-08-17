@@ -99,3 +99,39 @@ class BaseNestedSerializer(BaseReadSerializer):
 
     class Meta:
         abstract = True
+
+
+class BaseListSerializer(serializers.ListSerializer):
+    """
+    List serializer with bulk create/update support.
+
+    Bulk create delegates to the child serializer's ``create`` (or the
+    service layer when using ``BaseWriteSerializer``). Bulk update is
+    supported when the child serializer exposes a ``bulk_update`` method.
+    """
+
+    def create(self, validated_data):
+        instances = [self.child.create(attrs) for attrs in validated_data]
+        return instances
+
+    def update(self, instance_list, validated_data):
+        if hasattr(self.child, "bulk_update"):
+            return self.child.bulk_update(instance_list, validated_data)
+
+        raise NotImplementedError(
+            "Bulk update requires the child serializer to implement " "bulk_update()."
+        )
+
+
+class BulkModelSerializer(BaseModelSerializer):
+    """
+    Model serializer with bulk create/update support.
+
+    Use ``many=True`` to create/update multiple instances in a single
+    request. Bulk update requires the child serializer to implement
+    ``bulk_update``.
+    """
+
+    class Meta:
+        abstract = True
+        list_serializer_class = BaseListSerializer

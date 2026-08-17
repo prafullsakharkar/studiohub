@@ -1,26 +1,24 @@
 """
 Permission exports.
+
+Core provides only generic, domain-agnostic permissions.
+Domain-specific permissions (organization, project, reviewer) live in
+their respective domain apps.
 """
 
 from .base import BasePermission
-from .organization import (
-    IsOrganizationAdmin,
-    IsOrganizationMember,
-)
+from .mixins import PermissionMapPermission
 from .owner import IsOwner
-from .project import IsProjectMember
 from .readonly import ReadOnlyPermission
-from .reviewer import IsReviewer
+from .resolver import PermissionResolver
 from .staff import IsStaff, IsSuperUser
 
 __all__ = [
     "BasePermission",
-    "IsOrganizationAdmin",
-    "IsOrganizationMember",
     "IsOwner",
-    "IsProjectMember",
-    "IsReviewer",
     "IsStaff",
     "IsSuperUser",
+    "PermissionMapPermission",
+    "PermissionResolver",
     "ReadOnlyPermission",
 ]
