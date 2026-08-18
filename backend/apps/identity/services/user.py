@@ -38,3 +38,32 @@ class UserService(
         "activate": UserActivated,
         "deactivate": UserDeactivated,
     }
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        user=None,
+        **validated_data,
+    ):
+        from apps.identity.services.user_password import (
+            UserPasswordService,
+        )
+
+        password = validated_data.pop(
+            "password",
+            None,
+        )
+
+        instance = super().create(
+            user=user,
+            **validated_data,
+        )
+
+        if password:
+            UserPasswordService.set_password(
+                user=instance,
+                password=password,
+            )
+
+        return instance

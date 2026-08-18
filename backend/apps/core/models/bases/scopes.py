@@ -1,37 +1,50 @@
 """
-Domain-scoped models - DEPRECATED.
+Common ownership/scope abstract models.
 
-These models have been moved to their respective domain applications.
-This file is kept for backward compatibility during migration.
+These models provide reusable tenant and hierarchy boundaries
+throughout the platform.
 
-For new code, use the domain-specific scoped models:
-- organization.OrganizationScopedModel
-- production.ProjectScopedModel
-- production.SequenceScopedModel
-- production.ShotScopedModel
-- production.TaskScopedModel
-- review.ReviewScopedModel
-- identity.UserScopedModel
+This is a protocol/interface for domain applications to implement.
+Domain applications should define their own scoped fields.
+
+Example:
+    class MyModel(OrganizationScopedModel):
+        organization = models.ForeignKey(
+            "myapp.Organization",
+            on_delete=models.CASCADE,
+            related_name="%(app_label)s_%(class)ss",
+            db_index=True,
+        )
 """
 
-from __future__ import annotations
-
 from django.db import models
+import warnings
+
+# NOTE: The following scope classes (SequenceScopedModel, ShotScopedModel,
+# TaskScopedModel, ReviewScopedModel) express domain-specific concepts used by
+# production/VFX workflows. Keeping them inside `apps.core` couples the shared
+# kernel to a particular vertical. They remain here for now for backwards
+# compatibility but are considered deprecated at the shared-kernel level.
+#
+# Migration recommendation:
+# - Move these classes into a domain package (e.g. `apps/production` or
+#   `apps/project`) and provide a thin compatibility shim in `apps.core` that
+#   re-exports the symbols and emits a deprecation warning until consumers
+#   are migrated.
+#
+warnings.warn(
+    "Core: domain-scoped base models (Sequence/Shot/Task/Review/Project) are deprecated in apps.core and should be moved to a domain package (e.g. apps.production). See docs/architecture/core-refactor-analysis.md for guidance.",
+    FutureWarning,
+)
 
 
 class OrganizationScopedModel(models.Model):
     """
-    DEPRECATED: Use organization.OrganizationScopedModel instead.
+    Base model for organization-scoped records.
 
-    Adds organization scoping to a model.
+    This is a protocol/interface for domain applications to implement.
+    Domain applications should define their own organization field.
     """
-
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)ss",
-        db_index=True,
-    )
 
     class Meta:
         abstract = True
@@ -39,17 +52,11 @@ class OrganizationScopedModel(models.Model):
 
 class ProjectScopedModel(models.Model):
     """
-    DEPRECATED: Use production.ProjectScopedModel instead.
+    Base model for project-scoped records.
 
-    Adds project scoping to a model.
+    This is a protocol/interface for domain applications to implement.
+    Domain applications should define their own project field.
     """
-
-    project = models.ForeignKey(
-        "production.Project",
-        on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)ss",
-        db_index=True,
-    )
 
     class Meta:
         abstract = True
@@ -57,17 +64,11 @@ class ProjectScopedModel(models.Model):
 
 class SequenceScopedModel(models.Model):
     """
-    DEPRECATED: Use production.SequenceScopedModel instead.
+    Base model for sequence-scoped records.
 
-    Adds sequence scoping to a model.
+    This is a protocol/interface for domain applications to implement.
+    Domain applications should define their own sequence field.
     """
-
-    sequence = models.ForeignKey(
-        "production.Sequence",
-        on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)ss",
-        db_index=True,
-    )
 
     class Meta:
         abstract = True
@@ -75,17 +76,11 @@ class SequenceScopedModel(models.Model):
 
 class ShotScopedModel(models.Model):
     """
-    DEPRECATED: Use production.ShotScopedModel instead.
+    Base model for shot-scoped records.
 
-    Adds shot scoping to a model.
+    This is a protocol/interface for domain applications to implement.
+    Domain applications should define their own shot field.
     """
-
-    shot = models.ForeignKey(
-        "production.Shot",
-        on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)ss",
-        db_index=True,
-    )
 
     class Meta:
         abstract = True
@@ -93,17 +88,11 @@ class ShotScopedModel(models.Model):
 
 class TaskScopedModel(models.Model):
     """
-    DEPRECATED: Use production.TaskScopedModel instead.
+    Base model for task-scoped records.
 
-    Adds task scoping to a model.
+    This is a protocol/interface for domain applications to implement.
+    Domain applications should define their own task field.
     """
-
-    task = models.ForeignKey(
-        "production.Task",
-        on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)ss",
-        db_index=True,
-    )
 
     class Meta:
         abstract = True
@@ -111,17 +100,11 @@ class TaskScopedModel(models.Model):
 
 class ReviewScopedModel(models.Model):
     """
-    DEPRECATED: Use review.ReviewScopedModel instead.
+    Base model for review-scoped records.
 
-    Adds review scoping to a model.
+    This is a protocol/interface for domain applications to implement.
+    Domain applications should define their own review field.
     """
-
-    review = models.ForeignKey(
-        "review.Review",
-        on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)ss",
-        db_index=True,
-    )
 
     class Meta:
         abstract = True
@@ -129,17 +112,11 @@ class ReviewScopedModel(models.Model):
 
 class UserScopedModel(models.Model):
     """
-    DEPRECATED: Use identity.UserScopedModel instead.
+    Base model for user-scoped records.
 
-    Adds user scoping to a model.
+    This is a protocol/interface for domain applications to implement.
+    Domain applications should define their own user/owner field.
     """
-
-    user = models.ForeignKey(
-        "identity.User",
-        on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)ss",
-        db_index=True,
-    )
 
     class Meta:
         abstract = True

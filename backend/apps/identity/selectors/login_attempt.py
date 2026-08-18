@@ -31,3 +31,18 @@ class LoginAttemptSelector(
         minutes=15,
     ):
         return cls.get_queryset().failed().for_username(username).recent(minutes)
+
+    @classmethod
+    def failed_attempts(
+        cls,
+        username,
+        ip_address,
+    ):
+        return (
+            cls.get_queryset()
+            .failed()
+            .filter(
+                username=username,
+                ip_address=ip_address,
+            )
+        )

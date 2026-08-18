@@ -58,7 +58,7 @@ class OrganizationSettings(OrganizationEntityModel):
     objects = OrganizationSettingsManager()
 
     class Meta:
-        db_table = "organization_settings"
+        db_table = "organization_organization_settings"
 
         verbose_name = "Organization Settings"
 

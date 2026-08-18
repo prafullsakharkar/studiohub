@@ -1,0 +1,163 @@
+openapi: 3.0.3
+info:
+  title: StudioHub Saved Searches / Smart Collections (fragment)
+  version: 0.1.0
+paths:
+  /api/saved-searches:
+    post:
+      summary: Create a saved search (Smart Collection)
+      tags:
+        - saved_searches
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SavedSearchCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavedSearch'
+    get:
+      summary: List saved searches visible to caller (supports scope)
+      tags:
+        - saved_searches
+      parameters:
+        - name: scope
+          in: query
+          schema:
+            type: string
+            enum: [personal, team, project, organization]
+      responses:
+        '200':
+          description: List
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SavedSearch'
+  /api/saved-searches/{id}:
+    get:
+      summary: Get saved search
+      tags:
+        - saved_searches
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Saved search
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavedSearch'
+    put:
+      summary: Update saved search
+      tags:
+        - saved_searches
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SavedSearchUpdate'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavedSearch'
+    delete:
+      summary: Delete saved search
+      tags:
+        - saved_searches
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Deleted
+components:
+  schemas:
+    QueryObject:
+      type: object
+      properties:
+        entity:
+          type: string
+        filters:
+          type: object
+          additionalProperties: true
+        sort:
+          $ref: '#/components/schemas/Sort'
+        q:
+          type: string
+    SavedSearchCreate:
+      type: object
+      required: [name, query]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        query:
+          $ref: '#/components/schemas/QueryObject'
+        scope:
+          type: string
+          enum: [personal, team, project, organization]
+        owner_id:
+          type: string
+          format: uuid
+        share_with:
+          type: array
+          items:
+            type: string
+    SavedSearchUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        query:
+          $ref: '#/components/schemas/QueryObject'
+        scope:
+          type: string
+          enum: [personal, team, project, organization]
+    SavedSearch:
+      allOf:
+        - $ref: '#/components/schemas/SavedSearchCreate'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+            last_run_preview:
+              type: object
+              description: 'Optional: cached preview/result metadata (do not include full results)'
+security: []

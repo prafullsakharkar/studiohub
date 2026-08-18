@@ -14,5 +14,4 @@ class OfficeListSerializer(
             "country",
             "manager",
             "is_headquarters",
-            "status",
         )

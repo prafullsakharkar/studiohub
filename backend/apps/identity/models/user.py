@@ -5,25 +5,11 @@ from django.contrib.auth.models import (
 from django.core.validators import validate_email
 from django.db import models
 
-from apps.core.models import (
-    AuditModel,
-    MetadataModel,
-    SoftDeleteModel,
-    TimeStampedModel,
-    UUIDModel,
-)
+from apps.core.models import EntityModel
 from apps.identity.managers import UserManager
 
 
-class User(
-    UUIDModel,
-    TimeStampedModel,
-    AuditModel,
-    SoftDeleteModel,
-    MetadataModel,
-    AbstractBaseUser,
-    PermissionsMixin,
-):
+class User(EntityModel, AbstractBaseUser, PermissionsMixin):
 
     email = models.EmailField(
         unique=True,
@@ -77,7 +63,7 @@ class User(
         ]
 
     def clean(self):
-        self.email = self.__class__.objects.normalize_email(self.email)
+        self.email = self.__class__.objects.normalize_email(self.email).lower()
 
     def get_full_name(self):
         return self.full_name
@@ -86,6 +72,22 @@ class User(
         parts = (self.full_name or "").split()
 
         return parts[0] if parts else self.email
+
+    @property
+    def username(self):
+        """Usernames are the user's email address in this system."""
+        return self.email
+
+    @property
+    def organizations(self):
+        """
+        Organizations the user belongs to (via organization memberships).
+        """
+        from apps.organization.models import Organization
+
+        return Organization.objects.filter(
+            memberships__user=self,
+        )
 
     @property
     def display_name(self):

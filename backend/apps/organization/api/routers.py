@@ -1,14 +1,28 @@
 from rest_framework.routers import DefaultRouter
 
 from apps.organization.api.viewsets import (
+    APIKeyViewSet,
     BrandingViewSet,
     CalendarViewSet,
     DepartmentViewSet,
+    GroupViewSet,
+    GroupMemberViewSet,
+    GroupRoleViewSet,
+    HolidayViewSet,
+    InvitationViewSet,
     OfficeViewSet,
+    OrganizationMembershipViewSet,
     OrganizationSettingsViewSet,
     OrganizationViewSet,
+    PersonalAccessTokenViewSet,
+    PermissionViewSet,
     PositionViewSet,
+    RoleViewSet,
+    RolePermissionViewSet,
     TeamViewSet,
+    UserRoleViewSet,
+    WorkCalendarViewSet,
+    WorkHoursViewSet,
 )
 
 router = DefaultRouter()
@@ -52,7 +66,25 @@ router.register(
 router.register(
     "calendars",
     CalendarViewSet,
-    basename="branding",
+    basename="calendar",
+)
+
+router.register(
+    "holidays",
+    HolidayViewSet,
+    basename="holiday",
+)
+
+router.register(
+    "work-calendars",
+    WorkCalendarViewSet,
+    basename="work_calendar",
+)
+
+router.register(
+    "work-hours",
+    WorkHoursViewSet,
+    basename="work_hours",
 )
 
 router.register(
@@ -60,4 +92,71 @@ router.register(
     PositionViewSet,
     basename="position",
 )
+
+router.register(
+    "api-keys",
+    APIKeyViewSet,
+    basename="api_key",
+)
+
+router.register(
+    "personal-access-tokens",
+    PersonalAccessTokenViewSet,
+    basename="personal_access_token",
+)
+
+router.register(
+    "invitations",
+    InvitationViewSet,
+    basename="invitation",
+)
+
+router.register(
+    "memberships",
+    OrganizationMembershipViewSet,
+    basename="organization_membership",
+)
+
+router.register(
+    "groups",
+    GroupViewSet,
+    basename="group",
+)
+
+router.register(
+    "roles",
+    RoleViewSet,
+    basename="role",
+)
+
+router.register(
+    "permissions",
+    PermissionViewSet,
+    basename="permission",
+)
+
+router.register(
+    "user-roles",
+    UserRoleViewSet,
+    basename="user_role",
+)
+
+router.register(
+    "group-members",
+    GroupMemberViewSet,
+    basename="group_member",
+)
+
+router.register(
+    "group-roles",
+    GroupRoleViewSet,
+    basename="group_role",
+)
+
+router.register(
+    "role-permissions",
+    RolePermissionViewSet,
+    basename="role_permission",
+)
+
 urlpatterns = router.urls

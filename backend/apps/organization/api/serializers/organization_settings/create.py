@@ -1,4 +1,4 @@
-from apps.organization.services.branding import (
+from apps.organization.services.organization_settings import (
     OrganizationSettingsService,
 )
 

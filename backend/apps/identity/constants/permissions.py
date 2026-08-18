@@ -21,128 +21,36 @@ class UserPermissions:
     IMPORT = "identity.user.import"
 
 
-class GroupMemberPermissions:
-    VIEW = "identity.group_member.view"
-    CREATE = "identity.group_member.create"
-    UPDATE = "identity.group_member.update"
-    DELETE = "identity.group_member.delete"
-
-    ACTIVATE = "identity.group_member.activate"
-    DEACTIVATE = "identity.group_member.deactivate"
-    RESTORE = "identity.group_member.restore"
-    ARCHIVE = "identity.group_member.archive"
-
-    EXPORT = "identity.group_member.export"
+class ProfilePermissions:
+    VIEW = "identity.profile.view"
+    CREATE = "identity.profile.create"
+    UPDATE = "identity.profile.update"
+    DELETE = "identity.profile.delete"
 
 
-class RolePermissions:
-    VIEW = "identity.role.view"
-    CREATE = "identity.role.create"
-    UPDATE = "identity.role.update"
-    DELETE = "identity.role.delete"
-
-    ACTIVATE = "identity.role.activate"
-    DEACTIVATE = "identity.role.deactivate"
-    RESTORE = "identity.role.restore"
-    ARCHIVE = "identity.role.archive"
-
-    ASSIGN = "identity.role.assign"
-    UNASSIGN = "identity.role.unassign"
-
-    EXPORT = "identity.role.export"
-    IMPORT = "identity.role.import"
+class IPBlacklistPermissions:
+    VIEW = "identity.ip_blacklist.view"
+    CREATE = "identity.ip_blacklist.create"
+    UPDATE = "identity.ip_blacklist.update"
+    DELETE = "identity.ip_blacklist.delete"
 
 
-class PermissionPermissions:
-    VIEW = "identity.permission.view"
-    CREATE = "identity.permission.create"
-    UPDATE = "identity.permission.update"
-    DELETE = "identity.permission.delete"
-
-    ACTIVATE = "identity.permission.activate"
-    DEACTIVATE = "identity.permission.deactivate"
-    RESTORE = "identity.permission.restore"
-    ARCHIVE = "identity.permission.archive"
-
-    EXPORT = "identity.permission.export"
-    IMPORT = "identity.permission.import"
+class LoginAttemptPermissions:
+    VIEW = "identity.login_attempt.view"
+    CREATE = "identity.login_attempt.create"
+    UPDATE = "identity.login_attempt.update"
+    DELETE = "identity.login_attempt.delete"
 
 
-class GroupPermissions:
-    VIEW = "identity.group.view"
-    CREATE = "identity.group.create"
-    UPDATE = "identity.group.update"
-    DELETE = "identity.group.delete"
-
-    ACTIVATE = "identity.group.activate"
-    DEACTIVATE = "identity.group.deactivate"
-    RESTORE = "identity.group.restore"
-    ARCHIVE = "identity.group.archive"
-
-    ASSIGN = "identity.group.assign"
-    UNASSIGN = "identity.group.unassign"
-
-    EXPORT = "identity.group.export"
-    IMPORT = "identity.group.import"
+class SecurityEventPermissions:
+    VIEW = "identity.security_event.view"
+    CREATE = "identity.security_event.create"
+    UPDATE = "identity.security_event.update"
+    DELETE = "identity.security_event.delete"
 
 
-class UserPreferencePermissions:
-    VIEW = "identity.user_preference.view"
-    CREATE = "identity.user_preference.create"
-    UPDATE = "identity.user_preference.update"
-    DELETE = "identity.user_preference.delete"
-
-    EXPORT = "identity.user_preference.export"
-
-
-class UserSessionPermissions:
-    VIEW = "identity.user_session.view"
-
-    LOGOUT = "identity.user_session.logout"
-
-    LOGOUT_ALL = "identity.user_session.logout_all"
-
-    REVOKE = "identity.user_session.revoke"
-
-    TRUST = "identity.user_session.trust"
-
-    REFRESH = "identity.user_session.refresh"
-
-
-class LoginHistoryPermissions:
-    VIEW = "identity.login_history.view"
-    DELETE = "identity.login_history.delete"
-
-    EXPORT = "identity.login_history.export"
-
-
-class APIKeyPermissions:
-    VIEW = "identity.api_key.view"
-    CREATE = "identity.api_key.create"
-    UPDATE = "identity.api_key.update"
-    DELETE = "identity.api_key.delete"
-
-    REGENERATE = "identity.api_key.regenerate"
-
-
-class PersonalAccessTokenPermissions:
-    VIEW = "identity.personal_access_token.view"
-    CREATE = "identity.personal_access_token.create"
-    DELETE = "identity.personal_access_token.delete"
-
-    REVOKE = "identity.personal_access_token.revoke"
-
-
-class MembershipPermissions:
-    VIEW = "identity.membership.view"
-    CREATE = "identity.membership.create"
-    UPDATE = "identity.membership.update"
-    DELETE = "identity.membership.delete"
-
-    ACTIVATE = "identity.membership.activate"
-    DEACTIVATE = "identity.membership.deactivate"
-    RESTORE = "identity.membership.restore"
-    ARCHIVE = "identity.membership.archive"
-
-    EXPORT = "identity.membership.export"
-    IMPORT = "identity.membership.import"
+class TrustedDevicePermissions:
+    VIEW = "identity.trusted_device.view"
+    CREATE = "identity.trusted_device.create"
+    UPDATE = "identity.trusted_device.update"
+    DELETE = "identity.trusted_device.delete"

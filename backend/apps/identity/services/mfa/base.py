@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.conf import settings
+from django.db import transaction
 
 from apps.core.events import publish
 from apps.core.services import BaseService
@@ -17,11 +18,6 @@ from apps.identity.selectors import (
     BackupCodeSelector,
     TrustedDeviceSelector,
     UserMFASelector,
-)
-from apps.identity.validators import (
-    BackupCodeValidator,
-    TrustedDeviceValidator,
-    UserMFAValidator,
 )
 
 
@@ -100,12 +96,28 @@ class BaseMFAService(BaseService):
     trusted_device_selector = TrustedDeviceSelector
 
     # ------------------------------------------------------------------
+    # Selector aliases (services reference these by class name)
+    # ------------------------------------------------------------------
+
+    UserMFASelector = UserMFASelector
+
+    BackupCodeSelector = BackupCodeSelector
+
+    TrustedDeviceSelector = TrustedDeviceSelector
+
+    # ------------------------------------------------------------------
     # Validators
     # ------------------------------------------------------------------
 
-    user_mfa_validator = UserMFAValidator
+    from apps.identity.validators import (  # noqa: E402
+        BackupCodeValidator as BackupCodeValidator,
+        TrustedDeviceValidator as TrustedDeviceValidator,
+        UserMFAValidator as UserMFAValidator,
+    )
 
     backup_code_validator = BackupCodeValidator
+
+    user_mfa_validator = UserMFAValidator
 
     trusted_device_validator = TrustedDeviceValidator
 
@@ -114,3 +126,9 @@ class BaseMFAService(BaseService):
     # ------------------------------------------------------------------
 
     publish = staticmethod(publish)
+
+    # ------------------------------------------------------------------
+    # Transaction
+    # ------------------------------------------------------------------
+
+    transaction = transaction

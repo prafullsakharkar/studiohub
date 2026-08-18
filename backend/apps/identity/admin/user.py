@@ -10,6 +10,7 @@ class UserAdmin(admin.ModelAdmin):
         "is_active",
         "is_staff",
         "is_email_verified",
+        "last_seen",
         "created_at",
     )
 
@@ -29,4 +30,57 @@ class UserAdmin(admin.ModelAdmin):
         "updated_at",
         "last_login",
         "last_seen",
+    )
+
+    filter_horizontal = (
+        "groups",
+        "user_permissions",
+    )
+
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "email",
+                    "password",
+                ),
+            },
+        ),
+        (
+            "Permissions",
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "is_email_verified",
+                    "groups",
+                    "user_permissions",
+                ),
+            },
+        ),
+        (
+            "Important dates",
+            {
+                "fields": (
+                    "last_login",
+                    "last_seen",
+                ),
+            },
+        ),
+    )
+
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "email",
+                    "password1",
+                    "password2",
+                ),
+            },
+        ),
     )

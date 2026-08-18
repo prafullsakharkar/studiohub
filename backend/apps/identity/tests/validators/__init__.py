@@ -1,0 +1,3 @@
+"""
+Identity validators tests.
+"""

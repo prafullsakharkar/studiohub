@@ -23,10 +23,13 @@ class UUIDModel(models.Model):
         primary_key=True,
         default=uuid.uuid4,
         editable=False,
-        unique=True,
-        db_index=True,
         help_text="Universally unique identifier.",
     )
+
+    @property
+    def uuid(self) -> uuid.UUID:
+        """Return the UUID of the model (alias for id)."""
+        return self.id
 
     class Meta:
         abstract = True

@@ -3,14 +3,11 @@ from django_filters import BooleanFilter, CharFilter
 from apps.core.filters.base import BaseFilterSet
 from apps.core.filters.ordering import OrderingFilterMixin
 from apps.core.filters.search import SearchFilterMixin
-from apps.core.filters.status import StatusFilterMixin
 from apps.organization.models.office import Office
-
 
 class OfficeFilterSet(
     SearchFilterMixin,
     OrderingFilterMixin,
-    StatusFilterMixin,
     BaseFilterSet,
 ):
     """
@@ -77,6 +74,5 @@ class OfficeFilterSet(
             "country",
             "timezone",
             "manager",
-            "status",
             "is_headquarters",
         )

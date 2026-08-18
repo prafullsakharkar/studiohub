@@ -17,6 +17,9 @@ class HasPermission(
         if not permissions:
             return True
 
+        if request.user.is_staff or request.user.is_superuser:
+            return True
+
         # Imported lazily to avoid circular imports at app-load time.
         from apps.identity.services.permission_cache import (
             PermissionCacheService,

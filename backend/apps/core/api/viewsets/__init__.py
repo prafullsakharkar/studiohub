@@ -1,21 +1,13 @@
-from .base import BaseViewSet
-from .bulk import (
-    BulkCreateModelMixin,
-    BulkModelViewSet,
-    BulkUpdateModelMixin,
-)
-from .generic import BaseModelViewSet
-from .nested import NestedModelViewSet
-from .readonly import ReadOnlyModelViewSet
-from .service import ServiceModelViewSet
+"""
+Core API viewsets.
+
+Provides base viewset classes for domain applications.
+"""
+
+from __future__ import annotations
+
+from apps.core.api.viewsets.service import ServiceModelViewSet
 
 __all__ = [
-    "BaseViewSet",
-    "BaseModelViewSet",
-    "BulkCreateModelMixin",
-    "BulkModelViewSet",
-    "BulkUpdateModelMixin",
-    "NestedModelViewSet",
-    "ReadOnlyModelViewSet",
     "ServiceModelViewSet",
 ]

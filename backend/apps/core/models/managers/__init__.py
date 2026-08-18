@@ -1,24 +1,21 @@
 """
 Model managers.
-
-Re-exports the manager classes defined in :mod:`apps.core.managers`
-so they can be imported from ``apps.core.models.managers``.
-
-Managers are thin and delegate query construction to their QuerySet.
 """
 
-from apps.core.managers.active import ActiveManager
-from apps.core.managers.organization import OrganizationManager
-from apps.core.managers.publishable import (
+from __future__ import annotations
+
+from apps.core.models.managers.active import ActiveManager
+from apps.core.models.managers.base import BaseManager
+from apps.core.models.managers.organization import OrganizationManager
+from apps.core.models.managers.publishable import (
     AllPublishedManager,
     PublishedManager,
 )
-from apps.core.managers.soft_delete import (
+from apps.core.models.managers.soft_delete import (
     AllObjectsManager,
     DeletedObjectsManager,
     SoftDeleteManager,
 )
-from apps.core.models.managers.base import BaseManager
 
 __all__ = [
     "ActiveManager",

@@ -18,5 +18,4 @@ class WorkCalendarListSerializer(
             "organization",
             "timezone",
             "is_default",
-            "status",
         )

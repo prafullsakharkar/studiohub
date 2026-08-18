@@ -14,5 +14,4 @@ class WorkHoursSummarySerializer(
             "code",
             "name",
             "day",
-            "status",
         )

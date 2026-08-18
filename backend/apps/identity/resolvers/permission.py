@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from apps.identity.models import (
+from apps.organization.models import (
     GroupRole,
     OrganizationMembership,
     Permission,

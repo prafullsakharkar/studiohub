@@ -1,0 +1,27 @@
+"""
+Base filter for Settings bounded context.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+from django_filters import FilterSet
+
+from apps.core.filters import BaseFilterSet
+
+
+class SettingsBaseFilter(BaseFilterSet):
+    """
+    Base filter for Settings entities.
+    """
+
+    def __init__(self, queryset=None, **kwargs: Any):
+        # The settings viewsets call ``filter_class(queryset, data=params)``
+        # while django_filters.FilterSet expects ``(data, queryset)`` —
+        # translate so both call styles work.
+        data = kwargs.pop("data", None)
+        super().__init__(data=data, queryset=queryset, **kwargs)
+
+    class Meta:
+        abstract = True

@@ -8,12 +8,12 @@ class LoginAttemptAdmin(admin.ModelAdmin):
     list_display = (
         "username",
         "ip_address",
-        "successful",
+        "success",
         "locked_until",
         "attempted_at",
     )
 
-    list_filter = ("successful",)
+    list_filter = ("success",)
 
     search_fields = (
         "username",

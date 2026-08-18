@@ -57,9 +57,3 @@ class OrganizationManager(models.Manager.from_queryset(OrganizationQuerySet)):
         Lookup by slug, code or name.
         """
         return self.get_queryset().lookup(value)
-
-    def with_statistics(self):
-        """
-        Return annotated queryset.
-        """
-        return self.get_queryset().with_statistics()

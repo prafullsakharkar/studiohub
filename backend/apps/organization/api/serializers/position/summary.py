@@ -13,5 +13,4 @@ class PositionSummarySerializer(
             "uuid",
             "code",
             "name",
-            "status",
         )

@@ -1,0 +1,3 @@
+"""
+Identity admin tests.
+"""

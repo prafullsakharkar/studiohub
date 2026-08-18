@@ -1,35 +1,19 @@
 """
 Soft delete managers.
+
+Re-exported from apps.core.models.managers for backward compatibility.
 """
 
 from __future__ import annotations
 
-from apps.core.models.managers.base import BaseManager
-from apps.core.models.querysets import SoftDeleteQuerySet
+from apps.core.models.managers.soft_delete import (
+    AllObjectsManager,
+    DeletedObjectsManager,
+    SoftDeleteManager,
+)
 
-
-class SoftDeleteManager(BaseManager.from_queryset(SoftDeleteQuerySet)):
-    """
-    Default manager that excludes deleted objects.
-    """
-
-    def get_queryset(self) -> SoftDeleteQuerySet:
-        return super().get_queryset().alive()
-
-
-class AllObjectsManager(BaseManager.from_queryset(SoftDeleteQuerySet)):
-    """
-    Returns all objects including deleted.
-    """
-
-    def get_queryset(self) -> SoftDeleteQuerySet:
-        return super().get_queryset()
-
-
-class DeletedObjectsManager(BaseManager.from_queryset(SoftDeleteQuerySet)):
-    """
-    Returns only soft-deleted objects.
-    """
-
-    def get_queryset(self) -> SoftDeleteQuerySet:
-        return super().get_queryset().deleted()
+__all__ = [
+    "SoftDeleteManager",
+    "AllObjectsManager",
+    "DeletedObjectsManager",
+]

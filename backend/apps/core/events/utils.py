@@ -7,13 +7,6 @@ from __future__ import annotations
 from apps.core.events.base import DomainEvent
 
 
-def event_type(event: DomainEvent) -> str:
-    """
-    Return the stable event type identifier.
-    """
-    return event.event_type
-
-
 def event_name(event: DomainEvent) -> str:
     """
     Return the event class name.

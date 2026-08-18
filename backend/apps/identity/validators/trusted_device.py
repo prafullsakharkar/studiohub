@@ -1,10 +1,12 @@
 from django.utils import timezone
 
-from apps.core.validators import BaseValidator
 from apps.identity.models import TrustedDevice
+from apps.identity.validators.base import (
+    IdentityBaseValidator,
+)
 
 
-class TrustedDeviceValidator(BaseValidator):
+class TrustedDeviceValidator(IdentityBaseValidator):
     model = TrustedDevice
 
     @classmethod

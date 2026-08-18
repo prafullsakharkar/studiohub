@@ -13,5 +13,4 @@ class CalendarSummarySerializer(
             "uuid",
             "code",
             "name",
-            "status",
         )

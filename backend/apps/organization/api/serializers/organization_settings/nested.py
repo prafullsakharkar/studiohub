@@ -11,5 +11,4 @@ class OrganizationSettingsNestedSerializer(OrganizationSettingsBaseSerializer):
             "uuid",
             "code",
             "name",
-            "lead",
         )

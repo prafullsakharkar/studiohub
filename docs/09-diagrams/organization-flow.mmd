@@ -1,0 +1,15 @@
+%% Organization flow (Mermaid)
+%% File: docs/09-diagrams/organization-flow.mmd
+
+flowchart TB
+  CEO[Executive] --> CTO[CTO]
+  CTO --> Eng[Engineering]
+  CTO --> Prod[Product]
+  Eng --> FE[Frontend Team]
+  Eng --> BE[Backend Team]
+  Eng --> Infra[Infrastructure]
+  Prod --> PM[Product Managers]
+  PM --> Stakeholders
+
+  style CTO fill:#c2f0ff,stroke:#333
+  style Eng fill:#ffefc2,stroke:#333

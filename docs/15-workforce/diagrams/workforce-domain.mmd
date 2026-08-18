@@ -1,0 +1,98 @@
+%%{init: {"theme":"default"}}%%
+classDiagram
+    class Person {
+      +person_id
+      +full_name
+      +email
+      +timezone
+      +status
+    }
+
+    class Resource {
+      +resource_id
+      +resource_type
+      +display_name
+      +department_id
+      +manager_id
+      +timezone
+      +status
+    }
+
+    class Team {
+      +team_id
+      +name
+      +department_id
+      +capacity_policy
+    }
+
+    class Skill {
+      +skill_id
+      +name
+      +category
+      +description
+    }
+
+    class SkillProficiency {
+      +resource_id
+      +skill_id
+      +level
+      +years_experience
+      +verified_at
+    }
+
+    class Allocation {
+      +allocation_id
+      +resource_id
+      +project_id
+      +planned_hours
+      +allocation_percent
+      +start_date
+      +end_date
+      +allocation_type
+      +status
+    }
+
+    class Assignment {
+      +assignment_id
+      +resource_id
+      +project_id
+      +task_id
+      +role
+      +assignment_type
+      +start_date
+      +end_date
+    }
+
+    class StaffingRequest {
+      +request_id
+      +project_id
+      +required_skills
+      +count
+      +start_date
+      +end_date
+      +priority
+      +status
+    }
+
+    class CapacitySnapshot {
+      +snapshot_id
+      +period_start
+      +period_end
+      +department_id
+      +skill_id
+      +total_capacity_hours
+      +committed_hours
+      +available_hours
+    }
+
+    Person "1" --> "0..*" Resource : owns profile or links
+    Resource "1" --> "0..*" SkillProficiency : has
+    Skill "1" --> "0..*" SkillProficiency : defines
+    Resource "1" --> "0..*" Allocation : planned for
+    Resource "1" --> "0..*" Assignment : assigned to
+    Team "1" --> "0..*" Resource : contains
+    Team "1" --> "0..*" Allocation : allocates across members
+    Team "1" --> "0..*" Assignment : staffed by team members
+    StaffingRequest "1" --> "0..*" Skill : requires
+    Skill "1" --> "0..*" CapacitySnapshot : aggregates by
+    Resource "1" --> "0..*" CapacitySnapshot : contributes to

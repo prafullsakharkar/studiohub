@@ -3,14 +3,11 @@ from django_filters import BooleanFilter, CharFilter, DateFilter
 from apps.core.filters.base import BaseFilterSet
 from apps.core.filters.ordering import OrderingFilterMixin
 from apps.core.filters.search import SearchFilterMixin
-from apps.core.filters.status import StatusFilterMixin
 from apps.organization.models import Holiday
-
 
 class HolidayFilterSet(
     SearchFilterMixin,
     OrderingFilterMixin,
-    StatusFilterMixin,
     BaseFilterSet,
 ):
     """
@@ -68,5 +65,4 @@ class HolidayFilterSet(
             "holiday_type",
             "is_paid",
             "is_recurring",
-            "status",
         )

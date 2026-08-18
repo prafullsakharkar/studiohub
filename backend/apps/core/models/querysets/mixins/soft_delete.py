@@ -32,15 +32,12 @@ class SoftDeleteQuerySetMixin:
 
     def active(self):
         """
-        Return active records.
+        Return active (non-deleted) records.
         """
-        return self.filter(
-            is_deleted=False,
-            status="active",
-        )
+        return self.filter(is_deleted=False)
 
     def inactive(self):
         """
-        Return inactive records.
+        Return inactive (deleted) records.
         """
-        return self.exclude(status="active")
+        return self.filter(is_deleted=True)

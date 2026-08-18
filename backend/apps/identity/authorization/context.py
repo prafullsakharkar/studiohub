@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from apps.identity.models import (
+from apps.identity.models import User
+from apps.organization.models import (
     OrganizationMembership,
-    User,
 )
 
 

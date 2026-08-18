@@ -3,14 +3,11 @@ from django_filters import CharFilter, NumberFilter
 from apps.core.filters.base import BaseFilterSet
 from apps.core.filters.ordering import OrderingFilterMixin
 from apps.core.filters.search import SearchFilterMixin
-from apps.core.filters.status import StatusFilterMixin
 from apps.organization.models.team import Team
-
 
 class TeamFilterSet(
     SearchFilterMixin,
     OrderingFilterMixin,
-    StatusFilterMixin,
     BaseFilterSet,
 ):
     """
@@ -73,5 +70,4 @@ class TeamFilterSet(
             "organization",
             "department",
             "lead",
-            "status",
         )

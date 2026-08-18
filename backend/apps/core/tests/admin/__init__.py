@@ -1,0 +1,3 @@
+"""
+Core admin tests package.
+"""

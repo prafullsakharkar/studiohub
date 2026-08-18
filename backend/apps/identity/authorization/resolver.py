@@ -1,4 +1,4 @@
-from apps.identity.models import (
+from apps.organization.models import (
     OrganizationMembership,
 )
 
@@ -17,7 +17,9 @@ class AuthorizationResolver:
 
         return (
             OrganizationMembership.objects.active()
-            .with_related()
+            .with_user()
+            .with_organization()
+            .with_role()
             .filter(
                 user=user,
                 organization=organization,

@@ -4,13 +4,10 @@ from apps.core.filters.base import BaseFilterSet
 from apps.core.filters.date import DateRangeFilterMixin
 from apps.core.filters.ordering import OrderingFilterMixin
 from apps.core.filters.search import SearchFilterMixin
-from apps.core.filters.status import StatusFilterMixin
 from apps.organization.models import Department
-
 
 class DepartmentFilterSet(
     SearchFilterMixin,
-    StatusFilterMixin,
     DateRangeFilterMixin,
     OrderingFilterMixin,
     BaseFilterSet,
@@ -51,5 +48,4 @@ class DepartmentFilterSet(
             "department_type",
             "parent",
             "manager",
-            "status",
         )

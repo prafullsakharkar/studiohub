@@ -1,22 +1,20 @@
-from .api_key import APIKeyService
 from .authentication import AuthenticationService
 from .base import IdentityBaseService
-from .invitation import InvitationService
-from .membership import MembershipService
+from .ip_blacklist import IPBlacklistService
+from .login_attempt import LoginAttemptService
 from .mfa import (
     MFAEnrollmentService,
     MFAGeneratorService,
     MFATrustedDeviceService,
     MFAVerificationService,
 )
+from .password import PasswordService
 from .permission_cache import PermissionCacheService
-from .personal_access_token import PersonalAccessTokenService
+from .profile import ProfileService
 from .user_session import UserSessionService
 
 __all__ = [
     "IdentityBaseService",
-    "MembershipService",
-    "InvitationService",
     "AuthenticationService",
     "UserSessionService",
     "PermissionCacheService",
@@ -24,6 +22,8 @@ __all__ = [
     "MFAEnrollmentService",
     "MFAVerificationService",
     "MFATrustedDeviceService",
-    "APIKeyService",
-    "PersonalAccessTokenService",
+    "IPBlacklistService",
+    "PasswordService",
+    "ProfileService",
+    "LoginAttemptService",
 ]

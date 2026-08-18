@@ -31,7 +31,7 @@ class MFARecoveryService(BaseMFAService):
         Returns plaintext codes exactly once.
         """
 
-        count = count or cls.RECOVERY_CODES
+        count = count or cls.RECOVERY_CODE_COUNT
 
         cls.BackupCode.objects.filter(
             user=user,

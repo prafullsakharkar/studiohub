@@ -17,5 +17,4 @@ class PositionListSerializer(
             "department",
             "level",
             "is_managerial",
-            "status",
         )

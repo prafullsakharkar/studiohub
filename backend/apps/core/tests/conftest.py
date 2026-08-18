@@ -1,16 +1,24 @@
 """
-Pytest configuration for Core module tests.
-
-This file configures Django for pytest tests and provides fixtures.
+Core test configuration.
 """
 
-import os
+from __future__ import annotations
 
-import django
-from django.conf import settings
+import pytest
+from django.test import RequestFactory
+
+from apps.core.tests.fixtures import *  # noqa: F401, F403
 
 
-def pytest_configure():
-    """Configure Django settings before tests run."""
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.testing")
-    django.setup()
+@pytest.fixture
+def rf():
+    """RequestFactory instance."""
+    return RequestFactory()
+
+
+@pytest.fixture
+def authenticated_request(rf, user):
+    """Create an authenticated request."""
+    request = rf.get("/")
+    request.user = user
+    return request

@@ -1,1 +1,3 @@
-# Architecture tests for Core module
+"""
+Core tests package.
+"""

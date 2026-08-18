@@ -6,4 +6,3 @@ from .permissions import *
 from .renderers import *
 from .serializers import *
 from .utils import *
-from .viewsets import *

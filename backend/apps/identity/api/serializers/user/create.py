@@ -1,3 +1,5 @@
+from rest_framework import serializers
+
 from apps.identity.services.user import (
     UserService,
 )
@@ -19,6 +21,18 @@ class UserCreateSerializer(
     ):
         fields = UserBaseSerializer.Meta.fields + ("password",)
 
+    def validate_password(
+        self,
+        value,
+    ):
+        from apps.identity.validators.password import (
+            validate_password,
+        )
+
+        validate_password(value)
+
+        return value
+
     def create(
         self,
         validated_data,
@@ -28,12 +42,16 @@ class UserCreateSerializer(
             None,
         )
 
+        from apps.identity.services.user_password import (
+            UserPasswordService,
+        )
+
         user = UserService.create(
             **validated_data,
         )
 
         if password:
-            UserService.set_password(
+            UserPasswordService.set_password(
                 user=user,
                 password=password,
             )

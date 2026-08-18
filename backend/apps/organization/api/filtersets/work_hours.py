@@ -3,14 +3,11 @@ from django_filters import BooleanFilter, CharFilter, NumberFilter
 from apps.core.filters.base import BaseFilterSet
 from apps.core.filters.ordering import OrderingFilterMixin
 from apps.core.filters.search import SearchFilterMixin
-from apps.core.filters.status import StatusFilterMixin
 from apps.organization.models.work_hours import WorkHours
-
 
 class WorkHoursFilterSet(
     SearchFilterMixin,
     OrderingFilterMixin,
-    StatusFilterMixin,
     BaseFilterSet,
 ):
     """
@@ -58,5 +55,4 @@ class WorkHoursFilterSet(
             "name",
             "day",
             "is_working_day",
-            "status",
         )

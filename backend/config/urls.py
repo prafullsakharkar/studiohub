@@ -11,6 +11,7 @@ def health(request):
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("health/", health),
+    path("api/", include("config.api_urls")),
 ]
 
 if settings.DEBUG:

@@ -24,11 +24,7 @@ from .views.authentication import (
     TrustedDeviceRevokeAPIView,
 )
 
-urlpatterns = [
-    path(
-        "identity/",
-        include(router_urls),
-    ),
+urlpatterns = router_urls + [
     path(
         "login/",
         LoginAPIView.as_view(),

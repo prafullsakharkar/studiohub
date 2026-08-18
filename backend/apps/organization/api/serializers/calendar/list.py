@@ -17,5 +17,4 @@ class CalendarListSerializer(
             "color",
             "is_default",
             "is_public",
-            "status",
         )

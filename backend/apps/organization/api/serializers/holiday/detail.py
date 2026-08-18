@@ -1,7 +1,7 @@
-from .base import HolidayBaseSerializer
+from .base import HolidaySerializer
 
 
 class HolidayDetailSerializer(
-    HolidayBaseSerializer,
+    HolidaySerializer,
 ):
     pass

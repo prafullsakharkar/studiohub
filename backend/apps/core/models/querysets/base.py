@@ -12,25 +12,11 @@ from django.db import models
 class BaseQuerySet(models.QuerySet):
     """
     Base queryset shared across all models.
+
+    NOTE: Lifecycle helpers (active/inactive/draft/archived) are provided by
+    LifecycleQuerySetMixin so BaseQuerySet deliberately does not implement
+    them to avoid duplicated/ambiguous semantics across different models.
     """
-
-    def active(self):
-        """
-        Return active records.
-        """
-        if hasattr(self.model, "status"):
-            return self.filter(status="active")
-
-        return self
-
-    def inactive(self):
-        """
-        Return inactive records.
-        """
-        if hasattr(self.model, "status"):
-            return self.exclude(status="active")
-
-        return self
 
     def ids(self):
         """
@@ -40,13 +26,9 @@ class BaseQuerySet(models.QuerySet):
 
     def ordered(self):
         """
-        Respect model ordering.
-
-        Falls back to the queryset unchanged when the model declares no
-        default ordering.
+        Respect model ordering when defined on the model's Meta.
         """
         ordering = getattr(self.model._meta, "ordering", None)
-
         if ordering:
             return self.order_by(*ordering)
 

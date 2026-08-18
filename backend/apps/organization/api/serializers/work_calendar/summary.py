@@ -15,5 +15,4 @@ class WorkCalendarSummarySerializer(
             "uuid",
             "code",
             "name",
-            "status",
         )

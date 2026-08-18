@@ -1,33 +1,32 @@
-"""
-Domain-scoped ownership models - DEPRECATED.
-
-These models have been moved to their respective domain applications.
-This file is kept for backward compatibility during migration.
-
-For new code, use the domain-specific ownership models:
-- organization.OrganizationOwnedModel
-- production.ProjectOwnedModel
-- identity.UserOwnedModel
-"""
-
-from __future__ import annotations
-
 from django.db import models
+
+import warnings
+
+
+# Warn when importing project-scoped ownership helpers — these are domain
+# oriented and likely belong in a domain application.
+warnings.warn(
+    "apps.core.models.bases.ownership exposes ProjectOwnedModel which is project-scoped and may belong in a domain application. Consider migrating domain-scoped ownership classes out of core.",
+    FutureWarning,
+)
 
 
 class OrganizationOwnedModel(models.Model):
     """
-    DEPRECATED: Use organization.OrganizationOwnedModel instead.
+    Abstract model for organization-scoped records.
 
-    Adds organization ownership to a model.
+    This is a protocol/interface for domain applications to implement.
+    Domain applications should define their own organization field.
+
+    Example:
+        class MyModel(OrganizationOwnedModel):
+            organization = models.ForeignKey(
+                "myapp.Organization",
+                on_delete=models.CASCADE,
+                related_name="%(app_label)s_%(class)ss",
+                db_index=True,
+            )
     """
-
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="%(class)ss",
-        db_index=True,
-    )
 
     class Meta:
         abstract = True
@@ -35,17 +34,11 @@ class OrganizationOwnedModel(models.Model):
 
 class ProjectOwnedModel(models.Model):
     """
-    DEPRECATED: Use production.ProjectOwnedModel instead.
+    Abstract model for project-scoped records.
 
-    Adds project ownership to a model.
+    This is a protocol/interface for domain applications to implement.
+    Domain applications should define their own project field.
     """
-
-    project = models.ForeignKey(
-        "production.Project",
-        on_delete=models.CASCADE,
-        related_name="%(class)ss",
-        db_index=True,
-    )
 
     class Meta:
         abstract = True
@@ -53,17 +46,11 @@ class ProjectOwnedModel(models.Model):
 
 class UserOwnedModel(models.Model):
     """
-    DEPRECATED: Use identity.UserOwnedModel instead.
+    Abstract model for user-owned records.
 
-    Adds user ownership to a model.
+    This is a protocol/interface for domain applications to implement.
+    Domain applications should define their own user/owner field.
     """
-
-    user = models.ForeignKey(
-        "identity.User",
-        on_delete=models.CASCADE,
-        related_name="%(class)ss",
-        db_index=True,
-    )
 
     class Meta:
         abstract = True

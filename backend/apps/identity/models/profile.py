@@ -2,12 +2,7 @@ from __future__ import annotations
 
 from django.db import models
 
-from apps.core.models import (
-    AuditModel,
-    MetadataModel,
-    TimeStampedModel,
-    UUIDModel,
-)
+from apps.core.models import EntityModel
 from apps.identity.choices import (
     TIMEZONE_CHOICES,
     Language,
@@ -15,12 +10,7 @@ from apps.identity.choices import (
 from apps.identity.managers import ProfileManager
 
 
-class Profile(
-    UUIDModel,
-    TimeStampedModel,
-    AuditModel,
-    MetadataModel,
-):
+class Profile(EntityModel):
     """
     User profile.
     """

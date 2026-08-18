@@ -1,0 +1,29 @@
+%%{init: {"theme":"default"}}%%
+sequenceDiagram
+    actor PM as Project Manager
+    participant SR as StaffingRequest
+    participant Search as Candidate Search
+    participant Profile as Resource Profile
+    participant Alloc as Allocation
+    participant Assign as Assignment
+    participant Team as Team / Capacity
+
+    PM->>SR: create staffing request
+    SR->>Search: evaluate role, skills, dates, region
+    Search->>Profile: fetch eligible resources and proficiency
+    Search->>Team: inspect team availability and capacity
+    Search-->>PM: ranked candidates
+
+    PM->>Alloc: propose allocation / block capacity
+    Alloc->>Team: reserve capacity
+    Team-->>Alloc: approval or conflict warning
+    Alloc->>SR: request approved / rejected
+
+    alt approved
+        PM->>Assign: create assignment for selected resource
+        Assign->>Team: confirm operational commitment
+        Team-->>Assign: assignment accepted
+        Assign-->>PM: staffed plan ready
+    else rejected
+        PM->>Search: revise filters or find alternate candidate
+    end

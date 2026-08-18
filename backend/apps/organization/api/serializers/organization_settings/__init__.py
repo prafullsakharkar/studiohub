@@ -1,4 +1,4 @@
-from .base import OrganizationSettingsSerializer
+from .base import OrganizationSettingsBaseSerializer
 from .create import OrganizationSettingsCreateSerializer
 from .detail import OrganizationSettingsDetailSerializer
 from .list import OrganizationSettingsListSerializer
@@ -7,7 +7,7 @@ from .summary import OrganizationSettingsSummarySerializer
 from .update import OrganizationSettingsUpdateSerializer
 
 __all__ = [
-    "OrganizationSettingsSerializer",
+    "OrganizationSettingsBaseSerializer",
     "OrganizationSettingsCreateSerializer",
     "OrganizationSettingsUpdateSerializer",
     "OrganizationSettingsNestedSerializer",

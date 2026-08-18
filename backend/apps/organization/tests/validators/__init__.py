@@ -1,0 +1,3 @@
+"""
+Organization validators tests.
+"""

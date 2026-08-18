@@ -3,14 +3,11 @@ from django_filters import BooleanFilter, CharFilter
 from apps.core.filters.base import BaseFilterSet
 from apps.core.filters.ordering import OrderingFilterMixin
 from apps.core.filters.search import SearchFilterMixin
-from apps.core.filters.status import StatusFilterMixin
 from apps.organization.models.work_calendar import WorkCalendar
-
 
 class WorkCalendarFilterSet(
     SearchFilterMixin,
     OrderingFilterMixin,
-    StatusFilterMixin,
     BaseFilterSet,
 ):
     """
@@ -55,5 +52,4 @@ class WorkCalendarFilterSet(
             "name",
             "timezone",
             "is_default",
-            "status",
         )

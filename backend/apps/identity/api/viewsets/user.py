@@ -56,13 +56,10 @@ class UserViewSet(
     }
 
     permission_map = {
-        "list": (UserPermissions.VIEW,),
-        "retrieve": (UserPermissions.VIEW,),
         "create": (UserPermissions.CREATE,),
         "update": (UserPermissions.UPDATE,),
         "partial_update": (UserPermissions.UPDATE,),
         "destroy": (UserPermissions.DELETE,),
-        "me": (UserPermissions.VIEW,),
         "change_password": (UserPermissions.CHANGE_PASSWORD,),
     }
 

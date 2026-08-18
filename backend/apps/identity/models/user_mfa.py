@@ -1,24 +1,19 @@
+from datetime import datetime
+
 from django.conf import settings
 from django.db import models
 
-from apps.core.models import (
-    AuditModel,
-    MetadataModel,
-    TimeStampedModel,
-    UUIDModel,
-)
+from apps.core.models import EntityModel
 from apps.identity.choices.mfa import (
     MFAMethod,
     MFAStatus,
 )
+from apps.identity.managers.user_mfa import UserMFAManager
 
 
-class UserMFA(
-    UUIDModel,
-    TimeStampedModel,
-    AuditModel,
-    MetadataModel,
-):
+class UserMFA(EntityModel):
+
+    objects = UserMFAManager()
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -111,4 +106,24 @@ class UserMFA(
         ]
 
     def __str__(self):
-        return f"{self.user.email} MFA"
+        return f"{self.primary_method} for {self.user.email}"
+
+    @property
+    def method(self) -> str:
+        """Get the primary MFA method."""
+        return self.primary_method
+
+    @property
+    def is_enabled(self) -> bool:
+        """Check if MFA is enabled."""
+        return self.status == "enabled"
+
+    @property
+    def secret(self) -> str | None:
+        """Get the TOTP secret."""
+        return self.totp_secret
+
+    @property
+    def verified_at(self) -> datetime.datetime | None:
+        """Get the verification timestamp."""
+        return self.totp_confirmed_at

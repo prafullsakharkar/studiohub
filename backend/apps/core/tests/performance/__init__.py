@@ -1,0 +1,3 @@
+"""
+Core performance tests package.
+"""

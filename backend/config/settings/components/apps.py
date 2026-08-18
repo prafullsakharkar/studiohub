@@ -3,7 +3,6 @@ Installed applications.
 """
 
 DJANGO_APPS = [
-    "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -19,16 +18,19 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
+    # Foundation
     "apps.core",
-    # Business Apps
     "apps.identity",
     "apps.organization",
-    # "apps.projects",
-    # "apps.assets",
-    # "apps.shots",
-    # "apps.tasks",
-    # "apps.reviews",
-    # "apps.notifications",
+    "apps.settings",
+    "apps.audit",
 ]
 
-INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+INSTALLED_APPS = (
+    DJANGO_APPS
+    + THIRD_PARTY_APPS
+    + LOCAL_APPS
+    + [
+        "django.contrib.admin",
+    ]
+)

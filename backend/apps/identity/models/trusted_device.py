@@ -1,18 +1,12 @@
 from django.conf import settings
 from django.db import models
 
-from apps.core.models import (
-    AuditModel,
-    TimeStampedModel,
-    UUIDModel,
-)
+from apps.core.models import EntityModel
+
+from apps.identity.managers import TrustedDeviceManager
 
 
-class TrustedDevice(
-    UUIDModel,
-    TimeStampedModel,
-    AuditModel,
-):
+class TrustedDevice(EntityModel):
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -64,9 +58,13 @@ class TrustedDevice(
         null=True,
     )
 
+    objects = TrustedDeviceManager()
+
     class Meta:
 
         db_table = "identity_trusted_devices"
+
+        unique_together = (("user", "fingerprint"),)
 
         indexes = [
             models.Index(

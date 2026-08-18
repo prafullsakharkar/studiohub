@@ -3,14 +3,11 @@ from django_filters import BooleanFilter, CharFilter
 from apps.core.filters.base import BaseFilterSet
 from apps.core.filters.ordering import OrderingFilterMixin
 from apps.core.filters.search import SearchFilterMixin
-from apps.core.filters.status import StatusFilterMixin
 from apps.organization.models import Branding
-
 
 class BrandingFilterSet(
     SearchFilterMixin,
     OrderingFilterMixin,
-    StatusFilterMixin,
     BaseFilterSet,
 ):
     """
@@ -74,6 +71,5 @@ class BrandingFilterSet(
             "primary_color",
             "secondary_color",
             "accent_color",
-            "status",
             "has_logo",
         )

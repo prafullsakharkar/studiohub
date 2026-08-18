@@ -3,25 +3,13 @@ from __future__ import annotations
 from django.conf import settings
 from django.db import models
 
-from apps.core.models import (
-    AuditModel,
-    MetadataModel,
-    SoftDeleteModel,
-    TimeStampedModel,
-    UUIDModel,
-)
+from apps.core.models import EntityModel
 from apps.identity.managers.login_attempt import (
     LoginAttemptManager,
 )
 
 
-class LoginAttempt(
-    UUIDModel,
-    TimeStampedModel,
-    AuditModel,
-    SoftDeleteModel,
-    MetadataModel,
-):
+class LoginAttempt(EntityModel):
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -42,7 +30,7 @@ class LoginAttempt(
         blank=True,
     )
 
-    successful = models.BooleanField(
+    success = models.BooleanField(
         default=False,
     )
 
@@ -63,10 +51,13 @@ class LoginAttempt(
 
     class Meta:
 
-        db_table = "identity_login_attempt"
+        db_table = "identity_login_attempts"
 
         ordering = ("-attempted_at",)
 
     def __str__(self):
 
-        return f"{self.username} ({self.ip_address})"
+        if self.user:
+            return f"Login attempt for {self.user.email}"
+
+        return f"Login attempt for {self.username}"

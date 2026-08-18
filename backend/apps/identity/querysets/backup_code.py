@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.utils import timezone
 
 from apps.core.models import BaseQuerySet
@@ -8,7 +9,7 @@ class BackupCodeQuerySet(BaseQuerySet):
         return self.filter(
             used=False,
         ).filter(
-            expires_at__gt=timezone.now(),
+            Q(expires_at__isnull=True) | Q(expires_at__gt=timezone.now()),
         )
 
     def used(self):

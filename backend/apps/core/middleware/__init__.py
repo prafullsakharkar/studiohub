@@ -4,6 +4,7 @@ from .base import BaseMiddleware
 from .locale import LocaleMiddleware
 from .maintenance import MaintenanceMiddleware
 from .organization import OrganizationMiddleware
+from .rate_limit import RateLimitMiddleware
 from .request_id import RequestIDMiddleware
 from .security import SecurityHeadersMiddleware
 from .timezone import TimezoneMiddleware
@@ -15,6 +16,7 @@ __all__ = [
     "LocaleMiddleware",
     "MaintenanceMiddleware",
     "OrganizationMiddleware",
+    "RateLimitMiddleware",
     "RequestIDMiddleware",
     "SecurityHeadersMiddleware",
     "TimezoneMiddleware",

@@ -11,7 +11,6 @@ class OrganizationUpdateSerializer(
 
         read_only_fields = (
             "id",
-            "uuid",
             "code",
             "slug",
             "created_at",

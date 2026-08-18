@@ -22,5 +22,4 @@ class OrganizationSettingsListSerializer(
             "timezone",
             "language",
             "currency",
-            "status",
         )

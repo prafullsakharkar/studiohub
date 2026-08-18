@@ -1,145 +1,312 @@
-# StudioHub Core Module — Refactoring Analysis (Part 01)
+StudioHub — Core Architecture Audit (Part 01)
 
-> **Scope:** Analysis only. No production code was modified, moved, or deleted.
-> **Date:** 2026-08-14
-> **Module:** `backend/apps/core/`
-> **Related:** `backend/apps/identity/`, `backend/apps/organization/`
+Location audited: backend/apps/core/
 
----
+Audit date: 2026-08-18T13:52:50+05:30
 
-## 1. Rules Status
+Author: Copilot CLI (AI assistant using Copilot CLI runtime in VS Code)
 
-### 1.1 `.roo/rules/` inventory
+Overview
+--------
+This document records a comprehensive architecture audit of the StudioHub "core" package (backend/apps/core). The goal is to determine whether the current Core implementation is suitable as the stable technical foundation for StudioHub. The audit inspects module boundaries, public classes/functions, imports/dependencies, models, selectors, services, validators, middleware, events, utilities, and tests.
 
-The `.roo/rules/` directory contains **exactly one file**:
+High-level conclusion (summary)
+------------------------------
+- Core provides a broad set of reusable primitives (models, services, selectors, exceptions, API helpers).
+- Core is largely well organized and implements many platform-level cross-cutting concerns (attachments, storage, tagging, metadata, soft-delete, publishable, auditing, pagination, tasks, events).
+- There are clear domain-leakage issues: a set of "scope" abstractions referencing film/VFX-style domain concepts (Sequence, Shot, Task, Review) exist in core as abstract protocols/models. These are not strictly platform-level and should be relocated or gated behind a domain layer.
+- Some modules are over-broad (many responsibilities), and a handful of features appear duplicated or over-engineered relative to their actual usage.
+- No production code in core (non-test) imports business applications directly (good). Some test fixtures import other application factories (acceptable for tests but should be documented).
 
-| File | Purpose | Status |
-|------|---------|--------|
-| `.roo/rules/hindsight-memory.md` | Hindsight long-term memory usage rules | Present |
+This document contains:
+1. Current architecture (module map)
+2. Dependency graph
+3. Domain leakage details
+4. Duplicate functionality
+5. Over-engineered areas
+6. Dead-code candidates
+7. Proposed architecture
+8. Proposed file moves (logical)
+9. Proposed removals
+10. Risk assessment
+11. Migration order
+12. Compatibility concerns
 
-### 1.2 Coverage assessment
+1) Current architecture
+-----------------------
+The top-level package audited: [backend/apps/core](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core)
 
-- **No architecture rules exist** in `.roo/rules/`. There are no rules governing module boundaries, dependency direction, layering, naming, or the Core↔Domain relationship.
-- The only rule file governs the **Hindsight memory tool**, not the codebase architecture.
-- **Gap:** The architecture is documented in `docs/adr/` (25 ADRs) and `docs/03-backend/core.md`, but none of it is enforced as machine-readable rules. This is a primary reason the Core module has drifted into a "dumping ground."
+Key subpackages (non-exhaustive list and intent):
+- api/ — API builders, viewsets, serializers, permissions, renderers, filters, pagination helpers ([backend/apps/core/api](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/api)
+)
+- models/ — base models, mixins, managers, querysets, attachments, tags ([backend/apps/core/models](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models))
+- services/ — reusable service layer helpers (CRUD, slug, storage, tagging, soft-delete, notifications, email) ([backend/apps/core/services](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/services))
+- selectors/ — read-only selectors and common query helpers ([backend/apps/core/selectors](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/selectors))
+- managers/ and querysets/ — model managers and queryset mixins ([backend/apps/core/models/managers](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models/managers))
+- middleware/ — request-scoped context helpers
+- events/ and signals/ — domain/event plumbing (autodiscover hooks, dispatch helpers)
+- validators/ — validation primitives
+- utils/, text/, dates/ — utility functions
+- exceptions/ — centralized exception hierarchy ([backend/apps/core/exceptions/base.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/exceptions/base.py))
+- filesystem/ and storage service — wraps storage backends
+- tasks/ — Celery base tasks, task helpers
+- types.py / aliases.py / protocols.py / typing.py — shared typing exports and small protocols
 
-### 1.3 Recommendation
+Files observed during audit (examples):
+- [backend/apps/core/aliases.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/aliases.py)
+- [backend/apps/core/types.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/types.py)
+- [backend/apps/core/protocols.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/protocols.py)
+- [backend/apps/core/models/bases/scopes.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models/bases/scopes.py)
+- [backend/apps/core/models/bases/project.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models/bases/project.py)
+- [backend/apps/core/models/attachment.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models/attachment.py)
+- [backend/apps/core/services/base.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/services/base.py)
+- [backend/apps/core/selectors/base.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/selectors/base.py)
+- [backend/apps/core/exceptions/base.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/exceptions/base.py)
 
-- Do **not** add rules during Part 01 (analysis only).
-- In a later stage, codify the Core boundary as `.roo/rules/` (e.g., `core-boundary.md`, `dependency-direction.md`) and back it with architecture tests (see Section 19).
+2) Dependency graph
+-------------------
+Observed dependencies (Core -> ...):
+- Core depends on Django and Django REST Framework (DRF) — expected
+- Core depends on Celery (tasks)
+- Core depends on internal storage abstractions (apps.core.filesystem/storage), utilities, and logging
+- Core depends on Python stdlib modules (typing, pathlib, uuid, logging, etc.)
 
----
+Important: core does NOT import other business applications in production code. A targeted search found only test-time imports referencing factories in other apps (e.g. [backend/apps/core/tests/fixtures.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/tests/fixtures.py) imports from apps.identity.tests.factories). Tests referencing other apps are acceptable but should be documented.
 
-## 2. Documentation & ADR Contradictions
+Dependency directions:
+- Core → Django/DRF/Celery (platform libs)
+- Apps → Core (domain apps depend on core primitives)
+- Core → Apps (no production imports observed; tests only)
 
-### 2.1 Contradiction: ADR-0002 layering vs. actual structure
+3) Domain leakage
+-----------------
+Goal: identify Core components that are domain-specific (Project, Shot, Sequence, Asset, Task, Review, Delivery, Playlist, Production, Artist, Supervisor, Vendor, Staff, Client).
 
-- **ADR-0002** defines a strict layered flow: `API → Serializers → Permissions → Validators → Services → Selectors → Managers → QuerySets → Models → Database`.
-- **Actual:** `apps/core/` mixes these layers with cross-cutting concerns (`context/`, `security/`, `text/`, `dates/`, `filesystem/`, `i18n/`, `logging/`, `middleware/`, `choices/`, `filters/`) and domain-leaking abstractions (`models/bases/scopes.py`, `models/bases/ownership.py`, `api/permissions/`, `choices/department.py`). The layering is not cleanly reflected in the directory structure.
+Findings:
+- Scope and ownership abstract models include Film/VFX-style concepts. See [models/bases/scopes.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models/bases/scopes.py). It contains:
+  - OrganizationScopedModel
+  - ProjectScopedModel
+  - SequenceScopedModel
+  - ShotScopedModel
+  - TaskScopedModel
+  - ReviewScopedModel
+  - UserScopedModel
 
-### 2.2 Contradiction: ADR-0004 DDD "shared kernel" vs. domain leakage
+- There's also [models/bases/project.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models/bases/project.py) exposing a ProjectEntityModel.
 
-- **ADR-0004** positions Core as a **shared kernel** — generic, domain-agnostic foundations.
-- **Actual:** Core contains VFX/production-specific abstractions (Project/Sequence/Shot/Task/Review scoped models, VFX departments, project permissions). This violates the shared-kernel contract.
+- Other domain-adjacent files: permissions like [api/permissions/project.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/api/permissions/project.py) and permission exceptions referencing "ProjectPermissionException".
 
-### 2.3 Contradiction: ADR-0002 dependency rule vs. `viewsets/base.py`
+Classification and reasoning:
+- OrganizationScopedModel: KEEP in core (Organization is a platform-level, tenant concept; keeping tenant abstractions in core is reasonable). It is generic if the naming remains generic.
 
-- **ADR-0002** states Domain Applications depend on Core, not vice versa.
-- **Actual:** `apps/core/api/viewsets/base.py` imports `HasPermission` from `apps.identity.permissions` — a **Core→identity dependency violation** (see Section 8).
+- ProjectScopedModel / ProjectEntityModel / ProjectOwnedModel: DEFER/REVIEW. "Project" is often a cross-cutting platform concept but may be domain-specific depending on StudioHub's product model. If StudioHub is explicitly project-focused (a studio/project model), Project abstractions may be central and can remain. Otherwise, move to a "workspaces" or "project" domain app. For now mark DEFER: confirm with product.
 
-### 2.4 Contradiction: docs vs. implementation (empty scaffolding)
+- SequenceScopedModel, ShotScopedModel, TaskScopedModel, ReviewScopedModel: DOMAIN LEAK — these are domain-specific to production/VFX pipelines. They are protocols requiring domain apps to provide specific foreign keys. Having them in core couples core to a particular vertical. Recommendation: MOVE these to a domain-specific package (e.g., apps/production), or if retained, reduce to a single generic "ScopedModel" with a customizable name/semantics.
 
-- `docs/03-backend/core.md` and `docs/08-development/core.md` describe a rich Core. Many documented directories are **empty scaffolding** (see Section 5.3). `docs/08-development/core.md` is entirely empty.
+- ClientInformationModel ([backend/apps/core/models/bases/client.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models/bases/client.py)): KEEP — generic and reusable (captures client metadata).
 
-### 2.5 Contradiction: ADR-0018 event bus vs. broken event import
+- Staff/Reviewer/IsReviewer permission classes: these are role-based. "Staff" and "Reviewer" can be considered platform-level roles — KEEP as Core permissions but ensure semantics are generic (e.g., IsStaff). If the concept "Reviewer" is domain-specific, DEFER.
 
-- **ADR-0018** mandates a consistent event framework. The framework exists (`DomainEvent`, `EventBus`, `publish`, `subscribe`), but `identity/events/mfa.py` imports a non-existent `Event` symbol (see Section 8.3), indicating the event contract is not consistently applied.
+Overall domain leakage summary: the biggest issue is the presence of Shot/Sequence/Task/Review scoped models in core. They should be relocated or turned into optional adapters/plugins rather than baked into Core's base models.
 
----
+4) Duplicate functionality
+--------------------------
+Search highlights for duplicated concepts (high-level):
+- Multiple queryset mixins and manager patterns: there are BaseQuerySet, SoftDeleteQuerySet, PublishableQuerySet, OrganizationQuerySet and corresponding managers (common but expected). Review for duplication only if behaviors overlap.
 
-## 3. Actual `apps/core/` Filesystem Inventory
+- Exceptions: Core defines a broad exception hierarchy in [exceptions/base.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/exceptions/base.py). Some of these map closely to DRF exceptions (AuthenticationFailed, PermissionDenied). There's some duplication between BaseAPIException and DRF's APIException. Classification: KEEP but simplify/normalize: avoid re-implementing DRF behavior; keep wrappers that set default codes/messages.
 
-### 3.1 Top-level files
+- API builders/response builders/pagination builders: check for duplicate response shaping logic between [api/builders] and [api/pagination]. Potential duplication if there are multiple response builders returning similar payloads. Classification: MERGE if duplicated or consolidate into a single ResponseBuilder with configurable format.
 
-| File | Content | Assessment |
-|------|---------|------------|
-| `__init__.py` | Empty | Dead scaffolding |
-| `apps.py` | `CoreConfig` with `ready()` | Keep |
-| `aliases.py` | JSON/JSONList/Headers/Metadata/QueryParams/Context aliases | Keep |
-| `constants.py` | Empty | Dead scaffolding |
-| `protocols.py` | HasOrganization/HasOwner/HasStatus/HasMetadata/HasAudit | Keep |
-| `types.py` | UUIDType/PathLike/ID/PrimaryKey/Color/Slug/Email/Phone | Keep |
-| `typing.py` | Re-exports aliases/protocols/types | Keep |
+- Validators: There are base validators plus specific validators. Ensure single source of truth for common checks; if multiple modules implement similar validation (e.g., email/phone checks in multiple places), MERGE.
 
-### 3.2 Sub-packages
+- Utilities: Possible duplicates across utils/text/dates. Consolidate common helpers into utils/ and smaller modules into focused modules.
 
-| Package | Files | Assessment |
-|---------|-------|------------|
-| `api/` | builders, exceptions, filters, mixins, pagination, permissions, renderers, serializers, utils, views, viewsets | **Keep** (foundation), but see domain leakage |
-| `choices/` | base, department, file, lifecycle, priority, publish, record, visibility | **Keep** (generic), **MOVE** department |
-| `context/` | builder, organization, permission, request, user (all empty) | **REMOVE** (dead) |
-| `dates/` | formatting, ranges, timezone (all empty) | **REMOVE** (dead) |
-| `events/` | full event framework | **Keep** |
-| `filesystem/` | paths, storage, upload (all empty) | **REMOVE** (dead) |
-| `filters/` | base, date, metadata, ordering, organization, ownership, search, soft_delete, status | **Keep** (generic), **MOVE** organization |
-| `i18n/` | constants, countries, currencies, languages, timezones, utils, validators | **Keep** |
-| `logging/` | full logging framework | **Keep** |
-| `managers/` | active, base, lifecycle, organization, publishable, soft_delete | **Keep** |
-| `middleware/` | audit, authentication, base, locale, maintenance, organization, request_context, request_id, security, timezone | **Keep** (generic), **MOVE** organization |
-| `models/` | base, bases, managers, mixins, querysets | **Keep** (foundation), but see domain leakage |
-| `security/` | hashing, signing, tokens (all empty) | **REMOVE** (dead) |
-| `selectors/` | base, utils, mixins | **Keep** |
-| `services/` | full service framework | **Keep** |
-| `text/` | casing, formatting, normalization (all empty) | **REMOVE** (dead) |
-| `utils/` | datetime, enums, files, hashing, json, logger, response, serializers, slug, strings, uuid | **Keep** (fix uuid.py) |
-| `validators/` | full validator set | **Keep** |
+Given the codebase size, a more automated search should be run later (text similarity across functions) to detect exact duplicates.
 
-### 3.3 Empty / dead-code inventory
+5) Over-engineered areas
+------------------------
+- The exceptions file is very large and provides many thin wrappers around DRF exceptions. Consider consolidating and relying more on DRF or providing small adapters.
+- Core implements many "scoped" abstract models for highly specific domain entities (Shot, Sequence, Review). This adds complexity to BaseModel composition (see [models/base.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models/base.py)). The long inheritance chain (UUIDModel, TimeStampedModel, SoftDeleteModel, AuditModel, OrderableModel, PublishableModel, MetadataModel, NotesModel, OrganizationOwnedModel, ColorModel, SoftDeleteMixin) may be too heavy for simple domain entities — consider splitting into lighter weight composable mixins and promoting composition over monolithic BaseModel.
+- Services layer: several small service classes are fine, but duplication between CRUD/bulk/publishable/lifecycle services might be simplified using mixins.
 
-Confirmed empty or placeholder files:
+6) Dead-code candidates
+-----------------------
+- During this audit quick-pass, no definitive unused production modules were found. However, candidates for manual review:
+  - Very specific scope classes that are declared but rarely referenced outside tests (SequenceScopedModel, ShotScopedModel) — verify usages across the repo; if unused, REMOVE.
+  - Some API builders and renderers: if only one format is used, simplify and remove unused response builders.
+  - Overly large exception variants that are not used (RateLimitException, ServiceUnavailableException) — verify usage.
 
-- `core/__init__.py`, `core/constants.py`
-- `context/` — all 6 files
-- `security/` — all 4 files
-- `text/` — all 4 files
-- `dates/` — all 4 files
-- `filesystem/` — all 4 files
-- `api/filters/` — both files
-- `api/views/` — 9 of 12 files
-- `api/mixins/` — 5 of 18 files
-- `permissions/` — 3 of 13 files
-- `selectors/mixins/` — 5 files
-- `events/signals.py`, `events/mixins/` — 4 files
-- `models/bases/querysets.py`
-- `models/querysets/mixins/project.py`, `ownership.py`
-- `models/querysets/search.py`
-- `validators/asset.py`, `shot.py`
-- `docs/08-development/core.md`
+7) Proposed architecture (principles)
+------------------------------------
+Refactor Core to be:
+- Reusable: provide minimal, well-documented primitives. Avoid shipping domain-specific policies.
+- Domain-agnostic: remove or move domain-specific abstractions (Shot/Sequence/Task/Review) to domain packages.
+- Stable & low coupling: provide clear, small public APIs (services, selectors, models) with deprecation paths.
+- Highly cohesive: group cross-cutting concerns (storage, attachments, tags, auditing) in core; move business domain objects to their corresponding apps.
 
----
+Suggested Core boundaries:
+- core.models.*: keep base mixins that are truly generic (UUIDModel, TimeStampedModel, SoftDeleteModel, OrganizationOwnedModel) — move domain-scoped mixins (ShotScopedModel, SequenceScopedModel, ReviewScopedModel, TaskScopedModel) to domain apps.
+- core.api.*: keep request/response shaping, base viewsets, pagination, renderers, and a small set of opinionated defaults.
+- core.services.*: Keep platform-level services (attachment storage, slug generation, search adapters, caching). Split domain-specific service logic into domain apps.
+- core.selectors.*: Keep as read-only cross-app query helpers; allow domain-specific selectors in domain apps.
 
-## 4. Proposed Target Structure — Validation
+8) Proposed file moves (logical grouping)
+----------------------------------------
+Note: this section lists logical moves — do NOT perform any file moves now (per instruction). Each move should be executed in a dedicated migration PR with tests.
 
-The proposed target structure introduces `application/`, `domain/`, and `persistence/` layers inside Core. This is **critically evaluated** below.
+Short list of recommended moves:
+- Move domain-scoped models and scopes out of core:
+  - [backend/apps/core/models/bases/scopes.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models/bases/scopes.py) — split into:
+    - Keep: OrganizationScopedModel, UserScopedModel
+    - Move: ProjectScopedModel, SequenceScopedModel, ShotScopedModel, TaskScopedModel, ReviewScopedModel -> apps/production or apps/project (domain app)
+  - [backend/apps/core/models/bases/project.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models/bases/project.py) -> RE-EVALUATE. If StudioHub is project-driven, keep; otherwise move to "workspaces" plugin.
 
-### 4.1 Directory-by-directory verdict
+- Permissions tied to project/roles:
+  - [backend/apps/core/api/permissions/project.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/api/permissions/project.py) -> move to domain app unless "project" is core concept.
+  - Reviewer & staff permissions: keep IsStaff (platform-level). Move IsReviewer to domain if reviewer semantics tie to production review flows.
 
-| Proposed directory | Verdict | Rationale |
-|--------------------|---------|-----------|
-| `application/` | **REJECT** | Core is a shared kernel, not an application layer. Application services belong in each domain app, not Core. Adding this layer to Core would re-create the dumping-ground problem. |
-| `domain/` | **REJECT** | Core must be domain-agnostic. A `domain/` folder inside Core contradicts ADR-0004 (shared kernel). Domain entities belong in their owning apps. |
-| `persistence/` | **REJECT** | Core already has `models/`, `managers/`, `querysets/`. A separate `persistence/` layer is redundant and over-engineered for a modular monolith. |
-| `api/` | **KEEP** | Core API foundation (viewsets, serializers, permissions, pagination, renderers, exceptions) is legitimate shared infrastructure. |
-| `events/` | **KEEP** | Core event framework is a genuine shared kernel. |
-| `services/` | **KEEP** | Core service base classes (BaseService → CRUDService → AuditService → EventService → CacheService, BusinessService) are shared infrastructure. |
-| `selectors/` | **KEEP** | Core selector base is shared infrastructure. |
-| `models/` | **KEEP** | Core model foundations (UUID, timestamp, audit, soft-delete, metadata, entity) are shared. **MOVE** domain-scoped bases out. |
-| `managers/` | **KEEP** | Core managers are shared. |
-| `querysets/` | **KEEP** | Core querysets are shared. |
-| `validators/` | **KEEP** | Core validators are shared. |
-| `filters/` | **KEEP** | Generic filter mixins are shared. **MOVE** organization filter out. |
-| `choices/` | **KEEP** | Generic choices are shared. **MOVE** department out. |
-| `middleware/` | **KEEP** | Generic middleware is shared. **MOVE** organization middleware out. |
+- Any selectors/operators refer specifically to shots/sequences/tasks -> move to domain.
+
+9) Proposed removals
+--------------------
+- Only remove after migration and deprecation windows. Candidate removals after migration of functionality to domain apps:
+  - Remove ShotScopedModel/SequenceScopedModel/ReviewScopedModel definitions from core.
+  - Remove duplicate/unreferenced response builders or renderers in api/ after consolidating.
+
+10) Risk assessment
+-------------------
+High-risk items (require careful migration and testing):
+- Moving scope abstractions (Project/Sequence/Shot/Task/Review) — many domain apps may import these. Risk: import failures and migration complexity. Mitigation: provide deprecation wrappers in core that import from the new domain package for a transition period.
+
+- Large BaseModel composition: splitting BaseModel may cause backward-incompatible changes to model inheritance order or fields. Migration must preserve DB schemas and field names.
+
+Medium-risk items:
+- Consolidating exception classes — tests and error handling may rely on specific exception classes or .to_dict() shapes. Preserve API compatibility or add adapters.
+
+Low-risk items:
+- Internal utility consolidation (text, dates, utils). Usually safe, but ensure imports are updated.
+
+11) Migration order (recommended)
+--------------------------------
+1. Discovery & usage mapping
+   - Run a repo-wide search to list all references to the domain-scoped classes (ShotScopedModel, SequenceScopedModel, TaskScopedModel, ReviewScopedModel, ProjectEntityModel). Produce a usage map. (Automated step: `rg "ShotScopedModel|SequenceScopedModel|ReviewScopedModel|TaskScopedModel|ProjectEntityModel" -n` )
+2. Create target domain package(s)
+   - Add new apps domain package: e.g., `apps/production` or `apps/workspaces` depending on business model.
+3. Copy (not delete) the domain-scoped classes into the new domain package and keep the original definitions in core as thin adapters that import from the new location and issue a deprecation warning.
+4. Update domain apps to import from new package where feasible.
+5. After all apps stop importing core's domain-scoped classes directly, remove the adapters from core in a follow-up PR.
+6. For BaseModel simplification: introduce new lighter-weight mixins (UUIDMixin, AuditMixin, SoftDeleteMixin) and a migration plan for models using BaseModel to adopt smaller mixins incrementally. Avoid changing existing DB table structures — ensure mixin behaviors are purely Python/Django model-layer changes.
+7. Consolidate ResponseBuilder/Renderers and Exceptions with wrappers to preserve public API.
+8. Run full test-suite and roll out migrations progressively in staging.
+
+12) Compatibility concerns
+-------------------------
+- Backwards compatibility must be maintained for public import paths. If consumers import from `apps.core.models.bases.scopes import ShotScopedModel`, the migration must include a deprecation shim at that import path re-exporting from the new location and emitting a DeprecationWarning.
+- Database schema must not change as a result of refactoring; keep model fields and db_table unchanged.
+- Exception class identity: if code compares exception types by class, preserve type or provide adapter exceptions that subclass the originals.
+
+Component-by-component classification (KEEP / MERGE / MOVE / REMOVE / DOMAIN LEAK / DEFER)
+-----------------------------------------------------------------------------------------
+Below is a prioritized list of important components observed in core with classification and reasoning. File links use exact paths to aid follow-up work.
+
+Core package-level
+- [backend/apps/core](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core) — KEEP. The package is the right place to host cross-cutting concerns.
+
+Typing & protocols
+- [backend/apps/core/aliases.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/aliases.py) — KEEP (simple type aliases, generic).
+- [backend/apps/core/types.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/types.py) — KEEP.
+- [backend/apps/core/protocols.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/protocols.py) — KEEP, but ensure protocols stay generic (HasOrganization, HasOwner, HasStatus, HasMetadata, HasAudit are fine).
+- [backend/apps/core/typing.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/typing.py) — KEEP.
+
+Exceptions
+- [backend/apps/core/exceptions/base.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/exceptions/base.py) — MERGE (keep but simplify). Rationale: centralizing exceptions is good, but many classes duplicate DRF. Reduce duplication, ensure compatibility.
+
+Models
+- [backend/apps/core/models/base.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models/base.py) — DEFER (refactor later). Rationale: base model bundles many features; consider splitting gradually to composable mixins.
+- Generic mixins (UUIDModel, TimeStampedModel, SoftDeleteModel, AuditModel, MetadataModel, NotesModel, OrganizationOwnedModel, ColorModel) — KEEP (generic and reusable).
+- [backend/apps/core/models/bases/scopes.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models/bases/scopes.py)
+  - OrganizationScopedModel — KEEP
+  - UserScopedModel — KEEP
+  - ProjectScopedModel — DEFER (product decision)
+  - SequenceScopedModel — DOMAIN LEAK / MOVE
+  - ShotScopedModel — DOMAIN LEAK / MOVE
+  - TaskScopedModel — DOMAIN LEAK / MOVE
+  - ReviewScopedModel — DOMAIN LEAK / MOVE
+
+- [backend/apps/core/models/bases/project.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models/bases/project.py) — DEFER (if StudioHub is project-driven, keep; otherwise move)
+
+Attachment
+- [backend/apps/core/models/attachment.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models/attachment.py) — KEEP. Attachment & storage are cross-cutting concerns.
+
+Managers and QuerySets
+- managers/* and querysets/* — KEEP. These are reusable building blocks (ActiveManager, SoftDeleteManager, OrganizationManager). Merge if overlapping logic found.
+
+Selectors
+- [backend/apps/core/selectors/base.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/selectors/base.py) — KEEP (generic read-only abstraction).
+- selectors referencing attachments/tags — KEEP.
+
+Services
+- [backend/apps/core/services/base.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/services/base.py) — KEEP (foundation of service layer).
+- storage, attachment, slug, publishable, soft_delete services — KEEP.
+- services that implement domain workflows (if any) — MOVE into domain apps.
+
+API
+- api builders, viewsets, serializers, renderers, permissions — KEEP but audit for domain-specific permissions (e.g., project permissions) and move domain-specific ones.
+  - [backend/apps/core/api/permissions/project.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/api/permissions/project.py) — DEFER/MOVE depending on project being a core concept.
+  - Staff & admin permission helpers — KEEP.
+
+Middleware, events, signals
+- middleware/context/get_current_user etc. — KEEP (platform-level concerns).
+- events/ and signals/ autoloading — KEEP, but ensure event publishers are decoupled (use protocol/interfaces) to avoid domain dependencies.
+
+Validators
+- validators/ — KEEP; consolidate overlapping validators.
+
+Tests
+- tests/ within core uses factories from other apps (e.g. [backend/apps/core/tests/fixtures.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/tests/fixtures.py) imports apps.identity factories). Classification: DEFER/NOTE: keep tests but document cross-app fixtures and consider using dedicated test-data builders inside core tests.
+
+13) Concrete next steps (actionable list)
+----------------------------------------
+1. Run a full usage scan for the domain-scoped classes to enumerate current importers. (Automated step; required before moving code.)
+2. Decide product-level stance on "Project" as a core concept: if Project is platform-level, keep; otherwise plan to move to a workspace domain app.
+3. Create a new domain package (e.g., apps/production) and copy Sequence/Shot/Task/Review scoped models there. Add deprecation shims in core that re-export from the new location and emit DeprecationWarning.
+4. Introduce a small Core refactor PR that:
+   - Adds deprecation shims (no behavior change) for moved items
+   - Runs the test suite, fixing import paths in domain apps to use new locations when ready
+5. Consolidate API ResponseBuilder and pagination logic: create a single ResponseBuilder if multiple exist.
+6. Simplify exceptions: keep a small set of canonical exception classes and adapt code to use them.
+7. Break up BaseModel into composable mixins in a non-breaking way (introduce new mixins first, then provide optional migration guidance for domain models).
+8. After stabilization and tests green, remove deprecated shims.
+
+14) Checklist for a migration PR
+-------------------------------
+- [ ] Add a usage map for every symbol moved
+- [ ] Add deprecation warning wrappers in core (thin re-exports)
+- [ ] Keep tests green; update tests to use new import paths only after deprecation period
+- [ ] Keep database schema unchanged, preserve db_table names
+- [ ] Add migration notes in CHANGELOG and docs
+
+Appendix: Notable files referenced during audit
+-----------------------------------------------
+- [backend/apps/core/models/bases/scopes.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models/bases/scopes.py)
+- [backend/apps/core/models/bases/project.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models/bases/project.py)
+- [backend/apps/core/models/attachment.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/models/attachment.py)
+- [backend/apps/core/services/base.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/services/base.py)
+- [backend/apps/core/selectors/base.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/selectors/base.py)
+- [backend/apps/core/exceptions/base.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/exceptions/base.py)
+- [backend/apps/core/api/permissions/project.py](/home/prafull.sakharkar/Repository/github/studiohub/backend/apps/core/api/permissions/project.py)
+
+Concise summary / Recommended priority list
+------------------------------------------
+1. High priority: Move/adapter domain-scoped classes (SequenceScopedModel, ShotScopedModel, TaskScopedModel, ReviewScopedModel) out of core into a domain app with deprecation shims. Rationale: removes vertical coupling and preserves core domain-agnosticism.
+2. Medium priority: Re-evaluate Project* abstractions; confirm if project is truly platform-level. If not, migrate to a workspace domain app.
+3. Medium priority: Simplify exceptions and API response builder duplication. Add compatibility shims.
+4. Low priority: Gradually split BaseModel into smaller mixins; keep behaviour and DB schema stable.
+
+If more detailed symbol-level classification or automated cross-references (who imports what) is required, run a code search tool (ripgrep) across the repo to produce a complete symbol-usage mapping and attach it to this document.
+
+End of audit (Part 01).. **MOVE** department out. || `middleware/` | **KEEP** | Generic middleware is shared. **MOVE** organization middleware out. |
 | `i18n/` | **KEEP** | Shared i18n utilities. |
 | `logging/` | **KEEP** | Shared logging framework. |
 | `utils/` | **KEEP** | Shared utilities (fix uuid.py). |

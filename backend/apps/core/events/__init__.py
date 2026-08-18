@@ -1,36 +1,23 @@
-from .autodiscover import autodiscover_events
-from .base import DomainEvent
-from .bus import EventBus
-from .constants import EventSource, EventVersion
-from .decorators import listens_to
-from .dispatcher import EventDispatcher
-from .exceptions import (
-    EventDispatchError,
-    EventError,
-    EventRegistrationError,
-    InvalidEventError,
-)
-from .handlers import DomainEventHandler
-from .publisher import publish
-from .registry import EventRegistry
-from .subscriber import subscribe
-from .utils import event_type
+"""
+Core events.
+
+Provides base event classes and infrastructure for domain applications.
+"""
+
+from __future__ import annotations
+
+from apps.core.events.base import BaseCreated, BaseDeleted, BaseUpdated, DomainEvent, Event
+from apps.core.events.bus import EventBus, default_event_bus
 
 __all__ = [
+    "BaseCreated",
+    "BaseDeleted",
+    "BaseUpdated",
     "DomainEvent",
-    "DomainEventHandler",
     "EventBus",
-    "EventDispatchError",
-    "EventDispatcher",
-    "EventError",
-    "EventRegistrationError",
-    "EventRegistry",
-    "EventSource",
-    "EventVersion",
-    "InvalidEventError",
-    "autodiscover_events",
-    "event_type",
-    "listens_to",
-    "publish",
-    "subscribe",
 ]
+
+
+def publish(event):
+    """Publish an event to the event bus."""
+    default_event_bus.publish(event)

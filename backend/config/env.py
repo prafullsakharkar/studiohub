@@ -12,9 +12,7 @@ from enum import Enum
 
 
 class StrEnum(str, Enum):
-    """Python 3.9+ compatible StrEnum."""
-
-    pass
+    """StrEnum for Python 3.9 compatibility."""
 
 
 from pathlib import Path
@@ -49,7 +47,9 @@ def discover_env_file() -> str:
         "ci": ".env.ci",
     }
 
-    return mapping.get(env, ".env.local")
+    env_file = mapping.get(env, ".env.local")
+    # Return absolute path based on BASE_DIR
+    return str(BASE_DIR / env_file)
 
 
 class Settings(BaseSettings):

@@ -22,7 +22,6 @@ class OrganizationEntitySerializer(serializers.ModelSerializer):
             "name",
             "description",
             "organization",
-            "status",
             "created_at",
             "updated_at",
         )

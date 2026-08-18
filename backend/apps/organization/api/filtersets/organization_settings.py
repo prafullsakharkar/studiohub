@@ -3,16 +3,13 @@ from django_filters import BooleanFilter, CharFilter
 from apps.core.filters.base import BaseFilterSet
 from apps.core.filters.ordering import OrderingFilterMixin
 from apps.core.filters.search import SearchFilterMixin
-from apps.core.filters.status import StatusFilterMixin
 from apps.organization.models import (
     OrganizationSettings,
 )
 
-
 class OrganizationSettingsFilterSet(
     SearchFilterMixin,
     OrderingFilterMixin,
-    StatusFilterMixin,
     BaseFilterSet,
 ):
     """
@@ -76,5 +73,4 @@ class OrganizationSettingsFilterSet(
             "currency",
             "allow_remote_work",
             "allow_overtime",
-            "status",
         )

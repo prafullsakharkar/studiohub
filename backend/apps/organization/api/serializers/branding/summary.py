@@ -11,5 +11,4 @@ class BrandingSummarySerializer(
             "code",
             "name",
             "theme",
-            "status",
         )

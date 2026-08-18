@@ -15,8 +15,11 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",
+        # BasicAuthentication must come first so that a WWW-Authenticate
+        # header is available; DRF coerces unauthenticated requests to 403
+        # when no header can be issued, but the API contract is 401.
         "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_RENDERER_CLASSES": (
         "apps.core.api.renderers.StandardJSONRenderer",

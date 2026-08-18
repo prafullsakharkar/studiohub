@@ -1,21 +1,26 @@
 """
-Organization constants.
+Organization application.
+
+Provides organization management capabilities including:
+- Organizations
+- Departments
+- Offices
+- Teams
+- Positions
+- Calendars
+- Holidays
+- Work Hours
+- Branding
+- Organization Settings
+- Memberships
+- Invitations
+- API Keys
+- Personal Access Tokens
+- Groups
+- Roles
+- Permissions
 """
 
-APP_NAME = "organization"
+from apps.organization.apps import OrganizationConfig
 
-DEFAULT_TIMEZONE = "UTC"
-
-DEFAULT_LANGUAGE = "en"
-
-DEFAULT_CURRENCY = "USD"
-
-DEFAULT_COUNTRY = "US"
-
-DEFAULT_ORGANIZATION_CODE_LENGTH = 6
-
-MAX_NAME_LENGTH = 255
-
-MAX_CODE_LENGTH = 20
-
-MAX_SLUG_LENGTH = 255
+__all__ = ["OrganizationConfig"]

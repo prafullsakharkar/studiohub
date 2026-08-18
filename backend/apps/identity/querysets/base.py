@@ -8,6 +8,9 @@ class IdentityQuerySet(BaseQuerySet):
     """
 
     def active(self):
+        if not hasattr(self.model, "status"):
+            return self
+
         return self.filter(
             status=RecordStatus.ACTIVE,
         )
@@ -51,3 +54,15 @@ class IdentityQuerySet(BaseQuerySet):
         if hasattr(self.model, "name"):
             return self.filter(name__icontains=term)
         return self
+
+    def get_by_id(self, id):
+        """
+        Get a single record by primary key.
+        """
+        return self.filter(pk=id).first()
+
+    def count_all(self):
+        """
+        Count all records.
+        """
+        return self.count()

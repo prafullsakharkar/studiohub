@@ -1,0 +1,25 @@
+%% Authentication flow (Mermaid)
+%% File: docs/09-diagrams/authentication-flow.mmd
+
+sequenceDiagram
+  autonumber
+  participant U as User
+  participant C as Client (Browser/Mobile)
+  participant API as API Gateway
+  participant A as Auth Service
+  participant DB as Auth DB
+
+  U->>C: Enter credentials
+  C->>API: POST /auth/login {credentials}
+  API->>A: Validate credentials
+  A->>DB: Query user record
+  DB-->>A: User record
+  A-->>API: Issue JWT / session
+  API-->>C: Set cookie / return token
+  C-->>U: Authenticated (redirect)
+
+  note over A,API: Support refresh tokens and MFA as optional steps
+
+  style A fill:#ffefc2,stroke:#333
+  style API fill:#c2f0ff,stroke:#333
+  style DB fill:#e6e6e6,stroke:#333

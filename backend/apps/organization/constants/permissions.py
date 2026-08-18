@@ -76,3 +76,90 @@ class PositionPermissions:
     CREATE = "position.create"
     UPDATE = "position.update"
     DELETE = "position.delete"
+
+
+class InvitationPermissions:
+    VIEW = "invitation.view"
+    CREATE = "invitation.create"
+    UPDATE = "invitation.update"
+    DELETE = "invitation.delete"
+    ACCEPT = "invitation.accept"
+    DECLINE = "invitation.decline"
+    CANCEL = "invitation.cancel"
+
+
+class OrganizationMembershipPermissions:
+    VIEW = "organization_membership.view"
+    CREATE = "organization_membership.create"
+    UPDATE = "organization_membership.update"
+    DELETE = "organization_membership.delete"
+    ACTIVATE = "organization_membership.activate"
+    DEACTIVATE = "organization_membership.deactivate"
+
+
+class APIKeyPermissions:
+    VIEW = "api_key.view"
+    CREATE = "api_key.create"
+    UPDATE = "api_key.update"
+    DELETE = "api_key.delete"
+    REVOKE = "api_key.revoke"
+
+
+class PersonalAccessTokenPermissions:
+    VIEW = "personal_access_token.view"
+    CREATE = "personal_access_token.create"
+    UPDATE = "personal_access_token.update"
+    DELETE = "personal_access_token.delete"
+    REVOKE = "personal_access_token.revoke"
+
+
+class GroupPermissions:
+    VIEW = "group.view"
+    CREATE = "group.create"
+    UPDATE = "group.update"
+    DELETE = "group.delete"
+    ADD_MEMBER = "group.add_member"
+    REMOVE_MEMBER = "group.remove_member"
+    ADD_ROLE = "group.add_role"
+    REMOVE_ROLE = "group.remove_role"
+
+
+class RolePermissions:
+    VIEW = "role.view"
+    CREATE = "role.create"
+    UPDATE = "role.update"
+    DELETE = "role.delete"
+    ASSIGN = "role.assign"
+    REVOKE = "role.revoke"
+    GRANT_PERMISSION = "role.grant_permission"
+    REVOKE_PERMISSION = "role.revoke_permission"
+
+
+class PermissionPermissions:
+    VIEW = "permission.view"
+    CREATE = "permission.create"
+    UPDATE = "permission.update"
+    DELETE = "permission.delete"
+
+
+class UserRolePermissions:
+    ASSIGN = "user_role.assign"
+    REVOKE = "user_role.revoke"
+
+
+class GroupMemberPermissions:
+    ADD = "group_member.add"
+    REMOVE = "group_member.remove"
+    UPDATE = "group_member.update"
+
+
+class GroupRolePermissions:
+    ADD = "group_role.add"
+    REMOVE = "group_role.remove"
+    UPDATE = "group_role.update"
+
+
+class RolePermissionPermissions:
+    GRANT = "role_permission.grant"
+    REVOKE = "role_permission.revoke"
+    UPDATE = "role_permission.update"

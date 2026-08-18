@@ -21,10 +21,10 @@ class LogoutSerializer(
 
         AuthenticationService.logout(
             request=request,
-            session=request.user.current_session,
+            session=None,
             refresh_token=self.validated_data.get(
                 "refresh",
-            ),
+            ) or None,
         )
 
         return {}

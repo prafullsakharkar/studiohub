@@ -1,49 +1,107 @@
-from apps.core.events import DomainEvent
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from apps.organization.models import Invitation
 
 
-class InvitationCreated(DomainEvent):
-    event_type = "organization.invitation.created"
+@dataclass
+class InvitationEvent:
+    """Base class for invitation events."""
+
+    invitation: "Invitation"
 
 
-class InvitationUpdated(DomainEvent):
-    event_type = "organization.invitation.updated"
+@dataclass
+class InvitationCreatedEvent(InvitationEvent):
+    """Event triggered when an invitation is created."""
 
 
-class InvitationDeleted(DomainEvent):
-    event_type = "organization.invitation.deleted"
+InvitationCreated = InvitationCreatedEvent
 
 
-class InvitationArchived(DomainEvent):
-    event_type = "organization.invitation.archived"
+@dataclass
+class InvitationSentEvent(InvitationEvent):
+    """Event triggered when an invitation is sent."""
 
 
-class InvitationActivated(DomainEvent):
-    event_type = "organization.invitation.activated"
+@dataclass
+class InvitationAcceptedEvent(InvitationEvent):
+    """Event triggered when an invitation is accepted."""
 
 
-class InvitationDeactivated(DomainEvent):
-    event_type = "organization.invitation.deactivated"
+@dataclass
+class InvitationDeclinedEvent(InvitationEvent):
+    """Event triggered when an invitation is declined."""
 
 
-class InvitationRestored(DomainEvent):
-    event_type = "organization.invitation.restored"
+InvitationDeclined = InvitationDeclinedEvent
 
 
-class InvitationAccepted(DomainEvent):
-    event_type = "organization.invitation.accepted"
+@dataclass
+class InvitationCancelledEvent(InvitationEvent):
+    """Event triggered when an invitation is cancelled."""
 
 
-class InvitationDeclined(DomainEvent):
-    event_type = "organization.invitation.declined"
+InvitationCancelled = InvitationCancelledEvent
 
 
-class InvitationCancelled(DomainEvent):
-    event_type = "organization.invitation.cancelled"
+@dataclass
+class InvitationExpiredEvent(InvitationEvent):
+    """Event triggered when an invitation expires."""
 
 
-class InvitationExpired(DomainEvent):
-    event_type = "organization.invitation.expired"
+@dataclass
+class InvitationActivatedEvent(InvitationEvent):
+    """Event triggered when an invitation is activated."""
 
 
-class InvitationResent(DomainEvent):
-    event_type = "organization.invitation.resent"
+@dataclass
+class InvitationDeactivatedEvent(InvitationEvent):
+    """Event triggered when an invitation is deactivated."""
+
+
+InvitationAccepted = InvitationAcceptedEvent
+InvitationActivated = InvitationActivatedEvent
+InvitationDeactivated = InvitationDeactivatedEvent
+
+
+@dataclass
+class InvitationArchivedEvent(InvitationEvent):
+    """Event triggered when an invitation is archived."""
+
+
+InvitationArchived = InvitationArchivedEvent
+
+
+@dataclass
+class InvitationDeletedEvent(InvitationEvent):
+    """Event triggered when an invitation is deleted."""
+
+
+InvitationDeleted = InvitationDeletedEvent
+InvitationExpired = InvitationExpiredEvent
+
+
+@dataclass
+class InvitationResentEvent(InvitationEvent):
+    """Event triggered when an invitation is resent."""
+
+
+InvitationResent = InvitationResentEvent
+
+
+@dataclass
+class InvitationRestoredEvent(InvitationEvent):
+    """Event triggered when an invitation is restored."""
+
+
+InvitationRestored = InvitationRestoredEvent
+
+
+@dataclass
+class InvitationUpdatedEvent(InvitationEvent):
+    """Event triggered when an invitation is updated."""
+
+
+InvitationUpdated = InvitationUpdatedEvent

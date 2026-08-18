@@ -48,24 +48,28 @@ class UserValidator(
     @classmethod
     def validate_create(
         cls,
-        data,
+        **kwargs,
     ):
+        email = kwargs.get("email")
+
         cls.validate_email(
-            data.get("email"),
+            email,
         )
 
         cls.validate_email_unique(
-            data.get("email"),
+            email,
         )
 
     @classmethod
     def validate_update(
         cls,
         instance,
-        data,
+        **kwargs,
     ):
-        if "email" in data:
+        email = kwargs.get("email")
+
+        if email:
             cls.validate_email_unique(
-                data["email"],
+                email,
                 instance,
             )

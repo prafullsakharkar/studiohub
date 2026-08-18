@@ -63,4 +63,10 @@ class DepartmentSelector(OrganizationBaseSelector):
 
     @classmethod
     def by_uuid(cls, uuid):
-        return cls.get(uuid=uuid)
+        """
+        Lookup by the UUID primary key.
+
+        ``uuid`` is a property alias for the ``id`` primary key field;
+        lookup must target the real column.
+        """
+        return cls.get(id=uuid)

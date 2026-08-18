@@ -1,0 +1,3 @@
+"""
+Core events tests package.
+"""

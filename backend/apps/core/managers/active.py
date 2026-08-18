@@ -1,16 +1,13 @@
 """
 Active manager.
+
+Re-exported from apps.core.models.managers for backward compatibility.
 """
 
 from __future__ import annotations
 
-from apps.core.models.managers.base import BaseManager
+from apps.core.models.managers.active import ActiveManager
 
-
-class ActiveManager(BaseManager):
-    """
-    Manager exposing only active objects.
-    """
-
-    def get_queryset(self):
-        return super().get_queryset().active()
+__all__ = [
+    "ActiveManager",
+]

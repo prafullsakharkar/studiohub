@@ -1,0 +1,15 @@
+%% follow-up-dataflow.mmd
+%% Follow-up: file upload dataflow (editable)
+
+graph TD
+  User[User] -->|upload| Frontend[Frontend]
+  Frontend --> API[API Gateway]
+  API --> UploadService[Upload Service]
+  UploadService --> VirusScan[Malware Scan]
+  VirusScan -->|clean| Storage[(Object Storage)]
+  VirusScan -->|infected| Quarantine[(Quarantine)]
+  Storage --> CDN[(CDN)]
+  CDN --> User
+
+  %% Notes:
+  %% - Add async processing steps (e.g., thumbnails, transcoding) as separate nodes if needed.

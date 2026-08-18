@@ -137,7 +137,7 @@ class AuthenticationUtils:
                 " ",
                 "_",
             ),
-            "os_version": os_version,
+            "operating_system_version": os_version,
             "device_name": device_name,
             "device_type": device_type,
         }

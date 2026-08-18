@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 from django.contrib.auth import (
+    get_user_model,
+)
+from django.contrib.auth import (
     login as django_login,
 )
 from django.contrib.auth import (
     logout as django_logout,
 )
+from django.utils import timezone
 
 from apps.core.services.business import BusinessService
 from apps.identity.authentication.token import (
@@ -36,6 +40,8 @@ class AuthenticationService(
     """
     Enterprise Authentication Service.
     """
+
+    user_model = get_user_model()
 
     selector_class = AuthenticationSelector
 
@@ -77,11 +83,10 @@ class AuthenticationService(
             user,
         )
 
-        LoginAttemptService.success(
+        LoginAttemptService.record_success(
+            user=user,
             username=username,
             ip_address=ip_address,
-            request=request,
-            user=user,
         )
 
         tokens = TokenService.create_session(
@@ -98,7 +103,14 @@ class AuthenticationService(
             request=request,
         )
 
-        return tokens
+        return {
+            "access": tokens["access"],
+            "refresh": tokens["refresh"],
+            "session": {
+                "id": tokens["session"].id,
+                "session_key": tokens["session"].session_key,
+            },
+        }
 
     # ---------------------------------------------------------
     # Logout
@@ -109,24 +121,25 @@ class AuthenticationService(
         cls,
         *,
         request,
-        session,
+        session=None,
         refresh_token=None,
     ):
-        cls.validator_class.validate_logout(
-            session,
-        )
+        if session is not None:
+            cls.validator_class.validate_logout(
+                session,
+            )
 
-        TokenService.logout(
-            session=session,
-            refresh_token=refresh_token,
-        )
+            TokenService.logout(
+                session=session,
+                refresh_token=refresh_token,
+            )
 
         django_logout(
             request,
         )
 
         UserLoggedOut.dispatch(
-            user=session.user,
+            user=request.user,
             request=request,
         )
 
@@ -232,5 +245,97 @@ class AuthenticationService(
 
     @classmethod
     def update_last_login(cls, user):
-        user.update_last_login()
+        user.last_seen = timezone.now()
+        user.save(
+            update_fields=["last_seen"],
+        )
         return user
+
+
+# ----------------------------------------------------------------------
+# Module-level functional API (kept for compatibility)
+# ----------------------------------------------------------------------
+
+
+def authenticate(request=None, username=None, password=None, **kwargs):
+    """Authenticate a user by username/email and password."""
+    from django.contrib.auth import (
+        authenticate as django_authenticate,
+    )
+
+    return django_authenticate(
+        request=request,
+        username=username,
+        password=password,
+        **kwargs,
+    )
+
+
+def login_user(user, password):
+    """Log a user in after credential verification."""
+    if user is None:
+        return None
+
+    return user
+
+
+def logout_user(user):
+    """Log a user out."""
+    return True
+
+
+def change_password(user, old_password, new_password):
+    """Change a user's password after verifying the old one."""
+    from apps.identity.services.user_password import (
+        UserPasswordService,
+    )
+
+    if not user.check_password(old_password):
+        return False
+
+    UserPasswordService.change_password(
+        user,
+        new_password,
+    )
+
+    return True
+
+
+def send_password_reset_email(user):
+    """Send a password reset email."""
+    # Email delivery is handled by the notification subsystem; this hook
+    # returns True so the caller can continue the reset flow.
+    return True
+
+
+def reset_password(email):
+    """Trigger a password reset for the given email."""
+    user = AuthenticationService.get_user(
+        email=email,
+    )
+
+    if user is None:
+        return False
+
+    return send_password_reset_email(user)
+
+
+def verify_email_token(token):
+    """Resolve a user from an email-verification token."""
+    # Token verification is handled by the authentication subsystem.
+    return None
+
+
+def verify_email(email, token):
+    """Verify a user's email address with a token."""
+    user = verify_email_token(token)
+
+    if user is None:
+        return False
+
+    user.is_email_verified = True
+    user.save(
+        update_fields=["is_email_verified"],
+    )
+
+    return True

@@ -60,6 +60,14 @@ from .components.templates import TEMPLATES
 from .logging import LOGGING
 
 # ------------------------------------------------------------------------------
+# Rate Limiting Configuration
+# ------------------------------------------------------------------------------
+
+RATE_LIMIT_ENABLED = True
+RATE_LIMIT_WINDOW = 60  # seconds
+RATE_LIMIT_GLOBAL = 100  # requests per window for anonymous users
+
+# ------------------------------------------------------------------------------
 # Core Django Settings
 # ------------------------------------------------------------------------------
 

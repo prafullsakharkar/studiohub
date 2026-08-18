@@ -17,7 +17,6 @@ class TeamBaseSerializer(serializers.ModelSerializer):
             "lead",
             "color",
             "capacity",
-            "status",
             "created_at",
             "updated_at",
         )

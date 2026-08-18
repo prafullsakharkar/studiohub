@@ -42,10 +42,10 @@ class MFALockoutService(BaseMFAService):
         mfa.failed_attempts = 0
         mfa.locked_until = None
 
-        if mfa.enabled:
-            mfa.status = MFAStatus.ACTIVE
+        if mfa.is_verified:
+            mfa.status = MFAStatus.ENABLED
         else:
-            mfa.status = MFAStatus.PENDING
+            mfa.status = MFAStatus.DISABLED
 
         mfa.save(
             update_fields=[
@@ -87,10 +87,10 @@ class MFALockoutService(BaseMFAService):
         mfa.failed_attempts = 0
         mfa.locked_until = None
 
-        if mfa.enabled:
-            mfa.status = MFAStatus.ACTIVE
+        if mfa.is_verified:
+            mfa.status = MFAStatus.ENABLED
         else:
-            mfa.status = MFAStatus.PENDING
+            mfa.status = MFAStatus.DISABLED
 
         mfa.save(
             update_fields=[

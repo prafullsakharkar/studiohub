@@ -8,11 +8,9 @@ from apps.identity.selectors.base import (
 from apps.identity.selectors.login_attempt import (
     LoginAttemptSelector,
 )
-from apps.identity.selectors.login_history import (
-    LoginHistorySelector,
-)
-from apps.identity.selectors.user_session import (
-    UserSessionSelector,
+from apps.audit.models import LoginHistory
+from apps.organization.models import (
+    UserSession,
 )
 
 User = get_user_model()
@@ -23,6 +21,9 @@ class AuthenticationSelector(
 ):
     """
     Read-only selector used by the authentication subsystem.
+
+    Sessions and login history are owned by ``apps.organization``; identity
+    reads them here to drive the authentication flows.
     """
 
     @classmethod
@@ -45,7 +46,7 @@ class AuthenticationSelector(
             ).first()
 
         return queryset.filter(
-            username__iexact=username,
+            email__iexact=username,
         ).first()
 
     @classmethod
@@ -74,8 +75,10 @@ class AuthenticationSelector(
         *,
         user,
     ):
-        return UserSessionSelector.current(
-            user=user,
+        return (
+            UserSession.objects.current()
+            .by_user(user)
+            .first()
         )
 
     @classmethod
@@ -84,8 +87,12 @@ class AuthenticationSelector(
         *,
         refresh_token_jti: str,
     ):
-        return UserSessionSelector.by_refresh_jti(
-            refresh_token_jti,
+        return (
+            UserSession.objects.filter(
+                refresh_token_jti=refresh_token_jti,
+            )
+            .select_related("user")
+            .first()
         )
 
     @classmethod
@@ -94,8 +101,12 @@ class AuthenticationSelector(
         *,
         access_token_jti: str,
     ):
-        return UserSessionSelector.by_access_jti(
-            access_token_jti,
+        return (
+            UserSession.objects.filter(
+                access_token_jti=access_token_jti,
+            )
+            .select_related("user")
+            .first()
         )
 
     @classmethod
@@ -104,8 +115,9 @@ class AuthenticationSelector(
         *,
         user,
     ):
-        return UserSessionSelector.active_sessions(
-            user=user,
+        return (
+            UserSession.objects.active()
+            .by_user(user)
         )
 
     @classmethod
@@ -114,8 +126,10 @@ class AuthenticationSelector(
         *,
         user,
     ):
-        return UserSessionSelector.trusted_sessions(
-            user=user,
+        return (
+            UserSession.objects.active()
+            .trusted()
+            .by_user(user)
         )
 
     @classmethod
@@ -124,8 +138,10 @@ class AuthenticationSelector(
         *,
         user,
     ):
-        return LoginHistorySelector.for_user(
-            user=user,
+        return (
+            LoginHistory.objects.filter(
+                user=user,
+            )
         )
 
     @classmethod
@@ -135,10 +151,12 @@ class AuthenticationSelector(
         username: str,
         ip_address: str,
     ):
-        return LoginAttemptSelector.failed_attempts(
-            username=username,
-            ip_address=ip_address,
-        ).order_by("-created_at")
+        return (
+            LoginAttemptSelector.failed_attempts(
+                username=username,
+                ip_address=ip_address,
+            ).order_by("-created_at")
+        )
 
     @classmethod
     def get_dashboard(

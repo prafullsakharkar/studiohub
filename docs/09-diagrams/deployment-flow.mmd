@@ -1,0 +1,19 @@
+%% Deployment flow (Mermaid)
+%% File: docs/09-diagrams/deployment-flow.mmd
+
+flowchart TD
+  CI[CI Pipeline] --> Build[Build & Test]
+  Build --> Image[Container Image]
+  Image --> Registry[Image Registry]
+  Registry --> CD[CD Pipeline]
+  CD --> K8s[Kubernetes Cluster]
+  K8s --> Monitor[Monitoring & Alerts]
+  Monitor --> Ops[On-call / Runbook]
+
+  subgraph "Optional"
+    Security[Security Scans] --> Build
+    Canary[Canary Release] --> K8s
+  end
+
+  style CI fill:#c2f0ff,stroke:#333
+  style K8s fill:#ffefc2,stroke:#333

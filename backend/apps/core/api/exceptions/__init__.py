@@ -16,7 +16,11 @@ from .authentication import (
     UserInactive,
 )
 from .handlers import custom_exception_handler
-from .permissions import PermissionDeniedException
+from .permissions import (
+    OrganizationPermissionException,
+    PermissionDeniedException,
+    ProjectPermissionException,
+)
 from .validation import (
     DuplicateNameException,
     InvalidStateException,
@@ -29,7 +33,9 @@ __all__ = [
     "ConflictException",
     "DuplicateNameException",
     "InvalidStateException",
+    "OrganizationPermissionException",
     "PermissionDeniedException",
+    "ProjectPermissionException",
     "ResourceLockedException",
     "ServiceUnavailableException",
     "ValidationException",

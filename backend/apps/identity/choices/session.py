@@ -86,6 +86,8 @@ class LogoutReason(models.TextChoices):
 
     TOKEN_EXPIRED = "TOKEN_EXPIRED", "Token Expired"
 
+    REVOKED = "REVOKED", "Revoked"
+
     PASSWORD_CHANGED = (
         "PASSWORD_CHANGED",
         "Password Changed",
@@ -114,6 +116,10 @@ class LogoutReason(models.TextChoices):
     SESSION_LIMIT = (
         "SESSION_LIMIT",
         "Session Limit",
+    )
+    USER_LOGOUT = (
+        "USER_LOGOUT",
+        "User Logout",
     )
 
     UNKNOWN = (

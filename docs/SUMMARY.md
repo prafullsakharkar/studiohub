@@ -4,6 +4,32 @@
 
 ---
 
+# Documentation Modernization — Checkpoints
+
+A concise summary of the documentation modernization work (Parts 1–3). These checkpoints were produced as part of the StudioHub docs refactor program and contain canonical artifacts and recommendations.
+
+- Part 1 — Docs Audit & Governance
+  - Artifact: [Documentation Audit & Refactor Plan](docs/architecture/documentation-audit.md)
+  - Outcome: full inventory of docs/, duplicate/conflict analysis, ADR audit, documentation debt, and a staged refactor plan. Recommended safe fixes (SUMMARY.md alignment) and documentation governance rules.
+
+- Part 2 — Product & Domain
+  - Artifact: [Product Vision](docs/02-product/product-vision.md)
+  - Artifacts: canonical domain package under docs/03-domain/ (production, asset, shot, task, version, review, publishing, delivery, scheduling, pipelines)
+  - Outcome: authoritative domain model, bounded contexts, domain events, and an expanded glossary ([docs/12-reference/glossary.md]). These files establish the product and domain source-of-truth for Part 3.
+
+- Part 3 — Technical Architecture (initial)
+  - Artifact: [Technical Architecture Overview](docs/04-architecture/overview.md)
+  - Outcome: canonical architecture entry-point reconciling DDD, Clean Architecture, Layered Architecture and a modular-monolith approach tailored to Django. Contains: layer definitions, dependency rules, Django mapping, module layout recommendations, event rules, transaction guidance, shared-kernel policy, and Mermaid diagrams. Also lists next steps (import-boundary tests, ADR reconciliation, module README templates).
+
+Recommended next actions
+
+- Keep SUMMARY.md updated to reflect the canonical docs above (this file has been updated to surface the checkpoints).
+- Create a Documentation Governance page (owners, ADR linkage, canonical location rules).
+- Reconcile overlapping ADRs (especially event and shared-kernel ADRs) and record any exceptions.
+- Add import-boundary tests and CI checks for documentation link validation.
+
+---
+
 # 01. Getting Started
 
 - [Overview](01-getting-started/overview.md)
@@ -25,6 +51,16 @@
 - [Multi-Tenancy](02-architecture/multi-tenancy.md)
 - [Domain Model](02-architecture/domain-model.md)
 - [Design Principles](02-architecture/design-principles.md)
+
+---
+
+# 03. Domain
+
+- [Production Domain — Overview](03-domain/production-domain.md)
+- [Production Entities](03-domain/production-entities.md)
+- [Production Workflows](03-domain/production-workflows.md)
+- [Production Scheduling](03-domain/production-scheduling.md)
+- [Production Events](03-domain/production-events.md)
 
 ---
 

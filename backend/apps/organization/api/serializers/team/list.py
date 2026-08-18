@@ -13,5 +13,4 @@ class TeamListSerializer(TeamBaseSerializer):
             "name",
             "department",
             "lead",
-            "status",
         )

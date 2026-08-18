@@ -1,0 +1,26 @@
+%% Follow-up work flowchart (Mermaid)
+%% File: docs/09-diagrams/follow-up-work.mmd
+
+flowchart TD
+  A[Follow-up Work] --> B(Collect required diagrams)
+  B --> C{Decide priority}
+  C -->|High| D[System architecture]
+  C -->|Medium| E[Feature & event flows]
+  C -->|Low| F[Operational runbooks / runbooks diagrams]
+  D --> G[Draft mermaid files in docs/09-diagrams]
+  E --> G
+  F --> G
+  G --> H[Peer review]
+  H --> I[Publish to docs and link from README]
+  I --> J[Close follow-up tasks]
+
+  style A fill:#f9f,stroke:#333,stroke-width:1px
+  style D fill:#ffefc2,stroke:#333
+  style E fill:#c2f0ff,stroke:#333
+  style F fill:#e6e6e6,stroke:#333
+  style H fill:#c2ffc2,stroke:#333
+  style I fill:#d9d9ff,stroke:#333
+
+%% Notes:
+%% - Use this file as the living checklist for mermaid diagrams to add.
+%% - Each target node corresponds to one or more .mmd files that should be added to this folder.

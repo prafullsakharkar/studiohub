@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 
 class UserChangePasswordSerializer(
-    serializers.SerializerSerializer,
+    serializers.Serializer,
 ):
     old_password = serializers.CharField(
         write_only=True,

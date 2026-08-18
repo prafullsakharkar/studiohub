@@ -20,5 +20,4 @@ class OrganizationSettingsSummarySerializer(
             "timezone",
             "language",
             "currency",
-            "status",
         )

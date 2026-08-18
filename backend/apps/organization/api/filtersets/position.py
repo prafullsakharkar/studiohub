@@ -3,14 +3,11 @@ from django_filters import BooleanFilter, CharFilter, NumberFilter
 from apps.core.filters.base import BaseFilterSet
 from apps.core.filters.ordering import OrderingFilterMixin
 from apps.core.filters.search import SearchFilterMixin
-from apps.core.filters.status import StatusFilterMixin
 from apps.organization.models.position import Position
-
 
 class PositionFilterSet(
     SearchFilterMixin,
     OrderingFilterMixin,
-    StatusFilterMixin,
     BaseFilterSet,
 ):
     """
@@ -63,5 +60,4 @@ class PositionFilterSet(
             "name",
             "level",
             "is_managerial",
-            "status",
         )

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 from datetime import timedelta
+from datetime import timezone as dt_timezone
 
 from django.conf import settings
 from django.utils import timezone
@@ -173,7 +174,7 @@ class JWTService:
 
         return timezone.datetime.fromtimestamp(
             timestamp,
-            tz=timezone.utc,
+            tz=dt_timezone.utc,
         )
 
     @staticmethod

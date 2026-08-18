@@ -35,14 +35,13 @@ class MFAEnrollmentService(BaseMFAService):
             user=user,
         )
 
-        mfa.method = method
-        mfa.secret = TOTPService.generate_secret()
-        mfa.status = MFAStatus.PENDING
-        mfa.enabled = False
-        mfa.verified = False
+        mfa.primary_method = method
+        mfa.totp_secret = TOTPService.generate_secret()
+        mfa.status = MFAStatus.DISABLED
+        mfa.is_verified = False
         mfa.failed_attempts = 0
         mfa.locked_until = None
-        mfa.last_verified_at = None
+        mfa.totp_confirmed_at = None
 
         mfa.save()
 
@@ -66,17 +65,15 @@ class MFAEnrollmentService(BaseMFAService):
 
         cls.UserMFAValidator.validate_enable(mfa)
 
-        mfa.enabled = True
-        mfa.verified = True
-        mfa.status = MFAStatus.ACTIVE
-        mfa.last_verified_at = timezone.now()
+        mfa.status = MFAStatus.ENABLED
+        mfa.is_verified = True
+        mfa.totp_confirmed_at = timezone.now()
 
         mfa.save(
             update_fields=[
-                "enabled",
-                "verified",
                 "status",
-                "last_verified_at",
+                "is_verified",
+                "totp_confirmed_at",
             ]
         )
 
@@ -100,15 +97,13 @@ class MFAEnrollmentService(BaseMFAService):
 
         cls.UserMFAValidator.validate_disable(mfa)
 
-        mfa.enabled = False
-        mfa.verified = False
         mfa.status = MFAStatus.DISABLED
+        mfa.is_verified = False
 
         mfa.save(
             update_fields=[
-                "enabled",
-                "verified",
                 "status",
+                "is_verified",
             ]
         )
 
@@ -132,16 +127,14 @@ class MFAEnrollmentService(BaseMFAService):
 
         cls.UserMFAValidator.validate_disable(mfa)
 
-        mfa.secret = TOTPService.generate_secret()
-        mfa.verified = False
-        mfa.enabled = False
-        mfa.status = MFAStatus.PENDING
+        mfa.totp_secret = TOTPService.generate_secret()
+        mfa.is_verified = False
+        mfa.status = MFAStatus.DISABLED
 
         mfa.save(
             update_fields=[
-                "secret",
-                "verified",
-                "enabled",
+                "totp_secret",
+                "is_verified",
                 "status",
             ]
         )
@@ -157,7 +150,7 @@ class MFAEnrollmentService(BaseMFAService):
         mfa = cls.UserMFASelector.get_by_user(user)
 
         return TOTPService.provisioning_uri(
-            secret=mfa.secret,
+            secret=mfa.totp_secret,
             email=user.email,
             issuer=getattr(
                 settings,
@@ -176,7 +169,7 @@ class MFAEnrollmentService(BaseMFAService):
 
         return QRCodeService.data_uri(
             email=user.email,
-            secret=mfa.secret,
+            secret=mfa.totp_secret,
             issuer=getattr(
                 settings,
                 "MFA_ISSUER_NAME",
@@ -193,23 +186,21 @@ class MFAEnrollmentService(BaseMFAService):
     ):
         mfa = cls.UserMFASelector.get_by_user(user)
 
-        mfa.secret = TOTPService.generate_secret()
+        mfa.totp_secret = TOTPService.generate_secret()
         mfa.failed_attempts = 0
         mfa.locked_until = None
-        mfa.enabled = False
-        mfa.verified = False
-        mfa.status = MFAStatus.PENDING
-        mfa.last_verified_at = None
+        mfa.status = MFAStatus.DISABLED
+        mfa.is_verified = False
+        mfa.totp_confirmed_at = None
 
         mfa.save(
             update_fields=[
-                "secret",
+                "totp_secret",
                 "failed_attempts",
                 "locked_until",
-                "enabled",
-                "verified",
                 "status",
-                "last_verified_at",
+                "is_verified",
+                "totp_confirmed_at",
             ]
         )
 

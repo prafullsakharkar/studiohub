@@ -1,0 +1,24 @@
+%%{init: {"theme":"default"}}%%
+stateDiagram-v2
+    [*] --> Draft
+    Draft --> Submitted : submit for review
+    Submitted --> Approved : manager approves
+    Submitted --> Rejected : declined or rework required
+    Rejected --> Draft : revise proposal
+    Approved --> Committed : plan lock / schedule commit
+    Committed --> Active : work starts
+    Active --> Released : project ends or resource exits
+    Active --> Adjusted : re-baseline / partial change
+    Adjusted --> Approved : new version approved
+    Committed --> Cancelled : plan withdrawn
+    Active --> Cancelled : cancellation during execution
+    Released --> [*]
+    Cancelled --> [*]
+
+    note right of Approved
+      hard allocation: protected against silent change
+    end note
+
+    note right of Committed
+      capacity commitment becomes visible in snapshoting
+    end note

@@ -1,18 +1,13 @@
 from django.conf import settings
 from django.db import models
 
-from apps.core.models import (
-    AuditModel,
-    TimeStampedModel,
-    UUIDModel,
-)
+from apps.core.models import EntityModel
+from apps.identity.managers import BackupCodeManager
 
 
-class BackupCode(
-    UUIDModel,
-    TimeStampedModel,
-    AuditModel,
-):
+class BackupCode(EntityModel):
+
+    objects = BackupCodeManager()
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -43,6 +38,16 @@ class BackupCode(
 
         db_table = "identity_backup_codes"
 
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "user",
+                    "code_hash",
+                ],
+                name="uniq_backup_code_user_hash",
+            ),
+        ]
+
         indexes = [
             models.Index(
                 fields=[
@@ -58,4 +63,4 @@ class BackupCode(
         ]
 
     def __str__(self):
-        return f"Backup Code {self.id}"
+        return f"Backup code for {self.user.email}"

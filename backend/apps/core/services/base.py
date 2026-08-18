@@ -24,36 +24,6 @@ class BaseService:
         return
 
     @classmethod
-    def publish_event(cls, operation, **kwargs):
-        """
-        Publish a domain event for the given operation.
-
-        Delegates to ``_publish_event`` so subclasses that define an
-        ``event_map`` publish the mapped event. No-op when no event is mapped.
-        """
-        cls._publish_event(operation, **kwargs)
-
-    @classmethod
-    def _publish_event(cls, operation, **kwargs):
-        """
-        Internal hook to publish the event mapped to ``operation``.
-
-        No-op by default. ``CRUDService`` and ``LifecycleService`` override
-        this to publish from their ``event_map``.
-        """
-        return
-
-    @classmethod
-    def invalidate_cache(cls, instance):
-        """
-        Invalidate any cached representation of ``instance``.
-
-        No-op by default. Subclasses that integrate with a cache layer
-        (e.g. ``CacheService``) override this hook.
-        """
-        return
-
-    @classmethod
     def before_create(cls, **kwargs):
         return
 
@@ -76,3 +46,31 @@ class BaseService:
     @classmethod
     def after_delete(cls, instance):
         return
+
+    # ------------------------------------------------------------------
+    # Instance helpers (convenience wrappers used by instance-method
+    # services, e.g. ``service.create_xxx(**data)``)
+    # ------------------------------------------------------------------
+
+    def _create(self, **kwargs):
+        """
+        Create a model instance.
+
+        Requires ``self.model`` to be set on the service class.
+        """
+        return self.model.objects.create(**kwargs)
+
+    def _update(self, instance, **kwargs):
+        """
+        Update a model instance in place.
+        """
+        for field, value in kwargs.items():
+            setattr(instance, field, value)
+        instance.save()
+        return instance
+
+    def _delete(self, instance):
+        """
+        Delete (hard) a model instance.
+        """
+        instance.delete()

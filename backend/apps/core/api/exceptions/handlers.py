@@ -5,6 +5,7 @@ Global DRF exception handler.
 from __future__ import annotations
 
 from rest_framework import status
+from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
@@ -27,6 +28,25 @@ def custom_exception_handler(exc, context):
             ),
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+    # DRF coerces ``AuthenticationFailed``/``NotAuthenticated`` to 403 when
+    # the view cannot issue a WWW-Authenticate header (e.g. login views
+    # without authenticators), and views without authenticators raise
+    # ``PermissionDenied`` instead of ``NotAuthenticated``. The API contract
+    # treats authentication failures as 401.
+    if isinstance(
+        exc,
+        (AuthenticationFailed, NotAuthenticated),
+    ) and response.status_code == status.HTTP_403_FORBIDDEN:
+        response.status_code = status.HTTP_401_UNAUTHORIZED
+    elif (
+        isinstance(exc, PermissionDenied)
+        and response.status_code == status.HTTP_403_FORBIDDEN
+    ):
+        request = context.get("request")
+        user = getattr(request, "user", None)
+        if user is None or not user.is_authenticated:
+            response.status_code = status.HTTP_401_UNAUTHORIZED
 
     detail = response.data
 

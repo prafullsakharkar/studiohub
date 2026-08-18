@@ -1,0 +1,22 @@
+%% Event flow (Mermaid)
+%% File: docs/09-diagrams/event-flow.mmd
+
+flowchart LR
+  subgraph Producer
+    A[Feature Service] -->|emit event| Kafka[(Event Broker)]
+  end
+
+  subgraph Consumers
+    Kafka --> B[Email Service]
+    Kafka --> C[Notification Service]
+    Kafka --> D[Analytics Pipeline]
+  end
+
+  A --> E[Command: enqueue]
+  E -->|persist event| EventStore[(Event Store)]
+  EventStore --> Kafka
+
+  classDef broker fill:#f9f,stroke:#333
+  class Kafka broker
+
+  %% Notes: events should be idempotent and versioned

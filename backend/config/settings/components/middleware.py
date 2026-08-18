@@ -17,8 +17,10 @@ MIDDLEWARE = [
     "apps.core.middleware.TimezoneMiddleware",
     "apps.core.middleware.AuthenticationMiddleware",
     "apps.core.middleware.OrganizationMiddleware",
+    "apps.organization.middleware.organization_context.OrganizationContextMiddleware",
     "apps.core.middleware.AuditMiddleware",
     "apps.core.middleware.MaintenanceMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "apps.core.middleware.RateLimitMiddleware",
 ]

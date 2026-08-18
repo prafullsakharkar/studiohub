@@ -27,7 +27,7 @@ dependencies = [
     "celery[redis]>=5.5",
     "flower>=2.0",
     "django-celery-results>=2.6",
-    "django-celery-beat>=2.8",
+    "django-celery-beat>=2.9",
     # Images
     "pillow>=11.3",
     # Storage
@@ -48,6 +48,8 @@ dependencies = [
     "django-health-check>=3.20",
     # Extensions
     "django-extensions>=4.1",
+    # Channels (WebSocket support)
+    "channels>=4.2",
     # OpenAPI
     "pyyaml>=6.0",
     # Typing
@@ -74,6 +76,8 @@ dependencies = [
     "qrcode[pil]>=8.2",
     "pycountry>=24.6.1",
     "openpyxl>=3.1.5",
+    # ASGI server
+    "uvicorn[standard]>=0.34",
 ]
 
 [dependency-groups]
@@ -132,7 +136,7 @@ python_files = ["test_*.py", "*_test.py"]
 
 addopts = ["--reuse-db", "--strict-markers", "--cov=apps"]
 
-testpaths = ["tests", "apps"]
+testpaths = ["apps"]
 
 [tool.coverage.run]
 

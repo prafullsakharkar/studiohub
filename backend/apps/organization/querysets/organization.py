@@ -7,6 +7,9 @@ from __future__ import annotations
 from django.db.models import Count, Q
 
 from apps.core.models.querysets.base import BaseQuerySet
+from apps.core.models.querysets.mixins.lifecycle import (
+    LifecycleQuerySetMixin,
+)
 from apps.core.models.querysets.mixins.ordering import (
     OrderingQuerySetMixin,
 )
@@ -19,6 +22,7 @@ from apps.core.models.querysets.mixins.soft_delete import (
 
 
 class OrganizationQuerySet(
+    LifecycleQuerySetMixin,
     SearchQuerySetMixin,
     OrderingQuerySetMixin,
     SoftDeleteQuerySetMixin,
@@ -72,23 +76,6 @@ class OrganizationQuerySet(
                 distinct=True,
             )
         )
-
-    def with_project_count(self):
-        """
-        Annotate project count.
-        """
-        return self.annotate(
-            project_count=Count(
-                "projects",
-                distinct=True,
-            )
-        )
-
-    def with_statistics(self):
-        """
-        Annotate commonly used statistics.
-        """
-        return self.with_member_count().with_project_count()
 
     def lookup(self, value: str):
         """

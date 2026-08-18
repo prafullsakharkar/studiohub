@@ -1,4 +1,4 @@
-from apps.identity.models import (
+from apps.organization.models import (
     GroupRole,
     OrganizationMembership,
     UserRole,

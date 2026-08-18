@@ -1,0 +1,3 @@
+"""
+Core integration tests package.
+"""

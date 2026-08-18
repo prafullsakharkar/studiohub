@@ -1,18 +1,15 @@
-from .base import DepartmentSerializer
+from .base import TeamBaseSerializer
 
 
-class DepartmentSummarySerializer(
-    DepartmentSerializer,
+class TeamSummarySerializer(
+    TeamBaseSerializer,
 ):
 
-    class Meta(DepartmentSerializer.Meta):
+    class Meta(TeamBaseSerializer.Meta):
 
         fields = (
             "id",
             "uuid",
             "name",
             "code",
-            "organization_type",
-            "status",
-            "logo",
         )

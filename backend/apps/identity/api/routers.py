@@ -1,27 +1,12 @@
 from rest_framework.routers import DefaultRouter
 
-from apps.identity.api.viewsets.api_key import APIKeyViewSet
-from apps.identity.api.viewsets.group import (
-    GroupViewSet,
-)
-from apps.identity.api.viewsets.login_history import (
-    LoginHistoryViewSet,
-)
-from apps.identity.api.viewsets.permission import (
-    PermissionViewSet,
-)
-from apps.identity.api.viewsets.personal_access_token import PersonalAccessTokenViewSet
-from apps.identity.api.viewsets.role import (
-    RoleViewSet,
-)
-from apps.identity.api.viewsets.user import (
+from apps.identity.api.viewsets import (
+    IPBlacklistViewSet,
+    LoginAttemptViewSet,
+    ProfileViewSet,
+    SecurityEventViewSet,
+    TrustedDeviceViewSet,
     UserViewSet,
-)
-from apps.identity.api.viewsets.user_preference import (
-    UserPreferenceViewSet,
-)
-from apps.identity.api.viewsets.user_session import (
-    UserSessionViewSet,
 )
 
 router = DefaultRouter()
@@ -33,49 +18,33 @@ router.register(
 )
 
 router.register(
-    "roles",
-    RoleViewSet,
-    basename="role",
+    "profiles",
+    ProfileViewSet,
+    basename="profile",
 )
 
 router.register(
-    "permissions",
-    PermissionViewSet,
-    basename="permission",
+    "ip-blacklist",
+    IPBlacklistViewSet,
+    basename="ip-blacklist",
 )
 
 router.register(
-    "groups",
-    GroupViewSet,
-    basename="group",
+    "login-attempts",
+    LoginAttemptViewSet,
+    basename="login-attempt",
 )
 
 router.register(
-    "user-preferences",
-    UserPreferenceViewSet,
-    basename="user-preference",
+    "security-events",
+    SecurityEventViewSet,
+    basename="security-event",
 )
 
 router.register(
-    "user-sessions",
-    UserSessionViewSet,
-    basename="user-session",
+    "trusted-devices",
+    TrustedDeviceViewSet,
+    basename="trusted-device",
 )
 
-router.register(
-    "login-history",
-    LoginHistoryViewSet,
-    basename="login-history",
-)
-router.register(
-    "api-keys",
-    APIKeyViewSet,
-    basename="identity-api-key",
-)
-
-router.register(
-    "personal-access-tokens",
-    PersonalAccessTokenViewSet,
-    basename="identity-personal-access-token",
-)
 urlpatterns = router.urls
