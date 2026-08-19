@@ -1,0 +1,87 @@
+import { BaseEntity } from '@/types/common';
+
+export interface AuditLog extends BaseEntity {
+  user_id: string;
+  user_name: string;
+  user_email: string;
+  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'APPROVE' | 'REJECT' | 'PUBLISH' | 'LOGIN' | 'EXPORT';
+  entity_type: 'Project' | 'Shot' | 'Asset' | 'Task' | 'Review' | 'User' | 'Pipeline';
+  entity_id: string;
+  entity_code: string;
+  description: string;
+  ip_address: string;
+  changes_diff?: Record<string, { old: any; new: any }>;
+}
+
+export const mockAuditLogs: AuditLog[] = [
+  {
+    id: 'aud-001',
+    user_id: 'usr-001',
+    user_name: 'Alex Chen',
+    user_email: 'supervisor@studiohub.vfx',
+    action: 'APPROVE',
+    entity_type: 'Shot',
+    entity_id: 'shot-002',
+    entity_code: 'NK_010_020',
+    description: 'Signed off and approved final comp pass for shot NK_010_020 (v007).',
+    ip_address: '192.168.10.45',
+    created_at: '2026-08-17T14:35:00Z',
+    updated_at: '2026-08-17T14:35:00Z',
+  },
+  {
+    id: 'aud-002',
+    user_id: 'usr-004',
+    user_name: 'Sarah Jenkins',
+    user_email: 'artist@studiohub.vfx',
+    action: 'PUBLISH',
+    entity_type: 'Review',
+    entity_id: 'rev-001',
+    entity_code: 'REV-2026-0817-01',
+    description: 'Published new version v003 with Houdini pyro simulation EXR renders.',
+    ip_address: '192.168.10.82',
+    created_at: '2026-08-17T10:00:00Z',
+    updated_at: '2026-08-17T10:00:00Z',
+  },
+  {
+    id: 'aud-003',
+    user_id: 'usr-003',
+    user_name: 'Elena Rostova',
+    user_email: 'lead@studiohub.vfx',
+    action: 'UPDATE',
+    entity_type: 'Task',
+    entity_id: 'task-001',
+    entity_code: 'TSK-FX-1092',
+    description: 'Logged 4.5 hours and updated task status to In Progress.',
+    ip_address: '192.168.10.51',
+    created_at: '2026-08-17T09:20:00Z',
+    updated_at: '2026-08-17T09:20:00Z',
+  },
+  {
+    id: 'aud-004',
+    user_id: 'usr-002',
+    user_name: 'Marcus Vance',
+    user_email: 'admin@studiohub.vfx',
+    action: 'UPDATE',
+    entity_type: 'Pipeline',
+    entity_id: 'pipe-01',
+    entity_code: 'USD_PIPELINE',
+    description: 'Updated OpenUSD resolver to v24.08 and synched Maya 2025 plugin.',
+    ip_address: '192.168.10.12',
+    created_at: '2026-08-16T16:00:00Z',
+    updated_at: '2026-08-16T16:00:00Z',
+  },
+  {
+    id: 'aud-005',
+    user_id: 'usr-001',
+    user_name: 'Alex Chen',
+    user_email: 'supervisor@studiohub.vfx',
+    action: 'LOGIN',
+    entity_type: 'User',
+    entity_id: 'usr-001',
+    entity_code: 'ALEX_CHEN',
+    description: 'Successful JWT login via Studio Hub Web Portal.',
+    ip_address: '192.168.10.45',
+    created_at: '2026-08-17T08:00:00Z',
+    updated_at: '2026-08-17T08:00:00Z',
+  },
+];

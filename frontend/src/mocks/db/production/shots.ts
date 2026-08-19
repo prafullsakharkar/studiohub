@@ -1,0 +1,184 @@
+import { BaseEntity, ProductionStatus } from '@/types/common';
+
+export interface ShotPipelineStatus {
+  layout: ProductionStatus;
+  animation: ProductionStatus;
+  fx: ProductionStatus;
+  lighting: ProductionStatus;
+  comp: ProductionStatus;
+}
+
+export interface Shot extends BaseEntity {
+  project_id: string;
+  project_code: string;
+  sequence_code: string;
+  code: string;
+  name: string;
+  description: string;
+  status: ProductionStatus;
+  frame_in: number;
+  frame_out: number;
+  frame_count: number;
+  handle_frames: number;
+  thumbnail_url: string;
+  video_url?: string;
+  current_version: string;
+  assigned_artist_id?: string;
+  assigned_artist_name?: string;
+  supervisor_approved: boolean;
+  client_approved: boolean;
+  pipeline: ShotPipelineStatus;
+}
+
+export const mockShots: Shot[] = [
+  {
+    id: 'shot-001',
+    project_id: 'proj-001',
+    project_code: 'NK99',
+    sequence_code: 'NK_010',
+    code: 'NK_010_010',
+    name: 'Hero Spinner Dive Through Neon Canyon',
+    description: 'Hero police spinner dives vertically through dense holographic billboards and rainy haze.',
+    status: 'In Progress',
+    frame_in: 1001,
+    frame_out: 1148,
+    frame_count: 148,
+    handle_frames: 8,
+    thumbnail_url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600&auto=format&fit=crop&q=80',
+    video_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    current_version: 'v004',
+    assigned_artist_id: 'usr-003',
+    assigned_artist_name: 'Elena Rostova',
+    supervisor_approved: false,
+    client_approved: false,
+    pipeline: {
+      layout: 'Approved',
+      animation: 'Approved',
+      fx: 'In Progress',
+      lighting: 'In Progress',
+      comp: 'Not Started',
+    },
+    created_at: '2026-01-20T10:00:00Z',
+    updated_at: '2026-08-16T12:00:00Z',
+  },
+  {
+    id: 'shot-002',
+    project_id: 'proj-001',
+    project_code: 'NK99',
+    sequence_code: 'NK_010',
+    code: 'NK_010_020',
+    name: 'Cockpit Tight Close-Up Rain Streaks',
+    description: 'Interior cockpit camera looking at pilot face with interactive neon light passes and windshield fluid droplets.',
+    status: 'Approved',
+    frame_in: 1001,
+    frame_out: 1084,
+    frame_count: 84,
+    handle_frames: 8,
+    thumbnail_url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&auto=format&fit=crop&q=80',
+    video_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+    current_version: 'v007',
+    assigned_artist_id: 'usr-003',
+    assigned_artist_name: 'Elena Rostova',
+    supervisor_approved: true,
+    client_approved: true,
+    pipeline: {
+      layout: 'Approved',
+      animation: 'Approved',
+      fx: 'Approved',
+      lighting: 'Approved',
+      comp: 'Approved',
+    },
+    created_at: '2026-01-20T10:15:00Z',
+    updated_at: '2026-08-14T17:30:00Z',
+  },
+  {
+    id: 'shot-003',
+    project_id: 'proj-001',
+    project_code: 'NK99',
+    sequence_code: 'NK_010',
+    code: 'NK_010_030',
+    name: 'Tracking Drone Plasma Missile Detonation',
+    description: 'Enemy hunter drone fires dual plasma missiles that detonate against concrete overpass creating pyroclastic sparks.',
+    status: 'Pending Review',
+    frame_in: 1001,
+    frame_out: 1192,
+    frame_count: 192,
+    handle_frames: 8,
+    thumbnail_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop&q=80',
+    video_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+    current_version: 'v003',
+    assigned_artist_id: 'usr-004',
+    assigned_artist_name: 'Sarah Jenkins',
+    supervisor_approved: false,
+    client_approved: false,
+    pipeline: {
+      layout: 'Approved',
+      animation: 'Approved',
+      fx: 'Pending Review',
+      lighting: 'In Progress',
+      comp: 'Not Started',
+    },
+    created_at: '2026-01-21T09:30:00Z',
+    updated_at: '2026-08-17T11:00:00Z',
+  },
+  {
+    id: 'shot-004',
+    project_id: 'proj-002',
+    project_code: 'AETH2',
+    sequence_code: 'AETH_101',
+    code: 'AETH_101_040',
+    name: 'Ancient Wyvern Gate Breach',
+    description: 'Colossal dragon lands onto castle parapet, shattering masonry with rigid body dynamics and smoke plumes.',
+    status: 'In Progress',
+    frame_in: 1001,
+    frame_out: 1220,
+    frame_count: 220,
+    handle_frames: 8,
+    thumbnail_url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop&q=80',
+    video_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4',
+    current_version: 'v005',
+    assigned_artist_id: 'usr-003',
+    assigned_artist_name: 'Elena Rostova',
+    supervisor_approved: false,
+    client_approved: false,
+    pipeline: {
+      layout: 'Approved',
+      animation: 'In Progress',
+      fx: 'In Progress',
+      lighting: 'Not Started',
+      comp: 'Not Started',
+    },
+    created_at: '2026-02-10T14:00:00Z',
+    updated_at: '2026-08-16T15:20:00Z',
+  },
+  {
+    id: 'shot-005',
+    project_id: 'proj-003',
+    project_code: 'VEL01',
+    sequence_code: 'VEL_001',
+    code: 'VEL_001_010',
+    name: 'Hyperdrive Warp Singularity',
+    description: 'Starfighter fleet accelerates past speed of light with chromatic aberration warp tunnel and particle wake.',
+    status: 'Approved',
+    frame_in: 1001,
+    frame_out: 1096,
+    frame_count: 96,
+    handle_frames: 8,
+    thumbnail_url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop&q=80',
+    video_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+    current_version: 'v008',
+    assigned_artist_id: 'usr-003',
+    assigned_artist_name: 'Elena Rostova',
+    supervisor_approved: true,
+    client_approved: true,
+    pipeline: {
+      layout: 'Approved',
+      animation: 'Approved',
+      fx: 'Approved',
+      lighting: 'Approved',
+      comp: 'Approved',
+    },
+    created_at: '2026-04-10T09:00:00Z',
+    updated_at: '2026-08-15T18:00:00Z',
+  },
+];
