@@ -57,8 +57,10 @@ export const AuthLayout: React.FC = () => {
       </div>
 
       {/* Right Login / Auth Form Container */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 overflow-y-auto">
-        <Outlet />
+      <div className="w-full lg:w-1/2 flex p-6 sm:p-12 overflow-y-auto">
+        <div className="m-auto w-full max-w-md">
+          <Outlet />
+        </div>
       </div>
     </div>
   );

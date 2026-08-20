@@ -2,7 +2,7 @@ import React, { HTMLAttributes } from 'react';
 import { cn } from '../utils/cn';
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  variant?: 'neutral' | 'success' | 'warning' | 'error' | 'info' | 'purple' | 'cyan' | 'outline';
+  variant?: 'neutral' | 'success' | 'warning' | 'error' | 'info' | 'purple' | 'cyan' | 'outline' | 'primary' | 'danger';
   size?: 'sm' | 'md';
 }
 
@@ -31,6 +31,8 @@ export const Badge: React.FC<BadgeProps> = ({
     purple: 'bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800',
     cyan: 'bg-cyan-50 dark:bg-cyan-950/50 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800',
     outline: 'bg-transparent border border-slate-700 text-slate-300',
+    primary: 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800',
+    danger: 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800',
   };
 
   return (

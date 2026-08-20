@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Edit3, ChevronLeft, Save, Sparkles, Building, MapPin, AlertCircle } from 'lucide-react';
 import { usePerson, usePersonMutations, useDepartments, useTeams, useOffices } from '@/modules/organization/hooks/useOrganizationData';
+import { Person } from '@/types/organization';
 import { Button } from '@/shared/components/Button';
 import { Card, CardBody } from '@/shared/components/Card';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
@@ -25,13 +26,13 @@ export const EditPersonPage: React.FC = () => {
     team_name: '',
     office_id: '',
     office_name: '',
-    seniority: 'Senior' as const,
+    seniority: 'Senior' as Person['seniority'],
     skills: '',
     phone: '',
     timezone: '',
     security_clearance: 'MPAA Tier 3',
-    status: 'Active' as const,
-    availability_status: 'Available' as const,
+    status: 'Active' as Person['status'],
+    availability_status: 'Available' as Person['availability_status'],
   });
 
   useEffect(() => {
@@ -87,6 +88,7 @@ export const EditPersonPage: React.FC = () => {
       id: person.id,
       data: {
         ...form,
+        role: form.role as Person['role'],
         department_name: selectedDept?.name || form.department_name,
         office_name: selectedOffice?.name || form.office_name,
         team_name: selectedTeam?.name || form.team_name,

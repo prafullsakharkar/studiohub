@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { GuestRoute } from './GuestRoute';
 import { AppLayout } from '@/layouts/AppLayout';
+import { AuthLayout } from '@/layouts/AuthLayout';
 
 // Auth Pages
 import { LoginPage } from '@/modules/auth/pages/LoginPage';
@@ -32,6 +33,26 @@ import { DepartmentsPage } from '@/modules/organization/pages/DepartmentsPage';
 import { TeamsPage } from '@/modules/organization/pages/TeamsPage';
 import { OfficesPage } from '@/modules/organization/pages/OfficesPage';
 
+// People Module Pages
+import { PersonWorkspacePage } from '@/modules/people/pages/PersonWorkspacePage';
+import { CreatePersonPage } from '@/modules/people/pages/CreatePersonPage';
+import { EditPersonPage } from '@/modules/people/pages/EditPersonPage';
+
+// Departments Module Pages
+import { DepartmentWorkspacePage } from '@/modules/departments/pages/DepartmentWorkspacePage';
+import { CreateDepartmentPage } from '@/modules/departments/pages/CreateDepartmentPage';
+import { EditDepartmentPage } from '@/modules/departments/pages/EditDepartmentPage';
+
+// Teams Module Pages
+import { TeamWorkspacePage } from '@/modules/teams/pages/TeamWorkspacePage';
+import { CreateTeamPage } from '@/modules/teams/pages/CreateTeamPage';
+import { EditTeamPage } from '@/modules/teams/pages/EditTeamPage';
+
+// Offices Module Pages
+import { OfficeWorkspacePage } from '@/modules/offices/pages/OfficeWorkspacePage';
+import { CreateOfficePage } from '@/modules/offices/pages/CreateOfficePage';
+import { EditOfficePage } from '@/modules/offices/pages/EditOfficePage';
+
 // Production & Platform Pages
 import { VersionsPage } from '@/modules/production/pages/VersionsPage';
 import { NotificationsPage } from '@/modules/platform/pages/NotificationsPage';
@@ -49,15 +70,17 @@ export const AppRoutes: React.FC = () => {
     <Routes>
       {/* Guest Only Routes */}
       <Route element={<GuestRoute />}>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        </Route>
       </Route>
 
       {/* Protected Studio App Routes */}
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          
+
           {/* HOME & WORKSPACE */}
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/workspace" element={<WorkspacePage />} />
@@ -70,9 +93,21 @@ export const AppRoutes: React.FC = () => {
           <Route path="/clients" element={<ClientsPage />} />
           <Route path="/vendors" element={<VendorsPage />} />
           <Route path="/people" element={<PeoplePage />} />
+          <Route path="/people/new" element={<CreatePersonPage />} />
+          <Route path="/people/:id" element={<PersonWorkspacePage />} />
+          <Route path="/people/:id/edit" element={<EditPersonPage />} />
           <Route path="/departments" element={<DepartmentsPage />} />
+          <Route path="/departments/new" element={<CreateDepartmentPage />} />
+          <Route path="/departments/:id" element={<DepartmentWorkspacePage />} />
+          <Route path="/departments/:id/edit" element={<EditDepartmentPage />} />
           <Route path="/teams" element={<TeamsPage />} />
+          <Route path="/teams/new" element={<CreateTeamPage />} />
+          <Route path="/teams/:id" element={<TeamWorkspacePage />} />
+          <Route path="/teams/:id/edit" element={<EditTeamPage />} />
           <Route path="/offices" element={<OfficesPage />} />
+          <Route path="/offices/new" element={<CreateOfficePage />} />
+          <Route path="/offices/:id" element={<OfficeWorkspacePage />} />
+          <Route path="/offices/:id/edit" element={<EditOfficePage />} />
 
           {/* PRODUCTION APPS */}
           <Route path="/projects" element={<ProjectsPage />} />

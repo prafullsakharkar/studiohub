@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { organizationApi } from '../api/organizationApi';
 import { useOrganization } from '@/core/organization/useOrganization';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
-import { Client, Vendor, Person } from '@/types/organization';
+import { Client, Vendor, Person, DepartmentEntity, Team, Office } from '@/types/organization';
 
 export const useOrganizationsList = () => {
   return useQuery({
