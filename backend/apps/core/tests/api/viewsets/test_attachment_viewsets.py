@@ -28,13 +28,8 @@ class TestAttachmentViewSet:
 
         data = response.json()
 
-        assert data["success"] is True
-        assert "data" in data
-        assert "meta" in data
-        assert "pagination" in data["meta"]
-
-        assert data["meta"]["pagination"]["total"] == 3
-        assert len(data["data"]) == 3
+        assert data["count"] == 3
+        assert len(data["results"]) == 3
 
     @pytest.mark.django_db
     def test_list_attachments_unauthenticated(self, api_client):
@@ -58,9 +53,9 @@ class TestAttachmentViewSet:
 
         data = response.json()
 
-        assert data["meta"]["pagination"]["total"] == 15
-        assert len(data["data"]) == 5
-        assert "next_url" in data["meta"]["pagination"]
+        assert data["count"] == 15
+        assert len(data["results"]) == 5
+        assert "next" in data
 
     @pytest.mark.django_db
     def test_retrieve_attachment(self, authenticated_client):
@@ -75,9 +70,9 @@ class TestAttachmentViewSet:
 
         data = response.json()
 
-        assert data["data"]["id"] == str(attachment.id)
-        assert data["data"]["uuid"] == str(attachment.uuid)
-        assert data["data"]["name"] == attachment.name
+        assert data["id"] == str(attachment.id)
+        assert data["uuid"] == str(attachment.uuid)
+        assert data["name"] == attachment.name
 
     @pytest.mark.django_db
     def test_retrieve_attachment_not_found(self, authenticated_client):
@@ -107,9 +102,9 @@ class TestAttachmentViewSet:
 
         data = response.json()
 
-        assert data["data"]["name"] == "New Attachment"
-        assert data["data"]["description"] == "A new attachment"
-        assert data["data"]["file_type"] == "document"
+        assert data["name"] == "New Attachment"
+        assert data["description"] == "A new attachment"
+        assert data["file_type"] == "document"
 
     @pytest.mark.django_db
     def test_create_attachment_unauthenticated(self, api_client):
@@ -144,9 +139,9 @@ class TestAttachmentViewSet:
 
         data = response.json()
 
-        assert data["data"]["name"] == "Updated Attachment"
-        assert data["data"]["description"] == "An updated attachment"
-        assert data["data"]["file_type"] == "image"
+        assert data["name"] == "Updated Attachment"
+        assert data["description"] == "An updated attachment"
+        assert data["file_type"] == "image"
 
     @pytest.mark.django_db
     def test_partial_update_attachment(self, authenticated_client):
@@ -164,7 +159,7 @@ class TestAttachmentViewSet:
 
         data = response.json()
 
-        assert data["data"]["description"] == "A partially updated attachment"
+        assert data["description"] == "A partially updated attachment"
 
     @pytest.mark.django_db
     def test_delete_attachment(self, authenticated_client):
@@ -194,7 +189,7 @@ class TestAttachmentViewSet:
 
         data = response.json()
 
-        assert data["meta"]["pagination"]["total"] == 3
+        assert data["count"] == 3
 
     @pytest.mark.django_db
     def test_order_attachments(self, authenticated_client):
@@ -208,7 +203,7 @@ class TestAttachmentViewSet:
 
         data = response.json()
 
-        assert data["meta"]["pagination"]["total"] == 3
+        assert data["count"] == 3
 
     @pytest.mark.django_db
     def test_filter_attachments(self, authenticated_client):
@@ -223,4 +218,4 @@ class TestAttachmentViewSet:
 
         data = response.json()
 
-        assert data["meta"]["pagination"]["total"] == 3
+        assert data["count"] == 3

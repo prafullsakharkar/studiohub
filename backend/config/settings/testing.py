@@ -6,6 +6,11 @@ import os
 
 from .base import *
 
+# Test settings must never run with DEBUG on: ``debug_toolbar`` is only
+# registered in ``local.py``, so a stray ``DEBUG=True`` in ``.env.test``
+# would make ``config.urls``'s debug_toolbar include blow up on import.
+DEBUG = False
+
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.MD5PasswordHasher",
 ]

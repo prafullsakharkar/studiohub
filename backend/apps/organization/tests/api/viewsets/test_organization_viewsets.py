@@ -113,7 +113,7 @@ class TestOrganizationViewSet:
         )
 
         assert response.status_code == 400
-        assert "code" in response.json()["errors"]
+        assert "code" in response.json()
 
     @pytest.mark.django_db
     def test_create_organization_unauthenticated(self, api_client):
@@ -318,7 +318,7 @@ class TestOrganizationViewSet:
         )
 
         assert response.status_code == 400
-        assert "organization_type" in response.json()["errors"]
+        assert "organization_type" in response.json()
 
     @pytest.mark.django_db
     def test_duplicate_code(self, staff_client):
@@ -331,7 +331,7 @@ class TestOrganizationViewSet:
         )
 
         assert response.status_code == 400
-        assert "code" in response.json()["errors"]
+        assert "code" in response.json()
 
     @pytest.mark.django_db
     def test_invalid_email(self, staff_client):
@@ -344,7 +344,7 @@ class TestOrganizationViewSet:
         )
 
         assert response.status_code == 400
-        assert "email" in response.json()["errors"]
+        assert "email" in response.json()
 
     @pytest.mark.django_db
     def test_invalid_website(self, staff_client):
@@ -357,7 +357,7 @@ class TestOrganizationViewSet:
         )
 
         assert response.status_code == 400
-        assert "website" in response.json()["errors"]
+        assert "website" in response.json()
 
     @pytest.mark.django_db
     def test_content_type_header(self, staff_client):

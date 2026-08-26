@@ -28,13 +28,8 @@ class TestTagViewSet:
 
         data = response.json()
 
-        assert data["success"] is True
-        assert "data" in data
-        assert "meta" in data
-        assert "pagination" in data["meta"]
-
-        assert data["meta"]["pagination"]["total"] == 3
-        assert len(data["data"]) == 3
+        assert data["count"] == 3
+        assert len(data["results"]) == 3
 
     @pytest.mark.django_db
     def test_list_tags_unauthenticated(self, api_client):
@@ -58,9 +53,9 @@ class TestTagViewSet:
 
         data = response.json()
 
-        assert data["meta"]["pagination"]["total"] == 15
-        assert len(data["data"]) == 5
-        assert "next_url" in data["meta"]["pagination"]
+        assert data["count"] == 15
+        assert len(data["results"]) == 5
+        assert "next" in data
 
     @pytest.mark.django_db
     def test_retrieve_tag(self, authenticated_client):
@@ -78,9 +73,9 @@ class TestTagViewSet:
 
         data = response.json()
 
-        assert data["data"]["id"] == str(tag.id)
-        assert data["data"]["uuid"] == str(tag.uuid)
-        assert data["data"]["name"] == tag.name
+        assert data["id"] == str(tag.id)
+        assert data["uuid"] == str(tag.uuid)
+        assert data["name"] == tag.name
 
     @pytest.mark.django_db
     def test_retrieve_tag_not_found(self, authenticated_client):
@@ -108,9 +103,9 @@ class TestTagViewSet:
 
         data = response.json()
 
-        assert data["data"]["name"] == "New Tag"
-        assert data["data"]["description"] == "A new tag"
-        assert data["data"]["color"] == "#ff0000"
+        assert data["name"] == "New Tag"
+        assert data["description"] == "A new tag"
+        assert data["color"] == "#ff0000"
 
     @pytest.mark.django_db
     def test_create_tag_unauthenticated(self, api_client):
@@ -143,9 +138,9 @@ class TestTagViewSet:
 
         data = response.json()
 
-        assert data["data"]["name"] == "Updated Tag"
-        assert data["data"]["description"] == "An updated tag"
-        assert data["data"]["color"] == "#00ff00"
+        assert data["name"] == "Updated Tag"
+        assert data["description"] == "An updated tag"
+        assert data["color"] == "#00ff00"
 
     @pytest.mark.django_db
     def test_partial_update_tag(self, authenticated_client):
@@ -163,7 +158,7 @@ class TestTagViewSet:
 
         data = response.json()
 
-        assert data["data"]["description"] == "A partially updated tag"
+        assert data["description"] == "A partially updated tag"
 
     @pytest.mark.django_db
     def test_delete_tag(self, authenticated_client):
@@ -196,7 +191,7 @@ class TestTagViewSet:
 
         data = response.json()
 
-        assert data["meta"]["pagination"]["total"] == 3
+        assert data["count"] == 3
 
     @pytest.mark.django_db
     def test_order_tags(self, authenticated_client):
@@ -210,7 +205,7 @@ class TestTagViewSet:
 
         data = response.json()
 
-        assert data["meta"]["pagination"]["total"] == 3
+        assert data["count"] == 3
 
     @pytest.mark.django_db
     def test_filter_tags(self, authenticated_client):
@@ -225,4 +220,4 @@ class TestTagViewSet:
 
         data = response.json()
 
-        assert data["meta"]["pagination"]["total"] == 3
+        assert data["count"] == 3

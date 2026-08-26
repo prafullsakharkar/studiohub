@@ -1,16 +1,15 @@
 from django.test import SimpleTestCase
-
 from rest_framework import serializers, viewsets
 
+from apps.core.api.builders.response import ResponseBuilder
+from apps.core.api.pagination.base import BasePagination
 from apps.core.api.serializers.base import (
     BaseModelSerializer,
+    BaseNestedSerializer,
     BaseReadSerializer,
     BaseWriteSerializer,
-    BaseNestedSerializer,
 )
 from apps.core.api.viewsets.base import BaseViewSet, ServiceModelViewSet
-from apps.core.api.builders.response import ResponseBuilder
-from apps.core.api.pagination.base import BaseAPIPagination
 
 
 class TestAPIFoundation(SimpleTestCase):
@@ -41,6 +40,6 @@ class TestAPIFoundation(SimpleTestCase):
         self.assertEqual(err.get("errors"), {"a": "b"})
 
     def test_pagination_base_exists(self):
-        # BaseAPIPagination is a lightweight DRF pagination helper in core
-        self.assertTrue(hasattr(BaseAPIPagination, "paginate_queryset"))
-        self.assertTrue(hasattr(BaseAPIPagination, "get_paginated_response"))
+        # BasePagination is a lightweight DRF pagination helper in core
+        self.assertTrue(hasattr(BasePagination, "paginate_queryset"))
+        self.assertTrue(hasattr(BasePagination, "get_paginated_response"))
