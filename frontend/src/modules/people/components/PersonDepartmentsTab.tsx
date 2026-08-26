@@ -58,7 +58,7 @@ export const PersonDepartmentsTab: React.FC<{
                   </div>
                 </div>
                 {isCurrent && (
-                  <Badge variant="primary" className="text-[10px] font-mono flex items-center gap-1">
+                  <Badge variant="info" className="text-[10px] font-mono flex items-center gap-1">
                     <Check className="w-3 h-3" /> Assigned
                   </Badge>
                 )}

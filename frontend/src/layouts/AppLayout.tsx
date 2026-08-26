@@ -4,6 +4,7 @@ import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { Breadcrumbs } from './Breadcrumbs';
 import { InspectorDrawer } from '@/shared/components/InspectorDrawer';
+import { ActiveTimerBanner } from '@/modules/tasks/components/ActiveTimerBanner';
 
 export const AppLayout: React.FC = () => {
   return (
@@ -15,10 +16,13 @@ export const AppLayout: React.FC = () => {
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <Header />
         <Breadcrumbs />
-        <main className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 custom-scrollbar">
+        <main className="flex-1 overflow-y-auto min-h-0 flex flex-col custom-scrollbar">
           <Outlet />
         </main>
       </div>
+
+      {/* Global Active Timer Banner */}
+      <ActiveTimerBanner />
 
       {/* Right-Pane Deep Dive Inspector Drawer */}
       <InspectorDrawer />

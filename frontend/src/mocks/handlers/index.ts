@@ -7,6 +7,9 @@ import { reviewHandlers } from './reviewHandlers';
 import { auditHandlers } from './auditHandlers';
 import { analyticsHandlers } from './analyticsHandlers';
 import { settingsHandlers } from './settingsHandlers';
+import { organizationHandlers } from './organizationHandlers';
+import { versionHandlers } from './versionHandlers';
+import { timelogHandlers } from './timelogHandlers';
 
 export const handlers = [
   ...authHandlers,
@@ -14,8 +17,11 @@ export const handlers = [
   ...shotHandlers,
   ...assetHandlers,
   ...taskHandlers,
+  ...timelogHandlers,
   ...reviewHandlers,
   ...auditHandlers,
   ...analyticsHandlers,
   ...settingsHandlers,
+  ...organizationHandlers,
+  ...versionHandlers,
 ];

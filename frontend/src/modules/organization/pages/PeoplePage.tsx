@@ -266,7 +266,7 @@ export const PeoplePage: React.FC = () => {
                   </div>
 
                   <Badge
-                    variant={person.status === 'Active' || !person.status ? 'success' : person.status === 'Suspended' ? 'danger' : 'warning'}
+                    variant={person.status === 'Active' || !person.status ? 'success' : person.status === 'Suspended' ? 'error' : 'warning'}
                     className="text-[9px] font-mono shrink-0"
                   >
                     {person.status || 'Active'}
@@ -399,7 +399,7 @@ export const PeoplePage: React.FC = () => {
                   </td>
                   <td className="py-3 px-4">
                     <Badge
-                      variant={person.status === 'Active' || !person.status ? 'success' : person.status === 'Suspended' ? 'danger' : 'warning'}
+                      variant={person.status === 'Active' || !person.status ? 'success' : person.status === 'Suspended' ? 'error' : 'warning'}
                       className="text-[10px] font-mono"
                     >
                       {person.status || 'Active'}

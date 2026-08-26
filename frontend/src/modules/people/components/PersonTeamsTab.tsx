@@ -57,7 +57,7 @@ export const PersonTeamsTab: React.FC<{
                   <span className="text-xs text-slate-400 font-mono">Lead: {team.lead_name}</span>
                 </div>
                 {isCurrent && (
-                  <Badge variant="primary" className="text-[10px] font-mono flex items-center gap-1">
+                  <Badge variant="info" className="text-[10px] font-mono flex items-center gap-1">
                     <Check className="w-3 h-3" /> Squad Member
                   </Badge>
                 )}

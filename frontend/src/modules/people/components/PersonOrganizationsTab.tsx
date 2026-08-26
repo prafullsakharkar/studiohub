@@ -47,7 +47,7 @@ export const PersonOrganizationsTab: React.FC<{ person: Person }> = ({ person })
                   </div>
                 </div>
                 {isPrimary ? (
-                  <Badge variant="primary" className="text-[10px] font-mono">
+                  <Badge variant="info" className="text-[10px] font-mono">
                     Home Studio
                   </Badge>
                 ) : (

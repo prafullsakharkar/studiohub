@@ -33,10 +33,45 @@ export function useAssetMutations() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => assetService.deleteAsset(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ASSET_QUERY_KEYS.all });
+      addNotification({
+        type: 'success',
+        title: 'Asset Deleted',
+        message: 'The asset was permanently deleted from the pipeline.',
+      });
+    },
+  });
+
+  const archiveMutation = useMutation({
+    mutationFn: ({ id, isArchived }: { id: string; isArchived: boolean }) =>
+      assetService.updateAsset(id, {
+        is_archived: isArchived,
+        status: isArchived ? 'Archived' : 'In Progress',
+      }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ASSET_QUERY_KEYS.all });
+      addNotification({
+        type: 'info',
+        title: variables.isArchived ? 'Asset Archived' : 'Asset Restored',
+        message: variables.isArchived
+          ? 'Asset moved to archive and locked from production turnover.'
+          : 'Asset restored to active production workspace.',
+      });
+    },
+  });
+
   return {
     createAsset: createMutation.mutateAsync,
     updateAsset: updateMutation.mutateAsync,
+    deleteAsset: deleteMutation.mutateAsync,
+    archiveAsset: (id: string) => archiveMutation.mutateAsync({ id, isArchived: true }),
+    restoreAsset: (id: string) => archiveMutation.mutateAsync({ id, isArchived: false }),
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending,
+    isArchiving: archiveMutation.isPending,
   };
 }

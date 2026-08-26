@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { reviewService } from '../services/ReviewService';
 import { QueryParams } from '@/types/drf';
+import { ReviewSession } from '@/types/reviews';
 
 export const REVIEW_QUERY_KEYS = {
   all: ['reviews'] as const,
@@ -18,7 +19,7 @@ export function useReviews(params?: QueryParams) {
 }
 
 export function useReview(id?: string) {
-  return useQuery({
+  return useQuery<ReviewSession>({
     queryKey: id ? REVIEW_QUERY_KEYS.detail(id) : ['reviews', 'null'],
     queryFn: () => {
       if (!id) throw new Error('Review ID required');

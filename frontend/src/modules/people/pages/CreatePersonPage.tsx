@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { UserPlus, ChevronLeft, Save, Sparkles, Building, MapPin } from 'lucide-react';
 import { usePersonMutations, useDepartments, useTeams, useOffices } from '@/modules/organization/hooks/useOrganizationData';
-import { Person } from '@/types/organization';
 import { Button } from '@/shared/components/Button';
 import { Card, CardHeader, CardBody } from '@/shared/components/Card';
 
@@ -41,7 +40,6 @@ export const CreatePersonPage: React.FC = () => {
 
     const result = await createPerson.mutateAsync({
       ...form,
-      role: form.role as Person['role'],
       department_name: selectedDept?.name || form.department_name,
       office_name: selectedOffice?.name || form.office_name,
       team_name: selectedTeam?.name || form.team_name,

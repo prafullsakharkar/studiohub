@@ -14,6 +14,13 @@ import { mockShots } from '@/mocks/db/production/shots';
 import { mockAssets } from '@/mocks/db/assets/assets';
 import { mockTasks } from '@/mocks/db/tasks/tasks';
 import { mockReviews } from '@/mocks/db/reviews/reviews';
+import { mockPublishRecords } from '@/mocks/db/production/publishing';
+import { mockPlaylists } from '@/mocks/db/production/playlists';
+import { mockWorkflows } from '@/mocks/db/production/workflow';
+import { mockTimelogs } from '@/mocks/db/production/timelogs';
+import { mockCalendarMilestones } from '@/mocks/db/production/calendar';
+import { mockMediaAssets } from '@/mocks/db/production/media';
+import { mockProductionAttachments } from '@/mocks/db/production/attachments';
 
 // Mock Sequences
 export const mockSequences = [
@@ -717,6 +724,215 @@ export function resolveEntity(type: UniversalEntityType, id: string): UniversalE
       };
     }
 
+    case 'publishing': {
+      const pub = mockPublishRecords.find((p) => p.id === id || p.entity_code.toLowerCase() === id.toLowerCase()) || mockPublishRecords[0];
+      if (!pub) return null;
+      return {
+        id: pub.id,
+        type: 'publishing',
+        code: `${pub.entity_code}_${pub.version_number}_PUB`,
+        title: `${pub.entity_code} ${pub.version_number} OpenUSD Publish`,
+        subtitle: `${pub.dcc_software} • Submitter: ${pub.publisher_name} (${pub.department})`,
+        description: pub.comment || `Published USD layer for ${pub.entity_code}. Pyblish validator: ${pub.pyblish_status}.`,
+        status: pub.pyblish_status === 'Passed' ? 'Approved' : 'Pending Review',
+        thumbnail_url: pub.publisher_avatar,
+        created_at: pub.published_at,
+        properties: {
+          'Target Entity': `${pub.entity_type} [${pub.entity_code}]`,
+          'Version Tag': pub.version_number,
+          'Authoring DCC': `${pub.dcc_software} ${pub.dcc_version}`,
+          'USD Stage Path': pub.usd_stage_path,
+          'USD Layer Ref': pub.usd_layer_identifier,
+          'Pyblish Status': pub.pyblish_status,
+          'Hero Layer Promoted': pub.is_hero_promoted ? 'Yes (Active Hero)' : 'No',
+          'Payload Size': `${pub.file_size_mb} MB`,
+        },
+        tags: [pub.department, pub.dcc_software, pub.pyblish_status],
+        relations: {
+          project: { id: pub.project_id, type: 'project', title: 'Cyberpunk 2099: Neo-Kyoto', code: pub.project_code, status: 'In Progress' },
+          shot: pub.entity_type === 'Shot' ? { id: pub.entity_id, type: 'shot', title: pub.entity_code, code: pub.entity_code, status: 'In Progress' } : undefined,
+          asset: pub.entity_type === 'Asset' ? { id: pub.entity_id, type: 'asset', title: pub.entity_code, code: pub.entity_code, status: 'In Progress' } : undefined,
+          assignee: { id: pub.publisher_id, type: 'person', title: pub.publisher_name, subtitle: pub.department, thumbnail_url: pub.publisher_avatar },
+        },
+      };
+    }
+
+    case 'playlist': {
+      const ply = mockPlaylists.find((p) => p.id === id || p.code.toLowerCase() === id.toLowerCase()) || mockPlaylists[0];
+      if (!ply) return null;
+      return {
+        id: ply.id,
+        type: 'playlist',
+        code: ply.code,
+        title: ply.name,
+        subtitle: `${ply.type} • ${ply.items_count} Cuts (${ply.total_duration_timecode})`,
+        description: ply.description,
+        status: ply.status,
+        thumbnail_url: ply.entries[0]?.thumbnail_url,
+        created_at: ply.created_at,
+        updated_at: ply.updated_at,
+        properties: {
+          'Playlist Type': ply.type,
+          'Reel Cuts': `${ply.items_count} items`,
+          'Total Frames': `${ply.total_duration_frames} frames (${ply.total_duration_timecode})`,
+          'Reel Curator': ply.author_name,
+          'Session Status': ply.status,
+          'Lock State': ply.is_locked ? 'Locked' : 'Editable',
+        },
+        tags: [ply.type, ply.status],
+        relations: {
+          project: { id: ply.project_id, type: 'project', title: 'Cyberpunk 2099: Neo-Kyoto', code: ply.project_code, status: 'In Progress' },
+          assignee: { id: ply.author_id, type: 'person', title: ply.author_name, subtitle: 'Curator', thumbnail_url: ply.author_avatar },
+          shots: ply.entries.filter((e) => e.entity_type === 'Shot').map((e) => ({ id: `shot-${e.item_order}`, type: 'shot', title: e.entity_code, code: e.entity_code, subtitle: e.version_number, thumbnail_url: e.thumbnail_url })),
+        },
+      };
+    }
+
+    case 'workflow': {
+      const wf = mockWorkflows.find((w) => w.id === id || w.code.toLowerCase() === id.toLowerCase()) || mockWorkflows[0];
+      if (!wf) return null;
+      const stepsCount = wf.nodes?.length || wf.steps_count || 0;
+      const autoCount = wf.automation_rules?.length || wf.automation_triggers_count || 0;
+      return {
+        id: wf.id,
+        type: 'workflow',
+        code: wf.code,
+        title: wf.name,
+        subtitle: `${wf.category} • v${wf.version} • ${stepsCount} Linear DAG Steps`,
+        description: wf.description,
+        status: wf.is_active ? 'Active' : 'Inactive',
+        created_at: wf.created_at,
+        updated_at: wf.updated_at,
+        properties: {
+          'Pipeline Category': wf.category,
+          'Schema Version': wf.version,
+          'DAG Steps': `${stepsCount} Departmental Steps`,
+          'Active Automation Triggers': `${autoCount} Events`,
+          'Last Executed': wf.last_executed_at ? new Date(wf.last_executed_at).toLocaleString() : 'Never',
+        },
+        tags: [wf.category, wf.code],
+        relations: {
+          project: { id: wf.project_id, type: 'project', title: 'Cyberpunk 2099: Neo-Kyoto', code: wf.project_code, status: 'In Progress' },
+        },
+      };
+    }
+
+    case 'timelog': {
+      const tlog = mockTimelogs.find((t) => t.id === id) || mockTimelogs[0];
+      if (!tlog) return null;
+      return {
+        id: tlog.id,
+        type: 'timelog',
+        code: `TIME-${tlog.id.toUpperCase()}`,
+        title: `${tlog.artist_name}: ${tlog.task_title} (${tlog.hours_logged} hrs)`,
+        subtitle: `${tlog.department} • ${tlog.entity_code} • ${tlog.date_logged}`,
+        description: tlog.description,
+        status: tlog.approved_by_name ? 'Approved' : 'Pending',
+        created_at: tlog.created_at,
+        properties: {
+          'Artist': tlog.artist_name,
+          'Department': tlog.department,
+          'Target Entity': tlog.entity_code,
+          'Hours Logged': `${tlog.hours_logged} hrs`,
+          'Date': tlog.date_logged,
+          'Overtime': tlog.is_overtime ? 'Yes (1.5x OT)' : 'Standard Hours',
+          'Activity Category': tlog.activity_category,
+          'Billing Rate': `$${tlog.billing_rate_usd}/hr`,
+          'Approved By': tlog.approved_by_name || 'Pending Review',
+        },
+        tags: [tlog.department, tlog.activity_category],
+        relations: {
+          project: { id: tlog.project_id, type: 'project', title: 'Cyberpunk 2099: Neo-Kyoto', code: tlog.project_code, status: 'In Progress' },
+          assignee: { id: tlog.artist_id, type: 'person', title: tlog.artist_name, subtitle: tlog.department, thumbnail_url: tlog.artist_avatar },
+        },
+      };
+    }
+
+    case 'calendar': {
+      const cal = mockCalendarMilestones.find((c) => c.id === id) || mockCalendarMilestones[0];
+      if (!cal) return null;
+      return {
+        id: cal.id,
+        type: 'calendar',
+        code: `CAL-${cal.id.toUpperCase()}`,
+        title: cal.title,
+        subtitle: `${cal.category} • ${cal.start_date} → ${cal.end_date}`,
+        description: cal.deliverables_summary,
+        status: cal.status,
+        created_at: cal.created_at,
+        properties: {
+          'Milestone Category': cal.category,
+          'Start Date': cal.start_date,
+          'Target Delivery': cal.end_date,
+          'Milestone Progress': `${cal.progress_pct}%`,
+          'Milestone Lead': `${cal.owner_name} (${cal.department_lead})`,
+          'Shots Affected': `${cal.shots_affected} cuts`,
+          'Critical Path': cal.critical_path ? 'Yes (Hard Lock)' : 'No',
+        },
+        tags: [cal.category, cal.status],
+        relations: {
+          project: { id: cal.project_id, type: 'project', title: 'Cyberpunk 2099: Neo-Kyoto', code: cal.project_code, status: 'In Progress' },
+        },
+      };
+    }
+
+    case 'media': {
+      const med = mockMediaAssets.find((m) => m.id === id || m.code.toLowerCase() === id.toLowerCase()) || mockMediaAssets[0];
+      if (!med) return null;
+      return {
+        id: med.id,
+        type: 'media',
+        code: med.code,
+        title: med.title,
+        subtitle: `${med.media_type} • ${med.file_format} • ${med.file_size_mb} MB`,
+        description: med.description,
+        status: 'Active',
+        thumbnail_url: med.thumbnail_url,
+        created_at: med.created_at,
+        properties: {
+          'Media Category': med.media_type,
+          'File Name': med.file_name,
+          'Format': med.file_format,
+          'Resolution': med.resolution || 'N/A',
+          'Framerate': med.fps ? `${med.fps} FPS` : 'N/A',
+          'Color Space': med.color_space,
+          'Storage Path': med.source_url,
+          'Uploaded By': med.uploaded_by,
+        },
+        tags: [med.media_type, med.file_format],
+        relations: {
+          project: { id: med.project_id, type: 'project', title: 'Cyberpunk 2099: Neo-Kyoto', code: med.project_code, status: 'In Progress' },
+        },
+      };
+    }
+
+    case 'attachment': {
+      const att = mockProductionAttachments.find((a) => a.id === id || a.code.toLowerCase() === id.toLowerCase()) || mockProductionAttachments[0];
+      if (!att) return null;
+      return {
+        id: att.id,
+        type: 'attachment',
+        code: att.code,
+        title: att.file_name,
+        subtitle: `${att.category} • ${att.file_type} (${(att.file_size_kb / 1024).toFixed(1)} MB)`,
+        description: att.description,
+        status: 'Active',
+        created_at: att.created_at,
+        properties: {
+          'Document Category': att.category,
+          'File Format': att.file_type,
+          'File Size': `${(att.file_size_kb / 1024).toFixed(2)} MB`,
+          'Document Version': att.version,
+          'Security Classification': att.security_classification,
+          'Uploaded By': att.uploaded_by,
+        },
+        tags: [att.category, att.security_classification],
+        relations: {
+          project: { id: att.project_id, type: 'project', title: 'Cyberpunk 2099: Neo-Kyoto', code: att.project_code, status: 'In Progress' },
+        },
+      };
+    }
+
     default:
       return null;
   }
@@ -819,6 +1035,33 @@ export function searchUniversalEntities(query: string, filterType?: UniversalEnt
     });
   }
 
+  // Playlists
+  if (!filterType || filterType === 'playlist') {
+    mockPlaylists.forEach((pl) => {
+      if (!q || pl.name.toLowerCase().includes(q) || pl.code.toLowerCase().includes(q)) {
+        all.push({ id: pl.id, type: 'playlist', title: pl.name, code: pl.code, subtitle: `${pl.type} (${pl.items_count} cuts)`, status: pl.status, thumbnail_url: pl.entries[0]?.thumbnail_url });
+      }
+    });
+  }
+
+  // Media
+  if (!filterType || filterType === 'media') {
+    mockMediaAssets.forEach((m) => {
+      if (!q || m.title.toLowerCase().includes(q) || m.code.toLowerCase().includes(q) || m.file_name.toLowerCase().includes(q)) {
+        all.push({ id: m.id, type: 'media', title: m.title, code: m.code, subtitle: `${m.media_type} • ${m.file_format}`, status: 'Active', thumbnail_url: m.thumbnail_url });
+      }
+    });
+  }
+
+  // Attachments
+  if (!filterType || filterType === 'attachment') {
+    mockProductionAttachments.forEach((a) => {
+      if (!q || a.file_name.toLowerCase().includes(q) || a.code.toLowerCase().includes(q)) {
+        all.push({ id: a.id, type: 'attachment', title: a.file_name, code: a.code, subtitle: a.category, status: 'Active' });
+      }
+    });
+  }
+
   // Departments
   if (!filterType || filterType === 'department') {
     mockDepartments.forEach((d) => {
@@ -872,6 +1115,13 @@ export function formatEntityType(type: UniversalEntityType): string {
     delivery: 'Client Delivery',
     schedule: 'Schedule Milestone',
     resource: 'Compute / SAN Resource',
+    publishing: 'USD Publish Record',
+    playlist: 'Review Playlist / Reel',
+    workflow: 'Pipeline Workflow DAG',
+    timelog: 'Artist Timelog',
+    calendar: 'Production Calendar',
+    media: 'Source Media / Plate',
+    attachment: 'Production Attachment',
   };
   return map[type] || type;
 }

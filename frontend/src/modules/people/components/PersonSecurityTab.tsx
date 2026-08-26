@@ -9,7 +9,7 @@ export const PersonSecurityTab: React.FC<{
   onUpdateStatus?: (status: 'Active' | 'Inactive' | 'Suspended') => void;
 }> = ({ person, onUpdateStatus }) => {
   const [currentStatus, setCurrentStatus] = useState<'Active' | 'Inactive' | 'Suspended'>(
-    person.status || 'Active'
+    (person.status as 'Active' | 'Inactive' | 'Suspended') || 'Active'
   );
 
   const handleAction = (status: 'Active' | 'Inactive' | 'Suspended') => {
@@ -72,7 +72,7 @@ export const PersonSecurityTab: React.FC<{
               </span>
             </div>
             <Badge
-              variant={currentStatus === 'Active' ? 'success' : currentStatus === 'Suspended' ? 'danger' : 'warning'}
+              variant={currentStatus === 'Active' ? 'success' : currentStatus === 'Suspended' ? 'error' : 'warning'}
               className="font-mono text-xs"
             >
               {currentStatus}

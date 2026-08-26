@@ -1,186 +1,262 @@
 import React, { useState } from 'react';
-import { useTasks } from '../hooks/useTasks';
-import { useTaskMutations } from '../hooks/useTaskMutations';
+import { useTasks, useTaskMutations } from '../hooks/useTasks';
 import { useProjects } from '@/modules/production/hooks/useProjects';
-import { Card, CardBody, CardHeader } from '@/shared/components/Card';
+import { mockUsers } from '@/mocks/db/identity/users';
+import { mockDepartments, mockTeams, mockVendors } from '@/mocks/db/organization/organization';
+import { Task, TaskEntityType } from '@/types/tasks';
+import { Department, PriorityLevel, ProductionStatus } from '@/types/common';
 import { Button } from '@/shared/components/Button';
 import { SearchInput } from '@/shared/components/SearchInput';
-import { StatusBadge, PriorityBadge } from '@/shared/components/StatusBadge';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { EmptyState } from '@/shared/components/EmptyState';
-import { Modal } from '@/shared/components/Modal';
 import { Can } from '@/core/permissions/Can';
+import { useNotificationStore } from '@/shared/stores/useNotificationStore';
+import { useActivityStore } from '@/shared/stores/useActivityStore';
+import { useAuth } from '@/modules/auth/hooks/useAuth';
+
+import { TaskTableView } from '../components/TaskTableView';
+import { TaskBoardView } from '../components/TaskBoardView';
+import { TaskCalendarView } from '../components/TaskCalendarView';
+import { TaskTimelineView } from '../components/TaskTimelineView';
+import { TaskCreateModal } from '../components/TaskCreateModal';
+import { TaskBulkOperationsBar } from '../components/TaskBulkOperationsBar';
+import { TimelogCreateModal } from '../components/TimelogCreateModal';
+import { useTimelogMutations } from '../hooks/useTimelogs';
+
 import {
   CheckSquare,
   Plus,
   Clock,
   LayoutGrid,
   ListFilter,
-  User,
-  Film,
-  Box,
-  CheckCircle2,
   Calendar,
+  GitBranch,
+  Filter,
   Layers,
-  ArrowRight,
+  Building,
+  User,
+  Users,
+  Archive,
+  Search,
 } from 'lucide-react';
-import { Task } from '@/mocks/db/tasks/tasks';
-import { Department, PriorityLevel, ProductionStatus } from '@/types/common';
-import { useInspectorStore } from '@/shared/stores/useInspectorStore';
-import { useNotificationStore } from '@/shared/stores/useNotificationStore';
+
+type TaskViewMode = 'table' | 'board' | 'calendar' | 'timeline';
 
 export const TasksPage: React.FC = () => {
-  const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
-  const [search, setSearch] = useState('');
-  const [departmentFilter, setDepartmentFilter] = useState<string>('ALL');
-  const [priorityFilter, setPriorityFilter] = useState<string>('ALL');
-  const [projectFilter, setProjectFilter] = useState<string>('ALL');
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isLogHoursOpen, setIsLogHoursOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [hoursToAdd, setHoursToAdd] = useState(2);
-
-  const openInspector = useInspectorStore((state) => state.openInspector);
+  const { user } = useAuth();
   const addNotification = useNotificationStore((state) => state.addNotification);
+  const addActivity = useActivityStore((state) => state.addActivity);
+
+  const [viewMode, setViewMode] = useState<TaskViewMode>('table');
+  const [search, setSearch] = useState('');
+  const [projectFilter, setProjectFilter] = useState<string>('ALL');
+  const [entityTypeFilter, setEntityTypeFilter] = useState<string>('ALL');
+  const [departmentFilter, setDepartmentFilter] = useState<string>('ALL');
+  const [teamFilter, setTeamFilter] = useState<string>('ALL');
+  const [assigneeFilter, setAssigneeFilter] = useState<string>('ALL');
+  const [vendorFilter, setVendorFilter] = useState<string>('ALL');
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [priorityFilter, setPriorityFilter] = useState<string>('ALL');
+  const [showArchived, setShowArchived] = useState<boolean>(false);
+
+  const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isLogHoursModalOpen, setIsLogHoursModalOpen] = useState(false);
+  const [selectedTaskForLog, setSelectedTaskForLog] = useState<Task | undefined>(undefined);
 
   const { data: projectsData } = useProjects();
-  const { data, isLoading } = useTasks({
+  const {
+    data: tasksData,
+    isLoading,
+    refetch,
+  } = useTasks({
     search: search || undefined,
-    department: departmentFilter !== 'ALL' ? departmentFilter : undefined,
-    priority: priorityFilter !== 'ALL' ? priorityFilter : undefined,
     project_id: projectFilter !== 'ALL' ? projectFilter : undefined,
+    entity_type: entityTypeFilter !== 'ALL' ? entityTypeFilter : undefined,
+    department: departmentFilter !== 'ALL' ? departmentFilter : undefined,
+    team_id: teamFilter !== 'ALL' ? teamFilter : undefined,
+    assignee_id: assigneeFilter !== 'ALL' ? assigneeFilter : undefined,
+    vendor_id: vendorFilter !== 'ALL' ? vendorFilter : undefined,
+    status: statusFilter !== 'ALL' ? statusFilter : undefined,
+    priority: priorityFilter !== 'ALL' ? priorityFilter : undefined,
+    is_archived: showArchived ? 'true' : 'false',
   });
 
-  const { createTask, updateTask, isCreating } = useTaskMutations();
+  const {
+    createTask,
+    updateTask,
+    deleteTask,
+    bulkAssign,
+    bulkStatusUpdate,
+    bulkArchive,
+    bulkDelete,
+  } = useTaskMutations();
 
-  const [formData, setFormData] = useState({
-    title: '',
-    code: '',
-    entity_type: 'Shot' as const,
-    entity_code: 'NK_010_010',
-    department: 'FX & Simulation' as Department,
-    priority: 'High' as PriorityLevel,
-    assignee_name: 'Elena Rostova',
-    due_date: '2026-08-30',
-    estimated_hours: 40,
-    software: 'Houdini 20.5',
-    description: '',
-  });
+  const { createTimelog } = useTimelogMutations();
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await createTask({
-      ...formData,
-      project_id: projectsData?.results[0]?.id || 'proj-001',
-      project_code: projectsData?.results[0]?.code || 'NK99',
-      status: 'Not Started',
-      entity_id: 'shot-001',
-      logged_hours: 0,
-      assignee_avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
-    } as Partial<Task>);
-    setIsCreateOpen(false);
+  const tasks = tasksData?.results || [];
+
+  const handleToggleSelect = (taskId: string) => {
+    setSelectedTaskIds((prev) =>
+      prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId]
+    );
   };
 
-  const handleLogHours = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedTask) return;
-    const newLogged = (selectedTask.logged_hours || 0) + Number(hoursToAdd);
-    await updateTask({
-      id: selectedTask.id,
-      data: {
-        logged_hours: newLogged,
-      },
+  const handleSelectAll = (allIds: string[]) => {
+    setSelectedTaskIds(allIds);
+  };
+
+  const handleCreateSubmit = async (data: Partial<Task>) => {
+    const created = await createTask.mutateAsync(data);
+    return created;
+  };
+
+  const handleUpdateTask = async (id: string, data: Partial<Task>) => {
+    await updateTask.mutateAsync({ id, data });
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    if (!window.confirm('Delete this task?')) return;
+    await deleteTask.mutateAsync(id);
+    addNotification({
+      type: 'success',
+      title: 'Task Deleted',
+      message: 'Task removed from project schedule.',
+    });
+  };
+
+  const handleBulkAssign = async (payload: any) => {
+    await bulkAssign.mutateAsync({
+      task_ids: selectedTaskIds,
+      ...payload,
     });
     addNotification({
       type: 'success',
-      title: 'Production Hours Logged',
-      message: `${hoursToAdd}h added to ${selectedTask.code} (Total: ${newLogged}h)`,
+      title: 'Tasks Reassigned',
+      message: `Updated assignment for ${selectedTaskIds.length} tasks.`,
     });
-    setIsLogHoursOpen(false);
-    setSelectedTask(null);
   };
 
-  const handleAdvanceStatus = async (task: Task) => {
-    const nextStatus: Record<ProductionStatus, ProductionStatus> = {
-      'Not Started': 'In Progress',
-      'In Progress': 'Pending Review',
-      'Pending Review': 'Approved',
-      'Approved': 'Approved',
-      'Retake': 'In Progress',
-      'On Hold': 'In Progress',
-      'Omitted': 'Not Started',
-    };
-    const target = nextStatus[task.status] || 'In Progress';
-    await updateTask({
-      id: task.id,
-      data: { status: target },
+  const handleBulkStatusUpdate = async (status: ProductionStatus) => {
+    await bulkStatusUpdate.mutateAsync({
+      task_ids: selectedTaskIds,
+      status,
+    });
+    addNotification({
+      type: 'success',
+      title: 'Statuses Updated',
+      message: `Updated ${selectedTaskIds.length} tasks to ${status}.`,
+    });
+  };
+
+  const handleBulkArchive = async (isArchived: boolean) => {
+    await bulkArchive.mutateAsync({
+      task_ids: selectedTaskIds,
+      is_archived: isArchived,
     });
     addNotification({
       type: 'info',
-      title: 'Task Status Updated',
-      message: `${task.code} advanced to ${target}`,
+      title: isArchived ? 'Tasks Archived' : 'Tasks Restored',
+      message: `${selectedTaskIds.length} tasks updated.`,
     });
   };
 
-  const tasks = data?.results || [];
+  const handleBulkDelete = async () => {
+    await bulkDelete.mutateAsync({
+      task_ids: selectedTaskIds,
+    });
+    addNotification({
+      type: 'success',
+      title: 'Tasks Deleted',
+      message: `Removed ${selectedTaskIds.length} tasks.`,
+    });
+  };
 
-  const columns: ProductionStatus[] = ['Not Started', 'In Progress', 'Pending Review', 'Approved'];
-  const departments = ['ALL', 'Layout', 'Modeling', 'Rigging', 'Animation', 'FX & Simulation', 'Lighting & LookDev', 'Compositing'];
+  const openLogHoursModal = (task: Task) => {
+    setSelectedTaskForLog(task);
+    setIsLogHoursModalOpen(true);
+  };
+
+  // Metrics counters
+  const totalTasks = tasks.length;
+  const inProgressCount = tasks.filter((t) => t.status === 'In Progress').length;
+  const pendingReviewCount = tasks.filter((t) => t.status === 'Pending Review').length;
+  const approvedCount = tasks.filter((t) => t.status === 'Approved').length;
+  const totalEstimatedHours = tasks.reduce((sum, t) => sum + (t.schedule?.estimated_hours || t.estimated_hours || 0), 0);
+  const totalLoggedHours = tasks.reduce((sum, t) => sum + (t.schedule?.logged_hours || t.logged_hours || 0), 0);
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto font-sans">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/60 p-3.5 rounded-xl border border-slate-800">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-            <CheckSquare className="w-5 h-5" />
+    <div className="p-4 sm:p-6 space-y-6 pb-24 max-w-7xl mx-auto w-full">
+      {/* Page Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800 shadow-md">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400">
+            <CheckSquare className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-              Discipline Task Board & Timesheets
-              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 bg-slate-800 text-indigo-300 rounded border border-slate-700">
-                {tasks.length} Active Tasks
+            <h1 className="text-lg font-bold text-slate-100 tracking-tight flex items-center gap-2">
+              Production Tasks, Assignments & Timelogs
+              <span className="text-xs font-mono font-semibold px-2 py-0.5 bg-slate-800 text-indigo-300 rounded border border-slate-700">
+                {totalTasks} Total
               </span>
             </h1>
             <p className="text-xs text-slate-400">
-              Department task handoffs, timesheets, and artist milestone tracking
+              Department execution queue, team delegation, milestones, and timesheet logging.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-3">
+          {/* View Switcher */}
           <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-1">
             <button
-              onClick={() => setViewMode('kanban')}
-              className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                viewMode === 'kanban'
-                  ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-              <span>Kanban</span>
-            </button>
-            <button
               onClick={() => setViewMode('table')}
-              className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                viewMode === 'table'
-                  ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-slate-200'
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                viewMode === 'table' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
               }`}
+              title="Table View"
             >
               <ListFilter className="w-3.5 h-3.5" />
-              <span>Matrix</span>
+              <span>Table</span>
+            </button>
+            <button
+              onClick={() => setViewMode('board')}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                viewMode === 'board' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Kanban Board View"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>Board</span>
+            </button>
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                viewMode === 'calendar' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Calendar Deadlines View"
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Calendar</span>
+            </button>
+            <button
+              onClick={() => setViewMode('timeline')}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                viewMode === 'timeline' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Gantt Timeline View"
+            >
+              <GitBranch className="w-3.5 h-3.5" />
+              <span>Timeline</span>
             </button>
           </div>
 
           <Can permission="tasks:create">
             <Button
-              id="create-task-btn"
               variant="primary"
               size="sm"
-              onClick={() => setIsCreateOpen(true)}
-              leftIcon={<Plus className="w-3.5 h-3.5" />}
+              onClick={() => setIsCreateModalOpen(true)}
+              leftIcon={<Plus className="w-4 h-4" />}
             >
               Create Task
             </Button>
@@ -188,34 +264,165 @@ export const TasksPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-3">
-        <div className="flex items-center space-x-2 w-full md:w-auto">
-          <SearchInput
-            className="w-full sm:w-72"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onClear={() => setSearch('')}
-            placeholder="Search task title, code, artist..."
-          />
+      {/* Production Stats Summary Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+        <div className="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800">
+          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">In Progress</span>
+          <span className="text-xl font-bold font-mono text-indigo-400 mt-1 block">{inProgressCount}</span>
+          <span className="text-[10px] text-slate-500">Active execution</span>
+        </div>
 
+        <div className="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800">
+          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Pending Review</span>
+          <span className="text-xl font-bold font-mono text-amber-400 mt-1 block">{pendingReviewCount}</span>
+          <span className="text-[10px] text-slate-500">Dailies / Lead signoff</span>
+        </div>
+
+        <div className="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800">
+          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Approved</span>
+          <span className="text-xl font-bold font-mono text-emerald-400 mt-1 block">{approvedCount}</span>
+          <span className="text-[10px] text-slate-500">Passed final review</span>
+        </div>
+
+        <div className="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800">
+          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Estimated Hours</span>
+          <span className="text-xl font-bold font-mono text-slate-200 mt-1 block">{totalEstimatedHours}h</span>
+          <span className="text-[10px] text-slate-500">Total capacity</span>
+        </div>
+
+        <div className="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800">
+          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Logged Hours</span>
+          <span className="text-xl font-bold font-mono text-cyan-400 mt-1 block">{totalLoggedHours}h</span>
+          <span className="text-[10px] text-slate-500">Actual work logged</span>
+        </div>
+
+        <div className="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800">
+          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Burnup Progress</span>
+          <span className="text-xl font-bold font-mono text-purple-400 mt-1 block">
+            {totalEstimatedHours > 0 ? Math.round((totalLoggedHours / totalEstimatedHours) * 100) : 0}%
+          </span>
+          <span className="text-[10px] text-slate-500">Budget consumed</span>
+        </div>
+      </div>
+
+      {/* Comprehensive Filter Toolbar */}
+      <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-3 shadow-md">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Search */}
+          <div className="flex-1 min-w-[240px]">
+            <SearchInput
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onClear={() => setSearch('')}
+              placeholder="Search task code, title, artist, software, tags..."
+            />
+          </div>
+
+          {/* Project Filter */}
           <select
             value={projectFilter}
             onChange={(e) => setProjectFilter(e.target.value)}
-            className="px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
           >
-            <option value="ALL">All Shows</option>
-            {projectsData?.results.map((p) => (
+            <option value="ALL">All Projects</option>
+            {projectsData?.results?.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.code}
+                {p.code} - {p.name}
               </option>
             ))}
           </select>
 
+          {/* Entity Type Filter */}
+          <select
+            value={entityTypeFilter}
+            onChange={(e) => setEntityTypeFilter(e.target.value)}
+            className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+          >
+            <option value="ALL">All Entity Types</option>
+            <option value="Shot">Shots (VFX Cuts)</option>
+            <option value="Asset">Assets (3D/LookDev)</option>
+            <option value="General">General Pipeline</option>
+          </select>
+
+          {/* Department Filter */}
+          <select
+            value={departmentFilter}
+            onChange={(e) => setDepartmentFilter(e.target.value)}
+            className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+          >
+            <option value="ALL">All Departments</option>
+            <option value="FX & Simulation">FX & Simulation</option>
+            <option value="3D Modeling & Assets">3D Modeling & Assets</option>
+            <option value="Character & Creature Rigging">Rigging</option>
+            <option value="Character & Creature Animation">Animation</option>
+            <option value="Lighting & LookDev">Lighting & LookDev</option>
+            <option value="Compositing (Nuke)">Compositing</option>
+            <option value="Editorial">Editorial</option>
+            <option value="Pipeline & Core Infrastructure">Pipeline & TD</option>
+          </select>
+
+          {/* Team Filter */}
+          <select
+            value={teamFilter}
+            onChange={(e) => setTeamFilter(e.target.value)}
+            className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+          >
+            <option value="ALL">All Teams</option>
+            {mockTeams.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Assignee Filter */}
+          <select
+            value={assigneeFilter}
+            onChange={(e) => setAssigneeFilter(e.target.value)}
+            className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+          >
+            <option value="ALL">All Assignees</option>
+            {mockUsers.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.full_name}
+              </option>
+            ))}
+          </select>
+
+          {/* Vendor Filter */}
+          <select
+            value={vendorFilter}
+            onChange={(e) => setVendorFilter(e.target.value)}
+            className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+          >
+            <option value="ALL">All Studios / Vendors</option>
+            {mockVendors.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Status Filter */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+          >
+            <option value="ALL">All Statuses</option>
+            <option value="Not Started">Not Started</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Pending Review">Pending Review</option>
+            <option value="Approved">Approved</option>
+            <option value="Retake">Retake</option>
+            <option value="On Hold">On Hold</option>
+          </select>
+
+          {/* Priority Filter */}
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
-            className="px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
           >
             <option value="ALL">All Priorities</option>
             <option value="Critical">Critical</option>
@@ -223,371 +430,86 @@ export const TasksPage: React.FC = () => {
             <option value="Medium">Medium</option>
             <option value="Low">Low</option>
           </select>
-        </div>
 
-        {/* Department tabs */}
-        <div className="flex items-center space-x-1 overflow-x-auto w-full md:w-auto">
-          {departments.map((dept) => (
-            <button
-              key={dept}
-              onClick={() => setDepartmentFilter(dept)}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
-                departmentFilter === dept
-                  ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'bg-slate-800/80 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              {dept}
-            </button>
-          ))}
+          {/* Archive Toggle */}
+          <label className="flex items-center gap-2 cursor-pointer bg-slate-900 px-3 py-2 rounded-lg border border-slate-700 text-xs text-slate-300 hover:bg-slate-800 select-none">
+            <input
+              type="checkbox"
+              checked={showArchived}
+              onChange={(e) => setShowArchived(e.target.checked)}
+              className="rounded border-slate-700 bg-slate-800 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5"
+            />
+            <span>Show Archived</span>
+          </label>
         </div>
       </div>
 
-      {/* Content */}
+      {/* Main View Area */}
       {isLoading ? (
-        <LoadingSpinner size="lg" label="Syncing production task queue..." />
+        <LoadingSpinner size="lg" label="Synchronizing studio production task queue..." />
       ) : tasks.length === 0 ? (
         <EmptyState
-          icon={<CheckSquare className="w-8 h-8 text-indigo-400" />}
-          title="No Tasks Assigned"
-          description="There are no active production tasks matching your criteria."
+          icon={<CheckSquare className="w-10 h-10 text-indigo-400" />}
+          title="No Tasks Found"
+          description="There are no production tasks matching the selected filters."
           actionLabel="Create Task"
-          onAction={() => setIsCreateOpen(true)}
+          onAction={() => setIsCreateModalOpen(true)}
         />
-      ) : viewMode === 'kanban' ? (
-        /* Kanban Board View */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5 items-start">
-          {columns.map((colStatus) => {
-            const colTasks = tasks.filter((t) => t.status === colStatus);
-            return (
-              <div
-                key={colStatus}
-                className="bg-slate-900/60 border border-slate-800 rounded-xl p-3 flex flex-col gap-2.5 min-h-[500px]"
-              >
-                {/* Column Header */}
-                <div className="flex items-center justify-between px-1 pb-2 border-b border-slate-800">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                      {colStatus}
-                    </span>
-                    <span className="px-1.5 py-0.2 text-[10px] font-bold rounded-full bg-slate-800 text-slate-300 font-mono">
-                      {colTasks.length}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Cards */}
-                <div className="space-y-2.5 flex-1">
-                  {colTasks.map((task) => (
-                    <Card
-                      key={task.id}
-                      onClick={() => openInspector('task', task)}
-                      className="bg-slate-900 border-slate-800 hover:border-indigo-500/40 transition-all cursor-pointer group shadow-sm"
-                    >
-                      <CardBody className="p-3 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-mono font-bold text-indigo-400 group-hover:text-indigo-300">
-                            {task.code}
-                          </span>
-                          <PriorityBadge priority={task.priority} />
-                        </div>
-
-                        <h4 className="text-xs font-bold text-white leading-snug">
-                          {task.title}
-                        </h4>
-
-                        <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono">
-                          {task.entity_type === 'Shot' ? (
-                            <Film className="w-3 h-3 text-indigo-400" />
-                          ) : (
-                            <Box className="w-3 h-3 text-emerald-400" />
-                          )}
-                          <span className="font-bold text-slate-300">{task.entity_code}</span>
-                          <span className="text-slate-600">•</span>
-                          <span className="text-slate-400 truncate">{task.department}</span>
-                        </div>
-
-                        {/* Progress hours bar */}
-                        <div className="space-y-1 pt-1.5 border-t border-slate-800/80">
-                          <div className="flex justify-between text-[10px] text-slate-400 font-mono">
-                            <span>Logged: {task.logged_hours}h / {task.estimated_hours}h</span>
-                            <span>{Math.round((task.logged_hours / (task.estimated_hours || 1)) * 100)}%</span>
-                          </div>
-                          <div className="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden border border-slate-800">
-                            <div
-                              className={`h-full rounded-full ${
-                                task.logged_hours > task.estimated_hours
-                                  ? 'bg-amber-500'
-                                  : 'bg-indigo-500'
-                              }`}
-                              style={{
-                                width: `${Math.min(100, (task.logged_hours / (task.estimated_hours || 1)) * 100)}%`,
-                              }}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="flex items-center justify-between pt-1.5 text-[10px] text-slate-400 border-t border-slate-800/60">
-                          <div className="flex items-center space-x-1.5">
-                            {task.assignee_avatar ? (
-                              <img
-                                src={task.assignee_avatar}
-                                alt={task.assignee_name}
-                                className="w-4 h-4 rounded-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-4 h-4 rounded-full bg-slate-700 flex items-center justify-center text-[8px] text-white">
-                                {task.assignee_name?.[0]}
-                              </div>
-                            )}
-                            <span className="truncate max-w-[80px]">{task.assignee_name}</span>
-                          </div>
-
-                          <div className="flex items-center space-x-1">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedTask(task);
-                                setIsLogHoursOpen(true);
-                              }}
-                              className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-indigo-300"
-                              title="Log Work Hours"
-                            >
-                              <Clock className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAdvanceStatus(task);
-                              }}
-                              className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400"
-                              title="Advance Status"
-                            >
-                              <ArrowRight className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      </CardBody>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+      ) : viewMode === 'table' ? (
+        <TaskTableView
+          tasks={tasks}
+          selectedTaskIds={selectedTaskIds}
+          onToggleSelect={handleToggleSelect}
+          onSelectAll={handleSelectAll}
+          onUpdateTask={handleUpdateTask}
+          onDeleteTask={handleDeleteTask}
+          onOpenLogHours={openLogHoursModal}
+        />
+      ) : viewMode === 'board' ? (
+        <TaskBoardView
+          tasks={tasks}
+          onUpdateTask={handleUpdateTask}
+          onOpenLogHours={openLogHoursModal}
+        />
+      ) : viewMode === 'calendar' ? (
+        <TaskCalendarView
+          tasks={tasks}
+          onOpenCreate={(dateStr) => setIsCreateModalOpen(true)}
+        />
       ) : (
-        /* Table View */
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
-          <div className="overflow-x-auto custom-scrollbar">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-slate-950/80 border-b border-slate-800 text-[11px] font-mono text-slate-400 uppercase tracking-wider select-none">
-                  <th className="py-2.5 px-3">Code & Title</th>
-                  <th className="py-2.5 px-3">Target Entity</th>
-                  <th className="py-2.5 px-3">Department</th>
-                  <th className="py-2.5 px-3">Priority</th>
-                  <th className="py-2.5 px-3">Status</th>
-                  <th className="py-2.5 px-3">Assignee</th>
-                  <th className="py-2.5 px-3">Logged / Est</th>
-                  <th className="py-2.5 px-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60 font-sans">
-                {tasks.map((task) => (
-                  <tr
-                    key={task.id}
-                    onClick={() => openInspector('task', task)}
-                    className="hover:bg-slate-800/40 transition-colors cursor-pointer"
-                  >
-                    <td className="py-2.5 px-3">
-                      <span className="font-mono text-indigo-400 font-bold block">{task.code}</span>
-                      <span className="text-white font-medium">{task.title}</span>
-                    </td>
-                    <td className="py-2.5 px-3 font-mono text-slate-300">
-                      {task.entity_code} ({task.entity_type})
-                    </td>
-                    <td className="py-2.5 px-3 text-slate-300">{task.department}</td>
-                    <td className="py-2.5 px-3">
-                      <PriorityBadge priority={task.priority} />
-                    </td>
-                    <td className="py-2.5 px-3">
-                      <StatusBadge status={task.status} />
-                    </td>
-                    <td className="py-2.5 px-3 text-slate-200">
-                      {task.assignee_name || 'Unassigned'}
-                    </td>
-                    <td className="py-2.5 px-3 font-mono text-slate-300">
-                      {task.logged_hours}h / {task.estimated_hours}h
-                    </td>
-                    <td className="py-2.5 px-3 text-right space-x-1.5" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={() => {
-                          setSelectedTask(task);
-                          setIsLogHoursOpen(true);
-                        }}
-                        className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[11px]"
-                      >
-                        Log Time
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <TaskTimelineView tasks={tasks} />
+      )}
+
+      {/* Floating Bulk Operations Toolbar */}
+      <TaskBulkOperationsBar
+        selectedCount={selectedTaskIds.length}
+        selectedTaskIds={selectedTaskIds}
+        onClearSelection={() => setSelectedTaskIds([])}
+        onBulkAssign={handleBulkAssign}
+        onBulkStatusUpdate={handleBulkStatusUpdate}
+        onBulkArchive={handleBulkArchive}
+        onBulkDelete={handleBulkDelete}
+      />
+
+      {/* Create Task Modal */}
+      {isCreateModalOpen && (
+        <TaskCreateModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSubmit={handleCreateSubmit}
+          defaultProjectId={projectFilter !== 'ALL' ? projectFilter : 'proj-001'}
+        />
       )}
 
       {/* Log Hours Modal */}
-      <Modal
-        isOpen={isLogHoursOpen}
-        onClose={() => setIsLogHoursOpen(false)}
-        title="Log Production Hours"
-        description={`Task ${selectedTask?.code}: ${selectedTask?.title}`}
-      >
-        <form onSubmit={handleLogHours} className="space-y-3">
-          <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs space-y-1 font-mono">
-            <div className="flex justify-between text-slate-400">
-              <span>Current Logged:</span>
-              <strong className="text-white">{selectedTask?.logged_hours} hours</strong>
-            </div>
-            <div className="flex justify-between text-slate-400">
-              <span>Budget Estimate:</span>
-              <strong className="text-white">{selectedTask?.estimated_hours} hours</strong>
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">Additional Hours Worked</label>
-            <input
-              type="number"
-              step="0.5"
-              min="0.5"
-              value={hoursToAdd}
-              onChange={(e) => setHoursToAdd(Number(e.target.value))}
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono"
-            />
-          </div>
-
-          <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-            <Button variant="ghost" size="sm" onClick={() => setIsLogHoursOpen(false)} type="button">
-              Cancel
-            </Button>
-            <Button variant="primary" size="sm" type="submit">
-              Save Work Hours
-            </Button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Create Task Modal */}
-      <Modal
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-        title="Create Production Task"
-        description="Assign VFX shots or 3D asset work to department artists."
-      >
-        <form onSubmit={handleCreate} className="space-y-3">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">Task Title</label>
-            <input
-              required
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="e.g. Volumetric Explosion & Shockwave Simulation"
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Task Code</label>
-              <input
-                required
-                type="text"
-                value={formData.code}
-                onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                placeholder="TSK-FX-1099"
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Department</label>
-              <select
-                value={formData.department}
-                onChange={(e) => setFormData({ ...formData, department: e.target.value as Department })}
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white"
-              >
-                <option value="Layout">Layout</option>
-                <option value="Modeling">Modeling</option>
-                <option value="Rigging">Rigging</option>
-                <option value="Animation">Animation</option>
-                <option value="FX & Simulation">FX & Simulation</option>
-                <option value="Lighting & LookDev">Lighting & LookDev</option>
-                <option value="Compositing">Compositing</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Target Entity Code</label>
-              <input
-                type="text"
-                value={formData.entity_code}
-                onChange={(e) => setFormData({ ...formData, entity_code: e.target.value.toUpperCase() })}
-                placeholder="NK_010_010"
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Priority</label>
-              <select
-                value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value as PriorityLevel })}
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white"
-              >
-                <option value="Critical">Critical</option>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Assignee</label>
-              <input
-                type="text"
-                value={formData.assignee_name}
-                onChange={(e) => setFormData({ ...formData, assignee_name: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Estimated Hours</label>
-              <input
-                type="number"
-                value={formData.estimated_hours}
-                onChange={(e) => setFormData({ ...formData, estimated_hours: Number(e.target.value) })}
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-            <Button variant="ghost" size="sm" onClick={() => setIsCreateOpen(false)} type="button">
-              Cancel
-            </Button>
-            <Button variant="primary" size="sm" type="submit" isLoading={isCreating}>
-              Create Task
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      {isLogHoursModalOpen && (
+        <TimelogCreateModal
+          isOpen={isLogHoursModalOpen}
+          onClose={() => setIsLogHoursModalOpen(false)}
+          onSubmit={(data) => createTimelog.mutateAsync(data)}
+          task={selectedTaskForLog}
+        />
+      )}
     </div>
   );
 };

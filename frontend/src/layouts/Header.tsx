@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Menu,
   Bell,
@@ -15,13 +15,20 @@ import {
   Sliders,
   Sparkles,
   Building2,
+  ShieldCheck,
+  HelpCircle,
 } from 'lucide-react';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { useSidebarStore } from '@/shared/stores/useSidebarStore';
 import { useThemeMode } from '@/providers/ThemeProvider';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import { CommandPalette } from '@/shared/components/CommandPalette';
+import { PermissionsSimulatorModal } from '@/shared/components/PermissionsSimulatorModal';
+import { KeyboardShortcutsModal } from '@/shared/components/KeyboardShortcutsModal';
+import { usePermissions } from '@/core/permissions/usePermissions';
+import { useKeyboardNavigation } from '@/shared/hooks/useKeyboardNavigation';
 import { OrganizationSwitcher } from './OrganizationSwitcher';
+import { ProjectSwitcher } from './ProjectSwitcher';
 import { Button } from '@/shared/components/Button';
 import { Link } from 'react-router-dom';
 
@@ -30,24 +37,22 @@ export const Header: React.FC = () => {
   const { toggleMobile } = useSidebarStore();
   const { mode, toggleTheme } = useThemeMode();
   const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
+  const { currentRole } = usePermissions();
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isCommandOpen, setIsCommandOpen] = useState(false);
+  const [isPermissionsOpen, setIsPermissionsOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  // Global ⌘K / Ctrl+K keyboard shortcut listener
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setIsCommandOpen((prev) => !prev);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  // Register Global Keyboard Navigation (⌘K, ?, G+key, ⌘ Shift P)
+  useKeyboardNavigation({
+    onOpenCommandPalette: () => setIsCommandOpen(true),
+    onOpenShortcutsModal: () => setIsShortcutsOpen(true),
+    onOpenPermissionsModal: () => setIsPermissionsOpen(true),
+  });
 
   return (
     <>
@@ -67,19 +72,9 @@ export const Header: React.FC = () => {
 
           <div className="h-4 w-px bg-slate-800 hidden sm:block" />
 
-          {/* Project Master Badge */}
+          {/* Project Production Master Switcher */}
           <div className="flex items-center space-x-2">
-            <Link
-              to="/projects"
-              className="flex items-center space-x-2 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-xs text-slate-200 transition-colors"
-            >
-              <Film className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-              <span className="font-bold text-white font-mono">[NK99]</span>
-              <span className="hidden md:inline font-medium text-slate-300">Neon Knight</span>
-              <span className="hidden xl:inline text-[10px] text-slate-400 font-mono px-1 bg-slate-900 rounded">
-                ACEScg • 24fps
-              </span>
-            </Link>
+            <ProjectSwitcher />
 
             <span className="hidden 2xl:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -92,20 +87,20 @@ export const Header: React.FC = () => {
         <div className="flex-1 max-w-sm lg:max-w-md mx-3 hidden md:block">
           <button
             onClick={() => setIsCommandOpen(true)}
-            className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg bg-slate-950/60 border border-slate-800 hover:border-slate-700 text-xs text-slate-400 hover:text-slate-200 transition-all shadow-inner"
+            className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg bg-slate-950/60 border border-slate-800 hover:border-slate-700 text-xs text-slate-400 hover:text-slate-200 transition-all shadow-inner group"
           >
-            <div className="flex items-center space-x-2">
-              <Search className="w-3.5 h-3.5 text-slate-500" />
-              <span className="text-slate-400">Search shots, assets, clients, crew or commands...</span>
+            <div className="flex items-center space-x-2 truncate">
+              <Search className="w-3.5 h-3.5 text-slate-500 group-hover:text-indigo-400 transition-colors" />
+              <span className="text-slate-400 truncate">Search shots, assets, clients, crew or commands...</span>
             </div>
-            <div className="flex items-center space-x-1 font-mono text-[10px] bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-700 text-slate-300">
+            <div className="flex items-center space-x-1 font-mono text-[10px] bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-700 text-slate-300 shrink-0 ml-2">
               <Command className="w-2.5 h-2.5" />
               <span>K</span>
             </div>
           </button>
         </div>
 
-        {/* Right section: Farm load, Theme Switcher, Notifications, User Profile */}
+        {/* Right section: Permissions Role Simulator, Farm load, Theme Switcher, Notifications, User Profile */}
         <div className="flex items-center space-x-1.5 sm:space-x-2">
           {/* Mobile search trigger */}
           <button
@@ -115,8 +110,28 @@ export const Header: React.FC = () => {
             <Search className="w-4 h-4" />
           </button>
 
+          {/* Quick RBAC Role Badge & Simulator Trigger */}
+          <button
+            onClick={() => setIsPermissionsOpen(true)}
+            className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-slate-950/50 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-[11px] font-mono text-slate-300 transition-all"
+            title="Inspect RBAC permissions matrix or switch active role"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+            <span className="hidden xl:inline text-slate-500">Role:</span>
+            <span className="text-indigo-300 font-semibold truncate max-w-[120px]">{currentRole.name}</span>
+          </button>
+
+          {/* Keyboard Shortcuts Trigger */}
+          <button
+            onClick={() => setIsShortcutsOpen(true)}
+            className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            title="Keyboard Shortcuts (?)"
+          >
+            <HelpCircle className="w-4 h-4" />
+          </button>
+
           {/* Render Farm Quick HUD */}
-          <div className="hidden lg:flex items-center space-x-2 px-2.5 py-1 rounded-lg bg-slate-950/50 border border-slate-800 text-[11px] text-slate-300 font-mono">
+          <div className="hidden 2xl:flex items-center space-x-2 px-2.5 py-1 rounded-lg bg-slate-950/50 border border-slate-800 text-[11px] text-slate-300 font-mono">
             <Activity className="w-3.5 h-3.5 text-indigo-400" />
             <span className="text-slate-400">Farm:</span>
             <span className="text-emerald-400 font-semibold">94/128 Blades</span>
@@ -221,11 +236,21 @@ export const Header: React.FC = () => {
                   <p className="text-xs font-bold text-white">{user?.full_name}</p>
                   <p className="text-[11px] text-slate-400 truncate">{user?.email}</p>
                   <div className="mt-2 inline-flex items-center px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-[10px] font-mono">
-                    {user?.role}
+                    Role: {currentRole.name}
                   </div>
                 </div>
 
                 <div className="p-1 space-y-1">
+                  <button
+                    onClick={() => {
+                      setIsPermissionsOpen(true);
+                      setShowUserMenu(false);
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-300 hover:bg-slate-800 flex items-center justify-between"
+                  >
+                    <span>Simulate Role & Permissions</span>
+                    <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
+                  </button>
                   <button
                     onClick={() => {
                       setIsCommandOpen(true);
@@ -233,7 +258,7 @@ export const Header: React.FC = () => {
                     }}
                     className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-300 hover:bg-slate-800 flex items-center justify-between"
                   >
-                    <span>Switch Role Persona</span>
+                    <span>Command Palette</span>
                     <kbd className="text-[10px] font-mono text-slate-500 bg-slate-950 px-1 py-0.2 rounded">⌘K</kbd>
                   </button>
                   <Link
@@ -265,6 +290,12 @@ export const Header: React.FC = () => {
 
       {/* Global Command Palette */}
       <CommandPalette isOpen={isCommandOpen} onClose={() => setIsCommandOpen(false)} />
+
+      {/* Permissions Matrix & Simulator Modal */}
+      <PermissionsSimulatorModal isOpen={isPermissionsOpen} onClose={() => setIsPermissionsOpen(false)} />
+
+      {/* Keyboard Shortcuts Help Modal */}
+      <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
     </>
   );
 };

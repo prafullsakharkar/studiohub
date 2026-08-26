@@ -7,6 +7,7 @@ import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { Card, CardHeader, CardBody } from '@/shared/components/Card';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
+import { Badge } from '@/shared/components/Badge';
 import {
   ArrowLeft,
   Calendar,
@@ -18,6 +19,10 @@ import {
   Clapperboard,
   Box,
   Sliders,
+  Building,
+  Briefcase,
+  ExternalLink,
+  Shield,
 } from 'lucide-react';
 
 export const ProjectDetailPage: React.FC = () => {
@@ -48,7 +53,7 @@ export const ProjectDetailPage: React.FC = () => {
   const assets = assetsData?.results || [];
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto w-full">
       {/* Back button & Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center space-x-3">
@@ -87,29 +92,92 @@ export const ProjectDetailPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="bg-slate-900 border-slate-800">
           <CardBody className="p-4 space-y-1">
-            <span className="text-xs text-slate-400">Client / Studio</span>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-slate-400 flex items-center gap-1">
+                <Building className="w-3.5 h-3.5 text-indigo-400" />
+                Client Studio
+              </span>
+              {project.client_id && (
+                <Link
+                  to={`/clients/${project.client_id}`}
+                  className="text-[10px] text-indigo-400 hover:text-indigo-300 flex items-center gap-0.5"
+                >
+                  Workspace <ExternalLink className="w-2.5 h-2.5" />
+                </Link>
+              )}
+            </div>
             <p className="text-sm font-bold text-white">{project.client_name}</p>
+            {project.client_contact_name && (
+              <p className="text-[11px] text-slate-400 font-mono">Contact: {project.client_contact_name}</p>
+            )}
           </CardBody>
         </Card>
+
         <Card className="bg-slate-900 border-slate-800">
           <CardBody className="p-4 space-y-1">
             <span className="text-xs text-slate-400">VFX Supervisor</span>
             <p className="text-sm font-bold text-white">{project.supervisor_name}</p>
+            <p className="text-[11px] text-slate-400 font-mono">Coord: {project.coordinator_name}</p>
           </CardBody>
         </Card>
+
         <Card className="bg-slate-900 border-slate-800">
           <CardBody className="p-4 space-y-1">
             <span className="text-xs text-slate-400">Pipeline Color & Format</span>
-            <p className="text-sm font-bold text-indigo-400">{project.color_space} • {project.fps} FPS</p>
+            <p className="text-sm font-bold text-indigo-400">{project.color_space}</p>
+            <p className="text-[11px] text-slate-400 font-mono">{project.fps} FPS @ {project.resolution}</p>
           </CardBody>
         </Card>
+
         <Card className="bg-slate-900 border-slate-800">
           <CardBody className="p-4 space-y-1">
             <span className="text-xs text-slate-400">Delivery Deadline</span>
             <p className="text-sm font-bold text-white">{project.delivery_date}</p>
+            <p className="text-[11px] text-emerald-400 font-mono">${(project.budget_usd / 1000000).toFixed(2)}M Budget</p>
           </CardBody>
         </Card>
       </div>
+
+      {/* Outsourcing Vendors Card */}
+      {project.vendor_names && project.vendor_names.length > 0 && (
+        <Card className="bg-slate-900/90 border-slate-800">
+          <CardBody className="p-4">
+            <div className="flex items-center justify-between pb-2 mb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-purple-400" />
+                <h3 className="text-xs font-bold text-white font-mono uppercase tracking-wider">
+                  Contracted Outsourcing Vendor Partners ({project.vendor_names.length})
+                </h3>
+              </div>
+              <Link to="/vendors" className="text-xs text-purple-400 hover:text-purple-300">
+                Vendor Directory →
+              </Link>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {project.vendor_names.map((vName, idx) => {
+                const vId = project.vendor_ids?.[idx];
+                return (
+                  <div
+                    key={idx}
+                    className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center gap-3 text-xs"
+                  >
+                    <span className="font-bold text-white">{vName}</span>
+                    {vId && (
+                      <Link
+                        to={`/vendors/${vId}`}
+                        className="text-[11px] text-purple-400 hover:text-purple-300 flex items-center gap-1 font-mono"
+                      >
+                        Workspace <ExternalLink className="w-3 h-3" />
+                      </Link>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </CardBody>
+        </Card>
+      )}
 
       {/* Description & Overview */}
       <Card className="bg-slate-900 border-slate-800">

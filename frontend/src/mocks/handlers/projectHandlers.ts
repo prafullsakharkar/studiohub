@@ -62,7 +62,13 @@ export const projectHandlers = [
       supervisor_name: body.supervisor_name || 'Alex Chen',
       coordinator_id: body.coordinator_id || 'usr-002',
       coordinator_name: body.coordinator_name || 'Marcus Vance',
+      client_id: body.client_id || 'cl-001',
       client_name: body.client_name || 'Warner Nexus Studios',
+      client_contact_id: body.client_contact_id,
+      client_contact_name: body.client_contact_name,
+      vendor_ids: body.vendor_ids || [],
+      vendor_names: body.vendor_names || [],
+      vendor_team_ids: body.vendor_team_ids || [],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };

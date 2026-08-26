@@ -18,7 +18,14 @@ export type UniversalEntityType =
   | 'note'
   | 'delivery'
   | 'schedule'
-  | 'resource';
+  | 'resource'
+  | 'publishing'
+  | 'playlist'
+  | 'workflow'
+  | 'timelog'
+  | 'calendar'
+  | 'media'
+  | 'attachment';
 
 export type WorkspaceDisplayMode = 'full' | 'split' | 'drawer' | 'peek' | 'embedded';
 export type SplitDirection = 'horizontal' | 'vertical';

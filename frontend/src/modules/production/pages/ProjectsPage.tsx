@@ -9,10 +9,13 @@ import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { Modal } from '@/shared/components/Modal';
 import { Can } from '@/core/permissions/Can';
-import { Plus, Film, Calendar, Clapperboard, Layers, ExternalLink, Sparkles } from 'lucide-react';
+import { Plus, Film, Calendar, Clapperboard, Layers, ExternalLink, Sparkles, Building, Briefcase } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Project } from '@/mocks/db/production/projects';
 import { useWorkspaceStore } from '@/core/workspace/useWorkspaceStore';
+import { ClientSelect } from '@/modules/organization/components/ClientSelect';
+import { ClientContactSelect } from '@/modules/organization/components/ClientContactSelect';
+import { VendorSelect } from '@/modules/organization/components/VendorSelect';
 
 export const ProjectsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -30,7 +33,12 @@ export const ProjectsPage: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     code: '',
-    client: '',
+    client_id: 'cl-001',
+    client_name: 'Warner Nexus Studios',
+    client_contact_id: 'cc-001',
+    client_contact_name: 'Sarah Jenkins',
+    vendor_ids: ['ven-001'],
+    vendor_names: ['Silhouette FX Labs India'],
     description: '',
     fps: 24,
     resolution: '3840x2160',
@@ -45,11 +53,11 @@ export const ProjectsPage: React.FC = () => {
       status: 'In Progress',
       total_shots: 0,
       approved_shots: 0,
-      sequences_count: 0,
+      in_progress_shots: 0,
+      total_assets: 0,
       supervisor_name: 'Alex Chen',
-      lead_coordinator: 'Rachel Adams',
-      budget_allocated: 500000,
-      budget_spent: 0,
+      coordinator_name: 'Marcus Vance',
+      budget_usd: 1500000,
     } as Partial<Project>);
     setIsCreateOpen(false);
   };
@@ -57,13 +65,13 @@ export const ProjectsPage: React.FC = () => {
   const projects = data?.results || [];
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto w-full">
       {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-white tracking-tight">Productions & Shows</h1>
           <p className="text-xs text-slate-400">
-            Feature films, episodic series, and commercial pipeline projects
+            Feature films, episodic series, and commercial pipeline projects linked to client studios and outsourcing vendor partners
           </p>
         </div>
 
@@ -125,7 +133,7 @@ export const ProjectsPage: React.FC = () => {
               proj.total_shots > 0 ? Math.round((proj.approved_shots / proj.total_shots) * 100) : 0;
 
             return (
-              <Card key={proj.id} className="bg-slate-900 border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between">
+              <Card key={proj.id} className="bg-slate-900 border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between shadow-md">
                 <CardBody className="p-5 space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
@@ -133,7 +141,19 @@ export const ProjectsPage: React.FC = () => {
                         {proj.code}
                       </span>
                       <h3 className="text-base font-bold text-white pt-1">{proj.name}</h3>
-                      <p className="text-xs text-slate-400">{proj.client_name}</p>
+                      <div className="flex items-center gap-1 text-xs text-slate-400">
+                        <Building className="w-3 h-3 text-indigo-400 shrink-0" />
+                        {proj.client_id ? (
+                          <Link
+                            to={`/clients/${proj.client_id}`}
+                            className="hover:text-indigo-300 transition-colors underline-offset-2 hover:underline"
+                          >
+                            {proj.client_name}
+                          </Link>
+                        ) : (
+                          <span>{proj.client_name}</span>
+                        )}
+                      </div>
                     </div>
                     <StatusBadge status={proj.status} />
                   </div>
@@ -141,6 +161,25 @@ export const ProjectsPage: React.FC = () => {
                   <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
                     {proj.description}
                   </p>
+
+                  {/* Vendor Partners Badges */}
+                  {proj.vendor_names && proj.vendor_names.length > 0 && (
+                    <div className="pt-2 border-t border-slate-800/80">
+                      <div className="text-[10px] font-mono text-slate-500 uppercase mb-1">
+                        Outsourcing Partners:
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {proj.vendor_names.map((vName, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-0.5 rounded bg-purple-950/60 text-purple-300 text-[10px] font-mono border border-purple-500/30"
+                          >
+                            {vName}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="space-y-2 pt-2 border-t border-slate-800/80">
                     <div className="flex items-center justify-between text-xs text-slate-400">
@@ -247,15 +286,50 @@ export const ProjectsPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Client Selection (Reusable Selector) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-300">Client Studio</label>
+              <ClientSelect
+                value={formData.client_id}
+                onChange={(cId, cName) => {
+                  setFormData({
+                    ...formData,
+                    client_id: cId,
+                    client_name: cName || '',
+                  });
+                }}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-300">Client Contact Liaison</label>
+              <ClientContactSelect
+                clientId={formData.client_id}
+                value={formData.client_contact_id}
+                onChange={(contId, contName) => {
+                  setFormData({
+                    ...formData,
+                    client_contact_id: contId,
+                    client_contact_name: contName,
+                  });
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Primary Vendor Partner Selection (Reusable Selector) */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">Client / Studio</label>
-            <input
-              required
-              type="text"
-              value={formData.client}
-              onChange={(e) => setFormData({ ...formData, client: e.target.value })}
-              placeholder="e.g. Universal Pictures / Warner Bros."
-              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:ring-2 focus:ring-indigo-500"
+            <label className="text-xs font-semibold text-slate-300">Primary Outsourcing Vendor Partner</label>
+            <VendorSelect
+              value={formData.vendor_ids[0] || ''}
+              onChange={(vId, vName) => {
+                setFormData({
+                  ...formData,
+                  vendor_ids: vId ? [vId] : [],
+                  vendor_names: vName ? [vName] : [],
+                });
+              }}
             />
           </div>
 

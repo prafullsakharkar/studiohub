@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Edit3, ChevronLeft, Save, Sparkles, Building, MapPin, AlertCircle } from 'lucide-react';
 import { usePerson, usePersonMutations, useDepartments, useTeams, useOffices } from '@/modules/organization/hooks/useOrganizationData';
-import { Person } from '@/types/organization';
 import { Button } from '@/shared/components/Button';
 import { Card, CardBody } from '@/shared/components/Card';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
@@ -16,7 +15,24 @@ export const EditPersonPage: React.FC = () => {
   const { data: teams } = useTeams();
   const { data: offices } = useOffices();
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    full_name: string;
+    email: string;
+    role: string;
+    department_id: string;
+    department_name: string;
+    team_id: string;
+    team_name: string;
+    office_id: string;
+    office_name: string;
+    seniority: string;
+    skills: string;
+    phone: string;
+    timezone: string;
+    security_clearance: string;
+    status: string;
+    availability_status: string;
+  }>({
     full_name: '',
     email: '',
     role: '',
@@ -26,13 +42,13 @@ export const EditPersonPage: React.FC = () => {
     team_name: '',
     office_id: '',
     office_name: '',
-    seniority: 'Senior' as Person['seniority'],
+    seniority: 'Senior',
     skills: '',
     phone: '',
     timezone: '',
     security_clearance: 'MPAA Tier 3',
-    status: 'Active' as Person['status'],
-    availability_status: 'Available' as Person['availability_status'],
+    status: 'Active',
+    availability_status: 'Available',
   });
 
   useEffect(() => {
@@ -88,7 +104,6 @@ export const EditPersonPage: React.FC = () => {
       id: person.id,
       data: {
         ...form,
-        role: form.role as Person['role'],
         department_name: selectedDept?.name || form.department_name,
         office_name: selectedOffice?.name || form.office_name,
         team_name: selectedTeam?.name || form.team_name,

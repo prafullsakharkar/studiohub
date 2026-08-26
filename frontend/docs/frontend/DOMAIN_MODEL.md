@@ -1,64 +1,108 @@
-# StudioHub Domain Model Specification
+# StudioHub Domain Model & Entity Specifications
 
-## 1. Domain Entities Overview
-
-StudioHub models the complete VFX and animation studio ecosystem.
-
----
-
-## 2. Organization & Business Entities
-
-### 2.1 Organization (Studio Entity)
-The root multi-tenant entity representing a visual effects studio or company group.
-- **Fields**: `id`, `name`, `slug`, `code`, `tier`, `logo_url`, `headquarters`, `offices_count`, `active_projects_count`, `crew_count`, `storage_quota_tb`, `storage_used_tb`, `status`, `created_at`
-- **Sub-domains**: Offices, Departments, Teams, People, Clients, Vendors, Projects, Settings, Billing
-
-### 2.2 Client (Studio Partner / Production Company)
-Film studios, streaming networks, and production houses commissioning VFX work.
-- **Fields**: `id`, `organization_id`, `name`, `code`, `contact_name`, `email`, `phone`, `studio_type`, `active_projects`, `contract_tier`, `portal_access`, `status`, `logo_url`
-- **Relations**: Associated Projects, Client Review Sessions, Delivery Specs, Milestones
-
-### 2.3 Vendor (Outsourcing & Specialist VFX Partner)
-External boutique studios, rotoscope vendors, matchmove houses, and simulation specialists.
-- **Fields**: `id`, `organization_id`, `name`, `code`, `contact_name`, `email`, `specialization`, `security_tier`, `nda_signed`, `active_tasks_count`, `active_projects`, `rating`, `status`
-- **Relations**: Assigned Tasks, Outsourcing Deliverables, Quality Scores, Secure Transfer Portals
-
-### 2.4 Person (Studio Crew Member / Artist)
-Artists, department supervisors, production coordinators, technical directors, and pipeline developers.
-- **Fields**: `id`, `organization_id`, `full_name`, `email`, `role`, `department_id`, `department_name`, `team_id`, `team_name`, `office_id`, `office_name`, `avatar_url`, `skills`, `seniority`, `availability_status`, `active_tasks`, `logged_hours`
-
-### 2.5 Department (Discipline Unit)
-Core pipeline crafts (Layout, Modeling, Animation, FX & Simulation, Lighting & LookDev, Compositing, Pipeline, Editorial).
-- **Fields**: `id`, `organization_id`, `name`, `code`, `head_id`, `head_name`, `member_count`, `active_tasks_count`, `color`, `description`, `software_stack`
-
-### 2.6 Team (Production Squad)
-Cross-functional squads assigned to specific sequences, hero assets, or technical milestones.
-- **Fields**: `id`, `organization_id`, `department_id`, `name`, `code`, `lead_id`, `lead_name`, `member_count`, `current_project_id`, `current_project_code`, `focus_discipline`
-
-### 2.7 Office (Global Studio Facility)
-Physical locations and cloud virtual studios with timezone and infrastructure parameters.
-- **Fields**: `id`, `organization_id`, `name`, `code`, `city`, `country`, `address`, `timezone`, `capacity`, `current_occupancy`, `manager_id`, `manager_name`, `network_speed_gbps`, `color_space`
+## 1. Domain Overview
+StudioHub coordinates enterprise visual effects (VFX) production across two complementary operational domains:
+1. **Business & Organization Entities**: The institutional foundation (Studios, Clients, External Vendors, Crew Members, Departments, Teams, Offices, Billing, and Capacity).
+2. **Production & Pipeline Entities**: The media creation graph (Projects, Sequences, Shots, 3D Assets, Pipeline Tasks, Published Versions, Screening Reviews, and Notes).
 
 ---
 
-## 3. Production Entities
+## 2. Comprehensive Entity Matrix
 
-### 3.1 Project (Show / Production)
-Feature film, episodic series, or commercial project with delivery specs and OCIO configuration.
-- **Fields**: `id`, `organization_id`, `name`, `code`, `type`, `description`, `status`, `fps`, `resolution`, `aspect_ratio`, `color_space`, `start_date`, `delivery_date`, `thumbnail_url`, `budget_usd`, `supervisor_id`, `coordinator_id`, `client_name`
+### 2.1 Organization (`Organization`)
+- **Ownership**: Root Multi-Tenant Container
+- **Relationships**: Owns all `Clients`, `Vendors`, `People`, `Departments`, `Teams`, `Offices`, `Projects`, `Reports`, and `Billing`.
+- **Cardinality**: `1 : N` with all child entities.
+- **Lifecycle**: `Active` → `Suspended` → `Archived`
+- **Permissions**: `org:manage`, `billing:admin`, `settings:manage`
+- **Attributes**: `id`, `name`, `slug`, `code`, `tier`, `headquarters`, `offices_count`, `active_projects_count`, `crew_count`, `storage_quota_tb`, `settings (fps, color_space, resolution, usd_schema)`
 
-### 3.2 Shot (Cinematic Cut)
-Film cuts with frame counts, head/tail handles, cut timecodes, and discipline progress.
-- **Fields**: `id`, `project_id`, `sequence_code`, `code`, `name`, `status`, `frame_in`, `frame_out`, `frame_count`, `handle_frames`, `thumbnail_url`, `video_url`, `current_version`, `assigned_artist_name`, `pipeline` (layout, anim, fx, lgt, comp)
+### 2.2 Client Studio (`Client`)
+- **Ownership**: Organization
+- **Relationships**: `N : M` with `Project` (A client commissions multiple projects; joint-venture projects can involve co-distributor clients).
+- **Cardinality**: `Client N:M Project`
+- **Lifecycle**: `Prospect` → `Active Account` → `Completed` → `Archived`
+- **Permissions**: `client:read`, `client:create`, `client:edit`, `client:delete`
+- **Attributes**: `id`, `organization_id`, `name`, `code`, `contact_name`, `email`, `phone`, `studio_type`, `active_projects`, `contract_tier`, `portal_access`, `status`, `total_billed_usd`
 
-### 3.3 Asset (OpenUSD Model / Rig / Prop)
-Digital production assets authored in Maya, Houdini, Blender, and packaged into USD layers.
-- **Fields**: `id`, `project_id`, `name`, `code`, `category`, `status`, `version`, `thumbnail_url`, `file_format`, `poly_count`, `lod_levels`, `software`
+### 2.3 Outsourcing Partner (`Vendor`)
+- **Ownership**: Organization
+- **Relationships**: `N : M` with `Project` and `Task` (Vendors receive task packages and deliver version publishes).
+- **Cardinality**: `Vendor N:M Project`, `Vendor 1:N VendorUser`, `Vendor 1:N TaskPackage`
+- **Lifecycle**: `Vetting` → `Approved Partner` → `Contract Active` → `Offboarded`
+- **Permissions**: `vendor:read`, `vendor:create`, `vendor:edit`, `vendor:delete`, `vendor:assign`
+- **Attributes**: `id`, `organization_id`, `name`, `code`, `contact_name`, `email`, `specialization`, `security_tier (MPAA Tier 1-4)`, `nda_signed`, `bandwidth_gbps`, `active_tasks_count`, `active_projects`, `rating`, `location`
 
-### 3.4 Task (Discipline Work Unit)
-Atomic assignments with tracked vs estimated hours and software runtime dependencies.
-- **Fields**: `id`, `project_id`, `entity_type`, `entity_id`, `entity_code`, `title`, `code`, `department`, `status`, `priority`, `assignee_name`, `due_date`, `estimated_hours`, `logged_hours`
+### 2.4 Crew Member / User (`Person`)
+- **Ownership**: Organization
+- **Relationships**: Assigned to 1 `Department`, 1+ `Teams`, 1 `Office`, and multiple `Projects` / `Tasks`.
+- **Cardinality**: `Department 1:N Person`, `Team N:M Person`, `Office 1:N Person`, `Project N:M Person`
+- **Lifecycle**: `Invited` → `Active` → `On Leave` → `Deactivated`
+- **Permissions**: `people:read`, `people:create`, `people:edit`, `people:delete`, `people:assign`
+- **Attributes**: `id`, `organization_id`, `full_name`, `email`, `role`, `department_id`, `team_id`, `office_id`, `avatar_url`, `skills`, `seniority`, `availability_status`, `assigned_projects`, `security_clearance`, `active_tasks`, `logged_hours`, `timezone`
 
-### 3.5 Version & Review
-Published render passes, review dailies, frame annotations, timecodes, and supervisor verdicts.
-- **Fields**: `id`, `entity_type`, `entity_id`, `entity_code`, `version_number`, `status`, `supervisor_verdict`, `annotations`, `timecode`, `color_lut`
+### 2.5 Discipline Department (`DepartmentEntity`)
+- **Ownership**: Organization
+- **Relationships**: Parent of `Teams` and `People`; linked across all active `Projects`.
+- **Cardinality**: `Department 1:N Team`, `Department 1:N Person`, `Department N:M Project`
+- **Lifecycle**: `Active` → `Restructuring` → `Inactive`
+- **Permissions**: `department:read`, `department:manage`
+- **Attributes**: `id`, `organization_id`, `name`, `code`, `head_id`, `head_name`, `member_count`, `active_tasks_count`, `color`, `software_stack`, `capacity_hours_weekly`, `utilization_percentage`, `assigned_projects`
+
+### 2.6 Production Squad (`Team`)
+- **Ownership**: Organization & Department
+- **Relationships**: Sub-unit of a `Department`; groups `People` for specific `Project` assignments.
+- **Cardinality**: `Department 1:N Team`, `Team N:M Person`, `Team N:M Project`
+- **Lifecycle**: `Active` → `Disbanded`
+- **Permissions**: `team:read`, `team:manage`
+- **Attributes**: `id`, `organization_id`, `department_id`, `name`, `code`, `lead_id`, `lead_name`, `member_count`, `member_ids`, `current_project_id`, `current_project_code`, `assigned_projects`, `focus_discipline`, `capacity_utilization`
+
+### 2.7 Global Facility Hub (`Office`)
+- **Ownership**: Organization
+- **Relationships**: Physical workstation site housing `People` and hosting pipeline infrastructure.
+- **Cardinality**: `Organization 1:N Office`, `Office 1:N Person`, `Office N:M Project`
+- **Lifecycle**: `Operational` → `Maintenance` → `Decommissioned`
+- **Permissions**: `office:read`, `office:manage`
+- **Attributes**: `id`, `organization_id`, `name`, `code`, `city`, `country`, `address`, `timezone`, `capacity`, `current_occupancy`, `manager_id`, `network_speed_gbps`, `color_space`, `status`, `working_hours`, `holidays`, `resources`
+
+### 2.8 Production Master (`Project`)
+- **Ownership**: Organization & Commissioning Client(s)
+- **Relationships**: Central hub for `Shots`, `Assets`, `Tasks`, `Versions`, `Reviews`, and `Teams`.
+- **Cardinality**: `Project 1:N Sequence`, `Project 1:N Shot`, `Project 1:N Asset`, `Project 1:N Task`, `Project 1:N Delivery`
+- **Lifecycle**: `Bidding` → `Pre-Production` → `In Progress` → `Final Delivery` → `Archived`
+- **Permissions**: `project:read`, `project:create`, `project:edit`, `project:delete`, `project:approve`
+- **Attributes**: `id`, `organization_id`, `name`, `code`, `type (Feature/Episodic/Commercial)`, `client_id`, `client_name`, `status`, `start_date`, `delivery_date`, `shot_count`, `asset_count`, `progress_percentage`, `budget_usd`, `spent_usd`, `fps`, `resolution`, `color_space`, `aspect_ratio`
+
+---
+
+## 3. Production Graph Entities
+
+### 3.1 Shot (`Shot`)
+- **Ownership**: Project (and Sequence)
+- **Relationships**: `Project 1:N Shot`, `Shot 1:N Task`, `Shot 1:N PublishedVersion`, `Shot 1:N Note`
+- **Lifecycle**: `Not Started` → `Ready to Start` → `In Progress` → `Internal Review` → `Client Review` → `Approved` → `Omitted`
+- **Attributes**: `id`, `project_id`, `code`, `sequence`, `status`, `frame_in`, `frame_out`, `duration_frames`, `thumbnail_url`, `assigned_artists`, `hero_version`, `delivery_date`
+
+### 3.2 3D / Pipeline Asset (`Asset`)
+- **Ownership**: Project
+- **Relationships**: `Project 1:N Asset`, `Asset 1:N Task`, `Asset 1:N PublishedVersion`, `Asset N:M Shot (Instancing)`
+- **Lifecycle**: `Concept` → `Modeling` → `Texturing` → `Rigging` → `Approved`
+- **Attributes**: `id`, `project_id`, `code`, `name`, `type (Character/Prop/Environment/FX/Vehicle)`, `status`, `usd_path`, `polygon_count`, `thumbnail_url`
+
+### 3.3 Discipline Task (`Task`)
+- **Ownership**: Shot or Asset (under Project)
+- **Relationships**: `Shot 1:N Task`, `Asset 1:N Task`, `Person 1:N Task`, `Vendor 1:N Task`
+- **Lifecycle**: `Unassigned` → `Ready to Start` → `In Progress` → `Pending Review` → `Approved`
+- **Attributes**: `id`, `project_id`, `entity_type`, `entity_id`, `entity_code`, `department`, `name`, `assignee_id`, `assignee_name`, `bid_days`, `logged_hours`, `status`, `progress_percentage`, `due_date`
+
+### 3.4 Published Version (`PublishedVersion`)
+- **Ownership**: Shot or Asset
+- **Relationships**: `Entity 1:N Version`, `Version 1:N ReviewSession`, `Version 1:N Note`
+- **Lifecycle**: `Published` → `In Review` → `Approved / Promoted` → `Superseded`
+- **Attributes**: `id`, `project_id`, `entity_type`, `entity_id`, `entity_code`, `version_number`, `department`, `published_by_name`, `status`, `thumbnail_url`, `file_path`, `usd_stage_path`, `frame_range`, `file_size_mb`, `notes`
+
+### 3.5 Screening Room Review (`ReviewSession`)
+- **Ownership**: Project / Version
+- **Relationships**: `ReviewSession 1:N Version`, `ReviewSession 1:N Attendee (Person/Client)`
+- **Lifecycle**: `Scheduled` → `In Progress` → `Concluded`
+- **Attributes**: `id`, `project_id`, `title`, `review_type`, `session_date`, `lead_reviewer_name`, `status`, `items_count`, `approved_count`, `notes_count`, `stream_url`

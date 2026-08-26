@@ -3,23 +3,33 @@ import { ProductionStatus, PriorityLevel } from '@/types/common';
 import { Badge } from './Badge';
 
 interface StatusBadgeProps {
-  status: ProductionStatus;
+  status: ProductionStatus | string;
   size?: 'sm' | 'md';
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'sm' }) => {
-  const getVariant = (s: ProductionStatus) => {
+  const getVariant = (s: string) => {
     switch (s) {
       case 'Approved':
+      case 'Completed':
+      case 'Active':
+      case 'Operational':
         return 'success';
       case 'In Progress':
+      case 'In Session':
+      case 'Ready for Review':
         return 'info';
       case 'Pending Review':
+      case 'Upcoming':
         return 'purple';
       case 'Retake':
+      case 'At Risk':
+      case 'Blocked':
         return 'error';
       case 'On Hold':
+      case 'Draft':
         return 'warning';
+      case 'Archived':
       case 'Omitted':
       case 'Not Started':
       default:

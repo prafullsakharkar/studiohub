@@ -1,29 +1,57 @@
-# StudioHub Universal Workspace Architecture
+# StudioHub Workspace Architecture
 
-## 1. Non-Linear Production Philosophy
-StudioHub treats every entity (Organization, Client, Vendor, Project, Shot, Asset, Task, Version, Review) as a first-class node in a universal DAG (Directed Acyclic Graph). Artists, supervisors, and studio executives can traverse arbitrary depths without losing multi-tab context.
+## 1. Concept: Non-Linear VFX Production Workspace
+StudioHub rejects the paradigm of isolated, siloed CRUD pages. Instead, it implements a **unified, non-linear multi-view workspace** designed for high-density visual effects operations.
 
-## 2. Organization Multi-Tenancy Engine
+---
 
-### Switcher Mechanics
-1. **Selection**: Switcher UI (`OrganizationSwitcher.tsx`) displays recent studios, favorites, and quick search.
-2. **Context Synchronization**: Triggering `switchOrganization(orgId)` performs:
-   - Updates `localStorage.setItem('studiohub_active_org_id', orgId)`
-   - Updates `ApiClient` header injection (`X-Organization-Id: <active_org_id>`)
-   - Invalidates all TanStack Query caches (`queryClient.invalidateQueries()`) to eliminate cross-tenant data bleed
-   - Updates `OrganizationContext` and triggers reactive re-renders across the navigation header, active breadcrumbs, and permission gates.
+## 2. Core Workspace Capabilities
 
-### 12-Tab Organization Workspace Layout
-When viewing `/organizations/:id`, users access the comprehensive studio operational control plane:
-- **Overview**: Real-time show count, crew count, storage quota consumption, OCIO standards, and high-level health vitals.
-- **Profile**: Legal entity details, registered URL slug, jurisdiction, and supervisory contacts.
-- **Branding**: Logos, screening portal banners, burn-in watermark presets, and UI accent themes.
-- **Offices**: Physical facilities, timezone alignments, DCI screening suites, and SAN bandwidth links.
-- **Departments**: Pipeline craft units (FX, Lighting, Comp, Asset) with custom software toolchains.
-- **Teams**: Specialized squads and sequence strike pods.
-- **People**: Crew directory with hourly rates, active task loads, and MPAA clearance levels.
-- **Clients**: Commissioning studios, contract tiers, and client screening portals.
-- **Vendors**: Outsourcing partner labs with NDA status and secure direct transfer links.
-- **Projects**: Direct access to production modules (Shots, Assets, Tasks, Versions, Reviews) with zero data duplication.
-- **Settings**: Global FPS defaults, ACES color pipelines, OpenUSD versions, and SAML SSO enforcement.
-- **Activity**: Live audit trail of pipeline changes, key rotations, and facility updates.
+### 2.1 Workspace Topography & Context Retention
+1. **Master Context Bar (Top HUD)**:
+   - Displays active Studio Tenant, active Production Show (`NK99`), Global Search, Quick Personas, and System Diagnostics.
+   - Preserves view filters (e.g. sequence filters, department view modes) across screen transitions.
+2. **Contextual Navigation (Primary Sidebar)**:
+   - Categorized by operational workflows: `Workspace`, `Organization Entities`, `Production Graph`, and `Platform Controls`.
+   - Collapsible with keyboard shortcut `[` for maximal viewport real estate.
+3. **Inspector Drawer (Right Flyout)**:
+   - Deep inspection drawer for any selected entity (`Shot`, `Task`, `Asset`, `Person`, `Vendor`, `Client`).
+   - Supports editing, history review, version comparison, and note logging without losing list position or sequencer scroll state.
+
+### 2.2 Split Views & Multi-Pane Workspaces
+- **Sequencer Split Grid**: View shot thumbnails on the left pane and shot tasks/versions in the right inspector.
+- **Review Cinema Mode**: Side-by-side frame comparison (Wipe/Diff slider) with live synchronized video playback.
+- **Workload Heatmap**: Dual-pane view of team member capacity vs project milestone deadlines.
+
+### 2.3 Context Preservation During Navigation
+The workspace ensures seamless state preservation during complex non-linear navigation flows:
+```
+Client Profile
+   ↓ (Click Active Project)
+Project Overview
+   ↓ (Click Sequence)
+Shot Sequencer
+   ↓ (Click Assignee)
+Artist Drawer
+   ↓ (Click Team)
+Team Capacity View
+   ↓ (Browser Back or Breadcrumb)
+Exact Shot Sequencer (Maintains Frame In/Out, Search Filter, and Selected Row)
+```
+
+---
+
+## 3. Keyboard-First UX & Shortcuts
+StudioHub supports full keyboard navigation for fast studio operations:
+- `⌘ K` / `Ctrl K`: Open Global Command Palette
+- `G P`: Go to Productions
+- `G S`: Go to Shots & Sequencer
+- `G A`: Go to Assets
+- `G T`: Go to Tasks
+- `G R`: Go to Reviews & Screening Room
+- `G O`: Go to Organizations & Facilities
+- `G T S`: Open API & Test Suite
+- `[`: Toggle Sidebar Collapse
+- `ESC`: Close active Drawer / Modal / Palette
+- `J` / `K`: Navigate records up/down in active table
+- `Space`: Quick-play video preview or open entity Quick Peek

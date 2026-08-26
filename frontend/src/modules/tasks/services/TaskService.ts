@@ -1,7 +1,8 @@
 import { ITaskRepository } from '../repositories/ITaskRepository';
 import { taskRepository } from '../repositories/TaskRepository';
-import { Task } from '@/mocks/db/tasks/tasks';
+import { Task } from '@/types/tasks';
 import { PaginatedResponse, QueryParams } from '@/types/drf';
+import { apiClient } from '@/api/client/ApiClient';
 
 export class TaskService {
   private repository: ITaskRepository;
@@ -28,6 +29,38 @@ export class TaskService {
 
   async deleteTask(id: string): Promise<void> {
     return this.repository.delete(id);
+  }
+
+  async bulkAssign(payload: {
+    task_ids: string[];
+    assignee_id?: string;
+    assignee_name?: string;
+    assignee_avatar?: string;
+    assignee_role?: string;
+    team_id?: string;
+    team_name?: string;
+  }): Promise<{ success: boolean; updated_count: number }> {
+    return apiClient.post<{ success: boolean; updated_count: number }>('/api/v1/tasks/bulk-assign/', payload);
+  }
+
+  async bulkStatusUpdate(payload: {
+    task_ids: string[];
+    status: string;
+  }): Promise<{ success: boolean; updated_count: number }> {
+    return apiClient.post<{ success: boolean; updated_count: number }>('/api/v1/tasks/bulk-status/', payload);
+  }
+
+  async bulkArchive(payload: {
+    task_ids: string[];
+    is_archived: boolean;
+  }): Promise<{ success: boolean; updated_count: number }> {
+    return apiClient.post<{ success: boolean; updated_count: number }>('/api/v1/tasks/bulk-archive/', payload);
+  }
+
+  async bulkDelete(payload: {
+    task_ids: string[];
+  }): Promise<{ success: boolean; deleted_count: number }> {
+    return apiClient.post<{ success: boolean; deleted_count: number }>('/api/v1/tasks/bulk-delete/', payload);
   }
 }
 

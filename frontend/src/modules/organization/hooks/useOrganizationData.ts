@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { organizationApi } from '../api/organizationApi';
 import { useOrganization } from '@/core/organization/useOrganization';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
-import { Client, Vendor, Person, DepartmentEntity, Team, Office } from '@/types/organization';
+import { Client, Vendor, Person, DepartmentEntity, Department, Team, Office } from '@/types/organization';
 
 export const useOrganizationsList = () => {
   return useQuery({
@@ -18,6 +18,14 @@ export const useClients = (params?: Record<string, any>) => {
     queryKey: ['clients', currentOrganization.id, params],
     queryFn: () => organizationApi.getClients({ ...params, organization_id: currentOrganization.id }),
     staleTime: 1000 * 30,
+  });
+};
+
+export const useClient = (id: string) => {
+  return useQuery({
+    queryKey: ['client', id],
+    queryFn: () => organizationApi.getClientDetail(id),
+    enabled: !!id,
   });
 };
 
@@ -46,7 +54,59 @@ export const useClientMutations = () => {
     },
   });
 
-  return { createClient };
+  const updateClient = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Client> }) =>
+      organizationApi.updateClient(id, data),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['client', updated.id] });
+      addNotification({
+        type: 'success',
+        title: 'Client Account Updated',
+        message: `${updated.name} records have been updated successfully.`,
+      });
+    },
+  });
+
+  const archiveClient = useMutation({
+    mutationFn: (id: string) => organizationApi.archiveClient(id),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['client', updated.id] });
+      addNotification({
+        type: 'info',
+        title: 'Client Studio Archived',
+        message: `${updated.name} has been archived.`,
+      });
+    },
+  });
+
+  const restoreClient = useMutation({
+    mutationFn: (id: string) => organizationApi.restoreClient(id),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['client', updated.id] });
+      addNotification({
+        type: 'success',
+        title: 'Client Studio Restored',
+        message: `${updated.name} status restored to Active.`,
+      });
+    },
+  });
+
+  const deleteClient = useMutation({
+    mutationFn: (id: string) => organizationApi.deleteClient(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      addNotification({
+        type: 'info',
+        title: 'Client Removed',
+        message: 'The client studio account has been removed.',
+      });
+    },
+  });
+
+  return { createClient, updateClient, archiveClient, restoreClient, deleteClient };
 };
 
 export const useVendors = (params?: Record<string, any>) => {
@@ -55,6 +115,14 @@ export const useVendors = (params?: Record<string, any>) => {
     queryKey: ['vendors', currentOrganization.id, params],
     queryFn: () => organizationApi.getVendors({ ...params, organization_id: currentOrganization.id }),
     staleTime: 1000 * 30,
+  });
+};
+
+export const useVendor = (id: string) => {
+  return useQuery({
+    queryKey: ['vendor', id],
+    queryFn: () => organizationApi.getVendorDetail(id),
+    enabled: !!id,
   });
 };
 
@@ -74,9 +142,68 @@ export const useVendorMutations = () => {
         message: `${newVendor.name} [${newVendor.code}] added as approved outsourcing partner.`,
       });
     },
+    onError: () => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to Enrol Vendor',
+        message: 'Could not complete vendor enrolment.',
+      });
+    },
   });
 
-  return { createVendor };
+  const updateVendor = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Vendor> }) =>
+      organizationApi.updateVendor(id, data),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
+      queryClient.invalidateQueries({ queryKey: ['vendor', updated.id] });
+      addNotification({
+        type: 'success',
+        title: 'Vendor Partner Updated',
+        message: `${updated.name} profiles and credentials updated.`,
+      });
+    },
+  });
+
+  const archiveVendor = useMutation({
+    mutationFn: (id: string) => organizationApi.archiveVendor(id),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
+      queryClient.invalidateQueries({ queryKey: ['vendor', updated.id] });
+      addNotification({
+        type: 'info',
+        title: 'Vendor Facility Archived',
+        message: `${updated.name} partner access is now archived.`,
+      });
+    },
+  });
+
+  const restoreVendor = useMutation({
+    mutationFn: (id: string) => organizationApi.restoreVendor(id),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
+      queryClient.invalidateQueries({ queryKey: ['vendor', updated.id] });
+      addNotification({
+        type: 'success',
+        title: 'Vendor Partner Restored',
+        message: `${updated.name} restored to Approved Partner status.`,
+      });
+    },
+  });
+
+  const deleteVendor = useMutation({
+    mutationFn: (id: string) => organizationApi.deleteVendor(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
+      addNotification({
+        type: 'info',
+        title: 'Vendor Partner Removed',
+        message: 'Outsourcing partner facility removed from registry.',
+      });
+    },
+  });
+
+  return { createVendor, updateVendor, archiveVendor, restoreVendor, deleteVendor };
 };
 
 export const usePeople = (params?: Record<string, any>) => {

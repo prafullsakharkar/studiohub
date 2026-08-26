@@ -34,7 +34,7 @@ export const PersonOverviewTab: React.FC<{ person: Person }> = ({ person }) => {
                 {person.seniority}
               </Badge>
               <Badge
-                variant={person.status === 'Active' || !person.status ? 'success' : person.status === 'Suspended' ? 'danger' : 'warning'}
+                variant={person.status === 'Active' || !person.status ? 'success' : person.status === 'Suspended' ? 'error' : 'warning'}
                 className="font-mono text-[10px]"
               >
                 {person.status || 'Active'}

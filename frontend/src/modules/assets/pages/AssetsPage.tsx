@@ -2,512 +2,726 @@ import React, { useState } from 'react';
 import { useAssets } from '../hooks/useAssets';
 import { useAssetMutations } from '../hooks/useAssetMutations';
 import { useProjects } from '@/modules/production/hooks/useProjects';
-import { Card, CardBody } from '@/shared/components/Card';
 import { Button } from '@/shared/components/Button';
 import { SearchInput } from '@/shared/components/SearchInput';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { EmptyState } from '@/shared/components/EmptyState';
-import { Pagination } from '@/shared/components/Pagination';
+import { Badge } from '@/shared/components/Badge';
 import { Modal } from '@/shared/components/Modal';
-import { Can } from '@/core/permissions/Can';
-import { HasRole } from '@/core/permissions/HasRole';
 import {
   Box,
   Plus,
-  CheckCircle2,
   Layers,
   Cpu,
   Database,
   List,
   LayoutGrid,
-  Download,
-  Copy,
-  Check,
   Sparkles,
+  FolderTree,
+  Image as ImageIcon,
+  Filter,
+  ExternalLink,
+  Archive,
+  RotateCcw,
+  Edit,
+  Trash2,
+  Download,
+  Users2,
+  Film,
+  SlidersHorizontal,
 } from 'lucide-react';
-import { Asset, AssetCategory } from '@/mocks/db/assets/assets';
+import { Asset, AssetCategory, AssetSoftware } from '@/mocks/db/assets/assets';
 import { ProductionStatus } from '@/types/common';
 import { useInspectorStore } from '@/shared/stores/useInspectorStore';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
+import { Link } from 'react-router-dom';
+
+// Subcomponents
+import { AssetGalleryView } from '../components/AssetGalleryView';
+import { AssetHierarchyTree } from '../components/AssetHierarchyTree';
+import { AssetCreateModal } from '../components/AssetCreateModal';
+import { AssetEditModal } from '../components/AssetEditModal';
 
 export const AssetsPage: React.FC = () => {
-  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
+  const [departmentFilter, setDepartmentFilter] = useState<string>('ALL');
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [taskStatusFilter, setTaskStatusFilter] = useState<string>('ALL');
+  const [artistFilter, setArtistFilter] = useState<string>('ALL');
+  const [teamFilter, setTeamFilter] = useState<string>('ALL');
+  const [versionFilter, setVersionFilter] = useState<string>('ALL');
+  const [reviewStatusFilter, setReviewStatusFilter] = useState<string>('ALL');
   const [projectFilter, setProjectFilter] = useState<string>('ALL');
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [archiveFilter, setArchiveFilter] = useState<'active' | 'archived' | 'all'>('active');
+
+  const [viewMode, setViewMode] = useState<'table' | 'grid' | 'gallery' | 'hierarchy'>('grid');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
+  const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const openInspector = useInspectorStore((state) => state.openInspector);
   const addNotification = useNotificationStore((state) => state.addNotification);
 
   const { data: projectsData } = useProjects();
   const { data, isLoading } = useAssets({
-    page,
-    page_size: viewMode === 'table' ? 10 : 6,
     search: search || undefined,
-    category: categoryFilter !== 'ALL' ? categoryFilter : undefined,
     project_id: projectFilter !== 'ALL' ? projectFilter : undefined,
   });
 
-  const { createAsset, updateAsset, isCreating } = useAssetMutations();
+  const { updateAsset, archiveAsset, restoreAsset, deleteAsset, isDeleting } = useAssetMutations();
 
-  const [formData, setFormData] = useState({
-    name: '',
-    code: '',
-    category: 'Character' as AssetCategory,
-    description: '',
-    software: 'Maya' as const,
-    file_format: 'USD / Alembic (.abc)',
-    poly_count: 1500000,
-    lod_levels: 4,
-    assigned_artist_name: 'Sarah Jenkins',
+  const allAssets = data?.results || [];
+
+  // Filter pipeline
+  const filteredAssets = allAssets.filter((asset) => {
+    // Search
+    if (search) {
+      const q = search.toLowerCase();
+      const match =
+        asset.name.toLowerCase().includes(q) ||
+        asset.code.toLowerCase().includes(q) ||
+        (asset.description && asset.description.toLowerCase().includes(q)) ||
+        (asset.assigned_artist_name && asset.assigned_artist_name.toLowerCase().includes(q));
+      if (!match) return false;
+    }
+
+    // Category / Asset Type
+    if (categoryFilter !== 'ALL' && asset.category !== categoryFilter) return false;
+
+    // Department
+    if (departmentFilter !== 'ALL' && asset.department_name !== departmentFilter) return false;
+
+    // Status
+    if (statusFilter !== 'ALL' && asset.status !== statusFilter) return false;
+
+    // Task Status
+    if (taskStatusFilter !== 'ALL' && asset.task_status !== taskStatusFilter) return false;
+
+    // Artist
+    if (artistFilter !== 'ALL' && asset.assigned_artist_name !== artistFilter) return false;
+
+    // Team
+    if (teamFilter !== 'ALL' && asset.team_name !== teamFilter) return false;
+
+    // Version
+    if (versionFilter !== 'ALL' && asset.version !== versionFilter) return false;
+
+    // Review Status
+    if (reviewStatusFilter !== 'ALL' && asset.review_status !== reviewStatusFilter) return false;
+
+    // Project
+    if (projectFilter !== 'ALL' && asset.project_id !== projectFilter && asset.project_code !== projectFilter)
+      return false;
+
+    // Archive
+    if (archiveFilter === 'active' && asset.is_archived) return false;
+    if (archiveFilter === 'archived' && !asset.is_archived) return false;
+
+    return true;
   });
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await createAsset({
-      ...formData,
-      project_id: projectsData?.results[0]?.id || 'proj-001',
-      project_code: projectsData?.results[0]?.code || 'NK99',
-      status: 'Not Started',
-      version: 'v001',
-      thumbnail_url: 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=600&auto=format&fit=crop&q=80',
-    } as Partial<Asset>);
-    setIsCreateOpen(false);
-  };
+  const categories: string[] = [
+    'ALL',
+    'Character',
+    'Environment',
+    'Vehicle',
+    'Prop',
+    'FX Rig',
+    'Shader & LookDev',
+    'Crowd Agent',
+    'Costume / Groom',
+  ];
 
-  const exportUSDManifest = () => {
-    addNotification({
-      type: 'info',
-      title: 'OpenUSD Stage Manifest Exported',
-      message: 'Generated composition graph with all active assets in NK99.',
+  const handleStatusQuickChange = async (asset: Asset, newStatus: ProductionStatus) => {
+    await updateAsset({
+      id: asset.id,
+      data: { status: newStatus },
     });
   };
 
-  const assets = data?.results || [];
-  const totalCount = data?.count || 0;
+  const handleToggleArchive = async (asset: Asset) => {
+    if (asset.is_archived) {
+      await restoreAsset(asset.id);
+    } else {
+      await archiveAsset(asset.id);
+    }
+  };
 
-  const categories: string[] = ['ALL', 'Character', 'Environment', 'Vehicle', 'Prop', 'FX Rig', 'Shader & LookDev'];
+  const handleDeleteConfirm = async () => {
+    if (deletingAsset) {
+      await deleteAsset(deletingAsset.id);
+      setDeletingAsset(null);
+    }
+  };
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto font-sans">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/60 p-3.5 rounded-xl border border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-2xl shadow-xl">
         <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-            <Box className="w-5 h-5" />
+          <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+            <Box className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-              OpenUSD Asset Directory
-              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 bg-slate-800 text-emerald-300 rounded border border-slate-700">
-                {totalCount} Assets
-              </span>
-            </h1>
-            <p className="text-xs text-slate-400">
-              Geometry sublayers, polygon budgets, MaterialX lookdev versions, and LOD cascades
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-bold text-white tracking-tight">Production Assets</h1>
+              <Badge variant="outline" className="font-mono text-[10px] text-emerald-300 border-emerald-500/30">
+                OpenUSD 23.11
+              </Badge>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Production asset entities, OpenUSD composition sublayers, LOD cascades, and lookdev turnovers
             </p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={exportUSDManifest}
-            leftIcon={<Download className="w-3.5 h-3.5" />}
-          >
-            Export USDA
-          </Button>
-
-          <Can permission="assets:create">
-            <Button
-              id="register-asset-btn"
-              variant="primary"
-              size="sm"
-              onClick={() => setIsCreateOpen(true)}
-              leftIcon={<Plus className="w-3.5 h-3.5" />}
+        {/* View Switchers & Actions */}
+        <div className="flex items-center space-x-2 self-end sm:self-center">
+          {/* 4 View Modes */}
+          <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
+            <button
+              onClick={() => setViewMode('grid')}
+              title="Grid View"
+              className={`p-1.5 rounded-lg transition-all ${
+                viewMode === 'grid'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-400 hover:text-white'
+              }`}
             >
-              Register Asset
-            </Button>
-          </Can>
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('table')}
+              title="Table View"
+              className={`p-1.5 rounded-lg transition-all ${
+                viewMode === 'table'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <List className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('gallery')}
+              title="Showcase Gallery"
+              className={`p-1.5 rounded-lg transition-all ${
+                viewMode === 'gallery'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <ImageIcon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('hierarchy')}
+              title="Stage Hierarchy Tree"
+              className={`p-1.5 rounded-lg transition-all ${
+                viewMode === 'hierarchy'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <FolderTree className="w-4 h-4" />
+            </button>
+          </div>
+
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={() => setIsCreateOpen(true)}
+            leftIcon={<Plus className="w-4 h-4" />}
+          >
+            Register Asset
+          </Button>
         </div>
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-3">
-        <div className="flex items-center space-x-2 w-full md:w-auto">
-          <SearchInput
-            className="w-full sm:w-72"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            onClear={() => {
-              setSearch('');
-              setPage(1);
-            }}
-            placeholder="Search code, model, artist..."
-          />
+      {/* Main Filter & Category Bar */}
+      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-4 shadow-lg">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="w-full md:w-80">
+            <SearchInput
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search assets by code, name, artist, prim..."
+            />
+          </div>
 
-          <select
-            value={projectFilter}
-            onChange={(e) => {
-              setProjectFilter(e.target.value);
-              setPage(1);
-            }}
-            className="px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option value="ALL">All Shows</option>
-            {projectsData?.results.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.code}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex items-center justify-between sm:justify-end space-x-2 w-full md:w-auto overflow-x-auto">
-          {/* Category Pills */}
-          <div className="flex items-center space-x-1">
+          {/* Quick Category Chips */}
+          <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 text-xs font-mono">
             {categories.map((cat) => (
               <button
                 key={cat}
-                onClick={() => {
-                  setCategoryFilter(cat);
-                  setPage(1);
-                }}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
+                onClick={() => setCategoryFilter(cat)}
+                className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-all ${
                   categoryFilter === cat
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-slate-800/80 text-slate-400 hover:text-slate-200'
+                    ? 'bg-emerald-600 text-white font-semibold shadow-xs'
+                    : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800 hover:border-slate-700'
                 }`}
               >
-                {cat}
+                {cat === 'ALL' ? 'All Types' : cat}
               </button>
             ))}
           </div>
 
-          {/* View Switcher */}
-          <div className="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800 shrink-0">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}
-              title="Asset Card Grid"
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded ${viewMode === 'table' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}
-              title="Dense Matrix Table View"
-            >
-              <List className="w-3.5 h-3.5" />
-            </button>
+          <Button
+            size="sm"
+            variant={showAdvancedFilters ? 'primary' : 'outline'}
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            leftIcon={<SlidersHorizontal className="w-3.5 h-3.5" />}
+            className="text-xs h-9"
+          >
+            Filters {showAdvancedFilters ? '▲' : '▼'}
+          </Button>
+        </div>
+
+        {/* Expandable Advanced Multi-Filter Grid */}
+        {showAdvancedFilters && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-3 border-t border-slate-800 text-xs font-mono">
+            {/* Department */}
+            <div>
+              <label className="text-[10px] uppercase text-slate-500 block mb-1">Department</label>
+              <select
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+                className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:ring-1 focus:ring-emerald-500"
+              >
+                <option value="ALL">All Depts</option>
+                <option value="3D Modeling & Assets">3D Modeling</option>
+                <option value="LookDev & Shading">LookDev & Shading</option>
+                <option value="Character & Creature Rigging">Rigging</option>
+                <option value="CFX & Groom">CFX Groom</option>
+                <option value="FX & Simulation">FX Simulation</option>
+              </select>
+            </div>
+
+            {/* Status */}
+            <div>
+              <label className="text-[10px] uppercase text-slate-500 block mb-1">Asset Status</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:ring-1 focus:ring-emerald-500"
+              >
+                <option value="ALL">All Statuses</option>
+                <option value="Approved">Approved</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Pending Review">Pending Review</option>
+                <option value="Retake">Retake</option>
+                <option value="On Hold">On Hold</option>
+                <option value="Not Started">Not Started</option>
+                <option value="Archived">Archived</option>
+              </select>
+            </div>
+
+            {/* Artist */}
+            <div>
+              <label className="text-[10px] uppercase text-slate-500 block mb-1">Artist</label>
+              <select
+                value={artistFilter}
+                onChange={(e) => setArtistFilter(e.target.value)}
+                className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:ring-1 focus:ring-emerald-500"
+              >
+                <option value="ALL">All Artists</option>
+                <option value="Sarah Jenkins">Sarah Jenkins</option>
+                <option value="Elena Rostova">Elena Rostova</option>
+                <option value="Marcus Vance">Marcus Vance</option>
+                <option value="Kenji Takahashi">Kenji Takahashi</option>
+              </select>
+            </div>
+
+            {/* Team */}
+            <div>
+              <label className="text-[10px] uppercase text-slate-500 block mb-1">Team Crew</label>
+              <select
+                value={teamFilter}
+                onChange={(e) => setTeamFilter(e.target.value)}
+                className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:ring-1 focus:ring-emerald-500"
+              >
+                <option value="ALL">All Teams</option>
+                <option value="Hero Asset Crew">Hero Asset Crew</option>
+                <option value="Cyber Creature Unit">Cyber Creature Unit</option>
+                <option value="LookDev & Shading Unit">LookDev Unit</option>
+              </select>
+            </div>
+
+            {/* Version */}
+            <div>
+              <label className="text-[10px] uppercase text-slate-500 block mb-1">Version</label>
+              <select
+                value={versionFilter}
+                onChange={(e) => setVersionFilter(e.target.value)}
+                className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:ring-1 focus:ring-emerald-500"
+              >
+                <option value="ALL">All Versions</option>
+                <option value="v001">v001</option>
+                <option value="v004">v004</option>
+                <option value="v005">v005</option>
+                <option value="v006">v006</option>
+                <option value="v007">v007</option>
+                <option value="v008">v008</option>
+                <option value="v009">v009</option>
+                <option value="v011">v011</option>
+              </select>
+            </div>
+
+            {/* Archive Filter */}
+            <div>
+              <label className="text-[10px] uppercase text-slate-500 block mb-1">Archive State</label>
+              <select
+                value={archiveFilter}
+                onChange={(e) => setArchiveFilter(e.target.value as any)}
+                className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:ring-1 focus:ring-emerald-500"
+              >
+                <option value="active">Active Only</option>
+                <option value="archived">Archived Only</option>
+                <option value="all">Include All</option>
+              </select>
+            </div>
           </div>
+        )}
+
+        <div className="flex items-center justify-between text-xs font-mono text-slate-400 pt-1">
+          <span>
+            Displaying <strong className="text-white">{filteredAssets.length}</strong> production asset{filteredAssets.length === 1 ? '' : 's'}
+          </span>
+          <button
+            onClick={() => {
+              setSearch('');
+              setCategoryFilter('ALL');
+              setDepartmentFilter('ALL');
+              setStatusFilter('ALL');
+              setArtistFilter('ALL');
+              setTeamFilter('ALL');
+              setVersionFilter('ALL');
+              setReviewStatusFilter('ALL');
+              setArchiveFilter('active');
+            }}
+            className="text-indigo-400 hover:text-indigo-300"
+          >
+            Reset Filters
+          </button>
         </div>
       </div>
 
-      {/* Content */}
+      {/* Main Content View Switcher */}
       {isLoading ? (
-        <LoadingSpinner size="lg" label="Indexing OpenUSD asset repository..." />
-      ) : assets.length === 0 ? (
+        <div className="flex flex-col items-center justify-center min-h-[40vh]">
+          <LoadingSpinner size="lg" />
+          <span className="text-xs text-slate-400 mt-3 font-mono">Querying OpenUSD asset catalog...</span>
+        </div>
+      ) : filteredAssets.length === 0 ? (
         <EmptyState
-          icon={<Box className="w-8 h-8 text-emerald-400" />}
-          title="No Digital Assets Found"
-          description="There are no assets matching your current filter criteria."
+          icon={<Box className="w-10 h-10 text-slate-500" />}
+          title="No production assets matched your filters"
+          description="Try broadening your category or filter selections, or register a new asset."
           actionLabel="Register Asset"
           onAction={() => setIsCreateOpen(true)}
         />
+      ) : viewMode === 'gallery' ? (
+        <AssetGalleryView assets={filteredAssets} />
+      ) : viewMode === 'hierarchy' ? (
+        <AssetHierarchyTree assets={filteredAssets} />
       ) : viewMode === 'table' ? (
-        /* Dense Matrix Table View */
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
-          <div className="overflow-x-auto custom-scrollbar">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-950/80 border-b border-slate-800 text-[11px] font-mono uppercase tracking-wider text-slate-400 select-none">
-                  <th className="py-2.5 px-3">Asset Code & Name</th>
-                  <th className="py-2.5 px-3">Category</th>
-                  <th className="py-2.5 px-3">DCC Software</th>
-                  <th className="py-2.5 px-3">Polygon Budget</th>
-                  <th className="py-2.5 px-3">LODs & Format</th>
-                  <th className="py-2.5 px-3">Status</th>
-                  <th className="py-2.5 px-3">Lead Modeler</th>
-                  <th className="py-2.5 px-3 text-right">Inspect</th>
+        /* TABLE VIEW */
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs font-mono">
+              <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-400">
+                <tr>
+                  <th className="py-3.5 px-4">Asset</th>
+                  <th className="py-3.5 px-4">Code / Prim</th>
+                  <th className="py-3.5 px-4">Category</th>
+                  <th className="py-3.5 px-4">Show</th>
+                  <th className="py-3.5 px-4">DCC / Version</th>
+                  <th className="py-3.5 px-4">Poly Budget</th>
+                  <th className="py-3.5 px-4">Lead Modeler</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 font-sans">
-                {assets.map((asset) => (
-                  <tr
-                    key={asset.id}
-                    className="hover:bg-slate-800/40 transition-colors"
-                  >
-                    <td className="py-2.5 px-3">
-                      <div
-                        onClick={() => openInspector('asset', asset)}
-                        className="flex items-center space-x-2.5 cursor-pointer group"
-                      >
-                        <img
-                          src={asset.thumbnail_url}
-                          alt={asset.name}
-                          className="w-10 h-7 object-cover rounded bg-slate-950 shrink-0 border border-slate-800 group-hover:border-emerald-500/50 transition-colors"
-                        />
-                        <div>
-                          <div className="flex items-center space-x-1.5">
-                            <span className="font-mono font-bold text-white text-xs group-hover:text-emerald-400 transition-colors">
-                              {asset.code}
+              <tbody className="divide-y divide-slate-800/60">
+                {filteredAssets.map((asset) => {
+                  const polyMillions = (asset.poly_count / 1000000).toFixed(2);
+                  return (
+                    <tr
+                      key={asset.id}
+                      className={`hover:bg-slate-800/40 transition-colors ${
+                        asset.is_archived ? 'opacity-60 bg-slate-950/40' : ''
+                      }`}
+                    >
+                      {/* Asset */}
+                      <td className="py-3 px-4">
+                        <Link to={`/assets/${asset.id}`} className="flex items-center space-x-3 group">
+                          <img
+                            src={asset.thumbnail_url}
+                            alt={asset.name}
+                            className="w-10 h-10 rounded-lg object-cover ring-1 ring-slate-800 shrink-0 group-hover:ring-emerald-500"
+                          />
+                          <div>
+                            <span className="font-bold text-white group-hover:text-emerald-400 transition-colors font-sans text-xs line-clamp-1">
+                              {asset.name}
                             </span>
-                            <span className="text-[10px] font-mono px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-semibold">
-                              {asset.version}
+                            <span className="text-[10px] text-slate-500 font-mono block">
+                              {asset.department_name}
                             </span>
                           </div>
-                          <p className="text-[11px] text-slate-400 line-clamp-1">{asset.name}</p>
+                        </Link>
+                      </td>
+
+                      {/* Code / Prim */}
+                      <td className="py-3 px-4">
+                        <div className="font-bold text-emerald-400">{asset.code}</div>
+                        <div className="text-[10px] text-slate-500 truncate max-w-[130px]" title={asset.usd_prim_path}>
+                          {asset.usd_prim_path || `/World/Assets/${asset.code}`}
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    <td className="py-2.5 px-3 text-slate-300 font-medium">
-                      {asset.category}
-                    </td>
+                      {/* Category */}
+                      <td className="py-3 px-4">
+                        <Badge variant="outline" className="text-[10px] font-mono text-indigo-300 border-indigo-500/30">
+                          {asset.category}
+                        </Badge>
+                      </td>
 
-                    <td className="py-2.5 px-3 font-mono text-[11px] text-slate-300">
-                      {asset.software}
-                    </td>
+                      {/* Show */}
+                      <td className="py-3 px-4 font-bold text-slate-300">{asset.project_code}</td>
 
-                    <td className="py-2.5 px-3 font-mono text-[11px] text-indigo-300">
-                      {(asset.poly_count / 1000000).toFixed(2)}M Tris
-                    </td>
+                      {/* DCC / Version */}
+                      <td className="py-3 px-4">
+                        <div className="flex items-center space-x-1.5">
+                          <span className="text-cyan-300 font-semibold">{asset.software}</span>
+                          <span className="px-1.5 py-0.2 bg-emerald-500/20 text-emerald-300 text-[10px] rounded font-bold">
+                            {asset.version}
+                          </span>
+                        </div>
+                      </td>
 
-                    <td className="py-2.5 px-3 font-mono text-[11px] text-slate-400">
-                      {asset.lod_levels} LODs ({asset.file_format.split('/')[0].trim()})
-                    </td>
+                      {/* Poly Budget */}
+                      <td className="py-3 px-4">
+                        <div className="text-indigo-300">
+                          {asset.poly_count > 0 ? `${polyMillions}M Tris` : 'Volumetric'}
+                        </div>
+                        <div className="text-[10px] text-slate-500">{asset.lod_levels} LODs</div>
+                      </td>
 
-                    <td className="py-2.5 px-3">
-                      <select
-                        value={asset.status}
-                        onChange={(e) =>
-                          updateAsset({ id: asset.id, data: { status: e.target.value as ProductionStatus } })
-                        }
-                        className="bg-slate-950 border border-slate-800 text-slate-200 rounded px-2 py-1 text-[11px] font-medium focus:ring-1 focus:ring-emerald-500"
-                      >
-                        <option value="Not Started">Not Started</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Pending Review">Pending Review</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Retake">Retake</option>
-                      </select>
-                    </td>
+                      {/* Artist */}
+                      <td className="py-3 px-4">
+                        <div className="flex items-center space-x-1.5 font-sans">
+                          <img
+                            src={asset.assigned_artist_avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150'}
+                            alt={asset.assigned_artist_name || 'Artist'}
+                            className="w-5 h-5 rounded-full object-cover"
+                          />
+                          <span className="text-slate-300 text-xs">{asset.assigned_artist_name || 'Sarah Jenkins'}</span>
+                        </div>
+                      </td>
 
-                    <td className="py-2.5 px-3 text-slate-300 text-xs">
-                      {asset.assigned_artist_name || 'Unassigned'}
-                    </td>
+                      {/* Status */}
+                      <td className="py-3 px-4">
+                        <select
+                          value={asset.status}
+                          onChange={(e) => handleStatusQuickChange(asset, e.target.value as ProductionStatus)}
+                          className="bg-slate-950 border border-slate-800 text-slate-200 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-emerald-500 font-medium"
+                        >
+                          <option value="Not Started">Not Started</option>
+                          <option value="In Progress">In Progress</option>
+                          <option value="Pending Review">Pending Review</option>
+                          <option value="Approved">Approved</option>
+                          <option value="Retake">Retake</option>
+                          <option value="On Hold">On Hold</option>
+                          <option value="Archived">Archived</option>
+                        </select>
+                      </td>
 
-                    <td className="py-2.5 px-3 text-right">
-                      <button
-                        onClick={() => openInspector('asset', asset)}
-                        className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-300"
-                        title="Inspect OpenUSD Prim Details"
-                      >
-                        <Layers className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      {/* Actions */}
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end space-x-1">
+                          <Link to={`/assets/${asset.id}`}>
+                            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" title="Open Asset Workspace">
+                              <ExternalLink className="w-3.5 h-3.5 text-indigo-400" />
+                            </Button>
+                          </Link>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => setEditingAsset(asset)}
+                            title="Edit Asset Metadata"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 px-2 text-xs text-amber-400"
+                            onClick={() => handleToggleArchive(asset)}
+                            title={asset.is_archived ? 'Restore Asset' : 'Archive Asset'}
+                          >
+                            {asset.is_archived ? <RotateCcw className="w-3.5 h-3.5" /> : <Archive className="w-3.5 h-3.5" />}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 px-2 text-xs text-rose-400 hover:text-rose-300"
+                            onClick={() => setDeletingAsset(asset)}
+                            title="Delete Asset"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
-
-          <div className="p-3 border-t border-slate-800 bg-slate-950/60">
-            <Pagination
-              currentPage={page}
-              totalCount={totalCount}
-              pageSize={10}
-              onPageChange={(newPage) => setPage(newPage)}
-            />
-          </div>
         </div>
       ) : (
-        /* Card Grid View */
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {assets.map((asset) => (
-              <Card
+        /* GRID VIEW */
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredAssets.map((asset) => {
+            const polyMillions = (asset.poly_count / 1000000).toFixed(2);
+            return (
+              <div
                 key={asset.id}
-                onClick={() => openInspector('asset', asset)}
-                className="bg-slate-900 border-slate-800 hover:border-emerald-500/40 transition-all overflow-hidden flex flex-col justify-between cursor-pointer group"
+                className={`group bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl overflow-hidden shadow-xl transition-all hover:-translate-y-1 flex flex-col justify-between ${
+                  asset.is_archived ? 'opacity-70' : ''
+                }`}
               >
-                {/* Thumbnail Header */}
-                <div className="relative h-40 bg-slate-950 overflow-hidden">
-                  <img
-                    src={asset.thumbnail_url}
-                    alt={asset.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
-                  <div className="absolute top-2 left-2 flex items-center gap-1.5">
-                    <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-slate-900/90 text-white border border-slate-700">
-                      {asset.code}
-                    </span>
-                    <span className="px-1 py-0.2 rounded text-[9px] font-mono bg-emerald-500 text-white font-semibold">
-                      {asset.version}
-                    </span>
+                <div>
+                  {/* Thumbnail Card Header */}
+                  <div className="relative aspect-16/10 bg-slate-950 overflow-hidden">
+                    <img
+                      src={asset.thumbnail_url}
+                      alt={asset.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+
+                    <div className="absolute top-2.5 inset-x-2.5 flex items-center justify-between pointer-events-none">
+                      <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-slate-950/85 backdrop-blur-md text-emerald-400 border border-slate-800">
+                        {asset.version}
+                      </span>
+                      <StatusBadge status={asset.status} />
+                    </div>
+
+                    <div className="absolute bottom-2.5 left-2.5">
+                      <Badge variant="outline" className="text-[10px] font-mono bg-slate-950/80 backdrop-blur-md text-indigo-300 border-indigo-500/30">
+                        {asset.category}
+                      </Badge>
+                    </div>
+
+                    {asset.is_archived && (
+                      <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center">
+                        <span className="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-lg text-xs font-mono font-bold">
+                          ARCHIVED
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <div className="absolute top-2 right-2">
-                    <StatusBadge status={asset.status} />
-                  </div>
-                  <div className="absolute bottom-1.5 left-2 right-2 flex items-center justify-between text-[10px] text-slate-300 font-mono">
-                    <span className="font-semibold text-white">{asset.category}</span>
-                    <span>{asset.software}</span>
+
+                  {/* Body Info */}
+                  <div className="p-4 space-y-3">
+                    <div>
+                      <div className="flex items-center space-x-2 text-[11px] font-mono text-slate-400">
+                        <span>{asset.project_code}</span>
+                        <span>•</span>
+                        <span className="text-emerald-400 font-bold">{asset.code}</span>
+                      </div>
+                      <Link to={`/assets/${asset.id}`}>
+                        <h3 className="text-sm font-bold text-white hover:text-emerald-400 transition-colors mt-0.5 line-clamp-1">
+                          {asset.name}
+                        </h3>
+                      </Link>
+                    </div>
+
+                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                      {asset.description}
+                    </p>
+
+                    {/* Specs Pills */}
+                    <div className="flex items-center justify-between text-[11px] font-mono bg-slate-950/60 p-2 rounded-lg border border-slate-800/80">
+                      <span className="text-cyan-300">{asset.software}</span>
+                      <span className="text-indigo-300">{asset.poly_count > 0 ? `${polyMillions}M Tris` : 'Volumetric'}</span>
+                      <span className="text-slate-400">{asset.lod_levels} LODs</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Body */}
-                <CardBody className="p-3.5 space-y-2.5">
-                  <h3 className="text-xs font-bold text-white group-hover:text-emerald-300 transition-colors line-clamp-1">
-                    {asset.name}
-                  </h3>
-                  <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
-                    {asset.description}
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800 text-[10px] font-mono text-slate-400">
-                    <div className="flex items-center gap-1.5">
-                      <Cpu className="w-3 h-3 text-indigo-400" />
-                      <span>{(asset.poly_count / 1000000).toFixed(2)}M Tris</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Layers className="w-3 h-3 text-emerald-400" />
-                      <span>{asset.lod_levels} LODs</span>
-                    </div>
+                {/* Card Footer */}
+                <div className="px-4 py-3 bg-slate-950/70 border-t border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <img
+                      src={asset.assigned_artist_avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150'}
+                      alt={asset.assigned_artist_name || 'Artist'}
+                      className="w-5 h-5 rounded-full object-cover"
+                    />
+                    <span className="text-xs text-slate-300">{asset.assigned_artist_name || 'Sarah Jenkins'}</span>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800">
-                    <span>Artist: <strong className="text-slate-200">{asset.assigned_artist_name || 'Unassigned'}</strong></span>
-                    <span className="text-emerald-400 text-[10px] font-mono">Inspect OpenUSD →</span>
-                  </div>
-                </CardBody>
-              </Card>
-            ))}
-          </div>
-
-          <Pagination
-            currentPage={page}
-            totalCount={totalCount}
-            pageSize={6}
-            onPageChange={(newPage) => setPage(newPage)}
-          />
+                  <Link to={`/assets/${asset.id}`}>
+                    <Button size="sm" variant="ghost" className="text-xs h-7 px-2 hover:bg-slate-800">
+                      Workspace <ExternalLink className="w-3 h-3 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {/* Register Asset Modal */}
-      <Modal
+      {/* Create Modal */}
+      <AssetCreateModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
-        title="Register OpenUSD Asset"
-        description="Catalog 3D character, vehicle, or environment model for pipeline sharing."
-      >
-        <form onSubmit={handleCreate} className="space-y-3">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">Asset Name</label>
-            <input
-              required
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="e.g. Cyber Spinner Mark V"
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
+      />
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Asset Code</label>
-              <input
-                required
-                type="text"
-                value={formData.code}
-                onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                placeholder="AST_VEH_SPINNER_05"
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono"
-              />
+      {/* Edit Modal */}
+      {editingAsset && (
+        <AssetEditModal
+          asset={editingAsset}
+          isOpen={!!editingAsset}
+          onClose={() => setEditingAsset(null)}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingAsset && (
+        <Modal
+          isOpen={!!deletingAsset}
+          onClose={() => setDeletingAsset(null)}
+          title="Confirm Asset Deletion"
+        >
+          <div className="space-y-4 text-xs text-slate-300">
+            <p>
+              Are you sure you want to permanently delete asset <strong className="text-white font-mono">{deletingAsset.name} ({deletingAsset.code})</strong>?
+            </p>
+            <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-300 font-mono">
+              Warning: This will remove this asset from the OpenUSD project catalog and delete its layer references.
             </div>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Category</label>
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value as AssetCategory })}
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white"
+
+            <div className="flex justify-end space-x-2 pt-2">
+              <Button variant="ghost" size="sm" onClick={() => setDeletingAsset(null)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                isLoading={isDeleting}
+                onClick={handleDeleteConfirm}
+                className="bg-rose-600 hover:bg-rose-500 text-white"
               >
-                <option value="Character">Character</option>
-                <option value="Environment">Environment</option>
-                <option value="Vehicle">Vehicle</option>
-                <option value="Prop">Prop</option>
-                <option value="FX Rig">FX Rig</option>
-                <option value="Shader & LookDev">Shader & LookDev</option>
-              </select>
+                Delete Asset
+              </Button>
             </div>
           </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">Description</label>
-            <textarea
-              rows={2}
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Asset specifications, lookdev notes, and rigging requirements..."
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white"
-            />
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">DCC Software</label>
-              <select
-                value={formData.software}
-                onChange={(e) => setFormData({ ...formData, software: e.target.value as any })}
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white"
-              >
-                <option value="Maya">Maya</option>
-                <option value="Houdini">Houdini</option>
-                <option value="Blender">Blender</option>
-                <option value="ZBrush">ZBrush</option>
-                <option value="Substance Painter">Substance Painter</option>
-                <option value="Unreal Engine 5">Unreal Engine 5</option>
-              </select>
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Poly Count</label>
-              <input
-                type="number"
-                value={formData.poly_count}
-                onChange={(e) => setFormData({ ...formData, poly_count: Number(e.target.value) })}
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">LOD Levels</label>
-              <input
-                type="number"
-                value={formData.lod_levels}
-                onChange={(e) => setFormData({ ...formData, lod_levels: Number(e.target.value) })}
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-            <Button variant="ghost" size="sm" onClick={() => setIsCreateOpen(false)} type="button">
-              Cancel
-            </Button>
-            <Button variant="primary" size="sm" type="submit" isLoading={isCreating}>
-              Register Asset
-            </Button>
-          </div>
-        </form>
-      </Modal>
+        </Modal>
+      )}
     </div>
   );
 };

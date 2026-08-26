@@ -45,16 +45,46 @@ export const organizationApi = {
   getClients: async (params?: Record<string, any>): Promise<PaginatedResponse<Client>> => {
     return apiClient.get<PaginatedResponse<Client>>('/api/v1/clients/', { params });
   },
+  getClientDetail: async (id: string): Promise<Client> => {
+    return apiClient.get<Client>(`/api/v1/clients/${id}/`);
+  },
   createClient: async (client: Partial<Client>): Promise<Client> => {
     return apiClient.post<Client>('/api/v1/clients/', client);
+  },
+  updateClient: async (id: string, client: Partial<Client>): Promise<Client> => {
+    return apiClient.patch<Client>(`/api/v1/clients/${id}/`, client);
+  },
+  archiveClient: async (id: string): Promise<Client> => {
+    return apiClient.patch<Client>(`/api/v1/clients/${id}/`, { status: 'Archived' });
+  },
+  restoreClient: async (id: string): Promise<Client> => {
+    return apiClient.patch<Client>(`/api/v1/clients/${id}/`, { status: 'Active' });
+  },
+  deleteClient: async (id: string): Promise<void> => {
+    return apiClient.delete<void>(`/api/v1/clients/${id}/`);
   },
 
   // Vendors
   getVendors: async (params?: Record<string, any>): Promise<PaginatedResponse<Vendor>> => {
     return apiClient.get<PaginatedResponse<Vendor>>('/api/v1/vendors/', { params });
   },
+  getVendorDetail: async (id: string): Promise<Vendor> => {
+    return apiClient.get<Vendor>(`/api/v1/vendors/${id}/`);
+  },
   createVendor: async (vendor: Partial<Vendor>): Promise<Vendor> => {
     return apiClient.post<Vendor>('/api/v1/vendors/', vendor);
+  },
+  updateVendor: async (id: string, vendor: Partial<Vendor>): Promise<Vendor> => {
+    return apiClient.patch<Vendor>(`/api/v1/vendors/${id}/`, vendor);
+  },
+  archiveVendor: async (id: string): Promise<Vendor> => {
+    return apiClient.patch<Vendor>(`/api/v1/vendors/${id}/`, { status: 'Archived' });
+  },
+  restoreVendor: async (id: string): Promise<Vendor> => {
+    return apiClient.patch<Vendor>(`/api/v1/vendors/${id}/`, { status: 'Approved Partner' });
+  },
+  deleteVendor: async (id: string): Promise<void> => {
+    return apiClient.delete<void>(`/api/v1/vendors/${id}/`);
   },
 
   // People

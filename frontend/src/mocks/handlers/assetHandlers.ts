@@ -44,7 +44,12 @@ export const assetHandlers = [
       lod_levels: body.lod_levels || 3,
       assigned_artist_id: body.assigned_artist_id,
       assigned_artist_name: body.assigned_artist_name,
+      department_id: body.department_id || 'dept-002',
+      department_name: body.department_name || '3D Modeling & Assets',
+      team_id: body.team_id || 'team-002',
+      team_name: body.team_name || 'Hero Asset Crew',
       software: body.software || 'Maya',
+      tags: body.tags || ['Production', 'OpenUSD'],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -69,5 +74,16 @@ export const assetHandlers = [
     };
 
     return HttpResponse.json(inMemoryAssets[idx]);
+  }),
+
+  // DELETE /api/v1/assets/:id/
+  http.delete('*/api/v1/assets/:id/', async ({ params }) => {
+    await delay(200);
+    const idx = inMemoryAssets.findIndex((a) => a.id === params.id);
+    if (idx === -1) {
+      return HttpResponse.json({ detail: 'Asset not found' }, { status: 404 });
+    }
+    inMemoryAssets = inMemoryAssets.filter((a) => a.id !== params.id);
+    return new HttpResponse(null, { status: 204 });
   }),
 ];
