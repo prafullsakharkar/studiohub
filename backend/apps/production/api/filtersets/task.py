@@ -27,7 +27,10 @@ class TaskFilterSet(BaseFilterSet):
             Q(code__icontains=value) |
             Q(description__icontains=value) |
             Q(entity_code__icontains=value) |
-            Q(entity_name__icontains=value)
+            Q(entity_name__icontains=value) |
+            Q(assignee_name_annotated__icontains=value) |
+            Q(project_code_annotated__icontains=value) |
+            Q(department__icontains=value)
         )
 
     def filter_status(self, queryset, name, value):

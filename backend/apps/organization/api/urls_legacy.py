@@ -15,6 +15,8 @@ from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
 from drf_spectacular.utils import extend_schema
 
+from apps.organization.api.viewsets.billing import BillingView, NotificationsView, ReportsView
+from apps.organization.api.viewsets.client import ClientViewSet
 from apps.organization.api.viewsets.legacy import (
     LegacyDepartmentViewSet,
     LegacyOfficeViewSet,
@@ -22,6 +24,7 @@ from apps.organization.api.viewsets.legacy import (
     LegacyPersonViewSet,
     LegacyTeamViewSet,
 )
+from apps.organization.api.viewsets.vendor import VendorViewSet
 
 router = DefaultRouter()
 
@@ -30,10 +33,8 @@ router.register(r"departments", LegacyDepartmentViewSet, basename="legacy-depart
 router.register(r"teams", LegacyTeamViewSet, basename="legacy-team")
 router.register(r"offices", LegacyOfficeViewSet, basename="legacy-office")
 router.register(r"people", LegacyPersonViewSet, basename="legacy-person")
-
-# Note: clients/vendors/billing/reports/notifications are intentionally NOT registered;
-# they have no Django models (MISSING MODELS) and are documented as deferred.
-# See docs/api/frontend-backend-mapping.md and docs/adr/ for decision.
+router.register(r"clients", ClientViewSet, basename="legacy-client")
+router.register(r"vendors", VendorViewSet, basename="legacy-vendor")
 
 app_name = "organization-legacy"
 
@@ -71,4 +72,7 @@ class LegacyOrganizationSingletonView(GenericAPIView):
 
 urlpatterns = [
     path("organization/", LegacyOrganizationSingletonView.as_view(), name="legacy-organization-singleton"),
+    path("billing/", BillingView.as_view(), name="legacy-billing"),
+    path("reports/", ReportsView.as_view(), name="legacy-reports"),
+    path("notifications/", NotificationsView.as_view(), name="legacy-notifications"),
 ] + router.urls

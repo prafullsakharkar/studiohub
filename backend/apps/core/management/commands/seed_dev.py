@@ -83,6 +83,8 @@ class Command(BaseCommand):
             playlists = self._seed_playlists(org, projects, versions, reviews)
             media = self._seed_media(org, projects, shots, assets)
             workflows = self._seed_workflows(org, projects)
+            clients = self._seed_clients(org)
+            vendors = self._seed_vendors(org)
 
         self.stdout.write(self.style.SUCCESS("Seed complete."))
         self.stdout.write(f"  Organization: {org.code} ({org.name})")
@@ -91,6 +93,7 @@ class Command(BaseCommand):
         self.stdout.write(f"  Projects: {len(projects)}  Shots: {len(shots)}  Assets: {len(assets)}")
         self.stdout.write(f"  Tasks: {len(tasks)}  Timelogs: {len(timelogs)}  Versions: {len(versions)}")
         self.stdout.write(f"  Reviews: {len(reviews)}  Playlists: {len(playlists)}  Media: {len(media)}  Workflows: {len(workflows)}")
+        self.stdout.write(f"  Clients: {len(clients)}  Vendors: {len(vendors)}")
         self.stdout.write(self.style.NOTICE("  Default password for seeded users: password123"))
 
     def _reset(self):
@@ -412,302 +415,229 @@ class Command(BaseCommand):
             created_users.append(user)
         return created_users
 
-    # ------------------------------------------------------------------
-    # Production seeding (Phase D + I)
+# ------------------------------------------------------------------
+    # Production seeding (full mock) — delegates to seed_production_mocks logic
     # ------------------------------------------------------------------
 
     def _seed_projects(self, org, users):
-        from apps.production.models import Project
+        from pathlib import Path
 
-        supervisor = users[0] if users else None
-        coordinator = users[1] if len(users) > 1 else supervisor
-        specs = [
-            ("NK99", "Cyberpunk 2099: Neo-Kyoto", "Feature Film"),
-            ("AETH2", "Chronicles of Aethelgard: Season 2", "Episodic Series"),
-            ("VEL01", "Apex Velocity: Hyperdrive Trailer", "Game Cinematic"),
-        ]
-        projects = []
-        for code, name, ptype in specs:
-            proj, _ = Project.objects.get_or_create(
-                code=code,
-                organization=org,
-                defaults={
-                    "name": name,
-                    "type": ptype,
-                    "description": f"Seeded project {name}",
-                    "status": "In Progress",
-                    "fps": 24,
-                    "resolution": "4096x2160",
-                    "aspect_ratio": "2.39:1",
-                    "color_space": "ACEScg",
-                    "thumbnail_url": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800",
-                    "budget_usd": 1000000,
-                    "supervisor": supervisor,
-                    "coordinator": coordinator,
-                },
-            )
-            projects.append(proj)
-        return projects
+        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
+        from apps.production.models import Project
+        from unittest.mock import MagicMock
+
+        cmd = ProdMockCommand()
+        cmd.stdout = MagicMock()
+        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        cmd._seed_projects(frontend_root / "production" / "projects.ts", org)
+        return list(Project.objects.filter(organization=org))
 
     def _seed_shots(self, org, projects, users):
-        from apps.production.models import Shot
+        from pathlib import Path
 
-        shots = []
-        for proj in projects[:2]:
-            for i, (code, name) in enumerate(
-                [("NK_010_010", "Hero Spinner Dive"), ("NK_010_020", "Cockpit Close-Up")], 1
-            ):
-                # Use project_code + seq + code for uniqueness
-                full_code = f"{proj.code}_{code.split('_')[-1]}"
-                shot, _ = Shot.objects.get_or_create(
-                    code=code,
-                    project=proj,
-                    defaults={
-                        "organization": org,
-                        "sequence_code": code.split("_")[0] + "_" + code.split("_")[1],
-                        "name": name,
-                        "description": f"Seeded shot {name}",
-                        "status": "In Progress" if i == 1 else "Approved",
-                        "frame_in": 1001,
-                        "frame_out": 1100 + i * 10,
-                        "handle_frames": 8,
-                        "thumbnail_url": "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600",
-                        "assigned_artist": users[2] if len(users) > 2 else None,
-                        "pipeline": {"layout": "Approved", "animation": "Approved", "fx": "In Progress", "lighting": "Not Started", "comp": "Not Started"},
-                    },
-                )
-                shots.append(shot)
-        return shots
+        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
+        from apps.production.models import Shot
+        from unittest.mock import MagicMock
+
+        cmd = ProdMockCommand()
+        cmd.stdout = MagicMock()
+        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        cmd._seed_shots(frontend_root / "production" / "shots.ts", org)
+        return list(Shot.objects.filter(organization=org))
 
     def _seed_assets(self, org, projects, users, departments, teams):
-        from apps.production.models import Asset
+        from pathlib import Path
 
-        assets = []
-        proj = projects[0] if projects else None
-        if not proj:
-            return assets
-        dept = departments[0] if departments else None
-        team = teams[0] if teams else None
-        artist = users[3] if len(users) > 3 else None
-        specs = [
-            ("AST_VEH_SPINNER_04", "Cyber Spinner", "Vehicle"),
-            ("AST_CHR_MECHA_09", "Mecha Unit", "Character"),
-        ]
-        for code, name, cat in specs:
-            asset, _ = Asset.objects.get_or_create(
-                code=code,
-                project=proj,
-                defaults={
-                    "organization": org,
-                    "name": name,
-                    "category": cat,
-                    "description": f"Seeded asset {name}",
-                    "status": "Approved",
-                    "version": "v001",
-                    "file_format": "OpenUSD",
-                    "poly_count": 100000,
-                    "lod_levels": 2,
-                    "software": "Maya",
-                    "department": dept,
-                    "team": team,
-                    "assigned_artist": artist,
-                    "tags": ["Seeded"],
-                },
-            )
-            assets.append(asset)
-        return assets
+        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
+        from apps.production.models import Asset
+        from unittest.mock import MagicMock
+
+        cmd = ProdMockCommand()
+        cmd.stdout = MagicMock()
+        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        cmd._seed_assets(frontend_root / "assets" / "assets.ts", org)
+        return list(Asset.objects.filter(organization=org))
 
     def _seed_tasks(self, org, projects, shots, assets, users, departments, teams):
-        from apps.production.models import Task
+        from pathlib import Path
 
-        tasks = []
-        proj = projects[0] if projects else None
-        shot = shots[0] if shots else None
-        dept_name = departments[0].name if departments else "FX"
-        team_obj = teams[0] if teams else None
-        assignee = users[2] if len(users) > 2 else None
-        reviewer = users[0] if users else None
-        for i, (title, code) in enumerate([("FX Sim", "TSK001"), ("Comp", "TSK002")], 1):
-            task, _ = Task.objects.get_or_create(
-                code=code,
-                project=proj,
-                defaults={
-                    "organization": org,
-                    "title": title,
-                    "entity_type": "Shot" if shot else "General",
-                    "entity_id": str(shot.id) if shot else "",
-                    "entity_code": shot.code if shot else "",
-                    "entity_name": shot.name if shot else "",
-                    "department": dept_name,
-                    "team": team_obj,
-                    "assignee": assignee,
-                    "reviewer": reviewer,
-                    "status": "In Progress",
-                    "priority": "Medium",
-                    "workflow": {"stage_name": "Test"},
-                    "schedule": {"start_date": "2026-08-10", "due_date": "2026-08-26", "estimated_hours": 40, "logged_hours": 10, "progress_percent": 25},
-                    "dependencies": {"upstream_task_ids": [], "downstream_task_ids": []},
-                    "description": f"Seeded task {title}",
-                    "software": "Houdini",
-                    "is_archived": False,
-                },
-            )
-            tasks.append(task)
-        return tasks
+        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
+        from apps.production.models import Task
+        from unittest.mock import MagicMock
+
+        cmd = ProdMockCommand()
+        cmd.stdout = MagicMock()
+        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        cmd._seed_tasks(frontend_root / "tasks" / "tasks.ts", org)
+        return list(Task.objects.filter(organization=org))
 
     def _seed_timelogs(self, org, tasks, users):
-        from apps.production.models import Timelog
-        from datetime import date
+        from pathlib import Path
 
-        timelogs = []
-        for task in tasks[:1]:
-            tl, _ = Timelog.objects.get_or_create(
-                task=task,
-                person=users[2] if len(users) > 2 else users[0],
-                date=date(2026, 8, 26),
-                defaults={
-                    "organization": org,
-                    "project": task.project,
-                    "duration_hours": 4,
-                    "billable": True,
-                    "notes": "Seeded timelog",
-                    "status": "Submitted",
-                    "activity_category": "Direct Work",
-                    "hourly_rate_usd": 50,
-                    "department": task.department,
-                },
-            )
-            timelogs.append(tl)
-        return timelogs
+        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
+        from apps.production.models import Timelog
+        from unittest.mock import MagicMock
+
+        cmd = ProdMockCommand()
+        cmd.stdout = MagicMock()
+        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        cmd._seed_timelogs(frontend_root / "production" / "timelogs.ts", org)
+        return list(Timelog.objects.filter(organization=org))
 
     def _seed_versions(self, org, projects, shots, assets, tasks, users):
-        from apps.production.models import Version
+        from pathlib import Path
 
-        versions = []
-        proj = projects[0] if projects else None
-        shot = shots[0] if shots else None
-        task = tasks[0] if tasks else None
-        artist = users[2] if len(users) > 2 else None
-        for i, vnum in enumerate(["v001", "v002"], 1):
-            code = f"VER-{proj.code if proj else 'PROJ'}-SHOT-{vnum}"
-            ver, _ = Version.objects.get_or_create(
-                code=code,
-                project=proj,
-                defaults={
-                    "organization": org,
-                    "version_number": vnum,
-                    "version_index": i,
-                    "entity_type": "Shot",
-                    "entity_id": str(shot.id) if shot else "",
-                    "entity_code": shot.code if shot else "",
-                    "shot": shot,
-                    "task": task,
-                    "department": "Comp",
-                    "artist": artist,
-                    "status": "Pending Review",
-                    "is_published": False,
-                    "thumbnail_url": "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800",
-                    "resolution": "4096x2160",
-                    "fps": 24,
-                    "file_size_mb": 100,
-                    "color_space": "ACEScg",
-                },
-            )
-            versions.append(ver)
-        return versions
+        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
+        from apps.production.models import Version
+        from unittest.mock import MagicMock
+
+        cmd = ProdMockCommand()
+        cmd.stdout = MagicMock()
+        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        cmd._seed_versions(frontend_root / "versions" / "versions.ts", org)
+        return list(Version.objects.filter(organization=org))
 
     def _seed_reviews(self, org, projects, shots, versions, users):
-        from apps.production.models import Review
+        from pathlib import Path
 
-        reviews = []
-        proj = projects[0] if projects else None
-        shot = shots[0] if shots else None
-        ver = versions[0] if versions else None
-        for i in range(1):
-            code = f"REV-{proj.code if proj else 'PROJ'}-001"
-            rev, _ = Review.objects.get_or_create(
-                code=code,
-                organization=org,
-                defaults={
-                    "title": "Seed Review",
-                    "description": "Seeded review",
-                    "project": proj,
-                    "entity_type": "Shot",
-                    "entity_id": str(shot.id) if shot else "",
-                    "entity_code": shot.code if shot else "",
-                    "status": "Pending Review",
-                    "lead_reviewer": users[0] if users else None,
-                    "lead_reviewer_name": f"{users[0].email}" if users else "",
-                    "thumbnail_url": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600",
-                    "versions": [str(ver.id) if ver else ""],
-                },
-            )
-            reviews.append(rev)
-        return reviews
+        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
+        from apps.production.models import Review
+        from unittest.mock import MagicMock
+
+        cmd = ProdMockCommand()
+        cmd.stdout = MagicMock()
+        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        cmd._seed_reviews(frontend_root / "reviews" / "reviews.ts", org)
+        return list(Review.objects.filter(organization=org))
 
     def _seed_playlists(self, org, projects, versions, reviews):
-        from apps.production.models import Playlist
+        from pathlib import Path
 
-        playlists = []
-        proj = projects[0] if projects else None
-        for i in range(1):
-            code = f"PLY-{proj.code if proj else 'PROJ'}-001"
-            pl, _ = Playlist.objects.get_or_create(
-                code=code,
-                organization=org,
-                defaults={
-                    "name": "Seed Playlist",
-                    "description": "Seeded playlist",
-                    "project": proj,
-                    "status": "Active",
-                    "entries": [{"version_id": str(versions[0].id) if versions else ""}],
-                },
-            )
-            playlists.append(pl)
-        return playlists
+        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
+        from apps.production.models import Playlist
+        from unittest.mock import MagicMock
+
+        cmd = ProdMockCommand()
+        cmd.stdout = MagicMock()
+        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        cmd._seed_playlists(frontend_root / "production" / "playlists.ts", org)
+        return list(Playlist.objects.filter(organization=org))
 
     def _seed_media(self, org, projects, shots, assets):
-        from apps.production.models import Media
+        from pathlib import Path
 
-        media = []
-        proj = projects[0] if projects else None
-        shot = shots[0] if shots else None
-        for i in range(1):
-            m, _ = Media.objects.get_or_create(
-                organization=org,
-                project=proj,
-                entity_type="Shot",
-                entity_id=str(shot.id) if shot else "",
-                media_type="image",
-                defaults={
-                    "category": "plate",
-                    "file_format": "jpg",
-                    "source_url": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800",
-                    "preview_url": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400",
-                    "file_size_mb": 5,
-                },
-            )
-            media.append(m)
-        return media
+        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
+        from apps.production.models import Media
+        from unittest.mock import MagicMock
+
+        cmd = ProdMockCommand()
+        cmd.stdout = MagicMock()
+        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        cmd._seed_media(frontend_root / "production" / "media.ts", org)
+        return list(Media.objects.filter(organization=org))
 
     def _seed_workflows(self, org, projects):
-        from apps.production.models import Workflow
+        from pathlib import Path
 
-        workflows = []
-        proj = projects[0] if projects else None
-        for code, name in [("WF-FILM-01", "Feature Film Pipeline"), ("WF-EPI-01", "Episodic Pipeline")]:
-            wf, _ = Workflow.objects.get_or_create(
+        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
+        from apps.production.models import Workflow
+        from unittest.mock import MagicMock
+
+        cmd = ProdMockCommand()
+        cmd.stdout = MagicMock()
+        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        cmd._seed_workflows(frontend_root / "production" / "workflow.ts", org)
+        return list(Workflow.objects.filter(organization=org))
+
+    def _seed_clients(self, org):
+        from apps.organization.models import Client
+
+        # Seed from frontend mockClients
+        from pathlib import Path
+
+        from apps.production.management.commands.seed_production_mocks import _load_ts_mock_array
+
+        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        data = _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockClients")
+        count = 0
+        for item in data:
+            code = item.get("code")
+            if not code:
+                continue
+            Client.objects.update_or_create(
                 code=code,
                 organization=org,
                 defaults={
-                    "name": name,
-                    "description": f"Seeded workflow {name}",
-                    "category": "production",
-                    "is_active": True,
-                    "project": proj,
-                    "nodes": [{"id": "start", "type": "start"}, {"id": "task", "type": "task"}, {"id": "end", "type": "end"}],
-                    "transitions": [{"from": "start", "to": "task"}, {"from": "task", "to": "end"}],
+                    "name": item.get("name", code),
+                    "contact_name": item.get("contact_name", ""),
+                    "email": item.get("email", ""),
+                    "phone": item.get("phone", ""),
+                    "studio_type": item.get("studio_type", "Major Studio"),
+                    "active_projects": item.get("active_projects", []),
+                    "contract_tier": item.get("contract_tier", "Standard Producer"),
+                    "portal_access": item.get("portal_access", True),
+                    "status": item.get("status", "Active"),
+                    "logo_url": item.get("logo_url", ""),
+                    "headquarters": item.get("headquarters", ""),
+                    "total_billed_usd": item.get("total_billed_usd", 0) or 0,
                 },
             )
-            workflows.append(wf)
-        return workflows
+            count += 1
+        # Fallback if no data (e.g., parsing failed)
+        if count == 0:
+            for code, name in [("WNS", "Warner Nexus Studios"), ("AMC", "Amazon Prime Original Productions")]:
+                Client.objects.get_or_create(
+                    code=code,
+                    organization=org,
+                    defaults={
+                        "name": name,
+                        "contact_name": "Seed Contact",
+                        "email": f"contact@{code.lower()}.com",
+                        "status": "Active",
+                    },
+                )
+                count += 1
+        return list(Client.objects.filter(organization=org))
+
+    def _seed_vendors(self, org):
+        from apps.organization.models import Vendor
+
+        from pathlib import Path
+
+        from apps.production.management.commands.seed_production_mocks import _load_ts_mock_array
+
+        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        data = _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockVendors")
+        count = 0
+        for item in data:
+            code = item.get("code")
+            if not code:
+                continue
+            Vendor.objects.update_or_create(
+                code=code,
+                organization=org,
+                defaults={
+                    "name": item.get("name", code),
+                    "contact_name": item.get("contact_name", ""),
+                    "email": item.get("email", ""),
+                    "specialization": item.get("specialization", "Roto & Paint"),
+                    "security_tier": item.get("security_tier", "Standard Studio NDA"),
+                    "nda_signed": item.get("nda_signed", False),
+                    "active_projects": item.get("active_projects", []),
+                    "rating": item.get("rating", 4.5) or 4.5,
+                    "location": item.get("location", ""),
+                    "status": item.get("status", "Approved Partner"),
+                    "logo_url": item.get("logo_url", ""),
+                    "bandwidth_gbps": item.get("bandwidth_gbps", 10) or 10,
+                },
+            )
+            count += 1
+        if count == 0:
+            for code, name in [("VEN-01", "Silhouette FX Labs"), ("VEN-02", "Nordic Creatures")]:
+                Vendor.objects.get_or_create(
+                    code=code,
+                    organization=org,
+                    defaults={"name": name, "contact_name": "Seed Vendor", "status": "Approved Partner"},
+                )
+                count += 1
+        return list(Vendor.objects.filter(organization=org))

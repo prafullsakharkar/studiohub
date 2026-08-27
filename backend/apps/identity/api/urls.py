@@ -24,6 +24,23 @@ from .views.authentication import (
     TrustedDeviceRevokeAPIView,
 )
 
+from .views.mfa_compat import (
+    MFAAdminResetView,
+    MFAConfigView,
+    MFAEmailDisableView,
+    MFAEmailEnableView,
+    MFAEmailVerifyView,
+    MFARecoveryCodesRegenerateView,
+    MFARecoveryCodesView,
+    MFASMSDisableView,
+    MFASMSEnableView,
+    MFASMSVerifyView,
+    MFATOTPDisableView,
+    MFATOTPEnableView,
+    MFATOTPSetupView,
+    MFATOTPVerifyView,
+)
+
 urlpatterns = router_urls + [
     path(
         "login/",
@@ -100,4 +117,23 @@ urlpatterns = router_urls + [
         TrustedDeviceRevokeAPIView.as_view(),
         name="trusted-device-revoke",
     ),
+    # Frontend-compatible MFA (Phase C — MFAService.ts)
+    path("mfa/config/", MFAConfigView.as_view(), name="mfa-config-compat"),
+    path("mfa/totp/setup/", MFATOTPSetupView.as_view(), name="mfa-totp-setup"),
+    path("mfa/totp/enable/", MFATOTPEnableView.as_view(), name="mfa-totp-enable"),
+    path("mfa/totp/verify/", MFATOTPVerifyView.as_view(), name="mfa-totp-verify"),
+    path("mfa/totp/disable/", MFATOTPDisableView.as_view(), name="mfa-totp-disable"),
+    path("mfa/sms/enable/", MFASMSEnableView.as_view(), name="mfa-sms-enable"),
+    path("mfa/sms/verify/", MFASMSVerifyView.as_view(), name="mfa-sms-verify"),
+    path("mfa/sms/disable/", MFASMSDisableView.as_view(), name="mfa-sms-disable"),
+    path("mfa/email/enable/", MFAEmailEnableView.as_view(), name="mfa-email-enable"),
+    path("mfa/email/verify/", MFAEmailVerifyView.as_view(), name="mfa-email-verify"),
+    path("mfa/email/disable/", MFAEmailDisableView.as_view(), name="mfa-email-disable"),
+    path("mfa/recovery-codes/", MFARecoveryCodesView.as_view(), name="mfa-recovery-codes"),
+    path(
+        "mfa/recovery-codes/regenerate/",
+        MFARecoveryCodesRegenerateView.as_view(),
+        name="mfa-recovery-codes-regenerate",
+    ),
+    path("mfa/admin/reset/<str:user_id>/", MFAAdminResetView.as_view(), name="mfa-admin-reset"),
 ]

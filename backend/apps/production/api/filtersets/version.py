@@ -23,5 +23,8 @@ class VersionFilterSet(BaseFilterSet):
         return queryset.filter(
             Q(code__icontains=value) |
             Q(version_number__icontains=value) |
-            Q(entity_code__icontains=value)
+            Q(entity_code__icontains=value) |
+            Q(artist_name_annotated__icontains=value) |
+            Q(project_code_annotated__icontains=value) |
+            Q(entity_name_annotated__icontains=value)
         )

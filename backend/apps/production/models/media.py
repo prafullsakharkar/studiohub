@@ -28,10 +28,10 @@ class Media(EntityModel):
     entity_type = models.CharField(max_length=20, blank=True, default="", db_index=True)
     entity_id = models.CharField(max_length=50, blank=True, default="", db_index=True)
 
-    media_type = models.CharField(max_length=20, blank=True, default="image", db_index=True)
+    media_type = models.CharField(max_length=50, blank=True, default="image", db_index=True)
     category = models.CharField(max_length=50, blank=True, default="")
-    file_format = models.CharField(max_length=20, blank=True, default="jpg")
-    storage_tier = models.CharField(max_length=20, blank=True, default="hot")
+    file_format = models.CharField(max_length=100, blank=True, default="jpg")
+    storage_tier = models.CharField(max_length=50, blank=True, default="hot")
 
     source_url = models.URLField(max_length=500, blank=True, default="")
     preview_url = models.URLField(max_length=500, blank=True, default="")

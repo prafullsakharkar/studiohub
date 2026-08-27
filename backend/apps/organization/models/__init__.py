@@ -12,6 +12,7 @@ from .office import Office
 from .organization import Organization
 from .organization_settings import OrganizationSettings
 from .permission import Permission
+from .client import Client
 from .person import Person
 from .personal_access_token import PersonalAccessToken
 from .position import Position
@@ -21,6 +22,7 @@ from .team import Team
 from .user_preference import UserPreference
 from .user_role import UserRole
 from .user_session import UserSession
+from .vendor import Vendor
 from .work_calendar import WorkCalendar
 from .work_hours import WorkHours
 
@@ -50,4 +52,6 @@ __all__ = [
     "UserPreference",
     "UserSession",
     "Person",
+    "Client",
+    "Vendor",
 ]

@@ -10,6 +10,8 @@ from .holiday import HolidayViewSet
 from .invitation import InvitationViewSet
 from .membership import OrganizationMembershipViewSet
 from .office import OfficeViewSet
+from .billing import BillingView, NotificationsView, ReportsView
+from .client import ClientViewSet
 from .organization import OrganizationViewSet
 from .organization_settings import OrganizationSettingsViewSet
 from .person import PersonViewSet
@@ -20,6 +22,7 @@ from .role import RoleViewSet
 from .role_permission import RolePermissionViewSet
 from .team import TeamViewSet
 from .user_role import UserRoleViewSet
+from .vendor import VendorViewSet
 from .work_calendar import WorkCalendarViewSet
 from .work_hours import WorkHoursViewSet
 
@@ -48,4 +51,9 @@ __all__ = [
     "UserRoleViewSet",
     "RolePermissionViewSet",
     "PersonViewSet",
+    "ClientViewSet",
+    "VendorViewSet",
+    "BillingView",
+    "ReportsView",
+    "NotificationsView",
 ]

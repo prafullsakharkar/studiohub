@@ -21,6 +21,8 @@ urlpatterns = [
     path("", include("apps.organization.api.urls_legacy")),
     # Production — top-level to match frontend /api/v1/{projects,shots,assets}/
     path("", include("apps.production.api.urls")),
+    # Intelligence — search, knowledge, AI workspace
+    path("intelligence/", include("apps.intelligence.api.urls")),
     # Identity (authentication, users, security)
     path("identity/", include(("apps.identity.api.urls", "identity"))),
     # Organization (tenants, departments, teams, offices, RBAC) — namespaced v2

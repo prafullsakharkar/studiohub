@@ -24,5 +24,8 @@ class TimelogFilterSet(BaseFilterSet):
         return queryset.filter(
             Q(notes__icontains=value) |
             Q(task_code__icontains=value) |
-            Q(task_title__icontains=value)
+            Q(task_title__icontains=value) |
+            Q(person_name_annotated__icontains=value) |
+            Q(project_code_annotated__icontains=value) |
+            Q(task_title_annotated__icontains=value)
         )
