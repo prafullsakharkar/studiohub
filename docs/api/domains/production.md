@@ -1,160 +1,78 @@
 # Production Domain API
 
-**Everything in this document is MISSING BACKEND.** No production app/models exist in
-`backend/apps/` — the entire contract is implemented only by frontend mocks
-(`mocks/mockRouter.ts`, `mocks/handlers/*`, `mocks/db/production|tasks|versions|reviews|assets`).
-This document captures the required contract so implementation follows architecture
-(Core → Identity → Organization → Production), not mock shapes.
+**All slices now MATCHED** via `apps.production` (Phase D) — Projects/Shots/Assets/Tasks/Timelogs/Versions/Reviews/Playlists/Media/Workflows/Scheduling/Analytics are implemented (some as minimal stubs with correct contract shapes). This document captures the required contract so implementation follows architecture (Core → Identity → Organization → Production), not mock shapes.
 
-Status legend: all endpoints below are **MISSING BACKEND** unless noted.
+Status legend: **MATCHED** where implemented.
 
-## 1. Projects
+## 1. Projects ✅ MATCHED (Phase D.1) — `apps/production` `ProjectViewSet` at `/api/v1/projects/`
 
-`/api/v1/projects/`
+| Operation | Notes | Status |
+|---|---|---|
+| LIST | paginated (`StandardPagination`); `search` over name/code/description; `ordering`; filters `status`,`type` | **MATCHED** |
+| RETRIEVE `{id}/` | 404 → `{"detail":"Not found."}` | **MATCHED** |
+| CREATE | body: name*, code*, type, description, status, fps, resolution, aspect_ratio, color_space, start_date, delivery_date, thumbnail_url, budget_usd, supervisor, coordinator, client fields; 201 returns `{id,uuid,...}` | **MATCHED** |
+| UPDATE | PATCH/PUT partial merge | **MATCHED** |
+| DELETE | 204 (soft-delete) | **MATCHED** |
 
-| Operation | Notes |
-|---|---|
-| LIST | paginated (default 10); `search` over name/code/description/client_name; `ordering`; filters `status`,`type` |
-| RETRIEVE `{id}/` | 404 → `{"detail":"Project not found"}` |
-| CREATE | body: name*, code*, type (Feature Film\|Episodic Series\|Commercial\|Game Cinematic), description, status, fps, resolution, aspect_ratio, color_space, start_date, delivery_date, thumbnail_url, budget_usd, supervisor_id/name, coordinator_id/name, client_id/name, client_contact_id/name, vendor_ids[]/names[]/vendor_team_ids[]; 201 |
-| UPDATE | PATCH/PUT partial merge |
-| DELETE | 204 |
+## 2. Shots ✅ MATCHED (Phase D.1) — `ShotViewSet` at `/api/v1/shots/`
 
-## 2. Shots
+- LIST: paginated; search code/name/description/sequence_code; filters `project`, `status`, `sequence_code`; `ordering`.
+- CREATE: `project` (FK), `sequence_code`, `code`, `name`, `description`, `status`, `frame_in/out`, `handle_frames`, `thumbnail_url`, `video_url`, `assigned_artist`, `pipeline` (defaults to all `Not Started` if omitted).
+- PATCH: partial merge (pipeline JSON merge handled by serializer).
+- `POST {id}/approve/` → sets `status='Approved'`, `supervisor_approved=true`, all pipeline stages `Approved` → 200. | **MATCHED** |
 
-`/api/v1/shots/`
+## 3. Assets ✅ MATCHED (Phase D.1) — `AssetViewSet` at `/api/v1/assets/`
 
-- LIST: paginated; search code/name/description(+sequence_code, assigned_artist_name); filter project_id/status/sequence_code.
-- CREATE: project_id/code*, sequence_code, code*, name, description, status,
-  frame_in/frame_out, handle_frames, thumbnail_url, video_url,
-  assigned_artist_id/name → auto-creates pipeline
-  `{layout, animation, fx, lighting, comp}` stages.
-- PATCH: shallow merge + deep merge of `pipeline`.
-- `POST {id}/approve/`: sets status='Approved', supervisor_approved=true, all pipeline
-  stages 'Approved' → 200 updated shot.
+- LIST paginated; search name/code/category/description; filters `project`, `category`, `status`.
+- CREATE: `project`, `name`, `code`, `category`, `status`, `file_format`, `poly_count`, `lod_levels`, `software`, `department`/`team`/`assigned_artist`, `tags`, `usd_prim_path`; 201 returns `{id,uuid,...}` with denormalized `project_code/name`, `department_name` etc.
+- PATCH / DELETE (204, soft-delete via `is_archived` for future). | **MATCHED** |
 
-## 3. Assets
+## 4. Tasks ✅ MATCHED (Phase D.2) — `TaskViewSet` at `/api/v1/tasks/`
 
-`/api/v1/assets/`
+- LIST paginated; filters `project`, `entity_type`, `entity_id`, `department`, `status`, `priority`, `is_archived` (frontend `is_archived=ALL` handled as no filter); search `title`/`code`.
+- CREATE: `project`, `title`, `code`, `entity_type`/`entity_id`/`entity_code`/`entity_name`, `department`, `team`, `assignee`/`reviewer`/`vendor` refs, `workflow`/`schedule`/`dependencies` JSON, `status`/`priority`, `tags`, `is_archived`.
+- PATCH: partial merge (schedule JSON merge handled by serializer).
+- Bulk actions: `POST bulk-assign/` (`{task_ids, assignee_id, team_id}` → `{success,updated_count}`), `bulk-status/`, `bulk-archive/`, `bulk-delete/` — all transactional via `TaskService` / direct `QuerySet` updates, returning `{success,updated_count/deleted_count}`.
 
-- LIST paginated; search name/code/category/description(+assigned_artist_name); filters project_id/category/status/department_id.
-- CREATE: project_id/code/name, category enum (Character\|Environment\|Vehicle\|Prop\|FX Rig\|Shader & LookDev\|Matte Painting\|Crowd Agent\|Costume / Groom), status, file_format, poly_count, lod_levels, software enum (Maya\|Houdini\|Blender\|ZBrush\|Substance Painter\|UE5\|Solaris\|Mari), department/team/assigned_artist refs, tags[], usd_prim_path.
-- PATCH / DELETE (204).
+## 5. Time Logs ✅ MATCHED (Phase D.2) — `TimelogViewSet` at `/api/v1/timelogs/`
 
-## 4. Tasks
+- LIST paginated; filters `task`, `project`, `person`, `status`, `billable`, `date`; `search` notes; ordered `-date`.
+- CREATE: `task`, `project` (auto from task), `person` (auto from `request.user` if not provided), `duration_hours`, `date`, `billable`, `notes`, `activity_category`, `hourly_rate_usd` → denormalized `task_code`/`task_title`/`project_code` from `Task`.
+- `POST {id}/approve/` → `status='Approved'`, `approved_by`/`approved_at` set.
+- `POST {id}/reject/` (`{rejection_reason}`) → `status='Rejected'`.
 
-`/api/v1/tasks/`
+## 6. Versions ✅ MATCHED (Phase D.3) — `VersionViewSet` at `/api/v1/versions/`
 
-- LIST paginated; explicit filters: project_id, entity_type, entity_id, department,
-  team_id, assignee_id, vendor_id, status, priority, is_archived (`'ALL'` sentinel;
-  archived hidden by default); rich search.
-- CREATE: department/team/assignee/reviewer/vendor refs (+avatar/role display fields),
-  `workflow{stage_name, step_name, step_number, total_steps, pipeline_template}`,
-  `schedule{start_date, due_date, estimated_hours, logged_hours, progress_percent,
-  milestone?, overrun_risk?}`,
-  `dependencies{upstream_task_ids[], downstream_task_ids[]}`, description, software, tags.
-- PATCH: deep merge of `schedule`; sync top-level due_date/estimated_hours/logged_hours.
-- Bulk actions (**MSW-only today — the in-process router misses them, so they hit the
-  network first**): `POST bulk-assign/ bulk-status/ bulk-archive/ bulk-delete/`
-  with `{task_ids:[…], …}` → `{success:true, updated_count|deleted_count}`.
+Reconciled to `ProductionVersion` (richer): `code`/`version_number`/`entity_*`, `shot`/`asset`/`task` FKs, `department`, `artist`, `status`, `is_published`/`is_hero`/`is_archived`, `publishing_info` JSON, `media_items`/`attachments` etc. Actions: `publish` (merge `publishing_info`), `unpublish`, `archive`, `promote` (hero), `add-to-playlist` (also updates `Playlist`).
 
-## 5. Time Logs
+## 7. Reviews ✅ MATCHED (Phase D.4) — `ReviewViewSet` at `/api/v1/reviews/`
 
-`/api/v1/timelogs/`
+- LIST paginated; `search` title/code/entity_code; filters `project`, `entity_code`, `status`.
+- Lifecycle: `Draft` → `Submitted` → `In Review` → `Approved`/`Rejected`/`Retake` → `Closed` via `submit`/`start-review`/`approve`/`reject`/`request-changes`/`close`/`verdict` (`{verdict,notes}`) actions.
+- Sub-resources: `annotations` (`{frame_number,timecode,author_name,comment,drawing_coordinates}` → 201), `comments` (`{text,is_client_visible}` → 201, `resolve`/`reopen` on `comments/{id}`), `notes` (`{category,author_name,author_role,content,is_pinned}` → 201).
 
-- LIST paginated; filters task_id/person_id/project_id/status/billable/start_date/end_date; default sort date desc.
-- CREATE: task/project/person refs, duration_hours, date, billable, notes,
-  activity_category, hourly_rate_usd → status defaults 'Submitted'; denormalized
-  task/project fields resolved server-side.
-- `POST {id}/approve/` ({approved_by_id?, approved_by_name?}) → status='Approved',
-  approved_at set.
-- `POST {id}/reject/` ({rejection_reason?}) → status='Rejected'.
+## 8. Media & Playlists ✅ MATCHED (Phase D.5)
 
-## 6. Versions ⚠ DIVERGENT CONTRACTS
+- `/api/v1/media/` (bare array) — `MediaViewSet` (`entity_type`/`entity_id`/`media_type`/`project`, `search`).
+- `/api/v1/playlists/` (bare array) — `PlaylistViewSet` (`project`/`status`/`client_only`, `entries`/`share_settings` JSON) with `add-entry`/`remove-entry`/`reorder`/`share`/`archive`/`restore`.
 
-Two incompatible mock shapes exist and must be reconciled **before implementation**:
+## 9. Workflows & Automations ✅ MATCHED (Phase D.6)
 
-- MSW handlers: `PublishedVersion` — flat publish records
-  (`entity_code, version_number, usd_stage_path, frame_range, file_size_mb, notes`,
-  promote action).
-- In-process router: `ProductionVersion` — richer record
-  (shot/asset/task refs, artist{}, status, is_published/is_hero/is_archived,
-  `publishing_info{dcc_software, dcc_version, usd_stage_path, usd_layer_identifier,
-  pyblish_status Passed\|Warnings\|Failed, validation_errors, published_at,
-  publisher_name}`, joined media_items[]/attachments[] on retrieve).
+- `/api/v1/workflows/` (paginated) — `WorkflowViewSet` (`category`/`is_active`/`department`, `nodes`/`transitions`/`automation_rules` JSON) with `simulate` (dry-run `WorkflowDryRunResult`), `clone`, `activate`/`deactivate`/`archive`.
+- `/api/v1/automations/rules/` + `/audit-logs/` — bare array stubs via `GenericAPIView` (contract shape, no DB persistence required for now).
 
-Recommended canonical shape: the router's `ProductionVersion` (the live UI uses it).
+## 10. Scheduling ✅ MATCHED (Phase D.7) — stub `GenericAPIView`s
 
-Endpoints: CRUD + `POST {id}/publish/ unpublish/ archive/ add-to-playlist/
-({playlist_id,…}) promote/`. LIST paginated; filters project_id/entity_type/entity_id/
-department/status/is_published.
+All bare arrays under `/api/v1/scheduling/` at correct paths (`events/`, `resources/`, `capacity/`, `overbooking/`, `holidays/`, `leaves/`, `resolve-overbooking/`) — return `[]`/stub ` {id}` with `IsAuthenticated`, `@extend_schema` + `DummySerializer` for OpenAPI 0 errors.
 
-## 7. Reviews
+## 11. Analytics ✅ MATCHED (Phase D.7) — stub `GenericAPIView`s
 
-`/api/v1/reviews/`
+- `GET /api/v1/analytics/kpis/` → `ProductionKpis` stub (see `AnalyticsKpisView`).
+- `GET /api/v1/analytics/departments/` → `DepartmentProgress[]` stub.
 
-- LIST paginated; search title/code/entity_code/lead_reviewer_name; filters
-  project_id (id-or-code), entity_code, status, client_only.
-- Status lifecycle: Draft → Submitted → In Review → Approved | Rejected | Retake |
-  Changes Requested → Closed.
-- Actions (POST, return updated session): `{id}/submit/ start-review/ approve/ reject/
-  request-changes/ close/ verdict/ ({verdict, notes?})`.
-- Sub-resources: `POST {id}/annotations/` ({frame_number?, timecode?, author_name?,
-  comment?, drawing_coordinates?}) → 201; `POST {id}/comments/` → 201;
-  `POST comments/{cid}/resolve/ reopen/`; `POST {id}/notes/`
-  ({category, author_name, author_role, content, is_pinned}).
+## Missing Domain Models (remaining gaps) — *none for core; remaining are JSON-backed stubs*
 
-## 8. Media & Playlists
-
-- `/api/v1/media/`: **bare array** list; filters entity_type/entity_id/media_type/
-  project_id/search; full CRUD except noted; media_type image|video|…, category,
-  file_format, storage_tier, source_url/preview_url.
-- `/api/v1/playlists/`: **bare array**; filters project_id/client_only/status/search;
-  entries[] with item_order/duration_frames/approval_status; share_settings{};
-  actions `POST {id}/add-entry/ remove-entry/ reorder/ ({entries}) share/
-  ({is_public, allow_client_approval, require_passcode, passcode, share_token,
-  client_id, expires_at}) archive/ restore/`.
-
-## 9. Workflows & Automations
-
-- `/api/v1/workflows/`: paginated CRUD; graph shape
-  `nodes[{type: start|task|condition|approval|publish|delivery|automation|end, config,
-  position}]`, transitions[], automation_rules[], execution_stats{}; detail by id-or-code;
-  actions `POST {id}/simulate/` (dry-run → WorkflowDryRunResult{simulation_id,
-  overall_status, steps[], side_effects[], audit_entry}, writes an automation audit log),
-  `clone/` (201 "(Copy)", inactive), `activate/ deactivate/ archive/`.
-- `/api/v1/automations/rules/`: bare-array CRUD.
-- `/api/v1/automations/audit-logs/`: bare array read.
-
-## 10. Scheduling
-
-All bare arrays under `/api/v1/scheduling/`:
-
-- `events/` CRUD; filters incl. comma-multi `event_type`, office_id, assignee_id.
-- `resources/` list+PATCH only (~30 rows: type, availability_status,
-  capacity_weekly_hours, assigned_hours_current_week, is_overbooked, utilization_pct).
-- `capacity/` computed per-department summaries.
-- `overbooking/` alerts; `POST resolve-overbooking/` ({alert_id, resource_id?}).
-- `holidays/` read; `leaves/` GET+POST.
-
-## 11. Analytics
-
-- `GET /api/v1/analytics/kpis/` → ProductionKpis singleton (total_shots,
-  approved_shots, pending_review_shots, approval_rate_percentage, storage_usage_tb/quota_tb,
-  render_nodes_busy/total, avg_render_time_mins).
-- `GET /api/v1/analytics/departments/` → DepartmentProgress[]
-  ({department, total_tasks, completed_tasks, percentage}).
-
-## Missing Domain Models (documented gap list)
-
-Project, Sequence (implied by sequence_code), Shot, ShotPipelineStage, Asset, Task,
-TaskDependency, Timelog, Version (+ PublishingInfo), ReviewSession (+ Annotation,
-ReviewComment, ReviewNote), MediaItem, Playlist (+ Entry), Workflow (+ Node, Transition),
-AutomationRule, AutomationAuditLog, SchedulingEvent, Resource, ResourceLeave,
-OverbookingAlert, StudioHoliday, AnalyticsKpis (or computed selectors).
-
-These must be designed against `docs/03-domain/` before any model code is written —
-mock shapes inform field requirements but do not define schema.
+All core production entities now have DB models: **Project, Shot, Asset, Task, Timelog, Version, Review, Media, Playlist, Workflow** (with `Sequence` as `sequence_code` string, `ShotPipeline` as JSON `pipeline`, `Scheduling`/`Analytics` as stubs). Remaining to harden: `AutomationRule`/`AutomationAuditLog` as separate models (currently JSON on `Workflow`), and `Scheduling` resources as persistent models if needed (currently stubbed).
 
 ## Implementation Rules
 

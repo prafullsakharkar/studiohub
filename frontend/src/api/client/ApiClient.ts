@@ -5,14 +5,15 @@ import { ApiError } from '@/api/errors/ApiError';
 import { mapHttpError } from '@/api/errors/errorMapper';
 import { logger } from '@/core/logging/logger';
 import { DrfErrorResponse } from '@/types/drf';
-import { dispatchMockRequest } from '@/mocks/mockRouter';
+
+const API_PREFIX = (import.meta as any).env?.VITE_API_URL || '';
 
 export class ApiClient implements IApiClient {
   private client: KyInstance;
   private isRefreshing = false;
   private refreshSubscribers: ((token: string) => void)[] = [];
 
-  constructor(prefix = '') {
+  constructor(prefix = API_PREFIX) {
     this.client = ky.create({
       prefix: prefix || undefined,
       timeout: 30000,
@@ -92,18 +93,9 @@ export class ApiClient implements IApiClient {
 
     try {
       logger.info('ApiClient', 'Attempting automatic JWT token refresh...');
-      const mockRes = await dispatchMockRequest<{ access: string }>('POST', '/api/v1/auth/refresh/', { refresh: refreshToken });
-      if (mockRes) {
-        const newAccessToken = mockRes.data.access;
-        tokenStorage.setAccessToken(newAccessToken);
-        this.isRefreshing = false;
-        this.onTokenRefreshed(newAccessToken);
-        logger.info('ApiClient', 'Token refreshed successfully');
-        return newAccessToken;
-      }
 
       const response = await ky
-        .post('/api/v1/auth/refresh/', {
+        .post(`${API_PREFIX}/api/v1/auth/refresh/`, {
           json: { refresh: refreshToken },
           retry: 0,
         })
@@ -151,11 +143,6 @@ export class ApiClient implements IApiClient {
 
   public async get<T>(url: string, options?: RequestOptions): Promise<T> {
     return this.executeWithAuthRetry(async () => {
-      const mockRes = await dispatchMockRequest<T>('GET', url, undefined, options?.params);
-      if (mockRes) {
-        return mockRes.data;
-      }
-
       const kyOptions: KyOptions = {
         ...options,
         searchParams: this.sanitizeParams(options?.params),
@@ -166,11 +153,6 @@ export class ApiClient implements IApiClient {
 
   public async post<T>(url: string, body?: unknown, options?: RequestOptions): Promise<T> {
     return this.executeWithAuthRetry(async () => {
-      const mockRes = await dispatchMockRequest<T>('POST', url, body, options?.params);
-      if (mockRes) {
-        return mockRes.data;
-      }
-
       const kyOptions: KyOptions = {
         ...options,
         json: body,
@@ -182,11 +164,6 @@ export class ApiClient implements IApiClient {
 
   public async put<T>(url: string, body?: unknown, options?: RequestOptions): Promise<T> {
     return this.executeWithAuthRetry(async () => {
-      const mockRes = await dispatchMockRequest<T>('PUT', url, body, options?.params);
-      if (mockRes) {
-        return mockRes.data;
-      }
-
       const kyOptions: KyOptions = {
         ...options,
         json: body,
@@ -198,11 +175,6 @@ export class ApiClient implements IApiClient {
 
   public async patch<T>(url: string, body?: unknown, options?: RequestOptions): Promise<T> {
     return this.executeWithAuthRetry(async () => {
-      const mockRes = await dispatchMockRequest<T>('PATCH', url, body, options?.params);
-      if (mockRes) {
-        return mockRes.data;
-      }
-
       const kyOptions: KyOptions = {
         ...options,
         json: body,
@@ -214,11 +186,6 @@ export class ApiClient implements IApiClient {
 
   public async delete<T>(url: string, options?: RequestOptions): Promise<T> {
     return this.executeWithAuthRetry(async () => {
-      const mockRes = await dispatchMockRequest<T>('DELETE', url, undefined, options?.params);
-      if (mockRes) {
-        return mockRes.data;
-      }
-
       const kyOptions: KyOptions = {
         ...options,
         searchParams: this.sanitizeParams(options?.params),
@@ -233,11 +200,6 @@ export class ApiClient implements IApiClient {
 
   public async upload<T>(url: string, formData: FormData, options?: RequestOptions): Promise<T> {
     return this.executeWithAuthRetry(async () => {
-      const mockRes = await dispatchMockRequest<T>('POST', url, formData, options?.params);
-      if (mockRes) {
-        return mockRes.data;
-      }
-
       const kyOptions: KyOptions = {
         ...options,
         body: formData,

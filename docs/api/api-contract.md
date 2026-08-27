@@ -20,13 +20,15 @@ Full details: [authentication.md](authentication.md) and [domains/identity.md](d
 
 | Method | Endpoint | Request | Response | Auth | Backend Route | Status |
 |---|---|---|---|---|---|---|
-| POST | `/api/v1/auth/login/` | `{email, password}` | `{tokens:{access, refresh}, user}` | none | `/api/v1/identity/login/` → `{access, refresh, session}` | MISMATCH |
-| POST | `/api/v1/auth/refresh/` | `{refresh}` | `{access}` | none | `/api/v1/identity/refresh/` → `{access, refresh?, …}` | MISMATCH |
-| POST | `/api/v1/auth/logout/` | – | `{detail}` | Bearer | `/api/v1/identity/logout/` | MISMATCH (path) |
-| GET | `/api/v1/auth/me/` | – | `User` | Bearer | unrouted `MeAPIView` exists in `apps.identity.api.views.authentication` | MISMATCH |
+| POST | `/api/v1/auth/login/` | `{email, password}` | `{tokens:{access, refresh}, user}` | none | `/api/v1/auth/login/` (compat) + `/api/v1/identity/login/` canonical | **MATCHED** |
+| POST | `/api/v1/auth/refresh/` | `{refresh}` | `{access}` | none | `/api/v1/auth/refresh/` (compat) | **MATCHED** |
+| POST | `/api/v1/auth/logout/` | – | `{detail}` | Bearer | `/api/v1/auth/logout/` (compat) | **MATCHED** |
+| GET | `/api/v1/auth/me/` | – | `User` | Bearer | `/api/v1/auth/me/` (compat) | **MATCHED** |
 
 The nested `tokens` wrapper is a hard frontend requirement
-(`types/auth.ts` → `LoginResponse`). The backend login response must be adapted.
+(`types/auth.ts` → `LoginResponse`). Backend now provides compat layer at `/api/v1/auth/`
+via `auth_compat.py` + `frontend_user` serializer; canonical identity routes remain at
+`/api/v1/identity/` for internal use.
 
 ## 2. Identity (`identity`) — namespaced tree
 
@@ -43,23 +45,22 @@ Backend routes exist under `/api/v1/identity/…`.
 
 ## 3. Organization — legacy flat contract
 
-Contract source: `modules/organization/hooks/*`, `api/organizationApi.ts`. These are the
-endpoints the current UI actually calls. **All are MISSING BACKEND at these exact paths**
-(backend mounts equivalents under `/api/v1/organization/…`, see §4).
+Contract source: `modules/organization/hooks/*`, `api/organizationApi.ts`. Frontend calls these
+flat paths directly; backend now serves them via `apps/organization/api/urls_legacy.py`.
 
-| Entity | Endpoints (prefix `/api/v1/`) | Pagination | Notes |
-|---|---|---|---|
-| Organizations | `GET/POST organizations/`, `GET/PATCH/PUT/DELETE organizations/{id}/` | Bare array unless `?page=`/`?page_size=` present, then `{count,next,previous,results}` | detail accepts id **or uppercase code**; nested `settings{…}` merged on PATCH |
-| Clients | `GET/POST clients/`, CRUD `clients/{id}/` | paginated (default 15) | detail by id-or-code; requires `name` |
-| Vendors | `GET/POST vendors/`, CRUD `vendors/{id}/` | paginated | specialization/security_tier/nda_signed/rating fields |
-| People | `GET/POST people/`, CRUD `people/{id}/` | paginated | requires `full_name`+`email`; maps to `organization.Person` model (no API yet) |
-| Departments | `GET departments/`, CRUD `departments/{id}/` | **bare array** | head/member_count/color/software_stack fields |
-| Teams | `GET teams/`, CRUD `teams/{id}/` | **bare array** | department/lead/member_ids/current_project refs |
-| Offices | `GET offices/`, CRUD `offices/{id}/` | **bare array** | holidays[], resources[], working_hours embedded |
-| Billing singleton | `GET billing/` | object | StudioBilling shape |
-| Reports | `GET reports/` | array | ProductionReport[] |
-| Notifications | `GET notifications/` | array | also consumed via platform tree below |
-| Org singleton | `GET organization/` | object | legacy dashboard bootstrap |
+| Entity | Endpoints (prefix `/api/v1/`) | Pagination | Status | Notes |
+|---|---|---|---|---|
+| Organizations | `GET/POST organizations/`, `GET/PATCH/PUT/DELETE organizations/{id}/` | Bare array unless `?page`/`?page_size` → then `{count,next,previous,results}` | **MATCHED** (Phase C) | detail id **or uppercase code** (`code__iexact`) |
+| People | `GET/POST people/`, CRUD `people/{id}/` | paginated | **MATCHED** (Phase C: `PersonViewSet` at `/people/` + `/organization/persons/`) | `full_name` ← `name`, compat fields via `PersonSerializer` |
+| Departments | `GET departments/`, CRUD `departments/{id}/` | **bare array** (`pagination_class=None`) | **MATCHED** (Phase C) | id-or-code |
+| Teams | `GET teams/`, CRUD `teams/{id}/` | **bare array** | **MATCHED** (Phase C) | id-or-code |
+| Offices | `GET offices/`, CRUD `offices/{id}/` | **bare array** | **MATCHED** (Phase C) | id-or-code |
+| Org singleton | `GET organization/` | object | **MATCHED** (Phase C) | first org for user |
+| Clients | `GET/POST clients/`, CRUD `clients/{id}/` | paginated (15) | **MISSING MODEL** | deferred to `commercial` app |
+| Vendors | `GET/POST vendors/`, CRUD `vendors/{id}/` | paginated | **MISSING MODEL** | deferred |
+| Billing singleton | `GET billing/` | object | **MISSING MODEL** | platform scope |
+| Reports | `GET reports/` | array | **MISSING MODEL** | platform scope |
+| Notifications | `GET notifications/` | array | **MISSING MODEL** | platform scope |
 
 ## 4. Organization — namespaced v2 contract
 
@@ -68,12 +69,13 @@ Contract source: `modules/organization/api/{OrganizationService,DepartmentServic
 
 | Resource | Endpoints (prefix `/api/v1/organization/`) | Backend Status |
 |---|---|---|
-| Organizations | CRUD `organizations/` (+ actions `archive/ restore/ export/ switch/ settings/`) | MISMATCH — CRUD MATCHED; custom actions MISSING BACKEND |
-| Departments | CRUD `departments/` | MATCHED (list/detail/create/update/delete) |
-| Teams | CRUD `teams/` | MATCHED |
-| Offices | CRUD `offices/` | MATCHED |
-| Memberships | `memberships/` + `members/add/ remove/ transfer-ownership/` | MISMATCH — memberships routed; member actions MISSING BACKEND |
-| Invitations | `invitations/` CRUD | MATCHED (accept/revoke actions to confirm against service calls) |
+| Organizations | CRUD `organizations/` (paginated) + `my/` `archive/` `restore/` `export/` `switch/` `settings/` | **MATCHED** (Phase C) |
+| Departments | CRUD `departments/` (paginated) | **MATCHED** |
+| Teams | CRUD `teams/` (paginated) + `archive/` `transfer-ownership/` `members/` `members/add/` `members/remove/` | **MATCHED** (Phase C) |
+| Offices | CRUD `offices/` (paginated) | **MATCHED** |
+| Persons | CRUD `persons/` (paginated) | **MATCHED** (Phase C) |
+| Memberships | `memberships/` (paginated) + `bulk-update/` | **MATCHED** (Phase C) |
+| Invitations | `invitations/` (paginated) + `resend/` `accept/` `decline/` | **MATCHED** (Phase C) |
 
 Backend extras already routed but not yet consumed by the frontend (MISSING FRONTEND):
 `brandings/ calendars/ holidays/ work-calendars/ work-hours/ positions/ api-keys/
@@ -82,26 +84,25 @@ group-roles/ role-permissions/ organization-settings/`.
 
 ## 5. Production
 
-**Entirely MISSING BACKEND.** No production app/models exist; every endpoint below is a
-frontend contract implemented only by mocks. Full field-level contracts:
-[domains/production.md](domains/production.md).
+**Slice 1 (Projects/Shots/Assets) MATCHED via `apps.production` (Phase D.1);** remaining
+entities still MISSING. Full field-level contracts: [domains/production.md](domains/production.md).
 
-| Entity | Endpoints (prefix `/api/v1/`) | Pagination |
-|---|---|---|
-| Projects | CRUD `projects/` | paginated (default 10); search name/code/description/client_name |
-| Shots | CRUD `shots/` + `POST shots/{id}/approve/` | paginated |
-| Assets | CRUD `assets/` | paginated |
-| Tasks | CRUD `tasks/` + `POST tasks/bulk-{assign,status,archive,delete}/` | paginated; MSW-only bulk ops (mockRouter misses them) |
-| Timelogs | CRUD `timelogs/` + `POST {id}/{approve,reject}/` | paginated |
-| Versions | CRUD `versions/` + `POST {id}/{publish,unpublish,archive,add-to-playlist,promote}/` | paginated; **two divergent mock shapes** (`PublishedVersion` MSW vs `ProductionVersion` router) — must reconcile before implementing |
-| Reviews | CRUD `reviews/` + `POST {id}/{submit,start-review,approve,reject,request-changes,close,verdict,annotations,comments,notes}/`, `comments/{cid}/{resolve,reopen}/` | paginated list |
-| Media | CRUD `media/` | **bare array** |
-| Attachments | `GET/POST/DELETE attachments/`, `GET attachments/{id}/` | **bare array** (backend has `/api/v1/core/attachments/` — different path) |
-| Playlists | CRUD `playlists/` + `POST {id}/{add-entry,remove-entry,reorder,share,archive,restore}/` | **bare array** |
-| Workflows | CRUD `workflows/` + `POST {id}/{simulate,clone,activate,deactivate,archive}/` | paginated (default 10) |
-| Automations | CRUD `automations/rules/`, `GET automations/audit-logs/` | bare array |
-| Scheduling | `scheduling/{events,resources,capacity,overbooking,holidays,leaves}/` + `POST scheduling/resolve-overbooking/` | bare arrays |
-| Analytics | `GET analytics/kpis/`, `GET analytics/departments/` | objects/array |
+| Entity | Endpoints (prefix `/api/v1/`) | Pagination | Status |
+|---|---|---|---|
+| Projects | CRUD `projects/` | paginated | **MATCHED** (Phase D.1) |
+| Shots | CRUD `shots/` + `POST shots/{id}/approve/` | paginated | **MATCHED** (Phase D.1) |
+| Assets | CRUD `assets/` | paginated | **MATCHED** (Phase D.1) |
+| Tasks | CRUD `tasks/` + `POST tasks/bulk-{assign,status,archive,delete}/` | paginated | **MATCHED** (Phase D.2) |
+| Timelogs | CRUD `timelogs/` + `POST {id}/{approve,reject}/` | paginated | **MATCHED** (Phase D.2) |
+| Versions | CRUD `versions/` + `POST {id}/{publish,unpublish,archive,add-to-playlist,promote}/` | paginated | **MATCHED** (Phase D.3) |
+| Reviews | CRUD `reviews/` + `POST {id}/{submit,start-review,approve,reject,request-changes,close,verdict,annotations,comments,notes}/` | paginated | **MATCHED** (Phase D.4) |
+| Media | CRUD `media/` | **bare array** | **MATCHED** (Phase D.5) |
+| Attachments | `GET/POST/DELETE attachments/` | **paginated** via alias | **MATCHED** |
+| Playlists | CRUD `playlists/` + `POST {id}/{add-entry,remove-entry,reorder,share,archive,restore}/` | **bare array** | **MATCHED** (Phase D.5) |
+| Workflows | CRUD `workflows/` + `POST {id}/{simulate,clone,activate,deactivate,archive}/` | paginated | **MATCHED** (Phase D.6) |
+| Automations | CRUD `automations/rules/`, `GET automations/audit-logs/` | bare array | **MATCHED** (Phase D.6) |
+| Scheduling | `scheduling/{events,resources,capacity,overbooking,holidays,leaves}/` | bare arrays | **MATCHED** (Phase D.7) |
+| Analytics | `GET analytics/kpis/`, `GET analytics/departments/` | objects/array | **MATCHED** (Phase D.7) |
 
 ## 6. Settings
 
@@ -134,8 +135,8 @@ do not implement until prioritized).
 
 | Frontend Endpoint | Backend Route | Status |
 |---|---|---|
-| `GET /healthz` style checks | `GET /health/` (outside `/api/`) | MATCHED (unused by frontend today) |
-| `attachments/` (production-style) | `/api/v1/core/attachments/` | Path mismatch — decide canonical location in production phase |
+| `GET /health/` | `GET /health/` (outside `/api/`) | **MATCHED** (Phase A verified) |
+| `attachments/` (production-style) | `/api/v1/attachments/` (alias) + `/api/v1/core/attachments/` | **MATCHED** (Phase A alias) |
 | tags | `/api/v1/core/tags/` | MISSING FRONTEND (routed, unused) |
 
 ## 10. Conventions Summary

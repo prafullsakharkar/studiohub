@@ -1,3 +1,5 @@
+from apps.core.api.pagination import StandardPagination
+
 from apps.organization.api.filtersets.office import OfficeFilterSet
 from apps.organization.api.serializers.office import (
     OfficeCreateSerializer,
@@ -25,6 +27,8 @@ class OfficeViewSet(OrganizationEntityViewSet):
     service_class = OfficeService
 
     filterset_class = OfficeFilterSet
+
+    pagination_class = StandardPagination
 
     serializer_map = {
         "list": OfficeListSerializer,

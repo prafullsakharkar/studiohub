@@ -23,14 +23,16 @@ migrates — do not fork business logic.
 
 | Resource | Operations | Status |
 |---|---|---|
-| `organizations/` | list/create/retrieve/update/partial_update/destroy | MATCHED |
-| `organizations/{id}/archive/ restore/ export/ switch/ settings/` | POST | MISSING BACKEND actions |
-| `departments/` | full CRUD | MATCHED |
-| `teams/` | full CRUD | MATCHED |
-| `offices/` | full CRUD | MATCHED |
-| `memberships/` | CRUD | MATCHED |
-| `memberships` member ops: `members/add/ remove/ transfer-ownership/` | POST | MISSING BACKEND |
-| `invitations/` | CRUD (+ accept/revoke per service) | MATCHED core; verify action set |
+| `organizations/` | list/create/retrieve/update/partial_update/destroy (paginated) | **MATCHED** |
+| `organizations/{id}/archive/` `restore/` `export/` `switch/` | POST | **MATCHED** (Phase C: `OrganizationViewSet.archive/restore/export/switch`) |
+| `organizations/{id}/settings/` | GET/PATCH | **MATCHED** (Phase C: `organization_settings` action → `OrganizationSettings`) |
+| `organizations/my/` | GET | **MATCHED** (Phase C: `my` action — user's orgs) |
+| `departments/` | full CRUD (paginated) | **MATCHED** |
+| `teams/` | full CRUD (paginated) + `archive/` `transfer-ownership/` `members/` `members/add/` `members/remove/` | **MATCHED** (Phase C) |
+| `offices/` | full CRUD (paginated) | **MATCHED** |
+| `persons/` | CRUD (paginated) via `PersonViewSet` | **MATCHED** (Phase C) |
+| `memberships/` | CRUD (paginated) + `bulk-update/` | **MATCHED** (Phase C: `bulk_update` action) |
+| `invitations/` | CRUD (paginated) + `resend/` `accept/` `decline/` | **MATCHED** (Phase C) |
 
 Routed but unconsumed (MISSING FRONTEND): `brandings/ calendars/ holidays/
 work-calendars/ work-hours/ positions/ api-keys/ personal-access-tokens/ groups/ roles/
@@ -39,23 +41,20 @@ organization-settings/`. Keep them; they are the RBAC/settings backbone.
 
 ## Legacy Flat Contract (prefix `/api/v1/`)
 
-All **MISSING BACKEND** at these exact paths:
+Implemented via `apps/organization/api/urls_legacy.py` (thin aliases reusing same selectors/services):
 
-| Endpoint | Shape notes |
-|---|---|
-| `GET organizations/` | bare array unless `?page`/`?page_size` → then `{count,next,previous,results}` |
-| `GET organizations/{id}/` | accepts id **or uppercase code** |
-| `POST/PATCH/PUT/DELETE organizations/{id}/` | create requires name/code (400 field errors); nested `settings{default_fps, sso_enforced, …}` merged on update |
-| `clients/` CRUD | paginated (15); fields incl. `contact_name, studio_type, active_projects[], contract_tier, total_billed_usd`; detail by id-or-code |
-| `vendors/` CRUD | paginated; `specialization, security_tier, nda_signed, rating, bandwidth_gbps, active_projects[]` |
-| `people/` CRUD | paginated; requires `full_name`+`email`; `role, department_id/name, team_id/name, office_id/name, skills[], seniority, availability_status, security_clearance, timezone` → maps to `organization.Person` (model exists, **no API yet**) |
-| `departments/` | **bare array**; `head_id/name/avatar, member_count, color, software_stack[], capacity_hours_weekly, utilization_percentage` |
-| `teams/` | **bare array**; `department_id/name, lead_id/name, member_ids[], current_project_id/code, focus_discipline, capacity_utilization` |
-| `offices/` | **bare array**; embedded `holidays[{name,date,type}]`, `resources[]`, `working_hours`, `network_speed_gbps` |
-| `GET billing/` | singleton StudioBilling object (**MISSING MODEL** — candidate platform domain) |
-| `GET reports/` | ProductionReport[] (**MISSING MODEL**) |
-| `GET notifications/` | Notification[] (**MISSING MODEL** — platform tree also needs it) |
-| `GET organization/` | legacy bootstrap singleton |
+| Endpoint | Shape notes | Status |
+|---|---|---|
+| `GET organizations/` | bare array unless `?page`/`?page_size` → then `{count,next,previous,results}` (conditional) | **MATCHED** |
+| `GET organizations/{id}/` | accepts id **or uppercase code** (`code__iexact`) | **MATCHED** |
+| `POST/PATCH/PUT/DELETE organizations/{id}/` | create requires name/code (400 field errors) | **MATCHED** |
+| `departments/` | **bare array** (`pagination_class=None`) | **MATCHED** |
+| `teams/` | **bare array** | **MATCHED** |
+| `offices/` | **bare array** | **MATCHED** |
+| `people/` CRUD | paginated (`StandardPagination`); `full_name` ← `name`, `avatar_url` etc defaults via `PersonSerializer` | **MATCHED** |
+| `GET organization/` | legacy bootstrap singleton → first org for user | **MATCHED** |
+| `clients/` `vendors/` CRUD | paginated (15); fields incl. `contact_name, studio_type, ...` | **MISSING MODEL** — see decision below |
+| `GET billing/` `GET reports/` `GET notifications/` | singletons/arrays | **MISSING MODEL** — platform scope, deferred |
 
 ## Denormalized Display Fields
 
@@ -68,13 +67,13 @@ selector pattern). This applies to every flat-contract entity.
 | Mock entity | Django model | Status |
 |---|---|---|
 | Organization ×3 | `Organization` | exists |
-| Client / Vendor | **MISSING DOMAIN MODEL** (candidates: CRM models in organization or a commercial app) | documented gap |
-| Person ×7 | `Person` | model exists, API missing |
+| Client / Vendor | **MISSING DOMAIN MODEL** — decision: defer to Phase `commercial` app (see `docs/adr/0005-crm-deferred.md`); frontend `organizationApi` for clients/vendors will remain MSW until then | documented gap |
+| Person ×7 | `Person` | **MATCHED** via `PersonViewSet` (`/api/v1/organization/persons/` + `/api/v1/people/`) |
 | DepartmentEntity | `Department` | exists |
 | Team | `Team` | exists |
 | Office | `Office` | exists |
 | Organization.settings{} | `OrganizationSettings` | exists |
-| StudioBilling, ProductionReport, StudioNotification | MISSING MODELS | platform scope |
+| StudioBilling, ProductionReport, StudioNotification | MISSING MODELS | platform scope — deferred to `platform` domain (Phase K) |
 
 ## Architecture Rules
 

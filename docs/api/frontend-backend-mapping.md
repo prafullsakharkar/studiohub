@@ -7,10 +7,10 @@ Primary integration checklist. Statuses: `MATCHED` · `MISMATCH` · `MISSING BAC
 
 | Frontend API | MSW Source | Django Endpoint | Backend App | Status |
 |---|---|---|---|---|
-| `POST /api/v1/auth/login/` | router+handler | `/api/v1/identity/login/` | identity | MISMATCH |
-| `POST /api/v1/auth/refresh/` | router+handler | `/api/v1/identity/refresh/` | identity | MISMATCH |
-| `POST /api/v1/auth/logout/` | router+handler | `/api/v1/identity/logout/` | identity | MISMATCH |
-| `GET /api/v1/auth/me/` | router+handler | unrouted `MeAPIView` | identity | MISMATCH |
+| `POST /api/v1/auth/login/` | router+handler | `/api/v1/auth/login/` (compat) + `/api/v1/identity/login/` | identity | **MATCHED** (Phase B) |
+| `POST /api/v1/auth/refresh/` | router+handler | `/api/v1/auth/refresh/` (compat) | identity | **MATCHED** (Phase B) |
+| `POST /api/v1/auth/logout/` | router+handler | `/api/v1/auth/logout/` (compat) | identity | **MATCHED** (Phase B) |
+| `GET /api/v1/auth/me/` | router+handler | `/api/v1/auth/me/` (compat) | identity | **MATCHED** (Phase B) |
 
 ## Identity
 
@@ -28,40 +28,41 @@ Primary integration checklist. Statuses: `MATCHED` · `MISMATCH` · `MISSING BAC
 
 | Frontend API | MSW Source | Django Endpoint | Backend App | Status |
 |---|---|---|---|---|
-| v2: organizations CRUD | router+handler | `organization/organizations/` | organization | MATCHED |
-| v2: org archive/restore/export/switch/settings | router only | — | organization | MISSING BACKEND |
-| v2: departments/teams/offices CRUD | handler | routed viewsets | organization | MATCHED |
-| v2: memberships CRUD | router | routed | organization | MATCHED |
-| v2: members/add, remove, transfer-ownership | router | — | organization | MISSING BACKEND |
-| v2: invitations CRUD | router | routed | organization | MATCHED |
-| legacy: `/organizations/` flat (conditional pagination, id-or-code) | router+handler | — | organization | MISSING BACKEND |
-| legacy: `/clients/`, `/vendors/` CRUD | router+handler | — | — | MISSING BACKEND (missing models too) |
-| legacy: `/people/` CRUD | router+handler | model exists, no API | organization | MISSING BACKEND |
-| legacy: `/departments/ /teams/ /offices/` flat bare-array | router+handler | namespaced routes only | organization | MISSING BACKEND (aliases) |
-| legacy: `/billing/ /reports/ /notifications/ /organization/` | router+handler | — | — | MISSING BACKEND |
+| v2: organizations CRUD (paginated) | router+handler | `organization/organizations/` | organization | **MATCHED** |
+| v2: org `archive/` `restore/` `export/` `switch/` `settings/` `my/` | `OrganizationService` | `organization/organizations/{id}/{archive,restore,export,switch,settings}` + `my/` | organization | **MATCHED** (Phase C) |
+| v2: departments/teams/offices CRUD (paginated) | handler | routed viewsets | organization | **MATCHED** |
+| v2: persons CRUD (paginated) | — | `organization/persons/` + `people/` | organization | **MATCHED** (Phase C) |
+| v2: memberships CRUD (paginated) + `bulk-update/` | router | `organization/memberships/` + `bulk-update/` | organization | **MATCHED** (Phase C) |
+| v2: teams `archive/` `transfer-ownership/` `members/` `members/add/` `members/remove/` | router | `organization/teams/{id}/...` | organization | **MATCHED** (Phase C) |
+| v2: invitations CRUD + `resend/` `accept/` `decline/` | router | `organization/invitations/` | organization | **MATCHED** (Phase C) |
+| legacy: `/organizations/` flat (conditional pagination, id-or-code) | router+handler | `/organizations/` (legacy) | organization | **MATCHED** (Phase C alias) |
+| legacy: `/departments/` `/teams/` `/offices/` flat bare-array | router+handler | `/departments/` etc (legacy) | organization | **MATCHED** (Phase C alias) |
+| legacy: `/people/` CRUD (paginated) | router+handler | `/people/` (legacy) + `/organization/persons/` | organization | **MATCHED** (Phase C) |
+| legacy: `/organization/` singleton | router+handler | `/organization/` (legacy) | organization | **MATCHED** (Phase C) |
+| legacy: `/clients/`, `/vendors/` CRUD | router+handler | — | — | **MISSING MODEL** (deferred to `commercial` app) |
+| legacy: `/billing/` `/reports/` `/notifications/` | router+handler | — | — | **MISSING MODEL** (platform scope) |
 
 ## Production
 
-All **MISSING BACKEND** (no app/models). MSW source column shows where the contract lives.
+All slices **MATCHED** via `apps.production` (Phase D).
 
-| Frontend API | MSW Source | Status |
-|---|---|---|
-| projects CRUD | router+handler | MISSING BACKEND |
-| shots CRUD + approve | router+handler | MISSING BACKEND |
-| assets CRUD | router+handler | MISSING BACKEND |
-| tasks CRUD | router+handler | MISSING BACKEND |
-| tasks bulk-assign/status/archive/delete | **MSW only** | MISSING BACKEND |
-| timelogs CRUD + approve/reject | router+handler | MISSING BACKEND |
-| versions CRUD + publish/unpublish/archive/add-to-playlist | router (rich) vs handler (flat) | MISSING BACKEND + **contract divergence** |
-| versions promote | **MSW only** | MISSING BACKEND |
-| reviews list/detail + lifecycle actions + annotations/comments/notes | router+4 handlers | MISSING BACKEND |
-| media CRUD | router only | MISSING BACKEND |
-| attachments (production paths) | router only | MISSING BACKEND (core attachments exist at different path → MISMATCH) |
-| playlists CRUD + entry/share actions | router only | MISSING BACKEND |
-| workflows CRUD + simulate/clone/activate/deactivate/archive | router only | MISSING BACKEND |
-| automations rules CRUD, audit-logs | router only | MISSING BACKEND |
-| scheduling events/resources/capacity/overbooking/holidays/leaves | router only | MISSING BACKEND |
-| analytics kpis/departments | router+handler | MISSING BACKEND |
+| Frontend API | MSW Source | Django Endpoint | Status |
+|---|---|---|---|
+| projects CRUD (paginated) | router+handler | `/api/v1/projects/` | **MATCHED** (Phase D.1) |
+| shots CRUD + `approve/` | router+handler | `/api/v1/shots/` | **MATCHED** (Phase D.1) |
+| assets CRUD | router+handler | `/api/v1/assets/` | **MATCHED** (Phase D.1) |
+| tasks CRUD (paginated) | router+handler | `/api/v1/tasks/` | **MATCHED** (Phase D.2) |
+| tasks bulk-assign/status/archive/delete | **MSW only** | `/api/v1/tasks/bulk-*` | **MATCHED** (Phase D.2) |
+| timelogs CRUD + approve/reject | router+handler | `/api/v1/timelogs/` | **MATCHED** (Phase D.2) |
+| versions CRUD + publish/unpublish/archive/add-to-playlist/promote | router (rich) vs handler (flat) | `/api/v1/versions/` | **MATCHED** (Phase D.3) |
+| reviews list/detail + lifecycle actions | router+4 handlers | `/api/v1/reviews/` | **MATCHED** (Phase D.4) |
+| media CRUD (bare array) | router only | `/api/v1/media/` | **MATCHED** (Phase D.5) |
+| attachments (production paths) | router only | `/api/v1/attachments/` (alias) | **MATCHED** (Phase A alias) |
+| playlists CRUD + entry/share actions (bare array) | router only | `/api/v1/playlists/` | **MATCHED** (Phase D.5) |
+| workflows CRUD + simulate/clone/... (paginated) | router only | `/api/v1/workflows/` | **MATCHED** (Phase D.6) |
+| automations rules CRUD, audit-logs (bare array) | router only | `/api/v1/automations/rules|audit-logs/` | **MATCHED** (Phase D.6) |
+| scheduling events/resources/... (bare arrays) | router only | `/api/v1/scheduling/...` | **MATCHED** (Phase D.7) |
+| analytics kpis/departments | router+handler | `/api/v1/analytics/...` | **MATCHED** (Phase D.7) |
 
 ## Settings & Platform
 
@@ -79,7 +80,7 @@ All **MISSING BACKEND** (no app/models). MSW source column shows where the contr
 |---|---|---|
 | `GET/POST /audit/` | `audit/audit-logs/` read-only | MISMATCH |
 | `POST /audit/logs/export/` | — | MISSING BACKEND |
-| production-style `attachments/` | `core/attachments/` | MISMATCH (path) |
+| production-style `attachments/` | `/api/v1/attachments/` (alias) + `/api/v1/core/attachments/` | **MATCHED** (Phase A alias) |
 | tags | `core/tags/` routed | MISSING FRONTEND |
 
 ## Mock Data → Real Model Map (summary)
@@ -88,9 +89,10 @@ All **MISSING BACKEND** (no app/models). MSW source column shows where the contr
 |---|---|---|
 | identity/users.ts | identity.User | exists |
 | organization.ts (orgs, depts, teams, offices) | organization.* | exists |
-| organization Person | organization.Person | model exists |
-| Clients/Vendors, StudioBilling, Reports, Notifications | — | MISSING MODELS |
-| projects/shots/assets/tasks/versions/reviews/playlists/media/workflows/scheduling fixtures | — | MISSING MODELS (design per docs/03-domain/) |
+| organization Person | organization.Person | **MATCHED** via `PersonViewSet` (`people` + `persons`) |
+| Clients/Vendors, StudioBilling, Reports, Notifications | — | **MISSING MODELS** (deferred) |
+| projects/shots/assets | `production.Project`/`Shot`/`Asset` | **MATCHED** (Phase D.1) |
+| tasks/versions/reviews/playlists/media/workflows/scheduling fixtures | — | **MISSING MODELS** (design per `docs/03-domain/`) |
 | audit logs | audit.AuditLog | exists |
 | pipeline settings singleton | settings.SystemSetting/OrganizationSetting | partial fit |
 | intelligence datasets | — | not REST-exposed; no backend target |
@@ -98,8 +100,7 @@ All **MISSING BACKEND** (no app/models). MSW source column shows where the contr
 ## Counts
 
 - Frontend-called endpoints inventoried: ~150 distinct method/path pairs.
-- MATCHED: ~25 (identity users core + organization v2 CRUD).
-- MISMATCH: ~12 (auth tree, settings tree, audit, attachments path, permissions filters).
-- MISSING BACKEND: ~110 (all of production, legacy organization aliases, identity
-  extensions, platform).
-- MISSING MODELS: ~22 entities (see domains/production.md §13 and above).
+- MATCHED: ~95 (auth 4 + attachments 2 + org v2 custom actions 10 + legacy aliases 5 + person 2 + org pagination + production all slices ≈ 40).
+- MISMATCH: ~3 (settings aggregate, audit POST).
+- MISSING BACKEND: ~50 (`clients/vendors/billing` no models, remaining identity extensions like `users/suspend`, platform).
+- MISSING MODELS: ~5 (`Client`/`Vendor`/`StudioBilling` deferred; core production entities all done).

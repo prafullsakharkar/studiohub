@@ -40,10 +40,11 @@ Errors:
 - `401 { "detail": "No active account found with the given email" }`
 - `400 { "detail": "…" }`
 
-Backend status: **MISMATCH**. Current implementation is `POST /api/v1/identity/login/`
-returning `{access, refresh, session:{id, session_key}}` and no nested `user`.
-Required adaptation: route `/auth/*` paths and wrap the token pair in `tokens`, embed the
-serialized user.
+Backend status: **MATCHED via compat layer** (`apps/identity/api/views/auth_compat.py` mounted at
+`/api/v1/auth/` in `config/v1_urls.py`). The identity canonical endpoints remain at
+`/api/v1/identity/login/` etc. returning `{access, refresh, session}`; the compat layer
+wraps them to frontend shapes and serializes the user via
+`apps/identity/api/serializers/frontend_user.py::serialize_frontend_user`.
 
 ### POST /api/v1/auth/refresh/
 
@@ -52,7 +53,11 @@ Request `{ "refresh": "<token>" }` → Response `200 { "access": "<token>" }`.
 The frontend calls this automatically on any `401` (single-flight queue, one retry of the
 original request; logout on refresh failure). Refresh requests set `retry: 0`.
 
-Backend status: **MISMATCH** (path + response must be exactly `{access}`).
+Backend status: **MATCHED** — compat layer calls `AuthenticationService.refresh` then
+projects to `{access}` only. Fixed `JWTService.rotate_refresh_token` to resolve user via
+`api_settings.USER_ID_CLAIM` (was `refresh.user` AttributeError) and added missing
+`UserSessionValidator.validate_refresh/validate_logout` stubs; `SIMPLE_JWT` now imported
+in `config/settings/base.py`.
 
 ### POST /api/v1/auth/logout/
 
@@ -60,15 +65,18 @@ Authenticated. Expected `200 { "detail": "…" }`. Frontend clears local tokens 
 of server outcome. Backend should blacklist/rotate-revoke the refresh token
 (`TokenService` already supports this).
 
+Backend status: **MATCHED** — `AuthLogoutView` at `/api/v1/auth/logout/` with
+`JWTAuthentication` + `IsAuthenticated` calls `LogoutSerializer` → `AuthenticationService.logout`.
+
 ### GET /api/v1/auth/me/
 
 Returns the current serialized `User` (same shape as login's `user`). Used by
 `AuthProvider.initAuth()` at bootstrap when a stored access token exists; any failure
 clears tokens.
 
-Backend status: **MISMATCH** — a `MeAPIView` exists in
-`apps/identity/api/views/authentication/` but is not wired into
-`apps/identity/api/urls.py`; `users/me/` exists as a UserViewSet action.
+Backend status: **MATCHED** — `AuthMeView` at `/api/v1/auth/me/` returns
+`serialize_frontend_user(request.user, request)`. Fixed `BaseAPIView` auth (was
+`authentication_classes=()` blocking JWT); now uses `JWTAuthentication` for `me`/`logout`.
 
 ## Token Lifecycle
 

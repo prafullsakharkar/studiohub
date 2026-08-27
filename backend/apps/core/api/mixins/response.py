@@ -40,18 +40,20 @@ class ResponseMixin:
 
 class ResponseEnvelopeMixin(ResponseMixin):
     """
-    Wrap every CRUD action response in the standard API envelope.
+    Consistent CRUD response overrides for ModelViewSets.
 
-    ViewSets using this mixin consistently return:
+    .. deprecated::
+        Historic name. Despite the name, this mixin does **not** wrap
+        responses in an envelope: it inherits ``ResponseMixin``, which emits
+        raw bodies matching the frontend API contract (see
+        ``docs/api/pagination.md`` / ``docs/api/errors.md``). List responses
+        are paginated via the viewset's pagination class; create/update/
+        retrieve return the serialized object directly.
 
-        {
-            "success": True,
-            "status_code": ...,
-            "message": ...,
-            "data": ...,
-            "meta": ...,
-            "errors": None,
-        }
+    Provides:
+
+        - standard list/retrieve/create/update/destroy flow overrides
+        - soft-delete for models exposing ``is_deleted``
     """
 
     resource_name = "Resource"

@@ -17,6 +17,7 @@ from apps.core.services.email import EmailService
 from apps.core.services.event import EventService
 from apps.core.services.lifecycle import LifecycleService
 from apps.core.services.metadata import MetadataService
+from apps.core.services.notifications import NotificationService
 from apps.core.services.ordering import OrderingService
 from apps.core.services.publishable import PublishableService
 from apps.core.services.search import SearchService
@@ -36,6 +37,7 @@ __all__ = [
     "EventService",
     "LifecycleService",
     "MetadataService",
+    "NotificationService",
     "OrderingService",
     "PublishableService",
     "SearchService",

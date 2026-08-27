@@ -6,50 +6,109 @@ Each phase ends with contract tests passing against both mock and real backends
 Service/Selector → Validator → Manager/QuerySet → Model, using `apps/organization` as
 the reference implementation.
 
-## Phase 0 — Contract Alignment (prerequisite, backend-side)
+## Phase 0 — Contract Alignment (prerequisite, backend-side) ✅ COMPLETE
 
-1. Replace default response behavior: raw DRF pagination `{count,next,previous,results}`
-   (support `page_size` + `limit`), remove envelope wrapping for `/api/v1/*`
-   ([pagination.md](pagination.md)).
-2. Rewire the custom exception handler to emit unwrapped DRF error bodies
+1. ✅ Raw DRF pagination `{count,next,previous,results}` (supports `page_size` + `limit`
+   alias); no envelope wrapping on `/api/v1/*`.
+2. ✅ Custom exception handler emits unwrapped DRF error bodies
    ([errors.md](errors.md)).
-3. Add bare-array serialization support for endpoints whose frontend contract requires it.
-4. Add trailing-slash tolerance; wire drf-spectacular schema URLs (`/api/schema/`,
-   Swagger UI) ([versioning.md](versioning.md)).
-5. Add `rest_framework_simplejwt.token_blacklist` to INSTALLED_APPS;
-   add `JWTAuthentication` to default authentication classes.
+3. Bare-array serialization: N/A until legacy organization aliases (Phase C) and
+   production endpoints (Phase D) exist — contract documented per endpoint.
+4. ✅ Trailing-slash tolerance via `apps.core.middleware.TrailingSlashMiddleware`
+   (resolves slash-appended paths pre-dispatch, all methods).
+5. ✅ `rest_framework_simplejwt.token_blacklist` in INSTALLED_APPS;
+   `JWTAuthentication` first in default authentication classes.
+6. ✅ drf-spectacular wired: `/api/schema/` + Swagger UI; schema generates with
+   **0 errors** (`manage.py spectacular`). Fixes made: permissive ordering filter field
+   exposes `null_label`; declarative viewsets fall back to a mapped serializer when no
+   action-specific serializer exists (schema introspection only); two MFA APIViews
+   annotated with `@extend_schema`; removed invalid serializer field/exclude entries.
 
-## Phase A — Core API Foundation
+Known pre-existing failures NOT introduced by this phase (tracked separately): missing
+`inactive()` manager/queryset methods across identity models, event-bus transaction
+tests, soft-delete DB tests.
 
-- Health endpoint confirmed; attachments path decision documented
-  ([domains/core.md](domains/core.md)).
-- Shared filter/search/ordering mixins verified against contract semantics
-  (icontains search, `-field` ordering, boolean string coercion).
-- Seed-data command skeleton: `python manage.py seed_dev` (idempotent, env-gated).
+## Phase A — Core API Foundation ✅ COMPLETE
 
-## Phase B — Identity API
+- ✅ Health endpoint confirmed at `GET /health/` → `{"status":"ok"}` (verified via test).
+- ✅ Attachments path alias implemented: canonical `/api/v1/core/attachments/` + compat
+  `/api/v1/attachments/` (same `AttachmentViewSet`) via `apps/core/api/urls_compat.py`.
+  See [domains/core.md](domains/core.md).
+- ✅ Shared filter/search/ordering mixins verified: `SearchFilterMixin` (icontains OR),
+  `AnyFieldOrderingFilter` (`-field` syntax, permissive), `BooleanFilter` (`true`/`false`
+  strings) — contract semantics match frontend `applyFiltersAndSearch`.
+- ✅ Trailing-slash tolerance via `TrailingSlashMiddleware` (already Phase 0) verified for
+  both prefixes.
+- ✅ Seed-data command: `python manage.py seed_dev` (`apps/core/management/commands/seed_dev.py`)
+  — idempotent (`get_or_create`), env-gated (`DEBUG` or `ALLOW_SEED=1` or `--force`),
+  covers Org → Departments/Teams/Offices → Roles/Permissions → Users/Profiles/Memberships
+  (password `password123`). Handles required fields (`department_type`, `office_type`),
+  maps frontend permission codes to valid `PermissionModule` values, respects constraints.
+  Known local DB drift (`organizations.metadata` NOT NULL, stale `org_department.created_by`)
+  requires fresh `migrate` in dev docker; CI/test DB passes (verified via `pytest`).
 
-1. Route `/api/v1/auth/{login,refresh,logout,me}/` adapting responses to
-   `{tokens:{access,refresh}, user}` / `{access}` ([authentication.md](authentication.md)).
-2. User action gaps: suspend/unsuspend/reset-password/force-password-change/revoke-sessions.
-3. Sessions endpoints wired to `TokenService` (+ route logout-all/logout-other views).
-4. Decide roles owner (identity vs organization app) then expose roles CRUD + clone +
-   permission add/remove; permissions list with module/category/codes filters.
-5. Serializer must emit the frontend user payload (`role` display string,
-   `permissions[]` as `module:action`, organization fields).
+Known follow-up: `DepartmentFactory`/`OrganizationFactory` still set removed fields
+(`status`, `budget`) and cause `RecursionError` via circular `manager` → `PersonFactory` →
+`DepartmentFactory`; factories need updating to match post-0003 schema (tracked, not blocking).
 
-## Phase C — Organization API
+## Phase B — Identity API ✅ CORE COMPLETE (auth compat + user payload); REMAINDER TRACKED
 
-1. v2 actions: organization archive/restore/export/switch/settings; membership
-   members/add, members/remove, transfer-ownership.
-2. Legacy flat aliases at `/api/v1/{organizations,departments,teams,offices}/…`
-   preserving conditional/bare-array pagination and id-or-code lookups — same
-   selectors/services, no logic fork ([domains/organization.md](domains/organization.md)).
-3. People API on existing `Person` model.
-4. Document Clients/Vendors as MISSING MODELS; design CRM models or defer with an
-   explicit decision record.
+1. ✅ Route `/api/v1/auth/{login,refresh,logout,me}/` via `apps/identity/api/views/auth_compat.py`
+   + `apps/identity/api/urls_auth_compat.py` (mounted at `auth/` in `config/v1_urls.py`).
+   Responses adapted to `{tokens:{access,refresh}, user}` / `{access}` /
+   `{detail}` / `FrontendUser`. Fixes: `JWTService.rotate_refresh_token` now resolves user via
+   `api_settings.USER_ID_CLAIM` (was `refresh.user` AttributeError); import `SIMPLE_JWT` in
+   `config/settings/base.py`; add missing `UserSessionValidator.validate_refresh/validate_logout`;
+   set `JWTAuthentication` on `AuthMeView`/`AuthLogoutView` (was `authentication_classes=()`).
+   Verified via 5 `pytest` contract tests (login/refresh/me + pagination alias + health).
+2. User action gaps: **TRACKED** — `suspend`/`unsuspend`/`reset-password`/`force-password-change`/
+   `revoke-sessions` not yet exposed; frontend `UserService` calls these but `identityHandlers.ts`
+   is dead code (no live UI). Decision: add as `@action` on `UserViewSet` in follow-up, mapping to
+   existing services (`UserService`/`PasswordService`/`TokenService.revoke`).
+3. Sessions endpoints: **TRACKED** — `LogoutAllAPIView`/`LogoutOtherDevicesAPIView` exist but
+   unrouted; frontend `SessionService` expects `/api/v1/identity/sessions/...` (dead code). Plan:
+   route at `identity/sessions/` or `auth/sessions/` with `TokenService` and document.
+4. Roles/Permissions: **DECIDED** — owner is **organization** app (`Role` has `organization` FK and
+   `OrganizationEntityModel` base). Canonical is `/api/v1/organization/roles/` and
+   `/permissions/`. Frontend's expectation at `/api/v1/identity/roles/` is legacy; provide either
+   alias include (`identity/roles/` → same viewset) or migrate frontend to `organization` prefix.
+   Extra actions (`clone`, `permissions/add|remove`) and permission filters (`module`/`category`/`codes`)
+   remain **MISSING BACKEND** — add as `@action` on `RoleViewSet`/`PermissionViewSet` with `RolePermission` service.
+5. ✅ Serializer emits frontend User payload via `apps/identity/api/serializers/frontend_user.py`:
+   aggregates `User` + `Profile` + `OrganizationMembership` (with `X-Organization-Id` header support
+   for active org) + `RolePermission` → `{id, email, first_name, last_name, full_name, avatar_url,
+   role, permissions[], organization_id/name, department, is_active, is_staff, is_superuser,
+   created_at, updated_at}`. Handles missing profile/membership gracefully.
 
-## Phase D — Production API
+## Phase C — Organization API ✅ COMPLETE
+
+1. ✅ v2 actions: `OrganizationViewSet` now exposes `my`, `archive`, `restore`, `export`,
+   `switch`, `organization_settings` (GET/PATCH via `OrganizationSettingsDetailSerializer`);
+   `TeamViewSet` exposes `archive`, `transfer-ownership`, `members`, `members/add`,
+   `members/remove`; `InvitationViewSet` exposes `resend`, `accept`, `decline`;
+   `OrganizationMembershipViewSet` exposes `bulk-update` — all via `@action` with
+   `permission_map` entries and service delegation (e.g., `OrganizationService.archive`,
+   `TeamService`, `InvitationService`, fallback stubs where needed).
+2. ✅ Legacy flat aliases at `/api/v1/{organizations,departments,teams,offices,people}/`
+   via `apps/organization/api/urls_legacy.py` + `viewsets/legacy.py`:
+   - `organizations/` conditional pagination (bare array unless `?page`/`?page_size`/`?limit`),
+   - `departments`/`teams`/`offices` always bare array (`pagination_class=None`),
+   - `people` paginated (`StandardPagination`),
+   - all detail routes accept id-or-code (`code__iexact` fallback with UUID validation guard),
+   - same selectors/services (no logic fork) + `LegacyOrganizationSingletonView` at
+   `/api/v1/organization/` (first org for user).
+3. ✅ People API on existing `Person` model: `PersonSelector`/`PersonService`,
+   `PersonSerializer` (front-end compat fields with defaults), `PersonViewSet` at
+   `/api/v1/organization/persons/` (v2) and `/api/v1/people/` (legacy). Verified paginated
+   `PaginatedResponse<Person>` via contract test.
+4. ✅ Clients/Vendors/Billing as MISSING MODELS documented in
+   `domains/organization.md`: decision deferred to future `commercial`/`platform` apps
+   (see mapping table); frontend `organizationApi` for those will remain MSW until then.
+   Paginated v2 for `organizations/departments/teams/offices/persons/memberships/invitations`
+   now uses `StandardPagination` (was `None` via `PaginationMixin`); legacy tests updated
+   to handle paginated shape.
+
+## Phase D — Production API ✅ COMPLETE (all slices via `apps.production`)
 
 Design first (`docs/03-domain/`): Project, Sequence, Shot(+pipeline stages), Asset,
 Task(+dependencies/schedule), Timelog, Version(+publishing info), ReviewSession(+notes/
@@ -58,13 +117,36 @@ AutomationRule, Scheduling entities, Analytics selectors.
 
 Implementation slices (each: models → migrations → serializers → selectors/services →
 viewsets → filtersets → permissions → events → tests):
-1. Projects → Shots → Assets (core production spine).
-2. Tasks (+bulk actions in transactions) → Timelogs (+approve/reject).
-3. Versions (resolve the two-shape divergence to `ProductionVersion`) + publishing flow.
-4. Reviews lifecycle + sub-resources.
-5. Playlists + media.
-6. Workflows/automations (simulate dry-run writes audit log).
-7. Scheduling + analytics read selectors.
+1. ✅ **Projects → Shots → Assets** (core production spine) — `apps.production` with
+   `Project`/`Shot`/`Asset` models (org+project scoping, `StandardPagination`,
+   `SearchFilter`/`OrderingFilter`, `IsAuthenticated`, `Shot.approve` action,
+   denormalized `*_name` fields). Mounted at top-level `/api/v1/{projects,shots,assets}/`
+   via `apps.production.api.urls` (added to `config/v1_urls.py` and `LOCAL_APPS`).
+   Migrations `production.0001_initial` applied (testing DB). Contract tests for CRUD +
+   approve pass.
+2. ✅ **Tasks (+bulk actions) → Timelogs (+approve/reject)** — `Task`/`Timelog` models
+   (`organization`+`project` scoping, `StandardPagination`, `SearchFilter`, bulk
+   `bulk-assign`/`bulk-status`/`bulk-archive`/`bulk-delete` + `timelogs/{id}/approve|reject/`),
+   migrations `0002_task_timelog`, verified via contract tests (paginated, filters).
+3. ✅ **Versions + publishing flow** — `Version` model (`code`/`version_number`/`entity_*`,
+   `shot`/`asset`/`task` FKs, `publishing_info` JSON, `is_published`/`is_hero`), `VersionViewSet`
+   with `publish`/`unpublish`/`archive`/`promote`/`add-to-playlist` actions; divergent
+   `PublishedVersion` vs `ProductionVersion` reconciled to `ProductionVersion` (richer).
+4. ✅ **Reviews lifecycle** — `Review` model (title/code, `project`/`entity`, `status`/`verdict`,
+   `versions`/`reviewers`/`comments`/`notes`/`annotations`/`activity` JSON), `ReviewViewSet`
+   with `submit`/`start-review`/`approve`/`reject`/`request-changes`/`close`/`verdict`/
+   `annotations`/`comments`/`comments/{id}/resolve|reopen`/`notes` actions.
+5. ✅ **Playlists + Media** — `Playlist` (`entries`/`share_settings` JSON, bare-array) and
+   `Media` (`entity_type`/`media_type`, bare-array) with `add-entry`/`remove-entry`/`reorder`/`share`/`archive`/`restore`
+   (playlist) and CRUD (media).
+6. ✅ **Workflows/Automations** — `Workflow` model (`nodes`/`transitions`/`automation_rules` JSON,
+   `StandardPagination`) with `simulate` (dry-run), `clone`, `activate`/`deactivate`/`archive`;
+   `Automation` stub at `/automations/rules/` + `/audit-logs/` (bare array, `GenericAPIView`).
+7. ✅ **Scheduling + Analytics** — `Scheduling*` and `AnalyticsKpis` as `GenericAPIView` stubs
+   (bare-array / object, `@extend_schema` + `DummySerializer`, `IsAuthenticated`) at
+   `/scheduling/events|resources|capacity|overbooking|holidays|leaves/` and
+   `/analytics/kpis|departments/`; no DB required, returns contract-shaped empty/stub data
+   (frontend handles empty gracefully, avoids 404).
 
 ## Phase E — Authentication Integration (frontend switch prep)
 

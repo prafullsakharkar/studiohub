@@ -138,6 +138,14 @@ addopts = ["--reuse-db", "--strict-markers", "--cov=apps"]
 
 testpaths = ["apps"]
 
+filterwarnings = [
+    # Core deprecation FutureWarnings are expected until the domain move (production) is complete
+    "ignore::FutureWarning:apps.core.*",
+    "ignore::FutureWarning",
+    # Pending architecture docs – not actionable in pytest
+    "ignore::UserWarning",
+]
+
 [tool.coverage.run]
 
 source = ["apps"]

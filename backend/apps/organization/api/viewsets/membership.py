@@ -2,6 +2,11 @@
 OrganizationMembership API viewsets.
 """
 
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from apps.core.api.pagination import StandardPagination
+
 from apps.organization.api.filtersets.membership import OrganizationMembershipFilterSet
 from apps.organization.api.serializers.membership import (
     OrganizationMembershipCreateSerializer,
@@ -27,6 +32,8 @@ class OrganizationMembershipViewSet(OrganizationEntityViewSet):
     service_class = OrganizationMembershipService
 
     filterset_class = OrganizationMembershipFilterSet
+
+    pagination_class = StandardPagination
 
     search_fields = ()
 
@@ -55,4 +62,24 @@ class OrganizationMembershipViewSet(OrganizationEntityViewSet):
         "update": (OrganizationMembershipPermissions.UPDATE,),
         "partial_update": (OrganizationMembershipPermissions.UPDATE,),
         "destroy": (OrganizationMembershipPermissions.DELETE,),
+        "bulk_update": (OrganizationMembershipPermissions.UPDATE,),
     }
+
+    @action(detail=False, methods=["post"], url_path="bulk-update")
+    def bulk_update(self, request, *args, **kwargs):
+        payload = request.data.get("memberships", [])
+        updated = 0
+        for item in payload:
+            mid = item.get("id")
+            data = item.get("data", {})
+            if not mid:
+                continue
+            try:
+                instance = self.get_queryset().get(pk=mid)
+            except OrganizationMembership.DoesNotExist:
+                continue
+            serializer = OrganizationMembershipUpdateSerializer(instance, data=data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            updated += 1
+        return Response({"updated": updated})

@@ -25,6 +25,7 @@ LOCAL_APPS = [
     "apps.organization",
     "apps.settings",
     "apps.audit",
+    "apps.production",
 ]
 
 INSTALLED_APPS = (

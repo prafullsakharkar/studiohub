@@ -64,26 +64,11 @@ Plain objects, never wrapped:
   `/api/v1/settings/pipeline/`, review/version/task/etc. detail routes,
   workflow action responses (`simulate/`, `clone/`, …), playlist action responses.
 
-## CRITICAL: Current Backend Does NOT Match
+## Backend Status: ALIGNED (Phase 0 complete)
 
-The Django default (`StandardPagination` in `apps/core/api/pagination/base.py` +
-`ResponseEnvelopeMixin`) produces:
-
-```json
-{
-  "success": true,
-  "status_code": 200,
-  "message": "…",
-  "data": ["…"],
-  "meta": { "pagination": { "page": 1, "page_size": 25, "total": 100, "pages": 4,
-             "next_url": "…", "previous_url": null } },
-  "errors": null
-}
-```
-
-This is **incompatible** with the frontend (`ApiClient.ts` parses `.json<T>` directly —
-no unwrapping). Resolution per the compatibility rule: **adapt Django** — either replace
-the default pagination class with a plain DRF `PageNumberPagination` producing
-`{count,next,previous,results}` and remove envelope wrapping for API v1 responses, or
-introduce a per-router setting that keeps the envelope for internal consumers only. Do
-not change the frontend.
+The Django default (`StandardPagination` in `apps/core/api/pagination/`) now emits the
+raw DRF envelope `{count, next, previous, results}` — no `{success,data,meta}` wrapper
+anywhere on `/api/v1/*` — and accepts `limit` as an alias for `page_size`
+(`BasePagination.get_page_size`). ViewSets inherit raw `ResponseMixin` behavior
+(the historically named `ResponseEnvelopeMixin` also emits raw bodies). Verified by
+`apps/core/tests/api/` viewset contract tests.

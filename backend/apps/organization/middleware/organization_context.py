@@ -38,11 +38,11 @@ def resolve_organization_context(request, *, force=False):
     request.organization = None
     request.membership = None
 
-    org_ref = getattr(
-        request,
-        "organization",
-        None,
-    ) or request.headers.get("X-Organization")
+    org_ref = (
+        getattr(request, "organization", None)
+        or request.headers.get("X-Organization")
+        or request.headers.get("X-Organization-Id")
+    )
 
     user = getattr(request, "user", None)
 

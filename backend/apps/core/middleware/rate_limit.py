@@ -98,12 +98,11 @@ class RateLimitMiddleware(BaseMiddleware):
         return request.META.get('REMOTE_ADDR', '127.0.0.1')
     
     def _get_rate_limit_response(self) -> JsonResponse:
-        """Return a 429 Too Many Requests response."""
-        return JsonResponse(
-            data={
-                "error": "rate_limit_exceeded",
-                "message": "Too many requests. Please try again later.",
-                "status_code": 429,
-            },
+        """Return a 429 Too Many Requests response in DRF contract shape."""
+        response = JsonResponse(
+            data={"detail": "Too many requests. Please try again later."},
             status=429,
         )
+        # Let frontend know when to retry (per Retry-After spec)
+        response["Retry-After"] = str(getattr(self, 'window', 60))
+        return response

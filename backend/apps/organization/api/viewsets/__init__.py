@@ -12,6 +12,7 @@ from .membership import OrganizationMembershipViewSet
 from .office import OfficeViewSet
 from .organization import OrganizationViewSet
 from .organization_settings import OrganizationSettingsViewSet
+from .person import PersonViewSet
 from .personal_access_token import PersonalAccessTokenViewSet
 from .permission import PermissionViewSet
 from .position import PositionViewSet
@@ -46,4 +47,5 @@ __all__ = [
     "PermissionViewSet",
     "UserRoleViewSet",
     "RolePermissionViewSet",
+    "PersonViewSet",
 ]

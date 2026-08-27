@@ -50,8 +50,13 @@ class TestOrganizationViewSet:
 
         data = response.json()
 
-        assert isinstance(data, list)
-        assert len(data) == 3
+        # v2 is now paginated (StandardPagination) per frontend contract
+        if isinstance(data, dict) and "results" in data:
+            assert data["count"] == 3
+            assert len(data["results"]) == 3
+        else:
+            assert isinstance(data, list)
+            assert len(data) == 3
 
     @pytest.mark.django_db
     def test_list_organizations_unauthenticated(self, api_client):
@@ -208,8 +213,8 @@ class TestOrganizationViewSet:
         assert response.status_code == 200
 
         data = response.json()
-        assert isinstance(data, list)
-        assert len(data) == 2
+        items = data["results"] if isinstance(data, dict) and "results" in data else data
+        assert len(items) == 2
 
     @pytest.mark.django_db
     def test_filter_organizations_by_type(self, staff_client):
@@ -226,8 +231,8 @@ class TestOrganizationViewSet:
         assert response.status_code == 200
 
         data = response.json()
-        assert isinstance(data, list)
-        assert len(data) == 1
+        items = data["results"] if isinstance(data, dict) and "results" in data else data
+        assert len(items) == 1
 
     @pytest.mark.django_db
     def test_order_organizations(self, staff_client):
@@ -242,9 +247,9 @@ class TestOrganizationViewSet:
         assert response.status_code == 200
 
         data = response.json()
-        assert isinstance(data, list)
-        assert len(data) == 3
-        assert data[0]["name"] == "A Organization"
+        items = data["results"] if isinstance(data, dict) and "results" in data else data
+        assert len(items) == 3
+        assert items[0]["name"] == "A Organization"
 
     @pytest.mark.django_db
     def test_filter_by_status(self, staff_client):
@@ -259,8 +264,8 @@ class TestOrganizationViewSet:
         assert response.status_code == 200
 
         data = response.json()
-        assert isinstance(data, list)
-        assert len(data) == 2
+        items = data["results"] if isinstance(data, dict) and "results" in data else data
+        assert len(items) == 2
 
     @pytest.mark.django_db
     def test_filter_by_country(self, staff_client):
@@ -275,8 +280,8 @@ class TestOrganizationViewSet:
         assert response.status_code == 200
 
         data = response.json()
-        assert isinstance(data, list)
-        assert len(data) == 2
+        items = data["results"] if isinstance(data, dict) and "results" in data else data
+        assert len(items) == 2
 
     @pytest.mark.django_db
     def test_admin_can_view(self, admin_client):

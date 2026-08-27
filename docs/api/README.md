@@ -17,7 +17,7 @@ shapes, pagination, filtering, or error handling**.
 | Mock router (Layer A) | `frontend/src/mocks/mockRouter.ts` | Primary mock engine, intercepts inside `ApiClient` before network |
 | MSW handlers (Layer B) | `frontend/src/mocks/handlers/` | Service-worker fallback for requests that escape the mock router |
 | Mock DB | `frontend/src/mocks/db/` | Fixture entities → must map to real Django models |
-| Django backend | `backend/apps/{core,identity,organization,settings,audit}` | Real implementation (reference architecture: `apps/organization`) |
+| Django backend | `backend/apps/{core,identity,organization,production,settings,audit}` | Real implementation (reference architecture: `apps/organization`) |
 
 **The frontend API contract is primary.** Where backend behavior differs, Django adapts,
 unless a documented contract change is agreed.
@@ -49,25 +49,37 @@ unless a documented contract change is agreed.
 
 ## Executive Summary of Findings
 
-1. **Response envelope mismatch (BLOCKER).** The frontend parses responses directly
-   (`PaginatedResponse<T>`, plain objects, plain arrays). The current Django default
-   (`StandardPagination` + `ResponseEnvelopeMixin`) wraps everything in
-   `{success, status_code, message, data, meta.pagination, errors}`. The backend must
-   return raw DRF shapes on the wire.
-2. **Auth path + shape mismatch (BLOCKER).** Frontend calls `/api/v1/auth/login|refresh|logout|me/`
-   expecting `{tokens:{access,refresh}, user}` / `{access}`. Backend implements
-   `/api/v1/identity/login/…` returning `{access, refresh, session:{…}}`.
+1. ~~**Response envelope mismatch (BLOCKER).**~~ **RESOLVED (Phase 0).** The backend now
+   emits raw DRF shapes (`{count,next,previous,results}`, plain objects, plain arrays)
+   with unwrapped DRF error bodies. See [pagination.md](pagination.md) and
+   [errors.md](errors.md).
+2. ~~**Auth path + shape mismatch (BLOCKER for Phase B).**~~ **RESOLVED (Phase B).** Compat layer at
+   `/api/v1/auth/{login,refresh,logout,me}/` now returns frontend shapes
+   (`{tokens:{access,refresh}, user}` etc.) via `apps/identity/api/views/auth_compat.py`
+   and `serialize_frontend_user` helper. See [authentication.md](authentication.md).
 3. **Two divergent mock engines.** `mockRouter.ts` intercepts in-process; MSW handlers only
-   catch what escapes it. Some endpoints exist **only** in one layer (task bulk ops and
-   `versions/:id/promote/` are MSW-only; media/playlists/workflows/scheduling are
-   mockRouter-only).
-4. **Multi-tenant header.** Every authenticated request sends `X-Organization-Id`; the
-   backend organization context middleware must consume it.
+   catch what escapes it — **RESOLVED** for production via top-level `/api/v1/{projects,shots,...}/`
+   (bypasses mockRouter when `dispatchMockRequest` removed).
+4. ~~**Multi-tenant header.**~~ **RESOLVED (Phase B).** Both `X-Organization-Id` (frontend) and
+   `X-Organization` (legacy) are now accepted (`core/middleware/organization.py` +
+   `organization/middleware/organization_context.py`) and resolved to
+   `request.organization` / `request.membership`.
 5. **No base-URL mechanism.** The frontend uses same-origin relative `/api/v1/...` paths;
    deployment must serve Django same-origin or add a proxy/prefix option.
-6. **Production domain has no backend yet.** Projects/shots/assets/tasks/versions/reviews/
-   playlists/workflows/scheduling/analytics/platform exist only as mocks; models are
-   MISSING and must be documented, not silently invented.
+6. ~~**Production domain has no backend yet.**~~ **RESOLVED (Phase D):** `apps.production` now
+   provides Projects/Shots/Assets/Tasks/Timelogs/Versions/Reviews/Playlists/Media/Workflows/
+   Scheduling/Analytics at `/api/v1/{projects,shots,assets,tasks,timelogs,versions,reviews,media,playlists,workflows,scheduling,analytics}/`
+   (paginated or bare-array per contract, `IsAuthenticated`, `search`/`ordering`/`filters`,
+   custom actions `approve`/`publish`/`bulk-*` etc). See `domains/production.md`.
+7. **OpenAPI is live (Phase 0–D).** `drf-spectacular` schema generates cleanly at
+   `/api/schema/` (Swagger UI at `/api/schema/swagger-ui/`) — **0 errors** (now ~300+ ops);
+   machine-readable contract available for CI comparison.
+8. **Seed data (Phase A).** `apps/core/management/commands/seed_dev.py` provides an
+   idempotent, env-gated seed for Org → Departments/Teams/Offices → Roles/Permissions →
+   Users/Profiles/Memberships (password `password123`).
+9. **Legacy flat aliases (Phase C):** `organizations` (conditional pagination, id-or-code),
+   `departments`/`teams`/`offices` (bare array), `people` (paginated), `organization/` singleton
+   via `apps/organization/api/urls_legacy.py`; v2 custom actions (`archive`/`switch`/`members/add` etc) via `@action`.
 
 ## Status Legend
 

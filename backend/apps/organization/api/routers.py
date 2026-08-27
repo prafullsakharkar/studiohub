@@ -15,6 +15,7 @@ from apps.organization.api.viewsets import (
     OrganizationSettingsViewSet,
     OrganizationViewSet,
     PermissionViewSet,
+    PersonViewSet,
     PersonalAccessTokenViewSet,
     PositionViewSet,
     RolePermissionViewSet,
@@ -157,6 +158,12 @@ router.register(
     "role-permissions",
     RolePermissionViewSet,
     basename="role_permission",
+)
+
+router.register(
+    "persons",
+    PersonViewSet,
+    basename="person",
 )
 
 urlpatterns = router.urls

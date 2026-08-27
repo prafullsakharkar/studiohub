@@ -36,6 +36,7 @@ from .components.cors import (
 )
 from .components.database import DATABASES
 from .components.drf import REST_FRAMEWORK, SPECTACULAR_SETTINGS
+from .components.jwt import SIMPLE_JWT
 from .components.internationalization import (
     LANGUAGE_CODE,
     LOCALE_PATHS,

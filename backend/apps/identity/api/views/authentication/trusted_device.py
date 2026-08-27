@@ -1,13 +1,16 @@
-from apps.identity.services.mfa import MFAService
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 
 from apps.core.api.builders.response import ResponseBuilder
 from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import (
     TrustedDeviceRevokeSerializer,
 )
+from apps.identity.services.mfa import MFAService
 
 
 class TrustedDeviceListAPIView(BaseAPIView):
+    @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request, *args, **kwargs):
         devices = MFAService.list_devices(
             user=request.user,

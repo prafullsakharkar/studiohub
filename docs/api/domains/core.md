@@ -10,16 +10,17 @@ just because models exist.
 ### Attachments
 
 Backend: `AttachmentViewSet` at `/api/v1/core/attachments/` (+ `/{uuid}/`), full CRUD,
-`IsAuthenticatedPermission`, `ResponseEnvelopeMixin` (**must be removed** per
-[pagination.md](../pagination.md)/[errors.md](../errors.md)).
+`IsAuthenticatedPermission`, raw `ResponseMixin` (envelope removed in Phase 0).
 
-Frontend contract: `/api/v1/attachments/` — `GET` list (**bare array**, filters:
-`entity_type`, `entity_id`, `category`, `search`), `POST` create, `GET/{id}/`,
-`DELETE /{id}/`. No PATCH.
+Frontend contract: `/api/v1/attachments/` — `GET` list (**paginated** `{count,next,previous,results}`
+via `StandardPagination`; filters: `entity_type`, `entity_id`, `category`, `search`), `POST` create,
+`GET/{id}/`, `DELETE /{id}/`. No PATCH.
 
-Status: **MISMATCH** (path + envelope). Decision required: keep frontend path and adapt
-routing, or move frontend to `/api/v1/core/attachments/`. Until production attachments UI
-is wired to HTTP there is no live consumer; resolve when implementing production.
+Status: **MATCHED via alias** — canonical remains `/api/v1/core/attachments/`; compat alias
+at `/api/v1/attachments/` via `apps/core/api/urls_compat.py` (mounted in `config/v1_urls.py`) exposes
+same viewset under both prefixes. Both are paginated (frontend's earlier bare-array expectation
+was updated to paginatedShape; hook in `useAttachments` defensively handles arrays). Verified in
+OpenAPI schema (`/api/v1/attachments/` and `/api/v1/core/attachments/` both listed, 0 errors).
 
 ### Tags
 

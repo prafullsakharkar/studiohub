@@ -163,3 +163,10 @@ class RolePermissionPermissions:
     GRANT = "role_permission.grant"
     REVOKE = "role_permission.revoke"
     UPDATE = "role_permission.update"
+
+
+class PersonPermissions:
+    VIEW = "person.view"
+    CREATE = "person.create"
+    UPDATE = "person.update"
+    DELETE = "person.delete"

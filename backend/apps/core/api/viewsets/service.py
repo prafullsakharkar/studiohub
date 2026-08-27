@@ -42,9 +42,7 @@ class ServiceModelViewSet(
         Return the configured selector.
         """
         if self.selector_class is None:
-            raise ImproperlyConfigured(
-                f"{self.__class__.__name__} must define selector_class."
-            )
+            raise ImproperlyConfigured(f"{self.__class__.__name__} must define selector_class.")
 
         return self.selector_class
 
@@ -64,12 +62,25 @@ class ServiceModelViewSet(
         Resolve serializer by action.
         """
 
-        serializer = self.serializer_map.get(self.action)
+        # ``action`` is only set during request dispatch; schema generation
+        # introspects the view without one.
+        action = getattr(self, "action", None)
+        serializer = self.serializer_map.get(action)
 
         if serializer:
             return serializer
 
         if self.default_serializer_class:
             return self.default_serializer_class
+
+        if self.serializer_map and (action is None or action not in self.serializer_map):
+            # Schema generation (drf-spectacular) resolves serializers for
+            # every operation, including actions without a mapped serializer
+            # (e.g. ``destroy``, custom ``@action`` methods) and before
+            # dispatch (no action set). Fall back to the primary mapped
+            # serializer so OpenAPI introspection can succeed; runtime
+            # behavior for mapped actions is unchanged.
+            preferred = self.serializer_map.get("list")
+            return preferred or next(iter(self.serializer_map.values()))
 
         return super().get_serializer_class()

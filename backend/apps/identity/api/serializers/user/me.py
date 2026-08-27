@@ -15,7 +15,6 @@ class UserMeSerializer(
             "full_name",
             "is_email_verified",
             "last_seen",
-            "metadata",
             "created_at",
             "updated_at",
         )

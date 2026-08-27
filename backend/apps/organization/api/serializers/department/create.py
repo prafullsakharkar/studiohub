@@ -11,8 +11,6 @@ class DepartmentCreateSerializer(
 
         exclude = (
             "id",
-            "uuid",
-            "slug",
             "created_at",
             "updated_at",
             "created_by",

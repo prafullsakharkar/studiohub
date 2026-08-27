@@ -42,34 +42,21 @@ Rules:
 Client-side synthetic statuses (never sent by server): `0` network offline, `504` timeout
 (30s).
 
-## CRITICAL: Current Backend Does NOT Match
+## Backend Status: ALIGNED (Phase 0 complete)
 
-`apps.core.api.exceptions.custom_exception_handler` wraps all errors in:
+The custom handler (`apps.core.api.exceptions.custom_exception_handler`) returns raw DRF
+bodies: domain exceptions map to `{"detail": message}`, unhandled exceptions to
+`{"detail": "Internal server error."}` (500), and authentication failures are coerced to
+401. No envelope is emitted on `/api/v1/*`.
 
-```json
-{
-  "success": false, "status_code": 400,
-  "message": "Validation failed.",
-  "data": null, "meta": {},
-  "errors": { "name": ["This field is required."] }
-}
-```
+Remaining checklist:
 
-The frontend would read top-level keys as *field names* (e.g. it would treat
-`"success": false` as a field error for field `success`). Resolution: **adapt Django** —
-the v1 exception handler must emit raw DRF bodies (`detail` / `non_field_errors` /
-field maps) at the top level. Keep the envelope only if a non-API consumer needs it.
-
-Also note: domain exceptions (`apps/core/exceptions/base.py`,
-`{"error": {"code","message","details"}}`) are plain Python exceptions and currently fall
-through to the generic handler — they need explicit mapping to DRF shapes/status codes.
-
-## Backend Requirements Checklist
-
-- [ ] Custom exception handler returns unwrapped DRF error bodies.
-- [ ] `AuthenticationFailed`/`NotAuthenticated` → 401 (already coerced today).
-- [ ] PermissionDenied stays 403 when authenticated (already correct).
-- [ ] Domain exceptions mapped to statuses (conflict → 409, validation → 400, missing → 404).
-- [ ] Throttling/rate-limit middleware responses use `{ "detail": "…" }`.
-- [ ] 500 responses are JSON `{ "detail": "Internal server error." }` (never HTML) —
-      `StandardJSONRenderer` already helps here.
+- [x] Custom exception handler returns unwrapped DRF error bodies.
+- [x] `AuthenticationFailed`/`NotAuthenticated` → 401.
+- [x] PermissionDenied stays 403 when authenticated.
+- [ ] Domain exceptions mapped to granular statuses (409 conflicts, state-machine
+      violations) — Phase H (some mapping already exists via `BaseDomainException`
+      → `{"detail": …}`).
+- [ ] Rate-limit middleware (`RateLimitMiddleware`) responses verified to use
+      `{ "detail": "…" }` — Phase H.
+- [x] 500 responses are JSON, never HTML (`StandardJSONRenderer`).

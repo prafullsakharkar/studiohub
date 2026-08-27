@@ -14,6 +14,12 @@ class _PermissiveOrderingField(forms.ChoiceField):
     """
 
     def __init__(self, *, choices=(), null_label=None, **kwargs):
+        # ``forms.ChoiceField`` does not accept ``null_label`` (it is a
+        # django-filter concept injected via ``OrderingFilter.extra``), so it
+        # must not be forwarded to ``super().__init__`` — but it is kept as an
+        # attribute because drf-spectacular introspects ``field.null_label``
+        # when generating OpenAPI schemas for ordering filters.
+        self.null_label = null_label
         super().__init__(choices=choices, **kwargs)
 
     def valid_value(self, value):

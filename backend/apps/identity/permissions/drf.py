@@ -1,26 +1,11 @@
-from rest_framework.permissions import BasePermission
-
-from apps.identity.authorization import (
-    PermissionChecker,
-)
+from apps.identity.permissions.permission import HasPermission
 
 
-class RBACPermission(
-    BasePermission,
-):
+class RBACPermission(HasPermission):
+    """
+    Deprecated alias for HasPermission.
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ):
-
-        permission = view.get_required_permission()
-
-        organization = view.get_organization()
-
-        return PermissionChecker.has_permission(
-            user=request.user,
-            organization=organization,
-            permission=permission,
-        )
+    Consolidated in Phase F: both checkers now share the same implementation
+    (HasPermission → PermissionCacheService). RBACPermission is kept for
+    backward compatibility and will be removed in a future release.
+    """
