@@ -66,10 +66,18 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       if (list && list.length > 0) {
         setOrganizations(list);
         const saved = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
-        const stillExists = list.some((o) => o.id === saved || o.code.toLowerCase() === (saved || '').toLowerCase());
-        if (saved && !stillExists) {
-          setCurrentOrgId(list[0].id);
+        const stillExists = list.some(
+          (o) => o.id === saved || (o.code || '').toLowerCase() === (saved || '').toLowerCase()
+        );
+        // Persist a real, existing org id so the ApiClient always sends a valid
+        // X-Organization-Id header (keeps project queries consistently org-scoped).
+        const resolvedId = stillExists ? saved : list[0].id;
+        try {
+          localStorage.setItem(STORAGE_KEY, resolvedId);
+        } catch (e) {
+          // ignore
         }
+        setCurrentOrgId(resolvedId);
       }
     } catch (e) {
       console.error('Failed to load organizations', e);

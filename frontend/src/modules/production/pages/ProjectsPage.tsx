@@ -13,6 +13,8 @@ import { Plus, Film, Calendar, Clapperboard, Layers, ExternalLink, Sparkles, Bui
 import { Link, useNavigate } from 'react-router-dom';
 import { Project } from '@/mocks/db/production/projects';
 import { useWorkspaceStore } from '@/core/workspace/useWorkspaceStore';
+import { useOrganization } from '@/core/organization/useOrganization';
+import { OrganizationSwitcher } from '@/layouts/OrganizationSwitcher';
 import { ClientSelect } from '@/modules/organization/components/ClientSelect';
 import { ClientContactSelect } from '@/modules/organization/components/ClientContactSelect';
 import { VendorSelect } from '@/modules/organization/components/VendorSelect';
@@ -22,6 +24,8 @@ export const ProjectsPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  const { currentOrganization } = useOrganization();
 
   const { data, isLoading } = useProjects({
     search: search || undefined,
@@ -93,6 +97,17 @@ export const ProjectsPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
+            <div
+              className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-950/80 border border-slate-800 text-xs text-slate-300"
+              title="Projects are scoped to the active organization"
+            >
+              <Building className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="font-mono">
+                {currentOrganization?.name}
+                {currentOrganization?.code ? ` [${currentOrganization.code}]` : ''}
+              </span>
+            </div>
+            <OrganizationSwitcher compact />
             <Can permission="projects:create">
               <Button
                 id="create-project-btn"

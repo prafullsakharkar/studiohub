@@ -1,6 +1,7 @@
 import { BaseEntity, ProductionStatus } from '@/types/common';
 
 export interface Project extends BaseEntity {
+  organization_id?: string;
   name: string;
   code: string;
   type: 'Feature Film' | 'Episodic Series' | 'Commercial' | 'Game Cinematic';
@@ -33,6 +34,7 @@ export interface Project extends BaseEntity {
 
 export const mockProjects: Project[] = [
   {
+    organization_id: 'org-apex-01',
     id: 'proj-001',
     name: 'Cyberpunk 2099: Neo-Kyoto',
     code: 'NK99',
@@ -66,6 +68,7 @@ export const mockProjects: Project[] = [
     updated_at: '2026-08-10T14:20:00Z',
   },
   {
+    organization_id: 'org-apex-01',
     id: 'proj-002',
     name: 'Chronicles of Aethelgard: Season 2',
     code: 'AETH2',
@@ -99,6 +102,7 @@ export const mockProjects: Project[] = [
     updated_at: '2026-08-12T16:45:00Z',
   },
   {
+    organization_id: 'org-apex-01',
     id: 'proj-003',
     name: 'Apex Velocity: Hyperdrive Trailer',
     code: 'VEL01',
@@ -132,6 +136,7 @@ export const mockProjects: Project[] = [
     updated_at: '2026-08-01T10:15:00Z',
   },
   {
+    organization_id: 'org-apex-01',
     id: 'proj-004',
     name: 'Luminary Aurora: Cosmic Awakening',
     code: 'LUM01',

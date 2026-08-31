@@ -32,6 +32,7 @@ from .components.cors import (
     CORS_ALLOW_ALL_ORIGINS,
     CORS_ALLOW_CREDENTIALS,
     CORS_ALLOWED_ORIGINS,
+    CORS_ALLOW_HEADERS,
     CSRF_TRUSTED_ORIGINS,
 )
 from .components.database import DATABASES

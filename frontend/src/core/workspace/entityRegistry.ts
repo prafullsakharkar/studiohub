@@ -31,7 +31,7 @@ import { PaginatedResponse } from '@/types/drf';
  */
 function getRealProjects(): Project[] {
   const cached = queryClient.getQueryData<PaginatedResponse<Project>>(
-    PROJECT_QUERY_KEYS.list({ page_size: 100 })
+    PROJECT_QUERY_KEYS.list(localStorage.getItem('studiohub_active_org_id') || undefined, { page_size: 100 })
   );
   if (cached?.results?.length) return cached.results;
   for (const q of queryClient.getQueryCache().getAll()) {

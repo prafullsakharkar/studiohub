@@ -24,8 +24,9 @@ import { PaginatedResponse } from '@/types/drf';
  * useActiveProject). Returns [] until the list has been fetched.
  */
 export function getRealProjects(): Project[] {
+  const orgId = localStorage.getItem('studiohub_active_org_id') || undefined;
   const cached = queryClient.getQueryData<PaginatedResponse<Project>>(
-    PROJECT_QUERY_KEYS.list({ page_size: 100 })
+    PROJECT_QUERY_KEYS.list(orgId, { page_size: 100 })
   );
   if (cached?.results?.length) return cached.results;
   for (const q of queryClient.getQueryCache().getAll()) {

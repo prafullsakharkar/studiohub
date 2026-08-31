@@ -9,7 +9,14 @@ export const projectHandlers = [
   http.get('*/api/v1/projects/', async ({ request }) => {
     await delay(200);
     const url = new URL(request.url);
-    const filtered = applyFiltersAndSearch(inMemoryProjects, url, ['name', 'code', 'description', 'client_name']);
+    const headerOrgId = request.headers.get('X-Organization-Id') || request.headers.get('X-Organization');
+    const queryOrgId = url.searchParams.get('organization');
+    const orgId = queryOrgId || headerOrgId;
+
+    let filtered = applyFiltersAndSearch(inMemoryProjects, url, ['name', 'code', 'description', 'client_name']);
+    if (orgId) {
+      filtered = filtered.filter((p) => p.organization_id === orgId);
+    }
     const paginated = paginateDRF(filtered, url);
     return HttpResponse.json(paginated);
   }),
@@ -28,6 +35,7 @@ export const projectHandlers = [
   http.post('*/api/v1/projects/', async ({ request }) => {
     await delay(300);
     const body = (await request.json()) as Partial<Project>;
+    const headerOrgId = request.headers.get('X-Organization-Id') || request.headers.get('X-Organization');
 
     if (!body.name || !body.code) {
       return HttpResponse.json(
@@ -41,6 +49,7 @@ export const projectHandlers = [
 
     const newProject: Project = {
       id: `proj-${Date.now()}`,
+      organization_id: body.organization_id || headerOrgId || 'org-apex-01',
       name: body.name,
       code: body.code.toUpperCase(),
       type: body.type || 'Feature Film',
