@@ -70,24 +70,22 @@ export const ClientsPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 shrink-0">
           <Button
             size="sm"
             variant="outline"
             onClick={handleExport}
-            className="text-xs flex items-center gap-1.5"
+            leftIcon={<Download className="w-3.5 h-3.5" />}
           >
-            <Download className="w-3.5 h-3.5" />
             Export Portfolio
           </Button>
 
-          <Link to="/clients/new">
+          <Link to="/clients/new" className="inline-flex">
             <Button
               size="sm"
               variant="primary"
-              className="text-xs flex items-center gap-1.5"
+              leftIcon={<Plus className="w-3.5 h-3.5" />}
             >
-              <Plus className="w-3.5 h-3.5" />
               Register Client
             </Button>
           </Link>

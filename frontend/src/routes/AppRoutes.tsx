@@ -23,6 +23,8 @@ import { TimelogsPage } from '@/modules/tasks/pages/TimelogsPage';
 import { ReviewsPage } from '@/modules/reviews/pages/ReviewsPage';
 import { AuditLogsPage } from '@/modules/audit/pages/AuditLogsPage';
 import { SettingsPage } from '@/modules/settings/pages/SettingsPage';
+import { UsersPage } from '@/modules/identity/pages/UsersPage';
+import { RolesPage } from '@/modules/identity/pages/RolesPage';
 
 // Foundation & Organization Pages
 import { OrganizationsPage } from '@/modules/organization/pages/OrganizationsPage';
@@ -108,6 +110,8 @@ export const AppRoutes: React.FC = () => {
 
           {/* ORGANIZATION FOUNDATION APPS */}
           <Route path="/organizations" element={<OrganizationsPage />} />
+          <Route path="/users" element={<UsersPage />} />
+          <Route path="/roles" element={<RolesPage />} />
           <Route path="/organizations/new" element={<CreateOrganizationPage />} />
           <Route path="/organizations/:id" element={<OrganizationWorkspacePage />} />
           <Route path="/organizations/:id/edit" element={<EditOrganizationPage />} />

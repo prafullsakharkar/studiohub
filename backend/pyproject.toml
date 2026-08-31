@@ -134,7 +134,7 @@ DJANGO_SETTINGS_MODULE = "config.settings.testing"
 
 python_files = ["test_*.py", "*_test.py"]
 
-addopts = ["--reuse-db", "--strict-markers", "--cov=apps"]
+addopts = ["--reuse-db", "--strict-markers", "--cov=apps", "--import-mode=importlib"]
 
 testpaths = ["apps"]
 

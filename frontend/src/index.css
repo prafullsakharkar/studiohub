@@ -1,1 +1,123 @@
 @import "tailwindcss";
+
+@layer base {
+  /* Default HTML & Body configuration */
+  html {
+    color-scheme: dark;
+  }
+  
+  html.light {
+    color-scheme: light;
+  }
+
+  /* Global Scrollbar Theming - Dark Mode (Default) */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #334155 transparent;
+  }
+
+  /* WebKit Global Scrollbar - Dark Mode */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Global Scrollbar Theming - Light Mode */
+  html.light * {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+
+  html.light ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  html.light ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+  }
+
+  html.light ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  /* Remove default browser search clear button to prevent UI duplication */
+  input[type="search"]::-webkit-search-decoration,
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-results-button,
+  input[type="search"]::-webkit-search-results-decoration {
+    display: none;
+    -webkit-appearance: none;
+  }
+}
+
+/* Custom Scrollbar Utilities */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(51, 65, 85, 0.7) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(51, 65, 85, 0.7);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(71, 85, 105, 0.95);
+}
+
+/* Light mode custom scrollbar */
+html.light .custom-scrollbar {
+  scrollbar-color: rgba(203, 213, 225, 0.9) transparent;
+}
+
+html.light .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(203, 213, 225, 0.9);
+}
+
+html.light .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 1);
+}
+
+/* Hide scrollbar utility while preserving scrollability */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Search input theme styling helper */
+#search-input-field {
+  transition: all 0.15s ease-in-out;
+}
+

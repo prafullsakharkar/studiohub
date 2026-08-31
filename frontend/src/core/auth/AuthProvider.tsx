@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { AuthContext, AuthContextValue } from './AuthContext';
 import { authService } from '@/modules/auth/services/AuthService';
-import { User, Role, Permission } from '@/types/auth';
+import { User, Role, AnyPermission } from '@/types/auth';
 import { LoginFormData } from '@/modules/auth/schemas/authSchemas';
 import { checkUserHasPermission, checkUserHasRole } from '@/core/permissions/rbac';
 import { logger } from '@/core/logging/logger';
+import { useActivityStore } from '@/shared/stores/useActivityStore';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -30,6 +31,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     initAuth();
   }, [initAuth]);
+
+  useEffect(() => {
+    if (user) {
+      void useActivityStore.getState().fetchActivities();
+    }
+  }, [user]);
 
   const login = useCallback(async (credentials: LoginFormData) => {
     setIsLoading(true);
@@ -62,12 +69,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   );
 
   const hasPermission = useCallback(
-    (permission: Permission | Permission[]) => checkUserHasPermission(user, permission),
+    (permission: AnyPermission | AnyPermission[]) => checkUserHasPermission(user, permission),
     [user]
   );
 
   const can = useCallback(
-    (action: Permission | Permission[]) => checkUserHasPermission(user, action),
+    (action: AnyPermission | AnyPermission[]) => checkUserHasPermission(user, action),
     [user]
   );
 

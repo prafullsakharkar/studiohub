@@ -85,6 +85,11 @@ class Command(BaseCommand):
             workflows = self._seed_workflows(org, projects)
             clients = self._seed_clients(org)
             vendors = self._seed_vendors(org)
+            people = self._seed_people(org)
+            activities = self._seed_activities(org, users)
+            deliveries = self._seed_deliveries(org, projects, users)
+            publishes = self._seed_publishes(org, projects, users)
+            pipeline_settings = self._seed_pipeline_settings()
 
         self.stdout.write(self.style.SUCCESS("Seed complete."))
         self.stdout.write(f"  Organization: {org.code} ({org.name})")
@@ -93,7 +98,9 @@ class Command(BaseCommand):
         self.stdout.write(f"  Projects: {len(projects)}  Shots: {len(shots)}  Assets: {len(assets)}")
         self.stdout.write(f"  Tasks: {len(tasks)}  Timelogs: {len(timelogs)}  Versions: {len(versions)}")
         self.stdout.write(f"  Reviews: {len(reviews)}  Playlists: {len(playlists)}  Media: {len(media)}  Workflows: {len(workflows)}")
-        self.stdout.write(f"  Clients: {len(clients)}  Vendors: {len(vendors)}")
+        self.stdout.write(f"  Clients: {len(clients)}  Vendors: {len(vendors)}  People: {len(people)}")
+        self.stdout.write(f"  Activities: {activities}")
+        self.stdout.write(f"  Deliveries: {deliveries}  Publishes: {publishes}  Pipeline Settings: {pipeline_settings}")
         self.stdout.write(self.style.NOTICE("  Default password for seeded users: password123"))
 
     def _reset(self):
@@ -641,3 +648,567 @@ class Command(BaseCommand):
                 )
                 count += 1
         return list(Vendor.objects.filter(organization=org))
+
+    def _seed_people(self, org):
+        from pathlib import Path
+
+        from apps.organization.models import Person
+        from apps.production.management.commands.seed_production_mocks import _load_ts_mock_array
+
+        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        data = _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockPeople")
+        count = 0
+        for item in data:
+            full_name = item.get("full_name")
+            if not full_name:
+                continue
+            Person.objects.update_or_create(
+                name=full_name,
+                defaults={
+                    "email": item.get("email", ""),
+                    "phone": item.get("phone", ""),
+                },
+            )
+            count += 1
+        return list(Person.objects.all())
+
+    def _seed_activities(self, org, users):
+        """
+        Seed Activity records consumed by the frontend activity store.
+
+        The Activity model stores arbitrary activity context in its JSON
+        ``metadata`` field; the frontend maps it back into its
+        ``ActivityLogItem`` shape (action / actionLabel / entity / diffs).
+        Idempotent: keyed on (description, user). Backdated for realistic feeds.
+        """
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from apps.audit.models.activity import Activity
+
+        user_by_email = {u.email: u for u in users}
+        actor_by_email = {
+            "supervisor@studiohub.vfx": ("Alex Chen", "VFX Supervisor"),
+            "admin@studiohub.vfx": ("Marcus Vance", "Platform Admin"),
+            "lead@studiohub.vfx": ("Elena Rostova", "Lead Artist"),
+            "artist@studiohub.vfx": ("Sarah Jenkins", "Artist"),
+        }
+
+        # (activity_type, email, description, action, actionLabel, entity, ip, hours_ago, diffs)
+        specs = [
+            (
+                "interaction",
+                "supervisor@studiohub.vfx",
+                "Approved final compositing on shot LUM01_0010 (v14).",
+                "approve",
+                "APPROVE",
+                {"type": "shot", "id": "LUM01_0010", "code": "LUM01_0010", "name": "Aurora Crystal Formation", "context": "Luminary Aurora"},
+                12,
+                None,
+            ),
+            (
+                "interaction",
+                "supervisor@studiohub.vfx",
+                "Created review session for Luminary Aurora trailer turnover.",
+                "review",
+                "REVIEW",
+                {"type": "review", "id": "rev-lum-01", "code": "REV-LUM-01", "name": "Luminary Trailer Turnover", "context": "Luminary Aurora"},
+                26,
+                None,
+            ),
+            (
+                "interaction",
+                "admin@studiohub.vfx",
+                "Assigned FX shot VEL01_0022 to Elena Rostova (Lead Artist).",
+                "assign",
+                "ASSIGN",
+                {"type": "task", "id": "tsk-vel-022", "code": "VEL01_0022", "name": "Nebula Lensing Pass", "context": "Apex Velocity"},
+                40,
+                None,
+            ),
+            (
+                "feature_usage",
+                "artist@studiohub.vfx",
+                "Logged 4.5 hours on asset build AST-LUM-HERO-01.",
+                "upload",
+                "UPLOAD",
+                {"type": "asset", "id": "AST-LUM-HERO-01", "code": "AST-LUM-HERO-01", "name": "Crystalline Hero Rig", "context": "Luminary Aurora"},
+                52,
+                None,
+            ),
+            (
+                "interaction",
+                "lead@studiohub.vfx",
+                "Updated shot LUM01_0024 status from In Progress to Ready for Review.",
+                "status_change",
+                "UPDATE",
+                {"type": "shot", "id": "LUM01_0024", "code": "LUM01_0024", "name": "Holographic Billboard Reveal", "context": "Luminary Aurora"},
+                66,
+                None,
+            ),
+            (
+                "export",
+                "admin@studiohub.vfx",
+                "Exported production report for Apex Velocity as CSV.",
+                "export",
+                "EXPORT",
+                {"type": "project", "id": "VEL01", "code": "VEL01", "name": "Apex Velocity: Hyperdrive Trailer", "context": "Apex Digital Studios"},
+                80,
+                None,
+            ),
+            (
+                "interaction",
+                "supervisor@studiohub.vfx",
+                "Created new project 'Apex Velocity: Hyperdrive Trailer'.",
+                "create",
+                "CREATE",
+                {"type": "project", "id": "VEL01", "code": "VEL01", "name": "Apex Velocity: Hyperdrive Trailer", "context": "Apex Digital Studios"},
+                94,
+                None,
+            ),
+            (
+                "interaction",
+                "artist@studiohub.vfx",
+                "Uploaded version v12 of shot LUM01_0010 for review.",
+                "upload",
+                "UPLOAD",
+                {"type": "version", "id": "LUM01_0010_v12", "code": "v12", "name": "LUM01_0010 v12", "context": "Luminary Aurora"},
+                110,
+                None,
+            ),
+            (
+                "interaction",
+                "admin@studiohub.vfx",
+                "Granted 'Lead Artist' role to Elena Rostova.",
+                "permission_change",
+                "PERMISSION_CHANGE",
+                {"type": "person", "id": "usr-lead", "code": "usr-lead", "name": "Elena Rostova", "context": "Apex Digital Studios"},
+                124,
+                None,
+            ),
+            (
+                "dashboard",
+                "supervisor@studiohub.vfx",
+                "Viewed Luminary Aurora production dashboard.",
+                "status_change",
+                "VIEW",
+                {"type": "project", "id": "LUM01", "code": "LUM01", "name": "Luminary Aurora: Cosmic Awakening", "context": "Apex Digital Studios"},
+                138,
+                None,
+            ),
+            (
+                "interaction",
+                "lead@studiohub.vfx",
+                "Commented on review REV-LUM-01 for shot LUM01_0010.",
+                "comment",
+                "COMMENT",
+                {"type": "review", "id": "rev-lum-01", "code": "REV-LUM-01", "name": "Luminary Trailer Turnover", "context": "Luminary Aurora"},
+                152,
+                None,
+            ),
+            (
+                "interaction",
+                "artist@studiohub.vfx",
+                "Deleted stale placeholder asset AST-OLD-TMP-00.",
+                "delete",
+                "DELETE",
+                {"type": "asset", "id": "AST-OLD-TMP-00", "code": "AST-OLD-TMP-00", "name": "Legacy Temp Asset", "context": "Apex Velocity"},
+                166,
+                None,
+            ),
+            (
+                "feature_usage",
+                "supervisor@studiohub.vfx",
+                "Ran global asset search across all active productions.",
+                "search",
+                "SEARCH",
+                {"type": "asset", "id": "global-search", "code": "asset-search", "name": "Global Asset Search", "context": "Apex Digital Studios"},
+                180,
+                None,
+            ),
+            (
+                "interaction",
+                "admin@studiohub.vfx",
+                "Assigned team FX Team to project Luminary Aurora.",
+                "assign",
+                "ASSIGN",
+                {"type": "team", "id": "TEAM-FX", "code": "TEAM-FX", "name": "FX Team", "context": "Luminary Aurora"},
+                194,
+                None,
+            ),
+            (
+                "report",
+                "supervisor@studiohub.vfx",
+                "Generated weekly delivery status report for all shows.",
+                "export",
+                "EXPORT",
+                {"type": "organization", "id": "APEX", "code": "APEX", "name": "Apex Digital Studios", "context": "Studio Hub"},
+                208,
+                None,
+            ),
+            (
+                "interaction",
+                "lead@studiohub.vfx",
+                "Updated task VEL01_0022 estimated hours from 12 to 16.",
+                "update",
+                "UPDATE",
+                {"type": "task", "id": "tsk-vel-022", "code": "VEL01_0022", "name": "Nebula Lensing Pass", "context": "Apex Velocity"},
+                222,
+                [{"field": "estimated_hours", "label": "Estimated Hours", "before": 12, "after": 16}],
+            ),
+        ]
+
+        now = timezone.now()
+        user_agent = (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+        )
+        count = 0
+        for (
+            activity_type,
+            email,
+            description,
+            action,
+            action_label,
+            entity,
+            hours_ago,
+            diffs,
+        ) in specs:
+            user = user_by_email.get(email) or (users[0] if users else None)
+            if user is None:
+                continue
+            actor_name, actor_role = actor_by_email.get(email, (email.split("@")[0], "Member"))
+
+            activity, created = Activity.objects.get_or_create(
+                description=description,
+                user=user,
+                organization=org,
+                defaults={
+                    "activity_type": activity_type,
+                    "status": Activity.STATUS_SUCCESS,
+                    "ip_address": "10.0.0.15",
+                    "user_agent": user_agent,
+                    "duration_seconds": 2,
+                    "metadata": {
+                        "action": action,
+                        "actionLabel": action_label,
+                        "entity": entity,
+                        "actor": {"name": actor_name, "role": actor_role},
+                        "diffs": diffs or [],
+                    },
+                },
+            )
+            if created:
+                Activity.objects.filter(pk=activity.pk).update(
+                    created_at=now - timedelta(hours=hours_ago)
+                )
+                count += 1
+        return count
+
+    def _seed_deliveries(self, org, projects, users):
+        """
+        Seed demo client turnover delivery packages (idempotent).
+
+        Uses the real delivery service so records are valid and consistent.
+        """
+        from datetime import datetime, timedelta
+
+        from django.utils import timezone
+
+        from apps.deliveries.models import DeliveryPackage
+        from apps.deliveries.services.delivery import (
+            approve_delivery,
+            complete_delivery,
+            create_delivery,
+            prepare_delivery,
+            reject_delivery,
+            submit_delivery,
+            validate_delivery,
+        )
+        from apps.organization.models import Client
+
+        clients = list(Client.objects.filter(organization=org))
+        actor_id = str(users[0].id) if users else None
+        created = 0
+        now = timezone.now()
+
+        specs = [
+            {
+                "name": "Scheduled Picture Lock Turnover",
+                "code": "DEL-LUM01-2026-W01",
+                "project": projects[0] if projects else None,
+                "client": clients[0] if clients else None,
+                "method": "Aspera",
+                "destination": "s3://studiohub-deliveries/luminary-aurora/s01/picture-lock/",
+                "expires": now + timedelta(days=7),
+                "notes": "Final picture lock turnover for Luminary Aurora Episode 101.",
+            },
+            {
+                "name": "VFX Review Batch 03",
+                "code": "DEL-AETH2-2026-W02",
+                "project": projects[2] if len(projects) > 2 else None,
+                "client": clients[1] if len(clients) > 1 else None,
+                "method": "Aspera",
+                "destination": "signiant://netflix-originals/vfx-review-batch-03/",
+                "expires": now + timedelta(days=14),
+                "notes": "Intermediate VFX review delivery.",
+            },
+            {
+                "name": "Trailer Color & Finishing Package",
+                "code": "DEL-VEL01-2026-W03",
+                "project": projects[1] if len(projects) > 1 else None,
+                "client": clients[2] if len(clients) > 2 else None,
+                "method": "S3",
+                "destination": "s3://studiohub-deliveries/apex-velocity/finishing/",
+                "expires": now + timedelta(days=3),
+                "notes": "Color finishing and delivery spec package.",
+            },
+        ]
+
+        for spec in specs:
+            delivery, was_created = DeliveryPackage.objects.get_or_create(
+                organization=org,
+                code=spec["code"],
+                defaults={
+                    "name": spec["name"],
+                    "project": spec["project"],
+                    "client": spec["client"],
+                    "delivery_method": spec["method"],
+                    "delivery_destination": spec["destination"],
+                    "expires_at": spec["expires"],
+                    "notes": spec["notes"],
+                },
+            )
+            if was_created:
+                created += 1
+
+            # Drive statuses through the real service for realistic state transitions.
+            if spec["code"] == "DEL-LUM01-2026-W01":
+                prepare_delivery(delivery_id=str(delivery.id), user_id=actor_id)
+                submit_delivery(delivery_id=str(delivery.id), user_id=actor_id)
+            elif spec["code"] == "DEL-AETH2-2026-W02":
+                prepare_delivery(delivery_id=str(delivery.id), user_id=actor_id)
+                submit_delivery(delivery_id=str(delivery.id), user_id=actor_id)
+                approve_delivery(delivery_id=str(delivery.id), user_id=actor_id)
+            elif spec["code"] == "DEL-VEL01-2026-W03":
+                prepare_delivery(delivery_id=str(delivery.id), user_id=actor_id)
+                submit_delivery(delivery_id=str(delivery.id), user_id=actor_id)
+                reject_delivery(delivery_id=str(delivery.id), user_id=actor_id, rejection_reason="Color space mismatch on delivery spec sheet.")
+
+        return created
+
+    def _seed_publishes(self, org, projects, users):
+        """
+        Seed demo publish items (idempotent).
+        """
+        from apps.publishing.models import PublishItem
+
+        actor = users[0] if users else None
+        created = 0
+
+        specs = [
+            {
+                "code": "PUB-LUM01-SH010-V001",
+                "name": "Shot 010 - Color VFX",
+                "project": projects[0] if projects else None,
+                "entity_type": "Shot",
+                "entity_id": "shot-101",
+                "entity_code": "LUM01_SH010",
+                "entity_name": "Shot 010",
+                "dcc_tool": "Nuke",
+                "dcc_version": "15.0v2",
+                "source_file": "/mnt/storage/vfx_prod/shots/LUM01/SH010/comp/v001/source.nk",
+                "source_version": "v001",
+                "export_path": "/mnt/storage/vfx_prod/publishes/LUM01/SH010/v001/",
+                "export_format": "EXR",
+                "status": "Exported",
+            },
+            {
+                "code": "PUB-AETH2-ASSET-BOT-USD",
+                "name": "Bot Character - USD",
+                "project": projects[2] if len(projects) > 2 else None,
+                "entity_type": "Asset",
+                "entity_id": "asset-bot",
+                "entity_code": "AETH2_BOT",
+                "entity_name": "Bot Character",
+                "dcc_tool": "Houdini",
+                "dcc_version": "20.0",
+                "source_file": "/mnt/storage/vfx_prod/assets/AETH2/BOT/model/v003/bot_geo.hiplc",
+                "source_version": "v003",
+                "export_path": "/mnt/storage/vfx_prod/publishes/AETH2/BOT/v003/usd/",
+                "export_format": "USD",
+                "status": "Validated",
+            },
+            {
+                "code": "PUB-VEL01-SH004-LIGHT",
+                "name": "Shot 004 - Lighting",
+                "project": projects[1] if len(projects) > 1 else None,
+                "entity_type": "Shot",
+                "entity_id": "shot-004",
+                "entity_code": "VEL01_SH004",
+                "entity_name": "Shot 004",
+                "dcc_tool": "Maya Light",
+                "dcc_version": "2025.1",
+                "source_file": "/mnt/storage/vfx_prod/shots/VEL01/SH004/light/v002/scene.ma",
+                "source_version": "v002",
+                "export_path": "/mnt/storage/vfx_prod/publishes/VEL01/SH004/v002/",
+                "export_format": "USD",
+                "status": "Exported",
+            },
+        ]
+
+        for spec in specs:
+            _, was_created = PublishItem.objects.get_or_create(
+                organization=org,
+                code=spec["code"],
+                defaults={
+                    "name": spec["name"],
+                    "project": spec["project"],
+                    "entity_type": spec["entity_type"],
+                    "entity_id": spec["entity_id"],
+                    "entity_code": spec["entity_code"],
+                    "entity_name": spec["entity_name"],
+                    "dcc_tool": spec["dcc_tool"],
+                    "dcc_version": spec["dcc_version"],
+                    "source_file": spec["source_file"],
+                    "source_version": spec["source_version"],
+                    "export_path": spec["export_path"],
+                    "export_format": spec["export_format"],
+                    "status": spec["status"],
+                    "created_by": actor,
+                },
+            )
+            if was_created:
+                created += 1
+
+        return created
+
+    def _seed_pipeline_settings(self):
+        """
+        Seed pipeline/environment settings consumed by the frontend SettingsPage.
+
+        The frontend pipeline settings form reads/writes these as a flat key->value
+        map via ``/api/v1/settings/system-settings/``. Each field is modelled as a
+        SettingDefinition (data_type + choices + default) plus a SystemSetting value.
+        Idempotent via get_or_create keyed on the definition code.
+        """
+        import json
+
+        from apps.settings.models.category import SettingCategory
+        from apps.settings.models.definition import SettingDefinition
+        from apps.settings.models.system import SystemSetting
+
+        category, _ = SettingCategory.objects.get_or_create(
+            code="pipeline",
+            defaults={
+                "name": "Studio Pipeline",
+                "description": "Render pipeline, color science and USD architecture settings.",
+                "icon": "layers",
+                "is_active": True,
+            },
+        )
+
+        # code -> (name, data_type, default_value, choices)
+        specs = [
+            (
+                "pipeline.default_color_space",
+                "Default Working Color Space",
+                SettingDefinition.TYPE_SELECT,
+                "ACEScg - ACES 1.3",
+                [
+                    "ACEScg - ACES 1.3",
+                    "ACES 2.0 Candidate",
+                    "Rec.709 - ITU-R BT.709",
+                    "ARRI LogC4 / Wide Gamut 4",
+                    "REDWideGamutRGB / Log3G10",
+                ],
+            ),
+            (
+                "pipeline.default_fps",
+                "Default Timebase / FPS",
+                SettingDefinition.TYPE_FLOAT,
+                "24",
+                [24, 23.976, 25, 29.97, 60],
+            ),
+            (
+                "pipeline.ocio_config_path",
+                "OCIO Config File Path",
+                SettingDefinition.TYPE_STRING,
+                "/opt/studiohub/ocio/aces_1.3/config.ocio",
+                [],
+            ),
+            (
+                "pipeline.usd_schema_version",
+                "USD Schema Specification",
+                SettingDefinition.TYPE_SELECT,
+                "OpenUSD v24.08",
+                ["OpenUSD v24.08", "OpenUSD v23.11", "OpenUSD v22.11"],
+            ),
+            (
+                "pipeline.default_resolution",
+                "Default Resolution Buffer",
+                SettingDefinition.TYPE_SELECT,
+                "4096x2160",
+                ["4096x2160", "3840x2160", "2048x1080", "1920x1080"],
+            ),
+            (
+                "pipeline.storage_mount_path",
+                "Central SAN / NAS Storage Root Path",
+                SettingDefinition.TYPE_STRING,
+                "/mnt/studiohub/shows",
+                [],
+            ),
+            (
+                "pipeline.farm_engine",
+                "Render Farm Management Engine",
+                SettingDefinition.TYPE_SELECT,
+                "Deadline",
+                ["Deadline", "Tractor", "OpenCue"],
+            ),
+            (
+                "pipeline.enable_ai_denoising",
+                "Enable AI Denoising",
+                SettingDefinition.TYPE_BOOLEAN,
+                "true",
+                [],
+            ),
+            (
+                "pipeline.enable_auto_transcode",
+                "Enable Auto Transcode",
+                SettingDefinition.TYPE_BOOLEAN,
+                "true",
+                [],
+            ),
+            (
+                "pipeline.enable_webhooks",
+                "Enable Webhooks",
+                SettingDefinition.TYPE_BOOLEAN,
+                "false",
+                [],
+            ),
+        ]
+
+        count = 0
+        for code, name, data_type, default, choices in specs:
+            definition, _ = SettingDefinition.objects.get_or_create(
+                code=code,
+                defaults={
+                    "name": name,
+                    "description": name,
+                    "category": category,
+                    "data_type": data_type,
+                    "scope": SettingDefinition.SCOPE_SYSTEM,
+                    "default_value": json.dumps(default),
+                    "is_active": True,
+                    "choices": choices,
+                    "order": count,
+                },
+            )
+            _, created = SystemSetting.objects.get_or_create(
+                setting=definition,
+                defaults={"value": json.dumps(default)},
+            )
+            if created:
+                count += 1
+        return count

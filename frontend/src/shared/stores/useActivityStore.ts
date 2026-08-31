@@ -1,11 +1,12 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { ActivityLogItem, ActivityFilterOptions } from '@/types/enterprise';
-import { mockActivityLogs } from '@/mocks/db/audit/activityEvents';
+import { auditService } from '@/modules/audit/services/AuditService';
 import { EntityType, EntityId } from '@/types/crud';
 
 interface ActivityState {
   activities: ActivityLogItem[];
+  isLoading: boolean;
+  fetchActivities: () => Promise<void>;
   addActivity: (activity: Omit<ActivityLogItem, 'id' | 'timestamp'> & { id?: string; timestamp?: string }) => ActivityLogItem;
   getFilteredActivities: (filters: ActivityFilterOptions) => ActivityLogItem[];
   getActivitiesForEntity: (type: EntityType, id: EntityId) => ActivityLogItem[];
@@ -14,10 +15,21 @@ interface ActivityState {
   resetActivities: () => void;
 }
 
-export const useActivityStore = create<ActivityState>()(
-  persist(
-    (set, get) => ({
-      activities: mockActivityLogs,
+export const useActivityStore = create<ActivityState>((set, get) => ({
+      activities: [],
+      isLoading: false,
+
+      fetchActivities: async () => {
+        try {
+          set({ isLoading: true });
+          const items = await auditService.getActivities({ page_size: 200 });
+          set({ activities: items, isLoading: false });
+        } catch (error) {
+          console.error('[useActivityStore] Failed to load activities:', error);
+          set({ isLoading: false });
+        }
+      },
+
 
       addActivity: (item) => {
         const newLog: ActivityLogItem = {
@@ -122,10 +134,5 @@ export const useActivityStore = create<ActivityState>()(
         return [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
       },
 
-      resetActivities: () => set({ activities: mockActivityLogs }),
-    }),
-    {
-      name: 'studiohub-activity-log-v1',
-    }
-  )
-);
+      resetActivities: () => set({ activities: [] }),
+}));

@@ -1,9 +1,9 @@
 import React from 'react';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
-import { Permission } from '@/types/auth';
+import { AnyPermission } from '@/types/auth';
 
 interface CanProps {
-  permission: Permission | Permission[];
+  permission: AnyPermission | AnyPermission[];
   children: React.ReactNode;
   fallback?: React.ReactNode;
 }

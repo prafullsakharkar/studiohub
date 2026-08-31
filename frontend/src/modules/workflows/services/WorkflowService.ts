@@ -7,14 +7,17 @@ import {
 } from '@/types/workflow';
 import { PaginatedResponse, QueryParams } from '@/types/drf';
 import { workflowRepository } from '../repositories/WorkflowRepository';
+import { normalizeWorkflow, normalizeWorkflows } from '../api/mappers/workflowMapper';
 
 export class WorkflowService {
   static async listWorkflows(params?: QueryParams): Promise<PaginatedResponse<Workflow>> {
-    return workflowRepository.findAll(params);
+    const data = await workflowRepository.findAll(params);
+    return { ...data, results: normalizeWorkflows(data.results ?? []) };
   }
 
   static async getWorkflow(id: string): Promise<Workflow> {
-    return workflowRepository.findById(id);
+    const data = await workflowRepository.findById(id);
+    return normalizeWorkflow(data);
   }
 
   static async createWorkflow(data: Partial<Workflow>): Promise<Workflow> {

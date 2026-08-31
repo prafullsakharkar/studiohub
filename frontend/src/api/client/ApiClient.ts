@@ -14,8 +14,14 @@ export class ApiClient implements IApiClient {
   private refreshSubscribers: ((token: string) => void)[] = [];
 
   constructor(prefix = API_PREFIX) {
+    let base = prefix || undefined;
+    // A bare relative prefix (e.g. '/api/v1') must resolve against the
+    // configured API base URL (VITE_API_URL) instead of the page origin.
+    if (base && base.startsWith('/') && API_PREFIX) {
+      base = `${API_PREFIX}${base}`;
+    }
     this.client = ky.create({
-      prefix: prefix || undefined,
+      prefix: base || undefined,
       timeout: 30000,
       retry: {
         limit: 2,

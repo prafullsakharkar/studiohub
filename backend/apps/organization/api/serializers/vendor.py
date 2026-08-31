@@ -26,6 +26,7 @@ class VendorSerializer(BaseReadSerializer):
             "status",
             "logo_url",
             "bandwidth_gbps",
+            "bandwidth_link",
             "created_at",
             "updated_at",
         )
@@ -63,6 +64,7 @@ class VendorCreateSerializer(BaseWriteSerializer):
             "status",
             "logo_url",
             "bandwidth_gbps",
+            "bandwidth_link",
         )
         read_only_fields = ("id", "uuid")
 
@@ -85,4 +87,5 @@ class VendorUpdateSerializer(BaseWriteSerializer):
             "status",
             "logo_url",
             "bandwidth_gbps",
+            "bandwidth_link",
         )

@@ -73,6 +73,9 @@ class BaseViewSet(
     def get_object_filter_kwargs(self, lookup_value):
         """
         Build the filter kwargs used to resolve the detail object.
+        
+        Supports UUID lookup (translates to 'id') and code lookup for models
+        that have a 'code' field.
         """
         if self.lookup_field == "uuid":
             return {"id": lookup_value}

@@ -137,44 +137,61 @@ export const VersionsListPage: React.FC = () => {
   const compareVersionB = versions.find((v) => v.id === selectedVersionIds[1]) || filteredVersions[1] || filteredVersions[0];
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold font-mono text-white flex items-center">
-            <GitBranch className="w-6 h-6 mr-2.5 text-blue-400" />
-            Versions & Media Master Catalog
-          </h1>
-          <p className="text-xs text-slate-400 font-mono">
-            Browse, review, compare, and publish production renders, multi-channel EXRs, and OpenUSD stages across all shows.
-          </p>
-        </div>
+    <div className="flex-1 flex flex-col min-h-0 bg-slate-950 text-slate-100">
+      {/* Studio Header Bar */}
+      <div className="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 py-3.5 shrink-0">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 border border-blue-500/30 rounded-xl text-blue-400">
+              <GitBranch className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg font-bold tracking-tight text-white">
+                  Versions & Media Master Catalog
+                </h1>
+                <span className="px-2 py-0.5 text-[11px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full">
+                  {versions.length} Media Versions
+                </span>
+                <span className="px-2 py-0.5 text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Multi-channel EXRs
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Browse, review, compare, and publish production renders, multi-channel EXRs, and OpenUSD stages
+              </p>
+            </div>
+          </div>
 
-        <div className="flex items-center space-x-2">
-          {selectedVersionIds.length >= 2 && (
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+            {selectedVersionIds.length >= 2 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setLayoutMode('compare')}
+                leftIcon={<Columns className="w-3.5 h-3.5" />}
+                className="font-mono text-xs"
+              >
+                Compare Selected ({selectedVersionIds.length})
+              </Button>
+            )}
             <Button
               size="sm"
-              variant="outline"
-              onClick={() => setLayoutMode('compare')}
-              leftIcon={<Columns className="w-3.5 h-3.5" />}
+              variant="primary"
+              onClick={() => setIsCreateModalOpen(true)}
+              leftIcon={<Plus className="w-3.5 h-3.5" />}
               className="font-mono text-xs"
             >
-              Compare Selected ({selectedVersionIds.length})
+              Create Version
             </Button>
-          )}
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={() => setIsCreateModalOpen(true)}
-            leftIcon={<Plus className="w-3.5 h-3.5" />}
-            className="font-mono text-xs"
-          >
-            Create Version
-          </Button>
+          </div>
         </div>
       </div>
 
-      {/* Filter & Toolbar Bar */}
+      {/* Main Studio View */}
+      <div className="flex-1 min-h-0 p-4 sm:p-6 space-y-6 flex flex-col overflow-y-auto custom-scrollbar">
+        {/* Filter & Toolbar Bar */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 space-y-3 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Search Box */}
@@ -534,6 +551,7 @@ export const VersionsListPage: React.FC = () => {
           </div>
         </form>
       </Modal>
+      </div>
     </div>
   );
 };

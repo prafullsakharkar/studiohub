@@ -3,6 +3,7 @@ import { Organization, OrganizationSettings } from '@/types/organization';
 import { mockOrganizations } from '@/mocks/db/organization/organization';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { organizationApi } from '@/modules/organization/api/organizationApi';
 
 interface OrganizationContextValue {
@@ -55,18 +56,25 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [isLoading, setIsLoading] = useState(false);
   const { addNotification } = useNotificationStore();
   const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuth();
 
-  // Fetch live organizations from API
+  // Fetch live organizations from API once authenticated.
   const refreshOrganizations = useCallback(async () => {
+    if (!isAuthenticated) return;
     try {
       const list = await organizationApi.getOrganizations();
       if (list && list.length > 0) {
         setOrganizations(list);
+        const saved = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
+        const stillExists = list.some((o) => o.id === saved || o.code.toLowerCase() === (saved || '').toLowerCase());
+        if (saved && !stillExists) {
+          setCurrentOrgId(list[0].id);
+        }
       }
     } catch (e) {
       console.error('Failed to load organizations', e);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     refreshOrganizations();

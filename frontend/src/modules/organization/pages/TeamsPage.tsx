@@ -71,8 +71,8 @@ export const TeamsPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Link to="/teams/new">
+        <div className="flex items-center gap-2 shrink-0">
+          <Link to="/teams/new" className="inline-flex">
             <Button size="sm" variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
               Create Team Squad
             </Button>

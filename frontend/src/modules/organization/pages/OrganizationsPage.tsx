@@ -150,46 +150,54 @@ export const OrganizationsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-in fade-in duration-200">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-5 border-b border-slate-800">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+    <div className="flex-1 flex flex-col min-h-0 bg-slate-950 text-slate-100 animate-in fade-in duration-200">
+      {/* Studio Header Bar */}
+      <div className="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 py-3.5 shrink-0">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 rounded-xl text-indigo-400">
               <Building2 className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold text-white tracking-tight">Studio Organizations</h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg font-bold tracking-tight text-white">
+                  Studio Organizations
+                </h1>
                 <Badge variant="outline" className="font-mono text-xs text-indigo-300 border-indigo-500/30">
                   {orgs.length} Multi-Tenant Units
                 </Badge>
+                <span className="px-2 py-0.5 text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Active Facilities
+                </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Centralized management for studio tenancies, facility hubs, pipeline defaults, and tenant isolation.
+                Centralized management for studio tenancies, facility hubs, pipeline defaults, and tenant isolation
               </p>
             </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2.5">
-          <Button
-            size="sm"
-            variant="outline"
-            leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
-            onClick={() => refetch()}
-          >
-            Refresh
-          </Button>
-          <Link to="/organizations/new">
-            <Button size="sm" variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
-              New Studio Organization
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+            <Button
+              size="sm"
+              variant="outline"
+              leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
+              onClick={() => refetch()}
+            >
+              Refresh
             </Button>
-          </Link>
+            <Link to="/organizations/new" className="inline-flex">
+              <Button size="sm" variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
+                New Studio Organization
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* Global Studio Metric Cards */}
+      {/* Main Studio View */}
+      <div className="flex-1 min-h-0 p-4 sm:p-6 space-y-6 flex flex-col overflow-y-auto custom-scrollbar">
+        {/* Global Studio Metric Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
         <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800/90 shadow-xs flex items-center gap-3">
           <div className="p-2.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
@@ -391,11 +399,17 @@ export const OrganizationsPage: React.FC = () => {
                   {/* Top info row */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <img
-                        src={org.logo_url}
-                        alt={org.name}
-                        className="w-12 h-12 rounded-xl object-cover ring-1 ring-slate-700 shadow-md shrink-0 bg-slate-950"
-                      />
+                      {org.logo_url ? (
+                        <img
+                          src={org.logo_url}
+                          alt={org.name}
+                          className="w-12 h-12 rounded-xl object-cover ring-1 ring-slate-700 shadow-md shrink-0 bg-slate-950"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl ring-1 ring-slate-700 shadow-md shrink-0 bg-indigo-600/20 flex items-center justify-center text-indigo-300 font-mono font-bold text-lg">
+                          {(org.name || '?').charAt(0).toUpperCase()}
+                        </div>
+                      )}
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
                           <h2 className="font-bold text-sm text-white truncate group-hover:text-indigo-300 transition-colors">
@@ -770,6 +784,7 @@ export const OrganizationsPage: React.FC = () => {
           </div>
         </div>
       </Modal>
+      </div>
     </div>
   );
 };

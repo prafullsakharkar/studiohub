@@ -8,6 +8,7 @@ import { DeliveryApprovalModal } from '../components/DeliveryApprovalModal';
 import { DeliveryRejectModal } from '../components/DeliveryRejectModal';
 import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
+import { SearchInput } from '@/shared/components/SearchInput';
 import { EmptyState } from '@/shared/components/EmptyState';
 import {
   Send,
@@ -84,46 +85,61 @@ export const DeliveriesPage: React.FC = () => {
   }, [deliveries]);
 
   return (
-    <div id="deliveries-page-root" className="p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-white tracking-tight">Studio Deliveries & Turnovers</h1>
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-              Aspera & Signiant Ingest
-            </span>
+    <div id="deliveries-page-root" className="flex-1 flex flex-col min-h-0 bg-slate-950 text-slate-100">
+      {/* Studio Header Bar */}
+      <div className="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 py-3.5 shrink-0">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 rounded-xl text-indigo-400">
+              <Send className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg font-bold tracking-tight text-white">
+                  Studio Deliveries & Turnovers
+                </h1>
+                <span className="px-2 py-0.5 text-[11px] font-semibold font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full">
+                  Aspera & Signiant Ingest
+                </span>
+                <span className="px-2 py-0.5 text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {metrics.total} Packages
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Official client turnover packages, automated pre-flight QC inspection, Aspera/Signiant transfers, and sign-offs
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Official client turnover packages, automated pre-flight QC inspection, Aspera/Signiant transfers, and sign-offs.
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refresh()}
-            leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
-            className="text-xs text-slate-300"
-          >
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refresh()}
+              leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
+              className="text-xs text-slate-300"
+            >
+              Refresh
+            </Button>
 
-          <Button
-            id="btn-create-delivery"
-            variant="primary"
-            size="sm"
-            onClick={() => setIsCreateOpen(true)}
-            leftIcon={<Plus className="w-3.5 h-3.5" />}
-            className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white"
-          >
-            New Delivery Package
-          </Button>
+            <Button
+              id="btn-create-delivery"
+              variant="primary"
+              size="sm"
+              onClick={() => setIsCreateOpen(true)}
+              leftIcon={<Plus className="w-3.5 h-3.5" />}
+              className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white"
+            >
+              New Delivery Package
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Metrics Row */}
+      {/* Main Studio View */}
+      <div className="flex-1 min-h-0 p-4 sm:p-6 space-y-6 flex flex-col overflow-y-auto custom-scrollbar">
+        {/* Metrics Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4 bg-slate-900/80 border border-slate-800">
           <span className="text-[11px] font-medium text-slate-400 block">Total Turnover Packages</span>
@@ -159,67 +175,69 @@ export const DeliveriesPage: React.FC = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <Card className="p-4 bg-slate-900/90 border border-slate-800 space-y-3">
-        <div className="flex flex-col md:flex-row items-center gap-3">
+      <div className="p-4 bg-slate-900/90 border border-slate-800 rounded-xl space-y-3 shadow-sm">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           {/* Search Input */}
-          <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
-            <input
-              type="text"
+          <div className="flex-1 min-w-[260px]">
+            <SearchInput
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onClear={() => setSearchQuery('')}
               placeholder="Search by package code, client name, title, or milestone..."
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              className="w-full"
             />
           </div>
 
-          {/* Project Filter */}
-          <select
-            value={selectedProject}
-            onChange={(e) => setSelectedProject(e.target.value)}
-            className="w-full md:w-36 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
-          >
-            <option value="ALL">All Projects</option>
-            <option value="NK99">Neo Kyoto 2099</option>
-            <option value="ATH">Aetheria S2</option>
-            <option value="CBR">CyberRunner</option>
-          </select>
-
-          {/* Status Filter */}
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="w-full md:w-40 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
-          >
-            <option value="ALL">All Statuses</option>
-            <option value="Draft">Draft</option>
-            <option value="Preparing">Preparing</option>
-            <option value="Ready">Ready</option>
-            <option value="Submitted">Submitted</option>
-            <option value="Approved">Approved</option>
-            <option value="Rejected">Rejected</option>
-            <option value="Completed">Completed</option>
-          </select>
-
-          {/* View Mode */}
-          <div className="flex items-center bg-slate-950 rounded-lg border border-slate-800 p-0.5">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
-              title="Grid View"
+          {/* Filter Dropdowns and View Toggle */}
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            {/* Project Filter */}
+            <select
+              value={selectedProject}
+              onChange={(e) => setSelectedProject(e.target.value)}
+              className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
             >
-              <Grid className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded ${viewMode === 'table' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
-              title="Table View"
+              <option value="ALL">All Projects</option>
+              <option value="NK99">Neo Kyoto 2099</option>
+              <option value="ATH">Aetheria S2</option>
+              <option value="CBR">CyberRunner</option>
+            </select>
+
+            {/* Status Filter */}
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
             >
-              <List className="w-3.5 h-3.5" />
-            </button>
+              <option value="ALL">All Statuses</option>
+              <option value="Draft">Draft</option>
+              <option value="Preparing">Preparing</option>
+              <option value="Ready">Ready</option>
+              <option value="Submitted">Submitted</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+              <option value="Completed">Completed</option>
+            </select>
+
+            {/* View Mode */}
+            <div className="flex items-center bg-slate-950 rounded-lg border border-slate-800 p-0.5">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 rounded transition-colors ${viewMode === 'grid' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-400 hover:text-slate-200'}`}
+                title="Grid View"
+              >
+                <Grid className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setViewMode('table')}
+                className={`p-1.5 rounded transition-colors ${viewMode === 'table' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-400 hover:text-slate-200'}`}
+                title="Table View"
+              >
+                <List className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Main Content */}
       {loading ? (
@@ -332,6 +350,7 @@ export const DeliveriesPage: React.FC = () => {
         deliveryId={rejectDeliveryId || ''}
         onReject={rejectDelivery}
       />
+      </div>
     </div>
   );
 };

@@ -9,7 +9,6 @@ import {
   mockOffices,
   mockPublishedVersions,
 } from '@/mocks/db/organization/organization';
-import { mockProjects } from '@/mocks/db/production/projects';
 import { mockShots } from '@/mocks/db/production/shots';
 import { mockAssets } from '@/mocks/db/assets/assets';
 import { mockTasks } from '@/mocks/db/tasks/tasks';
@@ -21,6 +20,34 @@ import { mockTimelogs } from '@/mocks/db/production/timelogs';
 import { mockCalendarMilestones } from '@/mocks/db/production/calendar';
 import { mockMediaAssets } from '@/mocks/db/production/media';
 import { mockProductionAttachments } from '@/mocks/db/production/attachments';
+import { queryClient } from '@/providers/QueryProvider';
+import { PROJECT_QUERY_KEYS } from '@/modules/production/hooks/useProjects';
+import { Project } from '@/mocks/db/production/projects';
+import { PaginatedResponse } from '@/types/drf';
+
+/**
+ * Reads real projects from the React Query cache (populated by useProjects /
+ * useActiveProject). Returns [] until the list has been fetched.
+ */
+function getRealProjects(): Project[] {
+  const cached = queryClient.getQueryData<PaginatedResponse<Project>>(
+    PROJECT_QUERY_KEYS.list({ page_size: 100 })
+  );
+  if (cached?.results?.length) return cached.results;
+  for (const q of queryClient.getQueryCache().getAll()) {
+    const key = q.queryKey;
+    if (Array.isArray(key) && key[0] === 'projects' && key[1] === 'list') {
+      const data = q.state.data as PaginatedResponse<Project> | undefined;
+      if (data?.results?.length) return data.results;
+    }
+  }
+  return [];
+}
+
+function findRealProject(id: string): Project | null {
+  const normalized = id.toLowerCase();
+  return getRealProjects().find((p) => p.id === id || p.code.toLowerCase() === normalized) || null;
+}
 
 // Mock Sequences
 export const mockSequences = [
@@ -386,7 +413,7 @@ export function resolveEntity(type: UniversalEntityType, id: string): UniversalE
     }
 
     case 'project': {
-      const proj = mockProjects.find((p) => p.id === id || p.code.toLowerCase() === id.toLowerCase()) || mockProjects[0];
+      const proj = findRealProject(id);
       if (!proj) return null;
       return {
         id: proj.id,
@@ -404,13 +431,13 @@ export function resolveEntity(type: UniversalEntityType, id: string): UniversalE
           'Client Studio': proj.client_name,
           'VFX Supervisor': proj.supervisor_name,
           'VFX Producer': proj.coordinator_name,
-          'Timeline / Delivery': `${proj.start_date} → ${proj.delivery_date}`,
+          'Timeline / Delivery': proj.start_date && proj.delivery_date ? `${proj.start_date} → ${proj.delivery_date}` : 'TBD',
           'Resolution / FPS': `${proj.resolution} @ ${proj.fps} FPS`,
           'Aspect Ratio': proj.aspect_ratio,
           'Color Management': proj.color_space,
           'Total Shot Count': `${proj.total_shots} (${proj.approved_shots} Approved, ${proj.in_progress_shots} In Progress)`,
           'Asset Library': `${proj.total_assets} Hero Assets`,
-          'Allocated Budget': `$${(proj.budget_usd / 1000000).toFixed(2)}M USD`,
+          'Allocated Budget': `$${(Number(proj.budget_usd) / 1000000).toFixed(2)}M USD`,
         },
         tags: [proj.type, proj.color_space, proj.status],
         relations: {
@@ -983,7 +1010,7 @@ export function searchUniversalEntities(query: string, filterType?: UniversalEnt
 
   // Projects
   if (!filterType || filterType === 'project') {
-    mockProjects.forEach((p) => {
+    getRealProjects().forEach((p) => {
       if (!q || p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q)) {
         all.push({ id: p.id, type: 'project', title: p.name, code: p.code, subtitle: p.type, status: p.status, thumbnail_url: p.thumbnail_url });
       }

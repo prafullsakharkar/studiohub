@@ -71,8 +71,8 @@ export const OfficesPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Link to="/offices/new">
+        <div className="flex items-center gap-2 shrink-0">
+          <Link to="/offices/new" className="inline-flex">
             <Button size="sm" variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
               Establish Office
             </Button>

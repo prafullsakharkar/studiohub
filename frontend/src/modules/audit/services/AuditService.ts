@@ -2,6 +2,8 @@ import { IAuditRepository } from '../repositories/IAuditRepository';
 import { auditRepository } from '../repositories/AuditRepository';
 import { AuditLog } from '@/mocks/db/audit/auditLogs';
 import { PaginatedResponse, QueryParams } from '@/types/drf';
+import { ActivityLogItem } from '@/types/enterprise';
+import { normalizeActivities } from '../api/mappers/activityMapper';
 
 export class AuditService {
   private repository: IAuditRepository;
@@ -12,6 +14,11 @@ export class AuditService {
 
   async getAuditLogs(params?: QueryParams): Promise<PaginatedResponse<AuditLog>> {
     return this.repository.findAll(params);
+  }
+
+  async getActivities(params?: QueryParams): Promise<ActivityLogItem[]> {
+    const raw = await this.repository.findActivities(params);
+    return normalizeActivities(raw);
   }
 
   async recordLog(data: Partial<AuditLog>): Promise<AuditLog> {

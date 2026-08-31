@@ -158,89 +158,98 @@ export const AssetsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-2xl shadow-xl">
-        <div className="flex items-center space-x-3">
-          <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-            <Box className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-white tracking-tight">Production Assets</h1>
-              <Badge variant="outline" className="font-mono text-[10px] text-emerald-300 border-emerald-500/30">
-                OpenUSD 23.11
-              </Badge>
+    <div className="flex-1 flex flex-col min-h-0 bg-slate-950 text-slate-100">
+      {/* Studio Header Bar */}
+      <div className="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 py-3.5 shrink-0">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-xl text-emerald-400">
+              <Box className="w-5 h-5" />
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Production asset entities, OpenUSD composition sublayers, LOD cascades, and lookdev turnovers
-            </p>
-          </div>
-        </div>
-
-        {/* View Switchers & Actions */}
-        <div className="flex items-center space-x-2 self-end sm:self-center">
-          {/* 4 View Modes */}
-          <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
-            <button
-              onClick={() => setViewMode('grid')}
-              title="Grid View"
-              className={`p-1.5 rounded-lg transition-all ${
-                viewMode === 'grid'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('table')}
-              title="Table View"
-              className={`p-1.5 rounded-lg transition-all ${
-                viewMode === 'table'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <List className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('gallery')}
-              title="Showcase Gallery"
-              className={`p-1.5 rounded-lg transition-all ${
-                viewMode === 'gallery'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <ImageIcon className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('hierarchy')}
-              title="Stage Hierarchy Tree"
-              className={`p-1.5 rounded-lg transition-all ${
-                viewMode === 'hierarchy'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <FolderTree className="w-4 h-4" />
-            </button>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg font-bold tracking-tight text-white">
+                  Production Assets
+                </h1>
+                <span className="px-2 py-0.5 text-[11px] font-semibold font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">
+                  OpenUSD 23.11
+                </span>
+                <span className="px-2 py-0.5 text-[11px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full">
+                  {filteredAssets.length} Assets
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Production asset entities, OpenUSD composition sublayers, LOD cascades, and lookdev turnovers
+              </p>
+            </div>
           </div>
 
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={() => setIsCreateOpen(true)}
-            leftIcon={<Plus className="w-4 h-4" />}
-          >
-            Register Asset
-          </Button>
+          {/* View Switchers & Actions */}
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+            {/* 4 View Modes */}
+            <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
+              <button
+                onClick={() => setViewMode('grid')}
+                title="Grid View"
+                className={`p-1.5 rounded-lg transition-all ${
+                  viewMode === 'grid'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('table')}
+                title="Table View"
+                className={`p-1.5 rounded-lg transition-all ${
+                  viewMode === 'table'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <List className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('gallery')}
+                title="Showcase Gallery"
+                className={`p-1.5 rounded-lg transition-all ${
+                  viewMode === 'gallery'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <ImageIcon className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('hierarchy')}
+                title="Stage Hierarchy Tree"
+                className={`p-1.5 rounded-lg transition-all ${
+                  viewMode === 'hierarchy'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <FolderTree className="w-4 h-4" />
+              </button>
+            </div>
+
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={() => setIsCreateOpen(true)}
+              leftIcon={<Plus className="w-4 h-4" />}
+            >
+              Register Asset
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Main Filter & Category Bar */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-4 shadow-lg">
+      {/* Main Studio View */}
+      <div className="flex-1 min-h-0 p-4 sm:p-6 space-y-6 flex flex-col overflow-y-auto custom-scrollbar">
+        {/* Main Filter & Category Bar */}
+        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-4 shadow-lg">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="w-full md:w-80">
             <SearchInput
@@ -722,6 +731,7 @@ export const AssetsPage: React.FC = () => {
           </div>
         </Modal>
       )}
+      </div>
     </div>
   );
 };

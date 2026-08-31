@@ -23,13 +23,8 @@ from apps.production.api.viewsets.scheduling import (
     AutomationRuleDetailView,
     AutomationRulesView,
     SchedulingCapacityView,
-    SchedulingEventDetailView,
-    SchedulingEventsView,
-    SchedulingHolidaysView,
-    SchedulingLeavesView,
     SchedulingOverbookingView,
     SchedulingResolveOverbookingView,
-    SchedulingResourcesView,
 )
 from apps.production.api.viewsets.shot import ShotViewSet
 from apps.production.api.viewsets.task import TaskViewSet
@@ -57,17 +52,10 @@ urlpatterns = router.urls + [
     path("automations/rules/", AutomationRulesView.as_view(), name="automation-rules-list"),
     path("automations/rules/<str:pk>/", AutomationRuleDetailView.as_view(), name="automation-rules-detail"),
     path("automations/audit-logs/", AutomationAuditLogsView.as_view(), name="automation-audit-logs"),
-    # Scheduling (bare arrays)
-    path("scheduling/events/", SchedulingEventsView.as_view(), name="scheduling-events"),
-    path("scheduling/events/<str:pk>/", SchedulingEventDetailView.as_view(), name="scheduling-event-detail"),
-    path("scheduling/resources/", SchedulingResourcesView.as_view(), name="scheduling-resources"),
-    path("scheduling/resources/<str:pk>/", SchedulingResourcesView.as_view(), name="scheduling-resource-detail"),
+    # Scheduling capacity/overbooking (not provided by the scheduling app)
     path("scheduling/capacity/", SchedulingCapacityView.as_view(), name="scheduling-capacity"),
     path("scheduling/overbooking/", SchedulingOverbookingView.as_view(), name="scheduling-overbooking"),
     path("scheduling/resolve-overbooking/", SchedulingResolveOverbookingView.as_view(), name="scheduling-resolve-overbooking"),
-    path("scheduling/holidays/", SchedulingHolidaysView.as_view(), name="scheduling-holidays"),
-    path("scheduling/leaves/", SchedulingLeavesView.as_view(), name="scheduling-leaves"),
-    path("scheduling/leaves/<str:pk>/", SchedulingLeavesView.as_view(), name="scheduling-leave-detail"),
     # Analytics
     path("analytics/kpis/", AnalyticsKpisView.as_view(), name="analytics-kpis"),
     path("analytics/departments/", AnalyticsDepartmentsView.as_view(), name="analytics-departments"),

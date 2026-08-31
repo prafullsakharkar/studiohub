@@ -19,7 +19,7 @@ export class RoleService {
         ordering?: string;
         is_system?: boolean;
     }): Promise<PaginatedResponse<Role>> {
-        const response = await this.apiClient.get<PaginatedResponse<Role>>('/identity/roles/', { params });
+        const response = await this.apiClient.get<PaginatedResponse<Role>>('/organization/roles/', { params });
         return response;
     }
 
@@ -27,7 +27,7 @@ export class RoleService {
      * Get a single role by ID
      */
     async getRole(id: string): Promise<Role> {
-        const response = await this.apiClient.get<Role>(`/identity/roles/${id}/`);
+        const response = await this.apiClient.get<Role>(`/organization/roles/${id}/`);
         return response;
     }
 
@@ -35,7 +35,7 @@ export class RoleService {
      * Create a new role
      */
     async createRole(data: CreateRole): Promise<Role> {
-        const response = await this.apiClient.post<Role>('/identity/roles/', data);
+        const response = await this.apiClient.post<Role>('/organization/roles/', data);
         return response;
     }
 
@@ -43,7 +43,7 @@ export class RoleService {
      * Update an existing role
      */
     async updateRole(id: string, data: UpdateRole): Promise<Role> {
-        const response = await this.apiClient.patch<Role>(`/identity/roles/${id}/`, data);
+        const response = await this.apiClient.patch<Role>(`/organization/roles/${id}/`, data);
         return response;
     }
 
@@ -51,14 +51,14 @@ export class RoleService {
      * Delete a role
      */
     async deleteRole(id: string): Promise<void> {
-        await this.apiClient.delete(`/identity/roles/${id}/`);
+        await this.apiClient.delete(`/organization/roles/${id}/`);
     }
 
     /**
      * Clone a role
      */
     async cloneRole(id: string, name: string): Promise<Role> {
-        const response = await this.apiClient.post<Role>(`/identity/roles/${id}/clone/`, { name });
+        const response = await this.apiClient.post<Role>(`/organization/roles/${id}/clone/`, { name });
         return response;
     }
 
@@ -66,7 +66,7 @@ export class RoleService {
      * Get role permissions
      */
     async getRolePermissions(id: string): Promise<{ permissions: string[] }> {
-        const response = await this.apiClient.get<{ permissions: string[] }>(`/identity/roles/${id}/permissions/`);
+        const response = await this.apiClient.get<{ permissions: string[] }>(`/organization/roles/${id}/permissions/`);
         return response;
     }
 
@@ -74,7 +74,7 @@ export class RoleService {
      * Update role permissions
      */
     async updateRolePermissions(id: string, permissions: string[]): Promise<Role> {
-        const response = await this.apiClient.patch<Role>(`/identity/roles/${id}/permissions/`, { permissions });
+        const response = await this.apiClient.patch<Role>(`/organization/roles/${id}/permissions/`, { permissions });
         return response;
     }
 
@@ -82,7 +82,7 @@ export class RoleService {
      * Add permission to role
      */
     async addPermissionToRole(id: string, permission: string): Promise<Role> {
-        const response = await this.apiClient.post<Role>(`/identity/roles/${id}/permissions/add/`, { permission });
+        const response = await this.apiClient.post<Role>(`/organization/roles/${id}/permissions/add/`, { permission });
         return response;
     }
 
@@ -90,7 +90,7 @@ export class RoleService {
      * Remove permission from role
      */
     async removePermissionFromRole(id: string, permission: string): Promise<Role> {
-        const response = await this.apiClient.post<Role>(`/identity/roles/${id}/permissions/remove/`, { permission });
+        const response = await this.apiClient.post<Role>(`/organization/roles/${id}/permissions/remove/`, { permission });
         return response;
     }
 }

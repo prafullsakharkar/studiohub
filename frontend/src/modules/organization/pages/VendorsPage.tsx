@@ -68,24 +68,23 @@ export const VendorsPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 shrink-0">
           <Button
             size="sm"
             variant="outline"
             onClick={handleExport}
-            className="text-xs flex items-center gap-1.5"
+            leftIcon={<Download className="w-3.5 h-3.5" />}
           >
-            <Download className="w-3.5 h-3.5" />
             Export Directory
           </Button>
 
-          <Link to="/vendors/new">
+          <Link to="/vendors/new" className="inline-flex">
             <Button
               size="sm"
               variant="primary"
-              className="text-xs flex items-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white"
+              leftIcon={<Plus className="w-3.5 h-3.5" />}
+              className="bg-purple-600 hover:bg-purple-500 text-white"
             >
-              <Plus className="w-3.5 h-3.5" />
               Register Vendor
             </Button>
           </Link>

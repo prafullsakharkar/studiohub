@@ -141,71 +141,88 @@ export const ReviewsPage: React.FC = () => {
   );
 
   return (
-    <div id="reviews-main-page" className="p-6 space-y-6 max-w-7xl mx-auto custom-scrollbar overflow-y-auto">
-      {/* Top Banner & Mode Toggle */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/80 p-4 rounded-2xl border border-slate-800 backdrop-blur-sm">
-        <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <Film className="w-6 h-6 text-indigo-400" />
-            Reviews & Screening Playlists
-          </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Frame-accurate screening rooms, markup annotations, version comparisons, and client review workflows.
-          </p>
-        </div>
-
-        {/* View Mode Switcher + Action Button */}
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
-            <button
-              onClick={() => setMainView('reviews')}
-              className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
-                mainView === 'reviews'
-                  ? 'bg-indigo-600 text-white font-bold shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Film className="w-3.5 h-3.5" />
-              <span>Review Sessions ({reviews.length})</span>
-            </button>
-            <button
-              onClick={() => setMainView('playlists')}
-              className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
-                mainView === 'playlists'
-                  ? 'bg-indigo-600 text-white font-bold shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <List className="w-3.5 h-3.5" />
-              <span>Playlists & Reels ({playlists.length})</span>
-            </button>
+    <div id="reviews-main-page" className="flex-1 flex flex-col min-h-0 bg-slate-950 text-slate-100">
+      {/* Studio Header Bar */}
+      <div className="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 py-3.5 shrink-0">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 rounded-xl text-indigo-400">
+              <Film className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg font-bold tracking-tight text-white">
+                  Reviews & Screening Playlists
+                </h1>
+                <span className="px-2 py-0.5 text-[11px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full">
+                  {totalReviewsCount} Review Sessions
+                </span>
+                <span className="px-2 py-0.5 text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {inReviewCount} In Screening
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Frame-accurate screening rooms, markup annotations, version comparisons, and client review workflows
+              </p>
+            </div>
           </div>
 
-          {mainView === 'reviews' ? (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setIsCreateReviewOpen(true)}
-              className="text-xs bg-indigo-600 hover:bg-indigo-500 whitespace-nowrap"
-              leftIcon={<Plus className="w-3.5 h-3.5" />}
-            >
-              New Review
-            </Button>
-          ) : (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setIsCreatePlaylistOpen(true)}
-              className="text-xs bg-indigo-600 hover:bg-indigo-500 whitespace-nowrap"
-              leftIcon={<ListPlus className="w-3.5 h-3.5" />}
-            >
-              New Screening Reel
-            </Button>
-          )}
+          {/* View Mode Switcher + Action Button */}
+          <div className="flex items-center gap-3 shrink-0 flex-wrap">
+            <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+              <button
+                onClick={() => setMainView('reviews')}
+                className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
+                  mainView === 'reviews'
+                    ? 'bg-indigo-600 text-white font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Film className="w-3.5 h-3.5" />
+                <span>Review Sessions ({reviews.length})</span>
+              </button>
+              <button
+                onClick={() => setMainView('playlists')}
+                className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
+                  mainView === 'playlists'
+                    ? 'bg-indigo-600 text-white font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <List className="w-3.5 h-3.5" />
+                <span>Playlists & Reels ({playlists.length})</span>
+              </button>
+            </div>
+
+            {mainView === 'reviews' ? (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsCreateReviewOpen(true)}
+                className="text-xs bg-indigo-600 hover:bg-indigo-500 whitespace-nowrap"
+                leftIcon={<Plus className="w-3.5 h-3.5" />}
+              >
+                New Review
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsCreatePlaylistOpen(true)}
+                className="text-xs bg-indigo-600 hover:bg-indigo-500 whitespace-nowrap"
+                leftIcon={<ListPlus className="w-3.5 h-3.5" />}
+              >
+                New Screening Reel
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Summary KPI Strip */}
+      {/* Main Studio View */}
+      <div className="flex-1 min-h-0 p-4 sm:p-6 space-y-6 flex flex-col overflow-y-auto custom-scrollbar">
+        {/* Summary KPI Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="p-4 bg-slate-900/60 border border-slate-800 rounded-xl space-y-1">
           <div className="text-[11px] font-mono text-slate-400 uppercase">Total Review Sessions</div>
@@ -546,6 +563,7 @@ export const ReviewsPage: React.FC = () => {
         }}
         isLoading={isCreatingPlaylist}
       />
+      </div>
     </div>
   );
 };

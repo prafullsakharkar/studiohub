@@ -27,6 +27,10 @@ LOCAL_APPS = [
     "apps.audit",
     "apps.production",
     "apps.intelligence",
+    # New apps
+    "apps.deliveries",
+    "apps.publishing",
+    "apps.scheduling",
 ]
 
 INSTALLED_APPS = (

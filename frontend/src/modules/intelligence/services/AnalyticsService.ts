@@ -1,15 +1,13 @@
-import { ApiClient } from '@/api/client/ApiClient';
 import {
   AnalyticsDashboard,
   AnalyticsDomain,
 } from '@/types/intelligence';
+import { getDomainAnalyticsDashboard } from '@/mocks/db/intelligence/analytics';
 
 class AnalyticsService {
-  private api = new ApiClient('/api/v1');
-
   async getDashboard(domain: AnalyticsDomain): Promise<AnalyticsDashboard> {
-    const response = await this.api.get<AnalyticsDashboard>(`/intelligence/analytics/${domain}/`);
-    return response;
+    await new Promise((r) => setTimeout(r, 40));
+    return getDomainAnalyticsDashboard(domain);
   }
 
   async getAvailableDomains(): Promise<{
@@ -18,7 +16,6 @@ class AnalyticsService {
     description: string;
     icon: string;
   }[]> {
-    // Static list — could be moved to backend /intelligence/analytics/domains/ in future
     return [
       { id: 'projects', label: 'Projects & Shows', description: 'Show burn-down & budget tracking', icon: 'Film' },
       { id: 'production', label: 'Shot Production', description: 'Sequence stages & revisions', icon: 'Clapperboard' },

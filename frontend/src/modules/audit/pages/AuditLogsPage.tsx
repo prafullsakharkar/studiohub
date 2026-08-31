@@ -63,27 +63,45 @@ export const AuditLogsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <span>Enterprise Activity & Audit Trail</span>
-          </h1>
-          <p className="text-xs text-slate-400">
-            Immutable log of supervisor approvals, shot handoffs, team deployments, and granular state transitions
-          </p>
-        </div>
+    <div className="flex-1 flex flex-col min-h-0 bg-slate-950 text-slate-100">
+      {/* Studio Header Bar */}
+      <div className="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 py-3.5 shrink-0">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-xl text-emerald-400">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg font-bold tracking-tight text-white">
+                  Enterprise Activity & Audit Trail
+                </h1>
+                <span className="px-2 py-0.5 text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  SOC2 Type II / TPN Studio Compliant
+                </span>
+                <span className="px-2 py-0.5 text-[11px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full">
+                  {activities.length} Recorded Events
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Immutable log of supervisor approvals, shot handoffs, team deployments, and granular state transitions
+              </p>
+            </div>
+          </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center space-x-2 text-xs font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-3 py-1.5 rounded-lg shadow-xs">
-            <ShieldCheck className="w-4 h-4" />
-            <span>SOC2 Type II / TPN Studio Compliant</span>
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center space-x-2 text-xs font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-3 py-1.5 rounded-lg shadow-xs">
+              <ShieldCheck className="w-4 h-4" />
+              <span>Immutable Ledger Active</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Quick Metrics Bar */}
+      {/* Main Studio View */}
+      <div className="flex-1 min-h-0 p-4 sm:p-6 space-y-6 flex flex-col overflow-y-auto custom-scrollbar">
+        {/* Quick Metrics Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-3.5 bg-slate-900 border border-slate-800 rounded-xl">
           <div className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Total Activity Events</div>
@@ -256,6 +274,7 @@ export const AuditLogsPage: React.FC = () => {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 };

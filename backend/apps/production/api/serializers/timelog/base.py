@@ -16,6 +16,18 @@ class TimelogSerializer(BaseReadSerializer):
     person_avatar = serializers.SerializerMethodField()
     person_role = serializers.SerializerMethodField()
     department = serializers.CharField(read_only=True)
+    duration_hours = serializers.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        coerce_to_string=False,
+        read_only=True,
+    )
+    hourly_rate_usd = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        coerce_to_string=False,
+        read_only=True,
+    )
 
     class Meta:
         model = Timelog

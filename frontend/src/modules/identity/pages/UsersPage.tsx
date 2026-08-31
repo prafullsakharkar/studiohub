@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useFoundationPermissions } from '@/modules/core/hooks/useFoundationPermissions';
 import { Can } from '@/core/permissions/Can';
 import { Button } from '@/shared/components/Button';
@@ -6,8 +6,40 @@ import { Plus, Search, Filter, Download, Upload, Trash2, Edit, Eye } from 'lucid
 import { DataTable } from '@/shared/components/DataTable';
 import { Card, CardHeader, CardBody, CardFooter } from '@/shared/components/Card';
 import { Badge } from '@/shared/components/Badge';
-import { mockUsers } from '@/mocks/db/identity/identity';
+import { userService } from '@/modules/identity/api/UserService';
 import { UserStatus } from '@/modules/core/types';
+
+interface TableUser {
+  id: string;
+  username: string;
+  email: string;
+  full_name: string;
+  first_name?: string;
+  last_name?: string;
+  status: UserStatus;
+  roles: string[];
+  mfa_enabled: boolean;
+}
+
+function toTableUser(raw: Record<string, any>): TableUser {
+  const parts = (raw.full_name || '').split(' ');
+  return {
+    id: raw.id ?? raw.uuid,
+    username: raw.username ?? raw.email ?? '',
+    email: raw.email ?? '',
+    full_name: raw.full_name ?? '',
+    first_name: parts[0] ?? '',
+    last_name: parts.slice(1).join(' '),
+    status: raw.is_active ? 'ACTIVE' : 'INACTIVE',
+    roles: Array.isArray(raw.roles) ? raw.roles.map(String) : [],
+    mfa_enabled: !!raw.mfa_enabled,
+  };
+}
+
+function extractUsers(data: any): TableUser[] {
+  const list = Array.isArray(data) ? data : data?.results ?? [];
+  return (list as any[]).map(toTableUser);
+}
 
 export const UsersPage: React.FC = () => {
     const { canViewUsers, canCreateUsers, canUpdateUsers, canDeleteUsers } = useFoundationPermissions();
@@ -17,9 +49,29 @@ export const UsersPage: React.FC = () => {
     const [page, setPage] = useState(1);
     const [_pageSize, setPageSize] = useState(20);
     const [_selectedRows, setSelectedRows] = useState<string[]>([]);
+    const [allUsers, setAllUsers] = useState<TableUser[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        let mounted = true;
+        userService
+            .getUsers({ page_size: 200 })
+            .then((data) => {
+                if (mounted) setAllUsers(extractUsers(data));
+            })
+            .catch((err) => {
+                console.error('[UsersPage] Failed to load users:', err);
+            })
+            .finally(() => {
+                if (mounted) setIsLoading(false);
+            });
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     const filteredUsers = useMemo(() => {
-        let filtered = [...mockUsers];
+        let filtered = [...allUsers];
         if (search) {
             const searchLower = search.toLowerCase();
             filtered = filtered.filter(
@@ -37,7 +89,7 @@ export const UsersPage: React.FC = () => {
             filtered = filtered.filter((user) => user.roles.includes(role));
         }
         return filtered;
-    }, [search, status, role]);
+    }, [search, status, role, allUsers]);
 
     const paginatedUsers = useMemo(() => {
         const startIndex = (page - 1) * _pageSize;
@@ -50,22 +102,22 @@ export const UsersPage: React.FC = () => {
         {
             id: 'username',
             label: 'Username',
-            accessor: 'username' as keyof typeof mockUsers[0],
+            accessor: 'username' as keyof TableUser,
         },
         {
             id: 'email',
             label: 'Email',
-            accessor: 'email' as keyof typeof mockUsers[0],
+            accessor: 'email' as keyof TableUser,
         },
         {
             id: 'full_name',
             label: 'Full Name',
-            accessor: 'full_name' as keyof typeof mockUsers[0],
+            accessor: 'full_name' as keyof TableUser,
         },
         {
             id: 'status',
             label: 'Status',
-            accessor: 'status' as keyof typeof mockUsers[0],
+            accessor: 'status' as keyof TableUser,
             cell: (status: UserStatus) => {
                 const statusColors: Record<UserStatus, string> = {
                     ACTIVE: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
@@ -79,7 +131,7 @@ export const UsersPage: React.FC = () => {
         {
             id: 'roles',
             label: 'Roles',
-            accessor: 'roles' as keyof typeof mockUsers[0],
+            accessor: 'roles' as keyof TableUser,
             cell: (roles: string[]) => (
                 <div className="flex flex-wrap gap-1">
                     {roles.map((role) => (
@@ -93,7 +145,7 @@ export const UsersPage: React.FC = () => {
         {
             id: 'mfa_enabled',
             label: 'MFA',
-            accessor: 'mfa_enabled' as keyof typeof mockUsers[0],
+            accessor: 'mfa_enabled' as keyof TableUser,
             cell: (mfaEnabled: boolean) => (
                 <Badge className={mfaEnabled ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-slate-500/10 text-slate-400 border-slate-500/20'}>
                     {mfaEnabled ? 'Enabled' : 'Disabled'}
@@ -103,7 +155,7 @@ export const UsersPage: React.FC = () => {
         {
             id: 'actions',
             label: 'Actions',
-            accessor: 'id' as keyof typeof mockUsers[0],
+            accessor: 'id' as keyof TableUser,
             cell: (_id: string) => (
                 <div className="flex items-center gap-1">
                     <Can permission="users.update">
@@ -200,10 +252,10 @@ export const UsersPage: React.FC = () => {
                     <DataTable
                         data={paginatedUsers}
                         columns={columns}
-                        isLoading={false}
+                        isLoading={isLoading}
                         totalCount={totalCount}
                         currentPage={page}
-                        pageSize={pageSize}
+                        pageSize={_pageSize}
                         onPageChange={setPage}
                         rowIdKey="id"
                         selectable

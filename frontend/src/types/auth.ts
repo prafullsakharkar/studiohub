@@ -14,6 +14,8 @@ export type Role =
   | 'Umpire'
   | 'Fan';
 
+import { PermissionCode } from '@/modules/core/constants';
+
 export type Permission =
   | 'projects:create'
   | 'projects:read'
@@ -38,6 +40,13 @@ export type Permission =
   | 'audit:read'
   | 'settings:update'
   | 'users:manage';
+
+/**
+ * A permission string in either the legacy colon-separated format
+ * (`projects:create`) or the dot-separated code format (`users.view`).
+ * Both are accepted across the RBAC boundary.
+ */
+export type AnyPermission = Permission | PermissionCode;
 
 export interface User {
   id: string;

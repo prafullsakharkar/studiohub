@@ -15,6 +15,14 @@ class IdentityQuerySet(BaseQuerySet):
             status=RecordStatus.ACTIVE,
         )
 
+    def inactive(self):
+        if not hasattr(self.model, "status"):
+            return self
+
+        return self.filter(
+            status=RecordStatus.INACTIVE,
+        )
+
     def system(self):
         """
         Return system-defined records.

@@ -70,8 +70,8 @@ export const DepartmentsPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Link to="/departments/new">
+        <div className="flex items-center gap-2 shrink-0">
+          <Link to="/departments/new" className="inline-flex">
             <Button size="sm" variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
               Create Department
             </Button>

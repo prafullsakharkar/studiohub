@@ -13,17 +13,29 @@ import {
   StudioNotification,
 } from '@/types/organization';
 import { PaginatedResponse } from '@/types/drf';
+import {
+  normalizeOffices,
+  normalizeOrganizations,
+  normalizeReports,
+  normalizeTeams,
+  toOffice,
+  toOrganization,
+  toTeam,
+} from './mappers/organizationMapper';
 
 export const organizationApi = {
   // Organizations
   getOrganizations: async (params?: Record<string, any>): Promise<Organization[]> => {
-    return apiClient.get<Organization[]>('/api/v1/organizations/', { params });
+    const data = await apiClient.get<any[]>('/api/v1/organizations/', { params });
+    return normalizeOrganizations(data);
   },
   getOrganizationsPaginated: async (params?: Record<string, any>): Promise<PaginatedResponse<Organization>> => {
-    return apiClient.get<PaginatedResponse<Organization>>('/api/v1/organizations/', { params: { ...params, page_size: params?.page_size || 10 } });
+    const data = await apiClient.get<PaginatedResponse<any>>('/api/v1/organizations/', { params: { ...params, page_size: params?.page_size || 10 } });
+    return { ...data, results: normalizeOrganizations(data.results ?? []) };
   },
   getOrganizationDetail: async (id: string): Promise<Organization> => {
-    return apiClient.get<Organization>(`/api/v1/organizations/${id}/`);
+    const data = await apiClient.get<any>(`/api/v1/organizations/${id}/`);
+    return toOrganization(data);
   },
   createOrganization: async (org: Partial<Organization>): Promise<Organization> => {
     return apiClient.post<Organization>('/api/v1/organizations/', org);
@@ -123,10 +135,12 @@ export const organizationApi = {
 
   // Teams
   getTeams: async (): Promise<Team[]> => {
-    return apiClient.get<Team[]>('/api/v1/teams/');
+    const data = await apiClient.get<any[]>('/api/v1/teams/');
+    return normalizeTeams(data);
   },
   getTeamDetail: async (id: string): Promise<Team> => {
-    return apiClient.get<Team>(`/api/v1/teams/${id}/`);
+    const data = await apiClient.get<any>(`/api/v1/teams/${id}/`);
+    return toTeam(data);
   },
   createTeam: async (team: Partial<Team>): Promise<Team> => {
     return apiClient.post<Team>('/api/v1/teams/', team);
@@ -140,10 +154,12 @@ export const organizationApi = {
 
   // Offices
   getOffices: async (): Promise<Office[]> => {
-    return apiClient.get<Office[]>('/api/v1/offices/');
+    const data = await apiClient.get<any[]>('/api/v1/offices/');
+    return normalizeOffices(data);
   },
   getOfficeDetail: async (id: string): Promise<Office> => {
-    return apiClient.get<Office>(`/api/v1/offices/${id}/`);
+    const data = await apiClient.get<any>(`/api/v1/offices/${id}/`);
+    return toOffice(data);
   },
   createOffice: async (office: Partial<Office>): Promise<Office> => {
     return apiClient.post<Office>('/api/v1/offices/', office);
@@ -167,7 +183,8 @@ export const organizationApi = {
 
   // Reports
   getReports: async (): Promise<ProductionReport[]> => {
-    return apiClient.get<ProductionReport[]>('/api/v1/reports/');
+    const data = await apiClient.get<any[]>('/api/v1/reports/');
+    return normalizeReports(data);
   },
 
   // Notifications

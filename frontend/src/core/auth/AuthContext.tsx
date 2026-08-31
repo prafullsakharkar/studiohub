@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { User, Role, Permission } from '@/types/auth';
+import { User, Role, AnyPermission } from '@/types/auth';
 import { LoginFormData } from '@/modules/auth/schemas/authSchemas';
 
 export interface AuthContextValue {
@@ -9,8 +9,8 @@ export interface AuthContextValue {
   login: (credentials: LoginFormData) => Promise<void>;
   logout: () => Promise<void>;
   hasRole: (role: Role | Role[]) => boolean;
-  hasPermission: (permission: Permission | Permission[]) => boolean;
-  can: (action: Permission | Permission[]) => boolean;
+  hasPermission: (permission: AnyPermission | AnyPermission[]) => boolean;
+  can: (action: AnyPermission | AnyPermission[]) => boolean;
   refreshUser: () => Promise<void>;
 }
 

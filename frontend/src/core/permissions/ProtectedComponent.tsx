@@ -1,10 +1,10 @@
 import React from 'react';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
-import { Role, Permission } from '@/types/auth';
+import { Role, AnyPermission } from '@/types/auth';
 
 interface ProtectedComponentProps {
   roles?: Role | Role[];
-  permissions?: Permission | Permission[];
+  permissions?: AnyPermission | AnyPermission[];
   children: React.ReactNode;
   fallback?: React.ReactNode;
 }

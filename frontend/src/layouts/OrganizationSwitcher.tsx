@@ -52,9 +52,9 @@ export const OrganizationSwitcher: React.FC<{ compact?: boolean }> = ({ compact 
 
   const filteredOrgs = organizations.filter(
     (o) =>
-      o.name.toLowerCase().includes(search.toLowerCase()) ||
-      o.code.toLowerCase().includes(search.toLowerCase()) ||
-      o.headquarters.toLowerCase().includes(search.toLowerCase())
+      (o.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (o.code || '').toLowerCase().includes(search.toLowerCase()) ||
+      (o.headquarters || '').toLowerCase().includes(search.toLowerCase())
   );
 
   const favoriteOrgs = organizations.filter((o) => favoriteOrgIds.includes(o.id));
@@ -84,16 +84,16 @@ export const OrganizationSwitcher: React.FC<{ compact?: boolean }> = ({ compact 
         </div>
 
         {!compact && (
-          <div className="flex flex-col min-w-0 max-w-[130px] sm:max-w-[170px]">
-            <div className="flex items-center gap-1">
+          <div className="flex flex-col min-w-0 max-w-[90px] sm:max-w-[130px] md:max-w-[160px]">
+            <div className="flex items-center gap-1 min-w-0">
               <span className="font-bold text-xs text-white truncate">{currentOrganization.name}</span>
-              <span className="text-[9px] font-mono text-indigo-400 bg-indigo-950/80 px-1 rounded border border-indigo-500/30">
+              <span className="hidden sm:inline-block text-[9px] font-mono text-indigo-400 bg-indigo-950/80 px-1 rounded border border-indigo-500/30 shrink-0">
                 {currentOrganization.code}
               </span>
             </div>
-            <span className="text-[9px] text-slate-400 truncate flex items-center gap-1 font-mono">
-              <Globe className="w-2.5 h-2.5 text-slate-500" />
-              {currentOrganization.headquarters.split(',')[0]} • {currentOrganization.tier.replace('Enterprise ', '')}
+            <span className="hidden md:flex text-[9px] text-slate-400 truncate items-center gap-1 font-mono">
+              <Globe className="w-2.5 h-2.5 text-slate-500 shrink-0" />
+              <span className="truncate">{(currentOrganization.headquarters || '').split(',')[0]} • {(currentOrganization.tier || '').replace('Enterprise ', '')}</span>
             </span>
           </div>
         )}
@@ -311,9 +311,9 @@ const OrgItem: React.FC<OrgItemProps> = ({ org, isSelected, isFavorite, onSelect
             </span>
           </div>
           <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
-            <span>{org.headquarters.split(',')[0]}</span>
+            <span>{(org.headquarters || '').split(',')[0]}</span>
             <span>•</span>
-            <span className="text-slate-500">{org.crew_count} Crew</span>
+            <span className="text-slate-500">{org.crew_count ?? 0} Crew</span>
           </div>
         </div>
       </div>

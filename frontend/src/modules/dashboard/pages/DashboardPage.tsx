@@ -52,43 +52,53 @@ export const DashboardPage: React.FC = () => {
   const recentReviews = reviewsData?.results || [];
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto">
-      {/* Studio Header HUD */}
-      <div className="rounded-xl bg-slate-900 border border-slate-800 p-4 relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1 z-10">
-          <div className="flex items-center space-x-2">
-            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-              SHOW: [NK99] NEBULA KNIGHTS
-            </span>
-            <span className="text-[10px] text-slate-400 font-mono">
-              OpenColorIO: ACEScg 1.3 • Resolution: 4096x2160 DCI • 24.00 fps
-            </span>
+    <div className="flex-1 flex flex-col min-h-0 bg-slate-950 text-slate-100">
+      {/* Studio Header Bar */}
+      <div className="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 py-3.5 shrink-0">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 rounded-xl text-indigo-400">
+              <Film className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                  Production Control Center
+                  <span className="text-xs font-mono font-normal text-slate-400">({user?.role})</span>
+                </h1>
+                <span className="px-2 py-0.5 text-[11px] font-semibold font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full">
+                  [NK99] NEBULA KNIGHTS
+                </span>
+                <span className="px-2 py-0.5 text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  ACEScg 1.3
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Resolution: 4096x2160 DCI • 24.00 fps • 18 sequence shots queued for supervisor approval
+              </p>
+            </div>
           </div>
-          <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            Production Control Center
-            <span className="text-xs font-mono font-normal text-slate-400">({user?.role})</span>
-          </h1>
-          <p className="text-xs text-slate-300">
-            Pipeline health is optimal. 18 sequence shots queued for supervisor approval today.
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2 z-10 shrink-0">
-          <Link to="/reviews">
-            <Button variant="primary" size="sm" leftIcon={<PlaySquare className="w-3.5 h-3.5" />}>
-              Screening Room
-            </Button>
-          </Link>
-          <Link to="/shots">
-            <Button variant="outline" size="sm" leftIcon={<Film className="w-3.5 h-3.5" />}>
-              Shot Matrix
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+            <Link to="/reviews" className="inline-flex">
+              <Button variant="primary" size="sm" leftIcon={<PlaySquare className="w-3.5 h-3.5" />}>
+                Screening Room
+              </Button>
+            </Link>
+            <Link to="/shots" className="inline-flex">
+              <Button variant="outline" size="sm" leftIcon={<Film className="w-3.5 h-3.5" />}>
+                Shot Matrix
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* KPI HUD Metric Cards (ShotGrid & Linear style) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* Main Studio View */}
+      <div className="flex-1 min-h-0 p-4 sm:p-6 space-y-6 flex flex-col overflow-y-auto custom-scrollbar">
+        {/* KPI HUD Metric Cards (ShotGrid & Linear style) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Total Shots Cut */}
         <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-400">
@@ -314,6 +324,7 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

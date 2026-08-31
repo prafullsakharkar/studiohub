@@ -122,34 +122,52 @@ export const TimelogsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-16">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-100 tracking-tight flex items-center gap-2.5">
-            <Clock className="w-6 h-6 text-indigo-400" />
-            Production Timelogs & Artist Hours
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Track live artist working sessions, review billable logs, and approve studio payroll entries.
-          </p>
-        </div>
+    <div className="flex-1 flex flex-col min-h-0 bg-slate-950 text-slate-100">
+      {/* Studio Header Bar */}
+      <div className="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 py-3.5 shrink-0">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 rounded-xl text-indigo-400">
+              <Clock className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg font-bold tracking-tight text-white">
+                  Production Timelogs & Artist Hours
+                </h1>
+                <span className="px-2 py-0.5 text-[11px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full">
+                  {totalHours.toFixed(1)} hrs Logged
+                </span>
+                <span className="px-2 py-0.5 text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {billableHours.toFixed(1)} hrs Billable
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Track live artist working sessions, review billable logs, and approve studio payroll entries
+              </p>
+            </div>
+          </div>
 
-        <div className="flex items-center gap-3">
-          <Button
-            variant="primary"
-            onClick={() => {
-              setSelectedTaskForLog(tasksData?.results?.[0]);
-              setIsCreateModalOpen(true);
-            }}
-            leftIcon={<Plus className="w-4 h-4" />}
-          >
-            Manual Log Entry
-          </Button>
+          <div className="flex items-center gap-3 shrink-0">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                setSelectedTaskForLog(tasksData?.results?.[0]);
+                setIsCreateModalOpen(true);
+              }}
+              leftIcon={<Plus className="w-4 h-4" />}
+            >
+              Manual Log Entry
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Metric Summary Cards */}
+      {/* Main Studio View */}
+      <div className="flex-1 min-h-0 p-4 sm:p-6 space-y-6 flex flex-col overflow-y-auto custom-scrollbar">
+        {/* Metric Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800 flex flex-col justify-between">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Logged Time</span>
@@ -417,6 +435,7 @@ export const TimelogsPage: React.FC = () => {
           task={selectedTaskForLog}
         />
       )}
+      </div>
     </div>
   );
 };

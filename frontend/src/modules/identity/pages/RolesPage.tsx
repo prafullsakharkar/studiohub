@@ -1,13 +1,37 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useFoundationPermissions } from '@/modules/core/hooks/useFoundationPermissions';
 import { Can } from '@/core/permissions/Can';
 import { Button } from '@/shared/components/Button';
-import { Plus, Search, Filter, MoreHorizontal, Download, Upload, Trash2, Edit, Eye, Shield, Key } from 'lucide-react';
+import { Plus, Search, Filter, Download, Upload, Trash2, Edit, Eye, Shield, Key } from 'lucide-react';
 import { DataTable } from '@/shared/components/DataTable';
 import { Card, CardHeader, CardBody, CardFooter } from '@/shared/components/Card';
 import { Badge } from '@/shared/components/Badge';
-import { mockRoles } from '@/mocks/db/identity/identity';
-import { Role } from '@/modules/core/types';
+import { roleService } from '@/modules/identity/api/RoleService';
+
+interface TableRole {
+    id: string;
+    name: string;
+    description: string;
+    user_count: number;
+    permission_count: number;
+    is_system: boolean;
+}
+
+function toTableRole(raw: Record<string, any>): TableRole {
+    return {
+        id: raw.id ?? raw.uuid,
+        name: raw.name ?? '',
+        description: raw.description ?? '',
+        user_count: raw.user_count ?? 0,
+        permission_count: raw.permission_count ?? 0,
+        is_system: !!raw.is_system,
+    };
+}
+
+function extractRoles(data: any): TableRole[] {
+    const list = Array.isArray(data) ? data : data?.results ?? [];
+    return (list as any[]).map(toTableRole);
+}
 
 export const RolesPage: React.FC = () => {
     const { canViewRoles, canCreateRoles, canUpdateRoles, canDeleteRoles } = useFoundationPermissions();
@@ -16,9 +40,29 @@ export const RolesPage: React.FC = () => {
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
     const [selectedRows, setSelectedRows] = useState<string[]>([]);
+    const [allRoles, setAllRoles] = useState<TableRole[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        let mounted = true;
+        roleService
+            .getRoles({ page_size: 200 })
+            .then((data) => {
+                if (mounted) setAllRoles(extractRoles(data));
+            })
+            .catch((err) => {
+                console.error('[RolesPage] Failed to load roles:', err);
+            })
+            .finally(() => {
+                if (mounted) setIsLoading(false);
+            });
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     const filteredRoles = useMemo(() => {
-        let filtered = [...mockRoles];
+        let filtered = [...allRoles];
         if (search) {
             const searchLower = search.toLowerCase();
             filtered = filtered.filter(
@@ -31,7 +75,7 @@ export const RolesPage: React.FC = () => {
             filtered = filtered.filter((role) => role.is_system === isSystem);
         }
         return filtered;
-    }, [search, isSystem]);
+    }, [search, isSystem, allRoles]);
 
     const paginatedRoles = useMemo(() => {
         const startIndex = (page - 1) * pageSize;
@@ -44,8 +88,8 @@ export const RolesPage: React.FC = () => {
         {
             id: 'name',
             label: 'Role Name',
-            accessor: 'name' as keyof typeof mockRoles[0],
-            cell: (name: string, role: typeof mockRoles[0]) => (
+            accessor: 'name' as keyof TableRole,
+            cell: (name: string, role: TableRole) => (
                 <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400">
                         <Shield className="h-5 w-5" />
@@ -60,7 +104,7 @@ export const RolesPage: React.FC = () => {
         {
             id: 'user_count',
             label: 'Users',
-            accessor: 'user_count' as keyof typeof mockRoles[0],
+            accessor: 'user_count' as keyof TableRole,
             cell: (count: number) => (
                 <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-full bg-slate-700/50 flex items-center justify-center text-slate-300">
@@ -73,9 +117,8 @@ export const RolesPage: React.FC = () => {
         {
             id: 'permissions_count',
             label: 'Permissions',
-            accessor: 'permissions' as keyof typeof mockRoles[0],
-            cell: (permissions: string[]) => {
-                const count = permissions.length;
+            accessor: 'permission_count' as keyof TableRole,
+            cell: (count: number) => {
                 return (
                     <div className="flex items-center gap-2">
                         <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400">
@@ -89,7 +132,7 @@ export const RolesPage: React.FC = () => {
         {
             id: 'is_system',
             label: 'Type',
-            accessor: 'is_system' as keyof typeof mockRoles[0],
+            accessor: 'is_system' as keyof TableRole,
             cell: (isSystem: boolean) => (
                 <Badge className={isSystem ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-slate-500/10 text-slate-400 border-slate-500/20'}>
                     {isSystem ? 'System' : 'Custom'}
@@ -98,7 +141,7 @@ export const RolesPage: React.FC = () => {
         },
     ];
 
-    const renderRowActions = (role: typeof mockRoles[0]) => (
+    const renderRowActions = (role: TableRole) => (
         <div className="flex items-center gap-2">
             <Can permission="roles.view">
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -197,7 +240,7 @@ export const RolesPage: React.FC = () => {
                         showColumnToggle={true}
                         showRefresh={true}
                         showExport={true}
-                        isLoading={false}
+                        isLoading={isLoading}
                         error={null}
                     />
                 </CardBody>

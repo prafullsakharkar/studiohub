@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardHeader, CardBody } from '@/shared/components/Card';
 import { Button } from '@/shared/components/Button';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
@@ -16,26 +16,127 @@ import {
   HardDrive,
   Cpu,
 } from 'lucide-react';
-import { mockPipelineSettings, PipelineSettings } from '@/mocks/db/settings/settings';
+import { settingsService } from '@/modules/settings/api/SettingsService';
+
+type FarmEngine = 'Deadline' | 'Tractor' | 'OpenCue';
+
+interface PipelineSettings {
+  default_fps: number;
+  default_color_space: string;
+  default_resolution: string;
+  usd_schema_version: string;
+  ocio_config_path: string;
+  farm_engine: FarmEngine;
+  storage_mount_path: string;
+  enable_ai_denoising: boolean;
+  enable_auto_transcode: boolean;
+  enable_webhooks: boolean;
+}
+
+const DEFAULT_PIPELINE_SETTINGS: PipelineSettings = {
+  default_fps: 24,
+  default_color_space: 'ACEScg - ACES 1.3',
+  default_resolution: '4096x2160',
+  usd_schema_version: 'OpenUSD v24.08',
+  ocio_config_path: '/opt/studiohub/ocio/aces_1.3/config.ocio',
+  farm_engine: 'Deadline',
+  storage_mount_path: '/mnt/studiohub/shows',
+  enable_ai_denoising: true,
+  enable_auto_transcode: true,
+  enable_webhooks: false,
+};
+
+function parseStoredValue(raw: string): unknown {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return raw;
+  }
+}
+
+function buildSettings(rows: any[]): PipelineSettings {
+  const next = { ...DEFAULT_PIPELINE_SETTINGS };
+  for (const row of rows) {
+    const code = row.setting_code ?? '';
+    const key = code.replace(/^pipeline\./, '');
+    let parsed = parseStoredValue(row.value);
+    if (row.setting_data_type === 'boolean') {
+      parsed = parsed === true || parsed === 'true';
+    }
+    if (key in next && parsed !== null && parsed !== undefined) {
+      (next as any)[key] = parsed;
+    }
+  }
+  return next;
+}
 
 export const SettingsPage: React.FC = () => {
   const { user } = useAuth();
   const addNotification = useNotificationStore((state) => state.addNotification);
 
-  const [settings, setSettings] = useState<PipelineSettings>(mockPipelineSettings);
+  const [settings, setSettings] = useState<PipelineSettings>(DEFAULT_PIPELINE_SETTINGS);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const settingMetaRef = useRef<Record<string, { id: string; value: unknown }>>({});
 
-  const handleSave = (e: React.FormEvent) => {
+  useEffect(() => {
+    let mounted = true;
+    settingsService
+      .getSystemSettingsList()
+      .then((rows) => {
+        if (!mounted) return;
+        const meta: Record<string, { id: string; value: unknown }> = {};
+        for (const row of rows) {
+          const code = row.setting_code ?? '';
+          const key = code.replace(/^pipeline\./, '');
+          meta[key] = { id: row.id ?? row.uuid, value: parseStoredValue(row.value) };
+        }
+        settingMetaRef.current = meta;
+        setSettings(buildSettings(rows));
+      })
+      .catch((err) => {
+        console.error('[SettingsPage] Failed to load settings:', err);
+      })
+      .finally(() => {
+        if (mounted) setIsLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
+    const meta = settingMetaRef.current;
+    const updates = Object.entries(meta)
+      .filter(([key]) => key in settings)
+      .map(([key, entry]) => ({
+        id: entry.id,
+        key,
+        value: (settings as any)[key],
+        changed: entry.value !== (settings as any)[key],
+      }))
+      .filter((u) => u.changed);
+    try {
+      await Promise.all(updates.map((u) => settingsService.updateSystemSetting(u.id, u.value)));
       addNotification({
         type: 'success',
         title: 'Pipeline Settings Synced',
-        message: 'OpenUSD and ACES Color management configuration saved.',
+        message: updates.length
+          ? `${updates.length} pipeline setting${updates.length > 1 ? 's' : ''} saved.`
+          : 'No changes to save.',
       });
-    }, 400);
+    } catch (err) {
+      console.error('[SettingsPage] Failed to save settings:', err);
+      addNotification({
+        type: 'error',
+        title: 'Save Failed',
+        message: 'Could not sync pipeline settings.',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -59,6 +160,8 @@ export const SettingsPage: React.FC = () => {
           Save Configuration
         </Button>
       </div>
+
+      {isLoading && <div className="text-sm text-slate-400">Loading pipeline settings…</div>}
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* User Account Profile */}

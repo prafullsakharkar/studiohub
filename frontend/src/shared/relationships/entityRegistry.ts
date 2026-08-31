@@ -1,5 +1,4 @@
 import { EntityType, EntityId, EntityReference } from '@/types/crud';
-import { mockProjects } from '@/mocks/db/production/projects';
 import { mockShots } from '@/mocks/db/production/shots';
 import { mockTasks } from '@/mocks/db/tasks/tasks';
 import { mockAssets } from '@/mocks/db/assets/assets';
@@ -15,6 +14,33 @@ import {
   mockPublishedVersions,
 } from '@/mocks/db/organization/organization';
 import { mockUsers } from '@/mocks/db/identity/users';
+import { queryClient } from '@/providers/QueryProvider';
+import { PROJECT_QUERY_KEYS } from '@/modules/production/hooks/useProjects';
+import { Project } from '@/mocks/db/production/projects';
+import { PaginatedResponse } from '@/types/drf';
+
+/**
+ * Reads real projects from the React Query cache (populated by useProjects /
+ * useActiveProject). Returns [] until the list has been fetched.
+ */
+export function getRealProjects(): Project[] {
+  const cached = queryClient.getQueryData<PaginatedResponse<Project>>(
+    PROJECT_QUERY_KEYS.list({ page_size: 100 })
+  );
+  if (cached?.results?.length) return cached.results;
+  for (const q of queryClient.getQueryCache().getAll()) {
+    const key = q.queryKey;
+    if (Array.isArray(key) && key[0] === 'projects' && key[1] === 'list') {
+      const data = q.state.data as PaginatedResponse<Project> | undefined;
+      if (data?.results?.length) return data.results;
+    }
+  }
+  return [];
+}
+
+function findRealProject(id: string): Project | null {
+  return getRealProjects().find((p) => p.id === id || p.code === id) || null;
+}
 
 export interface EntityTypeConfig {
   type: EntityType;
@@ -168,7 +194,7 @@ export function resolveEntityRaw(type: EntityType, id: EntityId): any | null {
 
   switch (type) {
     case 'project':
-      return mockProjects.find((p) => p.id === id || p.code === id) || null;
+      return findRealProject(id);
     case 'shot':
       return mockShots.find((s) => s.id === id || s.code === id) || null;
     case 'task':
@@ -396,7 +422,7 @@ export function searchAllEntities(
     let items: any[] = [];
     switch (t) {
       case 'project':
-        items = mockProjects;
+        items = getRealProjects();
         break;
       case 'shot':
         items = mockShots;
@@ -478,8 +504,8 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
   switch (type) {
     case 'client': {
       // Client -> Projects
-      const projects = mockProjects
-        .filter((p) => p.client_name?.toLowerCase().includes('warner') || id.includes('001') ? p.id === 'proj-001' || p.id === 'proj-003' : p.id === 'proj-002')
+      const projects = getRealProjects()
+        .slice(0, 3)
         .map((p) => resolveEntityReference('project', p.id))
         .filter(Boolean) as EntityReference[];
 
@@ -497,7 +523,7 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
 
     case 'vendor': {
       // Vendor -> Projects
-      const projects = mockProjects
+      const projects = getRealProjects()
         .slice(0, 2)
         .map((p) => resolveEntityReference('project', p.id))
         .filter(Boolean) as EntityReference[];
@@ -789,7 +815,7 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
       });
 
       // Person -> Projects
-      const projects = mockProjects
+      const projects = getRealProjects()
         .slice(0, 3)
         .map((p) => resolveEntityReference('project', p.id))
         .filter(Boolean) as EntityReference[];
@@ -822,7 +848,7 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
 
     case 'team': {
       // Team -> Project
-      const projects = mockProjects
+      const projects = getRealProjects()
         .slice(0, 2)
         .map((p) => resolveEntityReference('project', p.id))
         .filter(Boolean) as EntityReference[];

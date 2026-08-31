@@ -13,7 +13,7 @@ from apps.core.services.soft_delete import SoftDeleteService
 class SoftDeleteDBTests(TestCase):
     def setUp(self):
         User = get_user_model()
-        self.user = User.objects.create_user(username="tester", password="pass")
+        self.user = User.objects.create_user(email="tester@example.com", password="pass")
 
     def _create_attachment(self, name: str = "file.txt", content: bytes = b"hello") -> Attachment:
         storage_key = f"test-{uuid.uuid4().hex}"

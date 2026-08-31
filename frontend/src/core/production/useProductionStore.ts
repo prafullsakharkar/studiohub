@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Project, mockProjects } from '@/mocks/db/production/projects';
+import type { Project } from '@/mocks/db/production/projects';
+import { useProjects } from '@/modules/production/hooks/useProjects';
 
 export interface ProductionState {
   activeProjectId: string;
@@ -45,8 +46,10 @@ export const useProductionStore = create<ProductionState>()(
   )
 );
 
-export function useActiveProject(): { project: Project; activeProjectId: string } {
+export function useActiveProject(): { project: Project | undefined; activeProjectId: string } {
   const activeProjectId = useProductionStore((state) => state.activeProjectId);
-  const project = mockProjects.find((p) => p.id === activeProjectId) || mockProjects[0];
+  const { data } = useProjects({ page_size: 100 });
+  const projects = data?.results ?? [];
+  const project = projects.find((p) => p.id === activeProjectId) ?? projects[0];
   return { project, activeProjectId };
 }

@@ -31,4 +31,10 @@ urlpatterns = [
     path("settings/", include(("apps.settings.api.urls", "settings"))),
     # Audit (audit logs, login history, change logs, API requests)
     path("audit/", include(("apps.audit.api.urls", "audit"))),
+    # Deliveries (client turnover packages)
+    path("deliveries/", include("apps.deliveries.api.urls")),
+    # Publishing (DCC publish items)
+    path("publishing/", include("apps.publishing.api.urls")),
+    # Scheduling (resources, events, leaves)
+    path("scheduling/", include("apps.scheduling.api.urls")),
 ]

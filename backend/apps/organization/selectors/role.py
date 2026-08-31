@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from django.db.models import QuerySet
+from django.db.models import Count, QuerySet
 
 from apps.core.selectors.base import BaseSelector
 from apps.organization.models import Role
@@ -31,6 +31,11 @@ class RoleSelector(BaseSelector):
                 queryset = queryset.filter(
                     organization__in=request.user.organizations.all()
                 )
+
+        queryset = queryset.annotate(
+            user_count=Count("role_users", distinct=True),
+            permission_count=Count("role_permissions", distinct=True),
+        )
 
         return queryset
 

@@ -105,6 +105,26 @@ export class SettingsService {
     }
 
     /**
+     * Get system settings (list of SettingDefinition value rows)
+     */
+    async getSystemSettingsList(): Promise<any[]> {
+        const response = await this.apiClient.get<{ results?: any[] } | any[]>('/settings/system-settings/', {
+            params: { page_size: 200 },
+        });
+        return Array.isArray(response) ? response : (response?.results ?? []);
+    }
+
+    /**
+     * Update a system setting value by id
+     */
+    async updateSystemSetting(id: string, value: unknown): Promise<any> {
+        const response = await this.apiClient.patch<any>(`/settings/system-settings/${id}/`, {
+            value: JSON.stringify(value),
+        });
+        return response;
+    }
+
+    /**
      * Get system settings
      */
     async getSystemSettings(): Promise<Record<string, unknown>> {

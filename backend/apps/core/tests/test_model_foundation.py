@@ -33,9 +33,12 @@ class TestModelFoundation(SimpleTestCase):
         self.assertIsInstance(is_deleted_field, models.BooleanField)
         self.assertIsInstance(deleted_at_field, models.DateTimeField)
 
-        # Manager attributes should exist on the class
-        self.assertTrue(hasattr(SoftDeleteModel, 'objects'))
-        self.assertTrue(hasattr(SoftDeleteModel, 'all_objects'))
+        # Manager attributes should exist on the class.
+        # Note: on an abstract model, `hasattr` returns False because the
+        # manager descriptor raises on the abstract class, so inspect _meta.
+        manager_names = [m.name for m in SoftDeleteModel._meta.managers]
+        self.assertIn('objects', manager_names)
+        self.assertIn('all_objects', manager_names)
 
     def test_metadata_model_has_json_metadata(self):
         metadata_field = MetadataModel._meta.get_field('metadata')

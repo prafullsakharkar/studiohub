@@ -14,7 +14,8 @@ import {
   Radio,
   ExternalLink,
 } from 'lucide-react';
-import { mockProjects, Project } from '@/mocks/db/production/projects';
+import type { Project } from '@/mocks/db/production/projects';
+import { useProjects } from '@/modules/production/hooks/useProjects';
 import { useProductionStore, useActiveProject } from '@/core/production/useProductionStore';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 
@@ -27,6 +28,8 @@ export const ProjectSwitcher: React.FC = () => {
 
   const { activeProjectId, setActiveProject } = useProductionStore();
   const { project: activeProject } = useActiveProject();
+  const { data: projectsData } = useProjects({ page_size: 100 });
+  const projects = projectsData?.results ?? [];
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -39,7 +42,7 @@ export const ProjectSwitcher: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const filteredProjects = mockProjects.filter(
+  const filteredProjects = projects.filter(
     (p) =>
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -63,19 +66,19 @@ export const ProjectSwitcher: React.FC = () => {
         type="button"
         id="project-switcher-btn"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-xs text-slate-200 transition-colors group cursor-pointer"
+        className="flex items-center space-x-1.5 sm:space-x-2 px-2 sm:px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-xs text-slate-200 transition-colors group cursor-pointer shrink-0 min-w-0"
         title="Switch active production show context"
       >
         <Film className="w-3.5 h-3.5 text-indigo-400 shrink-0 group-hover:text-indigo-300 transition-colors" />
-        <span className="font-bold text-white font-mono">[{activeProject?.code || 'SHOW'}]</span>
-        <span className="hidden md:inline font-medium text-slate-300 truncate max-w-[130px]">
+        <span className="font-bold text-white font-mono text-xs shrink-0">[{activeProject?.code || 'SHOW'}]</span>
+        <span className="hidden md:inline font-medium text-slate-300 truncate max-w-[90px] lg:max-w-[130px]">
           {activeProject?.name || 'Production Show'}
         </span>
-        <span className="hidden xl:inline text-[10px] text-slate-400 font-mono px-1 bg-slate-900 rounded border border-slate-800">
+        <span className="hidden 2xl:inline text-[10px] text-slate-400 font-mono px-1 bg-slate-900 rounded border border-slate-800 shrink-0">
           {activeProject?.fps || 24}fps
         </span>
         <ChevronDown
-          className={`w-3 h-3 text-slate-400 transition-transform duration-150 ${
+          className={`w-3 h-3 text-slate-400 transition-transform duration-150 shrink-0 ${
             isOpen ? 'rotate-180 text-white' : ''
           }`}
         />
@@ -92,7 +95,7 @@ export const ProjectSwitcher: React.FC = () => {
                 Active Production Context
               </div>
               <span className="text-[10px] text-slate-400 font-mono">
-                {mockProjects.length} shows registered
+                {projects.length} shows registered
               </span>
             </div>
 

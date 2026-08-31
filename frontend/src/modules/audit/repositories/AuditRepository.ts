@@ -3,6 +3,8 @@ import { IAuditRepository } from './IAuditRepository';
 import { AuditLog } from '@/mocks/db/audit/auditLogs';
 import { IApiClient } from '@/api/client/types';
 import { apiClient } from '@/api/client/ApiClient';
+import { RawActivity } from '../api/mappers/activityMapper';
+import { QueryParams } from '@/types/drf';
 
 export class AuditRepository
   extends BaseRepository<AuditLog, Partial<AuditLog>, Partial<AuditLog>>
@@ -10,6 +12,10 @@ export class AuditRepository
 {
   constructor(client: IApiClient = apiClient) {
     super('/api/v1/audit', client);
+  }
+
+  async findActivities(params?: QueryParams): Promise<RawActivity[]> {
+    return this.client.get<RawActivity[]>(`${this.basePath}activities/`, { params });
   }
 }
 

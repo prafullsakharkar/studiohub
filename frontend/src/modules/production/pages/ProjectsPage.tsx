@@ -65,31 +65,53 @@ export const ProjectsPage: React.FC = () => {
   const projects = data?.results || [];
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto w-full">
-      {/* Header & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-white tracking-tight">Productions & Shows</h1>
-          <p className="text-xs text-slate-400">
-            Feature films, episodic series, and commercial pipeline projects linked to client studios and outsourcing vendor partners
-          </p>
-        </div>
+    <div className="flex-1 flex flex-col min-h-0 bg-slate-950 text-slate-100">
+      {/* Studio Header Bar */}
+      <div className="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 py-3.5 shrink-0">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 rounded-xl text-indigo-400">
+              <Film className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg font-bold tracking-tight text-white">
+                  Productions & Shows
+                </h1>
+                <span className="px-2 py-0.5 text-[11px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full">
+                  {projects.length} Active Shows
+                </span>
+                <span className="px-2 py-0.5 text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  OpenUSD 24.08 Active
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Feature films, episodic series, and commercial pipeline projects linked to client studios and vendors
+              </p>
+            </div>
+          </div>
 
-        <Can permission="projects:create">
-          <Button
-            id="create-project-btn"
-            variant="primary"
-            size="md"
-            onClick={() => setIsCreateOpen(true)}
-            leftIcon={<Plus className="w-4 h-4" />}
-          >
-            New Production
-          </Button>
-        </Can>
+          <div className="flex items-center gap-3 shrink-0">
+            <Can permission="projects:create">
+              <Button
+                id="create-project-btn"
+                variant="primary"
+                size="sm"
+                onClick={() => setIsCreateOpen(true)}
+                leftIcon={<Plus className="w-4 h-4" />}
+              >
+                New Production
+              </Button>
+            </Can>
+          </div>
+        </div>
       </div>
 
-      {/* Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-xl bg-slate-900 border border-slate-800">
+      {/* Main Studio View */}
+      <div className="flex-1 min-h-0 p-4 sm:p-6 space-y-6 flex flex-col overflow-y-auto custom-scrollbar">
+        {/* Filter Bar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-xl bg-slate-900 border border-slate-800">
         <SearchInput
           className="w-full sm:w-80"
           value={search}
@@ -384,6 +406,7 @@ export const ProjectsPage: React.FC = () => {
           </div>
         </form>
       </Modal>
+      </div>
     </div>
   );
 };

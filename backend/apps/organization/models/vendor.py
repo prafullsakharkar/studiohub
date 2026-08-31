@@ -23,6 +23,7 @@ class Vendor(EntityModel):
     status = models.CharField(max_length=30, blank=True, default="Approved Partner", db_index=True)
     logo_url = models.URLField(max_length=500, blank=True, default="")
     bandwidth_gbps = models.DecimalField(max_digits=5, decimal_places=2, default=10)
+    bandwidth_link = models.URLField(max_length=500, blank=True, default="")
 
     class Meta:
         db_table = "organization_vendor"

@@ -1,3 +1,6 @@
+from django.http import Http404
+from django.shortcuts import get_object_or_404
+
 from apps.core.api.pagination import StandardPagination
 from apps.core.api.viewsets import ServiceModelViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
@@ -57,18 +60,30 @@ class VendorViewSet(ServiceModelViewSet):
         serializer.save(organization=org)
 
     def get_object(self):
-        lookup = self.kwargs.get(self.lookup_url_kwarg or self.lookup_field)
-        qs = self.get_queryset()
+        """
+        Override to support both UUID and code lookup.
+        """
+        from django.core.exceptions import ValidationError
+
+        queryset = self.filter_queryset(self.get_queryset())
+
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup_value = self.kwargs[lookup_url_kwarg]
+
+        # Try UUID lookup first
+        filter_kwargs = {"id": lookup_value}
         try:
-            obj = qs.filter(id=lookup).first()
-            if obj:
-                self.check_object_permissions(self.request, obj)
-                return obj
-        except Exception:
+            obj = get_object_or_404(queryset, **filter_kwargs)
+            self.check_object_permissions(self.request, obj)
+            return obj
+        except (Http404, ValidationError):
             pass
-        obj = qs.filter(code__iexact=lookup).first()
+
+        # Try code lookup
+        filter_kwargs = {"code__iexact": lookup_value}
+        obj = queryset.filter(**filter_kwargs).first()
         if obj:
             self.check_object_permissions(self.request, obj)
             return obj
-        from django.http import Http404
+
         raise Http404

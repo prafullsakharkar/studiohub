@@ -1,4 +1,12 @@
-import { Role, Permission, User } from '@/types/auth';
+import { Role, Permission, AnyPermission, User } from '@/types/auth';
+
+/**
+ * Canonicalize a permission code to the colon-separated form so that both
+ * legacy (`projects:create`) and code (`users.view`) formats match.
+ */
+export function normalizePermission(permission: string): string {
+  return permission.replace(/\./g, ':');
+}
 
 /**
  * Role-Based Access Control hierarchy and default permissions
@@ -128,7 +136,7 @@ export function checkUserHasRole(user: User | null, allowedRoles: Role | Role[])
 
 export function checkUserHasPermission(
   user: User | null,
-  requiredPermission: Permission | Permission[]
+  requiredPermission: AnyPermission | AnyPermission[]
 ): boolean {
   if (!user) return false;
   if (user.role === 'Platform Admin' || user.is_superuser) return true;
@@ -137,7 +145,7 @@ export function checkUserHasPermission(
   const userPermissions = new Set([
     ...(user.permissions || []),
     ...(ROLE_PERMISSIONS[user.role] || []),
-  ]);
+  ].map(normalizePermission));
 
-  return permissions.every((p) => userPermissions.has(p));
+  return permissions.every((p) => userPermissions.has(normalizePermission(p)));
 }

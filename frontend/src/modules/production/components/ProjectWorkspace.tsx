@@ -258,8 +258,8 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
           </div>
 
           {/* Action Toolbar */}
-          <div className="flex items-center gap-2 flex-wrap self-start lg:self-center">
-            <Link to={`/projects/${project.id}/edit`}>
+          <div className="flex items-center gap-2 flex-wrap self-start lg:self-center shrink-0">
+            <Link to={`/projects/${project.id}/edit`} className="inline-flex">
               <Button size="sm" variant="outline" leftIcon={<Edit className="w-3.5 h-3.5" />}>
                 Edit Project
               </Button>

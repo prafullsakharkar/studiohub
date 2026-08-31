@@ -1,25 +1,22 @@
 import React, { useState } from 'react';
-import { EntityType, DataViewMode } from '@/types/crud';
+import { EntityType } from '@/types/crud';
 import { EntityList } from '@/shared/crud/EntityList';
 import { SHOT_FIELDS, TASK_FIELDS, PROJECT_FIELDS } from '@/shared/crud/fieldSchemas';
-import { mockShots } from '@/mocks/db/production/shots';
-import { mockTasks } from '@/mocks/db/tasks/tasks';
-import { mockProjects } from '@/mocks/db/production/projects';
-import { entityRegistry } from '@/shared/relationships/entityRegistry';
-import {
-  Clapperboard,
-  CheckSquare,
-  Film,
-  Sparkles,
-  Database,
-  Layers,
-  Network,
-  SlidersHorizontal,
-  BookmarkCheck,
-} from 'lucide-react';
+import { useShots } from '@/modules/shots/hooks/useShots';
+import { useTasks } from '@/modules/tasks/hooks/useTasks';
+import { useProjects } from '@/modules/production/hooks/useProjects';
+import { Clapperboard, CheckSquare, Film } from 'lucide-react';
 
 export const DataPlatformPage: React.FC = () => {
   const [activeEntityType, setActiveEntityType] = useState<EntityType>('shot');
+
+  const { data: shotsData } = useShots({ page_size: 200 });
+  const { data: tasksData } = useTasks({ page_size: 200 });
+  const { data: projectsData } = useProjects({ page_size: 200 });
+
+  const shots = shotsData?.results ?? [];
+  const tasks = tasksData?.results ?? [];
+  const projects = projectsData?.results ?? [];
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
@@ -52,7 +49,7 @@ export const DataPlatformPage: React.FC = () => {
             }`}
           >
             <Clapperboard className="w-3.5 h-3.5" />
-            <span>Shots ({mockShots.length})</span>
+            <span>Shots ({shots.length})</span>
           </button>
 
           <button
@@ -65,7 +62,7 @@ export const DataPlatformPage: React.FC = () => {
             }`}
           >
             <CheckSquare className="w-3.5 h-3.5" />
-            <span>Tasks ({mockTasks.length})</span>
+            <span>Tasks ({tasks.length})</span>
           </button>
 
           <button
@@ -78,7 +75,7 @@ export const DataPlatformPage: React.FC = () => {
             }`}
           >
             <Film className="w-3.5 h-3.5" />
-            <span>Projects ({mockProjects.length})</span>
+            <span>Projects ({projects.length})</span>
           </button>
         </div>
       </div>
@@ -88,7 +85,7 @@ export const DataPlatformPage: React.FC = () => {
         <EntityList
           key="shot-list"
           entityType="shot"
-          items={mockShots}
+          items={shots}
           fields={SHOT_FIELDS}
           initialViewMode="table"
         />
@@ -98,7 +95,7 @@ export const DataPlatformPage: React.FC = () => {
         <EntityList
           key="task-list"
           entityType="task"
-          items={mockTasks}
+          items={tasks}
           fields={TASK_FIELDS}
           initialViewMode="board"
           initialGroupBy="status"
@@ -109,7 +106,7 @@ export const DataPlatformPage: React.FC = () => {
         <EntityList
           key="project-list"
           entityType="project"
-          items={mockProjects}
+          items={projects}
           fields={PROJECT_FIELDS}
           initialViewMode="grid"
         />

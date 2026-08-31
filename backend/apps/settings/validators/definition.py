@@ -92,7 +92,7 @@ class SettingDefinitionValidator(SettingsBaseValidator):
         if data_type in ["integer", "float"]:
             try:
                 float(default_value)
-            except ValueError, TypeError:
+            except (ValueError, TypeError):
                 self.errors["default_value"] = ["Default value must be a valid number"]
                 return False
 

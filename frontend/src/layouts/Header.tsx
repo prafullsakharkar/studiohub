@@ -56,13 +56,13 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <header className="h-14 bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-3 lg:px-4 flex items-center justify-between sticky top-0 z-30 select-none">
+      <header className="h-14 bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-3 lg:px-4 flex items-center justify-between gap-2 lg:gap-4 sticky top-0 z-30 select-none">
         {/* Left section: Mobile Toggle, Studio Organization Switcher & Project HUD */}
-        <div className="flex items-center space-x-2.5 min-w-0">
+        <div className="flex items-center space-x-1.5 sm:space-x-2.5 min-w-0 shrink-0">
           <button
             id="mobile-menu-btn"
             onClick={toggleMobile}
-            className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+            className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 shrink-0"
           >
             <Menu className="w-4 h-4" />
           </button>
@@ -70,13 +70,13 @@ export const Header: React.FC = () => {
           {/* Studio Organization Switcher */}
           <OrganizationSwitcher />
 
-          <div className="h-4 w-px bg-slate-800 hidden sm:block" />
+          <div className="h-4 w-px bg-slate-800 hidden sm:block shrink-0" />
 
           {/* Project Production Master Switcher */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 min-w-0 shrink-0">
             <ProjectSwitcher />
 
-            <span className="hidden 2xl:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span className="hidden 2xl:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               OpenUSD 24.08 Active
             </span>
@@ -84,14 +84,14 @@ export const Header: React.FC = () => {
         </div>
 
         {/* Center: Linear-style Quick Command Trigger */}
-        <div className="flex-1 max-w-sm lg:max-w-md mx-3 hidden md:block">
+        <div className="flex-1 min-w-0 max-w-xs md:max-w-sm lg:max-w-md mx-2 hidden lg:block">
           <button
             onClick={() => setIsCommandOpen(true)}
             className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg bg-slate-950/60 border border-slate-800 hover:border-slate-700 text-xs text-slate-400 hover:text-slate-200 transition-all shadow-inner group"
           >
-            <div className="flex items-center space-x-2 truncate">
-              <Search className="w-3.5 h-3.5 text-slate-500 group-hover:text-indigo-400 transition-colors" />
-              <span className="text-slate-400 truncate">Search shots, assets, clients, crew or commands...</span>
+            <div className="flex items-center space-x-2 truncate min-w-0">
+              <Search className="w-3.5 h-3.5 text-slate-500 group-hover:text-indigo-400 transition-colors shrink-0" />
+              <span className="text-slate-400 truncate">Search shots, assets, crew or commands...</span>
             </div>
             <div className="flex items-center space-x-1 font-mono text-[10px] bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-700 text-slate-300 shrink-0 ml-2">
               <Command className="w-2.5 h-2.5" />
@@ -101,11 +101,12 @@ export const Header: React.FC = () => {
         </div>
 
         {/* Right section: Permissions Role Simulator, Farm load, Theme Switcher, Notifications, User Profile */}
-        <div className="flex items-center space-x-1.5 sm:space-x-2">
+        <div className="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2 shrink-0 ml-auto">
           {/* Mobile search trigger */}
           <button
             onClick={() => setIsCommandOpen(true)}
-            className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
+            title="Search (⌘K)"
           >
             <Search className="w-4 h-4" />
           </button>
@@ -113,25 +114,25 @@ export const Header: React.FC = () => {
           {/* Quick RBAC Role Badge & Simulator Trigger */}
           <button
             onClick={() => setIsPermissionsOpen(true)}
-            className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-slate-950/50 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-[11px] font-mono text-slate-300 transition-all"
+            className="hidden xl:flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-slate-950/50 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-[11px] font-mono text-slate-300 transition-all shrink-0"
             title="Inspect RBAC permissions matrix or switch active role"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-            <span className="hidden xl:inline text-slate-500">Role:</span>
-            <span className="text-indigo-300 font-semibold truncate max-w-[120px]">{currentRole.name}</span>
+            <span className="hidden 2xl:inline text-slate-500">Role:</span>
+            <span className="text-indigo-300 font-semibold truncate max-w-[100px]">{currentRole.name}</span>
           </button>
 
           {/* Keyboard Shortcuts Trigger */}
           <button
             onClick={() => setIsShortcutsOpen(true)}
-            className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="hidden 2xl:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
             title="Keyboard Shortcuts (?)"
           >
             <HelpCircle className="w-4 h-4" />
           </button>
 
           {/* Render Farm Quick HUD */}
-          <div className="hidden 2xl:flex items-center space-x-2 px-2.5 py-1 rounded-lg bg-slate-950/50 border border-slate-800 text-[11px] text-slate-300 font-mono">
+          <div className="hidden 2xl:flex items-center space-x-2 px-2.5 py-1 rounded-lg bg-slate-950/50 border border-slate-800 text-[11px] text-slate-300 font-mono shrink-0">
             <Activity className="w-3.5 h-3.5 text-indigo-400" />
             <span className="text-slate-400">Farm:</span>
             <span className="text-emerald-400 font-semibold">94/128 Blades</span>
@@ -141,14 +142,14 @@ export const Header: React.FC = () => {
           <button
             id="theme-toggle-btn"
             onClick={toggleTheme}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
             title={mode === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
           >
             {mode === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-400" />}
           </button>
 
           {/* Notifications Dropdown */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <button
               id="notifications-btn"
               onClick={() => {

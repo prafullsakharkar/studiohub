@@ -195,69 +195,79 @@ export const ShotsPage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto">
-      {/* Header & Sub-toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/60 p-3.5 rounded-xl border border-slate-800">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-            <Clapperboard className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-              Sequence Breakdown & Shot Matrix
-              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 bg-slate-800 text-indigo-300 rounded border border-slate-700">
-                {totalCount} Cuts
-              </span>
-            </h1>
-            <p className="text-xs text-slate-400">
-              NLE timecodes, discipline pass tracker (Layout → Anim → FX → Light → Comp) & OpenUSD versions
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          {selectedShotIds.length > 0 && (
-            <div className="flex items-center space-x-2 bg-indigo-950/60 border border-indigo-500/40 px-2.5 py-1 rounded-lg animate-in fade-in">
-              <span className="text-xs font-mono font-bold text-indigo-300">
-                {selectedShotIds.length} selected
-              </span>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  selectedShotIds.forEach((id) => handleApprove(id));
-                  setSelectedShotIds([]);
-                }}
-              >
-                Approve All
-              </Button>
+    <div className="flex-1 flex flex-col min-h-0 bg-slate-950 text-slate-100">
+      {/* Studio Header Bar */}
+      <div className="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 py-3.5 shrink-0">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 rounded-xl text-indigo-400">
+              <Clapperboard className="w-5 h-5" />
             </div>
-          )}
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg font-bold tracking-tight text-white">
+                  Sequence Breakdown & Shot Matrix
+                </h1>
+                <span className="px-2 py-0.5 text-[11px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full">
+                  {totalCount} Cuts
+                </span>
+                <span className="px-2 py-0.5 text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Live Sync
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                NLE timecodes, discipline pass tracker (Layout → Anim → FX → Light → Comp) & OpenUSD versions
+              </p>
+            </div>
+          </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={exportCutListCSV}
-            leftIcon={<Download className="w-3.5 h-3.5" />}
-            title="Export CSV Cut List"
-          >
-            Export EDL
-          </Button>
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+            {selectedShotIds.length > 0 && (
+              <div className="flex items-center space-x-2 bg-indigo-950/60 border border-indigo-500/40 px-2.5 py-1 rounded-lg animate-in fade-in">
+                <span className="text-xs font-mono font-bold text-indigo-300">
+                  {selectedShotIds.length} selected
+                </span>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    selectedShotIds.forEach((id) => handleApprove(id));
+                    setSelectedShotIds([]);
+                  }}
+                >
+                  Approve All
+                </Button>
+              </div>
+            )}
 
-          <Can permission="shots:create">
             <Button
-              variant="primary"
+              variant="outline"
               size="sm"
-              onClick={() => setIsCreateOpen(true)}
-              leftIcon={<Plus className="w-3.5 h-3.5" />}
+              onClick={exportCutListCSV}
+              leftIcon={<Download className="w-3.5 h-3.5" />}
+              title="Export CSV Cut List"
             >
-              Add Shot
+              Export EDL
             </Button>
-          </Can>
+
+            <Can permission="shots:create">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsCreateOpen(true)}
+                leftIcon={<Plus className="w-3.5 h-3.5" />}
+              >
+                Add Shot
+              </Button>
+            </Can>
+          </div>
         </div>
       </div>
 
-      {/* Filter Toolbar with View Toggles */}
+      {/* Main Studio View */}
+      <div className="flex-1 min-h-0 p-4 sm:p-6 space-y-4 flex flex-col overflow-y-auto custom-scrollbar">
+        {/* Filter Toolbar with View Toggles */}
       <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-3">
         <div className="flex items-center space-x-2 w-full md:w-auto">
           <SearchInput
@@ -700,6 +710,7 @@ export const ShotsPage: React.FC = () => {
           </div>
         </form>
       </Modal>
+      </div>
     </div>
   );
 };
