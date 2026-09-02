@@ -14,6 +14,13 @@ class ProjectPermissions:
     DELETE = "projects:delete"
 
 
+class SequencePermissions:
+    VIEW = "sequences:read"
+    CREATE = "sequences:create"
+    UPDATE = "sequences:update"
+    DELETE = "sequences:delete"
+
+
 class ShotPermissions:
     VIEW = "shots:read"
     CREATE = "shots:create"

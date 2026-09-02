@@ -18,6 +18,7 @@ from apps.production.api.viewsets.media import MediaViewSet
 from apps.production.api.viewsets.playlist import PlaylistViewSet
 from apps.production.api.viewsets.project import ProjectViewSet
 from apps.production.api.viewsets.review import ReviewViewSet
+from apps.production.api.viewsets.sequence import SequenceViewSet
 from apps.production.api.viewsets.scheduling import (
     AutomationAuditLogsView,
     AutomationRuleDetailView,
@@ -41,6 +42,7 @@ router.register(r"tasks", TaskViewSet, basename="task")
 router.register(r"timelogs", TimelogViewSet, basename="timelog")
 router.register(r"versions", VersionViewSet, basename="version")
 router.register(r"reviews", ReviewViewSet, basename="review")
+router.register(r"sequences", SequenceViewSet, basename="sequence")
 router.register(r"media", MediaViewSet, basename="media")
 router.register(r"playlists", PlaylistViewSet, basename="playlist")
 router.register(r"workflows", WorkflowViewSet, basename="workflow")

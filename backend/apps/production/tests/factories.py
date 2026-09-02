@@ -1,9 +1,9 @@
 import factory
 from factory.django import DjangoModelFactory
 
-from apps.production.models import Project, Task, Shot, Asset
-from apps.organization.tests.factories import OrganizationFactory
 from apps.identity.tests.factories import UserFactory
+from apps.organization.tests.factories import OrganizationFactory
+from apps.production.models import Asset, Project, Sequence, Shot, Task
 
 
 class ProjectFactory(DjangoModelFactory):
@@ -42,6 +42,25 @@ class ShotFactory(DjangoModelFactory):
     handle_frames = 8
     thumbnail_url = factory.Faker("url")
     pipeline = {"layout": "Not Started"}
+
+
+class SequenceFactory(DjangoModelFactory):
+    class Meta:
+        model = Sequence
+        django_get_or_create = ("code", "project")
+
+    organization = factory.SubFactory(OrganizationFactory)
+    project = factory.SubFactory(
+        ProjectFactory,
+        organization=factory.SelfAttribute("..organization"),
+    )
+    code = factory.Sequence(lambda n: f"SEQ{n:03d}")
+    name = factory.Sequence(lambda n: f"Sequence {n}")
+    status = "Not Started"
+    frame_in = 1001
+    frame_out = 1100
+    department = ""
+    tags = factory.LazyFunction(list)
 
 
 class AssetFactory(DjangoModelFactory):
