@@ -47,9 +47,10 @@ Episode (optional)
 - Notes: Use only if needed; keep simple.
 
 Sequence
-- Purpose: Group shots (e.g., SEQ001)
-- Attributes: id, project_id, code, name, description, order_index
-- Invariants: sequence.code unique within project
+- Purpose: Group shots (e.g., SEQ001) within a project; first-class entity
+- Attributes: id, uuid, organization_id, project_id, code, name, status, description, frame_in, frame_out, department, tags, metadata, shots_count, is_deleted, deleted_at, created_at, updated_at
+- Invariants: sequence.code unique within project (`unique_together=(project, code)`); soft-delete (archive) and restore supported
+- Notes: See [sequence-domain.md](sequence-domain.md)
 
 Shot (aggregate root candidate)
 - Purpose: The primary unit of work representing a single in-screen shot.

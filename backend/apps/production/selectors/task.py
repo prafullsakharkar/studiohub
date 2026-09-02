@@ -1,13 +1,14 @@
-from django.db.models import CharField, QuerySet, F, Value
-from django.db.models.functions import Coalesce, Concat
+from django.db.models import CharField, F, QuerySet, Value
+from django.db.models.functions import Coalesce
 
 from apps.production.models import Task
+from apps.production.selectors.base import ProductionBaseSelector
 
 
-class TaskSelector:
+class TaskSelector(ProductionBaseSelector):
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet:
-        qs = (
+        return (
             Task.objects.select_related("organization", "project", "team", "assignee", "reviewer", "assignee__profile", "reviewer__profile")
             .prefetch_related("project__organization")
             .annotate(
@@ -18,12 +19,3 @@ class TaskSelector:
             )
             .all()
         )
-        if request is not None:
-            org_id = request.headers.get("X-Organization-Id") or request.headers.get("X-Organization") or getattr(request, "organization", None)
-            if org_id:
-                try:
-                    org_pk = org_id.id if hasattr(org_id, "id") else org_id
-                    qs = qs.filter(organization_id=org_pk)
-                except Exception:
-                    pass
-        return qs

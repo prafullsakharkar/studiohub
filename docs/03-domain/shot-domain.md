@@ -14,7 +14,7 @@ The Shot domain models editorial units of work (shots) within sequences and proj
 
 ## Typical entities
 
-- Sequence (grouping)
+- Sequence (first-class grouping entity — see [sequence-domain.md](sequence-domain.md))
 - Shot (code, frame range, handles, duration)
 - ShotTask (task per department for a shot)
 - ShotVersion (artist submissions for a shot task)

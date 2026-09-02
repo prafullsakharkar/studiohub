@@ -1,28 +1,27 @@
+import datetime
+import uuid
+
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
 from apps.core.api.pagination import StandardPagination
-from apps.core.api.viewsets import ServiceModelViewSet
-from apps.core.permissions.base import IsAuthenticatedPermission
-from apps.identity.permissions import HasPermission
-from apps.production.constants.permissions import WorkflowPermissions
-from apps.organization.middleware.organization_context import resolve_organization_context
 from apps.production.api.filtersets.workflow import WorkflowFilterSet
 from apps.production.api.serializers.workflow.create import WorkflowCreateSerializer
 from apps.production.api.serializers.workflow.detail import WorkflowDetailSerializer
 from apps.production.api.serializers.workflow.list import WorkflowListSerializer
 from apps.production.api.serializers.workflow.update import WorkflowUpdateSerializer
+from apps.production.api.viewsets.base import ProductionEntityViewSet
+from apps.production.constants.permissions import WorkflowPermissions
 from apps.production.models import Workflow
 from apps.production.selectors.workflow import WorkflowSelector
 from apps.production.services.workflow import WorkflowService
-import uuid, datetime
 
-class WorkflowViewSet(ServiceModelViewSet):
-    queryset = Workflow.objects.all()
+
+class WorkflowViewSet(ProductionEntityViewSet):
     selector_class = WorkflowSelector
     service_class = WorkflowService
     pagination_class = StandardPagination
     filterset_class = WorkflowFilterSet
-    permission_classes = (IsAuthenticatedPermission, HasPermission,)
     serializer_map = {
         "list": WorkflowListSerializer,
         "retrieve": WorkflowDetailSerializer,
@@ -47,31 +46,6 @@ class WorkflowViewSet(ServiceModelViewSet):
 
     search_fields = ("name", "code", "description")
     ordering_fields = ("name", "created_at")
-
-    def perform_authentication(self, request):
-        super().perform_authentication(request)
-        resolve_organization_context(request, force=True)
-        return request
-
-    def perform_create(self, serializer):
-        org = getattr(self.request, "organization", None)
-        if org is None:
-            org_id = self.request.headers.get("X-Organization-Id")
-            if org_id:
-                from apps.organization.models import Organization
-                try:
-                    org = Organization.objects.get(pk=org_id)
-                except Exception:
-                    pass
-        if org is None and self.request.user.is_authenticated:
-            from apps.organization.models import OrganizationMembership
-            m = OrganizationMembership.objects.filter(user=self.request.user).first()
-            if m:
-                org = m.organization
-        if org is None:
-            from apps.organization.models import Organization
-            org = Organization.objects.first()
-        serializer.save(organization=org)
 
     @action(detail=True, methods=["post"], url_path="simulate")
     def simulate(self, request, *args, **kwargs):

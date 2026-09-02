@@ -348,3 +348,25 @@ class TestSequenceBulkUpdateArchiveRestore:
             format="json",
         )
         assert resp.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_archived_lists_only_soft_deleted_scoped_to_org(self, staff_client):
+        org = OrganizationFactory.create()
+        other_org = OrganizationFactory.create()
+        active = SequenceFactory.create(organization=org, code="ACT01")
+        archived = SequenceFactory.create(organization=org, code="ARC01")
+        other = SequenceFactory.create(organization=other_org, code="OTH01")
+        from apps.core.services.soft_delete import SoftDeleteService
+
+        SoftDeleteService.delete(archived)
+        archived.refresh_from_db()
+        assert archived.is_deleted is True
+
+        resp = staff_client.get(
+            reverse("api:v1:production:sequence-archived"),
+            HTTP_X_ORGANIZATION_ID=str(org.id),
+        )
+        assert resp.status_code == status.HTTP_200_OK
+        codes = [item["code"] for item in resp.data["results"]]
+        assert "ARC01" in codes
+        assert "ACT01" not in codes
+        assert "OTH01" not in codes

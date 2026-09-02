@@ -101,3 +101,35 @@ class TestProjectOrganizationScoping:
             HTTP_X_ORGANIZATION_ID=str(org_b.id),
         )
         assert resp.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_list_without_org_context_fails_closed(self, staff_client):
+        """No org header must not leak every organization's projects."""
+        OrganizationFactory.create()
+        ProjectFactory.create(organization=OrganizationFactory.create(), code="ORGAA04")
+        resp = staff_client.get(self._list_url())
+        assert resp.status_code == status.HTTP_200_OK
+        assert resp.data["results"] == []
+
+    def test_list_with_unknown_org_id_does_not_leak(self, staff_client):
+        """An unresolvable org id must not fall back to all projects."""
+        import uuid
+
+        ProjectFactory.create(organization=OrganizationFactory.create(), code="ORGAA05")
+        resp = staff_client.get(
+            self._list_url(),
+            HTTP_X_ORGANIZATION_ID=str(uuid.uuid4()),
+        )
+        assert resp.status_code == status.HTTP_200_OK
+        assert resp.data["results"] == []
+
+    def test_create_without_org_context_fails_closed(self, staff_client):
+        """Create must not assign to an arbitrary/first organization."""
+        resp = staff_client.post(
+            self._list_url(),
+            data={"code": "PROJX99", "name": "No Org Project"},
+            format="json",
+        )
+        assert resp.status_code == status.HTTP_400_BAD_REQUEST
+        from apps.production.models import Project
+
+        assert not Project.objects.filter(code="PROJX99").exists()

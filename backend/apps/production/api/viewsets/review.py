@@ -1,28 +1,26 @@
+import datetime
+import uuid
+
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
 from apps.core.api.pagination import StandardPagination
-from apps.core.api.viewsets import ServiceModelViewSet
-from apps.core.permissions.base import IsAuthenticatedPermission
-from apps.identity.permissions import HasPermission
-from apps.production.constants.permissions import ReviewPermissions
-from apps.organization.middleware.organization_context import resolve_organization_context
 from apps.production.api.filtersets.review import ReviewFilterSet
 from apps.production.api.serializers.review.create import ReviewCreateSerializer
 from apps.production.api.serializers.review.detail import ReviewDetailSerializer
 from apps.production.api.serializers.review.list import ReviewListSerializer
 from apps.production.api.serializers.review.update import ReviewUpdateSerializer
-from apps.production.models import Review
+from apps.production.api.viewsets.base import ProductionEntityViewSet
+from apps.production.constants.permissions import ReviewPermissions
 from apps.production.selectors.review import ReviewSelector
 from apps.production.services.review import ReviewService
-import uuid, datetime
 
-class ReviewViewSet(ServiceModelViewSet):
-    queryset = Review.objects.all()
+
+class ReviewViewSet(ProductionEntityViewSet):
     selector_class = ReviewSelector
     service_class = ReviewService
     pagination_class = StandardPagination
     filterset_class = ReviewFilterSet
-    permission_classes = (IsAuthenticatedPermission, HasPermission,)
     serializer_map = {
         "list": ReviewListSerializer,
         "retrieve": ReviewDetailSerializer,
@@ -55,30 +53,13 @@ class ReviewViewSet(ServiceModelViewSet):
     search_fields = ("title", "code", "entity_code")
     ordering_fields = ("title", "created_at", "status")
 
-    def perform_authentication(self, request):
-        super().perform_authentication(request)
-        resolve_organization_context(request, force=True)
-        return request
-
     def perform_create(self, serializer):
-        org = getattr(self.request, "organization", None)
-        if org is None:
-            org_id = self.request.headers.get("X-Organization-Id")
-            if org_id:
-                from apps.organization.models import Organization
-                try:
-                    org = Organization.objects.get(pk=org_id)
-                except Exception:
-                    pass
-        if org is None and self.request.user.is_authenticated:
-            from apps.organization.models import OrganizationMembership
-            m = OrganizationMembership.objects.filter(user=self.request.user).first()
-            if m:
-                org = m.organization
-        if org is None:
-            from apps.organization.models import Organization
-            org = Organization.objects.first()
-        serializer.save(organization=org, lead_reviewer=self.request.user if self.request.user.is_authenticated else None)
+        project = serializer.validated_data.get("project")
+        org = self.resolve_organization(instance=project)
+        serializer.save(
+            organization=org,
+            lead_reviewer=self.request.user if self.request.user.is_authenticated else None,
+        )
 
     def _update_status(self, instance, status, notes=None):
         instance.status = status

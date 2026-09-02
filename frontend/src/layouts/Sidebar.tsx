@@ -153,18 +153,25 @@ export const Sidebar: React.FC = () => {
           badge: '18 Cut',
         },
         {
+          to: '/sequences',
+          label: 'Sequences',
+          icon: Layers,
+          allowed: can('sequences:read'),
+          hotkey: '4',
+        },
+        {
           to: '/assets',
           label: 'Assets',
           icon: Box,
           allowed: can('assets:read'),
-          hotkey: '4',
+          hotkey: '5',
         },
         {
           to: '/tasks',
           label: 'Tasks',
           icon: CheckSquare,
           allowed: can('tasks:read'),
-          hotkey: '5',
+          hotkey: '6',
         },
         {
           to: '/timelogs',

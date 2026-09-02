@@ -15,6 +15,7 @@ from apps.production.api.serializers.sequence.update import SequenceUpdateSerial
 from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.constants.permissions import SequencePermissions
 from apps.production.models import Sequence
+from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.sequence import SequenceSelector
 from apps.production.services.sequence import SequenceService
 
@@ -106,6 +107,20 @@ class SequenceViewSet(ProductionEntityViewSet):
     # ------------------------------------------------------------------
     # Bulk actions
     # ------------------------------------------------------------------
+
+    @action(detail=False, methods=["get"], url_path="archived")
+    def archived(self, request):
+        qs = self.service_class.get_archived(
+            organization=self._organization(),
+            project_id=request.query_params.get("project_id"),
+        )
+        qs = ProductionBaseSelector.scope_by_request(qs, request=request, view=self)
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
 
     @action(detail=False, methods=["post"], url_path="existence-check")
     def existence_check(self, request):

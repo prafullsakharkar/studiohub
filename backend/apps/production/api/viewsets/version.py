@@ -1,27 +1,23 @@
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
 from apps.core.api.pagination import StandardPagination
-from apps.core.api.viewsets import ServiceModelViewSet
-from apps.core.permissions.base import IsAuthenticatedPermission
-from apps.identity.permissions import HasPermission
-from apps.production.constants.permissions import VersionPermissions
-from apps.organization.middleware.organization_context import resolve_organization_context
 from apps.production.api.filtersets.version import VersionFilterSet
 from apps.production.api.serializers.version.create import VersionCreateSerializer
 from apps.production.api.serializers.version.detail import VersionDetailSerializer
 from apps.production.api.serializers.version.list import VersionListSerializer
 from apps.production.api.serializers.version.update import VersionUpdateSerializer
-from apps.production.models import Version
+from apps.production.api.viewsets.base import ProductionEntityViewSet
+from apps.production.constants.permissions import VersionPermissions
 from apps.production.selectors.version import VersionSelector
 from apps.production.services.version import VersionService
 
-class VersionViewSet(ServiceModelViewSet):
-    queryset = Version.objects.all()
+
+class VersionViewSet(ProductionEntityViewSet):
     selector_class = VersionSelector
     service_class = VersionService
     pagination_class = StandardPagination
     filterset_class = VersionFilterSet
-    permission_classes = (IsAuthenticatedPermission, HasPermission,)
     serializer_map = {
         "list": VersionListSerializer,
         "retrieve": VersionDetailSerializer,
@@ -46,31 +42,6 @@ class VersionViewSet(ServiceModelViewSet):
 
     search_fields = ("code", "version_number", "entity_code")
     ordering_fields = ("code", "created_at", "version_number")
-
-    def perform_authentication(self, request):
-        super().perform_authentication(request)
-        resolve_organization_context(request, force=True)
-        return request
-
-    def perform_create(self, serializer):
-        org = getattr(self.request, "organization", None)
-        if org is None:
-            org_id = self.request.headers.get("X-Organization-Id")
-            if org_id:
-                from apps.organization.models import Organization
-                try:
-                    org = Organization.objects.get(pk=org_id)
-                except Exception:
-                    pass
-        if org is None and self.request.user.is_authenticated:
-            from apps.organization.models import OrganizationMembership
-            m = OrganizationMembership.objects.filter(user=self.request.user).first()
-            if m:
-                org = m.organization
-        if org is None:
-            from apps.organization.models import Organization
-            org = Organization.objects.first()
-        serializer.save(organization=org)
 
     @action(detail=True, methods=["post"], url_path="publish")
     def publish(self, request, *args, **kwargs):

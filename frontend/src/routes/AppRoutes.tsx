@@ -15,6 +15,7 @@ import { ProjectsPage } from '@/modules/production/pages/ProjectsPage';
 import { ProjectWorkspacePage } from '@/modules/production/pages/ProjectWorkspacePage';
 import { ProjectFormPage } from '@/modules/production/pages/ProjectFormPage';
 import { ShotsPage } from '@/modules/shots/pages/ShotsPage';
+import { SequencesPage } from '@/modules/sequences/pages/SequencesPage';
 import { AssetsPage } from '@/modules/assets/pages/AssetsPage';
 import { AssetWorkspacePage } from '@/modules/assets/pages/AssetWorkspacePage';
 import { TasksPage } from '@/modules/tasks/pages/TasksPage';
@@ -158,6 +159,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="/projects/:id/assets" element={<ProjectWorkspacePage />} />
           <Route path="/projects/:id/edit" element={<ProjectFormPage />} />
           <Route path="/shots" element={<ShotsPage />} />
+          <Route path="/sequences" element={<SequencesPage />} />
           <Route path="/assets" element={<AssetsPage />} />
           <Route path="/assets/:assetId" element={<AssetWorkspacePage />} />
           <Route path="/tasks" element={<TasksPage />} />
