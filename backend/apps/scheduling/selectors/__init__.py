@@ -3,108 +3,95 @@ Scheduling selectors for query operations.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from django.db.models import QuerySet
 
-if TYPE_CHECKING:
-    from django.http import HttpRequest
-    from rest_framework.viewsets import GenericViewSet
-
-
-def get_calendar_event_queryset(
-    *,
-    request: HttpRequest,
-    view: "GenericViewSet | None" = None,
-) -> "QuerySet[CalendarEvent]":
-    """Get filtered calendar event queryset."""
-    from apps.scheduling.models import CalendarEvent
-    
-    qs = CalendarEvent.objects.select_related(
-        "organization",
-        "project",
-    )
-    
-    org = getattr(request, "organization", None)
-    if org:
-        qs = qs.filter(organization=org)
-    
-    return qs
+from apps.core.selectors.base import BaseSelector
+from apps.scheduling.models import (
+    CalendarEvent,
+    Holiday,
+    Resource,
+    ResourceLeave,
+    ResourceSchedule,
+)
 
 
-def get_resource_queryset(
-    *,
-    request: HttpRequest,
-    view: "GenericViewSet | None" = None,
-) -> "QuerySet[Resource]":
-    """Get filtered resource queryset."""
-    from apps.scheduling.models import Resource
-    
-    qs = Resource.objects.select_related(
-        "organization",
-        "department",
-        "team",
-        "user",
-    )
-    
-    org = getattr(request, "organization", None)
-    if org:
-        qs = qs.filter(organization=org)
-    
-    return qs
+class CalendarEventSelector(BaseSelector):
+    """
+    Read-side data access for calendar events.
+
+    Organization scoping is applied by the viewset through
+    ``scope_by_request`` (fail closed).
+    """
+
+    model = CalendarEvent
+
+    @classmethod
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+        return cls.model.objects.select_related(
+            "organization",
+            "project",
+        )
 
 
-def get_resource_schedule_queryset(
-    *,
-    request: HttpRequest,
-    view: "GenericViewSet | None" = None,
-) -> "QuerySet[ResourceSchedule]":
-    """Get filtered resource schedule queryset."""
-    from apps.scheduling.models import ResourceSchedule
-    
-    qs = ResourceSchedule.objects.select_related(
-        "resource",
-        "event",
-        "task",
-    )
-    
-    org = getattr(request, "organization", None)
-    if org:
-        qs = qs.filter(resource__organization=org)
-    
-    return qs
+class ResourceSelector(BaseSelector):
+    """Read-side data access for scheduling resources."""
+
+    model = Resource
+
+    @classmethod
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+        return cls.model.objects.select_related(
+            "organization",
+            "department",
+            "team",
+            "user",
+        )
 
 
-def get_resource_leave_queryset(
-    *,
-    request: HttpRequest,
-    view: "GenericViewSet | None" = None,
-) -> "QuerySet[ResourceLeave]":
-    """Get filtered resource leave queryset."""
-    from apps.scheduling.models import ResourceLeave
-    
-    qs = ResourceLeave.objects.select_related(
-        "resource",
-        "approved_by",
-    )
-    
-    org = getattr(request, "organization", None)
-    if org:
-        qs = qs.filter(resource__organization=org)
-    
-    return qs
+class ResourceScheduleSelector(BaseSelector):
+    """
+    Read-side data access for resource schedules.
+
+    Schedules have no direct organization foreign key; they are scoped
+    through the related resource.
+    """
+
+    model = ResourceSchedule
+    scope_field = "resource__organization"
+
+    @classmethod
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+        return cls.model.objects.select_related(
+            "resource",
+            "event",
+            "task",
+        )
 
 
-def get_holiday_queryset(
-    *,
-    request: HttpRequest,
-    view: "GenericViewSet | None" = None,
-) -> "QuerySet[Holiday]":
-    """Get filtered holiday queryset."""
-    from apps.scheduling.models import Holiday
-    
-    qs = Holiday.objects.select_related("organization")
-    
-    org = getattr(request, "organization", None)
-    if org:
-        qs = qs.filter(organization=org)
-    
-    return qs
+class ResourceLeaveSelector(BaseSelector):
+    """
+    Read-side data access for resource leaves.
+
+    Leaves have no direct organization foreign key; they are scoped
+    through the related resource.
+    """
+
+    model = ResourceLeave
+    scope_field = "resource__organization"
+
+    @classmethod
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+        return cls.model.objects.select_related(
+            "resource",
+            "approved_by",
+        )
+
+
+class HolidaySelector(BaseSelector):
+    """Read-side data access for holidays."""
+
+    model = Holiday
+
+    @classmethod
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+        return cls.model.objects.select_related("organization")

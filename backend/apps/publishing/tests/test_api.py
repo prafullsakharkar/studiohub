@@ -5,17 +5,18 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
-from apps.publishing.models import PublishItem, PublishValidationRule
-from apps.organization.models import Organization
+from apps.publishing.models import PublishItem
 
 
 @pytest.fixture(autouse=True)
-def _org_membership(user):
-    """Give the built-in `user` fixture an organization membership.
+def _org_membership(user, staff_user):
+    """Give `user` and `staff_user` an organization membership.
 
     Several assertions construct objects with
     ``organization=user.organization_memberships.first().organization``,
-    which crashes when the user has no membership.
+    which crashes when the user has no membership. Tests authenticate via
+    `staff_client`, so `staff_user` needs a membership for headerless
+    organization resolution too.
     """
     from apps.organization.tests.factories import (
         OrganizationFactory,
@@ -24,6 +25,7 @@ def _org_membership(user):
 
     org = OrganizationFactory.create()
     OrganizationMembershipFactory.create(organization=org, user=user)
+    OrganizationMembershipFactory.create(organization=org, user=staff_user)
     return org
 
 
@@ -31,18 +33,16 @@ def _org_membership(user):
 class TestPublishingEndpoints:
     """Test publishing API endpoints."""
     
-    def test_list_publishing_empty(self, api_client, user):
+    def test_list_publishing_empty(self, staff_client):
         """Test listing publishing items when none exist."""
-        api_client.force_authenticate(user=user)
         url = reverse("api:v1:publishing:publishing-list")
-        response = api_client.get(url)
+        response = staff_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
         assert response.data["results"] == []
 
-    def test_create_publishing_item(self, api_client, user):
+    def test_create_publishing_item(self, staff_client):
         """Test creating a new publishing item."""
-        api_client.force_authenticate(user=user)
         url = reverse("api:v1:publishing:publishing-list")
         
         data = {
@@ -57,15 +57,14 @@ class TestPublishingEndpoints:
             "source_file": "/path/to/source.nk",
         }
         
-        response = api_client.post(url, data, format="json")
+        response = staff_client.post(url, data, format="json")
         
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["name"] == "Test Publish"
         assert response.data["code"] == "PUB-TEST-001"
     
-    def test_get_publishing_detail(self, api_client, user):
+    def test_get_publishing_detail(self, staff_client, _org_membership):
         """Test getting publishing item details."""
-        api_client.force_authenticate(user=user)
         publish = PublishItem.objects.create(
             name="Test Publish",
             code="PUB-TEST-002",
@@ -74,18 +73,17 @@ class TestPublishingEndpoints:
             entity_code="SH002",
             entity_name="Test Shot",
             dcc_tool="Nuke",
-            organization=user.organization_memberships.first().organization,
+            organization=_org_membership,
         )
         
         url = reverse("api:v1:publishing:publishing-detail", kwargs={"uuid": str(publish.id)})
-        response = api_client.get(url)
+        response = staff_client.get(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
         
         assert response.status_code == status.HTTP_200_OK
         assert response.data["name"] == "Test Publish"
     
-    def test_validate_publishing(self, api_client, user):
+    def test_validate_publishing(self, staff_client, _org_membership):
         """Test validating a publishing item."""
-        api_client.force_authenticate(user=user)
         publish = PublishItem.objects.create(
             name="Test Publish",
             code="PUB-TEST-003",
@@ -94,18 +92,17 @@ class TestPublishingEndpoints:
             entity_code="SH003",
             entity_name="Test Shot",
             dcc_tool="Nuke",
-            organization=user.organization_memberships.first().organization,
+            organization=_org_membership,
         )
         
         url = reverse("api:v1:publishing:publishing-validate", kwargs={"uuid": str(publish.id)})
-        response = api_client.post(url)
+        response = staff_client.post(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
         
         assert response.status_code == status.HTTP_200_OK
         assert "success" in response.data
     
-    def test_republish_publishing(self, api_client, user):
+    def test_republish_publishing(self, staff_client, _org_membership):
         """Test republishing an item."""
-        api_client.force_authenticate(user=user)
         publish = PublishItem.objects.create(
             name="Test Publish",
             code="PUB-TEST-004",
@@ -114,18 +111,17 @@ class TestPublishingEndpoints:
             entity_code="SH004",
             entity_name="Test Shot",
             dcc_tool="Nuke",
-            organization=user.organization_memberships.first().organization,
+            organization=_org_membership,
         )
         
         url = reverse("api:v1:publishing:publishing-republish", kwargs={"uuid": str(publish.id)})
-        response = api_client.post(url)
+        response = staff_client.post(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
         
         assert response.status_code == status.HTTP_201_CREATED
         assert "PUB-TEST-004_v2" in response.data["code"]
     
-    def test_unpublish_publishing(self, api_client, user):
+    def test_unpublish_publishing(self, staff_client, _org_membership):
         """Test unpublishing an item."""
-        api_client.force_authenticate(user=user)
         publish = PublishItem.objects.create(
             name="Test Publish",
             code="PUB-TEST-005",
@@ -134,18 +130,17 @@ class TestPublishingEndpoints:
             entity_code="SH005",
             entity_name="Test Shot",
             dcc_tool="Nuke",
-            organization=user.organization_memberships.first().organization,
+            organization=_org_membership,
         )
         
         url = reverse("api:v1:publishing:publishing-unpublish", kwargs={"uuid": str(publish.id)})
-        response = api_client.post(url)
+        response = staff_client.post(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
         
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "Cancelled"
     
-    def test_retry_publishing(self, api_client, user):
+    def test_retry_publishing(self, staff_client, _org_membership):
         """Test retrying a failed publish."""
-        api_client.force_authenticate(user=user)
         publish = PublishItem.objects.create(
             name="Test Publish",
             code="PUB-TEST-006",
@@ -155,11 +150,11 @@ class TestPublishingEndpoints:
             entity_name="Test Shot",
             dcc_tool="Nuke",
             status="Failed",
-            organization=user.organization_memberships.first().organization,
+            organization=_org_membership,
         )
         
         url = reverse("api:v1:publishing:publishing-retry", kwargs={"uuid": str(publish.id)})
-        response = api_client.post(url)
+        response = staff_client.post(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
         
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "Pending"

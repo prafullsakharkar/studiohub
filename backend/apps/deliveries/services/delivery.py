@@ -5,9 +5,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from django.db import transaction
+
 if TYPE_CHECKING:
     from apps.deliveries.models import DeliveryPackage, DeliveryVersionRef
-    from apps.identity.models import User
 
 
 def create_delivery(
@@ -24,14 +25,15 @@ def create_delivery(
     notes: str = "",
     client_notes: str = "",
     created_by_id: str | None = None,
-) -> "DeliveryPackage":
+) -> DeliveryPackage:
     """Create a new delivery package."""
     from datetime import datetime
+
     from apps.deliveries.models import DeliveryPackage
     from apps.organization.models import Organization
-    
+
     org = Organization.objects.get(id=organization_id)
-    
+
     delivery = DeliveryPackage.objects.create(
         name=name,
         code=code,
@@ -46,10 +48,11 @@ def create_delivery(
         client_notes=client_notes,
         created_by_id=created_by_id,
     )
-    
+
     return delivery
 
 
+@transaction.atomic
 def add_version_to_delivery(
     *,
     delivery_id: str,
@@ -63,14 +66,21 @@ def add_version_to_delivery(
     file_path: str = "",
     checksum_md5: str = "",
     checksum_sha256: str = "",
-) -> "DeliveryVersionRef":
+    organization_id: str,
+) -> DeliveryVersionRef:
     """Add a version reference to a delivery."""
     from apps.deliveries.models import DeliveryPackage, DeliveryVersionRef
     from apps.production.models import Version
-    
-    delivery = DeliveryPackage.objects.get(id=delivery_id)
-    version = Version.objects.get(id=version_id)
-    
+
+    delivery = DeliveryPackage.objects.get(
+        id=delivery_id,
+        organization_id=organization_id,
+    )
+    version = Version.objects.get(
+        id=version_id,
+        organization_id=organization_id,
+    )
+
     ref = DeliveryVersionRef.objects.create(
         delivery=delivery,
         version=version,
@@ -84,35 +94,40 @@ def add_version_to_delivery(
         checksum_md5=checksum_md5,
         checksum_sha256=checksum_sha256,
     )
-    
+
     # Update delivery totals
     delivery.total_size_bytes += file_size_bytes
     delivery.total_frames += frame_count
     delivery.save(update_fields=["total_size_bytes", "total_frames"])
-    
+
     return ref
 
 
+@transaction.atomic
 def validate_delivery(
     *,
     delivery_id: str,
     user_id: str,
+    organization_id: str,
 ) -> dict:
     """Validate delivery package contents."""
-    from apps.deliveries.models import DeliveryPackage, DeliveryVersionRef
     from apps.audit.models import AuditLog
-    
-    delivery = DeliveryPackage.objects.get(id=delivery_id)
-    
+    from apps.deliveries.models import DeliveryPackage
+
+    delivery = DeliveryPackage.objects.get(
+        id=delivery_id,
+        organization_id=organization_id,
+    )
+
     # Validate all versions
     validation_results = []
     all_valid = True
-    
+
     for ref in delivery.versions.all():
         ref.is_validated = True
         ref.validation_notes = "Auto-validated"
         ref.save(update_fields=["is_validated", "validation_notes"])
-        
+
         validation_results.append({
             "version_id": str(ref.version_id),
             "version_number": ref.version_number,
@@ -122,11 +137,11 @@ def validate_delivery(
                 "sha256": ref.checksum_sha256,
             },
         })
-    
+
     # Update delivery status
     delivery.status = DeliveryPackage.STATUS_VALIDATING
     delivery.save(update_fields=["status"])
-    
+
     # Create audit log
     AuditLog.objects.create(
         action=AuditLog.ACTION_UPDATE,
@@ -138,7 +153,7 @@ def validate_delivery(
         organization=delivery.organization,
         metadata={"validation_results": validation_results},
     )
-    
+
     return {
         "success": True,
         "delivery_id": str(delivery_id),
@@ -148,17 +163,22 @@ def validate_delivery(
     }
 
 
+@transaction.atomic
 def prepare_delivery(
     *,
     delivery_id: str,
     user_id: str,
+    organization_id: str,
 ) -> dict:
     """Prepare delivery package for submission."""
-    from apps.deliveries.models import DeliveryPackage
     from apps.audit.models import AuditLog
-    
-    delivery = DeliveryPackage.objects.get(id=delivery_id)
-    
+    from apps.deliveries.models import DeliveryPackage
+
+    delivery = DeliveryPackage.objects.get(
+        id=delivery_id,
+        organization_id=organization_id,
+    )
+
     # Generate manifest
     manifest_data = {
         "delivery_code": delivery.code,
@@ -176,19 +196,19 @@ def prepare_delivery(
             for ref in delivery.versions.all()
         ],
     }
-    
+
     # Generate checksums
     checksums = {
         "manifest_md5": "placeholder-manifest-checksum",
         "total_size_bytes": delivery.total_size_bytes,
         "version_count": delivery.version_count,
     }
-    
+
     delivery.manifest_data = manifest_data
     delivery.checksums = checksums
     delivery.status = DeliveryPackage.STATUS_PREPARED
     delivery.save(update_fields=["manifest_data", "checksums", "status"])
-    
+
     # Create audit log
     AuditLog.objects.create(
         action=AuditLog.ACTION_EXPORT,
@@ -200,7 +220,7 @@ def prepare_delivery(
         organization=delivery.organization,
         metadata={"manifest_generated": True},
     )
-    
+
     return {
         "success": True,
         "delivery_id": str(delivery_id),
@@ -210,17 +230,22 @@ def prepare_delivery(
     }
 
 
+@transaction.atomic
 def submit_delivery(
     *,
     delivery_id: str,
     user_id: str,
+    organization_id: str,
 ) -> dict:
     """Submit delivery to destination."""
-    from apps.deliveries.models import DeliveryPackage
     from apps.audit.models import AuditLog
-    
-    delivery = DeliveryPackage.objects.get(id=delivery_id)
-    
+    from apps.deliveries.models import DeliveryPackage
+
+    delivery = DeliveryPackage.objects.get(
+        id=delivery_id,
+        organization_id=organization_id,
+    )
+
     # Simulate submission (in production, this would call Aspera/S3/FTP)
     submission_result = {
         "success": True,
@@ -228,10 +253,10 @@ def submit_delivery(
         "destination": delivery.delivery_destination,
         "submitted_at": delivery.updated_at.isoformat(),
     }
-    
+
     delivery.status = DeliveryPackage.STATUS_SUBMITTED
     delivery.save(update_fields=["status"])
-    
+
     # Create audit log
     AuditLog.objects.create(
         action=AuditLog.ACTION_EXPORT,
@@ -243,7 +268,7 @@ def submit_delivery(
         organization=delivery.organization,
         metadata=submission_result,
     )
-    
+
     return {
         "success": True,
         "delivery_id": str(delivery_id),
@@ -252,23 +277,28 @@ def submit_delivery(
     }
 
 
+@transaction.atomic
 def approve_delivery(
     *,
     delivery_id: str,
     user_id: str,
     client_notes: str = "",
-) -> "DeliveryPackage":
+    organization_id: str,
+) -> DeliveryPackage:
     """Approve delivery by client."""
-    from apps.deliveries.models import DeliveryPackage
     from apps.audit.models import AuditLog
-    
-    delivery = DeliveryPackage.objects.get(id=delivery_id)
-    
+    from apps.deliveries.models import DeliveryPackage
+
+    delivery = DeliveryPackage.objects.get(
+        id=delivery_id,
+        organization_id=organization_id,
+    )
+
     delivery.status = DeliveryPackage.STATUS_APPROVED
     delivery.client_status = DeliveryPackage.CLIENT_STATUS_APPROVED
     delivery.client_notes = client_notes
     delivery.save(update_fields=["status", "client_status", "client_notes"])
-    
+
     # Create audit log
     AuditLog.objects.create(
         action=AuditLog.ACTION_UPDATE,
@@ -280,27 +310,32 @@ def approve_delivery(
         organization=delivery.organization,
         metadata={"client_notes": client_notes},
     )
-    
+
     return delivery
 
 
+@transaction.atomic
 def reject_delivery(
     *,
     delivery_id: str,
     user_id: str,
     rejection_reason: str,
-) -> "DeliveryPackage":
+    organization_id: str,
+) -> DeliveryPackage:
     """Reject delivery with feedback."""
-    from apps.deliveries.models import DeliveryPackage
     from apps.audit.models import AuditLog
-    
-    delivery = DeliveryPackage.objects.get(id=delivery_id)
-    
+    from apps.deliveries.models import DeliveryPackage
+
+    delivery = DeliveryPackage.objects.get(
+        id=delivery_id,
+        organization_id=organization_id,
+    )
+
     delivery.status = DeliveryPackage.STATUS_REJECTED
     delivery.client_status = DeliveryPackage.CLIENT_STATUS_REJECTED
     delivery.client_notes = rejection_reason
     delivery.save(update_fields=["status", "client_status", "client_notes"])
-    
+
     # Create audit log
     AuditLog.objects.create(
         action=AuditLog.ACTION_UPDATE,
@@ -312,24 +347,29 @@ def reject_delivery(
         organization=delivery.organization,
         metadata={"rejection_reason": rejection_reason},
     )
-    
+
     return delivery
 
 
+@transaction.atomic
 def complete_delivery(
     *,
     delivery_id: str,
     user_id: str,
-) -> "DeliveryPackage":
+    organization_id: str,
+) -> DeliveryPackage:
     """Mark delivery as complete."""
-    from apps.deliveries.models import DeliveryPackage
     from apps.audit.models import AuditLog
-    
-    delivery = DeliveryPackage.objects.get(id=delivery_id)
-    
+    from apps.deliveries.models import DeliveryPackage
+
+    delivery = DeliveryPackage.objects.get(
+        id=delivery_id,
+        organization_id=organization_id,
+    )
+
     delivery.status = DeliveryPackage.STATUS_COMPLETE
     delivery.save(update_fields=["status"])
-    
+
     # Create audit log
     AuditLog.objects.create(
         action=AuditLog.ACTION_EXPORT,
@@ -340,26 +380,31 @@ def complete_delivery(
         actor_id=user_id,
         organization=delivery.organization,
     )
-    
+
     return delivery
 
 
+@transaction.atomic
 def cancel_delivery(
     *,
     delivery_id: str,
     user_id: str,
     cancellation_reason: str = "",
-) -> "DeliveryPackage":
+    organization_id: str,
+) -> DeliveryPackage:
     """Cancel a delivery."""
-    from apps.deliveries.models import DeliveryPackage
     from apps.audit.models import AuditLog
-    
-    delivery = DeliveryPackage.objects.get(id=delivery_id)
-    
+    from apps.deliveries.models import DeliveryPackage
+
+    delivery = DeliveryPackage.objects.get(
+        id=delivery_id,
+        organization_id=organization_id,
+    )
+
     delivery.status = DeliveryPackage.STATUS_CANCELLED
     delivery.client_notes = cancellation_reason
     delivery.save(update_fields=["status", "client_notes"])
-    
+
     # Create audit log
     AuditLog.objects.create(
         action=AuditLog.ACTION_DELETE,
@@ -370,5 +415,5 @@ def cancel_delivery(
         actor_id=user_id,
         organization=delivery.organization,
     )
-    
+
     return delivery

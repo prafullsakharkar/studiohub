@@ -6,11 +6,13 @@ from __future__ import annotations
 
 import factory
 from django.utils import timezone
-from factory import LazyAttribute, Sequence
+from factory import LazyAttribute
 from factory.django import DjangoModelFactory
-from factory.fuzzy import FuzzyChoice, FuzzyDate, FuzzyDecimal, FuzzyText
+from factory.fuzzy import FuzzyChoice, FuzzyDecimal
 
+from apps.audit.models.login_history import LoginHistory
 from apps.identity.tests.factories import UserFactory
+from apps.organization.choices import OrganizationType
 from apps.organization.models.api_key import APIKey
 from apps.organization.models.branding import Branding
 from apps.organization.models.calendar import Calendar
@@ -19,11 +21,9 @@ from apps.organization.models.group import Group
 from apps.organization.models.group_member import GroupMember
 from apps.organization.models.group_role import GroupRole
 from apps.organization.models.holiday import Holiday
-from apps.audit.models.login_history import LoginHistory
 from apps.organization.models.invitation import Invitation
 from apps.organization.models.membership import OrganizationMembership
 from apps.organization.models.office import Office
-from apps.organization.choices import OrganizationType
 from apps.organization.models.organization import Organization
 from apps.organization.models.organization_settings import OrganizationSettings
 from apps.organization.models.permission import Permission
@@ -698,28 +698,14 @@ class RoleFactory(DjangoModelFactory):
 
     class Meta:
         model = Role
-        django_get_or_create = ("code", "organization")
+        django_get_or_create = ("name", "organization")
 
     organization = factory.SubFactory(OrganizationFactory)
     code = factory.Sequence(lambda n: f"ROLE{n:03d}")
     name = factory.Sequence(lambda n: f"Role {n}")
     description = factory.Faker("text", max_nb_chars=200)
-    priority = factory.Faker("random_int", min=1, max=100)
-    is_default = False
-    is_system = False
-    status = "active"
-
-
-class RolePermissionFactory(DjangoModelFactory):
-    """Factory for RolePermission model."""
-
-    class Meta:
-        model = RolePermission
-        django_get_or_create = ("role", "permission")
-
-    role = factory.SubFactory(RoleFactory)
-    permission = factory.SubFactory(PermissionFactory)
-    is_granted = True
+    priority = factory.Sequence(lambda n: n)
+    is_active = True
 
 
 class TeamFactory(DjangoModelFactory):
@@ -1075,20 +1061,6 @@ class PositionFactory(DjangoModelFactory):
     name = factory.Sequence(lambda n: f"Position {n}")
     description = factory.Faker("text", max_nb_chars=200)
     level = factory.Sequence(lambda n: n)
-    is_active = True
-
-
-class RoleFactory(DjangoModelFactory):
-    """Factory for Role model."""
-
-    class Meta:
-        model = Role
-        django_get_or_create = ("name", "organization")
-
-    organization = factory.SubFactory(OrganizationFactory)
-    name = factory.Sequence(lambda n: f"Role {n}")
-    description = factory.Faker("text", max_nb_chars=200)
-    priority = factory.Sequence(lambda n: n)
     is_active = True
 
 

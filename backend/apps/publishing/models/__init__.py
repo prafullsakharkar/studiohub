@@ -220,6 +220,14 @@ class PublishValidationRule(models.Model):
     Validation rule for publish items.
     """
     
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+        related_name="publish_validation_rules",
+        db_index=True,
+        help_text="Organization context",
+    )
+    
     # Rule types
     RULE_FILE_EXISTS = "file_exists"
     RULE_FILE_SIZE = "file_size"

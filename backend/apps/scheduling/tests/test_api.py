@@ -5,17 +5,18 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
-from apps.scheduling.models import CalendarEvent, Resource, ResourceSchedule, ResourceLeave, Holiday
-from apps.organization.models import Organization
+from apps.scheduling.models import CalendarEvent, Resource, ResourceLeave
 
 
 @pytest.fixture(autouse=True)
-def _org_membership(user):
-    """Give the built-in `user` fixture an organization membership.
+def _org_membership(user, staff_user):
+    """Give `user` and `staff_user` an organization membership.
 
     Several assertions construct objects with
     ``organization=user.organization_memberships.first().organization``,
-    which crashes when the user has no membership.
+    which crashes when the user has no membership. Tests authenticate via
+    `staff_client`, so `staff_user` needs a membership for headerless
+    organization resolution too.
     """
     from apps.organization.tests.factories import (
         OrganizationFactory,
@@ -24,6 +25,7 @@ def _org_membership(user):
 
     org = OrganizationFactory.create()
     OrganizationMembershipFactory.create(organization=org, user=user)
+    OrganizationMembershipFactory.create(organization=org, user=staff_user)
     return org
 
 
@@ -42,18 +44,16 @@ def _make_resource(user, org, code="RES-001"):
 class TestSchedulingEndpoints:
     """Test scheduling API endpoints."""
     
-    def test_list_calendar_events_empty(self, api_client, user):
+    def test_list_calendar_events_empty(self, staff_client):
         """Test listing calendar events when none exist."""
-        api_client.force_authenticate(user=user)
         url = reverse("api:v1:scheduling:calendar-event-list")
-        response = api_client.get(url)
+        response = staff_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
         assert response.data["results"] == []
     
-    def test_create_calendar_event(self, api_client, user):
+    def test_create_calendar_event(self, staff_client):
         """Test creating a new calendar event."""
-        api_client.force_authenticate(user=user)
         url = reverse("api:v1:scheduling:calendar-event-list")
         
         data = {
@@ -64,40 +64,42 @@ class TestSchedulingEndpoints:
             "status": "Scheduled",
         }
         
-        response = api_client.post(url, data, format="json")
+        response = staff_client.post(url, data, format="json")
         
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["title"] == "Team Meeting"
     
-    def test_update_calendar_event_status(self, api_client, user):
+    def test_update_calendar_event_status(self, staff_client, staff_user, _org_membership):
         """Test updating calendar event status."""
-        api_client.force_authenticate(user=user)
         event = CalendarEvent.objects.create(
             title="Team Meeting",
             start_time="2026-09-01T10:00:00Z",
             end_time="2026-09-01T11:00:00Z",
-            organization=user.organization_memberships.first().organization,
+            organization=_org_membership,
         )
         
         url = reverse("api:v1:scheduling:calendar-event-update-status", kwargs={"uuid": str(event.id)})
         data = {"status": "Completed"}
-        response = api_client.post(url, data, format="json")
+        response = staff_client.post(
+            url,
+            data,
+            format="json",
+            HTTP_X_ORGANIZATION_ID=str(_org_membership.id),
+        )
         
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "Completed"
     
-    def test_list_resources_empty(self, api_client, user):
+    def test_list_resources_empty(self, staff_client):
         """Test listing resources when none exist."""
-        api_client.force_authenticate(user=user)
         url = reverse("api:v1:scheduling:resource-list")
-        response = api_client.get(url)
+        response = staff_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
         assert response.data["results"] == []
     
-    def test_create_resource(self, api_client, user):
+    def test_create_resource(self, staff_client):
         """Test creating a new resource."""
-        api_client.force_authenticate(user=user)
         url = reverse("api:v1:scheduling:resource-list")
         
         data = {
@@ -108,19 +110,18 @@ class TestSchedulingEndpoints:
             "capacity_hours_per_week": 40,
         }
         
-        response = api_client.post(url, data, format="json")
+        response = staff_client.post(url, data, format="json")
         
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["name"] == "Artist 1"
     
-    def test_book_resource(self, api_client, user):
+    def test_book_resource(self, staff_client, staff_user, _org_membership):
         """Test booking a resource."""
-        api_client.force_authenticate(user=user)
         resource = Resource.objects.create(
             name="Artist 1",
             code="ART-002",
             resource_type="Person",
-            organization=user.organization_memberships.first().organization,
+            organization=_org_membership,
         )
         
         url = reverse("api:v1:scheduling:resource-book", kwargs={"uuid": str(resource.id)})
@@ -128,19 +129,23 @@ class TestSchedulingEndpoints:
             "start_time": "2026-09-01T10:00:00Z",
             "end_time": "2026-09-01T14:00:00Z",
         }
-        response = api_client.post(url, data, format="json")
+        response = staff_client.post(
+            url,
+            data,
+            format="json",
+            HTTP_X_ORGANIZATION_ID=str(_org_membership.id),
+        )
         
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["status"] == "Booked"
     
-    def test_block_resource(self, api_client, user):
+    def test_block_resource(self, staff_client, staff_user, _org_membership):
         """Test blocking a resource."""
-        api_client.force_authenticate(user=user)
         resource = Resource.objects.create(
             name="Artist 2",
             code="ART-003",
             resource_type="Person",
-            organization=user.organization_memberships.first().organization,
+            organization=_org_membership,
         )
         
         url = reverse("api:v1:scheduling:resource-block", kwargs={"uuid": str(resource.id)})
@@ -149,24 +154,27 @@ class TestSchedulingEndpoints:
             "end_time": "2026-09-01T14:00:00Z",
             "reason": "Maintenance",
         }
-        response = api_client.post(url, data, format="json")
+        response = staff_client.post(
+            url,
+            data,
+            format="json",
+            HTTP_X_ORGANIZATION_ID=str(_org_membership.id),
+        )
         
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["status"] == "Blocked"
     
-    def test_list_leaves_empty(self, api_client, user):
+    def test_list_leaves_empty(self, staff_client):
         """Test listing leaves when none exist."""
-        api_client.force_authenticate(user=user)
         url = reverse("api:v1:scheduling:resource-leave-list")
-        response = api_client.get(url)
+        response = staff_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
         assert response.data["results"] == []
     
-    def test_submit_leave_request(self, api_client, user, _org_membership):
+    def test_submit_leave_request(self, staff_client, staff_user, _org_membership):
         """Test submitting a leave request."""
-        api_client.force_authenticate(user=user)
-        _make_resource(user, _org_membership)
+        _make_resource(staff_user, _org_membership)
         url = reverse("api:v1:scheduling:resource-leave-list")
         
         data = {
@@ -175,15 +183,14 @@ class TestSchedulingEndpoints:
             "end_date": "2026-09-05",
             "reason": "Personal time",
         }
-        response = api_client.post(url, data, format="json")
+        response = staff_client.post(url, data, format="json")
         
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["status"] == "Pending"
     
-    def test_approve_leave(self, api_client, user, _org_membership):
+    def test_approve_leave(self, staff_client, staff_user, _org_membership):
         """Test approving a leave request."""
-        api_client.force_authenticate(user=user)
-        resource = _make_resource(user, _org_membership)
+        resource = _make_resource(staff_user, _org_membership)
         leave = ResourceLeave.objects.create(
             resource=resource,
             leave_type="Vacation",
@@ -192,15 +199,14 @@ class TestSchedulingEndpoints:
         )
         
         url = reverse("api:v1:scheduling:resource-leave-approve", kwargs={"uuid": str(leave.id)})
-        response = api_client.post(url)
+        response = staff_client.post(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
         
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "Approved"
     
-    def test_reject_leave(self, api_client, user, _org_membership):
+    def test_reject_leave(self, staff_client, staff_user, _org_membership):
         """Test rejecting a leave request."""
-        api_client.force_authenticate(user=user)
-        resource = _make_resource(user, _org_membership)
+        resource = _make_resource(staff_user, _org_membership)
         leave = ResourceLeave.objects.create(
             resource=resource,
             leave_type="Vacation",
@@ -210,23 +216,26 @@ class TestSchedulingEndpoints:
         
         url = reverse("api:v1:scheduling:resource-leave-reject", kwargs={"uuid": str(leave.id)})
         data = {"rejection_reason": "Too many requests"}
-        response = api_client.post(url, data, format="json")
+        response = staff_client.post(
+            url,
+            data,
+            format="json",
+            HTTP_X_ORGANIZATION_ID=str(_org_membership.id),
+        )
         
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "Rejected"
     
-    def test_list_holidays_empty(self, api_client, user):
+    def test_list_holidays_empty(self, staff_client):
         """Test listing holidays when none exist."""
-        api_client.force_authenticate(user=user)
         url = reverse("api:v1:scheduling:holiday-list")
-        response = api_client.get(url)
+        response = staff_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
         assert response.data["results"] == []
     
-    def test_create_holiday(self, api_client, user):
+    def test_create_holiday(self, staff_client):
         """Test creating a holiday."""
-        api_client.force_authenticate(user=user)
         url = reverse("api:v1:scheduling:holiday-list")
         
         data = {
@@ -234,7 +243,7 @@ class TestSchedulingEndpoints:
             "holiday_date": "2026-12-25",
             "is_paid": True,
         }
-        response = api_client.post(url, data, format="json")
+        response = staff_client.post(url, data, format="json")
         
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["name"] == "Company Holiday"

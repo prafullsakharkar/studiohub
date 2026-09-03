@@ -11,6 +11,11 @@ class BaseSelector:
 
     model = None
 
+    #: Model field used to scope querysets to the active organization.
+    #: Override for models without a direct organization foreign key
+    #: (e.g. ``"resource__organization"``).
+    scope_field = "organization"
+
     @classmethod
     def get_queryset(
         cls,
@@ -24,6 +29,27 @@ class BaseSelector:
         Applications should override.
         """
         raise NotImplementedError
+
+    @classmethod
+    def scope_by_request(
+        cls,
+        queryset: QuerySet,
+        *,
+        request=None,
+        view=None,
+    ) -> QuerySet:
+        """
+        Restrict a queryset to the request's active organization.
+
+        Fails closed: without an active organization no records are
+        returned, so unscoped requests can never leak other tenants' data.
+        """
+        organization = getattr(request, "organization", None) if request else None
+        if organization is None:
+            return queryset.none()
+        return queryset.filter(
+            **{cls.scope_field: organization},
+        )
 
     @classmethod
     def all(

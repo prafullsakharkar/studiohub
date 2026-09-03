@@ -20,6 +20,8 @@ core) preserves core's domain neutrality.
 
 from __future__ import annotations
 
+from django.core.exceptions import ValidationError
+
 
 def resolve_organization_context(request, *, force=False):
     """
@@ -50,14 +52,17 @@ def resolve_organization_context(request, *, force=False):
         Organization = _organization_model()
         OrganizationMembership = _membership_model()
 
-        org = (
-            Organization.objects.filter(
+        org = None
+        try:
+            org = Organization.objects.filter(
                 id=org_ref,
                 is_deleted=False,
             ).first()
-            if org_ref
-            else None
-        )
+        except (ValidationError, ValueError, TypeError):
+            # Malformed organization identifier (e.g. a non-UUID header
+            # value): resolve to no organization context (fail closed)
+            # instead of raising a server error.
+            org = None
 
         if org is not None:
             request.organization = org

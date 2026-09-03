@@ -5,9 +5,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from django.db import transaction
+
 if TYPE_CHECKING:
     from apps.publishing.models import PublishItem
-    from apps.identity.models import User
 
 
 def create_publish_item(
@@ -27,10 +28,10 @@ def create_publish_item(
     export_path: str = "",
     export_format: str = "",
     created_by_id: str | None = None,
-) -> "PublishItem":
+) -> PublishItem:
     """Create a new publish item."""
-    from apps.publishing.models import PublishItem
     from apps.organization.models import Organization
+    from apps.publishing.models import PublishItem
     
     org = Organization.objects.get(id=organization_id)
     
@@ -55,19 +56,27 @@ def create_publish_item(
     return publish
 
 
+@transaction.atomic
 def validate_publish(
     *,
     publish_id: str,
     user_id: str,
+    organization_id: str,
 ) -> dict:
     """Run validation on a publish item."""
-    from apps.publishing.models import PublishItem, PublishValidationRule
     from apps.audit.models import AuditLog
+    from apps.publishing.models import PublishItem, PublishValidationRule
     
-    publish = PublishItem.objects.get(id=publish_id)
+    publish = PublishItem.objects.get(
+        id=publish_id,
+        organization_id=organization_id,
+    )
     
-    # Get active validation rules
-    rules = PublishValidationRule.objects.filter(is_active=True).order_by("order")
+    # Get active validation rules scoped to the organization
+    rules = PublishValidationRule.objects.filter(
+        organization_id=organization_id,
+        is_active=True,
+    ).order_by("order")
     
     validation_results = []
     all_passed = True
@@ -140,16 +149,21 @@ def validate_publish(
     }
 
 
+@transaction.atomic
 def republish(
     *,
     publish_id: str,
     user_id: str,
-) -> "PublishItem":
+    organization_id: str,
+) -> PublishItem:
     """Create a new iteration of a publish."""
-    from apps.publishing.models import PublishItem
     from apps.audit.models import AuditLog
+    from apps.publishing.models import PublishItem
     
-    original = PublishItem.objects.get(id=publish_id)
+    original = PublishItem.objects.get(
+        id=publish_id,
+        organization_id=organization_id,
+    )
     
     # Increment version
     new_code = f"{original.code}_v{original.retry_count + 2}"
@@ -189,16 +203,21 @@ def republish(
     return publish
 
 
+@transaction.atomic
 def unpublish(
     *,
     publish_id: str,
     user_id: str,
-) -> "PublishItem":
+    organization_id: str,
+) -> PublishItem:
     """Deprecate and unlink a publish."""
-    from apps.publishing.models import PublishItem
     from apps.audit.models import AuditLog
+    from apps.publishing.models import PublishItem
     
-    publish = PublishItem.objects.get(id=publish_id)
+    publish = PublishItem.objects.get(
+        id=publish_id,
+        organization_id=organization_id,
+    )
     
     publish.status = PublishItem.STATUS_CANCELLED
     publish.is_archived = True
@@ -218,16 +237,21 @@ def unpublish(
     return publish
 
 
+@transaction.atomic
 def retry_publish(
     *,
     publish_id: str,
     user_id: str,
-) -> "PublishItem":
+    organization_id: str,
+) -> PublishItem:
     """Re-trigger a failed publish."""
-    from apps.publishing.models import PublishItem
     from apps.audit.models import AuditLog
+    from apps.publishing.models import PublishItem
     
-    publish = PublishItem.objects.get(id=publish_id)
+    publish = PublishItem.objects.get(
+        id=publish_id,
+        organization_id=organization_id,
+    )
     
     if publish.status != PublishItem.STATUS_FAILED:
         raise ValueError("Only failed publishes can be retried")

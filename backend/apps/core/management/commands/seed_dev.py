@@ -224,10 +224,8 @@ class Command(BaseCommand):
         ]
 
     def _seed_permissions(self):
-        from apps.organization.choices import PermissionModule
         from apps.organization.models import Permission
 
-        valid_modules = {c[0] for c in PermissionModule.choices}
         # Use get_or_create to avoid duplicate permission creation; org permissions may already be seeded via migrations.
         # Frontend codes like "projects:create" use module names outside backend choices; map to a valid module.
         perm_specs = [
@@ -251,6 +249,18 @@ class Command(BaseCommand):
             ("reviews:create", "reviews", "create"),
             ("reviews:read", "reviews", "read"),
             ("reviews:approve", "reviews", "approve"),
+            ("deliveries:create", "deliveries", "create"),
+            ("deliveries:read", "deliveries", "read"),
+            ("deliveries:update", "deliveries", "update"),
+            ("deliveries:delete", "deliveries", "delete"),
+            ("publishing:create", "publishing", "create"),
+            ("publishing:read", "publishing", "read"),
+            ("publishing:update", "publishing", "update"),
+            ("publishing:delete", "publishing", "delete"),
+            ("scheduling:create", "scheduling", "create"),
+            ("scheduling:read", "scheduling", "read"),
+            ("scheduling:update", "scheduling", "update"),
+            ("scheduling:delete", "scheduling", "delete"),
             ("audit:read", "audit", "read"),
             ("settings:update", "settings", "update"),
             ("users:manage", "users", "manage"),
@@ -290,17 +300,23 @@ class Command(BaseCommand):
                 "assets:create", "assets:read", "assets:update",
                 "tasks:create", "tasks:read", "tasks:update",
                 "reviews:create", "reviews:read", "reviews:approve",
+                "deliveries:create", "deliveries:read", "deliveries:update",
+                "publishing:create", "publishing:read", "publishing:update",
+                "scheduling:create", "scheduling:read", "scheduling:update",
                 "audit:read",
             ],
             "lead-artist": [
                 "projects:read", "shots:read", "shots:update",
                 "assets:read", "assets:update",
                 "tasks:create", "tasks:read", "tasks:update",
-                "reviews:create", "reviews:read", "audit:read",
+                "reviews:create", "reviews:read",
+                "deliveries:read", "publishing:read", "scheduling:read",
+                "audit:read",
             ],
             "artist": [
                 "projects:read", "shots:read", "tasks:read", "tasks:update",
                 "assets:read", "reviews:read",
+                "deliveries:read", "publishing:read", "scheduling:read",
             ],
             "org-admin": [
                 "projects:create", "projects:read", "projects:update", "projects:delete",
@@ -308,9 +324,12 @@ class Command(BaseCommand):
                 "assets:create", "assets:read", "assets:update", "assets:delete",
                 "tasks:create", "tasks:read", "tasks:update", "tasks:delete",
                 "reviews:create", "reviews:read", "reviews:approve",
+                "deliveries:create", "deliveries:read", "deliveries:update", "deliveries:delete",
+                "publishing:create", "publishing:read", "publishing:update", "publishing:delete",
+                "scheduling:create", "scheduling:read", "scheduling:update", "scheduling:delete",
                 "audit:read", "settings:update", "users:manage",
             ],
-            "client-reviewer": ["projects:read", "shots:read", "reviews:read", "reviews:approve"],
+            "client-reviewer": ["projects:read", "shots:read", "reviews:read", "reviews:approve", "deliveries:read", "publishing:read"],
         }
         roles = {}
         for code, name in self._seed_roles_spec():
@@ -428,10 +447,12 @@ class Command(BaseCommand):
 
     def _seed_projects(self, org, users):
         from pathlib import Path
-
-        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
-        from apps.production.models import Project
         from unittest.mock import MagicMock
+
+        from apps.production.management.commands.seed_production_mocks import (
+            Command as ProdMockCommand,
+        )
+        from apps.production.models import Project
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
@@ -441,10 +462,12 @@ class Command(BaseCommand):
 
     def _seed_shots(self, org, projects, users):
         from pathlib import Path
-
-        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
-        from apps.production.models import Shot
         from unittest.mock import MagicMock
+
+        from apps.production.management.commands.seed_production_mocks import (
+            Command as ProdMockCommand,
+        )
+        from apps.production.models import Shot
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
@@ -454,10 +477,12 @@ class Command(BaseCommand):
 
     def _seed_assets(self, org, projects, users, departments, teams):
         from pathlib import Path
-
-        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
-        from apps.production.models import Asset
         from unittest.mock import MagicMock
+
+        from apps.production.management.commands.seed_production_mocks import (
+            Command as ProdMockCommand,
+        )
+        from apps.production.models import Asset
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
@@ -467,10 +492,12 @@ class Command(BaseCommand):
 
     def _seed_tasks(self, org, projects, shots, assets, users, departments, teams):
         from pathlib import Path
-
-        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
-        from apps.production.models import Task
         from unittest.mock import MagicMock
+
+        from apps.production.management.commands.seed_production_mocks import (
+            Command as ProdMockCommand,
+        )
+        from apps.production.models import Task
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
@@ -480,10 +507,12 @@ class Command(BaseCommand):
 
     def _seed_timelogs(self, org, tasks, users):
         from pathlib import Path
-
-        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
-        from apps.production.models import Timelog
         from unittest.mock import MagicMock
+
+        from apps.production.management.commands.seed_production_mocks import (
+            Command as ProdMockCommand,
+        )
+        from apps.production.models import Timelog
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
@@ -493,10 +522,12 @@ class Command(BaseCommand):
 
     def _seed_versions(self, org, projects, shots, assets, tasks, users):
         from pathlib import Path
-
-        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
-        from apps.production.models import Version
         from unittest.mock import MagicMock
+
+        from apps.production.management.commands.seed_production_mocks import (
+            Command as ProdMockCommand,
+        )
+        from apps.production.models import Version
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
@@ -506,10 +537,12 @@ class Command(BaseCommand):
 
     def _seed_reviews(self, org, projects, shots, versions, users):
         from pathlib import Path
-
-        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
-        from apps.production.models import Review
         from unittest.mock import MagicMock
+
+        from apps.production.management.commands.seed_production_mocks import (
+            Command as ProdMockCommand,
+        )
+        from apps.production.models import Review
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
@@ -519,10 +552,12 @@ class Command(BaseCommand):
 
     def _seed_playlists(self, org, projects, versions, reviews):
         from pathlib import Path
-
-        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
-        from apps.production.models import Playlist
         from unittest.mock import MagicMock
+
+        from apps.production.management.commands.seed_production_mocks import (
+            Command as ProdMockCommand,
+        )
+        from apps.production.models import Playlist
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
@@ -532,10 +567,12 @@ class Command(BaseCommand):
 
     def _seed_media(self, org, projects, shots, assets):
         from pathlib import Path
-
-        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
-        from apps.production.models import Media
         from unittest.mock import MagicMock
+
+        from apps.production.management.commands.seed_production_mocks import (
+            Command as ProdMockCommand,
+        )
+        from apps.production.models import Media
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
@@ -545,10 +582,12 @@ class Command(BaseCommand):
 
     def _seed_workflows(self, org, projects):
         from pathlib import Path
-
-        from apps.production.management.commands.seed_production_mocks import Command as ProdMockCommand
-        from apps.production.models import Workflow
         from unittest.mock import MagicMock
+
+        from apps.production.management.commands.seed_production_mocks import (
+            Command as ProdMockCommand,
+        )
+        from apps.production.models import Workflow
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
@@ -557,11 +596,10 @@ class Command(BaseCommand):
         return list(Workflow.objects.filter(organization=org))
 
     def _seed_clients(self, org):
-        from apps.organization.models import Client
-
         # Seed from frontend mockClients
         from pathlib import Path
 
+        from apps.organization.models import Client
         from apps.production.management.commands.seed_production_mocks import _load_ts_mock_array
 
         frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
@@ -607,10 +645,9 @@ class Command(BaseCommand):
         return list(Client.objects.filter(organization=org))
 
     def _seed_vendors(self, org):
-        from apps.organization.models import Vendor
-
         from pathlib import Path
 
+        from apps.organization.models import Vendor
         from apps.production.management.commands.seed_production_mocks import _load_ts_mock_array
 
         frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
@@ -912,19 +949,16 @@ class Command(BaseCommand):
 
         Uses the real delivery service so records are valid and consistent.
         """
-        from datetime import datetime, timedelta
+        from datetime import timedelta
 
         from django.utils import timezone
 
         from apps.deliveries.models import DeliveryPackage
         from apps.deliveries.services.delivery import (
             approve_delivery,
-            complete_delivery,
-            create_delivery,
             prepare_delivery,
             reject_delivery,
             submit_delivery,
-            validate_delivery,
         )
         from apps.organization.models import Client
 
@@ -985,16 +1019,49 @@ class Command(BaseCommand):
 
             # Drive statuses through the real service for realistic state transitions.
             if spec["code"] == "DEL-LUM01-2026-W01":
-                prepare_delivery(delivery_id=str(delivery.id), user_id=actor_id)
-                submit_delivery(delivery_id=str(delivery.id), user_id=actor_id)
+                prepare_delivery(
+                    delivery_id=str(delivery.id),
+                    user_id=actor_id,
+                    organization_id=str(org.id),
+                )
+                submit_delivery(
+                    delivery_id=str(delivery.id),
+                    user_id=actor_id,
+                    organization_id=str(org.id),
+                )
             elif spec["code"] == "DEL-AETH2-2026-W02":
-                prepare_delivery(delivery_id=str(delivery.id), user_id=actor_id)
-                submit_delivery(delivery_id=str(delivery.id), user_id=actor_id)
-                approve_delivery(delivery_id=str(delivery.id), user_id=actor_id)
+                prepare_delivery(
+                    delivery_id=str(delivery.id),
+                    user_id=actor_id,
+                    organization_id=str(org.id),
+                )
+                submit_delivery(
+                    delivery_id=str(delivery.id),
+                    user_id=actor_id,
+                    organization_id=str(org.id),
+                )
+                approve_delivery(
+                    delivery_id=str(delivery.id),
+                    user_id=actor_id,
+                    organization_id=str(org.id),
+                )
             elif spec["code"] == "DEL-VEL01-2026-W03":
-                prepare_delivery(delivery_id=str(delivery.id), user_id=actor_id)
-                submit_delivery(delivery_id=str(delivery.id), user_id=actor_id)
-                reject_delivery(delivery_id=str(delivery.id), user_id=actor_id, rejection_reason="Color space mismatch on delivery spec sheet.")
+                prepare_delivery(
+                    delivery_id=str(delivery.id),
+                    user_id=actor_id,
+                    organization_id=str(org.id),
+                )
+                submit_delivery(
+                    delivery_id=str(delivery.id),
+                    user_id=actor_id,
+                    organization_id=str(org.id),
+                )
+                reject_delivery(
+                    delivery_id=str(delivery.id),
+                    user_id=actor_id,
+                    organization_id=str(org.id),
+                    rejection_reason="Color space mismatch on delivery spec sheet.",
+                )
 
         return created
 

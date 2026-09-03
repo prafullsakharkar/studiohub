@@ -4,7 +4,7 @@ Scheduling serializers.
 from rest_framework import serializers
 
 from apps.organization.models import Organization
-from apps.scheduling.models import CalendarEvent, Resource, ResourceSchedule, ResourceLeave, Holiday
+from apps.scheduling.models import CalendarEvent, Holiday, Resource, ResourceLeave, ResourceSchedule
 
 
 class CalendarEventListSerializer(serializers.ModelSerializer):
@@ -232,8 +232,8 @@ class ResourceCreateSerializer(serializers.Serializer):
     location = serializers.CharField(required=False, allow_blank=True, max_length=255)
 
     def create(self, validated_data):
-        from apps.organization.models import Department, Team
         from apps.identity.models import User
+        from apps.organization.models import Department, Team
 
         department_id = validated_data.pop("department_id", None)
         team_id = validated_data.pop("team_id", None)

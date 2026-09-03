@@ -31,10 +31,16 @@ Service operation (business rules, transactions, events)
 ## Backend Architecture (existing, reuse — do not duplicate)
 
 - Context resolution: organization middleware +
-  `resolve_organization_context(request)` in `apps/organization/api/viewsets/base.py`
-  (`OrganizationEntityViewSet.perform_authentication`).
-- Queryset scoping: `OrganizationBaseSelector.scope_by_request(...)` guarantees
-  row-level tenant isolation.
+  `resolve_organization_context(request)` in
+  `apps/organization/middleware/organization_context.py`, applied by
+  `OrganizationScopedViewSet.perform_authentication`
+  (`apps/organization/api/viewsets/scoped.py`) for domain viewsets.
+- Queryset scoping: core `BaseSelector.scope_by_request(...)` (fail closed when no
+  organization context resolves) keyed by `scope_field` (default `organization`);
+  `OrganizationBaseSelector` overrides it to allow platform-staff bypass. Domain
+  viewsets opt in via `OrganizationScopedViewSet` (deliveries, publishing, and
+  scheduling use it); mutation services accept an explicit `organization_id` and
+  resolve objects through it.
 - Code-level checks: `HasPermission` permission class
   (`apps/identity/permissions/permission.py`) reading `view.permission_map` →
   `PermissionCacheService.has_permission(user, code, organization=…)`;

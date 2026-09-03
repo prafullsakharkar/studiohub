@@ -3,7 +3,7 @@ Publishing serializers.
 """
 from rest_framework import serializers
 
-from apps.publishing.models import PublishItem, PublishValidationRule
+from apps.publishing.models import PublishItem
 
 
 class PublishListSerializer(serializers.ModelSerializer):

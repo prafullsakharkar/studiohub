@@ -2,10 +2,10 @@ from rest_framework.routers import DefaultRouter
 
 from apps.scheduling.api.viewsets import (
     CalendarEventViewSet,
-    ResourceViewSet,
-    ResourceScheduleViewSet,
-    ResourceLeaveViewSet,
     HolidayViewSet,
+    ResourceLeaveViewSet,
+    ResourceScheduleViewSet,
+    ResourceViewSet,
 )
 
 router = DefaultRouter()
