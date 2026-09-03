@@ -3,8 +3,6 @@ Error Log service.
 """
 from __future__ import annotations
 
-from typing import Any
-
 from django.db import transaction
 from django.utils import timezone
 

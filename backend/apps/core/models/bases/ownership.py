@@ -1,7 +1,6 @@
-from django.db import models
-
 import warnings
 
+from django.db import models
 
 # Warn when importing project-scoped ownership helpers — these are domain
 # oriented and likely belong in a domain application.

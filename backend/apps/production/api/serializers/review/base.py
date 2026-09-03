@@ -1,6 +1,9 @@
 from rest_framework import serializers
+
 from apps.core.api.serializers.base import BaseReadSerializer
 from apps.production.models import Review
+
+
 class ReviewSerializer(BaseReadSerializer):
     project_id = serializers.UUIDField(read_only=True, allow_null=True)
     lead_reviewer_name = serializers.CharField(read_only=True)

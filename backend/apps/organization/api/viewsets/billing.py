@@ -1,8 +1,8 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from drf_spectacular.utils import extend_schema
 from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 
 class BillingView(APIView):
@@ -64,8 +64,8 @@ class OrganizationSingletonLegacyView(APIView):
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
-        from apps.organization.models import Organization
         from apps.organization.api.serializers.organization import OrganizationDetailSerializer
+        from apps.organization.models import Organization
 
         qs = Organization.objects.all()
         user = request.user

@@ -6,8 +6,6 @@ from __future__ import annotations
 
 import pytest
 
-from apps.identity.models.security_event import SecurityEvent
-
 
 class TestSecurityEventModel:
     """Tests for SecurityEvent model."""

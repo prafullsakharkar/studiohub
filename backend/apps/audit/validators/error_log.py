@@ -54,16 +54,13 @@ class ErrorLogValidator(AuditBaseValidator):
         
         is_valid = True
         
-        if "severity" in data:
-            if not self.validate_severity(data["severity"]):
-                is_valid = False
-        
-        if "error_type" in data:
-            if not self.validate_error_type(data["error_type"]):
-                is_valid = False
-        
-        if "message" in data:
-            if not self.validate_message(data["message"]):
-                is_valid = False
+        if "severity" in data and not self.validate_severity(data["severity"]):
+            is_valid = False
+
+        if "error_type" in data and not self.validate_error_type(data["error_type"]):
+            is_valid = False
+
+        if "message" in data and not self.validate_message(data["message"]):
+            is_valid = False
         
         return is_valid

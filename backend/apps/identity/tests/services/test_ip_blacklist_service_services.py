@@ -8,8 +8,6 @@ from unittest.mock import patch
 
 import pytest
 
-from apps.identity.models.ip_blacklist import IPBlacklist
-from apps.identity.models.user import User
 from apps.identity.tests.factories import IPBlacklistFactory, UserFactory
 
 

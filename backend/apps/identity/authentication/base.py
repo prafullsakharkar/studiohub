@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple
-
 from django.contrib.auth import get_user_model
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
@@ -23,7 +21,7 @@ class IdentityAuthentication(BaseAuthentication):
     def authenticate(
         self,
         request,
-    ) -> Optional[Tuple[User, object]]:
+    ) -> tuple[User, object] | None:
         token = self.get_token(request)
 
         if token is None:

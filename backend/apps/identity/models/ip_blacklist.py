@@ -4,7 +4,6 @@ from django.conf import settings
 from django.db import models
 
 from apps.core.models import EntityModel
-
 from apps.identity.managers import IPBlacklistManager
 
 

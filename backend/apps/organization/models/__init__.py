@@ -1,6 +1,7 @@
 from .api_key import APIKey
 from .branding import Branding
 from .calendar import Calendar
+from .client import Client
 from .department import Department
 from .group import Group
 from .group_member import GroupMember
@@ -12,7 +13,6 @@ from .office import Office
 from .organization import Organization
 from .organization_settings import OrganizationSettings
 from .permission import Permission
-from .client import Client
 from .person import Person
 from .personal_access_token import PersonalAccessToken
 from .position import Position

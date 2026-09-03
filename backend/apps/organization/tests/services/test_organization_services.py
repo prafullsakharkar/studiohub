@@ -7,7 +7,6 @@ from __future__ import annotations
 from unittest.mock import patch
 
 import pytest
-from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from apps.organization.models.organization import Organization

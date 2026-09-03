@@ -10,7 +10,6 @@ from apps.core.api.permissions.staff import IsStaff
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.settings.api.viewsets.base import SettingsBaseViewSet
 from apps.settings.filters.category import SettingCategoryFilter
-from apps.settings.models.category import SettingCategory
 from apps.settings.selectors.category import SettingCategorySelector
 from apps.settings.serializers.category import SettingCategorySerializer
 from apps.settings.services.category import SettingCategoryService

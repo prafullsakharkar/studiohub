@@ -1,17 +1,15 @@
 from apps.core.api.pagination import StandardPagination
-from apps.core.permissions.base import IsAuthenticatedPermission
-from apps.identity.permissions import HasPermission
 from apps.organization.api.serializers.person import (
     PersonCreateSerializer,
     PersonDetailSerializer,
     PersonListSerializer,
     PersonUpdateSerializer,
 )
+from apps.organization.api.viewsets.base import OrganizationEntityViewSet
 from apps.organization.constants.permissions import PersonPermissions
 from apps.organization.models.person import Person
 from apps.organization.selectors.person import PersonSelector
 from apps.organization.services.person import PersonService
-from apps.organization.api.viewsets.base import OrganizationEntityViewSet
 
 
 class PersonViewSet(OrganizationEntityViewSet):

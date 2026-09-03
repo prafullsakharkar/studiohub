@@ -2,12 +2,9 @@
 Activity ViewSet.
 """
 from rest_framework import mixins
-from rest_framework.decorators import action
-from rest_framework.response import Response
 
 from apps.audit.api.viewsets.base import AuditEntityViewSet
 from apps.audit.filters.activity import ActivityFilter
-from apps.audit.models.activity import Activity
 from apps.audit.selectors.activity import ActivitySelector
 from apps.audit.serializers.activity import ActivitySerializer
 from apps.audit.services.activity import ActivityService

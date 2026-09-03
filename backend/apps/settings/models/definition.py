@@ -6,7 +6,6 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 

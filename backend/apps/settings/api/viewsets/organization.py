@@ -8,7 +8,6 @@ from rest_framework.response import Response
 
 from apps.settings.api.viewsets.base import SettingsBaseViewSet
 from apps.settings.filters.organization import OrganizationSettingFilter
-from apps.settings.models.organization import OrganizationSetting
 from apps.settings.selectors.organization import OrganizationSettingSelector
 from apps.settings.serializers.organization import OrganizationSettingSerializer
 from apps.settings.services.organization import OrganizationSettingService

@@ -1,15 +1,11 @@
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.core.api.pagination import StandardPagination
 from apps.core.api.viewsets import ServiceModelViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
-from apps.core.api.pagination import StandardPagination
-
 from apps.organization.api.filtersets import OrganizationFilterSet
-from apps.organization.middleware.organization_context import (
-    resolve_organization_context,
-)
 from apps.organization.api.serializers.organization import (
     OrganizationCreateSerializer,
     OrganizationDetailSerializer,
@@ -17,6 +13,9 @@ from apps.organization.api.serializers.organization import (
     OrganizationUpdateSerializer,
 )
 from apps.organization.constants import OrganizationPermissions
+from apps.organization.middleware.organization_context import (
+    resolve_organization_context,
+)
 from apps.organization.selectors import OrganizationSelector
 from apps.organization.services import OrganizationService
 
@@ -146,10 +145,10 @@ class OrganizationViewSet(ServiceModelViewSet):
     def organization_settings(self, request, *args, **kwargs):
         instance = self.get_object()
         # Lazy import to avoid circular imports
-        from apps.organization.models import OrganizationSettings
         from apps.organization.api.serializers.organization_settings import (
             OrganizationSettingsDetailSerializer,
         )
+        from apps.organization.models import OrganizationSettings
 
         settings_obj, _ = OrganizationSettings.objects.get_or_create(
             organization=instance,

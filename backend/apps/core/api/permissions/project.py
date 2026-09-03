@@ -10,6 +10,7 @@ first-class platform concept. Otherwise move to the owning domain app (e.g.
 from __future__ import annotations
 
 import warnings
+
 from .base import BasePermission
 
 warnings.warn(
@@ -27,6 +28,7 @@ class IsProjectMember(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         from typing import cast
+
         from apps.core.protocols import HasMembers
 
         project = getattr(obj, "project", obj)

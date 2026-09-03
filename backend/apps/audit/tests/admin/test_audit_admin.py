@@ -59,6 +59,7 @@ class TestAuditLogAdmin:
     def test_registered(self) -> None:
         """Verify the admin is registered for AuditLog."""
         from django.contrib import admin
+
         from apps.audit.models.audit_log import AuditLog
 
         assert admin.site.is_registered(AuditLog)

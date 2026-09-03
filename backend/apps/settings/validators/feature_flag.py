@@ -47,7 +47,6 @@ class FeatureFlagValidator(SettingsBaseValidator):
         """
         Validate date range.
         """
-        from django.utils import timezone
         
         if start_date and end_date:
             if start_date > end_date:

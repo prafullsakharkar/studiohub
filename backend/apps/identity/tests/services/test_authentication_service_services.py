@@ -8,7 +8,6 @@ from unittest.mock import patch
 
 import pytest
 
-from apps.identity.models.user import User
 from apps.identity.tests.factories import UserFactory
 
 

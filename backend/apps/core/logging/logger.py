@@ -9,7 +9,8 @@ get_logger(name) API for callers.
 from __future__ import annotations
 
 import logging
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from . import context as log_context
 

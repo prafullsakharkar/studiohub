@@ -1,9 +1,7 @@
 from apps.core.services.business import BusinessService
 from apps.organization.events import (
-    RoleAssigned,
     RoleCreated,
     RoleDeleted,
-    RoleRevoked,
     RoleUpdated,
 )
 from apps.organization.validators.role import RoleValidator

@@ -1,10 +1,5 @@
 from __future__ import annotations
 
-from django.utils import timezone
-
-from apps.identity.authentication.exceptions import (
-    AccountLocked,
-)
 from apps.identity.events.login_attempt import (
     AccountLocked as AccountLockedEvent,
 )

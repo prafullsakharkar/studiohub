@@ -1,6 +1,6 @@
-from apps.core.api.views import BaseAPIView
 from rest_framework.response import Response
 
+from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import (
     MeSerializer,
 )

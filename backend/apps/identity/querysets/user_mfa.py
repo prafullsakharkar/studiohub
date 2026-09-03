@@ -1,4 +1,3 @@
-from django.db import models
 
 from apps.identity.choices.mfa import MFAStatus
 from apps.identity.querysets.base import IdentityQuerySet

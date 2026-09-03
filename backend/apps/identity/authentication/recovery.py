@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import secrets
-import string
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 from django.contrib.auth.hashers import (
     check_password,

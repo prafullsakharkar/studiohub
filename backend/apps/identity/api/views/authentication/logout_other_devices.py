@@ -1,7 +1,7 @@
-from apps.core.api.views import BaseAPIView
 from rest_framework import status
 from rest_framework.response import Response
 
+from apps.core.api.views import BaseAPIView
 from apps.identity.selectors.authentication import (
     AuthenticationSelector,
 )

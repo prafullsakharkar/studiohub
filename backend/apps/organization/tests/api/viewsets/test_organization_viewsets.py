@@ -12,7 +12,6 @@ from uuid import uuid4
 import pytest
 from django.urls import reverse
 
-from apps.organization.models import Organization
 from apps.organization.tests.factories import OrganizationFactory
 
 

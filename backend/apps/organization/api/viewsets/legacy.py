@@ -18,7 +18,6 @@ at the top-level /api/v1/ prefix (outside /organization/).
 from __future__ import annotations
 
 from django.http import Http404
-from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 
 from apps.organization.api.viewsets.department import DepartmentViewSet

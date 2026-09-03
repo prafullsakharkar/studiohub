@@ -6,7 +6,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.core.api.pagination import StandardPagination
-
 from apps.organization.api.filtersets.invitation import InvitationFilterSet
 from apps.organization.api.serializers.invitation import (
     InvitationCreateSerializer,

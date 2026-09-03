@@ -10,7 +10,6 @@ tests verify that access control behaves as configured.
 
 from __future__ import annotations
 
-import pytest
 from django.contrib.auth.models import AnonymousUser
 from django.test import RequestFactory
 

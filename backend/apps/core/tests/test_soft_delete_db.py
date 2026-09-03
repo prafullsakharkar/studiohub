@@ -1,9 +1,8 @@
 import uuid
 
-from django.test import TestCase, override_settings
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.utils import timezone
+from django.test import TestCase, override_settings
 
 from apps.core.models.attachment import Attachment
 from apps.core.services.soft_delete import SoftDeleteService

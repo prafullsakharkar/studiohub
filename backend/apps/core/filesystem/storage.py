@@ -2,9 +2,10 @@
 """
 Storage service for file operations.
 """
-from typing import BinaryIO, Optional
-from django.core.files.storage import default_storage
+from typing import BinaryIO
+
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 
 
 class StorageService:
@@ -23,7 +24,7 @@ class StorageService:
         name: str,
         content: bytes,
         directory: str = "",
-        organization_id: Optional[str] = None
+        organization_id: str | None = None
     ) -> str:
         """
         Save a file to storage.
@@ -54,7 +55,7 @@ class StorageService:
         name: str,
         file_object: BinaryIO,
         directory: str = "",
-        organization_id: Optional[str] = None
+        organization_id: str | None = None
     ) -> str:
         """
         Save a file from a file object.

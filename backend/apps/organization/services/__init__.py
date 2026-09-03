@@ -10,8 +10,8 @@ from .invitation import InvitationService
 from .office import OfficeService
 from .organization import OrganizationService
 from .organization_settings import OrganizationSettingsService
-from .personal_access_token import PersonalAccessTokenService
 from .permission import PermissionService
+from .personal_access_token import PersonalAccessTokenService
 from .position import PositionService
 from .role import RoleService
 from .role_permission import RolePermissionService

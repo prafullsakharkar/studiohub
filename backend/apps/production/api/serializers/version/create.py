@@ -1,6 +1,9 @@
 from rest_framework import serializers
+
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.models import Version
+
+
 class VersionCreateSerializer(BaseWriteSerializer):
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)

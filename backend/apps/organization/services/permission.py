@@ -2,8 +2,6 @@ from apps.core.services.business import BusinessService
 from apps.organization.events import (
     PermissionCreated,
     PermissionDeleted,
-    PermissionGranted,
-    PermissionRevoked,
     PermissionUpdated,
 )
 from apps.organization.validators.permission import PermissionValidator

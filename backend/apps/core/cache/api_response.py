@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 from django.core.cache import cache
 
 if TYPE_CHECKING:
-    from django.http import HttpRequest, HttpResponse
+    from django.http import HttpRequest
 
 
 class APIResponseCache:

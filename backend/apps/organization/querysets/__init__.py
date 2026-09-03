@@ -11,8 +11,8 @@ from .membership import OrganizationMembershipQuerySet
 from .office import OfficeQuerySet
 from .organization import OrganizationQuerySet
 from .organization_settings import OrganizationSettingsQuerySet
-from .personal_access_token import PersonalAccessTokenQuerySet
 from .permission import PermissionQuerySet
+from .personal_access_token import PersonalAccessTokenQuerySet
 from .position import PositionQuerySet
 from .role import RoleQuerySet
 from .role_permission import RolePermissionQuerySet

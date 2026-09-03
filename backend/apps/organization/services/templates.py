@@ -12,11 +12,10 @@ from apps.organization.models import (
     Department,
     Office,
     Organization,
-    Team,
 )
 
 if TYPE_CHECKING:
-    from apps.organization.models import Role
+    pass
 
 
 class OrganizationTemplateService:

@@ -1,12 +1,12 @@
 from apps.settings.choices.feature_flag import FeatureFlagStatus, FeatureFlagType
-from apps.settings.choices.theme import ThemeType, FontFamily
 from apps.settings.choices.localization import (
-    Language,
-    Timezone,
     DateFormat,
-    TimeFormat,
+    Language,
     NumberFormat,
+    TimeFormat,
+    Timezone,
 )
+from apps.settings.choices.theme import FontFamily, ThemeType
 
 __all__ = [
     "FeatureFlagStatus",

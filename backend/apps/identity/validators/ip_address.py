@@ -4,7 +4,6 @@ IP address validator.
 
 from __future__ import annotations
 
-from django.core.exceptions import ValidationError
 from django.core.validators import validate_ipv46_address
 
 from apps.identity.validators.base import IdentityBaseValidator

@@ -5,7 +5,6 @@ Handler registry for domain events.
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Type
 
 from apps.core.events.base import DomainEvent
 from apps.core.events.handlers import DomainEventHandler
@@ -18,13 +17,13 @@ class EventRegistry:
 
     def __init__(self) -> None:
         self._handlers: dict[
-            Type[DomainEvent],
+            type[DomainEvent],
             list[type[DomainEventHandler]],
         ] = defaultdict(list)
 
     def register(
         self,
-        event: Type[DomainEvent],
+        event: type[DomainEvent],
         handler: type[DomainEventHandler],
     ) -> None:
         """
@@ -35,7 +34,7 @@ class EventRegistry:
 
     def unregister(
         self,
-        event: Type[DomainEvent],
+        event: type[DomainEvent],
         handler: type[DomainEventHandler],
     ) -> None:
         """

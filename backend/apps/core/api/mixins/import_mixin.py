@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from apps.core.api.utils.response import ResponseUtils
 
 if TYPE_CHECKING:
-    from django.db.models import QuerySet
+    pass
 
 
 class ImportMixin:

@@ -1,6 +1,5 @@
-from apps.identity.models import IPBlacklist
-
 from apps.identity.api.serializers.base import IdentitySerializer
+from apps.identity.models import IPBlacklist
 
 
 class IPBlacklistBaseSerializer(

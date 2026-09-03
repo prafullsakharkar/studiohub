@@ -5,9 +5,7 @@ Validator tests for Settings application.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
-
-import pytest
+from datetime import datetime
 
 from apps.settings.validators.category import SettingCategoryValidator
 from apps.settings.validators.definition import SettingDefinitionValidator

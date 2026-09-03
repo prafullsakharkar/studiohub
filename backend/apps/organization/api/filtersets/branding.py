@@ -5,6 +5,7 @@ from apps.core.filters.ordering import OrderingFilterMixin
 from apps.core.filters.search import SearchFilterMixin
 from apps.organization.models import Branding
 
+
 class BrandingFilterSet(
     SearchFilterMixin,
     OrderingFilterMixin,

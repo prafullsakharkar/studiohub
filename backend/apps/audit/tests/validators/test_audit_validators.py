@@ -4,8 +4,6 @@ Validator tests for Audit application.
 
 from __future__ import annotations
 
-import pytest
-
 from apps.audit.choices.audit_log import AuditAction, AuditSeverity, AuditTarget
 from apps.audit.choices.error_log import ErrorSeverity
 from apps.audit.choices.login_history import LoginStatus

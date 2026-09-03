@@ -11,8 +11,8 @@ from .membership import OrganizationMembershipSelector
 from .office import OfficeSelector
 from .organization import OrganizationSelector
 from .organization_settings import OrganizationSettingsSelector
-from .personal_access_token import PersonalAccessTokenSelector
 from .permission import PermissionSelector
+from .personal_access_token import PersonalAccessTokenSelector
 from .position import PositionSelector
 from .role import RoleSelector
 from .role_permission import RolePermissionSelector

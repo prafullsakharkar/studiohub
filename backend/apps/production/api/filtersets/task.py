@@ -1,7 +1,9 @@
 import django_filters
 from django.db.models import Q
+
 from apps.core.filters import BaseFilterSet
 from apps.production.models import Task
+
 
 class TaskFilterSet(BaseFilterSet):
     search = django_filters.CharFilter(method="filter_search")

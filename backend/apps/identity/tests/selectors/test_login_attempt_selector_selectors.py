@@ -10,7 +10,6 @@ import pytest
 from django.utils import timezone
 
 from apps.identity.models.login_attempt import LoginAttempt
-from apps.identity.models.user import User
 from apps.identity.tests.factories import LoginAttemptFactory, UserFactory
 
 

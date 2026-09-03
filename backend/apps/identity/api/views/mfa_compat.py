@@ -9,17 +9,15 @@ returns shapes matching frontend/src/modules/core/types MFAConfig etc.
 
 from __future__ import annotations
 
-from rest_framework import status
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
+from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from rest_framework import serializers
 from apps.core.api.views import BaseAPIView
-from rest_framework.generics import GenericAPIView
 from apps.identity.services.mfa.facade import MFAService
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema
 
 
 class MFAConfigView(BaseAPIView):

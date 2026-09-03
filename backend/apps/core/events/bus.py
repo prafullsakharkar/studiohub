@@ -4,8 +4,6 @@ Event bus.
 
 from __future__ import annotations
 
-from __future__ import annotations
-
 from django.db import transaction
 
 from apps.core.events.dispatcher import EventDispatcher

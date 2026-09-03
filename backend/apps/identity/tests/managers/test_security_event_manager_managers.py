@@ -7,7 +7,6 @@ from __future__ import annotations
 import pytest
 
 from apps.identity.models.security_event import SecurityEvent
-from apps.identity.models.user import User
 from apps.identity.tests.factories import SecurityEventFactory, UserFactory
 
 

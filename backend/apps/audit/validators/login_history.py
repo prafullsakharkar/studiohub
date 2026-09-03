@@ -45,12 +45,10 @@ class LoginHistoryValidator(AuditBaseValidator):
         
         is_valid = True
         
-        if "login_type" in data:
-            if not self.validate_login_type(data["login_type"]):
-                is_valid = False
-        
-        if "status" in data:
-            if not self.validate_status(data["status"]):
-                is_valid = False
+        if "login_type" in data and not self.validate_login_type(data["login_type"]):
+            is_valid = False
+
+        if "status" in data and not self.validate_status(data["status"]):
+            is_valid = False
         
         return is_valid

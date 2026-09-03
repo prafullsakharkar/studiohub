@@ -5,8 +5,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from django_filters import FilterSet
-
 from apps.core.filters import BaseFilterSet
 
 

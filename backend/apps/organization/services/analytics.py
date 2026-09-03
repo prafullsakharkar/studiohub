@@ -7,7 +7,7 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.utils import timezone
 
 from apps.organization.models import (

@@ -6,6 +6,7 @@ from apps.core.filters.ordering import OrderingFilterMixin
 from apps.core.filters.search import SearchFilterMixin
 from apps.organization.models import Department
 
+
 class DepartmentFilterSet(
     SearchFilterMixin,
     DateRangeFilterMixin,

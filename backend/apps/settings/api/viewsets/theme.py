@@ -8,7 +8,6 @@ from rest_framework.response import Response
 
 from apps.settings.api.viewsets.base import SettingsBaseViewSet
 from apps.settings.filters.theme import ThemeFilter
-from apps.settings.models.theme import Theme
 from apps.settings.selectors.theme import ThemeSelector
 from apps.settings.serializers.theme import ThemeSerializer
 from apps.settings.services.theme import ThemeService

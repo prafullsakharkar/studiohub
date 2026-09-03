@@ -57,18 +57,15 @@ class ChangeLogValidator(AuditBaseValidator):
         
         is_valid = True
         
-        if "change_type" in data:
-            if not self.validate_change_type(data["change_type"]):
-                is_valid = False
-        
-        if "before_values" in data and "after_values" in data:
-            if not self.validate_before_after(
-                data["before_values"], data["after_values"]
-            ):
-                is_valid = False
-        
-        if "changed_fields" in data:
-            if not self.validate_changed_fields(data["changed_fields"]):
-                is_valid = False
+        if "change_type" in data and not self.validate_change_type(data["change_type"]):
+            is_valid = False
+
+        if "before_values" in data and "after_values" in data and not self.validate_before_after(
+            data["before_values"], data["after_values"]
+        ):
+            is_valid = False
+
+        if "changed_fields" in data and not self.validate_changed_fields(data["changed_fields"]):
+            is_valid = False
         
         return is_valid

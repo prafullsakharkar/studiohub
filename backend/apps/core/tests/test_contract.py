@@ -11,8 +11,8 @@ frontend contract. Run with: pytest apps/core/tests/test_contract.py -v
 
 import pytest
 from django.test import RequestFactory
-from rest_framework.request import Request
 from drf_spectacular.generators import SchemaGenerator
+from rest_framework.request import Request
 
 
 @pytest.mark.django_db
@@ -68,8 +68,8 @@ def test_openapi_schema_contains_core_contract_endpoints():
 @pytest.mark.django_db
 def test_pagination_contract_via_api_client():
     """Verify that paginated endpoints return {count, next, previous, results}."""
-    from rest_framework.test import APIClient
     from django.contrib.auth import get_user_model
+    from rest_framework.test import APIClient
 
     User = get_user_model()
     user = User.objects.filter(is_active=True).first()

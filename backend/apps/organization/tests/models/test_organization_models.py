@@ -4,8 +4,6 @@ Organization model tests.
 
 from __future__ import annotations
 
-from datetime import date
-
 import pytest
 from django.core.exceptions import ValidationError
 

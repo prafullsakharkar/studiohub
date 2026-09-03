@@ -7,7 +7,7 @@ Provides base permission classes and domain-specific permission types.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from rest_framework import permissions
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
@@ -65,7 +65,7 @@ class BasePermission(permissions.BasePermission):
         self,
         request: HttpRequest,
         view: APIView,
-        obj: Optional[Any] = None,
+        obj: Any | None = None,
     ) -> bool:
         """
         Check permission for a request.
@@ -86,7 +86,7 @@ class BasePermission(permissions.BasePermission):
         self,
         request: HttpRequest,
         view: APIView,
-        obj: Optional[Any] = None,
+        obj: Any | None = None,
     ) -> None:
         """
         Log a denied permission.
@@ -113,7 +113,7 @@ class BasePermission(permissions.BasePermission):
         self,
         request: HttpRequest,
         view: APIView,
-        obj: Optional[Any] = None,
+        obj: Any | None = None,
     ) -> None:
         """
         Raise an exception when permission is denied.
@@ -157,11 +157,11 @@ class BasePermissionChecker:
     Provides common functionality for permission checking.
     """
 
-    permission_class: Optional[type[BasePermission]] = None
+    permission_class: type[BasePermission] | None = None
 
     def __init__(
         self,
-        permission_class: Optional[type[BasePermission]] = None,
+        permission_class: type[BasePermission] | None = None,
     ):
         """
         Initialize the permission checker.
@@ -170,7 +170,7 @@ class BasePermissionChecker:
             permission_class: The permission class to use
         """
         self.permission_class = permission_class or self.permission_class
-        self._permission_instance: Optional[BasePermission] = None
+        self._permission_instance: BasePermission | None = None
 
     @property
     def permission(self) -> BasePermission:
@@ -226,7 +226,7 @@ class BasePermissionChecker:
         self,
         request: HttpRequest,
         view: APIView,
-        obj: Optional[Any] = None,
+        obj: Any | None = None,
     ) -> bool:
         """
         Check permission for a request.
@@ -247,7 +247,7 @@ class BasePermissionChecker:
         self,
         request: HttpRequest,
         view: APIView,
-        obj: Optional[Any] = None,
+        obj: Any | None = None,
     ) -> None:
         """
         Raise an exception for denied permission.

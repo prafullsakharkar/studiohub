@@ -5,7 +5,12 @@ from apps.core.api.pagination import StandardPagination
 from apps.core.api.viewsets import ServiceModelViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
-from apps.organization.api.serializers.vendor import VendorCreateSerializer, VendorDetailSerializer, VendorListSerializer, VendorUpdateSerializer
+from apps.organization.api.serializers.vendor import (
+    VendorCreateSerializer,
+    VendorDetailSerializer,
+    VendorListSerializer,
+    VendorUpdateSerializer,
+)
 from apps.organization.constants.permissions import OrganizationPermissions
 from apps.organization.models import Vendor
 

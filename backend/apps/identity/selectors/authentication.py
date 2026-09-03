@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from django.contrib.auth import get_user_model
 
+from apps.audit.models import LoginHistory
 from apps.identity.selectors.base import (
     IdentityBaseSelector,
 )
 from apps.identity.selectors.login_attempt import (
     LoginAttemptSelector,
 )
-from apps.audit.models import LoginHistory
 from apps.organization.models import (
     UserSession,
 )

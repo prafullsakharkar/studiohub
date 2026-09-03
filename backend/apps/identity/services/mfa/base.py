@@ -111,7 +111,11 @@ class BaseMFAService(BaseService):
 
     from apps.identity.validators import (  # noqa: E402
         BackupCodeValidator as BackupCodeValidator,
+    )
+    from apps.identity.validators import (
         TrustedDeviceValidator as TrustedDeviceValidator,
+    )
+    from apps.identity.validators import (
         UserMFAValidator as UserMFAValidator,
     )
 

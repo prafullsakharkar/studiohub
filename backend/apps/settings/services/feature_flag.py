@@ -3,11 +3,8 @@ Feature Flag service.
 """
 from __future__ import annotations
 
-from typing import Any
-
 from django.db import transaction
 
-from apps.organization.models.organization import Organization
 from apps.settings.models.feature_flag import FeatureFlag
 from apps.settings.validators.feature_flag import FeatureFlagValidator
 

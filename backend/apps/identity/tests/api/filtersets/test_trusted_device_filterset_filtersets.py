@@ -10,7 +10,6 @@ import pytest
 from django.utils import timezone
 
 from apps.identity.models.trusted_device import TrustedDevice
-from apps.identity.models.user import User
 from apps.identity.tests.factories import TrustedDeviceFactory, UserFactory
 
 

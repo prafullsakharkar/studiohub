@@ -1,5 +1,7 @@
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.models import Workflow
+
+
 class WorkflowUpdateSerializer(BaseWriteSerializer):
     class Meta:
         model = Workflow

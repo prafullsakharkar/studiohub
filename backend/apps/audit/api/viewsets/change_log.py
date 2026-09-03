@@ -2,12 +2,9 @@
 Change Log ViewSet.
 """
 from rest_framework import mixins
-from rest_framework.decorators import action
-from rest_framework.response import Response
 
 from apps.audit.api.viewsets.base import AuditEntityViewSet
 from apps.audit.filters.change_log import ChangeLogFilter
-from apps.audit.models.change_log import ChangeLog
 from apps.audit.selectors.change_log import ChangeLogSelector
 from apps.audit.serializers.change_log import ChangeLogSerializer
 from apps.audit.services.change_log import ChangeLogService

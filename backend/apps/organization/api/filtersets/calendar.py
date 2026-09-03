@@ -5,6 +5,7 @@ from apps.core.filters.ordering import OrderingFilterMixin
 from apps.core.filters.search import SearchFilterMixin
 from apps.organization.models.calendar import Calendar
 
+
 class CalendarFilterSet(
     SearchFilterMixin,
     OrderingFilterMixin,

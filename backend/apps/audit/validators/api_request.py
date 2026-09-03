@@ -56,16 +56,13 @@ class APIRequestValidator(AuditBaseValidator):
         
         is_valid = True
         
-        if "method" in data:
-            if not self.validate_method(data["method"]):
-                is_valid = False
-        
-        if "status_code" in data:
-            if not self.validate_status_code(data["status_code"]):
-                is_valid = False
-        
-        if "response_time_ms" in data:
-            if not self.validate_response_time(data["response_time_ms"]):
-                is_valid = False
+        if "method" in data and not self.validate_method(data["method"]):
+            is_valid = False
+
+        if "status_code" in data and not self.validate_status_code(data["status_code"]):
+            is_valid = False
+
+        if "response_time_ms" in data and not self.validate_response_time(data["response_time_ms"]):
+            is_valid = False
         
         return is_valid

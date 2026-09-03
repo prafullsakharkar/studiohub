@@ -7,11 +7,11 @@ from __future__ import annotations
 from django.conf import settings
 from django.db import models
 
+from apps.core.models import EntityModel
 from apps.organization.choices import InvitationStatus
 from apps.organization.managers.invitation import (
     InvitationManager,
 )
-from apps.core.models import EntityModel
 
 
 class Invitation(EntityModel):
@@ -186,7 +186,6 @@ class Invitation(EntityModel):
 
     def expire(self):
         """Expire the invitation."""
-        from django.utils import timezone
 
         self.status = InvitationStatus.EXPIRED
         self.save(update_fields=["status"])

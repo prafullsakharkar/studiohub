@@ -4,15 +4,13 @@ Identity test factories.
 
 from __future__ import annotations
 
-import factory
 from datetime import timedelta
+
+import factory
 from django.utils import timezone
-from factory import LazyAttribute, Sequence
 from factory.django import DjangoModelFactory
-from factory.fuzzy import FuzzyChoice, FuzzyDate, FuzzyDecimal, FuzzyText
 
 from apps.identity.choices import (
-    OAuthProviderName,
     SecurityEventType,
 )
 from apps.identity.models.backup_code import BackupCode

@@ -5,7 +5,6 @@ Organization queryset tests.
 from __future__ import annotations
 
 import pytest
-from django.db.models import Q
 
 from apps.organization.models.organization import Organization
 from apps.organization.querysets import OrganizationQuerySet

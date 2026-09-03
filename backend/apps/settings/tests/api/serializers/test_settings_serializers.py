@@ -6,8 +6,8 @@ Serializer tests for Settings application.
 from __future__ import annotations
 
 import pytest
-from rest_framework import serializers
 
+from apps.organization.tests.factories import OrganizationFactory
 from apps.settings.api.serializers.base import SettingsBaseSerializer
 from apps.settings.models.category import SettingCategory
 from apps.settings.models.definition import SettingDefinition
@@ -16,15 +16,9 @@ from apps.settings.models.localization import Localization
 from apps.settings.models.organization import OrganizationSetting
 from apps.settings.models.system import SystemSetting
 from apps.settings.models.theme import Theme
-from apps.organization.tests.factories import OrganizationFactory
 from apps.settings.tests.factories import (
     CategoryFactory,
     DefinitionFactory,
-    FeatureFlagFactory,
-    LocalizationFactory,
-    OrganizationSettingFactory,
-    SystemSettingFactory,
-    ThemeFactory,
 )
 
 

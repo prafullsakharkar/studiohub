@@ -54,16 +54,13 @@ class BackgroundJobValidator(AuditBaseValidator):
         
         is_valid = True
         
-        if "job_type" in data:
-            if not self.validate_job_type(data["job_type"]):
-                is_valid = False
-        
-        if "status" in data:
-            if not self.validate_status(data["status"]):
-                is_valid = False
-        
-        if "progress" in data:
-            if not self.validate_progress(data["progress"]):
-                is_valid = False
+        if "job_type" in data and not self.validate_job_type(data["job_type"]):
+            is_valid = False
+
+        if "status" in data and not self.validate_status(data["status"]):
+            is_valid = False
+
+        if "progress" in data and not self.validate_progress(data["progress"]):
+            is_valid = False
         
         return is_valid

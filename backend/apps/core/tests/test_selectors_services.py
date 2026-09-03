@@ -1,18 +1,17 @@
 from django.test import SimpleTestCase
 
-from apps.core.selectors.base import BaseSelector
 from apps.core.selectors import AttachmentSelector, TagSelector
-
+from apps.core.selectors.base import BaseSelector
 from apps.core.services import (
     BaseService,
     CRUDService,
-    SoftDeleteService,
-    LifecycleService,
-    SearchService,
-    StorageService,
     EmailService,
-    NotificationService,
     EventService,
+    LifecycleService,
+    NotificationService,
+    SearchService,
+    SoftDeleteService,
+    StorageService,
 )
 
 

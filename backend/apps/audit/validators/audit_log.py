@@ -57,16 +57,13 @@ class AuditLogValidator(AuditBaseValidator):
         
         is_valid = True
         
-        if "action" in data:
-            if not self.validate_action(data["action"]):
-                is_valid = False
-        
-        if "severity" in data:
-            if not self.validate_severity(data["severity"]):
-                is_valid = False
-        
-        if "target_type" in data:
-            if not self.validate_target(data["target_type"]):
-                is_valid = False
+        if "action" in data and not self.validate_action(data["action"]):
+            is_valid = False
+
+        if "severity" in data and not self.validate_severity(data["severity"]):
+            is_valid = False
+
+        if "target_type" in data and not self.validate_target(data["target_type"]):
+            is_valid = False
         
         return is_valid

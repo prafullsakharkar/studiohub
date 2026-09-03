@@ -17,6 +17,9 @@ lockout, rotation, blacklist) remains in one place.
 
 from __future__ import annotations
 
+from django.contrib.auth import get_user_model
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -29,10 +32,6 @@ from apps.identity.api.serializers.authentication import (
     RefreshSerializer,
 )
 from apps.identity.api.serializers.frontend_user import serialize_frontend_user
-from apps.identity.services.authentication import AuthenticationService
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema
-from django.contrib.auth import get_user_model
 
 User = get_user_model()
 

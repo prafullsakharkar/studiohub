@@ -5,7 +5,6 @@ Core base model tests.
 from __future__ import annotations
 
 import pytest
-from django.core.exceptions import ValidationError
 
 from apps.core.models.base import BaseModel
 

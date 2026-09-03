@@ -1,12 +1,12 @@
-from django.test import SimpleTestCase
 from django.db import models
+from django.test import SimpleTestCase
 
-from apps.core.models.bases.uuid import UUIDModel
-from apps.core.models.bases.timestamp import TimeStampedModel
-from apps.core.models.bases.soft_delete import SoftDeleteModel
 from apps.core.models.bases.metadata import MetadataModel
 from apps.core.models.bases.ownership import OrganizationOwnedModel, ProjectOwnedModel
 from apps.core.models.bases.project import ProjectEntityModel
+from apps.core.models.bases.soft_delete import SoftDeleteModel
+from apps.core.models.bases.timestamp import TimeStampedModel
+from apps.core.models.bases.uuid import UUIDModel
 
 
 class TestModelFoundation(SimpleTestCase):

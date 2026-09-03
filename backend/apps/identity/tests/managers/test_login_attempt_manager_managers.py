@@ -7,7 +7,6 @@ from __future__ import annotations
 import pytest
 
 from apps.identity.models.login_attempt import LoginAttempt
-from apps.identity.models.user import User
 from apps.identity.tests.factories import LoginAttemptFactory, UserFactory
 
 

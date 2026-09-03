@@ -8,7 +8,6 @@ from rest_framework.response import Response
 
 from apps.settings.api.viewsets.base import SettingsBaseViewSet
 from apps.settings.filters.feature_flag import FeatureFlagFilter
-from apps.settings.models.feature_flag import FeatureFlag
 from apps.settings.selectors.feature_flag import FeatureFlagSelector
 from apps.settings.serializers.feature_flag import FeatureFlagSerializer
 from apps.settings.services.feature_flag import FeatureFlagService

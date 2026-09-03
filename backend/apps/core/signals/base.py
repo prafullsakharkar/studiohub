@@ -7,7 +7,8 @@ Provides common functionality for signal handling.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from django.db.models import Model
 from django.db.models.signals import (
@@ -18,10 +19,9 @@ from django.db.models.signals import (
     pre_init,
     pre_save,
 )
-from django.dispatch import Signal, receiver
 
 if TYPE_CHECKING:
-    from django.db.models.query import QuerySet
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ class BaseSignalHandler:
     post_init_signal = post_init
     pre_init_signal = pre_init
 
-    def __init__(self, model: Optional[type[Model]] = None):
+    def __init__(self, model: type[Model] | None = None):
         """
         Initialize the signal handler.
 
@@ -524,7 +524,7 @@ class CacheInvalidationSignalHandler(BaseSignalHandler):
 
     def __init__(
         self,
-        model: Optional[type[Model]] = None,
+        model: type[Model] | None = None,
         cache_key_prefix: str = "",
     ):
         """
@@ -596,12 +596,12 @@ class EventDispatchSignalHandler(BaseSignalHandler):
     Automatically dispatches events on model save/delete.
     """
 
-    event_dispatcher: Optional[Callable] = None
+    event_dispatcher: Callable | None = None
 
     def __init__(
         self,
-        model: Optional[type[Model]] = None,
-        event_dispatcher: Optional[Callable] = None,
+        model: type[Model] | None = None,
+        event_dispatcher: Callable | None = None,
     ):
         """
         Initialize the event dispatch signal handler.

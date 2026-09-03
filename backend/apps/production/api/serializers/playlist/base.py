@@ -1,6 +1,9 @@
 from rest_framework import serializers
+
 from apps.core.api.serializers.base import BaseReadSerializer
 from apps.production.models import Playlist
+
+
 class PlaylistSerializer(BaseReadSerializer):
     project_id = serializers.UUIDField(read_only=True, allow_null=True)
     class Meta:

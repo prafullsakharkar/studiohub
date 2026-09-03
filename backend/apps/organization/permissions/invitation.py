@@ -1,4 +1,3 @@
-from apps.organization.models import Invitation
 
 
 class InvitationPermissions:

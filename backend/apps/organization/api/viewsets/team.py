@@ -2,7 +2,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.core.api.pagination import StandardPagination
-
 from apps.organization.api.filtersets.team import TeamFilterSet
 from apps.organization.api.serializers.team.create import TeamCreateSerializer
 from apps.organization.api.serializers.team.detail import TeamDetailSerializer
@@ -119,6 +118,7 @@ class TeamViewSet(OrganizationEntityViewSet):
         if not user_id:
             return Response({"detail": "user is required."}, status=400)
         from django.contrib.auth import get_user_model
+
         from apps.organization.models import OrganizationMembership, Role
 
         User = get_user_model()

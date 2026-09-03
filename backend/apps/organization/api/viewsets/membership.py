@@ -6,7 +6,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.core.api.pagination import StandardPagination
-
 from apps.organization.api.filtersets.membership import OrganizationMembershipFilterSet
 from apps.organization.api.serializers.membership import (
     OrganizationMembershipCreateSerializer,

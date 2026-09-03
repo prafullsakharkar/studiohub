@@ -6,7 +6,6 @@ Verifies the actual ``post_save`` signal wiring on ``UserSession``.
 
 from __future__ import annotations
 
-import pytest
 from django.db.models.signals import post_save
 from django.test import TestCase
 

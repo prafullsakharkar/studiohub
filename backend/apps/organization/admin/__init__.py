@@ -11,8 +11,8 @@ from .membership import OrganizationMembershipAdmin
 from .office import OfficeAdmin
 from .organization import OrganizationAdmin
 from .organization_settings import OrganizationSettingsAdmin
-from .personal_access_token import PersonalAccessTokenAdmin
 from .permission import PermissionAdmin
+from .personal_access_token import PersonalAccessTokenAdmin
 from .position import PositionAdmin
 from .role import RoleAdmin
 from .role_permission import RolePermissionAdmin

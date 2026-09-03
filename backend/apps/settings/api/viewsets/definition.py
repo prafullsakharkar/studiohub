@@ -10,7 +10,6 @@ from apps.core.api.permissions.staff import IsStaff
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.settings.api.viewsets.base import SettingsBaseViewSet
 from apps.settings.filters.definition import SettingDefinitionFilter
-from apps.settings.models.definition import SettingDefinition
 from apps.settings.selectors.definition import SettingDefinitionSelector
 from apps.settings.serializers.definition import SettingDefinitionSerializer
 from apps.settings.services.definition import SettingDefinitionService

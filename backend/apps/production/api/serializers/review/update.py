@@ -1,5 +1,7 @@
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.models import Review
+
+
 class ReviewUpdateSerializer(BaseWriteSerializer):
     class Meta:
         model = Review

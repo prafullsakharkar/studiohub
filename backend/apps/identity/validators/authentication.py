@@ -14,7 +14,6 @@ from apps.identity.authentication.exceptions import (
     UserLocked,
 )
 from apps.identity.choices import (
-    LoginAttemptStatus,
     SessionStatus,
 )
 from apps.identity.models import (

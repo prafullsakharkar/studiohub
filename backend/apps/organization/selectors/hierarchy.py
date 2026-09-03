@@ -4,10 +4,7 @@ Organization hierarchy selectors.
 
 from __future__ import annotations
 
-from collections import defaultdict
 from typing import TYPE_CHECKING
-
-from django.db.models import QuerySet
 
 from apps.organization.models import (
     Department,
@@ -18,7 +15,7 @@ from apps.organization.models import (
 )
 
 if TYPE_CHECKING:
-    from django.db.models import QuerySet
+    pass
 
 
 class OrganizationHierarchySelector:

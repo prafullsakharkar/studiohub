@@ -5,7 +5,6 @@ Core XSS security tests.
 from __future__ import annotations
 
 import pytest
-from django.urls import reverse
 
 from apps.core.tests.factories import TagFactory
 

@@ -10,7 +10,6 @@ import pytest
 from django.utils import timezone
 
 from apps.identity.models.security_event import SecurityEvent
-from apps.identity.models.user import User
 from apps.identity.tests.factories import SecurityEventFactory, UserFactory
 
 

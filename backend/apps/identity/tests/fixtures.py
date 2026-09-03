@@ -7,17 +7,7 @@ from __future__ import annotations
 import pytest
 from django.contrib.contenttypes.models import ContentType
 
-from apps.identity.models.backup_code import BackupCode
-from apps.identity.models.ip_blacklist import IPBlacklist
-from apps.identity.models.known_device import KnownDevice
-from apps.identity.models.login_attempt import LoginAttempt
-from apps.identity.models.oauth_account import OAuthAccount
-from apps.identity.models.oauth_provider import OAuthProvider
-from apps.identity.models.profile import Profile
-from apps.identity.models.security_event import SecurityEvent
-from apps.identity.models.trusted_device import TrustedDevice
 from apps.identity.models.user import User
-from apps.identity.models.user_mfa import UserMFA
 
 from .factories import (
     BackupCodeFactory,

@@ -8,12 +8,12 @@ See docs/api/domains/organization.md for contract.
 """
 
 from django.urls import path
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
-from drf_spectacular.utils import extend_schema
 
 from apps.organization.api.viewsets.billing import BillingView, NotificationsView, ReportsView
 from apps.organization.api.viewsets.client import ClientViewSet
@@ -55,8 +55,8 @@ class LegacyOrganizationSingletonView(GenericAPIView):
 
     @extend_schema(responses=_OrganizationSingletonSerializer)
     def get(self, request, *args, **kwargs):
-        from apps.organization.models import Organization
         from apps.organization.api.serializers.organization import OrganizationDetailSerializer
+        from apps.organization.models import Organization
 
         qs = Organization.objects.all()
         # Scope to user's orgs if not staff

@@ -7,8 +7,6 @@ from __future__ import annotations
 import pytest
 from django.test import RequestFactory
 
-from apps.identity.models.user import User
-
 from .fixtures import *  # noqa: F401, F403
 
 

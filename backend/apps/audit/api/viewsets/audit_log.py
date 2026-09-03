@@ -2,12 +2,9 @@
 Audit Log ViewSet.
 """
 from rest_framework import mixins
-from rest_framework.decorators import action
-from rest_framework.response import Response
 
 from apps.audit.api.viewsets.base import AuditEntityViewSet
 from apps.audit.filters.audit_log import AuditLogFilter
-from apps.audit.models.audit_log import AuditLog
 from apps.audit.selectors.audit_log import AuditLogSelector
 from apps.audit.serializers.audit_log import AuditLogSerializer
 from apps.audit.services.audit_log import AuditLogService

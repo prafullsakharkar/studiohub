@@ -7,8 +7,6 @@ from __future__ import annotations
 import pytest
 from django.urls import reverse
 
-from apps.identity.tests.factories import UserFactory
-
 
 class TestSQLInjectionSecurity:
     """Tests for SQL injection security."""

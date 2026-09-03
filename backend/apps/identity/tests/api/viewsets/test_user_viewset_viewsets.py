@@ -7,7 +7,6 @@ from __future__ import annotations
 import pytest
 from django.urls import reverse
 
-from apps.identity.models.user import User
 from apps.identity.tests.factories import UserFactory
 
 

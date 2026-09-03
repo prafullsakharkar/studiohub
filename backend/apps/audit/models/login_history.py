@@ -8,8 +8,8 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.models.bases.entity import EntityModel
 from apps.core.models.bases.timestamp import TimeStampedModel
-from apps.organization.models.organization import Organization
 from apps.identity.models.user import User
+from apps.organization.models.organization import Organization
 
 
 class LoginHistory(EntityModel, TimeStampedModel):

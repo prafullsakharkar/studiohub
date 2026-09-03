@@ -7,7 +7,6 @@ from rest_framework.response import Response
 
 from apps.audit.api.viewsets.base import AuditEntityViewSet
 from apps.audit.filters.error_log import ErrorLogFilter
-from apps.audit.models.error_log import ErrorLog
 from apps.audit.selectors.error_log import ErrorLogSelector
 from apps.audit.serializers.error_log import ErrorLogSerializer
 from apps.audit.services.error_log import ErrorLogService

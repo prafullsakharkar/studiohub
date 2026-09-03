@@ -1,4 +1,3 @@
-from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.organization.models import Person

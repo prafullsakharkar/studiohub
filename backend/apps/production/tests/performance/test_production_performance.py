@@ -10,12 +10,11 @@ from __future__ import annotations
 import time
 
 import pytest
-from django.test import TestCase
-from django.test.utils import CaptureQueriesContext
 from django.db import connection
+from django.test.utils import CaptureQueriesContext
 
 from apps.organization.models import Organization
-from apps.production.models import Project, Task
+from apps.production.models import Project
 
 
 @pytest.mark.django_db

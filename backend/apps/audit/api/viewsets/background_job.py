@@ -2,12 +2,9 @@
 Background Job ViewSet.
 """
 from rest_framework import mixins
-from rest_framework.decorators import action
-from rest_framework.response import Response
 
 from apps.audit.api.viewsets.base import AuditEntityViewSet
 from apps.audit.filters.background_job import BackgroundJobFilter
-from apps.audit.models.background_job import BackgroundJob
 from apps.audit.selectors.background_job import BackgroundJobSelector
 from apps.audit.serializers.background_job import BackgroundJobSerializer
 from apps.audit.services.background_job import BackgroundJobService

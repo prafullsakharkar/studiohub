@@ -4,7 +4,6 @@ from django.conf import settings
 from django.db import models
 
 from apps.core.models import EntityModel
-from apps.organization.choices import InvitationStatus
 from apps.organization.managers.membership import (
     OrganizationMembershipManager,
 )

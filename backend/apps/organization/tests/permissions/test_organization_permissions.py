@@ -13,8 +13,6 @@ from __future__ import annotations
 import pytest
 from django.test import RequestFactory
 
-from apps.identity.tests.factories import UserFactory
-from apps.organization.models import Organization
 from apps.organization.permissions import (
     CanCreateOrganization,
     CanDeleteOrganization,

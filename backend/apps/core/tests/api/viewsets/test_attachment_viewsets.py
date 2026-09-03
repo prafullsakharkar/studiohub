@@ -7,7 +7,6 @@ from __future__ import annotations
 import pytest
 from django.urls import reverse
 
-from apps.core.api.viewsets.attachment import AttachmentViewSet
 from apps.core.models.attachment import Attachment
 from apps.core.tests.factories import AttachmentFactory
 

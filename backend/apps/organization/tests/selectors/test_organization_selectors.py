@@ -7,7 +7,6 @@ from __future__ import annotations
 import pytest
 from django.test import RequestFactory
 
-from apps.organization.models.organization import Organization
 from apps.organization.selectors import OrganizationSelector
 
 

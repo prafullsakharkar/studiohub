@@ -5,8 +5,6 @@ This mixin provides bulk create, update, and delete operations for ViewSets.
 """
 from __future__ import annotations
 
-from typing import Any
-
 from rest_framework import serializers
 from rest_framework.response import Response
 

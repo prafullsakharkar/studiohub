@@ -12,8 +12,8 @@ from .membership import OrganizationMembershipFilterSet
 from .office import OfficeFilterSet
 from .organization import OrganizationFilterSet
 from .organization_settings import OrganizationSettingsFilterSet
-from .personal_access_token import PersonalAccessTokenFilterSet
 from .permission import PermissionFilterSet
+from .personal_access_token import PersonalAccessTokenFilterSet
 from .position import PositionFilterSet
 from .role import RoleFilterSet
 from .role_permission import RolePermissionFilterSet

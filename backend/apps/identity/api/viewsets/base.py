@@ -4,7 +4,6 @@ from apps.core.api.viewsets.service import (
 from apps.core.permissions.base import (
     IsAuthenticatedPermission,
 )
-
 from apps.identity.permissions import (
     HasPermission,
 )

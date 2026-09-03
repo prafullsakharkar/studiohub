@@ -3,11 +3,8 @@ Theme service.
 """
 from __future__ import annotations
 
-from typing import Any
-
 from django.db import transaction
 
-from apps.organization.models.organization import Organization
 from apps.settings.models.theme import Theme
 from apps.settings.validators.theme import ThemeValidator
 

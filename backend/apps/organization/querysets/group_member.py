@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from django.db import models
-
 from apps.core.models.querysets.base import BaseQuerySet
 
 

@@ -1,5 +1,5 @@
-from django.test import TestCase
 from django.db import transaction
+from django.test import TestCase
 
 from apps.core.events.base import DomainEvent
 from apps.core.events.bus import default_event_bus
@@ -42,11 +42,10 @@ class TestEventBus(TestCase):
 
         default_event_bus.subscribe(DummyEvent, DummyHandler)
 
-        with self.captureOnCommitCallbacks(execute=True):
-            with transaction.atomic():
-                default_event_bus.publish(DummyEvent(bar=2))
-                # handler should not yet have been called
-                self.assertEqual(len(calls), 0)
+        with self.captureOnCommitCallbacks(execute=True), transaction.atomic():
+            default_event_bus.publish(DummyEvent(bar=2))
+            # handler should not yet have been called
+            self.assertEqual(len(calls), 0)
         # after exiting the transaction, on_commit should fire
         self.assertEqual(len(calls), 1)
         self.assertEqual(calls[0].payload.get("bar"), 2)
@@ -60,11 +59,10 @@ class TestEventBus(TestCase):
 
         default_event_bus.subscribe(DummyEvent, DummyHandler)
 
-        with self.captureOnCommitCallbacks(execute=True):
-            with self.assertRaises(RuntimeError):
-                with transaction.atomic():
-                    default_event_bus.publish(DummyEvent(baz=3))
-                    raise RuntimeError("force rollback")
+        with self.captureOnCommitCallbacks(execute=True), self.assertRaises(RuntimeError):
+            with transaction.atomic():
+                default_event_bus.publish(DummyEvent(baz=3))
+                raise RuntimeError("force rollback")
 
         # on rollback, handler should not be called
         self.assertEqual(len(calls), 0)

@@ -20,8 +20,6 @@ from apps.settings.tests.factories import (
     DefinitionFactory,
     FeatureFlagFactory,
     LocalizationFactory,
-    OrganizationSettingFactory,
-    SystemSettingFactory,
     ThemeFactory,
 )
 

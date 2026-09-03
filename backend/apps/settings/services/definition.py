@@ -3,8 +3,6 @@ Setting Definition service.
 """
 from __future__ import annotations
 
-from typing import Any
-
 from django.db import transaction
 
 from apps.settings.models.definition import SettingDefinition

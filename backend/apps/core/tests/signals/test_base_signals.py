@@ -5,7 +5,6 @@ Core base signal tests.
 from __future__ import annotations
 
 import pytest
-from django.db.models.signals import ModelSignal
 
 
 class TestBaseSignals:

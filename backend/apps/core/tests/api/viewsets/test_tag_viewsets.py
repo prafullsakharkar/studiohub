@@ -7,7 +7,6 @@ from __future__ import annotations
 import pytest
 from django.urls import reverse
 
-from apps.core.api.viewsets.tag import TagViewSet
 from apps.core.models.tag import Tag
 from apps.core.tests.factories import TagFactory
 

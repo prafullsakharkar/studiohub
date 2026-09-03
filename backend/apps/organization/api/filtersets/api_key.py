@@ -1,4 +1,4 @@
-from django_filters import BooleanFilter, CharFilter, DateTimeFilter
+from django_filters import BooleanFilter, CharFilter
 
 from apps.core.filters.base import BaseFilterSet
 from apps.core.filters.ordering import OrderingFilterMixin

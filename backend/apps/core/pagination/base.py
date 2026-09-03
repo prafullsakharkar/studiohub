@@ -7,7 +7,7 @@ Provides base pagination classes and domain-specific pagination types.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from django.core.paginator import Paginator
 from rest_framework.pagination import (
@@ -21,7 +21,6 @@ from apps.core.api.builders import PaginationBuilder, ResponseBuilder
 
 if TYPE_CHECKING:
     from django.http import HttpRequest
-    from rest_framework.views import APIView
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +100,7 @@ class BasePagination(PageNumberPagination):
                 return self.page_size
         return self.page_size
 
-    def get_next_link(self) -> Optional[str]:
+    def get_next_link(self) -> str | None:
         """
         Get next page link.
 
@@ -113,7 +112,7 @@ class BasePagination(PageNumberPagination):
         request = self.request
         return request.build_absolute_uri()
 
-    def get_previous_link(self) -> Optional[str]:
+    def get_previous_link(self) -> str | None:
         """
         Get previous page link.
 
@@ -154,7 +153,7 @@ class InfinitePagination(BasePagination):
     page_size = 20
     max_page_size = 100
 
-    def get_next_link(self) -> Optional[str]:
+    def get_next_link(self) -> str | None:
         """
         Get next page link.
 
@@ -169,7 +168,7 @@ class InfinitePagination(BasePagination):
             return request.build_absolute_uri(f"?cursor={cursor}")
         return request.build_absolute_uri()
 
-    def get_previous_link(self) -> Optional[str]:
+    def get_previous_link(self) -> str | None:
         """
         Get previous page link.
 

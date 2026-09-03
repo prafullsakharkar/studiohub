@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import contextlib
-from datetime import timedelta
-from datetime import timezone as dt_timezone
+from datetime import UTC
 
 from django.conf import settings
 from django.utils import timezone
@@ -10,7 +9,6 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
 from apps.identity.authentication.exceptions import (
-    ExpiredToken,
     InvalidToken,
 )
 
@@ -194,7 +192,7 @@ class JWTService:
 
         return timezone.datetime.fromtimestamp(
             timestamp,
-            tz=dt_timezone.utc,
+            tz=UTC,
         )
 
     @staticmethod

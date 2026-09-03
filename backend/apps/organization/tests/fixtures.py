@@ -5,34 +5,6 @@ Organization test fixtures.
 from __future__ import annotations
 
 import pytest
-from django.contrib.contenttypes.models import ContentType
-
-from apps.organization.models.api_key import APIKey
-from apps.organization.models.branding import Branding
-from apps.organization.models.calendar import Calendar
-from apps.organization.models.department import Department
-from apps.organization.models.group import Group
-from apps.organization.models.group_member import GroupMember
-from apps.organization.models.group_role import GroupRole
-from apps.organization.models.holiday import Holiday
-from apps.organization.models.invitation import Invitation
-from apps.audit.models.login_history import LoginHistory
-from apps.organization.models.membership import OrganizationMembership
-from apps.organization.models.office import Office
-from apps.organization.models.organization import Organization
-from apps.organization.models.organization_settings import OrganizationSettings
-from apps.organization.models.permission import Permission
-from apps.organization.models.person import Person
-from apps.organization.models.personal_access_token import PersonalAccessToken
-from apps.organization.models.position import Position
-from apps.organization.models.role import Role
-from apps.organization.models.role_permission import RolePermission
-from apps.organization.models.team import Team
-from apps.organization.models.user_preference import UserPreference
-from apps.organization.models.user_role import UserRole
-from apps.organization.models.user_session import UserSession
-from apps.organization.models.work_calendar import WorkCalendar
-from apps.organization.models.work_hours import WorkHours
 
 from apps.identity.tests.factories import UserFactory
 

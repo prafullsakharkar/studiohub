@@ -1,11 +1,10 @@
-from apps.identity.services.mfa import MFAService
-
 from apps.core.api.builders.response import ResponseBuilder
 from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import (
     MFAEnrollResponseSerializer,
     MFAEnrollSerializer,
 )
+from apps.identity.services.mfa import MFAService
 
 
 class MFAEnrollAPIView(BaseAPIView):

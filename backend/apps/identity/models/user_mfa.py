@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from django.conf import settings
 from django.db import models
@@ -122,11 +121,11 @@ class UserMFA(EntityModel):
         return self.status == "enabled"
 
     @property
-    def secret(self) -> Optional[str]:
+    def secret(self) -> str | None:
         """Get the TOTP secret."""
         return self.totp_secret
 
     @property
-    def verified_at(self) -> Optional[datetime]:
+    def verified_at(self) -> datetime | None:
         """Get the verification timestamp."""
         return self.totp_confirmed_at

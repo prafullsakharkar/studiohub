@@ -4,7 +4,8 @@ Base validator classes.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from django.core.exceptions import ValidationError
 
@@ -27,7 +28,7 @@ class BaseValidator:
     @classmethod
     def validate_required_fields(
         cls,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         fields: Sequence[str],
     ) -> None:
         """

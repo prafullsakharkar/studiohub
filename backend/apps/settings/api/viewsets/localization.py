@@ -8,7 +8,6 @@ from rest_framework.response import Response
 
 from apps.settings.api.viewsets.base import SettingsBaseViewSet
 from apps.settings.filters.localization import LocalizationFilter
-from apps.settings.models.localization import Localization
 from apps.settings.selectors.localization import LocalizationSelector
 from apps.settings.serializers.localization import LocalizationSerializer
 from apps.settings.services.localization import LocalizationService

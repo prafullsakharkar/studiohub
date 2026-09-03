@@ -7,7 +7,7 @@ Provides common functionality for background job processing.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from celery import Task as CeleryTask
 from celery.exceptions import Retry
@@ -125,9 +125,9 @@ class BaseTask(CeleryTask):
 
     def retry_task(
         self,
-        exc: Optional[Exception] = None,
-        countdown: Optional[int] = None,
-        max_retries: Optional[int] = None,
+        exc: Exception | None = None,
+        countdown: int | None = None,
+        max_retries: int | None = None,
     ) -> None:
         """
         Retry the current task.
@@ -191,7 +191,7 @@ class BaseTask(CeleryTask):
         """
         raise NotImplementedError("Subclasses must implement run()")
 
-    def get_context(self, context: Optional[Context] = None) -> dict:
+    def get_context(self, context: Context | None = None) -> dict:
         """
         Get task context for logging.
 
@@ -223,8 +223,8 @@ class BasePeriodicTask(BaseTask):
     abstract = True
 
     # Periodic task settings
-    run_every: Optional[Any] = None  # Celery crontab or timedelta
-    name: Optional[str] = None
+    run_every: Any | None = None  # Celery crontab or timedelta
+    name: str | None = None
 
     def run(self, *args: Any, **kwargs: Any) -> Any:
         """
@@ -260,8 +260,8 @@ class BaseEmailTask(BaseTask):
         to: list[str],
         subject: str,
         body: str,
-        from_email: Optional[str] = None,
-        html_body: Optional[str] = None,
+        from_email: str | None = None,
+        html_body: str | None = None,
         **kwargs: Any,
     ) -> dict:
         """
@@ -331,7 +331,7 @@ class BaseNotificationTask(BaseTask):
         user_id: str,
         message: str,
         notification_type: str,
-        metadata: Optional[dict] = None,
+        metadata: dict | None = None,
         **kwargs: Any,
     ) -> dict:
         """

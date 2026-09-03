@@ -28,8 +28,7 @@ from typing import TYPE_CHECKING
 from django.db import models
 
 if TYPE_CHECKING:
-    from apps.core.models.attachment import Attachment
-    from apps.core.models.tag import Tag
+    pass
 
 
 class MetadataModel(models.Model):

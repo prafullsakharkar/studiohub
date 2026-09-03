@@ -54,16 +54,13 @@ class ActivityValidator(AuditBaseValidator):
         
         is_valid = True
         
-        if "activity_type" in data:
-            if not self.validate_activity_type(data["activity_type"]):
-                is_valid = False
-        
-        if "status" in data:
-            if not self.validate_status(data["status"]):
-                is_valid = False
-        
-        if "duration_seconds" in data:
-            if not self.validate_duration(data["duration_seconds"]):
-                is_valid = False
+        if "activity_type" in data and not self.validate_activity_type(data["activity_type"]):
+            is_valid = False
+
+        if "status" in data and not self.validate_status(data["status"]):
+            is_valid = False
+
+        if "duration_seconds" in data and not self.validate_duration(data["duration_seconds"]):
+            is_valid = False
         
         return is_valid

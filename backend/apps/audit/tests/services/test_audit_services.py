@@ -9,7 +9,6 @@ import pytest
 
 from apps.audit.models.audit_log import AuditLog
 from apps.audit.services.audit_log import AuditLogService
-from apps.audit.tests.factories import AuditLogFactory
 
 
 class TestAuditLogService:

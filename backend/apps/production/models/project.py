@@ -7,9 +7,8 @@ from __future__ import annotations
 from django.conf import settings
 from django.db import models
 
-from apps.core.models.bases import EntityModel
+from apps.production.constants import ProjectStatus, ProjectType
 from apps.production.models.base import ProductionEntityModel
-from apps.production.constants import ProjectType, ProjectStatus
 
 
 class Project(ProductionEntityModel):

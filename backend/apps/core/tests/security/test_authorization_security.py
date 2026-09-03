@@ -7,7 +7,6 @@ from __future__ import annotations
 import pytest
 from django.urls import reverse
 
-from apps.core.tests.factories import TagFactory
 from apps.identity.tests.factories import UserFactory
 
 

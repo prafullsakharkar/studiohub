@@ -6,8 +6,6 @@ from __future__ import annotations
 
 import pytest
 
-from apps.identity.models.login_attempt import LoginAttempt
-
 
 class TestLoginAttemptModel:
     """Tests for LoginAttempt model."""

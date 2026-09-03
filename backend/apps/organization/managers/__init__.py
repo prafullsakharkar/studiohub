@@ -11,8 +11,8 @@ from .invitation import InvitationManager
 from .membership import OrganizationMembershipManager
 from .organization import OrganizationManager
 from .organization_settings import OrganizationSettingsManager
-from .personal_access_token import PersonalAccessTokenManager
 from .permission import PermissionManager
+from .personal_access_token import PersonalAccessTokenManager
 from .position import PositionManager
 from .role import RoleManager
 from .role_permission import RolePermissionManager

@@ -1,8 +1,28 @@
 from django.urls import path
-from .viewsets.search import IntelligenceSearchView, IntelligenceSearchRecentView, IntelligenceSearchSavedView, IntelligenceSearchSavedDetailView
-from .viewsets.knowledge import IntelligenceKnowledgeLikeView, IntelligenceKnowledgeLinkEntityView, IntelligenceKnowledgeListView, IntelligenceKnowledgeDetailView
-from .viewsets.ai import AIChatView, AIRisksResolveView, AIRisksView, AITaskRecommendationsApplyView, AITaskRecommendationsView, AIProjectSummaryView, AIShotSummaryView, AIPermissionContextView
+
+from .viewsets.ai import (
+    AIChatView,
+    AIPermissionContextView,
+    AIProjectSummaryView,
+    AIRisksResolveView,
+    AIRisksView,
+    AIShotSummaryView,
+    AITaskRecommendationsApplyView,
+    AITaskRecommendationsView,
+)
 from .viewsets.analytics import IntelligenceAnalyticsDashboardView
+from .viewsets.knowledge import (
+    IntelligenceKnowledgeDetailView,
+    IntelligenceKnowledgeLikeView,
+    IntelligenceKnowledgeLinkEntityView,
+    IntelligenceKnowledgeListView,
+)
+from .viewsets.search import (
+    IntelligenceSearchRecentView,
+    IntelligenceSearchSavedDetailView,
+    IntelligenceSearchSavedView,
+    IntelligenceSearchView,
+)
 
 app_name = "intelligence"
 

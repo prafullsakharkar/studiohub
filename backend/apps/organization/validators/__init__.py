@@ -11,8 +11,8 @@ from .membership import OrganizationMembershipValidator
 from .office import OfficeValidator
 from .organization import OrganizationValidator
 from .organization_settings import OrganizationSettingsValidator
-from .personal_access_token import PersonalAccessTokenValidator
 from .permission import PermissionValidator
+from .personal_access_token import PersonalAccessTokenValidator
 from .position import PositionValidator
 from .role import RoleValidator
 from .role_permission import RolePermissionValidator

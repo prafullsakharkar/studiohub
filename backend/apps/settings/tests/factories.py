@@ -8,7 +8,6 @@ from __future__ import annotations
 import factory
 from factory.django import DjangoModelFactory
 
-from apps.identity.tests.factories import UserFactory
 from apps.organization.tests.factories import OrganizationFactory
 from apps.settings.models.category import SettingCategory
 from apps.settings.models.definition import SettingDefinition

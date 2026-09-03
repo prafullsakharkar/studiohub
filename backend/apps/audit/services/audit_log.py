@@ -3,8 +3,6 @@ Audit Log service.
 """
 from __future__ import annotations
 
-from typing import Any
-
 from django.db import transaction
 
 from apps.audit.models.audit_log import AuditLog

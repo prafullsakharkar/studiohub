@@ -2,12 +2,9 @@
 Login History ViewSet.
 """
 from rest_framework import mixins
-from rest_framework.decorators import action
-from rest_framework.response import Response
 
 from apps.audit.api.viewsets.base import AuditEntityViewSet
 from apps.audit.filters.login_history import LoginHistoryFilter
-from apps.audit.models.login_history import LoginHistory
 from apps.audit.selectors.login_history import LoginHistorySelector
 from apps.audit.serializers.login_history import LoginHistorySerializer
 from apps.audit.services.login_history import LoginHistoryService

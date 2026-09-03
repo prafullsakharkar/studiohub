@@ -4,7 +4,7 @@ Attachment services.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from django.db import transaction
 
@@ -25,7 +25,7 @@ class AttachmentService(BaseService):
 
     @classmethod
     @transaction.atomic
-    def create_instance(cls, **validated_data) -> "Attachment":
+    def create_instance(cls, **validated_data) -> Attachment:
         """Create an attachment instance."""
         cls.validator_class.validate_create(**validated_data)
         from apps.core.models.attachment import Attachment
@@ -35,7 +35,7 @@ class AttachmentService(BaseService):
 
     @classmethod
     @transaction.atomic
-    def update_instance(cls, instance: "Attachment", **validated_data) -> "Attachment":
+    def update_instance(cls, instance: Attachment, **validated_data) -> Attachment:
         """Update an attachment instance."""
         cls.validator_class.validate_update(instance, **validated_data)
         for field, value in validated_data.items():
@@ -45,14 +45,14 @@ class AttachmentService(BaseService):
 
     @classmethod
     @transaction.atomic
-    def delete_instance(cls, instance: "Attachment") -> None:
+    def delete_instance(cls, instance: Attachment) -> None:
         """Delete an attachment instance."""
         cls.validator_class.validate_delete(instance)
         instance.delete()
 
     @classmethod
     @transaction.atomic
-    def archive_instance(cls, instance: "Attachment") -> "Attachment":
+    def archive_instance(cls, instance: Attachment) -> Attachment:
         """Archive an attachment instance."""
         cls.validator_class.validate_archive(instance)
         instance.archive()
@@ -60,7 +60,7 @@ class AttachmentService(BaseService):
 
     @classmethod
     @transaction.atomic
-    def restore_instance(cls, instance: "Attachment") -> "Attachment":
+    def restore_instance(cls, instance: Attachment) -> Attachment:
         """Restore an archived attachment instance."""
         cls.validator_class.validate_activate(instance)
         instance.restore()

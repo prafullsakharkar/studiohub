@@ -4,8 +4,6 @@ Setting Definition validator.
 
 from __future__ import annotations
 
-from typing import Any
-
 from apps.settings.validators.base import SettingsBaseValidator
 
 

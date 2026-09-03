@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import pytest
 
-from apps.identity.models.profile import Profile
 from apps.identity.services.profile import ProfileService
 from apps.identity.tests.factories import ProfileFactory, UserFactory
 

@@ -7,7 +7,6 @@ from __future__ import annotations
 from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-
 from rest_framework import viewsets
 
 from apps.core.api.mixins import (

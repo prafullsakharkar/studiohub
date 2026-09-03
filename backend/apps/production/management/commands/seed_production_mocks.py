@@ -76,7 +76,9 @@ def _load_ts_mock_array(ts_path: Path, var_name: str) -> list[dict]:
     js_array = text[start:end]
     # Use node to eval if available (more accurate)
     try:
-        import subprocess, json as _json, tempfile
+        import json as _json
+        import subprocess
+        import tempfile
 
         # For mockWorkflows, also include shotWorkflowNodes/Transitions definitions if present
         preamble = ""
@@ -170,7 +172,18 @@ class Command(BaseCommand):
         self.stdout.write(self.style.NOTICE("Frontend VITE_USE_MOCK=false will now serve this DB data at /api/v1/*"))
 
     def _reset(self):
-        from apps.production.models import Asset, Media, Playlist, Project, Review, Shot, Task, Timelog, Version, Workflow
+        from apps.production.models import (
+            Asset,
+            Media,
+            Playlist,
+            Project,
+            Review,
+            Shot,
+            Task,
+            Timelog,
+            Version,
+            Workflow,
+        )
 
         self.stdout.write(self.style.WARNING("  --reset: deleting existing production mock data..."))
         for model in [Timelog, Task, Version, Review, Media, Playlist, Workflow, Asset, Shot, Project]:
@@ -376,8 +389,10 @@ class Command(BaseCommand):
         return count
 
     def _seed_timelogs(self, ts_path, org):
-        from apps.production.models import Project, Task, Timelog
-        from datetime import datetime, date as date_type
+        from datetime import date as date_type
+        from datetime import datetime
+
+        from apps.production.models import Task, Timelog
 
         data = _load_ts_mock_array(ts_path, "mockTimelogs")
         if not data:

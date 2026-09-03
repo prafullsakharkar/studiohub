@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import path
 
 from apps.identity.api.routers import (
     urlpatterns as router_urls,
@@ -23,7 +23,6 @@ from .views.authentication import (
     TrustedDeviceListAPIView,
     TrustedDeviceRevokeAPIView,
 )
-
 from .views.mfa_compat import (
     MFAAdminResetView,
     MFAConfigView,

@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import time
 
-import pytest
 from django.test import TestCase
 
 from apps.organization.models.organization import Organization

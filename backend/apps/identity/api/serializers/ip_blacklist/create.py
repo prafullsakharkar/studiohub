@@ -1,4 +1,3 @@
-from rest_framework import serializers
 
 from apps.identity.services.ip_blacklist import (
     IPBlacklistService,

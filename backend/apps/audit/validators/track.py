@@ -33,8 +33,7 @@ class TrackValidator(AuditBaseValidator):
         
         is_valid = True
         
-        if "event_type" in data:
-            if not self.validate_event_type(data["event_type"]):
-                is_valid = False
+        if "event_type" in data and not self.validate_event_type(data["event_type"]):
+            is_valid = False
         
         return is_valid

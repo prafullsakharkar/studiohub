@@ -17,8 +17,9 @@ Example:
         )
 """
 
-from django.db import models
 import warnings
+
+from django.db import models
 
 # NOTE: The following scope classes (SequenceScopedModel, ShotScopedModel,
 # TaskScopedModel, ReviewScopedModel) express domain-specific concepts used by

@@ -6,10 +6,7 @@ Production API URLs — mounted at /api/v1/ (top-level) to match frontend contra
 /api/v1/assets/
 """
 
-from rest_framework.routers import DefaultRouter
-
 from django.urls import path
-
 from rest_framework.routers import DefaultRouter
 
 from apps.production.api.viewsets.analytics import AnalyticsDepartmentsView, AnalyticsKpisView
@@ -18,7 +15,6 @@ from apps.production.api.viewsets.media import MediaViewSet
 from apps.production.api.viewsets.playlist import PlaylistViewSet
 from apps.production.api.viewsets.project import ProjectViewSet
 from apps.production.api.viewsets.review import ReviewViewSet
-from apps.production.api.viewsets.sequence import SequenceViewSet
 from apps.production.api.viewsets.scheduling import (
     AutomationAuditLogsView,
     AutomationRuleDetailView,
@@ -27,6 +23,7 @@ from apps.production.api.viewsets.scheduling import (
     SchedulingOverbookingView,
     SchedulingResolveOverbookingView,
 )
+from apps.production.api.viewsets.sequence import SequenceViewSet
 from apps.production.api.viewsets.shot import ShotViewSet
 from apps.production.api.viewsets.task import TaskViewSet
 from apps.production.api.viewsets.timelog import TimelogViewSet

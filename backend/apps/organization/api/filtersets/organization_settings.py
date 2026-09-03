@@ -7,6 +7,7 @@ from apps.organization.models import (
     OrganizationSettings,
 )
 
+
 class OrganizationSettingsFilterSet(
     SearchFilterMixin,
     OrderingFilterMixin,

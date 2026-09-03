@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 class InvitationEvent:
     """Base class for invitation events."""
 
-    invitation: "Invitation"
+    invitation: Invitation
 
 
 @dataclass

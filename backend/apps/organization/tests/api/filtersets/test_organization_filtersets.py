@@ -8,9 +8,7 @@ testing search, ordering, date filtering, boolean filtering, multiple filters, a
 from __future__ import annotations
 
 import pytest
-from django.test import RequestFactory
 
-from apps.core.tests.base import BaseAPITestCase
 from apps.organization.api.filtersets import OrganizationFilterSet
 from apps.organization.models import Organization
 from apps.organization.tests.factories import OrganizationFactory
@@ -177,8 +175,8 @@ class TestOrganizationFilterSet:
     @pytest.mark.django_db
     def test_date_range_filter(self):
         """Test date range filter."""
+
         from django.utils import timezone
-        from datetime import timedelta
 
         org1 = OrganizationFactory.create()
         org2 = OrganizationFactory.create()

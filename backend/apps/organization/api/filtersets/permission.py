@@ -3,7 +3,6 @@ from django_filters import BooleanFilter, CharFilter
 from apps.core.filters.base import BaseFilterSet
 from apps.core.filters.ordering import OrderingFilterMixin
 from apps.core.filters.search import SearchFilterMixin
-from apps.organization.choices import PermissionModule, PermissionAction, PermissionCategory
 from apps.organization.models import Permission
 
 

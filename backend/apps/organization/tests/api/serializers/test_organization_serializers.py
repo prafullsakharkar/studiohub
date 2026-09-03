@@ -17,8 +17,6 @@ from apps.organization.api.serializers.organization import (
     OrganizationSummarySerializer,
     OrganizationUpdateSerializer,
 )
-from apps.organization.models import Organization
-from apps.organization.tests.factories import OrganizationFactory
 
 
 class TestOrganizationSummarySerializer:

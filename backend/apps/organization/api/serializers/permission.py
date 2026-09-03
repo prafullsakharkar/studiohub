@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from apps.organization.api.serializers.base import OrganizationEntitySerializer
-from apps.organization.choices import PermissionAction, PermissionCategory, PermissionModule
 from apps.organization.models import Permission
 
 

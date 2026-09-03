@@ -7,20 +7,15 @@ Provides base exception classes and domain-specific error types.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
-from django.http import Http404
 from rest_framework import status
 from rest_framework.exceptions import (
     APIException,
-    AuthenticationFailed,
-    NotAuthenticated,
-    PermissionDenied,
-    ValidationError,
 )
 
 if TYPE_CHECKING:
-    from django.http import HttpRequest
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -38,10 +33,10 @@ class BaseDomainException(Exception):
 
     def __init__(
         self,
-        message: Optional[str] = None,
-        code: Optional[str] = None,
-        status_code: Optional[int] = None,
-        details: Optional[dict[str, Any]] = None,
+        message: str | None = None,
+        code: str | None = None,
+        status_code: int | None = None,
+        details: dict[str, Any] | None = None,
     ):
         """
         Initialize the domain exception.
@@ -125,10 +120,10 @@ class BaseAPIException(APIException):
 
     def __init__(
         self,
-        message: Optional[str] = None,
-        code: Optional[str] = None,
-        status_code: Optional[int] = None,
-        details: Optional[dict[str, Any]] = None,
+        message: str | None = None,
+        code: str | None = None,
+        status_code: int | None = None,
+        details: dict[str, Any] | None = None,
     ):
         """
         Initialize the API exception.
@@ -189,11 +184,11 @@ class ObjectNotFoundException(BaseDomainException):
     def __init__(
         self,
         model_name: str = "object",
-        identifier: Optional[Any] = None,
-        message: Optional[str] = None,
-        code: Optional[str] = None,
-        status_code: Optional[int] = None,
-        details: Optional[dict[str, Any]] = None,
+        identifier: Any | None = None,
+        message: str | None = None,
+        code: str | None = None,
+        status_code: int | None = None,
+        details: dict[str, Any] | None = None,
     ):
         """
         Initialize the object not found exception.
@@ -227,11 +222,11 @@ class PermissionDeniedException(BaseDomainException):
 
     def __init__(
         self,
-        permission: Optional[str] = None,
-        message: Optional[str] = None,
-        code: Optional[str] = None,
-        status_code: Optional[int] = None,
-        details: Optional[dict[str, Any]] = None,
+        permission: str | None = None,
+        message: str | None = None,
+        code: str | None = None,
+        status_code: int | None = None,
+        details: dict[str, Any] | None = None,
     ):
         """
         Initialize the permission denied exception.
@@ -265,12 +260,12 @@ class InvalidStateException(BaseBusinessException):
     def __init__(
         self,
         current_state: str = "unknown",
-        expected_states: Optional[list[str]] = None,
-        operation: Optional[str] = None,
-        message: Optional[str] = None,
-        code: Optional[str] = None,
-        status_code: Optional[int] = None,
-        details: Optional[dict[str, Any]] = None,
+        expected_states: list[str] | None = None,
+        operation: str | None = None,
+        message: str | None = None,
+        code: str | None = None,
+        status_code: int | None = None,
+        details: dict[str, Any] | None = None,
     ):
         """
         Initialize the invalid state exception.
@@ -311,11 +306,11 @@ class DuplicateException(BaseBusinessException):
         self,
         model_name: str = "object",
         field: str = "field",
-        value: Optional[Any] = None,
-        message: Optional[str] = None,
-        code: Optional[str] = None,
-        status_code: Optional[int] = None,
-        details: Optional[dict[str, Any]] = None,
+        value: Any | None = None,
+        message: str | None = None,
+        code: str | None = None,
+        status_code: int | None = None,
+        details: dict[str, Any] | None = None,
     ):
         """
         Initialize the duplicate exception.
@@ -352,11 +347,11 @@ class RateLimitException(BaseAPIException):
 
     def __init__(
         self,
-        retry_after: Optional[int] = None,
-        message: Optional[str] = None,
-        code: Optional[str] = None,
-        status_code: Optional[int] = None,
-        details: Optional[dict[str, Any]] = None,
+        retry_after: int | None = None,
+        message: str | None = None,
+        code: str | None = None,
+        status_code: int | None = None,
+        details: dict[str, Any] | None = None,
     ):
         """
         Initialize the rate limit exception.
@@ -387,10 +382,10 @@ class AuthenticationException(BaseAPIException):
 
     def __init__(
         self,
-        message: Optional[str] = None,
-        code: Optional[str] = None,
-        status_code: Optional[int] = None,
-        details: Optional[dict[str, Any]] = None,
+        message: str | None = None,
+        code: str | None = None,
+        status_code: int | None = None,
+        details: dict[str, Any] | None = None,
     ):
         """
         Initialize the authentication exception.
@@ -419,10 +414,10 @@ class AuthorizationException(BaseAPIException):
 
     def __init__(
         self,
-        message: Optional[str] = None,
-        code: Optional[str] = None,
-        status_code: Optional[int] = None,
-        details: Optional[dict[str, Any]] = None,
+        message: str | None = None,
+        code: str | None = None,
+        status_code: int | None = None,
+        details: dict[str, Any] | None = None,
     ):
         """
         Initialize the authorization exception.
@@ -451,11 +446,11 @@ class ValidationException(BaseAPIException):
 
     def __init__(
         self,
-        field: Optional[str] = None,
-        message: Optional[str] = None,
-        code: Optional[str] = None,
-        status_code: Optional[int] = None,
-        details: Optional[dict[str, Any]] = None,
+        field: str | None = None,
+        message: str | None = None,
+        code: str | None = None,
+        status_code: int | None = None,
+        details: dict[str, Any] | None = None,
     ):
         """
         Initialize the validation exception.
@@ -489,11 +484,11 @@ class NotFoundException(BaseAPIException):
     def __init__(
         self,
         resource: str = "resource",
-        identifier: Optional[Any] = None,
-        message: Optional[str] = None,
-        code: Optional[str] = None,
-        status_code: Optional[int] = None,
-        details: Optional[dict[str, Any]] = None,
+        identifier: Any | None = None,
+        message: str | None = None,
+        code: str | None = None,
+        status_code: int | None = None,
+        details: dict[str, Any] | None = None,
     ):
         """
         Initialize the not found exception.
@@ -527,10 +522,10 @@ class ConflictException(BaseAPIException):
 
     def __init__(
         self,
-        message: Optional[str] = None,
-        code: Optional[str] = None,
-        status_code: Optional[int] = None,
-        details: Optional[dict[str, Any]] = None,
+        message: str | None = None,
+        code: str | None = None,
+        status_code: int | None = None,
+        details: dict[str, Any] | None = None,
     ):
         """
         Initialize the conflict exception.
@@ -559,10 +554,10 @@ class ServerException(BaseAPIException):
 
     def __init__(
         self,
-        message: Optional[str] = None,
-        code: Optional[str] = None,
-        status_code: Optional[int] = None,
-        details: Optional[dict[str, Any]] = None,
+        message: str | None = None,
+        code: str | None = None,
+        status_code: int | None = None,
+        details: dict[str, Any] | None = None,
     ):
         """
         Initialize the server exception.
@@ -591,11 +586,11 @@ class ServiceUnavailableException(BaseAPIException):
 
     def __init__(
         self,
-        service: Optional[str] = None,
-        message: Optional[str] = None,
-        code: Optional[str] = None,
-        status_code: Optional[int] = None,
-        details: Optional[dict[str, Any]] = None,
+        service: str | None = None,
+        message: str | None = None,
+        code: str | None = None,
+        status_code: int | None = None,
+        details: dict[str, Any] | None = None,
     ):
         """
         Initialize the service unavailable exception.
