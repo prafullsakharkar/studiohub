@@ -63,7 +63,7 @@ class BaseViewSet(
         except ValidationError:
             # Invalid UUID (or other malformed lookup value) must 404,
             # not 500.
-            raise Http404
+            raise Http404 from None
 
         self.check_object_permissions(self.request, obj)
 

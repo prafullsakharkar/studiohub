@@ -35,7 +35,7 @@ class TestProfileManager:
     @pytest.mark.django_db
     def test_lookup_manager(self):
         """Test lookup manager."""
-        profile = ProfileFactory.create(first_name="John", last_name="Doe")
+        ProfileFactory.create(first_name="John", last_name="Doe")
 
         # Lookup by first name
         assert Profile.objects.lookup("John").exists()

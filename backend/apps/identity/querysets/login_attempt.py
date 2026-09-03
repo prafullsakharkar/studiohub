@@ -102,10 +102,7 @@ class LoginAttemptQuerySet(
         if end_date is not None:
             queryset = queryset.filter(attempted_at__lte=end_date)
 
-        if order_by:
-            queryset = queryset.order_by(order_by)
-        else:
-            queryset = queryset.order_by("-attempted_at")
+        queryset = queryset.order_by(order_by) if order_by else queryset.order_by("-attempted_at")
 
         if offset:
             queryset = queryset[offset:]

@@ -1,3 +1,5 @@
+import contextlib
+
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 
@@ -85,10 +87,8 @@ class ClientViewSet(ServiceModelViewSet):
             org_id = self.request.headers.get("X-Organization-Id")
             if org_id:
                 from apps.organization.models import Organization
-                try:
+                with contextlib.suppress(Exception):
                     org = Organization.objects.get(pk=org_id)
-                except Exception:
-                    pass
         if not org:
             from apps.organization.models import Organization
             org = Organization.objects.first()

@@ -7,6 +7,7 @@ from django.db import models
 warnings.warn(
     "apps.core.models.bases.ownership exposes ProjectOwnedModel which is project-scoped and may belong in a domain application. Consider migrating domain-scoped ownership classes out of core.",
     FutureWarning,
+    stacklevel=2,
 )
 
 

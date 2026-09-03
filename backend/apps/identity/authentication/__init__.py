@@ -1,26 +1,38 @@
 from .api_key import *
-from .backend import EnterpriseAuthenticationBackend
-from .base import IdentityAuthentication
-from .blacklist import TokenBlacklistService
-from .claims import AuthenticationClaims
-from .device import TrustedDeviceService
+from .backend import EnterpriseAuthenticationBackend as EnterpriseAuthenticationBackend
+from .base import IdentityAuthentication as IdentityAuthentication
+from .blacklist import TokenBlacklistService as TokenBlacklistService
+from .claims import AuthenticationClaims as AuthenticationClaims
+from .device import TrustedDeviceService as TrustedDeviceService
 from .exceptions import (
-    AccountLocked,
-    AuthenticationException,
-    EmailNotVerified,
-    ExpiredToken,
-    InvalidCredentials,
-    InvalidToken,
-    MFARequired,
+    AccountLocked as AccountLocked,
 )
-from .jwt import JWTService
-from .login import LoginManager
-from .logout import LogoutManager
+from .exceptions import (
+    AuthenticationException as AuthenticationException,
+)
+from .exceptions import (
+    EmailNotVerified as EmailNotVerified,
+)
+from .exceptions import (
+    ExpiredToken as ExpiredToken,
+)
+from .exceptions import (
+    InvalidCredentials as InvalidCredentials,
+)
+from .exceptions import (
+    InvalidToken as InvalidToken,
+)
+from .exceptions import (
+    MFARequired as MFARequired,
+)
+from .jwt import JWTService as JWTService
+from .login import LoginManager as LoginManager
+from .logout import LogoutManager as LogoutManager
 from .personal_access_token import *
-from .qr import QRCodeService
-from .recovery import RecoveryCodeService
-from .refresh import RefreshManager
-from .totp import TOTPService
+from .qr import QRCodeService as QRCodeService
+from .recovery import RecoveryCodeService as RecoveryCodeService
+from .refresh import RefreshManager as RefreshManager
+from .totp import TOTPService as TOTPService
 
 # ``TokenService`` is intentionally NOT re-exported here: it depends on the
 # services layer, so importing it eagerly turns every submodule import into a

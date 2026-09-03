@@ -86,13 +86,11 @@ class OrganizationSettingValidator(SettingsBaseValidator):
         
         is_valid = True
         
-        if "setting" in data:
-            if not self.validate_setting(data["setting"]):
-                is_valid = False
+        if "setting" in data and not self.validate_setting(data["setting"]):
+            is_valid = False
         
-        if "organization" in data:
-            if not self.validate_organization(data["organization"]):
-                is_valid = False
+        if "organization" in data and not self.validate_organization(data["organization"]):
+            is_valid = False
         
         if "value" in data and "setting" in data:
             # Get the data type from the setting

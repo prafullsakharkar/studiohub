@@ -4,6 +4,8 @@ Permission cache service.
 
 from __future__ import annotations
 
+import contextlib
+
 from django.core.cache import cache
 
 from apps.identity.resolvers.permission import (
@@ -82,14 +84,12 @@ class PermissionCacheService:
                 organization=organization,
             )
 
-            try:
+            with contextlib.suppress(Exception):
                 cache.set(
                     key,
                     permissions,
                     timeout=cls.CACHE_TIMEOUT,
                 )
-            except Exception:
-                pass
 
         return permissions
 

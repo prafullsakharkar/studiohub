@@ -25,12 +25,11 @@ class RolePermissionSelector(BaseSelector):
         """
         queryset = RolePermission.objects.all()
 
-        if request and hasattr(request, "user"):
-            # Users can see role permissions in their organizations
-            if not request.user.is_superuser:
-                queryset = queryset.filter(
-                    role__organization__in=request.user.organizations.all()
-                )
+        # Users can see role permissions in their organizations
+        if request and hasattr(request, "user") and not request.user.is_superuser:
+            queryset = queryset.filter(
+                role__organization__in=request.user.organizations.all()
+            )
 
         return queryset
 

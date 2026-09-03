@@ -22,7 +22,7 @@ class TestLoginAttemptFilterSet:
         from apps.identity.api.filtersets.login_attempt import LoginAttemptFilterSet
 
         user = UserFactory.create()
-        attempt = LoginAttemptFactory.create(user=user)
+        LoginAttemptFactory.create(user=user)
 
         filterset = LoginAttemptFilterSet(
             data={"user": user.id},
@@ -55,7 +55,7 @@ class TestLoginAttemptFilterSet:
         """Test filter by ip_address."""
         from apps.identity.api.filtersets.login_attempt import LoginAttemptFilterSet
 
-        attempt = LoginAttemptFactory.create(ip_address="192.168.1.1")
+        LoginAttemptFactory.create(ip_address="192.168.1.1")
 
         filterset = LoginAttemptFilterSet(
             data={"ip_address": "192.168.1.1"},
@@ -71,7 +71,7 @@ class TestLoginAttemptFilterSet:
         """Test filter by reason."""
         from apps.identity.api.filtersets.login_attempt import LoginAttemptFilterSet
 
-        attempt = LoginAttemptFactory.create(reason="invalid_credentials")
+        LoginAttemptFactory.create(reason="invalid_credentials")
 
         filterset = LoginAttemptFilterSet(
             data={"reason": "invalid_credentials"},

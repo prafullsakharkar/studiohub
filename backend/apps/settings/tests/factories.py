@@ -109,7 +109,7 @@ class LocalizationFactory(DjangoModelFactory):
     code = factory.Sequence(lambda n: f"localization{n:03d}")
     name = factory.Sequence(lambda n: f"Localization {n}")
     language = factory.Faker(
-        "random_element", elements=[l[0] for l in Localization.LANGUAGE_CHOICES]
+        "random_element", elements=[lang[0] for lang in Localization.LANGUAGE_CHOICES]
     )
     timezone = factory.Faker(
         "random_element", elements=[t[0] for t in Localization.TIMEZONE_CHOICES]

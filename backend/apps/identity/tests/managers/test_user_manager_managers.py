@@ -81,7 +81,7 @@ class TestUserManager:
     @pytest.mark.django_db
     def test_with_last_seen_manager(self):
         """Test with_last_seen manager."""
-        user = UserFactory.create(last_seen=None)
+        UserFactory.create(last_seen=None)
         user_with_last_seen = UserFactory.create(last_seen=timezone.now())
 
         qs = User.objects.with_last_seen()

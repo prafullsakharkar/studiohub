@@ -69,16 +69,11 @@ class ExportMixin:
 
     def _get_export_content_type(self) -> str:
         """Get export content type."""
-        format_type = self.export_format
-        if format_type == "csv":
-            return "text/csv"
-        elif format_type == "json":
-            return "application/json"
-        elif format_type == "xlsx":
-            return (
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-        return "application/octet-stream"
+        return {
+            "csv": "text/csv",
+            "json": "application/json",
+            "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        }.get(self.export_format, "application/octet-stream")
 
     def _get_timestamp(self) -> str:
         """Get current timestamp for filename."""

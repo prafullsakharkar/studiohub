@@ -25,10 +25,9 @@ class UserRoleSelector(BaseSelector):
         """
         queryset = UserRole.objects.all()
 
-        if request and hasattr(request, "user"):
-            # Users can see their own roles
-            if not request.user.is_superuser:
-                queryset = queryset.filter(user=request.user)
+        # Users can see their own roles
+        if request and hasattr(request, "user") and not request.user.is_superuser:
+            queryset = queryset.filter(user=request.user)
 
         return queryset
 

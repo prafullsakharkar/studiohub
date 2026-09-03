@@ -1,3 +1,4 @@
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 from rest_framework.generics import GenericAPIView
@@ -7,8 +8,6 @@ from rest_framework.response import Response
 
 class DummySerializer(serializers.Serializer):
     pass
-from drf_spectacular.types import OpenApiTypes
-
 MOCK_RISKS = [
     {
         "id": "risk-001",

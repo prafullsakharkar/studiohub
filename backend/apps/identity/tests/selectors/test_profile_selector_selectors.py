@@ -24,7 +24,7 @@ class TestProfileSelector:
     def test_get_profile_by_user(self):
         """Test get_profile_by_user method."""
         user = UserFactory.create()
-        profile = ProfileFactory.create(user=user)
+        ProfileFactory.create(user=user)
         retrieved_profile = Profile.objects.get_profile_by_user(user.id)
         assert retrieved_profile.user.id == user.id
 

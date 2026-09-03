@@ -26,13 +26,12 @@ class APIKeySelector(BaseSelector):
         """
         queryset = APIKey.objects.all()
 
-        if request and hasattr(request, "user"):
-            # Users can see their own API keys and organization API keys
-            if not request.user.is_superuser:
-                queryset = queryset.filter(
-                    models.Q(owner=request.user)
-                    | models.Q(organization__in=request.user.organizations.all())
-                )
+        # Users can see their own API keys and organization API keys
+        if request and hasattr(request, "user") and not request.user.is_superuser:
+            queryset = queryset.filter(
+                models.Q(owner=request.user)
+                | models.Q(organization__in=request.user.organizations.all())
+            )
 
         return queryset
 

@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import pytest
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from django.utils import timezone
 
 from apps.identity.models.user import User
@@ -48,7 +49,7 @@ class TestUserModel:
     @pytest.mark.django_db
     def test_user_unique_email(self, user):
         """Test email field is unique."""
-        with pytest.raises(Exception):
+        with pytest.raises(IntegrityError):
             User.objects.create(
                 email=user.email,
                 is_active=True,

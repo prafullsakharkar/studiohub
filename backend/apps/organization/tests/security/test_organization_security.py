@@ -8,6 +8,7 @@ authorization, authentication, and data protection.
 from __future__ import annotations
 
 import pytest
+from django.db import IntegrityError
 from django.test import TestCase
 
 from apps.organization.models.organization import Organization
@@ -34,7 +35,7 @@ class OrganizationAuthorizationTests(TestCase):
         """Test that organization codes are unique."""
         OrganizationFactory.create(code="ORG001")
 
-        with pytest.raises(Exception):
+        with pytest.raises(IntegrityError):
             Organization.objects.create(
                 code="ORG001",
                 name="Duplicate",

@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import pytest
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 
 from apps.organization.choices import OrganizationType
 from apps.organization.models.organization import Organization
@@ -59,7 +60,7 @@ class TestOrganizationModel:
     @pytest.mark.django_db
     def test_organization_unique_code(self, organization):
         """Test code field is unique."""
-        with pytest.raises(Exception):
+        with pytest.raises(IntegrityError):
             Organization.objects.create(
                 code=organization.code,
                 name="Duplicate Organization",
@@ -68,7 +69,7 @@ class TestOrganizationModel:
     @pytest.mark.django_db
     def test_organization_unique_slug(self, organization):
         """Test slug field is unique."""
-        with pytest.raises(Exception):
+        with pytest.raises(IntegrityError):
             Organization.objects.create(
                 code="ORG002",
                 name="Duplicate Organization",

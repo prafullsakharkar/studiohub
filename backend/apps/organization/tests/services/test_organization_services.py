@@ -7,6 +7,7 @@ from __future__ import annotations
 from unittest.mock import patch
 
 import pytest
+from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from apps.organization.models.organization import Organization
@@ -87,7 +88,7 @@ class TestOrganizationService:
     def test_service_create_with_duplicate_code(self):
         """Test create with duplicate code."""
         OrganizationService.create(**_valid_data())
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             OrganizationService.create(**_valid_data(name="Test Organization 2"))
 
     @pytest.mark.django_db

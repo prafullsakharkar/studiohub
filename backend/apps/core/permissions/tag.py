@@ -39,10 +39,7 @@ class TagPermissions(BasePermission):
         if view.action in ["create"]:
             return True
 
-        if view.action in ["update", "partial_update", "destroy"]:
-            return True
-
-        return False
+        return view.action in ["update", "partial_update", "destroy"]
 
     def has_object_permission(self, request: HttpRequest, view, obj) -> bool:
         """

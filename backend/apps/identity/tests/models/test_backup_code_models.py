@@ -5,6 +5,7 @@ Identity backup code model tests.
 from __future__ import annotations
 
 import pytest
+from django.db import IntegrityError
 
 from apps.identity.models.backup_code import BackupCode
 
@@ -44,7 +45,7 @@ class TestBackupCodeModel:
     @pytest.mark.django_db
     def test_backup_code_unique_constraint(self, backup_code):
         """Test unique constraint on user, code_hash."""
-        with pytest.raises(Exception):
+        with pytest.raises(IntegrityError):
             BackupCode.objects.create(
                 user=backup_code.user,
                 code_hash=backup_code.code_hash,

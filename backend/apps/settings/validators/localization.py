@@ -53,12 +53,12 @@ class LocalizationValidator(SettingsBaseValidator):
         
         is_valid = True
         
-        if "currency_code" in data:
-            if not self.validate_currency_code(data["currency_code"]):
-                is_valid = False
+        if "currency_code" in data and not self.validate_currency_code(
+            data["currency_code"]
+        ):
+            is_valid = False
         
-        if "week_start" in data:
-            if not self.validate_week_start(data["week_start"]):
-                is_valid = False
+        if "week_start" in data and not self.validate_week_start(data["week_start"]):
+            is_valid = False
         
         return is_valid

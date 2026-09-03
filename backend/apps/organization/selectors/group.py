@@ -26,13 +26,12 @@ class GroupSelector(BaseSelector):
         """
         queryset = Group.objects.all()
 
-        if request and hasattr(request, "user"):
-            # Users can see groups in their organizations
-            if not request.user.is_superuser:
-                queryset = queryset.filter(
-                    models.Q(organization__in=request.user.organizations.all())
-                    | models.Q(users=request.user)
-                )
+        # Users can see groups in their organizations
+        if request and hasattr(request, "user") and not request.user.is_superuser:
+            queryset = queryset.filter(
+                models.Q(organization__in=request.user.organizations.all())
+                | models.Q(users=request.user)
+            )
 
         return queryset
 

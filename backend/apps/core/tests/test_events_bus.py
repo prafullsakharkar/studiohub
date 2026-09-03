@@ -59,8 +59,11 @@ class TestEventBus(TestCase):
 
         default_event_bus.subscribe(DummyEvent, DummyHandler)
 
-        with self.captureOnCommitCallbacks(execute=True), self.assertRaises(RuntimeError):
-            with transaction.atomic():
+        with (
+            self.captureOnCommitCallbacks(execute=True),
+            self.assertRaises(RuntimeError),
+            transaction.atomic(),
+        ):
                 default_event_bus.publish(DummyEvent(baz=3))
                 raise RuntimeError("force rollback")
 

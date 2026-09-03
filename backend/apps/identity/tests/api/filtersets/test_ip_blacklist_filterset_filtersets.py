@@ -21,7 +21,7 @@ class TestIPBlacklistFilterSet:
         """Test filter by ip_address."""
         from apps.identity.api.filtersets.ip_blacklist import IPBlacklistFilterSet
 
-        entry = IPBlacklistFactory.create(ip_address="192.168.1.1")
+        IPBlacklistFactory.create(ip_address="192.168.1.1")
 
         filterset = IPBlacklistFilterSet(
             data={"ip_address": "192.168.1.1"},
@@ -54,7 +54,7 @@ class TestIPBlacklistFilterSet:
         """Test filter by reason."""
         from apps.identity.api.filtersets.ip_blacklist import IPBlacklistFilterSet
 
-        entry = IPBlacklistFactory.create(reason="Suspicious activity")
+        IPBlacklistFactory.create(reason="Suspicious activity")
 
         filterset = IPBlacklistFilterSet(
             data={"reason": "Suspicious activity"},
@@ -71,7 +71,7 @@ class TestIPBlacklistFilterSet:
         from apps.identity.api.filtersets.ip_blacklist import IPBlacklistFilterSet
 
         user = UserFactory.create()
-        entry = IPBlacklistFactory.create(created_by=user)
+        IPBlacklistFactory.create(created_by=user)
 
         filterset = IPBlacklistFilterSet(
             data={"created_by": user.id},

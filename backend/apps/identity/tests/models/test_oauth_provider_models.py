@@ -5,6 +5,7 @@ Identity OAuth provider model tests.
 from __future__ import annotations
 
 import pytest
+from django.db import IntegrityError
 
 from apps.identity.models.oauth_provider import OAuthProvider
 
@@ -45,7 +46,7 @@ class TestOAuthProviderModel:
     @pytest.mark.django_db
     def test_oauth_provider_unique_name(self, oauth_provider):
         """Test name field is unique."""
-        with pytest.raises(Exception):
+        with pytest.raises(IntegrityError):
             OAuthProvider.objects.create(
                 name=oauth_provider.name,
                 client_id="new-client-id",

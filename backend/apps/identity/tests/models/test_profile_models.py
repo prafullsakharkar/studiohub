@@ -5,6 +5,7 @@ Identity profile model tests.
 from __future__ import annotations
 
 import pytest
+from django.db import IntegrityError
 
 from apps.identity.models.profile import Profile
 
@@ -45,7 +46,7 @@ class TestProfileModel:
     @pytest.mark.django_db
     def test_profile_unique_user(self, profile):
         """Test user field is unique."""
-        with pytest.raises(Exception):
+        with pytest.raises(IntegrityError):
             Profile.objects.create(
                 user=profile.user,
                 first_name="Another",

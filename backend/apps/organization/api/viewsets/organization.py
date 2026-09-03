@@ -1,3 +1,5 @@
+import contextlib
+
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -118,10 +120,8 @@ class OrganizationViewSet(ServiceModelViewSet):
     @action(detail=True, methods=["post"], url_path="restore")
     def restore(self, request, *args, **kwargs):
         instance = self.get_object()
-        try:
+        with contextlib.suppress(Exception):
             self.service_class.restore(instance)
-        except Exception:
-            pass
         serializer = OrganizationDetailSerializer(instance)
         return Response(serializer.data)
 

@@ -25,12 +25,11 @@ class PermissionSelector(BaseSelector):
         """
         queryset = Permission.objects.all()
 
-        if request and hasattr(request, "user"):
-            # Users can see permissions in their organizations
-            if not request.user.is_superuser:
-                queryset = queryset.filter(
-                    organization__in=request.user.organizations.all()
-                )
+        # Users can see permissions in their organizations
+        if request and hasattr(request, "user") and not request.user.is_superuser:
+            queryset = queryset.filter(
+                organization__in=request.user.organizations.all()
+            )
 
         return queryset
 

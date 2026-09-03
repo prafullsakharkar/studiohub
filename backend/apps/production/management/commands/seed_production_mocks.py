@@ -577,8 +577,6 @@ class Command(BaseCommand):
         proj_map = {p.code: p for p in Project.objects.filter(organization=org)}
         count = 0
         for item in data:
-            # Media has no code, use id
-            mid = item.get("id")
             proj_code = item.get("project_code")
             proj = proj_map.get(proj_code) or Project.objects.filter(organization=org).first()
             Media.objects.get_or_create(

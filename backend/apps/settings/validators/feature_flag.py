@@ -48,10 +48,9 @@ class FeatureFlagValidator(SettingsBaseValidator):
         Validate date range.
         """
         
-        if start_date and end_date:
-            if start_date > end_date:
-                self.errors["start_date"] = ["Start date must be before end date"]
-                return False
+        if start_date and end_date and start_date > end_date:
+            self.errors["start_date"] = ["Start date must be before end date"]
+            return False
         
         return True
     
@@ -63,18 +62,15 @@ class FeatureFlagValidator(SettingsBaseValidator):
         
         is_valid = True
         
-        if "code" in data:
-            if not self.validate_code(data["code"]):
-                is_valid = False
+        if "code" in data and not self.validate_code(data["code"]):
+            is_valid = False
         
-        if "percentage" in data:
-            if not self.validate_percentage(data["percentage"]):
-                is_valid = False
+        if "percentage" in data and not self.validate_percentage(data["percentage"]):
+            is_valid = False
         
-        if "start_date" in data or "end_date" in data:
-            if not self.validate_dates(
-                data.get("start_date"), data.get("end_date")
-            ):
-                is_valid = False
+        if ("start_date" in data or "end_date" in data) and not self.validate_dates(
+            data.get("start_date"), data.get("end_date")
+        ):
+            is_valid = False
         
         return is_valid

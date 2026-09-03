@@ -239,15 +239,17 @@ class SettingDefinition(EntityModel, TimeStampedModel):
             if not isinstance(value, str):
                 errors.append(_("Must be a string"))
             else:
-                if "min_length" in self.validation_rules:
-                    if len(value) < self.validation_rules["min_length"]:
+                if "min_length" in self.validation_rules and (
+                    len(value) < self.validation_rules["min_length"]
+                ):
                         errors.append(
                             _("Must be at least {length} characters").format(
                                 length=self.validation_rules["min_length"]
                             )
                         )
-                if "max_length" in self.validation_rules:
-                    if len(value) > self.validation_rules["max_length"]:
+                if "max_length" in self.validation_rules and (
+                    len(value) > self.validation_rules["max_length"]
+                ):
                         errors.append(
                             _("Must be at most {length} characters").format(
                                 length=self.validation_rules["max_length"]

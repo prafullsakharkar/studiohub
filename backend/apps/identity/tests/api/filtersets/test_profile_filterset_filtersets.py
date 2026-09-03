@@ -19,7 +19,7 @@ class TestProfileFilterSet:
         from apps.identity.api.filtersets.user_preference import ProfileFilterSet
 
         user = UserFactory.create()
-        profile = ProfileFactory.create(user=user)
+        ProfileFactory.create(user=user)
 
         filterset = ProfileFilterSet(
             data={"user": user.id},
@@ -35,7 +35,7 @@ class TestProfileFilterSet:
         """Test filter by first_name."""
         from apps.identity.api.filtersets.user_preference import ProfileFilterSet
 
-        profile = ProfileFactory.create(first_name="John")
+        ProfileFactory.create(first_name="John")
 
         filterset = ProfileFilterSet(
             data={"first_name": "John"},
@@ -51,7 +51,7 @@ class TestProfileFilterSet:
         """Test filter by last_name."""
         from apps.identity.api.filtersets.user_preference import ProfileFilterSet
 
-        profile = ProfileFactory.create(last_name="Doe")
+        ProfileFactory.create(last_name="Doe")
 
         filterset = ProfileFilterSet(
             data={"last_name": "Doe"},
@@ -67,7 +67,7 @@ class TestProfileFilterSet:
         """Test filter by display_name."""
         from apps.identity.api.filtersets.user_preference import ProfileFilterSet
 
-        profile = ProfileFactory.create(display_name="John Doe")
+        ProfileFactory.create(display_name="John Doe")
 
         filterset = ProfileFilterSet(
             data={"display_name": "John Doe"},
@@ -83,7 +83,7 @@ class TestProfileFilterSet:
         """Test filter by timezone."""
         from apps.identity.api.filtersets.user_preference import ProfileFilterSet
 
-        profile = ProfileFactory.create(timezone="UTC")
+        ProfileFactory.create(timezone="UTC")
 
         filterset = ProfileFilterSet(
             data={"timezone": "UTC"},
@@ -99,7 +99,7 @@ class TestProfileFilterSet:
         """Test filter by language."""
         from apps.identity.api.filtersets.user_preference import ProfileFilterSet
 
-        profile = ProfileFactory.create(language="en")
+        ProfileFactory.create(language="en")
 
         filterset = ProfileFilterSet(
             data={"language": "en"},

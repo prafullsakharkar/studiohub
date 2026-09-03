@@ -28,6 +28,7 @@ from apps.core.models.bases.scopes import ProjectScopedModel
 warnings.warn(
     "apps.core.models.bases.project.ProjectEntityModel is project-scoped and may belong in a domain application. Consider moving it to a domain package.",
     FutureWarning,
+    stacklevel=2,
 )
 
 

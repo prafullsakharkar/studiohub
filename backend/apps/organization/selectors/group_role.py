@@ -25,12 +25,11 @@ class GroupRoleSelector(BaseSelector):
         """
         queryset = GroupRole.objects.all()
 
-        if request and hasattr(request, "user"):
-            # Users can see group roles in their organizations
-            if not request.user.is_superuser:
-                queryset = queryset.filter(
-                    group__organization__in=request.user.organizations.all()
-                )
+        # Users can see group roles in their organizations
+        if request and hasattr(request, "user") and not request.user.is_superuser:
+            queryset = queryset.filter(
+                group__organization__in=request.user.organizations.all()
+            )
 
         return queryset
 

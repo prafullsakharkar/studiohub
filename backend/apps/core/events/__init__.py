@@ -14,6 +14,7 @@ __all__ = [
     "BaseDeleted",
     "BaseUpdated",
     "DomainEvent",
+    "Event",
     "EventBus",
 ]
 

@@ -55,7 +55,7 @@ class TestUserQuerySet:
     @pytest.mark.django_db
     def test_with_last_seen_queryset(self):
         """Test with_last_seen queryset."""
-        user = UserFactory.create(last_seen=None)
+        UserFactory.create(last_seen=None)
         user_with_last_seen = UserFactory.create(last_seen=timezone.now())
 
         qs = User.objects.with_last_seen()
@@ -72,7 +72,7 @@ class TestUserQuerySet:
     @pytest.mark.django_db
     def test_by_email_queryset(self):
         """Test by_email queryset."""
-        user = UserFactory.create(email="test@example.com")
+        UserFactory.create(email="test@example.com")
 
         assert User.objects.by_email("test@example.com").exists()
 
@@ -93,8 +93,8 @@ class TestUserQuerySet:
     @pytest.mark.django_db
     def test_order_by_last_seen_queryset(self):
         """Test order_by_last_seen queryset."""
-        user1 = UserFactory.create(last_seen=timezone.now() - timedelta(days=1))
-        user2 = UserFactory.create(last_seen=timezone.now())
+        UserFactory.create(last_seen=timezone.now() - timedelta(days=1))
+        UserFactory.create(last_seen=timezone.now())
 
         qs = User.objects.order_by_last_seen()
         users = list(qs)

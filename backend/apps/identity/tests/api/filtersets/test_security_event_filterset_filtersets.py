@@ -22,7 +22,7 @@ class TestSecurityEventFilterSet:
         from apps.identity.api.filtersets.user_preference import SecurityEventFilterSet
 
         user = UserFactory.create()
-        event = SecurityEventFactory.create(user=user)
+        SecurityEventFactory.create(user=user)
 
         filterset = SecurityEventFilterSet(
             data={"user": user.id},
@@ -55,7 +55,7 @@ class TestSecurityEventFilterSet:
         """Test filter by ip_address."""
         from apps.identity.api.filtersets.user_preference import SecurityEventFilterSet
 
-        event = SecurityEventFactory.create(ip_address="192.168.1.1")
+        SecurityEventFactory.create(ip_address="192.168.1.1")
 
         filterset = SecurityEventFilterSet(
             data={"ip_address": "192.168.1.1"},

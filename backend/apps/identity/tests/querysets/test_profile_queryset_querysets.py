@@ -35,7 +35,7 @@ class TestProfileQuerySet:
     @pytest.mark.django_db
     def test_lookup_queryset(self):
         """Test lookup queryset."""
-        profile = ProfileFactory.create(first_name="John", last_name="Doe")
+        ProfileFactory.create(first_name="John", last_name="Doe")
 
         assert Profile.objects.lookup("John").exists()
         assert Profile.objects.lookup("Doe").exists()
@@ -45,15 +45,15 @@ class TestProfileQuerySet:
     def test_by_user_queryset(self):
         """Test by_user queryset."""
         user = UserFactory.create()
-        profile = ProfileFactory.create(user=user)
+        ProfileFactory.create(user=user)
 
         assert Profile.objects.by_user(user).exists()
 
     @pytest.mark.django_db
     def test_order_by_name_queryset(self):
         """Test order_by_name queryset."""
-        profile1 = ProfileFactory.create(first_name="Zoe", last_name="Zebra")
-        profile2 = ProfileFactory.create(first_name="Alice", last_name="Apple")
+        ProfileFactory.create(first_name="Zoe", last_name="Zebra")
+        ProfileFactory.create(first_name="Alice", last_name="Apple")
 
         qs = Profile.objects.order_by_name()
         profiles = list(qs)

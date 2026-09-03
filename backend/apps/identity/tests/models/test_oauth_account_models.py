@@ -5,6 +5,7 @@ Identity OAuth account model tests.
 from __future__ import annotations
 
 import pytest
+from django.db import IntegrityError
 
 from apps.identity.models.oauth_account import OAuthAccount
 
@@ -45,7 +46,7 @@ class TestOAuthAccountModel:
     @pytest.mark.django_db
     def test_oauth_account_unique_constraint(self, oauth_account):
         """Test unique constraint on provider, provider_account_id."""
-        with pytest.raises(Exception):
+        with pytest.raises(IntegrityError):
             OAuthAccount.objects.create(
                 user=oauth_account.user,
                 provider=oauth_account.provider,

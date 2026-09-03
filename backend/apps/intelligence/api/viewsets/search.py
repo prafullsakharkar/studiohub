@@ -1,3 +1,4 @@
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 from rest_framework.generics import GenericAPIView
@@ -7,8 +8,6 @@ from rest_framework.response import Response
 
 class DummySerializer(serializers.Serializer):
     pass
-from drf_spectacular.types import OpenApiTypes
-
 # For now, intelligence search is a thin proxy that returns the same mock index
 # that the frontend previously built locally. In a real implementation, this would
 # query a search index (e.g., Elasticsearch) that indexes all domain entities.

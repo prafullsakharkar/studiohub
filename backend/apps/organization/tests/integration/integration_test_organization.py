@@ -76,8 +76,8 @@ class OrganizationIntegrationTests(TestCase):
         """Test organization with related memberships."""
         # Arrange
         organization = OrganizationFactory.create()
-        user_factory = pytest.lazy_fixture("user_factory")
-        membership_factory = pytest.lazy_fixture("membership_factory")
+        pytest.lazy_fixture("user_factory")
+        pytest.lazy_fixture("membership_factory")
 
         # Act
         organization_with_memberships = Organization.objects.with_member_count().get(
@@ -233,7 +233,7 @@ class OrganizationSelectorIntegrationTests(TestCase):
         """Test filtering organizations by status."""
         # Arrange
         active_org = OrganizationFactory.create(status="active")
-        inactive_org = OrganizationFactory.create(status="inactive")
+        OrganizationFactory.create(status="inactive")
 
         # Act
         active_organizations = Organization.objects.filter(status="active")

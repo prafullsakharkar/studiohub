@@ -16,6 +16,7 @@ from .base import BasePermission
 warnings.warn(
     "Core: api.permissions.project.IsProjectMember lives in apps.core but is domain-specific. Consider moving it to the project/production domain app and adding a compatibility shim in core.",
     FutureWarning,
+    stacklevel=2,
 )
 
 

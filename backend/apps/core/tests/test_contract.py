@@ -29,7 +29,7 @@ def test_openapi_schema_contains_core_contract_endpoints():
 
     paths = schema.get("paths", {})
     # Normalize paths to ignore trailing slash variance (mockRouter normalizes)
-    normalized = {p.rstrip("/") for p in paths.keys()}
+    normalized = {p.rstrip("/") for p in paths}
 
     # Core contract endpoints that must exist (from docs/api/api-contract.md)
     required = [

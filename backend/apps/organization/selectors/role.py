@@ -25,12 +25,11 @@ class RoleSelector(BaseSelector):
         """
         queryset = Role.objects.all()
 
-        if request and hasattr(request, "user"):
-            # Users can see roles in their organizations
-            if not request.user.is_superuser:
-                queryset = queryset.filter(
-                    organization__in=request.user.organizations.all()
-                )
+        # Users can see roles in their organizations
+        if request and hasattr(request, "user") and not request.user.is_superuser:
+            queryset = queryset.filter(
+                organization__in=request.user.organizations.all()
+            )
 
         queryset = queryset.annotate(
             user_count=Count("role_users", distinct=True),

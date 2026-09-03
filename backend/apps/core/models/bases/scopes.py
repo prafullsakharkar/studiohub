@@ -36,6 +36,7 @@ from django.db import models
 warnings.warn(
     "Core: domain-scoped base models (Sequence/Shot/Task/Review/Project) are deprecated in apps.core and should be moved to a domain package (e.g. apps.production). See docs/architecture/core-refactor-analysis.md for guidance.",
     FutureWarning,
+    stacklevel=2,
 )
 
 

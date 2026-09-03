@@ -8,13 +8,7 @@ Everything else imports the `settings` object.
 
 from __future__ import annotations
 
-from enum import Enum
-
-
-class StrEnum(str, Enum):
-    """StrEnum for Python 3.9 compatibility."""
-
-
+from enum import StrEnum
 from pathlib import Path
 
 from pydantic import Field, computed_field

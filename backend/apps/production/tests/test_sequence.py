@@ -352,9 +352,9 @@ class TestSequenceBulkUpdateArchiveRestore:
     def test_archived_lists_only_soft_deleted_scoped_to_org(self, staff_client):
         org = OrganizationFactory.create()
         other_org = OrganizationFactory.create()
-        active = SequenceFactory.create(organization=org, code="ACT01")
+        SequenceFactory.create(organization=org, code="ACT01")
         archived = SequenceFactory.create(organization=org, code="ARC01")
-        other = SequenceFactory.create(organization=other_org, code="OTH01")
+        SequenceFactory.create(organization=other_org, code="OTH01")
         from apps.core.services.soft_delete import SoftDeleteService
 
         SoftDeleteService.delete(archived)

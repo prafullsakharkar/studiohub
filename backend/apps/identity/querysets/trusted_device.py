@@ -75,10 +75,7 @@ class TrustedDeviceQuerySet(IdentityQuerySet):
         if platform is not None:
             queryset = queryset.filter(platform=platform)
 
-        if order_by:
-            queryset = queryset.order_by(order_by)
-        else:
-            queryset = queryset.order_by("-created_at")
+        queryset = queryset.order_by(order_by) if order_by else queryset.order_by("-created_at")
 
         if offset:
             queryset = queryset[offset:]

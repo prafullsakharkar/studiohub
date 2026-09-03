@@ -5,6 +5,7 @@ Identity user MFA model tests.
 from __future__ import annotations
 
 import pytest
+from django.db import IntegrityError
 
 from apps.identity.models.user_mfa import UserMFA
 
@@ -43,11 +44,10 @@ class TestUserMFAModel:
 
     @pytest.mark.django_db
     def test_user_mfa_unique_constraint(self, user_mfa):
-        """Test unique constraint on user, method."""
-        with pytest.raises(Exception):
+        """Test unique constraint on user (OneToOne relation)."""
+        with pytest.raises(IntegrityError):
             UserMFA.objects.create(
                 user=user_mfa.user,
-                method=user_mfa.method,
             )
 
     @pytest.mark.django_db

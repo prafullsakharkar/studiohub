@@ -18,7 +18,7 @@ class TestUserFilterSet:
         """Test filter by email."""
         from apps.identity.api.filtersets.user import UserFilterSet
 
-        user = UserFactory.create(email="test@example.com")
+        UserFactory.create(email="test@example.com")
 
         filterset = UserFilterSet(
             data={"email": "test@example.com"},

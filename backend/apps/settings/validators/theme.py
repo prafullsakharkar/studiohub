@@ -74,16 +74,13 @@ class ThemeValidator(SettingsBaseValidator):
         ]
         
         for field in color_fields:
-            if field in data:
-                if not self.validate_hex_color(data[field]):
-                    is_valid = False
-        
-        if "font_size" in data:
-            if not self.validate_font_size(data["font_size"]):
+            if field in data and not self.validate_hex_color(data[field]):
                 is_valid = False
         
-        if "spacing_unit" in data:
-            if not self.validate_spacing_unit(data["spacing_unit"]):
-                is_valid = False
+        if "font_size" in data and not self.validate_font_size(data["font_size"]):
+            is_valid = False
+        
+        if "spacing_unit" in data and not self.validate_spacing_unit(data["spacing_unit"]):
+            is_valid = False
         
         return is_valid

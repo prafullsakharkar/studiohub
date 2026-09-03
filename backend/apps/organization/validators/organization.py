@@ -49,7 +49,7 @@ class OrganizationValidator(OrganizationBaseValidator):
             except ValidationError:
                 raise ValidationError(
                     "Enter a valid email address."
-                )
+                ) from None
 
         website = kwargs.get("website")
         if website:
@@ -58,7 +58,7 @@ class OrganizationValidator(OrganizationBaseValidator):
             except ValidationError:
                 raise ValidationError(
                     "Enter a valid URL."
-                )
+                ) from None
 
         cls.validate_code_unique(code)
 

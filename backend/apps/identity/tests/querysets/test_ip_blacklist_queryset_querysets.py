@@ -35,7 +35,7 @@ class TestIPBlacklistQuerySet:
     @pytest.mark.django_db
     def test_is_blacklisted_queryset(self):
         """Test is_blacklisted queryset."""
-        entry = IPBlacklistFactory.create(ip_address="192.168.1.1")
+        IPBlacklistFactory.create(ip_address="192.168.1.1")
 
         assert IPBlacklist.objects.is_blacklisted("192.168.1.1")
 

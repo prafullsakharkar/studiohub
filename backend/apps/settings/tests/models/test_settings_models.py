@@ -224,7 +224,7 @@ class TestLocalizationModel:
     @pytest.mark.django_db
     def test_localization_language_choices(self) -> None:
         """Test language field choices."""
-        valid_languages = [l[0] for l in Localization.LANGUAGE_CHOICES]
+        valid_languages = [lang[0] for lang in Localization.LANGUAGE_CHOICES]
         localization = LocalizationFactory()
         assert localization.language in valid_languages
 

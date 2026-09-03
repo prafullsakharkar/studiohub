@@ -3,7 +3,6 @@ Scheduling serializers.
 """
 from rest_framework import serializers
 
-from apps.organization.models import Organization
 from apps.scheduling.models import CalendarEvent, Holiday, Resource, ResourceLeave, ResourceSchedule
 
 

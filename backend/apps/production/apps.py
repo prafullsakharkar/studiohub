@@ -1,3 +1,5 @@
+import contextlib
+
 from django.apps import AppConfig
 
 
@@ -10,7 +12,5 @@ class ProductionConfig(AppConfig):
 
     def ready(self):
         # Import signals if any
-        try:
+        with contextlib.suppress(ImportError):
             from . import signals  # noqa: F401
-        except ImportError:
-            pass

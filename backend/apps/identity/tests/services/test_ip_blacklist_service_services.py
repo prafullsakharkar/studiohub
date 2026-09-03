@@ -61,7 +61,7 @@ class TestIPBlacklistService:
     @pytest.mark.django_db
     def test_is_ip_blacklisted_success(self):
         """Test successful IP blacklist check."""
-        entry = IPBlacklistFactory.create(ip_address="192.168.1.1")
+        IPBlacklistFactory.create(ip_address="192.168.1.1")
 
         with patch("apps.identity.services.ip_blacklist.is_ip_blacklisted") as mock_check:
             mock_check.return_value = True

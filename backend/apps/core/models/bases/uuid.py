@@ -26,10 +26,10 @@ class UUIDModel(models.Model):
         help_text="Universally unique identifier.",
     )
 
+    class Meta:
+        abstract = True
+
     @property
     def uuid(self) -> uuid.UUID:
         """Return the UUID of the model (alias for id)."""
         return self.id
-
-    class Meta:
-        abstract = True

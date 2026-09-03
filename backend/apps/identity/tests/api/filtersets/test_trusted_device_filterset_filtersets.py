@@ -22,7 +22,7 @@ class TestTrustedDeviceFilterSet:
         from apps.identity.api.filtersets.user_preference import TrustedDeviceFilterSet
 
         user = UserFactory.create()
-        device = TrustedDeviceFactory.create(user=user)
+        TrustedDeviceFactory.create(user=user)
 
         filterset = TrustedDeviceFilterSet(
             data={"user": user.id},
@@ -55,7 +55,7 @@ class TestTrustedDeviceFilterSet:
         """Test filter by ip_address."""
         from apps.identity.api.filtersets.user_preference import TrustedDeviceFilterSet
 
-        device = TrustedDeviceFactory.create(ip_address="192.168.1.1")
+        TrustedDeviceFactory.create(ip_address="192.168.1.1")
 
         filterset = TrustedDeviceFilterSet(
             data={"ip_address": "192.168.1.1"},

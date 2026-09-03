@@ -191,7 +191,7 @@ class UserViewSet(
             raise_exception=True,
         )
 
-        user = self.password_service_class.change_password(
+        self.password_service_class.change_password(
             user=request.user,
             password=serializer.validated_data["new_password"],
         )

@@ -476,10 +476,6 @@ class AuditSignalHandler(BaseSignalHandler):
             instance: The model instance
             **kwargs: Additional keyword arguments
         """
-        from django.contrib.auth import get_user_model
-
-        User = get_user_model()
-
         # Get current user from thread-local storage
         try:
             from apps.core.middleware import get_current_user
@@ -489,28 +485,34 @@ class AuditSignalHandler(BaseSignalHandler):
             user = None
 
         # Handle soft delete models
-        if hasattr(instance, "is_deleted") and hasattr(instance, "status"):
-            if instance.is_deleted and not instance.pk:
-                # New soft delete - set deleted_by
-                if user and hasattr(instance, "deleted_by"):
-                    instance.deleted_by = user
-            elif instance.is_deleted and instance.pk:
-                # Existing soft delete - update deleted_at
-                if hasattr(instance, "deleted_at"):
-                    from django.utils import timezone
+        if (
+            hasattr(instance, "is_deleted")
+            and hasattr(instance, "status")
+            and instance.is_deleted
+            and not instance.pk
+        ):
+            # New soft delete - set deleted_by
+            if user and hasattr(instance, "deleted_by"):
+                instance.deleted_by = user
+        elif (
+            hasattr(instance, "is_deleted")
+            and instance.is_deleted
+            and instance.pk
+            and hasattr(instance, "deleted_at")
+        ):
+            # Existing soft delete - update deleted_at
+            from django.utils import timezone
 
-                    instance.deleted_at = timezone.now()
+            instance.deleted_at = timezone.now()
 
         # Handle audit fields
-        if hasattr(instance, "created_by") and not instance.pk:
+        if hasattr(instance, "created_by") and not instance.pk and user and not instance.created_id:
             # New object - set created_by
-            if user and not instance.created_id:
-                instance.created_by = user
+            instance.created_by = user
 
-        if hasattr(instance, "updated_by"):
-            # Update updated_by on every save
-            if user and not instance.updated_id == user.id:
-                instance.updated_by = user
+        # Update updated_by on every save
+        if hasattr(instance, "updated_by") and user and instance.updated_id != user.id:
+            instance.updated_by = user
 
 
 class CacheInvalidationSignalHandler(BaseSignalHandler):

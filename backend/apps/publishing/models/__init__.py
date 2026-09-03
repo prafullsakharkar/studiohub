@@ -3,10 +3,7 @@ PublishItem model for DCC publish validation.
 """
 from __future__ import annotations
 
-import uuid
-
 from django.db import models
-from django.utils import timezone
 
 from apps.core.models.bases.entity import EntityModel
 from apps.organization.models.organization import Organization

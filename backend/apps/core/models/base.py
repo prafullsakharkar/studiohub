@@ -45,6 +45,7 @@ class BaseModel(
     warnings.warn(
         "apps.core.models.base.BaseModel is a convenience aggregate. Prefer composing lightweight mixins (UUIDModel, TimeStampedModel, SoftDeleteModel, AuditModel, etc.) in new code.",
         FutureWarning,
+        stacklevel=2,
     )
 
     class Meta:

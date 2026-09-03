@@ -98,10 +98,7 @@ class MFAPolicyService:
         if not cls.is_required(user=user):
             return False
 
-        if trusted_device and cls.can_trust_device():
-            return False
-
-        return True
+        return not (trusted_device and cls.can_trust_device())
 
     @classmethod
     def can_disable(

@@ -1,7 +1,4 @@
 from .base import BaseFilterSet
-
-# Alias for backward compatibility
-BaseFilter = BaseFilterSet
 from .date import DateRangeFilterMixin
 from .metadata import MetadataFilterMixin
 from .ordering import OrderingFilterMixin
@@ -10,6 +7,9 @@ from .ownership import OwnershipFilterMixin
 from .search import SearchFilterMixin
 from .soft_delete import SoftDeleteFilterMixin
 from .status import StatusFilterMixin
+
+# Alias for backward compatibility
+BaseFilter = BaseFilterSet
 
 __all__ = [
     "BaseFilter",

@@ -153,7 +153,7 @@ class OrganizationManagerPerformanceTests(TestCase):
         # Act
         start_time = time.time()
         for i in range(100):
-            org = Organization.objects.lookup(f"ORG{i:03d}").first()
+            Organization.objects.lookup(f"ORG{i:03d}").first()
         end_time = time.time()
 
         # Assert

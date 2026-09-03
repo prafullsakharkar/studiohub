@@ -1,3 +1,4 @@
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 from rest_framework.generics import GenericAPIView
@@ -7,8 +8,6 @@ from rest_framework.response import Response
 
 class DummySerializer(serializers.Serializer):
     pass
-from drf_spectacular.types import OpenApiTypes
-
 # Stub knowledge documents — mirrors frontend mockKnowledgeDocuments
 MOCK_KNOWLEDGE = [
     {
@@ -116,5 +115,7 @@ class IntelligenceKnowledgeLinkEntityView(GenericAPIView):
         doc = next((d for d in MOCK_KNOWLEDGE if d["id"] == pk), None)
         if not doc:
             return Response({"detail": "Not found."}, status=404)
-        doc["linked_entities"] = [l for l in doc.get("linked_entities", []) if l.get("id") != link_id]
+        doc["linked_entities"] = [
+            e for e in doc.get("linked_entities", []) if e.get("id") != link_id
+        ]
         return Response(doc)

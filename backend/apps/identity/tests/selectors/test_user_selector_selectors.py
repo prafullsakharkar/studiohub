@@ -76,7 +76,7 @@ class TestUserSelector:
     def test_get_user_with_profile(self):
         """Test get_user_with_profile method."""
         user = UserFactory.create()
-        profile = ProfileFactory.create(user=user)
+        ProfileFactory.create(user=user)
         retrieved_user = User.objects.get_user_with_profile(user.id)
         assert retrieved_user.id == user.id
         assert hasattr(retrieved_user, "profile")

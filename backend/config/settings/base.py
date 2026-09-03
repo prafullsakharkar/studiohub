@@ -6,6 +6,8 @@ Environment-specific settings (local, docker, production, testing)
 should override values defined here.
 """
 
+# ruff: noqa: F401  -- settings aggregator: components are re-exported via `from .base import *`
+
 # ------------------------------------------------------------------------------
 # Components
 # ------------------------------------------------------------------------------
@@ -29,13 +31,12 @@ from .components.celery import (
 from .components.cors import (
     CORS_ALLOW_ALL_ORIGINS,
     CORS_ALLOW_CREDENTIALS,
-    CORS_ALLOWED_ORIGINS,
     CORS_ALLOW_HEADERS,
+    CORS_ALLOWED_ORIGINS,
     CSRF_TRUSTED_ORIGINS,
 )
 from .components.database import DATABASES
 from .components.drf import REST_FRAMEWORK, SPECTACULAR_SETTINGS
-from .components.jwt import SIMPLE_JWT
 from .components.internationalization import (
     LANGUAGE_CODE,
     LOCALE_PATHS,
@@ -43,7 +44,8 @@ from .components.internationalization import (
     USE_I18N,
     USE_TZ,
 )
-from .components.logging import LOGGING, LOGGING_CONFIG
+from .components.jwt import SIMPLE_JWT
+from .components.logging import LOGGING_CONFIG
 from .components.middleware import MIDDLEWARE
 from .components.security import (
     CSRF_COOKIE_HTTPONLY,

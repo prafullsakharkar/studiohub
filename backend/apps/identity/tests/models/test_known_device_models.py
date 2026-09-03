@@ -5,6 +5,7 @@ Identity known device model tests.
 from __future__ import annotations
 
 import pytest
+from django.db import IntegrityError
 
 from apps.identity.models.known_device import KnownDevice
 
@@ -45,7 +46,7 @@ class TestKnownDeviceModel:
     @pytest.mark.django_db
     def test_known_device_unique_constraint(self, known_device):
         """Test unique constraint on user, fingerprint."""
-        with pytest.raises(Exception):
+        with pytest.raises(IntegrityError):
             KnownDevice.objects.create(
                 user=known_device.user,
                 fingerprint=known_device.fingerprint,

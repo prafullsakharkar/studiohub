@@ -99,10 +99,7 @@ class SecretsManager:
     def _is_secret_key(self, key: str) -> bool:
         """Check if a key name suggests it contains a secret."""
         key_lower = key.lower()
-        for pattern in self.SECRET_PATTERNS:
-            if re.search(pattern, key_lower):
-                return True
-        return False
+        return any(re.search(pattern, key_lower) for pattern in self.SECRET_PATTERNS)
     
     def validate_secret_strength(self, secret: str, min_length: int = 16) -> dict:
         """

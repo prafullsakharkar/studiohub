@@ -25,10 +25,9 @@ class PersonalAccessTokenSelector(BaseSelector):
         """
         queryset = PersonalAccessToken.objects.all()
 
-        if request and hasattr(request, "user"):
-            # Users can see their own tokens
-            if not request.user.is_superuser:
-                queryset = queryset.filter(user=request.user)
+        # Users can see their own tokens
+        if request and hasattr(request, "user") and not request.user.is_superuser:
+            queryset = queryset.filter(user=request.user)
 
         return queryset
 

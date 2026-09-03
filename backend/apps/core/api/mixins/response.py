@@ -88,7 +88,6 @@ class ResponseEnvelopeMixin(ResponseMixin):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
         return self.success_response(
             data=serializer.data,
             message=f"{self.resource_name} created successfully.",

@@ -21,7 +21,7 @@ class TestOrganizationFilterSet:
     def test_filter_by_code(self):
         """Test filtering by code."""
         org1 = OrganizationFactory.create(code="ORG001")
-        org2 = OrganizationFactory.create(code="ORG002")
+        OrganizationFactory.create(code="ORG002")
 
         filterset = OrganizationFilterSet(
             data={"code": "ORG001"},
@@ -38,7 +38,7 @@ class TestOrganizationFilterSet:
     def test_filter_by_name(self):
         """Test filtering by name."""
         org1 = OrganizationFactory.create(name="Test Organization 1")
-        org2 = OrganizationFactory.create(name="Another Organization")
+        OrganizationFactory.create(name="Another Organization")
 
         filterset = OrganizationFilterSet(
             data={"name": "Test Organization"},
@@ -55,7 +55,7 @@ class TestOrganizationFilterSet:
     def test_filter_by_organization_type(self):
         """Test filtering by organization type."""
         org1 = OrganizationFactory.create(organization_type="studio")
-        org2 = OrganizationFactory.create(organization_type="client")
+        OrganizationFactory.create(organization_type="client")
 
         filterset = OrganizationFilterSet(
             data={"organization_type": "studio"},
@@ -72,7 +72,7 @@ class TestOrganizationFilterSet:
     def test_filter_by_country(self):
         """Test filtering by country."""
         org1 = OrganizationFactory.create(country="US")
-        org2 = OrganizationFactory.create(country="UK")
+        OrganizationFactory.create(country="UK")
 
         filterset = OrganizationFilterSet(
             data={"country": "US"},
@@ -89,7 +89,7 @@ class TestOrganizationFilterSet:
     def test_filter_by_language(self):
         """Test filtering by language."""
         org1 = OrganizationFactory.create(language="en")
-        org2 = OrganizationFactory.create(language="fr")
+        OrganizationFactory.create(language="fr")
 
         filterset = OrganizationFilterSet(
             data={"language": "en"},
@@ -106,7 +106,7 @@ class TestOrganizationFilterSet:
     def test_filter_by_status(self):
         """Test filtering by status."""
         org1 = OrganizationFactory.create(status="active")
-        org2 = OrganizationFactory.create(status="inactive")
+        OrganizationFactory.create(status="inactive")
 
         filterset = OrganizationFilterSet(
             data={"status": "active"},
@@ -123,7 +123,7 @@ class TestOrganizationFilterSet:
     def test_search_filter(self):
         """Test search filter."""
         org1 = OrganizationFactory.create(name="Test Organization", code="ORG001")
-        org2 = OrganizationFactory.create(name="Another Organization", code="ORG002")
+        OrganizationFactory.create(name="Another Organization", code="ORG002")
 
         filterset = OrganizationFilterSet(
             data={"search": "Test Organization"},
@@ -210,10 +210,10 @@ class TestOrganizationFilterSet:
         org1 = OrganizationFactory.create(
             code="ORG001", name="Test Organization", organization_type="studio"
         )
-        org2 = OrganizationFactory.create(
+        OrganizationFactory.create(
             code="ORG002", name="Test Organization", organization_type="client"
         )
-        org3 = OrganizationFactory.create(
+        OrganizationFactory.create(
             code="ORG003", name="Another Organization", organization_type="studio"
         )
 
@@ -280,8 +280,8 @@ class TestOrganizationFilterSet:
     @pytest.mark.django_db
     def test_partial_name_match(self):
         """Test partial name matching."""
-        org1 = OrganizationFactory.create(name="Test Organization")
-        org2 = OrganizationFactory.create(name="Another Organization")
+        OrganizationFactory.create(name="Test Organization")
+        OrganizationFactory.create(name="Another Organization")
 
         filterset = OrganizationFilterSet(
             data={"name": "Organization"},
@@ -297,7 +297,7 @@ class TestOrganizationFilterSet:
     def test_case_insensitive_search(self):
         """Test case insensitive search."""
         org1 = OrganizationFactory.create(name="Test Organization")
-        org2 = OrganizationFactory.create(name="Another Organization")
+        OrganizationFactory.create(name="Another Organization")
 
         filterset = OrganizationFilterSet(
             data={"name": "test organization"},

@@ -59,8 +59,5 @@ class TaskFilterSet(BaseFilterSet):
         if not value or value == "ALL":
             return queryset
         # Handle string boolean
-        if isinstance(value, str):
-            val = value.lower() in ("true", "1", "yes")
-        else:
-            val = bool(value)
+        val = value.lower() in ("true", "1", "yes") if isinstance(value, str) else bool(value)
         return queryset.filter(is_archived=val)
