@@ -179,6 +179,8 @@ docker-volumes/
 
 celerybeat.pid
 celerybeat-schedule
+celerybeat-schedule-shm
+celerybeat-schedule-wal
 
 # ============================================================
 
@@ -320,6 +322,7 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+.playwright-mcp/
 
 # ============================================================
 
