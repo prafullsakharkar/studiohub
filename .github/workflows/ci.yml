@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
 
 concurrency:
@@ -60,7 +60,7 @@ jobs:
         run: uv run python manage.py check
 
       - name: Run tests
-        run: uv run pytest --no-cov -q
+        run: uv run pytest -q
 
   frontend:
     name: Frontend (tsc + vitest)

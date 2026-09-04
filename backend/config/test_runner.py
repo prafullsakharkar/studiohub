@@ -16,7 +16,7 @@ class PreserveDatabaseTestRunner(DiscoverRunner):
     allowing tests to run against a pre-created database.
 
     Usage:
-    1. Create the test database manually: createdb test_cricketiq
+    1. Create the test database manually: createdb test_studiohub
     2. Run migrations on the test database: python manage.py migrate --database=default
     3. Run tests with: DJANGO_SETTINGS_MODULE=config.settings.testing pytest or manage.py test
     """
@@ -32,7 +32,7 @@ class PreserveDatabaseTestRunner(DiscoverRunner):
             if not cursor.fetchone():
                 raise RuntimeError(
                     f"Test database '{db_name}' does not exist. "
-                    "Please create it first with: createdb {db_name}"
+                    f"Please create it first with: createdb {db_name}"
                 )
 
         # Return None to skip the default database setup

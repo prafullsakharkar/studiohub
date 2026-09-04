@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Fix lint issues in the CricketOS Enterprise Frontend
+# Fix lint issues in the StudioHub Frontend
 
 cd /home/prafull.sakharkar/Repository/github/studiohub/frontend
 

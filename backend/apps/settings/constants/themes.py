@@ -18,10 +18,10 @@ class ThemeCodes:
     DEFAULT_CUSTOM = "default_custom"
     
     # Predefined themes
-    CRICKET_BLUE = "cricket_blue"
-    CRICKET_GREEN = "cricket_green"
-    CRICKET_RED = "cricket_red"
-    CRICKET_BLACK = "cricket_black"
+    STUDIO_BLUE = "studio_blue"
+    STUDIO_GREEN = "studio_green"
+    STUDIO_RED = "studio_red"
+    STUDIO_BLACK = "studio_black"
     
     # Custom themes
     CUSTOM_1 = "custom_1"
@@ -32,10 +32,10 @@ class ThemeCodes:
         DEFAULT_LIGHT,
         DEFAULT_DARK,
         DEFAULT_CUSTOM,
-        CRICKET_BLUE,
-        CRICKET_GREEN,
-        CRICKET_RED,
-        CRICKET_BLACK,
+        STUDIO_BLUE,
+        STUDIO_GREEN,
+        STUDIO_RED,
+        STUDIO_BLACK,
         CUSTOM_1,
         CUSTOM_2,
         CUSTOM_3,

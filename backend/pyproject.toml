@@ -2,7 +2,6 @@
 name = "studiohub-backend"
 version = "0.1.0"
 description = "Enterprise VFX/CG Studio Management Platform"
-readme = "README.md"
 requires-python = ">=3.14"
 
 authors = [{ name = "Prafull Sakharkar" }]
@@ -151,6 +150,11 @@ filterwarnings = [
 source = ["apps"]
 
 omit = ["*/migrations/*", "*/tests/*"]
+
+[tool.coverage.report]
+
+fail_under = 72
+show_missing = true
 
 [tool.hatch.build.targets.wheel]
 

@@ -2,8 +2,6 @@
 Testing settings.
 """
 
-import os
-
 from .base import *
 
 # Test settings must never run with DEBUG on: ``debug_toolbar`` is only
@@ -30,20 +28,10 @@ CELERY_TASK_ALWAYS_EAGER = True
 
 CELERY_TASK_EAGER_PROPAGATES = True
 
-# Override database for testing to use a pre-created test database
-# This allows tests to run without requiring CREATEDB privilege
-TEST_DB_NAME = os.environ.get(
-    "TEST_DB_NAME", f"test_{os.environ.get('DB_NAME', 'cricket_iq')}"
-)
-
-DATABASES["default"] = {
-    "ENGINE": "django.db.backends.postgresql",
-    "NAME": os.environ.get("DB_NAME", "cricketiq"),
-    "USER": os.environ.get("DB_USER", "user_iq"),
-    "PASSWORD": os.environ.get("DB_PASSWORD", "cricket1234"),
-    "HOST": os.environ.get("DB_HOST", "192.168.1.109"),
-    "PORT": os.environ.get("DB_PORT", "5439"),
-}
+# Database configuration is inherited from base settings
+# (components/database.py), which resolves DB_* via config.env.
+# Real environment variables take precedence over .env files, so CI
+# can override the database without changing code.
 
 # Use a custom test database that must be pre-created
 # The test runner will run tests against this database directly
