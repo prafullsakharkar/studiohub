@@ -89,6 +89,7 @@ class Command(BaseCommand):
             activities = self._seed_activities(org, users)
             deliveries = self._seed_deliveries(org, projects, users)
             publishes = self._seed_publishes(org, projects, users)
+            destinations = self._seed_destinations(org)
             pipeline_settings = self._seed_pipeline_settings()
 
         self.stdout.write(self.style.SUCCESS("Seed complete."))
@@ -100,7 +101,7 @@ class Command(BaseCommand):
         self.stdout.write(f"  Reviews: {len(reviews)}  Playlists: {len(playlists)}  Media: {len(media)}  Workflows: {len(workflows)}")
         self.stdout.write(f"  Clients: {len(clients)}  Vendors: {len(vendors)}  People: {len(people)}")
         self.stdout.write(f"  Activities: {activities}")
-        self.stdout.write(f"  Deliveries: {deliveries}  Publishes: {publishes}  Pipeline Settings: {pipeline_settings}")
+        self.stdout.write(f"  Deliveries: {deliveries}  Publishes: {publishes}  Destinations: {destinations}  Pipeline Settings: {pipeline_settings}")
         self.stdout.write(self.style.NOTICE("  Default password for seeded users: password123"))
 
     def _reset(self):
@@ -1145,6 +1146,87 @@ class Command(BaseCommand):
                     "status": spec["status"],
                     "created_by": actor,
                 },
+            )
+            if was_created:
+                created += 1
+
+        return created
+
+    def _seed_destinations(self, org):
+        """
+        Seed publish + delivery destinations (idempotent).
+
+        Static reference data presented as dropdown options in creation
+        flows. Idempotent via get_or_create keyed on (organization, name).
+        """
+        from apps.deliveries.models import DeliveryDestination
+        from apps.publishing.models import PublishDestination
+
+        created = 0
+
+        publish_specs = [
+            {
+                "name": "Primary Storage Cluster",
+                "destination_type": PublishDestination.TYPE_STORAGE_CLUSTER,
+                "path": "/mnt/storage/vfx_prod/publishes",
+                "protocol": PublishDestination.PROTOCOL_NFS,
+                "is_default": True,
+                "region": "Local On-Prem",
+            },
+            {
+                "name": "Cloud Global Cache",
+                "destination_type": PublishDestination.TYPE_CLOUD_S3,
+                "path": "s3://studiohub-vfx-global-publishes",
+                "protocol": PublishDestination.PROTOCOL_S3,
+                "is_default": False,
+                "region": "ap-northeast-1",
+            },
+            {
+                "name": "Daily Review Repository",
+                "destination_type": PublishDestination.TYPE_REVIEW_REPO,
+                "path": "/mnt/editorial/dailies_h264",
+                "protocol": PublishDestination.PROTOCOL_SMB,
+                "is_default": False,
+                "region": "Editorial Wing",
+            },
+        ]
+
+        for spec in publish_specs:
+            _, was_created = PublishDestination.objects.get_or_create(
+                organization=org,
+                name=spec["name"],
+                defaults=spec,
+            )
+            if was_created:
+                created += 1
+
+        delivery_specs = [
+            {
+                "name": "Aspera Point-to-Point",
+                "destination_type": DeliveryDestination.TYPE_ASPERA,
+                "endpoint": "aspera.example.com:33001",
+                "credentials_configured": False,
+                "transfer_rate_mbps": 850,
+                "storage_region": "US-West",
+                "port": 33001,
+                "target_directory": "/incoming/vfx/turnovers",
+            },
+            {
+                "name": "S3 Master Delivery Bucket",
+                "destination_type": DeliveryDestination.TYPE_S3,
+                "endpoint": "s3://studiohub-vfx-masters/deliveries",
+                "credentials_configured": False,
+                "transfer_rate_mbps": 1200,
+                "storage_region": "us-east-1",
+                "target_directory": "/deliveries",
+            },
+        ]
+
+        for spec in delivery_specs:
+            _, was_created = DeliveryDestination.objects.get_or_create(
+                organization=org,
+                name=spec["name"],
+                defaults=spec,
             )
             if was_created:
                 created += 1

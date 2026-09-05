@@ -297,3 +297,111 @@ class DeliveryVersionRef(models.Model):
     
     def __str__(self):
         return f"{self.delivery.code} - {self.version_number}"
+
+
+class DeliveryDestination(EntityModel):
+    """
+    Delivery destination for client turnover routing.
+
+    Static reference data curated per organization (Aspera endpoints,
+    S3 buckets, SFTP servers, archives). Presented as dropdown options
+    in delivery creation flows. Credentials themselves are never stored
+    here — only a flag indicating they are configured elsewhere.
+    """
+
+    TYPE_ASPERA = "Aspera Connect"
+    TYPE_SIGNIANT = "Signiant Media Shuttle"
+    TYPE_S3 = "AWS S3 Bucket"
+    TYPE_FRAMEIO = "Frame.io Enterprise"
+    TYPE_LTO = "LTO Tape Archive"
+    TYPE_SFTP = "Client SFTP"
+    TYPE_HDD = "Hard Drive Ingest"
+
+    TYPE_CHOICES = [
+        (TYPE_ASPERA, "Aspera Connect"),
+        (TYPE_SIGNIANT, "Signiant Media Shuttle"),
+        (TYPE_S3, "AWS S3 Bucket"),
+        (TYPE_FRAMEIO, "Frame.io Enterprise"),
+        (TYPE_LTO, "LTO Tape Archive"),
+        (TYPE_SFTP, "Client SFTP"),
+        (TYPE_HDD, "Hard Drive Ingest"),
+    ]
+
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+        related_name="delivery_destinations",
+        db_index=True,
+        help_text="Organization context",
+    )
+
+    name = models.CharField(
+        max_length=255,
+        help_text="Display name",
+    )
+
+    destination_type = models.CharField(
+        max_length=30,
+        choices=TYPE_CHOICES,
+        db_index=True,
+        help_text="Destination type",
+    )
+
+    endpoint = models.CharField(
+        max_length=500,
+        help_text="Endpoint address, URL, or bucket",
+    )
+
+    credentials_configured = models.BooleanField(
+        default=False,
+        help_text="Whether transfer credentials are configured",
+    )
+
+    transfer_rate_mbps = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Expected transfer rate in Mbps",
+    )
+
+    storage_region = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Storage region description",
+    )
+
+    port = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Connection port, if applicable",
+    )
+
+    target_directory = models.CharField(
+        max_length=500,
+        blank=True,
+        help_text="Target directory on the remote end",
+    )
+
+    is_default = models.BooleanField(
+        default=False,
+        help_text="Default destination for new deliveries",
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this destination is available",
+    )
+
+    class Meta:
+        db_table = "deliveries_destination"
+        ordering = ("name",)
+        verbose_name = "Delivery Destination"
+        verbose_name_plural = "Delivery Destinations"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "name"],
+                name="uniq_delivery_destination_name_per_org",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.destination_type})"

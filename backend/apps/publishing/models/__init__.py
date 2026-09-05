@@ -302,3 +302,107 @@ class PublishValidationRule(models.Model):
     
     def __str__(self):
         return f"{self.name} ({self.rule_type})"
+
+
+class PublishDestination(EntityModel):
+    """
+    Publish destination for DCC publish output routing.
+
+    Static reference data curated per organization (storage clusters,
+    cloud buckets, client ingest points). Presented as dropdown options
+    in publish creation flows.
+    """
+
+    TYPE_STORAGE_CLUSTER = "Storage Cluster"
+    TYPE_CLIENT_INGEST = "Client Delivery Ingest"
+    TYPE_RENDER_FARM = "Render Farm Cache"
+    TYPE_CLOUD_S3 = "Cloud S3 Bucket"
+    TYPE_VENDOR_INGEST = "Vendor Ingest"
+    TYPE_REVIEW_REPO = "Daily Review Repo"
+    TYPE_USD_CACHE = "USD Asset Cache"
+
+    TYPE_CHOICES = [
+        (TYPE_STORAGE_CLUSTER, "Storage Cluster"),
+        (TYPE_CLIENT_INGEST, "Client Delivery Ingest"),
+        (TYPE_RENDER_FARM, "Render Farm Cache"),
+        (TYPE_CLOUD_S3, "Cloud S3 Bucket"),
+        (TYPE_VENDOR_INGEST, "Vendor Ingest"),
+        (TYPE_REVIEW_REPO, "Daily Review Repo"),
+        (TYPE_USD_CACHE, "USD Asset Cache"),
+    ]
+
+    PROTOCOL_NFS = "NFS"
+    PROTOCOL_SMB = "SMB"
+    PROTOCOL_S3 = "S3"
+    PROTOCOL_ASPERA = "Aspera"
+    PROTOCOL_LOCAL = "Local POSIX"
+
+    PROTOCOL_CHOICES = [
+        (PROTOCOL_NFS, "NFS"),
+        (PROTOCOL_SMB, "SMB"),
+        (PROTOCOL_S3, "S3"),
+        (PROTOCOL_ASPERA, "Aspera"),
+        (PROTOCOL_LOCAL, "Local POSIX"),
+    ]
+
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+        related_name="publish_destinations",
+        db_index=True,
+        help_text="Organization context",
+    )
+
+    name = models.CharField(
+        max_length=255,
+        help_text="Display name",
+    )
+
+    destination_type = models.CharField(
+        max_length=30,
+        choices=TYPE_CHOICES,
+        db_index=True,
+        help_text="Destination type",
+    )
+
+    path = models.CharField(
+        max_length=500,
+        help_text="Storage path or URI",
+    )
+
+    protocol = models.CharField(
+        max_length=20,
+        choices=PROTOCOL_CHOICES,
+        help_text="Transfer protocol",
+    )
+
+    is_default = models.BooleanField(
+        default=False,
+        help_text="Default destination for new publishes",
+    )
+
+    region = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Region or location description",
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this destination is available",
+    )
+
+    class Meta:
+        db_table = "publishing_destination"
+        ordering = ("name",)
+        verbose_name = "Publish Destination"
+        verbose_name_plural = "Publish Destinations"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "name"],
+                name="uniq_publish_destination_name_per_org",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.protocol})"
