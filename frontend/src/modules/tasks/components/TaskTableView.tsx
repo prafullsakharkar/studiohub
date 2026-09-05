@@ -5,8 +5,6 @@ import { ProductionStatus, PriorityLevel, Department } from '@/types/common';
 import { StatusBadge, PriorityBadge } from '@/shared/components/StatusBadge';
 import { useTimerStore } from '@/shared/stores/useTimerStore';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
-import { mockUsers } from '@/mocks/db/identity/users';
-import { mockTeams } from '@/mocks/db/organization/organization';
 import {
   Play,
   Pause,

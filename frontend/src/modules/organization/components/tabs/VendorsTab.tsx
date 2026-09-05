@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
 import { Cpu, Plus, Search, ShieldCheck, Wifi, Star } from 'lucide-react';
 import { Organization, Vendor } from '@/types/organization';
-import { mockVendors } from '@/mocks/db/organization/organization';
+import { useVendors } from '@/modules/organization/hooks/useOrganizationData';
 import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
 
 export const VendorsTab: React.FC<{ org: Organization }> = ({ org }) => {
-  const [vendors, setVendors] = useState<Vendor[]>(mockVendors);
+  const { data: vendorsData, isLoading } = useVendors();
+  const vendors: Vendor[] = (vendorsData as any)?.results ?? vendorsData ?? [];
   const [search, setSearch] = useState('');
 
   const filtered = vendors.filter(
     (v) =>
-      v.name.toLowerCase().includes(search.toLowerCase()) ||
-      v.code.toLowerCase().includes(search.toLowerCase()) ||
-      v.specialization.toLowerCase().includes(search.toLowerCase())
+      (v.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (v.code || '').toLowerCase().includes(search.toLowerCase()) ||
+      (v.specialization || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -47,6 +48,11 @@ export const VendorsTab: React.FC<{ org: Organization }> = ({ org }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {!isLoading && filtered.length === 0 && (
+          <div className="col-span-full py-8 text-center text-xs text-slate-500">
+            No vendor partners found.
+          </div>
+        )}
         {filtered.map((vendor) => (
           <div
             key={vendor.id}

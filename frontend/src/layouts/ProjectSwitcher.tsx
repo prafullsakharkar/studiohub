@@ -14,7 +14,7 @@ import {
   Radio,
   ExternalLink,
 } from 'lucide-react';
-import type { Project } from '@/mocks/db/production/projects';
+import type { Project } from '@/types/projects';
 import { useProjects } from '@/modules/production/hooks/useProjects';
 import { useProductionStore, useActiveProject } from '@/core/production/useProductionStore';
 import { StatusBadge } from '@/shared/components/StatusBadge';

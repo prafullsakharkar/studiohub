@@ -4,7 +4,6 @@ import {
   DeliveryDestination,
   DeliveryVersionRef,
 } from '@/types/deliveries';
-import { mockDeliveryDestinations } from '@/mocks/db/production/deliveries';
 import {
   BackendDeliveryDetail,
   BackendDeliveryList,
@@ -44,7 +43,10 @@ class DeliveryService {
   }
 
   async getDestinations(): Promise<DeliveryDestination[]> {
-    return [...mockDeliveryDestinations];
+    const response = await this.apiClient.get<Paginated<DeliveryDestination>>('/deliveries/destinations/', {
+      params: { page_size: 100 },
+    });
+    return Array.isArray(response) ? response : response?.results ?? [];
   }
 
   async createDelivery(data: Partial<DeliveryPackage>): Promise<DeliveryPackage> {

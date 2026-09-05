@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTimelogs, useTimelogMutations } from '../hooks/useTimelogs';
 import { useTasks } from '../hooks/useTasks';
 import { useProjects } from '@/modules/production/hooks/useProjects';
-import { mockUsers } from '@/mocks/db/identity/users';
+import { usePeople } from '@/modules/organization/hooks/useOrganizationData';
 import { Timelog, Task } from '@/types/tasks';
 import { Button } from '@/shared/components/Button';
 import { useTimerStore } from '@/shared/stores/useTimerStore';
@@ -31,6 +31,8 @@ import {
 
 export const TimelogsPage: React.FC = () => {
   const { data: projectsData } = useProjects();
+  const { data: peopleData } = usePeople();
+  const logPeople: any[] = (peopleData as any)?.results ?? peopleData ?? [];
   const { data: tasksData } = useTasks();
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>('ALL');
@@ -236,7 +238,7 @@ export const TimelogsPage: React.FC = () => {
             className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
           >
             <option value="ALL">All Artists</option>
-            {mockUsers.map((u) => (
+            {logPeople.map((u: any) => (
               <option key={u.id} value={u.id}>
                 {u.full_name}
               </option>

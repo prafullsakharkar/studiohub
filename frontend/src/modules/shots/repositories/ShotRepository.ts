@@ -1,6 +1,6 @@
 import { BaseRepository } from '@/core/repository/BaseRepository';
 import { IShotRepository } from './IShotRepository';
-import { Shot } from '@/mocks/db/production/shots';
+import { Shot } from '@/types/shots';
 import { IApiClient } from '@/api/client/types';
 import { apiClient } from '@/api/client/ApiClient';
 

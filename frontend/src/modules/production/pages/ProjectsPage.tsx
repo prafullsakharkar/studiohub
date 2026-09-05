@@ -11,7 +11,7 @@ import { Modal } from '@/shared/components/Modal';
 import { Can } from '@/core/permissions/Can';
 import { Plus, Film, Calendar, Clapperboard, Layers, ExternalLink, Sparkles, Building, Briefcase } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
 import { useWorkspaceStore } from '@/core/workspace/useWorkspaceStore';
 import { useOrganization } from '@/core/organization/useOrganization';
 import { OrganizationSwitcher } from '@/layouts/OrganizationSwitcher';

@@ -18,7 +18,7 @@ import {
   Sparkles,
   ExternalLink,
 } from 'lucide-react';
-import { Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
 import { Button } from '@/shared/components/Button';
 import { Badge } from '@/shared/components/Badge';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';

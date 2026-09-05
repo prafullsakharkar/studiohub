@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Asset, AssetCategory, AssetSoftware } from '@/mocks/db/assets/assets';
+import { Asset, AssetCategory, AssetSoftware } from '@/types/assets';
 import { useAssetMutations } from '../hooks/useAssetMutations';
 import { Modal } from '@/shared/components/Modal';
 import { Button } from '@/shared/components/Button';

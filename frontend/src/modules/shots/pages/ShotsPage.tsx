@@ -31,7 +31,7 @@ import {
   ChevronRight,
   Filter,
 } from 'lucide-react';
-import { Shot } from '@/mocks/db/production/shots';
+import { Shot } from '@/types/shots';
 import { ProductionStatus } from '@/types/common';
 import { Link } from 'react-router-dom';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';

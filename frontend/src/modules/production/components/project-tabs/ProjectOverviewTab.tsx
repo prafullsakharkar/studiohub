@@ -3,28 +3,22 @@ import {
   Film,
   Building,
   Layers,
-  User,
   Users,
-  Briefcase,
   Calendar,
   Clock,
   DollarSign,
-  CheckCircle2,
-  AlertCircle,
   ExternalLink,
   ChevronRight,
   Sparkles,
   MapPin,
-  Flame,
   Clapperboard,
   Box,
-  CheckSquare,
-  Shield,
   Activity,
-  ArrowUpRight,
   TrendingUp,
 } from 'lucide-react';
-import { Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
+import { Client, Vendor } from '@/types/organization';
+import { useClients, useVendors } from '@/modules/organization/hooks/useOrganizationData';
 import { Badge } from '@/shared/components/Badge';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
@@ -34,8 +28,6 @@ import {
   mockProjectCrewMembers,
   mockProjectActivities,
 } from '@/mocks/db/production/projectDetails';
-import { mockClients, mockVendors, mockDepartments, mockTeams, mockOffices } from '@/mocks/db/organization/organization';
-import { mockClientContacts } from '@/mocks/db/organization/clientVendorDetails';
 
 interface ProjectOverviewTabProps {
   project: Project;
@@ -50,12 +42,15 @@ export const ProjectOverviewTab: React.FC<ProjectOverviewTabProps> = ({
     project.total_shots > 0 ? Math.round((project.approved_shots / project.total_shots) * 100) : 0;
 
   // Resolved entities
-  const client = mockClients.find((c) => c.id === project.client_id || c.name === project.client_name);
-  const clientContact = mockClientContacts.find(
-    (cc) => cc.id === project.client_contact_id || cc.name === project.client_contact_name
-  );
+  const { data: clientsData } = useClients({ page_size: 100 });
+  const clients: Client[] = (clientsData as any)?.results ?? clientsData ?? [];
 
-  const vendors = mockVendors.filter(
+  const { data: vendorsData } = useVendors({ page_size: 100 });
+  const allVendors: Vendor[] = (vendorsData as any)?.results ?? vendorsData ?? [];
+
+  const client = clients.find((c) => c.id === project.client_id || c.name === project.client_name);
+
+  const vendors = allVendors.filter(
     (v) =>
       project.vendor_ids?.includes(v.id) ||
       project.vendor_names?.some((vn) => v.name.toLowerCase().includes(vn.toLowerCase()) || vn.toLowerCase().includes(v.name.toLowerCase()))
@@ -223,9 +218,9 @@ export const ProjectOverviewTab: React.FC<ProjectOverviewTabProps> = ({
 
                   <div className="p-2 rounded-lg bg-slate-950/80 border border-slate-800/80 text-xs">
                     <span className="text-[10px] font-mono text-slate-500 uppercase block">Client Contact Liaison</span>
-                    <span className="font-bold text-slate-200">{project.client_contact_name || clientContact?.name || 'Assigned Client Rep'}</span>
-                    {clientContact?.role && (
-                      <span className="text-[10px] text-slate-400 block truncate">{clientContact.role}</span>
+                    <span className="font-bold text-slate-200">{project.client_contact_name || client?.contact_name || 'Assigned Client Rep'}</span>
+                    {client?.contact_name && (
+                      <span className="text-[10px] text-slate-400 block truncate">{client.email}</span>
                     )}
                   </div>
                 </div>

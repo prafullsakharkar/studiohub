@@ -1,6 +1,6 @@
 import { BaseRepository } from '@/core/repository/BaseRepository';
 import { ITaskRepository } from './ITaskRepository';
-import { Task } from '@/mocks/db/tasks/tasks';
+import { Task } from '@/types/tasks';
 import { IApiClient } from '@/api/client/types';
 import { apiClient } from '@/api/client/ApiClient';
 

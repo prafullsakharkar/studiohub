@@ -12,7 +12,7 @@ import {
   PlaySquare,
   Sparkles,
 } from 'lucide-react';
-import { Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
 import { usePublishedVersions } from '@/modules/organization/hooks/useOrganizationData';
 import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';

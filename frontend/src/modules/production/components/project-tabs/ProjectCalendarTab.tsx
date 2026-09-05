@@ -10,7 +10,7 @@ import {
   Plus,
   Tv,
 } from 'lucide-react';
-import { Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
 import { mockCalendarMilestones, CalendarMilestone } from '@/mocks/db/production/calendar';
 import { Button } from '@/shared/components/Button';
 import { StatusBadge } from '@/shared/components/StatusBadge';

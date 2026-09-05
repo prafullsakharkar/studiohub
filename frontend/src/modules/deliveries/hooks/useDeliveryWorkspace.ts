@@ -1,118 +1,72 @@
-import { useState, useEffect, useCallback } from 'react';
-import { deliveryService } from '../services/DeliveryService';
-import { DeliveryPackage, DeliveryVersionRef } from '@/types/deliveries';
+import { useQueryClient } from '@tanstack/react-query';
+import { useDeliveryDetail, DELIVERY_QUERY_KEYS } from './useDeliveryQueries';
+import { useDeliveryMutations } from './useDeliveryMutations';
+import { DeliveryVersionRef } from '@/types/deliveries';
 
+/**
+ * Aggregator hook preserving the legacy useDeliveryWorkspace contract, now
+ * backed by TanStack Query. Prefer the granular hooks for new code.
+ */
 export function useDeliveryWorkspace(deliveryId: string) {
-  const [delivery, setDelivery] = useState<DeliveryPackage | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const detailQuery = useDeliveryDetail(deliveryId || undefined);
+  const mutations = useDeliveryMutations();
 
-  const fetchDelivery = useCallback(async () => {
-    if (!deliveryId) return;
-    try {
-      setLoading(true);
-      const data = await deliveryService.getDeliveryById(deliveryId);
-      if (!data) {
-        setError('Delivery package not found');
-      } else {
-        setDelivery(data);
-        setError(null);
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load delivery workspace');
-    } finally {
-      setLoading(false);
-    }
-  }, [deliveryId]);
+  const delivery = detailQuery.data ?? null;
+  const error = detailQuery.error instanceof Error ? detailQuery.error.message : null;
 
-  useEffect(() => {
-    fetchDelivery();
-  }, [fetchDelivery]);
+  const refresh = () =>
+    queryClient.invalidateQueries({ queryKey: DELIVERY_QUERY_KEYS.all });
 
-  const prepare = async (actorName?: string) => {
-    if (!deliveryId) return;
-    const updated = await deliveryService.prepareDelivery(deliveryId, actorName);
-    setDelivery(updated);
-    return updated;
-  };
-
-  const validate = async (actorName?: string) => {
-    if (!deliveryId) return;
-    const updated = await deliveryService.validateDelivery(deliveryId, actorName);
-    setDelivery(updated);
-    return updated;
-  };
-
-  const submit = async (actorName?: string) => {
-    if (!deliveryId) return;
-    const updated = await deliveryService.submitDelivery(deliveryId, actorName);
-    setDelivery(updated);
-    return updated;
-  };
-
-  const approve = async (actorName?: string, notes?: string) => {
-    if (!deliveryId) return;
-    const updated = await deliveryService.approveDelivery(deliveryId, actorName, notes);
-    setDelivery(updated);
-    return updated;
-  };
-
-  const reject = async (reason: string, notes: string, actorName?: string) => {
-    if (!deliveryId) return;
-    const updated = await deliveryService.rejectDelivery(deliveryId, reason, notes, actorName);
-    setDelivery(updated);
-    return updated;
-  };
-
-  const retry = async (actorName?: string) => {
-    if (!deliveryId) return;
-    const updated = await deliveryService.retryDelivery(deliveryId, actorName);
-    setDelivery(updated);
-    return updated;
-  };
-
-  const complete = async (actorName?: string) => {
-    if (!deliveryId) return;
-    const updated = await deliveryService.completeDelivery(deliveryId, actorName);
-    setDelivery(updated);
-    return updated;
-  };
-
-  const cancel = async (reason: string, actorName?: string) => {
-    if (!deliveryId) return;
-    const updated = await deliveryService.cancelDelivery(deliveryId, reason, actorName);
-    setDelivery(updated);
-    return updated;
-  };
-
-  const addVersion = async (version: DeliveryVersionRef) => {
-    if (!deliveryId) return;
-    const updated = await deliveryService.addVersionToDelivery(deliveryId, version);
-    setDelivery(updated);
-    return updated;
-  };
-
-  const removeVersion = async (versionId: string) => {
-    if (!deliveryId) return;
-    const updated = await deliveryService.removeVersionFromDelivery(deliveryId, versionId);
-    setDelivery(updated);
-    return updated;
+  const guard = () => {
+    if (!deliveryId) return false;
+    return true;
   };
 
   return {
     delivery,
-    loading,
+    loading: detailQuery.isLoading,
     error,
-    refresh: fetchDelivery,
-    prepare,
-    validate,
-    submit,
-    approve,
-    reject,
-    retry,
-    complete,
-    cancel,
-    addVersion,
-    removeVersion,
+    refresh,
+    prepare: (actorName?: string) => {
+      if (!guard()) return Promise.resolve(undefined);
+      return mutations.prepareDelivery({ id: deliveryId, actorName });
+    },
+    validate: (actorName?: string) => {
+      if (!guard()) return Promise.resolve(undefined);
+      return mutations.validateDelivery({ id: deliveryId, actorName });
+    },
+    submit: (actorName?: string) => {
+      if (!guard()) return Promise.resolve(undefined);
+      return mutations.submitDelivery({ id: deliveryId, actorName });
+    },
+    approve: (actorName?: string, notes?: string) => {
+      if (!guard()) return Promise.resolve(undefined);
+      return mutations.approveDelivery({ id: deliveryId, actorName, notes });
+    },
+    reject: (reason: string, notes: string, actorName?: string) => {
+      if (!guard()) return Promise.resolve(undefined);
+      return mutations.rejectDelivery({ id: deliveryId, reason, notes, actorName });
+    },
+    retry: (actorName?: string) => {
+      if (!guard()) return Promise.resolve(undefined);
+      return mutations.retryDelivery({ id: deliveryId, actorName });
+    },
+    complete: (actorName?: string) => {
+      if (!guard()) return Promise.resolve(undefined);
+      return mutations.completeDelivery({ id: deliveryId, actorName });
+    },
+    cancel: (reason: string, actorName?: string) => {
+      if (!guard()) return Promise.resolve(undefined);
+      return mutations.cancelDelivery({ id: deliveryId, reason, actorName });
+    },
+    addVersion: (version: DeliveryVersionRef) => {
+      if (!guard()) return Promise.resolve(undefined);
+      return mutations.addVersion({ id: deliveryId, version });
+    },
+    removeVersion: (versionId: string) => {
+      if (!guard()) return Promise.resolve(undefined);
+      return mutations.removeVersion({ id: deliveryId, versionId });
+    },
   };
 }

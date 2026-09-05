@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
 import { Building, Plus, Search, DollarSign, ExternalLink, ShieldCheck } from 'lucide-react';
 import { Organization, Client } from '@/types/organization';
-import { mockClients } from '@/mocks/db/organization/organization';
+import { useClients } from '@/modules/organization/hooks/useOrganizationData';
 import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
 
 export const ClientsTab: React.FC<{ org: Organization }> = ({ org }) => {
-  const [clients, setClients] = useState<Client[]>(mockClients);
+  const { data: clientsData, isLoading } = useClients();
+  const clients: Client[] = (clientsData as any)?.results ?? clientsData ?? [];
   const [search, setSearch] = useState('');
 
   const filtered = clients.filter(
     (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.code.toLowerCase().includes(search.toLowerCase()) ||
-      c.contact_name.toLowerCase().includes(search.toLowerCase())
+      (c.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (c.code || '').toLowerCase().includes(search.toLowerCase()) ||
+      (c.contact_name || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -47,6 +48,11 @@ export const ClientsTab: React.FC<{ org: Organization }> = ({ org }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {!isLoading && filtered.length === 0 && (
+          <div className="col-span-full py-8 text-center text-xs text-slate-500">
+            No client studios found.
+          </div>
+        )}
         {filtered.map((client) => (
           <div
             key={client.id}

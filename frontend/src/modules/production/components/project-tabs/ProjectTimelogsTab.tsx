@@ -2,17 +2,16 @@ import React, { useState } from 'react';
 import {
   Clock,
   DollarSign,
-  User,
   Calendar,
   Plus,
   CheckCircle2,
-  AlertCircle,
-  BarChart3,
-  TrendingUp,
-  FileSpreadsheet,
+  XCircle,
 } from 'lucide-react';
-import { Project } from '@/mocks/db/production/projects';
-import { mockTimelogs, TimelogEntry } from '@/mocks/db/production/timelogs';
+import { Project } from '@/types/projects';
+import { Timelog, TimelogCategory } from '@/types/tasks';
+import { useTimelogs, useTimelogMutations } from '@/modules/tasks/hooks/useTimelogs';
+import { useTasks } from '@/modules/tasks/hooks/useTasks';
+import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { Button } from '@/shared/components/Button';
 import { Modal } from '@/shared/components/Modal';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
@@ -22,63 +21,106 @@ interface ProjectTimelogsTabProps {
   onNavigateTab: (tabId: string) => void;
 }
 
-export const ProjectTimelogsTab: React.FC<ProjectTimelogsTabProps> = ({ project, onNavigateTab }) => {
-  const [timelogs, setTimelogs] = useState<TimelogEntry[]>(
-    mockTimelogs.filter((t) => t.project_code === project.code || t.project_id === project.id).length > 0
-      ? mockTimelogs.filter((t) => t.project_code === project.code || t.project_id === project.id)
-      : mockTimelogs
-  );
+const ACTIVITY_CATEGORIES: TimelogCategory[] = [
+  'Direct Work',
+  'Revisions',
+  'Dailies / Meetings',
+  'Pipeline Debug',
+  'Simulation Run',
+  'Lighting Setup',
+  'LookDev Tuning',
+  'Plate Prep & Clean',
+];
 
-  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
+const statusBadge = (status: string) => {
+  if (status === 'Approved') {
+    return (
+      <span className="px-2 py-1 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+        <CheckCircle2 className="w-3 h-3" />
+        Approved
+      </span>
+    );
+  }
+  if (status === 'Rejected') {
+    return (
+      <span className="px-2 py-1 rounded text-[10px] font-mono bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center gap-1">
+        <XCircle className="w-3 h-3" />
+        Rejected
+      </span>
+    );
+  }
+  return (
+    <span className="px-2 py-1 rounded text-[10px] font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20">
+      {status}
+    </span>
+  );
+};
+
+export const ProjectTimelogsTab: React.FC<ProjectTimelogsTabProps> = ({ project, onNavigateTab }) => {
+  const { data: timelogsData, isLoading } = useTimelogs({
+    project_id: project.id,
+    page_size: 50,
+  });
+  const timelogs: Timelog[] = (timelogsData as any)?.results ?? timelogsData ?? [];
+
+  const { data: tasksData } = useTasks({ project_id: project.id, page_size: 100 });
+  const projectTasks = (tasksData as any)?.results ?? tasksData ?? [];
+
+  const { createTimelog, isCreating } = useTimelogMutations();
+  const { user } = useAuth();
   const addNotification = useNotificationStore((state) => state.addNotification);
 
+  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    artist_name: 'Elena Rostova',
-    department: 'Compositing',
-    entity_code: 'NK_010_0010',
-    entity_type: 'Shot' as 'Shot' | 'Asset' | 'General Production',
-    task_title: 'Lighting Match & Flare Integrations',
-    hours_logged: 8.0,
-    date_logged: new Date().toISOString().split('T')[0],
-    is_overtime: false,
-    activity_category: 'Direct Work' as any,
-    description: 'Matched anamorphic flare dispersion against hero physical plate.',
+    task_id: '',
+    duration_hours: 8.0,
+    date: new Date().toISOString().split('T')[0],
+    activity_category: 'Direct Work' as TimelogCategory,
+    notes: '',
   });
 
-  const totalHours = timelogs.reduce((acc, t) => acc + t.hours_logged, 0);
-  const totalCost = timelogs.reduce((acc, t) => acc + t.hours_logged * t.billing_rate_usd, 0);
-  const overtimeHours = timelogs.filter((t) => t.is_overtime).reduce((acc, t) => acc + t.hours_logged, 0);
+  const totalHours = timelogs.reduce((acc, t) => acc + t.duration_hours, 0);
+  const billableHours = timelogs.filter((t) => t.billable).reduce((acc, t) => acc + t.duration_hours, 0);
+  const totalCost = timelogs.reduce((acc, t) => acc + t.duration_hours * (t.hourly_rate_usd || 115), 0);
 
-  const handleLogSubmit = (e: React.FormEvent) => {
+  const handleLogSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newEntry: TimelogEntry = {
-      id: `time-${Date.now()}`,
+    const selectedTask = projectTasks.find((t) => t.id === formData.task_id);
+    if (!selectedTask) {
+      addNotification({
+        type: 'error',
+        title: 'Validation Error',
+        message: 'Please select a task to log hours against.',
+      });
+      return;
+    }
+
+    await createTimelog.mutateAsync({
+      task_id: selectedTask.id,
+      task_code: selectedTask.code,
+      task_title: selectedTask.title,
       project_id: project.id,
       project_code: project.code,
-      artist_id: 'usr-003',
-      artist_name: formData.artist_name,
-      artist_avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-      department: formData.department,
-      entity_type: formData.entity_type,
-      entity_code: formData.entity_code,
-      task_title: formData.task_title,
-      hours_logged: Number(formData.hours_logged),
-      date_logged: formData.date_logged,
-      is_overtime: formData.is_overtime,
+      project_name: project.name,
+      person_id: user?.id || '',
+      person_name: user?.full_name || '',
+      person_avatar: user?.avatar_url,
+      person_role: user?.role,
+      department: selectedTask.department || '',
+      duration_hours: Number(formData.duration_hours),
+      date: formData.date,
+      billable: true,
+      notes: formData.notes,
+      status: 'Submitted',
       activity_category: formData.activity_category,
-      description: formData.description,
-      billing_rate_usd: 95,
-      approved_by_name: 'Alex Chen',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+      hourly_rate_usd: 115,
+    } as Partial<Timelog>);
 
-    setTimelogs([newEntry, ...timelogs]);
     setIsLogModalOpen(false);
     addNotification({
       type: 'success',
       title: 'Timelog Logged',
-      message: `Logged ${formData.hours_logged} hours for ${formData.entity_code}.`,
+      message: `Logged ${formData.duration_hours} hours for ${selectedTask.code}.`,
     });
   };
 
@@ -92,7 +134,7 @@ export const ProjectTimelogsTab: React.FC<ProjectTimelogsTabProps> = ({ project,
             Artist Timelogs & Production Burn-Down Analytics
           </h3>
           <p className="text-xs text-slate-400 mt-1">
-            Track actual creative man-hours against bid days, overtime rates, and departmental budgets
+            Track actual creative man-hours against bid days, billable rates, and departmental budgets
           </p>
         </div>
 
@@ -114,16 +156,16 @@ export const ProjectTimelogsTab: React.FC<ProjectTimelogsTabProps> = ({ project,
             <Clock className="w-4 h-4 text-indigo-400" />
           </div>
           <p className="text-2xl font-bold text-white font-mono">{totalHours.toFixed(1)} hrs</p>
-          <span className="text-[11px] text-emerald-400 font-mono">Within 85% bid envelope</span>
+          <span className="text-[11px] text-slate-400 font-mono">{timelogs.length} entries recorded</span>
         </div>
 
         <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
           <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
-            <span>OVERTIME SURCHARGE</span>
-            <AlertCircle className="w-4 h-4 text-amber-400" />
+            <span>BILLABLE HOURS</span>
+            <CheckCircle2 className="w-4 h-4 text-amber-400" />
           </div>
-          <p className="text-2xl font-bold text-amber-300 font-mono">{overtimeHours.toFixed(1)} hrs</p>
-          <span className="text-[11px] text-slate-400 font-mono">Weekend / Crunch shifts</span>
+          <p className="text-2xl font-bold text-amber-300 font-mono">{billableHours.toFixed(1)} hrs</p>
+          <span className="text-[11px] text-slate-400 font-mono">Client-invoicable work</span>
         </div>
 
         <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
@@ -145,65 +187,67 @@ export const ProjectTimelogsTab: React.FC<ProjectTimelogsTabProps> = ({ project,
         </h4>
 
         <div className="space-y-2">
+          {isLoading && (
+            <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-400">
+              Loading timelogs…
+            </div>
+          )}
           {timelogs.map((entry) => (
             <div
               key={entry.id}
               className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
             >
               <div className="flex items-start gap-3 min-w-0">
-                {entry.artist_avatar ? (
+                {entry.person_avatar ? (
                   <img
-                    src={entry.artist_avatar}
-                    alt={entry.artist_name}
+                    src={entry.person_avatar}
+                    alt={entry.person_name}
                     className="w-10 h-10 rounded-xl object-cover bg-slate-950 border border-slate-800 shrink-0"
                   />
                 ) : (
                   <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300 font-mono font-bold shrink-0">
-                    {entry.artist_name.charAt(0)}
+                    {(entry.person_name || '?').charAt(0)}
                   </div>
                 )}
 
                 <div className="min-w-0 space-y-0.5">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-white text-sm">{entry.artist_name}</span>
+                    <span className="font-bold text-white text-sm">{entry.person_name || 'Unknown'}</span>
                     <span className="px-2 py-0.2 text-[10px] font-mono bg-slate-800 text-slate-300 rounded border border-slate-700">
-                      {entry.department}
+                      {entry.department || '—'}
                     </span>
                     <span className="px-2 py-0.2 text-[10px] font-mono bg-indigo-500/20 text-indigo-300 rounded border border-indigo-500/30">
-                      {entry.entity_code}
+                      {entry.task_code}
                     </span>
-                    {entry.is_overtime && (
-                      <span className="px-2 py-0.2 text-[10px] font-mono bg-amber-500/20 text-amber-300 rounded border border-amber-500/30">
-                        1.5x Overtime
-                      </span>
-                    )}
                   </div>
 
                   <p className="text-xs font-semibold text-slate-200">{entry.task_title}</p>
-                  <p className="text-xs text-slate-400 italic line-clamp-1">{entry.description}</p>
+                  <p className="text-xs text-slate-400 italic line-clamp-1">{entry.notes || '—'}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-4 self-end md:self-auto shrink-0 font-mono">
                 <div className="text-right">
-                  <span className="text-sm font-bold text-white block">{entry.hours_logged} hrs</span>
-                  <span className="text-[11px] text-slate-400">{entry.date_logged}</span>
+                  <span className="text-sm font-bold text-white block">{entry.duration_hours} hrs</span>
+                  <span className="text-[11px] text-slate-400">{entry.date}</span>
                 </div>
 
                 <div className="text-right">
                   <span className="text-xs text-emerald-400 font-bold block">
-                    ${entry.hours_logged * entry.billing_rate_usd}
+                    ${(entry.duration_hours * (entry.hourly_rate_usd || 115)).toLocaleString('en-US')}
                   </span>
-                  <span className="text-[10px] text-slate-500">${entry.billing_rate_usd}/hr</span>
+                  <span className="text-[10px] text-slate-500">${entry.hourly_rate_usd || 115}/hr</span>
                 </div>
 
-                <span className="px-2 py-1 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  Approved
-                </span>
+                {statusBadge(entry.status)}
               </div>
             </div>
           ))}
+          {!isLoading && timelogs.length === 0 && (
+            <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 text-center text-xs text-slate-500">
+              No timelogs recorded for this project yet.
+            </div>
+          )}
         </div>
       </div>
 
@@ -217,37 +261,20 @@ export const ProjectTimelogsTab: React.FC<ProjectTimelogsTabProps> = ({ project,
         <form onSubmit={handleLogSubmit} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Artist Name</label>
-              <input
-                type="text"
+              <label className="text-xs font-semibold text-slate-300">Task</label>
+              <select
                 required
-                value={formData.artist_name}
-                onChange={(e) => setFormData({ ...formData, artist_name: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Department</label>
-              <input
-                type="text"
-                required
-                value={formData.department}
-                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Target Entity Code</label>
-              <input
-                type="text"
-                required
-                value={formData.entity_code}
-                onChange={(e) => setFormData({ ...formData, entity_code: e.target.value })}
+                value={formData.task_id}
+                onChange={(e) => setFormData({ ...formData, task_id: e.target.value })}
                 className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono"
-              />
+              >
+                <option value="">— Select Task —</option>
+                {projectTasks.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.code}: {t.title}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-300">Hours Logged</label>
@@ -257,52 +284,55 @@ export const ProjectTimelogsTab: React.FC<ProjectTimelogsTabProps> = ({ project,
                 min="0.5"
                 max="24"
                 required
-                value={formData.hours_logged}
-                onChange={(e) => setFormData({ ...formData, hours_logged: parseFloat(e.target.value) || 0 })}
+                value={formData.duration_hours}
+                onChange={(e) => setFormData({ ...formData, duration_hours: parseFloat(e.target.value) || 0 })}
                 className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono"
               />
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">Task Title</label>
-            <input
-              type="text"
-              required
-              value={formData.task_title}
-              onChange={(e) => setFormData({ ...formData, task_title: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-300">Date</label>
+              <input
+                type="date"
+                required
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white font-mono"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-300">Activity Category</label>
+              <select
+                value={formData.activity_category}
+                onChange={(e) => setFormData({ ...formData, activity_category: e.target.value as TimelogCategory })}
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white"
+              >
+                {ACTIVITY_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="space-y-1">
             <label className="text-xs font-semibold text-slate-300">Activity Summary</label>
             <textarea
               rows={2}
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white"
             />
-          </div>
-
-          <div className="flex items-center gap-2 pt-1">
-            <input
-              type="checkbox"
-              id="overtime_check"
-              checked={formData.is_overtime}
-              onChange={(e) => setFormData({ ...formData, is_overtime: e.target.checked })}
-              className="rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-indigo-500"
-            />
-            <label htmlFor="overtime_check" className="text-xs text-slate-300 select-none">
-              Overtime / Crunch Shift (1.5x Multiplier)
-            </label>
           </div>
 
           <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
             <Button variant="ghost" size="sm" onClick={() => setIsLogModalOpen(false)} type="button">
               Cancel
             </Button>
-            <Button variant="primary" size="sm" type="submit">
+            <Button variant="primary" size="sm" type="submit" disabled={isCreating}>
               Save Timelog
             </Button>
           </div>

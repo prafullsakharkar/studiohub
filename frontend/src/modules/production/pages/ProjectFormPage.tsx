@@ -6,9 +6,9 @@ import { Button } from '@/shared/components/Button';
 import { Card, CardHeader, CardBody } from '@/shared/components/Card';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { ArrowLeft, Film, Building, Layers, Check, Sparkles } from 'lucide-react';
-import { Project } from '@/mocks/db/production/projects';
-import { mockClients, mockVendors } from '@/mocks/db/organization/organization';
-import { mockClientContacts } from '@/mocks/db/organization/clientVendorDetails';
+import { Project } from '@/types/projects';
+import { Vendor } from '@/types/organization';
+import { useVendors } from '@/modules/organization/hooks/useOrganizationData';
 import { ClientSelect } from '@/modules/organization/components/ClientSelect';
 import { ClientContactSelect } from '@/modules/organization/components/ClientContactSelect';
 import { VendorSelect } from '@/modules/organization/components/VendorSelect';
@@ -21,6 +21,8 @@ export const ProjectFormPage: React.FC = () => {
   const { data: project, isLoading: isProjectLoading } = useProject(id);
   const { data: allProjectsData } = useProjects();
   const { createProject, updateProject, isCreating, isUpdating } = useProjectMutations();
+  const { data: vendorsData } = useVendors({ page_size: 100 });
+  const vendors: Vendor[] = (vendorsData as any)?.results ?? vendorsData ?? [];
 
   const resolvedProject =
     project || (id ? allProjectsData?.results.find((p) => p.id === id) : undefined);
@@ -37,11 +39,11 @@ export const ProjectFormPage: React.FC = () => {
     resolution: '4096x2160 (4K DCI)',
     color_space: 'ACEScg / Linear',
     aspect_ratio: '2.39:1',
-    client_id: 'cli-001',
-    client_name: 'Warner Nexus Entertainment',
-    client_contact_name: 'David Z. Kogen',
-    vendor_ids: ['ven-001', 'ven-002'],
-    vendor_names: ['Scanline Roto & Prep Lab', 'Virtuos Creature FX House'],
+    client_id: undefined,
+    client_name: undefined,
+    client_contact_name: undefined,
+    vendor_ids: [],
+    vendor_names: [],
     total_shots: 240,
     approved_shots: 0,
     total_assets: 85,
@@ -70,14 +72,12 @@ export const ProjectFormPage: React.FC = () => {
   };
 
   const handleClientChange = (clientId: string, clientName?: string) => {
-    const contacts = mockClientContacts.filter((c) => c.client_id === clientId);
-    const primary = contacts.find((c) => c.is_primary) || contacts[0];
     setFormData((prev) => ({
       ...prev,
       client_id: clientId,
       client_name: clientName || '',
-      client_contact_id: primary?.id,
-      client_contact_name: primary?.name,
+      client_contact_id: undefined,
+      client_contact_name: undefined,
     }));
   };
 
@@ -264,7 +264,7 @@ export const ProjectFormPage: React.FC = () => {
             <div className="space-y-2 pt-2 border-t border-slate-800">
               <label className="text-xs font-semibold text-slate-300">Contracted Outsourcing Vendors</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {mockVendors.map((vendor) => {
+                {vendors.map((vendor) => {
                   const isAssigned = formData.vendor_ids?.includes(vendor.id);
                   return (
                     <div

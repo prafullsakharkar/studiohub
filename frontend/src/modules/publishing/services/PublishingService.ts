@@ -1,5 +1,4 @@
 import { ApiClient } from '@/api/client/ApiClient';
-import { mockPublishDestinations } from '@/mocks/db/production/publishing';
 import { PublishItem, PublishStatus, PublishDestination, PublishActivity } from '@/types/publishing';
 import {
   BackendPublishDetail,
@@ -29,7 +28,10 @@ class PublishingService {
   }
 
   async getDestinations(): Promise<PublishDestination[]> {
-    return [...mockPublishDestinations];
+    const data = await this.client.get<{ results: PublishDestination[] }>('/publishing/destinations/', {
+      params: { page_size: 100 },
+    });
+    return data.results || [];
   }
 
   async createPublish(data: Partial<PublishItem>): Promise<PublishItem> {

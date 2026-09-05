@@ -1,6 +1,6 @@
 import { BaseRepository } from '@/core/repository/BaseRepository';
 import { IProjectRepository } from './IProjectRepository';
-import { Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
 import { IApiClient } from '@/api/client/types';
 import { apiClient } from '@/api/client/ApiClient';
 

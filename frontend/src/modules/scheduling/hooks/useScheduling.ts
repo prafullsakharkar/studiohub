@@ -1,15 +1,16 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { schedulingRepository } from '../repositories/SchedulingRepository';
+import { useState, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
-  CalendarEvent,
-  CalendarEventType,
-  Resource,
-  ResourceCategory,
-  SchedulingCapacitySummary,
-  SchedulingOverbookingAlert,
-  StudioHoliday,
-  ResourceLeave,
-} from '@/types/scheduling';
+  useSchedulingEvents,
+  useSchedulingResources,
+  useSchedulingHolidays,
+  useSchedulingLeaves,
+  useCapacitySummary,
+  useOverbookingAlerts,
+  SCHEDULING_QUERY_KEYS,
+} from './useSchedulingQueries';
+import { useSchedulingMutations } from './useSchedulingMutations';
+import { CalendarEvent, Resource, ResourceLeave } from '@/types/scheduling';
 
 export interface SchedulingFilterState {
   search: string;
@@ -22,15 +23,44 @@ export interface SchedulingFilterState {
   showOverbookedOnly: boolean;
 }
 
+/**
+ * Aggregator hook preserving the legacy useScheduling contract, now backed
+ * by TanStack Query. Prefer the granular hooks for new code.
+ */
 export function useScheduling() {
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [resources, setResources] = useState<Resource[]>([]);
-  const [capacitySummaries, setCapacitySummaries] = useState<SchedulingCapacitySummary[]>([]);
-  const [overbookingAlerts, setOverbookingAlerts] = useState<SchedulingOverbookingAlert[]>([]);
-  const [holidays, setHolidays] = useState<StudioHoliday[]>([]);
-  const [leaves, setLeaves] = useState<ResourceLeave[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const eventsQuery = useSchedulingEvents();
+  const resourcesQuery = useSchedulingResources();
+  const capacityQuery = useCapacitySummary();
+  const overbookingQuery = useOverbookingAlerts();
+  const holidaysQuery = useSchedulingHolidays();
+  const leavesQuery = useSchedulingLeaves();
+  const mutations = useSchedulingMutations();
+
+  const events = eventsQuery.data ?? [];
+  const resources = resourcesQuery.data ?? [];
+  const capacitySummaries = capacityQuery.data ?? [];
+  const overbookingAlerts = overbookingQuery.data ?? [];
+  const holidays = holidaysQuery.data ?? [];
+  const leaves = leavesQuery.data ?? [];
+
+  const loading =
+    eventsQuery.isLoading ||
+    resourcesQuery.isLoading ||
+    capacityQuery.isLoading ||
+    overbookingQuery.isLoading ||
+    holidaysQuery.isLoading ||
+    leavesQuery.isLoading;
+
+  const firstError = [
+    eventsQuery.error,
+    resourcesQuery.error,
+    capacityQuery.error,
+    overbookingQuery.error,
+    holidaysQuery.error,
+    leavesQuery.error,
+  ].find((err) => err instanceof Error);
+  const error = firstError instanceof Error ? firstError.message : null;
 
   // Selected date for calendar navigation (Default: 2026-08-26)
   const [currentDate, setCurrentDate] = useState<Date>(new Date(2026, 7, 26)); // August 26, 2026
@@ -47,98 +77,8 @@ export function useScheduling() {
     showOverbookedOnly: false,
   });
 
-  const loadData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const [evts, resList, caps, ovb, hols, lvs] = await Promise.all([
-        schedulingRepository.getEvents(),
-        schedulingRepository.getResources(),
-        schedulingRepository.getCapacitySummary(),
-        schedulingRepository.getOverbookingAlerts(),
-        schedulingRepository.getHolidays(),
-        schedulingRepository.getLeaves(),
-      ]);
-      setEvents(evts);
-      setResources(resList);
-      setCapacitySummaries(caps);
-      setOverbookingAlerts(ovb);
-      setHolidays(hols);
-      setLeaves(lvs);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to load scheduling data');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  // Event Mutations
-  const createEvent = useCallback(async (eventData: Partial<CalendarEvent>) => {
-    try {
-      const created = await schedulingRepository.createEvent(eventData);
-      setEvents((prev) => [created, ...prev]);
-      return created;
-    } catch (err: any) {
-      throw new Error(err?.message || 'Failed to create event');
-    }
-  }, []);
-
-  const updateEvent = useCallback(async (id: string, updates: Partial<CalendarEvent>) => {
-    try {
-      const updated = await schedulingRepository.updateEvent(id, updates);
-      setEvents((prev) => prev.map((e) => (e.id === id ? updated : e)));
-      return updated;
-    } catch (err: any) {
-      throw new Error(err?.message || 'Failed to update event');
-    }
-  }, []);
-
-  const deleteEvent = useCallback(async (id: string) => {
-    try {
-      await schedulingRepository.deleteEvent(id);
-      setEvents((prev) => prev.filter((e) => e.id !== id));
-    } catch (err: any) {
-      throw new Error(err?.message || 'Failed to delete event');
-    }
-  }, []);
-
-  const updateResource = useCallback(async (id: string, updates: Partial<Resource>) => {
-    try {
-      const updated = await schedulingRepository.updateResource(id, updates);
-      setResources((prev) => prev.map((r) => (r.id === id ? updated : r)));
-      return updated;
-    } catch (err: any) {
-      throw new Error(err?.message || 'Failed to update resource');
-    }
-  }, []);
-
-  const resolveOverbooking = useCallback(async (alertId: string, resourceId?: string) => {
-    try {
-      await schedulingRepository.resolveOverbooking(alertId, resourceId);
-      setOverbookingAlerts((prev) => prev.filter((a) => a.id !== alertId));
-      if (resourceId) {
-        setResources((prev) =>
-          prev.map((r) => (r.id === resourceId ? { ...r, is_overbooked: false, overbooking_reason: undefined, utilization_pct: Math.min(100, r.utilization_pct), availability_status: 'Assigned' } : r))
-        );
-      }
-    } catch (err: any) {
-      throw new Error(err?.message || 'Failed to resolve overbooking conflict');
-    }
-  }, []);
-
-  const createLeave = useCallback(async (leaveData: Partial<ResourceLeave>) => {
-    try {
-      const created = await schedulingRepository.createLeave(leaveData);
-      setLeaves((prev) => [created, ...prev]);
-      return created;
-    } catch (err: any) {
-      throw new Error(err?.message || 'Failed to submit leave request');
-    }
-  }, []);
+  const reload = () =>
+    queryClient.invalidateQueries({ queryKey: SCHEDULING_QUERY_KEYS.all });
 
   // Filtered Events
   const filteredEvents = useMemo(() => {
@@ -217,12 +157,18 @@ export function useScheduling() {
     setCurrentDate,
     filters,
     setFilters,
-    reload: loadData,
-    createEvent,
-    updateEvent,
-    deleteEvent,
-    updateResource,
-    resolveOverbooking,
-    createLeave,
+    reload,
+    createEvent: (eventData: Partial<CalendarEvent>) =>
+      mutations.createEvent(eventData),
+    updateEvent: (id: string, updates: Partial<CalendarEvent>) =>
+      mutations.updateEvent({ id, updates }),
+    deleteEvent: (id: string) => mutations.deleteEvent(id),
+    updateResource: (id: string, updates: Partial<Resource>) =>
+      mutations.updateResource({ id, updates }),
+    resolveOverbooking: async (alertId: string, resourceId?: string): Promise<void> => {
+      await mutations.resolveOverbooking({ alertId, resourceId });
+    },
+    createLeave: (leaveData: Partial<ResourceLeave>) =>
+      mutations.createLeave(leaveData),
   };
 }

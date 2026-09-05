@@ -11,7 +11,7 @@ import {
   MessageSquare,
   Sparkles,
 } from 'lucide-react';
-import { Asset } from '@/mocks/db/assets/assets';
+import { Asset } from '@/types/assets';
 import { Badge } from '@/shared/components/Badge';
 
 interface AssetActivityTabProps {

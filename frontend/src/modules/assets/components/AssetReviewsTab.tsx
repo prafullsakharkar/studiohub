@@ -13,7 +13,7 @@ import {
   Sliders,
   Sparkles,
 } from 'lucide-react';
-import { Asset } from '@/mocks/db/assets/assets';
+import { Asset } from '@/types/assets';
 import { useReviews } from '@/modules/reviews/hooks/useReviews';
 import { Button } from '@/shared/components/Button';
 import { Badge } from '@/shared/components/Badge';

@@ -10,7 +10,7 @@ import {
   Layers,
   Sparkles,
 } from 'lucide-react';
-import { Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
 import {
   mockProjectMilestones,
   ProjectMilestone,

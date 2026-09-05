@@ -12,7 +12,7 @@ import {
   ArrowRight,
   Calendar,
 } from 'lucide-react';
-import { Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
 import { useTasks, useTaskMutations } from '@/modules/tasks/hooks/useTasks';
 import { StatusBadge, PriorityBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
@@ -23,7 +23,7 @@ import { Modal } from '@/shared/components/Modal';
 import { useInspectorStore } from '@/shared/stores/useInspectorStore';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import { Link } from 'react-router-dom';
-import { Task } from '@/mocks/db/tasks/tasks';
+import { Task } from '@/types/tasks';
 import { Department, PriorityLevel, ProductionStatus } from '@/types/common';
 
 interface ProjectTasksTabProps {

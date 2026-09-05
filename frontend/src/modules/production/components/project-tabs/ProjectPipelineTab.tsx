@@ -11,7 +11,7 @@ import {
   Sparkles,
   Flame,
 } from 'lucide-react';
-import { Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
 import { Badge } from '@/shared/components/Badge';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 

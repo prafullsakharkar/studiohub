@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { projectService } from '../services/ProjectService';
-import { Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
 import { PROJECT_QUERY_KEYS } from './useProjects';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 

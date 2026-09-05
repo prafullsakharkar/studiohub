@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/shared/components/Button';
 import { Modal } from '@/shared/components/Modal';
-import { mockUsers } from '@/mocks/db/identity/users';
-import { mockTeams } from '@/mocks/db/organization/organization';
+import { usePeople, useTeams } from '@/modules/organization/hooks/useOrganizationData';
 import { ProductionStatus, PriorityLevel } from '@/types/common';
 import {
   Users,
@@ -41,11 +40,16 @@ export const TaskBulkOperationsBar: React.FC<TaskBulkOperationsBarProps> = ({
   onBulkArchive,
   onBulkDelete,
 }) => {
+  const { data: peopleData } = usePeople();
+  const { data: teamsData } = useTeams();
+  const people: any[] = (peopleData as any)?.results ?? peopleData ?? [];
+  const teams: any[] = (teamsData as any)?.results ?? teamsData ?? [];
+
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedAssigneeId, setSelectedAssigneeId] = useState('usr-003');
-  const [selectedTeamId, setSelectedTeamId] = useState('team-01');
+  const [selectedAssigneeId, setSelectedAssigneeId] = useState('');
+  const [selectedTeamId, setSelectedTeamId] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<ProductionStatus>('In Progress');
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -55,8 +59,8 @@ export const TaskBulkOperationsBar: React.FC<TaskBulkOperationsBarProps> = ({
     e.preventDefault();
     setIsProcessing(true);
     try {
-      const user = mockUsers.find((u) => u.id === selectedAssigneeId);
-      const team = mockTeams.find((t) => t.id === selectedTeamId);
+      const user = people.find((u) => u.id === selectedAssigneeId);
+      const team = teams.find((t) => t.id === selectedTeamId);
       await onBulkAssign({
         assignee_id: user?.id,
         assignee_name: user?.full_name,
@@ -173,9 +177,10 @@ export const TaskBulkOperationsBar: React.FC<TaskBulkOperationsBarProps> = ({
               onChange={(e) => setSelectedAssigneeId(e.target.value)}
               className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
             >
-              {mockUsers.map((u) => (
+              <option value="">Unassigned</option>
+              {people.map((u: any) => (
                 <option key={u.id} value={u.id}>
-                  {u.full_name} ({u.role}) - {u.department || 'Studio'}
+                  {u.full_name} ({u.role}) - {u.department_name || 'Studio'}
                 </option>
               ))}
             </select>
@@ -190,7 +195,8 @@ export const TaskBulkOperationsBar: React.FC<TaskBulkOperationsBarProps> = ({
               onChange={(e) => setSelectedTeamId(e.target.value)}
               className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
             >
-              {mockTeams.map((t) => (
+              <option value="">No Team</option>
+              {teams.map((t: any) => (
                 <option key={t.id} value={t.id}>
                   {t.name} ({t.code})
                 </option>

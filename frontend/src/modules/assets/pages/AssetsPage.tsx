@@ -31,7 +31,7 @@ import {
   Film,
   SlidersHorizontal,
 } from 'lucide-react';
-import { Asset, AssetCategory, AssetSoftware } from '@/mocks/db/assets/assets';
+import { Asset, AssetCategory, AssetSoftware } from '@/types/assets';
 import { ProductionStatus } from '@/types/common';
 import { useInspectorStore } from '@/shared/stores/useInspectorStore';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';

@@ -1,6 +1,6 @@
 import { BaseRepository } from '@/core/repository/BaseRepository';
 import { IAssetRepository } from './IAssetRepository';
-import { Asset } from '@/mocks/db/assets/assets';
+import { Asset } from '@/types/assets';
 import { IApiClient } from '@/api/client/types';
 import { apiClient } from '@/api/client/ApiClient';
 

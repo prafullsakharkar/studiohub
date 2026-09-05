@@ -1,5 +1,5 @@
 import { IBaseRepository } from '@/core/repository/IBaseRepository';
-import { AuditLog } from '@/mocks/db/audit/auditLogs';
+import { AuditLog } from '@/types/audit';
 import { QueryParams } from '@/types/drf';
 import { RawActivity } from '../api/mappers/activityMapper';
 

@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Users, Film, Plus, Sparkles, CheckCircle2 } from 'lucide-react';
 import { Organization, Team } from '@/types/organization';
-import { mockTeams } from '@/mocks/db/organization/organization';
+import { useTeams } from '@/modules/organization/hooks/useOrganizationData';
 import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
 
 export const TeamsTab: React.FC<{ org: Organization }> = ({ org }) => {
-  const [teams, setTeams] = useState<Team[]>(mockTeams);
+  const { data: teamsData, isLoading } = useTeams();
+  const teams: Team[] = (teamsData as any)?.results ?? teamsData ?? [];
 
   return (
     <div className="space-y-6">
@@ -27,6 +28,11 @@ export const TeamsTab: React.FC<{ org: Organization }> = ({ org }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {!isLoading && teams.length === 0 && (
+          <div className="col-span-full py-8 text-center text-xs text-slate-500">
+            No production squads found.
+          </div>
+        )}
         {teams.map((team) => (
           <div
             key={team.id}

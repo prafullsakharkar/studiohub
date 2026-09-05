@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
 import {
-  Film,
   HardDrive,
   Eye,
-  Download,
-  Share2,
   Maximize2,
-  FileVideo,
-  Image,
-  Music,
   Plus,
-  Terminal,
 } from 'lucide-react';
-import { Project } from '@/mocks/db/production/projects';
-import { mockMediaAssets, MediaAsset } from '@/mocks/db/production/media';
+import { Project } from '@/types/projects';
+import { MediaItem } from '@/types/media';
+import { useMedia } from '@/modules/media/hooks/useMedia';
+import { useMediaMutations } from '@/modules/media/hooks/useMediaMutations';
+import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { Button } from '@/shared/components/Button';
 import { Modal } from '@/shared/components/Modal';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
@@ -23,20 +19,35 @@ interface ProjectMediaTabProps {
   onNavigateTab: (tabId: string) => void;
 }
 
-export const ProjectMediaTab: React.FC<ProjectMediaTabProps> = ({ project, onNavigateTab }) => {
-  const [mediaList, setMediaList] = useState<MediaAsset[]>(
-    mockMediaAssets.filter((m) => m.project_code === project.code || m.project_id === project.id).length > 0
-      ? mockMediaAssets.filter((m) => m.project_code === project.code || m.project_id === project.id)
-      : mockMediaAssets
-  );
+const MEDIA_CATEGORIES = [
+  'Camera Plate',
+  'Reference QuickTime',
+  'Concept Art',
+  'Audio Stem',
+  'HDRI Environment',
+  'LUT Profile',
+];
 
-  const [selectedMedia, setSelectedMedia] = useState<MediaAsset | null>(null);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+const mediaTypeForCategory = (category: string): string => {
+  if (category === 'Audio Stem') return 'audio';
+  if (category === 'Concept Art' || category === 'LUT Profile' || category === 'HDRI Environment') return 'image';
+  return 'video';
+};
+
+export const ProjectMediaTab: React.FC<ProjectMediaTabProps> = ({ project, onNavigateTab }) => {
+  const { data: mediaData, isLoading } = useMedia({ project_id: project.id });
+  const mediaList: MediaItem[] = mediaData ?? [];
+
+  const { createMedia, isCreating } = useMediaMutations();
+  const { user } = useAuth();
   const addNotification = useNotificationStore((state) => state.addNotification);
+
+  const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
-    media_type: 'Camera Plate' as any,
+    category: 'Camera Plate',
     file_name: '',
     file_format: 'ARRIRAW 6.5K',
     resolution: '6560x3100',
@@ -45,30 +56,28 @@ export const ProjectMediaTab: React.FC<ProjectMediaTabProps> = ({ project, onNav
     associated_shot_code: 'NK_010_0010',
   });
 
-  const handleUploadSubmit = (e: React.FormEvent) => {
+  const mediaTitle = (media: MediaItem) => media.title || media.name || media.file_name || media.code;
+
+  const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newMedia: MediaAsset = {
-      id: `med-${Date.now()}`,
-      code: `MED-${formData.associated_shot_code || 'INGEST'}-${Date.now().toString().slice(-4)}`,
+
+    await createMedia({
       title: formData.title,
       project_id: project.id,
       project_code: project.code,
-      media_type: formData.media_type,
+      media_type: mediaTypeForCategory(formData.category),
+      category: formData.category,
       file_name: formData.file_name || 'raw_plate_01.exr',
       file_format: formData.file_format,
       resolution: formData.resolution,
       color_space: formData.color_space,
-      file_size_mb: 1420,
       thumbnail_url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400',
       source_url: `s3://apex-storage-tier1/shows/${project.code}/plates/${formData.file_name}`,
-      uploaded_by: 'Editorial Ingest TD',
+      uploaded_by: user?.full_name || 'Unknown',
       associated_shot_code: formData.associated_shot_code,
       description: formData.description,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+    } as Partial<MediaItem>);
 
-    setMediaList([newMedia, ...mediaList]);
     setIsUploadModalOpen(false);
     addNotification({
       type: 'success',
@@ -102,6 +111,11 @@ export const ProjectMediaTab: React.FC<ProjectMediaTabProps> = ({ project, onNav
       </div>
 
       {/* Media Asset Grid */}
+      {isLoading && (
+        <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-400">
+          Loading media library…
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {mediaList.map((media) => (
           <div
@@ -113,7 +127,7 @@ export const ProjectMediaTab: React.FC<ProjectMediaTabProps> = ({ project, onNav
                 <div className="relative w-28 h-20 rounded-lg overflow-hidden bg-slate-950 border border-slate-800 shrink-0 group">
                   <img
                     src={media.thumbnail_url}
-                    alt={media.title}
+                    alt={mediaTitle(media)}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                   />
                   <button
@@ -128,10 +142,10 @@ export const ProjectMediaTab: React.FC<ProjectMediaTabProps> = ({ project, onNav
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-mono text-xs font-bold text-indigo-400">{media.code}</span>
                     <span className="px-2 py-0.2 text-[10px] font-mono bg-slate-800 text-slate-300 rounded border border-slate-700">
-                      {media.media_type}
+                      {media.category || media.media_type}
                     </span>
                   </div>
-                  <h4 className="text-xs font-bold text-white leading-snug">{media.title}</h4>
+                  <h4 className="text-xs font-bold text-white leading-snug">{mediaTitle(media)}</h4>
                   <p className="text-[11px] text-slate-400 font-mono">
                     {media.file_format} • {media.resolution || 'N/A'} • {media.file_size_mb} MB
                   </p>
@@ -156,6 +170,11 @@ export const ProjectMediaTab: React.FC<ProjectMediaTabProps> = ({ project, onNav
             </div>
           </div>
         ))}
+        {!isLoading && mediaList.length === 0 && (
+          <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 text-center text-xs text-slate-500 md:col-span-2">
+            No media registered for this project yet.
+          </div>
+        )}
       </div>
 
       {/* Media Detail / Preview Modal */}
@@ -163,14 +182,14 @@ export const ProjectMediaTab: React.FC<ProjectMediaTabProps> = ({ project, onNav
         <Modal
           isOpen={Boolean(selectedMedia)}
           onClose={() => setSelectedMedia(null)}
-          title={selectedMedia.title}
-          subtitle={`${selectedMedia.media_type} • ${selectedMedia.file_format}`}
+          title={mediaTitle(selectedMedia)}
+          subtitle={`${selectedMedia.category || selectedMedia.media_type} • ${selectedMedia.file_format}`}
         >
           <div className="space-y-4">
             <div className="w-full h-56 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 relative">
               <img
                 src={selectedMedia.thumbnail_url}
-                alt={selectedMedia.title}
+                alt={mediaTitle(selectedMedia)}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -223,16 +242,15 @@ export const ProjectMediaTab: React.FC<ProjectMediaTabProps> = ({ project, onNav
             <div className="space-y-1">
               <label className="text-xs font-semibold text-slate-300">Media Category</label>
               <select
-                value={formData.media_type}
-                onChange={(e) => setFormData({ ...formData, media_type: e.target.value as any })}
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white"
               >
-                <option value="Camera Plate">Camera Plate</option>
-                <option value="Reference QuickTime">Reference QuickTime</option>
-                <option value="Concept Art">Concept Art</option>
-                <option value="Audio Stem">Audio Stem</option>
-                <option value="HDRI Environment">HDRI Environment</option>
-                <option value="LUT Profile">LUT Profile</option>
+                {MEDIA_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="space-y-1">
@@ -262,7 +280,7 @@ export const ProjectMediaTab: React.FC<ProjectMediaTabProps> = ({ project, onNav
             <Button variant="ghost" size="sm" onClick={() => setIsUploadModalOpen(false)} type="button">
               Cancel
             </Button>
-            <Button variant="primary" size="sm" type="submit">
+            <Button variant="primary" size="sm" type="submit" disabled={isCreating}>
               Ingest Media
             </Button>
           </div>

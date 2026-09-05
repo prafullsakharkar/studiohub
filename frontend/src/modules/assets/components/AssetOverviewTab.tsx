@@ -24,7 +24,7 @@ import {
   Sliders,
   BarChart2,
 } from 'lucide-react';
-import { Asset } from '@/mocks/db/assets/assets';
+import { Asset } from '@/types/assets';
 import { Badge } from '@/shared/components/Badge';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';

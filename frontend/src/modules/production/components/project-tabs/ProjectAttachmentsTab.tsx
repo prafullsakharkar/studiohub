@@ -2,17 +2,15 @@ import React, { useState } from 'react';
 import {
   FileText,
   Download,
-  Upload,
   Shield,
-  FileSpreadsheet,
   FileCode,
-  FileCheck,
   Plus,
-  Copy,
-  ExternalLink,
 } from 'lucide-react';
-import { Project } from '@/mocks/db/production/projects';
-import { mockProductionAttachments, ProductionAttachment } from '@/mocks/db/production/attachments';
+import { Project } from '@/types/projects';
+import { AttachmentItem } from '@/types/attachments';
+import { useAttachments } from '@/modules/attachments/hooks/useAttachments';
+import { useAttachmentMutations } from '@/modules/attachments/hooks/useAttachmentMutations';
+import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { Button } from '@/shared/components/Button';
 import { Modal } from '@/shared/components/Modal';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
@@ -23,53 +21,50 @@ interface ProjectAttachmentsTabProps {
 }
 
 export const ProjectAttachmentsTab: React.FC<ProjectAttachmentsTabProps> = ({ project, onNavigateTab }) => {
-  const [attachments, setAttachments] = useState<ProductionAttachment[]>(
-    mockProductionAttachments.filter((a) => a.project_code === project.code || a.project_id === project.id).length > 0
-      ? mockProductionAttachments.filter((a) => a.project_code === project.code || a.project_id === project.id)
-      : mockProductionAttachments
-  );
+  const { data: attachmentsData, isLoading } = useAttachments({ project_id: project.id });
+  const attachments: AttachmentItem[] = attachmentsData ?? [];
 
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const { createAttachment, isCreating } = useAttachmentMutations();
+  const { user } = useAuth();
   const addNotification = useNotificationStore((state) => state.addNotification);
 
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [fileName, setFileName] = useState('');
   const [category, setCategory] = useState<'VFX Breakdown' | 'Camera & Lens Report' | 'Legal & Clearance' | 'Call Sheet' | 'Color Pipeline Spec' | 'Script Notes'>('VFX Breakdown');
-  const [fileType, setFileType] = useState('PDF Document');
   const [securityTier, setSecurityTier] = useState<'Confidential (Tier 4)' | 'Internal Studio Only' | 'Vendor Shareable'>('Internal Studio Only');
   const [desc, setDesc] = useState('');
 
-  const handleUploadSubmit = (e: React.FormEvent) => {
+  const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newDoc: ProductionAttachment = {
-      id: `att-${Date.now()}`,
+
+    await createAttachment({
       code: `DOC-${project.code}-${Date.now().toString().slice(-4)}`,
       file_name: fileName || 'specification_v1.pdf',
       project_id: project.id,
       project_code: project.code,
+      entity_type: 'project',
+      entity_id: project.id,
+      entity_code: project.code,
       category,
-      file_type: fileType,
+      file_type: 'PDF Document',
       file_size_kb: 4200,
-      uploaded_by: 'Alex Chen',
-      uploaded_by_avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+      uploaded_by: user?.full_name || 'Unknown',
       uploaded_at: new Date().toISOString(),
       version: 'v1.0',
       download_url: '#download',
       security_classification: securityTier,
       description: desc || 'Production documentation file.',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+    } as Partial<AttachmentItem>);
 
-    setAttachments([newDoc, ...attachments]);
     setIsUploadModalOpen(false);
     addNotification({
       type: 'success',
       title: 'Attachment Uploaded',
-      message: `Uploaded ${newDoc.file_name} into production repository.`,
+      message: `Uploaded ${fileName || 'specification_v1.pdf'} into production repository.`,
     });
   };
 
-  const handleDownload = (file: ProductionAttachment) => {
+  const handleDownload = (file: AttachmentItem) => {
     addNotification({
       type: 'info',
       title: 'Downloading Attachment',
@@ -103,6 +98,11 @@ export const ProjectAttachmentsTab: React.FC<ProjectAttachmentsTabProps> = ({ pr
 
       {/* Attachment Documents List */}
       <div className="space-y-3">
+        {isLoading && (
+          <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-400">
+            Loading attachments…
+          </div>
+        )}
         {attachments.map((doc) => (
           <div
             key={doc.id}
@@ -155,6 +155,11 @@ export const ProjectAttachmentsTab: React.FC<ProjectAttachmentsTabProps> = ({ pr
             </div>
           </div>
         ))}
+        {!isLoading && attachments.length === 0 && (
+          <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 text-center text-xs text-slate-500">
+            No attachments uploaded for this project yet.
+          </div>
+        )}
       </div>
 
       {/* Upload Modal */}
@@ -223,7 +228,7 @@ export const ProjectAttachmentsTab: React.FC<ProjectAttachmentsTabProps> = ({ pr
             <Button variant="ghost" size="sm" onClick={() => setIsUploadModalOpen(false)} type="button">
               Cancel
             </Button>
-            <Button variant="primary" size="sm" type="submit">
+            <Button variant="primary" size="sm" type="submit" disabled={isCreating}>
               Upload Document
             </Button>
           </div>

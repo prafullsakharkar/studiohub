@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Project } from '@/mocks/db/production/projects';
+import type { Project } from '@/types/projects';
 import { useProjects } from '@/modules/production/hooks/useProjects';
 
 export interface ProductionState {

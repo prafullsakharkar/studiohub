@@ -1,6 +1,6 @@
 import { IProjectRepository } from '../repositories/IProjectRepository';
 import { projectRepository } from '../repositories/ProjectRepository';
-import { Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
 import { PaginatedResponse, QueryParams } from '@/types/drf';
 
 export class ProjectService {

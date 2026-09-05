@@ -1,6 +1,6 @@
 import { IAssetRepository } from '../repositories/IAssetRepository';
 import { assetRepository } from '../repositories/AssetRepository';
-import { Asset } from '@/mocks/db/assets/assets';
+import { Asset } from '@/types/assets';
 import { PaginatedResponse, QueryParams } from '@/types/drf';
 
 export class AssetService {

@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Organization, OrganizationSettings } from '@/types/organization';
-import { mockOrganizations } from '@/mocks/db/organization/organization';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
@@ -24,33 +23,65 @@ const STORAGE_KEY = 'studiohub_active_org_id';
 const FAVORITES_STORAGE_KEY = 'studiohub_favorite_org_ids';
 const RECENTS_STORAGE_KEY = 'studiohub_recent_org_ids';
 
+/**
+ * Neutral placeholder rendered only while the real organization list is being
+ * fetched (pre-auth / first paint). Never contains fabricated studio data.
+ */
+const EMPTY_ORGANIZATION: Organization = {
+  id: '',
+  created_at: '',
+  updated_at: '',
+  name: 'No Organization',
+  slug: '',
+  code: '',
+  tier: 'Indie',
+  logo_url: '',
+  headquarters: '',
+  offices_count: 0,
+  active_projects_count: 0,
+  crew_count: 0,
+  storage_quota_tb: 0,
+  storage_used_tb: 0,
+  status: 'Onboarding',
+  primary_contact_email: '',
+  primary_contact_name: '',
+  settings: {
+    default_fps: 24,
+    default_color_space: '',
+    default_resolution: '',
+    allow_guest_reviewers: false,
+    enable_two_factor: false,
+    sso_enforced: false,
+    render_farm_region: '',
+    usd_schema_version: '',
+  },
+};
+
 export const OrganizationContext = createContext<OrganizationContextValue | undefined>(undefined);
 
 export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [organizations, setOrganizations] = useState<Organization[]>(mockOrganizations);
-  
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+
   const [favoriteOrgIds, setFavoriteOrgIds] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem(FAVORITES_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : ['org-apex-01'];
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return ['org-apex-01'];
+      return [];
     }
   });
 
   const [recentOrgIds, setRecentOrgIds] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem(RECENTS_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : ['org-apex-01', 'org-vanguard-02'];
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return ['org-apex-01', 'org-vanguard-02'];
+      return [];
     }
   });
 
   const [currentOrgId, setCurrentOrgId] = useState<string>(() => {
-    const saved = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
-    const exists = mockOrganizations.some((o) => o.id === saved);
-    return exists && saved ? saved : mockOrganizations[0].id;
+    return typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) || '' : '';
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -89,7 +120,7 @@ export const OrganizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, [refreshOrganizations]);
 
   const currentOrganization =
-    organizations.find((o) => o.id === currentOrgId) || organizations[0] || mockOrganizations[0];
+    organizations.find((o) => o.id === currentOrgId) || organizations[0] || EMPTY_ORGANIZATION;
 
   const toggleFavorite = useCallback((orgId: string) => {
     setFavoriteOrgIds((prev) => {

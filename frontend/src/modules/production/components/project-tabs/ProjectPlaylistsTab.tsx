@@ -13,8 +13,10 @@ import {
   MessageSquare,
   Plus,
 } from 'lucide-react';
-import { Project } from '@/mocks/db/production/projects';
-import { mockPlaylists, Playlist } from '@/mocks/db/production/playlists';
+import { Project } from '@/types/projects';
+import { Playlist } from '@/types/playlists';
+import { usePlaylists } from '@/modules/playlists/hooks/usePlaylists';
+import { usePlaylistMutations } from '@/modules/playlists/hooks/usePlaylistMutations';
 import { Button } from '@/shared/components/Button';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Modal } from '@/shared/components/Modal';
@@ -26,13 +28,16 @@ interface ProjectPlaylistsTabProps {
 }
 
 export const ProjectPlaylistsTab: React.FC<ProjectPlaylistsTabProps> = ({ project, onNavigateTab }) => {
-  const [playlists, setPlaylists] = useState<Playlist[]>(
-    mockPlaylists.filter((p) => p.project_code === project.code || p.project_id === project.id).length > 0
-      ? mockPlaylists.filter((p) => p.project_code === project.code || p.project_id === project.id)
-      : mockPlaylists
-  );
+  const { data: playlistsData, isLoading } = usePlaylists({
+    project_id: project.id,
+    page_size: 50,
+  });
+  const playlists: Playlist[] = (playlistsData as any)?.results ?? playlistsData ?? [];
 
-  const [activePlaylist, setActivePlaylist] = useState<Playlist>(playlists[0] || mockPlaylists[0]);
+  const { createPlaylist, isCreating } = usePlaylistMutations();
+
+  const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null);
+  const activePlaylist = playlists.find((p) => p.id === selectedPlaylistId) ?? playlists[0];
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isPlayingReel, setIsPlayingReel] = useState(false);
   const addNotification = useNotificationStore((state) => state.addNotification);
@@ -41,39 +46,22 @@ export const ProjectPlaylistsTab: React.FC<ProjectPlaylistsTabProps> = ({ projec
   const [newType, setNewType] = useState<'Dailies' | 'Client Review' | 'Editorial Sync' | 'Executive Screening'>('Dailies');
   const [newDesc, setNewDesc] = useState('');
 
-  const handleCreatePlaylist = (e: React.FormEvent) => {
+  const handleCreatePlaylist = async (e: React.FormEvent) => {
     e.preventDefault();
-    const created: Playlist = {
-      id: `ply-${Date.now()}`,
-      code: `PLY-NK-${Date.now().toString().slice(-4)}`,
+    const created = await createPlaylist({
       name: newTitle,
       project_id: project.id,
       project_code: project.code,
       type: newType,
-      author_id: 'usr-001',
-      author_name: 'Alex Chen',
-      author_avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
       description: newDesc || 'Curated review reel for show milestone.',
-      is_locked: false,
-      items_count: 0,
-      total_duration_frames: 0,
-      total_duration_timecode: '00:00:00:00',
       status: 'In Progress',
       entries: [],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+    } as Partial<Playlist>);
 
-    setPlaylists([created, ...playlists]);
-    setActivePlaylist(created);
+    setSelectedPlaylistId(created.id);
     setIsCreateModalOpen(false);
     setNewTitle('');
     setNewDesc('');
-    addNotification({
-      type: 'success',
-      title: 'Playlist Created',
-      message: `Created review playlist ${created.name}.`,
-    });
   };
 
   return (
@@ -110,11 +98,11 @@ export const ProjectPlaylistsTab: React.FC<ProjectPlaylistsTabProps> = ({ projec
 
           <div className="space-y-2">
             {playlists.map((pl) => {
-              const isSelected = pl.id === activePlaylist.id;
+              const isSelected = pl.id === activePlaylist?.id;
               return (
                 <div
                   key={pl.id}
-                  onClick={() => setActivePlaylist(pl)}
+                  onClick={() => setSelectedPlaylistId(pl.id)}
                   className={`p-3.5 rounded-xl border cursor-pointer transition-all space-y-2 ${
                     isSelected
                       ? 'bg-indigo-950/40 border-indigo-500/40 shadow-lg'
@@ -152,6 +140,12 @@ export const ProjectPlaylistsTab: React.FC<ProjectPlaylistsTabProps> = ({ projec
 
         {/* Right Column: Selected Playlist Details & Shot Cuts */}
         <div className="lg:col-span-2 space-y-4">
+          {!activePlaylist && !isLoading && (
+            <div className="p-8 rounded-2xl bg-slate-900 border border-slate-800 text-center text-xs text-slate-500">
+              No playlists available for this project yet. Create one to get started.
+            </div>
+          )}
+          {activePlaylist && (
           <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
             {/* Header of Active Playlist */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
@@ -243,6 +237,7 @@ export const ProjectPlaylistsTab: React.FC<ProjectPlaylistsTabProps> = ({ projec
               </div>
             </div>
           </div>
+          )}
         </div>
       </div>
 

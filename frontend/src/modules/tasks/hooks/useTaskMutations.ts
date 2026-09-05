@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { taskService } from '../services/TaskService';
-import { Task } from '@/mocks/db/tasks/tasks';
+import { Task } from '@/types/tasks';
 import { TASK_QUERY_KEYS } from './useTasks';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 

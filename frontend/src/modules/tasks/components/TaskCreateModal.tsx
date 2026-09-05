@@ -4,9 +4,7 @@ import { Button } from '@/shared/components/Button';
 import { useProjects } from '@/modules/production/hooks/useProjects';
 import { useShots } from '@/modules/shots/hooks/useShots';
 import { useAssets } from '@/modules/assets/hooks/useAssets';
-import { mockDepartments, mockTeams } from '@/mocks/db/organization/organization';
-import { mockUsers } from '@/mocks/db/identity/users';
-import { mockVendors } from '@/mocks/db/organization/organization';
+import { usePeople, useTeams, useVendors } from '@/modules/organization/hooks/useOrganizationData';
 import { Department, PriorityLevel, ProductionStatus } from '@/types/common';
 import { Task, TaskEntityType } from '@/types/tasks';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
@@ -34,11 +32,14 @@ interface TaskCreateModalProps {
   defaultEntityCode?: string;
 }
 
+const isoDatePlusDays = (days: number) =>
+  new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
 export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
-  defaultProjectId = 'proj-001',
+  defaultProjectId = '',
   defaultEntityType = 'Shot',
   defaultEntityId,
   defaultEntityCode,
@@ -50,27 +51,34 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
   const { data: projectsData } = useProjects();
   const { data: shotsData } = useShots();
   const { data: assetsData } = useAssets();
+  const { data: peopleData } = usePeople();
+  const { data: teamsData } = useTeams();
+  const { data: vendorsData } = useVendors();
+
+  const people: any[] = (peopleData as any)?.results ?? peopleData ?? [];
+  const teams: any[] = (teamsData as any)?.results ?? teamsData ?? [];
+  const vendors: any[] = (vendorsData as any)?.results ?? vendorsData ?? [];
 
   const [projectId, setProjectId] = useState<string>(defaultProjectId);
   const [entityType, setEntityType] = useState<TaskEntityType>(defaultEntityType);
   const [entityId, setEntityId] = useState<string>(defaultEntityId || '');
   const [title, setTitle] = useState('');
   const [department, setDepartment] = useState<Department>('FX & Simulation');
-  const [teamId, setTeamId] = useState<string>('team-01');
-  const [assigneeId, setAssigneeId] = useState<string>('usr-003');
-  const [reviewerId, setReviewerId] = useState<string>('usr-001');
+  const [teamId, setTeamId] = useState<string>('');
+  const [assigneeId, setAssigneeId] = useState<string>('');
+  const [reviewerId, setReviewerId] = useState<string>('');
   const [vendorId, setVendorId] = useState<string>('');
   const [priority, setPriority] = useState<PriorityLevel>('High');
   const [status, setStatus] = useState<ProductionStatus>('Not Started');
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
-  const [dueDate, setDueDate] = useState('2026-09-10');
+  const [dueDate, setDueDate] = useState(isoDatePlusDays(14));
   const [estimatedHours, setEstimatedHours] = useState(36);
   const [software, setSoftware] = useState('Houdini 20.5 (Solaris Karma)');
   const [milestone, setMilestone] = useState('First Temp Dailies');
   const [workflowStage, setWorkflowStage] = useState('Primary Production');
   const [workflowStep, setWorkflowStep] = useState('Working Pass 1');
   const [description, setDescription] = useState('');
-  const [tagsInput, setTagsInput] = useState('VFX, HighPriority');
+  const [tagsInput, setTagsInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selectedProject = projectsData?.results?.find((p) => p.id === projectId) || projectsData?.results?.[0];
@@ -94,30 +102,30 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
       let entityName = '';
       if (entityType === 'Shot') {
         const shot = projectShots.find((s) => s.id === entityId) || projectShots[0];
-        entityCode = shot?.code || 'NK_010_010';
+        entityCode = shot?.code || '';
         entityName = shot?.name || 'Shot';
       } else if (entityType === 'Asset') {
         const asset = projectAssets.find((a) => a.id === entityId) || projectAssets[0];
-        entityCode = asset?.code || 'AST_001';
+        entityCode = asset?.code || '';
         entityName = asset?.name || 'Asset';
       } else {
-        entityCode = `${selectedProject?.code || 'NK99'}_GLOBAL`;
+        entityCode = selectedProject?.code ? `${selectedProject.code}_GLOBAL` : 'GLOBAL';
         entityName = 'Global Production Pipeline';
       }
 
-      const assignedUser = mockUsers.find((u) => u.id === assigneeId);
-      const reviewerUser = mockUsers.find((u) => u.id === reviewerId);
-      const selectedTeam = mockTeams.find((t) => t.id === teamId);
-      const selectedVendor = mockVendors.find((v) => v.id === vendorId);
+      const assignedUser = people.find((u) => u.id === assigneeId);
+      const reviewerUser = people.find((u) => u.id === reviewerId);
+      const selectedTeam = teams.find((t) => t.id === teamId);
+      const selectedVendor = vendors.find((v) => v.id === vendorId);
       const tags = tagsInput.split(',').map((t) => t.trim()).filter(Boolean);
 
       const payload: Partial<Task> = {
         title,
-        project_id: selectedProject?.id || 'proj-001',
-        project_code: selectedProject?.code || 'NK99',
-        project_name: selectedProject?.name || 'Cyberpunk 2099: Neo-Kyoto',
+        project_id: selectedProject?.id || '',
+        project_code: selectedProject?.code || '',
+        project_name: selectedProject?.name || '',
         entity_type: entityType,
-        entity_id: entityId || (entityType === 'Shot' ? projectShots[0]?.id : projectAssets[0]?.id) || 'shot-001',
+        entity_id: entityId || (entityType === 'Shot' ? projectShots[0]?.id : projectAssets[0]?.id) || '',
         entity_code: entityCode,
         entity_name: entityName,
         department,
@@ -168,10 +176,10 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
 
       addActivity({
         actor: {
-          id: user?.id || 'usr-001',
-          name: user?.full_name || 'Alex Chen',
-          email: user?.email || 'supervisor@studiohub.vfx',
-          role: user?.role || 'VFX Supervisor',
+          id: user?.id || '',
+          name: user?.full_name || 'Unknown User',
+          email: user?.email || '',
+          role: user?.role || 'Unknown',
         },
         action: 'create',
         actionLabel: 'Task Created',
@@ -351,7 +359,8 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
               onChange={(e) => setTeamId(e.target.value)}
               className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
             >
-              {mockTeams.map((t) => (
+              <option value="">No Team</option>
+              {teams.map((t: any) => (
                 <option key={t.id} value={t.id}>
                   {t.name} ({t.code})
                 </option>
@@ -384,7 +393,8 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
               onChange={(e) => setAssigneeId(e.target.value)}
               className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
             >
-              {mockUsers.map((u) => (
+              <option value="">Unassigned</option>
+              {people.map((u: any) => (
                 <option key={u.id} value={u.id}>
                   {u.full_name} ({u.role})
                 </option>
@@ -401,7 +411,8 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
               onChange={(e) => setReviewerId(e.target.value)}
               className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
             >
-              {mockUsers.map((u) => (
+              <option value="">Unassigned</option>
+              {people.map((u: any) => (
                 <option key={u.id} value={u.id}>
                   {u.full_name} ({u.role})
                 </option>
@@ -419,7 +430,7 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
               className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
             >
               <option value="">None (In-House Studio)</option>
-              {mockVendors.map((v) => (
+              {vendors.map((v: any) => (
                 <option key={v.id} value={v.id}>
                   {v.name} ({v.code})
                 </option>

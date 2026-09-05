@@ -30,7 +30,7 @@ import {
   FileText,
   Upload,
 } from 'lucide-react';
-import { Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';

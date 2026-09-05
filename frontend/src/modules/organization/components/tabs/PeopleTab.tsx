@@ -1,20 +1,21 @@
 import React, { useState } from 'react';
 import { Users, Mail, MapPin, Plus, Search, Shield, CheckCircle2 } from 'lucide-react';
 import { Organization, Person } from '@/types/organization';
-import { mockPeople } from '@/mocks/db/organization/organization';
+import { usePeople } from '@/modules/organization/hooks/useOrganizationData';
 import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
 
 export const PeopleTab: React.FC<{ org: Organization }> = ({ org }) => {
-  const [people, setPeople] = useState<Person[]>(mockPeople);
+  const { data: peopleData, isLoading } = usePeople();
+  const people: Person[] = (peopleData as any)?.results ?? peopleData ?? [];
   const [search, setSearch] = useState('');
 
   const filtered = people.filter(
     (p) =>
-      p.full_name.toLowerCase().includes(search.toLowerCase()) ||
-      p.email.toLowerCase().includes(search.toLowerCase()) ||
-      p.role.toLowerCase().includes(search.toLowerCase()) ||
-      p.department_name.toLowerCase().includes(search.toLowerCase())
+      (p.full_name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (p.email || '').toLowerCase().includes(search.toLowerCase()) ||
+      (p.role || '').toLowerCase().includes(search.toLowerCase()) ||
+      (p.department_name || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -61,6 +62,13 @@ export const PeopleTab: React.FC<{ org: Organization }> = ({ org }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/60 font-sans">
+            {!isLoading && filtered.length === 0 && (
+              <tr>
+                <td colSpan={7} className="py-8 text-center text-xs text-slate-500">
+                  No crew members found.
+                </td>
+              </tr>
+            )}
             {filtered.map((person) => (
               <tr key={person.id} className="hover:bg-slate-800/40 transition-colors">
                 <td className="py-3 px-4">

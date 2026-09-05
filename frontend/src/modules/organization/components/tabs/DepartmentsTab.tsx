@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Layers, Users, Cpu, Plus, Sparkles, Sliders } from 'lucide-react';
 import { Organization, DepartmentEntity } from '@/types/organization';
-import { mockDepartments } from '@/mocks/db/organization/organization';
+import { useDepartments } from '@/modules/organization/hooks/useOrganizationData';
 import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
 
 export const DepartmentsTab: React.FC<{ org: Organization }> = ({ org }) => {
-  const [departments, setDepartments] = useState<DepartmentEntity[]>(mockDepartments);
+  const { data: departmentsData, isLoading } = useDepartments();
+  const departments: DepartmentEntity[] =
+    (departmentsData as any)?.results ?? departmentsData ?? [];
 
   return (
     <div className="space-y-6">
@@ -27,6 +29,11 @@ export const DepartmentsTab: React.FC<{ org: Organization }> = ({ org }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {!isLoading && departments.length === 0 && (
+          <div className="col-span-full py-8 text-center text-xs text-slate-500">
+            No departments found.
+          </div>
+        )}
         {departments.map((dept) => (
           <div
             key={dept.id}

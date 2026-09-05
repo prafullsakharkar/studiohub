@@ -1,45 +1,45 @@
 import { EntityType, EntityId, EntityReference } from '@/types/crud';
-import { mockShots } from '@/mocks/db/production/shots';
-import { mockTasks } from '@/mocks/db/tasks/tasks';
-import { mockAssets } from '@/mocks/db/assets/assets';
-import { mockReviews } from '@/mocks/db/reviews/reviews';
-import {
-  mockClients,
-  mockVendors,
-  mockPeople,
-  mockDepartments,
-  mockTeams,
-  mockOffices,
-  mockOrganizations,
-  mockPublishedVersions,
-} from '@/mocks/db/organization/organization';
-import { mockUsers } from '@/mocks/db/identity/users';
 import { queryClient } from '@/providers/QueryProvider';
-import { PROJECT_QUERY_KEYS } from '@/modules/production/hooks/useProjects';
-import { Project } from '@/mocks/db/production/projects';
-import { PaginatedResponse } from '@/types/drf';
+
+type AnyRecord = Record<string, any>;
+
+/**
+ * Reads list data for the given query-key roots from the React Query cache
+ * (populated by the module list hooks). Supports both plain arrays and
+ * DRF-style paginated responses. Returns [] until lists have been fetched.
+ */
+function readCachedList(rootKeys: string[]): AnyRecord[] {
+  const byId = new Map<string, AnyRecord>();
+  for (const q of queryClient.getQueryCache().getAll()) {
+    const key = q.queryKey;
+    if (!Array.isArray(key) || !rootKeys.includes(key[0])) continue;
+    if (key[1] === 'detail' || key[1] === 'null') continue;
+    const data = q.state.data as any;
+    if (!data) continue;
+    const items = Array.isArray(data) ? data : data?.results;
+    if (!Array.isArray(items)) continue;
+    for (const item of items) {
+      if (item && typeof item === 'object' && item.id != null) {
+        byId.set(String(item.id), item);
+      }
+    }
+  }
+  return Array.from(byId.values());
+}
+
+function findCached(rootKeys: string[], id: EntityId, fields: string[]): AnyRecord | null {
+  return readCachedList(rootKeys).find((item) => fields.some((f) => item?.[f] === id)) || null;
+}
 
 /**
  * Reads real projects from the React Query cache (populated by useProjects /
  * useActiveProject). Returns [] until the list has been fetched.
  */
-export function getRealProjects(): Project[] {
-  const orgId = localStorage.getItem('studiohub_active_org_id') || undefined;
-  const cached = queryClient.getQueryData<PaginatedResponse<Project>>(
-    PROJECT_QUERY_KEYS.list(orgId, { page_size: 100 })
-  );
-  if (cached?.results?.length) return cached.results;
-  for (const q of queryClient.getQueryCache().getAll()) {
-    const key = q.queryKey;
-    if (Array.isArray(key) && key[0] === 'projects' && key[1] === 'list') {
-      const data = q.state.data as PaginatedResponse<Project> | undefined;
-      if (data?.results?.length) return data.results;
-    }
-  }
-  return [];
+export function getRealProjects(): AnyRecord[] {
+  return readCachedList(['projects']);
 }
 
-function findRealProject(id: string): Project | null {
+function findRealProject(id: EntityId): AnyRecord | null {
   return getRealProjects().find((p) => p.id === id || p.code === id) || null;
 }
 
@@ -188,7 +188,7 @@ export const ENTITY_CONFIGS: Record<EntityType, EntityTypeConfig> = {
 };
 
 /**
- * Resolves raw entity data from mock sources by (type, id)
+ * Resolves raw entity data from the React Query cache by (type, id)
  */
 export function resolveEntityRaw(type: EntityType, id: EntityId): any | null {
   if (!id) return null;
@@ -197,32 +197,29 @@ export function resolveEntityRaw(type: EntityType, id: EntityId): any | null {
     case 'project':
       return findRealProject(id);
     case 'shot':
-      return mockShots.find((s) => s.id === id || s.code === id) || null;
+      return findCached(['shots'], id, ['id', 'code']);
     case 'task':
-      return mockTasks.find((t) => t.id === id || t.code === id) || null;
+      return findCached(['tasks'], id, ['id', 'code']);
     case 'asset':
-      return mockAssets.find((a) => a.id === id || a.code === id) || null;
+      return findCached(['assets'], id, ['id', 'code']);
     case 'review':
-      return mockReviews.find((r) => r.id === id || r.code === id) || null;
+      return findCached(['reviews'], id, ['id', 'code']);
     case 'version':
-      return mockPublishedVersions.find((v) => v.id === id || v.entity_code === id || v.version_number === id) || null;
+      return findCached(['versions'], id, ['id', 'entity_code', 'version_code']);
     case 'client':
-      return mockClients.find((c) => c.id === id || c.code === id) || null;
+      return findCached(['clients'], id, ['id', 'code']);
     case 'vendor':
-      return mockVendors.find((v) => v.id === id || v.code === id) || null;
-    case 'person': {
-      const user = mockUsers.find((u) => u.id === id || u.email === id);
-      if (user) return user;
-      return mockPeople.find((p) => p.id === id || p.email === id) || null;
-    }
+      return findCached(['vendors'], id, ['id', 'code']);
+    case 'person':
+      return findCached(['people', 'users'], id, ['id', 'email']);
     case 'team':
-      return mockTeams.find((t) => t.id === id || t.code === id) || null;
+      return findCached(['teams'], id, ['id', 'code']);
     case 'department':
-      return mockDepartments.find((d) => d.id === id || d.code === id || d.name === id) || null;
+      return findCached(['departments'], id, ['id', 'code', 'name']);
     case 'office':
-      return mockOffices.find((o) => o.id === id || o.code === id) || null;
+      return findCached(['offices'], id, ['id', 'code']);
     case 'organization':
-      return mockOrganizations.find((org) => org.id === id || org.code === id) || null;
+      return findCached(['organizations'], id, ['id', 'code']);
     default:
       return null;
   }
@@ -250,7 +247,7 @@ export function resolveEntityReference(type: EntityType, id: EntityId): EntityRe
         label: raw.name,
         code: raw.code,
         subtitle: raw.client_name || raw.genre,
-        context: `Client: ${raw.client_name || 'Warner Bros'} • ${raw.shots_count || 85} Shots`,
+        context: `Client: ${raw.client_name || '—'}`,
         badge: raw.status,
         status: raw.status,
       };
@@ -261,7 +258,7 @@ export function resolveEntityReference(type: EntityType, id: EntityId): EntityRe
         label: raw.name,
         code: raw.code,
         subtitle: `${raw.project_code} • ${raw.frame_count || 0}f`,
-        context: `Project: ${raw.project_name || raw.project_code || 'Film A'}`,
+        context: `Project: ${raw.project_name || raw.project_code || '—'}`,
         avatarUrl: raw.thumbnail_url,
         badge: raw.status,
         status: raw.status,
@@ -273,7 +270,7 @@ export function resolveEntityReference(type: EntityType, id: EntityId): EntityRe
         label: raw.title,
         code: raw.code,
         subtitle: `${raw.department} • ${raw.project_code}`,
-        context: `Department: ${raw.department} • Project: ${raw.project_code || 'NK99'}`,
+        context: `Project: ${raw.project_code || '—'}`,
         avatarUrl: raw.assignee_avatar,
         badge: raw.status,
         status: raw.status,
@@ -286,7 +283,7 @@ export function resolveEntityReference(type: EntityType, id: EntityId): EntityRe
         label: raw.name,
         code: raw.code,
         subtitle: `${raw.category} • ${raw.project_code}`,
-        context: `Project: ${raw.project_code || 'NK99'} • Type: ${raw.category || 'Character'}`,
+        context: `Type: ${raw.category || '—'}`,
         avatarUrl: raw.thumbnail_url,
         badge: raw.status,
         status: raw.status,
@@ -298,7 +295,7 @@ export function resolveEntityReference(type: EntityType, id: EntityId): EntityRe
         label: raw.version_code || raw.name,
         code: raw.version_code,
         subtitle: `${raw.department} • ${raw.file_format || 'OpenUSD/EXR'}`,
-        context: `Entity: ${raw.entity_code || 'Shot'} • Format: ${raw.file_format || 'USD/EXR'}`,
+        context: `Format: ${raw.file_format || '—'}`,
         badge: raw.approval_status || raw.status,
         status: raw.approval_status || raw.status,
       };
@@ -309,7 +306,7 @@ export function resolveEntityReference(type: EntityType, id: EntityId): EntityRe
         label: raw.title || raw.name,
         code: raw.code,
         subtitle: `${raw.project_code} • ${raw.item_count || 0} items`,
-        context: `Project: ${raw.project_code || 'NK99'} • ${raw.item_count || 6} Items`,
+        context: `Project: ${raw.project_code || '—'} • ${raw.item_count || 0} Items`,
         badge: raw.status,
         status: raw.status,
       };
@@ -320,7 +317,7 @@ export function resolveEntityReference(type: EntityType, id: EntityId): EntityRe
         label: raw.name,
         code: raw.code,
         subtitle: raw.studio_type || raw.contract_tier,
-        context: `Projects: ${raw.active_projects_count || 12}`,
+        context: `Projects: ${raw.active_projects_count || 0}`,
         badge: raw.status,
         status: raw.status,
       };
@@ -331,7 +328,7 @@ export function resolveEntityReference(type: EntityType, id: EntityId): EntityRe
         label: raw.name,
         code: raw.code,
         subtitle: raw.specialty || raw.tier,
-        context: `Specialty: ${raw.specialty || 'VFX / FX'} • Tier ${raw.tier || 1}`,
+        context: `Specialty: ${raw.specialty || '—'}`,
         badge: raw.status,
         status: raw.status,
       };
@@ -342,7 +339,7 @@ export function resolveEntityReference(type: EntityType, id: EntityId): EntityRe
         label: raw.full_name || `${raw.first_name || ''} ${raw.last_name || ''}`.trim() || raw.name,
         code: raw.role || raw.job_title,
         subtitle: raw.department || raw.email,
-        context: `Team: ${raw.department || 'Compositing'}`,
+        context: `Team: ${raw.department || '—'}`,
         avatarUrl: raw.avatar_url,
         badge: raw.is_active ? 'Active' : 'Inactive',
       };
@@ -353,7 +350,7 @@ export function resolveEntityReference(type: EntityType, id: EntityId): EntityRe
         label: raw.name,
         code: raw.code,
         subtitle: `${raw.lead_name || 'Team'} • ${raw.members_count || 0} crew`,
-        context: `Lead: ${raw.lead_name || 'Sarah Chen'} • ${raw.members_count || 12} Members`,
+        context: `Lead: ${raw.lead_name || '—'} • ${raw.members_count || 0} Members`,
         badge: raw.status,
       };
     case 'department':
@@ -363,7 +360,7 @@ export function resolveEntityReference(type: EntityType, id: EntityId): EntityRe
         label: raw.name,
         code: raw.code,
         subtitle: `${raw.head_name || 'Lead'} • ${raw.active_tasks_count || 0} tasks`,
-        context: `Lead: ${raw.head_name || 'Alex Rivera'} • ${raw.active_tasks_count || 24} Members`,
+        context: `Lead: ${raw.head_name || '—'} • ${raw.active_tasks_count || 0} Tasks`,
         badge: raw.status,
       };
     case 'office':
@@ -373,7 +370,7 @@ export function resolveEntityReference(type: EntityType, id: EntityId): EntityRe
         label: raw.name,
         code: raw.code,
         subtitle: `${raw.city || raw.location}, ${raw.country || ''}`,
-        context: `Location: ${raw.city || 'London'}, ${raw.country || 'UK'} • Capacity: ${raw.capacity || 140}`,
+        context: `Location: ${raw.city || '—'}, ${raw.country || ''}`,
         badge: raw.status,
       };
     case 'organization':
@@ -383,7 +380,7 @@ export function resolveEntityReference(type: EntityType, id: EntityId): EntityRe
         label: raw.name,
         code: raw.code,
         subtitle: raw.headquarters || raw.tier,
-        context: `Headquarters: ${raw.headquarters || 'Los Angeles, CA'} • 4 Studios`,
+        context: `Headquarters: ${raw.headquarters || '—'}`,
         avatarUrl: raw.logo_url,
         badge: raw.status,
       };
@@ -419,49 +416,26 @@ export function searchAllEntities(
   const results: EntityReference[] = [];
   const q = query.toLowerCase().trim();
 
+  const SEARCH_SOURCES: Partial<Record<EntityType, string[]>> = {
+    project: ['projects'],
+    shot: ['shots'],
+    asset: ['assets'],
+    task: ['tasks'],
+    version: ['versions'],
+    review: ['reviews'],
+    client: ['clients'],
+    vendor: ['vendors'],
+    person: ['people', 'users'],
+    team: ['teams'],
+    department: ['departments'],
+    office: ['offices'],
+    organization: ['organizations'],
+  };
+
   for (const t of allowedTypes) {
-    let items: any[] = [];
-    switch (t) {
-      case 'project':
-        items = getRealProjects();
-        break;
-      case 'shot':
-        items = mockShots;
-        break;
-      case 'task':
-        items = mockTasks;
-        break;
-      case 'asset':
-        items = mockAssets;
-        break;
-      case 'version':
-        items = mockPublishedVersions;
-        break;
-      case 'review':
-        items = mockReviews;
-        break;
-      case 'client':
-        items = mockClients;
-        break;
-      case 'vendor':
-        items = mockVendors;
-        break;
-      case 'person':
-        items = mockUsers;
-        break;
-      case 'team':
-        items = mockTeams;
-        break;
-      case 'department':
-        items = mockDepartments;
-        break;
-      case 'office':
-        items = mockOffices;
-        break;
-      case 'organization':
-        items = mockOrganizations;
-        break;
-    }
+    const rootKeys = SEARCH_SOURCES[t];
+    if (!rootKeys) continue;
+    const items: AnyRecord[] = readCachedList(rootKeys);
 
     for (const item of items) {
       if (results.length >= limit) break;
@@ -541,7 +515,10 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
 
     case 'project': {
       // Project -> Client
-      const client = resolveEntityReference('client', 'cli-001');
+      const projectRaw = findRealProject(id);
+      const client = projectRaw?.client_id
+        ? resolveEntityReference('client', projectRaw.client_id)
+        : null;
       if (client) {
         groups.push({
           relationshipType: 'client',
@@ -553,8 +530,8 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
       }
 
       // Project -> Shots
-      const shots = mockShots
-        .filter((s) => s.project_id === id)
+      const shots = readCachedList(['shots'])
+        .filter((s) => s.project_id === id || s.project_code === id)
         .map((s) => resolveEntityReference('shot', s.id))
         .filter(Boolean) as EntityReference[];
 
@@ -569,8 +546,8 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
       }
 
       // Project -> Assets
-      const assets = mockAssets
-        .filter((a) => a.project_id === id)
+      const assets = readCachedList(['assets'])
+        .filter((a) => a.project_id === id || a.project_code === id)
         .map((a) => resolveEntityReference('asset', a.id))
         .filter(Boolean) as EntityReference[];
 
@@ -585,8 +562,8 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
       }
 
       // Project -> Tasks
-      const tasks = mockTasks
-        .filter((t) => t.project_id === id)
+      const tasks = readCachedList(['tasks'])
+        .filter((t) => t.project_id === id || t.project_code === id)
         .map((t) => resolveEntityReference('task', t.id))
         .filter(Boolean) as EntityReference[];
 
@@ -603,7 +580,7 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
     }
 
     case 'shot': {
-      const shot = mockShots.find((s) => s.id === id);
+      const shot = resolveEntityRaw('shot', id);
       if (!shot) break;
 
       // Shot -> Project
@@ -619,8 +596,10 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
       }
 
       // Shot -> Tasks
-      const tasks = mockTasks
-        .filter((t) => t.entity_id === id || (t.entity_type === 'Shot' && t.entity_code === shot.code))
+      const tasks = readCachedList(['tasks'])
+        .filter(
+          (t) => t.entity_id === id || ((t.entity_type || '').toLowerCase() === 'shot' && t.entity_code === shot.code)
+        )
         .map((t) => resolveEntityReference('task', t.id))
         .filter(Boolean) as EntityReference[];
 
@@ -635,8 +614,8 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
       }
 
       // Shot -> Versions
-      const versions = mockPublishedVersions
-        .filter((v) => v.entity_code?.includes(shot.code) || v.id.includes('ver-001') || v.id.includes('ver-002'))
+      const versions = readCachedList(['versions'])
+        .filter((v) => v.entity_id === id || v.entity_code === shot.code)
         .slice(0, 3)
         .map((v) => resolveEntityReference('version', v.id))
         .filter(Boolean) as EntityReference[];
@@ -668,7 +647,7 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
     }
 
     case 'task': {
-      const task = mockTasks.find((t) => t.id === id);
+      const task = resolveEntityRaw('task', id);
       if (!task) break;
 
       // Task -> Project
@@ -684,7 +663,7 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
       }
 
       // Task -> Shot / Asset
-      if (task.entity_type === 'Shot' && task.entity_id) {
+      if ((task.entity_type || '').toLowerCase() === 'shot' && task.entity_id) {
         const shot = resolveEntityReference('shot', task.entity_id);
         if (shot) {
           groups.push({
@@ -695,7 +674,7 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
             count: 1,
           });
         }
-      } else if (task.entity_type === 'Asset' && task.entity_id) {
+      } else if ((task.entity_type || '').toLowerCase() === 'asset' && task.entity_id) {
         const asset = resolveEntityReference('asset', task.entity_id);
         if (asset) {
           groups.push({
@@ -740,7 +719,8 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
 
     case 'version': {
       // Version -> Shot
-      const shot = resolveEntityReference('shot', 'shot-001');
+      const versionRaw = resolveEntityRaw('version', id);
+      const shot = versionRaw?.entity_id ? resolveEntityReference('shot', versionRaw.entity_id) : null;
       if (shot) {
         groups.push({
           relationshipType: 'shot',
@@ -752,7 +732,7 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
       }
 
       // Version -> Reviews
-      const reviews = mockReviews
+      const reviews = readCachedList(['reviews'])
         .slice(0, 2)
         .map((r) => resolveEntityReference('review', r.id))
         .filter(Boolean) as EntityReference[];
@@ -771,7 +751,7 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
 
     case 'review': {
       // Review -> Versions
-      const versions = mockPublishedVersions
+      const versions = readCachedList(['versions'])
         .slice(0, 4)
         .map((v) => resolveEntityReference('version', v.id))
         .filter(Boolean) as EntityReference[];
@@ -787,7 +767,8 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
       }
 
       // Review -> Project
-      const project = resolveEntityReference('project', 'proj-001');
+      const reviewRaw = resolveEntityRaw('review', id);
+      const project = reviewRaw?.project_id ? resolveEntityReference('project', reviewRaw.project_id) : null;
       if (project) {
         groups.push({
           relationshipType: 'project',
@@ -802,7 +783,7 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
 
     case 'person': {
       // Person -> Teams
-      const teams = mockTeams
+      const teams = readCachedList(['teams'])
         .slice(0, 2)
         .map((t) => resolveEntityReference('team', t.id))
         .filter(Boolean) as EntityReference[];
@@ -830,7 +811,7 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
       });
 
       // Person -> Active Tasks
-      const tasks = mockTasks
+      const tasks = readCachedList(['tasks'])
         .filter((t) => t.assignee_id === id)
         .map((t) => resolveEntityReference('task', t.id))
         .filter(Boolean) as EntityReference[];
@@ -863,7 +844,7 @@ export function getRelatedEntities(type: EntityType, id: EntityId): RelatedEntit
       });
 
       // Team -> People
-      const people = mockUsers
+      const people = readCachedList(['people', 'users'])
         .slice(0, 4)
         .map((u) => resolveEntityReference('person', u.id))
         .filter(Boolean) as EntityReference[];

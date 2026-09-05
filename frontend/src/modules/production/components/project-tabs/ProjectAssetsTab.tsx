@@ -10,7 +10,7 @@ import {
   ExternalLink,
   Download,
 } from 'lucide-react';
-import { Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
 import { useAssets } from '@/modules/assets/hooks/useAssets';
 import { useAssetMutations } from '@/modules/assets/hooks/useAssetMutations';
 import { StatusBadge } from '@/shared/components/StatusBadge';
@@ -22,7 +22,7 @@ import { Modal } from '@/shared/components/Modal';
 import { useInspectorStore } from '@/shared/stores/useInspectorStore';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import { Link } from 'react-router-dom';
-import { Asset, AssetCategory } from '@/mocks/db/assets/assets';
+import { Asset, AssetCategory } from '@/types/assets';
 
 interface ProjectAssetsTabProps {
   project: Project;

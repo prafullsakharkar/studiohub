@@ -1,5 +1,5 @@
 import React from 'react';
-import { Asset } from '@/mocks/db/assets/assets';
+import { Asset } from '@/types/assets';
 import { AttachmentList } from '@/shared/components/attachments/AttachmentList';
 import { useAttachments } from '@/modules/attachments/hooks/useAttachments';
 import { useAttachmentMutations } from '@/modules/attachments/hooks/useAttachmentMutations';

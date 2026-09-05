@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Modal } from './Modal';
 import { Button } from './Button';
 import { EntityType, EntityId } from '@/types/crud';
+import { Person, Team } from '@/types/organization';
 import { useActivityStore } from '@/shared/stores/useActivityStore';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import { usePermissions } from '@/core/permissions/usePermissions';
-import { mockProjects } from '@/mocks/db/production/projects';
-import { mockTeams, mockPeople, mockClients, mockVendors, mockOrganizations } from '@/mocks/db/organization/organization';
+import { useProjects } from '@/modules/production/hooks/useProjects';
+import { usePeople, useTeams } from '@/modules/organization/hooks/useOrganizationData';
+import { useAuth } from '@/modules/auth/hooks/useAuth';
 import {
   Briefcase,
   Users,
@@ -38,6 +40,14 @@ interface ActionModalProps {
   onClose: () => void;
 }
 
+/** Minimal structural view of a project row (full type moves to @/types in P0.4). */
+interface ProjectOption {
+  id: string;
+  code: string;
+  name: string;
+  status?: string;
+}
+
 export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
   type,
   entityType = 'shot',
@@ -48,11 +58,28 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
   const { addActivity } = useActivityStore();
   const addNotification = useNotificationStore((s) => s.addNotification);
   const { currentRole } = usePermissions();
+  const { user } = useAuth();
+
+  // Live data from the query cache (module list hooks)
+  const projectsQuery = useProjects();
+  const peopleQuery = usePeople();
+  const teamsQuery = useTeams();
+
+  const projects: ProjectOption[] = (projectsQuery.data as any)?.results ?? projectsQuery.data ?? [];
+  const people: Person[] = (peopleQuery.data as any)?.results ?? peopleQuery.data ?? [];
+  const teams: Team[] = (teamsQuery.data as any)?.results ?? teamsQuery.data ?? [];
+
+  const actor = {
+    id: user?.id || '',
+    name: user?.full_name || 'Unknown User',
+    email: user?.email || '',
+    role: currentRole.name,
+  };
 
   // State for forms
-  const [selectedProject, setSelectedProject] = useState(mockProjects[0]?.id || 'proj-001');
-  const [selectedTeam, setSelectedTeam] = useState(mockTeams[0]?.id || 'tm-001');
-  const [selectedPerson, setSelectedPerson] = useState(mockPeople[0]?.id || 'usr-001');
+  const [selectedProject, setSelectedProject] = useState('');
+  const [selectedTeam, setSelectedTeam] = useState('');
+  const [selectedPerson, setSelectedPerson] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('Approved');
   const [targetEntityName, setTargetEntityName] = useState('');
   const [targetEntityCode, setTargetEntityCode] = useState('');
@@ -62,16 +89,12 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
 
   // Handle Assign Project
   const handleAssignProject = () => {
-    const proj = mockProjects.find((p) => p.id === selectedProject) || mockProjects[0];
-    const person = mockPeople.find((u) => u.id === selectedPerson) || mockPeople[0];
+    const proj = projects.find((p) => p.id === selectedProject);
+    const person = people.find((u) => u.id === selectedPerson);
+    if (!proj || !person) return;
 
     addActivity({
-      actor: {
-        id: 'usr-001',
-        name: 'Alex Chen',
-        email: 'supervisor@studiohub.vfx',
-        role: currentRole.name,
-      },
+      actor,
       action: 'assign',
       actionLabel: 'Project assigned',
       entity: {
@@ -96,16 +119,12 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
 
   // Handle Assign Team
   const handleAssignTeam = () => {
-    const team = mockTeams.find((t) => t.id === selectedTeam) || mockTeams[0];
-    const proj = mockProjects.find((p) => p.id === selectedProject) || mockProjects[0];
+    const team = teams.find((t) => t.id === selectedTeam);
+    const proj = projects.find((p) => p.id === selectedProject);
+    if (!team || !proj) return;
 
     addActivity({
-      actor: {
-        id: 'usr-002',
-        name: 'Marcus Vance',
-        email: 'admin@studiohub.vfx',
-        role: currentRole.name,
-      },
+      actor,
       action: 'assign',
       actionLabel: 'Team assigned',
       entity: {
@@ -131,12 +150,7 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
   // Handle Archive Entity
   const handleArchive = () => {
     addActivity({
-      actor: {
-        id: 'usr-001',
-        name: 'Alex Chen',
-        email: 'supervisor@studiohub.vfx',
-        role: currentRole.name,
-      },
+      actor,
       action: 'archive',
       actionLabel: `${entityType.toUpperCase()} archived`,
       entity: {
@@ -160,12 +174,7 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
   // Handle Restore Entity
   const handleRestore = () => {
     addActivity({
-      actor: {
-        id: 'usr-001',
-        name: 'Alex Chen',
-        email: 'supervisor@studiohub.vfx',
-        role: currentRole.name,
-      },
+      actor,
       action: 'restore',
       actionLabel: `${entityType.toUpperCase()} restored`,
       entity: {
@@ -189,12 +198,7 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
   // Handle Change Status
   const handleChangeStatus = () => {
     addActivity({
-      actor: {
-        id: 'usr-001',
-        name: 'Alex Chen',
-        email: 'supervisor@studiohub.vfx',
-        role: currentRole.name,
-      },
+      actor,
       action: 'status_change',
       actionLabel: 'Status changed',
       entity: {
@@ -221,12 +225,7 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
     const code = targetEntityCode.trim() || `${createCategory.slice(0, 3).toUpperCase()}-99`;
 
     addActivity({
-      actor: {
-        id: 'usr-001',
-        name: 'Alex Chen',
-        email: 'supervisor@studiohub.vfx',
-        role: currentRole.name,
-      },
+      actor,
       action: 'create',
       actionLabel: `${createCategory.charAt(0).toUpperCase() + createCategory.slice(1)} created`,
       entity: {
@@ -268,9 +267,10 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
                 onChange={(e) => setSelectedProject(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-200"
               >
-                {mockProjects.map((p) => (
+                {projects.length === 0 && <option value="">No projects available</option>}
+                {projects.map((p) => (
                   <option key={p.id} value={p.id}>
-                    [{p.code}] {p.name} ({p.status})
+                    [{p.code}] {p.name} ({p.status || '—'})
                   </option>
                 ))}
               </select>
@@ -283,7 +283,8 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
                 onChange={(e) => setSelectedPerson(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-200"
               >
-                {mockPeople.map((u) => (
+                {people.length === 0 && <option value="">No crew available</option>}
+                {people.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.full_name} — {u.role} ({u.department_name})
                   </option>
@@ -320,7 +321,8 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
                 onChange={(e) => setSelectedTeam(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-200"
               >
-                {mockTeams.map((t) => (
+                {teams.length === 0 && <option value="">No teams available</option>}
+                {teams.map((t) => (
                   <option key={t.id} value={t.id}>
                     [{t.code}] {t.name} ({t.member_count || 0} crew)
                   </option>
@@ -335,7 +337,8 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
                 onChange={(e) => setSelectedProject(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-200"
               >
-                {mockProjects.map((p) => (
+                {projects.length === 0 && <option value="">No projects available</option>}
+                {projects.map((p) => (
                   <option key={p.id} value={p.id}>
                     [{p.code}] {p.name}
                   </option>

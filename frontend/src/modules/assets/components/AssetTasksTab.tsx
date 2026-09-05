@@ -12,7 +12,7 @@ import {
   Filter,
   CheckCircle2,
 } from 'lucide-react';
-import { Asset } from '@/mocks/db/assets/assets';
+import { Asset } from '@/types/assets';
 import { useTasks } from '@/modules/tasks/hooks/useTasks';
 import { useTaskMutations } from '@/modules/tasks/hooks/useTaskMutations';
 import { Button } from '@/shared/components/Button';
@@ -21,7 +21,7 @@ import { Badge } from '@/shared/components/Badge';
 import { Modal } from '@/shared/components/Modal';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { PriorityLevel, ProductionStatus, Department } from '@/types/common';
-import { Task } from '@/mocks/db/tasks/tasks';
+import { Task } from '@/types/tasks';
 
 interface AssetTasksTabProps {
   asset: Asset;

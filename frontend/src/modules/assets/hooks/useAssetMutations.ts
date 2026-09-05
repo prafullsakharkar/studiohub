@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { assetService } from '../services/AssetService';
-import { Asset } from '@/mocks/db/assets/assets';
+import { Asset } from '@/types/assets';
 import { ASSET_QUERY_KEYS } from './useAssets';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 

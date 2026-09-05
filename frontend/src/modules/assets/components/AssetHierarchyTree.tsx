@@ -10,7 +10,7 @@ import {
   ExternalLink,
   ShieldAlert,
 } from 'lucide-react';
-import { Asset, AssetHierarchyNode } from '@/mocks/db/assets/assets';
+import { Asset, AssetHierarchyNode } from '@/types/assets';
 import { Badge } from '@/shared/components/Badge';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Link } from 'react-router-dom';

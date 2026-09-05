@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Globe, MapPin, Users, Wifi, Tv, Plus, CheckCircle2 } from 'lucide-react';
 import { Organization, Office } from '@/types/organization';
-import { mockOffices } from '@/mocks/db/organization/organization';
+import { useOffices } from '@/modules/organization/hooks/useOrganizationData';
 import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
 
 export const OfficesTab: React.FC<{ org: Organization }> = ({ org }) => {
-  const [offices, setOffices] = useState<Office[]>(mockOffices);
+  const { data: officesData, isLoading } = useOffices();
+  const offices: Office[] = (officesData as any)?.results ?? officesData ?? [];
 
   return (
     <div className="space-y-6">
@@ -27,6 +28,11 @@ export const OfficesTab: React.FC<{ org: Organization }> = ({ org }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {!isLoading && offices.length === 0 && (
+          <div className="col-span-full py-8 text-center text-xs text-slate-500">
+            No facility offices found.
+          </div>
+        )}
         {offices.map((office) => (
           <div
             key={office.id}

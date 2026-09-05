@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useTasks, useTaskMutations } from '../hooks/useTasks';
 import { useProjects } from '@/modules/production/hooks/useProjects';
-import { mockUsers } from '@/mocks/db/identity/users';
-import { mockDepartments, mockTeams, mockVendors } from '@/mocks/db/organization/organization';
+import { usePeople, useTeams, useVendors } from '@/modules/organization/hooks/useOrganizationData';
 import { Task, TaskEntityType } from '@/types/tasks';
 import { Department, PriorityLevel, ProductionStatus } from '@/types/common';
 import { Button } from '@/shared/components/Button';
@@ -52,6 +51,13 @@ export const TasksPage: React.FC = () => {
   const [projectFilter, setProjectFilter] = useState<string>('ALL');
   const [entityTypeFilter, setEntityTypeFilter] = useState<string>('ALL');
   const [departmentFilter, setDepartmentFilter] = useState<string>('ALL');
+  const { data: peopleData } = usePeople();
+  const { data: teamsData } = useTeams();
+  const { data: vendorsData } = useVendors();
+  const filterPeople: any[] = (peopleData as any)?.results ?? peopleData ?? [];
+  const filterTeams: any[] = (teamsData as any)?.results ?? teamsData ?? [];
+  const filterVendors: any[] = (vendorsData as any)?.results ?? vendorsData ?? [];
+
   const [teamFilter, setTeamFilter] = useState<string>('ALL');
   const [assigneeFilter, setAssigneeFilter] = useState<string>('ALL');
   const [vendorFilter, setVendorFilter] = useState<string>('ALL');
@@ -378,7 +384,7 @@ export const TasksPage: React.FC = () => {
             className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
           >
             <option value="ALL">All Teams</option>
-            {mockTeams.map((t) => (
+            {filterTeams.map((t: any) => (
               <option key={t.id} value={t.id}>
                 {t.name}
               </option>
@@ -392,7 +398,7 @@ export const TasksPage: React.FC = () => {
             className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
           >
             <option value="ALL">All Assignees</option>
-            {mockUsers.map((u) => (
+            {filterPeople.map((u: any) => (
               <option key={u.id} value={u.id}>
                 {u.full_name}
               </option>
@@ -406,7 +412,7 @@ export const TasksPage: React.FC = () => {
             className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
           >
             <option value="ALL">All Studios / Vendors</option>
-            {mockVendors.map((v) => (
+            {filterVendors.map((v: any) => (
               <option key={v.id} value={v.id}>
                 {v.name}
               </option>

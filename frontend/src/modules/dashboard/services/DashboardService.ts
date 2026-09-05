@@ -1,7 +1,7 @@
 import { IApiClient } from '@/api/client/types';
 import { apiClient } from '@/api/client/ApiClient';
-import { ProductionKpis, DepartmentProgress } from '@/mocks/db/analytics/metrics';
-import { Organization } from '@/mocks/db/organization/organization';
+import { ProductionKpis, DepartmentProgress } from '@/types/analytics';
+import { Organization } from '@/types/organization';
 
 export class DashboardService {
   private client: IApiClient;

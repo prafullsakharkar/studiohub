@@ -1,13 +1,20 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { ChevronRight, Home, Film, Box, CheckSquare, Layers, PackageCheck, PlaySquare, Calendar, Users, Activity, FileText } from 'lucide-react';
-import { mockProjects } from '@/mocks/db/production/projects';
-import { mockShots } from '@/mocks/db/production/shots';
-import { mockAssets } from '@/mocks/db/assets/assets';
+import { ChevronRight, Home, Film } from 'lucide-react';
+import { useProjects } from '@/modules/production/hooks/useProjects';
+import { useShots } from '@/modules/shots/hooks/useShots';
+import { useAssets } from '@/modules/assets/hooks/useAssets';
 
 export const Breadcrumbs: React.FC = () => {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
+
+  const { data: projectsData } = useProjects();
+  const { data: shotsData } = useShots();
+  const { data: assetsData } = useAssets();
+  const projects = projectsData?.results ?? [];
+  const shots = shotsData?.results ?? [];
+  const assets = assetsData?.results ?? [];
 
   const routeNameMap: Record<string, string> = {
     dashboard: 'Studio Home',
@@ -45,7 +52,7 @@ export const Breadcrumbs: React.FC = () => {
 
     // If following /projects/
     if (prevSegment === 'projects') {
-      const project = mockProjects.find((p) => p.id === segment || p.code.toLowerCase() === segment.toLowerCase());
+      const project = projects.find((p) => p.id === segment || p.code.toLowerCase() === segment.toLowerCase());
       if (project) {
         return {
           label: `${project.name} [${project.code}]`,
@@ -57,7 +64,7 @@ export const Breadcrumbs: React.FC = () => {
 
     // If following /shots/
     if (prevSegment === 'shots') {
-      const shot = mockShots.find((s) => s.id === segment || s.code.toLowerCase() === segment.toLowerCase());
+      const shot = shots.find((s) => s.id === segment || s.code.toLowerCase() === segment.toLowerCase());
       if (shot) {
         return { label: `Shot ${shot.code}` };
       }
@@ -65,7 +72,7 @@ export const Breadcrumbs: React.FC = () => {
 
     // If following /assets/
     if (prevSegment === 'assets') {
-      const asset = mockAssets.find((a) => a.id === segment || a.code.toLowerCase() === segment.toLowerCase());
+      const asset = assets.find((a) => a.id === segment || a.code.toLowerCase() === segment.toLowerCase());
       if (asset) {
         return { label: `Asset ${asset.name}` };
       }

@@ -14,7 +14,7 @@ import {
   Clock,
   Sparkles,
 } from 'lucide-react';
-import { Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
 import { mockPublishRecords, PublishRecord } from '@/mocks/db/production/publishing';
 import { Button } from '@/shared/components/Button';
 import { Modal } from '@/shared/components/Modal';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
 import { WorkflowStudio } from '@/modules/workflows/components/WorkflowStudio';
 
 interface ProjectWorkflowTabProps {

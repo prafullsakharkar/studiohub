@@ -14,7 +14,7 @@ import {
   ArrowRightLeft,
   FileCheck,
 } from 'lucide-react';
-import { Asset, AssetVersionRecord } from '@/mocks/db/assets/assets';
+import { Asset, AssetVersionRecord } from '@/types/assets';
 import { Button } from '@/shared/components/Button';
 import { Badge } from '@/shared/components/Badge';
 import { Modal } from '@/shared/components/Modal';

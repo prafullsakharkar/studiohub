@@ -1,6 +1,6 @@
 import { IShotRepository } from '../repositories/IShotRepository';
 import { shotRepository } from '../repositories/ShotRepository';
-import { Shot } from '@/mocks/db/production/shots';
+import { Shot } from '@/types/shots';
 import { PaginatedResponse, QueryParams } from '@/types/drf';
 
 export class ShotService {

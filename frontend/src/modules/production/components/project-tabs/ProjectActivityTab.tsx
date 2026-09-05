@@ -12,7 +12,7 @@ import {
   Download,
   CheckCircle2,
 } from 'lucide-react';
-import { Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
 import {
   mockProjectActivities,
   ProjectActivityItem,

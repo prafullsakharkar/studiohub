@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Film, Plus, Search, ExternalLink, Calendar, Users, DollarSign, Layers, X } from 'lucide-react';
 import { Vendor } from '@/types/organization';
-import { mockProjects, Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
+import { useProjects } from '@/modules/production/hooks/useProjects';
 import { Button } from '@/shared/components/Button';
 import { Badge } from '@/shared/components/Badge';
 import { Link } from 'react-router-dom';
@@ -19,8 +20,10 @@ export const VendorProjectsTab: React.FC<VendorProjectsTabProps> = ({ vendor }) 
   const [customProjectCode, setCustomProjectCode] = useState('');
 
   const { updateVendor } = useVendorMutations();
+  const { data: projectsData } = useProjects();
+  const allProjects: Project[] = projectsData?.results ?? [];
 
-  const associatedProjects = mockProjects.filter((p) =>
+  const associatedProjects = allProjects.filter((p) =>
     activeProjectsList.some(
       (codeOrName) =>
         p.code.toLowerCase() === codeOrName.toLowerCase() ||
@@ -39,7 +42,7 @@ export const VendorProjectsTab: React.FC<VendorProjectsTabProps> = ({ vendor }) 
     e.preventDefault();
     let codeToAdd = customProjectCode.trim();
     if (selectedProjectId) {
-      const proj = mockProjects.find((p) => p.id === selectedProjectId);
+      const proj = allProjects.find((p) => p.id === selectedProjectId);
       if (proj) {
         codeToAdd = `${proj.code} (${proj.name})`;
       }
@@ -222,7 +225,7 @@ export const VendorProjectsTab: React.FC<VendorProjectsTabProps> = ({ vendor }) 
                   className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:border-purple-500 focus:outline-hidden"
                 >
                   <option value="">-- Choose Organization Show --</option>
-                  {mockProjects.map((p) => (
+                  {allProjects.map((p) => (
                     <option key={p.id} value={p.id}>
                       [{p.code}] {p.name} ({p.type})
                     </option>

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Task } from '@/types/tasks';
 import { Button } from '@/shared/components/Button';
-import { mockUsers } from '@/mocks/db/identity/users';
-import { mockTeams, mockVendors, mockDepartments } from '@/mocks/db/organization/organization';
+import { usePeople, useTeams, useVendors } from '@/modules/organization/hooks/useOrganizationData';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import { useActivityStore } from '@/shared/stores/useActivityStore';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
@@ -19,6 +18,13 @@ export const TaskAssignmentTab: React.FC<TaskAssignmentTabProps> = ({ task, onUp
   const addNotification = useNotificationStore((state) => state.addNotification);
   const addActivity = useActivityStore((state) => state.addActivity);
 
+  const { data: peopleData } = usePeople();
+  const { data: teamsData } = useTeams();
+  const { data: vendorsData } = useVendors();
+  const people: any[] = (peopleData as any)?.results ?? peopleData ?? [];
+  const teams: any[] = (teamsData as any)?.results ?? teamsData ?? [];
+  const vendors: any[] = (vendorsData as any)?.results ?? vendorsData ?? [];
+
   const [assigneeId, setAssigneeId] = useState(task.assignee_id || '');
   const [reviewerId, setReviewerId] = useState(task.reviewer_id || '');
   const [teamId, setTeamId] = useState(task.team_id || '');
@@ -30,10 +36,10 @@ export const TaskAssignmentTab: React.FC<TaskAssignmentTabProps> = ({ task, onUp
     e.preventDefault();
     setIsSaving(true);
     try {
-      const assignedUser = mockUsers.find((u) => u.id === assigneeId);
-      const reviewerUser = mockUsers.find((u) => u.id === reviewerId);
-      const selectedTeam = mockTeams.find((t) => t.id === teamId);
-      const selectedVendor = mockVendors.find((v) => v.id === vendorId);
+      const assignedUser = people.find((u) => u.id === assigneeId);
+      const reviewerUser = people.find((u) => u.id === reviewerId);
+      const selectedTeam = teams.find((t) => t.id === teamId);
+      const selectedVendor = vendors.find((v) => v.id === vendorId);
 
       await onUpdate({
         assignee_id: assigneeId || undefined,
@@ -53,10 +59,10 @@ export const TaskAssignmentTab: React.FC<TaskAssignmentTabProps> = ({ task, onUp
 
       addActivity({
         actor: {
-          id: user?.id || 'usr-001',
-          name: user?.full_name || 'Alex Chen',
-          email: user?.email || 'supervisor@studiohub.vfx',
-          role: user?.role || 'VFX Supervisor',
+          id: user?.id || '',
+          name: user?.full_name || 'Unknown User',
+          email: user?.email || '',
+          role: user?.role || 'Unknown',
         },
         action: 'update',
         actionLabel: 'Task Reassigned',
@@ -114,9 +120,9 @@ export const TaskAssignmentTab: React.FC<TaskAssignmentTabProps> = ({ task, onUp
               className="w-full bg-slate-900 border border-slate-700 rounded-md px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
             >
               <option value="">— Unassigned —</option>
-              {mockUsers.map((u) => (
+              {people.map((u: any) => (
                 <option key={u.id} value={u.id}>
-                  {u.full_name} ({u.role}) — {u.department || 'Studio'}
+                  {u.full_name} ({u.role}) — {u.department_name || 'Studio'}
                 </option>
               ))}
             </select>
@@ -133,7 +139,7 @@ export const TaskAssignmentTab: React.FC<TaskAssignmentTabProps> = ({ task, onUp
               className="w-full bg-slate-900 border border-slate-700 rounded-md px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
             >
               <option value="">— No Designated Reviewer —</option>
-              {mockUsers.map((u) => (
+              {people.map((u: any) => (
                 <option key={u.id} value={u.id}>
                   {u.full_name} ({u.role})
                 </option>
@@ -174,7 +180,7 @@ export const TaskAssignmentTab: React.FC<TaskAssignmentTabProps> = ({ task, onUp
               className="w-full bg-slate-900 border border-slate-700 rounded-md px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
             >
               <option value="">— Unassigned Team —</option>
-              {mockTeams.map((t) => (
+              {teams.map((t: any) => (
                 <option key={t.id} value={t.id}>
                   {t.name} ({t.code})
                 </option>
@@ -192,7 +198,7 @@ export const TaskAssignmentTab: React.FC<TaskAssignmentTabProps> = ({ task, onUp
               className="w-full bg-slate-900 border border-slate-700 rounded-md px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
             >
               <option value="">None (Internal Studio Work)</option>
-              {mockVendors.map((v) => (
+              {vendors.map((v: any) => (
                 <option key={v.id} value={v.id}>
                   {v.name} ({v.code})
                 </option>

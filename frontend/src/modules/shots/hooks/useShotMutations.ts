@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { shotService } from '../services/ShotService';
-import { Shot } from '@/mocks/db/production/shots';
+import { Shot } from '@/types/shots';
 import { SHOT_QUERY_KEYS } from './useShots';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import { PROJECT_QUERY_KEYS } from '@/modules/production/hooks/useProjects';

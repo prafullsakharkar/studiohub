@@ -1,6 +1,6 @@
 import { IAuditRepository } from '../repositories/IAuditRepository';
 import { auditRepository } from '../repositories/AuditRepository';
-import { AuditLog } from '@/mocks/db/audit/auditLogs';
+import { AuditLog } from '@/types/audit';
 import { PaginatedResponse, QueryParams } from '@/types/drf';
 import { ActivityLogItem } from '@/types/enterprise';
 import { normalizeActivities } from '../api/mappers/activityMapper';

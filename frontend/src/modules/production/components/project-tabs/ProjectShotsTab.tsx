@@ -11,7 +11,7 @@ import {
   Sliders,
   ExternalLink,
 } from 'lucide-react';
-import { Project } from '@/mocks/db/production/projects';
+import { Project } from '@/types/projects';
 import { useShots } from '@/modules/shots/hooks/useShots';
 import { useShotMutations } from '@/modules/shots/hooks/useShotMutations';
 import { StatusBadge } from '@/shared/components/StatusBadge';
@@ -22,7 +22,7 @@ import { EmptyState } from '@/shared/components/EmptyState';
 import { Modal } from '@/shared/components/Modal';
 import { useInspectorStore } from '@/shared/stores/useInspectorStore';
 import { Link } from 'react-router-dom';
-import { Shot } from '@/mocks/db/production/shots';
+import { Shot } from '@/types/shots';
 import { ProductionStatus } from '@/types/common';
 
 interface ProjectShotsTabProps {
