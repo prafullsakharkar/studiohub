@@ -5,6 +5,7 @@ from .profile import ProfileViewSet
 from .security_event import SecurityEventViewSet
 from .trusted_device import TrustedDeviceViewSet
 from .user import UserViewSet
+from .user_session import UserSessionViewSet
 
 __all__ = (
     "IdentityViewSet",
@@ -13,5 +14,6 @@ __all__ = (
     "ProfileViewSet",
     "SecurityEventViewSet",
     "TrustedDeviceViewSet",
+    "UserSessionViewSet",
     "UserViewSet",
 )

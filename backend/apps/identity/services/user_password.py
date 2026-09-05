@@ -34,6 +34,22 @@ class UserPasswordService(
             ],
         )
 
+        profile = getattr(
+            user,
+            "profile",
+            None,
+        )
+
+        if profile and profile.must_change_password:
+            profile.must_change_password = False
+
+            profile.save(
+                update_fields=[
+                    "must_change_password",
+                    "updated_at",
+                ],
+            )
+
         return user
 
     @classmethod

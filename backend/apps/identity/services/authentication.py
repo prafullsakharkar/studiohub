@@ -12,6 +12,9 @@ from django.contrib.auth import (
 from django.utils import timezone
 
 from apps.core.services.business import BusinessService
+from apps.identity.authentication.exceptions import (
+    IPBlocked,
+)
 from apps.identity.authentication.token import (
     TokenService,
 )
@@ -25,6 +28,9 @@ from apps.identity.events.authentication import (
 )
 from apps.identity.selectors.authentication import (
     AuthenticationSelector,
+)
+from apps.identity.services.ip_blacklist import (
+    is_ip_blacklisted,
 )
 from apps.identity.services.login_attempt import (
     LoginAttemptService,
@@ -67,16 +73,40 @@ class AuthenticationService(
             request,
         )
 
+        if is_ip_blacklisted(
+            ip_address,
+        ):
+            raise IPBlocked()
+
         user = cls.selector_class.get_user(
             username=username,
         )
 
-        cls.validator_class.validate_login(
-            username=username,
-            password=password,
-            user=user,
-            ip_address=ip_address,
-        )
+        try:
+            cls.validator_class.validate_login(
+                username=username,
+                password=password,
+                user=user,
+                ip_address=ip_address,
+            )
+        except Exception as exc:
+            LoginAttemptService.record_failure(
+                username=username,
+                ip_address=ip_address,
+                user_agent=request.META.get(
+                    "HTTP_USER_AGENT",
+                    "",
+                ),
+                reason=getattr(
+                    exc,
+                    "default_detail",
+                    None,
+                )
+                or type(exc).__name__,
+                user=user,
+            )
+
+            raise
 
         django_login(
             request,

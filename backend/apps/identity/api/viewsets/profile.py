@@ -44,6 +44,9 @@ class ProfileViewSet(
         "partial_update": ProfileUpdateSerializer,
     }
 
+    # NOTE: reads/writes stay open to any authenticated user, but the
+    # selector scopes them to the request user's own profile (staff see
+    # all). Object-level scoping — not permission codes — is the control.
     permission_map = {
         "destroy": (ProfilePermissions.DELETE,),
     }

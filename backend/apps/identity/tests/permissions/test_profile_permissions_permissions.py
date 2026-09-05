@@ -88,9 +88,9 @@ class TestProfilePermissions:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_authenticated_user_can_update_own_profile(self, authenticated_client):
+    def test_authenticated_user_can_update_own_profile(self, authenticated_client, user):
         """Test that authenticated user can update own profile."""
-        profile = ProfileFactory.create()
+        profile = ProfileFactory.create(user=user)
         response = authenticated_client.patch(
             f"/api/v1/identity/profiles/{profile.id}/",
             {"first_name": "Updated"},

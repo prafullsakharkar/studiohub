@@ -1,3 +1,4 @@
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -54,6 +55,9 @@ class IPBlacklistViewSet(
         "update": (IPBlacklistPermissions.UPDATE,),
         "partial_update": (IPBlacklistPermissions.UPDATE,),
         "destroy": (IPBlacklistPermissions.DELETE,),
+        "activate": (IPBlacklistPermissions.UPDATE,),
+        "deactivate": (IPBlacklistPermissions.UPDATE,),
+        "expire": (IPBlacklistPermissions.UPDATE,),
     }
 
     @action(
@@ -65,7 +69,7 @@ class IPBlacklistViewSet(
     def activate(
         self,
         request,
-        uuid=None,
+        pk=None,
     ):
         ip_blacklist = self.get_object()
 
@@ -84,7 +88,7 @@ class IPBlacklistViewSet(
     def deactivate(
         self,
         request,
-        uuid=None,
+        pk=None,
     ):
         ip_blacklist = self.get_object()
 
@@ -103,11 +107,25 @@ class IPBlacklistViewSet(
     def expire(
         self,
         request,
-        uuid=None,
+        pk=None,
     ):
+        from django.utils.dateparse import (
+            parse_datetime,
+        )
+
         ip_blacklist = self.get_object()
 
-        expires_at = request.data.get("expires_at")
+        expires_at = parse_datetime(
+            request.data.get("expires_at") or "",
+        )
+
+        if expires_at is None:
+            return Response(
+                {
+                    "detail": "A valid ISO-8601 expires_at is required.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         IPBlacklistService.update(
             ip_blacklist,

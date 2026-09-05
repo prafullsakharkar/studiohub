@@ -6,6 +6,7 @@ from apps.identity.api.viewsets import (
     ProfileViewSet,
     SecurityEventViewSet,
     TrustedDeviceViewSet,
+    UserSessionViewSet,
     UserViewSet,
 )
 
@@ -15,6 +16,12 @@ router.register(
     "users",
     UserViewSet,
     basename="user",
+)
+
+router.register(
+    "sessions",
+    UserSessionViewSet,
+    basename="session",
 )
 
 router.register(

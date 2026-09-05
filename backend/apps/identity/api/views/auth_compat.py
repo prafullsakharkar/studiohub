@@ -25,6 +25,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from apps.core.api.throttling import ResilientScopedRateThrottle
 from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import (
     LoginSerializer,
@@ -41,6 +42,8 @@ class AuthLoginView(BaseAPIView):
 
     authentication_classes = ()
     permission_classes = (AllowAny,)
+    throttle_classes = (ResilientScopedRateThrottle,)
+    throttle_scope = "login"
     serializer_class = LoginSerializer
 
     @extend_schema(
@@ -87,6 +90,8 @@ class AuthRefreshView(BaseAPIView):
 
     authentication_classes = ()
     permission_classes = (AllowAny,)
+    throttle_classes = (ResilientScopedRateThrottle,)
+    throttle_scope = "refresh"
     serializer_class = RefreshSerializer
 
     @extend_schema(

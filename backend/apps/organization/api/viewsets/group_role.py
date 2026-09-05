@@ -48,6 +48,9 @@ class GroupRoleViewSet(OrganizationEntityViewSet):
         "create": (GroupRolePermissions.ADD,),
         "add": (GroupRolePermissions.ADD,),
         "remove": (GroupRolePermissions.REMOVE,),
+        "update": (GroupRolePermissions.ADD,),
+        "partial_update": (GroupRolePermissions.ADD,),
+        "destroy": (GroupRolePermissions.REMOVE,),
     }
 
     def get_serializer_class(self):

@@ -66,6 +66,11 @@ class Profile(EntityModel):
         blank=True,
     )
 
+    must_change_password = models.BooleanField(
+        default=False,
+        db_index=True,
+    )
+
     objects = ProfileManager()
 
     class Meta:

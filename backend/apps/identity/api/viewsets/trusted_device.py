@@ -44,6 +44,9 @@ class TrustedDeviceViewSet(
         "partial_update": TrustedDeviceUpdateSerializer,
     }
 
+    # NOTE: reads/writes stay open to any authenticated user, but the
+    # selector scopes them to the request user's own devices (staff see
+    # all). Object-level scoping — not permission codes — is the control.
     permission_map = {
         "destroy": (TrustedDevicePermissions.DELETE,),
     }

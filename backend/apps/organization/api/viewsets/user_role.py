@@ -44,6 +44,9 @@ class UserRoleViewSet(OrganizationEntityViewSet):
         "retrieve": (UserRolePermissions.ASSIGN,),
         "assign": (UserRolePermissions.ASSIGN,),
         "revoke": (UserRolePermissions.REVOKE,),
+        "update": (UserRolePermissions.ASSIGN,),
+        "partial_update": (UserRolePermissions.ASSIGN,),
+        "destroy": (UserRolePermissions.REVOKE,),
     }
 
     def get_serializer_class(self):

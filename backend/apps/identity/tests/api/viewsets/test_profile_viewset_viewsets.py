@@ -26,6 +26,16 @@ class TestProfileViewSet:
         assert response.status_code == 200
 
     @pytest.mark.django_db
+    def test_list_profiles_scoped_to_self(self, authenticated_client, user):
+        """Test listing profiles returns only the request user's own."""
+        ProfileFactory.create(user=user)
+        ProfileFactory.create()
+        response = authenticated_client.get(reverse("api:v1:identity:profile-list"))
+        assert response.status_code == 200
+        results = response.data["results"] if isinstance(response.data, dict) else response.data
+        assert len(results) == 1
+
+    @pytest.mark.django_db
     def test_retrieve_profile_unauthenticated(self, api_client):
         """Test retrieving profile without authentication."""
         profile = ProfileFactory.create()
@@ -35,10 +45,30 @@ class TestProfileViewSet:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_retrieve_profile_authenticated(self, authenticated_client):
-        """Test retrieving profile with authentication."""
+    def test_retrieve_profile_authenticated(self, authenticated_client, user):
+        """Test retrieving own profile with authentication."""
+        profile = ProfileFactory.create(user=user)
+        response = authenticated_client.get(
+            reverse("api:v1:identity:profile-detail", kwargs={"pk": profile.id})
+        )
+        assert response.status_code == 200
+
+    @pytest.mark.django_db
+    def test_retrieve_other_users_profile_not_found(
+        self, authenticated_client
+    ):
+        """Test retrieving another user's profile is scoped out."""
         profile = ProfileFactory.create()
         response = authenticated_client.get(
+            reverse("api:v1:identity:profile-detail", kwargs={"pk": profile.id})
+        )
+        assert response.status_code == 404
+
+    @pytest.mark.django_db
+    def test_retrieve_profile_staff_sees_all(self, staff_client):
+        """Test staff can retrieve any profile."""
+        profile = ProfileFactory.create()
+        response = staff_client.get(
             reverse("api:v1:identity:profile-detail", kwargs={"pk": profile.id})
         )
         assert response.status_code == 200
@@ -74,14 +104,24 @@ class TestProfileViewSet:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_update_profile_authenticated(self, authenticated_client):
-        """Test updating profile with authentication."""
-        profile = ProfileFactory.create()
+    def test_update_profile_authenticated(self, authenticated_client, user):
+        """Test updating own profile with authentication."""
+        profile = ProfileFactory.create(user=user)
         data = {"first_name": "Updated"}
         response = authenticated_client.put(
             reverse("api:v1:identity:profile-detail", kwargs={"pk": profile.id}), data
         )
         assert response.status_code == 200
+
+    @pytest.mark.django_db
+    def test_update_other_users_profile_not_found(self, authenticated_client):
+        """Test updating another user's profile is scoped out."""
+        profile = ProfileFactory.create()
+        data = {"first_name": "Updated"}
+        response = authenticated_client.put(
+            reverse("api:v1:identity:profile-detail", kwargs={"pk": profile.id}), data
+        )
+        assert response.status_code == 404
 
     @pytest.mark.django_db
     def test_partial_update_profile_unauthenticated(self, api_client):
@@ -94,9 +134,9 @@ class TestProfileViewSet:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_partial_update_profile_authenticated(self, authenticated_client):
-        """Test partially updating profile with authentication."""
-        profile = ProfileFactory.create()
+    def test_partial_update_profile_authenticated(self, authenticated_client, user):
+        """Test partially updating own profile with authentication."""
+        profile = ProfileFactory.create(user=user)
         data = {"first_name": "Updated"}
         response = authenticated_client.patch(
             reverse("api:v1:identity:profile-detail", kwargs={"pk": profile.id}), data

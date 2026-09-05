@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from apps.identity.choices import (
+    SessionStatus,
+)
 from apps.organization.querysets.base import (
     OrganizationEntityQuerySet,
 )
@@ -11,14 +14,14 @@ class UserSessionQuerySet(OrganizationEntityQuerySet):
     """
 
     def active(self):
-        return self.filter(status="active")
+        return self.filter(status=SessionStatus.ACTIVE)
 
     def expired(self):
         from django.utils import timezone
         return self.filter(expires_at__lt=timezone.now())
 
     def logged_out(self):
-        return self.filter(status="logged_out")
+        return self.filter(status=SessionStatus.LOGGED_OUT)
 
     def by_user(self, user):
         return self.filter(user=user)

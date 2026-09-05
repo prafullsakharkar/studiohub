@@ -22,8 +22,20 @@ class ProfileSelector(
         request=None,
         view=None,
     ):
-        return Profile.objects.select_related(
+        queryset = Profile.objects.select_related(
             "user",
+        )
+
+        user = getattr(request, "user", None)
+
+        if user is None or user.is_staff or user.is_superuser:
+            return queryset
+
+        if not getattr(user, "is_authenticated", False):
+            return queryset.none()
+
+        return queryset.filter(
+            user=user,
         )
 
     @classmethod

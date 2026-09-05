@@ -39,6 +39,71 @@ class IPBlacklistService(
         "deactivate": IPBlacklistDeactivated,
     }
 
+    @classmethod
+    def activate(
+        cls,
+        instance,
+        *,
+        user=None,
+    ):
+        """
+        Activate a blacklist entry.
+
+        ``IPBlacklist`` has no lifecycle ``status`` column, so the base
+        ``LifecycleService.change_status`` flow is replaced with the
+        ``is_active`` flag while keeping event publishing and cache
+        invalidation.
+        """
+
+        instance.is_active = True
+
+        instance.save(
+            update_fields=[
+                "is_active",
+                "updated_at",
+            ],
+        )
+
+        cls.publish_event(
+            cls.ACTIVATE,
+            instance=instance,
+            user=user,
+        )
+
+        cls.invalidate_cache(instance)
+
+        return instance
+
+    @classmethod
+    def deactivate(
+        cls,
+        instance,
+        *,
+        user=None,
+    ):
+        """
+        Deactivate a blacklist entry via the ``is_active`` flag.
+        """
+
+        instance.is_active = False
+
+        instance.save(
+            update_fields=[
+                "is_active",
+                "updated_at",
+            ],
+        )
+
+        cls.publish_event(
+            cls.DEACTIVATE,
+            instance=instance,
+            user=user,
+        )
+
+        cls.invalidate_cache(instance)
+
+        return instance
+
 
 # ----------------------------------------------------------------------
 # Module-level functional API (kept for compatibility)

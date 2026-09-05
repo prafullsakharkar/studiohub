@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 
+from apps.core.api.throttling import ResilientScopedRateThrottle
 from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import (
     RefreshSerializer,
@@ -13,6 +14,10 @@ class RefreshAPIView(
     authentication_classes = ()
 
     permission_classes = ()
+
+    throttle_classes = (ResilientScopedRateThrottle,)
+
+    throttle_scope = "refresh"
 
     serializer_class = RefreshSerializer
 

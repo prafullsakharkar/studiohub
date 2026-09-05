@@ -207,8 +207,10 @@ class UserSessionService(
         user,
         reason=LogoutReason.USER,
     ):
-        sessions = UserSessionSelector.active_sessions(
-            user=user,
+        sessions = list(
+            UserSession.objects.active().by_user(
+                user,
+            ),
         )
 
         for session in sessions:
@@ -217,7 +219,7 @@ class UserSessionService(
                 reason=reason,
             )
 
-        return sessions.count()
+        return len(sessions)
 
     @classmethod
     def logout_other_devices(
@@ -225,12 +227,12 @@ class UserSessionService(
         *,
         current_session,
     ):
-        sessions = (
+        sessions = list(
             UserSession.objects.active()
-            .for_user(current_session.user)
+            .by_user(current_session.user)
             .exclude(
                 pk=current_session.pk,
-            )
+            ),
         )
 
         for session in sessions:
@@ -239,7 +241,7 @@ class UserSessionService(
                 reason=LogoutReason.USER,
             )
 
-        return sessions.count()
+        return len(sessions)
 
     # ---------------------------------------------------------
     # Security
@@ -344,11 +346,13 @@ class UserSessionService(
     def cleanup(
         cls,
     ):
-        sessions = UserSessionSelector.cleanup_queryset()
+        sessions = list(
+            UserSession.objects.active().expired(),
+        )
 
         for session in sessions:
             cls.expire(
                 session,
             )
 
-        return sessions.count()
+        return len(sessions)

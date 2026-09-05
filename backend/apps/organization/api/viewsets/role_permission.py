@@ -48,6 +48,9 @@ class RolePermissionViewSet(OrganizationEntityViewSet):
         "create": (RolePermissionPermissions.GRANT,),
         "grant": (RolePermissionPermissions.GRANT,),
         "revoke": (RolePermissionPermissions.REVOKE,),
+        "update": (RolePermissionPermissions.GRANT,),
+        "partial_update": (RolePermissionPermissions.GRANT,),
+        "destroy": (RolePermissionPermissions.REVOKE,),
     }
 
     def get_serializer_class(self):

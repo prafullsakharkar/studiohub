@@ -29,6 +29,18 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
     ),
     "EXCEPTION_HANDLER": ("apps.core.api.exceptions.custom_exception_handler"),
+    # Scoped throttling only: views opt in via ``throttle_scope`` (login /
+    # refresh). Views without a scope are unaffected, so the general API and
+    # the test suite are not rate-limited. Account lockout after repeated
+    # failures (LoginAttemptService, 5 attempts) is the primary brute-force
+    # defense; these rates are defense in depth per client IP.
+    "DEFAULT_THROTTLE_CLASSES": [
+        "apps.core.api.throttling.ResilientScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "login": "30/min",
+        "refresh": "60/min",
+    },
 }
 
 SPECTACULAR_SETTINGS = {

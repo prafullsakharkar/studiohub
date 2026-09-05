@@ -88,9 +88,9 @@ class TestTrustedDevicePermissions:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_authenticated_user_can_update_own_trusted_device(self, authenticated_client):
+    def test_authenticated_user_can_update_own_trusted_device(self, authenticated_client, user):
         """Test that authenticated user can update own trusted device."""
-        device = TrustedDeviceFactory.create()
+        device = TrustedDeviceFactory.create(user=user)
         response = authenticated_client.patch(
             f"/api/v1/identity/trusted-devices/{device.id}/",
             {"browser": "Chrome"},
