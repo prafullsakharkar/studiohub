@@ -1,5 +1,10 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    ".opencode/AGENTS.md",
+    ".claude/CLAUDE.md",
+    ".claude-mem/README.md"
+  ],
   "lsp": true,
   "permission": {
     "lsp": "allow"
@@ -18,6 +23,24 @@
           "-y",
           "@playwright/mcp@latest"
         ]
+      },
+      "serena": {
+        "type": "local",
+        "command": [
+          "serena",
+          "start-mcp-server",
+          "--context",
+          "ide"
+        ],
+        "enabled": true
+      },
+      "headroom": {
+        "type": "local",
+        "command": [
+          "headroom",
+          "mcp",
+          "serve"
+        ]
       }
     }
   },
@@ -26,7 +49,7 @@
       "npm": "@ai-sdk/openai-compatible",
       "name": "DeepSeek V4 Flash - llama.cpp",
       "options": {
-        "baseURL": "http://192.168.1.238:8080/v1",
+        "baseURL": "http://127.0.0.1:8080/v1",
         "apiKey": "local-dev-key"
       },
       "models": {

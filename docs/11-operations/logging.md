@@ -109,6 +109,25 @@ Example fields:
 
 Structured logs simplify searching and analysis.
 
+## Implementation (P1.3)
+
+Structured logging is implemented with **structlog** (`backend/apps/core/logging/`):
+
+- `structlog_config.configure_structlog()` (called from `CoreConfig.ready()`)
+  renders JSON when `DEBUG` is off and human-readable console output otherwise.
+  Both structlog-native and stdlib (Django, third-party) records flow through
+  the same processors into the same renderer.
+- Every event carries `timestamp`, `level`, `logger`, `service`
+  (`studiohub`), `environment` (`STUDIOHUB_ENV`, default `development`),
+  plus `request_id`/`user_id`/`organization_id` from ContextVars populated by
+  `LoggingContextMiddleware`.
+- `redact_secrets` masks sensitive keys (`password`, tokens, secrets,
+  `authorization`, hashes, …) at top level and one nesting level deep, per
+  the ADR-0022 prohibition on secrets in logs.
+- `get_logger(name)` (also re-exported via `apps.core.utils.logger`) returns
+  a structlog bound logger; the legacy `ContextLoggerAdapter` is retained for
+  backward compatibility only.
+
 ---
 
 # Log Levels

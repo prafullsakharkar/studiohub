@@ -44,12 +44,18 @@ tests, soft-delete DB tests.
   covers Org → Departments/Teams/Offices → Roles/Permissions → Users/Profiles/Memberships
   (password `password123`). Handles required fields (`department_type`, `office_type`),
   maps frontend permission codes to valid `PermissionModule` values, respects constraints.
-  Known local DB drift (`organizations.metadata` NOT NULL, stale `org_department.created_by`)
-  requires fresh `migrate` in dev docker; CI/test DB passes (verified via `pytest`).
+  Local DB drift verified resolved: `organizations` has no `metadata` column (model has
+  none), `org_department` columns match the model exactly, and a full model↔DB sweep shows
+  no real drift (only implicit-`id` false positives on contrib tables).
 
-Known follow-up: `DepartmentFactory`/`OrganizationFactory` still set removed fields
-(`status`, `budget`) and cause `RecursionError` via circular `manager` → `PersonFactory` →
-`DepartmentFactory`; factories need updating to match post-0003 schema (tracked, not blocking).
+Resolved: all organization factories updated to match post-0003 schema — `PersonFactory`
+stripped to real fields (was setting 10 removed attrs), `DepartmentFactory` drops removed
+`status`/`budget`/`budget_currency`, adds required `department_type`, defaults
+`manager=None` (FK is to User, nullable); the circular `manager` → `PersonFactory` →
+`DepartmentFactory` `RecursionError` is broken. A full factory audit fixed 21 broken
+factories (wrong-model FKs, removed attrs, wrong choice cases, stale duplicate
+`LoginHistoryFactory` now mirrors the canonical audit shape). Verified: every factory
+`create()`s cleanly; suite 1450 passed, ruff clean.
 
 ## Phase B — Identity API ✅ CORE COMPLETE (auth compat + user payload); REMAINDER TRACKED
 
@@ -207,4 +213,23 @@ viewsets → filtersets → permissions → events → tests):
 
 - Platform domain (`/platform/*`) — PLANNED, contract documented only.
 - MFA UI reconciliation — PLANNED.
-- Intelligence module HTTP wiring — currently pure local mocks, no REST contract.
+- Intelligence module HTTP wiring — frontend stays on local mocks: the backend
+  intelligence endpoints exist as URL contracts but return stub/empty payloads
+  (no models), so rewiring would regress the UI. Real implementation needs
+  search-index + LLM-backed services first.
+- Publish/delivery destinations — DONE (P2.2): real org-scoped CRUD at
+  `/publishing/destinations/` and `/deliveries/destinations/`; frontend
+  services rewired; deliveries + publishing + scheduling hooks converted to
+  TanStack Query.
+- Client/vendor project association tabs — DONE (P2.3): ClientProjectsTab and
+  VendorProjectsTab resolve associations from the real project list
+  (`useProjects`), keeping the existing fuzzy code/name matching and the real
+  `updateClient`/`updateVendor` mutations.
+- Remaining mock-backed tabs — contacts, contracts, invoices, purchase orders,
+  activities, performance, teams, users, departments, selects, overview
+  aggregates, and the USD/milestone/crew/activity/deliverable-shaped project
+  tabs stay on local mocks: no backend models exist for those entities, and
+  several mock shapes (VendorDelivery QC submissions, ProjectMilestone phases,
+  ProjectCrewMember allocations) describe different entities than their
+  same-named backend counterparts. Building those domains is feature work,
+  not debt cleanup.
