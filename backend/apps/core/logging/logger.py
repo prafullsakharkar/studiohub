@@ -1,9 +1,10 @@
 """
-Logger factory with context-aware adapter.
+Logger factory.
 
-Provides a LoggerAdapter that injects request, user and organization
-context from apps.core.logging.context ContextVars. Keeps a stable
-get_logger(name) API for callers.
+Returns structlog bound loggers. Request/user/organization context is
+injected by processors (see apps.core.logging.processors) from
+apps.core.logging.context ContextVars, so call sites stay clean.
+Keeps a stable get_logger(name) API for callers.
 """
 
 from __future__ import annotations
@@ -11,6 +12,8 @@ from __future__ import annotations
 import logging
 from collections.abc import Mapping
 from typing import Any
+
+import structlog
 
 from . import context as log_context
 
@@ -40,7 +43,11 @@ class ContextLoggerAdapter(logging.LoggerAdapter):
         return msg, kwargs
 
 
-def get_logger(name: str) -> logging.LoggerAdapter:
-    """Return a context-aware LoggerAdapter for the given logger name."""
-    base = logging.getLogger(name)
-    return ContextLoggerAdapter(base, {})
+def get_logger(name: str):
+    """
+    Return a structlog bound logger for the given logger name.
+
+    The legacy ``ContextLoggerAdapter`` path is kept for backward
+    compatibility but no longer used by the factory.
+    """
+    return structlog.get_logger(name)

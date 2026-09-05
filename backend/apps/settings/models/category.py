@@ -20,32 +20,32 @@ class SettingCategory(EntityModel, TimeStampedModel):
     
     # Category codes for standard categories
     GENERAL = "general"
-    MATCH = "match"
-    TOURNAMENT = "tournament"
-    SCORING = "scoring"
+    PROJECT = "project"
+    MEDIA = "media"
+    WORKFLOW = "workflow"
+    REVIEW = "review"
+    DELIVERY = "delivery"
     NOTIFICATION = "notification"
-    STREAMING = "streaming"
     BILLING = "billing"
     BRANDING = "branding"
     ANALYTICS = "analytics"
     AI = "ai"
-    VIDEO = "video"
     LOCALIZATION = "localization"
     THEME = "theme"
     SECURITY = "security"
-    
+
     CATEGORY_CHOICES = [
         (GENERAL, _("General")),
-        (MATCH, _("Match")),
-        (TOURNAMENT, _("Tournament")),
-        (SCORING, _("Scoring")),
+        (PROJECT, _("Project")),
+        (MEDIA, _("Media")),
+        (WORKFLOW, _("Workflow")),
+        (REVIEW, _("Review")),
+        (DELIVERY, _("Delivery")),
         (NOTIFICATION, _("Notification")),
-        (STREAMING, _("Streaming")),
         (BILLING, _("Billing")),
         (BRANDING, _("Branding")),
         (ANALYTICS, _("Analytics")),
         (AI, _("AI")),
-        (VIDEO, _("Video")),
         (LOCALIZATION, _("Localization")),
         (THEME, _("Theme")),
         (SECURITY, _("Security")),
@@ -73,7 +73,7 @@ class SettingCategory(EntityModel, TimeStampedModel):
     icon = models.CharField(
         max_length=50,
         blank=True,
-        help_text="Icon name for the category (e.g., 'settings', 'match')",
+        help_text="Icon name for the category (e.g., 'settings', 'project')",
     )
     
     order = models.PositiveIntegerField(

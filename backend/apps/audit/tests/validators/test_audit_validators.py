@@ -40,7 +40,7 @@ class TestAuditLogValidator:
     def test_valid_target(self) -> None:
         """Valid target passes validation."""
         validator = AuditLogValidator()
-        assert validator.validate_target(AuditTarget.MATCH) is True
+        assert validator.validate_target(AuditTarget.PROJECT) is True
 
     def test_invalid_target(self) -> None:
         """Invalid target fails validation and records an error."""
@@ -54,7 +54,7 @@ class TestAuditLogValidator:
         result = validator.validate(
             action=AuditAction.CREATE,
             severity=AuditSeverity.INFO,
-            target_type=AuditTarget.MATCH,
+            target_type=AuditTarget.PROJECT,
         )
         assert result is True
 

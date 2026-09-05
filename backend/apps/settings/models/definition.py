@@ -92,7 +92,7 @@ class SettingDefinition(EntityModel, TimeStampedModel):
         max_length=100,
         unique=True,
         db_index=True,
-        help_text="Unique code for the setting (e.g., 'match.auto_score')",
+        help_text="Unique code for the setting (e.g., 'project.default_fps')",
     )
     
     name = models.CharField(

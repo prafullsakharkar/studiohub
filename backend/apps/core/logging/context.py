@@ -5,18 +5,19 @@ Logging context.
 from __future__ import annotations
 
 from contextvars import ContextVar
+from typing import Any
 
-request_id = ContextVar(
+request_id: ContextVar[str | None] = ContextVar(
     "request_id",
     default=None,
 )
 
-organization = ContextVar(
+organization: ContextVar[Any | None] = ContextVar(
     "organization",
     default=None,
 )
 
-user = ContextVar(
+user: ContextVar[Any | None] = ContextVar(
     "user",
     default=None,
 )

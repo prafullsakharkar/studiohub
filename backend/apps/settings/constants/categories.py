@@ -13,50 +13,50 @@ class SettingCategoryCodes:
     """
     
     GENERAL = "general"
-    MATCH = "match"
-    TOURNAMENT = "tournament"
-    SCORING = "scoring"
+    PROJECT = "project"
+    MEDIA = "media"
+    WORKFLOW = "workflow"
+    REVIEW = "review"
+    DELIVERY = "delivery"
     NOTIFICATION = "notification"
-    STREAMING = "streaming"
     BILLING = "billing"
     BRANDING = "branding"
     ANALYTICS = "analytics"
     AI = "ai"
-    VIDEO = "video"
     LOCALIZATION = "localization"
     THEME = "theme"
     SECURITY = "security"
-    
+
     ALL = [
         GENERAL,
-        MATCH,
-        TOURNAMENT,
-        SCORING,
+        PROJECT,
+        MEDIA,
+        WORKFLOW,
+        REVIEW,
+        DELIVERY,
         NOTIFICATION,
-        STREAMING,
         BILLING,
         BRANDING,
         ANALYTICS,
         AI,
-        VIDEO,
         LOCALIZATION,
         THEME,
         SECURITY,
     ]
-    
+
     # Category descriptions
     DESCRIPTIONS = {
         GENERAL: "General application settings",
-        MATCH: "Match-related settings",
-        TOURNAMENT: "Tournament-related settings",
-        SCORING: "Scoring system settings",
+        PROJECT: "Project and production settings",
+        MEDIA: "Media and attachment settings",
+        WORKFLOW: "Workflow and automation settings",
+        REVIEW: "Review and approval settings",
+        DELIVERY: "Client delivery settings",
         NOTIFICATION: "Notification settings",
-        STREAMING: "Streaming settings",
         BILLING: "Billing and payment settings",
         BRANDING: "Branding and appearance settings",
         ANALYTICS: "Analytics and reporting settings",
         AI: "AI and machine learning settings",
-        VIDEO: "Video-related settings",
         LOCALIZATION: "Localization and internationalization settings",
         THEME: "Theme and appearance settings",
         SECURITY: "Security and access control settings",

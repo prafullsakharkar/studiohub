@@ -18,18 +18,17 @@ from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
 
-
-def get_websocket_urlpatterns():
-    """Lazy import of websocket patterns to avoid circular imports."""
-    from apps.tournament.routing import websocket_urlpatterns
-
-    return websocket_urlpatterns
+# No application currently exposes websocket consumers. Register per-app
+# ``websocket_urlpatterns`` here when real-time features land (e.g. live
+# review notifications), keeping the ASGI entry point importable in the
+# meantime.
+websocket_urlpatterns: list = []
 
 
 def get_application():
     """Get the ASGI application after Django is fully initialized."""
     http_application = get_asgi_application()
-    websocket_application = AuthMiddlewareStack(URLRouter(get_websocket_urlpatterns()))
+    websocket_application = AuthMiddlewareStack(URLRouter(websocket_urlpatterns))
     return ProtocolTypeRouter(
         {
             "http": http_application,

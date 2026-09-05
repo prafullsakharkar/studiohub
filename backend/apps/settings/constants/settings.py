@@ -19,56 +19,47 @@ class SettingDefinitionCodes:
     GENERAL_SUPPORT_PHONE = "general.support_phone"
     GENERAL_ADDRESS = "general.address"
     
-    # Match Settings
-    MATCH_AUTO_SCORE = "match.auto_score"
-    MATCH_AUTO_UPDATE = "match.auto_update"
-    MATCH_SCORE_HISTORY = "match.score_history"
-    MATCH_MATCH_DURATION = "match.match_duration"
-    
-    # Tournament Settings
-    TOURNAMENT_REGISTRATION_OPEN = "tournament.registration_open"
-    TOURNAMENT_MAX_TEAMS = "tournament.max_teams"
-    TOURNAMENT_PRIZE_POOL = "tournament.prize_pool"
-    
-    # Scoring Settings
-    SCORING_BATTING_POINTS = "scoring.batting_points"
-    SCORING_BOWLING_POINTS = "scoring.bowling_points"
-    SCORING_FIELDING_POINTS = "scoring.fielding_points"
-    
+    # Project Settings
+    PROJECT_CODE_PREFIX = "project.code_prefix"
+    PROJECT_DEFAULT_FPS = "project.default_fps"
+    PROJECT_DEFAULT_RESOLUTION = "project.default_resolution"
+
+    # Media Settings
+    MEDIA_MAX_UPLOAD_SIZE = "media.max_upload_size"
+    MEDIA_ALLOWED_FORMATS = "media.allowed_formats"
+    MEDIA_AUTO_TRANSCODE = "media.auto_transcode"
+
+    # Review Settings
+    REVIEW_DEFAULT_STATUS = "review.default_status"
+    REVIEW_RETENTION_DAYS = "review.retention_days"
+
+    # Delivery Settings
+    DELIVERY_EXPIRY_DAYS = "delivery.expiry_days"
+
     # Notification Settings
     NOTIFICATION_EMAIL_ENABLED = "notification.email_enabled"
     NOTIFICATION_SMS_ENABLED = "notification.sms_enabled"
     NOTIFICATION_PUSH_ENABLED = "notification.push_enabled"
-    
-    # Streaming Settings
-    STREAMING_PLATFORM = "streaming.platform"
-    STREAMING_API_KEY = "streaming.api_key"
-    STREAMING_CHANNEL_ID = "streaming.channel_id"
-    
+
     # Billing Settings
     BILLING_CURRENCY = "billing.currency"
     BILLING_TAX_RATE = "billing.tax_rate"
     BILLING_INVOICE_PREFIX = "billing.invoice_prefix"
-    
+
     # Branding Settings
     BRANDING_LOGO = "branding.logo"
     BRANDING_PRIMARY_COLOR = "branding.primary_color"
     BRANDING_SECONDARY_COLOR = "branding.secondary_color"
-    
+
     # Analytics Settings
     ANALYTICS_ENABLED = "analytics.enabled"
     ANALYTICS_GOOGLE_ANALYTICS_ID = "analytics.google_analytics_id"
     ANALYTICS_DATA_RETENTION_DAYS = "analytics.data_retention_days"
-    
+
     # AI Settings
     AI_ENABLED = "ai.enabled"
     AI_API_KEY = "ai.api_key"
     AI_MODEL = "ai.model"
-    
-    # Video Settings
-    VIDEO_MAX_SIZE = "video.max_size"
-    VIDEO_FORMATS = "video.formats"
-    VIDEO_TRANSCODING = "video.transcoding"
     
     # Localization Settings
     LOCALIZATION_LANGUAGE = "localization.language"
@@ -92,22 +83,18 @@ class SettingDefinitionCodes:
         GENERAL_SUPPORT_EMAIL,
         GENERAL_SUPPORT_PHONE,
         GENERAL_ADDRESS,
-        MATCH_AUTO_SCORE,
-        MATCH_AUTO_UPDATE,
-        MATCH_SCORE_HISTORY,
-        MATCH_MATCH_DURATION,
-        TOURNAMENT_REGISTRATION_OPEN,
-        TOURNAMENT_MAX_TEAMS,
-        TOURNAMENT_PRIZE_POOL,
-        SCORING_BATTING_POINTS,
-        SCORING_BOWLING_POINTS,
-        SCORING_FIELDING_POINTS,
+        PROJECT_CODE_PREFIX,
+        PROJECT_DEFAULT_FPS,
+        PROJECT_DEFAULT_RESOLUTION,
+        MEDIA_MAX_UPLOAD_SIZE,
+        MEDIA_ALLOWED_FORMATS,
+        MEDIA_AUTO_TRANSCODE,
+        REVIEW_DEFAULT_STATUS,
+        REVIEW_RETENTION_DAYS,
+        DELIVERY_EXPIRY_DAYS,
         NOTIFICATION_EMAIL_ENABLED,
         NOTIFICATION_SMS_ENABLED,
         NOTIFICATION_PUSH_ENABLED,
-        STREAMING_PLATFORM,
-        STREAMING_API_KEY,
-        STREAMING_CHANNEL_ID,
         BILLING_CURRENCY,
         BILLING_TAX_RATE,
         BILLING_INVOICE_PREFIX,
@@ -120,9 +107,6 @@ class SettingDefinitionCodes:
         AI_ENABLED,
         AI_API_KEY,
         AI_MODEL,
-        VIDEO_MAX_SIZE,
-        VIDEO_FORMATS,
-        VIDEO_TRANSCODING,
         LOCALIZATION_LANGUAGE,
         LOCALIZATION_TIMEZONE,
         LOCALIZATION_DATE_FORMAT,

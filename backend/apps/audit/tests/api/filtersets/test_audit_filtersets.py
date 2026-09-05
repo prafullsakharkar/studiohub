@@ -69,11 +69,11 @@ class TestAuditLogFilter:
     @pytest.mark.django_db
     def test_filter_by_target_type(self) -> None:
         """Filter audit logs by target type."""
-        log1 = AuditLogFactory(target_type=AuditLog.TARGET_MATCH)
+        log1 = AuditLogFactory(target_type=AuditLog.TARGET_PROJECT)
         log2 = AuditLogFactory(target_type=AuditLog.TARGET_USER)
         filterset = AuditLogFilter(
             AuditLog.objects.all(),
-            data={"target_type": AuditLog.TARGET_MATCH},
+            data={"target_type": AuditLog.TARGET_PROJECT},
         )
         assert log1 in filterset.qs
         assert log2 not in filterset.qs

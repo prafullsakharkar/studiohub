@@ -12,91 +12,83 @@ class FeatureFlagCodes:
     throughout the application.
     """
     
-    # Match Features
-    MATCH_AUTO_SCORE = "match_auto_score"
-    MATCH_LIVE_UPDATE = "match_live_update"
-    MATCH_VIDEO_REVIEW = "match_video_review"
-    
-    # Tournament Features
-    TOURNAMENT_REGISTRATION = "tournament_registration"
-    TOURNAMENT_BRACKET = "tournament_bracket"
-    TOURNAMENT_LIVE_SCORES = "tournament_live_scores"
-    
-    # Scoring Features
-    SCORING_AUTO_CATCH = "scoring_auto_catch"
-    SCORING_AUTO_NO_BALL = "scoring_auto_no_ball"
-    SCORING_AUTO_WIDE = "scoring_auto_wide"
-    
+    # Project Features
+    PROJECT_TEMPLATES = "project_templates"
+
+    # Production Features
+    VERSION_AUTO_PUBLISH = "version_auto_publish"
+    REVIEW_ANNOTATIONS = "review_annotations"
+    PLAYLIST_SHARING = "playlist_sharing"
+    WORKFLOW_AUTOMATION = "workflow_automation"
+
     # Notification Features
     NOTIFICATION_EMAIL = "notification_email"
     NOTIFICATION_SMS = "notification_sms"
     NOTIFICATION_PUSH = "notification_push"
-    
-    # Streaming Features
-    STREAMING_LIVE = "streaming_live"
-    STREAMING_VOD = "streaming_vod"
-    STREAMING_MULTI_CAMERA = "streaming_multi_camera"
-    
+
+    # Media Features
+    MEDIA_PROXY_GENERATION = "media_proxy_generation"
+    MEDIA_AUTO_TRANSCODE = "media_auto_transcode"
+
+    # Delivery Features
+    DELIVERY_TRACKING = "delivery_tracking"
+
     # Billing Features
     BILLING_ONLINE_PAYMENT = "billing_online_payment"
     BILLING_INVOICE = "billing_invoice"
     BILLING_SUBSCRIPTION = "billing_subscription"
-    
+
     # Analytics Features
     ANALYTICS_DASHBOARD = "analytics_dashboard"
     ANALYTICS_EXPORT = "analytics_export"
     ANALYTICS_REPORTS = "analytics_reports"
-    
+
     # AI Features
-    AI_SCORE_PREDICTION = "ai_score_prediction"
-    AI_PLAYER_ANALYSIS = "ai_player_analysis"
-    AI_MATCH_REVIEW = "ai_match_review"
-    
+    AI_SEARCH = "ai_search"
+    AI_INSIGHTS = "ai_insights"
+    AI_AUTOMATION = "ai_automation"
+
     # Video Features
     VIDEO_REVIEW = "video_review"
-    VIDEO_HIGH_LIGHTS = "video_highlights"
-    VIDEO_COACH_REVIEW = "video_coach_review"
-    
+    VIDEO_PROXY_GENERATION = "video_proxy_generation"
+    VIDEO_AUTO_TRANSCODE = "video_auto_transcode"
+
     # User Features
     USER_PROFILE_PRIVATE = "user_profile_private"
-    USER_CONTACTS = "user_contacts"
+    USER_API_TOKENS = "user_api_tokens"
     USER_TEAMS = "user_teams"
-    
+
     # Admin Features
     ADMIN_DASHBOARD = "admin_dashboard"
     ADMIN_SETTINGS = "admin_settings"
     ADMIN_AUDIT_LOG = "admin_audit_log"
-    
+
     ALL = [
-        MATCH_AUTO_SCORE,
-        MATCH_LIVE_UPDATE,
-        MATCH_VIDEO_REVIEW,
-        TOURNAMENT_REGISTRATION,
-        TOURNAMENT_BRACKET,
-        TOURNAMENT_LIVE_SCORES,
-        SCORING_AUTO_CATCH,
-        SCORING_AUTO_NO_BALL,
-        SCORING_AUTO_WIDE,
+        PROJECT_TEMPLATES,
+        VERSION_AUTO_PUBLISH,
+        REVIEW_ANNOTATIONS,
+        PLAYLIST_SHARING,
+        WORKFLOW_AUTOMATION,
         NOTIFICATION_EMAIL,
         NOTIFICATION_SMS,
         NOTIFICATION_PUSH,
-        STREAMING_LIVE,
-        STREAMING_VOD,
-        STREAMING_MULTI_CAMERA,
+        MEDIA_PROXY_GENERATION,
+        MEDIA_AUTO_TRANSCODE,
+        DELIVERY_TRACKING,
         BILLING_ONLINE_PAYMENT,
         BILLING_INVOICE,
         BILLING_SUBSCRIPTION,
         ANALYTICS_DASHBOARD,
         ANALYTICS_EXPORT,
         ANALYTICS_REPORTS,
-        AI_SCORE_PREDICTION,
-        AI_PLAYER_ANALYSIS,
-        AI_MATCH_REVIEW,
+        AI_SEARCH,
+        AI_INSIGHTS,
+        AI_AUTOMATION,
         VIDEO_REVIEW,
-        VIDEO_HIGH_LIGHTS,
-        VIDEO_COACH_REVIEW,
+        VIDEO_PROXY_GENERATION,
+        VIDEO_AUTO_TRANSCODE,
         USER_PROFILE_PRIVATE,
-        USER_CONTACTS,
+        USER_API_TOKENS,
         USER_TEAMS,
         ADMIN_DASHBOARD,
         ADMIN_SETTINGS,

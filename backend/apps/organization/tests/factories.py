@@ -8,11 +8,15 @@ import factory
 from django.utils import timezone
 from factory import LazyAttribute
 from factory.django import DjangoModelFactory
-from factory.fuzzy import FuzzyChoice, FuzzyDecimal
+from factory.fuzzy import FuzzyChoice, FuzzyInteger
 
 from apps.audit.models.login_history import LoginHistory
+from apps.identity.choices import (
+    SessionStatus,
+)
 from apps.identity.tests.factories import UserFactory
 from apps.organization.choices import OrganizationType
+from apps.organization.choices.department_type import DepartmentType
 from apps.organization.models.api_key import APIKey
 from apps.organization.models.branding import Branding
 from apps.organization.models.calendar import Calendar
@@ -45,26 +49,14 @@ class PersonFactory(DjangoModelFactory):
 
     class Meta:
         model = Person
-        django_get_or_create = ("user",)
 
-    user = factory.SubFactory(UserFactory)
-    organization = factory.SubFactory(
-        "apps.organization.tests.factories.OrganizationFactory"
-    )
-    first_name = factory.Faker("first_name")
-    last_name = factory.Faker("last_name")
-    email = factory.LazyAttribute(
-        lambda o: f"{o.first_name.lower()}.{o.last_name.lower()}@organization.com"
-    )
+    name = factory.Faker("name")
+    description = ""
+    email = factory.Faker("email")
     phone = factory.Faker("phone_number")
-    job_title = factory.Faker("job")
-    department = factory.SubFactory("apps.organization.tests.factories.DepartmentFactory")
-    office = factory.SubFactory("apps.organization.tests.factories.OfficeFactory")
-    manager = None
-    status = "active"
     date_of_birth = factory.Faker("date_of_birth", minimum_age=18, maximum_age=65)
-    date_of_joining = factory.Faker("date_this_decade")
-    date_of_leaving = None
+    nationality = factory.Faker("country_code")
+    status = "active"
 
 
 class OrganizationFactory(DjangoModelFactory):
@@ -114,15 +106,14 @@ class BrandingFactory(DjangoModelFactory):
         django_get_or_create = ("organization",)
 
     organization = factory.SubFactory(OrganizationFactory)
+    code = factory.Sequence(lambda n: f"BRAND{n:03d}")
+    name = factory.Sequence(lambda n: f"Branding {n}")
     logo = factory.django.FileField(filename="logo.png")
     favicon = factory.django.FileField(filename="favicon.ico")
     primary_color = "#007bff"
     secondary_color = "#6c757d"
     accent_color = "#17a2b8"
-    background_color = "#ffffff"
-    text_color = "#333333"
     font_family = "Arial, sans-serif"
-    is_default = True
 
 
 class DepartmentFactory(DjangoModelFactory):
@@ -136,11 +127,11 @@ class DepartmentFactory(DjangoModelFactory):
     code = factory.Sequence(lambda n: f"DEPT{n:03d}")
     name = factory.Sequence(lambda n: f"Department {n}")
     description = factory.Faker("text", max_nb_chars=200)
-    manager = factory.SubFactory(PersonFactory)
+    department_type = FuzzyChoice(
+        choices=[c[0] for c in DepartmentType.choices]
+    )
+    manager = None
     parent = None
-    status = "active"
-    budget = FuzzyDecimal(10000, 1000000)
-    budget_currency = "INR"
 
 
 class HolidayFactory(DjangoModelFactory):
@@ -151,12 +142,17 @@ class HolidayFactory(DjangoModelFactory):
         django_get_or_create = ("name", "date", "organization")
 
     organization = factory.SubFactory(OrganizationFactory)
+    work_calendar = factory.SubFactory(
+        "apps.organization.tests.factories.WorkCalendarFactory"
+    )
+    code = factory.Sequence(lambda n: f"HOL{n:03d}")
     name = factory.Faker("sentence", nb_words=3)
     description = factory.Faker("text", max_nb_chars=200)
     date = factory.Faker("date_this_year")
-    holiday_type = FuzzyChoice(choices=["PUBLIC", "COMPANY", "REGIONAL", "RELIGIOUS"])
+    holiday_type = FuzzyChoice(
+        choices=["public", "national", "religious", "company", "optional", "other"]
+    )
     is_paid = True
-    status = "active"
 
 
 class LoginHistoryFactory(DjangoModelFactory):
@@ -167,11 +163,31 @@ class LoginHistoryFactory(DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory)
     organization = factory.SubFactory(OrganizationFactory)
-    email = factory.LazyAttribute(lambda o: o.user.email)
+    login_type = factory.Faker(
+        "random_element",
+        elements=[
+            LoginHistory.TYPE_LOGIN,
+            LoginHistory.TYPE_LOGOUT,
+            LoginHistory.TYPE_DEVICE_LOGIN,
+        ],
+    )
+    login_method = factory.Faker(
+        "random_element", elements=["password", "oauth", "sso", "api_key"]
+    )
+    status = factory.Faker(
+        "random_element",
+        elements=[
+            LoginHistory.STATUS_SUCCESS,
+            LoginHistory.STATUS_FAILED,
+            LoginHistory.STATUS_EXPIRED,
+        ],
+    )
     ip_address = factory.Faker("ipv4")
     user_agent = factory.Faker("user_agent")
-    status = "success"
-    failure_reason = ""
+    mfa_enabled = factory.Faker("boolean")
+    failure_reason = factory.Faker("text", max_nb_chars=200)
+    session_id = factory.Faker("uuid4")
+    browser = factory.Faker("word")
 
 
 class OrganizationMembershipFactory(DjangoModelFactory):
@@ -218,7 +234,7 @@ class UserSessionFactory(DjangoModelFactory):
     session_key = factory.Faker("uuid4")
     ip_address = factory.Faker("ipv4")
     user_agent = factory.Faker("user_agent")
-    status = "active"
+    status = SessionStatus.ACTIVE
     started_at = factory.Faker("date_time_this_year")
     last_activity = factory.Faker("date_time_this_year")
     expires_at = factory.LazyFunction(lambda: timezone.now() + timezone.timedelta(days=30))
@@ -234,9 +250,11 @@ class APIKeyFactory(DjangoModelFactory):
 
     organization = factory.SubFactory(OrganizationFactory)
     name = factory.Sequence(lambda n: f"API Key {n}")
-    key = factory.Sequence(lambda n: f"api_key_{n:08d}")
+    description = factory.Faker("text", max_nb_chars=200)
+    prefix = factory.Sequence(lambda n: f"sk{n:06d}")
+    hashed_key = factory.Sequence(lambda n: f"hashed_key_{n:08d}")
     created_by = factory.SubFactory(UserFactory)
-    status = "active"
+    is_active = True
 
 
 class CalendarFactory(DjangoModelFactory):
@@ -247,10 +265,10 @@ class CalendarFactory(DjangoModelFactory):
         django_get_or_create = ("name", "organization")
 
     organization = factory.SubFactory(OrganizationFactory)
+    code = factory.Sequence(lambda n: f"CAL{n:03d}")
     name = factory.Sequence(lambda n: f"Calendar {n}")
     description = factory.Faker("text", max_nb_chars=200)
-    is_active = True
-    calendar_type = "general"
+    color = "#007bff"
 
 
 class GroupFactory(DjangoModelFactory):
@@ -261,9 +279,10 @@ class GroupFactory(DjangoModelFactory):
         django_get_or_create = ("name", "organization")
 
     organization = factory.SubFactory(OrganizationFactory)
+    code = factory.Sequence(lambda n: f"GRP{n:03d}")
     name = factory.Sequence(lambda n: f"Group {n}")
     description = factory.Faker("text", max_nb_chars=200)
-    is_active = True
+    color = "#007bff"
 
 
 class GroupMemberFactory(DjangoModelFactory):
@@ -271,12 +290,11 @@ class GroupMemberFactory(DjangoModelFactory):
 
     class Meta:
         model = GroupMember
-        django_get_or_create = ("group", "person")
+        django_get_or_create = ("group", "user")
 
     group = factory.SubFactory(GroupFactory)
-    person = factory.SubFactory(PersonFactory)
+    user = factory.SubFactory(UserFactory)
     joined_at = factory.Faker("date_this_year")
-    status = "active"
 
 
 class GroupRoleFactory(DjangoModelFactory):
@@ -299,8 +317,11 @@ class InvitationFactory(DjangoModelFactory):
 
     organization = factory.SubFactory(OrganizationFactory)
     email = factory.LazyAttribute(lambda o: f"invite{o.organization.code}@example.com")
-    invitation_type = "membership"
-    invitation_status = "pending"
+    role = factory.SubFactory(RoleFactory)
+    status = "pending"
+    expires_at = factory.LazyFunction(
+        lambda: timezone.now() + timezone.timedelta(days=7)
+    )
     invited_by = factory.SubFactory(UserFactory)
 
 
@@ -314,12 +335,15 @@ class OfficeFactory(DjangoModelFactory):
     organization = factory.SubFactory(OrganizationFactory)
     code = factory.Sequence(lambda n: f"OFFICE{n:03d}")
     name = factory.Sequence(lambda n: f"Office {n}")
+    office_type = "branch"
     address = factory.Faker("address")
     city = factory.Faker("city")
     state = factory.Faker("state")
     country = "IN"
-    pincode = factory.Faker("postcode")
-    is_active = True
+    postal_code = factory.Faker("postcode")
+    email = factory.Faker("email")
+    phone = factory.Faker("phone_number")
+    timezone = "Asia/Kolkata"
 
 
 class OrganizationSettingsFactory(DjangoModelFactory):
@@ -330,11 +354,13 @@ class OrganizationSettingsFactory(DjangoModelFactory):
         django_get_or_create = ("organization",)
 
     organization = factory.SubFactory(OrganizationFactory)
-    default_currency = "INR"
-    default_timezone = "Asia/Kolkata"
-    default_language = "en"
-    enable_notifications = True
-    enable_audit_log = True
+    code = factory.Sequence(lambda n: f"ORGSET{n:03d}")
+    name = factory.Sequence(lambda n: f"Organization Settings {n}")
+    currency = "INR"
+    timezone = "Asia/Kolkata"
+    language = "en"
+    date_format = "YYYY-MM-DD"
+    time_format = "HH:mm"
 
 
 class PermissionFactory(DjangoModelFactory):
@@ -342,12 +368,13 @@ class PermissionFactory(DjangoModelFactory):
 
     class Meta:
         model = Permission
-        django_get_or_create = ("name", "organization")
+        django_get_or_create = ("code",)
 
-    organization = factory.SubFactory(OrganizationFactory)
     name = factory.Sequence(lambda n: f"Permission {n}")
     code = factory.Sequence(lambda n: f"perm_{n:04d}")
     description = factory.Faker("text", max_nb_chars=200)
+    module = "organization"
+    action = "view"
     category = "general"
     is_active = True
 
@@ -360,9 +387,9 @@ class PersonalAccessTokenFactory(DjangoModelFactory):
         django_get_or_create = ("name", "user")
 
     user = factory.SubFactory(UserFactory)
-    organization = factory.SubFactory(OrganizationFactory)
     name = factory.Sequence(lambda n: f"Token {n}")
-    token = factory.Sequence(lambda n: f"pat_{n:08d}")
+    prefix = factory.Sequence(lambda n: f"pat{n:06d}")
+    hashed_token = factory.Sequence(lambda n: f"hashed_pat_{n:08d}")
     expires_at = factory.Faker("date_time_this_year")
     is_active = True
 
@@ -375,10 +402,10 @@ class PositionFactory(DjangoModelFactory):
         django_get_or_create = ("name", "organization")
 
     organization = factory.SubFactory(OrganizationFactory)
+    code = factory.Sequence(lambda n: f"POS{n:03d}")
     name = factory.Sequence(lambda n: f"Position {n}")
     description = factory.Faker("text", max_nb_chars=200)
     level = factory.Sequence(lambda n: n)
-    is_active = True
 
 
 class RolePermissionFactory(DjangoModelFactory):
@@ -390,6 +417,7 @@ class RolePermissionFactory(DjangoModelFactory):
 
     role = factory.SubFactory(RoleFactory)
     permission = factory.SubFactory(PermissionFactory)
+    granted_at = factory.Faker("date_time_this_year")
 
 
 class TeamFactory(DjangoModelFactory):
@@ -400,10 +428,11 @@ class TeamFactory(DjangoModelFactory):
         django_get_or_create = ("code", "organization")
 
     organization = factory.SubFactory(OrganizationFactory)
+    department = factory.SubFactory(DepartmentFactory)
     code = factory.Sequence(lambda n: f"TEAM{n:03d}")
     name = factory.Sequence(lambda n: f"Team {n}")
     description = factory.Faker("text", max_nb_chars=200)
-    is_active = True
+    color = "#007bff"
 
 
 class UserPreferenceFactory(DjangoModelFactory):
@@ -411,10 +440,9 @@ class UserPreferenceFactory(DjangoModelFactory):
 
     class Meta:
         model = UserPreference
-        django_get_or_create = ("user", "organization")
+        django_get_or_create = ("user",)
 
     user = factory.SubFactory(UserFactory)
-    organization = factory.SubFactory(OrganizationFactory)
     theme = "light"
     language = "en"
     timezone = "Asia/Kolkata"
@@ -427,13 +455,10 @@ class UserRoleFactory(DjangoModelFactory):
 
     class Meta:
         model = UserRole
-        django_get_or_create = ("user", "role", "organization")
+        django_get_or_create = ("user", "role")
 
     user = factory.SubFactory(UserFactory)
     role = factory.SubFactory(RoleFactory)
-    organization = factory.SubFactory(OrganizationFactory)
-    assigned_at = factory.Faker("date_this_year")
-    expires_at = None
 
 
 class WorkCalendarFactory(DjangoModelFactory):
@@ -444,9 +469,10 @@ class WorkCalendarFactory(DjangoModelFactory):
         django_get_or_create = ("name", "organization")
 
     organization = factory.SubFactory(OrganizationFactory)
+    code = factory.Sequence(lambda n: f"WCAL{n:03d}")
     name = factory.Sequence(lambda n: f"Work Calendar {n}")
     description = factory.Faker("text", max_nb_chars=200)
-    is_active = True
+    timezone = "Asia/Kolkata"
 
 
 class WorkHoursFactory(DjangoModelFactory):
@@ -454,23 +480,15 @@ class WorkHoursFactory(DjangoModelFactory):
 
     class Meta:
         model = WorkHours
-        django_get_or_create = ("calendar", "day_of_week")
+        django_get_or_create = ("work_calendar", "day")
 
-    calendar = factory.SubFactory(WorkCalendarFactory)
-    day_of_week = FuzzyChoice(
-        choices=[
-            "MONDAY",
-            "TUESDAY",
-            "WEDNESDAY",
-            "THURSDAY",
-            "FRIDAY",
-            "SATURDAY",
-            "SUNDAY",
-        ]
-    )
+    work_calendar = factory.SubFactory(WorkCalendarFactory)
+    organization = factory.SelfAttribute("work_calendar.organization")
+    code = factory.Sequence(lambda n: f"WH{n:03d}")
+    name = factory.Sequence(lambda n: f"Work Hours {n}")
+    day = FuzzyInteger(0, 6)
     is_working_day = True
     start_time = "09:00:00"
     end_time = "18:00:00"
-    break_start_time = "12:00:00"
-    break_end_time = "13:00:00"
-    status = "active"
+    break_start = "12:00:00"
+    break_end = "13:00:00"

@@ -12,11 +12,18 @@ class AuditTargetCodes:
     USER = "user"
     ORGANIZATION = "organization"
     TEAM = "team"
-    MATCH = "match"
-    TOURNAMENT = "tournament"
-    SCORING = "scoring"
+    PROJECT = "project"
+    SEQUENCE = "sequence"
+    SHOT = "shot"
+    ASSET = "asset"
+    TASK = "task"
+    VERSION = "version"
+    REVIEW = "review"
+    PLAYLIST = "playlist"
+    MEDIA = "media"
+    WORKFLOW = "workflow"
+    DELIVERY = "delivery"
     NOTIFICATION = "notification"
-    STREAMING = "streaming"
     BILLING = "billing"
     BRANDING = "branding"
     ANALYTICS = "analytics"
@@ -26,16 +33,23 @@ class AuditTargetCodes:
     FEATURE_FLAG = "feature_flag"
     THEME = "theme"
     LOCALIZATION = "localization"
-    
+
     ALL = [
         USER,
         ORGANIZATION,
         TEAM,
-        MATCH,
-        TOURNAMENT,
-        SCORING,
+        PROJECT,
+        SEQUENCE,
+        SHOT,
+        ASSET,
+        TASK,
+        VERSION,
+        REVIEW,
+        PLAYLIST,
+        MEDIA,
+        WORKFLOW,
+        DELIVERY,
         NOTIFICATION,
-        STREAMING,
         BILLING,
         BRANDING,
         ANALYTICS,
@@ -46,16 +60,23 @@ class AuditTargetCodes:
         THEME,
         LOCALIZATION,
     ]
-    
+
     DESCRIPTIONS = {
         USER: "User entity",
         ORGANIZATION: "Organization entity",
         TEAM: "Team entity",
-        MATCH: "Match entity",
-        TOURNAMENT: "Tournament entity",
-        SCORING: "Scoring entity",
+        PROJECT: "Project entity",
+        SEQUENCE: "Sequence entity",
+        SHOT: "Shot entity",
+        ASSET: "Asset entity",
+        TASK: "Task entity",
+        VERSION: "Version entity",
+        REVIEW: "Review entity",
+        PLAYLIST: "Playlist entity",
+        MEDIA: "Media entity",
+        WORKFLOW: "Workflow entity",
+        DELIVERY: "Delivery entity",
         NOTIFICATION: "Notification entity",
-        STREAMING: "Streaming entity",
         BILLING: "Billing entity",
         BRANDING: "Branding entity",
         ANALYTICS: "Analytics entity",

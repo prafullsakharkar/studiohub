@@ -126,8 +126,8 @@ def department(db):
 
 @pytest.fixture
 def active_department(db):
-    """Create an active department."""
-    return DepartmentFactory.create(status="active")
+    """Create a department (Department has no status field)."""
+    return DepartmentFactory.create()
 
 
 @pytest.fixture

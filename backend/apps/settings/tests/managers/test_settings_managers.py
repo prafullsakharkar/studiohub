@@ -68,7 +68,7 @@ class TestCategoryManager:
     def test_manager_filter_by_code(self) -> None:
         """Test manager filter by code."""
         category1 = CategoryFactory(code="general")
-        category2 = CategoryFactory(code="match")
+        category2 = CategoryFactory(code="project")
         queryset = SettingCategory.objects.filter(code="general")
         assert category1 in queryset
         assert category2 not in queryset

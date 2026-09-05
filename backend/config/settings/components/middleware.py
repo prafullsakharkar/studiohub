@@ -23,5 +23,7 @@ MIDDLEWARE = [
     "apps.core.middleware.MaintenanceMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "apps.core.middleware.RateLimitMiddleware",
+    # NOTE: RateLimitMiddleware removed (P2.5) — it could never limit
+    # (global_limit unset) and DRF's ResilientScopedRateThrottle (P1.1)
+    # is the live rate-limiting mechanism.
 ]

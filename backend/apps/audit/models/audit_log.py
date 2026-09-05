@@ -71,11 +71,18 @@ class AuditLog(EntityModel, TimeStampedModel):
     TARGET_USER = "user"
     TARGET_ORGANIZATION = "organization"
     TARGET_TEAM = "team"
-    TARGET_MATCH = "match"
-    TARGET_TOURNAMENT = "tournament"
-    TARGET_SCORING = "scoring"
+    TARGET_PROJECT = "project"
+    TARGET_SEQUENCE = "sequence"
+    TARGET_SHOT = "shot"
+    TARGET_ASSET = "asset"
+    TARGET_TASK = "task"
+    TARGET_VERSION = "version"
+    TARGET_REVIEW = "review"
+    TARGET_PLAYLIST = "playlist"
+    TARGET_MEDIA = "media"
+    TARGET_WORKFLOW = "workflow"
+    TARGET_DELIVERY = "delivery"
     TARGET_NOTIFICATION = "notification"
-    TARGET_STREAMING = "streaming"
     TARGET_BILLING = "billing"
     TARGET_BRANDING = "branding"
     TARGET_ANALYTICS = "analytics"
@@ -85,16 +92,23 @@ class AuditLog(EntityModel, TimeStampedModel):
     TARGET_FEATURE_FLAG = "feature_flag"
     TARGET_THEME = "theme"
     TARGET_LOCALIZATION = "localization"
-    
+
     TARGET_CHOICES = [
         (TARGET_USER, _("User")),
         (TARGET_ORGANIZATION, _("Organization")),
         (TARGET_TEAM, _("Team")),
-        (TARGET_MATCH, _("Match")),
-        (TARGET_TOURNAMENT, _("Tournament")),
-        (TARGET_SCORING, _("Scoring")),
+        (TARGET_PROJECT, _("Project")),
+        (TARGET_SEQUENCE, _("Sequence")),
+        (TARGET_SHOT, _("Shot")),
+        (TARGET_ASSET, _("Asset")),
+        (TARGET_TASK, _("Task")),
+        (TARGET_VERSION, _("Version")),
+        (TARGET_REVIEW, _("Review")),
+        (TARGET_PLAYLIST, _("Playlist")),
+        (TARGET_MEDIA, _("Media")),
+        (TARGET_WORKFLOW, _("Workflow")),
+        (TARGET_DELIVERY, _("Delivery")),
         (TARGET_NOTIFICATION, _("Notification")),
-        (TARGET_STREAMING, _("Streaming")),
         (TARGET_BILLING, _("Billing")),
         (TARGET_BRANDING, _("Branding")),
         (TARGET_ANALYTICS, _("Analytics")),

@@ -21,7 +21,7 @@ class SettingDefinitionValidator(SettingsBaseValidator):
             return False
         if "." not in code:
             self.errors["code"] = [
-                "Code must contain a dot separator (e.g., 'match.auto_score')"
+                "Code must contain a dot separator (e.g., 'project.default_fps')"
             ]
             return False
         return True

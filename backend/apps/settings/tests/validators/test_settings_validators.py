@@ -79,8 +79,8 @@ class TestSettingDefinitionValidator:
     def test_valid_definition_data(self) -> None:
         """Valid definition data passes validation."""
         validator = SettingDefinitionValidator()
-        assert validator.validate_code("match.auto_score") is True
-        assert validator.validate_name("Auto Score") is True
+        assert validator.validate_code("project.default_fps") is True
+        assert validator.validate_name("Default FPS") is True
 
     def test_invalid_data_type(self) -> None:
         """Unknown data types fail validation."""
