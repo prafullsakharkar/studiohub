@@ -20,12 +20,12 @@ import { Client } from '@/types/organization';
 import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
 import {
-  mockClientContacts,
   mockClientContracts,
   mockPurchaseOrders,
   mockClientDeliverables,
   mockClientActivities,
 } from '@/mocks/db/organization/clientVendorDetails';
+import { useClientContacts } from '../../hooks/useOrganizationData';
 import { mockProjects } from '@/mocks/db/production/projects';
 import { Link } from 'react-router-dom';
 
@@ -42,7 +42,7 @@ export const ClientOverviewTab: React.FC<ClientOverviewTabProps> = ({
   onAddContact,
   onAddProject,
 }) => {
-  const contacts = mockClientContacts.filter((c) => c.client_id === client.id);
+  const { data: contacts = [] } = useClientContacts(client.id);
   const primaryContact = contacts.find((c) => c.is_primary) || contacts[0];
   const contracts = mockClientContracts.filter((c) => c.client_id === client.id);
   const activeMSA = contracts.find((c) => c.type === 'MSA' && c.status === 'Active');

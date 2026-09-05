@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, Mail, Phone, Globe, Plus, Search, Trash2 } from 'lucide-react';
-import { Vendor, VendorContact } from '@/types/organization';
-import { mockVendorContacts } from '@/mocks/db/organization/clientVendorDetails';
+import { Vendor } from '@/types/organization';
+import { useVendorContacts, useVendorContactMutations } from '../../hooks/useOrganizationData';
 import { Button } from '@/shared/components/Button';
 import { Badge } from '@/shared/components/Badge';
 
@@ -10,9 +10,8 @@ interface VendorContactsTabProps {
 }
 
 export const VendorContactsTab: React.FC<VendorContactsTabProps> = ({ vendor }) => {
-  const [contacts, setContacts] = useState<VendorContact[]>(() =>
-    mockVendorContacts.filter((c) => c.vendor_id === vendor.id)
-  );
+  const { data: contacts = [], isLoading } = useVendorContacts(vendor.id);
+  const { createContact, deleteContact } = useVendorContactMutations(vendor.id);
   const [search, setSearch] = useState('');
   const [isAddOpen, setIsAddOpen] = useState(false);
 
@@ -35,18 +34,15 @@ export const VendorContactsTab: React.FC<VendorContactsTabProps> = ({ vendor }) 
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
 
-    const newContact: VendorContact = {
-      id: `vc-${Date.now()}`,
-      vendor_id: vendor.id,
+    createContact.mutate({
       name,
       role,
       email,
-      phone: phone || '+91 22 5550 0000',
+      phone,
       timezone,
       is_primary: isPrimary || contacts.length === 0,
-    };
+    });
 
-    setContacts([newContact, ...contacts]);
     setIsAddOpen(false);
     setName('');
     setRole('');
@@ -55,7 +51,7 @@ export const VendorContactsTab: React.FC<VendorContactsTabProps> = ({ vendor }) 
   };
 
   const handleDelete = (id: string) => {
-    setContacts(contacts.filter((c) => c.id !== id));
+    deleteContact.mutate(id);
   };
 
   return (
@@ -98,7 +94,11 @@ export const VendorContactsTab: React.FC<VendorContactsTabProps> = ({ vendor }) 
 
       {/* Contacts Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <div className="col-span-full py-12 text-center text-xs text-slate-500 bg-slate-900/40 rounded-xl border border-slate-800/80">
+            Loading contacts...
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="col-span-full py-12 text-center text-xs text-slate-500 bg-slate-900/40 rounded-xl border border-slate-800/80">
             No contacts recorded for this vendor.
           </div>

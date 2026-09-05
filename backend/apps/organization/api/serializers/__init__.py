@@ -8,6 +8,13 @@ from .api_key import (
 from .base import OrganizationEntitySerializer
 from .branding import BrandingBaseSerializer
 from .calendar import CalendarBaseSerializer
+from .client_contact import (
+    ClientContactCreateSerializer,
+    ClientContactDetailSerializer,
+    ClientContactListSerializer,
+    ClientContactSerializer,
+    ClientContactUpdateSerializer,
+)
 from .department import DepartmentBaseSerializer
 from .group import (
     GroupBaseSerializer,
@@ -83,6 +90,13 @@ from .user_role import (
     UserRoleListSerializer,
     UserRoleRevokeSerializer,
 )
+from .vendor_contact import (
+    VendorContactCreateSerializer,
+    VendorContactDetailSerializer,
+    VendorContactListSerializer,
+    VendorContactSerializer,
+    VendorContactUpdateSerializer,
+)
 from .work_calendar import WorkCalendarBaseSerializer
 from .work_hours import WorkHoursBaseSerializer
 
@@ -156,4 +170,14 @@ __all__ = [
     "RolePermissionUpdateSerializer",
     "RolePermissionGrantSerializer",
     "RolePermissionRevokeSerializer",
+    "ClientContactSerializer",
+    "ClientContactListSerializer",
+    "ClientContactDetailSerializer",
+    "ClientContactCreateSerializer",
+    "ClientContactUpdateSerializer",
+    "VendorContactSerializer",
+    "VendorContactListSerializer",
+    "VendorContactDetailSerializer",
+    "VendorContactCreateSerializer",
+    "VendorContactUpdateSerializer",
 ]

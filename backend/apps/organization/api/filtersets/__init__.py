@@ -2,6 +2,7 @@ from .api_key import APIKeyFilterSet
 from .base import OrganizationBaseFilterSet
 from .branding import BrandingFilterSet
 from .calendar import CalendarFilterSet
+from .client_contact import ClientContactFilterSet
 from .department import DepartmentFilterSet
 from .group import GroupFilterSet
 from .group_member import GroupMemberFilterSet
@@ -19,6 +20,7 @@ from .role import RoleFilterSet
 from .role_permission import RolePermissionFilterSet
 from .team import TeamFilterSet
 from .user_role import UserRoleFilterSet
+from .vendor_contact import VendorContactFilterSet
 from .work_calendar import WorkCalendarFilterSet
 from .work_hours import WorkHoursFilterSet
 
@@ -46,4 +48,6 @@ __all__ = [
     "PermissionFilterSet",
     "UserRoleFilterSet",
     "RolePermissionFilterSet",
+    "ClientContactFilterSet",
+    "VendorContactFilterSet",
 ]

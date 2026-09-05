@@ -1,5 +1,5 @@
 import React from 'react';
-import { mockClientContacts } from '@/mocks/db/organization/clientVendorDetails';
+import { useClientContacts } from '../hooks/useOrganizationData';
 
 interface ClientContactSelectProps {
   clientId?: string;
@@ -18,10 +18,7 @@ export const ClientContactSelect: React.FC<ClientContactSelectProps> = ({
   className = '',
   disabled = false,
 }) => {
-  let contacts = mockClientContacts;
-  if (clientId) {
-    contacts = contacts.filter((c) => c.client_id === clientId);
-  }
+  const { data: contacts = [] } = useClientContacts(clientId);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;

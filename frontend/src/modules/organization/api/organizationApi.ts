@@ -2,7 +2,9 @@ import { apiClient } from '@/api/client/ApiClient';
 import {
   Organization,
   Client,
+  ClientContact,
   Vendor,
+  VendorContact,
   Person,
   DepartmentEntity,
   Team,
@@ -97,6 +99,48 @@ export const organizationApi = {
   },
   deleteVendor: async (id: string): Promise<void> => {
     return apiClient.delete<void>(`/api/v1/vendors/${id}/`);
+  },
+
+  // Client Contacts
+  getClientContacts: async (clientId: string, params?: Record<string, any>): Promise<ClientContact[]> => {
+    const data = await apiClient.get<any>(`/api/v1/clients/${clientId}/contacts/`, {
+      params: { ...params, page_size: params?.page_size || 100 },
+    });
+    return data?.results ?? data ?? [];
+  },
+  createClientContact: async (clientId: string, contact: Partial<ClientContact>): Promise<ClientContact> => {
+    return apiClient.post<ClientContact>(`/api/v1/clients/${clientId}/contacts/`, contact);
+  },
+  updateClientContact: async (
+    clientId: string,
+    contactId: string,
+    contact: Partial<ClientContact>
+  ): Promise<ClientContact> => {
+    return apiClient.patch<ClientContact>(`/api/v1/clients/${clientId}/contacts/${contactId}/`, contact);
+  },
+  deleteClientContact: async (clientId: string, contactId: string): Promise<void> => {
+    return apiClient.delete<void>(`/api/v1/clients/${clientId}/contacts/${contactId}/`);
+  },
+
+  // Vendor Contacts
+  getVendorContacts: async (vendorId: string, params?: Record<string, any>): Promise<VendorContact[]> => {
+    const data = await apiClient.get<any>(`/api/v1/vendors/${vendorId}/contacts/`, {
+      params: { ...params, page_size: params?.page_size || 100 },
+    });
+    return data?.results ?? data ?? [];
+  },
+  createVendorContact: async (vendorId: string, contact: Partial<VendorContact>): Promise<VendorContact> => {
+    return apiClient.post<VendorContact>(`/api/v1/vendors/${vendorId}/contacts/`, contact);
+  },
+  updateVendorContact: async (
+    vendorId: string,
+    contactId: string,
+    contact: Partial<VendorContact>
+  ): Promise<VendorContact> => {
+    return apiClient.patch<VendorContact>(`/api/v1/vendors/${vendorId}/contacts/${contactId}/`, contact);
+  },
+  deleteVendorContact: async (vendorId: string, contactId: string): Promise<void> => {
+    return apiClient.delete<void>(`/api/v1/vendors/${vendorId}/contacts/${contactId}/`);
   },
 
   // People

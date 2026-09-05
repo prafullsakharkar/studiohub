@@ -2,7 +2,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { organizationApi } from '../api/organizationApi';
 import { useOrganization } from '@/core/organization/useOrganization';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
-import { Client, Vendor, Person, DepartmentEntity, Department, Team, Office } from '@/types/organization';
+import {
+  Client,
+  ClientContact,
+  Vendor,
+  VendorContact,
+  Person,
+  DepartmentEntity,
+  Department,
+  Team,
+  Office,
+} from '@/types/organization';
 
 export const useOrganizationsList = () => {
   return useQuery({
@@ -204,6 +214,110 @@ export const useVendorMutations = () => {
   });
 
   return { createVendor, updateVendor, archiveVendor, restoreVendor, deleteVendor };
+};
+
+export const useClientContacts = (clientId?: string) => {
+  return useQuery({
+    queryKey: ['client-contacts', clientId],
+    queryFn: () => organizationApi.getClientContacts(clientId!),
+    enabled: !!clientId,
+    staleTime: 1000 * 30,
+  });
+};
+
+export const useClientContactMutations = (clientId: string) => {
+  const queryClient = useQueryClient();
+  const { addNotification } = useNotificationStore();
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['client-contacts', clientId] });
+
+  const createContact = useMutation({
+    mutationFn: (data: Partial<ClientContact>) => organizationApi.createClientContact(clientId, data),
+    onSuccess: () => {
+      invalidate();
+      addNotification({ type: 'success', title: 'Contact Added', message: 'Client contact has been added.' });
+    },
+    onError: () => {
+      addNotification({ type: 'error', title: 'Failed to Add Contact', message: 'Could not create client contact.' });
+    },
+  });
+
+  const updateContact = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<ClientContact> }) =>
+      organizationApi.updateClientContact(clientId, id, data),
+    onSuccess: () => {
+      invalidate();
+      addNotification({ type: 'success', title: 'Contact Updated', message: 'Client contact has been updated.' });
+    },
+    onError: () => {
+      addNotification({ type: 'error', title: 'Failed to Update Contact', message: 'Could not update client contact.' });
+    },
+  });
+
+  const deleteContact = useMutation({
+    mutationFn: (id: string) => organizationApi.deleteClientContact(clientId, id),
+    onSuccess: () => {
+      invalidate();
+      addNotification({ type: 'info', title: 'Contact Removed', message: 'Client contact has been removed.' });
+    },
+    onError: () => {
+      addNotification({ type: 'error', title: 'Failed to Remove Contact', message: 'Could not remove client contact.' });
+    },
+  });
+
+  return { createContact, updateContact, deleteContact };
+};
+
+export const useVendorContacts = (vendorId?: string) => {
+  return useQuery({
+    queryKey: ['vendor-contacts', vendorId],
+    queryFn: () => organizationApi.getVendorContacts(vendorId!),
+    enabled: !!vendorId,
+    staleTime: 1000 * 30,
+  });
+};
+
+export const useVendorContactMutations = (vendorId: string) => {
+  const queryClient = useQueryClient();
+  const { addNotification } = useNotificationStore();
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['vendor-contacts', vendorId] });
+
+  const createContact = useMutation({
+    mutationFn: (data: Partial<VendorContact>) => organizationApi.createVendorContact(vendorId, data),
+    onSuccess: () => {
+      invalidate();
+      addNotification({ type: 'success', title: 'Contact Added', message: 'Vendor contact has been added.' });
+    },
+    onError: () => {
+      addNotification({ type: 'error', title: 'Failed to Add Contact', message: 'Could not create vendor contact.' });
+    },
+  });
+
+  const updateContact = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<VendorContact> }) =>
+      organizationApi.updateVendorContact(vendorId, id, data),
+    onSuccess: () => {
+      invalidate();
+      addNotification({ type: 'success', title: 'Contact Updated', message: 'Vendor contact has been updated.' });
+    },
+    onError: () => {
+      addNotification({ type: 'error', title: 'Failed to Update Contact', message: 'Could not update vendor contact.' });
+    },
+  });
+
+  const deleteContact = useMutation({
+    mutationFn: (id: string) => organizationApi.deleteVendorContact(vendorId, id),
+    onSuccess: () => {
+      invalidate();
+      addNotification({ type: 'info', title: 'Contact Removed', message: 'Vendor contact has been removed.' });
+    },
+    onError: () => {
+      addNotification({ type: 'error', title: 'Failed to Remove Contact', message: 'Could not remove vendor contact.' });
+    },
+  });
+
+  return { createContact, updateContact, deleteContact };
 };
 
 export const usePeople = (params?: Record<string, any>) => {

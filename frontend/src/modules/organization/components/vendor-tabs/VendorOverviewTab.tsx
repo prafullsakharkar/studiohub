@@ -20,13 +20,13 @@ import { Vendor } from '@/types/organization';
 import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
 import {
-  mockVendorContacts,
   mockVendorUsers,
   mockVendorTeams,
   mockVendorDeliveries,
   mockVendorPerformanceMap,
   mockVendorActivities,
 } from '@/mocks/db/organization/clientVendorDetails';
+import { useVendorContacts } from '../../hooks/useOrganizationData';
 import { mockProjects } from '@/mocks/db/production/projects';
 
 interface VendorOverviewTabProps {
@@ -44,7 +44,7 @@ export const VendorOverviewTab: React.FC<VendorOverviewTabProps> = ({
   onAddProject,
   onAssignTeam,
 }) => {
-  const contacts = mockVendorContacts.filter((c) => c.vendor_id === vendor.id);
+  const { data: contacts = [] } = useVendorContacts(vendor.id);
   const primaryContact = contacts.find((c) => c.is_primary) || contacts[0];
   const users = mockVendorUsers.filter((u) => u.vendor_id === vendor.id);
   const teams = mockVendorTeams.filter((t) => t.vendor_id === vendor.id);

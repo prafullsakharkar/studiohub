@@ -4,6 +4,7 @@ from .billing import BillingView, NotificationsView, ReportsView
 from .branding import BrandingViewSet
 from .calendar import CalendarViewSet
 from .client import ClientViewSet
+from .contact import ClientContactViewSet, VendorContactViewSet
 from .department import DepartmentViewSet
 from .group import GroupViewSet
 from .group_member import GroupMemberViewSet
@@ -53,6 +54,8 @@ __all__ = [
     "PersonViewSet",
     "ClientViewSet",
     "VendorViewSet",
+    "ClientContactViewSet",
+    "VendorContactViewSet",
     "BillingView",
     "ReportsView",
     "NotificationsView",

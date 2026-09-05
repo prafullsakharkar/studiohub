@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { User, Mail, Phone, Globe, Shield, Plus, Search, Trash2, Edit2, CheckCircle2 } from 'lucide-react';
-import { Client, ClientContact } from '@/types/organization';
-import { mockClientContacts } from '@/mocks/db/organization/clientVendorDetails';
+import { User, Mail, Phone, Globe, Plus, Search, Trash2 } from 'lucide-react';
+import { Client } from '@/types/organization';
+import { useClientContacts, useClientContactMutations } from '../../hooks/useOrganizationData';
 import { Button } from '@/shared/components/Button';
 import { Badge } from '@/shared/components/Badge';
 
@@ -10,9 +10,8 @@ interface ClientContactsTabProps {
 }
 
 export const ClientContactsTab: React.FC<ClientContactsTabProps> = ({ client }) => {
-  const [contacts, setContacts] = useState<ClientContact[]>(() =>
-    mockClientContacts.filter((c) => c.client_id === client.id)
-  );
+  const { data: contacts = [], isLoading } = useClientContacts(client.id);
+  const { createContact, deleteContact } = useClientContactMutations(client.id);
   const [search, setSearch] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -36,19 +35,16 @@ export const ClientContactsTab: React.FC<ClientContactsTabProps> = ({ client }) 
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
 
-    const newContact: ClientContact = {
-      id: `cc-${Date.now()}`,
-      client_id: client.id,
+    createContact.mutate({
       name,
       role,
       email,
-      phone: phone || '+1 (555) 010-0000',
+      phone,
       timezone,
       portal_access: portalAccess,
       is_primary: isPrimary || contacts.length === 0,
-    };
+    });
 
-    setContacts([newContact, ...contacts]);
     setIsAddModalOpen(false);
     setName('');
     setRole('');
@@ -57,7 +53,7 @@ export const ClientContactsTab: React.FC<ClientContactsTabProps> = ({ client }) 
   };
 
   const handleDelete = (id: string) => {
-    setContacts(contacts.filter((c) => c.id !== id));
+    deleteContact.mutate(id);
   };
 
   return (
@@ -100,7 +96,11 @@ export const ClientContactsTab: React.FC<ClientContactsTabProps> = ({ client }) 
 
       {/* Contacts Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <div className="col-span-full py-12 text-center text-xs text-slate-500 bg-slate-900/40 rounded-xl border border-slate-800/80">
+            Loading contacts...
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="col-span-full py-12 text-center text-xs text-slate-500 bg-slate-900/40 rounded-xl border border-slate-800/80">
             No client contacts match your criteria.
           </div>

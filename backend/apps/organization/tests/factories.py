@@ -20,6 +20,8 @@ from apps.organization.choices.department_type import DepartmentType
 from apps.organization.models.api_key import APIKey
 from apps.organization.models.branding import Branding
 from apps.organization.models.calendar import Calendar
+from apps.organization.models.client import Client
+from apps.organization.models.client_contact import ClientContact
 from apps.organization.models.department import Department
 from apps.organization.models.group import Group
 from apps.organization.models.group_member import GroupMember
@@ -40,6 +42,8 @@ from apps.organization.models.team import Team
 from apps.organization.models.user_preference import UserPreference
 from apps.organization.models.user_role import UserRole
 from apps.organization.models.user_session import UserSession
+from apps.organization.models.vendor import Vendor
+from apps.organization.models.vendor_contact import VendorContact
 from apps.organization.models.work_calendar import WorkCalendar
 from apps.organization.models.work_hours import WorkHours
 
@@ -492,3 +496,72 @@ class WorkHoursFactory(DjangoModelFactory):
     end_time = "18:00:00"
     break_start = "12:00:00"
     break_end = "13:00:00"
+
+
+class ClientFactory(DjangoModelFactory):
+    """Factory for Client model."""
+
+    class Meta:
+        model = Client
+
+    organization = factory.SubFactory(OrganizationFactory)
+    name = factory.Sequence(lambda n: f"Client {n}")
+    code = factory.Sequence(lambda n: f"CLI{n:03d}")
+    contact_name = factory.Faker("name")
+    email = factory.LazyAttribute(
+        lambda o: f"contact@{o.code.lower()}.example.com"
+    )
+    status = "Active"
+
+
+class VendorFactory(DjangoModelFactory):
+    """Factory for Vendor model."""
+
+    class Meta:
+        model = Vendor
+
+    organization = factory.SubFactory(OrganizationFactory)
+    name = factory.Sequence(lambda n: f"Vendor {n}")
+    code = factory.Sequence(lambda n: f"VEN{n:03d}")
+    contact_name = factory.Faker("name")
+    email = factory.LazyAttribute(
+        lambda o: f"contact@{o.code.lower()}.example.com"
+    )
+    status = "Approved Partner"
+
+
+class ClientContactFactory(DjangoModelFactory):
+    """Factory for ClientContact model."""
+
+    class Meta:
+        model = ClientContact
+
+    organization = factory.SelfAttribute("client.organization")
+    client = factory.SubFactory(ClientFactory)
+    name = factory.Sequence(lambda n: f"Client Contact {n}")
+    role = "VFX Producer"
+    email = factory.LazyAttribute(
+        lambda o: f"{o.name.split()[-1].lower()}@client.example.com"
+    )
+    phone = factory.Faker("phone_number")
+    timezone = "America/Los_Angeles (PST)"
+    portal_access = True
+    is_primary = False
+
+
+class VendorContactFactory(DjangoModelFactory):
+    """Factory for VendorContact model."""
+
+    class Meta:
+        model = VendorContact
+
+    organization = factory.SelfAttribute("vendor.organization")
+    vendor = factory.SubFactory(VendorFactory)
+    name = factory.Sequence(lambda n: f"Vendor Contact {n}")
+    role = "Delivery Coordinator"
+    email = factory.LazyAttribute(
+        lambda o: f"{o.name.split()[-1].lower()}@vendor.example.com"
+    )
+    phone = factory.Faker("phone_number")
+    timezone = "Asia/Kolkata (IST)"
+    is_primary = False

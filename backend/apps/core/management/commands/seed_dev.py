@@ -86,6 +86,7 @@ class Command(BaseCommand):
             clients = self._seed_clients(org)
             vendors = self._seed_vendors(org)
             people = self._seed_people(org)
+            contacts = self._seed_contacts(org)
             activities = self._seed_activities(org, users)
             deliveries = self._seed_deliveries(org, projects, users)
             publishes = self._seed_publishes(org, projects, users)
@@ -100,6 +101,7 @@ class Command(BaseCommand):
         self.stdout.write(f"  Tasks: {len(tasks)}  Timelogs: {len(timelogs)}  Versions: {len(versions)}")
         self.stdout.write(f"  Reviews: {len(reviews)}  Playlists: {len(playlists)}  Media: {len(media)}  Workflows: {len(workflows)}")
         self.stdout.write(f"  Clients: {len(clients)}  Vendors: {len(vendors)}  People: {len(people)}")
+        self.stdout.write(f"  Client/Vendor Contacts: {contacts}")
         self.stdout.write(f"  Activities: {activities}")
         self.stdout.write(f"  Deliveries: {deliveries}  Publishes: {publishes}  Destinations: {destinations}  Pipeline Settings: {pipeline_settings}")
         self.stdout.write(self.style.NOTICE("  Default password for seeded users: password123"))
@@ -686,6 +688,83 @@ class Command(BaseCommand):
                 )
                 count += 1
         return list(Vendor.objects.filter(organization=org))
+
+    def _seed_contacts(self, org):
+        """Seed client/vendor contacts from frontend mock data."""
+        from pathlib import Path
+
+        from apps.organization.models import (
+            Client,
+            ClientContact,
+            Vendor,
+            VendorContact,
+        )
+        from apps.production.management.commands.seed_production_mocks import _load_ts_mock_array
+
+        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+
+        # Mock contacts reference mock parent ids; map them to seeded codes.
+        client_id_to_code = {
+            item.get("id"): item.get("code")
+            for item in _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockClients")
+            if item.get("id") and item.get("code")
+        }
+        vendor_id_to_code = {
+            item.get("id"): item.get("code")
+            for item in _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockVendors")
+            if item.get("id") and item.get("code")
+        }
+
+        client_count = 0
+        for item in _load_ts_mock_array(
+            frontend_root / "organization" / "clientVendorDetails.ts", "mockClientContacts"
+        ):
+            code = client_id_to_code.get(item.get("client_id"))
+            if not code:
+                continue
+            client = Client.objects.filter(code=code, organization=org).first()
+            if client is None:
+                continue
+            ClientContact.objects.update_or_create(
+                organization=org,
+                client=client,
+                email=item.get("email", ""),
+                defaults={
+                    "name": item.get("name", ""),
+                    "role": item.get("role", ""),
+                    "phone": item.get("phone", ""),
+                    "timezone": item.get("timezone", ""),
+                    "portal_access": item.get("portal_access", True),
+                    "is_primary": item.get("is_primary", False),
+                },
+            )
+            client_count += 1
+
+        vendor_count = 0
+        for item in _load_ts_mock_array(
+            frontend_root / "organization" / "clientVendorDetails.ts", "mockVendorContacts"
+        ):
+            code = vendor_id_to_code.get(item.get("vendor_id"))
+            if not code:
+                continue
+            vendor = Vendor.objects.filter(code=code, organization=org).first()
+            if vendor is None:
+                continue
+            VendorContact.objects.update_or_create(
+                organization=org,
+                vendor=vendor,
+                email=item.get("email", ""),
+                defaults={
+                    "name": item.get("name", ""),
+                    "role": item.get("role", ""),
+                    "phone": item.get("phone", ""),
+                    "timezone": item.get("timezone", ""),
+                    "is_primary": item.get("is_primary", False),
+                },
+            )
+            vendor_count += 1
+
+        return client_count + vendor_count
 
     def _seed_people(self, org):
         from pathlib import Path

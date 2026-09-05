@@ -17,6 +17,7 @@ from rest_framework.routers import DefaultRouter
 
 from apps.organization.api.viewsets.billing import BillingView, NotificationsView, ReportsView
 from apps.organization.api.viewsets.client import ClientViewSet
+from apps.organization.api.viewsets.contact import ClientContactViewSet, VendorContactViewSet
 from apps.organization.api.viewsets.legacy import (
     LegacyDepartmentViewSet,
     LegacyOfficeViewSet,
@@ -33,6 +34,18 @@ router.register(r"departments", LegacyDepartmentViewSet, basename="legacy-depart
 router.register(r"teams", LegacyTeamViewSet, basename="legacy-team")
 router.register(r"offices", LegacyOfficeViewSet, basename="legacy-office")
 router.register(r"people", LegacyPersonViewSet, basename="legacy-person")
+# Nested contact routes must precede the parent clients/vendors registration
+# so their regexes win over the parent detail routes.
+router.register(
+    r"clients/(?P<client_pk>[^/.]+)/contacts",
+    ClientContactViewSet,
+    basename="legacy-client-contact",
+)
+router.register(
+    r"vendors/(?P<vendor_pk>[^/.]+)/contacts",
+    VendorContactViewSet,
+    basename="legacy-vendor-contact",
+)
 router.register(r"clients", ClientViewSet, basename="legacy-client")
 router.register(r"vendors", VendorViewSet, basename="legacy-vendor")
 

@@ -113,6 +113,17 @@ factories (wrong-model FKs, removed attrs, wrong choice cases, stale duplicate
    Paginated v2 for `organizations/departments/teams/offices/persons/memberships/invitations`
    now uses `StandardPagination` (was `None` via `PaginationMixin`); legacy tests updated
    to handle paginated shape.
+   UPDATE: Clients/Vendors now exist as real models + CRUD APIs
+   (`/api/v1/clients/`, `/api/v1/vendors/`); Billing remains deferred.
+5. ✅ Client/Vendor Contacts (F1a): `ClientContact`/`VendorContact` models
+   (soft-delete, org FK, parent FK) with nested legacy routes
+   `/api/v1/clients/{client_pk}/contacts/` and `/api/v1/vendors/{vendor_pk}/contacts/`
+   (GET list / POST create / PATCH / DELETE). Parent + organization derived
+   server-side (org-scoped parent lookup; 404 on missing parent); permissions reuse
+   `OrganizationPermissions`; filtersets (`is_primary`, search over name/email/role);
+   `seed_dev` seeds contacts from frontend mock data. Frontend tabs
+   (`ClientContactsTab`, `VendorContactsTab`, `ClientContactSelect`, overview tabs)
+   consume the real API via `useClientContacts`/`useVendorContacts` + mutations.
 
 ## Phase D — Production API ✅ COMPLETE (all slices via `apps.production`)
 
@@ -225,7 +236,7 @@ viewsets → filtersets → permissions → events → tests):
   VendorProjectsTab resolve associations from the real project list
   (`useProjects`), keeping the existing fuzzy code/name matching and the real
   `updateClient`/`updateVendor` mutations.
-- Remaining mock-backed tabs — contacts, contracts, invoices, purchase orders,
+- Remaining mock-backed tabs — contracts, invoices, purchase orders,
   activities, performance, teams, users, departments, selects, overview
   aggregates, and the USD/milestone/crew/activity/deliverable-shaped project
   tabs stay on local mocks: no backend models exist for those entities, and
