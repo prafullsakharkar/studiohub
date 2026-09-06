@@ -22,6 +22,7 @@ from apps.organization.models.branding import Branding
 from apps.organization.models.calendar import Calendar
 from apps.organization.models.client import Client
 from apps.organization.models.client_contact import ClientContact
+from apps.organization.models.client_contract import ClientContract
 from apps.organization.models.department import Department
 from apps.organization.models.group import Group
 from apps.organization.models.group_member import GroupMember
@@ -44,6 +45,7 @@ from apps.organization.models.user_role import UserRole
 from apps.organization.models.user_session import UserSession
 from apps.organization.models.vendor import Vendor
 from apps.organization.models.vendor_contact import VendorContact
+from apps.organization.models.vendor_contract import VendorContract
 from apps.organization.models.work_calendar import WorkCalendar
 from apps.organization.models.work_hours import WorkHours
 
@@ -565,3 +567,41 @@ class VendorContactFactory(DjangoModelFactory):
     phone = factory.Faker("phone_number")
     timezone = "Asia/Kolkata (IST)"
     is_primary = False
+
+
+class ClientContractFactory(DjangoModelFactory):
+    """Factory for ClientContract model."""
+
+    class Meta:
+        model = ClientContract
+
+    organization = factory.SelfAttribute("client.organization")
+    client = factory.SubFactory(ClientFactory)
+    contract_number = factory.Sequence(lambda n: f"CON{n:04d}")
+    title = factory.Sequence(lambda n: f"Client Contract {n}")
+    type = "SOW"
+    effective_date = "2025-01-01"
+    expiry_date = "2027-12-31"
+    value_usd = 1000000
+    status = "Active"
+    nda_signed = True
+    document_url = ""
+
+
+class VendorContractFactory(DjangoModelFactory):
+    """Factory for VendorContract model."""
+
+    class Meta:
+        model = VendorContract
+
+    organization = factory.SelfAttribute("vendor.organization")
+    vendor = factory.SubFactory(VendorFactory)
+    contract_number = factory.Sequence(lambda n: f"VCON{n:04d}")
+    title = factory.Sequence(lambda n: f"Vendor Contract {n}")
+    type = "MSA"
+    effective_date = "2025-01-01"
+    expiry_date = "2027-12-31"
+    total_value_usd = 500000
+    nda_signed = True
+    security_tier = "MPAA Certified Tier 4"
+    status = "Active"

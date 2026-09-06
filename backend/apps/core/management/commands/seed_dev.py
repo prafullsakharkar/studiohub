@@ -87,6 +87,7 @@ class Command(BaseCommand):
             vendors = self._seed_vendors(org)
             people = self._seed_people(org)
             contacts = self._seed_contacts(org)
+            contracts = self._seed_contracts(org)
             activities = self._seed_activities(org, users)
             deliveries = self._seed_deliveries(org, projects, users)
             publishes = self._seed_publishes(org, projects, users)
@@ -102,6 +103,7 @@ class Command(BaseCommand):
         self.stdout.write(f"  Reviews: {len(reviews)}  Playlists: {len(playlists)}  Media: {len(media)}  Workflows: {len(workflows)}")
         self.stdout.write(f"  Clients: {len(clients)}  Vendors: {len(vendors)}  People: {len(people)}")
         self.stdout.write(f"  Client/Vendor Contacts: {contacts}")
+        self.stdout.write(f"  Client/Vendor Contracts: {contracts}")
         self.stdout.write(f"  Activities: {activities}")
         self.stdout.write(f"  Deliveries: {deliveries}  Publishes: {publishes}  Destinations: {destinations}  Pipeline Settings: {pipeline_settings}")
         self.stdout.write(self.style.NOTICE("  Default password for seeded users: password123"))
@@ -760,6 +762,88 @@ class Command(BaseCommand):
                     "phone": item.get("phone", ""),
                     "timezone": item.get("timezone", ""),
                     "is_primary": item.get("is_primary", False),
+                },
+            )
+            vendor_count += 1
+
+        return client_count + vendor_count
+
+    def _seed_contracts(self, org):
+        """Seed client/vendor contracts from frontend mock data."""
+        from pathlib import Path
+
+        from apps.organization.models import (
+            Client,
+            ClientContract,
+            Vendor,
+            VendorContract,
+        )
+        from apps.production.management.commands.seed_production_mocks import _load_ts_mock_array
+
+        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+
+        # Mock contracts reference mock parent ids; map them to seeded codes.
+        client_id_to_code = {
+            item.get("id"): item.get("code")
+            for item in _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockClients")
+            if item.get("id") and item.get("code")
+        }
+        vendor_id_to_code = {
+            item.get("id"): item.get("code")
+            for item in _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockVendors")
+            if item.get("id") and item.get("code")
+        }
+
+        client_count = 0
+        for item in _load_ts_mock_array(
+            frontend_root / "organization" / "clientVendorDetails.ts", "mockClientContracts"
+        ):
+            code = client_id_to_code.get(item.get("client_id"))
+            if not code:
+                continue
+            client = Client.objects.filter(code=code, organization=org).first()
+            if client is None:
+                continue
+            ClientContract.objects.update_or_create(
+                organization=org,
+                client=client,
+                contract_number=item.get("contract_number", ""),
+                defaults={
+                    "title": item.get("title", ""),
+                    "type": item.get("type", "SOW"),
+                    "effective_date": item.get("effective_date"),
+                    "expiry_date": item.get("expiry_date"),
+                    "value_usd": item.get("value_usd", 0),
+                    "status": item.get("status", "Active"),
+                    "nda_signed": item.get("nda_signed", False),
+                    "document_url": item.get("document_url", ""),
+                },
+            )
+            client_count += 1
+
+        vendor_count = 0
+        for item in _load_ts_mock_array(
+            frontend_root / "organization" / "clientVendorDetails.ts", "mockVendorContracts"
+        ):
+            code = vendor_id_to_code.get(item.get("vendor_id"))
+            if not code:
+                continue
+            vendor = Vendor.objects.filter(code=code, organization=org).first()
+            if vendor is None:
+                continue
+            VendorContract.objects.update_or_create(
+                organization=org,
+                vendor=vendor,
+                contract_number=item.get("contract_number", ""),
+                defaults={
+                    "title": item.get("title", ""),
+                    "type": item.get("type", "MSA"),
+                    "effective_date": item.get("effective_date"),
+                    "expiry_date": item.get("expiry_date"),
+                    "total_value_usd": item.get("total_value_usd", 0),
+                    "nda_signed": item.get("nda_signed", False),
+                    "security_tier": item.get("security_tier", ""),
+                    "status": item.get("status", "Active"),
                 },
             )
             vendor_count += 1

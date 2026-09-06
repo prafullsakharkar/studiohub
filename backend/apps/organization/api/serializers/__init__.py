@@ -15,6 +15,13 @@ from .client_contact import (
     ClientContactSerializer,
     ClientContactUpdateSerializer,
 )
+from .client_contract import (
+    ClientContractCreateSerializer,
+    ClientContractDetailSerializer,
+    ClientContractListSerializer,
+    ClientContractSerializer,
+    ClientContractUpdateSerializer,
+)
 from .department import DepartmentBaseSerializer
 from .group import (
     GroupBaseSerializer,
@@ -96,6 +103,13 @@ from .vendor_contact import (
     VendorContactListSerializer,
     VendorContactSerializer,
     VendorContactUpdateSerializer,
+)
+from .vendor_contract import (
+    VendorContractCreateSerializer,
+    VendorContractDetailSerializer,
+    VendorContractListSerializer,
+    VendorContractSerializer,
+    VendorContractUpdateSerializer,
 )
 from .work_calendar import WorkCalendarBaseSerializer
 from .work_hours import WorkHoursBaseSerializer
@@ -180,4 +194,14 @@ __all__ = [
     "VendorContactDetailSerializer",
     "VendorContactCreateSerializer",
     "VendorContactUpdateSerializer",
+    "ClientContractSerializer",
+    "ClientContractListSerializer",
+    "ClientContractDetailSerializer",
+    "ClientContractCreateSerializer",
+    "ClientContractUpdateSerializer",
+    "VendorContractSerializer",
+    "VendorContractListSerializer",
+    "VendorContractDetailSerializer",
+    "VendorContractCreateSerializer",
+    "VendorContractUpdateSerializer",
 ]

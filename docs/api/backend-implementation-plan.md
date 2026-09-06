@@ -124,6 +124,22 @@ factories (wrong-model FKs, removed attrs, wrong choice cases, stale duplicate
    `seed_dev` seeds contacts from frontend mock data. Frontend tabs
    (`ClientContactsTab`, `VendorContactsTab`, `ClientContactSelect`, overview tabs)
    consume the real API via `useClientContacts`/`useVendorContacts` + mutations.
+6. ✅ Client/Vendor Contracts (F1b, backend only): `ClientContract`/`VendorContract`
+   models (soft-delete, org FK, parent FK, whole-USD integer money fields so DRF
+   emits JSON numbers per the frontend `value_usd`/`total_value_usd: number`
+   contract, nullable YYYY-MM-DD dates) with nested legacy routes
+   `/api/v1/clients/{client_pk}/contracts/` and
+   `/api/v1/vendors/{vendor_pk}/contracts/` (GET list / POST create / PATCH /
+   DELETE). Same hardened pattern as F1a: server-side parent + organization
+   derivation, org-scoped parent lookup (404 on missing parent), reused
+   `OrganizationPermissions`, filtersets (`status`, `type`, `nda_signed`, search
+   over contract_number/title). NOTE: contracts have no `name` field, so the
+   viewsets also override base `ordering = ("name",)` with
+   `ordering = ("contract_number",)` — otherwise DRF's default ordering raises
+   FieldError (500). `seed_dev` seeds contracts from frontend mock data
+   (5 client + 3 vendor). Frontend tabs (`ClientContractsTab`,
+   `VendorContractsTab`, overview MSA lookup) still on mocks — rewiring is
+   follow-up work.
 
 ## Phase D — Production API ✅ COMPLETE (all slices via `apps.production`)
 
@@ -236,7 +252,8 @@ viewsets → filtersets → permissions → events → tests):
   VendorProjectsTab resolve associations from the real project list
   (`useProjects`), keeping the existing fuzzy code/name matching and the real
   `updateClient`/`updateVendor` mutations.
-- Remaining mock-backed tabs — contracts, invoices, purchase orders,
+- Remaining mock-backed tabs — contracts UI (backend DONE per F1b, tabs not yet
+  rewired), invoices, purchase orders,
   activities, performance, teams, users, departments, selects, overview
   aggregates, and the USD/milestone/crew/activity/deliverable-shaped project
   tabs stay on local mocks: no backend models exist for those entities, and

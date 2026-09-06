@@ -3,6 +3,7 @@ from .branding import Branding
 from .calendar import Calendar
 from .client import Client
 from .client_contact import ClientContact
+from .client_contract import ClientContract
 from .department import Department
 from .group import Group
 from .group_member import GroupMember
@@ -25,6 +26,7 @@ from .user_role import UserRole
 from .user_session import UserSession
 from .vendor import Vendor
 from .vendor_contact import VendorContact
+from .vendor_contract import VendorContract
 from .work_calendar import WorkCalendar
 from .work_hours import WorkHours
 
@@ -56,6 +58,8 @@ __all__ = [
     "Person",
     "Client",
     "ClientContact",
+    "ClientContract",
     "Vendor",
     "VendorContact",
+    "VendorContract",
 ]

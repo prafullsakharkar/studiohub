@@ -18,6 +18,7 @@ from rest_framework.routers import DefaultRouter
 from apps.organization.api.viewsets.billing import BillingView, NotificationsView, ReportsView
 from apps.organization.api.viewsets.client import ClientViewSet
 from apps.organization.api.viewsets.contact import ClientContactViewSet, VendorContactViewSet
+from apps.organization.api.viewsets.contract import ClientContractViewSet, VendorContractViewSet
 from apps.organization.api.viewsets.legacy import (
     LegacyDepartmentViewSet,
     LegacyOfficeViewSet,
@@ -45,6 +46,16 @@ router.register(
     r"vendors/(?P<vendor_pk>[^/.]+)/contacts",
     VendorContactViewSet,
     basename="legacy-vendor-contact",
+)
+router.register(
+    r"clients/(?P<client_pk>[^/.]+)/contracts",
+    ClientContractViewSet,
+    basename="legacy-client-contract",
+)
+router.register(
+    r"vendors/(?P<vendor_pk>[^/.]+)/contracts",
+    VendorContractViewSet,
+    basename="legacy-vendor-contract",
 )
 router.register(r"clients", ClientViewSet, basename="legacy-client")
 router.register(r"vendors", VendorViewSet, basename="legacy-vendor")

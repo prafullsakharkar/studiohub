@@ -2,6 +2,7 @@ from .api_key import APIKeyService
 from .branding import BrandingService
 from .calendar import CalendarService
 from .client_contact import ClientContactService
+from .client_contract import ClientContractService
 from .department import DepartmentService
 from .group import GroupService
 from .group_member import GroupMemberService
@@ -20,6 +21,7 @@ from .statistics import OrganizationStatisticsService
 from .team import TeamService
 from .user_role import UserRoleService
 from .vendor_contact import VendorContactService
+from .vendor_contract import VendorContractService
 from .work_calendar import WorkCalendarService
 from .work_hours import WorkHoursService
 
@@ -27,6 +29,8 @@ __all__ = [
     "APIKeyService",
     "ClientContactService",
     "VendorContactService",
+    "ClientContractService",
+    "VendorContractService",
     "BrandingService",
     "OrganizationService",
     "OrganizationStatisticsService",

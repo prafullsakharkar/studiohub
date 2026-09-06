@@ -2,6 +2,7 @@ from .api_key import APIKeySelector
 from .branding import BrandingSelector
 from .calendar import CalendarSelector
 from .contact import ClientContactSelector, VendorContactSelector
+from .contract import ClientContractSelector, VendorContractSelector
 from .department import DepartmentSelector
 from .group import GroupSelector
 from .group_member import GroupMemberSelector
@@ -28,6 +29,8 @@ __all__ = [
     "OrganizationSelector",
     "ClientContactSelector",
     "VendorContactSelector",
+    "ClientContractSelector",
+    "VendorContractSelector",
     "DepartmentSelector",
     "TeamSelector",
     "OfficeSelector",
