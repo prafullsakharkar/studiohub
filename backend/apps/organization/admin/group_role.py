@@ -1,10 +1,12 @@
 from django.contrib import admin
 
+from apps.organization.admin.base import OrganizationScopedAdminMixin
 from apps.organization.models import GroupRole
 
 
 @admin.register(GroupRole)
-class GroupRoleAdmin(admin.ModelAdmin):
+class GroupRoleAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+    organization_lookup = "group__organization"
     list_display = (
         "group",
         "role",

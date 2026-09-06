@@ -34,3 +34,6 @@ class UserMFAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
     )
+
+    # TOTP secrets are reversible credentials: never display or edit them.
+    exclude = ("totp_secret",)

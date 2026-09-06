@@ -1,10 +1,12 @@
 from django.contrib import admin
 
+from apps.organization.admin.base import OrganizationScopedAdminMixin
 from apps.organization.models import RolePermission
 
 
 @admin.register(RolePermission)
-class RolePermissionAdmin(admin.ModelAdmin):
+class RolePermissionAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+    organization_lookup = "role__organization"
     list_display = (
         "role",
         "permission",

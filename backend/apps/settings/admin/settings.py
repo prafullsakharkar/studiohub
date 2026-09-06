@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from apps.organization.admin.base import OrganizationScopedAdminMixin
 from apps.settings.models import (
     FeatureFlag,
     Localization,
@@ -84,7 +85,7 @@ class SettingDefinitionAdmin(admin.ModelAdmin):
 
 
 @admin.register(FeatureFlag)
-class FeatureFlagAdmin(admin.ModelAdmin):
+class FeatureFlagAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
     """Admin for FeatureFlag."""
 
     list_display = (
@@ -119,7 +120,7 @@ class FeatureFlagAdmin(admin.ModelAdmin):
 
 
 @admin.register(Localization)
-class LocalizationAdmin(admin.ModelAdmin):
+class LocalizationAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
     """Admin for Localization."""
 
     list_display = (
@@ -152,7 +153,7 @@ class LocalizationAdmin(admin.ModelAdmin):
 
 
 @admin.register(OrganizationSetting)
-class OrganizationSettingAdmin(admin.ModelAdmin):
+class OrganizationSettingAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
     """Admin for OrganizationSetting."""
 
     list_display = (
@@ -208,7 +209,7 @@ class SystemSettingAdmin(admin.ModelAdmin):
 
 
 @admin.register(Theme)
-class ThemeAdmin(admin.ModelAdmin):
+class ThemeAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
     """Admin for Theme."""
 
     list_display = (

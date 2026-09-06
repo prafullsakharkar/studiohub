@@ -1,10 +1,11 @@
 from django.contrib import admin
 
+from apps.organization.admin.base import OrganizationScopedAdminMixin
 from apps.organization.models import Office
 
 
 @admin.register(Office)
-class OfficeAdmin(admin.ModelAdmin):
+class OfficeAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
     list_display = (
         "name",
         "code",

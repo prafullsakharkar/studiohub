@@ -1,10 +1,11 @@
 from django.contrib import admin
 
+from apps.organization.admin.base import OrganizationScopedAdminMixin
 from apps.organization.models import APIKey
 
 
 @admin.register(APIKey)
-class APIKeyAdmin(admin.ModelAdmin):
+class APIKeyAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
     list_display = (
         "name",
         "organization",

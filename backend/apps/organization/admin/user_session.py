@@ -1,41 +1,48 @@
-"""
-Organization user session admin configuration.
-"""
-
 from django.contrib import admin
 
+from apps.organization.admin.base import OrganizationScopedModelAdmin
 from apps.organization.models import UserSession
 
 
 @admin.register(UserSession)
-class UserSessionAdmin(admin.ModelAdmin):
-    """Admin for UserSession."""
-
+class UserSessionAdmin(OrganizationScopedModelAdmin):
     list_display = (
+        "session_key",
         "user",
         "organization",
         "status",
         "authentication_method",
         "ip_address",
-        "created_at",
+        "is_trusted",
+        "started_at",
+        "last_activity",
     )
 
     list_filter = (
         "status",
         "authentication_method",
-        "device_type",
-        "created_at",
+        "is_trusted",
+        "is_current",
+        "organization",
     )
 
     search_fields = (
+        "session_key",
         "user__email",
         "ip_address",
-        "session_token",
+        "device_name",
     )
 
-    readonly_fields = (
-        "id",
-        "session_token",
-        "created_at",
-        "updated_at",
+    autocomplete_fields = (
+        "user",
+        "organization",
+        "office",
+        "department",
+        "team",
     )
+
+    list_select_related = ("user", "organization")
+
+    date_hierarchy = "started_at"
+
+    ordering = ("-last_activity",)
