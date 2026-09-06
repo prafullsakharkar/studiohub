@@ -3,8 +3,11 @@ Organization domain events.
 """
 
 from apps.organization.events.api_key import *
+from apps.organization.events.billing import *
 from apps.organization.events.branding import *
 from apps.organization.events.calendar import *
+from apps.organization.events.contact import *
+from apps.organization.events.contract import *
 from apps.organization.events.department import *
 from apps.organization.events.group import *
 from apps.organization.events.group_member import *
@@ -33,6 +36,8 @@ __all__ = [
     "APIKeyRevoked",
     "APIKeyExpired",
     "APIKeyUsed",
+    # Billing
+    "OrganizationBillingUpdated",
     # Branding
     "BrandingCreated",
     "BrandingUpdated",
@@ -47,6 +52,24 @@ __all__ = [
     "CalendarCreated",
     "CalendarUpdated",
     "CalendarDeleted",
+    # Contact
+    "ClientContactCreated",
+    "ClientContactUpdated",
+    "ClientContactDeleted",
+    "ClientContactRestored",
+    "VendorContactCreated",
+    "VendorContactUpdated",
+    "VendorContactDeleted",
+    "VendorContactRestored",
+    # Contract
+    "ClientContractCreated",
+    "ClientContractUpdated",
+    "ClientContractDeleted",
+    "ClientContractRestored",
+    "VendorContractCreated",
+    "VendorContractUpdated",
+    "VendorContractDeleted",
+    "VendorContractRestored",
     # Department
     "DepartmentCreated",
     "DepartmentUpdated",
@@ -162,8 +185,6 @@ __all__ = [
     "RoleDeleted",
     "RoleAssigned",
     "RoleRevoked",
-    "RolePermissionGranted",
-    "RolePermissionRevoked",
     # Role Permission
     "RolePermissionGranted",
     "RolePermissionRevoked",

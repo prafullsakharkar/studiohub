@@ -88,6 +88,8 @@ class Command(BaseCommand):
             people = self._seed_people(org)
             contacts = self._seed_contacts(org)
             contracts = self._seed_contracts(org)
+            billing = self._seed_billing(org)
+            knowledge = self._seed_knowledge(org)
             activities = self._seed_activities(org, users)
             deliveries = self._seed_deliveries(org, projects, users)
             publishes = self._seed_publishes(org, projects, users)
@@ -104,6 +106,8 @@ class Command(BaseCommand):
         self.stdout.write(f"  Clients: {len(clients)}  Vendors: {len(vendors)}  People: {len(people)}")
         self.stdout.write(f"  Client/Vendor Contacts: {contacts}")
         self.stdout.write(f"  Client/Vendor Contracts: {contracts}")
+        self.stdout.write(f"  Billing: {billing}")
+        self.stdout.write(f"  Knowledge documents: {knowledge}")
         self.stdout.write(f"  Activities: {activities}")
         self.stdout.write(f"  Deliveries: {deliveries}  Publishes: {publishes}  Destinations: {destinations}  Pipeline Settings: {pipeline_settings}")
         self.stdout.write(self.style.NOTICE("  Default password for seeded users: password123"))
@@ -849,6 +853,65 @@ class Command(BaseCommand):
             vendor_count += 1
 
         return client_count + vendor_count
+
+    def _seed_billing(self, org):
+        """Seed the organization's billing account with plan defaults."""
+        from apps.organization.models import OrganizationBilling
+
+        billing, _ = OrganizationBilling.objects.update_or_create(
+            organization=org,
+            defaults={
+                "tier": "Enterprise Vanguard",
+                "monthly_base_fee_usd": 12500,
+                "farm_credits_total": 500000,
+                "farm_credits_used": 0,
+                "storage_quota_tb": 500,
+                "storage_used_tb": 0,
+                "active_seats_count": 0,
+                "max_seats_count": 300,
+                "invoice_currency": "USD ($)",
+                "payment_method": "",
+            },
+        )
+        return billing.tier
+
+    def _seed_knowledge(self, org):
+        """Seed knowledge-base documents from frontend mock data."""
+        from pathlib import Path
+
+        from apps.intelligence.models import KnowledgeDocument
+        from apps.production.management.commands.seed_production_mocks import _load_ts_mock_array
+
+        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        count = 0
+        for item in _load_ts_mock_array(
+            frontend_root / "intelligence" / "knowledge.ts", "mockKnowledgeDocuments"
+        ):
+            slug = item.get("slug")
+            if not slug:
+                continue
+            KnowledgeDocument.objects.update_or_create(
+                organization=org,
+                slug=slug,
+                defaults={
+                    "title": item.get("title", ""),
+                    "summary": item.get("summary", ""),
+                    "content_markdown": item.get("content_markdown", ""),
+                    "category": item.get("category", "general"),
+                    "department_name": item.get("department_name", ""),
+                    "project_code": item.get("project_code", ""),
+                    "tags": item.get("tags", []),
+                    "author_name": item.get("author_name", ""),
+                    "author_role": item.get("author_role", ""),
+                    "author_avatar": item.get("author_avatar", ""),
+                    "version": item.get("version", "1.0"),
+                    "is_pinned": item.get("is_pinned", False),
+                    "is_verified": item.get("is_verified", False),
+                    "linked_entities": item.get("linked_entities", []),
+                },
+            )
+            count += 1
+        return count
 
     def _seed_people(self, org):
         from pathlib import Path

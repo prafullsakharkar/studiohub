@@ -9,6 +9,17 @@ def health(request):
     return JsonResponse({"status": "ok"})
 
 
+def server_error(request):
+    """
+    JSON 500 handler: API consumers always receive a DRF-shaped JSON body,
+    never Django's HTML debug/technical page.
+    """
+    return JsonResponse({"detail": "Internal server error."}, status=500)
+
+
+handler500 = server_error
+
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("health/", health),

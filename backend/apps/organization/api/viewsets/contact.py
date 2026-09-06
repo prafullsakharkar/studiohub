@@ -25,6 +25,7 @@ from apps.organization.api.serializers.vendor_contact import (
     VendorContactUpdateSerializer,
 )
 from apps.organization.api.viewsets.base import OrganizationEntityViewSet
+from apps.organization.api.viewsets.nested_bulk import NestedBulkActionsMixin
 from apps.organization.constants.permissions import OrganizationPermissions
 from apps.organization.models import Client, Vendor
 from apps.organization.selectors.contact import (
@@ -35,13 +36,19 @@ from apps.organization.services.client_contact import ClientContactService
 from apps.organization.services.vendor_contact import VendorContactService
 
 
-class ClientContactViewSet(OrganizationEntityViewSet):
+class ClientContactViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet):
     """
     Client contacts scoped to a parent client.
 
     Organization and client are derived server-side from the URL parent
     and the resolved request context — never from the payload.
     """
+
+    parent_accessor = "_get_parent_client"
+    parent_field = "client"
+    detail_serializer_class = ClientContactDetailSerializer
+    create_serializer_class = ClientContactCreateSerializer
+    update_serializer_class = ClientContactUpdateSerializer
 
     selector_class = ClientContactSelector
 
@@ -73,6 +80,11 @@ class ClientContactViewSet(OrganizationEntityViewSet):
         "update": (OrganizationPermissions.UPDATE,),
         "partial_update": (OrganizationPermissions.UPDATE,),
         "destroy": (OrganizationPermissions.DELETE,),
+        "bulk_create": (OrganizationPermissions.CREATE,),
+        "bulk_update": (OrganizationPermissions.UPDATE,),
+        "bulk_archive": (OrganizationPermissions.DELETE,),
+        "bulk_restore": (OrganizationPermissions.UPDATE,),
+        "restore": (OrganizationPermissions.UPDATE,),
     }
 
     def get_queryset(self):
@@ -122,13 +134,19 @@ class ClientContactViewSet(OrganizationEntityViewSet):
         super().perform_create(serializer)
 
 
-class VendorContactViewSet(OrganizationEntityViewSet):
+class VendorContactViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet):
     """
     Vendor contacts scoped to a parent vendor.
 
     Organization and vendor are derived server-side from the URL parent
     and the resolved request context — never from the payload.
     """
+
+    parent_accessor = "_get_parent_vendor"
+    parent_field = "vendor"
+    detail_serializer_class = VendorContactDetailSerializer
+    create_serializer_class = VendorContactCreateSerializer
+    update_serializer_class = VendorContactUpdateSerializer
 
     selector_class = VendorContactSelector
 
@@ -160,6 +178,11 @@ class VendorContactViewSet(OrganizationEntityViewSet):
         "update": (OrganizationPermissions.UPDATE,),
         "partial_update": (OrganizationPermissions.UPDATE,),
         "destroy": (OrganizationPermissions.DELETE,),
+        "bulk_create": (OrganizationPermissions.CREATE,),
+        "bulk_update": (OrganizationPermissions.UPDATE,),
+        "bulk_archive": (OrganizationPermissions.DELETE,),
+        "bulk_restore": (OrganizationPermissions.UPDATE,),
+        "restore": (OrganizationPermissions.UPDATE,),
     }
 
     def get_queryset(self):

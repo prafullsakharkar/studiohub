@@ -1,3 +1,9 @@
+"""
+Explicit stub: analytics aggregation has no backend implementation yet.
+
+Returns a contract-shaped empty dashboard until KPI computation lands.
+"""
+
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
@@ -6,6 +12,8 @@ from rest_framework.views import APIView
 
 
 class IntelligenceAnalyticsDashboardView(APIView):
+    """Explicit stub — see module docstring."""
+
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(responses=OpenApiTypes.OBJECT)

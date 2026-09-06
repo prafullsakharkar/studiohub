@@ -67,19 +67,24 @@ factories (wrong-model FKs, removed attrs, wrong choice cases, stale duplicate
    `config/settings/base.py`; add missing `UserSessionValidator.validate_refresh/validate_logout`;
    set `JWTAuthentication` on `AuthMeView`/`AuthLogoutView` (was `authentication_classes=()`).
    Verified via 5 `pytest` contract tests (login/refresh/me + pagination alias + health).
-2. User action gaps: **TRACKED** — `suspend`/`unsuspend`/`reset-password`/`force-password-change`/
-   `revoke-sessions` not yet exposed; frontend `UserService` calls these but `identityHandlers.ts`
-   is dead code (no live UI). Decision: add as `@action` on `UserViewSet` in follow-up, mapping to
-   existing services (`UserService`/`PasswordService`/`TokenService.revoke`).
-3. Sessions endpoints: **TRACKED** — `LogoutAllAPIView`/`LogoutOtherDevicesAPIView` exist but
-   unrouted; frontend `SessionService` expects `/api/v1/identity/sessions/...` (dead code). Plan:
-   route at `identity/sessions/` or `auth/sessions/` with `TokenService` and document.
+2. ✅ User action gaps: DONE — `suspend`/`unsuspend`/`reset-password`/`force-password-change`/
+   `revoke-sessions` exposed as `@action` on `UserViewSet`, covered by
+   `test_user_viewset_actions.py`.
+3. ✅ Sessions endpoints: DONE — `UserSessionViewSet` registered in the identity
+   router with session list/revoke coverage.
 4. Roles/Permissions: **DECIDED** — owner is **organization** app (`Role` has `organization` FK and
    `OrganizationEntityModel` base). Canonical is `/api/v1/organization/roles/` and
    `/permissions/`. Frontend's expectation at `/api/v1/identity/roles/` is legacy; provide either
    alias include (`identity/roles/` → same viewset) or migrate frontend to `organization` prefix.
-   Extra actions (`clone`, `permissions/add|remove`) and permission filters (`module`/`category`/`codes`)
-   remain **MISSING BACKEND** — add as `@action` on `RoleViewSet`/`PermissionViewSet` with `RolePermission` service.
+   ✅ Permission filters (`module`/`category`) exist on `PermissionFilterSet`.
+   ✅ Extra actions DONE: `clone`, `permissions/add`, `permissions/remove` on
+   `RoleViewSet` (service-level copy/grant/revoke with `DuplicateException` on
+   code clash, covered by `test_role_actions.py`). Also fixed: `RoleSelector`
+   now grants staff the admin-context all-rows scope (was superuser-only,
+   contradicting `scope_by_request`), and the duplicate
+   `RolePermissionGranted`/`RolePermissionRevoked` event classes in
+   `events/role.py` shadowing the canonical `events/role_permission.py`
+   versions were removed.
 5. ✅ Serializer emits frontend User payload via `apps/identity/api/serializers/frontend_user.py`:
    aggregates `User` + `Profile` + `OrganizationMembership` (with `X-Organization-Id` header support
    for active org) + `RolePermission` → `{id, email, first_name, last_name, full_name, avatar_url,
@@ -140,6 +145,23 @@ factories (wrong-model FKs, removed attrs, wrong choice cases, stale duplicate
    (5 client + 3 vendor). Frontend tabs (`ClientContractsTab`,
    `VendorContractsTab`, overview MSA lookup) still on mocks — rewiring is
    follow-up work.
+7. ✅ Lifecycle hardening (contacts/contracts/clients/vendors):
+   `ClientContractValidator`/`VendorContractValidator` (expiry ≥ effective,
+   duplicate numbers → 409 `DuplicateException`; DB `UniqueConstraint`s in
+   migration `0012`); `ClientContact*`/`VendorContact*`/`ClientContract*`/
+   `VendorContract*` domain events wired into service `event_map`s; single
+   `restore` + `bulk-create`/`bulk-update`/`bulk-archive`/`bulk-restore` on all
+   four nested viewsets via shared `NestedBulkActionsMixin` (ADR-0028 envelope
+   + status vocabulary, org-scoped parents, per-record errors); `restore` on
+   the top-level client/vendor viewsets (also fixed: their `destroy` always
+   500'd — no `service_class` — now soft-deletes via `perform_destroy`).
+8. ✅ Billing is real: `OrganizationBilling` per-org model (migration `0013`,
+   seeded plan defaults, zeroed counters) backs `GET/PATCH /api/v1/billing/`
+   with validator + service + event; PATCH is staff-only.
+   Reports/notifications return honest empty lists (were fake records);
+   intelligence chat is a stateless echo (was a mutating global transcript);
+   knowledge-base CRUD is persisted (`KnowledgeDocument`, migration
+   `intelligence.0001`, seeded from frontend mocks). See ADR-0029.
 
 ## Phase D — Production API ✅ COMPLETE (all slices via `apps.production`)
 
@@ -188,12 +210,14 @@ viewsets → filtersets → permissions → events → tests):
   (no runtime flag exists today) — document exact diff before touching frontend.
 - Verify `X-Organization-Id` handling end-to-end.
 
-## Phase F — Permissions
+## Phase F — Permissions ✅ CONSOLIDATION COMPLETE
 
 - `permission_map` entries for every new viewset; object-level rules in services.
 - Ensure login/me payloads surface `Permission.code` values matching UI strings
   (`module:action`).
-- Consolidate `HasPermission` vs `RBACPermission` duplication (documented tech debt).
+- ✅ `HasPermission` vs `RBACPermission` consolidated: `RBACPermission` is a
+  deprecated alias sharing the `HasPermission` → `PermissionCacheService`
+  implementation.
 
 ## Phase G — Filtering / Search / Pagination
 
@@ -202,10 +226,16 @@ viewsets → filtersets → permissions → events → tests):
 - Search annotations for denormalized `*_name` fields (N+1 safe).
 - Parity tests: same param set against mock expectations.
 
-## Phase H — Error Handling
+## Phase H — Error Handling ✅ CORE COMPLETE
 
-- Domain exceptions mapped to statuses; 409 conflicts (duplicate code, state-machine
-  violations); rate-limit middleware returns DRF-shaped bodies; 500 JSON guarantee.
+- ✅ Domain exceptions mapped to statuses; 409 conflicts via `DuplicateException`
+  (used by contract/role validators) and `IntegrityError` → 409 mapping for
+  DB-level races; Django `ValidationError` from service validators → 400
+  (previously fell through to 500); JSON 500 guarantee via
+  `custom_exception_handler` (DRF paths) + `handler500` JSON view (non-DRF
+  paths). Covered by `apps/core/tests/api/test_exception_handler.py`.
+- Rate limiting via DRF `ResilientScopedRateThrottle` (global middleware
+  removed in P2.5 as unenforceable).
 - Contract fixtures for each status code consumed by both test suites.
 
 ## Phase I — Seed Data
@@ -255,6 +285,9 @@ viewsets → filtersets → permissions → events → tests):
 - Remaining mock-backed tabs — contracts UI (backend DONE per F1b, tabs not yet
   rewired), invoices, purchase orders,
   activities, performance, teams, users, departments, selects, overview
+- Intelligence module HTTP wiring — frontend stays on local mocks (unchanged):
+  knowledge-base CRUD is now real backend persistence, but chat/risks/search
+  need LLM + search-index services first (ADR-0029).
   aggregates, and the USD/milestone/crew/activity/deliverable-shaped project
   tabs stay on local mocks: no backend models exist for those entities, and
   several mock shapes (VendorDelivery QC submissions, ProjectMilestone phases,

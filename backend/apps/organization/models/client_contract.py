@@ -35,6 +35,12 @@ class ClientContract(EntityModel):
             models.Index(fields=["organization", "client"]),
             models.Index(fields=["organization", "status"]),
         ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "client", "contract_number"],
+                name="uq_client_contract_org_client_number",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.contract_number} ({self.client})"

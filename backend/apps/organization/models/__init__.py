@@ -1,4 +1,5 @@
 from .api_key import APIKey
+from .billing import OrganizationBilling
 from .branding import Branding
 from .calendar import Calendar
 from .client import Client
@@ -45,6 +46,7 @@ __all__ = [
     "Invitation",
     "OrganizationMembership",
     "APIKey",
+    "OrganizationBilling",
     "PersonalAccessToken",
     "Group",
     "GroupMember",

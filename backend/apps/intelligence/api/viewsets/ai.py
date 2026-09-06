@@ -1,3 +1,10 @@
+"""
+Explicit stubs: LLM-backed chat/risks/summaries have no backend yet.
+
+Chat is a stateless echo; risks return one illustrative record shape.
+Real implementation needs search-index + LLM services (see ADR).
+"""
+
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
@@ -8,6 +15,9 @@ from rest_framework.response import Response
 
 class DummySerializer(serializers.Serializer):
     pass
+
+
+# Illustrative record shape for the risks stub (read-only).
 MOCK_RISKS = [
     {
         "id": "risk-001",
@@ -26,32 +36,42 @@ MOCK_RISKS = [
     }
 ]
 
-MOCK_CHAT = [
-    {"id": "msg-001", "sender": "assistant", "content": "StudioHub Intelligence ready.", "timestamp": "2026-08-20T00:00:00Z"}
-]
-
 class AIChatView(GenericAPIView):
+    """
+    Explicit stub: stateless echo until the LLM-backed assistant lands.
+
+    Deliberately stores nothing — earlier revisions mutated a module-global
+    transcript shared across all users/requests.
+    """
+
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def get(self, request):
-        return Response(MOCK_CHAT)
+        return Response(
+            [
+                {
+                    "id": "msg-001",
+                    "sender": "assistant",
+                    "content": "StudioHub Intelligence ready.",
+                    "timestamp": "2026-08-20T00:00:00Z",
+                }
+            ]
+        )
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def post(self, request):
         user_query = request.data.get("content") or request.data.get("query") or ""
-        # Echo + stub
-        response = {
-            "id": f"msg-{len(MOCK_CHAT)+1}",
-            "sender": "assistant",
-            "content": f"Processed: {user_query}\n\nThis is a stub AI response — wire to production LLM in next iteration.",
-            "timestamp": "2026-08-20T00:00:00Z",
-            "capability_used": "production_assistant",
-        }
-        MOCK_CHAT.append({"id": f"msg-{len(MOCK_CHAT)+1}", "sender": "user", "content": user_query, "timestamp": "2026-08-20T00:00:00Z"})
-        MOCK_CHAT.append(response)
-        return Response(response)
+        return Response(
+            {
+                "id": "msg-echo",
+                "sender": "assistant",
+                "content": f"Processed: {user_query}\n\nThis is a stub AI response — wire to production LLM in next iteration.",
+                "timestamp": "2026-08-20T00:00:00Z",
+                "capability_used": "production_assistant",
+            }
+        )
 
 class AIRisksView(GenericAPIView):
     serializer_class = DummySerializer
@@ -153,11 +173,4 @@ class AIPermissionContextView(GenericAPIView):
         })
 
 
-# Extend AIChatView to handle DELETE (clear chat) and GET history
-# Monkey-patch to add delete
-def _ai_chat_delete(self, request):
-    global MOCK_CHAT
-    MOCK_CHAT = [{"id": "msg-001", "sender": "assistant", "content": "StudioHub Intelligence ready.", "timestamp": "2026-08-20T00:00:00Z"}]
-    return Response(status=204)
 
-AIChatView.delete = _ai_chat_delete

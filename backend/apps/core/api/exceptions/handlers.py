@@ -4,9 +4,12 @@ Global DRF exception handler.
 
 from __future__ import annotations
 
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated, PermissionDenied
 from rest_framework.response import Response
+from rest_framework.serializers import as_serializer_error
 from rest_framework.views import exception_handler
 
 from apps.core.exceptions.base import BaseDomainException
@@ -25,6 +28,23 @@ def custom_exception_handler(exc, context):
         return Response(
             {"detail": exc.message},
             status=exc.status_code,
+        )
+
+    # Service-layer validators raise Django's ValidationError, which DRF
+    # does not handle — without this mapping every business-rule failure
+    # would surface as a 500 instead of a 400.
+    if isinstance(exc, DjangoValidationError):
+        return Response(
+            as_serializer_error(exc),
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Database-level uniqueness/ integrity races that slip past
+    # validators are conflicts (409), not server errors (500).
+    if isinstance(exc, IntegrityError):
+        return Response(
+            {"detail": "Resource conflict: the request conflicts with existing data."},
+            status=status.HTTP_409_CONFLICT,
         )
 
     response = exception_handler(exc, context)

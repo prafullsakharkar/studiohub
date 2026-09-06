@@ -178,10 +178,12 @@ class TestTagViewSet:
     def test_search_tags(self, authenticated_client):
         """Test searching tags."""
         # Use unique names: TagFactory uses get_or_create on name.
+        # Pin descriptions: search covers name+description and Faker text
+        # could randomly contain the search term (flaky count).
         for i in range(3):
-            TagFactory.create(name=f"Search Tag {i}")
+            TagFactory.create(name=f"Search Tag {i}", description="alpha beta gamma")
         for i in range(2):
-            TagFactory.create(name=f"Other Tag {i}")
+            TagFactory.create(name=f"Other Tag {i}", description="delta epsilon zeta")
 
         url = reverse("api:v1:core:tag-list")
         response = authenticated_client.get(url, {"search": "Search"})

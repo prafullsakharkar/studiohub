@@ -18,6 +18,7 @@ from apps.identity.tests.factories import UserFactory
 from apps.organization.choices import OrganizationType
 from apps.organization.choices.department_type import DepartmentType
 from apps.organization.models.api_key import APIKey
+from apps.organization.models.billing import OrganizationBilling
 from apps.organization.models.branding import Branding
 from apps.organization.models.calendar import Calendar
 from apps.organization.models.client import Client
@@ -102,6 +103,15 @@ class OrganizationFactory(DjangoModelFactory):
     def create_archived(cls, **kwargs):
         """Create an archived organization."""
         return cls.create(status="archived", **kwargs)
+
+
+class OrganizationBillingFactory(DjangoModelFactory):
+    """Factory for OrganizationBilling model."""
+
+    class Meta:
+        model = OrganizationBilling
+
+    organization = factory.SubFactory(OrganizationFactory)
 
 
 class BrandingFactory(DjangoModelFactory):

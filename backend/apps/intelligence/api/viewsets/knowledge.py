@@ -1,3 +1,12 @@
+"""
+Knowledge-base endpoints backed by the ``KnowledgeDocument`` model.
+
+Same URL contract as the former in-memory stub store, now persisted per
+organization. List responses stay bare arrays.
+"""
+
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db.models import F, Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
@@ -5,31 +14,49 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.intelligence.models import KnowledgeDocument
+from apps.intelligence.serializers import (
+    KnowledgeDocumentSerializer,
+    KnowledgeDocumentUpdateSerializer,
+)
+from apps.organization.middleware.organization_context import (
+    resolve_organization_context,
+)
+from apps.organization.models import Organization
+
 
 class DummySerializer(serializers.Serializer):
     pass
-# Stub knowledge documents — mirrors frontend mockKnowledgeDocuments
-MOCK_KNOWLEDGE = [
-    {
-        "id": "kdoc-001",
-        "title": "OpenUSD 24.08 Multi-Department Asset Composition Standard",
-        "slug": "openusd-24-08-standard",
-        "summary": "Authoring and payload conventions for high-density assets.",
-        "content_markdown": "# OpenUSD Standard\n...",
-        "category": "pipeline",
-        "department_name": "Pipeline",
-        "project_code": "ALL",
-        "tags": ["USD", "OpenUSD", "Karma"],
-        "author_name": "Pipeline TD",
-        "author_role": "Pipeline TD",
-        "version": "1.0",
-        "views_count": 42,
-        "likes_count": 12,
-        "created_at": "2026-01-01T00:00:00Z",
-        "updated_at": "2026-01-01T00:00:00Z",
-        "linked_entities": [],
-    }
-]
+
+
+def _resolve_organization(request):
+    """
+    Resolve the knowledge organization: explicit request context first,
+    then the first org for staff (admin context).
+    """
+    resolve_organization_context(request, force=True)
+    organization = getattr(request, "organization", None)
+    if organization is not None:
+        return organization
+    user = getattr(request, "user", None)
+    if user is not None and (user.is_staff or user.is_superuser):
+        return Organization.objects.first()
+    return None
+
+
+def _scoped_queryset(request):
+    organization = _resolve_organization(request)
+    if organization is None:
+        return KnowledgeDocument.objects.none()
+    return KnowledgeDocument.objects.filter(organization=organization)
+
+
+def _get_doc(request, pk):
+    try:
+        return _scoped_queryset(request).filter(id=pk).first()
+    except (DjangoValidationError, ValueError):
+        return None
+
 
 class IntelligenceKnowledgeListView(GenericAPIView):
     serializer_class = DummySerializer
@@ -39,25 +66,23 @@ class IntelligenceKnowledgeListView(GenericAPIView):
     def get(self, request):
         category = request.query_params.get("category")
         search = request.query_params.get("search")
-        docs = MOCK_KNOWLEDGE
+        docs = _scoped_queryset(request)
         if category and category != "ALL":
-            docs = [d for d in docs if d["category"] == category]
+            docs = docs.filter(category=category)
         if search:
-            q = search.lower()
-            docs = [d for d in docs if q in d["title"].lower() or q in d["summary"].lower()]
-        return Response(docs)
+            docs = docs.filter(Q(title__icontains=search) | Q(summary__icontains=search))
+        return Response(KnowledgeDocumentSerializer(docs, many=True).data)
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def post(self, request):
-        new_doc = {
-            "id": f"kdoc-{len(MOCK_KNOWLEDGE)+1}",
-            **request.data,
-            "views_count": 1,
-            "likes_count": 0,
-            "linked_entities": [],
-        }
-        MOCK_KNOWLEDGE.insert(0, new_doc)
-        return Response(new_doc, status=201)
+        organization = _resolve_organization(request)
+        if organization is None:
+            return Response({"detail": "No organization found."}, status=404)
+        serializer = KnowledgeDocumentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        doc = serializer.save(organization=organization)
+        return Response(KnowledgeDocumentSerializer(doc).data, status=201)
+
 
 class IntelligenceKnowledgeDetailView(GenericAPIView):
     serializer_class = DummySerializer
@@ -65,23 +90,31 @@ class IntelligenceKnowledgeDetailView(GenericAPIView):
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request, pk=None):
-        doc = next((d for d in MOCK_KNOWLEDGE if d["id"] == pk), None)
-        if not doc:
+        doc = _get_doc(request, pk)
+        if doc is None:
             return Response({"detail": "Not found."}, status=404)
-        doc["views_count"] = doc.get("views_count", 0) + 1
-        return Response(doc)
+        KnowledgeDocument.objects.filter(pk=doc.pk).update(views_count=F("views_count") + 1)
+        doc.refresh_from_db()
+        return Response(KnowledgeDocumentSerializer(doc).data)
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def patch(self, request, pk=None):
-        doc = next((d for d in MOCK_KNOWLEDGE if d["id"] == pk), None)
-        if not doc:
+        doc = _get_doc(request, pk)
+        if doc is None:
             return Response({"detail": "Not found."}, status=404)
-        doc.update(request.data)
-        return Response(doc)
+        serializer = KnowledgeDocumentUpdateSerializer(
+            instance=doc, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        doc.refresh_from_db()
+        return Response(KnowledgeDocumentSerializer(doc).data)
 
     def delete(self, request, pk=None):
-        global MOCK_KNOWLEDGE
-        MOCK_KNOWLEDGE = [d for d in MOCK_KNOWLEDGE if d["id"] != pk]
+        doc = _get_doc(request, pk)
+        if doc is None:
+            return Response({"detail": "Not found."}, status=404)
+        doc.soft_delete(user=getattr(request, "user", None))
         return Response(status=204)
 
 
@@ -91,11 +124,12 @@ class IntelligenceKnowledgeLikeView(GenericAPIView):
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def post(self, request, pk=None):
-        doc = next((d for d in MOCK_KNOWLEDGE if d["id"] == pk), None)
-        if not doc:
+        doc = _get_doc(request, pk)
+        if doc is None:
             return Response({"detail": "Not found."}, status=404)
-        doc["likes_count"] = doc.get("likes_count", 0) + 1
-        return Response({"likes_count": doc["likes_count"]})
+        KnowledgeDocument.objects.filter(pk=doc.pk).update(likes_count=F("likes_count") + 1)
+        doc.refresh_from_db()
+        return Response({"likes_count": doc.likes_count})
 
 
 class IntelligenceKnowledgeLinkEntityView(GenericAPIView):
@@ -104,18 +138,24 @@ class IntelligenceKnowledgeLinkEntityView(GenericAPIView):
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def post(self, request, pk=None):
-        doc = next((d for d in MOCK_KNOWLEDGE if d["id"] == pk), None)
-        if not doc:
+        doc = _get_doc(request, pk)
+        if doc is None:
             return Response({"detail": "Not found."}, status=404)
-        link = {"id": f"klink-{len(doc.get('linked_entities', []))+1}", **request.data}
-        doc.setdefault("linked_entities", []).append(link)
-        return Response(doc)
+        links = list(doc.linked_entities or [])
+        link = {"id": f"klink-{len(links) + 1}", **request.data}
+        links.append(link)
+        doc.linked_entities = links
+        doc.save(update_fields=["linked_entities", "updated_at"])
+        doc.refresh_from_db()
+        return Response(KnowledgeDocumentSerializer(doc).data)
 
     def delete(self, request, pk=None, link_id=None):
-        doc = next((d for d in MOCK_KNOWLEDGE if d["id"] == pk), None)
-        if not doc:
+        doc = _get_doc(request, pk)
+        if doc is None:
             return Response({"detail": "Not found."}, status=404)
-        doc["linked_entities"] = [
-            e for e in doc.get("linked_entities", []) if e.get("id") != link_id
+        doc.linked_entities = [
+            e for e in (doc.linked_entities or []) if e.get("id") != link_id
         ]
-        return Response(doc)
+        doc.save(update_fields=["linked_entities", "updated_at"])
+        doc.refresh_from_db()
+        return Response(KnowledgeDocumentSerializer(doc).data)

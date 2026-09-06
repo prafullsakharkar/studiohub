@@ -25,10 +25,13 @@ class RoleSelector(BaseSelector):
         """
         queryset = Role.objects.all()
 
-        # Users can see roles in their organizations
-        if request and hasattr(request, "user") and not request.user.is_superuser:
+        # Staff/superusers see everything (admin context, matching
+        # OrganizationBaseSelector.scope_by_request). Other users can
+        # see roles in their organizations.
+        user = getattr(request, "user", None) if request else None
+        if user is not None and not (user.is_staff or user.is_superuser):
             queryset = queryset.filter(
-                organization__in=request.user.organizations.all()
+                organization__in=user.organizations.all()
             )
 
         queryset = queryset.annotate(

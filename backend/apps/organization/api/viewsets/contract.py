@@ -25,6 +25,7 @@ from apps.organization.api.serializers.vendor_contract import (
     VendorContractUpdateSerializer,
 )
 from apps.organization.api.viewsets.base import OrganizationEntityViewSet
+from apps.organization.api.viewsets.nested_bulk import NestedBulkActionsMixin
 from apps.organization.constants.permissions import OrganizationPermissions
 from apps.organization.models import Client, Vendor
 from apps.organization.selectors.contract import (
@@ -35,13 +36,19 @@ from apps.organization.services.client_contract import ClientContractService
 from apps.organization.services.vendor_contract import VendorContractService
 
 
-class ClientContractViewSet(OrganizationEntityViewSet):
+class ClientContractViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet):
     """
     Client contracts scoped to a parent client.
 
     Organization and client are derived server-side from the URL parent
     and the resolved request context — never from the payload.
     """
+
+    parent_accessor = "_get_parent_client"
+    parent_field = "client"
+    detail_serializer_class = ClientContractDetailSerializer
+    create_serializer_class = ClientContractCreateSerializer
+    update_serializer_class = ClientContractUpdateSerializer
 
     selector_class = ClientContractSelector
 
@@ -83,6 +90,11 @@ class ClientContractViewSet(OrganizationEntityViewSet):
         "update": (OrganizationPermissions.UPDATE,),
         "partial_update": (OrganizationPermissions.UPDATE,),
         "destroy": (OrganizationPermissions.DELETE,),
+        "bulk_create": (OrganizationPermissions.CREATE,),
+        "bulk_update": (OrganizationPermissions.UPDATE,),
+        "bulk_archive": (OrganizationPermissions.DELETE,),
+        "bulk_restore": (OrganizationPermissions.UPDATE,),
+        "restore": (OrganizationPermissions.UPDATE,),
     }
 
     def get_queryset(self):
@@ -132,13 +144,19 @@ class ClientContractViewSet(OrganizationEntityViewSet):
         super().perform_create(serializer)
 
 
-class VendorContractViewSet(OrganizationEntityViewSet):
+class VendorContractViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet):
     """
     Vendor contracts scoped to a parent vendor.
 
     Organization and vendor are derived server-side from the URL parent
     and the resolved request context — never from the payload.
     """
+
+    parent_accessor = "_get_parent_vendor"
+    parent_field = "vendor"
+    detail_serializer_class = VendorContractDetailSerializer
+    create_serializer_class = VendorContractCreateSerializer
+    update_serializer_class = VendorContractUpdateSerializer
 
     selector_class = VendorContractSelector
 
@@ -180,6 +198,11 @@ class VendorContractViewSet(OrganizationEntityViewSet):
         "update": (OrganizationPermissions.UPDATE,),
         "partial_update": (OrganizationPermissions.UPDATE,),
         "destroy": (OrganizationPermissions.DELETE,),
+        "bulk_create": (OrganizationPermissions.CREATE,),
+        "bulk_update": (OrganizationPermissions.UPDATE,),
+        "bulk_archive": (OrganizationPermissions.DELETE,),
+        "bulk_restore": (OrganizationPermissions.UPDATE,),
+        "restore": (OrganizationPermissions.UPDATE,),
     }
 
     def get_queryset(self):

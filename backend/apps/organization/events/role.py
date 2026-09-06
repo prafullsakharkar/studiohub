@@ -19,11 +19,3 @@ class RoleAssigned(DomainEvent):
 
 class RoleRevoked(DomainEvent):
     event_type = "organization.role.revoked"
-
-
-class RolePermissionGranted(DomainEvent):
-    event_type = "organization.role.permission_granted"
-
-
-class RolePermissionRevoked(DomainEvent):
-    event_type = "organization.role.permission_revoked"

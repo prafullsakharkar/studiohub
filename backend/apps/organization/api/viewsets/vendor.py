@@ -2,6 +2,8 @@ import contextlib
 
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from apps.core.api.pagination import StandardPagination
 from apps.core.api.viewsets import ServiceModelViewSet
@@ -34,6 +36,7 @@ class VendorViewSet(ServiceModelViewSet):
         "update": (OrganizationPermissions.UPDATE,),
         "partial_update": (OrganizationPermissions.UPDATE,),
         "destroy": (OrganizationPermissions.DELETE,),
+        "restore": (OrganizationPermissions.UPDATE,),
     }
     pagination_class = StandardPagination
     search_fields = ("name", "code", "contact_name")
@@ -63,6 +66,28 @@ class VendorViewSet(ServiceModelViewSet):
             from apps.organization.models import Organization
             org = Organization.objects.first()
         serializer.save(organization=org)
+
+    def perform_destroy(self, instance):
+        # This legacy viewset defines no service_class, so the service
+        # mixin cannot soft-delete — invoke the model helper directly.
+        instance.soft_delete(user=getattr(self.request, "user", None))
+
+    @action(detail=True, methods=["post"], url_path="restore")
+    def restore(self, request, *args, **kwargs):
+        """Recover a soft-deleted vendor."""
+        lookup_value = self.kwargs.get(self.lookup_url_kwarg or self.lookup_field)
+        queryset = Vendor.all_objects.filter(is_deleted=True)
+        org = getattr(request, "organization", None)
+        if org is not None:
+            queryset = queryset.filter(organization=org)
+        instance = queryset.filter(id=lookup_value).first()
+        if instance is None:
+            instance = queryset.filter(code__iexact=lookup_value).first()
+        if instance is None:
+            raise Http404
+        self.check_object_permissions(request, instance)
+        instance.restore()
+        return Response(VendorDetailSerializer(instance).data)
 
     def get_object(self):
         """

@@ -178,8 +178,14 @@ class TestAttachmentViewSet:
     @pytest.mark.django_db
     def test_search_attachments(self, authenticated_client):
         """Test searching attachments."""
-        AttachmentFactory.create_batch(3, name="Search Attachment")
-        AttachmentFactory.create_batch(2, name="Other Attachment")
+        # Pin descriptions: search covers name+description+mime_type and
+        # Faker text could randomly contain the search term (flaky count).
+        AttachmentFactory.create_batch(
+            3, name="Search Attachment", description="alpha beta gamma"
+        )
+        AttachmentFactory.create_batch(
+            2, name="Other Attachment", description="delta epsilon zeta"
+        )
 
         url = reverse("api:v1:core:attachment-list")
         response = authenticated_client.get(url, {"search": "Search"})

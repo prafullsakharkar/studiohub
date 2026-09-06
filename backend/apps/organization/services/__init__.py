@@ -1,4 +1,5 @@
 from .api_key import APIKeyService
+from .billing import OrganizationBillingService
 from .branding import BrandingService
 from .calendar import CalendarService
 from .client_contact import ClientContactService
@@ -27,6 +28,7 @@ from .work_hours import WorkHoursService
 
 __all__ = [
     "APIKeyService",
+    "OrganizationBillingService",
     "ClientContactService",
     "VendorContactService",
     "ClientContractService",

@@ -1,62 +1,115 @@
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
+from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.organization.api.serializers.billing import (
+    OrganizationBillingSerializer,
+    OrganizationBillingUpdateSerializer,
+)
+from apps.organization.middleware.organization_context import (
+    resolve_organization_context,
+)
+from apps.organization.models import Organization, OrganizationBilling
+from apps.organization.services.billing import OrganizationBillingService
+
+
+def _resolve_billing_organization(request):
+    """
+    Resolve the billing organization: explicit request context first,
+    then the first org for staff (admin context).
+    """
+    resolve_organization_context(request, force=True)
+    organization = getattr(request, "organization", None)
+    if organization is not None:
+        return organization
+    user = getattr(request, "user", None)
+    if user is not None and (user.is_staff or user.is_superuser):
+        return Organization.objects.first()
+    return None
+
 
 class BillingView(APIView):
+    """
+    Per-organization billing account (backed by ``OrganizationBilling``).
+
+    Usage counters start at zero — consumption wiring is future work.
+    """
+
     permission_classes = (IsAuthenticated,)
 
-    @extend_schema(responses=OpenApiTypes.OBJECT)
+    def _get_billing(self, request):
+        organization = _resolve_billing_organization(request)
+        if organization is None:
+            return None
+        billing, _ = OrganizationBilling.objects.get_or_create(
+            organization=organization
+        )
+        return billing
+
+    @extend_schema(responses=OrganizationBillingSerializer)
     def get(self, request):
-        return Response({
-            "tier": "Enterprise Vanguard",
-            "monthly_base_fee_usd": 12500,
-            "farm_credits_total": 500000,
-            "farm_credits_used": 328450,
-            "farm_credits_remaining": 171550,
-            "storage_quota_tb": 500,
-            "storage_used_tb": 342.5,
-            "active_seats_count": 248,
-            "max_seats_count": 300,
-            "next_billing_date": "2026-09-01",
-            "invoice_currency": "USD ($)",
-            "payment_method": "Corporate Wire ACH ••••• 8912",
-        })
+        billing = self._get_billing(request)
+        if billing is None:
+            return Response(
+                {"detail": "No organization found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        return Response(OrganizationBillingSerializer(billing).data)
+
+    @extend_schema(
+        request=OrganizationBillingUpdateSerializer,
+        responses=OrganizationBillingSerializer,
+    )
+    def patch(self, request):
+        user = getattr(request, "user", None)
+        if user is None or not (user.is_staff or user.is_superuser):
+            raise PermissionDenied("Only staff can update billing.")
+        billing = self._get_billing(request)
+        if billing is None:
+            return Response(
+                {"detail": "No organization found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = OrganizationBillingUpdateSerializer(
+            instance=billing, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        updated = OrganizationBillingService.update(
+            billing, user=user, **serializer.validated_data
+        )
+        return Response(OrganizationBillingSerializer(updated).data)
 
 
 class ReportsView(APIView):
+    """
+    Explicit stub: the reporting domain has no backend models yet.
+
+    Returns an empty list (never fake records) until the domain is built.
+    """
+
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
-        return Response([
-            {
-                "id": "rep-001",
-                "title": "Weekly Production Report",
-                "project_code": "NK99",
-                "generated_at": "2026-08-20T00:00:00Z",
-                "status": "Ready",
-            }
-        ])
+        return Response([])
 
 
 class NotificationsView(APIView):
+    """
+    Explicit stub: the notifications domain has no backend models yet.
+
+    Returns an empty list (never fake records) until the domain is built.
+    """
+
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
-        return Response([
-            {
-                "id": "notif-01",
-                "title": "Screening Room Dailies Published",
-                "message": "Alex Chen approved Shot NK_010_010 v004 with 2 supervisor notes.",
-                "type": "success",
-                "created_at": "2026-08-20T00:00:00Z",
-                "is_read": False,
-            }
-        ])
+        return Response([])
 
 
 class OrganizationSingletonLegacyView(APIView):
