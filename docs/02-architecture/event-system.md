@@ -236,5 +236,4 @@ When no transaction is active, `on_commit=True` dispatches immediately.
 - layered-architecture.md
 - api-architecture.md
 - database-design.md
-- ADR-0005-event-driven-architecture.md
-- ADR-0018-event-bus-architecture.md
+- ADR-0030-domain-events-and-event-bus.md (consolidates the historical ADR-0005 and ADR-0018)

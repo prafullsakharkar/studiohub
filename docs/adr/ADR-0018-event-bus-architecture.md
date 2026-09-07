@@ -1,10 +1,10 @@
 # ADR-0018: Event Bus Architecture
 
-- **Status:** Accepted
+- **Status:** Superseded by [ADR-0030](ADR-0030-domain-events-and-event-bus.md)
 - **Date:** 2026-07-13
 - **Decision Makers:** Architecture Team
 - **Supersedes:** None
-- **Superseded By:** None
+- **Superseded By:** [ADR-0030 — Domain Events and Event Bus (Consolidation)](ADR-0030-domain-events-and-event-bus.md)
 
 ---
 

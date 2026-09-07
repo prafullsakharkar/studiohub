@@ -39,8 +39,8 @@ Core is the shared kernel. The dependency rule is **Domain → Core**:
 - Domain apps **may** import from `apps.core.api`.
 - Core **must NOT** import from any domain app (`identity`, `organization`, …).
 
-This is enforced by architecture tests in
-[`apps/core/tests/test_architecture.py`](../../backend/apps/core/tests/test_architecture.py).
+This boundary is documented in
+[ADR-0026 Core Shared Kernel Boundary](../adr/ADR-0026-core-shared-kernel-boundary.md).
 
 Domain-specific concerns (organization/project/reviewer permissions, domain
 exceptions, domain filters) **do not** belong in Core. They live in their
@@ -77,7 +77,6 @@ a consistent envelope.
 | --- | --- |
 | [`ResponseBuilder`](../../backend/apps/core/api/builders/response.py) | Standardized `success` / `error` envelopes |
 | [`PaginationBuilder`](../../backend/apps/core/api/builders/pagination.py) | Standardized pagination metadata |
-| [`ExportBuilder`](../../backend/apps/core/api/builders/export.py) | Standardized export payloads |
 
 ### Success envelope
 
@@ -324,17 +323,14 @@ contract** and is guarded by architecture tests.
 ## Testing
 
 The API foundation is covered by
-[`apps/core/tests/test_api.py`](../../backend/apps/core/tests/test_api.py)
-(response builders, exception handler, serializers, views, viewsets, bulk
-support) and
-[`apps/core/tests/test_architecture.py`](../../backend/apps/core/tests/test_architecture.py)
-(dependency direction and public API stability).
+[`apps/core/tests/test_api_foundation.py`](../../backend/apps/core/tests/test_api_foundation.py)
+(base serializers, viewsets, response builders, pagination).
 
 Run the API foundation tests:
 
 ```bash
 cd backend
-.venv/bin/python -m pytest apps/core/tests/test_api.py apps/core/tests/test_architecture.py -o addopts=""
+uv run pytest apps/core/tests/test_api_foundation.py -o addopts=""
 ```
 
 > Note: DB-dependent core tests (models, querysets, selectors, services)
