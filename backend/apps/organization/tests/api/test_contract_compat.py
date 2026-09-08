@@ -352,3 +352,46 @@ class TestProjectScopedAPI:
             **_org_header(org_a),
         )
         assert resp.data["count"] == 0
+
+
+@pytest.mark.django_db
+class TestOrganizationContractFields:
+    """Frontend Organization type parity (types/organization.ts).
+
+    Regression: OrganizationSwitcher crashed on
+    ``currentOrganization.headquarters.split`` because the list payload
+    omitted headquarters/tier/logo_url/counts. Every field the switcher
+    and overview tabs read must be present with crash-safe types.
+    """
+
+    def test_list_carries_switcher_contract(self, staff_client):
+        org = OrganizationFactory.create(
+            headquarters="Montreal, QC, Canada",
+            primary_contact_name="Alex Chen",
+        )
+        resp = staff_client.get("/api/v1/organizations/", **_org_header(org))
+        assert resp.status_code == status.HTTP_200_OK, resp.data
+        row = resp.data[0] if isinstance(resp.data, list) else resp.data["results"][0]
+        assert row["headquarters"] == "Montreal, QC, Canada"
+        assert isinstance(row["tier"], str)
+        assert isinstance(row["logo_url"], str)
+        assert isinstance(row["crew_count"], int)
+        assert isinstance(row["offices_count"], int)
+        assert isinstance(row["active_projects_count"], int)
+        assert isinstance(row["storage_quota_tb"], (int, float))
+        assert isinstance(row["storage_used_tb"], (int, float))
+        assert row["primary_contact_name"] == "Alex Chen"
+        assert row["primary_contact_email"] == org.email
+        # Crash-path expressions from OrganizationSwitcher must evaluate.
+        assert row["headquarters"].split(",")[0] == "Montreal"
+        assert isinstance(row["tier"].replace("Enterprise ", ""), str)
+
+    def test_detail_carries_contract(self, staff_client):
+        org = OrganizationFactory.create(headquarters="London, United Kingdom")
+        resp = staff_client.get(
+            f"/api/v1/organizations/{org.id}/", **_org_header(org)
+        )
+        assert resp.status_code == status.HTTP_200_OK, resp.data
+        assert resp.data["headquarters"] == "London, United Kingdom"
+        assert isinstance(resp.data["tier"], str)
+        assert isinstance(resp.data["crew_count"], int)

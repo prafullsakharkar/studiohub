@@ -452,6 +452,9 @@ class Command(BaseCommand):
                     "name": item.get("name", code),
                     "slug": (item.get("slug") or code).lower(),
                     "status": "Active",
+                    "headquarters": item.get("headquarters", ""),
+                    "primary_contact_name": item.get("primary_contact_name", ""),
+                    "email": item.get("primary_contact_email", ""),
                 },
             )
             reporter.add("organizations", "created" if created else "updated")

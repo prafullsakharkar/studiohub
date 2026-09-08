@@ -459,3 +459,89 @@ class TestReviewAndProjectContract:
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert isinstance(resp.data, list)
         assert [r["code"] for r in resp.data] == ["ROOM-A"]
+
+
+@pytest.mark.django_db
+class TestTimelogCreateContract:
+    """Timelog create accepts the frontend Timelog payload shape.
+
+    Regression: logging hours posted ``task_id``/``project_id``/``person_id``
+    mock-style refs while the serializer required UUID ``task`` → 400
+    ``{'task': ['This field is required.']}`` surfaced in the UI as the
+    generic "An unexpected server error occurred."
+    """
+
+    def _setup(self):
+        from apps.identity.tests.factories import UserFactory
+        from apps.organization.tests.factories import OrganizationMembershipFactory
+
+        user = UserFactory.create(is_staff=True, is_superuser=True)
+        project = ProjectFactory.create()
+        OrganizationMembershipFactory.create(
+            user=user, organization=project.organization
+        )
+        task = TaskFactory.create(
+            organization=project.organization, project=project
+        )
+        return user, project, task
+
+    def _payload(self, project, task):
+        return {
+            "task_id": "task-001",
+            "task_code": task.code,
+            "task_title": task.title,
+            "project_id": "proj-001",
+            "project_code": project.code,
+            "person_id": "usr-001",
+            "department": "FX & Simulation",
+            "duration_hours": 4.5,
+            "date": "2026-09-08",
+            "billable": True,
+            "notes": "Comp pass",
+            "status": "Submitted",
+            "activity_category": "Production",
+        }
+
+    def _authed(self, user):
+        from rest_framework.test import APIClient
+
+        client = APIClient()
+        client.force_authenticate(user=user)
+        return client
+
+    def test_create_with_frontend_refs(self):
+        user, project, task = self._setup()
+        resp = self._authed(user).post(
+            "/api/v1/timelogs/",
+            self._payload(project, task),
+            format="json",
+            **_org_header(project.organization),
+        )
+        assert resp.status_code == status.HTTP_201_CREATED, resp.data
+        assert str(resp.data["task"]) == str(task.id)
+        assert str(resp.data["project"]) == str(project.id)
+        assert str(resp.data["person"]) == str(user.id)
+
+    def test_create_with_uuid_task(self):
+        user, project, task = self._setup()
+        resp = self._authed(user).post(
+            "/api/v1/timelogs/",
+            {"task": str(task.id), "duration_hours": 2, "date": "2026-09-08"},
+            format="json",
+            **_org_header(project.organization),
+        )
+        assert resp.status_code == status.HTTP_201_CREATED, resp.data
+
+    def test_create_unknown_task_is_descriptive_400(self):
+        user, project, task = self._setup()
+        payload = self._payload(project, task)
+        payload["task_code"] = "NOPE-000"
+        payload.pop("task_id")
+        resp = self._authed(user).post(
+            "/api/v1/timelogs/",
+            payload,
+            format="json",
+            **_org_header(project.organization),
+        )
+        assert resp.status_code == status.HTTP_400_BAD_REQUEST, resp.data
+        assert "task" in resp.data

@@ -81,6 +81,21 @@ class Organization(
         blank=True,
     )
 
+    headquarters = models.CharField(
+        _("Headquarters"),
+        max_length=255,
+        blank=True,
+        default="",
+        help_text=_("Display location required by the frontend contract."),
+    )
+
+    primary_contact_name = models.CharField(
+        _("Primary Contact Name"),
+        max_length=255,
+        blank=True,
+        default="",
+    )
+
     country = models.CharField(
         _("Country"),
         max_length=2,
