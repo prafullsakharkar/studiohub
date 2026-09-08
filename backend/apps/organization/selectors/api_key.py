@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from django.db import models
-from django.db.models import QuerySet
 
 from apps.core.selectors.base import BaseSelector
 from apps.organization.models import APIKey
+from apps.organization.querysets import APIKeyQuerySet
 
 
 class APIKeySelector(BaseSelector):
@@ -20,7 +20,7 @@ class APIKeySelector(BaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> APIKeyQuerySet:
         """
         Get API key queryset.
         """

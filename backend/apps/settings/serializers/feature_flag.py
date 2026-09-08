@@ -6,7 +6,7 @@ from rest_framework import serializers
 from apps.settings.models.feature_flag import FeatureFlag
 
 
-class FeatureFlagSerializer(serializers.ModelSerializer):
+class FeatureFlagSerializer(serializers.ModelSerializer[FeatureFlag]):
     """
     Serializer for FeatureFlag.
     """

@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from django.db.models import QuerySet
-
 from apps.core.selectors.base import BaseSelector
 from apps.organization.models import Permission
+from apps.organization.querysets.permission import PermissionQuerySet
 
 
 class PermissionSelector(BaseSelector):
@@ -19,7 +18,7 @@ class PermissionSelector(BaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> PermissionQuerySet:
         """
         Get permission queryset.
         """

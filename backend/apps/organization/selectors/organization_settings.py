@@ -4,9 +4,8 @@ Organization settings selector.
 
 from __future__ import annotations
 
-from django.db.models import QuerySet
-
 from apps.organization.models import OrganizationSettings
+from apps.organization.querysets import OrganizationSettingsQuerySet
 
 from .base import OrganizationBaseSelector
 
@@ -26,7 +25,7 @@ class OrganizationSettingsSelector(
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> OrganizationSettingsQuerySet:
         return OrganizationSettings.objects.with_organization()
 
     @classmethod

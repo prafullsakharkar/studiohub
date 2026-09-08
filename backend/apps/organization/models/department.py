@@ -32,7 +32,7 @@ class Department(OrganizationEntityModel):
         on_delete=models.SET_NULL,
     )
 
-    objects = DepartmentManager()
+    objects: DepartmentManager = DepartmentManager()
 
     class Meta:
         db_table = "org_department"

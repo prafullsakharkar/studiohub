@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 from pathlib import Path
+from typing import Any
 
 from pydantic import Field, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -99,8 +100,12 @@ class Settings(BaseSettings):
     use_tz: bool = True
 
     ####################################################################
-    # PostgreSQL
+    # Database (PostgreSQL by default; DB_ENGINE=sqlite for local file DB)
     ####################################################################
+
+    db_engine: str = Field(default="postgresql", alias="DB_ENGINE")
+
+    db_sqlite_path: str = Field(default="db.sqlite3", alias="DB_SQLITE_PATH")
 
     db_name: str = Field(alias="DB_NAME")
 
@@ -160,7 +165,12 @@ class Settings(BaseSettings):
 
     @computed_field
     @property
-    def database(self) -> dict:
+    def database(self) -> dict[Any, Any]:
+        if self.db_engine.strip().lower() == "sqlite":
+            return {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": str(BASE_DIR / self.db_sqlite_path),
+            }
         return {
             "ENGINE": "django.db.backends.postgresql",
             "NAME": self.db_name,
@@ -180,4 +190,5 @@ class Settings(BaseSettings):
         )
 
 
-settings = Settings()
+# Required values are provided via environment / .env at runtime.
+settings = Settings()  # pyright: ignore[reportCallIssue]

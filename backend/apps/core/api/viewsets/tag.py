@@ -17,7 +17,7 @@ from apps.core.models.tag import Tag
 from apps.core.permissions.base import IsAuthenticatedPermission
 
 
-class TagViewSet(ResponseEnvelopeMixin, viewsets.ModelViewSet):
+class TagViewSet(ResponseEnvelopeMixin, viewsets.ModelViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     ViewSet for Tag management.
     """

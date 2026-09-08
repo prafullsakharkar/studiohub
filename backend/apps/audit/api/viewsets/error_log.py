@@ -15,7 +15,7 @@ from apps.audit.services.error_log import ErrorLogService
 class ErrorLogViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
-    AuditEntityViewSet,
+    AuditEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     ViewSet for ErrorLog.

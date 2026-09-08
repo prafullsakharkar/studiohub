@@ -94,7 +94,7 @@ class UserPreference(EntityModel):
         default=True,
     )
 
-    objects = UserPreferenceManager()
+    objects: UserPreferenceManager = UserPreferenceManager()
 
     class Meta:
         db_table = "organization_user_preference"

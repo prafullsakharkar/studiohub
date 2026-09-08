@@ -6,7 +6,7 @@ from rest_framework import serializers
 from apps.settings.models.definition import SettingDefinition
 
 
-class SettingDefinitionSerializer(serializers.ModelSerializer):
+class SettingDefinitionSerializer(serializers.ModelSerializer[SettingDefinition]):
     """
     Serializer for SettingDefinition.
     """

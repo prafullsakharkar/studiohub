@@ -36,7 +36,7 @@ from apps.organization.services.client_contact import ClientContactService
 from apps.organization.services.vendor_contact import VendorContactService
 
 
-class ClientContactViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet):
+class ClientContactViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     Client contacts scoped to a parent client.
 
@@ -134,7 +134,7 @@ class ClientContactViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet):
         super().perform_create(serializer)
 
 
-class VendorContactViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet):
+class VendorContactViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     Vendor contacts scoped to a parent vendor.
 

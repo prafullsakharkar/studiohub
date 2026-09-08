@@ -13,6 +13,7 @@ class AuditBaseService(BaseService):
     @classmethod
     @transaction.atomic
     def create_instance(cls, **validated_data):
+        assert cls.model is not None, "model must be set on the service class."
         return cls.model.objects.create(**validated_data)
 
     @classmethod
@@ -30,10 +31,6 @@ class AuditBaseService(BaseService):
     def delete_instance(cls, instance):
         instance.delete()
 
-    @classmethod
-    @transaction.atomic
-    def archive_instance(cls, instance):
-        instance.archive()
 
     @classmethod
     @transaction.atomic

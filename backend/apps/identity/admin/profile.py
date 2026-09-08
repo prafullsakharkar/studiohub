@@ -7,7 +7,7 @@ from apps.identity.models import Profile
 
 
 @admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
+class ProfileAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     """Admin for Profile."""
 
     list_display = (

@@ -1,3 +1,6 @@
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from apps.core.api.pagination import StandardPagination
 from apps.production.api.filtersets.project import ProjectFilterSet
 from apps.production.api.serializers.project.create import ProjectCreateSerializer
@@ -10,7 +13,7 @@ from apps.production.selectors.project import ProjectSelector
 from apps.production.services.project import ProjectService
 
 
-class ProjectViewSet(ProductionEntityViewSet):
+class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = ProjectSelector
     service_class = ProjectService
     pagination_class = StandardPagination
@@ -31,7 +34,14 @@ class ProjectViewSet(ProductionEntityViewSet):
         "update": (ProjectPermissions.UPDATE,),
         "partial_update": (ProjectPermissions.UPDATE,),
         "destroy": (ProjectPermissions.DELETE,),
+        "statistics": (ProjectPermissions.VIEW,),
     }
 
-    search_fields = ("name", "code", "description")
+    search_fields = ("name", "code", "description", "client_name")
     ordering_fields = ("name", "code", "created_at", "status")
+
+    @action(detail=True, methods=["get"], url_path="statistics")
+    def statistics(self, request, *args, **kwargs):
+        """Frontend contract: GET /api/v1/projects/{id}/statistics/."""
+        instance = self.get_object()
+        return Response(ProjectSelector.summary_counts(instance))

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from django.db import models
-from django.db.models import QuerySet
 
 from apps.core.selectors.base import BaseSelector
 from apps.organization.models import Group
+from apps.organization.querysets.group import GroupQuerySet
 
 
 class GroupSelector(BaseSelector):
@@ -20,7 +20,7 @@ class GroupSelector(BaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> GroupQuerySet:
         """
         Get group queryset.
         """

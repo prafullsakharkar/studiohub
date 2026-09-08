@@ -37,9 +37,9 @@ class SoftDeleteModel(models.Model):
         db_index=True,
     )
 
-    objects = SoftDeleteManager()
+    objects: SoftDeleteManager = SoftDeleteManager()
 
-    all_objects = AllObjectsManager()
+    all_objects: AllObjectsManager = AllObjectsManager()
 
     class Meta:
         abstract = True
@@ -47,17 +47,22 @@ class SoftDeleteModel(models.Model):
         # (and forward FK resolution) can still reach soft-deleted rows.
         base_manager_name = "all_objects"
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args, **kwargs) -> tuple[int, dict[str, int]]:
         """
         Soft-delete the record by default.
 
         The record is flagged ``is_deleted`` and kept in the database,
         retrievable via ``all_objects``. Use ``hard_delete()`` for a real
         database delete.
+
+        Returns the same ``(count, per-label counts)`` shape as
+        ``django.db.models.Model.delete`` so callers can rely on the
+        standard contract.
         """
         from apps.core.services import SoftDeleteService
 
         user = kwargs.pop("user", None)
         if self.is_deleted:
-            return
+            return (0, {})
         SoftDeleteService.delete(self, user=user)
+        return (1, {self._meta.label: 1})

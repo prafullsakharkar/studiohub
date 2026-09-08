@@ -29,7 +29,7 @@ from apps.identity.services.ip_blacklist import (
 
 
 class IPBlacklistViewSet(
-    IdentityViewSet,
+    IdentityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
 
     queryset = IPBlacklist.objects.all()

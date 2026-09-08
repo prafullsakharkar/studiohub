@@ -5,10 +5,7 @@ from apps.deliveries.models import (
     DeliveryPackage,
     DeliveryVersionRef,
 )
-from apps.organization.admin.base import (
-    OrganizationScopedAdminMixin,
-    OrganizationScopedModelAdmin,
-)
+from apps.organization.admin.base import OrganizationScopedModelAdmin
 
 
 @admin.register(DeliveryPackage)
@@ -79,7 +76,7 @@ class DeliveryDestinationAdmin(OrganizationScopedModelAdmin):
 
 
 @admin.register(DeliveryVersionRef)
-class DeliveryVersionRefAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class DeliveryVersionRefAdmin(OrganizationScopedModelAdmin):
     organization_lookup = "delivery__organization"
 
     list_display = (

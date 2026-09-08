@@ -43,7 +43,7 @@ class GroupMember(EntityModel):
         blank=True,
     )
 
-    objects = GroupMemberManager()
+    objects: GroupMemberManager = GroupMemberManager()
 
     class Meta:
         db_table = "organization_group_member"

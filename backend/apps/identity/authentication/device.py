@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
+from typing import Any
 
 from django.conf import settings
 from django.core import signing
@@ -170,7 +171,7 @@ class TrustedDeviceService:
         token: str,
         *,
         max_age: int | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         try:
             return signing.loads(
                 token,
@@ -198,7 +199,7 @@ class TrustedDeviceService:
         return payload["uid"] == str(user_id) and payload["fp"] == current.fingerprint
 
     @classmethod
-    def cookie_kwargs(cls) -> dict:
+    def cookie_kwargs(cls) -> dict[Any, Any]:
         return {
             "max_age": cls.COOKIE_MAX_AGE,
             "httponly": True,

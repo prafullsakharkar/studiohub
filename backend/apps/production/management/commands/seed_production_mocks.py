@@ -16,6 +16,7 @@ import json
 import os
 import re
 from pathlib import Path
+from typing import Any
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -25,18 +26,16 @@ from django.db import transaction
 User = get_user_model()
 
 
-def _load_ts_mock_array(ts_path: Path, var_name: str) -> list[dict]:
+def _extract_array_source(text: str, var_name: str) -> str | None:
     """
-    Very small TS mock parser: extracts `export const <var_name>: Type[] = [ ... ];`
-    and evaluates the JS array literal as JSON-ish (handles single quotes, trailing commas).
-    For a more robust parse we just exec via node if available, else fallback to manual.
+    Extract the ``[...]`` array literal assigned to ``const <var_name>``
+    (exported or not), tracking brackets while respecting string literals.
+    Returns the source including brackets, or None when not found.
     """
-    text = ts_path.read_text()
-    # Find the const declaration
-    pattern = rf"export const {re.escape(var_name)}[^=]*=\s*\["
+    pattern = rf"(?:export\s+)?const {re.escape(var_name)}[^=]*=\s*\["
     m = re.search(pattern, text)
     if not m:
-        return []
+        return None
     start = m.end() - 1  # at [
     # Find matching closing ]; (track brackets, handle strings)
     depth = 0
@@ -72,27 +71,44 @@ def _load_ts_mock_array(ts_path: Path, var_name: str) -> list[dict]:
                 end = i + 1
                 break
     if end is None:
+        return None
+    return text[start:end]
+
+
+def _load_ts_mock_array(ts_path: Path, var_name: str) -> list[dict[str, Any]]:
+    """
+    Very small TS mock parser: extracts `export const <var_name>: Type[] = [ ... ];`
+    and evaluates the JS array literal as JSON-ish (handles single quotes, trailing commas).
+    For a more robust parse we just exec via node if available, else fallback to manual.
+    """
+    text = ts_path.read_text()
+    # Find the const declaration (exported for top-level datasets).
+    pattern = rf"export const {re.escape(var_name)}[^=]*=\s*\["
+    m = re.search(pattern, text)
+    if not m:
         return []
-    js_array = text[start:end]
+    js_array = _extract_array_source(text, var_name)
+    if js_array is None:
+        return []
     # Use node to eval if available (more accurate)
     try:
         import json as _json
         import subprocess
         import tempfile
 
-        # For mockWorkflows, also include shotWorkflowNodes/Transitions definitions if present
+        # For mockWorkflows, also include sibling array definitions it
+        # references (shotWorkflowNodes/Transitions, mockAutomationRules).
         preamble = ""
         if var_name == "mockWorkflows":
-            # Extract shotWorkflowNodes and shotWorkflowTransitions if present
-            for dep_var in ["shotWorkflowNodes", "shotWorkflowTransitions"]:
-                dep_pat = rf"(?:export\s+)?const {re.escape(dep_var)}[^=]*=\s*\[(?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*\]"
-                dep_m = re.search(dep_pat, text, re.DOTALL)
-                if dep_m:
-                    dep_src = dep_m.group(0)
-                    # Strip export and TypeScript type annotation
-                    dep_src = re.sub(r"^\s*export\s+", "", dep_src)
-                    dep_src = re.sub(r":[^=]*=", "=", dep_src, count=1)
-                    preamble += dep_src + ";\n"
+            for dep_match in re.finditer(
+                r"(?:export\s+)?const ([A-Za-z_][A-Za-z0-9_]*)[^=]*=\s*\[", text
+            ):
+                dep_var = dep_match.group(1)
+                if dep_var == var_name:
+                    continue
+                dep_src = _extract_array_source(text, dep_var)
+                if dep_src:
+                    preamble += f"const {dep_var} = {dep_src};\n"
         js = f"{preamble}const data = {js_array}; console.log(JSON.stringify(data));"
         with tempfile.NamedTemporaryFile(mode="w", suffix=".js", delete=False) as f:
             f.write(js)
@@ -156,6 +172,7 @@ class Command(BaseCommand):
             # Load and seed each mock file
             counts = {}
             counts["projects"] = self._seed_projects(frontend_root / "production" / "projects.ts", org)
+            counts["sequences"] = self._seed_sequences(frontend_root / "production" / "sequences.ts", org)
             counts["shots"] = self._seed_shots(frontend_root / "production" / "shots.ts", org)
             counts["assets"] = self._seed_assets(frontend_root / "assets" / "assets.ts", org)
             counts["tasks"] = self._seed_tasks(frontend_root / "tasks" / "tasks.ts", org)
@@ -250,6 +267,45 @@ class Command(BaseCommand):
                     "approved_shots": item.get("approved_shots", 0),
                     "in_progress_shots": item.get("in_progress_shots", 0),
                     "total_assets": item.get("total_assets", 0),
+                },
+            )
+            count += 1
+        return count
+
+    def _seed_sequences(self, ts_path, org):
+        from apps.production.models import Project, Sequence
+
+        data = _load_ts_mock_array(ts_path, "mockSequences")
+        if not data:
+            return 0
+        # Build project code -> id map for org
+        proj_map = {p.code: p for p in Project.objects.filter(organization=org)}
+        count = 0
+        for item in data:
+            code = item.get("code")
+            proj_code = item.get("project_code")
+            proj = proj_map.get(proj_code)
+            if not proj:
+                proj = Project.objects.filter(organization=org).first()
+            if not proj or not code:
+                continue
+            lead = self._get_user(item.get("lead_artist_id", ""))
+            Sequence.objects.update_or_create(
+                code=code,
+                project=proj,
+                defaults={
+                    "organization": org,
+                    "name": item.get("name", code),
+                    "description": item.get("description", ""),
+                    "status": item.get("status", "Not Started"),
+                    "frame_in": item.get("start_frame", 1001) or 1001,
+                    "frame_out": item.get("end_frame", 1100) or 1100,
+                    "department": item.get("department", ""),
+                    "lead_artist": lead,
+                    "lead_artist_name": item.get("lead_artist", "")
+                    or (getattr(lead, "email", "") if lead else ""),
+                    "tags": item.get("tags", []),
+                    "metadata": item.get("metadata", {}),
                 },
             )
             count += 1
@@ -579,13 +635,17 @@ class Command(BaseCommand):
         for item in data:
             proj_code = item.get("project_code")
             proj = proj_map.get(proj_code) or Project.objects.filter(organization=org).first()
-            Media.objects.get_or_create(
+            Media.objects.update_or_create(
                 organization=org,
                 project=proj,
                 entity_type=item.get("entity_type", ""),
                 entity_id=item.get("entity_id", ""),
                 media_type=item.get("media_type", "image"),
                 defaults={
+                    "code": item.get("code", ""),
+                    "name": item.get("name", ""),
+                    "title": item.get("title", "") or item.get("name", ""),
+                    "file_name": item.get("file_name", ""),
                     "category": item.get("category", ""),
                     "file_format": item.get("file_format", "jpg"),
                     "source_url": item.get("source_url", "") or item.get("url", ""),

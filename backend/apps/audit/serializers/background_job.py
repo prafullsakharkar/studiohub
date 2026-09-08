@@ -6,7 +6,7 @@ from rest_framework import serializers
 from apps.audit.models.background_job import BackgroundJob
 
 
-class BackgroundJobSerializer(serializers.ModelSerializer):
+class BackgroundJobSerializer(serializers.ModelSerializer[BackgroundJob]):
     """
     Serializer for BackgroundJob.
     """

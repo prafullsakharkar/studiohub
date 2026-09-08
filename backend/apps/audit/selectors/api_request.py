@@ -23,7 +23,7 @@ class APIRequestSelector(AuditBaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> QuerySet[APIRequest]:
         return cls._scope_by_request(
             cls.model.objects.all(),
             request=request,

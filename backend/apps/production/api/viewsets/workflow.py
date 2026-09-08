@@ -17,7 +17,7 @@ from apps.production.selectors.workflow import WorkflowSelector
 from apps.production.services.workflow import WorkflowService
 
 
-class WorkflowViewSet(ProductionEntityViewSet):
+class WorkflowViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = WorkflowSelector
     service_class = WorkflowService
     pagination_class = StandardPagination

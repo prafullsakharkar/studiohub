@@ -9,6 +9,7 @@ from django.urls import path
 from apps.identity.api.views.auth_compat import (
     AuthLoginView,
     AuthLogoutView,
+    AuthMembershipsView,
     AuthMeView,
     AuthRefreshView,
 )
@@ -20,4 +21,5 @@ urlpatterns = [
     path("refresh/", AuthRefreshView.as_view(), name="auth-refresh"),
     path("logout/", AuthLogoutView.as_view(), name="auth-logout"),
     path("me/", AuthMeView.as_view(), name="auth-me"),
+    path("memberships/", AuthMembershipsView.as_view(), name="auth-memberships"),
 ]

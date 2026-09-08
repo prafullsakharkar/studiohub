@@ -4,7 +4,7 @@ Protocol definitions.
 
 from __future__ import annotations
 
-from typing import Protocol
+from typing import Any, Protocol
 
 
 class HasOrganization(Protocol):
@@ -24,7 +24,7 @@ class HasStatus(Protocol):
 
 class HasMetadata(Protocol):
 
-    metadata: dict
+    metadata: dict[Any, Any]
 
 
 class HasAudit(Protocol):
@@ -42,7 +42,6 @@ class HasMembers(Protocol):
     from domain apps.
     """
 
-    # `members` is intentionally typed as `object` to avoid importing Django
-    # model types at the protocol definition site. Consumers can use typing
-    # hints or runtime checks as needed.
-    members: object
+    # `members` is intentionally loose (Any) to avoid importing Django
+    # model types at the protocol definition site.
+    members: Any

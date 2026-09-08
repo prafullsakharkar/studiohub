@@ -131,7 +131,7 @@ class Command(BaseCommand):
         Organization.objects.filter(code="APEX").delete()
 
     def _seed_emails(self):
-        return [e for e, _ in self._seed_users_spec()]
+        return [spec[0] for spec in self._seed_users_spec()]
 
     def _seed_organizations(self):
         from apps.organization.models import Organization
@@ -402,10 +402,11 @@ class Command(BaseCommand):
                 if not user.check_password("password123") and not user.check_password("admin"):
                     user.set_password("password123")
                     user.save(update_fields=["password"])
-                # Ensure flags
-                if user.is_staff != is_staff or user.is_superuser != is_superuser:
-                    user.is_staff = is_staff
-                    user.is_superuser = is_superuser
+                # Ensure flags (user is dynamically resolved; attribute
+                # assignment cannot be statically verified here).
+                if getattr(user, "is_staff", False) != is_staff or getattr(user, "is_superuser", False) != is_superuser:
+                    user.is_staff = is_staff  # pyright: ignore[reportAttributeAccessIssue]
+                    user.is_superuser = is_superuser  # pyright: ignore[reportAttributeAccessIssue]
                     user.save(update_fields=["is_staff", "is_superuser"])
 
             # Profile
@@ -1245,7 +1246,7 @@ class Command(BaseCommand):
                 created += 1
 
             # Drive statuses through the real service for realistic state transitions.
-            if spec["code"] == "DEL-LUM01-2026-W01":
+            if actor_id is not None and spec["code"] == "DEL-LUM01-2026-W01":
                 prepare_delivery(
                     delivery_id=str(delivery.id),
                     user_id=actor_id,
@@ -1256,7 +1257,7 @@ class Command(BaseCommand):
                     user_id=actor_id,
                     organization_id=str(org.id),
                 )
-            elif spec["code"] == "DEL-AETH2-2026-W02":
+            elif actor_id is not None and spec["code"] == "DEL-AETH2-2026-W02":
                 prepare_delivery(
                     delivery_id=str(delivery.id),
                     user_id=actor_id,
@@ -1272,7 +1273,7 @@ class Command(BaseCommand):
                     user_id=actor_id,
                     organization_id=str(org.id),
                 )
-            elif spec["code"] == "DEL-VEL01-2026-W03":
+            elif actor_id is not None and spec["code"] == "DEL-VEL01-2026-W03":
                 prepare_delivery(
                     delivery_id=str(delivery.id),
                     user_id=actor_id,

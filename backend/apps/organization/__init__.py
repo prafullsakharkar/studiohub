@@ -21,6 +21,4 @@ Provides organization management capabilities including:
 - Permissions
 """
 
-from apps.organization.apps import OrganizationConfig
-
-__all__ = ["OrganizationConfig"]
+__all__: list[str] = []

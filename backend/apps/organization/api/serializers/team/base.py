@@ -1,9 +1,11 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.organization.models.team import Team
 
 
-class TeamBaseSerializer(serializers.ModelSerializer):
+class TeamBaseSerializer(serializers.ModelSerializer[Any]):
     class Meta:
         model = Team
         fields = (

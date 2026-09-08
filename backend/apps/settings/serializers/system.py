@@ -6,7 +6,7 @@ from rest_framework import serializers
 from apps.settings.models.system import SystemSetting
 
 
-class SystemSettingSerializer(serializers.ModelSerializer):
+class SystemSettingSerializer(serializers.ModelSerializer[SystemSetting]):
     """
     Serializer for SystemSetting.
     """

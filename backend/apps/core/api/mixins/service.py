@@ -4,6 +4,8 @@ Service mixins for DRF ViewSets.
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 from rest_framework import serializers
 
 
@@ -27,28 +29,30 @@ class ServiceMixin:
             raise NotImplementedError("service_class must be defined.")
         return self.service_class
 
-    def perform_create(self, serializer: serializers.Serializer):
+    def perform_create(self, serializer: serializers.BaseSerializer[Any]):
         service = self.get_service()
 
         create = getattr(service, self.create_method)
+        writable = cast(serializers.Serializer[Any], serializer)
 
         instance = create(
-            **serializer.validated_data,
+            **writable.validated_data,
         )
 
-        serializer.instance = instance
+        writable.instance = instance
 
-    def perform_update(self, serializer: serializers.Serializer):
+    def perform_update(self, serializer: serializers.BaseSerializer[Any]):
         service = self.get_service()
 
         update = getattr(service, self.update_method)
+        writable = cast(serializers.Serializer[Any], serializer)
 
         instance = update(
-            serializer.instance,
-            **serializer.validated_data,
+            writable.instance,
+            **writable.validated_data,
         )
 
-        serializer.instance = instance
+        writable.instance = instance
 
     def perform_destroy(self, instance):
         service = self.get_service()

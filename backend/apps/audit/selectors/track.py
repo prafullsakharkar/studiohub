@@ -23,7 +23,7 @@ class TrackSelector(AuditBaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> QuerySet[Track]:
         return cls._scope_by_request(
             cls.model.objects.all(),
             request=request,

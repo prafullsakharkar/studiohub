@@ -17,7 +17,7 @@ class HasPermission(
         if not permissions:
             return True
 
-        if request.user.is_staff or request.user.is_superuser:
+        if getattr(request.user, "is_staff", False) or getattr(request.user, "is_superuser", False):
             return True
 
         # Imported lazily to avoid circular imports at app-load time.

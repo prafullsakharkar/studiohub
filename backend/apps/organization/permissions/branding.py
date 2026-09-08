@@ -14,6 +14,6 @@ class BrandingPermissions(BasePermission):
     def has_permission(self, request: HttpRequest, view) -> bool:
         if not request.user or not request.user.is_authenticated:
             return False
-        if request.user.is_staff:
+        if getattr(request.user, "is_staff", False):
             return True
         return True

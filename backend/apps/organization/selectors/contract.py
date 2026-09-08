@@ -26,8 +26,8 @@ class ClientContractSelector(OrganizationBaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
-        return cls.model.objects.select_related(
+    ) -> QuerySet[ClientContract]:
+        return cls.model.objects.get_queryset().select_related(
             "organization",
             "client",
         )
@@ -54,8 +54,8 @@ class VendorContractSelector(OrganizationBaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
-        return cls.model.objects.select_related(
+    ) -> QuerySet[VendorContract]:
+        return cls.model.objects.get_queryset().select_related(
             "organization",
             "vendor",
         )

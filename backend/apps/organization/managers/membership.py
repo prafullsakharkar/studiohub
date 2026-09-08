@@ -3,13 +3,17 @@ from django.db import models
 
 class OrganizationMembershipManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().select_related(
-            "user",
-            "organization",
-            "department",
-            "team",
-            "office",
-            "role",
+        return (
+            super()
+            .get_queryset()
+            .select_related(
+                "user",
+                "organization",
+                "department",
+                "team",
+                "office",
+                "role",
+            )
         )
 
     def active(self):

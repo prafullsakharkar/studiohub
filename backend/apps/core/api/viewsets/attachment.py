@@ -15,7 +15,7 @@ from apps.core.api.serializers.attachment import (
 from apps.core.models.attachment import Attachment
 
 
-class AttachmentViewSet(ResponseEnvelopeMixin, viewsets.ModelViewSet):
+class AttachmentViewSet(ResponseEnvelopeMixin, viewsets.ModelViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     ViewSet for Attachment management.
     """
@@ -48,3 +48,13 @@ class AttachmentViewSet(ResponseEnvelopeMixin, viewsets.ModelViewSet):
         elif self.action in ["update", "partial_update"]:
             return AttachmentUpdateSerializer
         return super().get_serializer_class()
+
+
+class CompatAttachmentViewSet(AttachmentViewSet):  # pyright: ignore[reportMissingTypeArgument]
+    """Frontend contract alias: /api/v1/attachments/ returns a bare array.
+
+    The canonical /api/v1/core/attachments/ stays paginated; the compat
+    prefix serves the AttachmentService shape (AttachmentItem[]).
+    """
+
+    pagination_class = None

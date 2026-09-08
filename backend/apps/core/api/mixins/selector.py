@@ -10,4 +10,4 @@ class SelectorMixin:
     """
 
     def select_queryset(self, queryset):
-        return super().select_queryset(queryset)
+        return super().select_queryset(queryset)  # pyright: ignore[reportAttributeAccessIssue]

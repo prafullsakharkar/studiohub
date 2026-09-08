@@ -4,7 +4,7 @@ from apps.identity.models import IPBlacklist
 
 
 @admin.register(IPBlacklist)
-class IPBlacklistAdmin(admin.ModelAdmin):
+class IPBlacklistAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     list_display = (
         "ip_address",
         "network",

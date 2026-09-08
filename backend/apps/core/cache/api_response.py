@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.core.cache import cache
 
@@ -56,7 +56,12 @@ class APIResponseCache:
         # Get relevant request data for cache key
         path = request.path
         query_params = self._get_query_params_for_cache(request)
-        user_id = getattr(request.user, "id", "anonymous") if request.user.is_authenticated else "anonymous"
+        user = getattr(request, "user", None)
+        user_id = (
+            getattr(user, "id", "anonymous")
+            if getattr(user, "is_authenticated", False)
+            else "anonymous"
+        )
         
         # Create a hash of the request data
         request_data = {
@@ -71,7 +76,7 @@ class APIResponseCache:
         
         return f"api_response:{data_hash}:{suffix}" if suffix else f"api_response:{data_hash}"
     
-    def _get_query_params_for_cache(self, request: HttpRequest) -> dict:
+    def _get_query_params_for_cache(self, request: HttpRequest) -> dict[Any, Any]:
         """Get query parameters suitable for cache key generation."""
         # Only include certain query params to avoid cache fragmentation
         # This should be customized based on your API
@@ -83,7 +88,7 @@ class APIResponseCache:
             if key in request.GET
         }
     
-    def get(self, key: str) -> dict | None:
+    def get(self, key: str) -> dict[str, Any] | None:
         """
         Get a cached response.
         
@@ -98,7 +103,7 @@ class APIResponseCache:
         
         return cache.get(key)
     
-    def set(self, key: str, data: dict, timeout: int | None = None) -> bool:
+    def set(self, key: str, data: dict[Any, Any], timeout: int | None = None) -> bool:
         """
         Cache a response.
         
@@ -114,7 +119,7 @@ class APIResponseCache:
             return False
         
         timeout = timeout or self.default_timeout
-        return cache.set(key, data, timeout=timeout)
+        return bool(cache.set(key, data, timeout=timeout))
     
     def delete(self, key: str) -> bool:
         """

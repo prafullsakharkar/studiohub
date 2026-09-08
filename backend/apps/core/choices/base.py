@@ -14,12 +14,12 @@ class BaseChoices(models.TextChoices):
 
     @classmethod
     def values(cls) -> list[str]:
-        return [choice.value for choice in cls]
+        return [str(choice.value) for choice in cls]
 
     @classmethod
     def labels(cls) -> list[str]:
-        return [choice.label for choice in cls]
+        return [str(choice.label) for choice in cls]
 
     @classmethod
     def choices_dict(cls) -> dict[str, str]:
-        return {choice.value: choice.label for choice in cls}
+        return {str(choice.value): str(choice.label) for choice in cls}

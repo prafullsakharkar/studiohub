@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedAdminMixin
+from apps.organization.admin.base import OrganizationScopedModelAdmin
 from apps.organization.models import Group
 
 
 @admin.register(Group)
-class GroupAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class GroupAdmin(OrganizationScopedModelAdmin):
     list_display = (
         "name",
         "code",

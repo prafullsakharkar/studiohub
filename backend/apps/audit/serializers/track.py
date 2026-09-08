@@ -6,7 +6,7 @@ from rest_framework import serializers
 from apps.audit.models.track import Track
 
 
-class TrackSerializer(serializers.ModelSerializer):
+class TrackSerializer(serializers.ModelSerializer[Track]):
     """
     Serializer for Track.
     """

@@ -6,7 +6,7 @@ from rest_framework import serializers
 from apps.audit.models.error_log import ErrorLog
 
 
-class ErrorLogSerializer(serializers.ModelSerializer):
+class ErrorLogSerializer(serializers.ModelSerializer[ErrorLog]):
     """
     Serializer for ErrorLog.
     """

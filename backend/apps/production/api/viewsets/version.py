@@ -13,7 +13,7 @@ from apps.production.selectors.version import VersionSelector
 from apps.production.services.version import VersionService
 
 
-class VersionViewSet(ProductionEntityViewSet):
+class VersionViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = VersionSelector
     service_class = VersionService
     pagination_class = StandardPagination

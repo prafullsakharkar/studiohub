@@ -4,7 +4,7 @@ from apps.organization.models import Organization
 
 
 @admin.register(Organization)
-class OrganizationAdmin(admin.ModelAdmin):
+class OrganizationAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     list_display = (
         "name",
         "code",

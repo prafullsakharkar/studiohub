@@ -2,10 +2,12 @@
 Base serializer for Settings entities.
 """
 
+from typing import Any
+
 from rest_framework import serializers
 
 
-class SettingsBaseSerializer(serializers.ModelSerializer):
+class SettingsBaseSerializer(serializers.ModelSerializer[Any]):
     """
     Base serializer for Settings entities.
     """

@@ -149,3 +149,58 @@ def serialize_frontend_user(user, request=None) -> dict[str, Any]:
         "created_at": user.created_at.isoformat() if getattr(user, "created_at", None) else "",
         "updated_at": user.updated_at.isoformat() if getattr(user, "updated_at", None) else "",
     }
+
+
+_MEMBERSHIP_STATUS_MAP = {
+    "active": "Active",
+    "on_leave": "On Leave",
+    "terminated": "Terminated",
+    "suspended": "Suspended",
+}
+
+
+def serialize_frontend_membership(membership) -> dict[str, Any]:
+    """
+    Serialize an OrganizationMembership into the frontend
+    OrganizationMembership shape (see frontend types/auth.ts):
+
+      id, user_id, organization_id, organization_name, organization_code?,
+      organization_slug?, role, permissions[], is_default?, status,
+      department?, joined_at?
+    """
+    org = getattr(membership, "organization", None)
+    role = getattr(membership, "role", None)
+    department = getattr(membership, "department", None)
+    permissions: list[str] = []
+    role_name = "Artist"
+    if role is not None:
+        role_name = getattr(role, "name", role_name) or role_name
+        try:
+            from apps.organization.models import Permission
+
+            perms_qs = Permission.objects.filter(
+                role_permissions__role=role,
+                role_permissions__granted=True,
+                is_deleted=False,
+                is_active=True,
+            ).values_list("code", flat=True)
+            permissions = sorted(set(perms_qs))
+        except Exception:
+            permissions = []
+    raw_status = getattr(membership, "status", "active") or "active"
+    return {
+        "id": str(membership.id),
+        "user_id": str(membership.user_id),
+        "organization_id": str(getattr(org, "id", "")) if org else "",
+        "organization_name": getattr(org, "name", "") if org else "",
+        "organization_code": getattr(org, "code", "") if org else "",
+        "organization_slug": getattr(org, "slug", "") if org else "",
+        "role": role_name,
+        "permissions": permissions,
+        "is_default": bool(getattr(membership, "is_primary", False)),
+        "status": _MEMBERSHIP_STATUS_MAP.get(raw_status, raw_status),
+        "department": getattr(department, "name", "") if department else "",
+        "joined_at": membership.joined_at.isoformat()
+        if getattr(membership, "joined_at", None)
+        else "",
+    }

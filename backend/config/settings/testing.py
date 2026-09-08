@@ -7,7 +7,7 @@ from .base import *
 # Test settings must never run with DEBUG on: ``debug_toolbar`` is only
 # registered in ``local.py``, so a stray ``DEBUG=True`` in ``.env.test``
 # would make ``config.urls``'s debug_toolbar include blow up on import.
-DEBUG = False
+DEBUG = False  # pyright: ignore[reportConstantRedefinition]
 
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.MD5PasswordHasher",
@@ -17,7 +17,7 @@ EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
 # Use an in-memory cache for tests so permission/authorization caches do not
 # require a running Redis instance.
-CACHES = {
+CACHES = {  # pyright: ignore[reportConstantRedefinition]
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "identity-test-cache",

@@ -7,7 +7,7 @@ from __future__ import annotations
 from apps.core.api.viewsets.base import ServiceModelViewSet
 
 
-class SettingsBaseViewSet(ServiceModelViewSet):
+class SettingsBaseViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     Base ViewSet for all Settings entities.
 

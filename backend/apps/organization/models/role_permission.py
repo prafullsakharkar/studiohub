@@ -42,7 +42,7 @@ class RolePermission(EntityModel):
         blank=True,
     )
 
-    objects = RolePermissionManager()
+    objects: RolePermissionManager = RolePermissionManager()
 
     class Meta:
 

@@ -7,7 +7,7 @@ from apps.core.models.tag import Tag
 
 
 @admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
+class TagAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     """
     Admin configuration for Tag model.
     """

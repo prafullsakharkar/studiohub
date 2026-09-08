@@ -1,7 +1,12 @@
+from typing import TypeVar
+
+from django.db import models
 from rest_framework import serializers
 
+_ModelT = TypeVar("_ModelT", bound=models.Model)
 
-class OrganizationEntitySerializer(serializers.ModelSerializer):
+
+class OrganizationEntitySerializer(serializers.ModelSerializer[_ModelT]):
     """
     Base serializer for Organization entities.
 

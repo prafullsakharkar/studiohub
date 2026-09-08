@@ -66,7 +66,7 @@ class IPBlacklist(EntityModel):
         blank=True,
     )
 
-    objects = IPBlacklistManager()
+    objects: IPBlacklistManager = IPBlacklistManager()
 
     class Meta:
         db_table = "identity_ip_blacklist"

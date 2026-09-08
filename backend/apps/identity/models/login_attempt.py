@@ -47,7 +47,7 @@ class LoginAttempt(EntityModel):
         blank=True,
     )
 
-    objects = LoginAttemptManager()
+    objects: LoginAttemptManager = LoginAttemptManager()
 
     class Meta:
 

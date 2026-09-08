@@ -25,7 +25,7 @@ from apps.organization.services.organization_settings import (
 
 
 class OrganizationSettingsViewSet(
-    OrganizationEntityViewSet,
+    OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     API endpoint for Organization Settings.

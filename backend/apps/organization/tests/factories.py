@@ -51,7 +51,7 @@ from apps.organization.models.work_calendar import WorkCalendar
 from apps.organization.models.work_hours import WorkHours
 
 
-class PersonFactory(DjangoModelFactory):
+class PersonFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Person model."""
 
     class Meta:
@@ -66,7 +66,7 @@ class PersonFactory(DjangoModelFactory):
     status = "active"
 
 
-class OrganizationFactory(DjangoModelFactory):
+class OrganizationFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Organization model."""
 
     class Meta:
@@ -105,7 +105,7 @@ class OrganizationFactory(DjangoModelFactory):
         return cls.create(status="archived", **kwargs)
 
 
-class OrganizationBillingFactory(DjangoModelFactory):
+class OrganizationBillingFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for OrganizationBilling model."""
 
     class Meta:
@@ -114,7 +114,7 @@ class OrganizationBillingFactory(DjangoModelFactory):
     organization = factory.SubFactory(OrganizationFactory)
 
 
-class BrandingFactory(DjangoModelFactory):
+class BrandingFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Branding model."""
 
     class Meta:
@@ -132,7 +132,7 @@ class BrandingFactory(DjangoModelFactory):
     font_family = "Arial, sans-serif"
 
 
-class DepartmentFactory(DjangoModelFactory):
+class DepartmentFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Department model."""
 
     class Meta:
@@ -150,7 +150,7 @@ class DepartmentFactory(DjangoModelFactory):
     parent = None
 
 
-class HolidayFactory(DjangoModelFactory):
+class HolidayFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Holiday model."""
 
     class Meta:
@@ -171,7 +171,7 @@ class HolidayFactory(DjangoModelFactory):
     is_paid = True
 
 
-class LoginHistoryFactory(DjangoModelFactory):
+class LoginHistoryFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for LoginHistory model (canonical audit app)."""
 
     class Meta:
@@ -206,7 +206,7 @@ class LoginHistoryFactory(DjangoModelFactory):
     browser = factory.Faker("word")
 
 
-class OrganizationMembershipFactory(DjangoModelFactory):
+class OrganizationMembershipFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for OrganizationMembership model."""
 
     class Meta:
@@ -224,7 +224,7 @@ class OrganizationMembershipFactory(DjangoModelFactory):
     status = "active"
 
 
-class RoleFactory(DjangoModelFactory):
+class RoleFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Role model."""
 
     class Meta:
@@ -239,7 +239,7 @@ class RoleFactory(DjangoModelFactory):
     is_active = True
 
 
-class UserSessionFactory(DjangoModelFactory):
+class UserSessionFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for UserSession model."""
 
     class Meta:
@@ -257,7 +257,7 @@ class UserSessionFactory(DjangoModelFactory):
     logged_out_at = None
 
 
-class APIKeyFactory(DjangoModelFactory):
+class APIKeyFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for APIKey model."""
 
     class Meta:
@@ -273,7 +273,7 @@ class APIKeyFactory(DjangoModelFactory):
     is_active = True
 
 
-class CalendarFactory(DjangoModelFactory):
+class CalendarFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Calendar model."""
 
     class Meta:
@@ -287,7 +287,7 @@ class CalendarFactory(DjangoModelFactory):
     color = "#007bff"
 
 
-class GroupFactory(DjangoModelFactory):
+class GroupFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Group model."""
 
     class Meta:
@@ -301,7 +301,7 @@ class GroupFactory(DjangoModelFactory):
     color = "#007bff"
 
 
-class GroupMemberFactory(DjangoModelFactory):
+class GroupMemberFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for GroupMember model."""
 
     class Meta:
@@ -313,7 +313,7 @@ class GroupMemberFactory(DjangoModelFactory):
     joined_at = factory.Faker("date_this_year")
 
 
-class GroupRoleFactory(DjangoModelFactory):
+class GroupRoleFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for GroupRole model."""
 
     class Meta:
@@ -324,7 +324,7 @@ class GroupRoleFactory(DjangoModelFactory):
     role = factory.SubFactory(RoleFactory)
 
 
-class InvitationFactory(DjangoModelFactory):
+class InvitationFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Invitation model."""
 
     class Meta:
@@ -341,7 +341,7 @@ class InvitationFactory(DjangoModelFactory):
     invited_by = factory.SubFactory(UserFactory)
 
 
-class OfficeFactory(DjangoModelFactory):
+class OfficeFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Office model."""
 
     class Meta:
@@ -362,7 +362,7 @@ class OfficeFactory(DjangoModelFactory):
     timezone = "Asia/Kolkata"
 
 
-class OrganizationSettingsFactory(DjangoModelFactory):
+class OrganizationSettingsFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for OrganizationSettings model."""
 
     class Meta:
@@ -379,7 +379,7 @@ class OrganizationSettingsFactory(DjangoModelFactory):
     time_format = "HH:mm"
 
 
-class PermissionFactory(DjangoModelFactory):
+class PermissionFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Permission model."""
 
     class Meta:
@@ -395,7 +395,7 @@ class PermissionFactory(DjangoModelFactory):
     is_active = True
 
 
-class PersonalAccessTokenFactory(DjangoModelFactory):
+class PersonalAccessTokenFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for PersonalAccessToken model."""
 
     class Meta:
@@ -410,7 +410,7 @@ class PersonalAccessTokenFactory(DjangoModelFactory):
     is_active = True
 
 
-class PositionFactory(DjangoModelFactory):
+class PositionFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Position model."""
 
     class Meta:
@@ -424,7 +424,7 @@ class PositionFactory(DjangoModelFactory):
     level = factory.Sequence(lambda n: n)
 
 
-class RolePermissionFactory(DjangoModelFactory):
+class RolePermissionFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for RolePermission model."""
 
     class Meta:
@@ -436,7 +436,7 @@ class RolePermissionFactory(DjangoModelFactory):
     granted_at = factory.Faker("date_time_this_year")
 
 
-class TeamFactory(DjangoModelFactory):
+class TeamFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Team model."""
 
     class Meta:
@@ -451,7 +451,7 @@ class TeamFactory(DjangoModelFactory):
     color = "#007bff"
 
 
-class UserPreferenceFactory(DjangoModelFactory):
+class UserPreferenceFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for UserPreference model."""
 
     class Meta:
@@ -466,7 +466,7 @@ class UserPreferenceFactory(DjangoModelFactory):
     time_format = "HH:mm"
 
 
-class UserRoleFactory(DjangoModelFactory):
+class UserRoleFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for UserRole model."""
 
     class Meta:
@@ -477,7 +477,7 @@ class UserRoleFactory(DjangoModelFactory):
     role = factory.SubFactory(RoleFactory)
 
 
-class WorkCalendarFactory(DjangoModelFactory):
+class WorkCalendarFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for WorkCalendar model."""
 
     class Meta:
@@ -491,7 +491,7 @@ class WorkCalendarFactory(DjangoModelFactory):
     timezone = "Asia/Kolkata"
 
 
-class WorkHoursFactory(DjangoModelFactory):
+class WorkHoursFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for WorkHours model."""
 
     class Meta:
@@ -510,7 +510,7 @@ class WorkHoursFactory(DjangoModelFactory):
     break_end = "13:00:00"
 
 
-class ClientFactory(DjangoModelFactory):
+class ClientFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Client model."""
 
     class Meta:
@@ -526,7 +526,7 @@ class ClientFactory(DjangoModelFactory):
     status = "Active"
 
 
-class VendorFactory(DjangoModelFactory):
+class VendorFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Vendor model."""
 
     class Meta:
@@ -542,7 +542,7 @@ class VendorFactory(DjangoModelFactory):
     status = "Approved Partner"
 
 
-class ClientContactFactory(DjangoModelFactory):
+class ClientContactFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for ClientContact model."""
 
     class Meta:
@@ -561,7 +561,7 @@ class ClientContactFactory(DjangoModelFactory):
     is_primary = False
 
 
-class VendorContactFactory(DjangoModelFactory):
+class VendorContactFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for VendorContact model."""
 
     class Meta:
@@ -579,7 +579,7 @@ class VendorContactFactory(DjangoModelFactory):
     is_primary = False
 
 
-class ClientContractFactory(DjangoModelFactory):
+class ClientContractFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for ClientContract model."""
 
     class Meta:
@@ -598,7 +598,7 @@ class ClientContractFactory(DjangoModelFactory):
     document_url = ""
 
 
-class VendorContractFactory(DjangoModelFactory):
+class VendorContractFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for VendorContract model."""
 
     class Meta:

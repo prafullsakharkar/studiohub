@@ -4,8 +4,13 @@ Organization permissions.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 from .base import BasePermission
 
+if TYPE_CHECKING:
+    from rest_framework.request import Request
+    from rest_framework.views import APIView
 
 class IsOrganizationMember(BasePermission):
     """
@@ -14,16 +19,17 @@ class IsOrganizationMember(BasePermission):
 
     message = "Organization membership required."
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view: APIView, obj: Any) -> bool:
         organization = getattr(obj, "organization", None)
 
         if organization is None:
             return False
 
-        if not hasattr(request.user, "organizations"):
+        organizations = getattr(request.user, "organizations", None)
+        if organizations is None:
             return False
 
-        return request.user.organizations.filter(pk=organization.pk).exists()
+        return organizations.filter(pk=organization.pk).exists()
 
 
 class IsOrganizationAdmin(IsOrganizationMember):
@@ -33,13 +39,16 @@ class IsOrganizationAdmin(IsOrganizationMember):
 
     message = "Organization administrator access required."
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view: APIView, obj: Any) -> bool:
         organization = getattr(obj, "organization", None)
 
         if organization is None:
             return False
 
-        membership = request.user.organizations.filter(
+        organizations = getattr(request.user, "organizations", None)
+        if organizations is None:
+            return False
+        membership = organizations.filter(
             pk=organization.pk,
             role="ADMIN",
         )

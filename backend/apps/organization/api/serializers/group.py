@@ -1,10 +1,12 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.organization.api.serializers.base import OrganizationEntitySerializer
 from apps.organization.models import Group
 
 
-class GroupBaseSerializer(OrganizationEntitySerializer):
+class GroupBaseSerializer(OrganizationEntitySerializer[Group]):
     """
     Base serializer for Group.
     """
@@ -87,7 +89,7 @@ class GroupDetailSerializer(GroupBaseSerializer):
         )
 
 
-class GroupMemberSerializer(serializers.Serializer):
+class GroupMemberSerializer(serializers.Serializer[Any]):
     """
     Serializer for Group member operations.
     """
@@ -97,7 +99,7 @@ class GroupMemberSerializer(serializers.Serializer):
     is_manager = serializers.BooleanField(default=False)
 
 
-class GroupRoleSerializer(serializers.Serializer):
+class GroupRoleSerializer(serializers.Serializer[Any]):
     """
     Serializer for Group role operations.
     """

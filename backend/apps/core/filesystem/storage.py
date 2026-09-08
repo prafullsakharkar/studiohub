@@ -108,6 +108,13 @@ class StorageService:
         return default_storage.exists(path)
     
     @staticmethod
+    def exists(path: str) -> bool:
+        """
+        Check whether a file exists in storage.
+        """
+        return default_storage.exists(path)
+
+    @staticmethod
     def delete_file(path: str) -> bool:
         """
         Delete a file from storage.
@@ -147,4 +154,4 @@ class StorageService:
         Returns:
             datetime object representing last modified time
         """
-        return default_storage.modified_time(path)
+        return default_storage.get_modified_time(path)

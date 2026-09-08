@@ -6,7 +6,7 @@ from rest_framework import serializers
 from apps.audit.models.activity import Activity
 
 
-class ActivitySerializer(serializers.ModelSerializer):
+class ActivitySerializer(serializers.ModelSerializer[Activity]):
     """
     Serializer for Activity.
     """

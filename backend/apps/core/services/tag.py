@@ -50,13 +50,6 @@ class TagService(BaseService):
         cls.validator_class.validate_delete(instance)
         instance.delete()
 
-    @classmethod
-    @transaction.atomic
-    def archive_instance(cls, instance: Tag) -> Tag:
-        """Archive a tag instance."""
-        cls.validator_class.validate_archive(instance)
-        instance.archive()
-        return instance
 
     @classmethod
     @transaction.atomic

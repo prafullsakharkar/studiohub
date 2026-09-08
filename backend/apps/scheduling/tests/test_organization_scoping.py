@@ -80,7 +80,7 @@ class TestCalendarEventOrganizationScoping:
             self._list_url(), HTTP_X_ORGANIZATION_ID=str(org_a.id)
         )
         assert resp.status_code == status.HTTP_200_OK
-        titles = {e["title"] for e in resp.data["results"]}
+        titles = {e["title"] for e in resp.data}
         assert "Event A" in titles
         assert "Event B" not in titles
 
@@ -103,7 +103,7 @@ class TestCalendarEventOrganizationScoping:
             self._list_url(), HTTP_X_ORGANIZATION_ID=str(org_b.id)
         )
         assert resp_b.status_code == status.HTTP_200_OK
-        titles_b = {e["title"] for e in resp_b.data["results"]}
+        titles_b = {e["title"] for e in resp_b.data}
         assert "Event B2" in titles_b
         assert "Event A2" not in titles_b
 
@@ -132,7 +132,7 @@ class TestCalendarEventOrganizationScoping:
         )
         resp = staff_client.get(self._list_url())
         assert resp.status_code == status.HTTP_200_OK
-        assert resp.data["results"] == []
+        assert resp.data == []
 
     def test_list_with_unknown_org_id_does_not_leak(self, staff_client):
         """An unresolvable org id must not fall back to all events."""
@@ -147,7 +147,7 @@ class TestCalendarEventOrganizationScoping:
             HTTP_X_ORGANIZATION_ID=str(uuid.uuid4()),
         )
         assert resp.status_code == status.HTTP_200_OK
-        assert resp.data["results"] == []
+        assert resp.data == []
 
     def test_create_without_org_context_fails_closed(self, staff_client):
         """Create must not assign to an arbitrary/first organization."""

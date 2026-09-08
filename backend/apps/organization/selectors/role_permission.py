@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from django.db.models import QuerySet
-
 from apps.core.selectors.base import BaseSelector
 from apps.organization.models import RolePermission
+from apps.organization.querysets import RolePermissionQuerySet
 
 
 class RolePermissionSelector(BaseSelector):
@@ -19,7 +18,7 @@ class RolePermissionSelector(BaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> RolePermissionQuerySet:
         """
         Get role permission queryset.
         """

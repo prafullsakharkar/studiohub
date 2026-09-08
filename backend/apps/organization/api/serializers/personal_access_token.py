@@ -4,7 +4,7 @@ from apps.organization.api.serializers.base import OrganizationEntitySerializer
 from apps.organization.models import PersonalAccessToken
 
 
-class PersonalAccessTokenBaseSerializer(OrganizationEntitySerializer):
+class PersonalAccessTokenBaseSerializer(OrganizationEntitySerializer[PersonalAccessToken]):
     """
     Base serializer for PersonalAccessToken.
     """

@@ -12,7 +12,7 @@ from apps.organization.selectors.api_key import APIKeySelector
 from apps.organization.services.api_key import APIKeyService
 
 
-class APIKeyViewSet(OrganizationEntityViewSet):
+class APIKeyViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     API endpoint for APIKey.
     """

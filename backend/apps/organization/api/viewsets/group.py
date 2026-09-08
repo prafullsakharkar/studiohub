@@ -12,7 +12,7 @@ from apps.organization.selectors.group import GroupSelector
 from apps.organization.services.group import GroupService
 
 
-class GroupViewSet(OrganizationEntityViewSet):
+class GroupViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     API endpoint for Group.
     """

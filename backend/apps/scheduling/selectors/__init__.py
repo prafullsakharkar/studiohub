@@ -3,6 +3,8 @@ Scheduling selectors for query operations.
 """
 from __future__ import annotations
 
+from typing import Any
+
 from django.db.models import QuerySet
 
 from apps.core.selectors.base import BaseSelector
@@ -26,7 +28,7 @@ class CalendarEventSelector(BaseSelector):
     model = CalendarEvent
 
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
         return cls.model.objects.select_related(
             "organization",
             "project",
@@ -39,7 +41,7 @@ class ResourceSelector(BaseSelector):
     model = Resource
 
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
         return cls.model.objects.select_related(
             "organization",
             "department",
@@ -60,7 +62,7 @@ class ResourceScheduleSelector(BaseSelector):
     scope_field = "resource__organization"
 
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
         return cls.model.objects.select_related(
             "resource",
             "event",
@@ -80,7 +82,7 @@ class ResourceLeaveSelector(BaseSelector):
     scope_field = "resource__organization"
 
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
         return cls.model.objects.select_related(
             "resource",
             "approved_by",
@@ -93,5 +95,5 @@ class HolidaySelector(BaseSelector):
     model = Holiday
 
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
         return cls.model.objects.select_related("organization")

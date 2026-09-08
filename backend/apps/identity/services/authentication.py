@@ -194,6 +194,7 @@ class AuthenticationService(
         cls.validator_class.validate_refresh(
             session,
         )
+        assert session is not None  # guaranteed by validate_refresh above
 
         tokens = TokenService.refresh(
             session=session,

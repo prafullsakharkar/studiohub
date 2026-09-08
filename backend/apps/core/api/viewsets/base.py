@@ -29,7 +29,7 @@ class BaseViewSet(
     PaginationMixin,
     PermissionMixin,
     QuerysetMixin,
-    viewsets.GenericViewSet,
+    viewsets.GenericViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     Root ViewSet for the project.
@@ -101,7 +101,7 @@ class BaseViewSet(
         return permissions
 
 
-class ServiceModelViewSet(BaseViewSet):
+class ServiceModelViewSet(BaseViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     Base ViewSet for service-based model operations.
 

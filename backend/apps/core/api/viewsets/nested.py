@@ -8,7 +8,7 @@ from .generic import BaseModelViewSet
 
 
 class NestedModelViewSet(
-    BaseModelViewSet,
+    BaseModelViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     Parent ViewSet for nested routes.

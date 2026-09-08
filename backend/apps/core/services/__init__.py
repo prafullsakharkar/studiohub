@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from apps.core.services.audit import AuditService
 from apps.core.services.base import BaseService
-from apps.core.services.bulk import BulkService
 from apps.core.services.business import BusinessService
 from apps.core.services.cache import CacheService
 from apps.core.services.color import ColorService
@@ -28,7 +27,6 @@ from apps.core.services.storage import StorageService
 __all__ = [
     "AuditService",
     "BaseService",
-    "BulkService",
     "BusinessService",
     "CacheService",
     "ColorService",

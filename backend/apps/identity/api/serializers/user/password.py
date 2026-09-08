@@ -1,8 +1,10 @@
+from typing import Any
+
 from rest_framework import serializers
 
 
 class UserChangePasswordSerializer(
-    serializers.Serializer,
+    serializers.Serializer[Any],
 ):
     old_password = serializers.CharField(
         write_only=True,

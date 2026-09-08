@@ -11,12 +11,16 @@ import pytest
 from django.db import IntegrityError
 from django.test import TestCase
 
+from apps.identity.models.user import User
 from apps.organization.models.organization import Organization
 from apps.organization.tests.factories import OrganizationFactory, UserFactory
 
 
 class OrganizationAuthorizationTests(TestCase):
     """Authorization tests for Organization model."""
+
+    user: User
+    organization: Organization
 
     def setUp(self) -> None:
         """Set up test data."""
@@ -69,6 +73,8 @@ class OrganizationAuthorizationTests(TestCase):
 
 class OrganizationDataProtectionTests(TestCase):
     """Data protection tests for Organization model."""
+
+    organization: Organization
 
     def setUp(self) -> None:
         """Set up test data."""
@@ -125,6 +131,9 @@ class OrganizationDataProtectionTests(TestCase):
 class OrganizationAuthenticationTests(TestCase):
     """Authentication-related security tests."""
 
+    user: User
+    organization: Organization
+
     def setUp(self) -> None:
         """Set up test data."""
         self.user = UserFactory.create()
@@ -146,15 +155,18 @@ class OrganizationAuthenticationTests(TestCase):
 
     def test_regular_user_cannot_manage_organization(self) -> None:
         """Test a regular user without membership cannot manage."""
+        from typing import Any
+
         from django.test import RequestFactory
+        from rest_framework.views import APIView
 
         from apps.organization.permissions import CanManageOrganization
 
-        request = RequestFactory().post("/api/organizations/")
+        request: Any = RequestFactory().post("/api/organizations/")
         request.user = self.user
 
         permission = CanManageOrganization()
 
         assert not permission.has_object_permission(
-            request, None, self.organization
+            request, APIView(), self.organization
         )

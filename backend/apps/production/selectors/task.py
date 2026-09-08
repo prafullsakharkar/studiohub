@@ -7,7 +7,7 @@ from apps.production.selectors.base import ProductionBaseSelector
 
 class TaskSelector(ProductionBaseSelector):
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Task]:
         return (
             Task.objects.select_related("organization", "project", "team", "assignee", "reviewer", "assignee__profile", "reviewer__profile")
             .prefetch_related("project__organization")

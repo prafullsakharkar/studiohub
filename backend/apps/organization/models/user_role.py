@@ -26,7 +26,7 @@ class UserRole(EntityModel):
         related_name="role_users",
     )
 
-    objects = UserRoleManager()
+    objects: UserRoleManager = UserRoleManager()
 
     class Meta:
         db_table = "organization_user_role"

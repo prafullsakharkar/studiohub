@@ -15,7 +15,7 @@ from apps.organization.services.department import DepartmentService
 
 
 class DepartmentViewSet(
-    OrganizationEntityViewSet,
+    OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
 
     selector_class = DepartmentSelector

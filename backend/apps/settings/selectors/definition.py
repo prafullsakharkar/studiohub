@@ -23,7 +23,7 @@ class SettingDefinitionSelector(SettingsBaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> QuerySet[SettingDefinition]:
         return cls.model.objects.all()
     
     @classmethod

@@ -49,7 +49,7 @@ class BusinessService(
     @classmethod
     def validate(
         cls,
-        operation: str,
+        operation: str = "",
         **kwargs,
     ):
         if cls.validator_class is None:
@@ -218,6 +218,7 @@ class BusinessService(
         if cls.selector_class:
             return cls.selector_class.get_queryset()
 
+        assert cls.model is not None, "model must be set on the service class."
         return cls.model.objects.all()
 
     @classmethod

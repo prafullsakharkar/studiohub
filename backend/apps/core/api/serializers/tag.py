@@ -7,7 +7,7 @@ from rest_framework import serializers
 from apps.core.models.tag import Tag
 
 
-class TagSerializer(serializers.ModelSerializer):
+class TagSerializer(serializers.ModelSerializer[Tag]):
     """
     Base serializer for Tag.
     """

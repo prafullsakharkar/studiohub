@@ -13,7 +13,7 @@ from apps.core.models.attachment import Attachment
 from apps.core.models.tag import Tag
 
 
-class TagFactory(DjangoModelFactory):
+class TagFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Tag model."""
 
     class Meta:
@@ -26,7 +26,7 @@ class TagFactory(DjangoModelFactory):
     is_system = False
 
 
-class AttachmentFactory(DjangoModelFactory):
+class AttachmentFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Attachment model."""
 
     class Meta:

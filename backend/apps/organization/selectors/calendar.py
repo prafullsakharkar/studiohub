@@ -1,6 +1,6 @@
-from django.db.models import QuerySet
 
 from apps.organization.models import Calendar
+from apps.organization.querysets.calendar import CalendarQuerySet
 
 from .base import OrganizationBaseSelector
 
@@ -17,7 +17,7 @@ class CalendarSelector(
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> CalendarQuerySet:
         return Calendar.objects.select_related(
             "organization",
         )

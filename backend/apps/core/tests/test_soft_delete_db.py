@@ -1,17 +1,17 @@
 import uuid
 
-from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 
 from apps.core.models.attachment import Attachment
 from apps.core.services.soft_delete import SoftDeleteService
+from apps.identity.models.user import User
 
 
 @override_settings(MEDIA_ROOT="/tmp/test_media_core")
 class SoftDeleteDBTests(TestCase):
+
     def setUp(self):
-        User = get_user_model()
         self.user = User.objects.create_user(email="tester@example.com", password="pass")
 
     def _create_attachment(self, name: str = "file.txt", content: bytes = b"hello") -> Attachment:

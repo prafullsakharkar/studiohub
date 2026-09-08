@@ -14,7 +14,7 @@ from apps.production.selectors.timelog import TimelogSelector
 from apps.production.services.timelog import TimelogService
 
 
-class TimelogViewSet(ProductionEntityViewSet):
+class TimelogViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = TimelogSelector
     service_class = TimelogService
     pagination_class = StandardPagination

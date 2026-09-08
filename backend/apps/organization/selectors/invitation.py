@@ -6,9 +6,8 @@ Selectors are responsible for read-only queries.
 
 from __future__ import annotations
 
-from django.db.models import QuerySet
-
 from apps.organization.models import Invitation
+from apps.organization.querysets.invitation import InvitationQuerySet
 
 from .base import OrganizationBaseSelector
 
@@ -26,7 +25,7 @@ class InvitationSelector(OrganizationBaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> InvitationQuerySet:
         """
         Return invitations scoped to the requesting user's organizations.
 

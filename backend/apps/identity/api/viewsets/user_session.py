@@ -25,7 +25,7 @@ from apps.organization.models import (
 
 
 class UserSessionViewSet(
-    IdentityViewSet,
+    IdentityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     Session management for the authenticated user.

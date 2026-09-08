@@ -8,16 +8,25 @@ are usable both in the structlog chain and in the stdlib foreign_pre_chain.
 from __future__ import annotations
 
 import os
+from typing import Any
 
-from . import context as log_context
 from .constants import REDACTED, SENSITIVE_KEYS, SERVICE_NAME
+from .context import (
+    organization as _ctx_organization,
+)
+from .context import (
+    request_id as _ctx_request_id,
+)
+from .context import (
+    user as _ctx_user,
+)
 
 
 def add_service_context(
-    logger,
-    method_name,
-    event_dict,
-):
+    logger: Any,
+    method_name: str,
+    event_dict: dict[str, Any],
+) -> dict[str, Any]:
     """
     Attach service name and environment to every event.
     """
@@ -32,10 +41,10 @@ def add_service_context(
 
 
 def add_request_context(
-    logger,
-    method_name,
-    event_dict,
-):
+    logger: Any,
+    method_name: str,
+    event_dict: dict[str, Any],
+) -> dict[str, Any]:
     """
     Attach request/user/organization context from ContextVars.
 
@@ -45,21 +54,21 @@ def add_request_context(
 
     event_dict.setdefault(
         "request_id",
-        log_context.request_id.get(None),
+        _ctx_request_id.get(None),
     )
     event_dict.setdefault(
         "user_id",
-        _compact_id(log_context.user.get(None)),
+        _compact_id(_ctx_user.get(None)),
     )
     event_dict.setdefault(
         "organization_id",
-        _compact_id(log_context.organization.get(None)),
+        _compact_id(_ctx_organization.get(None)),
     )
 
     return event_dict
 
 
-def _compact_id(value):
+def _compact_id(value: Any) -> Any:
     if value is None:
         return None
 
@@ -67,10 +76,10 @@ def _compact_id(value):
 
 
 def redact_secrets(
-    logger,
-    method_name,
-    event_dict,
-):
+    logger: Any,
+    method_name: str,
+    event_dict: dict[str, Any],
+) -> dict[str, Any]:
     """
     Replace sensitive values with a redaction marker.
 
@@ -87,7 +96,7 @@ def redact_secrets(
     return event_dict
 
 
-def _redact_mapping(mapping):
+def _redact_mapping(mapping: dict[str, Any]) -> dict[str, Any]:
     return {
         key: REDACTED if key.lower() in SENSITIVE_KEYS else value
         for key, value in mapping.items()

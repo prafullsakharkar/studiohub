@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from django.db.models import QuerySet
-
 from apps.core.selectors.base import BaseSelector
 from apps.organization.models import PersonalAccessToken
+from apps.organization.querysets import PersonalAccessTokenQuerySet
 
 
 class PersonalAccessTokenSelector(BaseSelector):
@@ -19,7 +18,7 @@ class PersonalAccessTokenSelector(BaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> PersonalAccessTokenQuerySet:
         """
         Get personal access token queryset.
         """

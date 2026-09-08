@@ -13,7 +13,7 @@ from apps.audit.services.background_job import BackgroundJobService
 class BackgroundJobViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
-    AuditEntityViewSet,
+    AuditEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     ViewSet for BackgroundJob.

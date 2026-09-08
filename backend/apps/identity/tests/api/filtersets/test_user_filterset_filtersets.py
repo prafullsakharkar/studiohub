@@ -27,7 +27,9 @@ class TestUserFilterSet:
 
         assert filterset.is_valid()
         assert filterset.qs.count() == 1
-        assert filterset.qs.first().email == "test@example.com"
+        _first = filterset.qs.first()
+        assert _first is not None
+        assert _first.email == "test@example.com"
 
     @pytest.mark.django_db
     def test_filter_by_is_active(self):
@@ -111,4 +113,6 @@ class TestUserFilterSet:
 
         assert filterset.is_valid()
         users = filterset.qs
-        assert users.first().email == "a@example.com"
+        _first = users.first()
+        assert _first is not None
+        assert _first.email == "a@example.com"

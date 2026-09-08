@@ -36,7 +36,7 @@ from apps.organization.services.client_contract import ClientContractService
 from apps.organization.services.vendor_contract import VendorContractService
 
 
-class ClientContractViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet):
+class ClientContractViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     Client contracts scoped to a parent client.
 
@@ -144,7 +144,7 @@ class ClientContractViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet):
         super().perform_create(serializer)
 
 
-class VendorContractViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet):
+class VendorContractViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     Vendor contracts scoped to a parent vendor.
 

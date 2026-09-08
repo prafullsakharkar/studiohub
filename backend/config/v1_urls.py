@@ -8,6 +8,8 @@ under its own ``app_name``. This module aggregates them under the versioned
 
 from django.urls import include, path
 
+from apps.identity.api.views.auth_compat import AuthMembershipsView
+
 app_name = "v1"
 
 urlpatterns = [
@@ -16,6 +18,12 @@ urlpatterns = [
     # Frontend-compatible aliases (must precede legacy paths for routing clarity)
     path("auth/", include("apps.identity.api.urls_auth_compat")),
     path("attachments/", include("apps.core.api.urls_compat")),
+    # Legacy alias for the frontend memberships call (frontend contract path).
+    path(
+        "users/me/memberships/",
+        AuthMembershipsView.as_view(),
+        name="users-me-memberships",
+    ),
     # Legacy flat organization aliases for frontend `organizationApi.ts`
     # (bare-array vs paginated, id-or-code lookup)
     path("", include("apps.organization.api.urls_legacy")),

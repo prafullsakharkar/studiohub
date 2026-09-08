@@ -247,7 +247,7 @@ class UserSession(EntityModel):
     # Organization Context
     # ------------------------------------------------------------------
 
-    objects = UserSessionManager()
+    objects: UserSessionManager = UserSessionManager()
 
     class Meta:
         db_table = "organization_user_session"

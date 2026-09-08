@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar
 
 from django.db.models import Model
 from django.db.models.signals import (
@@ -26,6 +26,20 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=Model)
+
+
+class AuditableModel(Protocol):
+    """Protocol for models with audit and soft-delete fields."""
+
+    created_by: Any
+    updated_by: Any
+    deleted_by: Any
+    created_id: int | None
+    updated_id: int | None
+    is_deleted: bool
+    deleted_at: Any
+    pk: Any
+    status: Any
 
 
 class BaseSignalHandler:
@@ -478,41 +492,46 @@ class AuditSignalHandler(BaseSignalHandler):
         """
         # Get current user from thread-local storage
         try:
-            from apps.core.middleware import get_current_user
+            from apps.core.logging.context import get_current_user
 
             user = get_current_user()
         except (ImportError, AttributeError):
             user = None
 
+        # Type-check instance for audit/soft-delete fields
+        from typing import cast
+
+        auditable = cast(AuditableModel, cast(object, instance))
+
         # Handle soft delete models
         if (
             hasattr(instance, "is_deleted")
             and hasattr(instance, "status")
-            and instance.is_deleted
+            and auditable.is_deleted
             and not instance.pk
         ):
             # New soft delete - set deleted_by
             if user and hasattr(instance, "deleted_by"):
-                instance.deleted_by = user
+                auditable.deleted_by = user
         elif (
             hasattr(instance, "is_deleted")
-            and instance.is_deleted
+            and auditable.is_deleted
             and instance.pk
             and hasattr(instance, "deleted_at")
         ):
             # Existing soft delete - update deleted_at
             from django.utils import timezone
 
-            instance.deleted_at = timezone.now()
+            auditable.deleted_at = timezone.now()
 
         # Handle audit fields
-        if hasattr(instance, "created_by") and not instance.pk and user and not instance.created_id:
+        if hasattr(instance, "created_by") and not instance.pk and user and not auditable.created_id:
             # New object - set created_by
-            instance.created_by = user
+            auditable.created_by = user
 
         # Update updated_by on every save
-        if hasattr(instance, "updated_by") and user and instance.updated_id != user.id:
-            instance.updated_by = user
+        if hasattr(instance, "updated_by") and user and auditable.updated_id != user.id:
+            auditable.updated_by = user
 
 
 class CacheInvalidationSignalHandler(BaseSignalHandler):
@@ -598,12 +617,12 @@ class EventDispatchSignalHandler(BaseSignalHandler):
     Automatically dispatches events on model save/delete.
     """
 
-    event_dispatcher: Callable | None = None
+    event_dispatcher: Callable[..., Any] | None = None
 
     def __init__(
         self,
         model: type[Model] | None = None,
-        event_dispatcher: Callable | None = None,
+        event_dispatcher: Callable[..., Any] | None = None,
     ):
         """
         Initialize the event dispatch signal handler.

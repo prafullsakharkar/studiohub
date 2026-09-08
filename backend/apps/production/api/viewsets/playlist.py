@@ -3,6 +3,7 @@ import uuid
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.core.api.pagination import StandardPagination
 from apps.production.api.serializers.playlist.create import PlaylistCreateSerializer
 from apps.production.api.serializers.playlist.detail import PlaylistDetailSerializer
 from apps.production.api.serializers.playlist.list import PlaylistListSerializer
@@ -13,10 +14,11 @@ from apps.production.selectors.playlist import PlaylistSelector
 from apps.production.services.playlist import PlaylistService
 
 
-class PlaylistViewSet(ProductionEntityViewSet):
+class PlaylistViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = PlaylistSelector
     service_class = PlaylistService
-    pagination_class = None
+    # Frontend contract: paginated list (BaseRepository expects PaginatedResponse).
+    pagination_class = StandardPagination
     serializer_map = {
         "list": PlaylistListSerializer,
         "retrieve": PlaylistDetailSerializer,

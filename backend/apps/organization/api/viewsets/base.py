@@ -11,7 +11,7 @@ from apps.organization.middleware.organization_context import (
 from apps.organization.selectors.base import OrganizationBaseSelector
 
 
-class OrganizationEntityViewSet(ServiceModelViewSet):
+class OrganizationEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     Base ViewSet for all Organization entities.
 

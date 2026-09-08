@@ -44,6 +44,7 @@ class MFAVerificationService(BaseMFAService):
 
         cls.UserMFAValidator.validate_verify(mfa)
 
+        assert mfa is not None  # guaranteed by validate_verify above
         if TOTPService.verify(
             secret=mfa.totp_secret,
             code=code,
@@ -230,6 +231,9 @@ class MFAVerificationService(BaseMFAService):
         """
 
         mfa = cls.UserMFASelector.get_by_user(user)
+
+        if mfa is None:
+            return False
 
         if not mfa.locked_until:
             return False

@@ -8,6 +8,7 @@ canonical ``EntityModel`` soft-delete machinery.
 
 from __future__ import annotations
 
+from django.conf import settings
 from django.db import models
 
 from apps.core.models.bases import EntityModel
@@ -47,6 +48,17 @@ class Sequence(EntityModel):
     frame_out = models.PositiveIntegerField(default=1100)
 
     department = models.CharField(max_length=100, blank=True, default="")
+
+    # Frontend contract: sequence lead artist (searchable, denormalized name
+    # alongside the FK like Task assignee).
+    lead_artist = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="led_sequences",
+    )
+    lead_artist_name = models.CharField(max_length=255, blank=True, default="")
 
     tags = models.JSONField(default=list, blank=True)
     metadata = models.JSONField(default=dict, blank=True)

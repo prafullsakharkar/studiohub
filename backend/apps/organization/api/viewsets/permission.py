@@ -12,7 +12,7 @@ from apps.organization.selectors.permission import PermissionSelector
 from apps.organization.services.permission import PermissionService
 
 
-class PermissionViewSet(OrganizationEntityViewSet):
+class PermissionViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     API endpoint for Permission.
     """

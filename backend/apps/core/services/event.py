@@ -4,7 +4,7 @@ Event service.
 
 from __future__ import annotations
 
-from apps.core.events import EventBus
+from apps.core.events import default_event_bus
 
 from .audit import AuditService
 
@@ -25,7 +25,7 @@ class EventService(AuditService):
 
         if cls.created_event:
 
-            EventBus.publish(
+            default_event_bus.publish(
                 cls.created_event(
                     instance=instance,
                 )
@@ -38,7 +38,7 @@ class EventService(AuditService):
 
         if cls.updated_event:
 
-            EventBus.publish(
+            default_event_bus.publish(
                 cls.updated_event(
                     instance=instance,
                 )
@@ -51,7 +51,7 @@ class EventService(AuditService):
 
         if cls.deleted_event:
 
-            EventBus.publish(
+            default_event_bus.publish(
                 cls.deleted_event(
                     instance=instance,
                 )

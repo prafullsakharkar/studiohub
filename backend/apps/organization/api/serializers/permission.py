@@ -1,10 +1,12 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.organization.api.serializers.base import OrganizationEntitySerializer
 from apps.organization.models import Permission
 
 
-class PermissionBaseSerializer(OrganizationEntitySerializer):
+class PermissionBaseSerializer(OrganizationEntitySerializer[Permission]):
     """
     Base serializer for Permission.
     """
@@ -90,7 +92,7 @@ class PermissionDetailSerializer(PermissionBaseSerializer):
         )
 
 
-class PermissionGrantSerializer(serializers.Serializer):
+class PermissionGrantSerializer(serializers.Serializer[Any]):
     """
     Serializer for granting Permission to Role.
     """

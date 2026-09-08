@@ -25,7 +25,7 @@ from apps.organization.services.calendar import (
 
 
 class CalendarViewSet(
-    OrganizationEntityViewSet,
+    OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     API endpoint for Calendar.

@@ -5,7 +5,7 @@ Base ViewSet for Audit entities.
 from apps.core.api.viewsets.base import ServiceModelViewSet
 
 
-class AuditEntityViewSet(ServiceModelViewSet):
+class AuditEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     Base ViewSet for all Audit entities.
 

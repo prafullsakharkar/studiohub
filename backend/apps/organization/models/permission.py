@@ -70,7 +70,7 @@ class Permission(EntityModel):
         default=0,
     )
 
-    objects = PermissionManager()
+    objects: PermissionManager = PermissionManager()
 
     class Meta:
         db_table = "organization_permission"

@@ -5,6 +5,8 @@ Same URL contract as the former in-memory stub store, now persisted per
 organization. List responses stay bare arrays.
 """
 
+from typing import Any
+
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import F, Q
 from drf_spectacular.types import OpenApiTypes
@@ -25,7 +27,7 @@ from apps.organization.middleware.organization_context import (
 from apps.organization.models import Organization
 
 
-class DummySerializer(serializers.Serializer):
+class DummySerializer(serializers.Serializer[Any]):
     pass
 
 
@@ -58,7 +60,7 @@ def _get_doc(request, pk):
         return None
 
 
-class IntelligenceKnowledgeListView(GenericAPIView):
+class IntelligenceKnowledgeListView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 
@@ -84,7 +86,7 @@ class IntelligenceKnowledgeListView(GenericAPIView):
         return Response(KnowledgeDocumentSerializer(doc).data, status=201)
 
 
-class IntelligenceKnowledgeDetailView(GenericAPIView):
+class IntelligenceKnowledgeDetailView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 
@@ -118,7 +120,7 @@ class IntelligenceKnowledgeDetailView(GenericAPIView):
         return Response(status=204)
 
 
-class IntelligenceKnowledgeLikeView(GenericAPIView):
+class IntelligenceKnowledgeLikeView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 
@@ -132,7 +134,7 @@ class IntelligenceKnowledgeLikeView(GenericAPIView):
         return Response({"likes_count": doc.likes_count})
 
 
-class IntelligenceKnowledgeLinkEntityView(GenericAPIView):
+class IntelligenceKnowledgeLinkEntityView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 

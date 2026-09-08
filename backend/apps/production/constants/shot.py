@@ -8,6 +8,9 @@ class ShotStatus(models.TextChoices):
     APPROVED = "Approved", "Approved"
     RETAKE = "Retake", "Retake"
     ON_HOLD = "On Hold", "On Hold"
+    # Frontend contract: archiving a shot sets status "Archived"
+    # (mirrors ProductionStatus; soft-delete remains the recoverable store).
+    ARCHIVED = "Archived", "Archived"
 
 
 class ProductionStatus(models.TextChoices):

@@ -6,7 +6,7 @@ from rest_framework import serializers
 from apps.settings.models.organization import OrganizationSetting
 
 
-class OrganizationSettingSerializer(serializers.ModelSerializer):
+class OrganizationSettingSerializer(serializers.ModelSerializer[OrganizationSetting]):
     """
     Serializer for OrganizationSetting.
     """

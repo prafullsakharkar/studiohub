@@ -2,6 +2,7 @@ import datetime
 import uuid
 
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.response import Response
 
 from apps.core.api.pagination import StandardPagination
@@ -16,7 +17,7 @@ from apps.production.selectors.review import ReviewSelector
 from apps.production.services.review import ReviewService
 
 
-class ReviewViewSet(ProductionEntityViewSet):
+class ReviewViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = ReviewSelector
     service_class = ReviewService
     pagination_class = StandardPagination
@@ -48,6 +49,7 @@ class ReviewViewSet(ProductionEntityViewSet):
         "resolve_comment": (ReviewPermissions.UPDATE,),
         "reopen_comment": (ReviewPermissions.UPDATE,),
         "notes": (ReviewPermissions.UPDATE,),
+        "participant_verdict": (ReviewPermissions.UPDATE,),
     }
 
     search_fields = ("title", "code", "entity_code")
@@ -199,3 +201,29 @@ class ReviewViewSet(ProductionEntityViewSet):
         instance.notes = (instance.notes or []) + [note]
         instance.save(update_fields=["notes"])
         return Response(note, status=201)
+
+    @action(detail=True, methods=["post"], url_path="participant-verdict")
+    def participant_verdict(self, request, *args, **kwargs):
+        """Frontend contract: record one participant's verdict on the session."""
+        instance = self.get_object()
+        participant_id = request.data.get("participant_id")
+        verdict = request.data.get("verdict", "Pending Review")
+        notes = request.data.get("notes", "")
+        if not participant_id:
+            raise ValidationError({"participant_id": "This field is required."})
+        reviewers = list(instance.reviewers or [])
+        for entry in reviewers:
+            if not isinstance(entry, dict):
+                continue
+            if str(entry.get("id", "")) == str(participant_id) or str(
+                entry.get("user_id", "")
+            ) == str(participant_id):
+                entry["verdict"] = verdict
+                entry["verdict_notes"] = notes
+                entry["verdict_date"] = datetime.datetime.now().isoformat()
+                break
+        else:
+            raise NotFound("Participant not found on this review.")
+        instance.reviewers = reviewers
+        instance.save(update_fields=["reviewers"])
+        return Response(ReviewDetailSerializer(instance).data)

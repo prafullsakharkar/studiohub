@@ -13,5 +13,5 @@ class PersonSelector:
     """Read-only queries for Person."""
 
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Person]:
         return Person.objects.all()

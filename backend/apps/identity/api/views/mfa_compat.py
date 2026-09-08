@@ -29,17 +29,11 @@ class MFAConfigView(BaseAPIView):
     def get(self, request, *args, **kwargs):
         user = request.user
         try:
-            mfa = MFAService.enrollment.get_mfa(user) if hasattr(MFAService.enrollment, "get_mfa") else None
+            from apps.identity.models import UserMFA
+
+            mfa = UserMFA.objects.filter(user=user).first()
         except Exception:
             mfa = None
-        # Fallback: try to get UserMFA directly
-        if mfa is None:
-            try:
-                from apps.identity.models import UserMFA
-
-                mfa = UserMFA.objects.filter(user=user).first()
-            except Exception:
-                mfa = None
 
         enabled = bool(mfa and getattr(mfa, "is_verified", False))
         methods = []
@@ -77,17 +71,18 @@ class MFATOTPSetupView(BaseAPIView):
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request, *args, **kwargs):
         user = request.user
-        # Generate secret and provisioning uri via MFAService
+        email = getattr(user, "email", "")
+        # Generate secret and provisioning uri via MFAService generators.
         try:
-            secret = MFAService.generate_secret(user)
-            uri = MFAService.provisioning_uri(user, secret) if hasattr(MFAService, "provisioning_uri") else f"otpauth://totp/StudioHub:{user.email}?secret={secret}&issuer=StudioHub"
-            qr = MFAService.qr_code(user, secret) if hasattr(MFAService, "qr_code") else None
+            secret = MFAService.generators.generate_secret()
+            uri = MFAService.generators.provisioning_uri(email=email, secret=secret)
+            qr = MFAService.generators.qr_code(email=email, secret=secret)
         except Exception:
             # Fallback: generate via pyotp
             import pyotp
 
             secret = pyotp.random_base32()
-            uri = f"otpauth://totp/StudioHub:{user.email}?secret={secret}&issuer=StudioHub"
+            uri = f"otpauth://totp/StudioHub:{email}?secret={secret}&issuer=StudioHub"
             qr = None
 
         return Response({"secret": secret, "uri": uri, "qr_code": qr, "qr": qr})
@@ -106,24 +101,20 @@ class MFATOTPEnableView(BaseAPIView):
         if not secret or not code:
             return Response({"detail": "secret and code are required."}, status=400)
         try:
-            # Enroll with provided secret, then activate with code
-            # MFAService.enroll expects to generate secret, but we can set directly if provided
+            # Enroll, pin the provided secret, then verify the code.
+            # (Activation itself stays behind the dedicated activate flow;
+            # this shim never enables MFA without a verified code.)
+            MFAService.enroll(user=user)
             try:
-                MFAService.enroll(user, secret=secret)
-            except TypeError:
-                # Fallback: enroll without secret param
-                MFAService.enroll(user)
-                # Try to set secret directly via model if needed
-                try:
-                    from apps.identity.models import UserMFA
+                from apps.identity.models import UserMFA
 
-                    mfa = UserMFA.objects.get(user=user)
-                    mfa.totp_secret = secret
-                    mfa.save(update_fields=["totp_secret"])
-                except Exception:
-                    pass
-            mfa = MFAService.activate(user, code)
-            return Response({"enabled": True, "verified": getattr(mfa, "is_verified", True)})
+                mfa = UserMFA.objects.get(user=user)
+                mfa.totp_secret = secret
+                mfa.save(update_fields=["totp_secret"])
+            except Exception:
+                pass
+            verified = MFAService.verify(user=user, code=code)
+            return Response({"enabled": bool(verified), "verified": bool(verified)})
         except Exception as exc:
             return Response({"detail": str(exc)}, status=400)
 
@@ -140,7 +131,7 @@ class MFATOTPVerifyView(BaseAPIView):
         if not code:
             return Response({"detail": "code is required."}, status=400)
         try:
-            result = MFAService.verify(user, code)
+            result = MFAService.verify(user=user, code=code)
             # MFAService.verify returns bool or mfa
             valid = bool(result) if not isinstance(result, bool) else result
             # Some implementations return None on failure
@@ -161,7 +152,7 @@ class MFATOTPDisableView(BaseAPIView):
         user = request.user
         # code is optional for disable, but frontend sends it
         try:
-            MFAService.disable(user)
+            MFAService.disable(user=user)
             return Response({"success": True})
         except Exception as exc:
             return Response({"detail": str(exc)}, status=400)
@@ -237,10 +228,10 @@ class MFARecoveryCodesView(BaseAPIView):
     def get(self, request, *args, **kwargs):
         user = request.user
         try:
-            codes = MFAService.generate_recovery_codes(user)
+            codes = MFAService.generate_recovery_codes(user=user)
             # generate may return None if already exists; fallback to remaining
             if not codes:
-                codes = MFAService.remaining_recovery_codes(user) or []
+                codes = MFAService.remaining_recovery_codes(user=user) or []
         except Exception:
             codes = []
         return Response({"codes": codes})
@@ -255,9 +246,9 @@ class MFARecoveryCodesRegenerateView(BaseAPIView):
     def post(self, request, *args, **kwargs):
         user = request.user
         try:
-            codes = MFAService.regenerate_recovery_codes(user)
+            codes = MFAService.regenerate_recovery_codes(user=user)
             if not codes:
-                codes = MFAService.generate_recovery_codes(user) or []
+                codes = MFAService.generate_recovery_codes(user=user) or []
         except Exception as exc:
             return Response({"detail": str(exc)}, status=400)
         return Response({"codes": codes or []})
@@ -281,7 +272,7 @@ class MFAAdminResetView(BaseAPIView):
 
             User = get_user_model()
             target = User.objects.get(pk=user_id)
-            MFAService.reset(target)
+            MFAService.reset(user=target)
             return Response({"success": True})
         except Exception as exc:
             return Response({"detail": str(exc)}, status=400)

@@ -18,7 +18,7 @@ from apps.settings.models.system import SystemSetting
 from apps.settings.models.theme import Theme
 
 
-class ThemeFactory(DjangoModelFactory):
+class ThemeFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Theme model."""
 
     class Meta:
@@ -39,7 +39,7 @@ class ThemeFactory(DjangoModelFactory):
     is_active = True
 
 
-class CategoryFactory(DjangoModelFactory):
+class CategoryFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for SettingCategory model."""
 
     class Meta:
@@ -57,7 +57,7 @@ class CategoryFactory(DjangoModelFactory):
     is_active = True
 
 
-class DefinitionFactory(DjangoModelFactory):
+class DefinitionFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for SettingDefinition model."""
 
     class Meta:
@@ -78,7 +78,7 @@ class DefinitionFactory(DjangoModelFactory):
     is_active = True
 
 
-class FeatureFlagFactory(DjangoModelFactory):
+class FeatureFlagFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for FeatureFlag model."""
 
     class Meta:
@@ -100,7 +100,7 @@ class FeatureFlagFactory(DjangoModelFactory):
     organization = factory.SubFactory(OrganizationFactory)
 
 
-class LocalizationFactory(DjangoModelFactory):
+class LocalizationFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Localization model."""
 
     class Meta:
@@ -128,7 +128,7 @@ class LocalizationFactory(DjangoModelFactory):
     is_active = True
 
 
-class OrganizationSettingFactory(DjangoModelFactory):
+class OrganizationSettingFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for OrganizationSetting model."""
 
     class Meta:
@@ -140,7 +140,7 @@ class OrganizationSettingFactory(DjangoModelFactory):
     is_locked = False
 
 
-class SystemSettingFactory(DjangoModelFactory):
+class SystemSettingFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for SystemSetting model."""
 
     class Meta:

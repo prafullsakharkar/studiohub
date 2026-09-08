@@ -18,7 +18,7 @@ class TestProfileSelector:
         """Test get_profile_by_id method."""
         profile = ProfileFactory.create()
         retrieved_profile = Profile.objects.get_by_id(profile.id)
-        assert retrieved_profile.id == profile.id
+        assert retrieved_profile is not None and retrieved_profile.id == profile.id
 
     @pytest.mark.django_db
     def test_get_profile_by_user(self):
@@ -26,7 +26,7 @@ class TestProfileSelector:
         user = UserFactory.create()
         ProfileFactory.create(user=user)
         retrieved_profile = Profile.objects.get_profile_by_user(user.id)
-        assert retrieved_profile.user.id == user.id
+        assert retrieved_profile is not None and retrieved_profile.user.id == user.id
 
     @pytest.mark.django_db
     def test_list_profiles(self):
@@ -56,7 +56,9 @@ class TestProfileSelector:
         ProfileFactory.create(first_name="Zoe", last_name="Zebra")
         ProfileFactory.create(first_name="Alice", last_name="Apple")
         profiles = Profile.objects.list_profiles(order_by="first_name")
-        assert profiles.first().first_name == "Alice"
+        _first = profiles.first()
+        assert _first is not None
+        assert _first.first_name == "Alice"
 
     @pytest.mark.django_db
     def test_count_profiles(self):
@@ -70,5 +72,5 @@ class TestProfileSelector:
         """Test get_profile_with_user method."""
         profile = ProfileFactory.create()
         retrieved_profile = Profile.objects.get_profile_with_user(profile.id)
-        assert retrieved_profile.id == profile.id
+        assert retrieved_profile is not None and retrieved_profile.id == profile.id
         assert hasattr(retrieved_profile, "user")

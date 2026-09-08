@@ -48,7 +48,7 @@ class Branding(OrganizationEntityModel):
         default="light",
     )
 
-    objects = BrandingManager()
+    objects: BrandingManager = BrandingManager()
 
     class Meta:
         db_table = "organization_branding"

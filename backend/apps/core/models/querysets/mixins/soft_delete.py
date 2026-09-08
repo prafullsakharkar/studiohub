@@ -4,11 +4,16 @@ Soft delete queryset mixin.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any, ClassVar
+
 
 class SoftDeleteQuerySetMixin:
     """
     Reusable queryset methods for soft-deletable models.
     """
+    # Mixin contract: provided by the QuerySet subclass.
+    filter: ClassVar[Callable[..., Any]]
 
     def alive(self):
         """

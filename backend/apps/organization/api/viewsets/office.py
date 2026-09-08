@@ -15,7 +15,7 @@ from apps.organization.selectors.office import OfficeSelector
 from apps.organization.services.office import OfficeService
 
 
-class OfficeViewSet(OrganizationEntityViewSet):
+class OfficeViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     API endpoint for Office.
     """

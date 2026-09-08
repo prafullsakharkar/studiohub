@@ -15,7 +15,7 @@ class OrganizationSelector(OrganizationBaseSelector):
     """
 
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Organization]:
         """
         Return the base queryset for Organization.
         """

@@ -1,7 +1,9 @@
+from typing import Any
+
 from rest_framework import serializers
 
 
-class SequenceBulkItemSerializer(serializers.Serializer):
+class SequenceBulkItemSerializer(serializers.Serializer[Any]):
     """Input item for bulk-create. ``project_id`` targets the owning project
     (resolved and scoped to the active organization by the service)."""
 
@@ -17,11 +19,11 @@ class SequenceBulkItemSerializer(serializers.Serializer):
     metadata = serializers.DictField(required=False, default=dict)
 
 
-class SequenceBulkCreateSerializer(serializers.Serializer):
+class SequenceBulkCreateSerializer(serializers.Serializer[Any]):
     items = SequenceBulkItemSerializer(many=True, required=True)
 
 
-class SequenceBulkUpdateItemSerializer(serializers.Serializer):
+class SequenceBulkUpdateItemSerializer(serializers.Serializer[Any]):
     """Input item for bulk-update: ``id`` targets an existing sequence."""
 
     id = serializers.UUIDField()

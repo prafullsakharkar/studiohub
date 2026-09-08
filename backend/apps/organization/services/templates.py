@@ -4,7 +4,7 @@ Organization templates service.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.db import transaction
 
@@ -27,7 +27,7 @@ class OrganizationTemplateService:
     def create_from_template(
         cls,
         template_name: str,
-        organization_data: dict,
+        organization_data: dict[Any, Any],
         **kwargs,
     ) -> Organization:
         """

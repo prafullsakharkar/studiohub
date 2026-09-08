@@ -20,7 +20,7 @@ class BaseManager(models.Manager.from_queryset(BaseQuerySet)):
     use_in_migrations = False
 
     def get_queryset(self) -> BaseQuerySet:
-        return super().get_queryset()
+        return BaseQuerySet(self.model, using=self._db)
 
     def create(self, **kwargs):
         """
@@ -28,14 +28,31 @@ class BaseManager(models.Manager.from_queryset(BaseQuerySet)):
         """
         return super().create(**kwargs)
 
-    def bulk_create(self, objs, **kwargs):
+    def bulk_create(
+        self,
+        objs,
+        batch_size=None,
+        ignore_conflicts=False,
+        update_conflicts=False,
+        update_fields=None,
+        unique_fields=None,
+        **kwargs,
+    ):
         """
         Hook for future bulk operations.
         """
-        return super().bulk_create(objs, **kwargs)
+        return super().bulk_create(
+            objs,
+            batch_size=batch_size,
+            ignore_conflicts=ignore_conflicts,
+            update_conflicts=update_conflicts,
+            update_fields=update_fields,
+            unique_fields=unique_fields,
+            **kwargs,
+        )
 
-    def bulk_update(self, objs, fields, **kwargs):
+    def bulk_update(self, objs, fields, batch_size=None, **kwargs):
         """
         Hook for future bulk updates.
         """
-        return super().bulk_update(objs, fields, **kwargs)
+        return super().bulk_update(objs, fields, batch_size=batch_size, **kwargs)

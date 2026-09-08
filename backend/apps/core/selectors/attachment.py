@@ -27,7 +27,7 @@ class AttachmentSelector(BaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> QuerySet[Attachment]:
         """
         Get queryset for Attachment.
 

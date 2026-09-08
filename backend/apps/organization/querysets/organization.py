@@ -77,6 +77,29 @@ class OrganizationQuerySet(
             )
         )
 
+    def with_statistics(self):
+        """
+        Annotate computed statistics (members, departments, teams, offices).
+        """
+        return self.annotate(
+            member_count=Count(
+                "memberships",
+                distinct=True,
+            ),
+            department_count=Count(
+                "organization_departments",
+                distinct=True,
+            ),
+            team_count=Count(
+                "organization_teams",
+                distinct=True,
+            ),
+            office_count=Count(
+                "organization_offices",
+                distinct=True,
+            ),
+        )
+
     def lookup(self, value: str):
         """
         Lookup by name, code or slug.

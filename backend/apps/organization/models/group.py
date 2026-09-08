@@ -48,7 +48,7 @@ class Group(EntityModel, ColorModel):
         related_name="organization_groups",
     )
 
-    objects = GroupManager()
+    objects: GroupManager = GroupManager()
 
     class Meta:
         db_table = "organization_group"

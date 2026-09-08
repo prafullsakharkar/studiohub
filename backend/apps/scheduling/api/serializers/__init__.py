@@ -1,12 +1,14 @@
 """
 Scheduling serializers.
 """
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.scheduling.models import CalendarEvent, Holiday, Resource, ResourceLeave, ResourceSchedule
 
 
-class CalendarEventListSerializer(serializers.ModelSerializer):
+class CalendarEventListSerializer(serializers.ModelSerializer[Any]):
     """Serializer for calendar event list view."""
     
     project_name = serializers.CharField(source="project.name", read_only=True)
@@ -38,7 +40,7 @@ class CalendarEventListSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created_at", "updated_at")
 
 
-class CalendarEventDetailSerializer(serializers.ModelSerializer):
+class CalendarEventDetailSerializer(serializers.ModelSerializer[Any]):
     """Serializer for calendar event detail view."""
     
     project = serializers.UUIDField(source="project.id", read_only=True)
@@ -74,7 +76,7 @@ class CalendarEventDetailSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created_at", "updated_at")
 
 
-class CalendarEventCreateSerializer(serializers.Serializer):
+class CalendarEventCreateSerializer(serializers.Serializer[Any]):
     """Serializer for creating a calendar event."""
     
     title = serializers.CharField(required=True, max_length=255)
@@ -112,7 +114,7 @@ class CalendarEventCreateSerializer(serializers.Serializer):
         return CalendarEvent.objects.create(**validated_data)
 
 
-class CalendarEventUpdateSerializer(serializers.Serializer):
+class CalendarEventUpdateSerializer(serializers.Serializer[Any]):
     """Serializer for updating a calendar event."""
     
     title = serializers.CharField(required=False, max_length=255)
@@ -133,7 +135,7 @@ class CalendarEventUpdateSerializer(serializers.Serializer):
     notes = serializers.CharField(required=False, allow_blank=True)
 
 
-class ResourceListSerializer(serializers.ModelSerializer):
+class ResourceListSerializer(serializers.ModelSerializer[Any]):
     """Serializer for resource list view."""
     
     department_name = serializers.CharField(source="department.name", read_only=True)
@@ -167,7 +169,7 @@ class ResourceListSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created_at", "updated_at")
 
 
-class ResourceDetailSerializer(serializers.ModelSerializer):
+class ResourceDetailSerializer(serializers.ModelSerializer[Any]):
     """Serializer for resource detail view."""
     
     department = serializers.UUIDField(source="department.id", read_only=True)
@@ -205,7 +207,7 @@ class ResourceDetailSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created_at", "updated_at")
 
 
-class ResourceCreateSerializer(serializers.Serializer):
+class ResourceCreateSerializer(serializers.Serializer[Any]):
     """Serializer for creating a resource."""
     
     name = serializers.CharField(required=True, max_length=255)
@@ -248,7 +250,7 @@ class ResourceCreateSerializer(serializers.Serializer):
         return Resource.objects.create(**validated_data)
 
 
-class ResourceUpdateSerializer(serializers.Serializer):
+class ResourceUpdateSerializer(serializers.Serializer[Any]):
     """Serializer for updating a resource."""
     
     name = serializers.CharField(required=False, max_length=255)
@@ -267,7 +269,7 @@ class ResourceUpdateSerializer(serializers.Serializer):
     location = serializers.CharField(required=False, allow_blank=True, max_length=255)
 
 
-class ResourceScheduleSerializer(serializers.ModelSerializer):
+class ResourceScheduleSerializer(serializers.ModelSerializer[Any]):
     """Serializer for resource schedule."""
     
     resource_name = serializers.CharField(source="resource.name", read_only=True)
@@ -296,7 +298,7 @@ class ResourceScheduleSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created_at", "updated_at")
 
 
-class ResourceLeaveSerializer(serializers.ModelSerializer):
+class ResourceLeaveSerializer(serializers.ModelSerializer[Any]):
     """Serializer for resource leave."""
     
     resource_name = serializers.CharField(source="resource.name", read_only=True)
@@ -335,7 +337,7 @@ class ResourceLeaveSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created_at", "updated_at")
 
 
-class HolidaySerializer(serializers.ModelSerializer):
+class HolidaySerializer(serializers.ModelSerializer[Any]):
     """Serializer for holiday."""
     
     organization = serializers.PrimaryKeyRelatedField(read_only=True)

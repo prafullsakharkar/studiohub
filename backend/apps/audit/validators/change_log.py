@@ -25,7 +25,7 @@ class ChangeLogValidator(AuditBaseValidator):
             return False
         return True
     
-    def validate_before_after(self, before: dict, after: dict) -> bool:
+    def validate_before_after(self, before: dict[Any, Any], after: dict[Any, Any]) -> bool:
         """
         Validate before and after values are dictionaries.
         """
@@ -39,7 +39,7 @@ class ChangeLogValidator(AuditBaseValidator):
         
         return True
     
-    def validate_changed_fields(self, changed_fields: list) -> bool:
+    def validate_changed_fields(self, changed_fields: list[Any]) -> bool:
         """
         Validate changed fields is a list.
         """

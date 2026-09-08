@@ -1,10 +1,12 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseReadSerializer
 from apps.production.models import Task
 
 
-class TaskSerializer(BaseReadSerializer):
+class TaskSerializer(BaseReadSerializer[Any]):
     project_id = serializers.UUIDField(read_only=True)
     project_code = serializers.SerializerMethodField()
     project_name = serializers.SerializerMethodField()

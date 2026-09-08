@@ -13,7 +13,7 @@ from apps.audit.services.audit_log import AuditLogService
 class AuditLogViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
-    AuditEntityViewSet,
+    AuditEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     Read-only ViewSet for AuditLog.

@@ -32,7 +32,7 @@ class AnyFieldOrderingFilter(django_filters.OrderingFilter):
     Ordering filter that accepts any model field name.
     """
 
-    field_class = _PermissiveOrderingField
+    field_class = _PermissiveOrderingField  # pyright: ignore[reportAssignmentType]
 
 
 class OrderingFilterMixin(django_filters.FilterSet):

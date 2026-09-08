@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import QuerySet
 
@@ -22,7 +24,7 @@ class BaseSelector:
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> QuerySet[Any, Any]:
         """
         Return the base queryset.
 
@@ -33,11 +35,11 @@ class BaseSelector:
     @classmethod
     def scope_by_request(
         cls,
-        queryset: QuerySet,
+        queryset: QuerySet[Any, Any],
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> QuerySet[Any, Any]:
         """
         Restrict a queryset to the request's active organization.
 

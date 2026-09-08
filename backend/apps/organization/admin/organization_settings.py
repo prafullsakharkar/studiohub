@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedAdminMixin
+from apps.organization.admin.base import OrganizationScopedModelAdmin
 from apps.organization.models import OrganizationSettings
 
 
 @admin.register(OrganizationSettings)
-class OrganizationSettingsAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class OrganizationSettingsAdmin(OrganizationScopedModelAdmin):
     list_display = (
         "organization",
         "timezone",

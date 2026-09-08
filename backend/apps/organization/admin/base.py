@@ -5,18 +5,23 @@ Shared Django admin base classes for organization-aware models.
 Django Admin: non-superuser staff only ever see rows belonging to
 organizations they are members of (fail closed). Superusers keep global
 access per the existing permission architecture.
+
+Concrete admins must extend ``OrganizationScopedModelAdmin`` (single
+inheritance) rather than combining the mixin with ``admin.ModelAdmin``
+themselves — duplicate ``ModelAdmin`` bases break cooperative multiple
+inheritance checks.
 """
 
 from __future__ import annotations
 
-from django.contrib import admin
+from typing import Any
 
 from apps.core.admin.base import StudioHubModelAdmin
 from apps.organization.models.membership import OrganizationMembership
 from apps.organization.models.organization import Organization
 
 
-class OrganizationScopedAdminMixin(admin.ModelAdmin):
+class OrganizationScopedAdminMixin:
     """
     Scope admin rows (and the organization dropdown) to the staff user's
     own organizations.
@@ -33,7 +38,7 @@ class OrganizationScopedAdminMixin(admin.ModelAdmin):
     organization_lookup = "organization"
     include_null_organization = False
 
-    def _user_organization_ids(self, request):
+    def _user_organization_ids(self, request: Any) -> list[Any] | None:
         user = getattr(request, "user", None)
         if user is None or not user.is_authenticated:
             return []
@@ -45,26 +50,28 @@ class OrganizationScopedAdminMixin(admin.ModelAdmin):
             )
         )
 
-    def _scoped(self, qs, org_ids):
+    def _scoped(self, qs: Any, org_ids: list[Any]) -> Any:
         lookup = self.organization_lookup
         scoped = qs.filter(**{f"{lookup}__in": org_ids})
         if self.include_null_organization:
             scoped = scoped | qs.filter(**{f"{lookup}__isnull": True})
         return scoped
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
+    def get_queryset(self, request: Any) -> Any:
+        qs = super().get_queryset(request)  # pyright: ignore[reportAttributeAccessIssue]
         org_ids = self._user_organization_ids(request)
         if org_ids is None:
             return qs
         return self._scoped(qs, org_ids)
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+    def formfield_for_foreignkey(self, db_field: Any, request: Any, **kwargs: Any) -> Any:
         if db_field.name == "organization" and not request.user.is_superuser:
             kwargs["queryset"] = Organization.objects.filter(
                 id__in=self._user_organization_ids(request)
             )
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+        return super().formfield_for_foreignkey(  # pyright: ignore[reportAttributeAccessIssue]
+            db_field, request, **kwargs
+        )
 
 
 class OrganizationScopedModelAdmin(OrganizationScopedAdminMixin, StudioHubModelAdmin):

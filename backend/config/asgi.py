@@ -8,6 +8,7 @@ https://docs.djangoproject.com/en/6.0/howto/deployment/asgi/
 """
 
 import os
+from typing import Any
 
 os.environ.setdefault(
     "DJANGO_SETTINGS_MODULE",
@@ -22,7 +23,7 @@ from django.core.asgi import get_asgi_application
 # ``websocket_urlpatterns`` here when real-time features land (e.g. live
 # review notifications), keeping the ASGI entry point importable in the
 # meantime.
-websocket_urlpatterns: list = []
+websocket_urlpatterns: list[Any] = []
 
 
 def get_application():

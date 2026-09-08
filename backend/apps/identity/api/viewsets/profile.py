@@ -25,7 +25,7 @@ from apps.identity.services.profile import (
 
 
 class ProfileViewSet(
-    IdentityViewSet,
+    IdentityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
 
     queryset = Profile.objects.all()

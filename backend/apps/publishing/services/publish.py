@@ -3,7 +3,7 @@ Publishing service for business logic.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.db import transaction
 
@@ -62,7 +62,7 @@ def validate_publish(
     publish_id: str,
     user_id: str,
     organization_id: str,
-) -> dict:
+) -> dict[Any, Any]:
     """Run validation on a publish item."""
     from apps.audit.models import AuditLog
     from apps.publishing.models import PublishItem, PublishValidationRule

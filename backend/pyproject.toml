@@ -104,6 +104,7 @@ dev = [
     "httpie>=3.2",
     # Shell
     "rich>=14.1",
+    "djangorestframework-stubs>=3.17.0",
 ]
 
 [build-system]
@@ -122,6 +123,15 @@ typeCheckingMode = "recommended"
 
 reportMissingImports = true
 reportMissingTypeStubs = false
+
+# Django-idiomatic patterns that are false positives under pyright
+# (no mypy plugin runs here):
+# - reportIncompatibleVariableOverride: every model's `class Meta` narrows
+#   the base Meta by design; every Django project triggers this.
+# - reportPrivateImportUsage: factory-boy ships no `__all__`, so all
+#   `factory.X` attribute uses read as private re-export usage.
+reportIncompatibleVariableOverride = false
+reportPrivateImportUsage = false
 
 include = ["apps", "config"]
 

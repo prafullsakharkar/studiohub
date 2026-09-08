@@ -4,6 +4,8 @@ Base selector for the Settings bounded context.
 
 from __future__ import annotations
 
+from typing import Any
+
 from django.db.models import QuerySet
 
 from apps.core.selectors.base import BaseSelector
@@ -26,7 +28,7 @@ class SettingsBaseSelector(BaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> QuerySet[Any, Any]:
         """
         Applications must override this.
         """
@@ -35,9 +37,9 @@ class SettingsBaseSelector(BaseSelector):
     @classmethod
     def _scope_by_request(
         cls,
-        queryset: QuerySet,
+        queryset: QuerySet[Any, Any],
         request=None,
-    ) -> QuerySet:
+    ) -> QuerySet[Any, Any]:
         """
         Restrict org-scoped settings to the caller's organizations.
 

@@ -10,4 +10,4 @@ class OrderingMixin:
     """
 
     def order_queryset(self, queryset):
-        return super().order_queryset(queryset)
+        return super().order_queryset(queryset)  # pyright: ignore[reportAttributeAccessIssue]

@@ -12,7 +12,7 @@ from apps.organization.selectors.personal_access_token import PersonalAccessToke
 from apps.organization.services.personal_access_token import PersonalAccessTokenService
 
 
-class PersonalAccessTokenViewSet(OrganizationEntityViewSet):
+class PersonalAccessTokenViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     API endpoint for PersonalAccessToken.
     """

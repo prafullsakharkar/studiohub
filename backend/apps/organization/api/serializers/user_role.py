@@ -1,10 +1,12 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.organization.api.serializers.base import OrganizationEntitySerializer
 from apps.organization.models import UserRole
 
 
-class UserRoleBaseSerializer(OrganizationEntitySerializer):
+class UserRoleBaseSerializer(OrganizationEntitySerializer[UserRole]):
     """
     Base serializer for UserRole.
     """
@@ -28,7 +30,7 @@ class UserRoleBaseSerializer(OrganizationEntitySerializer):
         )
 
 
-class UserRoleAssignSerializer(serializers.Serializer):
+class UserRoleAssignSerializer(serializers.Serializer[Any]):
     """
     Serializer for assigning UserRole.
     """
@@ -38,7 +40,7 @@ class UserRoleAssignSerializer(serializers.Serializer):
     expires_at = serializers.DateTimeField(required=False, allow_null=True)
 
 
-class UserRoleRevokeSerializer(serializers.Serializer):
+class UserRoleRevokeSerializer(serializers.Serializer[Any]):
     """
     Serializer for revoking UserRole.
     """

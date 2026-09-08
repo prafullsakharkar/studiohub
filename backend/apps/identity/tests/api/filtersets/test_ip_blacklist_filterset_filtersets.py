@@ -30,7 +30,9 @@ class TestIPBlacklistFilterSet:
 
         assert filterset.is_valid()
         assert filterset.qs.count() == 1
-        assert filterset.qs.first().ip_address == "192.168.1.1"
+        _first = filterset.qs.first()
+        assert _first is not None
+        assert _first.ip_address == "192.168.1.1"
 
     @pytest.mark.django_db
     def test_filter_by_is_active(self):
@@ -63,7 +65,9 @@ class TestIPBlacklistFilterSet:
 
         assert filterset.is_valid()
         assert filterset.qs.count() == 1
-        assert filterset.qs.first().reason == "Suspicious activity"
+        _first = filterset.qs.first()
+        assert _first is not None
+        assert _first.reason == "Suspicious activity"
 
     @pytest.mark.django_db
     def test_filter_by_created_by(self):
@@ -80,7 +84,9 @@ class TestIPBlacklistFilterSet:
 
         assert filterset.is_valid()
         assert filterset.qs.count() == 1
-        assert filterset.qs.first().created_by.id == user.id
+        _first = filterset.qs.first()
+        assert _first is not None
+        assert _first.created_by.id == user.id
 
     @pytest.mark.django_db
     def test_filter_by_ordering(self):
@@ -97,4 +103,7 @@ class TestIPBlacklistFilterSet:
 
         assert filterset.is_valid()
         entries = filterset.qs
-        assert entries.first().created_at <= entries.last().created_at
+        _first = entries.first()
+        _last = entries.last()
+        assert _first is not None and _last is not None
+        assert _first.created_at <= _last.created_at

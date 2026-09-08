@@ -152,7 +152,9 @@ class TestOrganizationFilterSet:
         results = filterset.qs
 
         assert results.count() == 3
-        assert results.first().name == "A Organization"
+        _first = results.first()
+        assert _first is not None
+        assert _first.name == "A Organization"
 
     @pytest.mark.django_db
     def test_ordering_descending_filter(self):
@@ -170,7 +172,9 @@ class TestOrganizationFilterSet:
         results = filterset.qs
 
         assert results.count() == 3
-        assert results.first().name == "Z Organization"
+        _first = results.first()
+        assert _first is not None
+        assert _first.name == "Z Organization"
 
     @pytest.mark.django_db
     def test_date_range_filter(self):

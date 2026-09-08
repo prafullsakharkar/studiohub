@@ -29,17 +29,17 @@ class AttachmentPermissions(BasePermission):
             return False
 
         # Staff users have full access
-        if request.user.is_staff:
+        if getattr(request.user, "is_staff", False):
             return True
 
         # Organization members can view and manage their own attachments
-        if view.action in ["list", "retrieve"]:
+        if getattr(view, "action", None) in ["list", "retrieve"]:
             return True
 
-        if view.action in ["create"]:
+        if getattr(view, "action", None) in ["create"]:
             return True
 
-        return view.action in ["update", "partial_update", "destroy"]
+        return getattr(view, "action", None) in ["update", "partial_update", "destroy"]
 
     def has_object_permission(self, request: HttpRequest, view, obj) -> bool:
         """
@@ -49,12 +49,12 @@ class AttachmentPermissions(BasePermission):
             return False
 
         # Staff users have full access
-        if request.user.is_staff:
+        if getattr(request.user, "is_staff", False):
             return True
 
         # Organization members can manage their own attachments
         if hasattr(obj, "organization"):
-            return obj.organization == request.user.organization
+            return obj.organization == getattr(request.user, "organization", None)
 
         return False
 

@@ -1,8 +1,8 @@
-from django.db.models import QuerySet
 
 from apps.organization.models import (
     WorkCalendar,
 )
+from apps.organization.querysets import WorkCalendarQuerySet
 
 from .base import (
     OrganizationBaseSelector,
@@ -21,7 +21,7 @@ class WorkCalendarSelector(
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> WorkCalendarQuerySet:
         return WorkCalendar.objects.prefetch_related(
             "holidays",
         )

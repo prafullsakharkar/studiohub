@@ -1,7 +1,9 @@
+from typing import Any
+
 from rest_framework import serializers
 
 
-class IdentitySerializer(serializers.ModelSerializer):
+class IdentitySerializer(serializers.ModelSerializer[Any]):
     """
     Base serializer for Identity models.
     """

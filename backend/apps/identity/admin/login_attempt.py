@@ -4,7 +4,7 @@ from apps.identity.models import LoginAttempt
 
 
 @admin.register(LoginAttempt)
-class LoginAttemptAdmin(admin.ModelAdmin):
+class LoginAttemptAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     list_display = (
         "username",
         "ip_address",

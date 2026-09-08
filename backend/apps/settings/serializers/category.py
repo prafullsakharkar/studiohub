@@ -6,7 +6,7 @@ from rest_framework import serializers
 from apps.settings.models.category import SettingCategory
 
 
-class SettingCategorySerializer(serializers.ModelSerializer):
+class SettingCategorySerializer(serializers.ModelSerializer[SettingCategory]):
     """
     Serializer for SettingCategory.
     """

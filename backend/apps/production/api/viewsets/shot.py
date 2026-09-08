@@ -8,16 +8,18 @@ from apps.production.api.serializers.shot.detail import ShotDetailSerializer
 from apps.production.api.serializers.shot.list import ShotListSerializer
 from apps.production.api.serializers.shot.update import ShotUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
+from apps.production.api.viewsets.bulk import BulkContractViewSetMixin
 from apps.production.constants.permissions import ShotPermissions
 from apps.production.selectors.shot import ShotSelector
 from apps.production.services.shot import ShotService
 
 
-class ShotViewSet(ProductionEntityViewSet):
+class ShotViewSet(BulkContractViewSetMixin, ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = ShotSelector
     service_class = ShotService
     pagination_class = StandardPagination
     filterset_class = ShotFilterSet
+    detail_serializer_class = ShotDetailSerializer
 
     serializer_map = {
         "list": ShotListSerializer,
@@ -35,6 +37,14 @@ class ShotViewSet(ProductionEntityViewSet):
         "partial_update": (ShotPermissions.UPDATE,),
         "destroy": (ShotPermissions.DELETE,),
         "approve": (ShotPermissions.APPROVE,),
+        "bulk_create": (ShotPermissions.CREATE,),
+        "bulk_update": (ShotPermissions.UPDATE,),
+        "bulk_archive": (ShotPermissions.DELETE,),
+        "bulk_restore": (ShotPermissions.UPDATE,),
+        "check_existence": (ShotPermissions.CREATE,),
+        "existence_check": (ShotPermissions.CREATE,),
+        "archive": (ShotPermissions.DELETE,),
+        "restore": (ShotPermissions.UPDATE,),
     }
 
     search_fields = ("code", "name", "description", "sequence_code")

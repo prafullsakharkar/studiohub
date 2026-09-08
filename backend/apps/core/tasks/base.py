@@ -41,8 +41,8 @@ class BaseTask(CeleryTask):
         self,
         retval: Any,
         task_id: str,
-        args: tuple,
-        kwargs: dict,
+        args: tuple[Any, ...],
+        kwargs: dict[Any, Any],
     ) -> None:
         """
         Handle task success.
@@ -66,9 +66,9 @@ class BaseTask(CeleryTask):
         self,
         exc: Exception,
         task_id: str,
-        args: tuple,
-        kwargs: dict,
-        traceback: Any,
+        args: tuple[Any, ...],
+        kwargs: dict[Any, Any],
+        einfo: Any,
     ) -> None:
         """
         Handle task failure.
@@ -78,7 +78,7 @@ class BaseTask(CeleryTask):
             task_id: Unique id of the executed task
             args: Original arguments for the task
             kwargs: Original keyword arguments for the task
-            traceback: Traceback object for the exception
+            einfo: Exception info
         """
         logger.error(
             "Task %s failed",
@@ -96,9 +96,8 @@ class BaseTask(CeleryTask):
         self,
         exc: Exception,
         task_id: str,
-        args: tuple,
-        kwargs: dict,
-        traceback: Any,
+        args: tuple[Any, ...],
+        kwargs: dict[Any, Any],
         einfo: Any,
     ) -> None:
         """
@@ -109,7 +108,6 @@ class BaseTask(CeleryTask):
             task_id: Unique id of the executed task
             args: Original arguments for the task
             kwargs: Original keyword arguments for the task
-            traceback: Traceback object for the exception
             einfo: Exception info
         """
         logger.warning(
@@ -191,7 +189,7 @@ class BaseTask(CeleryTask):
         """
         raise NotImplementedError("Subclasses must implement run()")
 
-    def get_context(self, context: Context | None = None) -> dict:
+    def get_context(self, context: Context | None = None) -> dict[Any, Any]:
         """
         Get task context for logging.
 
@@ -263,7 +261,7 @@ class BaseEmailTask(BaseTask):
         from_email: str | None = None,
         html_body: str | None = None,
         **kwargs: Any,
-    ) -> dict:
+    ) -> dict[Any, Any]:
         """
         Send an email asynchronously.
 
@@ -331,9 +329,9 @@ class BaseNotificationTask(BaseTask):
         user_id: str,
         message: str,
         notification_type: str,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
         **kwargs: Any,
-    ) -> dict:
+    ) -> dict[Any, Any]:
         """
         Send a notification asynchronously.
 
@@ -369,7 +367,7 @@ class BaseExportTask(BaseTask):
         export_format: str,
         output_path: str,
         **kwargs: Any,
-    ) -> dict:
+    ) -> dict[Any, Any]:
         """
         Export data asynchronously.
 
@@ -403,7 +401,7 @@ class BaseImportTask(BaseTask):
         file_path: str,
         import_format: str,
         **kwargs: Any,
-    ) -> dict:
+    ) -> dict[Any, Any]:
         """
         Import data asynchronously.
 

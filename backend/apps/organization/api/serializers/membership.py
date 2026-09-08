@@ -4,7 +4,7 @@ from apps.organization.api.serializers.base import OrganizationEntitySerializer
 from apps.organization.models import OrganizationMembership
 
 
-class OrganizationMembershipBaseSerializer(OrganizationEntitySerializer):
+class OrganizationMembershipBaseSerializer(OrganizationEntitySerializer[OrganizationMembership]):
     """
     Base serializer for OrganizationMembership.
     """

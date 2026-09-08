@@ -1,10 +1,12 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.models import Timelog
 
 
-class TimelogCreateSerializer(BaseWriteSerializer):
+class TimelogCreateSerializer(BaseWriteSerializer[Any]):
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
     person = serializers.PrimaryKeyRelatedField(

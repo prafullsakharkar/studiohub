@@ -4,4 +4,4 @@ Continuous Integration settings.
 
 from .testing import *
 
-DEBUG = False
+DEBUG = False  # pyright: ignore[reportConstantRedefinition]

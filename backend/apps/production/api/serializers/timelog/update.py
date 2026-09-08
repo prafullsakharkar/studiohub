@@ -1,8 +1,10 @@
+from typing import Any
+
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.models import Timelog
 
 
-class TimelogUpdateSerializer(BaseWriteSerializer):
+class TimelogUpdateSerializer(BaseWriteSerializer[Any]):
     class Meta:
         model = Timelog
         fields = (

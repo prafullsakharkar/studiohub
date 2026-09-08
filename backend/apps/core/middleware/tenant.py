@@ -5,6 +5,7 @@ Tenant middleware.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -16,7 +17,7 @@ class TenantMiddleware:
     Middleware to handle tenant settings.
     """
 
-    def __init__(self, get_response: callable) -> None:
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
         self.get_response = get_response
 
     def __call__(self, request: HttpRequest) -> HttpResponse:

@@ -86,7 +86,7 @@ class Role(EntityModel, ColorModel):
         default=0,
     )
 
-    objects = RoleManager()
+    objects: RoleManager = RoleManager()
 
     class Meta:
         db_table = "organization_role"

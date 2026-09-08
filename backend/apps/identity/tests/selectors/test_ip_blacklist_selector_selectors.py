@@ -18,7 +18,7 @@ class TestIPBlacklistSelector:
         """Test get_ip_blacklist_by_id method."""
         entry = IPBlacklistFactory.create()
         retrieved_entry = IPBlacklist.objects.get_by_id(entry.id)
-        assert retrieved_entry.id == entry.id
+        assert retrieved_entry is not None and retrieved_entry.id == entry.id
 
     @pytest.mark.django_db
     def test_list_ip_blacklist(self):

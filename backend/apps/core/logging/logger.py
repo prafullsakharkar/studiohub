@@ -15,10 +15,18 @@ from typing import Any
 
 import structlog
 
-from . import context as log_context
+from .context import (
+    organization as _ctx_organization,
+)
+from .context import (
+    request_id as _ctx_request_id,
+)
+from .context import (
+    user as _ctx_user,
+)
 
 
-class ContextLoggerAdapter(logging.LoggerAdapter):
+class ContextLoggerAdapter(logging.LoggerAdapter):  # pyright: ignore[reportMissingTypeArgument]
     """Attach structured context to log records using the ``extra`` dict.
 
     The adapter pulls values from ContextVars in apps.core.logging.context
@@ -29,13 +37,13 @@ class ContextLoggerAdapter(logging.LoggerAdapter):
         extra = dict(kwargs.get("extra", {}))
 
         # Pull values from the contextvars; keep None if not set.
-        extra.setdefault("request_id", log_context.request_id.get(None))
+        extra.setdefault("request_id", _ctx_request_id.get(None))
 
-        org = log_context.organization.get(None)
+        org = _ctx_organization.get(None)
         # Keep small stable representations (id or string) if model-like objects
         extra.setdefault("organization", getattr(org, "id", org))
 
-        user = log_context.user.get(None)
+        user = _ctx_user.get(None)
         extra.setdefault("user", getattr(user, "id", user))
 
         kwargs = dict(kwargs)

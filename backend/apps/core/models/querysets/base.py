@@ -6,10 +6,12 @@ Provides common helper methods for all querysets.
 
 from __future__ import annotations
 
+from typing import Any
+
 from django.db import models
 
 
-class BaseQuerySet(models.QuerySet):
+class BaseQuerySet(models.QuerySet[Any, Any]):
     """
     Base queryset shared across all models.
 
@@ -24,11 +26,18 @@ class BaseQuerySet(models.QuerySet):
         """
         return self.values_list("id", flat=True)
 
-    def ordered(self):
+    def ordered(self):  # pyright: ignore[reportIncompatibleMethodOverride]
         """
         Respect model ordering when defined on the model's Meta.
+
+        NOTE: intentionally shadows Django's ``QuerySet.ordered`` boolean
+        property with a chainable method (always call it: ``.ordered()``).
         """
-        ordering = getattr(self.model._meta, "ordering", None)
+        model = self.model
+        if model is None:
+            return self
+
+        ordering = getattr(model._meta, "ordering", None)
         if ordering:
             return self.order_by(*ordering)
 

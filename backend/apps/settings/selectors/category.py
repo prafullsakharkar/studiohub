@@ -23,7 +23,7 @@ class SettingCategorySelector(SettingsBaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> QuerySet[SettingCategory]:
         return cls.model.objects.all()
     
     @classmethod

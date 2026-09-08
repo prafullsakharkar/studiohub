@@ -9,7 +9,7 @@ from rest_framework import serializers
 from apps.core.models.attachment import Attachment
 
 
-class AttachmentSerializer(serializers.ModelSerializer):
+class AttachmentSerializer(serializers.ModelSerializer[Attachment]):
     """
     Base serializer for Attachment.
     """

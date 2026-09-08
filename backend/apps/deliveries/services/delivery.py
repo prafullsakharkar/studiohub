@@ -3,7 +3,7 @@ Delivery service for business logic.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.db import transaction
 
@@ -109,7 +109,7 @@ def validate_delivery(
     delivery_id: str,
     user_id: str,
     organization_id: str,
-) -> dict:
+) -> dict[Any, Any]:
     """Validate delivery package contents."""
     from apps.audit.models import AuditLog
     from apps.deliveries.models import DeliveryPackage
@@ -169,7 +169,7 @@ def prepare_delivery(
     delivery_id: str,
     user_id: str,
     organization_id: str,
-) -> dict:
+) -> dict[Any, Any]:
     """Prepare delivery package for submission."""
     from apps.audit.models import AuditLog
     from apps.deliveries.models import DeliveryPackage
@@ -236,7 +236,7 @@ def submit_delivery(
     delivery_id: str,
     user_id: str,
     organization_id: str,
-) -> dict:
+) -> dict[Any, Any]:
     """Submit delivery to destination."""
     from apps.audit.models import AuditLog
     from apps.deliveries.models import DeliveryPackage

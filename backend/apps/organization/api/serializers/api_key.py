@@ -4,7 +4,7 @@ from apps.organization.api.serializers.base import OrganizationEntitySerializer
 from apps.organization.models import APIKey
 
 
-class APIKeyBaseSerializer(OrganizationEntitySerializer):
+class APIKeyBaseSerializer(OrganizationEntitySerializer[APIKey]):
     """
     Base serializer for APIKey.
     """

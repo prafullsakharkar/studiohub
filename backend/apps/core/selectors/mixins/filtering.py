@@ -10,4 +10,4 @@ class FilteringMixin:
     """
 
     def filter_queryset(self, queryset):
-        return super().filter_queryset(queryset)
+        return super().filter_queryset(queryset)  # pyright: ignore[reportAttributeAccessIssue]

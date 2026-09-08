@@ -24,6 +24,8 @@ class BasePagination(PageNumberPagination):
         Accept ``limit`` as an alias for ``page_size`` (mock-layer parity).
         """
         for param in (self.page_size_query_param, "limit"):
+            if not param:
+                continue
             value = request.query_params.get(param)
             if value:
                 try:

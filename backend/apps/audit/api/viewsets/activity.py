@@ -13,7 +13,7 @@ from apps.audit.services.activity import ActivityService
 class ActivityViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
-    AuditEntityViewSet,
+    AuditEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     ViewSet for Activity.

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from django.db.models import QuerySet
-
+from apps.organization.models.user_preference import UserPreference
 from apps.organization.querysets.user_preference import (
     UserPreferenceQuerySet,
 )
@@ -13,13 +12,13 @@ class UserPreferenceSelector:
     """
 
     @classmethod
-    def get_queryset(cls) -> QuerySet:
-        return UserPreferenceQuerySet(model=UserPreferenceQuerySet.model)
+    def get_queryset(cls) -> UserPreferenceQuerySet:
+        return UserPreferenceQuerySet(model=UserPreference)
 
     @classmethod
-    def get_by_user(cls, user) -> UserPreferenceQuerySet.model | None:
+    def get_by_user(cls, user):
         return cls.get_queryset().by_user(user).first()
 
     @classmethod
-    def get_or_create(cls, user) -> UserPreferenceQuerySet.model:
+    def get_or_create(cls, user):
         return cls.get_queryset().get_or_create(user=user)

@@ -3,7 +3,7 @@ from rest_framework import serializers
 from apps.intelligence.models import KnowledgeDocument
 
 
-class KnowledgeDocumentSerializer(serializers.ModelSerializer):
+class KnowledgeDocumentSerializer(serializers.ModelSerializer[KnowledgeDocument]):
     id = serializers.UUIDField(read_only=True)
 
     class Meta:
@@ -40,7 +40,7 @@ class KnowledgeDocumentSerializer(serializers.ModelSerializer):
         )
 
 
-class KnowledgeDocumentUpdateSerializer(serializers.ModelSerializer):
+class KnowledgeDocumentUpdateSerializer(serializers.ModelSerializer[KnowledgeDocument]):
     class Meta:
         model = KnowledgeDocument
         fields = (

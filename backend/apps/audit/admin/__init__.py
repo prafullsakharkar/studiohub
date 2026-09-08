@@ -12,11 +12,11 @@ from apps.audit.models.change_log import ChangeLog
 from apps.audit.models.error_log import ErrorLog
 from apps.audit.models.login_history import LoginHistory
 from apps.audit.models.track import Track
-from apps.organization.admin.base import OrganizationScopedAdminMixin
+from apps.organization.admin.base import OrganizationScopedModelAdmin
 
 
 @admin.register(AuditLog)
-class AuditLogAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class AuditLogAdmin(OrganizationScopedModelAdmin):
     """Audit Log admin."""
 
     list_display = [
@@ -83,7 +83,7 @@ class AuditLogAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(Activity)
-class ActivityAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class ActivityAdmin(OrganizationScopedModelAdmin):
     """Activity admin."""
 
     list_display = [
@@ -133,7 +133,7 @@ class ActivityAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(LoginHistory)
-class LoginHistoryAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class LoginHistoryAdmin(OrganizationScopedModelAdmin):
     """Login History admin."""
 
     list_display = [
@@ -185,7 +185,7 @@ class LoginHistoryAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(ChangeLog)
-class ChangeLogAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class ChangeLogAdmin(OrganizationScopedModelAdmin):
     """Change Log admin."""
 
     list_display = [
@@ -241,7 +241,7 @@ class ChangeLogAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(APIRequest)
-class APIRequestAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class APIRequestAdmin(OrganizationScopedModelAdmin):
     """API Request admin."""
 
     list_display = [
@@ -307,7 +307,7 @@ class APIRequestAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(BackgroundJob)
-class BackgroundJobAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class BackgroundJobAdmin(OrganizationScopedModelAdmin):
     """Background Job admin."""
 
     list_display = [
@@ -366,7 +366,7 @@ class BackgroundJobAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(ErrorLog)
-class ErrorLogAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class ErrorLogAdmin(OrganizationScopedModelAdmin):
     """Error Log admin."""
 
     list_display = [
@@ -419,7 +419,7 @@ class ErrorLogAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(Track)
-class TrackAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class TrackAdmin(OrganizationScopedModelAdmin):
     """Track admin."""
 
     list_display = [

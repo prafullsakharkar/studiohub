@@ -19,21 +19,21 @@ class TestUserSelector:
         """Test get_user_by_id method."""
         user = UserFactory.create()
         retrieved_user = User.objects.get_by_id(user.id)
-        assert retrieved_user.id == user.id
+        assert retrieved_user is not None and retrieved_user.id == user.id
 
     @pytest.mark.django_db
     def test_get_user_by_email(self):
         """Test get_user_by_email method."""
         user = UserFactory.create(email="test@example.com")
         retrieved_user = User.objects.get_by_email("test@example.com")
-        assert retrieved_user.email == user.email
+        assert retrieved_user is not None and retrieved_user.email == user.email
 
     @pytest.mark.django_db
     def test_get_user_by_username(self):
         """Test get_user_by_username method (username == email)."""
         user = UserFactory.create(email="testuser@example.com")
         retrieved_user = User.objects.get_by_username("testuser@example.com")
-        assert retrieved_user.email == user.email
+        assert retrieved_user is not None and retrieved_user.email == user.email
 
     @pytest.mark.django_db
     def test_list_users(self):
@@ -63,7 +63,9 @@ class TestUserSelector:
         UserFactory.create(email="z@example.com")
         UserFactory.create(email="a@example.com")
         users = User.objects.list_users(order_by="email")
-        assert users.first().email == "a@example.com"
+        _first = users.first()
+        assert _first is not None
+        assert _first.email == "a@example.com"
 
     @pytest.mark.django_db
     def test_count_users(self):
@@ -78,7 +80,7 @@ class TestUserSelector:
         user = UserFactory.create()
         ProfileFactory.create(user=user)
         retrieved_user = User.objects.get_user_with_profile(user.id)
-        assert retrieved_user.id == user.id
+        assert retrieved_user is not None and retrieved_user.id == user.id
         assert hasattr(retrieved_user, "profile")
 
     @pytest.mark.django_db
@@ -86,5 +88,5 @@ class TestUserSelector:
         """Test get_user_with_last_login method."""
         user = UserFactory.create(last_seen=timezone.now())
         retrieved_user = User.objects.get_user_with_last_login(user.id)
-        assert retrieved_user.id == user.id
-        assert retrieved_user.last_seen is not None
+        assert retrieved_user is not None and retrieved_user.id == user.id
+        assert retrieved_user is not None and retrieved_user.last_seen is not None

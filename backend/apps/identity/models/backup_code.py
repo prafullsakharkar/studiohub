@@ -7,7 +7,7 @@ from apps.identity.managers import BackupCodeManager
 
 class BackupCode(EntityModel):
 
-    objects = BackupCodeManager()
+    objects: BackupCodeManager = BackupCodeManager()
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

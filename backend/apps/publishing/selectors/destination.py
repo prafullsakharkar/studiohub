@@ -20,7 +20,7 @@ class DestinationSelector(BaseSelector):
     model = PublishDestination
 
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[PublishDestination]:
         return cls.model.objects.select_related(
             "organization",
         )

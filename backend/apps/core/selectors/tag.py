@@ -27,7 +27,7 @@ class TagSelector(BaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> QuerySet[Tag]:
         """
         Get queryset for Tag.
 

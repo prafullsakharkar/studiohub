@@ -4,6 +4,8 @@ Base ViewSet for Production entities.
 
 from __future__ import annotations
 
+from django.http import Http404
+
 from apps.core.api.viewsets.service import ServiceModelViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
@@ -13,7 +15,7 @@ from apps.organization.middleware.organization_context import (
 from apps.production.selectors.base import ProductionBaseSelector
 
 
-class ProductionEntityViewSet(ServiceModelViewSet):
+class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     Base ViewSet for all Production organization-owned entities.
 
@@ -57,15 +59,53 @@ class ProductionEntityViewSet(ServiceModelViewSet):
 
     def get_queryset(self):
         resolve_organization_context(self.request)
-        qs = self.selector_class.get_queryset(
-            request=self.request,
-            view=self,
-        )
+        if self._include_deleted():
+            # Frontend contract: ?include_deleted / ?include_archived opts into
+            # soft-deleted rows (still strictly organization scoped).
+            qs = self.service_class.model.all_objects.all()
+        else:
+            qs = self.selector_class.get_queryset(
+                request=self.request,
+                view=self,
+            )
         return ProductionBaseSelector.scope_by_request(
             qs,
             request=self.request,
             view=self,
         )
+
+    def _include_deleted(self):
+        params = getattr(self.request, "query_params", {}) or {}
+        for key in ("include_deleted", "include_archived"):
+            value = params.get(key)
+            if isinstance(value, str) and value.lower() in ("true", "1", "yes"):
+                return True
+            if value is True:
+                return True
+        return False
+
+    def get_object(self):
+        # Frontend contract: detail lookup accepts the UUID id OR the entity
+        # code (case-insensitive). Fall back to code when UUID lookup 404s.
+        try:
+            return super().get_object()
+        except Http404:
+            pass
+        lookup = self.kwargs.get(self.lookup_url_kwarg or self.lookup_field)
+        model = self.service_class.model
+        try:
+            model._meta.get_field("code")
+        except Exception:  # noqa: BLE001
+            raise Http404 from None
+        queryset = self.filter_queryset(self.get_queryset())
+        try:
+            obj = queryset.filter(code__iexact=lookup).first()
+        except (ValueError, TypeError):
+            obj = None
+        if obj is None:
+            raise Http404
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def resolve_organization(self, *, instance=None):
         """

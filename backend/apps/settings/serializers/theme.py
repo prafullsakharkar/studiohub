@@ -6,7 +6,7 @@ from rest_framework import serializers
 from apps.settings.models.theme import Theme
 
 
-class ThemeSerializer(serializers.ModelSerializer):
+class ThemeSerializer(serializers.ModelSerializer[Theme]):
     """
     Serializer for Theme.
     """

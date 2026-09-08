@@ -6,7 +6,6 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.core.api.pagination import StandardPagination
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
 from apps.organization.api.viewsets.scoped import OrganizationScopedViewSet
@@ -47,11 +46,12 @@ _NO_USER_RESOURCE_ERROR = (
 )
 
 
-class CalendarEventViewSet(OrganizationScopedViewSet):
+class CalendarEventViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for CalendarEvent."""
 
     selector_class = CalendarEventSelector
-    pagination_class = StandardPagination
+    # Frontend contract: bare-array lists.
+    pagination_class = None
     permission_classes = (IsAuthenticatedPermission, HasPermission)
 
     serializer_map = {
@@ -93,11 +93,12 @@ class CalendarEventViewSet(OrganizationScopedViewSet):
         return Response(CalendarEventDetailSerializer(event).data)
 
 
-class ResourceViewSet(OrganizationScopedViewSet):
+class ResourceViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for Resource."""
 
     selector_class = ResourceSelector
-    pagination_class = StandardPagination
+    # Frontend contract: bare-array lists.
+    pagination_class = None
     permission_classes = (IsAuthenticatedPermission, HasPermission)
 
     serializer_map = {
@@ -173,11 +174,12 @@ class ResourceViewSet(OrganizationScopedViewSet):
         return Response(ResourceScheduleSerializer(schedule).data, status=status.HTTP_201_CREATED)
 
 
-class ResourceScheduleViewSet(OrganizationScopedViewSet):
+class ResourceScheduleViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for ResourceSchedule."""
 
     selector_class = ResourceScheduleSelector
-    pagination_class = StandardPagination
+    # Frontend contract: bare-array lists.
+    pagination_class = None
     permission_classes = (IsAuthenticatedPermission, HasPermission)
 
     serializer_map = {
@@ -215,11 +217,12 @@ class ResourceScheduleViewSet(OrganizationScopedViewSet):
         serializer.save()
 
 
-class ResourceLeaveViewSet(OrganizationScopedViewSet):
+class ResourceLeaveViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for ResourceLeave."""
 
     selector_class = ResourceLeaveSelector
-    pagination_class = StandardPagination
+    # Frontend contract: bare-array lists.
+    pagination_class = None
     permission_classes = (IsAuthenticatedPermission, HasPermission)
 
     serializer_map = {
@@ -294,11 +297,12 @@ class ResourceLeaveViewSet(OrganizationScopedViewSet):
         return Response(ResourceLeaveSerializer(leave).data)
 
 
-class HolidayViewSet(OrganizationScopedViewSet):
+class HolidayViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for Holiday."""
 
     selector_class = HolidaySelector
-    pagination_class = StandardPagination
+    # Frontend contract: bare-array lists.
+    pagination_class = None
     permission_classes = (IsAuthenticatedPermission, HasPermission)
 
     serializer_map = {

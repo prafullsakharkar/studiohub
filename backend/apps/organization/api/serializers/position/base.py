@@ -1,3 +1,5 @@
+from typing import Any
+
 from apps.organization.api.serializers.base import (
     OrganizationEntitySerializer,
 )
@@ -7,7 +9,7 @@ from apps.organization.models.position import (
 
 
 class PositionBaseSerializer(
-    OrganizationEntitySerializer,
+    OrganizationEntitySerializer[Any],
 ):
 
     class Meta(

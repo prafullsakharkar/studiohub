@@ -20,7 +20,7 @@ from apps.organization.selectors.invitation import InvitationSelector
 from apps.organization.services.invitation import InvitationService
 
 
-class InvitationViewSet(OrganizationEntityViewSet):
+class InvitationViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     API endpoint for Invitation.
     """

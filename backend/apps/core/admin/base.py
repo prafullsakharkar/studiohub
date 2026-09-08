@@ -8,10 +8,12 @@ organization-aware behavior lives in
 
 from __future__ import annotations
 
+from typing import Any
+
 from django.contrib import admin
 
 
-class StudioHubModelAdmin(admin.ModelAdmin):
+class StudioHubModelAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     """
     Base admin for all StudioHub models.
 
@@ -34,7 +36,7 @@ class StudioHubModelAdmin(admin.ModelAdmin):
     )
 
     def get_readonly_fields(self, request, obj=None):
-        fields: list = list(super().get_readonly_fields(request, obj))
+        fields: list[Any] = list(super().get_readonly_fields(request, obj))
         available = {f.name for f in self.model._meta.get_fields()}
         for name in self.audit_readonly_fields:
             if name in available and name not in fields:

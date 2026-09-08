@@ -4,7 +4,7 @@ Core test base classes.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.test import TestCase
 
@@ -29,24 +29,24 @@ class BaseTestCase(TestCase):
         """Tear down test data."""
         pass
 
-    def assertDictContains(self, expected: dict, actual: dict):
+    def assertDictContains(self, expected: dict[Any, Any], actual: dict[Any, Any]):
         """Assert that expected dict is contained in actual dict."""
         for key, value in expected.items():
             self.assertIn(key, actual)
             self.assertEqual(value, actual[key])
 
-    def assertDictNotContains(self, expected: dict, actual: dict):
+    def assertDictNotContains(self, expected: dict[Any, Any], actual: dict[Any, Any]):
         """Assert that expected dict is not contained in actual dict."""
         for key, value in expected.items():
             if key in actual:
                 self.assertNotEqual(value, actual[key])
 
-    def assertListContains(self, expected: list, actual: list):
+    def assertListContains(self, expected: list[Any], actual: list[Any]):
         """Assert that expected list is contained in actual list."""
         for item in expected:
             self.assertIn(item, actual)
 
-    def assertListNotContains(self, expected: list, actual: list):
+    def assertListNotContains(self, expected: list[Any], actual: list[Any]):
         """Assert that expected list is not contained in actual list."""
         for item in expected:
             self.assertNotIn(item, actual)
@@ -137,6 +137,8 @@ class BaseAPITestCase(BaseTestCase):
 
     Provides common setup for API testing.
     """
+
+    path: str | None = None
 
     def setUp(self):
         """Set up test data."""

@@ -13,8 +13,8 @@ class TestModelFoundation(SimpleTestCase):
     def test_uuid_model_has_uuid_primary_key(self):
         # Inspect the model meta for the 'id' field
         field = UUIDModel._meta.get_field('id')
-        self.assertTrue(field.primary_key)
         self.assertIsInstance(field, models.UUIDField)
+        self.assertTrue(field.primary_key)
 
     def test_timestamp_model_fields(self):
         created = TimeStampedModel._meta.get_field('created_at')

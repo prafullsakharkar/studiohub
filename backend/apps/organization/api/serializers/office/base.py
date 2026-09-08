@@ -1,3 +1,5 @@
+from typing import Any
+
 from apps.organization.api.serializers.base import (
     OrganizationEntitySerializer,
 )
@@ -5,7 +7,7 @@ from apps.organization.models.office import Office
 
 
 class OfficeBaseSerializer(
-    OrganizationEntitySerializer,
+    OrganizationEntitySerializer[Any],
 ):
     class Meta(OrganizationEntitySerializer.Meta):
         model = Office

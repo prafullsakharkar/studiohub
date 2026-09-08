@@ -39,7 +39,7 @@ class User(EntityModel, AbstractBaseUser, PermissionsMixin):
         db_index=True,
     )
 
-    objects = UserManager()
+    objects: UserManager = UserManager()
 
     USERNAME_FIELD = "email"
 

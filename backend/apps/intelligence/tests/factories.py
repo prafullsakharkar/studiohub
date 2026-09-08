@@ -11,7 +11,7 @@ from apps.intelligence.models import KnowledgeDocument
 from apps.organization.tests.factories import OrganizationFactory
 
 
-class KnowledgeDocumentFactory(DjangoModelFactory):
+class KnowledgeDocumentFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for KnowledgeDocument model."""
 
     class Meta:

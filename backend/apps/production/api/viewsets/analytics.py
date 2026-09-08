@@ -1,3 +1,5 @@
+from typing import Any
+
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
@@ -6,11 +8,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 
-class DummySerializer(serializers.Serializer):
+class DummySerializer(serializers.Serializer[Any]):
     pass
 
 
-class AnalyticsKpisView(GenericAPIView):
+class AnalyticsKpisView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     permission_classes = (IsAuthenticated,)
     serializer_class = DummySerializer
 
@@ -31,7 +33,7 @@ class AnalyticsKpisView(GenericAPIView):
         )
 
 
-class AnalyticsDepartmentsView(GenericAPIView):
+class AnalyticsDepartmentsView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     permission_classes = (IsAuthenticated,)
     serializer_class = DummySerializer
 

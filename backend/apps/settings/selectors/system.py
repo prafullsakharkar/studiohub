@@ -23,7 +23,7 @@ class SystemSettingSelector(SettingsBaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> QuerySet[SystemSetting]:
         return cls.model.objects.all()
     
     @classmethod

@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedAdminMixin
+from apps.organization.admin.base import OrganizationScopedModelAdmin
 from apps.organization.models import Holiday
 
 
 @admin.register(Holiday)
-class HolidayAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class HolidayAdmin(OrganizationScopedModelAdmin):
     list_display = (
         "name",
         "date",

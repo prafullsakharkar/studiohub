@@ -4,6 +4,8 @@ Lifecycle mixin.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 from django.db import transaction
 
 from apps.core.services.lifecycle import LifecycleService
@@ -13,6 +15,17 @@ class LifecycleMixin:
     """
     Lifecycle operations.
     """
+
+    if TYPE_CHECKING:
+
+        @classmethod
+        def validate(cls, operation: str, **kwargs: Any) -> None: ...
+
+        @classmethod
+        def publish_event(cls, operation: str, **kwargs: Any) -> None: ...
+
+        @classmethod
+        def invalidate_cache(cls, instance: Any) -> None: ...
 
     @classmethod
     @transaction.atomic

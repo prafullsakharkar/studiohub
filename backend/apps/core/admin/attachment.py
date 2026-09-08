@@ -7,7 +7,7 @@ from apps.core.models.attachment import Attachment
 
 
 @admin.register(Attachment)
-class AttachmentAdmin(admin.ModelAdmin):
+class AttachmentAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     """
     Admin configuration for Attachment model.
     """

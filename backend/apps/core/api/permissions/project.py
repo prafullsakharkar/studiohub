@@ -10,6 +10,7 @@ first-class platform concept. Otherwise move to the owning domain app (e.g.
 from __future__ import annotations
 
 import warnings
+from typing import TYPE_CHECKING, Any
 
 from .base import BasePermission
 
@@ -20,6 +21,11 @@ warnings.warn(
 )
 
 
+
+if TYPE_CHECKING:
+    from rest_framework.request import Request
+    from rest_framework.views import APIView
+
 class IsProjectMember(BasePermission):
     """
     Project membership permission.
@@ -27,7 +33,7 @@ class IsProjectMember(BasePermission):
 
     message = "Project membership required."
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view: APIView, obj: Any) -> bool:
         from typing import cast
 
         from apps.core.protocols import HasMembers

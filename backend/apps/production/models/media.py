@@ -28,6 +28,13 @@ class Media(EntityModel):
     entity_type = models.CharField(max_length=20, blank=True, default="", db_index=True)
     entity_id = models.CharField(max_length=50, blank=True, default="", db_index=True)
 
+    # Frontend MediaItem contract fields (name/code populated by seed data;
+    # title/file_name are optional aliases used by files search).
+    code = models.CharField(max_length=100, blank=True, default="", db_index=True)
+    name = models.CharField(max_length=255, blank=True, default="")
+    title = models.CharField(max_length=255, blank=True, default="")
+    file_name = models.CharField(max_length=255, blank=True, default="")
+
     media_type = models.CharField(max_length=50, blank=True, default="image", db_index=True)
     category = models.CharField(max_length=50, blank=True, default="")
     file_format = models.CharField(max_length=100, blank=True, default="jpg")

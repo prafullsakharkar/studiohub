@@ -22,7 +22,7 @@ from apps.organization.selectors import OrganizationSelector
 from apps.organization.services import OrganizationService
 
 
-class OrganizationViewSet(ServiceModelViewSet):
+class OrganizationViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     Organization API.
     """

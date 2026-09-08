@@ -283,7 +283,7 @@ class OrganizationServicePerformanceTests(TestCase):
         # Act
         start_time = time.time()
         for org in organizations:
-            OrganizationService.update(organization=org, name=f"Updated {org.name}")
+            OrganizationService.update(org, name=f"Updated {org.name}")
         end_time = time.time()
 
         # Assert

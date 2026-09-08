@@ -43,7 +43,7 @@ from apps.identity.services.user_session import (
 
 
 class UserViewSet(
-    IdentityViewSet,
+    IdentityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
 
     queryset = User.objects.all()

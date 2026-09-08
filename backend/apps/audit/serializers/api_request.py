@@ -6,7 +6,7 @@ from rest_framework import serializers
 from apps.audit.models.api_request import APIRequest
 
 
-class APIRequestSerializer(serializers.ModelSerializer):
+class APIRequestSerializer(serializers.ModelSerializer[APIRequest]):
     """
     Serializer for APIRequest.
     """

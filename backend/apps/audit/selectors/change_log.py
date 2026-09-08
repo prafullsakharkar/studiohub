@@ -23,7 +23,7 @@ class ChangeLogSelector(AuditBaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> QuerySet[ChangeLog]:
         return cls._scope_by_request(
             cls.model.objects.all(),
             request=request,

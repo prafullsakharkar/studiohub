@@ -31,7 +31,9 @@ class TestTrustedDeviceFilterSet:
 
         assert filterset.is_valid()
         assert filterset.qs.count() == 1
-        assert filterset.qs.first().user.id == user.id
+        _first = filterset.qs.first()
+        assert _first is not None
+        assert _first.user.id == user.id
 
     @pytest.mark.django_db
     def test_filter_by_platform(self):
@@ -64,7 +66,9 @@ class TestTrustedDeviceFilterSet:
 
         assert filterset.is_valid()
         assert filterset.qs.count() == 1
-        assert filterset.qs.first().ip_address == "192.168.1.1"
+        _first = filterset.qs.first()
+        assert _first is not None
+        assert _first.ip_address == "192.168.1.1"
 
     @pytest.mark.django_db
     def test_filter_by_is_trusted(self):
@@ -98,4 +102,7 @@ class TestTrustedDeviceFilterSet:
 
         assert filterset.is_valid()
         devices = filterset.qs
-        assert devices.first().last_login_at <= devices.last().last_login_at
+        _first = devices.first()
+        _last = devices.last()
+        assert _first is not None and _last is not None
+        assert _first.last_login_at <= _last.last_login_at

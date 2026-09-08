@@ -1,10 +1,12 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.organization.api.serializers.base import OrganizationEntitySerializer
 from apps.organization.models import GroupRole
 
 
-class GroupRoleBaseSerializer(OrganizationEntitySerializer):
+class GroupRoleBaseSerializer(OrganizationEntitySerializer[GroupRole]):
     """
     Base serializer for GroupRole.
     """
@@ -74,7 +76,7 @@ class GroupRoleDetailSerializer(GroupRoleBaseSerializer):
         )
 
 
-class GroupRoleAddSerializer(serializers.Serializer):
+class GroupRoleAddSerializer(serializers.Serializer[Any]):
     """
     Serializer for adding GroupRole.
     """
@@ -82,7 +84,7 @@ class GroupRoleAddSerializer(serializers.Serializer):
     role = serializers.PrimaryKeyRelatedField(read_only=True)
 
 
-class GroupRoleRemoveSerializer(serializers.Serializer):
+class GroupRoleRemoveSerializer(serializers.Serializer[Any]):
     """
     Serializer for removing GroupRole.
     """

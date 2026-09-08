@@ -6,7 +6,7 @@ from rest_framework import serializers
 from apps.deliveries.models import DeliveryDestination
 
 
-class DestinationListSerializer(serializers.ModelSerializer):
+class DestinationListSerializer(serializers.ModelSerializer[DeliveryDestination]):
     """Serializer for delivery destination list view."""
 
     type = serializers.CharField(source="destination_type")

@@ -22,7 +22,7 @@ class BaseValidator:
     def __call__(self, value: Any):
         self.validate(value)
 
-    def validate(self, value: Any):
+    def validate(self, *args: Any, **kwargs: Any):
         raise NotImplementedError
 
     @classmethod

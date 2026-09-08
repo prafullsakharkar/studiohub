@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedAdminMixin
+from apps.organization.admin.base import OrganizationScopedModelAdmin
 from apps.organization.models import WorkCalendar
 
 
 @admin.register(WorkCalendar)
-class WorkCalendarAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class WorkCalendarAdmin(OrganizationScopedModelAdmin):
     list_display = (
         "name",
         "organization",

@@ -7,7 +7,7 @@ from apps.production.selectors.base import ProductionBaseSelector
 
 class VersionSelector(ProductionBaseSelector):
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Version]:
         return Version.objects.select_related(
             "organization", "project", "shot", "asset", "task", "artist", "artist__profile"
         ).annotate(

@@ -6,7 +6,7 @@ from apps.production.selectors.base import ProductionBaseSelector
 
 class AssetSelector(ProductionBaseSelector):
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Asset]:
         return Asset.objects.select_related(
             "organization", "project", "department", "team", "assigned_artist"
         ).all()

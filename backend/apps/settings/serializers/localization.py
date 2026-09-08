@@ -6,7 +6,7 @@ from rest_framework import serializers
 from apps.settings.models.localization import Localization
 
 
-class LocalizationSerializer(serializers.ModelSerializer):
+class LocalizationSerializer(serializers.ModelSerializer[Localization]):
     """
     Serializer for Localization.
     """

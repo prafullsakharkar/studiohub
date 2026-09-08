@@ -4,6 +4,8 @@ Base service.
 
 from __future__ import annotations
 
+from typing import Any
+
 
 class BaseService:
     """
@@ -24,7 +26,7 @@ class BaseService:
         return
 
     @classmethod
-    def before_create(cls, **kwargs):
+    def before_create(cls, **kwargs) -> Any:
         return
 
     @classmethod
@@ -32,7 +34,7 @@ class BaseService:
         return instance
 
     @classmethod
-    def before_update(cls, instance, **kwargs):
+    def before_update(cls, instance, **kwargs) -> Any:
         return
 
     @classmethod
@@ -58,6 +60,7 @@ class BaseService:
 
         Requires ``self.model`` to be set on the service class.
         """
+        assert self.model is not None, "model must be set on the service class."
         return self.model.objects.create(**kwargs)
 
     def _update(self, instance, **kwargs):

@@ -21,7 +21,7 @@ class SettingCategoryViewSet(
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
-    SettingsBaseViewSet,
+    SettingsBaseViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     ViewSet for SettingCategory.

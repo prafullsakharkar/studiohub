@@ -2,6 +2,9 @@
 Reusable search queryset mixin.
 """
 
+from collections.abc import Callable
+from typing import Any, ClassVar
+
 from django.db.models import Q
 
 
@@ -9,6 +12,8 @@ class SearchQuerySetMixin:
     """
     Adds generic search capability.
     """
+    # Mixin contract: provided by the QuerySet subclass.
+    filter: ClassVar[Callable[..., Any]]
 
     search_fields: tuple[str, ...] = ()
 

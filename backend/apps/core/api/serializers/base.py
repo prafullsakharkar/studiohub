@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+from typing import TypeVar
+
+from django.db import models
 from rest_framework import serializers
 
+_ModelT = TypeVar("_ModelT", bound=models.Model)
 
-class BaseModelSerializer(serializers.ModelSerializer):
+
+class BaseModelSerializer(serializers.ModelSerializer[_ModelT]):
     """Base serializer for domain models."""
 
     class Meta:
@@ -19,13 +24,13 @@ class BaseModelSerializer(serializers.ModelSerializer):
 BaseSerializer = BaseModelSerializer
 
 
-class BaseReadSerializer(BaseModelSerializer):
+class BaseReadSerializer(BaseModelSerializer[_ModelT]):
     """Base serializer for read operations."""
 
 
-class BaseWriteSerializer(BaseModelSerializer):
+class BaseWriteSerializer(BaseModelSerializer[_ModelT]):
     """Base serializer for write operations."""
 
 
-class BaseNestedSerializer(BaseModelSerializer):
+class BaseNestedSerializer(BaseModelSerializer[_ModelT]):
     """Base serializer for nested operations."""

@@ -4,7 +4,7 @@ from apps.core.api.serializers.base import BaseReadSerializer, BaseWriteSerializ
 from apps.organization.models import Vendor
 
 
-class VendorSerializer(BaseReadSerializer):
+class VendorSerializer(BaseReadSerializer[Vendor]):
     organization_id = serializers.UUIDField(read_only=True)
 
     class Meta:
@@ -42,7 +42,7 @@ class VendorDetailSerializer(VendorSerializer):
     pass
 
 
-class VendorCreateSerializer(BaseWriteSerializer):
+class VendorCreateSerializer(BaseWriteSerializer[Vendor]):
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
 
@@ -70,7 +70,7 @@ class VendorCreateSerializer(BaseWriteSerializer):
         read_only_fields = ("id", "uuid")
 
 
-class VendorUpdateSerializer(BaseWriteSerializer):
+class VendorUpdateSerializer(BaseWriteSerializer[Vendor]):
     class Meta:
         model = Vendor
         fields = (

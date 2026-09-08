@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from django.db.models import QuerySet
-
 from apps.core.selectors.base import BaseSelector
 from apps.organization.models import UserRole
+from apps.organization.querysets import UserRoleQuerySet
 
 
 class UserRoleSelector(BaseSelector):
@@ -19,7 +18,7 @@ class UserRoleSelector(BaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> UserRoleQuerySet:
         """
         Get user role queryset.
         """

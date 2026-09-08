@@ -4,7 +4,7 @@ from apps.identity.models import TrustedDevice
 
 
 @admin.register(TrustedDevice)
-class TrustedDeviceAdmin(admin.ModelAdmin):
+class TrustedDeviceAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     list_display = (
         "user",
         "platform",

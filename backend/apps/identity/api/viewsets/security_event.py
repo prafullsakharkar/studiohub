@@ -25,7 +25,7 @@ from apps.identity.services.security_event import (
 
 
 class SecurityEventViewSet(
-    IdentityViewSet,
+    IdentityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     API endpoint for SecurityEvent.

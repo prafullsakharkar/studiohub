@@ -6,7 +6,7 @@ from apps.organization.api.serializers.base import (
 from apps.organization.models import Invitation
 
 
-class InvitationBaseSerializer(OrganizationEntitySerializer):
+class InvitationBaseSerializer(OrganizationEntitySerializer[Invitation]):
     """
     Base serializer for Invitation.
     """

@@ -1,14 +1,17 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseReadSerializer
 from apps.production.models import Sequence, Shot
 
 
-class SequenceSerializer(BaseReadSerializer):
+class SequenceSerializer(BaseReadSerializer[Any]):
     project_id = serializers.UUIDField(read_only=True)
     project_code = serializers.SerializerMethodField()
     project_name = serializers.SerializerMethodField()
     shots_count = serializers.SerializerMethodField()
+    lead_artist_id = serializers.UUIDField(read_only=True, allow_null=True)
     is_deleted = serializers.BooleanField(read_only=True)
     deleted_at = serializers.DateTimeField(read_only=True, allow_null=True)
 
@@ -27,6 +30,9 @@ class SequenceSerializer(BaseReadSerializer):
             "frame_in",
             "frame_out",
             "department",
+            "lead_artist",
+            "lead_artist_id",
+            "lead_artist_name",
             "tags",
             "metadata",
             "shots_count",

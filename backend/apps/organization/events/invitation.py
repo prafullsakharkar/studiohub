@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from apps.organization.models import Invitation
@@ -7,9 +7,19 @@ if TYPE_CHECKING:
 
 @dataclass
 class InvitationEvent:
-    """Base class for invitation events."""
+    """Base class for invitation events.
 
-    invitation: Invitation
+    ``BusinessService.publish_event`` constructs events with
+    ``instance=``/``user=`` kwargs; ``invitation`` stays available as an
+    alias for existing readers.
+    """
+
+    instance: Invitation
+    user: Any = field(default=None)
+
+    @property
+    def invitation(self):
+        return self.instance
 
 
 @dataclass

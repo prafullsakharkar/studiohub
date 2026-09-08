@@ -29,7 +29,7 @@ from apps.publishing.services.publish import (
 )
 
 
-class PublishingViewSet(OrganizationScopedViewSet):
+class PublishingViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for PublishItem."""
 
     selector_class = PublishSelector

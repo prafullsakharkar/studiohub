@@ -99,7 +99,7 @@ class OrganizationMembership(EntityModel):
         db_index=True,
     )
 
-    objects = OrganizationMembershipManager()
+    objects: OrganizationMembershipManager = OrganizationMembershipManager()
 
     class Meta:
         db_table = "organization_membership"

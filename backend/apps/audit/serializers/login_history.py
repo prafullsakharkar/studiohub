@@ -6,7 +6,7 @@ from rest_framework import serializers
 from apps.audit.models.login_history import LoginHistory
 
 
-class LoginHistorySerializer(serializers.ModelSerializer):
+class LoginHistorySerializer(serializers.ModelSerializer[LoginHistory]):
     """
     Serializer for LoginHistory.
     """

@@ -3,12 +3,16 @@ from django.db import models
 
 class InvitationManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().select_related(
-            "organization",
-            "department",
-            "team",
-            "role",
-            "invited_by",
+        return (
+            super()
+            .get_queryset()
+            .select_related(
+                "organization",
+                "department",
+                "team",
+                "role",
+                "invited_by",
+            )
         )
 
     def pending(self):

@@ -16,7 +16,7 @@ from apps.organization.selectors.team import TeamSelector
 from apps.organization.services.team import TeamService
 
 
-class TeamViewSet(OrganizationEntityViewSet):
+class TeamViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     API endpoint for Team entity.
     """

@@ -10,10 +10,10 @@ Compat:   /api/v1/attachments/   (frontend production contract)
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from apps.core.api.viewsets.attachment import AttachmentViewSet
+from apps.core.api.viewsets.attachment import CompatAttachmentViewSet
 
 router = DefaultRouter()
-router.register(r"", AttachmentViewSet, basename="attachment-compat")
+router.register(r"", CompatAttachmentViewSet, basename="attachment-compat")
 
 app_name = "core-compat"
 

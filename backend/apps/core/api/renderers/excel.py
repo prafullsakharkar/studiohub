@@ -22,6 +22,8 @@ class ExcelRenderer(BaseRenderer):
         workbook = Workbook()
 
         sheet = workbook.active
+        if sheet is None:
+            sheet = workbook.create_sheet("Sheet")
 
         if rows:
 

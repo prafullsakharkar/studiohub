@@ -57,7 +57,7 @@ class TrustedDevice(EntityModel):
         null=True,
     )
 
-    objects = TrustedDeviceManager()
+    objects: TrustedDeviceManager = TrustedDeviceManager()
 
     class Meta:
 

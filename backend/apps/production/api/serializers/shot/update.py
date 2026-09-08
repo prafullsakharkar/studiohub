@@ -1,8 +1,10 @@
+from typing import Any
+
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.models import Shot
 
 
-class ShotUpdateSerializer(BaseWriteSerializer):
+class ShotUpdateSerializer(BaseWriteSerializer[Any]):
     class Meta:
         model = Shot
         fields = (

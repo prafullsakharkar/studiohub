@@ -9,7 +9,7 @@ from apps.identity.permissions import (
 )
 
 
-class IdentityViewSet(ServiceModelViewSet):
+class IdentityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     Base ViewSet for Identity entities.
 

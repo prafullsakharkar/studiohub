@@ -12,7 +12,7 @@ from apps.organization.selectors.person import PersonSelector
 from apps.organization.services.person import PersonService
 
 
-class PersonViewSet(OrganizationEntityViewSet):
+class PersonViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     API endpoint for Person (people).
     Provides CRUD for the generic Person model, exposed as /people/ (legacy flat)

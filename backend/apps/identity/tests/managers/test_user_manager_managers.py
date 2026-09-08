@@ -104,4 +104,4 @@ class TestUserManager:
         user = UserFactory.create(email="test@example.com")
 
         retrieved_user = User.objects.get_by_natural_key("test@example.com")
-        assert retrieved_user.pk == user.pk
+        assert retrieved_user is not None and retrieved_user.pk == user.pk

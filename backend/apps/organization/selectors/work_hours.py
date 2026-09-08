@@ -1,6 +1,6 @@
-from django.db.models import QuerySet
 
 from apps.organization.models import WorkHours
+from apps.organization.querysets import WorkHoursQuerySet
 
 from .base import OrganizationBaseSelector
 
@@ -17,7 +17,7 @@ class WorkHoursSelector(
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> WorkHoursQuerySet:
         return WorkHours.objects.select_related(
             "organization",
             "work_calendar",

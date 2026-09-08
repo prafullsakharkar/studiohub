@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from django.db.models import Count, QuerySet
+from django.db.models import Count
 
 from apps.core.selectors.base import BaseSelector
 from apps.organization.models import Role
+from apps.organization.querysets.role import RoleQuerySet
 
 
 class RoleSelector(BaseSelector):
@@ -19,7 +20,7 @@ class RoleSelector(BaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> RoleQuerySet:
         """
         Get role queryset.
         """

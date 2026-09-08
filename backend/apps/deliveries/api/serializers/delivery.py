@@ -1,12 +1,14 @@
 """
 Delivery serializers.
 """
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.deliveries.models import DeliveryPackage, DeliveryVersionRef
 
 
-class DeliveryVersionRefSerializer(serializers.ModelSerializer):
+class DeliveryVersionRefSerializer(serializers.ModelSerializer[DeliveryVersionRef]):
     """Serializer for delivery version references."""
     
     version_id = serializers.UUIDField(source="version.id", read_only=True)
@@ -50,7 +52,7 @@ class DeliveryVersionRefSerializer(serializers.ModelSerializer):
         )
 
 
-class DeliveryListSerializer(serializers.ModelSerializer):
+class DeliveryListSerializer(serializers.ModelSerializer[DeliveryPackage]):
     """Serializer for delivery list view."""
     
     client_name = serializers.CharField(source="client.name", read_only=True)
@@ -92,7 +94,7 @@ class DeliveryListSerializer(serializers.ModelSerializer):
         )
 
 
-class DeliveryDetailSerializer(serializers.ModelSerializer):
+class DeliveryDetailSerializer(serializers.ModelSerializer[DeliveryPackage]):
     """Serializer for delivery detail view."""
     
     client = serializers.UUIDField(source="client.id", read_only=True)
@@ -142,7 +144,7 @@ class DeliveryDetailSerializer(serializers.ModelSerializer):
         )
 
 
-class DeliveryCreateSerializer(serializers.Serializer):
+class DeliveryCreateSerializer(serializers.Serializer[Any]):
     """Serializer for creating a delivery."""
     
     name = serializers.CharField(required=True, max_length=255)
@@ -180,7 +182,7 @@ class DeliveryCreateSerializer(serializers.Serializer):
         )
 
 
-class DeliveryUpdateSerializer(serializers.Serializer):
+class DeliveryUpdateSerializer(serializers.Serializer[Any]):
     """Serializer for updating a delivery."""
     
     name = serializers.CharField(required=False, max_length=255)
@@ -195,7 +197,7 @@ class DeliveryUpdateSerializer(serializers.Serializer):
     client_notes = serializers.CharField(required=False, allow_blank=True)
 
 
-class DeliveryAddVersionSerializer(serializers.Serializer):
+class DeliveryAddVersionSerializer(serializers.Serializer[Any]):
     """Serializer for adding a version to a delivery."""
     
     version_id = serializers.UUIDField(required=True)
@@ -210,7 +212,7 @@ class DeliveryAddVersionSerializer(serializers.Serializer):
     checksum_sha256 = serializers.CharField(required=False, allow_blank=True, max_length=64)
 
 
-class DeliveryValidateSerializer(serializers.Serializer):
+class DeliveryValidateSerializer(serializers.Serializer[Any]):
     """Serializer for validating a delivery."""
     
     def validate(self, data):
@@ -218,7 +220,7 @@ class DeliveryValidateSerializer(serializers.Serializer):
         return data
 
 
-class DeliveryPrepareSerializer(serializers.Serializer):
+class DeliveryPrepareSerializer(serializers.Serializer[Any]):
     """Serializer for preparing a delivery."""
     
     def validate(self, data):
@@ -226,7 +228,7 @@ class DeliveryPrepareSerializer(serializers.Serializer):
         return data
 
 
-class DeliverySubmitSerializer(serializers.Serializer):
+class DeliverySubmitSerializer(serializers.Serializer[Any]):
     """Serializer for submitting a delivery."""
     
     def validate(self, data):
@@ -234,13 +236,13 @@ class DeliverySubmitSerializer(serializers.Serializer):
         return data
 
 
-class DeliveryApproveSerializer(serializers.Serializer):
+class DeliveryApproveSerializer(serializers.Serializer[Any]):
     """Serializer for approving a delivery."""
     
     client_notes = serializers.CharField(required=False, allow_blank=True)
 
 
-class DeliveryRejectSerializer(serializers.Serializer):
+class DeliveryRejectSerializer(serializers.Serializer[Any]):
     """Serializer for rejecting a delivery."""
     
     rejection_reason = serializers.CharField(required=True, allow_blank=False)

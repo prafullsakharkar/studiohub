@@ -1,8 +1,10 @@
+from typing import Any
+
 from rest_framework import serializers
 
 
 class MeSerializer(
-    serializers.Serializer,
+    serializers.Serializer[Any],
 ):
     def to_representation(
         self,

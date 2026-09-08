@@ -50,7 +50,7 @@ class TestSchedulingEndpoints:
         response = staff_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["results"] == []
+        assert response.data == []
     
     def test_create_calendar_event(self, staff_client):
         """Test creating a new calendar event."""
@@ -96,7 +96,7 @@ class TestSchedulingEndpoints:
         response = staff_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["results"] == []
+        assert response.data == []
     
     def test_create_resource(self, staff_client):
         """Test creating a new resource."""
@@ -170,7 +170,7 @@ class TestSchedulingEndpoints:
         response = staff_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["results"] == []
+        assert response.data == []
     
     def test_submit_leave_request(self, staff_client, staff_user, _org_membership):
         """Test submitting a leave request."""
@@ -232,7 +232,7 @@ class TestSchedulingEndpoints:
         response = staff_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["results"] == []
+        assert response.data == []
     
     def test_create_holiday(self, staff_client):
         """Test creating a holiday."""

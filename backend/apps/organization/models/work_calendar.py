@@ -26,7 +26,7 @@ class WorkCalendar(OrganizationEntityModel):
         default=False,
     )
 
-    objects = WorkCalendarManager()
+    objects: WorkCalendarManager = WorkCalendarManager()
 
     class Meta:
         db_table = "organization_work_calendar"

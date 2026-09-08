@@ -4,6 +4,8 @@ Base selector for the Audit bounded context.
 
 from __future__ import annotations
 
+from typing import Any
+
 from django.db.models import QuerySet
 
 from apps.core.selectors.base import BaseSelector
@@ -25,18 +27,18 @@ class AuditBaseSelector(BaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> Any:
         """
-        Applications must override this.
+        Applications must override this with a concrete QuerySet type.
         """
         raise NotImplementedError
 
     @classmethod
     def _scope_by_request(
         cls,
-        queryset: QuerySet,
+        queryset: QuerySet[Any, Any],
         request=None,
-    ) -> QuerySet:
+    ) -> QuerySet[Any, Any]:
         """
         Restrict audit records to the caller's organizations.
 
@@ -66,9 +68,9 @@ class AuditBaseSelector(BaseSelector):
     @classmethod
     def _scope_by_user_or_organization(
         cls,
-        queryset: QuerySet,
+        queryset: QuerySet[Any, Any],
         request=None,
-    ) -> QuerySet:
+    ) -> QuerySet[Any, Any]:
         """
         Scope by the requesting user for models where ``organization`` may be
         null (login history) and by organization otherwise.

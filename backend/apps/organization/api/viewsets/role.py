@@ -17,7 +17,7 @@ from apps.organization.selectors.role import RoleSelector
 from apps.organization.services.role import RoleService
 
 
-class RoleViewSet(OrganizationEntityViewSet):
+class RoleViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     API endpoint for Role.
     """

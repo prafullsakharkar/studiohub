@@ -23,7 +23,7 @@ class ErrorLogSelector(AuditBaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> QuerySet[ErrorLog]:
         return cls._scope_by_request(
             cls.model.objects.all(),
             request=request,

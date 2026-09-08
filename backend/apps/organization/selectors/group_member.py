@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from django.db.models import QuerySet
-
 from apps.core.selectors.base import BaseSelector
 from apps.organization.models import GroupMember
+from apps.organization.querysets import GroupMemberQuerySet
 
 
 class GroupMemberSelector(BaseSelector):
@@ -19,7 +18,7 @@ class GroupMemberSelector(BaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> GroupMemberQuerySet:
         """
         Get group member queryset.
         """

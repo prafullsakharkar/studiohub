@@ -1,6 +1,6 @@
-from django.db.models import QuerySet
 
 from apps.identity.models import LoginAttempt
+from apps.identity.querysets import LoginAttemptQuerySet
 from apps.identity.selectors.base import (
     IdentityBaseSelector,
 )
@@ -18,9 +18,9 @@ class LoginAttemptSelector(
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> LoginAttemptQuerySet:
 
-        return LoginAttempt.objects.select_related(
+        return LoginAttempt.objects.get_queryset().select_related(
             "user",
         )
 

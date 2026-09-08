@@ -5,6 +5,8 @@ Chat is a stateless echo; risks return one illustrative record shape.
 Real implementation needs search-index + LLM services (see ADR).
 """
 
+from typing import Any
+
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
@@ -13,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 
-class DummySerializer(serializers.Serializer):
+class DummySerializer(serializers.Serializer[Any]):
     pass
 
 
@@ -36,7 +38,7 @@ MOCK_RISKS = [
     }
 ]
 
-class AIChatView(GenericAPIView):
+class AIChatView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     """
     Explicit stub: stateless echo until the LLM-backed assistant lands.
 
@@ -73,7 +75,7 @@ class AIChatView(GenericAPIView):
             }
         )
 
-class AIRisksView(GenericAPIView):
+class AIRisksView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 
@@ -87,7 +89,7 @@ class AIRisksView(GenericAPIView):
         risk_id = request.data.get("risk_id") or request.data.get("id")
         return Response({"success": True, "message": f"Risk {risk_id} mitigated (stub)."})
 
-class AITaskRecommendationsView(GenericAPIView):
+class AITaskRecommendationsView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 
@@ -95,7 +97,7 @@ class AITaskRecommendationsView(GenericAPIView):
     def get(self, request):
         return Response([])
 
-class AIProjectSummaryView(GenericAPIView):
+class AIProjectSummaryView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 
@@ -115,7 +117,7 @@ class AIProjectSummaryView(GenericAPIView):
             "recommended_actions": [],
         })
 
-class AIShotSummaryView(GenericAPIView):
+class AIShotSummaryView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 
@@ -137,7 +139,7 @@ class AIShotSummaryView(GenericAPIView):
         })
 
 
-class AIRisksResolveView(GenericAPIView):
+class AIRisksResolveView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 
@@ -147,7 +149,7 @@ class AIRisksResolveView(GenericAPIView):
         return Response({"success": True, "message": f"Risk {risk_id} resolved (stub)."})
 
 
-class AITaskRecommendationsApplyView(GenericAPIView):
+class AITaskRecommendationsApplyView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 
@@ -156,7 +158,7 @@ class AITaskRecommendationsApplyView(GenericAPIView):
         return Response({"success": True, "message": "Task recommendation applied (stub)."})
 
 
-class AIPermissionContextView(GenericAPIView):
+class AIPermissionContextView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 

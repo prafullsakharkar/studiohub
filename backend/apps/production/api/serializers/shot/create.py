@@ -1,10 +1,12 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.models import Shot
 
 
-class ShotCreateSerializer(BaseWriteSerializer):
+class ShotCreateSerializer(BaseWriteSerializer[Any]):
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
 

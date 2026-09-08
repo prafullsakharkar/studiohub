@@ -25,7 +25,7 @@ from apps.organization.services.position import (
 
 
 class PositionViewSet(
-    OrganizationEntityViewSet,
+    OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     API endpoint for Position.

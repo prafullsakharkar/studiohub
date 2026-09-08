@@ -35,7 +35,7 @@ from apps.identity.permissions import HasPermission
 from apps.organization.api.viewsets.scoped import OrganizationScopedViewSet
 
 
-class DeliveryViewSet(OrganizationScopedViewSet):
+class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for DeliveryPackage."""
 
     selector_class = DeliverySelector
@@ -109,7 +109,7 @@ class DeliveryViewSet(OrganizationScopedViewSet):
 
         result = validate_delivery(
             delivery_id=str(delivery.id),
-            user_id=str(request.user.id) if request.user.is_authenticated else None,
+            user_id=str(request.user.id),
             organization_id=str(request.organization.id),
         )
 
@@ -124,7 +124,7 @@ class DeliveryViewSet(OrganizationScopedViewSet):
 
         result = prepare_delivery(
             delivery_id=str(delivery.id),
-            user_id=str(request.user.id) if request.user.is_authenticated else None,
+            user_id=str(request.user.id),
             organization_id=str(request.organization.id),
         )
 
@@ -139,7 +139,7 @@ class DeliveryViewSet(OrganizationScopedViewSet):
 
         result = submit_delivery(
             delivery_id=str(delivery.id),
-            user_id=str(request.user.id) if request.user.is_authenticated else None,
+            user_id=str(request.user.id),
             organization_id=str(request.organization.id),
         )
 
@@ -154,7 +154,7 @@ class DeliveryViewSet(OrganizationScopedViewSet):
 
         delivery = approve_delivery(
             delivery_id=str(delivery.id),
-            user_id=str(request.user.id) if request.user.is_authenticated else None,
+            user_id=str(request.user.id),
             client_notes=serializer.validated_data.get("client_notes", ""),
             organization_id=str(request.organization.id),
         )
@@ -170,7 +170,7 @@ class DeliveryViewSet(OrganizationScopedViewSet):
 
         delivery = reject_delivery(
             delivery_id=str(delivery.id),
-            user_id=str(request.user.id) if request.user.is_authenticated else None,
+            user_id=str(request.user.id),
             rejection_reason=serializer.validated_data["rejection_reason"],
             organization_id=str(request.organization.id),
         )
@@ -184,7 +184,7 @@ class DeliveryViewSet(OrganizationScopedViewSet):
 
         delivery = complete_delivery(
             delivery_id=str(delivery.id),
-            user_id=str(request.user.id) if request.user.is_authenticated else None,
+            user_id=str(request.user.id),
             organization_id=str(request.organization.id),
         )
 
@@ -197,7 +197,7 @@ class DeliveryViewSet(OrganizationScopedViewSet):
 
         delivery = cancel_delivery(
             delivery_id=str(delivery.id),
-            user_id=str(request.user.id) if request.user.is_authenticated else None,
+            user_id=str(request.user.id),
             cancellation_reason=request.data.get("cancellation_reason", ""),
             organization_id=str(request.organization.id),
         )

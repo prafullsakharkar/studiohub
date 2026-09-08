@@ -1,6 +1,6 @@
-from django.db.models import QuerySet
 
 from apps.organization.models import Position
+from apps.organization.querysets.position import PositionQuerySet
 
 from .base import OrganizationBaseSelector
 
@@ -17,7 +17,7 @@ class PositionSelector(
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> PositionQuerySet:
         return Position.objects.select_related(
             "organization",
             "department",

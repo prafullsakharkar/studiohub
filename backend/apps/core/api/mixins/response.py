@@ -4,6 +4,9 @@ API response mixins.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any, ClassVar
+
 from rest_framework.response import Response
 
 from apps.core.services.soft_delete import SoftDeleteService
@@ -16,6 +19,18 @@ class ResponseMixin:
     Returns raw response bodies with no envelope, matching the frontend API
     contract.
     """
+    # Mixin contract: provided by the view/serializer this
+    # mixin is combined with. Annotations only, no runtime effect.
+    filter_queryset: ClassVar[Callable[..., Any]]
+    get_object: ClassVar[Callable[..., Any]]
+    get_paginated_response: ClassVar[Callable[..., Any]]
+    get_queryset: ClassVar[Callable[..., Any]]
+    get_serializer: ClassVar[Callable[..., Any]]
+    paginate_queryset: ClassVar[Callable[..., Any]]
+    perform_create: ClassVar[Callable[..., Any]]
+    perform_destroy: ClassVar[Callable[..., Any]]
+    perform_update: ClassVar[Callable[..., Any]]
+    request: ClassVar[Any]
 
     def success_response(
         self,
@@ -55,6 +70,18 @@ class ResponseEnvelopeMixin(ResponseMixin):
         - standard list/retrieve/create/update/destroy flow overrides
         - soft-delete for models exposing ``is_deleted``
     """
+    # Mixin contract: provided by the view/serializer this
+    # mixin is combined with. Annotations only, no runtime effect.
+    filter_queryset: ClassVar[Callable[..., Any]]
+    get_object: ClassVar[Callable[..., Any]]
+    get_paginated_response: ClassVar[Callable[..., Any]]
+    get_queryset: ClassVar[Callable[..., Any]]
+    get_serializer: ClassVar[Callable[..., Any]]
+    paginate_queryset: ClassVar[Callable[..., Any]]
+    perform_create: ClassVar[Callable[..., Any]]
+    perform_destroy: ClassVar[Callable[..., Any]]
+    perform_update: ClassVar[Callable[..., Any]]
+    request: ClassVar[Any]
 
     resource_name = "Resource"
 

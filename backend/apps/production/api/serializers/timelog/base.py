@@ -1,10 +1,12 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseReadSerializer
 from apps.production.models import Timelog
 
 
-class TimelogSerializer(BaseReadSerializer):
+class TimelogSerializer(BaseReadSerializer[Any]):
     task_id = serializers.UUIDField(read_only=True)
     task_code = serializers.CharField(read_only=True)
     task_title = serializers.CharField(read_only=True)

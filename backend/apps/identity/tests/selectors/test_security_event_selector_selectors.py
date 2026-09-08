@@ -21,7 +21,7 @@ class TestSecurityEventSelector:
         """Test get_security_event_by_id method."""
         event = SecurityEventFactory.create()
         retrieved_event = SecurityEvent.objects.get_by_id(event.id)
-        assert retrieved_event.id == event.id
+        assert retrieved_event is not None and retrieved_event.id == event.id
 
     @pytest.mark.django_db
     def test_list_security_events(self):
@@ -78,5 +78,5 @@ class TestSecurityEventSelector:
         """Test get_security_event_with_user method."""
         event = SecurityEventFactory.create()
         retrieved_event = SecurityEvent.objects.get_security_event_with_user(event.id)
-        assert retrieved_event.id == event.id
+        assert retrieved_event is not None and retrieved_event.id == event.id
         assert hasattr(retrieved_event, "user")

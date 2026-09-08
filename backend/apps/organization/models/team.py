@@ -33,7 +33,7 @@ class Team(OrganizationEntityModel):
         default=1,
     )
 
-    objects = TeamManager()
+    objects: TeamManager = TeamManager()
 
     class Meta:
         db_table = "org_team"

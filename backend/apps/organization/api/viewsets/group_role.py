@@ -13,7 +13,7 @@ from apps.organization.selectors.group_role import GroupRoleSelector
 from apps.organization.services.group_role import GroupRoleService
 
 
-class GroupRoleViewSet(OrganizationEntityViewSet):
+class GroupRoleViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     API endpoint for GroupRole.
     """

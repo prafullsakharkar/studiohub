@@ -1,6 +1,6 @@
-from django.db.models import QuerySet
 
 from apps.organization.models import Branding
+from apps.organization.querysets.branding import BrandingQuerySet
 
 from .base import OrganizationBaseSelector
 
@@ -20,5 +20,5 @@ class BrandingSelector(
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> BrandingQuerySet:
         return Branding.objects.all()

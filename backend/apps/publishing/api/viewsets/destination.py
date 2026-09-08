@@ -13,7 +13,7 @@ from apps.publishing.constants.permissions import PublishPermissions
 from apps.publishing.selectors.destination import DestinationSelector
 
 
-class DestinationViewSet(OrganizationScopedViewSet):
+class DestinationViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for PublishDestination."""
 
     selector_class = DestinationSelector

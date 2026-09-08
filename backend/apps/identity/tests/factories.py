@@ -26,7 +26,7 @@ from apps.identity.models.user import User
 from apps.identity.models.user_mfa import UserMFA
 
 
-class UserFactory(DjangoModelFactory):
+class UserFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for User model."""
 
     class Meta:
@@ -60,7 +60,7 @@ class UserFactory(DjangoModelFactory):
         return cls.create(is_staff=True, is_superuser=True, **kwargs)
 
 
-class ProfileFactory(DjangoModelFactory):
+class ProfileFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Profile model."""
 
     class Meta:
@@ -79,7 +79,7 @@ class ProfileFactory(DjangoModelFactory):
     preferences = {}
 
 
-class OAuthProviderFactory(DjangoModelFactory):
+class OAuthProviderFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for OAuthProvider model."""
 
     class Meta:
@@ -96,7 +96,7 @@ class OAuthProviderFactory(DjangoModelFactory):
     is_active = True
 
 
-class OAuthAccountFactory(DjangoModelFactory):
+class OAuthAccountFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for OAuthAccount model."""
 
     class Meta:
@@ -114,7 +114,7 @@ class OAuthAccountFactory(DjangoModelFactory):
     last_connected_at = factory.Faker("date_time_this_month")
 
 
-class BackupCodeFactory(DjangoModelFactory):
+class BackupCodeFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for BackupCode model."""
 
     class Meta:
@@ -128,7 +128,7 @@ class BackupCodeFactory(DjangoModelFactory):
     expires_at = factory.Faker("date_time_this_year")
 
 
-class TrustedDeviceFactory(DjangoModelFactory):
+class TrustedDeviceFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for TrustedDevice model."""
 
     class Meta:
@@ -146,7 +146,7 @@ class TrustedDeviceFactory(DjangoModelFactory):
     is_trusted = True
 
 
-class KnownDeviceFactory(DjangoModelFactory):
+class KnownDeviceFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for KnownDevice model."""
 
     class Meta:
@@ -165,7 +165,7 @@ class KnownDeviceFactory(DjangoModelFactory):
     is_trusted = False
 
 
-class LoginAttemptFactory(DjangoModelFactory):
+class LoginAttemptFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for LoginAttempt model."""
 
     class Meta:
@@ -181,7 +181,7 @@ class LoginAttemptFactory(DjangoModelFactory):
     attempted_at = factory.Faker("date_time_this_month")
 
 
-class SecurityEventFactory(DjangoModelFactory):
+class SecurityEventFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for SecurityEvent model."""
 
     class Meta:
@@ -196,7 +196,7 @@ class SecurityEventFactory(DjangoModelFactory):
     is_critical = False
 
 
-class UserMFACFactory(DjangoModelFactory):
+class UserMFACFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for UserMFA model."""
 
     class Meta:
@@ -220,7 +220,7 @@ class UserMFACFactory(DjangoModelFactory):
 
 
 
-class IPBlacklistFactory(DjangoModelFactory):
+class IPBlacklistFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for IPBlacklist model."""
 
     class Meta:

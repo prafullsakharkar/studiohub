@@ -14,7 +14,7 @@ class PersonalAccessToken(EntityModel):
     User Personal Access Token.
     """
 
-    objects = PersonalAccessTokenManager()
+    objects: PersonalAccessTokenManager = PersonalAccessTokenManager()
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

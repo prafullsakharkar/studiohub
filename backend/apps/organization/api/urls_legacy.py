@@ -7,6 +7,8 @@ which calls /api/v1/{organizations,departments,teams,offices,people}/ directly.
 See docs/api/domains/organization.md for contract.
 """
 
+from typing import Any
+
 from django.urls import path
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
@@ -20,6 +22,17 @@ from apps.organization.api.viewsets.client import ClientViewSet
 from apps.organization.api.viewsets.contact import ClientContactViewSet, VendorContactViewSet
 from apps.organization.api.viewsets.contract import ClientContractViewSet, VendorContractViewSet
 from apps.organization.api.viewsets.legacy import (
+    CompatAPIKeyViewSet,
+    CompatCalendarViewSet,
+    CompatGroupViewSet,
+    CompatHolidayViewSet,
+    CompatInvitationViewSet,
+    CompatPermissionViewSet,
+    CompatPersonalAccessTokenViewSet,
+    CompatPositionViewSet,
+    CompatRoleViewSet,
+    CompatWorkCalendarViewSet,
+    CompatWorkHoursViewSet,
     LegacyDepartmentViewSet,
     LegacyOfficeViewSet,
     LegacyOrganizationViewSet,
@@ -35,6 +48,17 @@ router.register(r"departments", LegacyDepartmentViewSet, basename="legacy-depart
 router.register(r"teams", LegacyTeamViewSet, basename="legacy-team")
 router.register(r"offices", LegacyOfficeViewSet, basename="legacy-office")
 router.register(r"people", LegacyPersonViewSet, basename="legacy-person")
+router.register(r"positions", CompatPositionViewSet, basename="legacy-position")
+router.register(r"invitations", CompatInvitationViewSet, basename="legacy-invitation")
+router.register(r"work-calendars", CompatWorkCalendarViewSet, basename="legacy-work-calendar")
+router.register(r"work-hours", CompatWorkHoursViewSet, basename="legacy-work-hours")
+router.register(r"calendars", CompatCalendarViewSet, basename="legacy-calendar")
+router.register(r"holidays", CompatHolidayViewSet, basename="legacy-holiday")
+router.register(r"roles", CompatRoleViewSet, basename="legacy-role")
+router.register(r"groups", CompatGroupViewSet, basename="legacy-group")
+router.register(r"permissions", CompatPermissionViewSet, basename="legacy-permission")
+router.register(r"api-keys", CompatAPIKeyViewSet, basename="legacy-api-key")
+router.register(r"pats", CompatPersonalAccessTokenViewSet, basename="legacy-pat")
 # Nested contact routes must precede the parent clients/vendors registration
 # so their regexes win over the parent detail routes.
 router.register(
@@ -63,7 +87,7 @@ router.register(r"vendors", VendorViewSet, basename="legacy-vendor")
 app_name = "organization-legacy"
 
 
-class _OrganizationSingletonSerializer(serializers.Serializer):
+class _OrganizationSingletonSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField(read_only=True)
     name = serializers.CharField(read_only=True)
 
@@ -71,7 +95,7 @@ class _OrganizationSingletonSerializer(serializers.Serializer):
         fields = ("id", "name")
 
 
-class LegacyOrganizationSingletonView(GenericAPIView):
+class LegacyOrganizationSingletonView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     """GET /api/v1/organization/ — returns first org for dashboard bootstrap (legacy)."""
 
     permission_classes = (IsAuthenticated,)

@@ -19,7 +19,7 @@ from apps.organization.constants.permissions import OrganizationPermissions
 from apps.organization.models import Vendor
 
 
-class VendorViewSet(ServiceModelViewSet):
+class VendorViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissingTypeArgument]
     queryset = Vendor.objects.all()
     serializer_map = {
         "list": VendorListSerializer,

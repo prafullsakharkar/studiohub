@@ -53,7 +53,9 @@ class TestDirectOrganizationScoping:
         qs = TeamAdmin(Team, AdminSite()).get_queryset(_request(user))
 
         assert qs.count() == 1
-        assert qs.first().organization_id == org_b.id
+        _first = qs.first()
+        assert _first is not None
+        assert _first.organization_id == org_b.id
 
     def test_member_sees_only_own_org_clients(self):
         org_a = OrganizationFactory.create()
@@ -65,7 +67,9 @@ class TestDirectOrganizationScoping:
         qs = ClientAdmin(Client, AdminSite()).get_queryset(_request(user))
 
         assert qs.count() == 1
-        assert qs.first().organization_id == org_b.id
+        _first = qs.first()
+        assert _first is not None
+        assert _first.organization_id == org_b.id
 
     def test_superuser_sees_everything(self):
         org_a = OrganizationFactory.create()
@@ -112,7 +116,9 @@ class TestNullableAndJunctionScoping:
         qs = UserRoleAdmin(UserRole, AdminSite()).get_queryset(_request(user))
 
         assert qs.count() == 1
-        assert qs.first().role_id == role_b.id
+        _first = qs.first()
+        assert _first is not None
+        assert _first.role_id == role_b.id
 
 
 @pytest.mark.django_db
@@ -129,7 +135,9 @@ class TestCrossAppScoping:
         qs = AuditLogAdmin(AuditLog, AdminSite()).get_queryset(_request(user))
 
         assert qs.count() == 1
-        assert qs.first().organization_id == org_b.id
+        _first = qs.first()
+        assert _first is not None
+        assert _first.organization_id == org_b.id
 
     def test_organization_dropdown_scoped(self):
         org_a = OrganizationFactory.create()

@@ -20,7 +20,7 @@ from apps.identity.tests.factories import UserFactory
 from apps.organization.tests.factories import OrganizationFactory
 
 
-class AuditLogFactory(DjangoModelFactory):
+class AuditLogFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for AuditLog model."""
 
     class Meta:
@@ -47,7 +47,7 @@ class AuditLogFactory(DjangoModelFactory):
     metadata = factory.Faker("json")
 
 
-class ActivityFactory(DjangoModelFactory):
+class ActivityFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Activity model."""
 
     class Meta:
@@ -74,7 +74,7 @@ class ActivityFactory(DjangoModelFactory):
     metadata = factory.Faker("json")
 
 
-class APIRequestFactory(DjangoModelFactory):
+class APIRequestFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for APIRequest model."""
 
     class Meta:
@@ -96,7 +96,7 @@ class APIRequestFactory(DjangoModelFactory):
     error_message = factory.Faker("text", max_nb_chars=200)
 
 
-class BackgroundJobFactory(DjangoModelFactory):
+class BackgroundJobFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for BackgroundJob model."""
 
     class Meta:
@@ -123,7 +123,7 @@ class BackgroundJobFactory(DjangoModelFactory):
     error_message = factory.Faker("text", max_nb_chars=200)
 
 
-class ChangeLogFactory(DjangoModelFactory):
+class ChangeLogFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for ChangeLog model."""
 
     class Meta:
@@ -148,7 +148,7 @@ class ChangeLogFactory(DjangoModelFactory):
     description = factory.Faker("text", max_nb_chars=200)
 
 
-class ErrorLogFactory(DjangoModelFactory):
+class ErrorLogFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for ErrorLog model."""
 
     class Meta:
@@ -182,7 +182,7 @@ class ErrorLogFactory(DjangoModelFactory):
     error_code = factory.Faker("word")
 
 
-class LoginHistoryFactory(DjangoModelFactory):
+class LoginHistoryFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for LoginHistory model."""
 
     class Meta:
@@ -217,7 +217,7 @@ class LoginHistoryFactory(DjangoModelFactory):
     browser = factory.Faker("word")
 
 
-class TrackFactory(DjangoModelFactory):
+class TrackFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for Track model."""
 
     class Meta:

@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib.auth.password_validation import (
     validate_password,
 )
@@ -8,7 +10,7 @@ from apps.identity.services.password import (
 )
 
 
-class ChangePasswordSerializer(serializers.Serializer):
+class ChangePasswordSerializer(serializers.Serializer[Any]):
 
     old_password = serializers.CharField()
 

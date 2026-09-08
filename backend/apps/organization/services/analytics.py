@@ -5,7 +5,7 @@ Organization analytics service.
 from __future__ import annotations
 
 from datetime import timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.db.models import Count
 from django.utils import timezone
@@ -31,7 +31,7 @@ class OrganizationAnalyticsService:
     def get_organization_stats(
         cls,
         organization: Organization,
-    ) -> dict:
+    ) -> dict[Any, Any]:
         """
         Get organization statistics.
 
@@ -60,7 +60,7 @@ class OrganizationAnalyticsService:
     def get_department_stats(
         cls,
         organization: Organization,
-    ) -> dict:
+    ) -> dict[Any, Any]:
         """
         Get department statistics.
 
@@ -85,7 +85,7 @@ class OrganizationAnalyticsService:
     def get_office_stats(
         cls,
         organization: Organization,
-    ) -> dict:
+    ) -> dict[Any, Any]:
         """
         Get office statistics.
 
@@ -113,7 +113,7 @@ class OrganizationAnalyticsService:
     def get_team_stats(
         cls,
         organization: Organization,
-    ) -> dict:
+    ) -> dict[Any, Any]:
         """
         Get team statistics.
 
@@ -139,7 +139,7 @@ class OrganizationAnalyticsService:
     def get_position_stats(
         cls,
         organization: Organization,
-    ) -> dict:
+    ) -> dict[Any, Any]:
         """
         Get position statistics.
 
@@ -163,7 +163,7 @@ class OrganizationAnalyticsService:
     def get_membership_stats(
         cls,
         organization: Organization,
-    ) -> dict:
+    ) -> dict[Any, Any]:
         """
         Get membership statistics.
 
@@ -191,7 +191,7 @@ class OrganizationAnalyticsService:
         cls,
         organization: Organization,
         days: int = 30,
-    ) -> dict:
+    ) -> dict[Any, Any]:
         """
         Get activity statistics for the specified period.
 
@@ -226,9 +226,9 @@ class OrganizationAnalyticsService:
     @classmethod
     def _count_by_field(
         cls,
-        queryset: QuerySet,
+        queryset: QuerySet[Any, Any],
         field_name: str,
-    ) -> dict:
+    ) -> dict[Any, Any]:
         """
         Count items by a field.
 
@@ -251,9 +251,9 @@ class OrganizationAnalyticsService:
     @classmethod
     def _get_monthly_breakdown(
         cls,
-        queryset: QuerySet,
+        queryset: QuerySet[Any, Any],
         date_field: str,
-    ) -> dict:
+    ) -> dict[Any, Any]:
         """
         Get monthly breakdown of items.
 

@@ -20,7 +20,7 @@ from apps.organization.selectors.membership import OrganizationMembershipSelecto
 from apps.organization.services.membership import OrganizationMembershipService
 
 
-class OrganizationMembershipViewSet(OrganizationEntityViewSet):
+class OrganizationMembershipViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     API endpoint for OrganizationMembership.
     """

@@ -4,7 +4,7 @@ from apps.organization.models import Permission
 
 
 @admin.register(Permission)
-class PermissionAdmin(admin.ModelAdmin):
+class PermissionAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     list_display = (
         "name",
         "code",

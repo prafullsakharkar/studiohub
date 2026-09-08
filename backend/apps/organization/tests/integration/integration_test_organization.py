@@ -51,7 +51,7 @@ class OrganizationIntegrationTests(TestCase):
 
         # Act
         updated_org = OrganizationService.update(
-            organization=organization,
+            organization,
             name="New Name",
         )
 
@@ -66,18 +66,17 @@ class OrganizationIntegrationTests(TestCase):
         organization = OrganizationFactory.create(status="active")
 
         # Act
-        OrganizationService.delete(organization=organization)
+        OrganizationService.delete(organization)
 
-        # Assert
+        # Assert (canonical soft-delete behavior: flagged, status untouched)
         organization.refresh_from_db()
-        assert organization.status == "deleted"
+        assert organization.is_deleted is True
+        assert organization.deleted_at is not None
 
     def test_organization_with_memberships(self) -> None:
         """Test organization with related memberships."""
         # Arrange
         organization = OrganizationFactory.create()
-        pytest.lazy_fixture("user_factory")
-        pytest.lazy_fixture("membership_factory")
 
         # Act
         organization_with_memberships = Organization.objects.with_member_count().get(
@@ -152,7 +151,7 @@ class OrganizationServiceIntegrationTests(TestCase):
 
         # Act
         updated_org = OrganizationService.update(
-            organization=organization,
+            organization,
             name="Updated Name",
         )
 
@@ -161,9 +160,8 @@ class OrganizationServiceIntegrationTests(TestCase):
         assert updated_org.email == "original@example.com"  # Unchanged
         assert updated_org.phone == "+1111111111"  # Unchanged
 
-    @patch("apps.organization.services.organization.transaction.atomic")
-    def test_create_organization_with_transaction(self, mock_atomic) -> None:
-        """Test that organization creation uses database transaction."""
+    def test_create_organization_rolls_back_on_failure(self) -> None:
+        """Test that organization creation is atomic (rolls back on failure)."""
         # Arrange
         data = {
             "code": "ORG004",
@@ -171,11 +169,19 @@ class OrganizationServiceIntegrationTests(TestCase):
             "organization_type": "ASSOCIATION",
         }
 
-        # Act
-        OrganizationService.create(**data)
+        # Act: fail after the row insert (publish step) and assert rollback.
+        with (
+            patch.object(
+                OrganizationService,
+                "publish_event",
+                side_effect=RuntimeError("boom"),
+            ),
+            pytest.raises(RuntimeError, match="boom"),
+        ):
+            OrganizationService.create(**data)
 
         # Assert
-        mock_atomic.assert_called_once()
+        assert not Organization.objects.filter(code="ORG004").exists()
 
     def test_delete_organization_marks_as_deleted(self) -> None:
         """Test that deleting an organization marks it as deleted."""
@@ -183,11 +189,12 @@ class OrganizationServiceIntegrationTests(TestCase):
         organization = OrganizationFactory.create(status="active")
 
         # Act
-        OrganizationService.delete(organization=organization)
+        OrganizationService.delete(organization)
 
-        # Assert
+        # Assert (canonical soft-delete behavior: flagged, status untouched)
         organization.refresh_from_db()
-        assert organization.status == "deleted"
+        assert organization.is_deleted is True
+        assert organization.deleted_at is not None
 
     def test_archive_organization(self) -> None:
         """Test archiving an organization."""
@@ -195,7 +202,7 @@ class OrganizationServiceIntegrationTests(TestCase):
         organization = OrganizationFactory.create(status="active")
 
         # Act
-        OrganizationService.archive(organization=organization)
+        OrganizationService.archive(organization)
 
         # Assert
         organization.refresh_from_db()
@@ -210,12 +217,13 @@ class OrganizationSelectorIntegrationTests(TestCase):
         # Arrange
         organization = OrganizationFactory.create()
 
-        # Act
-        retrieved_org = Organization.objects.get(uuid=organization.uuid)
+        # Act (uuid is a property alias of the UUID primary key `id`,
+        # which is the only ORM-queryable form).
+        retrieved_org = Organization.objects.get(id=organization.id)
 
         # Assert
-        assert retrieved_org.uuid == organization.uuid
-        assert retrieved_org.pk == organization.pk
+        assert retrieved_org is not None and retrieved_org.uuid == organization.uuid
+        assert retrieved_org is not None and retrieved_org.pk == organization.pk
 
     def test_get_organization_by_code(self) -> None:
         """Test getting organization by code."""
@@ -226,8 +234,8 @@ class OrganizationSelectorIntegrationTests(TestCase):
         retrieved_org = Organization.objects.get(code="ORG005")
 
         # Assert
-        assert retrieved_org.code == "ORG005"
-        assert retrieved_org.pk == organization.pk
+        assert retrieved_org is not None and retrieved_org.code == "ORG005"
+        assert retrieved_org is not None and retrieved_org.pk == organization.pk
 
     def test_filter_organizations_by_status(self) -> None:
         """Test filtering organizations by status."""

@@ -2,13 +2,15 @@
 Organization serializer base classes.
 """
 
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseReadSerializer
 from apps.organization.models import Organization
 
 
-class OrganizationSerializer(BaseReadSerializer):
+class OrganizationSerializer(BaseReadSerializer[Any]):
     """
     Base read serializer for Organization.
 

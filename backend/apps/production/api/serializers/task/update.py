@@ -1,8 +1,10 @@
+from typing import Any
+
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.models import Task
 
 
-class TaskUpdateSerializer(BaseWriteSerializer):
+class TaskUpdateSerializer(BaseWriteSerializer[Any]):
     class Meta:
         model = Task
         fields = (

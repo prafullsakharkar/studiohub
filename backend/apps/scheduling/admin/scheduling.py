@@ -1,9 +1,6 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import (
-    OrganizationScopedAdminMixin,
-    OrganizationScopedModelAdmin,
-)
+from apps.organization.admin.base import OrganizationScopedModelAdmin
 from apps.scheduling.models import (
     CalendarEvent,
     Holiday,
@@ -105,7 +102,7 @@ class HolidayAdmin(OrganizationScopedModelAdmin):
 
 
 @admin.register(ResourceLeave)
-class ResourceLeaveAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class ResourceLeaveAdmin(OrganizationScopedModelAdmin):
     organization_lookup = "resource__organization"
 
     list_display = (
@@ -134,7 +131,7 @@ class ResourceLeaveAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(ResourceSchedule)
-class ResourceScheduleAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class ResourceScheduleAdmin(OrganizationScopedModelAdmin):
     organization_lookup = "resource__organization"
 
     list_display = (

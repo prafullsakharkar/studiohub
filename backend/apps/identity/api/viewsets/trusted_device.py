@@ -25,7 +25,7 @@ from apps.identity.services.trusted_device import (
 
 
 class TrustedDeviceViewSet(
-    IdentityViewSet,
+    IdentityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
 
     queryset = TrustedDevice.objects.all()

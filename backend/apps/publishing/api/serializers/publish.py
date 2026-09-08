@@ -1,12 +1,14 @@
 """
 Publishing serializers.
 """
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.publishing.models import PublishItem
 
 
-class PublishListSerializer(serializers.ModelSerializer):
+class PublishListSerializer(serializers.ModelSerializer[PublishItem]):
     """Serializer for publish list view."""
     
     client_name = serializers.CharField(source="project.name", read_only=True)
@@ -50,7 +52,7 @@ class PublishListSerializer(serializers.ModelSerializer):
         )
 
 
-class PublishDetailSerializer(serializers.ModelSerializer):
+class PublishDetailSerializer(serializers.ModelSerializer[PublishItem]):
     """Serializer for publish detail view."""
     
     project = serializers.UUIDField(source="project.id", read_only=True)
@@ -100,7 +102,7 @@ class PublishDetailSerializer(serializers.ModelSerializer):
         )
 
 
-class PublishCreateSerializer(serializers.Serializer):
+class PublishCreateSerializer(serializers.Serializer[Any]):
     """Serializer for creating a publish."""
     
     name = serializers.CharField(required=True, max_length=255)
@@ -138,7 +140,7 @@ class PublishCreateSerializer(serializers.Serializer):
         )
 
 
-class PublishUpdateSerializer(serializers.Serializer):
+class PublishUpdateSerializer(serializers.Serializer[Any]):
     """Serializer for updating a publish."""
     
     name = serializers.CharField(required=False, max_length=255)
@@ -146,7 +148,7 @@ class PublishUpdateSerializer(serializers.Serializer):
     export_format = serializers.CharField(required=False, allow_blank=True, max_length=50)
 
 
-class PublishValidateSerializer(serializers.Serializer):
+class PublishValidateSerializer(serializers.Serializer[Any]):
     """Serializer for validating a publish."""
     
     def validate(self, data):
@@ -154,7 +156,7 @@ class PublishValidateSerializer(serializers.Serializer):
         return data
 
 
-class PublishRepublishSerializer(serializers.Serializer):
+class PublishRepublishSerializer(serializers.Serializer[Any]):
     """Serializer for republishing."""
     
     def validate(self, data):
@@ -162,7 +164,7 @@ class PublishRepublishSerializer(serializers.Serializer):
         return data
 
 
-class PublishUnpublishSerializer(serializers.Serializer):
+class PublishUnpublishSerializer(serializers.Serializer[Any]):
     """Serializer for unpublishing."""
     
     def validate(self, data):
@@ -170,7 +172,7 @@ class PublishUnpublishSerializer(serializers.Serializer):
         return data
 
 
-class PublishRetrySerializer(serializers.Serializer):
+class PublishRetrySerializer(serializers.Serializer[Any]):
     """Serializer for retrying a publish."""
     
     def validate(self, data):

@@ -1,3 +1,5 @@
+from typing import Any
+
 from apps.organization.api.serializers.base import (
     OrganizationEntitySerializer,
 )
@@ -5,7 +7,7 @@ from apps.organization.models import Holiday
 
 
 class HolidaySerializer(
-    OrganizationEntitySerializer,
+    OrganizationEntitySerializer[Any],
 ):
     class Meta(
         OrganizationEntitySerializer.Meta,

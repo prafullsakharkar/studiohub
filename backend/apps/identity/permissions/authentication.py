@@ -6,8 +6,13 @@ Provides permission classes for authentication-related authorization.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from rest_framework import permissions
 
+if TYPE_CHECKING:
+    from rest_framework.request import Request
+    from rest_framework.views import APIView
 
 class IsAuthenticated(permissions.IsAuthenticated):
     """
@@ -32,7 +37,7 @@ class IsSuperUser(permissions.BasePermission):
 
     message = "You do not have permission to perform this action."
 
-    def has_permission(self, request, view):
+    def has_permission(self, request: Request, view: APIView) -> bool:
         return bool(
-            request.user and request.user.is_authenticated and request.user.is_superuser
+            request.user and request.user.is_authenticated and getattr(request.user, "is_superuser", False)
         )

@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedAdminMixin
+from apps.organization.admin.base import OrganizationScopedModelAdmin
 from apps.organization.models import WorkHours
 
 
 @admin.register(WorkHours)
-class WorkHoursAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class WorkHoursAdmin(OrganizationScopedModelAdmin):
     list_display = (
         "work_calendar",
         "day",

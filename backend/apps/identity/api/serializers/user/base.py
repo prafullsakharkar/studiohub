@@ -1,3 +1,4 @@
+
 from apps.identity.models import User
 
 from ..base import IdentitySerializer

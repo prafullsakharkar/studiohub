@@ -10,6 +10,7 @@ frontend contract. Run with: pytest apps/core/tests/test_contract.py -v
 """
 
 import pytest
+from django.contrib.auth.models import AnonymousUser
 from django.test import RequestFactory
 from drf_spectacular.generators import SchemaGenerator
 from rest_framework.request import Request
@@ -19,9 +20,11 @@ from rest_framework.request import Request
 def test_openapi_schema_contains_core_contract_endpoints():
     factory = RequestFactory()
     wsgi = factory.get("/api/schema/")
-    request = Request(wsgi)
+    # django-stubs declares HttpRequest.__new__ with no args, which shadows
+    # DRF Request.__init__ for subclass construction.
+    request = Request(wsgi)  # pyright: ignore[reportCallIssue]
     # DRF test Request needs user/auth for spectacular's mock request builder
-    request.user = None
+    request.user = AnonymousUser()
     request.auth = None
 
     generator = SchemaGenerator()

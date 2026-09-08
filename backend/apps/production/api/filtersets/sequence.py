@@ -23,4 +23,5 @@ class SequenceFilterSet(BaseFilterSet):
             | Q(code__icontains=value)
             | Q(description__icontains=value)
             | Q(department__icontains=value)
+            | Q(lead_artist_name__icontains=value)
         )

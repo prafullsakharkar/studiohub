@@ -15,7 +15,7 @@ from apps.identity.managers.user_mfa import UserMFAManager
 
 class UserMFA(EntityModel):
 
-    objects = UserMFAManager()
+    objects: UserMFAManager = UserMFAManager()
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,

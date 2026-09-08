@@ -3,6 +3,8 @@ Custom test runner that preserves the database.
 This allows tests to run against a pre-created test database without requiring CREATEDB privilege.
 """
 
+from typing import Any
+
 from django.conf import settings
 from django.db import connection
 from django.test.runner import DiscoverRunner
@@ -21,9 +23,12 @@ class PreserveDatabaseTestRunner(DiscoverRunner):
     3. Run tests with: DJANGO_SETTINGS_MODULE=config.settings.testing pytest or manage.py test
     """
 
-    def setup_databases(self, **kwargs):
+    def setup_databases(self, **kwargs) -> Any:
         """
         Skip database creation - assume the test database already exists.
+
+        Intentionally breaks the base return contract (teardown is a
+        matching no-op); the runner is only used for local test runs.
         """
         # Verify the database exists
         db_name = settings.DATABASES["default"]["NAME"]

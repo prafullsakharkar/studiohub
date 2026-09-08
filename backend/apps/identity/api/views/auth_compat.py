@@ -32,7 +32,10 @@ from apps.identity.api.serializers.authentication import (
     LogoutSerializer,
     RefreshSerializer,
 )
-from apps.identity.api.serializers.frontend_user import serialize_frontend_user
+from apps.identity.api.serializers.frontend_user import (
+    serialize_frontend_membership,
+    serialize_frontend_user,
+)
 
 User = get_user_model()
 
@@ -146,4 +149,34 @@ class AuthMeView(BaseAPIView):
     def get(self, request, *args, **kwargs):
         user = request.user
         data = serialize_frontend_user(user, request)
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class AuthMembershipsView(BaseAPIView):
+    """Frontend-compatible memberships: GET /api/v1/auth/memberships/.
+
+    Returns the current user's OrganizationMembership rows in the frontend
+    OrganizationMembership shape (also served at the legacy alias
+    /api/v1/users/me/memberships/).
+    """
+
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    @extend_schema(
+        responses={200: OpenApiTypes.OBJECT},
+        description="Return current user's organization memberships.",
+    )
+    def get(self, request, *args, **kwargs):
+        from apps.organization.models import OrganizationMembership
+
+        memberships = (
+            OrganizationMembership.objects.filter(
+                user=request.user,
+                is_deleted=False,
+            )
+            .select_related("organization", "role", "department")
+            .order_by("-is_primary", "organization__name")
+        )
+        data = [serialize_frontend_membership(m) for m in memberships]
         return Response(data, status=status.HTTP_200_OK)

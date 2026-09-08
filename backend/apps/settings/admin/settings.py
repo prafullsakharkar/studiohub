@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedAdminMixin
+from apps.organization.admin.base import OrganizationScopedModelAdmin
 from apps.settings.models import (
     FeatureFlag,
     Localization,
@@ -13,7 +13,7 @@ from apps.settings.models import (
 
 
 @admin.register(SettingCategory)
-class SettingCategoryAdmin(admin.ModelAdmin):
+class SettingCategoryAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     """Admin for SettingCategory."""
 
     list_display = (
@@ -47,7 +47,7 @@ class SettingCategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(SettingDefinition)
-class SettingDefinitionAdmin(admin.ModelAdmin):
+class SettingDefinitionAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     """Admin for SettingDefinition."""
 
     list_display = (
@@ -85,7 +85,7 @@ class SettingDefinitionAdmin(admin.ModelAdmin):
 
 
 @admin.register(FeatureFlag)
-class FeatureFlagAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class FeatureFlagAdmin(OrganizationScopedModelAdmin):
     """Admin for FeatureFlag."""
 
     list_display = (
@@ -120,7 +120,7 @@ class FeatureFlagAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(Localization)
-class LocalizationAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class LocalizationAdmin(OrganizationScopedModelAdmin):
     """Admin for Localization."""
 
     list_display = (
@@ -153,7 +153,7 @@ class LocalizationAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(OrganizationSetting)
-class OrganizationSettingAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class OrganizationSettingAdmin(OrganizationScopedModelAdmin):
     """Admin for OrganizationSetting."""
 
     list_display = (
@@ -183,7 +183,7 @@ class OrganizationSettingAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(SystemSetting)
-class SystemSettingAdmin(admin.ModelAdmin):
+class SystemSettingAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     """Admin for SystemSetting."""
 
     list_display = (
@@ -209,7 +209,7 @@ class SystemSettingAdmin(admin.ModelAdmin):
 
 
 @admin.register(Theme)
-class ThemeAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class ThemeAdmin(OrganizationScopedModelAdmin):
     """Admin for Theme."""
 
     list_display = (

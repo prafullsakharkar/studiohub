@@ -7,7 +7,7 @@ from apps.production.selectors.base import ProductionBaseSelector
 
 class TimelogSelector(ProductionBaseSelector):
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Timelog]:
         return (
             Timelog.objects.select_related(
                 "organization", "project", "task", "person", "person__profile", "approved_by", "task__project"

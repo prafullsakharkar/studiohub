@@ -31,7 +31,7 @@ class Holiday(OrganizationEntityModel):
         default=False,
     )
 
-    objects = HolidayManager()
+    objects: HolidayManager = HolidayManager()
 
     class Meta:
         db_table = "organization_holiday"

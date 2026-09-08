@@ -14,7 +14,11 @@ bulk-operate on another organization's parent (404).
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any, ClassVar, cast
+
 from django.http import Http404
+from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.response import Response
@@ -39,9 +43,14 @@ class NestedBulkActionsMixin:
     parent_accessor = ""
     parent_field = ""
     parent_organization_field = "organization"
-    detail_serializer_class = None
-    create_serializer_class = None
-    update_serializer_class = None
+    detail_serializer_class: ClassVar[type[serializers.Serializer[Any]]]
+    create_serializer_class: ClassVar[type[serializers.Serializer[Any]]]
+    update_serializer_class: ClassVar[type[serializers.Serializer[Any]]]
+    # Mixin contract: provided by the viewset this mixin is combined with.
+    # Annotations only, no runtime effect.
+    request: ClassVar[Any]
+    service_class: ClassVar[Any]
+    get_serializer_context: ClassVar[Callable[..., dict[str, Any]]]
 
     CREATED = "created"
     UPDATED = "updated"
@@ -148,7 +157,7 @@ class NestedBulkActionsMixin:
                     user=request.user,
                     **{self.parent_field: parent},
                     **{self.parent_organization_field: parent.organization},
-                    **serializer.validated_data,
+                    **cast(dict[str, Any], serializer.validated_data),
                 )
             except DuplicateException as exc:
                 results.append(
@@ -198,7 +207,9 @@ class NestedBulkActionsMixin:
                 continue
             try:
                 updated = self.service_class.update(
-                    instance, user=request.user, **serializer.validated_data
+                    instance,
+                    user=request.user,
+                    **cast(dict[str, Any], serializer.validated_data),
                 )
             except Exception as exc:  # noqa: BLE001
                 results.append(

@@ -13,7 +13,7 @@ from apps.audit.services.change_log import ChangeLogService
 class ChangeLogViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
-    AuditEntityViewSet,
+    AuditEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     ViewSet for ChangeLog.

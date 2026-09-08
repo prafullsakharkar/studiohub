@@ -1,10 +1,12 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseReadSerializer
 from apps.production.models import Version
 
 
-class VersionSerializer(BaseReadSerializer):
+class VersionSerializer(BaseReadSerializer[Any]):
     project_id = serializers.UUIDField(read_only=True, allow_null=True)
     project_code = serializers.SerializerMethodField()
     artist_id = serializers.UUIDField(read_only=True, allow_null=True)

@@ -6,7 +6,7 @@ from apps.organization.tests.factories import OrganizationFactory
 from apps.production.models import Asset, Project, Sequence, Shot, Task
 
 
-class ProjectFactory(DjangoModelFactory):
+class ProjectFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     class Meta:
         model = Project
         django_get_or_create = ("code", "organization")
@@ -26,7 +26,7 @@ class ProjectFactory(DjangoModelFactory):
     coordinator = factory.SubFactory(UserFactory)
 
 
-class ShotFactory(DjangoModelFactory):
+class ShotFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     class Meta:
         model = Shot
         django_get_or_create = ("code", "project")
@@ -44,7 +44,7 @@ class ShotFactory(DjangoModelFactory):
     pipeline = {"layout": "Not Started"}
 
 
-class SequenceFactory(DjangoModelFactory):
+class SequenceFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     class Meta:
         model = Sequence
         django_get_or_create = ("code", "project")
@@ -63,7 +63,7 @@ class SequenceFactory(DjangoModelFactory):
     tags = factory.LazyFunction(list)
 
 
-class AssetFactory(DjangoModelFactory):
+class AssetFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     class Meta:
         model = Asset
         django_get_or_create = ("code", "project")
@@ -81,7 +81,7 @@ class AssetFactory(DjangoModelFactory):
     software = "Maya"
 
 
-class TaskFactory(DjangoModelFactory):
+class TaskFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     class Meta:
         model = Task
         django_get_or_create = ("code", "project")

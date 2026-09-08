@@ -4,7 +4,7 @@ from apps.core.api.serializers.base import BaseReadSerializer, BaseWriteSerializ
 from apps.organization.models import OrganizationBilling
 
 
-class OrganizationBillingSerializer(BaseReadSerializer):
+class OrganizationBillingSerializer(BaseReadSerializer[OrganizationBilling]):
     farm_credits_remaining = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -30,7 +30,7 @@ class OrganizationBillingSerializer(BaseReadSerializer):
         read_only_fields = ("id", "uuid", "created_at", "updated_at")
 
 
-class OrganizationBillingUpdateSerializer(BaseWriteSerializer):
+class OrganizationBillingUpdateSerializer(BaseWriteSerializer[OrganizationBilling]):
     class Meta:
         model = OrganizationBilling
         fields = (

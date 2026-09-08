@@ -65,6 +65,7 @@ class MFAEnrollmentService(BaseMFAService):
 
         cls.UserMFAValidator.validate_enable(mfa)
 
+        assert mfa is not None  # guaranteed by validate_enable above
         mfa.status = MFAStatus.ENABLED
         mfa.is_verified = True
         mfa.totp_confirmed_at = timezone.now()
@@ -97,6 +98,7 @@ class MFAEnrollmentService(BaseMFAService):
 
         cls.UserMFAValidator.validate_disable(mfa)
 
+        assert mfa is not None  # guaranteed by validate_disable above
         mfa.status = MFAStatus.DISABLED
         mfa.is_verified = False
 
@@ -127,6 +129,7 @@ class MFAEnrollmentService(BaseMFAService):
 
         cls.UserMFAValidator.validate_disable(mfa)
 
+        assert mfa is not None  # guaranteed by validate_disable above
         mfa.totp_secret = TOTPService.generate_secret()
         mfa.is_verified = False
         mfa.status = MFAStatus.DISABLED

@@ -4,7 +4,7 @@ from apps.organization.models import PersonalAccessToken
 
 
 @admin.register(PersonalAccessToken)
-class PersonalAccessTokenAdmin(admin.ModelAdmin):
+class PersonalAccessTokenAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     list_display = (
         "name",
         "user",

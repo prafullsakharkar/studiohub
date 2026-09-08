@@ -5,6 +5,7 @@ Base events for core models.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 
 class DomainEvent:
@@ -15,6 +16,9 @@ class DomainEvent:
     ``user``). The payload is retained on ``.payload`` for handlers that
     need it; subclasses remain free to declare their own dataclass fields.
     """
+
+    # Set via object.__setattr__ in __init__ (kept dynamic for subclass freedom).
+    payload: dict[str, Any]  # pyright: ignore[reportUninitializedInstanceVariable]
 
     def __init__(self, **kwargs):
         object.__setattr__(

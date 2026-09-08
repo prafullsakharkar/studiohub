@@ -6,6 +6,7 @@ from .asset import AssetAdmin
 from .media import MediaAdmin
 from .playlist import PlaylistAdmin
 from .project import ProjectAdmin
+from .project_scoped import EditorialCutAdmin, ProjectMembershipAdmin, ProjectNoteAdmin
 from .review import ReviewAdmin
 from .sequence import SequenceAdmin
 from .shot import ShotAdmin
@@ -26,4 +27,7 @@ __all__ = [
     "MediaAdmin",
     "PlaylistAdmin",
     "WorkflowAdmin",
+    "ProjectMembershipAdmin",
+    "EditorialCutAdmin",
+    "ProjectNoteAdmin",
 ]

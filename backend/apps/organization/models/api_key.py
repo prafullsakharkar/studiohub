@@ -12,7 +12,7 @@ class APIKey(EntityModel):
     Organization / Service API Key.
     """
 
-    objects = APIKeyManager()
+    objects: APIKeyManager = APIKeyManager()
 
     name = models.CharField(
         max_length=255,

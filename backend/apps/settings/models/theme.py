@@ -3,6 +3,8 @@ Theme model for theme management.
 """
 from __future__ import annotations
 
+from typing import Any
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -175,7 +177,7 @@ class Theme(EntityModel, TimeStampedModel):
     def __str__(self):
         return self.name
     
-    def get_color_palette(self) -> dict:
+    def get_color_palette(self) -> dict[Any, Any]:
         """Get the color palette as a dictionary."""
         return {
             "primary": self.primary_color,
@@ -188,7 +190,7 @@ class Theme(EntityModel, TimeStampedModel):
             "border": self.border_color,
         }
     
-    def get_typography(self) -> dict:
+    def get_typography(self) -> dict[Any, Any]:
         """Get the typography settings as a dictionary."""
         return {
             "font_family": self.font_family,

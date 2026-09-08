@@ -4,6 +4,8 @@ Person serializer base.
 
 from __future__ import annotations
 
+from typing import Any
+
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -11,7 +13,7 @@ from apps.core.api.serializers.base import BaseReadSerializer
 from apps.organization.models import Person
 
 
-class PersonSerializer(BaseReadSerializer):
+class PersonSerializer(BaseReadSerializer[Any]):
     # Frontend compat fields not on model — provide defaults
     full_name = serializers.CharField(source="name", read_only=True)
     avatar_url = serializers.SerializerMethodField()

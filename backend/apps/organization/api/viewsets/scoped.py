@@ -27,7 +27,7 @@ from apps.organization.middleware.organization_context import (
 from apps.organization.models import OrganizationMembership
 
 
-class OrganizationScopedViewSet(ServiceModelViewSet):
+class OrganizationScopedViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     Base ViewSet for organization scoped domain entities.
 

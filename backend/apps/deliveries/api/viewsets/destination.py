@@ -13,7 +13,7 @@ from apps.identity.permissions import HasPermission
 from apps.organization.api.viewsets.scoped import OrganizationScopedViewSet
 
 
-class DestinationViewSet(OrganizationScopedViewSet):
+class DestinationViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for DeliveryDestination."""
 
     selector_class = DestinationSelector

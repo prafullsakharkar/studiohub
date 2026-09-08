@@ -6,5 +6,5 @@ from apps.production.selectors.base import ProductionBaseSelector
 
 class SequenceSelector(ProductionBaseSelector):
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Sequence]:
         return Sequence.objects.select_related("organization", "project").all()

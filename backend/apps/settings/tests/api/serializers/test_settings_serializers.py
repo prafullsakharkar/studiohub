@@ -5,6 +5,8 @@ Serializer tests for Settings application.
 
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from apps.organization.tests.factories import OrganizationFactory
@@ -28,7 +30,7 @@ class TestSettingsBaseSerializer:
     def test_serializer_fields(self) -> None:
         """Test serializer has expected fields."""
 
-        class TestSerializer(SettingsBaseSerializer):
+        class TestSerializer(SettingsBaseSerializer[Any]):
             class Meta:
                 model = Theme
                 fields = (
@@ -57,7 +59,7 @@ class TestSettingsBaseSerializer:
     def test_serializer_read_only_fields(self) -> None:
         """Test serializer has read-only fields."""
 
-        class TestSerializer(SettingsBaseSerializer):
+        class TestSerializer(SettingsBaseSerializer[Any]):
             class Meta:
                 model = Theme
                 fields = "__all__"

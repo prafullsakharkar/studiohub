@@ -8,7 +8,7 @@ including validation, masking, and best practices for secrets management.
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from pydantic import BaseModel
@@ -71,7 +71,7 @@ class SecretsManager:
             return "*" * len(value)
         return value[:visible_chars] + "*" * (len(value) - visible_chars)
     
-    def mask_dict(self, data: dict, exclude_keys: list[str] | None = None) -> dict:
+    def mask_dict(self, data: dict[Any, Any], exclude_keys: list[str] | None = None) -> dict[Any, Any]:
         """
         Create a masked copy of a dictionary for logging.
         
@@ -101,7 +101,7 @@ class SecretsManager:
         key_lower = key.lower()
         return any(re.search(pattern, key_lower) for pattern in self.SECRET_PATTERNS)
     
-    def validate_secret_strength(self, secret: str, min_length: int = 16) -> dict:
+    def validate_secret_strength(self, secret: str, min_length: int = 16) -> dict[Any, Any]:
         """
         Validate the strength of a secret value.
         
@@ -132,7 +132,7 @@ class SecretsManager:
         
         return result
     
-    def get_masked_settings(self) -> dict:
+    def get_masked_settings(self) -> dict[Any, Any]:
         """Get settings with all secret values masked."""
         masked = {}
         for field_name in self._settings.model_fields:

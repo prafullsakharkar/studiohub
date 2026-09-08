@@ -19,7 +19,7 @@ from apps.organization.constants.permissions import OrganizationPermissions
 from apps.organization.models import Client
 
 
-class ClientViewSet(ServiceModelViewSet):
+class ClientViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissingTypeArgument]
     queryset = Client.objects.all()
     serializer_map = {
         "list": ClientListSerializer,

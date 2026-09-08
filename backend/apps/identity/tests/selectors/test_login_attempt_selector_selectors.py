@@ -21,7 +21,7 @@ class TestLoginAttemptSelector:
         """Test get_login_attempt_by_id method."""
         attempt = LoginAttemptFactory.create()
         retrieved_attempt = LoginAttempt.objects.get_by_id(attempt.id)
-        assert retrieved_attempt.id == attempt.id
+        assert retrieved_attempt is not None and retrieved_attempt.id == attempt.id
 
     @pytest.mark.django_db
     def test_list_login_attempts(self):
@@ -78,5 +78,5 @@ class TestLoginAttemptSelector:
         """Test get_login_attempt_with_user method."""
         attempt = LoginAttemptFactory.create()
         retrieved_attempt = LoginAttempt.objects.get_login_attempt_with_user(attempt.id)
-        assert retrieved_attempt.id == attempt.id
+        assert retrieved_attempt is not None and retrieved_attempt.id == attempt.id
         assert hasattr(retrieved_attempt, "user")

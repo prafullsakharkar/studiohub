@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedAdminMixin
+from apps.organization.admin.base import OrganizationScopedModelAdmin
 from apps.organization.models import Role
 
 
 @admin.register(Role)
-class RoleAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class RoleAdmin(OrganizationScopedModelAdmin):
     # Roles may be global (organization NULL): keep them visible.
     include_null_organization = True
     list_display = (

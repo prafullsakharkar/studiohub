@@ -52,7 +52,9 @@ class TestThemeSelector:
 
         default = ThemeFactory(organization=None)
         ThemeFactory()
-        assert ThemeSelector.get_default().id == default.id
+        _default = ThemeSelector.get_default()
+        assert _default is not None
+        assert _default.id == default.id
 
     @pytest.mark.django_db
     def test_get_queryset_without_request(self) -> None:
@@ -170,7 +172,9 @@ class TestLocalizationSelector:
 
         default = LocalizationFactory(organization=None)
         LocalizationFactory()
-        assert LocalizationSelector.get_default().id == default.id
+        _default = LocalizationSelector.get_default()
+        assert _default is not None
+        assert _default.id == default.id
 
 
 class TestOrganizationSettingSelector:

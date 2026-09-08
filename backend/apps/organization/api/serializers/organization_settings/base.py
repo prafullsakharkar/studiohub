@@ -1,3 +1,5 @@
+from typing import Any
+
 from apps.organization.api.serializers.base import (
     OrganizationEntitySerializer,
 )
@@ -7,7 +9,7 @@ from apps.organization.models import (
 
 
 class OrganizationSettingsBaseSerializer(
-    OrganizationEntitySerializer,
+    OrganizationEntitySerializer[Any],
 ):
     """
     Base serializer for Organization Settings.

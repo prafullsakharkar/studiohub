@@ -114,6 +114,8 @@ class AuthenticationValidator(
         cls,
         session,
     ):
+        cls.check_not_none(session, "Session not found.")
+
         if session.status == SessionStatus.REVOKED:
             raise SessionRevoked()
 

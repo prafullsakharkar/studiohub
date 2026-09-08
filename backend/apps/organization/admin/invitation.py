@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedAdminMixin
+from apps.organization.admin.base import OrganizationScopedModelAdmin
 from apps.organization.models import Invitation
 
 
 @admin.register(Invitation)
-class InvitationAdmin(OrganizationScopedAdminMixin, admin.ModelAdmin):
+class InvitationAdmin(OrganizationScopedModelAdmin):
     list_display = (
         "email",
         "organization",

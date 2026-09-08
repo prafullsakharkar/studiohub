@@ -4,8 +4,13 @@ Organization permission classes.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 from rest_framework.permissions import BasePermission
 
+if TYPE_CHECKING:
+    from rest_framework.request import Request
+    from rest_framework.views import APIView
 
 class OrganizationPermissions:
     """Organization permission codes."""
@@ -48,9 +53,9 @@ class CanCreateOrganization(BasePermission):
     message = "You do not have permission to create organizations."
     code = "organization_create_denied"
 
-    def has_permission(self, request, view):
+    def has_permission(self, request: Request, view: APIView) -> bool:
         """Check if user can create organizations."""
-        return request.user and request.user.is_staff
+        return request.user and getattr(request.user, "is_staff", False)
 
 
 class CanUpdateOrganization(BasePermission):
@@ -59,7 +64,7 @@ class CanUpdateOrganization(BasePermission):
     message = "You do not have permission to update this organization."
     code = "organization_update_denied"
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view: APIView, obj: Any) -> bool:
         """Check if user can update the organization."""
         from apps.organization.models.membership import OrganizationMembership
 
@@ -80,9 +85,9 @@ class CanDeleteOrganization(BasePermission):
     message = "You do not have permission to delete this organization."
     code = "organization_delete_denied"
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view: APIView, obj: Any) -> bool:
         """Check if user can delete the organization."""
-        return request.user and request.user.is_staff
+        return request.user and getattr(request.user, "is_staff", False)
 
 
 class CanManageOrganization(BasePermission):
@@ -91,7 +96,7 @@ class CanManageOrganization(BasePermission):
     message = "You do not have permission to manage this organization."
     code = "organization_manage_denied"
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view: APIView, obj: Any) -> bool:
         """Check if user can manage the organization."""
         from apps.organization.models.membership import OrganizationMembership
 

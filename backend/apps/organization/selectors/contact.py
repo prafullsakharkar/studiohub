@@ -26,8 +26,8 @@ class ClientContactSelector(OrganizationBaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
-        return cls.model.objects.select_related(
+    ) -> QuerySet[ClientContact]:
+        return cls.model.objects.get_queryset().select_related(
             "organization",
             "client",
         )
@@ -54,8 +54,8 @@ class VendorContactSelector(OrganizationBaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
-        return cls.model.objects.select_related(
+    ) -> QuerySet[VendorContact]:
+        return cls.model.objects.get_queryset().select_related(
             "organization",
             "vendor",
         )

@@ -20,7 +20,7 @@ from rest_framework.response import Response
 from apps.core.api.builders import PaginationBuilder, ResponseBuilder
 
 if TYPE_CHECKING:
-    from django.http import HttpRequest
+    from rest_framework.request import Request
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +36,16 @@ class BasePagination(PageNumberPagination):
     page_size_query_param = "page_size"
     max_page_size = 500
 
+    def _active_page(self):
+        """Return the current page; requires paginate_queryset() first."""
+        assert self.page is not None, "Call paginate_queryset() before building a response."
+        return self.page
+
+    def _active_request(self):
+        """Return the current request; requires paginate_queryset() first."""
+        assert self.request is not None, "Call paginate_queryset() before building a response."
+        return self.request
+
     def get_paginated_response(self, data: list[Any]) -> Response:
         """
         Get paginated response.
@@ -47,10 +57,10 @@ class BasePagination(PageNumberPagination):
             DRF Response with pagination metadata
         """
         pagination = PaginationBuilder.build(
-            page=self.page.number,
-            page_size=self.get_page_size(self.request),
-            total=self.page.paginator.count,
-            pages=self.page.paginator.num_pages,
+            page=self._active_page().number,
+            page_size=self.get_page_size(self._active_request()),
+            total=self._active_page().paginator.count,
+            pages=self._active_page().paginator.num_pages,
             next_url=self.get_next_link(),
             previous_url=self.get_previous_link(),
         )
@@ -64,7 +74,7 @@ class BasePagination(PageNumberPagination):
             ),
         )
 
-    def get_page_number(self, request: HttpRequest, paginator: Paginator) -> int:
+    def get_page_number(self, request: Request, paginator: Paginator[Any]) -> int:
         """
         Get page number from request.
 
@@ -80,7 +90,7 @@ class BasePagination(PageNumberPagination):
             page_number = paginator.num_pages
         return int(page_number)
 
-    def get_page_size(self, request: HttpRequest) -> int:
+    def get_page_size(self, request: Request) -> int:
         """
         Get page size from request.
 
@@ -90,15 +100,15 @@ class BasePagination(PageNumberPagination):
         Returns:
             Page size
         """
+        default_size = self.page_size or 25
         if self.page_size_query_param:
             try:
-                return min(
-                    int(request.query_params.get(self.page_size_query_param, self.page_size)),
-                    self.max_page_size,
-                )
+                raw = request.query_params.get(self.page_size_query_param, default_size)
+                size = int(raw) if raw is not None else default_size
             except (ValueError, TypeError):
-                return self.page_size
-        return self.page_size
+                return default_size
+            return min(size, self.max_page_size or default_size)
+        return default_size
 
     def get_next_link(self) -> str | None:
         """
@@ -107,9 +117,9 @@ class BasePagination(PageNumberPagination):
         Returns:
             Next page URL or None
         """
-        if not self.page.has_next():
+        if not self._active_page().has_next():
             return None
-        request = self.request
+        request = self._active_request()
         return request.build_absolute_uri()
 
     def get_previous_link(self) -> str | None:
@@ -119,28 +129,11 @@ class BasePagination(PageNumberPagination):
         Returns:
             Previous page URL or None
         """
-        if not self.page.has_previous():
+        if not self._active_page().has_previous():
             return None
-        request = self.request
+        request = self._active_request()
         return request.build_absolute_uri()
 
-    def get_page_context(self) -> dict[str, Any]:
-        """
-        Get pagination context.
-
-        Returns:
-            Dictionary with pagination context
-        """
-        return {
-            "page": self.page.number,
-            "page_size": self.get_page_size(self.request),
-            "total": self.page.paginator.count,
-            "pages": self.page.paginator.num_pages,
-            "has_next": self.page.has_next(),
-            "has_previous": self.page.has_previous(),
-            "next_url": self.get_next_link(),
-            "previous_url": self.get_previous_link(),
-        }
 
 
 class InfinitePagination(BasePagination):
@@ -160,10 +153,10 @@ class InfinitePagination(BasePagination):
         Returns:
             Next page URL or None
         """
-        if not self.page.has_next():
+        if not self._active_page().has_next():
             return None
-        request = self.request
-        cursor = self.request.query_params.get("cursor")
+        request = self._active_request()
+        cursor = self._active_request().query_params.get("cursor")
         if cursor:
             return request.build_absolute_uri(f"?cursor={cursor}")
         return request.build_absolute_uri()
@@ -175,10 +168,10 @@ class InfinitePagination(BasePagination):
         Returns:
             Previous page URL or None
         """
-        if not self.page.has_previous():
+        if not self._active_page().has_previous():
             return None
-        request = self.request
-        cursor = self.request.query_params.get("cursor")
+        request = self._active_request()
+        cursor = self._active_request().query_params.get("cursor")
         if cursor:
             return request.build_absolute_uri(f"?cursor={cursor}")
         return request.build_absolute_uri()
@@ -195,20 +188,6 @@ class CursorPaginationBase(CursorPagination):
     cursor_query_param = "cursor"
     ordering = "-created_at"
 
-    def get_page_context(self) -> dict[str, Any]:
-        """
-        Get pagination context.
-
-        Returns:
-            Dictionary with pagination context
-        """
-        return {
-            "page_size": self.page_size,
-            "next_cursor": self.get_next_cursor(),
-            "previous_cursor": self.get_previous_cursor(),
-            "next_url": self.get_next_link(),
-            "previous_url": self.get_previous_link(),
-        }
 
 
 class LimitOffsetPaginationBase(LimitOffsetPagination):
@@ -221,22 +200,6 @@ class LimitOffsetPaginationBase(LimitOffsetPagination):
     default_limit = 20
     max_limit = 100
 
-    def get_page_context(self) -> dict[str, Any]:
-        """
-        Get pagination context.
-
-        Returns:
-            Dictionary with pagination context
-        """
-        return {
-            "limit": self.limit,
-            "offset": self.offset,
-            "total": self.count,
-            "has_next": self.offset + self.limit < self.count,
-            "has_previous": self.offset > 0,
-            "next_url": self.get_next_link(),
-            "previous_url": self.get_previous_link(),
-        }
 
 
 class PagePagination(BasePagination):
@@ -249,23 +212,6 @@ class PagePagination(BasePagination):
     page_size = 25
     max_page_size = 100
 
-    def get_page_context(self) -> dict[str, Any]:
-        """
-        Get pagination context.
-
-        Returns:
-            Dictionary with pagination context
-        """
-        return {
-            "page": self.page.number,
-            "page_size": self.get_page_size(self.request),
-            "total": self.page.paginator.count,
-            "pages": self.page.paginator.num_pages,
-            "has_next": self.page.has_next(),
-            "has_previous": self.page.has_previous(),
-            "next_url": self.get_next_link(),
-            "previous_url": self.get_previous_link(),
-        }
 
 
 class SmallPagination(BasePagination):

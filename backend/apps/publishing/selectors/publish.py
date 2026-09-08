@@ -20,7 +20,7 @@ class PublishSelector(BaseSelector):
     model = PublishItem
 
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[PublishItem]:
         qs = cls.model.objects.select_related(
             "organization",
             "project",

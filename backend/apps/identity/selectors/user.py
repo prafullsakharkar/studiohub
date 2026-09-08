@@ -1,8 +1,8 @@
-from django.db.models import QuerySet
 
 from apps.identity.models import (
     User,
 )
+from apps.identity.querysets.user import UserQuerySet
 from apps.identity.selectors.base import (
     IdentityBaseSelector,
 )
@@ -23,8 +23,8 @@ class UserSelector(
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
-        return User.objects.all()
+    ) -> UserQuerySet:
+        return User.objects.get_queryset()
 
     @classmethod
     def get_by_email(

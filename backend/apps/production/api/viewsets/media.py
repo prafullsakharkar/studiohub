@@ -8,7 +8,7 @@ from apps.production.selectors.media import MediaSelector
 from apps.production.services.media import MediaService
 
 
-class MediaViewSet(ProductionEntityViewSet):
+class MediaViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = MediaSelector
     service_class = MediaService
     pagination_class = None
@@ -29,6 +29,6 @@ class MediaViewSet(ProductionEntityViewSet):
         "destroy": (MediaPermissions.DELETE,),
     }
 
-    search_fields = ("category",)
+    search_fields = ("title", "code", "file_name", "name", "file_format", "category")
     filterset_fields = ("media_type", "project", "entity_type", "entity_id")
     ordering_fields = ("created_at",)

@@ -13,7 +13,7 @@ from apps.audit.services.login_history import LoginHistoryService
 class LoginHistoryViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
-    AuditEntityViewSet,
+    AuditEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     Read-only ViewSet for LoginHistory.

@@ -19,7 +19,7 @@ class FeatureFlagViewSet(
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
-    SettingsBaseViewSet,
+    SettingsBaseViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     ViewSet for FeatureFlag.

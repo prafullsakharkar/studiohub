@@ -18,7 +18,7 @@ class TestTrustedDeviceSelector:
         """Test get_trusted_device_by_id method."""
         device = TrustedDeviceFactory.create()
         retrieved_device = TrustedDevice.objects.get_by_id(device.id)
-        assert retrieved_device.id == device.id
+        assert retrieved_device is not None and retrieved_device.id == device.id
 
     @pytest.mark.django_db
     def test_list_trusted_devices(self):
@@ -64,5 +64,5 @@ class TestTrustedDeviceSelector:
         """Test get_trusted_device_with_user method."""
         device = TrustedDeviceFactory.create()
         retrieved_device = TrustedDevice.objects.get_trusted_device_with_user(device.id)
-        assert retrieved_device.id == device.id
+        assert retrieved_device is not None and retrieved_device.id == device.id
         assert hasattr(retrieved_device, "user")

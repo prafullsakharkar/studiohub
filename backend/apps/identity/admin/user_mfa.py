@@ -7,7 +7,7 @@ from apps.identity.models import UserMFA
 
 
 @admin.register(UserMFA)
-class UserMFAdmin(admin.ModelAdmin):
+class UserMFAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     """Admin for UserMFA."""
 
     list_display = (

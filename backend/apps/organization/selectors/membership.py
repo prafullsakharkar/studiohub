@@ -6,9 +6,8 @@ Selectors are responsible for read-only queries.
 
 from __future__ import annotations
 
-from django.db.models import QuerySet
-
 from apps.organization.models import OrganizationMembership
+from apps.organization.querysets import OrganizationMembershipQuerySet
 
 from .base import OrganizationBaseSelector
 
@@ -26,7 +25,7 @@ class OrganizationMembershipSelector(OrganizationBaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> OrganizationMembershipQuerySet:
         """
         Return memberships scoped to the requesting user's organizations.
 

@@ -1,3 +1,5 @@
+from typing import Any
+
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
@@ -6,14 +8,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 
-class DummySerializer(serializers.Serializer):
+class DummySerializer(serializers.Serializer[Any]):
     pass
 # For now, intelligence search is a thin proxy that returns the same mock index
 # that the frontend previously built locally. In a real implementation, this would
 # query a search index (e.g., Elasticsearch) that indexes all domain entities.
 # We return a stub that matches the frontend's expected shape.
 
-class IntelligenceSearchView(GenericAPIView):
+class IntelligenceSearchView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 
@@ -59,7 +61,7 @@ class IntelligenceSearchView(GenericAPIView):
         })
 
 
-class IntelligenceSearchSavedView(GenericAPIView):
+class IntelligenceSearchSavedView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 
@@ -72,7 +74,7 @@ class IntelligenceSearchSavedView(GenericAPIView):
         return Response({"id": "save-001", **request.data, "created_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z"}, status=201)
 
 
-class IntelligenceSearchSavedDetailView(GenericAPIView):
+class IntelligenceSearchSavedDetailView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 
@@ -80,7 +82,7 @@ class IntelligenceSearchSavedDetailView(GenericAPIView):
         return Response(status=204)
 
 
-class IntelligenceSearchRecentView(GenericAPIView):
+class IntelligenceSearchRecentView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 

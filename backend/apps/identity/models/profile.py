@@ -71,7 +71,7 @@ class Profile(EntityModel):
         db_index=True,
     )
 
-    objects = ProfileManager()
+    objects: ProfileManager = ProfileManager()
 
     class Meta:
         db_table = "identity_profiles"

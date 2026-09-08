@@ -4,7 +4,7 @@ from apps.core.api.serializers.base import BaseReadSerializer, BaseWriteSerializ
 from apps.organization.models import Client
 
 
-class ClientSerializer(BaseReadSerializer):
+class ClientSerializer(BaseReadSerializer[Client]):
     organization_id = serializers.UUIDField(read_only=True)
 
     class Meta:
@@ -40,7 +40,7 @@ class ClientDetailSerializer(ClientSerializer):
     pass
 
 
-class ClientCreateSerializer(BaseWriteSerializer):
+class ClientCreateSerializer(BaseWriteSerializer[Client]):
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
 
@@ -66,7 +66,7 @@ class ClientCreateSerializer(BaseWriteSerializer):
         read_only_fields = ("id", "uuid")
 
 
-class ClientUpdateSerializer(BaseWriteSerializer):
+class ClientUpdateSerializer(BaseWriteSerializer[Client]):
     class Meta:
         model = Client
         fields = (

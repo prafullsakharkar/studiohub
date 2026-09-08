@@ -28,7 +28,9 @@ class TestProfileFilterSet:
 
         assert filterset.is_valid()
         assert filterset.qs.count() == 1
-        assert filterset.qs.first().user.id == user.id
+        _first = filterset.qs.first()
+        assert _first is not None
+        assert _first.user.id == user.id
 
     @pytest.mark.django_db
     def test_filter_by_first_name(self):
@@ -44,7 +46,9 @@ class TestProfileFilterSet:
 
         assert filterset.is_valid()
         assert filterset.qs.count() == 1
-        assert filterset.qs.first().first_name == "John"
+        _first = filterset.qs.first()
+        assert _first is not None
+        assert _first.first_name == "John"
 
     @pytest.mark.django_db
     def test_filter_by_last_name(self):
@@ -60,7 +64,9 @@ class TestProfileFilterSet:
 
         assert filterset.is_valid()
         assert filterset.qs.count() == 1
-        assert filterset.qs.first().last_name == "Doe"
+        _first = filterset.qs.first()
+        assert _first is not None
+        assert _first.last_name == "Doe"
 
     @pytest.mark.django_db
     def test_filter_by_display_name(self):
@@ -76,7 +82,9 @@ class TestProfileFilterSet:
 
         assert filterset.is_valid()
         assert filterset.qs.count() == 1
-        assert filterset.qs.first().display_name == "John Doe"
+        _first = filterset.qs.first()
+        assert _first is not None
+        assert _first.display_name == "John Doe"
 
     @pytest.mark.django_db
     def test_filter_by_timezone(self):
@@ -92,7 +100,9 @@ class TestProfileFilterSet:
 
         assert filterset.is_valid()
         assert filterset.qs.count() == 1
-        assert filterset.qs.first().timezone == "UTC"
+        _first = filterset.qs.first()
+        assert _first is not None
+        assert _first.timezone == "UTC"
 
     @pytest.mark.django_db
     def test_filter_by_language(self):
@@ -108,7 +118,9 @@ class TestProfileFilterSet:
 
         assert filterset.is_valid()
         assert filterset.qs.count() == 1
-        assert filterset.qs.first().language == "en"
+        _first = filterset.qs.first()
+        assert _first is not None
+        assert _first.language == "en"
 
     @pytest.mark.django_db
     def test_filter_by_search(self):
@@ -141,4 +153,6 @@ class TestProfileFilterSet:
 
         assert filterset.is_valid()
         profiles = filterset.qs
-        assert profiles.first().first_name == "Alice"
+        _first = profiles.first()
+        assert _first is not None
+        assert _first.first_name == "Alice"

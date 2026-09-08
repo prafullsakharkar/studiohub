@@ -13,7 +13,7 @@ class SearchFilterMixin(django_filters.FilterSet):
 
     search = django_filters.CharFilter(method="filter_search")
 
-    search_fields = ()
+    search_fields: tuple[str, ...] = ()
 
     def filter_search(
         self,

@@ -9,13 +9,12 @@ class QuerysetMixin:
     """
     Query optimization helpers.
     """
+    select_related: tuple[str, ...] = ()
 
-    select_related = ()
-
-    prefetch_related = ()
+    prefetch_related: tuple[str, ...] = ()
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset()  # pyright: ignore[reportAttributeAccessIssue]
 
         if self.select_related:
             queryset = queryset.select_related(*self.select_related)

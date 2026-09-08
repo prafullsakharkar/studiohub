@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from django.db.models import QuerySet
-
 from apps.core.selectors.base import BaseSelector
 from apps.organization.models import GroupRole
+from apps.organization.querysets import GroupRoleQuerySet
 
 
 class GroupRoleSelector(BaseSelector):
@@ -19,7 +18,7 @@ class GroupRoleSelector(BaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> GroupRoleQuerySet:
         """
         Get group role queryset.
         """

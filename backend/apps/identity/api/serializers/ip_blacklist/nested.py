@@ -1,8 +1,10 @@
+from typing import Any
+
 from apps.core.api.serializers.base import BaseNestedSerializer
 from apps.identity.models import IPBlacklist
 
 
-class IPBlacklistNestedSerializer(BaseNestedSerializer):
+class IPBlacklistNestedSerializer(BaseNestedSerializer[Any]):
 
     class Meta(BaseNestedSerializer.Meta):
 

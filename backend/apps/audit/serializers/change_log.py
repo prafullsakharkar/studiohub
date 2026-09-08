@@ -6,7 +6,7 @@ from rest_framework import serializers
 from apps.audit.models.change_log import ChangeLog
 
 
-class ChangeLogSerializer(serializers.ModelSerializer):
+class ChangeLogSerializer(serializers.ModelSerializer[ChangeLog]):
     """
     Serializer for ChangeLog.
     """

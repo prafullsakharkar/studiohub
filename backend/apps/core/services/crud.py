@@ -22,6 +22,7 @@ class CRUDService(BaseService):
     @classmethod
     @transaction.atomic
     def create(cls, **validated_data):
+        assert cls.model is not None, "model must be set on the service class."
         return cls.model.objects.create(
             **validated_data,
         )

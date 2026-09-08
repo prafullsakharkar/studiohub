@@ -6,7 +6,7 @@ from rest_framework import serializers
 from apps.publishing.models import PublishDestination
 
 
-class DestinationListSerializer(serializers.ModelSerializer):
+class DestinationListSerializer(serializers.ModelSerializer[PublishDestination]):
     """Serializer for publish destination list view."""
 
     type = serializers.CharField(source="destination_type")

@@ -1,10 +1,12 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.organization.api.serializers.base import OrganizationEntitySerializer
 from apps.organization.models import RolePermission
 
 
-class RolePermissionBaseSerializer(OrganizationEntitySerializer):
+class RolePermissionBaseSerializer(OrganizationEntitySerializer[RolePermission]):
     """
     Base serializer for RolePermission.
     """
@@ -103,7 +105,7 @@ class RolePermissionDetailSerializer(RolePermissionBaseSerializer):
         )
 
 
-class RolePermissionGrantSerializer(serializers.Serializer):
+class RolePermissionGrantSerializer(serializers.Serializer[Any]):
     """
     Serializer for granting RolePermission.
     """
@@ -113,7 +115,7 @@ class RolePermissionGrantSerializer(serializers.Serializer):
     expires_at = serializers.DateTimeField(required=False, allow_null=True)
 
 
-class RolePermissionRevokeSerializer(serializers.Serializer):
+class RolePermissionRevokeSerializer(serializers.Serializer[Any]):
     """
     Serializer for revoking RolePermission.
     """

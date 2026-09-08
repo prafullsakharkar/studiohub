@@ -11,7 +11,7 @@ from apps.organization.selectors.user_role import UserRoleSelector
 from apps.organization.services.user_role import UserRoleService
 
 
-class UserRoleViewSet(OrganizationEntityViewSet):
+class UserRoleViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     API endpoint for UserRole.
     """

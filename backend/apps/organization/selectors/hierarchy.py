@@ -4,7 +4,7 @@ Organization hierarchy selectors.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from apps.organization.models import (
     Department,
@@ -27,7 +27,7 @@ class OrganizationHierarchySelector:
     def get_organization_tree(
         cls,
         organization: Organization,
-    ) -> dict:
+    ) -> dict[Any, Any]:
         """
         Get organization hierarchy as a tree structure.
 
@@ -224,7 +224,7 @@ class OrganizationHierarchySelector:
     def get_department_tree(
         cls,
         department: Department,
-    ) -> dict:
+    ) -> dict[Any, Any]:
         """
         Get department hierarchy as a tree structure.
 
@@ -252,7 +252,7 @@ class OrganizationHierarchySelector:
     def get_team_tree(
         cls,
         team: Team,
-    ) -> dict:
+    ) -> dict[Any, Any]:
         """
         Get team hierarchy as a tree structure.
 

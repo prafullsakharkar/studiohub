@@ -13,7 +13,7 @@ from apps.audit.services.track import TrackService
 class TrackViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
-    AuditEntityViewSet,
+    AuditEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     ViewSet for Track.

@@ -25,7 +25,7 @@ class GroupRole(EntityModel):
         related_name="role_groups",
     )
 
-    objects = GroupRoleManager()
+    objects: GroupRoleManager = GroupRoleManager()
 
     class Meta:
         db_table = "organization_group_role"

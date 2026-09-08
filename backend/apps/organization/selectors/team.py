@@ -1,6 +1,6 @@
-from django.db.models import QuerySet
 
 from apps.organization.models.team import Team
+from apps.organization.querysets.team import TeamQuerySet
 from apps.organization.selectors.base import OrganizationBaseSelector
 
 
@@ -12,7 +12,7 @@ class TeamSelector(OrganizationBaseSelector):
     model = Team
 
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+    def get_queryset(cls, *, request=None, view=None) -> TeamQuerySet:
         return cls.model.objects.select_related(
             "organization",
             "department",

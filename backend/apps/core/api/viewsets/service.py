@@ -12,7 +12,7 @@ from .generic import BaseModelViewSet
 
 class ServiceModelViewSet(
     ServiceMixin,
-    BaseModelViewSet,
+    BaseModelViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     Declarative ViewSet.

@@ -25,7 +25,7 @@ from apps.organization.services.work_calendar import (
 
 
 class WorkCalendarViewSet(
-    OrganizationEntityViewSet,
+    OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     API endpoint for WorkCalendar.

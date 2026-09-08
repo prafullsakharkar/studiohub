@@ -8,13 +8,17 @@ server error.
 
 from __future__ import annotations
 
+from typing import Any
+
 from django.core.exceptions import ValidationError
 from django.test import RequestFactory, TestCase
 
+from apps.identity.models.user import User
 from apps.identity.tests.factories import UserFactory
 from apps.organization.middleware.organization_context import (
     resolve_organization_context,
 )
+from apps.organization.models.organization import Organization
 from apps.organization.tests.factories import (
     OrganizationFactory,
     OrganizationMembershipFactory,
@@ -23,6 +27,10 @@ from apps.organization.tests.factories import (
 
 class OrganizationContextResolutionTests(TestCase):
     """Tests for resolve_organization_context robustness."""
+
+    factory: RequestFactory
+    user: User
+    organization: Organization
 
     def setUp(self) -> None:
         self.factory = RequestFactory()
@@ -33,9 +41,13 @@ class OrganizationContextResolutionTests(TestCase):
             user=self.user,
         )
 
-    def _request(self, org_id: str | None):
-        headers = {} if org_id is None else {"HTTP_X_ORGANIZATION_ID": org_id}
-        request = self.factory.get("/api/v1/projects/", **headers)
+    def _request(self, org_id: str | None) -> Any:
+        if org_id is None:
+            request: Any = self.factory.get("/api/v1/projects/")
+        else:
+            request = self.factory.get(
+                "/api/v1/projects/", HTTP_X_ORGANIZATION_ID=org_id
+            )
         request.user = self.user
         return request
 
@@ -71,7 +83,7 @@ class OrganizationContextResolutionTests(TestCase):
     def test_unauthenticated_user_resolves_to_no_organization(self) -> None:
         from django.contrib.auth.models import AnonymousUser
 
-        request = self.factory.get(
+        request: Any = self.factory.get(
             "/", HTTP_X_ORGANIZATION_ID=str(self.organization.id)
         )
         request.user = AnonymousUser()

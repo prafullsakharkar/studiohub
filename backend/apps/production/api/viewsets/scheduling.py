@@ -1,3 +1,5 @@
+from typing import Any
+
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
@@ -6,11 +8,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 
-class DummySerializer(serializers.Serializer):
+class DummySerializer(serializers.Serializer[Any]):
     pass
 
 
-class SchedulingEventsView(GenericAPIView):
+class SchedulingEventsView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     permission_classes = (IsAuthenticated,)
     serializer_class = DummySerializer
 
@@ -23,7 +25,7 @@ class SchedulingEventsView(GenericAPIView):
         return Response({"id": "evt-001", **request.data}, status=201)
 
 
-class SchedulingEventDetailView(GenericAPIView):
+class SchedulingEventDetailView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     permission_classes = (IsAuthenticated,)
     serializer_class = DummySerializer
 
@@ -43,7 +45,7 @@ class SchedulingEventDetailView(GenericAPIView):
         return Response(status=204)
 
 
-class SchedulingResourcesView(GenericAPIView):
+class SchedulingResourcesView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     permission_classes = (IsAuthenticated,)
     serializer_class = DummySerializer
 
@@ -56,7 +58,7 @@ class SchedulingResourcesView(GenericAPIView):
         return Response({"id": pk, **request.data})
 
 
-class SchedulingCapacityView(GenericAPIView):
+class SchedulingCapacityView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     permission_classes = (IsAuthenticated,)
     serializer_class = DummySerializer
 
@@ -65,7 +67,7 @@ class SchedulingCapacityView(GenericAPIView):
         return Response([])
 
 
-class SchedulingOverbookingView(GenericAPIView):
+class SchedulingOverbookingView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     permission_classes = (IsAuthenticated,)
     serializer_class = DummySerializer
 
@@ -74,7 +76,7 @@ class SchedulingOverbookingView(GenericAPIView):
         return Response([])
 
 
-class SchedulingResolveOverbookingView(GenericAPIView):
+class SchedulingResolveOverbookingView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     permission_classes = (IsAuthenticated,)
     serializer_class = DummySerializer
 
@@ -83,7 +85,7 @@ class SchedulingResolveOverbookingView(GenericAPIView):
         return Response({"success": True, "message": "Resolved"})
 
 
-class SchedulingHolidaysView(GenericAPIView):
+class SchedulingHolidaysView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     permission_classes = (IsAuthenticated,)
     serializer_class = DummySerializer
 
@@ -92,7 +94,7 @@ class SchedulingHolidaysView(GenericAPIView):
         return Response([])
 
 
-class SchedulingLeavesView(GenericAPIView):
+class SchedulingLeavesView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     permission_classes = (IsAuthenticated,)
     serializer_class = DummySerializer
 
@@ -105,7 +107,7 @@ class SchedulingLeavesView(GenericAPIView):
         return Response({"id": "leave-001", **request.data}, status=201)
 
 
-class AutomationRulesView(GenericAPIView):
+class AutomationRulesView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     permission_classes = (IsAuthenticated,)
     serializer_class = DummySerializer
 
@@ -118,7 +120,7 @@ class AutomationRulesView(GenericAPIView):
         return Response({"id": "rule-001", **request.data}, status=201)
 
 
-class AutomationRuleDetailView(GenericAPIView):
+class AutomationRuleDetailView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     permission_classes = (IsAuthenticated,)
     serializer_class = DummySerializer
 
@@ -134,7 +136,7 @@ class AutomationRuleDetailView(GenericAPIView):
         return Response(status=204)
 
 
-class AutomationAuditLogsView(GenericAPIView):
+class AutomationAuditLogsView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     permission_classes = (IsAuthenticated,)
     serializer_class = DummySerializer
 

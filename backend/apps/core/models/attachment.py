@@ -22,8 +22,9 @@ def attachment_upload_path(instance: Attachment, filename: str) -> str:
     
     # Get organization from instance if available
     org_id = "unknown"
-    if hasattr(instance, "organization") and instance.organization:
-        org_id = instance.organization.id
+    organization = getattr(instance, "organization", None)
+    if organization is not None and organization.id:
+        org_id = str(organization.id)
     
     # Generate unique filename
     ext = filename.split(".")[-1] if "." in filename else "dat"
@@ -119,7 +120,7 @@ class Attachment(EntityModel):
     @property
     def filename(self) -> str:
         """Get the original filename."""
-        return self.file.name.split("/")[-1] if self.file else ""
+        return (self.file.name or "").split("/")[-1] if self.file else ""
 
     @property
     def extension(self) -> str:
@@ -129,8 +130,9 @@ class Attachment(EntityModel):
     def delete(self, *args, **kwargs) -> tuple[int, dict[str, int]]:
         """Delete the attachment and the underlying file."""
         # Delete the file from storage
-        if self.file and StorageService.exists(self.file.name):
-            StorageService.delete(self.file.name)
+        file_name = self.file.name if self.file else None
+        if file_name and StorageService.exists(file_name):
+            StorageService.delete_file(file_name)
         
         # Delete the database record
         return super().delete(*args, **kwargs)

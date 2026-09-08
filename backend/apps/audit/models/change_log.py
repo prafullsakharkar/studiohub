@@ -3,6 +3,8 @@ Change Log model for tracking data changes.
 """
 from __future__ import annotations
 
+from typing import Any
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -110,7 +112,7 @@ class ChangeLog(EntityModel, TimeStampedModel):
     def __str__(self):
         return f"{self.change_type}: {self.target_type} {self.target_id}"
     
-    def get_changes(self) -> dict:
+    def get_changes(self) -> dict[Any, Any]:
         """Get the changes between before and after values."""
         changes = {}
         for field in self.changed_fields:

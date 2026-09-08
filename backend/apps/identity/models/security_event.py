@@ -55,7 +55,7 @@ class SecurityEvent(EntityModel):
         db_index=True,
     )
 
-    objects = SecurityEventManager()
+    objects: SecurityEventManager = SecurityEventManager()
 
     class Meta:
         db_table = "identity_security_events"

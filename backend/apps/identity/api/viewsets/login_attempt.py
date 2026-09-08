@@ -25,7 +25,7 @@ from apps.identity.services.login_attempt import (
 
 
 class LoginAttemptViewSet(
-    IdentityViewSet,
+    IdentityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     API endpoint for LoginAttempt.

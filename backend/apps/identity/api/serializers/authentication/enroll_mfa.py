@@ -1,7 +1,9 @@
+from typing import Any
+
 from rest_framework import serializers
 
 
-class MFAEnrollSerializer(serializers.Serializer):
+class MFAEnrollSerializer(serializers.Serializer[Any]):
     method = serializers.ChoiceField(
         choices=[
             ("totp", "TOTP"),
@@ -10,7 +12,7 @@ class MFAEnrollSerializer(serializers.Serializer):
     )
 
 
-class MFAEnrollResponseSerializer(serializers.Serializer):
+class MFAEnrollResponseSerializer(serializers.Serializer[Any]):
     secret = serializers.CharField(read_only=True)
 
     provisioning_uri = serializers.CharField(read_only=True)

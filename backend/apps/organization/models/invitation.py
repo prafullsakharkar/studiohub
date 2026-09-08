@@ -97,7 +97,7 @@ class Invitation(EntityModel):
         blank=True,
     )
 
-    objects = InvitationManager()
+    objects: InvitationManager = InvitationManager()
 
     class Meta:
         db_table = "organization_invitation"

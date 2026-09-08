@@ -7,7 +7,7 @@ Provides base permission classes and domain-specific permission types.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 
 from rest_framework import permissions
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
@@ -170,7 +170,7 @@ class BasePermissionChecker:
             permission_class: The permission class to use
         """
         self.permission_class = permission_class or self.permission_class
-        self._permission_instance: BasePermission | None = None
+        self._permission_instance: Optional[BasePermission] = None  # noqa: UP045
 
     @property
     def permission(self) -> BasePermission:
@@ -258,7 +258,7 @@ class BasePermissionChecker:
             obj: The object being accessed (optional)
         """
         self.permission.log_denied(request, view, obj)
-        raise permissions.PermissionDenied(self.permission.message)
+        raise PermissionDenied(self.permission.message)
 
 
 class IsAuthenticatedPermission(BasePermission):
@@ -309,8 +309,8 @@ class IsAdminPermission(BasePermission):
         return bool(
             request.user
             and request.user.is_authenticated
-            and request.user.is_staff
-            and request.user.is_superuser,
+            and getattr(request.user, "is_staff", False)
+            and getattr(request.user, "is_superuser", False),
         )
 
     def has_object_permission(
@@ -333,8 +333,8 @@ class IsAdminPermission(BasePermission):
         return bool(
             request.user
             and request.user.is_authenticated
-            and request.user.is_staff
-            and request.user.is_superuser,
+            and getattr(request.user, "is_staff", False)
+            and getattr(request.user, "is_superuser", False),
         )
 
 
@@ -371,7 +371,7 @@ class IsOwnerPermission(BasePermission):
         if owner is None:
             owner = getattr(obj, "user", None)
 
-        return bool(request.user and owner and request.user.id == owner.id)
+        return bool(request.user and owner and getattr(request.user, "id", None) == owner.id)
 
 
 class ReadOnlyPermission(BasePermission):

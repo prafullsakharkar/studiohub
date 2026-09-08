@@ -13,7 +13,7 @@ from apps.organization.selectors.role_permission import RolePermissionSelector
 from apps.organization.services.role_permission import RolePermissionService
 
 
-class RolePermissionViewSet(OrganizationEntityViewSet):
+class RolePermissionViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     API endpoint for RolePermission.
     """

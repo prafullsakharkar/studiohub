@@ -31,7 +31,9 @@ class TestSecurityEventFilterSet:
 
         assert filterset.is_valid()
         assert filterset.qs.count() == 1
-        assert filterset.qs.first().user.id == user.id
+        _first = filterset.qs.first()
+        assert _first is not None
+        assert _first.user.id == user.id
 
     @pytest.mark.django_db
     def test_filter_by_event_type(self):
@@ -64,7 +66,9 @@ class TestSecurityEventFilterSet:
 
         assert filterset.is_valid()
         assert filterset.qs.count() == 1
-        assert filterset.qs.first().ip_address == "192.168.1.1"
+        _first = filterset.qs.first()
+        assert _first is not None
+        assert _first.ip_address == "192.168.1.1"
 
     @pytest.mark.django_db
     def test_filter_by_date_range(self):
@@ -100,4 +104,7 @@ class TestSecurityEventFilterSet:
 
         assert filterset.is_valid()
         events = filterset.qs
-        assert events.first().occurred_at <= events.last().occurred_at
+        _first = events.first()
+        _last = events.last()
+        assert _first is not None and _last is not None
+        assert _first.occurred_at <= _last.occurred_at
