@@ -1,3 +1,4 @@
+
 from .base import TeamBaseSerializer
 
 
@@ -13,5 +14,4 @@ class TeamListSerializer(TeamBaseSerializer):
             "name",
             "department",
             "lead",
-            "status",
         )

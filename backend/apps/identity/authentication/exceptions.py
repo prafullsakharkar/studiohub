@@ -1,4 +1,5 @@
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework import status
+from rest_framework.exceptions import APIException, AuthenticationFailed
 
 
 class AuthenticationException(AuthenticationFailed):
@@ -43,6 +44,20 @@ class SessionRevoked(AuthenticationException):
 
 class TooManyLoginAttempts(AuthenticationException):
     default_detail = "Too many login attempts."
+
+
+class IPBlocked(APIException):
+    """
+    Client IP is on the IP blacklist.
+
+    Plain ``APIException`` (not ``PermissionDenied``) so the shared exception
+    handler does not coerce the 403 into a 401 for anonymous callers — callers
+    must be able to distinguish "blocked" from "bad credentials".
+    """
+
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = "This IP address is blocked."
+    default_code = "ip_blocked"
 
 
 class AuthenticationRequired(AuthenticationException):

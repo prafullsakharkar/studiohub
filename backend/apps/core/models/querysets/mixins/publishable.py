@@ -4,6 +4,9 @@ Publishable queryset mixin.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any, ClassVar
+
 from django.utils import timezone
 
 
@@ -11,6 +14,8 @@ class PublishableQuerySetMixin:
     """
     QuerySet helpers for publishable models.
     """
+    # Mixin contract: provided by the QuerySet subclass.
+    filter: ClassVar[Callable[..., Any]]
 
     def published(self):
         """

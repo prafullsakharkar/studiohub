@@ -18,6 +18,7 @@ class IdentityBaseService:
 
     @classmethod
     def queryset(cls):
+        assert cls.model is not None, "model must be set on the service class."
         return cls.model.objects.all()
 
     @classmethod
@@ -25,6 +26,7 @@ class IdentityBaseService:
         if cls.selector:
             return cls.selector.get(*args, **kwargs)
 
+        assert cls.model is not None, "model must be set on the service class."
         return cls.model.objects.get(*args, **kwargs)
 
     @classmethod
@@ -106,22 +108,6 @@ class IdentityBaseService:
         cls.after_delete(instance)
 
     # ------------------------------------------------------------------
-    # Archive
-    # ------------------------------------------------------------------
-
-    @classmethod
-    @transaction.atomic
-    def archive_instance(
-        cls,
-        instance,
-    ):
-        instance.archive()
-
-        cls.after_archive(instance)
-
-        return instance
-
-    # ------------------------------------------------------------------
     # Restore
     # ------------------------------------------------------------------
 
@@ -147,6 +133,7 @@ class IdentityBaseService:
         cls,
         objects,
     ):
+        assert cls.model is not None, "model must be set on the service class."
         return cls.model.objects.bulk_create(
             objects,
         )
@@ -158,6 +145,7 @@ class IdentityBaseService:
         objects,
         fields,
     ):
+        assert cls.model is not None, "model must be set on the service class."
         return cls.model.objects.bulk_update(
             objects,
             fields,

@@ -39,7 +39,7 @@ class WorkHours(OrganizationEntityModel):
         default=True,
     )
 
-    objects = WorkHoursManager()
+    objects: WorkHoursManager = WorkHoursManager()
 
     class Meta:
         db_table = "organization_work_hours"

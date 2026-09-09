@@ -1,0 +1,3 @@
+"""
+Organization managers tests.
+"""

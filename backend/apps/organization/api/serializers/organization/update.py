@@ -1,9 +1,11 @@
+from typing import Any
+
 from apps.core.api.serializers import BaseWriteSerializer
 from apps.organization.models import Organization
 
 
 class OrganizationUpdateSerializer(
-    BaseWriteSerializer,
+    BaseWriteSerializer[Any],
 ):
 
     class Meta:
@@ -11,7 +13,6 @@ class OrganizationUpdateSerializer(
 
         read_only_fields = (
             "id",
-            "uuid",
             "code",
             "slug",
             "created_at",

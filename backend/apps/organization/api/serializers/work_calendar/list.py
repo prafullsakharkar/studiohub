@@ -1,3 +1,4 @@
+
 from .base import (
     WorkCalendarBaseSerializer,
 )
@@ -18,5 +19,4 @@ class WorkCalendarListSerializer(
             "organization",
             "timezone",
             "is_default",
-            "status",
         )

@@ -8,5 +8,9 @@ class CoreConfig(AppConfig):
         from apps.core.events.autodiscover import (
             autodiscover_events,
         )
+        from apps.core.logging.structlog_config import (
+            configure_structlog,
+        )
 
         autodiscover_events()
+        configure_structlog()

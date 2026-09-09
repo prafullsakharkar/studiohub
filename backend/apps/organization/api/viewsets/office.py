@@ -1,3 +1,4 @@
+from apps.core.api.pagination import StandardPagination
 from apps.organization.api.filtersets.office import OfficeFilterSet
 from apps.organization.api.serializers.office import (
     OfficeCreateSerializer,
@@ -14,7 +15,7 @@ from apps.organization.selectors.office import OfficeSelector
 from apps.organization.services.office import OfficeService
 
 
-class OfficeViewSet(OrganizationEntityViewSet):
+class OfficeViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     API endpoint for Office.
     """
@@ -25,6 +26,8 @@ class OfficeViewSet(OrganizationEntityViewSet):
     service_class = OfficeService
 
     filterset_class = OfficeFilterSet
+
+    pagination_class = StandardPagination
 
     serializer_map = {
         "list": OfficeListSerializer,

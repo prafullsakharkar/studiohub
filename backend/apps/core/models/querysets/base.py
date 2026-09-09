@@ -6,31 +6,19 @@ Provides common helper methods for all querysets.
 
 from __future__ import annotations
 
+from typing import Any
+
 from django.db import models
 
 
-class BaseQuerySet(models.QuerySet):
+class BaseQuerySet(models.QuerySet[Any, Any]):
     """
     Base queryset shared across all models.
+
+    NOTE: Lifecycle helpers (active/inactive/draft/archived) are provided by
+    LifecycleQuerySetMixin so BaseQuerySet deliberately does not implement
+    them to avoid duplicated/ambiguous semantics across different models.
     """
-
-    def active(self):
-        """
-        Return active records.
-        """
-        if hasattr(self.model, "status"):
-            return self.filter(status="active")
-
-        return self
-
-    def inactive(self):
-        """
-        Return inactive records.
-        """
-        if hasattr(self.model, "status"):
-            return self.exclude(status="active")
-
-        return self
 
     def ids(self):
         """
@@ -38,11 +26,22 @@ class BaseQuerySet(models.QuerySet):
         """
         return self.values_list("id", flat=True)
 
-    def ordered(self):
+    def ordered(self):  # pyright: ignore[reportIncompatibleMethodOverride]
         """
-        Respect model ordering.
+        Respect model ordering when defined on the model's Meta.
+
+        NOTE: intentionally shadows Django's ``QuerySet.ordered`` boolean
+        property with a chainable method (always call it: ``.ordered()``).
         """
-        return self.order_by(*self.model._meta.ordering)
+        model = self.model
+        if model is None:
+            return self
+
+        ordering = getattr(model._meta, "ordering", None)
+        if ordering:
+            return self.order_by(*ordering)
+
+        return self
 
     def latest_first(self):
         """

@@ -1,16 +1,13 @@
 """
 Organization-aware managers.
+
+Re-exported from apps.core.models.managers for backward compatibility.
 """
 
 from __future__ import annotations
 
-from apps.core.models.managers.base import BaseManager
-from apps.core.models.querysets import OrganizationQuerySet
+from apps.core.models.managers.organization import OrganizationManager
 
-
-class OrganizationManager(BaseManager.from_queryset(OrganizationQuerySet)):
-    """
-    Manager for organization-aware models.
-    """
-
-    pass
+__all__ = [
+    "OrganizationManager",
+]

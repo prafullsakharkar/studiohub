@@ -1,41 +1,41 @@
-from apps.core.events import Event
+from apps.core.events import DomainEvent
 
 
-class MFAEnrollmentStarted(Event):
-    event_name = "identity.mfa.enrollment.started"
+class MFAEnrollmentStarted(DomainEvent):
+    event_type = "identity.mfa.enrollment.started"
 
 
-class MFAEnabled(Event):
-    event_name = "identity.mfa.enabled"
+class MFAEnabled(DomainEvent):
+    event_type = "identity.mfa.enabled"
 
 
-class MFADisabled(Event):
-    event_name = "identity.mfa.disabled"
+class MFADisabled(DomainEvent):
+    event_type = "identity.mfa.disabled"
 
 
-class MFAVerified(Event):
-    event_name = "identity.mfa.verified"
+class MFAVerified(DomainEvent):
+    event_type = "identity.mfa.verified"
 
 
-class MFAVerificationFailed(Event):
-    event_name = "identity.mfa.verification.failed"
+class MFAVerificationFailed(DomainEvent):
+    event_type = "identity.mfa.verification.failed"
 
 
-class MFALocked(Event):
-    event_name = "identity.mfa.locked"
+class MFALocked(DomainEvent):
+    event_type = "identity.mfa.locked"
 
 
-class BackupCodesGenerated(Event):
-    event_name = "identity.mfa.backup_codes.generated"
+class BackupCodesGenerated(DomainEvent):
+    event_type = "identity.mfa.backup_codes.generated"
 
 
-class BackupCodeUsed(Event):
-    event_name = "identity.mfa.backup_code.used"
+class BackupCodeUsed(DomainEvent):
+    event_type = "identity.mfa.backup_code.used"
 
 
-class TrustedDeviceRegistered(Event):
-    event_name = "identity.mfa.trusted_device.registered"
+class TrustedDeviceRegistered(DomainEvent):
+    event_type = "identity.mfa.trusted_device.registered"
 
 
-class TrustedDeviceRevoked(Event):
-    event_name = "identity.mfa.trusted_device.revoked"
+class TrustedDeviceRevoked(DomainEvent):
+    event_type = "identity.mfa.trusted_device.revoked"

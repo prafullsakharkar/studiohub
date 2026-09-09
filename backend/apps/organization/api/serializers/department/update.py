@@ -1,9 +1,11 @@
+from typing import Any
+
 from apps.core.api.serializers import BaseWriteSerializer
 from apps.organization.models import Department
 
 
 class DepartmentUpdateSerializer(
-    BaseWriteSerializer,
+    BaseWriteSerializer[Any],
 ):
 
     class Meta:

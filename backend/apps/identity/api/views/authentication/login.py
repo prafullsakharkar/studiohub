@@ -1,8 +1,9 @@
-from apps.core.api.views import BaseAPIView
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from apps.core.api.throttling import ResilientScopedRateThrottle
+from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import (
     LoginSerializer,
 )
@@ -16,6 +17,10 @@ class LoginAPIView(BaseAPIView):
     authentication_classes = ()
 
     permission_classes = (AllowAny,)
+
+    throttle_classes = (ResilientScopedRateThrottle,)
+
+    throttle_scope = "login"
 
     serializer_class = LoginSerializer
 

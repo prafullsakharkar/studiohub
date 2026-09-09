@@ -1,0 +1,25 @@
+%% follow-up-system-architecture.mmd
+%% Follow-up: high-level system architecture (editable)
+
+graph LR
+  %% Actors
+  User[User] --> Frontend[Frontend App]
+
+  %% API and services
+  Frontend --> APIGW[API Gateway]
+  APIGW --> AuthService[(Auth Service)]
+  APIGW --> AppBackend[(Application Backend)]
+
+  %% Data stores
+  AppBackend --> DB[(Primary Database)]
+  AppBackend --> Storage[(Object Storage)]
+
+  %% Optional components
+  AppBackend --> Cache[(Cache / Redis)]
+  Storage --> CDN[(CDN)]
+
+  classDef external fill:#f9f,stroke:#333,stroke-width:1px;
+  class User external;
+
+  %% Notes
+  %% - Edit boxes, labels and links to reflect the concrete services used (e.g., AWS API Gateway, Kong, GCP Cloud Run).

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import QuerySet
 
@@ -11,19 +13,45 @@ class BaseSelector:
 
     model = None
 
+    #: Model field used to scope querysets to the active organization.
+    #: Override for models without a direct organization foreign key
+    #: (e.g. ``"resource__organization"``).
+    scope_field = "organization"
+
     @classmethod
     def get_queryset(
         cls,
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> QuerySet[Any, Any]:
         """
         Return the base queryset.
 
         Applications should override.
         """
         raise NotImplementedError
+
+    @classmethod
+    def scope_by_request(
+        cls,
+        queryset: QuerySet[Any, Any],
+        *,
+        request=None,
+        view=None,
+    ) -> QuerySet[Any, Any]:
+        """
+        Restrict a queryset to the request's active organization.
+
+        Fails closed: without an active organization no records are
+        returned, so unscoped requests can never leak other tenants' data.
+        """
+        organization = getattr(request, "organization", None) if request else None
+        if organization is None:
+            return queryset.none()
+        return queryset.filter(
+            **{cls.scope_field: organization},
+        )
 
     @classmethod
     def all(
@@ -38,44 +66,61 @@ class BaseSelector:
         )
 
     @classmethod
-    def get(cls, **filters):
-        return cls.get_queryset().get(
+    def _resolve_queryset(cls, model=None):
+        """
+        Resolve the base queryset for a lookup.
+
+        Selectors may pass an explicit model as the first positional argument
+        (``cls.get(Model, id=...)``) or rely on the selector's own
+        ``get_queryset()`` (``cls.get(id=...)``).
+        """
+        if model is not None:
+            return model.objects.all()
+        return cls.get_queryset()
+
+    @classmethod
+    def get(cls, model=None, **filters):
+        return cls._resolve_queryset(model).get(
             **filters,
         )
 
     @classmethod
-    def filter(cls, **filters):
-        return cls.get_queryset().filter(
+    def filter(cls, model=None, **filters):
+        return cls._resolve_queryset(model).filter(
             **filters,
         )
 
     @classmethod
-    def exclude(cls, **filters):
-        return cls.get_queryset().exclude(
+    def exclude(cls, model=None, **filters):
+        return cls._resolve_queryset(model).exclude(
             **filters,
         )
 
     @classmethod
-    def exists(cls, **filters):
+    def exists(cls, model=None, **filters):
         return cls.filter(
+            model,
             **filters,
         ).exists()
 
     @classmethod
-    def first(cls, **filters):
+    def first(cls, model=None, **filters):
         return cls.filter(
+            model,
             **filters,
         ).first()
 
     @classmethod
-    def last(cls, **filters):
+    def last(cls, model=None, **filters):
         return cls.filter(
+            model,
             **filters,
         ).last()
 
     @classmethod
-    def count(cls, **filters):
+    def count(cls, model=None, **filters):
         return cls.filter(
+            model,
             **filters,
         ).count()
 
@@ -84,9 +129,10 @@ class BaseSelector:
         return cls.get_queryset().none()
 
     @classmethod
-    def get_or_none(cls, **filters):
+    def get_or_none(cls, model=None, **filters):
         try:
             return cls.get(
+                model,
                 **filters,
             )
         except ObjectDoesNotExist:

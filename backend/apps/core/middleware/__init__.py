@@ -7,6 +7,7 @@ from .organization import OrganizationMiddleware
 from .request_id import RequestIDMiddleware
 from .security import SecurityHeadersMiddleware
 from .timezone import TimezoneMiddleware
+from .trailing_slash import TrailingSlashMiddleware
 
 __all__ = [
     "AuditMiddleware",
@@ -18,4 +19,5 @@ __all__ = [
     "RequestIDMiddleware",
     "SecurityHeadersMiddleware",
     "TimezoneMiddleware",
+    "TrailingSlashMiddleware",
 ]

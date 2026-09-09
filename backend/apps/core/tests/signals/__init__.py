@@ -1,0 +1,3 @@
+"""
+Core signals tests package.
+"""

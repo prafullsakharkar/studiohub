@@ -1,0 +1,18 @@
+%% follow-up-sequence.mmd
+%% Follow-up: user login sequence (editable)
+
+sequenceDiagram
+  participant U as User
+  participant F as Frontend
+  participant A as Auth Service
+  participant B as Backend
+
+  U->>F: Submit credentials (username/password)
+  F->>A: POST /login (credentials)
+  A-->>F: 200 OK + JWT token
+  F->>B: GET /profile (Authorization: Bearer <token>)
+  B-->>F: 200 OK + user profile
+  F-->>U: Render profile / success
+
+  %% Notes:
+  %% - Expand the flow for MFA, refresh tokens, error handling, and session revocation as follow-up tasks.

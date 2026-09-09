@@ -1,0 +1,18 @@
+%%{init: {"theme":"default"}}%%
+sequenceDiagram
+  participant Domain as Domain Service
+  participant Outbox as Outbox/DB
+  participant Router as Notification Router
+  participant DB as Notifications DB
+  participant Queue as Delivery Queue (Celery)
+  participant Worker as Delivery Worker
+  participant Recipient as Recipient Inbox
+
+  Domain->>Outbox: persist event (event_id)
+  Outbox->>Router: forward event
+  Router->>DB: persist Notification + NotificationRecipient
+  Router->>Queue: enqueue deliveries per channel
+  Queue->>Worker: deliver attempt
+  Worker->>Recipient: deliver (email/webhook/inapp)
+  Worker->>DB: update delivery status
+  Worker-->>Worker: on failure retry/backoff -> DLQ

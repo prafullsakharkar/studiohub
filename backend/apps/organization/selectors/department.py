@@ -6,9 +6,10 @@ Selectors are responsible for read-only queries.
 
 from __future__ import annotations
 
-from django.db.models import Prefetch, QuerySet
+from django.db.models import Prefetch
 
 from apps.organization.models import Department
+from apps.organization.querysets.department import DepartmentQuerySet
 
 from .base import OrganizationBaseSelector
 
@@ -26,7 +27,7 @@ class DepartmentSelector(OrganizationBaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> DepartmentQuerySet:
         return (
             cls.model.objects.active()
             .select_related(
@@ -63,4 +64,10 @@ class DepartmentSelector(OrganizationBaseSelector):
 
     @classmethod
     def by_uuid(cls, uuid):
-        return cls.get(uuid=uuid)
+        """
+        Lookup by the UUID primary key.
+
+        ``uuid`` is a property alias for the ``id`` primary key field;
+        lookup must target the real column.
+        """
+        return cls.get(id=uuid)

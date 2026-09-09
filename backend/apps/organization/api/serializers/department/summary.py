@@ -1,3 +1,4 @@
+
 from .base import DepartmentSerializer
 
 
@@ -12,7 +13,6 @@ class DepartmentSummarySerializer(
             "uuid",
             "name",
             "code",
-            "organization_type",
-            "status",
-            "logo",
+            "department_type",
+            "manager",
         )

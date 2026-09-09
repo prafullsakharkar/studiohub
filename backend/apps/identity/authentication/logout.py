@@ -1,8 +1,3 @@
-from apps.identity.services.authentication import (
-    AuthenticationService,
-)
-
-
 class LogoutManager:
     """
     Logout facade.
@@ -13,6 +8,12 @@ class LogoutManager:
         cls,
         **kwargs,
     ):
+        # Imported lazily to avoid a circular import with
+        # ``apps.identity.services.authentication``.
+        from apps.identity.services.authentication import (
+            AuthenticationService,
+        )
+
         return AuthenticationService.logout(
             **kwargs,
         )

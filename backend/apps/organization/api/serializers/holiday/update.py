@@ -1,10 +1,11 @@
+
 from apps.organization.services.holiday import HolidayService
 
-from .base import HolidayBaseSerializer
+from .base import HolidaySerializer
 
 
 class HolidayUpdateSerializer(
-    HolidayBaseSerializer,
+    HolidaySerializer,
 ):
 
     def update(

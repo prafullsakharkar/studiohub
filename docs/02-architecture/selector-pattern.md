@@ -45,6 +45,48 @@ Database
 
 ---
 
+# BaseSelector
+
+The Core module provides a generic `BaseSelector` that all domain selectors inherit from. It is exported from `apps.core.selectors`:
+
+```python
+from apps.core.selectors import BaseSelector
+```
+
+`BaseSelector` provides read-only query primitives:
+
+| Method | Purpose |
+| --- | --- |
+| `get_queryset()` | Return the base queryset (subclasses override) |
+| `all()` | Return all records |
+| `get(**filters)` | Return a single record or raise `DoesNotExist` |
+| `filter(**filters)` | Return filtered queryset |
+| `exclude(**filters)` | Return excluded queryset |
+| `exists(**filters)` | Return whether any record matches |
+| `first(**filters)` | Return the first matching record |
+| `last(**filters)` | Return the last matching record |
+| `count(**filters)` | Return the number of matching records |
+| `get_or_none(**filters)` | Return a record or `None` |
+| `values_list(...)` | Return a list of values |
+| `in_bulk(...)` | Return records keyed by field value |
+| `select_related(...)` | Optimize foreign-key loading |
+| `prefetch_related(...)` | Optimize many-to-many loading |
+
+Example:
+
+```python
+class DepartmentSelector(BaseSelector):
+    @classmethod
+    def get_queryset(cls):
+        return Department.objects.select_related("organization")
+
+    @classmethod
+    def by_organization(cls, organization):
+        return cls.filter(organization=organization)
+```
+
+---
+
 # Responsibilities
 
 A selector may:
@@ -56,7 +98,7 @@ A selector may:
 - Apply pagination
 - Annotate querysets
 - Perform aggregations
-- Optimize related object loading
+- Optimize related object loading (`select_related`, `prefetch_related`)
 
 A selector should **not**:
 
@@ -65,6 +107,7 @@ A selector should **not**:
 - Update models
 - Execute business workflows
 - Publish events
+- Send notifications
 
 ---
 
@@ -176,6 +219,7 @@ Potential caching strategies:
 - Reuse query logic.
 - Hide ORM complexity from services.
 - Keep APIs independent of database implementation.
+- Inherit from `BaseSelector` for consistent read primitives.
 
 ---
 
@@ -186,6 +230,7 @@ Potential caching strategies:
 - Direct ORM queries inside API views
 - Copying query logic across modules
 - Returning unoptimized querysets
+- Exposing write methods (create / update / delete) on selectors
 
 ---
 

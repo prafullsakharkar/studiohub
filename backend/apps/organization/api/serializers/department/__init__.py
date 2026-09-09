@@ -6,8 +6,11 @@ from .nested import DepartmentNestedSerializer
 from .summary import DepartmentSummarySerializer
 from .update import DepartmentUpdateSerializer
 
+DepartmentBaseSerializer = DepartmentSerializer
+
 __all__ = [
     "DepartmentSerializer",
+    "DepartmentBaseSerializer",
     "DepartmentCreateSerializer",
     "DepartmentUpdateSerializer",
     "DepartmentNestedSerializer",

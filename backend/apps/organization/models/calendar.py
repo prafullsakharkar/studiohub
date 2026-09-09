@@ -30,7 +30,7 @@ class Calendar(OrganizationEntityModel):
         default=False,
     )
 
-    objects = CalendarManager()
+    objects: CalendarManager = CalendarManager()
 
     class Meta:
         db_table = "organization_calendar"

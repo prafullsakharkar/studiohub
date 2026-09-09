@@ -1,0 +1,45 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - heading "Sign In to StudioHub" [level=2] [ref=e5]
+      - paragraph [ref=e6]: Enter your studio credentials to access the production management pipeline.
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - generic [ref=e9]: Demo Accounts (Click to Fill)
+        - generic [ref=e14]: password123
+      - generic [ref=e15]:
+        - button "🎬 Alex Chen (Supervisor)" [ref=e16]
+        - button "🛡️ Marcus Vance (Admin)" [ref=e17]
+        - button "🎨 Elena Rostova (Lead)" [ref=e18]
+        - button "👤 David Miller (Client)" [ref=e19]
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - generic [ref=e22]: Studio Email
+        - textbox "Studio Email" [ref=e24]:
+          - /placeholder: artist@studiohub.vfx
+          - text: supervisor@studiohub.vfx
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - generic [ref=e27]: Password
+          - link "Forgot password?" [ref=e28] [cursor=pointer]:
+            - /url: /forgot-password
+        - generic [ref=e29]:
+          - textbox "Password" [ref=e30]:
+            - /placeholder: ••••••••
+            - text: password123
+          - button [ref=e31]
+      - generic [ref=e36] [cursor=pointer]:
+        - checkbox "Remember session on this workstation" [checked] [ref=e37]
+        - generic [ref=e38]: Remember session on this workstation
+      - button "Authenticate & Launch" [ref=e39]
+  - generic:
+    - generic [ref=e44]:
+      - generic [ref=e48]:
+        - heading "Shot Approved" [level=4] [ref=e49]
+        - paragraph [ref=e50]: NK_010_020 has been marked Approved by Alex Chen.
+      - button [ref=e51]
+    - generic [ref=e55]:
+      - generic [ref=e58]:
+        - heading "New Review Ready" [level=4] [ref=e59]
+        - paragraph [ref=e60]: Version v003 published for NK_010_030.
+      - button [ref=e61]

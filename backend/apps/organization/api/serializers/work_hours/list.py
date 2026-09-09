@@ -1,3 +1,4 @@
+
 from .base import WorkHoursBaseSerializer
 
 
@@ -19,5 +20,4 @@ class WorkHoursListSerializer(
             "start_time",
             "end_time",
             "is_working_day",
-            "status",
         )

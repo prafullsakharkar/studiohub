@@ -1,13 +1,16 @@
-from apps.identity.services.mfa import MFAService
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 
 from apps.core.api.builders.response import ResponseBuilder
 from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import (
     RecoveryCodeVerifySerializer,
 )
+from apps.identity.services.mfa import MFAService
 
 
 class MFARecoveryCodesAPIView(BaseAPIView):
+    @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request, *args, **kwargs):
         codes = MFAService.generate_recovery_codes(
             user=request.user,

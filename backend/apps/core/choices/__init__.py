@@ -1,5 +1,4 @@
 from .base import BaseChoices
-from .department import Department
 from .file import FileType
 from .lifecycle import LifecycleStatus
 from .priority import Priority
@@ -9,7 +8,6 @@ from .visibility import Visibility
 
 __all__ = [
     "BaseChoices",
-    "Department",
     "FileType",
     "Priority",
     "PublishStatus",

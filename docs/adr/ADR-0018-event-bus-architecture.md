@@ -1,10 +1,10 @@
 # ADR-0018: Event Bus Architecture
 
-- **Status:** Accepted
+- **Status:** Superseded by [ADR-0030](ADR-0030-domain-events-and-event-bus.md)
 - **Date:** 2026-07-13
 - **Decision Makers:** Architecture Team
 - **Supersedes:** None
-- **Superseded By:** None
+- **Superseded By:** [ADR-0030 — Domain Events and Event Bus (Consolidation)](ADR-0030-domain-events-and-event-bus.md)
 
 ---
 
@@ -427,6 +427,21 @@ These trade-offs are appropriate for an enterprise event-driven architecture.
 - Use asynchronous processing for long-running work.
 - Include correlation identifiers for tracing.
 - Version events when schemas evolve.
+
+---
+
+# Implementation Status
+
+The event bus is implemented in `apps/core/events/` and follows a single, unified mechanism:
+
+- **Core owns event infrastructure** — `base.py`, `bus.py`, `dispatcher.py`, `publisher.py`, `registry.py`, `subscriber.py`, `handlers.py`, `decorators.py`, `autodiscover.py`, `exceptions.py`, `constants.py`, `typing.py`, and `utils.py`.
+- **Domain apps own domain events** — concrete events (e.g. `ProjectCreated`, `ShotStatusChanged`, `AssetPublished`, `VersionApproved`) are defined in their owning domain app, never in Core.
+- **`DomainEvent`** is an immutable frozen dataclass with `event_id`, `occurred_at`, `version`, `source`, and a computed `event_type` property. The `event_type` resolves to a declared subclass class attribute or falls back to the class name.
+- **`EventBus`** exposes `publish` and `subscribe` as classmethods operating on the module-level `default_event_bus` singleton, which owns a `Registry` and a `Dispatcher`.
+- **Transaction-safe dispatch** — `publish(event, on_commit=True)` defers dispatch via `transaction.on_commit(...)` when a transaction is active, so handlers only run if the surrounding transaction commits. Outside a transaction it dispatches immediately.
+- **Error isolation** — the dispatcher runs every handler even if one raises; the first error is collected and re-raised as `EventDispatchError` after all handlers execute.
+- **Autodiscovery** — `autodiscover_events()` imports `{app}.events` and `{app}.handlers` for every installed app and calls each module's `register_events()` when present, invoked from `CoreConfig.ready()`.
+- **Duplicate mechanisms removed** — the empty `signals.py` and `mixins/` scaffolding, the dead identity `events.py`/`domain_events.py`/`handlers.py`, and the service-layer `EventService`/`CacheService` were removed in favor of this single architecture.
 
 ---
 

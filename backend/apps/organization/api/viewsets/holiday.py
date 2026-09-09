@@ -17,7 +17,7 @@ from apps.organization.services.holiday import HolidayService
 
 
 class HolidayViewSet(
-    OrganizationEntityViewSet,
+    OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     API endpoint for Holiday.

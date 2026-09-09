@@ -13,3 +13,10 @@ class LoginMethod(models.TextChoices):
     API_TOKEN = "api_token", "API Token"
     REFRESH_TOKEN = "refresh_token", "Refresh Token"
     IMPERSONATION = "impersonation", "Impersonation"
+
+
+class LoginAttemptStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    SUCCESS = "success", "Success"
+    FAILED = "failed", "Failed"
+    LOCKED = "locked", "Locked"

@@ -19,10 +19,17 @@ from apps.identity.constants.permissions import (
     UserPermissions,
 )
 from apps.identity.models import (
+    Profile,
     User,
 )
 from apps.identity.selectors.user import (
     UserSelector,
+)
+from apps.identity.services.password import (
+    PasswordService,
+)
+from apps.identity.services.profile import (
+    ProfileService,
 )
 from apps.identity.services.user import (
     UserService,
@@ -30,10 +37,13 @@ from apps.identity.services.user import (
 from apps.identity.services.user_password import (
     UserPasswordService,
 )
+from apps.identity.services.user_session import (
+    UserSessionService,
+)
 
 
 class UserViewSet(
-    IdentityViewSet,
+    IdentityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
 
     queryset = User.objects.all()
@@ -56,14 +66,22 @@ class UserViewSet(
     }
 
     permission_map = {
-        "list": (UserPermissions.VIEW,),
-        "retrieve": (UserPermissions.VIEW,),
+        # NOTE: list/retrieve/me stay open to any authenticated user
+        # (member-directory / self-service contract asserted by tests).
         "create": (UserPermissions.CREATE,),
         "update": (UserPermissions.UPDATE,),
         "partial_update": (UserPermissions.UPDATE,),
         "destroy": (UserPermissions.DELETE,),
-        "me": (UserPermissions.VIEW,),
+        "activate": (UserPermissions.ACTIVATE,),
+        "deactivate": (UserPermissions.DEACTIVATE,),
+        "archive": (UserPermissions.ARCHIVE,),
+        "restore": (UserPermissions.RESTORE,),
         "change_password": (UserPermissions.CHANGE_PASSWORD,),
+        "suspend": (UserPermissions.DEACTIVATE,),
+        "unsuspend": (UserPermissions.ACTIVATE,),
+        "reset_password": (UserPermissions.RESET_PASSWORD,),
+        "force_password_change": (UserPermissions.UPDATE,),
+        "revoke_sessions": (UserPermissions.UPDATE,),
     }
 
     @action(
@@ -93,7 +111,7 @@ class UserViewSet(
     def activate(
         self,
         request,
-        uuid=None,
+        pk=None,
     ):
         user = self.get_object()
 
@@ -116,7 +134,7 @@ class UserViewSet(
     def deactivate(
         self,
         request,
-        uuid=None,
+        pk=None,
     ):
         user = self.get_object()
 
@@ -139,7 +157,7 @@ class UserViewSet(
     def archive(
         self,
         request,
-        uuid=None,
+        pk=None,
     ):
         user = self.get_object()
 
@@ -162,7 +180,7 @@ class UserViewSet(
     def restore(
         self,
         request,
-        uuid=None,
+        pk=None,
     ):
         user = self.get_object()
 
@@ -194,7 +212,7 @@ class UserViewSet(
             raise_exception=True,
         )
 
-        user = self.password_service_class.change_password(
+        self.password_service_class.change_password(
             user=request.user,
             password=serializer.validated_data["new_password"],
         )
@@ -202,5 +220,137 @@ class UserViewSet(
         return Response(
             {
                 "detail": "Password changed successfully.",
+            },
+        )
+
+    @action(
+        detail=True,
+        methods=[
+            "post",
+        ],
+    )
+    def suspend(
+        self,
+        request,
+        pk=None,
+    ):
+        user = self.get_object()
+
+        self.service_class.deactivate(
+            user,
+        )
+
+        return Response(
+            {
+                "detail": "User suspended successfully.",
+            },
+        )
+
+    @action(
+        detail=True,
+        methods=[
+            "post",
+        ],
+    )
+    def unsuspend(
+        self,
+        request,
+        pk=None,
+    ):
+        user = self.get_object()
+
+        self.service_class.activate(
+            user,
+        )
+
+        return Response(
+            {
+                "detail": "User unsuspended successfully.",
+            },
+        )
+
+    @action(
+        detail=True,
+        methods=[
+            "post",
+        ],
+        url_path="reset-password",
+    )
+    def reset_password(
+        self,
+        request,
+        pk=None,
+    ):
+        user = self.get_object()
+
+        PasswordService.request_password_reset(
+            user.email,
+        )
+
+        return Response(
+            {
+                "detail": "If an account exists, a password reset email has been sent.",
+            },
+        )
+
+    @action(
+        detail=True,
+        methods=[
+            "post",
+        ],
+        url_path="force-password-change",
+    )
+    def force_password_change(
+        self,
+        request,
+        pk=None,
+    ):
+        user = self.get_object()
+
+        profile = Profile.objects.filter(
+            user=user,
+        ).first()
+
+        if profile is None:
+            profile = ProfileService.create(
+                user=user,
+            )
+
+        profile.must_change_password = True
+
+        profile.save(
+            update_fields=[
+                "must_change_password",
+                "updated_at",
+            ],
+        )
+
+        return Response(
+            {
+                "detail": "User must change password at next login.",
+            },
+        )
+
+    @action(
+        detail=True,
+        methods=[
+            "post",
+        ],
+        url_path="revoke-sessions",
+    )
+    def revoke_sessions(
+        self,
+        request,
+        pk=None,
+    ):
+        user = self.get_object()
+
+        count = UserSessionService.logout_all(
+            user=user,
+        )
+
+        return Response(
+            {
+                "sessions": count,
             },
         )

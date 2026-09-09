@@ -61,7 +61,7 @@ class Office(OrganizationEntityModel):
         default=False,
     )
 
-    objects = OfficeManager()
+    objects: OfficeManager = OfficeManager()
 
     class Meta:
         db_table = "org_office"

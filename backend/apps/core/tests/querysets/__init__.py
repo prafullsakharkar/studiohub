@@ -1,0 +1,3 @@
+"""
+Core querysets tests package.
+"""

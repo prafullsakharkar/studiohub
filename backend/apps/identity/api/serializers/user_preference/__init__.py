@@ -1,13 +1,43 @@
-from .base import UserPreferenceBaseSerializer
-from .create import UserPreferenceCreateSerializer
-from .detail import UserPreferenceDetailSerializer
-from .list import UserPreferenceListSerializer
-from .update import UserPreferenceUpdateSerializer
+from .base import (
+    ProfileBaseSerializer,
+    SecurityEventBaseSerializer,
+    TrustedDeviceBaseSerializer,
+)
+from .create import (
+    ProfileCreateSerializer,
+    SecurityEventCreateSerializer,
+    TrustedDeviceCreateSerializer,
+)
+from .detail import (
+    ProfileDetailSerializer,
+    SecurityEventDetailSerializer,
+    TrustedDeviceDetailSerializer,
+)
+from .list import (
+    ProfileListSerializer,
+    SecurityEventListSerializer,
+    TrustedDeviceListSerializer,
+)
+from .update import (
+    ProfileUpdateSerializer,
+    SecurityEventUpdateSerializer,
+    TrustedDeviceUpdateSerializer,
+)
 
 __all__ = [
-    "UserPreferenceBaseSerializer",
-    "UserPreferenceCreateSerializer",
-    "UserPreferenceListSerializer",
-    "UserPreferenceDetailSerializer",
-    "UserPreferenceUpdateSerializer",
+    "ProfileBaseSerializer",
+    "ProfileCreateSerializer",
+    "ProfileDetailSerializer",
+    "ProfileListSerializer",
+    "ProfileUpdateSerializer",
+    "SecurityEventBaseSerializer",
+    "SecurityEventCreateSerializer",
+    "SecurityEventDetailSerializer",
+    "SecurityEventListSerializer",
+    "SecurityEventUpdateSerializer",
+    "TrustedDeviceBaseSerializer",
+    "TrustedDeviceCreateSerializer",
+    "TrustedDeviceDetailSerializer",
+    "TrustedDeviceListSerializer",
+    "TrustedDeviceUpdateSerializer",
 ]

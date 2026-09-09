@@ -1,3 +1,4 @@
+
 from .base import TeamBaseSerializer
 
 
@@ -12,7 +13,6 @@ class TeamCreateSerializer(TeamBaseSerializer):
             "uuid",
             "created_at",
             "updated_at",
-            "status",
         )
 
     def create(self, validated_data):

@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.identity.models import User
@@ -6,7 +8,7 @@ from apps.identity.services.email import (
 )
 
 
-class VerifyEmailSerializer(serializers.Serializer):
+class VerifyEmailSerializer(serializers.Serializer[Any]):
 
     token = serializers.CharField()
 

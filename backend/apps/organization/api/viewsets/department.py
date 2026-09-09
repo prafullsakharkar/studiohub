@@ -1,3 +1,4 @@
+from apps.core.api.pagination import StandardPagination
 from apps.organization.api.filtersets.department import DepartmentFilterSet
 from apps.organization.api.serializers.department import (
     DepartmentCreateSerializer,
@@ -14,7 +15,7 @@ from apps.organization.services.department import DepartmentService
 
 
 class DepartmentViewSet(
-    OrganizationEntityViewSet,
+    OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
 
     selector_class = DepartmentSelector
@@ -22,6 +23,8 @@ class DepartmentViewSet(
     service_class = DepartmentService
 
     filterset_class = DepartmentFilterSet
+
+    pagination_class = StandardPagination
 
     serializer_map = {
         "list": DepartmentListSerializer,

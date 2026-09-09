@@ -20,6 +20,7 @@ class TimeStampedModel(models.Model):
 
     updated_at = models.DateTimeField(
         auto_now=True,
+        db_index=True,
         help_text="Last update timestamp.",
     )
 

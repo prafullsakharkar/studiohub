@@ -81,6 +81,21 @@ class Organization(
         blank=True,
     )
 
+    headquarters = models.CharField(
+        _("Headquarters"),
+        max_length=255,
+        blank=True,
+        default="",
+        help_text=_("Display location required by the frontend contract."),
+    )
+
+    primary_contact_name = models.CharField(
+        _("Primary Contact Name"),
+        max_length=255,
+        blank=True,
+        default="",
+    )
+
     country = models.CharField(
         _("Country"),
         max_length=2,
@@ -113,7 +128,7 @@ class Organization(
         validators=[validate_timezone],
     )
 
-    objects = OrganizationManager()
+    objects: OrganizationManager = OrganizationManager()
 
     class Meta:
         db_table = "organizations"
@@ -157,3 +172,16 @@ class Organization(
         Display-friendly organization name.
         """
         return f"{self.name} ({self.code})"
+
+    @property
+    def statistics(self) -> dict[str, int]:
+        """
+        Computed statistics (populated by QuerySet.with_statistics(),
+        zeros otherwise).
+        """
+        return {
+            "member_count": getattr(self, "member_count", 0) or 0,
+            "department_count": getattr(self, "department_count", 0) or 0,
+            "team_count": getattr(self, "team_count", 0) or 0,
+            "office_count": getattr(self, "office_count", 0) or 0,
+        }

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from ipaddress import ip_address
+from typing import Any
 
 from django.http import HttpRequest
 from user_agents import parse
@@ -108,7 +109,7 @@ class AuthenticationUtils:
     def build_session_data(
         cls,
         request: HttpRequest,
-    ) -> dict:
+    ) -> dict[Any, Any]:
         browser, browser_version = cls.get_browser(
             request,
         )
@@ -137,7 +138,7 @@ class AuthenticationUtils:
                 " ",
                 "_",
             ),
-            "os_version": os_version,
+            "operating_system_version": os_version,
             "device_name": device_name,
             "device_type": device_type,
         }

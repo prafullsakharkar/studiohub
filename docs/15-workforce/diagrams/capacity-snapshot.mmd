@@ -1,0 +1,21 @@
+%%{init: {"theme":"default"}}%%
+flowchart LR
+    A[Staffing Request Created] --> B[Demand Signal]
+    C[Allocation Updated] --> B
+    D[Availability Changed] --> B
+    E[Calendar / Holiday Updated] --> B
+    F[Person / Resource State Changed] --> B
+
+    B --> G[Capacity Aggregation Job]
+    G --> H[Compute Daily/Weekly Capacity]
+    H --> I[Apply Working Hours & Leave]
+    I --> J[Subtract Committed Allocations]
+    J --> K[Compute Available Hours]
+    K --> L[Persist CapacitySnapshot]
+    L --> M[Publish CapacitySnapshotGenerated]
+    M --> N[Dashboards / Forecasting / Alerts]
+
+    L --> O[Capacity Planning Decision]
+    O --> P[Trigger Rebalance / Staffing Action]
+
+    P --> A

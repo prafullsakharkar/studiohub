@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from .generator import APIKeyGenerator
 from .hashing import APIKeyHasher
 
@@ -12,7 +14,7 @@ class APIKeyUtils:
     """
 
     @classmethod
-    def generate(cls) -> dict:
+    def generate(cls) -> dict[Any, Any]:
         prefix, secret, token = APIKeyGenerator.api_key()
 
         return {

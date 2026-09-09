@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.identity.services.password import (
@@ -5,7 +7,7 @@ from apps.identity.services.password import (
 )
 
 
-class ForgotPasswordSerializer(serializers.Serializer):
+class ForgotPasswordSerializer(serializers.Serializer[Any]):
 
     email = serializers.EmailField()
 

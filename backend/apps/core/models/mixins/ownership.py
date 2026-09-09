@@ -14,7 +14,4 @@ class OwnershipMixin:
         """
         Returns True if the given user owns this object.
         """
-        if hasattr(self, "owner"):
-            return self.owner == user
-
-        return False
+        return getattr(self, "owner", None) == user

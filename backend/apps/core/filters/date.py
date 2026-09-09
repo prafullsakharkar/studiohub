@@ -7,9 +7,13 @@ from __future__ import annotations
 import django_filters
 
 
-class DateRangeFilterMixin:
+class DateRangeFilterMixin(django_filters.FilterSet):
     """
     Common date filters.
+
+    Subclassing ``FilterSet`` (with an abstract ``Meta``) makes the declared
+    date filters visible to django-filter's metaclass, which only inspects
+    class attributes and bases that are themselves FilterSets.
     """
 
     created_after = django_filters.DateFilter(
@@ -31,3 +35,6 @@ class DateRangeFilterMixin:
         field_name="updated_at",
         lookup_expr="lte",
     )
+
+    class Meta:
+        abstract = True

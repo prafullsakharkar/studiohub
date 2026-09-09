@@ -1,10 +1,12 @@
 from django.utils import timezone
 
-from apps.core.validators import BaseValidator
 from apps.identity.models import BackupCode
+from apps.identity.validators.base import (
+    IdentityBaseValidator,
+)
 
 
-class BackupCodeValidator(BaseValidator):
+class BackupCodeValidator(IdentityBaseValidator):
     model = BackupCode
 
     @classmethod

@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.identity.services.email import (
@@ -6,7 +8,7 @@ from apps.identity.services.email import (
 
 
 class ResendVerificationSerializer(
-    serializers.Serializer,
+    serializers.Serializer[Any],
 ):
 
     email = serializers.EmailField()

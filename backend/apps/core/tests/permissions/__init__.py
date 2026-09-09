@@ -1,0 +1,3 @@
+"""
+Core permissions tests package.
+"""

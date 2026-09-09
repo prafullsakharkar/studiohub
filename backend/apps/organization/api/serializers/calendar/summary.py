@@ -1,3 +1,4 @@
+
 from .base import CalendarBaseSerializer
 
 
@@ -13,5 +14,4 @@ class CalendarSummarySerializer(
             "uuid",
             "code",
             "name",
-            "status",
         )

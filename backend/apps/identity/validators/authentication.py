@@ -14,7 +14,6 @@ from apps.identity.authentication.exceptions import (
     UserLocked,
 )
 from apps.identity.choices import (
-    LoginAttemptStatus,
     SessionStatus,
 )
 from apps.identity.models import (
@@ -115,6 +114,8 @@ class AuthenticationValidator(
         cls,
         session,
     ):
+        cls.check_not_none(session, "Session not found.")
+
         if session.status == SessionStatus.REVOKED:
             raise SessionRevoked()
 

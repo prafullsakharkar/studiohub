@@ -1,3 +1,5 @@
+from typing import Any
+
 from apps.organization.api.serializers.base import (
     OrganizationEntitySerializer,
 )
@@ -5,24 +7,29 @@ from apps.organization.models.office import Office
 
 
 class OfficeBaseSerializer(
-    OrganizationEntitySerializer,
+    OrganizationEntitySerializer[Any],
 ):
     class Meta(OrganizationEntitySerializer.Meta):
         model = Office
 
         fields = (
-            *OrganizationEntitySerializer.Meta.fields,
+            "id",
+            "uuid",
+            "organization",
+            "code",
+            "name",
+            "description",
             "office_type",
             "timezone",
             "country",
             "state",
             "city",
-            "address_line_1",
-            "address_line_2",
+            "address",
             "postal_code",
             "phone",
             "email",
             "manager",
-            "capacity",
             "is_headquarters",
+            "created_at",
+            "updated_at",
         )

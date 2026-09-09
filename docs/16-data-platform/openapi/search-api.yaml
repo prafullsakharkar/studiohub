@@ -1,0 +1,119 @@
+openapi: 3.0.3
+info:
+  title: StudioHub Search API (fragment)
+  version: 0.1.0
+paths:
+  /api/search:
+    post:
+      summary: Unified search endpoint (full-text, structured, hybrid)
+      tags:
+        - search
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+components:
+  schemas:
+    SearchRequest:
+      type: object
+      properties:
+        q:
+          type: string
+          description: Free-text query
+        entity_types:
+          type: array
+          items:
+            type: string
+        filters:
+          type: object
+          additionalProperties: true
+          description: Structured filters. Keys are field paths (e.g. project_id, custom_fields.priority)
+        facets:
+          type: array
+          items:
+            type: string
+        sort:
+          $ref: '#/components/schemas/Sort'
+        page:
+          $ref: '#/components/schemas/PageCursor'
+        highlight:
+          type: boolean
+        semantics:
+          type: string
+          description: 'Optional: "hybrid" | "semantic" | "fulltext"'
+      additionalProperties: false
+      required: []
+    Sort:
+      type: object
+      properties:
+        by:
+          type: string
+        direction:
+          type: string
+          enum: [asc, desc]
+    PageCursor:
+      type: object
+      properties:
+        limit:
+          type: integer
+          default: 25
+        cursor:
+          type: string
+    SearchResponse:
+      type: object
+      properties:
+        cursor:
+          type: string
+          nullable: true
+        total_estimate:
+          type: integer
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+        facets:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/FacetCount'
+    SearchResult:
+      type: object
+      properties:
+        entity_type:
+          type: string
+        id:
+          type: string
+          format: uuid
+        score:
+          type: number
+        highlight:
+          type: string
+        projection:
+          type: object
+          description: Projected fields for display. Keep minimal.
+    FacetCount:
+      type: object
+      properties:
+        value:
+          type: string
+        count:
+          type: integer
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required: [code, message]
+security: []

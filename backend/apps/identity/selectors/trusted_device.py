@@ -8,6 +8,27 @@ class TrustedDeviceSelector(IdentityBaseSelector):
     model = TrustedDevice
 
     @classmethod
+    def get_queryset(
+        cls,
+        *,
+        request=None,
+        view=None,
+    ):
+        queryset = TrustedDevice.objects.all()
+
+        user = getattr(request, "user", None)
+
+        if user is None or user.is_staff or user.is_superuser:
+            return queryset
+
+        if not getattr(user, "is_authenticated", False):
+            return queryset.none()
+
+        return queryset.filter(
+            user=user,
+        )
+
+    @classmethod
     def get_user_devices(cls, user):
         return TrustedDevice.objects.active().by_user(user)
 

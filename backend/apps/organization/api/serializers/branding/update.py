@@ -1,3 +1,4 @@
+
 from apps.organization.services.branding import (
     BrandingService,
 )

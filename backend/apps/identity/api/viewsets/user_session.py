@@ -1,21 +1,17 @@
+import uuid
+
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.identity.api.filtersets.user_session import (
-    UserSessionFilterSet,
-)
 from apps.identity.api.serializers.user_session import (
-    UserSessionDetailSerializer,
-    UserSessionListSerializer,
+    UserSessionBaseSerializer,
 )
 from apps.identity.api.viewsets.base import (
-    IdentityReadOnlyViewSet,
+    IdentityViewSet,
 )
-from apps.identity.constants.permissions import (
-    UserSessionPermissions,
-)
-from apps.identity.models import (
-    UserSession,
+from apps.identity.selectors.authentication import (
+    AuthenticationSelector,
 )
 from apps.identity.selectors.user_session import (
     UserSessionSelector,
@@ -23,59 +19,61 @@ from apps.identity.selectors.user_session import (
 from apps.identity.services.user_session import (
     UserSessionService,
 )
+from apps.organization.models import (
+    UserSession,
+)
 
 
 class UserSessionViewSet(
-    IdentityReadOnlyViewSet,
+    IdentityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
-    Enterprise User Session API.
+    Session management for the authenticated user.
 
-    Sessions are managed internally by the authentication
-    subsystem and cannot be created, updated or deleted
-    through the REST API.
+    Standard actions are scoped to ``request.user``; the ``admin/*`` routes
+    operate on any user and require staff privileges.
     """
 
     queryset = UserSession.objects.all()
 
     selector_class = UserSessionSelector
 
-    service_class = UserSessionService
+    serializer_class = UserSessionBaseSerializer
 
-    filterset_class = UserSessionFilterSet
+    admin_actions = (
+        "admin_list",
+        "admin_revoke_all",
+    )
 
-    serializer_map = {
-        "list": UserSessionListSerializer,
-        "retrieve": UserSessionDetailSerializer,
-    }
-
-    permission_map = {
-        "list": (UserSessionPermissions.VIEW,),
-        "retrieve": (UserSessionPermissions.VIEW,),
-        "current": (UserSessionPermissions.VIEW,),
-        "my_sessions": (UserSessionPermissions.VIEW,),
-        "logout": (UserSessionPermissions.LOGOUT,),
-        "logout_all": (UserSessionPermissions.LOGOUT_ALL,),
-        "logout_other_devices": (UserSessionPermissions.LOGOUT_ALL,),
-        "revoke": (UserSessionPermissions.REVOKE,),
-        "trust": (UserSessionPermissions.TRUST,),
-        "refresh": (UserSessionPermissions.REFRESH,),
-    }
+    def _is_admin(
+        self,
+        request,
+    ):
+        return request.user.is_staff or request.user.is_superuser
 
     @action(
         detail=False,
-        methods=["get"],
-        url_path="current",
+        methods=[
+            "get",
+        ],
     )
     def current(
         self,
         request,
     ):
-        session = self.selector_class.current(
+        session = AuthenticationSelector.get_active_session(
             user=request.user,
         )
 
-        serializer = UserSessionDetailSerializer(
+        if session is None:
+            return Response(
+                {
+                    "detail": "No active session.",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = self.get_serializer(
             session,
         )
 
@@ -84,93 +82,10 @@ class UserSessionViewSet(
         )
 
     @action(
-        detail=False,
-        methods=["get"],
-        url_path="my-sessions",
-    )
-    def my_sessions(
-        self,
-        request,
-    ):
-        queryset = self.selector_class.active_sessions(
-            user=request.user,
-        )
-
-        serializer = UserSessionListSerializer(
-            queryset,
-            many=True,
-        )
-
-        return Response(
-            serializer.data,
-        )
-
-    @action(
         detail=True,
-        methods=["post"],
-    )
-    def logout(
-        self,
-        request,
-        pk=None,
-    ):
-        session = self.get_object()
-
-        self.service_class.logout(
-            session,
-        )
-
-        return Response(
-            {
-                "detail": "Session logged out.",
-            }
-        )
-
-    @action(
-        detail=False,
-        methods=["post"],
-        url_path="logout-all",
-    )
-    def logout_all(
-        self,
-        request,
-    ):
-        count = self.service_class.logout_all(
-            user=request.user,
-        )
-
-        return Response(
-            {
-                "sessions": count,
-            }
-        )
-
-    @action(
-        detail=False,
-        methods=["post"],
-        url_path="logout-other-devices",
-    )
-    def logout_other_devices(
-        self,
-        request,
-    ):
-        current = self.selector_class.current(
-            user=request.user,
-        )
-
-        count = self.service_class.logout_other_devices(
-            current_session=current,
-        )
-
-        return Response(
-            {
-                "sessions": count,
-            }
-        )
-
-    @action(
-        detail=True,
-        methods=["post"],
+        methods=[
+            "post",
+        ],
     )
     def revoke(
         self,
@@ -179,33 +94,170 @@ class UserSessionViewSet(
     ):
         session = self.get_object()
 
-        self.service_class.revoke(
+        UserSessionService.revoke(
             session,
         )
 
         return Response(
             {
-                "detail": "Session revoked.",
-            }
+                "detail": "Session revoked successfully.",
+            },
+        )
+
+    @action(
+        detail=False,
+        methods=[
+            "post",
+        ],
+        url_path="revoke-all-other",
+    )
+    def revoke_all_other(
+        self,
+        request,
+    ):
+        session = AuthenticationSelector.get_active_session(
+            user=request.user,
+        )
+
+        if session is None:
+            return Response(
+                {
+                    "detail": "No active session.",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        count = UserSessionService.logout_other_devices(
+            current_session=session,
+        )
+
+        return Response(
+            {
+                "sessions": count,
+            },
         )
 
     @action(
         detail=True,
-        methods=["post"],
+        methods=[
+            "get",
+        ],
+        url_path="activity",
     )
-    def trust(
+    def activity(
         self,
         request,
         pk=None,
     ):
         session = self.get_object()
 
-        self.service_class.trust(
-            session,
+        activity = [
+            {
+                "timestamp": session.started_at.isoformat(),
+                "action": "login",
+            },
+        ]
+
+        if session.last_activity and session.last_activity != session.started_at:
+            activity.append(
+                {
+                    "timestamp": session.last_activity.isoformat(),
+                    "action": "activity",
+                },
+            )
+
+        if session.logged_out_at:
+            activity.append(
+                {
+                    "timestamp": session.logged_out_at.isoformat(),
+                    "action": "logout",
+                },
+            )
+
+        return Response(
+            {
+                "activity": activity,
+            },
+        )
+
+    @action(
+        detail=False,
+        methods=[
+            "get",
+        ],
+        url_path=r"admin/(?P<user_id>[^/.]+)",
+    )
+    def admin_list(
+        self,
+        request,
+        user_id=None,
+    ):
+        if not self._is_admin(request):
+            return Response(
+                {
+                    "detail": "You do not have permission to perform this action.",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        sessions = self.get_queryset().filter(
+            user_id=user_id,
+        )
+
+        page = self.paginate_queryset(sessions)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(sessions, many=True)
+
+        return Response(serializer.data)
+
+    @action(
+        detail=False,
+        methods=[
+            "post",
+        ],
+        url_path=r"admin/(?P<user_id>[^/.]+)/revoke-all",
+    )
+    def admin_revoke_all(
+        self,
+        request,
+        user_id=None,
+    ):
+        if not self._is_admin(request):
+            return Response(
+                {
+                    "detail": "You do not have permission to perform this action.",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        user = None
+
+        try:
+            user = AuthenticationSelector.get_user_by_id(
+                pk=uuid.UUID(user_id),
+            )
+        except (ValueError, AttributeError, TypeError):
+            user = None
+
+        if user is None:
+            return Response(
+                {
+                    "detail": "User not found.",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        count = UserSessionService.logout_all(
+            user=user,
         )
 
         return Response(
             {
-                "detail": "Session trusted.",
-            }
+                "sessions": count,
+            },
         )

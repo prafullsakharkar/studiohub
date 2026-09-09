@@ -1,0 +1,3 @@
+"""
+Identity selectors tests.
+"""

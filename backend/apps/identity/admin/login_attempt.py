@@ -4,16 +4,16 @@ from apps.identity.models import LoginAttempt
 
 
 @admin.register(LoginAttempt)
-class LoginAttemptAdmin(admin.ModelAdmin):
+class LoginAttemptAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     list_display = (
         "username",
         "ip_address",
-        "successful",
+        "success",
         "locked_until",
         "attempted_at",
     )
 
-    list_filter = ("successful",)
+    list_filter = ("success",)
 
     search_fields = (
         "username",

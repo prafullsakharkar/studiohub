@@ -8,6 +8,7 @@ from .location import GeoLocationModel
 from .metadata import MetadataModel
 from .named import NamedEntityModel
 from .network import NetworkInformationModel
+from .notes import NotesModel
 from .orderable import OrderableModel
 from .organization import OrganizationEntityModel
 from .ownership import OrganizationOwnedModel, ProjectOwnedModel, UserOwnedModel
@@ -36,9 +37,6 @@ __all__ = [
     "SoftDeleteModel",
     "TimeStampedModel",
     "UUIDModel",
-    "OrganizationOwnedModel",
-    "ProjectOwnedModel",
-    "UserOwnedModel",
     "OrganizationScopedModel",
     "ProjectScopedModel",
     "ReviewScopedModel",
@@ -49,11 +47,15 @@ __all__ = [
     "EntityModel",
     "NamedEntityModel",
     "OrganizationEntityModel",
+    "OrganizationOwnedModel",
     "ProjectEntityModel",
+    "ProjectOwnedModel",
+    "UserOwnedModel",
     "UserEntityModel",
     "BrandingModel",
     "LifecycleModel",
     "DeviceInformationModel",
     "GeoLocationModel",
     "NetworkInformationModel",
+    "NotesModel",
 ]

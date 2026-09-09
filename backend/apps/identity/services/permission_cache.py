@@ -4,6 +4,8 @@ Permission cache service.
 
 from __future__ import annotations
 
+import contextlib
+
 from django.core.cache import cache
 
 from apps.identity.resolvers.permission import (
@@ -53,22 +55,27 @@ class PermissionCacheService:
         user,
         organization=None,
     ):
-        version = cache.get(
-            cls._version_key(user.pk),
-            1,
-        )
+        try:
+            version = cache.get(
+                cls._version_key(user.pk),
+                1,
+            )
 
-        key = cls._permission_key(
-            user_id=user.pk,
-            organization_id=getattr(
-                organization,
-                "pk",
-                None,
-            ),
-            version=version,
-        )
+            key = cls._permission_key(
+                user_id=user.pk,
+                organization_id=getattr(
+                    organization,
+                    "pk",
+                    None,
+                ),
+                version=version,
+            )
 
-        permissions = cache.get(key)
+            permissions = cache.get(key)
+        except Exception:
+            # Cache backend unavailable (e.g. Redis down). Degrade to
+            # uncached resolution rather than failing authorization.
+            permissions = None
 
         if permissions is None:
 
@@ -77,11 +84,12 @@ class PermissionCacheService:
                 organization=organization,
             )
 
-            cache.set(
-                key,
-                permissions,
-                timeout=cls.CACHE_TIMEOUT,
-            )
+            with contextlib.suppress(Exception):
+                cache.set(
+                    key,
+                    permissions,
+                    timeout=cls.CACHE_TIMEOUT,
+                )
 
         return permissions
 

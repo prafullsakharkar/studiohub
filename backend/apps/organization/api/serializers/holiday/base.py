@@ -1,11 +1,13 @@
+from typing import Any
+
 from apps.organization.api.serializers.base import (
     OrganizationEntitySerializer,
 )
 from apps.organization.models import Holiday
 
 
-class HolidayBaseSerializer(
-    OrganizationEntitySerializer,
+class HolidaySerializer(
+    OrganizationEntitySerializer[Any],
 ):
     class Meta(
         OrganizationEntitySerializer.Meta,
@@ -14,6 +16,15 @@ class HolidayBaseSerializer(
 
         fields = (
             *OrganizationEntitySerializer.Meta.fields,
+            "work_calendar",
+            "date",
+            "holiday_type",
+            "is_paid",
+            "is_recurring",
+        )
+
+        read_only_fields = (
+            *OrganizationEntitySerializer.Meta.read_only_fields,
             "work_calendar",
             "date",
             "holiday_type",

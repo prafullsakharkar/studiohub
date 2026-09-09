@@ -1,6 +1,6 @@
-from django.db.models import QuerySet
 
 from apps.organization.models.office import Office
+from apps.organization.querysets.office import OfficeQuerySet
 from apps.organization.selectors.base import (
     OrganizationBaseSelector,
 )
@@ -14,7 +14,7 @@ class OfficeSelector(OrganizationBaseSelector):
     model = Office
 
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+    def get_queryset(cls, *, request=None, view=None) -> OfficeQuerySet:
         """
         Optimized queryset for Office APIs.
         """

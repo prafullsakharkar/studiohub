@@ -22,16 +22,26 @@ class OrganizationEntityQuerySet(BaseQuerySet):
     """
 
     def active(self):
-        return self.filter(
-            status=RecordStatus.ACTIVE,
-        )
+        """
+        Return active records.
+
+        Only models exposing a ``status`` field are filtered; other
+        organization entities (e.g. Department, Team, Office) do not
+        define one and return the full queryset instead.
+        """
+        if hasattr(self.model, "status"):
+            return self.filter(
+                status=RecordStatus.ACTIVE,
+            )
+
+        return self.all()
 
     def inactive(self):
         """
         Return inactive records.
         """
         if hasattr(self.model, "status"):
-            return self.exclude(status="active")
+            return self.exclude(status=RecordStatus.ACTIVE)
 
         return self.none()
 
@@ -69,6 +79,12 @@ class OrganizationEntityQuerySet(BaseQuerySet):
         )
 
     def by_uuid(self, uuid):
+        """
+        Filter by the UUID primary key.
+
+        ``uuid`` is a property alias for the ``id`` primary key field;
+        filtering must target the real column.
+        """
         return self.filter(
-            uuid=uuid,
+            id=uuid,
         )

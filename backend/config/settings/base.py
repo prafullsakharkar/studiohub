@@ -6,6 +6,8 @@ Environment-specific settings (local, docker, production, testing)
 should override values defined here.
 """
 
+# ruff: noqa: F401  -- settings aggregator: components are re-exported via `from .base import *`
+
 # ------------------------------------------------------------------------------
 # Components
 # ------------------------------------------------------------------------------
@@ -14,8 +16,6 @@ from config.env import settings
 
 from .components.apps import INSTALLED_APPS
 from .components.auth import AUTH_PASSWORD_VALIDATORS, AUTH_USER_MODEL
-
-# from .components.auth import AUTH_PASSWORD_VALIDATORS, AUTH_USER_MODEL
 from .components.cache import CACHES
 from .components.celery import (
     CELERY_ACCEPT_CONTENT,
@@ -31,6 +31,7 @@ from .components.celery import (
 from .components.cors import (
     CORS_ALLOW_ALL_ORIGINS,
     CORS_ALLOW_CREDENTIALS,
+    CORS_ALLOW_HEADERS,
     CORS_ALLOWED_ORIGINS,
     CSRF_TRUSTED_ORIGINS,
 )
@@ -43,7 +44,8 @@ from .components.internationalization import (
     USE_I18N,
     USE_TZ,
 )
-from .components.logging import LOGGING, LOGGING_CONFIG
+from .components.jwt import SIMPLE_JWT
+from .components.logging import LOGGING_CONFIG
 from .components.middleware import MIDDLEWARE
 from .components.security import (
     CSRF_COOKIE_HTTPONLY,
@@ -58,6 +60,14 @@ from .components.static import STATIC_ROOT, STATIC_URL
 from .components.storage import MEDIA_ROOT, MEDIA_URL
 from .components.templates import TEMPLATES
 from .logging import LOGGING
+
+# ------------------------------------------------------------------------------
+# Rate Limiting Configuration
+# ------------------------------------------------------------------------------
+
+RATE_LIMIT_ENABLED = True
+RATE_LIMIT_WINDOW = 60  # seconds
+RATE_LIMIT_GLOBAL = 100  # requests per window for anonymous users
 
 # ------------------------------------------------------------------------------
 # Core Django Settings

@@ -1,4 +1,4 @@
-from .base import WorkCalendarSerializer
+from .base import WorkCalendarBaseSerializer
 from .create import WorkCalendarCreateSerializer
 from .detail import WorkCalendarDetailSerializer
 from .list import WorkCalendarListSerializer
@@ -7,7 +7,7 @@ from .summary import WorkCalendarSummarySerializer
 from .update import WorkCalendarUpdateSerializer
 
 __all__ = [
-    "WorkCalendarSerializer",
+    "WorkCalendarBaseSerializer",
     "WorkCalendarCreateSerializer",
     "WorkCalendarUpdateSerializer",
     "WorkCalendarNestedSerializer",

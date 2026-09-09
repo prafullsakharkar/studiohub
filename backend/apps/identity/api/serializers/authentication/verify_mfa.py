@@ -1,7 +1,9 @@
+from typing import Any
+
 from rest_framework import serializers
 
 
-class MFAVerifySerializer(serializers.Serializer):
+class MFAVerifySerializer(serializers.Serializer[Any]):
     code = serializers.CharField(
         max_length=10,
     )

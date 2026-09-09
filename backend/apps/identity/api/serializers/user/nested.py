@@ -1,8 +1,10 @@
+from typing import Any
+
 from apps.core.api.serializers.base import BaseNestedSerializer
 from apps.identity.models import User
 
 
-class UserNestedSerializer(BaseNestedSerializer):
+class UserNestedSerializer(BaseNestedSerializer[Any]):
 
     class Meta(BaseNestedSerializer.Meta):
 

@@ -15,7 +15,7 @@ class BaseModelViewSet(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
-    BaseViewSet,
+    BaseViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     Full CRUD ViewSet.

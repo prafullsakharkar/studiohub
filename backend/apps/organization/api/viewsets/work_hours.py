@@ -25,7 +25,7 @@ from apps.organization.services.work_hours import (
 
 
 class WorkHoursViewSet(
-    OrganizationEntityViewSet,
+    OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     API endpoint for WorkHours.

@@ -30,6 +30,6 @@ class PaginationBuilder:
             "page_size": page_size,
             "total": total,
             "pages": pages,
-            "next": next_url,
-            "previous": previous_url,
+            "next_url": next_url,
+            "previous_url": previous_url,
         }

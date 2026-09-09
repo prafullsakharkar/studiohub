@@ -1,0 +1,6 @@
+{
+  "name": "StudioHub VFX & Animation Platform",
+  "description": "Enterprise-grade VFX and Animation Production Management Platform built with Clean Architecture, DDD, and Repository-Adapter patterns.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

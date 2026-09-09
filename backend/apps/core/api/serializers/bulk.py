@@ -4,10 +4,12 @@ Bulk serializers.
 
 from __future__ import annotations
 
-from .base import BaseModelSerializer
+from typing import Any
+
+from .base import BaseSerializer
 
 
-class BulkModelSerializer(BaseModelSerializer):
+class BulkModelSerializer(BaseSerializer[Any]):
     """
     Base serializer for bulk operations.
     """

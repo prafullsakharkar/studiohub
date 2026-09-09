@@ -4,6 +4,8 @@ Reusable serializer fields.
 
 from __future__ import annotations
 
+from typing import Any
+
 from rest_framework import serializers
 
 
@@ -34,7 +36,7 @@ class TrimmedCharField(serializers.CharField):
         return super().to_internal_value(data.strip())
 
 
-class ChoiceDisplayField(serializers.Field):
+class ChoiceDisplayField(serializers.Field[Any, Any, Any, Any]):
     """
     Serialize a model choice display value.
     """
@@ -43,5 +45,5 @@ class ChoiceDisplayField(serializers.Field):
         self.method_name = method_name
         super().__init__(read_only=True, **kwargs)
 
-    def to_representation(self, obj):
-        return getattr(obj, self.method_name)()
+    def to_representation(self, value):
+        return getattr(value, self.method_name)()

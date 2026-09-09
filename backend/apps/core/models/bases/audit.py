@@ -24,6 +24,7 @@ class AuditModel(models.Model):
         null=True,
         blank=True,
         editable=False,
+        db_index=True,
         help_text="User who created this object.",
     )
 
@@ -34,6 +35,7 @@ class AuditModel(models.Model):
         null=True,
         blank=True,
         editable=False,
+        db_index=True,
         help_text="User who last updated this object.",
     )
 
@@ -44,6 +46,7 @@ class AuditModel(models.Model):
         null=True,
         blank=True,
         editable=False,
+        db_index=True,
         help_text="User who deleted this object.",
     )
 

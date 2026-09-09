@@ -1,3 +1,4 @@
+
 from .base import PositionBaseSerializer
 
 
@@ -17,5 +18,4 @@ class PositionListSerializer(
             "department",
             "level",
             "is_managerial",
-            "status",
         )

@@ -1,3 +1,4 @@
+
 from apps.identity.models import User
 
 from ..base import IdentitySerializer
@@ -22,7 +23,6 @@ class UserBaseSerializer(
             "last_seen",
             "display_name",
             "full_name",
-            "metadata",
             "created_at",
             "updated_at",
         )
@@ -37,3 +37,7 @@ class UserBaseSerializer(
             "created_at",
             "updated_at",
         )
+
+
+# Backwards-compatible alias (the public API exposes this name).
+UserSerializer = UserBaseSerializer

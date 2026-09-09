@@ -29,3 +29,21 @@ class PasswordService:
                 "password",
             ]
         )
+
+    @classmethod
+    def request_password_reset(
+        cls,
+        email,
+    ):
+        """
+        Trigger the password reset flow for the given email address.
+
+        Delegates to the authentication subsystem. Returns ``False`` when no
+        account matches so callers can keep responses generic.
+        """
+
+        from apps.identity.services.authentication import (
+            reset_password,
+        )
+
+        return reset_password(email)

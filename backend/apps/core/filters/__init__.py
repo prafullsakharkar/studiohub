@@ -8,7 +8,11 @@ from .search import SearchFilterMixin
 from .soft_delete import SoftDeleteFilterMixin
 from .status import StatusFilterMixin
 
+# Alias for backward compatibility
+BaseFilter = BaseFilterSet
+
 __all__ = [
+    "BaseFilter",
     "BaseFilterSet",
     "DateRangeFilterMixin",
     "MetadataFilterMixin",

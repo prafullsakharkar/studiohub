@@ -12,19 +12,20 @@ from .base import BaseService
 class CRUDService(BaseService):
     """
     Generic CRUD operations.
+
+    ``CRUDService`` performs raw database operations only. Lifecycle hooks
+    (``before_create``/``after_create`` etc.) are invoked by
+    ``apps.core.services.business.BusinessService`` so they fire exactly
+    once per operation.
     """
 
     @classmethod
     @transaction.atomic
     def create(cls, **validated_data):
-
-        cls.before_create(**validated_data)
-
-        instance = cls.model.objects.create(
+        assert cls.model is not None, "model must be set on the service class."
+        return cls.model.objects.create(
             **validated_data,
         )
-
-        return cls.after_create(instance)
 
     @classmethod
     @transaction.atomic
@@ -33,12 +34,6 @@ class CRUDService(BaseService):
         instance,
         **validated_data,
     ):
-
-        cls.before_update(
-            instance,
-            **validated_data,
-        )
-
         for field, value in validated_data.items():
             setattr(
                 instance,
@@ -48,7 +43,7 @@ class CRUDService(BaseService):
 
         instance.save()
 
-        return cls.after_update(instance)
+        return instance
 
     @classmethod
     @transaction.atomic
@@ -56,9 +51,4 @@ class CRUDService(BaseService):
         cls,
         instance,
     ):
-
-        cls.before_delete(instance)
-
         instance.delete()
-
-        cls.after_delete(instance)

@@ -4,7 +4,7 @@ from apps.identity.models import BackupCode
 
 
 @admin.register(BackupCode)
-class BackupCodeAdmin(admin.ModelAdmin):
+class BackupCodeAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     list_display = (
         "user",
         "used",

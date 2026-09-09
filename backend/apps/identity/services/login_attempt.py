@@ -1,10 +1,5 @@
 from __future__ import annotations
 
-from django.utils import timezone
-
-from apps.identity.authentication.exceptions import (
-    AccountLocked,
-)
 from apps.identity.events.login_attempt import (
     AccountLocked as AccountLockedEvent,
 )
@@ -46,7 +41,7 @@ class LoginAttemptService:
             username=username,
             ip_address=ip_address,
             user_agent=user_agent,
-            successful=True,
+            success=True,
         )
 
         LoginAttemptSucceeded.dispatch(
@@ -74,7 +69,7 @@ class LoginAttemptService:
             username=username,
             ip_address=ip_address,
             user_agent=user_agent,
-            successful=False,
+            success=False,
             reason=reason,
         )
 
@@ -135,3 +130,49 @@ class LoginAttemptService:
         Future hook for Redis/cache based counters.
         """
         return True
+
+    # ---------------------------------------------------------
+    # CRUD (used by the LoginAttemptViewSet)
+    # ---------------------------------------------------------
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        user=None,
+        **validated_data,
+    ):
+        validated_data.setdefault(
+            "username",
+            user.email if user else "",
+        )
+
+        return LoginAttempt.objects.create(
+            user=user,
+            **validated_data,
+        )
+
+    @classmethod
+    def update(
+        cls,
+        instance,
+        **validated_data,
+    ):
+        for key, value in validated_data.items():
+            setattr(
+                instance,
+                key,
+                value,
+            )
+
+        instance.save()
+
+        return instance
+
+    @classmethod
+    def delete(
+        cls,
+        instance,
+        **kwargs,
+    ):
+        instance.delete()

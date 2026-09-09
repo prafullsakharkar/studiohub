@@ -1,3 +1,4 @@
+
 from .base import (
     WorkCalendarBaseSerializer,
 )
@@ -15,5 +16,4 @@ class WorkCalendarSummarySerializer(
             "uuid",
             "code",
             "name",
-            "status",
         )

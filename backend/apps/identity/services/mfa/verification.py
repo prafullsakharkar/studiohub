@@ -44,8 +44,9 @@ class MFAVerificationService(BaseMFAService):
 
         cls.UserMFAValidator.validate_verify(mfa)
 
+        assert mfa is not None  # guaranteed by validate_verify above
         if TOTPService.verify(
-            secret=mfa.secret,
+            secret=mfa.totp_secret,
             code=code,
         ):
             cls.reset_failed_attempts(mfa)
@@ -149,16 +150,16 @@ class MFAVerificationService(BaseMFAService):
 
         mfa.failed_attempts = 0
         mfa.locked_until = None
-        mfa.last_verified_at = timezone.now()
+        mfa.totp_confirmed_at = timezone.now()
 
         if mfa.status == MFAStatus.LOCKED:
-            mfa.status = MFAStatus.ACTIVE
+            mfa.status = MFAStatus.ENABLED
 
         mfa.save(
             update_fields=[
                 "failed_attempts",
                 "locked_until",
-                "last_verified_at",
+                "totp_confirmed_at",
                 "status",
             ]
         )
@@ -207,7 +208,7 @@ class MFAVerificationService(BaseMFAService):
 
         mfa.failed_attempts = 0
         mfa.locked_until = None
-        mfa.status = MFAStatus.ACTIVE
+        mfa.status = MFAStatus.ENABLED
 
         mfa.save(
             update_fields=[
@@ -230,6 +231,9 @@ class MFAVerificationService(BaseMFAService):
         """
 
         mfa = cls.UserMFASelector.get_by_user(user)
+
+        if mfa is None:
+            return False
 
         if not mfa.locked_until:
             return False

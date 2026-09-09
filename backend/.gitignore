@@ -3,6 +3,8 @@
 .env.*
 !.env.example
 !.env.test
+!.env.docker.example
+!.env.production.example
 
 # ── Logs ────────────────────────────────────────────────
 logs/
@@ -46,9 +48,11 @@ ENV/
 db.sqlite3
 staticfiles/
 static_root/
-mediafiles/
-media/
-media_root/
+# Anchored: bare names would also ignore source packages named
+# e.g. `media` at any depth (only the top-level upload dirs here)
+/mediafiles/
+/media/
+/media_root/
 /backend/staticfiles/
 /backend/media/
 local_settings.py

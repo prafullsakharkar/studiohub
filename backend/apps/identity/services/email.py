@@ -1,4 +1,4 @@
-from apps.core.events import EventBus
+from apps.core.events import default_event_bus
 from apps.identity.events.authentication import (
     EmailVerified,
     VerificationEmailSent,
@@ -17,7 +17,7 @@ class EmailService:
         Email sending is handled asynchronously.
         """
 
-        EventBus.publish(
+        default_event_bus.publish(
             VerificationEmailSent(
                 instance=user,
             )
@@ -34,7 +34,7 @@ class EmailService:
             ]
         )
 
-        EventBus.publish(
+        default_event_bus.publish(
             EmailVerified(
                 instance=user,
             )

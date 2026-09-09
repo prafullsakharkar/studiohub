@@ -69,12 +69,13 @@ db.sqlite3
 db.sqlite3-journal
 *.sqlite3
 
-# Django generated files
+# Django generated files (anchored: bare names would also ignore
+# source packages named e.g. `media` at any depth)
 
 staticfiles/
 static_root/
-media/
-media_root/
+/media/
+/media_root/
 
 # Django migrations
 
@@ -179,6 +180,8 @@ docker-volumes/
 
 celerybeat.pid
 celerybeat-schedule
+celerybeat-schedule-shm
+celerybeat-schedule-wal
 
 # ============================================================
 
@@ -320,6 +323,7 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+.playwright-mcp/
 
 # ============================================================
 

@@ -1,9 +1,9 @@
-from apps.core.api.views import BaseAPIView
 from rest_framework import status
 from rest_framework.response import Response
 
-from apps.identity.selectors.user_session import (
-    UserSessionSelector,
+from apps.core.api.views import BaseAPIView
+from apps.identity.selectors.authentication import (
+    AuthenticationSelector,
 )
 from apps.identity.services.authentication import (
     AuthenticationService,
@@ -19,7 +19,7 @@ class LogoutOtherDevicesAPIView(
         *args,
         **kwargs,
     ):
-        session = UserSessionSelector.current(
+        session = AuthenticationSelector.get_active_session(
             user=request.user,
         )
 

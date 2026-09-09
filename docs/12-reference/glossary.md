@@ -168,3 +168,46 @@ Definitions are intentionally concise and should be updated as the platform evol
 - ../02-architecture/domain-model.md
 - ../10-security/overview.md
 - ../11-operations/overview.md
+
+---
+
+# Canonical Production Glossary (domain terms)
+
+The following glossary entries expand the canonical domain vocabulary used across StudioHub. This section is the authoritative source for production terminology used in product and domain documentation.
+
+| Term | Definition |
+|------|------------|
+| Organization | Top-level tenant within StudioHub. Represents a studio, production company, or facility. |
+| Production | A program of work (e.g., a film, season, campaign) composed of Projects and production-wide configuration. |
+| Project | Logical subdivision of a Production, often aligned with an episode or client deliverable. |
+| Episode | Optional subdivision used in episodic productions. |
+| Sequence | Grouping of related Shots within a Project. |
+| Shot | Editorial unit of work with a frame range; primary unit for shot- based pipelines. |
+| Asset | Reusable production resource (model, rig, texture, set); has versions and publishes. |
+| Asset Version | Immutable recorded iteration of an Asset with representations and metadata. |
+| Task | Assigned unit of work associated with a Shot, Asset or Project (task_type, estimate, assignee, status). |
+| Assignment | The act of allocating a Task to a user or team. |
+| Version | A recorded submission representing an iteration of work (artist submission). |
+| Publish | Business-level registration of an artifact (one or more representations) for consumption. |
+| Review | Structured evaluation of Versions; includes ReviewSession, ReviewNote, and ReviewDecision. |
+| Deliverable | Collection of Publishes/Versions packaged for external delivery to a Recipient. |
+| Workflow | Configurable state machine defining states and transitions for a domain entity (Task, Asset, Shot). |
+| Department | Functional area (e.g., Modeling, Lighting, Compositing) used to group tasks and responsibilities. |
+| Team | Group of users typically aligned under a Department. |
+| Representation | A specific file-format instance of a Version or Publish (e.g., EXR, MP4, USD). |
+| Manifest | Machine-readable list of files and checksums associated with a Publish or Delivery. |
+| Consumer | System or process that consumes Publishes (render farm, editorial ingest, external integrator). |
+| Producer | Role responsible for production-level decisions, schedule, and delivery. |
+| Supervisor | Role responsible for creative approvals and quality control within a department. |
+| Vendor | External organization contracted to perform work for a Production. |
+| Client | External stakeholder receiving reviews and final deliveries. |
+| Representation | Binary or derivative file produced by a pipeline or DCC (distinct from domain 'Version'). |
+
+
+# Notes on canonical terminology
+
+- This glossary is the authoritative source for business terminology in StudioHub. Authors must use these terms consistently in documentation and in API naming where appropriate.
+- Distinguish 'Version' (domain object) from 'Representation' (file/formats) — a Version may contain multiple Representations.
+- Distinguish 'Publish' (registration/manifest) from raw object storage — publish is the business record referencing storage locations.
+- Distinguish Production vs Project: Production is the higher-level program; Project is a subdivision and may map to episodes or deliverables.
+

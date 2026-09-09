@@ -1,3 +1,4 @@
+
 from .base import BrandingBaseSerializer
 
 
@@ -11,5 +12,4 @@ class BrandingSummarySerializer(
             "code",
             "name",
             "theme",
-            "status",
         )

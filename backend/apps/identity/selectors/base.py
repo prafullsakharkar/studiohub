@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.db.models import QuerySet
 
 from apps.core.selectors.base import BaseSelector
@@ -16,7 +18,7 @@ class IdentityBaseSelector(BaseSelector):
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> QuerySet[Any, Any]:
         """
         Default queryset.
 

@@ -37,7 +37,7 @@ class Position(OrganizationEntityModel):
         default=False,
     )
 
-    objects = PositionManager()
+    objects: PositionManager = PositionManager()
 
     class Meta:
         db_table = "organization_position"

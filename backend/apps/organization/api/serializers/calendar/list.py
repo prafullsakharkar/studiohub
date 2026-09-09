@@ -1,3 +1,4 @@
+
 from .base import CalendarBaseSerializer
 
 
@@ -17,5 +18,4 @@ class CalendarListSerializer(
             "color",
             "is_default",
             "is_public",
-            "status",
         )

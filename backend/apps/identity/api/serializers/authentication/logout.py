@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.identity.services.authentication import (
@@ -6,7 +8,7 @@ from apps.identity.services.authentication import (
 
 
 class LogoutSerializer(
-    serializers.Serializer,
+    serializers.Serializer[Any],
 ):
     refresh = serializers.CharField(
         required=False,
@@ -21,10 +23,10 @@ class LogoutSerializer(
 
         AuthenticationService.logout(
             request=request,
-            session=request.user.current_session,
+            session=None,
             refresh_token=self.validated_data.get(
                 "refresh",
-            ),
+            ) or None,
         )
 
         return {}

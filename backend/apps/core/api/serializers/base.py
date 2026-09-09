@@ -1,101 +1,36 @@
-"""
-Base serializers.
-"""
+"""Core API base serializers."""
 
 from __future__ import annotations
 
+from typing import TypeVar
+
+from django.db import models
 from rest_framework import serializers
 
-
-class BaseSerializer(serializers.Serializer):
-    """
-    Base serializer with common behaviour.
-    """
-
-    def validate(self, attrs):
-        """
-        Global validation hook.
-        """
-        return super().validate(attrs)
-
-    @property
-    def request(self):
-        """
-        Shortcut to the request object.
-        """
-        return self.context.get("request")
-
-    @property
-    def user(self):
-        """
-        Shortcut to the authenticated user.
-        """
-        request = self.request
-        return getattr(request, "user", None)
+_ModelT = TypeVar("_ModelT", bound=models.Model)
 
 
-class BaseModelSerializer(serializers.ModelSerializer):
-    """
-    Base model serializer.
-    """
+class BaseModelSerializer(serializers.ModelSerializer[_ModelT]):
+    """Base serializer for domain models."""
 
     class Meta:
-        abstract = True
+        """Meta class for BaseModelSerializer."""
 
-    def validate(self, attrs):
-        return super().validate(attrs)
-
-    @property
-    def request(self):
-        return self.context.get("request")
-
-    @property
-    def user(self):
-        request = self.request
-        return getattr(request, "user", None)
-
-
-class BaseReadSerializer(BaseModelSerializer):
-    """
-    Read-only serializer.
-
-    Used for GET endpoints.
-    """
-
-    class Meta:
         abstract = True
 
 
-class BaseWriteSerializer(BaseModelSerializer):
-    """
-    Write serializer.
-
-    Validation only.
-
-    Persistence is delegated to the service layer.
-    """
-
-    class Meta:
-        abstract = True
-
-    def create(self, validated_data):
-        raise NotImplementedError(
-            "Serializer.create() is disabled. " "Use the service layer instead."
-        )
-
-    def update(self, instance, validated_data):
-        raise NotImplementedError(
-            "Serializer.update() is disabled. " "Use the service layer instead."
-        )
+# Backward-compatible aliases. Domain applications historically imported
+# these names; keep them pointing at the same base class.
+BaseSerializer = BaseModelSerializer
 
 
-class BaseNestedSerializer(BaseReadSerializer):
-    """
-    Lightweight serializer intended for nested relationships.
+class BaseReadSerializer(BaseModelSerializer[_ModelT]):
+    """Base serializer for read operations."""
 
-    Applications should override Meta.fields with the minimal
-    representation required by the parent serializer.
-    """
 
-    class Meta:
-        abstract = True
+class BaseWriteSerializer(BaseModelSerializer[_ModelT]):
+    """Base serializer for write operations."""
+
+
+class BaseNestedSerializer(BaseModelSerializer[_ModelT]):
+    """Base serializer for nested operations."""

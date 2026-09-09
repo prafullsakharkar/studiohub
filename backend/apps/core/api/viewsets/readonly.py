@@ -12,7 +12,7 @@ from .base import BaseViewSet
 class ReadOnlyModelViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
-    BaseViewSet,
+    BaseViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
     Read-only ViewSet.

@@ -1,20 +1,10 @@
-from .api_key import *
 from .backup_code import *
-from .group import *
-from .invitation import *
+from .ip_blacklist import *
+from .known_device import *
 from .login_attempt import *
-from .login_history import *
-from .permission import *
-from .personal_access_token import *
-from .role import *
+from .oauth import *
+from .profile import *
+from .security_event import *
 from .trusted_device import *
 from .user import *
-from .user_role import *
-
-# NOTE: The following admin modules reference models that do not yet
-# exist in apps.identity.models (MFADevice, Session, Team, TeamMembership).
-# They are disabled until the corresponding models are implemented.
-# from .mfa_device import *
-# from .session import *
-# from .team import *
-# from .team_membership import *
+from .user_mfa import *

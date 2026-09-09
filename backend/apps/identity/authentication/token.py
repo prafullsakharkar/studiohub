@@ -5,8 +5,6 @@ from django.utils import timezone
 from apps.identity.authentication.jwt import JWTService
 from apps.identity.authentication.utils import AuthenticationUtils
 from apps.identity.choices import AuthenticationMethod
-from apps.identity.services.login_history import LoginHistoryService
-from apps.identity.services.user_session import UserSessionService
 
 
 class TokenService:
@@ -33,6 +31,9 @@ class TokenService:
         team=None,
         authentication_method=AuthenticationMethod.PASSWORD,
     ):
+        from apps.identity.services.login_history import LoginHistoryService
+        from apps.identity.services.user_session import UserSessionService
+
         access_token, refresh_token = JWTService.create_token_pair(
             user,
         )
@@ -88,6 +89,8 @@ class TokenService:
         session,
         refresh_token: str,
     ):
+        from apps.identity.services.user_session import UserSessionService
+
         new_refresh, new_access = JWTService.rotate_refresh_token(
             refresh_token,
         )
@@ -114,6 +117,8 @@ class TokenService:
         session,
         refresh_token: str | None = None,
     ):
+        from apps.identity.services.user_session import UserSessionService
+
         if refresh_token:
             JWTService.blacklist(
                 refresh_token,
@@ -130,6 +135,8 @@ class TokenService:
         session,
         refresh_token: str | None = None,
     ):
+        from apps.identity.services.user_session import UserSessionService
+
         if refresh_token:
             JWTService.blacklist(
                 refresh_token,
@@ -145,6 +152,8 @@ class TokenService:
         *,
         user,
     ):
+        from apps.identity.services.user_session import UserSessionService
+
         UserSessionService.logout_all(
             user=user,
         )
@@ -155,6 +164,8 @@ class TokenService:
         *,
         current_session,
     ):
+        from apps.identity.services.user_session import UserSessionService
+
         UserSessionService.logout_other_devices(
             current_session=current_session,
         )

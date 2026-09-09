@@ -1,6 +1,6 @@
-from django.db.models import QuerySet
 
 from apps.organization.models import Holiday
+from apps.organization.querysets.holiday import HolidayQuerySet
 
 from .base import OrganizationBaseSelector
 
@@ -17,7 +17,7 @@ class HolidaySelector(
         *,
         request=None,
         view=None,
-    ) -> QuerySet:
+    ) -> HolidayQuerySet:
         return Holiday.objects.select_related(
             "organization",
             "work_calendar",

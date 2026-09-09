@@ -1,11 +1,12 @@
-from .base import HolidayBaseSerializer
+
+from .base import HolidaySerializer
 
 
 class HolidaySummarySerializer(
-    HolidayBaseSerializer,
+    HolidaySerializer,
 ):
     class Meta(
-        HolidayBaseSerializer.Meta,
+        HolidaySerializer.Meta,
     ):
         fields = (
             "id",
@@ -13,5 +14,4 @@ class HolidaySummarySerializer(
             "code",
             "name",
             "date",
-            "status",
         )

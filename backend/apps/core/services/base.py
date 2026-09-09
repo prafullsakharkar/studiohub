@@ -4,6 +4,8 @@ Base service.
 
 from __future__ import annotations
 
+from typing import Any
+
 
 class BaseService:
     """
@@ -24,7 +26,7 @@ class BaseService:
         return
 
     @classmethod
-    def before_create(cls, **kwargs):
+    def before_create(cls, **kwargs) -> Any:
         return
 
     @classmethod
@@ -32,7 +34,7 @@ class BaseService:
         return instance
 
     @classmethod
-    def before_update(cls, instance, **kwargs):
+    def before_update(cls, instance, **kwargs) -> Any:
         return
 
     @classmethod
@@ -46,3 +48,32 @@ class BaseService:
     @classmethod
     def after_delete(cls, instance):
         return
+
+    # ------------------------------------------------------------------
+    # Instance helpers (convenience wrappers used by instance-method
+    # services, e.g. ``service.create_xxx(**data)``)
+    # ------------------------------------------------------------------
+
+    def _create(self, **kwargs):
+        """
+        Create a model instance.
+
+        Requires ``self.model`` to be set on the service class.
+        """
+        assert self.model is not None, "model must be set on the service class."
+        return self.model.objects.create(**kwargs)
+
+    def _update(self, instance, **kwargs):
+        """
+        Update a model instance in place.
+        """
+        for field, value in kwargs.items():
+            setattr(instance, field, value)
+        instance.save()
+        return instance
+
+    def _delete(self, instance):
+        """
+        Delete (hard) a model instance.
+        """
+        instance.delete()

@@ -24,7 +24,7 @@ from apps.organization.services.branding import (
 )
 
 
-class BrandingViewSet(OrganizationEntityViewSet):
+class BrandingViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
     API endpoint for Branding.
     """

@@ -2,12 +2,7 @@ from __future__ import annotations
 
 from django.db import models
 
-from apps.core.models import (
-    AuditModel,
-    MetadataModel,
-    TimeStampedModel,
-    UUIDModel,
-)
+from apps.core.models import EntityModel
 from apps.identity.choices import (
     TIMEZONE_CHOICES,
     Language,
@@ -15,12 +10,7 @@ from apps.identity.choices import (
 from apps.identity.managers import ProfileManager
 
 
-class Profile(
-    UUIDModel,
-    TimeStampedModel,
-    AuditModel,
-    MetadataModel,
-):
+class Profile(EntityModel):
     """
     User profile.
     """
@@ -76,7 +66,12 @@ class Profile(
         blank=True,
     )
 
-    objects = ProfileManager()
+    must_change_password = models.BooleanField(
+        default=False,
+        db_index=True,
+    )
+
+    objects: ProfileManager = ProfileManager()
 
     class Meta:
         db_table = "identity_profiles"

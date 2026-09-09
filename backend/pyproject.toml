@@ -1,8 +1,7 @@
 [project]
 name = "studiohub-backend"
-version = "0.1.0"
+version = "1.0.0"
 description = "Enterprise VFX/CG Studio Management Platform"
-readme = "README.md"
 requires-python = ">=3.14"
 
 authors = [{ name = "Prafull Sakharkar" }]
@@ -27,7 +26,7 @@ dependencies = [
     "celery[redis]>=5.5",
     "flower>=2.0",
     "django-celery-results>=2.6",
-    "django-celery-beat>=2.8",
+    "django-celery-beat>=2.9",
     # Images
     "pillow>=11.3",
     # Storage
@@ -48,6 +47,8 @@ dependencies = [
     "django-health-check>=3.20",
     # Extensions
     "django-extensions>=4.1",
+    # Channels (WebSocket support)
+    "channels>=4.2",
     # OpenAPI
     "pyyaml>=6.0",
     # Typing
@@ -74,6 +75,8 @@ dependencies = [
     "qrcode[pil]>=8.2",
     "pycountry>=24.6.1",
     "openpyxl>=3.1.5",
+    # ASGI server
+    "uvicorn[standard]>=0.34",
 ]
 
 [dependency-groups]
@@ -101,6 +104,7 @@ dev = [
     "httpie>=3.2",
     # Shell
     "rich>=14.1",
+    "djangorestframework-stubs>=3.17.0",
 ]
 
 [build-system]
@@ -120,6 +124,15 @@ typeCheckingMode = "recommended"
 reportMissingImports = true
 reportMissingTypeStubs = false
 
+# Django-idiomatic patterns that are false positives under pyright
+# (no mypy plugin runs here):
+# - reportIncompatibleVariableOverride: every model's `class Meta` narrows
+#   the base Meta by design; every Django project triggers this.
+# - reportPrivateImportUsage: factory-boy ships no `__all__`, so all
+#   `factory.X` attribute uses read as private re-export usage.
+reportIncompatibleVariableOverride = false
+reportPrivateImportUsage = false
+
 include = ["apps", "config"]
 
 exclude = ["**/migrations", ".venv"]
@@ -130,15 +143,28 @@ DJANGO_SETTINGS_MODULE = "config.settings.testing"
 
 python_files = ["test_*.py", "*_test.py"]
 
-addopts = ["--reuse-db", "--strict-markers", "--cov=apps"]
+addopts = ["--reuse-db", "--strict-markers", "--cov=apps", "--import-mode=importlib"]
 
-testpaths = ["tests", "apps"]
+testpaths = ["apps"]
+
+filterwarnings = [
+    # Core deprecation FutureWarnings are expected until the domain move (production) is complete
+    "ignore::FutureWarning:apps.core.*",
+    "ignore::FutureWarning",
+    # Pending architecture docs – not actionable in pytest
+    "ignore::UserWarning",
+]
 
 [tool.coverage.run]
 
 source = ["apps"]
 
 omit = ["*/migrations/*", "*/tests/*"]
+
+[tool.coverage.report]
+
+fail_under = 72
+show_missing = true
 
 [tool.hatch.build.targets.wheel]
 

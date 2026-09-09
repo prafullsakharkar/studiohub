@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.identity.services.authentication import (
@@ -6,9 +8,9 @@ from apps.identity.services.authentication import (
 
 
 class LoginSerializer(
-    serializers.Serializer,
+    serializers.Serializer[Any],
 ):
-    username = serializers.CharField(
+    email = serializers.EmailField(
         max_length=255,
     )
 
@@ -44,6 +46,10 @@ class LoginSerializer(
         validated_data,
     ):
         request = self.context["request"]
+
+        validated_data["username"] = validated_data.pop(
+            "email",
+        )
 
         return AuthenticationService.login(
             request=request,

@@ -1,0 +1,18 @@
+%% System overview (Mermaid)
+%% File: docs/09-diagrams/system-overview.mmd
+
+flowchart LR
+  Browser[Frontend] --> API[API Gateway]
+  API --> Auth[Auth Service]
+  API --> Users[User Service]
+  API --> Features[Feature Service]
+  Features --> DB[(Primary DB)]
+  Users --> DB
+  Features --> MQ[(Message Broker)]
+  MQ --> Analytics[Analytics Pipeline]
+  Monitoring[Monitoring] --> Alerts[Alerting]
+  DB --> Backup[Backups]
+
+  style Browser fill:#c2f0ff,stroke:#333
+  style DB fill:#e6e6e6,stroke:#333
+  style MQ fill:#f9f,stroke:#333

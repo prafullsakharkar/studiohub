@@ -26,6 +26,15 @@ class IdentityBaseValidator(BaseValidator):
         cls.ensure(instance is not None, message)
 
     @classmethod
+    def check_not_none(cls, instance, message="Object not found."):
+        """Alias of ensure_not_none used by identity validators."""
+        cls.ensure_not_none(instance, message)
+
+    @classmethod
+    def raise_validation_error(cls, message):
+        raise ValidationError(message)
+
+    @classmethod
     def ensure_active(cls, instance):
         if hasattr(instance, "is_active"):
             cls.ensure(

@@ -1,3 +1,4 @@
+
 from .base import (
     OrganizationSettingsBaseSerializer,
 )
@@ -22,5 +23,4 @@ class OrganizationSettingsListSerializer(
             "timezone",
             "language",
             "currency",
-            "status",
         )

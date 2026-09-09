@@ -1,10 +1,11 @@
+
 from apps.organization.services.holiday import HolidayService
 
-from .base import HolidayBaseSerializer
+from .base import HolidaySerializer
 
 
 class HolidayCreateSerializer(
-    HolidayBaseSerializer,
+    HolidaySerializer,
 ):
 
     def create(self, validated_data):

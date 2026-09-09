@@ -22,7 +22,7 @@ class APIKeyHasher:
         )
 
         return hashlib.sha256(
-            f"{secret}:{value}".encode("utf-8"),
+            f"{secret}:{value}".encode(),
         ).hexdigest()
 
     @classmethod

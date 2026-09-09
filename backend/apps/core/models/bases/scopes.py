@@ -3,22 +3,50 @@ Common ownership/scope abstract models.
 
 These models provide reusable tenant and hierarchy boundaries
 throughout the platform.
+
+This is a protocol/interface for domain applications to implement.
+Domain applications should define their own scoped fields.
+
+Example:
+    class MyModel(OrganizationScopedModel):
+        organization = models.ForeignKey(
+            "myapp.Organization",
+            on_delete=models.CASCADE,
+            related_name="%(app_label)s_%(class)ss",
+            db_index=True,
+        )
 """
 
+import warnings
+
 from django.db import models
+
+# NOTE: The following scope classes (SequenceScopedModel, ShotScopedModel,
+# TaskScopedModel, ReviewScopedModel) express domain-specific concepts used by
+# production/VFX workflows. Keeping them inside `apps.core` couples the shared
+# kernel to a particular vertical. They remain here for now for backwards
+# compatibility but are considered deprecated at the shared-kernel level.
+#
+# Migration recommendation:
+# - Move these classes into a domain package (e.g. `apps/production` or
+#   `apps/project`) and provide a thin compatibility shim in `apps.core` that
+#   re-exports the symbols and emits a deprecation warning until consumers
+#   are migrated.
+#
+warnings.warn(
+    "Core: domain-scoped base models (Sequence/Shot/Task/Review/Project) are deprecated in apps.core and should be moved to a domain package (e.g. apps.production). See docs/architecture/core-refactor-analysis.md for guidance.",
+    FutureWarning,
+    stacklevel=2,
+)
 
 
 class OrganizationScopedModel(models.Model):
     """
-    Base model for organization owned records.
-    """
+    Base model for organization-scoped records.
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)ss",
-        db_index=True,
-    )
+    This is a protocol/interface for domain applications to implement.
+    Domain applications should define their own organization field.
+    """
 
     class Meta:
         abstract = True
@@ -26,15 +54,11 @@ class OrganizationScopedModel(models.Model):
 
 class ProjectScopedModel(models.Model):
     """
-    Base model for project owned records.
-    """
+    Base model for project-scoped records.
 
-    project = models.ForeignKey(
-        "production.Project",
-        on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)ss",
-        db_index=True,
-    )
+    This is a protocol/interface for domain applications to implement.
+    Domain applications should define their own project field.
+    """
 
     class Meta:
         abstract = True
@@ -42,15 +66,11 @@ class ProjectScopedModel(models.Model):
 
 class SequenceScopedModel(models.Model):
     """
-    Base model for sequence owned records.
-    """
+    Base model for sequence-scoped records.
 
-    sequence = models.ForeignKey(
-        "production.Sequence",
-        on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)ss",
-        db_index=True,
-    )
+    This is a protocol/interface for domain applications to implement.
+    Domain applications should define their own sequence field.
+    """
 
     class Meta:
         abstract = True
@@ -58,15 +78,11 @@ class SequenceScopedModel(models.Model):
 
 class ShotScopedModel(models.Model):
     """
-    Base model for shot owned records.
-    """
+    Base model for shot-scoped records.
 
-    shot = models.ForeignKey(
-        "production.Shot",
-        on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)ss",
-        db_index=True,
-    )
+    This is a protocol/interface for domain applications to implement.
+    Domain applications should define their own shot field.
+    """
 
     class Meta:
         abstract = True
@@ -74,15 +90,11 @@ class ShotScopedModel(models.Model):
 
 class TaskScopedModel(models.Model):
     """
-    Base model for task owned records.
-    """
+    Base model for task-scoped records.
 
-    task = models.ForeignKey(
-        "production.Task",
-        on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)ss",
-        db_index=True,
-    )
+    This is a protocol/interface for domain applications to implement.
+    Domain applications should define their own task field.
+    """
 
     class Meta:
         abstract = True
@@ -90,15 +102,11 @@ class TaskScopedModel(models.Model):
 
 class ReviewScopedModel(models.Model):
     """
-    Base model for review owned records.
-    """
+    Base model for review-scoped records.
 
-    review = models.ForeignKey(
-        "review.Review",
-        on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)ss",
-        db_index=True,
-    )
+    This is a protocol/interface for domain applications to implement.
+    Domain applications should define their own review field.
+    """
 
     class Meta:
         abstract = True
@@ -106,15 +114,11 @@ class ReviewScopedModel(models.Model):
 
 class UserScopedModel(models.Model):
     """
-    Base model for user owned records.
-    """
+    Base model for user-scoped records.
 
-    owner = models.ForeignKey(
-        "identity.User",
-        on_delete=models.CASCADE,
-        related_name="owned_%(app_label)s_%(class)ss",
-        db_index=True,
-    )
+    This is a protocol/interface for domain applications to implement.
+    Domain applications should define their own user/owner field.
+    """
 
     class Meta:
         abstract = True

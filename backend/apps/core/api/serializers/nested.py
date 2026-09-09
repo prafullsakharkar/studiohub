@@ -4,10 +4,12 @@ Nested serializers.
 
 from __future__ import annotations
 
-from .base import BaseModelSerializer
+from typing import Any
+
+from .base import BaseNestedSerializer
 
 
-class NestedModelSerializer(BaseModelSerializer):
+class NestedModelSerializer(BaseNestedSerializer[Any]):
     """
     Base serializer for nested representations.
     """

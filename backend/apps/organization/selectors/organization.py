@@ -15,12 +15,12 @@ class OrganizationSelector(OrganizationBaseSelector):
     """
 
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet:
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Organization]:
         """
         Return the base queryset for Organization.
         """
 
-        return Organization.objects.active().select_related(
+        return Organization.objects.alive().select_related(
             "created_by",
             "updated_by",
         )
@@ -29,9 +29,12 @@ class OrganizationSelector(OrganizationBaseSelector):
     def get_by_uuid(cls, uuid):
         """
         Return an organization by UUID.
+
+        ``uuid`` is a property alias for the ``id`` primary key field;
+        lookup must target the real column.
         """
 
-        return cls.get_queryset().get(uuid=uuid)
+        return cls.get_queryset().get(id=uuid)
 
     @classmethod
     def get_by_code(cls, code):

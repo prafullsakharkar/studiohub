@@ -2,6 +2,6 @@ from rest_framework.generics import GenericAPIView
 
 
 class BaseGenericAPIView(
-    GenericAPIView,
+    GenericAPIView,  # pyright: ignore[reportMissingTypeArgument]
 ):
     pass

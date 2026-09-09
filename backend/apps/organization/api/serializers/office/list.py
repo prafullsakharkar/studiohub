@@ -1,3 +1,4 @@
+
 from .base import OfficeBaseSerializer
 
 
@@ -14,5 +15,4 @@ class OfficeListSerializer(
             "country",
             "manager",
             "is_headquarters",
-            "status",
         )

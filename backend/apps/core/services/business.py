@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from django.db import transaction
 
-from apps.core.events import EventBus
+from apps.core.events import default_event_bus
 from apps.core.services.mixins.lifecycle import LifecycleMixin
 from apps.core.services.mixins.soft_delete import SoftDeleteMixin
 
@@ -49,7 +49,7 @@ class BusinessService(
     @classmethod
     def validate(
         cls,
-        operation: str,
+        operation: str = "",
         **kwargs,
     ):
         if cls.validator_class is None:
@@ -77,7 +77,7 @@ class BusinessService(
         event = cls.event_map.get(operation)
 
         if event is not None:
-            EventBus.publish(
+            default_event_bus.publish(
                 event(**kwargs),
             )
 
@@ -218,6 +218,7 @@ class BusinessService(
         if cls.selector_class:
             return cls.selector_class.get_queryset()
 
+        assert cls.model is not None, "model must be set on the service class."
         return cls.model.objects.all()
 
     @classmethod
@@ -459,7 +460,6 @@ class BusinessService(
 
         instance = super().restore(
             instance,
-            user=user,
         )
 
         instance = cls.after_restore(
@@ -492,7 +492,6 @@ class BusinessService(
 
         instance = super().archive(
             instance,
-            user=user,
         )
 
         instance = cls.after_archive(
@@ -525,7 +524,6 @@ class BusinessService(
 
         instance = super().activate(
             instance,
-            user=user,
         )
 
         instance = cls.after_activate(
@@ -558,7 +556,6 @@ class BusinessService(
 
         instance = super().deactivate(
             instance,
-            user=user,
         )
 
         instance = cls.after_deactivate(

@@ -1,3 +1,4 @@
+
 from .base import PositionBaseSerializer
 
 
@@ -13,5 +14,4 @@ class PositionSummarySerializer(
             "uuid",
             "code",
             "name",
-            "status",
         )

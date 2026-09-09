@@ -1,3 +1,4 @@
+
 from .base import WorkHoursBaseSerializer
 
 
@@ -14,5 +15,4 @@ class WorkHoursSummarySerializer(
             "code",
             "name",
             "day",
-            "status",
         )

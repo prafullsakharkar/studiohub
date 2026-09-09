@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import contextlib
-from datetime import timedelta
+from datetime import UTC
 
 from django.conf import settings
 from django.utils import timezone
@@ -9,7 +9,6 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
 from apps.identity.authentication.exceptions import (
-    ExpiredToken,
     InvalidToken,
 )
 
@@ -129,11 +128,26 @@ class JWTService:
             refresh_token,
         )
 
-        new_refresh = cls.refresh_token_class.for_user(
-            refresh.user,
-        )
+        # simplejwt RefreshToken does not expose .user; resolve via payload.
+        user_id = cls.get_user_id(refresh)
+        if not user_id:
+            raise InvalidToken("Refresh token has no user claim.")
+
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist as exc:
+            raise InvalidToken("User not found for refresh token.") from exc
+
+        new_refresh = cls.refresh_token_class.for_user(user)
 
         access = new_refresh.access_token
+
+        # Optionally blacklist old refresh when rotation is enabled.
+        with contextlib.suppress(Exception):
+            refresh.blacklist()
 
         return (
             new_refresh,
@@ -148,9 +162,14 @@ class JWTService:
     def get_user_id(
         token,
     ):
-        return token.get(
-            settings.SIMPLE_JWT["USER_ID_CLAIM"],
-        )
+        # Use simplejwt api_settings to respect defaults even if SIMPLE_JWT not in Django settings.
+        try:
+            from rest_framework_simplejwt.settings import api_settings
+
+            claim = api_settings.USER_ID_CLAIM
+        except Exception:
+            claim = getattr(settings, "SIMPLE_JWT", {}).get("USER_ID_CLAIM", "user_id")
+        return token.get(claim)
 
     @staticmethod
     def get_jti(
@@ -173,7 +192,7 @@ class JWTService:
 
         return timezone.datetime.fromtimestamp(
             timestamp,
-            tz=timezone.utc,
+            tz=UTC,
         )
 
     @staticmethod

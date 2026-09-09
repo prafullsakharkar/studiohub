@@ -1,0 +1,3 @@
+"""
+Identity application tests.
+"""

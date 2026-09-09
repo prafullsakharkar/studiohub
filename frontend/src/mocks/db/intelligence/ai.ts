@@ -1,0 +1,226 @@
+import {
+  AIRiskItem,
+  AITaskRecommendation,
+  AIProjectSummary,
+  AIShotSummary,
+  AIChatMessage,
+  AIPermissionContext,
+} from '@/types/intelligence';
+
+export const mockAIRisks: AIRiskItem[] = [
+  {
+    id: 'risk-001',
+    severity: 'critical',
+    category: 'schedule',
+    title: 'Sequence 010 Comp Milestone Slip Risk (4.5 Days Forecasted Delay)',
+    description: 'Compositing turnover for 8 hero asteroid shots is bottlenecked because Houdini Pyro simulation caches in FX are 3 days behind schedule.',
+    project_code: 'NK99',
+    impacted_entity_type: 'shot',
+    impacted_entity_id: 'shot-001',
+    impacted_entity_name: 'NK99-010-010: Asteroid Belt Chase',
+    detected_at: '2026-08-25T18:30:00Z',
+    suggested_action: 'Fast-track low-res proxy FX caches for initial 2D comp line-up, or temporarily reassign 2 senior FX TDs from secondary assets.',
+    confidence_score: 0.94,
+    auto_mitigation_available: true,
+  },
+  {
+    id: 'risk-002',
+    severity: 'high',
+    category: 'artist_capacity',
+    title: 'Artist Overbooking: Maya Lindqvist at 145% Capacity (58h)',
+    description: 'Senior Character Animator is simultaneously allocated to 3 hero titan fight shots with overlapping dailies milestones this Friday.',
+    project_code: 'NK99',
+    impacted_entity_type: 'person',
+    impacted_entity_id: 'usr-003',
+    impacted_entity_name: 'Maya Lindqvist (Senior Animator)',
+    detected_at: '2026-08-25T20:15:00Z',
+    suggested_action: 'Reallocate Shot NK99_010_030 blocking pass to Kenji Sato or David Chen (currently at 65% capacity).',
+    confidence_score: 0.98,
+    auto_mitigation_available: true,
+  },
+  {
+    id: 'risk-003',
+    severity: 'high',
+    category: 'delivery',
+    title: 'Paramount Turnover Missing Steganographic Watermark Metadata',
+    description: 'Batch export for Aspera dispatch del-001 contains 4 shots without verified CineCode recipient tokens, risking MPAA compliance rejection.',
+    project_code: 'NK99',
+    impacted_entity_type: 'delivery',
+    impacted_entity_id: 'del-001',
+    impacted_entity_name: 'NK99 Act 1 Final EXR Turnover',
+    detected_at: '2026-08-25T21:00:00Z',
+    suggested_action: 'Run automated StudioHub Watermark Injector node before triggering final Faspex uplink transmission.',
+    confidence_score: 0.99,
+    auto_mitigation_available: true,
+  },
+  {
+    id: 'risk-004',
+    severity: 'medium',
+    category: 'technical',
+    title: 'Render Node Memory Saturation on Spice VDB Simulations',
+    description: '32-core GPU blade cluster is experiencing 92% VRAM spikes during high-density OpenVDB grid meshing on DUNE sisterhood shots.',
+    project_code: 'DUNE',
+    impacted_entity_type: 'project',
+    impacted_entity_id: 'proj-002',
+    impacted_entity_name: 'Dune: The Sisterhood',
+    detected_at: '2026-08-25T14:40:00Z',
+    suggested_action: 'Enable adaptive voxel bounding box clamping in Karma rendering SOPs to reduce memory footprint by 38%.',
+    confidence_score: 0.88,
+    auto_mitigation_available: false,
+  },
+];
+
+export const mockAITaskRecommendations: AITaskRecommendation[] = [
+  {
+    task_id: 'task-001',
+    task_title: 'Hero Mech High-Poly Hard Surface Detailing',
+    project_code: 'NK99',
+    current_assignee_id: 'usr-003',
+    current_assignee_name: 'Maya Lindqvist (Overbooked)',
+    recommended_assignee_id: 'usr-004',
+    recommended_assignee_name: 'David Chen (Senior Hard-Surface Modeler)',
+    reason: 'David has 98% skill match in ZBrush hard-surface mech workflows and 14 free runway hours this sprint.',
+    workload_delta_hours: -18,
+    fit_score: 0.96,
+    estimated_speedup_days: 1.5,
+  },
+  {
+    task_id: 'task-002',
+    task_title: 'Deep EXR Volumetric Dust Compositing',
+    project_code: 'NK99',
+    current_assignee_id: undefined,
+    current_assignee_name: 'Unassigned',
+    recommended_assignee_id: 'usr-005',
+    recommended_assignee_name: 'Marcus Vance (Lead Compositor)',
+    reason: 'Marcus authored the 32-bit Deep EXR SOP and has completed 94% of his current sprint milestones.',
+    workload_delta_hours: 12,
+    fit_score: 0.99,
+    estimated_speedup_days: 2.0,
+  },
+  {
+    task_id: 'task-003',
+    task_title: 'Anamorphic Lens Distortion Solving (3DEqualizer)',
+    project_code: 'NK99',
+    current_assignee_id: undefined,
+    current_assignee_name: 'Unassigned',
+    recommended_assignee_id: 'usr-006',
+    recommended_assignee_name: 'Kenji Sato (Lead Matchmove)',
+    reason: 'Highest tracking precision score in Panavision C-series calibration grids across the studio.',
+    workload_delta_hours: 8,
+    fit_score: 0.95,
+    estimated_speedup_days: 1.0,
+  },
+];
+
+export const mockAIProjectSummaries: Record<string, AIProjectSummary> = {
+  NK99: {
+    project_code: 'NK99',
+    project_name: 'Nebula Knights',
+    generated_at: '2026-08-26T00:30:00Z',
+    health_score: 87,
+    status: 'on_track',
+    headline: 'Production pace is steady with 68% shot completion; FX sim cache turnaround remains the primary watchpoint for Friday dailies.',
+    executive_brief: 'Nebula Knights has achieved 383 approved visual effects shots out of 854 total target cuts. Sequence 010 space battle sequence is entering final compositing integration. Budget utilization is currently 4.2% below initial bid targets with 44 days remaining until final master delivery to Paramount Global.',
+    key_metrics: {
+      shots_completed: 383,
+      shots_total: 854,
+      completion_percentage: 68.4,
+      days_to_final_delivery: 44,
+      budget_burn_rate_pct: 71.2,
+      open_critical_notes: 6,
+    },
+    department_breakdown: [
+      { department: 'Concept & Art', progress_pct: 98, bottleneck_detected: false, velocity_trend: 'stable' },
+      { department: '3D Modeling & Asset', progress_pct: 92, bottleneck_detected: false, velocity_trend: 'stable' },
+      { department: 'Character Animation', progress_pct: 76, bottleneck_detected: false, velocity_trend: 'accelerating' },
+      { department: 'FX Simulation', progress_pct: 54, bottleneck_detected: true, velocity_trend: 'decelerating' },
+      { department: 'Lighting & LookDev', progress_pct: 61, bottleneck_detected: false, velocity_trend: 'accelerating' },
+      { department: 'Compositing', progress_pct: 48, bottleneck_detected: false, velocity_trend: 'accelerating' },
+    ],
+    critical_risks: [
+      'Sequence 010 Houdini pyro simulation cache queue is at 94% render farm capacity.',
+      'Maya Lindqvist overbooked across 3 hero animation shots.',
+      'Paramount Aspera delivery manifest requires tokenized watermark verification.',
+    ],
+    recommended_actions: [
+      'Prioritize render farm job tier 1 for FX explosion caches on shot 010-010.',
+      'Reassign secondary asset detailing task from Maya Lindqvist to David Chen.',
+      'Trigger automated review playlist compilation for 3pm supervisor dailies.',
+    ],
+  },
+  DUNE: {
+    project_code: 'DUNE',
+    project_name: 'Dune: The Sisterhood',
+    generated_at: '2026-08-26T00:30:00Z',
+    health_score: 91,
+    status: 'ahead_of_schedule',
+    headline: 'Teaser trailer stems completed ahead of Warner Bros deadline; environment sand grooming entering sequence turnover.',
+    executive_brief: 'Dune Sisterhood production is progressing exceptionally well with 485 approved cuts. FX particle shimmer optimization has reduced render times by 22% across Karma blades.',
+    key_metrics: {
+      shots_completed: 485,
+      shots_total: 620,
+      completion_percentage: 78.2,
+      days_to_final_delivery: 62,
+      budget_burn_rate_pct: 64.8,
+      open_critical_notes: 2,
+    },
+    department_breakdown: [
+      { department: 'Environment & Groom', progress_pct: 88, bottleneck_detected: false, velocity_trend: 'accelerating' },
+      { department: 'FX Simulation', progress_pct: 81, bottleneck_detected: false, velocity_trend: 'accelerating' },
+      { department: 'Compositing', progress_pct: 74, bottleneck_detected: false, velocity_trend: 'stable' },
+    ],
+    critical_risks: [
+      'VRAM memory spikes on heavy Arrakis dunes OpenVDB volume meshing.',
+    ],
+    recommended_actions: [
+      'Implement adaptive voxel bounding box SOP clamps across all dune shot templates.',
+    ],
+  },
+};
+
+export const mockAIShotSummaries: Record<string, AIShotSummary> = {
+  NK99_010_010: {
+    shot_code: 'NK99_010_010',
+    project_code: 'NK99',
+    generated_at: '2026-08-26T00:35:00Z',
+    status: 'in_progress',
+    frame_range: '1001-1148 (148 frames)',
+    supervisor_intent: 'Hero asteroid evasion with dynamic thruster rim lighting, intense anamorphic lens flare, and heavy foreground ice particulate drift.',
+    pipeline_stage: 'Compositing & Final Integration',
+    active_tasks_count: 3,
+    versions_history_count: 14,
+    latest_review_feedback: 'Supervisor Prafull Sakharkar: "Increase thruster core heat by +1.5 stops and soften the asteroid depth-of-field edge in deep merge. Otherwise looking fantastic."',
+    blocker_analysis: 'FX pyro explosion pass v008 published and ready. Awaiting final deep comp integration.',
+    turnaround_forecast_days: 1.5,
+  },
+};
+
+export const mockInitialAIChatMessages: AIChatMessage[] = [
+  {
+    id: 'msg-001',
+    sender: 'assistant',
+    content: `Hello! I am **StudioHub Production Assistant**, your AI copilot for VFX pipeline operations, schedule optimization, and cross-department knowledge.
+
+I am operating within **Industrial Pixel Magic** with active context for show **[NK99] Nebula Knights**.
+
+How can I assist your production today?`,
+    timestamp: '2026-08-26T00:00:00Z',
+    capability_used: 'production_assistant',
+    suggested_followups: [
+      'Give me an executive status summary for [NK99]',
+      'What are the critical schedule risks this week?',
+      'How do I author OpenUSD 24.08 payload layers?',
+      'Check artist overbooking in Compositing',
+      'Show me unapproved versions in Sequence 010',
+    ],
+  },
+];
+
+export const mockAIPermissionContext: AIPermissionContext = {
+  active_organization_id: 'org-001',
+  active_organization_name: 'Industrial Pixel Magic',
+  active_project_code: 'NK99',
+  user_role: 'VFX Supervisor / Admin',
+  restricted_entities_count: 0,
+  is_isolated: true,
+};

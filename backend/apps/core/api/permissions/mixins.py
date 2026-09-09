@@ -25,7 +25,7 @@ class PermissionMapPermission(BasePermission):
         )
 
         required = permission_map.get(
-            view.action,
+            getattr(view, "action", None),
             (),
         )
 

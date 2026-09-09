@@ -1,3 +1,4 @@
+
 from .base import BrandingBaseSerializer
 
 
@@ -13,5 +14,4 @@ class BrandingListSerializer(
             "organization",
             "theme",
             "primary_color",
-            "status",
         )

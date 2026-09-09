@@ -20,7 +20,7 @@ class Team(OrganizationEntityModel):
         settings.AUTH_USER_MODEL,
         null=True,
         blank=True,
-        related_name="led_teams",
+        related_name="organization_led_teams",
         on_delete=models.SET_NULL,
     )
 
@@ -33,7 +33,7 @@ class Team(OrganizationEntityModel):
         default=1,
     )
 
-    objects = TeamManager()
+    objects: TeamManager = TeamManager()
 
     class Meta:
         db_table = "org_team"

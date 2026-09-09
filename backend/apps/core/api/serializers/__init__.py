@@ -1,35 +1,23 @@
 """
-Serializer exports.
+Core API serializers.
+
+Provides base serializer classes for domain applications.
 """
 
-from .base import (
+from __future__ import annotations
+
+from apps.core.api.serializers.base import (
     BaseModelSerializer,
     BaseNestedSerializer,
     BaseReadSerializer,
     BaseSerializer,
     BaseWriteSerializer,
 )
-from .bulk import BulkModelSerializer
-from .fields import (
-    ChoiceDisplayField,
-    LowercaseEmailField,
-    TrimmedCharField,
-    UppercaseCharField,
-)
-from .list import BaseListSerializer
-from .nested import NestedModelSerializer
 
 __all__ = [
-    "BaseSerializer",
     "BaseModelSerializer",
-    "BulkModelSerializer",
-    "NestedModelSerializer",
-    "BaseListSerializer",
-    "ChoiceDisplayField",
-    "LowercaseEmailField",
-    "TrimmedCharField",
-    "UppercaseCharField",
     "BaseNestedSerializer",
     "BaseReadSerializer",
+    "BaseSerializer",
     "BaseWriteSerializer",
 ]
