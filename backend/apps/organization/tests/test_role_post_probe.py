@@ -1,9 +1,11 @@
 import pytest
 from rest_framework.test import APIClient
+
 from apps.identity.tests.factories import UserFactory
 from apps.organization.models import Permission, Role
 from apps.organization.tests.factories import (
-    OrganizationFactory, OrganizationMembershipFactory, RoleFactory,
+    OrganizationFactory,
+    OrganizationMembershipFactory,
 )
 
 
