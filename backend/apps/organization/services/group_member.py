@@ -4,6 +4,7 @@ from apps.organization.events import (
     GroupMemberRemoved,
     GroupMemberUpdated,
 )
+from apps.organization.models import GroupMember
 from apps.organization.validators.group_member import GroupMemberValidator
 
 
@@ -12,7 +13,7 @@ class GroupMemberService(BusinessService):
     Service for GroupMember model.
     """
 
-    model = None
+    model = GroupMember
     validator_class = GroupMemberValidator
 
     event_map = {

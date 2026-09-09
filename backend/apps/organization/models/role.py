@@ -20,6 +20,7 @@ class Role(EntityModel, ColorModel):
         max_length=100,
         unique=True,
         db_index=True,
+        blank=True,
     )
 
     description = models.TextField(

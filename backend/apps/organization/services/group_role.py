@@ -4,6 +4,7 @@ from apps.organization.events import (
     GroupRoleRemoved,
     GroupRoleUpdated,
 )
+from apps.organization.models import GroupRole
 from apps.organization.validators.group_role import GroupRoleValidator
 
 
@@ -12,7 +13,7 @@ class GroupRoleService(BusinessService):
     Service for GroupRole model.
     """
 
-    model = None
+    model = GroupRole
     validator_class = GroupRoleValidator
 
     event_map = {

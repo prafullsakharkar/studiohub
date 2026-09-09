@@ -18,7 +18,7 @@ class RoleService(BusinessService):
     Service for Role model.
     """
 
-    model = None
+    model = Role
     validator_class = RoleValidator
 
     event_map = {
@@ -98,6 +98,42 @@ class RoleService(BusinessService):
                 user=user,
             )
         return added, unknown
+
+    @classmethod
+    @transaction.atomic
+    def create(cls, *, user=None, **validated_data):
+        """Create a role, syncing any ``permissions`` code list afterwards.
+
+        The write-only ``permissions`` alias never reaches the model layer.
+        """
+        permission_codes = validated_data.pop("permissions", None)
+        instance = super().create(user=user, **validated_data)
+        if permission_codes:
+            cls.grant_permissions(instance, list(permission_codes), user=user)
+        return instance
+
+    @classmethod
+    @transaction.atomic
+    def update(cls, instance, *, user=None, **validated_data):
+        """Update a role; a present ``permissions`` list replaces the grants.
+
+        Absent key = partial update without touching grants (matches the
+        frontend sending the full selection only when permissions change).
+        Unknown codes are ignored here (the dedicated add/remove actions
+        already report them explicitly).
+        """
+        permission_codes = validated_data.pop("permissions", None)
+        instance = super().update(instance, user=user, **validated_data)
+        if permission_codes is not None:
+            wanted = set(permission_codes)
+            current = set(
+                instance.role_permissions.select_related("permission").values_list(
+                    "permission__code", flat=True
+                )
+            )
+            cls.grant_permissions(instance, list(wanted - current), user=user)
+            cls.revoke_permissions(instance, list(current - wanted), user=user)
+        return instance
 
     @classmethod
     @transaction.atomic

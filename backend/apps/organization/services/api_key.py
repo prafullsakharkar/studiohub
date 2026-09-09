@@ -4,6 +4,7 @@ from apps.organization.events import (
     APIKeyDeleted,
     APIKeyUpdated,
 )
+from apps.organization.models import APIKey
 from apps.organization.validators.api_key import APIKeyValidator
 
 
@@ -12,7 +13,7 @@ class APIKeyService(BusinessService):
     Service for APIKey model.
     """
 
-    model = None
+    model = APIKey
     validator_class = APIKeyValidator
 
     event_map = {

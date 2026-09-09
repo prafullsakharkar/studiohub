@@ -41,6 +41,17 @@
           "mcp",
           "serve"
         ]
+      },
+      "github": {
+        "type": "local",
+        "command": [
+          "/usr/local/bin/github-mcp-server",
+          "stdio"
+        ],
+        "environment": {
+          "GITHUB_PERSONAL_ACCESS_TOKEN": "{env:GITHUB_PERSONAL_ACCESS_TOKEN}"
+        },
+        "enabled": true
       }
     }
   },
