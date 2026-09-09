@@ -11,6 +11,7 @@ from rest_framework import viewsets
 
 from apps.core.api.mixins import (
     ContextMixin,
+    DiagnosticContextMixin,
     ErrorMixin,
     FilteringMixin,
     PaginationMixin,
@@ -24,6 +25,7 @@ from apps.core.permissions.base import IsAuthenticatedPermission
 class BaseViewSet(
     ResponseMixin,
     ContextMixin,
+    DiagnosticContextMixin,
     ErrorMixin,
     FilteringMixin,
     PaginationMixin,

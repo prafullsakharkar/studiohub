@@ -1,5 +1,6 @@
 from .audit import AuditMixin
 from .context import ContextMixin
+from .diagnostics import DiagnosticContextMixin
 from .dynamic_fields import DynamicFieldsMixin
 from .errors import ErrorMixin
 from .filtering import FilteringMixin
@@ -17,6 +18,7 @@ from .validation import ValidationMixin
 __all__ = [
     "AuditMixin",
     "ContextMixin",
+    "DiagnosticContextMixin",
     "DynamicFieldsMixin",
     "ErrorMixin",
     "FilteringMixin",

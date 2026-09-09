@@ -8,6 +8,9 @@ import contextlib
 
 from django.core.cache import cache
 
+from apps.core.api.diagnostics import events
+from apps.core.api.diagnostics.reasons import classify_cache_error
+from apps.core.logging.logger import get_logger
 from apps.identity.resolvers.permission import (
     PermissionResolver,
 )
@@ -55,6 +58,8 @@ class PermissionCacheService:
         user,
         organization=None,
     ):
+        key = None
+
         try:
             version = cache.get(
                 cls._version_key(user.pk),
@@ -72,9 +77,18 @@ class PermissionCacheService:
             )
 
             permissions = cache.get(key)
-        except Exception:
+        except Exception as exc:
             # Cache backend unavailable (e.g. Redis down). Degrade to
-            # uncached resolution rather than failing authorization.
+            # uncached resolution rather than failing authorization — but
+            # stay visible: silent fallbacks hide infrastructure outages.
+            get_logger("cache").warning(
+                events.CACHE_ERROR,
+                backend=type(cache).__name__,
+                operation="permission_lookup",
+                reason=classify_cache_error(exc),
+                exception_type=type(exc).__name__,
+                fallback="uncached_resolution",
+            )
             permissions = None
 
         if permissions is None:
@@ -85,11 +99,12 @@ class PermissionCacheService:
             )
 
             with contextlib.suppress(Exception):
-                cache.set(
-                    key,
-                    permissions,
-                    timeout=cls.CACHE_TIMEOUT,
-                )
+                if key is not None:
+                    cache.set(
+                        key,
+                        permissions,
+                        timeout=cls.CACHE_TIMEOUT,
+                    )
 
         return permissions
 

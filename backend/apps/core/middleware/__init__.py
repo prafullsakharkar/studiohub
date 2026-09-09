@@ -5,6 +5,7 @@ from .locale import LocaleMiddleware
 from .maintenance import MaintenanceMiddleware
 from .organization import OrganizationMiddleware
 from .request_id import RequestIDMiddleware
+from .request_logging import RequestLoggingMiddleware
 from .security import SecurityHeadersMiddleware
 from .timezone import TimezoneMiddleware
 from .trailing_slash import TrailingSlashMiddleware
@@ -17,6 +18,7 @@ __all__ = [
     "MaintenanceMiddleware",
     "OrganizationMiddleware",
     "RequestIDMiddleware",
+    "RequestLoggingMiddleware",
     "SecurityHeadersMiddleware",
     "TimezoneMiddleware",
     "TrailingSlashMiddleware",

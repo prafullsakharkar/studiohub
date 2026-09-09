@@ -3,6 +3,10 @@ Middleware configuration.
 """
 
 MIDDLEWARE = [
+    # Outermost: exactly-one completion record per request plus traceback
+    # logging for exceptions escaping the view layer (ADR-0031). Assigns
+    # request.request_id; RequestIDMiddleware below reuses it.
+    "apps.core.middleware.RequestLoggingMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "apps.core.middleware.RequestIDMiddleware",
     "apps.core.logging.middleware.LoggingContextMiddleware",

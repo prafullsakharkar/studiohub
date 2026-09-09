@@ -319,20 +319,28 @@ Sensitive information should never be logged.
 
 # Trace IDs
 
-Production deployments should include a request identifier.
+Every response carries the request identifier in the `X-Request-ID`
+header. Every error body additionally carries a machine-readable code
+and the same identifier in an additive `error` object (existing
+`detail` / field-error shapes are unchanged):
 
 Example
 
 ```json
 {
-    "success": false,
-    "code": "internal_server_error",
-    "message": "An unexpected error occurred.",
-    "trace_id": "7d82b3d2-31b4-4d71-b0f2-4f0d97dcb9ef"
+    "detail": "Internal server error.",
+    "error": {
+        "code": "internal_server_error",
+        "request_id": "7d82b3d2-31b4-4d71-b0f2-4f0d97dcb9ef"
+    }
 }
 ```
 
-This allows developers to correlate API errors with server logs.
+This allows developers to correlate API errors with server logs: search
+backend logs for `request_id=<id>` to find the structured diagnostic
+record (`authentication_failed`, `permission_denied`,
+`method_not_allowed`, `validation_error`, `unhandled_exception`, …)
+plus the `request_completed` record. See `docs/observability.md`.
 
 ---
 

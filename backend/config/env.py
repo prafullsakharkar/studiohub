@@ -152,6 +152,14 @@ class Settings(BaseSettings):
     email_port: int = Field(default=1025, alias="EMAIL_PORT")
 
     ####################################################################
+    # Logging
+    ####################################################################
+
+    log_level: str = Field(default="INFO", alias="LOG_LEVEL")
+
+    log_format: str = Field(default="", alias="LOG_FORMAT")
+
+    ####################################################################
     # Celery
     ####################################################################
 

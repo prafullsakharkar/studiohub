@@ -51,21 +51,23 @@ def _final_renderer(json_output):
     return structlog.dev.ConsoleRenderer(colors=False)
 
 
-def configure_structlog(*, json_output=None):
+def configure_structlog(*, json_output=None, level=None):
     """
     Configure structlog + the stdlib bridge.
 
-    ``json_output=None`` selects JSON when Django ``DEBUG`` is off.
+    ``json_output=None`` selects JSON when Django ``DEBUG`` is off, unless
+    overridden by the ``LOG_FORMAT`` environment variable (``json`` /
+    ``console`` / empty for automatic). ``level=None`` selects the root
+    log level from ``LOG_LEVEL`` (default ``INFO``).
+
     Returns the final renderer used (handy for tests).
     """
 
     if json_output is None:
-        try:
-            from django.conf import settings
+        json_output = _resolve_json_output()
 
-            json_output = not settings.DEBUG
-        except Exception:
-            json_output = True
+    if level is None:
+        level = _resolve_level()
 
     structlog.configure(
         processors=[
@@ -98,7 +100,48 @@ def configure_structlog(*, json_output=None):
     _installed_handler = handler
     root_logger.addHandler(handler)
 
-    if root_logger.level > logging.INFO:
-        root_logger.setLevel(logging.INFO)
+    if root_logger.level > level:
+        root_logger.setLevel(level)
+
+    # Silence Django's per-4xx one-liners ("Unauthorized: ...",
+    # "Not Found: ..."). They duplicate the structured diagnostic +
+    # completion records without adding root-cause detail. 5xx tracebacks
+    # still pass through at ERROR.
+    logging.getLogger("django.request").setLevel(max(level, logging.ERROR))
 
     return formatter
+
+
+def _resolve_json_output() -> bool:
+    try:
+        from config.env import settings as env_settings
+
+        log_format = str(getattr(env_settings, "log_format", "") or "")
+    except Exception:
+        log_format = ""
+
+    normalized = log_format.strip().lower()
+
+    if normalized == "json":
+        return True
+
+    if normalized == "console":
+        return False
+
+    try:
+        from django.conf import settings
+
+        return not settings.DEBUG
+    except Exception:
+        return True
+
+
+def _resolve_level() -> int:
+    try:
+        from config.env import settings as env_settings
+
+        configured = str(getattr(env_settings, "log_level", "") or "")
+    except Exception:
+        configured = ""
+
+    return logging._nameToLevel.get(configured.strip().upper(), logging.INFO)
