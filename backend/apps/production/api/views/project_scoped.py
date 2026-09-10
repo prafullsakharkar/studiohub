@@ -40,7 +40,7 @@ from apps.core.api.pagination import StandardPagination
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.deliveries.api.serializers.delivery import DeliveryListSerializer
 from apps.deliveries.selectors.delivery import DeliverySelector
-from apps.organization.models import Organization, OrganizationMembership
+from apps.organization.models import OrganizationMembership
 from apps.production.api.serializers.asset.list import AssetListSerializer
 from apps.production.api.serializers.editorial import EditorialCutSerializer
 from apps.production.api.serializers.media.list import MediaListSerializer
@@ -142,23 +142,11 @@ class ProjectScopeMixin:
 
     @staticmethod
     def _resolve_organization(lookup):
-        from django.core.exceptions import ValidationError as DjangoValidationError
-
         if not lookup:
             raise Http404("Organization not found.")
-        org = None
-        try:
-            org = Organization.objects.filter(id=lookup, is_deleted=False).first()
-        except (ValueError, TypeError, DjangoValidationError):
-            org = None
-        if org is None:
-            from django.db.models import Q
+        from apps.organization.selectors.organization import OrganizationSelector
 
-            org = (
-                Organization.objects.filter(is_deleted=False)
-                .filter(Q(code__iexact=lookup) | Q(slug__iexact=lookup))
-                .first()
-            )
+        org = OrganizationSelector.resolve_by_lookup(lookup)
         if org is None:
             raise Http404(f"Project {lookup} not found in organization.")
         return org

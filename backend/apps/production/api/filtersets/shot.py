@@ -10,11 +10,13 @@ class ShotFilterSet(BaseFilterSet):
     status = django_filters.CharFilter(field_name="status", lookup_expr="iexact")
     project = django_filters.UUIDFilter(field_name="project_id")
     sequence_code = django_filters.CharFilter(field_name="sequence_code", lookup_expr="iexact")
+    # Frontend-contract alias (defensive; no current caller sends bare `sequence`).
+    sequence = django_filters.CharFilter(field_name="sequence_code", lookup_expr="iexact")
     code = django_filters.CharFilter(field_name="code", lookup_expr="iexact")
 
     class Meta:
         model = Shot
-        fields = ["status", "project", "sequence_code", "code"]
+        fields = ["status", "project", "sequence_code", "sequence", "code"]
 
     def filter_search(self, queryset, name, value):
         if not value:

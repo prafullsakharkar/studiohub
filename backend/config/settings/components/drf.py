@@ -47,4 +47,8 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "StudioHub API",
     "DESCRIPTION": "StudioHub Production Management Platform",
     "VERSION": "1.0.0",
+    "POSTPROCESSING_HOOKS": [
+        # Flag deprecated paths (Deprecation/Sunset headers) in the schema.
+        "apps.core.api.deprecations.mark_deprecated_paths",
+    ],
 }

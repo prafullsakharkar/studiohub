@@ -27,6 +27,9 @@ MIDDLEWARE = [
     "apps.core.middleware.MaintenanceMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Response-side deprecation headers (Deprecation/Sunset) for routes in
+    # apps.core.api.deprecations.DEPRECATED_API_PATHS (ADR-0032).
+    "apps.core.middleware.DeprecationHeaderMiddleware",
     # NOTE: RateLimitMiddleware removed (P2.5) — it could never limit
     # (global_limit unset) and DRF's ResilientScopedRateThrottle (P1.1)
     # is the live rate-limiting mechanism.

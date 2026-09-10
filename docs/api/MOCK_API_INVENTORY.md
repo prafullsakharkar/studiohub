@@ -1,8 +1,15 @@
 # StudioHub React — Mock API Inventory
 
 Source of truth: `/home/prafull.sakharkar/Repository/github/studiohub-react/src`
-(mock authority = `src/mocks/mockRouter.ts`; MSW `src/mocks/handlers/*` is dormant —
-`main.tsx` never starts the worker. `ApiClient.dispatch` is mock-first, network fallback.)
+(mock authority = `src/mocks/mockRouter.ts`; MSW `src/mocks/handlers/*` is dormant
+by default — `main.tsx:27` calls `enableMocking()`, which starts the worker only
+when `VITE_USE_MSW=true|1`. `ApiClient.dispatch` is mock-first, network fallback
+on `mockRouter` miss — despite the "STRICT RULE: No fallback" comment in
+`api/repositories/config.ts:4-8`. The Django backend must therefore assume any
+path without `mockRouter` coverage hits the live network even in mock mode.)
+
+ freshness: re-verified 2026-09-10; Django statuses marked `(implemented)` were
+ completed 2026-09-08 unless noted otherwise.
 
 Global conventions (apply to every endpoint below unless noted):
 
@@ -55,14 +62,15 @@ Global conventions (apply to every endpoint below unless noted):
 - Auth: required. Query: —. Request: —.
   Response 200 `OrganizationMembership[]` (`id,user_id,organization_id,organization_name,`
   `organization_code?,organization_slug?,role,permissions[],is_default?,status,department?,joined_at?`).
-- Frontend: `modules/auth/hooks/useAuth.ts` (via `AuthService`), `core/organization`.
+- Frontend: NO `apiClient` caller — memberships are read embedded off `User`
+  (`core/auth/AuthProvider.tsx:148-171`). Routes exist in mock only.
   Mock: `authHandlers.ts:87`, `mockRouter.ts:635`.
-- Django: **MISSING** — implement (derive from `OrganizationMembership`).
+- Django: MATCH (implemented: `AuthMembershipsView` + alias).
 
 ### GET /api/v1/users/me/memberships/
-- Same contract as above (alias).
+- Same contract as above (alias). Mock-only routes, no caller.
 - Frontend: same consumers. Mock: `authHandlers.ts:98`, `mockRouter.ts:635`.
-- Django: **MISSING** — implement as alias.
+- Django: MATCH (implemented as alias).
 
 ---
 
@@ -75,8 +83,9 @@ Global conventions (apply to every endpoint below unless noted):
 - Frontend: `modules/production/repositories/ProjectRepository.ts:13`,
   `services/ProjectService.ts`, `hooks/useProjects.ts:19`, `RESTProjectAdapter`.
   Mock: `handlers/projectHandlers.ts:15`, `mockRouter.ts:685`.
-- Django: `GET /api/v1/projects/` (`ProjectViewSet`, search name/code/description) — MATCH
-  (add `client_name` to search; accept `organization_id` filter).
+- Django: `GET /api/v1/projects/` (`ProjectViewSet`) — MATCH (implemented
+  2026-09-10: `client_name` in filterset search; `organization_id` accepted and
+  resolved server-side, fail-closed).
 
 ### GET /api/v1/projects/{id}/
 - `{id}` = id or code. Response 200 `Project`; 401/403/404.
@@ -96,7 +105,7 @@ Global conventions (apply to every endpoint below unless noted):
 ### GET /api/v1/projects/{id}/statistics/
 - Auth: required. Response 200 `Record<string,number>`.
 - Frontend: `RESTProjectAdapter.getStatistics` only (no mock — network fallthrough).
-- Django: **MISSING** — implement (counts object).
+- Django: MATCH (implemented: `ProjectViewSet.statistics`).
 
 ---
 
@@ -115,14 +124,14 @@ Django: `GET /api/v1/sequences/` — MATCH (add `lead_artist` search, `include_d
 status `In Progress`) → 201. Django: MATCH.
 ### PATCH|PUT /api/v1/sequences/{id}/ — 200. Django: MATCH.
 ### DELETE /api/v1/sequences/{id}/ — 204 (mock soft-deletes). Django: MATCH (soft delete).
-### POST /api/v1/sequences/{id}/archive/ — 200 archived. Django: **MISSING** (only `restore/`).
+### POST /api/v1/sequences/{id}/archive/ — 200 archived. Django: MATCH (implemented).
 ### POST /api/v1/sequences/{id}/restore/ — 200 restored. Django: MATCH.
 ### POST /api/v1/sequences/check-existence/
 - Request: `{"project_id":str,"codes":[str]}`. Response 200:
   `{"items":[{"code":str,"state":"NEW|EXISTS|SOFT_DELETED|DUPLICATE_IN_REQUEST|INVALID",`
   `"existing_entity"?:obj,"message"?:str}]}` (mockRouter also accepts `check_existence/`).
 - Frontend: `SequenceRepository.checkExistence:24`. Mock: `sequenceHandlers.ts:244`.
-- Django: PARTIAL — exists as `existence-check/`; add `check-existence/` alias.
+- Django: MATCH (implemented: both `check-existence/` and legacy `existence-check/`).
 
 ### POST /api/v1/sequences/bulk-create/
 - Request: `{"project_id":str,"items":[{"code":str,"action":"skip|recover|create","data":obj}]}`.
@@ -131,7 +140,7 @@ status `In Progress`) → 201. Django: MATCH.
 - Frontend: `SequenceRepository.bulkCreate`. Mock: `sequenceHandlers.ts:301`.
 - Django: `POST bulk-create/` — MATCH (verify shape).
 
-### POST /api/v1/sequences/bulk-update/ — `{"ids":[],"changes":{}}` → 200 bulk response. Django: MATCH (`PATCH bulk-update/` — verify POST accepted).
+### POST /api/v1/sequences/bulk-update/ — `{"ids":[],"changes":{}}` → 200 bulk response. Django: MATCH (accepts POST+PATCH).
 ### POST /api/v1/sequences/bulk-archive/ — `{"ids":[]}` → 200 `{operation_id,summary:{total,archivedCount},results}`. Django: MATCH (verify shape).
 ### POST /api/v1/sequences/bulk-restore/ — → 200 `{…,restoredCount}`. Django: MATCH (verify).
 ### GET /api/v1/sequences/archived/ — Django-only extra (no frontend use). Keep.
@@ -146,7 +155,8 @@ sequence_code/department), ordering, pagination`. Detail = id or code.
 ### GET /api/v1/shots/ — 200 paginated `Shot[]`.
 Frontend: `modules/shots/repositories/ShotRepository.ts:20`, `useShots.ts`.
 Mock: `shotHandlers.ts:23`, `mockRouter.ts:1069`.
-Django: MATCH (add `sequence` alias filter, `include_deleted`).
+Django: MATCH (implemented 2026-09-10: `sequence` alias of `sequence_code`;
+`include_deleted` global).
 
 ### GET /api/v1/shots/{id}/ — 200; 403/404. Django: PARTIAL (UUID only).
 ### POST /api/v1/shots/ — `Partial<Shot>`; duplicate code → 409 `{detail,code:EXISTS_SOFT_DELETED}`
@@ -154,11 +164,11 @@ if archived else 400 `{code:[]}`; defaults frames 1001–1120, pipeline all `Not
 Django: PARTIAL (no duplicate-code 409).
 ### PATCH|PUT /api/v1/shots/{id}/ — 200. Django: MATCH.
 ### DELETE /api/v1/shots/{id}/ — 204. Django: MATCH.
-### POST /api/v1/shots/{id}/archive/ — 200. Django: **MISSING**.
-### POST /api/v1/shots/{id}/restore/ — 200. Django: **MISSING**.
+### POST /api/v1/shots/{id}/archive/ — 200. Django: MATCH (implemented).
+### POST /api/v1/shots/{id}/restore/ — 200. Django: MATCH (implemented).
 ### POST /api/v1/shots/{id}/approve/ — 200 approved. Django: MATCH.
-### POST /api/v1/shots/check-existence/ — same shape as sequences. Django: **MISSING**.
-### POST /api/v1/shots/bulk-create|bulk-update|bulk-archive|bulk-restore/ — bulk shapes. Django: **MISSING**.
+### POST /api/v1/shots/check-existence/ — same shape as sequences. Django: MATCH (implemented).
+### POST /api/v1/shots/bulk-create|bulk-update|bulk-archive|bulk-restore/ — bulk shapes. Django: MATCH (implemented).
 
 ---
 
@@ -175,9 +185,9 @@ Django: MATCH (add `include_archived`).
 ### POST /api/v1/assets/ — defaults project `proj-001`, category `Prop`, status `Not Started` → 201. Django: MATCH (server-side defaults).
 ### PATCH|PUT /api/v1/assets/{id}/ — 200. Django: MATCH.
 ### DELETE /api/v1/assets/{id}/ — 204. Django: MATCH.
-### POST /api/v1/assets/{id}/archive|restore/ — 200. Django: **MISSING**.
-### POST /api/v1/assets/check-existence/ — same shape. Django: **MISSING**.
-### POST /api/v1/assets/bulk-create|bulk-update|bulk-archive|bulk-restore/ — Django: **MISSING**.
+### POST /api/v1/assets/{id}/archive|restore/ — 200. Django: MATCH (implemented).
+### POST /api/v1/assets/check-existence/ — same shape. Django: MATCH (implemented).
+### POST /api/v1/assets/bulk-create|bulk-update|bulk-archive|bulk-restore/ — Django: MATCH (implemented).
 
 ---
 
@@ -190,15 +200,16 @@ entity_name/assignee_name/department/software/description)`.
 ### GET /api/v1/tasks/ — 200 paginated `Task[]`.
 Frontend: `modules/tasks/repositories/TaskRepository.ts:20`, `useTasks.ts`.
 Mock: `taskHandlers.ts:29`, `mockRouter.ts:1746`.
-Django: MATCH (add `assignee_id, vendor_id, team_id, include_archived` filters).
+Django: MATCH (implemented 2026-09-10: `project_id,team_id,assignee_id` UUID
+aliases + `vendor_id` iexact; `is_archived` + global `include_archived`).
 ### GET /api/v1/tasks/{id}/ — 200; 404. Django: MATCH.
 ### POST /api/v1/tasks/ — `Partial<Task>` → 201. Django: MATCH.
 ### PATCH|PUT /api/v1/tasks/{id}/ — 200. Django: MATCH.
 ### DELETE /api/v1/tasks/{id}/ — 204. Django: MATCH.
-### POST /api/v1/tasks/{id}/archive|restore/ — 200. Django: **MISSING** (only `bulk-archive/`).
-### POST /api/v1/tasks/check-existence/ — Django: **MISSING**.
-### POST /api/v1/tasks/bulk-create/ — Django: **MISSING** (has bulk-assign/status/archive/delete).
-### POST /api/v1/tasks/bulk-update/ — Django: **MISSING**.
+### POST /api/v1/tasks/{id}/archive|restore/ — 200. Django: MATCH (implemented).
+### POST /api/v1/tasks/check-existence/ — Django: MATCH (implemented).
+### POST /api/v1/tasks/bulk-create/ — Django: MATCH (implemented).
+### POST /api/v1/tasks/bulk-update/ — Django: MATCH (implemented).
 ### POST /api/v1/tasks/bulk-assign/ — `{task_ids?,assignee_id,…}` → 200 `{success,updated_count}`. Django: MATCH (shape verified).
 ### POST /api/v1/tasks/bulk-status/ — `{…,status}` → `{success,updated_count}`. Django: MATCH.
 ### POST /api/v1/tasks/bulk-archive/ — Django: MATCH (verify response shape vs `{success,updated_count}`).
@@ -224,7 +235,9 @@ Mock: `timelogHandlers.ts:10`, `mockRouter.ts:2080`. Django: MATCH (verify date 
 List query: `search(title/code/entity_code/lead_reviewer_name)` + `project_id,entity_code,status,client_only`.
 Entity: `ReviewSession` (+ nested annotations/comments/notes/reviewers/participants).
 
-### GET /api/v1/reviews/ — 200 paginated. Frontend: `ReviewRepository.findAll`, `useReviews.ts`. Django: MATCH (verify `client_only`, `lead_reviewer_name` search).
+### GET /api/v1/reviews/ — 200 paginated. Frontend: `ReviewRepository.findAll`, `useReviews.ts`. Django: MATCH.
+No `client_only` on reviews (verified 2026-09-10: no caller sends it; `client_only`
+is a Playlist field) and no reviewer-name search path — doc ask withdrawn, no change.
 ### GET /api/v1/reviews/{id}/ — 200; 404. Django: MATCH.
 ### POST /api/v1/reviews/ — `Partial<ReviewSession>` → 201. Django: MATCH.
 ### PATCH|PUT /api/v1/reviews/{id}/ — 200. Django: MATCH.
@@ -237,7 +250,7 @@ Entity: `ReviewSession` (+ nested annotations/comments/notes/reviewers/participa
 ### POST /api/v1/reviews/{id}/participant-verdict/
 - Request: `{"participant_id":str,"verdict":str,"notes"?:str}` → 200 `ReviewSession`.
 - Frontend: `ReviewRepository.updateParticipantVerdict` (no mock — direct network).
-- Django: **MISSING** — implement.
+- Django: MATCH (implemented).
 
 ---
 
@@ -254,17 +267,18 @@ Mock: `versionHandlers.ts:16`, `mockRouter.ts:3836`. Django: MATCH.
 ### POST /api/v1/versions/{id}/add-to-playlist/ — `{playlist_id,…}` → 200. Django: MATCH.
 ### POST /api/v1/versions/{id}/promote/ — mock-only, no caller. Django: has `promote/` extra. Keep.
 
-### Media — GET /api/v1/media/ (`entity_type,entity_id,media_type,project_id,search`) → paginated in mockRouter, but `MediaService` expects **RAW `MediaItem[]`**; GET|POST|PATCH|DELETE `/:id/`.
-Frontend: `modules/media/services/MediaService.ts`. Mock: `mockRouter.ts:4108` (no MSW).
+### Media — GET /api/v1/media/ (`entity_type,entity_id,media_type,project_id,search`) → **bare `MediaItem[]`** in mockRouter (`return {data:list}`); `MediaService` expects **RAW `MediaItem[]`** — shapes agree.
+GET|POST|PATCH|DELETE `/:id/`.
+Frontend: `modules/media/services/MediaService.ts`. Mock: `mockRouter.ts:4322-4355` (no MSW).
 Django: `MediaViewSet pagination=None` (bare array) — MATCH service expectation.
 
 ### Attachments — GET /api/v1/attachments/ (`entity_type,entity_id,category,search`); GET|POST|DELETE `/:id/`; `AttachmentService` expects **RAW `AttachmentItem[]`**.
 Frontend: `modules/attachments/services/AttachmentService.ts`. Mock: `mockRouter.ts:4201`.
 Django: core `AttachmentViewSet` paginated — **MISMATCH** (must return bare array at compat prefix).
 
-### Playlists — GET /api/v1/playlists/ (`project_id,search,client_only,status`) → **paginated**; POST; GET|PATCH|PUT|DELETE `/:id/`; POST `/:id/add-entry/` (`{entry}`), `/remove-entry/` (`{entry_id}`), `/reorder/` (`{entries}`), `/share/` (settings), `/archive|restore/` (`{}`) → 200 `Playlist`.
-Frontend: `modules/playlists/repositories/PlaylistRepository.ts` (`BaseRepository` → expects paginated list). Mock: `mockRouter.ts:4267` (no MSW).
-Django: actions MATCH; list `pagination=None` (bare array) — **MISMATCH** (must paginate).
+### Playlists — GET /api/v1/playlists/ (`project_id,search,client_only,status`) → **bare array** in mockRouter (`return {data:list}`), but the caller (`BaseRepository.findAll`) expects **paginated** — the mock itself is broken for `findAll` (client reads `.results` of an array). The typed contract (paginate) is authoritative.
+Frontend: `modules/playlists/repositories/PlaylistRepository.ts` (`BaseRepository` → expects paginated list). Mock: `mockRouter.ts:4481-4500` (no MSW).
+Django: actions MATCH; list paginated (`StandardPagination`) — MATCH the typed contract.
 
 ---
 
@@ -291,8 +305,13 @@ Django: MATCH (clients/vendors have `restore/` action; people archive via PATCH 
 ### GET|POST /api/v1/positions|invitations|work-calendars|work-hours|calendars|holidays|roles|groups|permissions|api-keys|pats/ (+detail, PATCH, DELETE; `POST /invitations/{id}/resend/`, PATCH `{status:Revoked}` cancel, PATCH api-keys `{status:Revoked}`)
 - All expect **RAW arrays** on list; single objects otherwise.
 - Frontend: `organizationApi.getPositions/getInvitations/getWorkCalendars/getWorkHours/getCalendars/getHolidays/getRoles/getGroups/getPermissions/getApiKeys…` (+ PATs).
-- Mock: NONE (network fallthrough; only `GET /roles/,/roles/:id/,/permissions/` exist in mockRouter).
-- Django: namespaced `/api/v1/organization/<resource>/` exists (paginated) — **MISMATCH shape + MISSING flat paths**. Implement flat bare-array aliases.
+- Mock: NONE in `mockRouter` except `GET /roles/`, `/roles/:id/`, `/permissions/`,
+  which return **paginated** (`mockRouter.ts:781-816`) while callers type bare
+  `AccessRole[]` / `PermissionDefinition[]` — same mock-side bug class as playlists
+  (frontend-owned; Django stays bare per the typed contract — confirm with owners
+  before changing either side).
+- Django: flat bare-array aliases implemented (`Compat*ViewSet`) — MATCH (invitation
+  `Revoked→cancelled`, api-keys/pats `status↔is_active` mapping included).
 
 ### GET /api/v1/organization/ (singular) — 200 current org object.
 Frontend: `DashboardService`. Mock: `organizationHandlers.ts:940`, `mockRouter.ts:4543`.
@@ -302,17 +321,24 @@ Django: legacy singleton — MATCH.
 Frontend: org billing callers. Django: `BillingView` — MATCH (verify shape).
 ### GET /api/v1/reports/ — 200 (mock array/object). Django: stub `[]` — verify vs caller.
 ### GET /api/v1/notifications/ — Django: stub `[]` — verify vs caller.
-### GET /api/v1/audit/ + POST — `AuditRepository` (`/api/v1/audit`), `useAuditLogs.ts`.
-Mock: `auditHandlers.ts:9,18`, `mockRouter.ts:2671`.
-Django: read-only `/api/v1/audit/<resources>/` — **MISMATCH path** (no `/audit/` root write path; decide: alias list).
+### GET /api/v1/audit/ (+ POST mock-only, uncalled) — `AuditRepository` (`/api/v1/audit`), `useAuditLogs.ts` (sends `page,page_size,search,action,organization_id`).
+Mock: `auditHandlers.ts:9,18`, `mockRouter.ts:2805-2825` (paginated).
+Django: MATCH (implemented 2026-09-10: flat list-only alias `audit-flat-list`
+reusing the read-only selector/filter/permission stack, `AuditLogFrontendSerializer`
+[`entity_*/user_*` shape], `search_fields` incl. actor email/display-name, `action`
+matched case-insensitively against lowercase DB choices; POST stays unrouted —
+audit is append-only).
 
-### GET /api/v1/roles/?category, GET /api/v1/roles/{id}/, GET /api/v1/permissions/?resource&category — 200 arrays.
-Frontend: RBAC stores, `core/permissions`. Mock: `mockRouter.ts:647,658,667`.
-Django: covered by flat aliases above.
+### GET /api/v1/roles/?category, GET /api/v1/roles/{id}/, GET /api/v1/permissions/?resource&category — callers type bare arrays; mockRouter returns paginated (see flat-alias note above — frontend-owned mismatch).
+Frontend: RBAC stores, `core/permissions`. Mock: `mockRouter.ts:781-816`.
+Django: covered by flat bare-array aliases (typed contract).
 
 ### GET /api/v1/analytics/kpis|departments/ — objects. Django: production analytics stubs — MATCH (verify shape).
-### GET /api/v1/settings/pipeline/ + PATCH — settings pages (no repository).
-Mock: `settingsHandlers.ts:9,15`, `mockRouter.ts:4554`. Django: settings app has no `pipeline/` — **MISSING** (verify caller, else stub).
+### GET /api/v1/settings/pipeline/ + PATCH — mock-only, NO caller (verified 2026-09-10:
+`SettingsPage.tsx` renders pipeline defaults locally; no `apiClient` call in
+`modules/settings/`).
+Mock: `settingsHandlers.ts:9,15`, `mockRouter.ts:4768-4776`. Django: intentionally
+not implemented — no contract caller (revisit if a caller lands).
 
 ---
 
@@ -327,8 +353,7 @@ Nested collections (list Glen):
   (GET list; GET `/{id}/`; POST; PATCH; DELETE; 404 `{detail}`).
 - Frontend: `organizationApi.*` (all `*Detail/create/update/delete/*` variants).
   Mock: `organizationHandlers.ts:90-755`, `mockRouter.ts:2809-3415`.
-- Django: **MISSING** — implement nested router (slash-optional) reusing namespaced
-  viewsets with per-resource pagination (None for RAW, Standard for paginated).
+- Django: MATCH (implemented: slash-optional nested router, per-resource pagination).
 
 ---
 
@@ -336,39 +361,51 @@ Nested collections (list Glen):
 
 Caller: `modules/production/api/projectScopedApi.ts` via `useProjectScopedData`
 (`queryKey ['organizations',orgId,'projects',projectId,sub]`). `{projectId}` = id or code.
-Mock: `handlers/projectScopedHandlers.ts:131-738`, `mockRouter.ts:209-575`
-(+ `?mock_error=` simulation — mock-only concern).
+Mock: `handlers/projectScopedHandlers.ts:131-738`, `mockRouter.ts:322-695`
+(+ `?mock_error=` simulation — mock-only concern). NOTE: the `mockRouter`
+subpath chain covers summary/sequences/shots/tasks/assets/versions/reviews/
+editorial/notes/deliveries/schedule/resources/pipeline/files/activity only —
+**no `members` branch**, so `GET|POST …/members` is MSW-only and falls through
+to network in default mock mode.
 
 ### GET|POST `…/members` — GET → `{"count":N,"results":[ProjectMembership]}`; POST
 `{userId|user_id|email,role,roles?,scope?}` → 201 membership. 404 if project/user unknown.
-Django: **MISSING** (no `ProjectMembership` model) — implement model + endpoints.
+Django: MATCH (implemented: `ProjectMembership` model + endpoints).
 
 ### GET `…/summary` — 200 `{project,counts:{sequences,shots,tasks,assets,versions,reviews,deliveries,notes,editorial,approved_shots,in_progress_shots,completed_tasks},organization_id,project_id}`; 403 without project access; 404 unknown project.
-Django: **MISSING** — implement (aggregate over existing models + new notes/editorial).
+Django: MATCH (implemented).
 
 ### GET `…/sequences|shots|tasks|assets|versions|reviews/` — 200 paginated (same list shapes as §3–§8; shots/tasks/assets scope-filtered by membership in mock — backend enforces org scope; project filter from URL).
-Django: **MISSING** — implement (reuse list serializers/filtersets + project filter).
+Django: MATCH (implemented).
 
-### GET `…/editorial/` — 200 paginated `EditorialCut[]`. Django: **MISSING** (no model) — implement model + read endpoint.
+### GET `…/editorial/` — 200 paginated `EditorialCut[]`. Django: MATCH (implemented).
 
-### GET|POST `…/notes/` — 200 paginated `ProjectNote[]`; POST `Partial<ProjectNote>` → 201. Django: **MISSING** (no model) — implement model + endpoints.
+### GET|POST `…/notes/` — 200 paginated `ProjectNote[]`; POST `Partial<ProjectNote>` → 201. Django: MATCH (implemented).
 
-### GET `…/deliveries/` — 200 paginated `DeliveryPackage[]`. Django: **MISSING nested** (flat `/api/v1/deliveries/` exists) — implement nested list.
+### GET `…/deliveries/` — 200 paginated `DeliveryPackage[]`. Django: MATCH (implemented nested list).
 
 ### GET `…/schedule/` — 200 `{project_id,start_date,delivery_date,milestones[5]}`.
-Django: **MISSING** — implement (derive from project dates + sequences).
+Django: MATCH (implemented).
 
 ### GET `…/resources/` — 200 `{project_id,total_artists,artists[{id,name,avatar?,role,task_count,hours_logged}],departments[]}` (mock derives from tasks).
-Django: **MISSING** — implement (aggregate tasks + timelogs).
+Django: MATCH (implemented).
 
 ### GET `…/pipeline/` — 200 `{project_id,color_space,resolution,fps,aspect_ratio,pipeline_steps,dcc_integrations[4],usd_schema_version,ocio_config}`.
-Django: **MISSING** — implement (project fields + workflow nodes + static DCC constants mirrored from mock).
+Django: MATCH (implemented).
 
-### GET `…/files/?search=` — 200 paginated `MediaItem[]`. Django: **MISSING nested** — implement (Media filtered by project).
+### GET `…/files/?search=` — 200 paginated `MediaItem[]`. Django: MATCH (implemented).
 
-### GET `…/activity/?search=` — 200 paginated activity rows. Django: **MISSING nested** — implement (audit Activity filtered by org/project metadata).
+### GET `…/activity/?search=` — 200 paginated activity rows. Django: MATCH (implemented).
 
 ---
+
+## 11b. Shows (orphaned — no backend, no live caller)
+
+`GET /api/v1/organizations/:oid/projects/:pid/shows`, `GET /api/v1/projects/:pid/shows`,
+`GET /api/v1/shows/:sid` exist only in MSW (`handlers/showHandlers.ts:1-59`, dataset
+`db/production/shows.ts`, 8 records); zero `mockRouter` coverage, zero `apiClient`
+callers. No Django model or route. Tracked by
+`docs/13-roadmap/show-production-context-epic.md` — do not implement ad-hoc.
 
 ## 12. Workflows / Automations / Scheduling
 

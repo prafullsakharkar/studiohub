@@ -20,6 +20,7 @@ from apps.organization.tests.factories import (
     OrganizationFactory,
     OrganizationMembershipFactory,
     PositionFactory,
+    VendorFactory,
 )
 from apps.production.models import EditorialCut
 from apps.production.tests.factories import (
@@ -78,6 +79,22 @@ class TestNestedOrganizationRoutes:
         )
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert isinstance(resp.data, list)
+
+    def test_nested_org_accepts_frontend_mock_id(self, staff_client):
+        """Regression: frontend sends mock id org-apex-01 (was 404)."""
+        org = OrganizationFactory.create(code="APEX", slug="apex-digital")
+        ClientFactory.create(organization=org, name="Acme")
+        VendorFactory.create(organization=org, name="Vendor One")
+        clients = staff_client.get(
+            "/api/organizations/org-apex-01/clients/", **_org_header(org)
+        )
+        assert clients.status_code == status.HTTP_200_OK, clients.data
+        assert clients.data["count"] == 1
+        vendors = staff_client.get(
+            "/api/organizations/org-apex-01/vendors/", **_org_header(org)
+        )
+        assert vendors.status_code == status.HTTP_200_OK, vendors.data
+        assert vendors.data["count"] == 1
 
     def test_nested_unknown_org_404(self, staff_client):
         resp = staff_client.get("/api/organizations/nope/departments/")

@@ -11,7 +11,8 @@ the active organization is known. Each viewset reuses the namespaced
   work-calendars, work-hours, calendars, holidays, roles, groups,
   permissions, api-keys, pats.
 
-``<org>`` accepts id, code, or slug (see NestedOrganizationMixin); the URL
+``<org>`` accepts id, code, slug, or studiohub-react mock-dataset id
+(``org-apex-01`` …; see ``OrganizationSelector.resolve_by_lookup``); the URL
 organization always wins over the ``X-Organization-Id`` header.
 """
 

@@ -89,23 +89,6 @@
           }
         }
       }
-    },
-    "llama-qwen": {
-      "npm": "@ai-sdk/openai-compatible",
-      "name": "Qwen3-Coder-Next - llama.cpp",
-      "options": {
-        "baseURL": "http://192.168.1.238:8080/v1",
-        "apiKey": "local-dev-key"
-      },
-      "models": {
-        "Qwen3-Coder-Next": {
-          "name": "Qwen3-Coder-Next (Local)",
-          "limit": {
-            "context": 250000,
-            "output": 16384
-          }
-        }
-      }
     }
   }
 }

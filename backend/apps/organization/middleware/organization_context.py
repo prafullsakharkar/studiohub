@@ -49,15 +49,12 @@ def resolve_organization_context(request, *, force=False):
     user = getattr(request, "user", None)
 
     if org_ref and user is not None and user.is_authenticated:
-        Organization = _organization_model()
+        from apps.organization.selectors.organization import OrganizationSelector
+
         OrganizationMembership = _membership_model()
 
-        org = None
         try:
-            org = Organization.objects.filter(
-                id=org_ref,
-                is_deleted=False,
-            ).first()
+            org = OrganizationSelector.resolve_by_lookup(org_ref)
         except (ValidationError, ValueError, TypeError):
             # Malformed organization identifier (e.g. a non-UUID header
             # value): resolve to no organization context (fail closed)
@@ -91,12 +88,6 @@ class OrganizationContextMiddleware:
         resolve_organization_context(request)
 
         return self.get_response(request)
-
-
-def _organization_model():
-    from apps.organization.models.organization import Organization
-
-    return Organization
 
 
 def _membership_model():

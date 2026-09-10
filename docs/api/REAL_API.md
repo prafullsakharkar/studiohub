@@ -48,14 +48,14 @@ CRUD = `GET+POST /`, `GET+PUT+PATCH+DELETE /{id}/` (id-or-code). All org-scoped.
 
 | Prefix | Filters/search | Actions |
 |---|---|---|
-| `projects/` | search name/code/description/client_name | `GET {id}/statistics/` → counts dict |
+| `projects/` | search name/code/description/client_name; `organization_id` accepted (server-resolved, fail-closed) | `GET {id}/statistics/` → counts dict |
 | `sequences/` | search code/name/description/department/lead_artist_name | `check-existence/`, `bulk-create|update|archive|restore/`, `{id}/archive|restore/`, `GET archived/` |
-| `shots/` | +`sequence` alias, `include_deleted` | same set + `{id}/approve/` |
-| `assets/` | +`include_archived` | same set (no approve) |
-| `tasks/` | assignee/vendor/team/entity/include_archived | same set + `bulk-assign|status|delete/` (`{success,updated_count}`) |
+| `shots/` | `sequence` (=`sequence_code`) alias, `include_deleted` | same set + `{id}/approve/` |
+| `assets/` | `include_archived` | same set (no approve) |
+| `tasks/` | `project_id` (UUID/code/mock-id via `ProjectSelector.resolve_by_lookup`, fail-closed), `team_id/assignee_id` (tolerant UUID, garbage→empty, never 400), `vendor_id` iexact, entity/is_archived; `show_id` accepted but not yet scoped (no Show model — see Show epic) | same set + `bulk-assign|status|delete/` (`{success,updated_count}`) |
 | `timelogs/` | date-desc default | `{id}/approve|reject/` |
 | `versions/` | entity/status/published | `publish|unpublish|archive|promote|add-to-playlist/` |
-| `reviews/` | +`client_only` | `submit|start-review|approve|reject|request-changes|close|verdict|annotations|comments|comments/{cid}/resolve|reopen|notes|participant-verdict/` |
+| `reviews/` | search title/code/entity_code (no `client_only` — Playlist field) | `submit|start-review|approve|reject|request-changes|close|verdict|annotations|comments|comments/{cid}/resolve|reopen|notes|participant-verdict/` |
 | `media/` | RAW[] bare array; search title/code/file_name/name/file_format/category | CRUD |
 | `playlists/` | paginated | `add-entry|remove-entry|reorder|share|archive|restore/` |
 | `workflows/` | — | `simulate|clone|activate|deactivate|archive/` |
@@ -77,8 +77,9 @@ Status-word mapping on update: invitations `Revoked→cancelled` (output
 Namespaced `/api/v1/organization/<resource>/` (paginated, full RBAC): unchanged.
 
 Nested `/api/organizations/<org>/<resource>/` (no `/v1/`, trailing slash
-optional; `<org>` = id/code/slug, wins over header): same 17 resources with
-contract pagination (clients/vendors/people paginated, rest RAW[]).
+optional; `<org>` = id/code/slug/mock-id like `org-apex-01`, wins over header):
+same 17 resources with contract pagination (clients/vendors/people paginated,
+rest RAW[]).
 
 ## Project-scoped `/api/organizations/<org>/projects/<project>/…`
 
@@ -104,7 +105,7 @@ aggregate stubs return `[]` / `{success,message}` shapes.
 (+`add-version|validate|prepare|submit|approve|reject|complete|cancel/`),
 `/api/v1/publishing/` (+`validate|republish|unpublish|retry/`),
 `/api/v1/scheduling/events|resources|schedules|leaves|holidays/`,
-`/api/v1/audit/*` (read-only), `/api/v1/settings/*`,
+`/api/v1/audit/` (flat list-only alias, frontend shape) + `/api/v1/audit/*` (read-only), `/api/v1/settings/*` (no `pipeline/` — mock-only, no caller),
 `/api/v1/intelligence/*` (stubs + knowledge), `/api/v1/core/tags/`,
 `/api/v1/attachments/` (RAW[] compat) + `/api/v1/core/attachments/` (paginated).
 

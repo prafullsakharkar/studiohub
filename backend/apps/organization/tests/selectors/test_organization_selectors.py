@@ -189,3 +189,41 @@ class TestOrganizationSelector:
         """Test lookup queryset method through selector."""
         qs = OrganizationSelector.get_queryset().lookup(organization.name)
         assert qs.filter(pk=organization.pk).exists()
+
+
+class TestOrganizationSelectorResolveByLookup:
+    """Tests for resolve_by_lookup (nested URL/header resolution)."""
+
+    @pytest.mark.django_db
+    def test_resolves_uuid_code_and_slug(self):
+        from apps.organization.tests.factories import OrganizationFactory
+
+        org = OrganizationFactory.create(code="APEX", slug="apex-digital")
+        assert OrganizationSelector.resolve_by_lookup(str(org.id)) == org
+        assert OrganizationSelector.resolve_by_lookup("APEX") == org
+        assert OrganizationSelector.resolve_by_lookup("apex-digital") == org
+        assert OrganizationSelector.resolve_by_lookup("apex-DIGITAL") == org
+
+    @pytest.mark.django_db
+    def test_resolves_frontend_mock_id(self):
+        """Regression: studiohub-react sends mock id org-apex-01 (was 404)."""
+        from apps.organization.tests.factories import OrganizationFactory
+
+        org = OrganizationFactory.create(code="APEX", slug="apex-digital")
+        assert OrganizationSelector.resolve_by_lookup("org-apex-01") == org
+
+    @pytest.mark.django_db
+    def test_returns_none_for_unknown_empty_and_none(self):
+        assert OrganizationSelector.resolve_by_lookup("nope") is None
+        assert OrganizationSelector.resolve_by_lookup("") is None
+        assert OrganizationSelector.resolve_by_lookup(None) is None
+
+    @pytest.mark.django_db
+    def test_skips_soft_deleted(self):
+        from apps.organization.models import Organization
+        from apps.organization.tests.factories import OrganizationFactory
+
+        org = OrganizationFactory.create(code="APEX", slug="apex-digital")
+        Organization.objects.filter(pk=org.pk).update(is_deleted=True)
+        assert OrganizationSelector.resolve_by_lookup("APEX") is None
+        assert OrganizationSelector.resolve_by_lookup("org-apex-01") is None

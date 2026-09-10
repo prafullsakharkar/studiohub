@@ -30,9 +30,36 @@ class _PermissiveOrderingField(forms.ChoiceField):
 class AnyFieldOrderingFilter(django_filters.OrderingFilter):
     """
     Ordering filter that accepts any model field name.
+
+    Unknown terms are dropped (DRF semantics: fall back to default ordering)
+    instead of reaching ``order_by()`` raw, where a typo previously raised
+    ``FieldError`` and surfaced as an unhandled 500.
     """
 
     field_class = _PermissiveOrderingField  # pyright: ignore[reportAssignmentType]
+
+    def filter(self, qs, value):
+        if not value:
+            return qs
+        model = getattr(qs, "model", None)
+        if model is None:
+            return qs
+        valid = {
+            field.name
+            for field in model._meta.get_fields()
+            if getattr(field, "concrete", False)
+        } | {"pk"}
+        # django-filter hands over a list of values (each possibly
+        # comma-separated); normalize to individual `-field` terms.
+        raw_terms: list[str] = []
+        for item in value if isinstance(value, (list, tuple)) else [value]:
+            raw_terms.extend(str(item).split(","))
+        terms = [
+            term.strip() for term in raw_terms if term.strip().lstrip("-") in valid
+        ]
+        if not terms:
+            return qs
+        return qs.order_by(*terms)
 
 
 class OrderingFilterMixin(django_filters.FilterSet):

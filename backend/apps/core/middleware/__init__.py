@@ -1,6 +1,7 @@
 from .audit import AuditMiddleware
 from .authentication import AuthenticationMiddleware
 from .base import BaseMiddleware
+from .deprecation import DeprecationHeaderMiddleware
 from .locale import LocaleMiddleware
 from .maintenance import MaintenanceMiddleware
 from .organization import OrganizationMiddleware
@@ -14,6 +15,7 @@ __all__ = [
     "AuditMiddleware",
     "AuthenticationMiddleware",
     "BaseMiddleware",
+    "DeprecationHeaderMiddleware",
     "LocaleMiddleware",
     "MaintenanceMiddleware",
     "OrganizationMiddleware",

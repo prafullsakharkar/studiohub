@@ -228,6 +228,10 @@ class NestedOrganizationMixin:
     ``X-Organization-Id`` header. The URL organization wins: unknown orgs
     404, and the resolved org + membership replace the header-derived
     context so selectors, permissions, and creates stay tenant-correct.
+
+    ``<org>`` accepts UUID id, ``code``, ``slug`` (case-insensitive), and
+    studiohub-react mock-dataset ids (``org-apex-01`` …) via
+    ``OrganizationSelector.resolve_by_lookup``.
     """
 
     organization_lookup_url_kwarg = "organization_id"
@@ -238,23 +242,11 @@ class NestedOrganizationMixin:
     def perform_authentication(self, request):
         # reportAttributeAccessIssue: super() is the combined DRF viewset.
         response = super().perform_authentication(request)  # pyright: ignore[reportAttributeAccessIssue]
-        from django.core.exceptions import ValidationError as DjangoValidationError
-
-        from apps.organization.models import Organization, OrganizationMembership
+        from apps.organization.models import OrganizationMembership
+        from apps.organization.selectors.organization import OrganizationSelector
 
         lookup = self.kwargs.get(self.organization_lookup_url_kwarg)
-        org = None
-        if lookup:
-            try:
-                org = Organization.objects.filter(id=lookup, is_deleted=False).first()
-            except (ValueError, TypeError, DjangoValidationError):
-                org = None
-            if org is None:
-                org = (
-                    Organization.objects.filter(is_deleted=False)
-                    .filter(models_Q_code_slug(lookup))
-                    .first()
-                )
+        org = OrganizationSelector.resolve_by_lookup(lookup)
         if org is None:
             raise Http404("Organization not found.")
         request.organization = org
@@ -271,12 +263,6 @@ class NestedOrganizationMixin:
         request.membership = membership
         request._org_context_resolved = True
         return response
-
-
-def models_Q_code_slug(lookup):
-    from django.db.models import Q
-
-    return Q(code__iexact=lookup) | Q(slug__iexact=lookup)
 
 
 class FrontendStatusCompatMixin:

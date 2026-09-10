@@ -42,7 +42,7 @@ Low|Medium|High|Critical`; dates `YYYY-MM-DD`, datetimes ISO strings; ids are st
   resolution,aspect_ratio,color_space,start_date,delivery_date,thumbnail_url,total_shots,
   approved_shots,in_progress_shots,total_assets,budget_usd,supervisor_id/_name,coordinator_id/_name,
   client_id/_name,client_contact_id?/_name?,vendor_ids[]?/vendor_names[]?/vendor_team_ids[]?,organization_id?`.
-- Example: `proj-001/NK99 "Cyberpunk 2099: Neo-Kyoto", In Progress, org-apex-01, cl-001`.
+- Example: `proj-001/NK99 "Cyberpunk 2099: Neo-Kyoto", In Progress, org-apex-01, cli-001`.
 - Relationships: org → project; project → sequences/shots/tasks/assets/versions/reviews/notes/editorial/deliveries/files.
 - Consumers: production module, project switcher, project-scoped API, dashboard.
 
@@ -146,7 +146,8 @@ Low|Medium|High|Critical`; dates `YYYY-MM-DD`, datetimes ISO strings; ids are st
   studio_type?|specialization?,contract_tier?,rating?,location?,active_projects?[]}`;
   contacts `{name,email,role,phone,portal_access?}`; contracts `{contract_number,title,type,
   effective/expiry_date,value_usd,status}`.
-- Mock: `cl-001` Warner Nexus Studios; vendors `ven-001/002`.
+- Mock: `cli-001` Warner Nexus Studios (primary keys are `cli-*`; `cl-` appears
+  only as the `client_id` FK echo inside `projects.ts`); vendors `ven-001…007`.
 - Consumers: org client/vendor tabs, project `client_id/_name`, `vendor_ids[]`.
 
 ## Person (`organization.ts`)
@@ -201,9 +202,28 @@ Low|Medium|High|Critical`; dates `YYYY-MM-DD`, datetimes ISO strings; ids are st
 - AI chat/risks/recommendations, knowledge docs, search saved/recent, KPIs, department metrics.
 - Consumers: intelligence + dashboard services (direct mock imports, no apiClient).
 
-## Mock dataset volumes (approx)
-Organizations 4 · Users ~10+ · Projects 8 · Sequences ~9+ · Shots 9 · Assets 11 ·
-Tasks 11 · Timelogs ~10+ · Versions 5 · Reviews ~6+ · Playlists ~4+ · Clients ~4+ ·
-Vendors ~4+ · People ~15+ · Departments/Teams/Offices/Positions/Invitations/Roles/
-Groups/Permissions/ApiKeys/PATs/Calendars/Holidays/WorkHours (workspaceData, dozens) ·
-Editorial ~4+ · Notes ~10+ · Deliveries ~4+ · Schedules/Resources ~20+.
+## Show (`db/production/shows.ts`, 8 records; type `types/shows.ts`)
+
+- Fields: `project_id,organization_id,name,code,type?,status?,season?,episode_count?,
+  total_shots?,…`. Example: `show-nk99-main/NK99-MAIN`, `proj-001`, `org-apex-01`.
+- No Django model exists (see `docs/13-roadmap/show-production-context-epic.md`);
+  the 3 `showHandlers.ts` MSW routes are orphaned (no `mockRouter`/`apiClient` caller).
+
+## Mock dataset volumes (exact top-level counts, 2026-09-10)
+
+Organizations 4 · Users 20 · Projects 8 · Sequences 9 · Shots 9 · Assets 11
+(+8 nested children) · Tasks 11 · Timelogs 8 · Versions 5 · Reviews 4 ·
+Playlists 2 · Media 5 · Attachments 6 · Clients 8 · Vendors 7 · People 10 ·
+Departments 13 · Teams 8 · Offices 9 · Positions 11 · Invitations 7 ·
+Roles 11 · Groups 6 · ApiKeys 6 · PATs 6 · WorkCalendars 6 · WorkHours 6 ·
+CalendarEvents 6 · OrgHolidays 10 · Editorial 3 · Notes 3 · Deliveries 3 packages
+(+4 destinations) · PublishItems 4 (+5 destinations, +`mockPublishRecords` alias) ·
+Workflows 4 · AutomationRules 4 · AutomationAuditLogs 3 · Resources 19 ·
+CalendarEvents 21 · StudioHolidays 4 · ResourceLeaves 3 · OverbookingAlerts 3 ·
+AuditLogs 5 · ActivityEvents 9 · KnowledgeDocs 17 · Shows 8.
+
+Notes: `db/production/timelogs.ts` is a legacy 3-record duplicate, superseded by
+`db/tasks/timelogs.ts` (not in `db/seed.ts`); `mockPermissionsCatalog` in
+`workspaceData.ts` is empty — the live catalog is `mockRouter.ts:
+PERMISSION_CATALOG` + `SYSTEM_ROLE_TEMPLATES`; `mockProductionKpis` and
+`mockPipelineSettings` are singular objects, not arrays.

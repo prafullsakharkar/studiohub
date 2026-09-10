@@ -100,6 +100,27 @@ class OrganizationQuerySet(
             ),
         )
 
+    def optimized_for_list(self):
+        """
+        Prefetch/annotate for the list serializer.
+
+        Eliminates per-row fan-out in `OrganizationSerializer.get_*_count`
+        (memberships, offices, active projects) and the billing lookup.
+        """
+        from django.db.models import Prefetch
+
+        return self.with_statistics().select_related(
+            "billing",
+        ).prefetch_related(
+            Prefetch(
+                "production_projects",
+                queryset=__import__(
+                    "apps.production.models.project",
+                    fromlist=["Project"],
+                ).Project.objects.exclude(status="Archived"),
+            ),
+        )
+
     def lookup(self, value: str):
         """
         Lookup by name, code or slug.
