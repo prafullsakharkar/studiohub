@@ -15,14 +15,9 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        # JWTAuthentication is the primary contract-facing scheme (tokens are
-        # issued via JWTService using stock SimpleJWT AccessToken/RefreshToken).
+        # JWTAuthentication is the primary (and only) contract-facing scheme.
+        # Tokens are issued via JWTService using stock SimpleJWT AccessToken/RefreshToken.
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-        # BasicAuthentication must come next so that a WWW-Authenticate
-        # header is available; DRF coerces unauthenticated requests to 403
-        # when no header can be issued, but the API contract is 401.
-        "rest_framework.authentication.BasicAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_RENDERER_CLASSES": (
         "apps.core.api.renderers.StandardJSONRenderer",

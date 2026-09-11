@@ -1,3 +1,8 @@
+"""
+PersonalAccessToken API viewset.
+"""
+
+from apps.core.api.pagination import StandardPagination
 from apps.organization.api.filtersets.personal_access_token import PersonalAccessTokenFilterSet
 from apps.organization.api.serializers.personal_access_token import (
     PersonalAccessTokenCreateSerializer,
@@ -6,13 +11,21 @@ from apps.organization.api.serializers.personal_access_token import (
     PersonalAccessTokenUpdateSerializer,
 )
 from apps.organization.api.viewsets.base import OrganizationEntityViewSet
+from apps.organization.api.viewsets.compat import FrontendStatusCompatMixin
+from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import PersonalAccessTokenPermissions
 from apps.organization.models.personal_access_token import PersonalAccessToken
 from apps.organization.selectors.personal_access_token import PersonalAccessTokenSelector
 from apps.organization.services.personal_access_token import PersonalAccessTokenService
 
 
-class PersonalAccessTokenViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class PersonalAccessTokenViewSet(
+    OrganizationContextMixin,
+    FrontendStatusCompatMixin,
+    IdOrCodeDetailMixin,
+    OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
+):
     """
     API endpoint for PersonalAccessToken.
     """
@@ -27,6 +40,8 @@ class PersonalAccessTokenViewSet(OrganizationEntityViewSet):  # pyright: ignore[
     )
 
     filterset_class = PersonalAccessTokenFilterSet
+
+    pagination_class = StandardPagination
 
     serializer_map = {
         "list": PersonalAccessTokenListSerializer,
@@ -44,3 +59,7 @@ class PersonalAccessTokenViewSet(OrganizationEntityViewSet):  # pyright: ignore[
         "partial_update": (PersonalAccessTokenPermissions.UPDATE,),
         "destroy": (PersonalAccessTokenPermissions.DELETE,),
     }
+
+    frontend_status_target = "is_active"
+    frontend_status_target_map = {"revoked": False, "expired": False, "active": True}
+    frontend_status_output = {"is_active": {True: "Active", False: "Revoked"}}

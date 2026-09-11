@@ -2,6 +2,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.core.api.pagination import StandardPagination
+
 from apps.organization.api.filtersets.team import TeamFilterSet
 from apps.organization.api.serializers.team.create import TeamCreateSerializer
 from apps.organization.api.serializers.team.detail import TeamDetailSerializer
@@ -10,13 +11,19 @@ from apps.organization.api.serializers.team.update import TeamUpdateSerializer
 from apps.organization.api.viewsets.base import (
     OrganizationEntityViewSet,
 )
+from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import TeamPermissions
 from apps.organization.models.team import Team
 from apps.organization.selectors.team import TeamSelector
 from apps.organization.services.team import TeamService
 
 
-class TeamViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class TeamViewSet(
+    OrganizationContextMixin,
+    IdOrCodeDetailMixin,
+    OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
+):
     """
     API endpoint for Team entity.
     """
@@ -30,7 +37,6 @@ class TeamViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTy
     service_class = TeamService
     filterset_class = TeamFilterSet
 
-    pagination_class = StandardPagination
 
     # -----------------------------
     # Serializer mapping
@@ -46,6 +52,8 @@ class TeamViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTy
     # -----------------------------
     # Permission mapping
     # -----------------------------
+    pagination_class = StandardPagination
+
     permission_map = {
         "list": (TeamPermissions.VIEW,),
         "retrieve": (TeamPermissions.VIEW,),

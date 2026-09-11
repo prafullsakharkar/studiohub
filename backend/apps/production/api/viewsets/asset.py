@@ -1,3 +1,4 @@
+from apps.core.api.mixins.bulk import BulkActionsMixin
 from apps.core.api.pagination import StandardPagination
 from apps.production.api.filtersets.asset import AssetFilterSet
 from apps.production.api.serializers.asset.create import AssetCreateSerializer
@@ -5,13 +6,12 @@ from apps.production.api.serializers.asset.detail import AssetDetailSerializer
 from apps.production.api.serializers.asset.list import AssetListSerializer
 from apps.production.api.serializers.asset.update import AssetUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
-from apps.production.api.viewsets.bulk import BulkContractViewSetMixin
 from apps.production.constants.permissions import AssetPermissions
 from apps.production.selectors.asset import AssetSelector
 from apps.production.services.asset import AssetService
 
 
-class AssetViewSet(BulkContractViewSetMixin, ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class AssetViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = AssetSelector
     service_class = AssetService
     pagination_class = StandardPagination

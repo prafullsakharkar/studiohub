@@ -1,3 +1,8 @@
+"""
+WorkCalendar API viewset.
+"""
+
+from apps.core.api.pagination import StandardPagination
 from apps.organization.api.filtersets.work_calendar import (
     WorkCalendarFilterSet,
 )
@@ -10,6 +15,8 @@ from apps.organization.api.serializers.work_calendar import (
 from apps.organization.api.viewsets.base import (
     OrganizationEntityViewSet,
 )
+from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import (
     WorkCalendarPermissions,
 )
@@ -25,6 +32,8 @@ from apps.organization.services.work_calendar import (
 
 
 class WorkCalendarViewSet(
+    OrganizationContextMixin,
+    IdOrCodeDetailMixin,
     OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
@@ -45,6 +54,8 @@ class WorkCalendarViewSet(
         "update": WorkCalendarUpdateSerializer,
         "partial_update": WorkCalendarUpdateSerializer,
     }
+
+    pagination_class = StandardPagination
 
     permission_map = {
         "list": (WorkCalendarPermissions.VIEW,),

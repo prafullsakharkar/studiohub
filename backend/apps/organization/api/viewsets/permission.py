@@ -1,3 +1,8 @@
+"""
+Permission API viewset.
+"""
+
+from apps.core.api.pagination import StandardPagination
 from apps.organization.api.filtersets.permission import PermissionFilterSet
 from apps.organization.api.serializers.permission import (
     PermissionCreateSerializer,
@@ -6,13 +11,19 @@ from apps.organization.api.serializers.permission import (
     PermissionUpdateSerializer,
 )
 from apps.organization.api.viewsets.base import OrganizationEntityViewSet
+from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import PermissionPermissions
 from apps.organization.models.permission import Permission
 from apps.organization.selectors.permission import PermissionSelector
 from apps.organization.services.permission import PermissionService
 
 
-class PermissionViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class PermissionViewSet(
+    OrganizationContextMixin,
+    IdOrCodeDetailMixin,
+    OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
+):
     """
     API endpoint for Permission.
     """
@@ -23,6 +34,8 @@ class PermissionViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMis
     service_class = PermissionService
 
     filterset_class = PermissionFilterSet
+
+    pagination_class = StandardPagination
 
     serializer_map = {
         "list": PermissionListSerializer,

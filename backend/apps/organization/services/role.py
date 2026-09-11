@@ -162,3 +162,62 @@ class RoleService(BusinessService):
                     user=user,
                 )
         return removed, unknown
+
+    # --- User role assignments ---
+    @classmethod
+    @transaction.atomic
+    def assign_user(cls, role, user_id, *, user=None):
+        """Assign role to a user (create UserRole)."""
+        from apps.organization.models import UserRole
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        user_obj = User.objects.filter(id=user_id).first()
+        if not user_obj:
+            return None, "User not found"
+        user_role, created = UserRole.objects.get_or_create(
+            user=user_obj,
+            role=role,
+            defaults={"assigned_by": user if user is not None and user.is_authenticated else None},
+        )
+        if created:
+            cls.publish_event("assign_user", instance=role, user=user_obj, assigned_by=user)
+        return user_role, None
+
+    @classmethod
+    @transaction.atomic
+    def unassign_user(cls, role, user_id, *, user=None):
+        """Remove role from a user (delete UserRole)."""
+        from apps.organization.models import UserRole
+
+        deleted, _ = UserRole.objects.filter(user_id=user_id, role=role).delete()
+        if deleted:
+            cls.publish_event("unassign_user", instance=role, user_id=user_id, user=user)
+        return deleted > 0, None
+
+    # --- Group role assignments ---
+    @classmethod
+    @transaction.atomic
+    def assign_group(cls, role, group_id, *, user=None):
+        """Assign role to a group (create GroupRole)."""
+        from apps.organization.models import GroupRole
+
+        group_role, created = GroupRole.objects.get_or_create(
+            group_id=group_id,
+            role=role,
+            defaults={"assigned_by": user if user is not None and user.is_authenticated else None},
+        )
+        if created:
+            cls.publish_event("assign_group", instance=role, group_id=group_id, user=user)
+        return group_role, None
+
+    @classmethod
+    @transaction.atomic
+    def unassign_group(cls, role, group_id, *, user=None):
+        """Remove role from a group (delete GroupRole)."""
+        from apps.organization.models import GroupRole
+
+        deleted, _ = GroupRole.objects.filter(group_id=group_id, role=role).delete()
+        if deleted:
+            cls.publish_event("unassign_group", instance=role, group_id=group_id, user=user)
+        return deleted > 0, None

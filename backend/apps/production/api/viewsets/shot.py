@@ -1,6 +1,7 @@
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.core.api.mixins.bulk import BulkActionsMixin
 from apps.core.api.pagination import StandardPagination
 from apps.production.api.filtersets.shot import ShotFilterSet
 from apps.production.api.serializers.shot.create import ShotCreateSerializer
@@ -8,13 +9,12 @@ from apps.production.api.serializers.shot.detail import ShotDetailSerializer
 from apps.production.api.serializers.shot.list import ShotListSerializer
 from apps.production.api.serializers.shot.update import ShotUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
-from apps.production.api.viewsets.bulk import BulkContractViewSetMixin
 from apps.production.constants.permissions import ShotPermissions
 from apps.production.selectors.shot import ShotSelector
 from apps.production.services.shot import ShotService
 
 
-class ShotViewSet(BulkContractViewSetMixin, ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class ShotViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = ShotSelector
     service_class = ShotService
     pagination_class = StandardPagination

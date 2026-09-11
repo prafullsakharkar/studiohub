@@ -14,13 +14,21 @@ from apps.organization.api.serializers.invitation import (
     InvitationUpdateSerializer,
 )
 from apps.organization.api.viewsets.base import OrganizationEntityViewSet
+from apps.organization.api.viewsets.compat import FrontendStatusCompatMixin
+from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import InvitationPermissions
 from apps.organization.models.invitation import Invitation
 from apps.organization.selectors.invitation import InvitationSelector
 from apps.organization.services.invitation import InvitationService
 
 
-class InvitationViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class InvitationViewSet(
+    OrganizationContextMixin,
+    FrontendStatusCompatMixin,
+    IdOrCodeDetailMixin,
+    OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
+):
     """
     API endpoint for Invitation.
     """
@@ -63,6 +71,24 @@ class InvitationViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMis
         "resend": (InvitationPermissions.UPDATE,),
         "accept": (InvitationPermissions.UPDATE,),
         "decline": (InvitationPermissions.UPDATE,),
+    }
+
+    frontend_status_map = {
+        "revoked": "cancelled",
+        "cancelled": "cancelled",
+        "pending": "pending",
+        "accepted": "accepted",
+        "declined": "declined",
+        "expired": "expired",
+    }
+    frontend_status_output = {
+        "status": {
+            "pending": "Pending",
+            "accepted": "Accepted",
+            "expired": "Expired",
+            "cancelled": "Revoked",
+            "declined": "Revoked",
+        }
     }
 
     @action(detail=True, methods=["post"], url_path="resend")

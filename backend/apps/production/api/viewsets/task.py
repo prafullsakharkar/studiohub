@@ -2,6 +2,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
+from apps.core.api.mixins.bulk import BulkActionsMixin
 from apps.core.api.pagination import StandardPagination
 from apps.production.api.filtersets.task import TaskFilterSet
 from apps.production.api.serializers.task.create import TaskCreateSerializer
@@ -9,7 +10,6 @@ from apps.production.api.serializers.task.detail import TaskDetailSerializer
 from apps.production.api.serializers.task.list import TaskListSerializer
 from apps.production.api.serializers.task.update import TaskUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
-from apps.production.api.viewsets.bulk import BulkContractViewSetMixin
 from apps.production.constants.permissions import TaskPermissions
 from apps.production.selectors.task import TaskSelector
 from apps.production.services.task import TaskService
@@ -19,7 +19,7 @@ from apps.production.services.task import TaskService
 # contract shapes ({success, updated_count}) and intentionally shadow nothing
 # from the mixin. The task-specific ``bulk_archive`` was removed in favor of
 # the mixin's union response (a superset containing success/updated_count).
-class TaskViewSet(BulkContractViewSetMixin, ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class TaskViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = TaskSelector
     service_class = TaskService
     pagination_class = StandardPagination

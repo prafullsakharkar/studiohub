@@ -15,11 +15,15 @@ from apps.organization.api.serializers.client import (
     ClientListSerializer,
     ClientUpdateSerializer,
 )
+from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import OrganizationPermissions
 from apps.organization.models import Client
 
 
-class ClientViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class ClientViewSet(
+    OrganizationContextMixin,
+    ServiceModelViewSet,  # pyright: ignore[reportMissingTypeArgument]
+):
     queryset = Client.objects.all()
     serializer_map = {
         "list": ClientListSerializer,

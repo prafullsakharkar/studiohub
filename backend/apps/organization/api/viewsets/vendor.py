@@ -15,11 +15,15 @@ from apps.organization.api.serializers.vendor import (
     VendorListSerializer,
     VendorUpdateSerializer,
 )
+from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import OrganizationPermissions
 from apps.organization.models import Vendor
 
 
-class VendorViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class VendorViewSet(
+    OrganizationContextMixin,
+    ServiceModelViewSet,  # pyright: ignore[reportMissingTypeArgument]
+):
     queryset = Vendor.objects.all()
     serializer_map = {
         "list": VendorListSerializer,
