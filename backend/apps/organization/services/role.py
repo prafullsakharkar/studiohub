@@ -168,8 +168,9 @@ class RoleService(BusinessService):
     @transaction.atomic
     def assign_user(cls, role, user_id, *, user=None):
         """Assign role to a user (create UserRole)."""
-        from apps.organization.models import UserRole
         from django.contrib.auth import get_user_model
+
+        from apps.organization.models import UserRole
 
         User = get_user_model()
         user_obj = User.objects.filter(id=user_id).first()

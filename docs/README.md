@@ -256,7 +256,7 @@ StudioHub is based on:
 
 ## Backend
 
-- Python 3.14
+- Python 3.13
 - Django 6
 - Django REST Framework
 - PostgreSQL 18

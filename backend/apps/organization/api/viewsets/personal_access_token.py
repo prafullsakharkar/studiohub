@@ -11,8 +11,7 @@ from apps.organization.api.serializers.personal_access_token import (
     PersonalAccessTokenUpdateSerializer,
 )
 from apps.organization.api.viewsets.base import OrganizationEntityViewSet
-from apps.organization.api.viewsets.compat import FrontendStatusCompatMixin
-from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.compat import FrontendStatusCompatMixin, IdOrCodeDetailMixin
 from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import PersonalAccessTokenPermissions
 from apps.organization.models.personal_access_token import PersonalAccessToken

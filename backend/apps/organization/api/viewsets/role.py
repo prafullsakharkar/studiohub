@@ -127,8 +127,8 @@ class RoleViewSet(
     def list_users(self, request, *args, **kwargs):
         """List users assigned this role."""
         role = self.get_object()
-        from apps.organization.models import UserRole
         from apps.organization.api.serializers.user_role import UserRoleListSerializer
+        from apps.organization.models import UserRole
 
         qs = UserRole.objects.filter(role=role).select_related("user")
         page = self.paginate_queryset(qs)
@@ -165,8 +165,8 @@ class RoleViewSet(
     def list_groups(self, request, *args, **kwargs):
         """List groups assigned this role."""
         role = self.get_object()
-        from apps.organization.models import GroupRole
         from apps.organization.api.serializers.group_role import GroupRoleListSerializer
+        from apps.organization.models import GroupRole
 
         qs = GroupRole.objects.filter(role=role).select_related("group")
         page = self.paginate_queryset(qs)

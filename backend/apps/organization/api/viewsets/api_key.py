@@ -11,8 +11,7 @@ from apps.organization.api.serializers.api_key import (
     APIKeyUpdateSerializer,
 )
 from apps.organization.api.viewsets.base import OrganizationEntityViewSet
-from apps.organization.api.viewsets.compat import FrontendStatusCompatMixin
-from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.compat import FrontendStatusCompatMixin, IdOrCodeDetailMixin
 from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import APIKeyPermissions
 from apps.organization.models.api_key import APIKey

@@ -28,7 +28,7 @@ The Python style guide promotes:
 StudioHub uses:
 
 ```text
-Python 3.14
+Python 3.13
 ```
 
 Developers should use language features supported by the project's target version.

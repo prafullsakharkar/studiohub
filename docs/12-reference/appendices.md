@@ -29,7 +29,7 @@ The current recommended technology stack for StudioHub is:
 
 | Layer | Technology |
 |--------|------------|
-| Backend | Python 3.14+, Django 6, Django REST Framework |
+| Backend | Python 3.13+, Django 6, Django REST Framework |
 | Frontend | React 19, TypeScript, Vite, Material UI |
 | Database | PostgreSQL 18 |
 | Cache | Redis |

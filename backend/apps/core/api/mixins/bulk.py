@@ -48,7 +48,6 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.response import Response
 
-
 # Service status -> frontend EntityResolutionState
 _EXISTENCE_STATE = {
     "new": "NEW",

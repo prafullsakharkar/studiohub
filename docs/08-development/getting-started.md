@@ -31,7 +31,7 @@ Before starting, install the following software.
 | Git | Latest Stable |
 | Docker | Latest Stable |
 | Docker Compose | Latest |
-| Python | 3.14 |
+| Python | 3.13 |
 | Node.js | Latest LTS |
 | npm | Latest |
 | VS Code | Latest |
