@@ -201,7 +201,7 @@ class TestDeliveryEndpoints:
         response = staff_client.post(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["status"] == "Complete"
+        assert response.data["status"] == "Completed"
 
     def test_cancel_delivery(self, staff_client, _org_membership):
         """Test cancelling a delivery."""
@@ -222,3 +222,33 @@ class TestDeliveryEndpoints:
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "Cancelled"
+
+    def test_retry_delivery(self, staff_client, _org_membership):
+        """Test retrying a delivery resets it to Prepared (reads as Ready)."""
+        delivery = DeliveryPackage.objects.create(
+            name="Test Delivery",
+            code="DEL-TEST-011",
+            organization=_org_membership,
+            status=DeliveryPackage.STATUS_SUBMITTED,
+        )
+
+        url = reverse("api:v1:deliveries:delivery-retry", kwargs={"uuid": str(delivery.id)})
+        response = staff_client.post(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["status"] == "Ready"
+        delivery.refresh_from_db()
+        assert delivery.status == DeliveryPackage.STATUS_PREPARED
+
+    def test_prepare_reads_as_ready(self, staff_client, _org_membership):
+        """Test the prepare action output uses the frontend status word."""
+        delivery = DeliveryPackage.objects.create(
+            name="Test Delivery",
+            code="DEL-TEST-012",
+            organization=_org_membership,
+        )
+
+        url = reverse("api:v1:deliveries:delivery-prepare", kwargs={"uuid": str(delivery.id)})
+        response = staff_client.post(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
+
+        assert response.status_code == status.HTTP_200_OK

@@ -60,7 +60,9 @@ class PersonFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArg
     name = factory.Faker("name")
     description = ""
     email = factory.Faker("email")
-    phone = factory.Faker("phone_number")
+    # Faker phone_number() often exceeds Person.phone max_length=20 (enforced
+    # by Postgres) — use a deterministic short value instead.
+    phone = factory.Sequence(lambda n: f"+1555000{n:04d}")
     date_of_birth = factory.Faker("date_of_birth", minimum_age=18, maximum_age=65)
     nationality = factory.Faker("country_code")
     status = "active"

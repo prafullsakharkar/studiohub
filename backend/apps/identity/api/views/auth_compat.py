@@ -6,10 +6,10 @@ Mount: /api/v1/auth/{login,refresh,logout,me}/
 These are thin adapters over the existing Identity services, translating
 backend shapes into frontend contract shapes defined in docs/api/authentication.md:
 
-  POST /auth/login/  -> { tokens: {access, refresh}, user: FrontendUser }
-  POST /auth/refresh/ -> { access }
-  POST /auth/logout/ -> { detail }
-  GET  /auth/me/     -> FrontendUser
+   POST /auth/login/  -> { tokens: {access, refresh}, user: FrontendUser }
+   POST /auth/refresh/ -> { access, refresh }
+   POST /auth/logout/ -> { detail }
+   GET  /auth/me/     -> FrontendUser
 
 They reuse AuthenticationService / TokenService so behavior (validation,
 lockout, rotation, blacklist) remains in one place.
@@ -89,7 +89,13 @@ class AuthLoginView(BaseAPIView):
 
 
 class AuthRefreshView(BaseAPIView):
-    """Frontend-compatible refresh: accepts {refresh} returns {access}."""
+    """Frontend-compatible refresh: accepts {refresh} returns {access, refresh}.
+
+    The refresh token is rotated server-side (old one blacklisted), so the
+    response must carry the NEW refresh token too — otherwise the client's
+    stored refresh dies on the next rotation and the session force-logs-out.
+    Extra fields are ignored by older frontends (superset of `{access}`).
+    """
 
     authentication_classes = ()
     permission_classes = (AllowAny,)
@@ -100,15 +106,16 @@ class AuthRefreshView(BaseAPIView):
     @extend_schema(
         request=RefreshSerializer,
         responses={200: OpenApiTypes.OBJECT},
-        description="Refresh access token. Request {refresh} -> {access}",
+        description="Refresh access token. Request {refresh} -> {access, refresh} (rotated)",
     )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.save()  # {access, refresh} (refresh rotated)
-        # Frontend contract expects only {access}
+        # Return the rotated pair: the client must replace its stored refresh
+        # token, since rotation blacklists the one it just presented.
         return Response(
-            {"access": data.get("access")},
+            {"access": data.get("access"), "refresh": data.get("refresh")},
             status=status.HTTP_200_OK,
         )
 

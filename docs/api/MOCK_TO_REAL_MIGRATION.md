@@ -124,6 +124,24 @@ fields exist in app models, keeping both backends portable.
   behaviorally; delete assertions aligned to canonical soft-delete),
   core `OrderingQuerySetMixin.ordered`, and all ruff findings.
 
+## Mock policy (Phase 7)
+
+Mocks remain available for isolated frontend development, explicitly as a
+**development/test fixture** — never the production data source:
+
+```text
+Mock API  →  frontend development only (isolated UI work, unit/integration tests)
+Real Django API  →  integration / staging / production
+```
+
+Rules: fixtures mirror the real contract (envelopes, required fields, error
+shapes); mock-only conveniences (`?mock_error=`, MSW-only `bulk-delete`,
+synthetic ids) never leak into rest-mode paths. Full doctrine:
+`studiohub-react/docs/frontend/MOCK_POLICY.md`. Conformance is tested on
+both sides (backend `test_contract*.py`, frontend
+`src/test/contract/apiContractConformance.test.ts`); any intentional
+breaking change updates docs + tests together.
+
 ## Remaining / intentional gaps
 
 - ~~Mock `lead_artist` sequence search~~ — closed: `Sequence.lead_artist`

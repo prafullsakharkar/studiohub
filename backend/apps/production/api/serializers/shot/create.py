@@ -3,10 +3,14 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseWriteSerializer
+from apps.production.api.serializers.common import (
+    LenientUniqueTogetherValidator,
+    ProjectReferenceMixin,
+)
 from apps.production.models import Shot
 
 
-class ShotCreateSerializer(BaseWriteSerializer[Any]):
+class ShotCreateSerializer(ProjectReferenceMixin, BaseWriteSerializer[Any]):
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
 
@@ -16,6 +20,8 @@ class ShotCreateSerializer(BaseWriteSerializer[Any]):
             "id",
             "uuid",
             "project",
+            "project_id",
+            "project_code",
             "sequence_code",
             "code",
             "name",
@@ -33,3 +39,10 @@ class ShotCreateSerializer(BaseWriteSerializer[Any]):
             "pipeline",
         )
         read_only_fields = ("id", "uuid")
+        extra_kwargs = {"project": {"required": False}}
+        validators = [
+            LenientUniqueTogetherValidator(
+                queryset=Shot.objects.all(),
+                fields=["project", "code"],
+            )
+        ]

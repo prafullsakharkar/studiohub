@@ -92,6 +92,16 @@ class OrganizationContextMixin:
             return
 
         if getattr(request, "_org_context_resolved", False):
+            # The Django middleware resolves pre-authentication (anonymous
+            # user), which caches organization=None. Now that DRF has
+            # authenticated the user, re-resolve so scoped non-staff reads
+            # see their organization instead of an empty queryset.
+            if getattr(request, "organization", None) is not None:
+                return
+            user = getattr(request, "user", None)
+            if user is None or not getattr(user, "is_authenticated", False):
+                return
+            _resolve_organization_context(request, force=True)
             return
 
         # Flat / namespaced trees: standard header-derived context.

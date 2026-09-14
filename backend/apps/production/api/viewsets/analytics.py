@@ -13,6 +13,12 @@ class DummySerializer(serializers.Serializer[Any]):
 
 
 class AnalyticsKpisView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
+    """
+    DOCUMENTED-STUB (Phase 2 P2-2): values below are illustrative literals,
+    not computed KPIs. Do not mistake them for real aggregates; computing
+    them from production models is tracked work, not this endpoint's job.
+    """
+
     permission_classes = (IsAuthenticated,)
     serializer_class = DummySerializer
 
@@ -34,6 +40,8 @@ class AnalyticsKpisView(GenericAPIView):  # pyright: ignore[reportMissingTypeArg
 
 
 class AnalyticsDepartmentsView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
+    """DOCUMENTED-STUB (Phase 2 P2-2): illustrative literals, see AnalyticsKpisView."""
+
     permission_classes = (IsAuthenticated,)
     serializer_class = DummySerializer
 

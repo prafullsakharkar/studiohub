@@ -11,6 +11,7 @@ use thin `legacy` aliases that only disable pagination):
 - Bare arrays: departments, teams, offices, positions, invitations,
   work-calendars, work-hours, calendars, holidays, roles, groups,
   permissions, api-keys, pats.
+- Paginated activity feed: activity (audit domain alias).
 
 ``<org>`` accepts id, code, slug, or studiohub-react mock-dataset id
 (``org-apex-01`` …; see ``OrganizationSelector.resolve_by_lookup``); the URL
@@ -19,6 +20,7 @@ organization always wins over the ``X-Organization-Id`` header.
 
 from rest_framework.routers import SimpleRouter
 
+from apps.audit.api.viewsets.activity import ActivityCompatViewSet
 from apps.organization.api.viewsets.client import ClientViewSet
 from apps.organization.api.viewsets.legacy import (
     CompatAPIKeyViewSet,
@@ -134,6 +136,11 @@ router.register(
     r"(?P<organization_id>[^/.]+)/pats",
     CompatPersonalAccessTokenViewSet,
     basename="nested-pat",
+)
+router.register(
+    r"(?P<organization_id>[^/.]+)/activity",
+    ActivityCompatViewSet,
+    basename="nested-activity",
 )
 
 app_name = "organization-nested"

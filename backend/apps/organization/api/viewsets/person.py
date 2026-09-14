@@ -49,10 +49,19 @@ class PersonViewSet(
         "destroy": (PersonPermissions.DELETE,),
     }
 
-    # Person is not organization-scoped in the same way as Department/Team;
-    # override to avoid scoping by organization (Person has no organization FK).
     def get_queryset(self):
-        # Bypass OrganizationEntityViewSet's organization scoping
-        from apps.organization.selectors.person import PersonSelector
+        # Organization-scoped via OrganizationBaseSelector.scope_by_request
+        # (staff/superusers unscoped; others filtered to request.organization;
+        # no context yields no rows). Person.organization is nullable for
+        # legacy rows, which stay invisible to scoped reads (fail closed).
+        return super().get_queryset()
 
-        return PersonSelector.get_queryset(request=self.request, view=self)
+    def perform_create(self, serializer):
+        # Default new rows to the request organization when the payload
+        # does not name one, so scoped creators can read what they create.
+        validated_data: dict = getattr(serializer, "validated_data", None) or {}
+        if not validated_data.get("organization"):
+            org = getattr(self.request, "organization", None)
+            if org is not None:
+                validated_data["organization"] = org
+        return super().perform_create(serializer)

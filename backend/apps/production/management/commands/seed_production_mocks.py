@@ -26,6 +26,54 @@ from django.db import transaction
 User = get_user_model()
 
 
+def _resolve_mock_root() -> Path:
+    """
+    Resolve the frontend mock dataset root (``.../src/mocks/db``).
+
+    Precedence: ``STUDIOHUB_REACT_MOCKS`` env → sibling ``studiohub-react/``
+    checkout → legacy in-repo ``frontend/`` fallback. Shared by seed_dev and
+    seed_demo_data so every seeder reads the same unmodified dataset.
+    """
+    candidates = []
+    env_root = os.getenv("STUDIOHUB_REACT_MOCKS")
+    if env_root:
+        candidates.append(Path(env_root))
+    # This file lives at <repo>/backend/apps/production/management/commands/.
+    repo_root = Path(__file__).resolve().parents[5]
+    candidates.append(repo_root.parent / "studiohub-react" / "src" / "mocks" / "db")
+    candidates.append(repo_root / "frontend" / "src" / "mocks" / "db")
+    for candidate in candidates:
+        if candidate.is_dir():
+            return candidate
+    raise CommandError(
+        "No mock dataset found. Set STUDIOHUB_REACT_MOCKS to .../src/mocks/db."
+    )
+
+def _update_or_create(model, defaults=None, **lookup):
+    """
+    ``update_or_create`` that reuses soft-deleted rows (restore, never duplicate).
+
+    The default manager hides soft-deleted rows, so a plain
+    ``update_or_create`` re-INSERTs on re-runs and violates natural-key
+    uniqueness. When the natural-key match exists only in ``all_objects`` and
+    is soft-deleted, restore it and apply ``defaults`` instead.
+    """
+    defaults = defaults or {}
+    manager = getattr(model, "all_objects", model.objects)
+    try:
+        existing = manager.filter(**lookup).first()
+    except Exception:  # noqa: BLE001
+        existing = None
+    if existing is not None and getattr(existing, "is_deleted", False):
+        for key, value in defaults.items():
+            setattr(existing, key, value)
+        existing.is_deleted = False
+        existing.deleted_at = None
+        existing.save()
+        return existing, False
+    return model.objects.update_or_create(defaults=defaults, **lookup)
+
+
 def _extract_array_source(text: str, var_name: str) -> str | None:
     """
     Extract the ``[...]`` array literal assigned to ``const <var_name>``
@@ -147,8 +195,8 @@ class Command(BaseCommand):
         if not settings.DEBUG and not force and not allow_seed_env:
             raise CommandError("Refusing to seed in production. Use --force or ALLOW_SEED=1.")
 
-        # Resolve frontend mocks path relative to repo root (backend is at repo/backend)
-        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        # Resolve frontend mocks (env → sibling studiohub-react → in-repo frontend).
+        frontend_root = _resolve_mock_root()
 
         self.stdout.write(self.style.NOTICE(f"Seeding production mocks from {frontend_root} ..."))
 
@@ -240,10 +288,7 @@ class Command(BaseCommand):
                 sup = User.objects.filter(is_staff=True).first()
             if not coord:
                 coord = User.objects.filter(is_staff=True).first()
-            Project.objects.update_or_create(
-                code=code,
-                organization=org,
-                defaults={
+            _update_or_create(Project, defaults={
                     "name": item.get("name", code),
                     "description": item.get("description", ""),
                     "type": item.get("type", "Feature Film"),
@@ -268,7 +313,9 @@ class Command(BaseCommand):
                     "in_progress_shots": item.get("in_progress_shots", 0),
                     "total_assets": item.get("total_assets", 0),
                 },
-            )
+code=code,
+organization=org,
+)
             count += 1
         return count
 
@@ -290,10 +337,7 @@ class Command(BaseCommand):
             if not proj or not code:
                 continue
             lead = self._get_user(item.get("lead_artist_id", ""))
-            Sequence.objects.update_or_create(
-                code=code,
-                project=proj,
-                defaults={
+            _update_or_create(Sequence, defaults={
                     "organization": org,
                     "name": item.get("name", code),
                     "description": item.get("description", ""),
@@ -307,7 +351,9 @@ class Command(BaseCommand):
                     "tags": item.get("tags", []),
                     "metadata": item.get("metadata", {}),
                 },
-            )
+code=code,
+project=proj,
+)
             count += 1
         return count
 
@@ -328,10 +374,7 @@ class Command(BaseCommand):
                 proj = Project.objects.filter(organization=org).first()
             if not proj:
                 continue
-            Shot.objects.update_or_create(
-                code=code,
-                project=proj,
-                defaults={
+            _update_or_create(Shot, defaults={
                     "organization": org,
                     "sequence_code": item.get("sequence_code", ""),
                     "name": item.get("name", code),
@@ -348,7 +391,9 @@ class Command(BaseCommand):
                     "client_approved": item.get("client_approved", False),
                     "pipeline": item.get("pipeline", {}),
                 },
-            )
+code=code,
+project=proj,
+)
             count += 1
         return count
 
@@ -375,10 +420,7 @@ class Command(BaseCommand):
                 dept = Department.objects.filter(organization=org, name=item["department_name"]).first() or Department.objects.filter(organization=org).first()
             if item.get("team_name"):
                 team = Team.objects.filter(organization=org, name=item["team_name"]).first() or Team.objects.filter(organization=org).first()
-            Asset.objects.update_or_create(
-                code=code,
-                project=proj,
-                defaults={
+            _update_or_create(Asset, defaults={
                     "organization": org,
                     "name": item.get("name", code),
                     "category": item.get("category", "Prop"),
@@ -396,7 +438,9 @@ class Command(BaseCommand):
                     "tags": item.get("tags", []),
                     "usd_prim_path": item.get("usd_prim_path", ""),
                 },
-            )
+code=code,
+project=proj,
+)
             count += 1
         return count
 
@@ -414,10 +458,7 @@ class Command(BaseCommand):
             proj = proj_map.get(proj_code) or Project.objects.filter(organization=org).first()
             if not proj:
                 continue
-            Task.objects.update_or_create(
-                code=code,
-                project=proj,
-                defaults={
+            _update_or_create(Task, defaults={
                     "organization": org,
                     "title": item.get("title", code),
                     "entity_type": item.get("entity_type", "Shot"),
@@ -440,7 +481,9 @@ class Command(BaseCommand):
                     "tags": item.get("tags", []),
                     "is_archived": item.get("is_archived", False),
                 },
-            )
+code=code,
+project=proj,
+)
             count += 1
         return count
 
@@ -495,6 +538,15 @@ class Command(BaseCommand):
                 hours = item.get("hours_logged", 0)
             # Handle department
             dept = item.get("department", task.department if task else "")
+            # Idempotency: Timelog has no DB uniqueness, so skip rows that
+            # already exist for (task, person, date, duration).
+            if Timelog.objects.filter(
+                task=task,
+                person=person,
+                date=date_val,
+                duration_hours=hours or 0,
+            ).exists():
+                continue
             Timelog.objects.get_or_create(
                 task=task,
                 person=person,
@@ -531,10 +583,7 @@ class Command(BaseCommand):
             proj = proj_map.get(proj_code) or Project.objects.filter(organization=org).first()
             if not proj:
                 continue
-            Version.objects.update_or_create(
-                code=code,
-                project=proj,
-                defaults={
+            _update_or_create(Version, defaults={
                     "organization": org,
                     "version_number": item.get("version_number", "v001"),
                     "version_index": item.get("version_index", 1),
@@ -556,7 +605,9 @@ class Command(BaseCommand):
                     "publishing_info": item.get("publishing_info", {}),
                     "tags": item.get("tags", []),
                 },
-            )
+code=code,
+project=proj,
+)
             count += 1
         return count
 
@@ -572,10 +623,7 @@ class Command(BaseCommand):
             code = item.get("code")
             proj_code = item.get("project_code")
             proj = proj_map.get(proj_code) or Project.objects.filter(organization=org).first()
-            Review.objects.update_or_create(
-                code=code,
-                organization=org,
-                defaults={
+            _update_or_create(Review, defaults={
                     "title": item.get("title", code),
                     "description": item.get("description", ""),
                     "project": proj,
@@ -593,7 +641,9 @@ class Command(BaseCommand):
                     "annotations": item.get("annotations", []),
                     "activity": item.get("activity", []),
                 },
-            )
+code=code,
+organization=org,
+)
             count += 1
         return count
 
@@ -609,10 +659,7 @@ class Command(BaseCommand):
             code = item.get("code") or item.get("id")
             proj_code = item.get("project_code")
             proj = proj_map.get(proj_code) or Project.objects.filter(organization=org).first()
-            Playlist.objects.update_or_create(
-                code=code,
-                organization=org,
-                defaults={
+            _update_or_create(Playlist, defaults={
                     "name": item.get("name", code),
                     "description": item.get("description", ""),
                     "project": proj,
@@ -620,7 +667,9 @@ class Command(BaseCommand):
                     "entries": item.get("entries", []),
                     "share_settings": item.get("share_settings", {}),
                 },
-            )
+code=code,
+organization=org,
+)
             count += 1
         return count
 
@@ -635,13 +684,7 @@ class Command(BaseCommand):
         for item in data:
             proj_code = item.get("project_code")
             proj = proj_map.get(proj_code) or Project.objects.filter(organization=org).first()
-            Media.objects.update_or_create(
-                organization=org,
-                project=proj,
-                entity_type=item.get("entity_type", ""),
-                entity_id=item.get("entity_id", ""),
-                media_type=item.get("media_type", "image"),
-                defaults={
+            _update_or_create(Media, defaults={
                     "code": item.get("code", ""),
                     "name": item.get("name", ""),
                     "title": item.get("title", "") or item.get("name", ""),
@@ -653,7 +696,12 @@ class Command(BaseCommand):
                     "thumbnail_url": item.get("thumbnail_url", ""),
                     "file_size_mb": item.get("file_size_mb", 0) or 0,
                 },
-            )
+organization=org,
+project=proj,
+entity_type=item.get("entity_type", ""),
+entity_id=item.get("entity_id", ""),
+media_type=item.get("media_type", "image"),
+)
             count += 1
         return count
 
@@ -687,10 +735,7 @@ class Command(BaseCommand):
             code = item.get("code")
             proj_code = item.get("project_code")
             proj = proj_map.get(proj_code) or Project.objects.filter(organization=org).first()
-            Workflow.objects.update_or_create(
-                code=code,
-                organization=org,
-                defaults={
+            _update_or_create(Workflow, defaults={
                     "name": item.get("name", code),
                     "description": item.get("description", ""),
                     "project": proj,
@@ -700,6 +745,8 @@ class Command(BaseCommand):
                     "transitions": item.get("transitions", []),
                     "automation_rules": item.get("automation_rules", []),
                 },
-            )
+code=code,
+organization=org,
+)
             count += 1
         return count

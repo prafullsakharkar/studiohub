@@ -7,6 +7,13 @@ from rest_framework import serializers
 
 from apps.deliveries.models import DeliveryPackage, DeliveryVersionRef
 
+# Backend status -> frontend contract words (types/deliveries.ts
+# DeliveryStatus). DB keeps backend words; only the read shape is mapped.
+STATUS_OUTPUT_MAP = {
+    DeliveryPackage.STATUS_PREPARED: "Ready",
+    DeliveryPackage.STATUS_COMPLETE: "Completed",
+}
+
 
 class DeliveryVersionRefSerializer(serializers.ModelSerializer[DeliveryVersionRef]):
     """Serializer for delivery version references."""
@@ -54,11 +61,17 @@ class DeliveryVersionRefSerializer(serializers.ModelSerializer[DeliveryVersionRe
 
 class DeliveryListSerializer(serializers.ModelSerializer[DeliveryPackage]):
     """Serializer for delivery list view."""
-    
+
     client_name = serializers.CharField(source="client.name", read_only=True)
     project_name = serializers.CharField(source="project.name", read_only=True)
     version_count = serializers.IntegerField(read_only=True)
     is_expired = serializers.BooleanField(read_only=True)
+    status = serializers.SerializerMethodField()
+
+    def get_status(self, obj):
+        # Frontend contract words (types/deliveries.ts DeliveryStatus):
+        # backend Prepared/Complete read as Ready/Completed.
+        return STATUS_OUTPUT_MAP.get(obj.status, obj.status)
     
     class Meta:
         model = DeliveryPackage
@@ -102,6 +115,10 @@ class DeliveryDetailSerializer(serializers.ModelSerializer[DeliveryPackage]):
     project = serializers.UUIDField(source="project.id", read_only=True)
     project_name = serializers.CharField(source="project.name", read_only=True)
     versions = DeliveryVersionRefSerializer(many=True, read_only=True)
+    status = serializers.SerializerMethodField()
+
+    def get_status(self, obj):
+        return STATUS_OUTPUT_MAP.get(obj.status, obj.status)
     
     class Meta:
         model = DeliveryPackage

@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from apps.core.api.pagination import StandardPagination
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.deliveries.api.serializers.delivery import (
+    STATUS_OUTPUT_MAP,
     DeliveryAddVersionSerializer,
     DeliveryApproveSerializer,
     DeliveryCreateSerializer,
@@ -28,6 +29,7 @@ from apps.deliveries.services.delivery import (
     complete_delivery,
     prepare_delivery,
     reject_delivery,
+    retry_delivery,
     submit_delivery,
     validate_delivery,
 )
@@ -65,10 +67,21 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
         "reject": (DeliveryPermissions.UPDATE,),
         "complete": (DeliveryPermissions.UPDATE,),
         "cancel": (DeliveryPermissions.UPDATE,),
+        "retry": (DeliveryPermissions.UPDATE,),
     }
 
     search_fields = ("name", "code", "client__name")
     ordering_fields = ("name", "created_at", "status")
+
+    @staticmethod
+    def _frontend_result(result):
+        """Map backend status words in action result dicts to contract words."""
+        if isinstance(result, dict) and "status" in result:
+            result = {
+                **result,
+                "status": STATUS_OUTPUT_MAP.get(result["status"], result["status"]),
+            }
+        return result
 
     def get_perform_create_kwargs(self):
         user = self.request.user
@@ -113,7 +126,7 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
             organization_id=str(request.organization.id),
         )
 
-        return Response(result)
+        return Response(self._frontend_result(result))
 
     @action(detail=True, methods=["post"], url_path="prepare")
     def prepare(self, request, *args, **kwargs):
@@ -128,7 +141,7 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
             organization_id=str(request.organization.id),
         )
 
-        return Response(result)
+        return Response(self._frontend_result(result))
 
     @action(detail=True, methods=["post"], url_path="submit")
     def submit(self, request, *args, **kwargs):
@@ -143,7 +156,7 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
             organization_id=str(request.organization.id),
         )
 
-        return Response(result)
+        return Response(self._frontend_result(result))
 
     @action(detail=True, methods=["post"], url_path="approve")
     def approve(self, request, *args, **kwargs):
@@ -199,6 +212,19 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
             delivery_id=str(delivery.id),
             user_id=str(request.user.id),
             cancellation_reason=request.data.get("cancellation_reason", ""),
+            organization_id=str(request.organization.id),
+        )
+
+        return Response(DeliveryDetailSerializer(delivery).data)
+
+    @action(detail=True, methods=["post"], url_path="retry")
+    def retry(self, request, *args, **kwargs):
+        """Retry a delivery: reset to Prepared (frontend `retryDelivery`)."""
+        delivery = self.get_object()
+
+        delivery = retry_delivery(
+            delivery_id=str(delivery.id),
+            user_id=str(request.user.id),
             organization_id=str(request.organization.id),
         )
 

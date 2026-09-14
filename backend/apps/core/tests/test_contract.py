@@ -31,41 +31,132 @@ def test_openapi_schema_contains_core_contract_endpoints():
     schema = generator.get_schema(request=request, public=True)
 
     paths = schema.get("paths", {})
-    # Normalize paths to ignore trailing slash variance (mockRouter normalizes)
-    normalized = {p.rstrip("/") for p in paths}
+    # Normalize paths to ignore trailing slash variance (mockRouter normalizes);
+    # merge HTTP methods across slash variants of the same route.
+    by_path: dict[str, set[str]] = {}
+    for raw, operations in paths.items():
+        norm = raw.rstrip("/") or "/"
+        by_path.setdefault(norm, set()).update(
+            m for m in operations if m in
+            {"get", "post", "put", "patch", "delete", "head", "options"}
+        )
 
-    # Core contract endpoints that must exist (from docs/api/api-contract.md)
-    required = [
-        "/api/v1/auth/login",
-        "/api/v1/auth/refresh",
-        "/api/v1/auth/logout",
-        "/api/v1/auth/me",
-        "/api/v1/projects",
-        "/api/v1/shots",
-        "/api/v1/assets",
-        "/api/v1/tasks",
-        "/api/v1/timelogs",
-        "/api/v1/versions",
-        "/api/v1/reviews",
-        "/api/v1/media",
-        "/api/v1/playlists",
-        "/api/v1/workflows",
-        "/api/v1/organization/organizations",
-        "/api/v1/organizations",  # legacy flat
-        "/api/v1/people",  # legacy
-        "/api/v1/attachments",  # alias
-        "/api/v1/core/attachments",
-        "/api/v1/organization/persons",
-        "/api/v1/scheduling/events",
-        "/api/v1/analytics/kpis",
-    ]
+    # Contract surface: path -> required HTTP methods. Sources:
+    # docs/api/REAL_API.md + docs/api/API_MIGRATION_MATRIX.md + frontend
+    # live callers verified in Phase 5/6. Phase 7 gate: any removal, rename,
+    # or method change here fails loudly instead of breaking the frontend.
+    required: dict[str, set[str]] = {
+        # Auth
+        "/api/v1/auth/login": {"post"},
+        "/api/v1/auth/refresh": {"post"},
+        "/api/v1/auth/logout": {"post"},
+        "/api/v1/auth/me": {"get"},
+        "/api/v1/auth/memberships": {"get"},
+        "/api/v1/users/me/memberships": {"get"},
+        # Production flat CRUD
+        "/api/v1/projects": {"get", "post"},
+        "/api/v1/projects/{uuid}": {"get", "put", "patch", "delete"},
+        "/api/v1/projects/{uuid}/statistics": {"get"},
+        "/api/v1/sequences": {"get", "post"},
+        "/api/v1/shots": {"get", "post"},
+        "/api/v1/shots/{uuid}": {"get", "put", "patch", "delete"},
+        "/api/v1/shots/{uuid}/approve": {"post"},
+        "/api/v1/shots/{uuid}/archive": {"post"},
+        "/api/v1/shots/{uuid}/restore": {"post"},
+        "/api/v1/shots/check-existence": {"post"},
+        "/api/v1/shots/bulk-create": {"post"},
+        "/api/v1/shots/bulk-update": {"post"},
+        "/api/v1/shots/bulk-archive": {"post"},
+        "/api/v1/shots/bulk-restore": {"post"},
+        "/api/v1/assets": {"get", "post"},
+        "/api/v1/assets/{uuid}": {"get", "put", "patch", "delete"},
+        "/api/v1/assets/check-existence": {"post"},
+        "/api/v1/assets/bulk-create": {"post"},
+        "/api/v1/assets/bulk-update": {"post"},
+        "/api/v1/tasks": {"get", "post"},
+        "/api/v1/tasks/{uuid}": {"get", "put", "patch", "delete"},
+        "/api/v1/timelogs": {"get", "post"},
+        "/api/v1/timelogs/{uuid}": {"get", "put", "patch", "delete"},
+        "/api/v1/versions": {"get", "post"},
+        "/api/v1/reviews": {"get", "post"},
+        "/api/v1/reviews/{uuid}/participant-verdict": {"post"},
+        "/api/v1/media": {"get", "post"},
+        "/api/v1/playlists": {"get", "post"},
+        "/api/v1/workflows": {"get", "post"},
+        # Deliveries / publishing
+        "/api/v1/deliveries": {"get", "post"},
+        "/api/v1/deliveries/{uuid}": {"get", "put", "patch", "delete"},
+        "/api/v1/deliveries/{uuid}/approve": {"post"},
+        "/api/v1/deliveries/{uuid}/submit": {"post"},
+        "/api/v1/deliveries/destinations": {"get", "post"},
+        "/api/v1/publishing": {"get", "post"},
+        "/api/v1/publishing/{uuid}/validate": {"post"},
+        "/api/v1/publishing/{uuid}/republish": {"post"},
+        "/api/v1/publishing/destinations": {"get", "post"},
+        # Scheduling
+        "/api/v1/scheduling/events": {"get", "post"},
+        "/api/v1/scheduling/resources": {"get", "post"},
+        "/api/v1/scheduling/leaves": {"get", "post"},
+        "/api/v1/scheduling/holidays": {"get", "post"},
+        "/api/v1/scheduling/schedules": {"get", "post"},
+        "/api/v1/scheduling/capacity": {"get"},
+        "/api/v1/scheduling/overbooking": {"get"},
+        "/api/v1/scheduling/resolve-overbooking": {"post"},
+        # Settings
+        "/api/v1/settings/categories": {"get", "post"},
+        "/api/v1/settings/categories/{id}/archive": {"post"},
+        "/api/v1/settings/categories/{id}/restore": {"post"},
+        "/api/v1/settings/definitions": {"get", "post"},
+        "/api/v1/settings/feature-flags": {"get", "post"},
+        "/api/v1/settings/feature-flags/{id}/enable": {"post"},
+        "/api/v1/settings/feature-flags/{id}/disable": {"post"},
+        # Audit
+        "/api/v1/audit/activities": {"get"},
+        "/api/v1/audit/activity": {"get"},
+        "/api/v1/audit/audit-logs": {"get"},
+        # Intelligence
+        "/api/v1/intelligence/knowledge": {"get", "post"},
+        "/api/v1/intelligence/knowledge/{id}": {"get", "patch", "delete"},
+        "/api/v1/intelligence/search": {"post"},
+        "/api/v1/intelligence/search/saved": {"get", "post"},
+        "/api/v1/intelligence/search/recent": {"get", "post"},
+        "/api/v1/intelligence/ai/chat": {"post"},
+        "/api/v1/intelligence/ai/risks": {"get", "post"},
+        "/api/v1/intelligence/ai/risks/resolve": {"post"},
+        "/api/v1/intelligence/ai/task-recommendations": {"get"},
+        "/api/v1/intelligence/ai/project-summary/{project_code}": {"get"},
+        "/api/v1/intelligence/ai/shot-summary/{shot_code}": {"get"},
+        "/api/v1/intelligence/ai/permission-context": {"get"},
+        "/api/v1/intelligence/analytics/{domain}": {"get"},
+        # Master data
+        "/api/v1/platform/master-data/asset-types": {"get", "post"},
+        "/api/v1/platform/master-data/asset-types/{id}/archive": {"post"},
+        "/api/v1/platform/master-data/asset-types/{id}/restore": {"post"},
+        "/api/v1/platform/master-data/software": {"get", "post"},
+        "/api/v1/platform/master-data/statuses": {"get", "post"},
+        "/api/v1/platform/master-data/task-types": {"get", "post"},
+        "/api/v1/organizations/{organization_id}/master-data/bundle": {"get"},
+        # Nested org (representative; full set covered by API behavior tests)
+        "/api/organizations/{organization_id}/teams/{uuid}/archive": {"post"},
+        "/api/organizations/{organization_id}/clients/{uuid}/restore": {"post"},
+        # Legacy compat aliases still served
+        "/api/v1/attachments": {"get"},
+        "/api/v1/core/attachments": {"get"},
+    }
 
-    missing = [p for p in required if p not in normalized]
-    assert not missing, f"Missing contract endpoints in OpenAPI schema: {missing}\nGot: {sorted(normalized)}"
+    missing = [p for p in required if p not in by_path]
+    method_gaps = {
+        p: sorted(required[p] - by_path.get(p, set()))
+        for p in required
+        if p in by_path and not required[p] <= by_path[p]
+    }
+    assert not missing, (
+        f"Missing contract endpoints in OpenAPI schema: {missing}\n"
+        f"Got {len(by_path)} paths."
+    )
+    assert not method_gaps, f"Contract endpoints lost HTTP methods: {method_gaps}"
 
-    # Spot-check that projects list is paginated (has count/next/previous/results in schema)
-    # The schema's components should include PaginatedProjectList etc; we just verify 0 errors earlier.
-    assert len(paths) > 50, f"Expected >50 paths, got {len(paths)}"
+    assert len(paths) > 500, f"Expected >500 paths, got {len(paths)}"
 
 
 @pytest.mark.django_db

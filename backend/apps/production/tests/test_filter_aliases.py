@@ -21,7 +21,9 @@ from apps.organization.tests.factories import (
     TeamFactory,
 )
 from apps.production.tests.factories import (
+    AssetFactory,
     ProjectFactory,
+    SequenceFactory,
     ShotFactory,
     TaskFactory,
 )
@@ -171,3 +173,61 @@ class TestProjectOrganizationFilterAndSearch:
         assert resp.data["results"] == []
         resp = client.get("/api/v1/projects/?organization_id=nope", **_org_header(org))
         assert resp.data["results"] == []
+
+
+@pytest.mark.django_db
+class TestProjectIdAliasAcrossResources:
+    """
+    Regression: list hooks send ``?project_id=<uuid>`` (plus ``show_id``), but
+    several production filtersets only declared ``project`` (UUIDFilter), so the
+    ``project_id`` param was silently ignored and the list returned unfiltered
+    rows from every project. Every project-scoped filterset must honor both
+    ``project`` and ``project_id`` and resolve mock/unknown ids to no rows.
+    """
+
+    @pytest.mark.parametrize(
+        "resource,factory,path",
+        [
+            ("shot", ShotFactory, "/api/v1/shots/"),
+            ("asset", AssetFactory, "/api/v1/assets/"),
+            ("sequence", SequenceFactory, "/api/v1/sequences/"),
+        ],
+    )
+    def test_project_id_filters_to_owning_project(
+        self, staff_client, resource, factory, path
+    ):
+        org = OrganizationFactory.create()
+        project_a = ProjectFactory.create(organization=org, code="PAA")
+        project_b = ProjectFactory.create(organization=org, code="PBB")
+        in_a = factory.create(organization=org, project=project_a)
+        factory.create(organization=org, project=project_b)
+
+        resp = staff_client.get(
+            f"{path}?project_id={project_a.id}", **_org_header(org)
+        )
+        assert resp.status_code == status.HTTP_200_OK, (path, resp.data)
+        codes = [row["code"] for row in resp.data["results"]]
+        assert codes == [in_a.code], path
+
+    @pytest.mark.parametrize(
+        "resource,factory,path",
+        [
+            ("shot", ShotFactory, "/api/v1/shots/"),
+            ("asset", AssetFactory, "/api/v1/assets/"),
+            ("sequence", SequenceFactory, "/api/v1/sequences/"),
+        ],
+    )
+    def test_project_id_mock_and_unknown_resolve_to_empty(
+        self, staff_client, resource, factory, path
+    ):
+        org = OrganizationFactory.create()
+        project = ProjectFactory.create(organization=org, code="NK99")
+        factory.create(organization=org, project=project)
+
+        for url in (
+            f"{path}?project_id=proj-999",
+            f"{path}?project=proj-999",
+        ):
+            resp = staff_client.get(url, **_org_header(org))
+            assert resp.status_code == status.HTTP_200_OK, (url, resp.data)
+            assert resp.data["results"] == [], url

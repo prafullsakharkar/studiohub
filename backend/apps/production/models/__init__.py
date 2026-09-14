@@ -1,4 +1,5 @@
 from .asset import Asset
+from .automation import AutomationAuditLog, AutomationRule
 from .editorial import EditorialCut
 from .media import Media
 from .playlist import Playlist
@@ -14,6 +15,8 @@ from .version import Version
 from .workflow import Workflow
 
 __all__ = [
+    "AutomationAuditLog",
+    "AutomationRule",
     "Project",
     "Sequence",
     "Shot",

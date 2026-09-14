@@ -417,3 +417,40 @@ def cancel_delivery(
     )
 
     return delivery
+
+
+@transaction.atomic
+def retry_delivery(
+    *,
+    delivery_id: str,
+    user_id: str,
+    organization_id: str,
+) -> DeliveryPackage:
+    """Retry a delivery: reset to Prepared so it re-enters the submit flow.
+
+    Frontend contract verb (``retryDelivery`` → ``Preparing``); the backend
+    ``Prepared`` state is the equivalent re-queue point.
+    """
+    from apps.audit.models import AuditLog
+    from apps.deliveries.models import DeliveryPackage
+
+    delivery = DeliveryPackage.objects.get(
+        id=delivery_id,
+        organization_id=organization_id,
+    )
+
+    delivery.status = DeliveryPackage.STATUS_PREPARED
+    delivery.save(update_fields=["status"])
+
+    # Create audit log
+    AuditLog.objects.create(
+        action=AuditLog.ACTION_UPDATE,
+        target_type=AuditLog.TARGET_BILLING,
+        target_id=str(delivery_id),
+        target_name=delivery.name,
+        description=f"Delivery {delivery.code} queued for retry",
+        actor_id=user_id,
+        organization=delivery.organization,
+    )
+
+    return delivery

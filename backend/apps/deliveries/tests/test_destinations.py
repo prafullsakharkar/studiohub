@@ -102,3 +102,21 @@ class TestDestinationEndpoints:
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["results"] == []
+
+    def test_create_destination_with_frontend_aliases(self, staff_client):
+        """Frontend posts rate/region instead of transfer_rate_mbps/storage_region."""
+        url = reverse("api:v1:deliveries:destination-list")
+
+        data = {
+            "name": "Alias Endpoint",
+            "type": "Aspera Connect",
+            "endpoint": "aspera.example.com:33001",
+            "rate": 750,
+            "region": "Alias Region",
+        }
+
+        response = staff_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED, response.data
+        assert response.data["transfer_rate_mbps"] == 750
+        assert response.data["storage_region"] == "Alias Region"

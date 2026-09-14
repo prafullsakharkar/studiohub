@@ -18,6 +18,7 @@ from apps.publishing.api.serializers.publish import (
     PublishUnpublishSerializer,
     PublishUpdateSerializer,
     PublishValidateSerializer,
+    frontend_result_status,
 )
 from apps.publishing.constants.permissions import PublishPermissions
 from apps.publishing.selectors.publish import PublishSelector
@@ -79,7 +80,7 @@ class PublishingViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMis
             organization_id=str(request.organization.id),
         )
 
-        return Response(result)
+        return Response(frontend_result_status(result))
 
     @action(detail=True, methods=["post"], url_path="republish")
     def republish(self, request, *args, **kwargs):

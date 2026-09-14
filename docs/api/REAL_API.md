@@ -10,6 +10,8 @@ Global contract (all endpoints):
 - **Organization scope**: `X-Organization-Id` (or `X-Organization`) header.
   Resolved server-side to org + membership; client-supplied org ids in bodies
   are ignored for scoping. No context → fail closed (400/403/empty).
+  Intelligence knowledge/search additionally require a live membership in the
+  resolved org for non-staff (header alone never grants access — Phase 6).
 - **Pagination**: `?page=&page_size=` (`limit` alias); envelope
   `{count,next,previous,results}`. Endpoints marked `RAW[]` return bare arrays.
 - **Filtering**: `?search=` (icontains OR over endpoint fields); other params exact
@@ -40,7 +42,7 @@ Global contract (all endpoints):
 | POST | `/logout/` | → `{detail}` |
 | GET | `/me/` | → `FrontendUser` |
 | GET | `/memberships/` | → `OrganizationMembership[]` (frontend shape) |
-| GET | `/users/me/memberships/` | alias of above |
+| GET | `/users/me/memberships/` | alias of above; frontend hydrates `user.memberships` from it on login + session bootstrap (best effort) |
 
 ## Production `/api/v1/`
 
@@ -79,7 +81,10 @@ Namespaced `/api/v1/organization/<resource>/` (paginated, full RBAC): unchanged.
 Nested `/api/organizations/<org>/<resource>/` (no `/v1/`, trailing slash
 optional; `<org>` = id/code/slug/mock-id like `org-apex-01`, wins over header):
 same 17 resources with contract pagination (clients/vendors/people paginated,
-rest RAW[]).
+rest RAW[]). RBAC: seed roles hold org-domain codes (`organization.view`,
+`organization.team.view`, `person.view`, … — directory views org-wide,
+mutations with `org-admin`; enforced by `OrganizationEntityViewSet`
+`permission_map`, staff/superuser short-circuit).
 
 ## Project-scoped `/api/organizations/<org>/projects/<project>/…`
 
