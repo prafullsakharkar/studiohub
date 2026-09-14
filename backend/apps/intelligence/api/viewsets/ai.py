@@ -9,7 +9,7 @@ from typing import Any
 
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
-from rest_framework import serializers
+from rest_framework import serializers, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -64,7 +64,7 @@ class AIChatView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def post(self, request):
-        user_query = request.data.get("content") or request.data.get("query") or ""
+        user_query = request.data.get("message") or request.data.get("content") or request.data.get("query") or ""
         return Response(
             {
                 "id": "msg-echo",
@@ -74,6 +74,12 @@ class AIChatView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
                 "capability_used": "production_assistant",
             }
         )
+
+    @extend_schema(request=OpenApiTypes.OBJECT, responses=None)
+    def delete(self, request):
+        # Stateless stub: nothing is persisted, so clearing is a no-op 204.
+        # Exists so the frontend clear-chat verb resolves in both modes.
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class AIRisksView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     serializer_class = DummySerializer

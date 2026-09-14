@@ -88,6 +88,8 @@ def test_openapi_schema_contains_core_contract_endpoints():
         "/api/v1/deliveries/{uuid}": {"get", "put", "patch", "delete"},
         "/api/v1/deliveries/{uuid}/approve": {"post"},
         "/api/v1/deliveries/{uuid}/submit": {"post"},
+        "/api/v1/deliveries/{uuid}/retry": {"post"},
+        "/api/v1/deliveries/{uuid}/remove-version": {"post"},
         "/api/v1/deliveries/destinations": {"get", "post"},
         "/api/v1/publishing": {"get", "post"},
         "/api/v1/publishing/{uuid}/validate": {"post"},

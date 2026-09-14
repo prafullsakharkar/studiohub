@@ -104,6 +104,30 @@ def add_version_to_delivery(
 
 
 @transaction.atomic
+def remove_version_from_delivery(
+    *,
+    delivery_id: str,
+    version_ref_id: str,
+    organization_id: str,
+) -> DeliveryPackage:
+    """Remove a version reference from a delivery (frontend ``removeVersion``)."""
+    from apps.deliveries.models import DeliveryPackage, DeliveryVersionRef
+
+    delivery = DeliveryPackage.objects.get(
+        id=delivery_id,
+        organization_id=organization_id,
+    )
+    ref = delivery.versions.get(id=version_ref_id)
+
+    delivery.total_size_bytes = max(0, (delivery.total_size_bytes or 0) - (ref.file_size_bytes or 0))
+    delivery.total_frames = max(0, (delivery.total_frames or 0) - (ref.frame_count or 0))
+    delivery.save(update_fields=["total_size_bytes", "total_frames"])
+    ref.delete()
+
+    return delivery
+
+
+@transaction.atomic
 def validate_delivery(
     *,
     delivery_id: str,

@@ -229,6 +229,13 @@ class DeliveryAddVersionSerializer(serializers.Serializer[Any]):
     checksum_sha256 = serializers.CharField(required=False, allow_blank=True, max_length=64)
 
 
+class DeliveryRemoveVersionSerializer(serializers.Serializer[Any]):
+    """Serializer for removing a version reference from a delivery."""
+
+    # DeliveryVersionRef uses the default integer PK (not a UUID).
+    version_ref_id = serializers.IntegerField(required=True)
+
+
 class DeliveryValidateSerializer(serializers.Serializer[Any]):
     """Serializer for validating a delivery."""
     

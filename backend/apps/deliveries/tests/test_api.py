@@ -107,6 +107,48 @@ class TestDeliveryEndpoints:
         assert response.status_code == status.HTTP_201_CREATED
         assert delivery.versions.count() == 1
 
+    def test_remove_version_from_delivery(self, staff_client, _org_membership):
+        """Test removing a version reference from a delivery."""
+        org = _org_membership
+        delivery = DeliveryPackage.objects.create(
+            name="Test Delivery",
+            code="DEL-TEST-004",
+            organization=org,
+        )
+        from apps.production.models import Version
+        version = Version.objects.create(
+            organization=org,
+            code="VER-002",
+        )
+
+        add_url = reverse("api:v1:deliveries:delivery-add-version", kwargs={"uuid": str(delivery.id)})
+        staff_client.post(
+            add_url,
+            {
+                "version_id": str(version.id),
+                "version_number": "v001",
+                "entity_type": "Shot",
+                "entity_code": "SH001",
+                "entity_name": "Test Shot",
+                "file_path": "/path/to/file.exr",
+            },
+            format="json",
+            HTTP_X_ORGANIZATION_ID=str(org.id),
+        )
+        assert delivery.versions.count() == 1
+        ref_id = str(delivery.versions.first().id)  # type: ignore[union-attr]
+
+        url = reverse("api:v1:deliveries:delivery-remove-version", kwargs={"uuid": str(delivery.id)})
+        response = staff_client.post(
+            url,
+            {"version_ref_id": ref_id},
+            format="json",
+            HTTP_X_ORGANIZATION_ID=str(org.id),
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert delivery.versions.count() == 0
+
     def test_validate_delivery(self, staff_client, _org_membership):
         """Test validating a delivery."""
         delivery = DeliveryPackage.objects.create(

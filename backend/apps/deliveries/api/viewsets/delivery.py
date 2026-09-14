@@ -16,6 +16,7 @@ from apps.deliveries.api.serializers.delivery import (
     DeliveryListSerializer,
     DeliveryPrepareSerializer,
     DeliveryRejectSerializer,
+    DeliveryRemoveVersionSerializer,
     DeliverySubmitSerializer,
     DeliveryUpdateSerializer,
     DeliveryValidateSerializer,
@@ -29,6 +30,7 @@ from apps.deliveries.services.delivery import (
     complete_delivery,
     prepare_delivery,
     reject_delivery,
+    remove_version_from_delivery,
     retry_delivery,
     submit_delivery,
     validate_delivery,
@@ -60,6 +62,7 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
         "partial_update": (DeliveryPermissions.UPDATE,),
         "destroy": (DeliveryPermissions.DELETE,),
         "add_version": (DeliveryPermissions.UPDATE,),
+        "remove_version": (DeliveryPermissions.UPDATE,),
         "validate": (DeliveryPermissions.UPDATE,),
         "prepare": (DeliveryPermissions.UPDATE,),
         "submit": (DeliveryPermissions.UPDATE,),
@@ -112,6 +115,21 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
         )
 
         return Response(DeliveryDetailSerializer(delivery).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"], url_path="remove-version")
+    def remove_version(self, request, *args, **kwargs):
+        """Remove a version reference from the delivery."""
+        delivery = self.get_object()
+        serializer = DeliveryRemoveVersionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        delivery = remove_version_from_delivery(
+            delivery_id=str(delivery.id),
+            version_ref_id=str(serializer.validated_data["version_ref_id"]),
+            organization_id=str(request.organization.id),
+        )
+
+        return Response(DeliveryDetailSerializer(delivery).data)
 
     @action(detail=True, methods=["post"], url_path="validate")
     def validate(self, request, *args, **kwargs):
