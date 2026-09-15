@@ -55,6 +55,21 @@ class ServiceMixin:
         writable.instance = instance
 
     def perform_destroy(self, instance):
+        if self.service_class is None:
+            # No service configured (previously a guaranteed 500 via
+            # get_service). Fall back to the Core soft-delete contract:
+            # soft-delete when the model supports it, hard-delete otherwise.
+            from apps.core.services.soft_delete import SoftDeleteService
+
+            if hasattr(instance, "is_deleted"):
+                SoftDeleteService.delete(
+                    instance,
+                    user=getattr(getattr(self, "request", None), "user", None),
+                )
+            else:
+                instance.delete()
+            return
+
         service = self.get_service()
 
         destroy = getattr(service, self.destroy_method)

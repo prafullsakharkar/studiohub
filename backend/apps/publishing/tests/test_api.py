@@ -82,6 +82,26 @@ class TestPublishingEndpoints:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["name"] == "Test Publish"
     
+    def test_destroy_publishing_soft_deletes(self, staff_client, _org_membership):
+        """DELETE soft-deletes (regression: destroy 500'd without service_class)."""
+        publish = PublishItem.objects.create(
+            name="Test Publish",
+            code="PUB-TEST-DELETE",
+            entity_type="Shot",
+            entity_id="shot-003",
+            entity_code="SH003",
+            entity_name="Test Shot",
+            dcc_tool="Nuke",
+            organization=_org_membership,
+        )
+
+        url = reverse("api:v1:publishing:publishing-detail", kwargs={"uuid": str(publish.id)})
+        response = staff_client.delete(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        publish.refresh_from_db()
+        assert publish.is_deleted is True
+
     def test_validate_publishing(self, staff_client, _org_membership):
         """Test validating a publishing item."""
         publish = PublishItem.objects.create(

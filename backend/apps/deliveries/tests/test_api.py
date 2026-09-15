@@ -149,6 +149,21 @@ class TestDeliveryEndpoints:
         assert response.status_code == status.HTTP_200_OK
         assert delivery.versions.count() == 0
 
+    def test_destroy_delivery_soft_deletes(self, staff_client, _org_membership):
+        """DELETE soft-deletes (regression: destroy 500'd without service_class)."""
+        delivery = DeliveryPackage.objects.create(
+            name="Test Delivery",
+            code="DEL-TEST-DELETE",
+            organization=_org_membership,
+        )
+
+        url = reverse("api:v1:deliveries:delivery-detail", kwargs={"uuid": str(delivery.id)})
+        response = staff_client.delete(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        delivery.refresh_from_db()
+        assert delivery.is_deleted is True
+
     def test_validate_delivery(self, staff_client, _org_membership):
         """Test validating a delivery."""
         delivery = DeliveryPackage.objects.create(
