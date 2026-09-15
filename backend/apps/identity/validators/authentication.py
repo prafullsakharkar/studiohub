@@ -32,6 +32,10 @@ class AuthenticationValidator(
     """
 
     MAX_LOGIN_ATTEMPTS = 5
+    # Throttle window: only failures inside this window count. Without a
+    # window, stale failures accumulated permanently and locked accounts
+    # forever (successes never reset the counter).
+    MAX_LOGIN_ATTEMPT_WINDOW_MINUTES = 15
 
     # ---------------------------------------------------------
     # User
@@ -99,6 +103,7 @@ class AuthenticationValidator(
                 username=username,
                 ip_address=ip_address,
             )
+            .recent(cls.MAX_LOGIN_ATTEMPT_WINDOW_MINUTES)
             .count()
         )
 
