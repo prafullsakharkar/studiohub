@@ -113,7 +113,10 @@ aggregate stubs return `[]` / `{success,message}` shapes.
 `/api/v1/publishing/` (+`validate|republish|unpublish|retry/`),
 `/api/v1/scheduling/events|resources|schedules|leaves|holidays/`,
 `/api/v1/audit/` (flat list-only alias, frontend shape) + `/api/v1/audit/*` (paginated reads; writes: job retry/cancel, error resolve, track ingest; simulators are mock-only), `/api/v1/settings/*` (no `pipeline/` — mock-only, no caller),
-`/api/v1/intelligence/*` (stubs + knowledge), `/api/v1/core/tags/`,
+`/api/v1/intelligence/*` (knowledge + AI; `ai/risks` GET lists real
+org-scoped risks and POST is an advisory echo, `ai/chat` rule-based assistant,
+`ai/task-recommendations`, `ai/{project|shot}-summary/<code>/`,
+`ai/permission-context`), `/api/v1/core/tags/`,
 `/api/v1/attachments/` (RAW[] compat) + `/api/v1/core/attachments/` (paginated).
 
 ## Permissions
