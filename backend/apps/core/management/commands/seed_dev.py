@@ -74,6 +74,7 @@ class Command(BaseCommand):
             users = self._seed_users(org, departments, teams, offices, roles)
             # Production seeding (idempotent)
             projects = self._seed_projects(org, users)
+            shows = self._seed_shows(org, projects)
             shots = self._seed_shots(org, projects, users)
             assets = self._seed_assets(org, projects, users, departments, teams)
             tasks = self._seed_tasks(org, projects, shots, assets, users, departments, teams)
@@ -266,6 +267,14 @@ class Command(BaseCommand):
             ("publishing:read", "publishing", "read"),
             ("publishing:update", "publishing", "update"),
             ("publishing:delete", "publishing", "delete"),
+            ("tracks:create", "tracks", "create"),
+            ("tracks:read", "tracks", "read"),
+            ("tracks:update", "tracks", "update"),
+            ("tracks:delete", "tracks", "delete"),
+            ("shows:create", "shows", "create"),
+            ("shows:read", "shows", "read"),
+            ("shows:update", "shows", "update"),
+            ("shows:delete", "shows", "delete"),
             ("scheduling:create", "scheduling", "create"),
             ("scheduling:read", "scheduling", "read"),
             ("scheduling:update", "scheduling", "update"),
@@ -364,6 +373,8 @@ class Command(BaseCommand):
                 "deliveries:create", "deliveries:read", "deliveries:update",
                 "publishing:create", "publishing:read", "publishing:update",
                 "scheduling:create", "scheduling:read", "scheduling:update",
+                "tracks:create", "tracks:read", "tracks:update", "tracks:delete",
+                "shows:create", "shows:read", "shows:update", "shows:delete",
                 "audit:read",
             ] + org_views,
             "lead-artist": [
@@ -372,12 +383,16 @@ class Command(BaseCommand):
                 "tasks:create", "tasks:read", "tasks:update",
                 "reviews:create", "reviews:read",
                 "deliveries:read", "publishing:read", "scheduling:read",
+                "tracks:read",
+                "shows:read",
                 "audit:read",
             ] + org_views,
             "artist": [
                 "projects:read", "shots:read", "tasks:read", "tasks:update",
                 "assets:read", "reviews:read",
                 "deliveries:read", "publishing:read", "scheduling:read",
+                "tracks:read",
+                "shows:read",
             ] + org_views,
             "org-admin": [
                 "projects:create", "projects:read", "projects:update", "projects:delete",
@@ -388,6 +403,8 @@ class Command(BaseCommand):
                 "deliveries:create", "deliveries:read", "deliveries:update", "deliveries:delete",
                 "publishing:create", "publishing:read", "publishing:update", "publishing:delete",
                 "scheduling:create", "scheduling:read", "scheduling:update", "scheduling:delete",
+                "tracks:create", "tracks:read", "tracks:update", "tracks:delete",
+                "shows:create", "shows:read", "shows:update", "shows:delete",
                 "audit:read", "settings:update", "users:manage",
             ] + org_crud,
             "client-reviewer": ["projects:read", "shots:read", "reviews:read", "reviews:approve", "deliveries:read", "publishing:read",
@@ -520,6 +537,24 @@ class Command(BaseCommand):
 # ------------------------------------------------------------------
     # Production seeding (full mock) — delegates to seed_production_mocks logic
     # ------------------------------------------------------------------
+
+    def _seed_shows(self, org, projects):
+        from apps.production.models import Show
+
+        for project in projects:
+            Show.objects.update_or_create(
+                organization=org,
+                project=project,
+                code=f"{project.code}-MAIN",
+                defaults={
+                    "name": f"{project.name} Main Cut",
+                    "show_type": "Feature Film",
+                    "status": "In Progress",
+                    "description": f"Primary distributable cut for {project.name}.",
+                    "is_primary": True,
+                },
+            )
+        return list(Show.objects.filter(organization=org))
 
     def _seed_projects(self, org, users):
         from unittest.mock import MagicMock
