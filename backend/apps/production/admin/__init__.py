@@ -7,7 +7,13 @@ from .automation import AutomationAuditLogAdmin, AutomationRuleAdmin
 from .media import MediaAdmin
 from .playlist import PlaylistAdmin
 from .project import ProjectAdmin
-from .project_scoped import EditorialCutAdmin, ProjectMembershipAdmin, ProjectNoteAdmin
+from .project_scoped import (
+    EditorialCutAdmin,
+    EditorialTrackAdmin,
+    ProjectMembershipAdmin,
+    ProjectNoteAdmin,
+    ShowAdmin,
+)
 from .review import ReviewAdmin
 from .sequence import SequenceAdmin
 from .shot import ShotAdmin
