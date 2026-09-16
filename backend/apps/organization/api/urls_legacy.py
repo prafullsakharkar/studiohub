@@ -17,7 +17,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
 
-from apps.organization.api.viewsets.billing import BillingView, NotificationsView, ReportsView
+from apps.organization.api.viewsets.billing import BillingView
 from apps.organization.api.viewsets.client import ClientViewSet
 from apps.organization.api.viewsets.contact import ClientContactViewSet, VendorContactViewSet
 from apps.organization.api.viewsets.contract import ClientContractViewSet, VendorContractViewSet
@@ -121,6 +121,4 @@ class LegacyOrganizationSingletonView(GenericAPIView):  # pyright: ignore[report
 urlpatterns = [
     path("organization/", LegacyOrganizationSingletonView.as_view(), name="legacy-organization-singleton"),
     path("billing/", BillingView.as_view(), name="legacy-billing"),
-    path("reports/", ReportsView.as_view(), name="legacy-reports"),
-    path("notifications/", NotificationsView.as_view(), name="legacy-notifications"),
 ] + router.urls

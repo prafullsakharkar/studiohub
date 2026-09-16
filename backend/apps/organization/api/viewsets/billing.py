@@ -84,34 +84,6 @@ class BillingView(APIView):
         return Response(OrganizationBillingSerializer(updated).data)
 
 
-class ReportsView(APIView):
-    """
-    Explicit stub: the reporting domain has no backend models yet.
-
-    Returns an empty list (never fake records) until the domain is built.
-    """
-
-    permission_classes = (IsAuthenticated,)
-
-    @extend_schema(responses=OpenApiTypes.OBJECT)
-    def get(self, request):
-        return Response([])
-
-
-class NotificationsView(APIView):
-    """
-    Explicit stub: the notifications domain has no backend models yet.
-
-    Returns an empty list (never fake records) until the domain is built.
-    """
-
-    permission_classes = (IsAuthenticated,)
-
-    @extend_schema(responses=OpenApiTypes.OBJECT)
-    def get(self, request):
-        return Response([])
-
-
 class OrganizationSingletonLegacyView(APIView):
     permission_classes = (IsAuthenticated,)
 

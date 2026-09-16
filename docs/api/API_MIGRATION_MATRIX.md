@@ -30,8 +30,8 @@ Status: **MATCH** (contract-compatible as-is) · **PARTIAL** (path exists, shape
 | clients/{id}/contacts\|contracts, vendors/… (mock data exists) | `ClientContact/VendorContact/ClientContract/VendorContractViewSet` | EXTRA | No frontend caller; keep |
 | GET /api/v1/organization/ (singleton) | `LegacyOrganizationSingletonView` | MATCH | None |
 | GET+PATCH billing/ | `BillingView` (PATCH staff-only, `get_or_create`-backed) | MATCH | Verify shape against `useStudioBilling` |
-| GET reports/ | `ReportsView` → `[]` stub (`backend/apps/organization/api/viewsets/billing.py:87-98`) | PARTIAL **[FLIP]** | Live caller `organizationApi.ts:595` expects `ProductionReport[]`; renders empty. P1-4 triage: DOCUMENTED-STUB (empty-state) or REAL (P2, no models exist) |
-| GET notifications/ | `NotificationsView` → `[]` stub (`backend/apps/organization/api/viewsets/billing.py:101-112`) | PARTIAL **[FLIP]** | Live caller `organizationApi.ts:600` expects `StudioNotification[]`; renders empty. Same triage as reports |
+| GET reports/ | `ProductionReportViewSet` → REAL (bare array, org-scoped) | MATCH **[FLIP]** | Live caller `organizationApi.ts:595` expects `ProductionReport[]`; now backed by `apps.platform.models.ProductionReport` + seed. Legacy `ReportsView` stub removed |
+| GET notifications/ | `StudioNotificationViewSet` → REAL (bare array, org-scoped; `mark-read`/`mark-all-read` actions) | MATCH **[FLIP]** | Live caller `organizationApi.ts:600` expects `StudioNotification[]`; now backed by `apps.platform.models.StudioNotification` + seed. Legacy `NotificationsView` stub removed |
 | GET /api/organizations/{org}/…/activity/ · GET /api/v1/activity/ | flat `activity/` alias + nested org activity | MATCH **[FLIP]** | None — was MISSING; `ActivityCompatViewSet` routed (`backend/apps/audit/api/urls.py:30-34`, nested `urls_nested.py`) for live caller `useOrganizationActivity` |
 | branding, organization-settings, memberships, user-roles, group-members, group-roles, role-permissions, team members, org export/switch/settings | canonical routers + actions | EXTRA | Keep; frontend has no callers |
 
@@ -155,8 +155,8 @@ frontend. Enforcement (all passing):
 - Flips this pass (Phase 3): automations rules/logs, scheduling capacity/overbooking/resolve,
   saved/recent search (×2 routes) → MATCH (4 rows). Earlier flips retained: refresh rotation,
   Person scoping, activity alias, deliveries/publishing vocab (×2), master-data platform + org (×2).
-- Remaining PARTIAL: global search, AI suite, analytics (prod + intel domain), reports,
-  notifications — all DOCUMENTED-STUB with triage verdicts in REAL_API_GAPS P1-4.
+- Reports + notifications flipped to MATCH (Phase: platform app). Remaining PARTIAL:
+  global search, AI suite, analytics (prod + intel domain) — DOCUMENTED-STUB.
 - Prior MATRIX corrections retained: refresh (was Match), Person scoping (was Compatible),
   publishing/deliveries (were Compatible), master-data (was unlisted); plus this pass:
   attachments compat (was MISMATCH in inventory — compat is bare array, MATCH).

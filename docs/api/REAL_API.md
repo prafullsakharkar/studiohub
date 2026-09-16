@@ -71,7 +71,9 @@ Flat `/api/v1/` (legacy aliases): `organizations/` (array unless page params),
 `departments|teams|offices/` (RAW[]), `people|clients|vendors/` (paginated),
 `positions|invitations|work-calendars|work-hours|calendars|holidays|roles|
 groups|permissions|api-keys|pats/` (RAW[]), `organization/` singleton,
-`billing/` (GET|PATCH), `reports|notifications/` (stubs). Detail id-or-code.
+`billing/` (GET|PATCH). Detail id-or-code. `reports|notifications/` are served by the
+`platform` domain (`apps/platform/api/urls.py`, bare-array GET lists; notifications also
+`mark-read`/`mark-all-read` PATCH actions).
 Status-word mapping on update: invitations `Revoked→cancelled` (output
 `Pending|Accepted|Expired|Revoked`); api-keys/pats `status↔is_active`
 (output `Active|Revoked`). Invitations keep `resend|accept|decline/`.

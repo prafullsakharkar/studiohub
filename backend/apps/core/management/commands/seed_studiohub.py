@@ -65,6 +65,8 @@ REACT_MOCK_FILES = {
     "workflows": ("production/workflow.ts", "mockWorkflows"),
     "editorial": ("production/editorial.ts", "mockEditorialCuts"),
     "notes": ("production/notes.ts", "mockProjectNotes"),
+    "notifications": ("organization/organization.ts", "mockStudioNotifications"),
+    "reports": ("organization/organization.ts", "mockProductionReports"),
 }
 
 # Mock user-id fields rewritten to emails before seeding (the production
@@ -176,7 +178,7 @@ SUPPLEMENTAL_ROLES = {
 # personas: client, vendor staff, viewer, auditor, producer, owner…).
 # Names come from the mock; password is the documented dev default.
 
-PHASES = ("base", "orgs", "production", "access", "content")
+PHASES = ("base", "orgs", "production", "access", "content", "platform")
 
 
 class SeedReporter:
@@ -264,6 +266,8 @@ class Command(BaseCommand):
                             help="Only seed users/memberships (needs orgs).")
         parser.add_argument("--content", action="store_true",
                             help="Only seed editorial/notes/activity linkage.")
+        parser.add_argument("--platform", action="store_true",
+                            help="Only seed notifications/reports (+ orgs/content).")
 
     # ------------------------------------------------------------------
     # Entry point
@@ -327,6 +331,9 @@ class Command(BaseCommand):
             self._seed_overlay_access_projects(mock_root, reporter)
         if "content" in phases:
             self._seed_overlay_content(mock_root, reporter)
+        if "platform" in phases:
+            org_by_code = org_by_code or self._seed_overlay_orgs(mock_root, reporter)
+            self._seed_overlay_platform(mock_root, reporter, org_by_code)
         self.stdout.write(reporter.summary())
         if not options["skip_validate"]:
             criticals = self._validate(reporter)
@@ -345,6 +352,7 @@ class Command(BaseCommand):
         "production": {"orgs", "access-users"},
         "access-projects": {"orgs", "access-users", "production"},
         "content": {"orgs", "production"},
+        "platform": {"orgs", "content"},
     }
 
     def _select_phases(self, options):
@@ -359,9 +367,11 @@ class Command(BaseCommand):
             selected |= {"access-users", "access-projects"}
         if options["content"]:
             selected.add("content")
+        if options["platform"]:
+            selected.add("platform")
         if not selected:
             selected = {"base", "permissions", "orgs", "access-users",
-                        "production", "access-projects", "content"}
+                        "production", "access-projects", "content", "platform"}
         # Close over dependencies.
         closure = set(selected)
         changed = True
@@ -1030,6 +1040,80 @@ class Command(BaseCommand):
             reporter.add("notes", "created" if was_created else "existing")
 
         reporter.add("activity_links", "processed", self._link_activities())
+
+    # ------------------------------------------------------------------
+    # Platform overlay (notifications, reports)
+    # ------------------------------------------------------------------
+
+    def _seed_overlay_platform(self, mock_root, reporter, org_by_code=None):
+        from apps.organization.models import Organization
+        from apps.platform.models import ProductionReport, StudioNotification
+
+        if org_by_code is None:
+            org_by_code = {}
+            for org in Organization.objects.all():
+                org_by_code.setdefault(org.code, org)
+
+        def resolve_org(item):
+            code = (item.get("project_code") or item.get("org_code") or "").upper()
+            return org_by_code.get(code) or org_by_code.get("APEX")
+
+        for item in self._load(mock_root, "notifications"):
+            org = resolve_org(item)
+            if org is None or not item.get("id"):
+                reporter.add("notifications", "skipped")
+                continue
+            self._restore_matching(
+                StudioNotification,
+                {"organization": org, "id": item["id"]},
+                reporter,
+                "notifications",
+            )
+            _, was_created = StudioNotification.objects.update_or_create(
+                organization=org,
+                id=item["id"],
+                defaults={
+                    "title": item.get("title", ""),
+                    "message": item.get("message", ""),
+                    "type": item.get("type", "info"),
+                    "category": item.get("category", ""),
+                    "read": item.get("read", False),
+                    "link": item.get("link", ""),
+                    "timestamp": item.get("timestamp", ""),
+                    "created_at": item.get("created_at") or None,
+                    "updated_at": item.get("updated_at") or None,
+                },
+            )
+            reporter.add("notifications", "created" if was_created else "updated")
+
+        for item in self._load(mock_root, "reports"):
+            org = resolve_org(item)
+            if org is None or not item.get("id"):
+                reporter.add("reports", "skipped")
+                continue
+            self._restore_matching(
+                ProductionReport,
+                {"organization": org, "id": item["id"]},
+                reporter,
+                "reports",
+            )
+            _, was_created = ProductionReport.objects.update_or_create(
+                organization=org,
+                id=item["id"],
+                defaults={
+                    "title": item.get("title", ""),
+                    "project_code": item.get("project_code", ""),
+                    "category": item.get("category", ""),
+                    "generated_at": item.get("generated_at", ""),
+                    "generated_by": item.get("generated_by", ""),
+                    "status": item.get("status", "Complete"),
+                    "summary_metrics": item.get("summary_metrics", {}),
+                    "download_url": item.get("download_url", ""),
+                    "created_at": item.get("created_at") or None,
+                    "updated_at": item.get("updated_at") or None,
+                },
+            )
+            reporter.add("reports", "created" if was_created else "updated")
 
     # ------------------------------------------------------------------
     # Activity linkage

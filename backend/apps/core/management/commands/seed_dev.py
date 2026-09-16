@@ -311,6 +311,12 @@ class Command(BaseCommand):
             ("position.create", "position", "create"),
             ("position.update", "position", "update"),
             ("position.delete", "position", "delete"),
+            # Platform domain (notifications, reports). Codes must match
+            # apps/platform/constants/permissions.py exactly.
+            ("reports:read", "reports", "read"),
+            ("reports:create", "reports", "create"),
+            ("notifications:read", "notifications", "read"),
+            ("notifications:update", "notifications", "update"),
         ]
         perms = []
         for code, module, action in perm_specs:
