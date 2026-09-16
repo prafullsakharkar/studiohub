@@ -50,12 +50,14 @@ Status: **MATCH** (contract-compatible as-is) · **PARTIAL** (path exists, shape
 | attachments CRUD (bare `[]`) | `/api/v1/attachments/` compat bare + canonical paginated | MATCH | None — compat explicitly disables pagination (`backend/apps/core/api/viewsets/attachment.py:60`); canonical `/api/v1/core/attachments/` paginated is EXTRA. Corrects the stale MISMATCH note in MOCK_API_INVENTORY §8 |
 | playlists CRUD + 6 actions | `PlaylistViewSet` paginated (`StandardPagination`) | MATCH | Frontend normalizes array→paginated; keep paginated |
 | workflows CRUD + clone/activate/deactivate/archive/simulate | `WorkflowViewSet` | MATCH | Verify `simulate` shape vs hook |
+| observability reads (`audit/api-requests|background-jobs|change-logs|error-logs|login-history|tracks`) | paginated org-scoped lists + job retry/cancel, error resolve, track ingest | MATCH | Was bare-list/405; telemetry writers (request middleware, error hook, change signals) now fill them; client simulators stay mock-only |
+| editorial timeline tracks (`/api/v1/editorial/tracks/`, full CRUD) | `production.EditorialTrack` + `EditorialTrackViewSet` | MATCH **[FLIP]** | Was MISSING (404 in rest); model, org-scoped API, seed codes, isolation-tested |
 | automations rules CRUD + audit-logs | `AutomationRules/AuditLogsView` (persisted, `urls.py:51-53`) | MATCH | Was PARTIAL (echo stubs); now `AutomationRule`/`AutomationAuditLog` models (`backend/apps/production/models/automation.py`), nested-trigger serializer, `automation` service, org-scoped views; audit-logs append-only list. Live callers `WorkflowService.ts:57-74` satisfied |
 | scheduling events/resources/holidays/leaves CRUD + book/block/update-status/approve/reject | `scheduling` app (bare arrays, real, `OrganizationScopedViewSet`) | MATCH | None |
 | scheduling capacity/overbooking/resolve-overbooking | real aggregates (`urls.py:55-57`) | MATCH | Was PARTIAL (empty stubs); now weekly capacity/overbooking selectors over real schedules (`backend/apps/scheduling/selectors/capacity.py`) + triage service flagging excess bookings `Overbooked` (`services/capacity.py`); no new models. Live callers `SchedulingRepository.ts:41-49` satisfied |
-| analytics kpis/departments | hardcoded stubs (`backend/apps/production/api/viewsets/analytics.py:15-47`) | PARTIAL **[FLIP]** | Values (`total_shots:100`, …) are literals, not computed. P2-2: compute from production models or DOCUMENTED-STUB |
+| analytics kpis/departments | computed aggregates (`api/viewsets/analytics.py`) | MATCH **[FLIP]** | Counts computed org-scoped (shots by status, tasks by department, billing quota); farm telemetry null = honest unknown |
 | settings/pipeline | — | OBSOLETE | Mock-only, no caller; do not implement |
-| shows (3 MSW routes) | — (no model) | MISSING | Deferred to Show epic (P2) |
+| shows (`/api/v1/shows/`, id-or-code, full CRUD) | `production.Show` + `ShowViewSet` | MATCH **[FLIP]** | Was MISSING; model, org-scoped API, seed, and frontend wiring landed |
 
 ## 4. Project-scoped nested (`/api/organizations/{org}/projects/{proj}/…`)
 

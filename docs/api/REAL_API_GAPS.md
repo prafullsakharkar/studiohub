@@ -20,8 +20,8 @@ verified 2026-09-12; frontend unchanged since 2026-09-10. Prior revision of this
 | P1-2 | Delivery/publishing vocabulary + field skew | **RESOLVED (backend)** | Output maps + destination aliases + retry serializers in place (`apps/deliveries/api/serializers/delivery.py:13-16`, `destination.py:13-18`; `apps/publishing/api/serializers/publish.py:13-28,213-217`), tested. Remaining rewire of local-only frontend services is frontend-phase work |
 | P1-3 | `GET …/activity/` + `/api/v1/activity/` had no route (live caller `useOrganizationActivity`) | **RESOLVED** | `ActivityCompatViewSet` flat alias (`backend/apps/audit/api/urls.py:30-34`) + nested org activity |
 | P1-4 | Search/saved/recent, AI chat/risks/summaries, automations rules/logs, scheduling capacity/overbooking, analytics values, reports/notifications return empty/echo/hardcoded stubs behind live UI hooks | **PARTLY RESOLVED — see triage** | Saved/recent, automations, scheduling aggregates implemented (Phase 3); global search, AI, analytics, reports/notifications remain DOCUMENTED-STUB |
-| P2-1 | Show entity/routes absent (MSW orphans, no model) | OPEN (MISSING) | Blocked on Show epic; `show_id` accepted-but-unscoped meanwhile |
-| P2-2 | Analytics dashboards hardcoded (prod kpis/departments literals; intel 1-KPI stub) | OPEN (PARTIAL) | Dashboards show fake numbers (e.g. `total_shots:100`) |
+| P2-1 | Show entity/routes absent (MSW orphans, no model) | **RESOLVED** | `production.Show` model + org-scoped CRUD (`/api/v1/shows/`, id-or-code), seeded primary show per project, frontend `show_id` values are real UUIDs |
+| P2-2 | Analytics dashboards hardcoded (prod kpis/departments literals; intel 1-KPI stub) | **RESOLVED (prod)** | KPIs/departments compute from real models org-scoped; unmeasurable farm telemetry returns null (UI renders unknown). Intel 1-KPI stub remains DOCUMENTED-STUB |
 | P2-3 | Attachment entity-link via metadata vs frontend `entity_type/entity_id` | OPEN (narrowed) | Compat list shape confirmed bare-array (MATCH); only the entity-link mapping layer remains |
 
 ## P1-4 stub triage (decided 2026-09-12 — implement in build phase, not here)
@@ -50,7 +50,7 @@ verified 2026-09-12; frontend unchanged since 2026-09-10. Prior revision of this
    in code docstrings + contract notes; frontend empty-states remain frontend-phase work.
 
 ### P2 — Required behavior
-5. **Show epic**: model + scoping + orphan MSW routes (roadmap epic, do not ad-hoc).
+5. ~~Show epic~~ — **DONE**: model + scoping + mockRouter routes + frontend context wiring.
 6. **Analytics domains**: computed KPIs/widgets (prod + intel) or documented stub.
 7. **Attachment entity link**: explicit `entity_type/entity_id` mapping (fields or documented
    metadata convention) before media workflows rely on it.
