@@ -154,9 +154,7 @@ class PublishCreateSerializer(serializers.Serializer[Any]):
     entity_code = serializers.CharField(required=True, max_length=255)
     entity_name = serializers.CharField(required=True, max_length=255)
     dcc_tool = serializers.ChoiceField(
-        choices=[
-            "Maya", "Houdini", "Blender", "Nuke", "Maya Light", "Cinema 4D", "3ds Max"
-        ],
+        choices=[c[0] for c in PublishItem.TOOL_CHOICES],
         required=True,
     )
     dcc_version = serializers.CharField(required=False, allow_blank=True, max_length=50)
