@@ -3,6 +3,8 @@ Change Log ViewSet.
 """
 from rest_framework import mixins
 
+from apps.core.api.pagination import StandardPagination
+
 from apps.audit.api.viewsets.base import AuditEntityViewSet
 from apps.audit.filters.change_log import ChangeLogFilter
 from apps.audit.selectors.change_log import ChangeLogSelector
@@ -21,9 +23,14 @@ class ChangeLogViewSet(
     
     serializer_class = ChangeLogSerializer
     service_class = ChangeLogService
+    pagination_class = StandardPagination
     selector_class = ChangeLogSelector
     filter_class = ChangeLogFilter
     
+    search_fields = (
+        "target_type", "target_name", "description",
+    )
+
     def get_queryset(self):
         queryset = self.selector_class.get_queryset(
             request=self.request,

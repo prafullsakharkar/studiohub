@@ -3,6 +3,8 @@ Login History ViewSet.
 """
 from rest_framework import mixins
 
+from apps.core.api.pagination import StandardPagination
+
 from apps.audit.api.viewsets.base import AuditEntityViewSet
 from apps.audit.filters.login_history import LoginHistoryFilter
 from apps.audit.selectors.login_history import LoginHistorySelector
@@ -24,6 +26,7 @@ class LoginHistoryViewSet(
     
     serializer_class = LoginHistorySerializer
     service_class = LoginHistoryService
+    pagination_class = StandardPagination
     selector_class = LoginHistorySelector
     filter_class = LoginHistoryFilter
     ordering = ("-created_at",)

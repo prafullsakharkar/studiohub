@@ -97,3 +97,53 @@ class TestAuditLogViewSetPermissions:
         """Authenticated users can list audit logs."""
         response = authenticated_client.get(self._list_url())
         assert response.status_code == status.HTTP_200_OK
+
+
+class TestBackgroundJobActions:
+    """Retry/cancel actions (frontend job cards call these in both modes)."""
+
+    @pytest.mark.django_db
+    def test_retry_job_requeues(self, staff_client) -> None:
+        from apps.audit.models.background_job import BackgroundJob
+        from apps.audit.tests.factories import BackgroundJobFactory
+
+        job = BackgroundJobFactory.create(
+            status=BackgroundJob.STATUS_FAILED, progress=80
+        )
+        url = reverse(
+            "api:v1:audit:background-job-retry", kwargs={"uuid": job.uuid}
+        )
+        response = staff_client.post(url)
+        assert response.status_code == status.HTTP_200_OK
+        job.refresh_from_db()
+        assert job.status == BackgroundJob.STATUS_QUEUED
+        assert job.progress == 0
+
+    @pytest.mark.django_db
+    def test_cancel_job(self, staff_client) -> None:
+        from apps.audit.models.background_job import BackgroundJob
+        from apps.audit.tests.factories import BackgroundJobFactory
+
+        job = BackgroundJobFactory.create(
+            status=BackgroundJob.STATUS_PROGRESS, progress=40
+        )
+        url = reverse(
+            "api:v1:audit:background-job-cancel", kwargs={"uuid": job.uuid}
+        )
+        response = staff_client.post(url)
+        assert response.status_code == status.HTTP_200_OK
+        job.refresh_from_db()
+        assert job.status == BackgroundJob.STATUS_CANCELLED
+
+    @pytest.mark.django_db
+    def test_resolve_error_log(self, staff_client) -> None:
+        from apps.audit.tests.factories import ErrorLogFactory
+
+        entry = ErrorLogFactory.create(resolved=False)
+        url = reverse(
+            "api:v1:audit:error-log-resolve", kwargs={"uuid": entry.uuid}
+        )
+        response = staff_client.post(url)
+        assert response.status_code == status.HTTP_200_OK
+        entry.refresh_from_db()
+        assert entry.resolved is True

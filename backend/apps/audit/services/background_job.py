@@ -46,3 +46,30 @@ class BackgroundJobService(AuditBaseService):
         Delete a background job log.
         """
         instance.delete()
+
+    @classmethod
+    @transaction.atomic
+    def retry_job(cls, instance: BackgroundJob) -> BackgroundJob:
+        """Re-queue a job: reset progress so workers pick it up again."""
+        cls.model.objects.filter(pk=instance.pk).update(
+            status=BackgroundJob.STATUS_QUEUED,
+            progress=0,
+            started_at=None,
+            completed_at=None,
+            error_message="",
+        )
+        instance.refresh_from_db()
+        return instance
+
+    @classmethod
+    @transaction.atomic
+    def cancel_job(cls, instance: BackgroundJob) -> BackgroundJob:
+        """Cancel a job: terminal cancelled state with completion stamp."""
+        from django.utils import timezone
+
+        cls.model.objects.filter(pk=instance.pk).update(
+            status=BackgroundJob.STATUS_CANCELLED,
+            completed_at=timezone.now(),
+        )
+        instance.refresh_from_db()
+        return instance
