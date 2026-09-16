@@ -6,3 +6,9 @@ class AuditConfig(AppConfig):
     name = "apps.audit"
     label = "audit"
     verbose_name = "Audit"
+
+    def ready(self):
+        # Bounded change-tracking receivers (explicit model list only).
+        from apps.audit.signals.change_tracking import register_change_tracking
+
+        register_change_tracking()

@@ -147,3 +147,151 @@ class TestBackgroundJobActions:
         assert response.status_code == status.HTTP_200_OK
         entry.refresh_from_db()
         assert entry.resolved is True
+
+
+class TestTrackIngest:
+    """Client telemetry ingest (player/UI events resolve org server-side)."""
+
+    @pytest.mark.django_db
+    def test_ingest_track_with_aliases(self, staff_client) -> None:
+        from apps.organization.tests.factories import (
+            OrganizationFactory,
+            OrganizationMembershipFactory,
+        )
+        from apps.identity.tests.factories import UserFactory
+
+        user = UserFactory.create()
+        org = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(organization=org, user=user)
+        user.set_password("password123")
+        user.save()
+
+        login = staff_client.post(
+            "/api/v1/auth/login/",
+            {"email": user.email, "password": "password123"},
+            format="json",
+        )
+        token = login.data["tokens"]["access"]
+        url = reverse("api:v1:audit:track-list")
+        response = staff_client.post(
+            url,
+            {
+                "event_type": "click",
+                "track_name": "Shot card opened",
+                "duration_ms": 120,
+                "page_url": "/shots",
+                "metadata": {"source": "test"},
+            },
+            format="json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+            HTTP_X_ORGANIZATION_ID=str(org.id),
+        )
+        assert response.status_code == status.HTTP_201_CREATED, response.data
+        assert response.data["event_name"] == "Shot card opened"
+        assert response.data["metadata"]["duration_ms"] == 120
+        assert str(response.data["organization"]) == str(org.id)
+
+
+class TestChangeTrackingSignals:
+    """Bounded receivers record creates/updates on tracked models."""
+
+    @pytest.mark.django_db
+    def test_create_and_update_record_changelog(self) -> None:
+        from apps.audit.models import ChangeLog
+        from apps.organization.tests.factories import OrganizationFactory
+        from apps.production.tests.factories import ProjectFactory
+
+        org = OrganizationFactory.create()
+        project = ProjectFactory.create(organization=org, name="Signal Test")
+        created = ChangeLog.objects.filter(
+            target_type="Project", target_id=str(project.pk), change_type="create"
+        )
+        assert created.count() == 1
+        assert created.first().organization_id == org.id
+
+        project.name = "Signal Test Renamed"
+        project.save()
+        updated = ChangeLog.objects.filter(
+            target_type="Project", target_id=str(project.pk), change_type="update"
+        )
+        assert updated.count() == 1
+        assert "name" in updated.first().changed_fields
+
+    @pytest.mark.django_db
+    def test_noop_save_records_nothing(self) -> None:
+        from apps.audit.models import ChangeLog
+        from apps.organization.tests.factories import OrganizationFactory
+        from apps.production.tests.factories import ProjectFactory
+
+        org = OrganizationFactory.create()
+        project = ProjectFactory.create(organization=org, name="Quiet")
+        before = ChangeLog.objects.filter(target_id=str(project.pk)).count()
+        project.save()
+        after = ChangeLog.objects.filter(target_id=str(project.pk)).count()
+        assert after == before
+
+
+class TestTelemetryWriters:
+    """Middleware + handler writers behind the observability pages."""
+
+    @pytest.mark.django_db
+    def test_api_middleware_records_request(self, staff_client) -> None:
+        from apps.audit.models import APIRequest
+        from apps.organization.tests.factories import (
+            OrganizationFactory,
+            OrganizationMembershipFactory,
+        )
+        from apps.identity.tests.factories import UserFactory
+
+        user = UserFactory.create()
+        org = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(organization=org, user=user)
+        user.set_password("password123")
+        user.save()
+        login = staff_client.post(
+            "/api/v1/auth/login/",
+            {"email": user.email, "password": "password123"},
+            format="json",
+        )
+        token = login.data["tokens"]["access"]
+        before = APIRequest.objects.count()
+        staff_client.get(
+            "/api/v1/projects/?page_size=1",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+            HTTP_X_ORGANIZATION_ID=str(org.id),
+        )
+        rows = APIRequest.objects.order_by("-created_at")[:1]
+        assert APIRequest.objects.count() == before + 1
+        row = rows[0]
+        assert row.method == "GET"
+        assert row.path == "/api/v1/projects/"
+        assert row.status_category == "2xx"
+        assert row.organization_id == org.id
+
+    @pytest.mark.django_db
+    def test_exception_handler_records_500(self) -> None:
+        from rest_framework.test import APIRequestFactory
+
+        from apps.audit.models import ErrorLog
+        from apps.core.api.exceptions.handlers import custom_exception_handler
+        from apps.identity.tests.factories import UserFactory
+        from apps.organization.tests.factories import (
+            OrganizationFactory,
+            OrganizationMembershipFactory,
+        )
+
+        user = UserFactory.create()
+        org = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(organization=org, user=user)
+        factory = APIRequestFactory()
+        request = factory.get("/api/v1/projects/")
+        request.user = user
+        request.organization = org
+        response = custom_exception_handler(
+            RuntimeError("boom"), {"request": request, "view": None}
+        )
+        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        row = ErrorLog.objects.order_by("-created_at").first()
+        assert row is not None
+        assert "boom" in row.message
+        assert row.organization_id == org.id

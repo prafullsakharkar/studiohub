@@ -95,7 +95,7 @@ def custom_exception_handler(exc, context):
         )
 
     try:
-        _log_diagnostic(exc, response, diagnostics)
+        _log_diagnostic(exc, response, diagnostics, request)
     except Exception:
         _fallback_logger.warning(
             "diagnostics_log_failed",
@@ -414,6 +414,7 @@ def _log_diagnostic(
     exc: BaseException,
     response: Response,
     diagnostics: dict[str, Any],
+    request: Any = None,
 ) -> None:
     try:
         status_code = int(diagnostics.get("status_code") or 500)
@@ -425,5 +426,61 @@ def _log_diagnostic(
 
     if status_code >= 500:
         _logger.error(event, exc_info=exc, **fields)
+        with contextlib.suppress(Exception):
+            _record_error_log(exc, request, diagnostics)
     else:
         _logger.warning(event, **fields)
+
+
+def _record_error_log(
+    exc: BaseException, request: Any, diagnostics: dict[str, Any]
+) -> None:
+    """
+    Persist server-side crashes to the observability ledger (ErrorLog).
+
+    Best-effort: failures here must never affect the error response.
+    Skipped when no organization context is resolvable (the FK requires
+    one) — e.g. pre-auth crashes.
+    """
+    from apps.audit.models import ErrorLog
+
+    organization = getattr(request, "organization", None)
+    if organization is None:
+        return
+    user = getattr(request, "user", None)
+    if user is not None and not getattr(user, "is_authenticated", False):
+        user = None
+    meta = getattr(request, "META", None) or {}
+
+    import traceback
+
+    ErrorLog.objects.create(
+        severity=ErrorLog.SEVERITY_ERROR,
+        error_type=ErrorLog.TYPE_API_ERROR,
+        error_code=str(diagnostics.get("code") or ""),
+        message=f"{type(exc).__name__}: {exc}"[:2000],
+        stack_trace="".join(
+            traceback.format_exception(type(exc), exc, exc.__traceback__)
+        )[:20000],
+        user=user,
+        organization=organization,
+        ip_address=_request_ip(request),
+        user_agent=str(meta.get("HTTP_USER_AGENT") or "")[:1000],
+        request_path=str(getattr(request, "path", "") or "")[:500],
+        request_method=str(getattr(request, "method", "") or "")[:10],
+        context_data={
+            "request_id": diagnostics.get("request_id"),
+            "view": str(diagnostics.get("view") or ""),
+        },
+    )
+
+
+def _request_ip(request: Any) -> str | None:
+    try:
+        meta = getattr(request, "META", {}) or {}
+        forwarded = meta.get("HTTP_X_FORWARDED_FOR")
+        if forwarded:
+            return str(forwarded).split(",")[0].strip()[:45]
+        return meta.get("REMOTE_ADDR")
+    except Exception:
+        return None

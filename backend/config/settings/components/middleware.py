@@ -24,6 +24,11 @@ MIDDLEWARE = [
     "apps.core.middleware.OrganizationMiddleware",
     "apps.organization.middleware.organization_context.OrganizationContextMiddleware",
     "apps.core.middleware.AuditMiddleware",
+    # Thread-local request for signal attribution (audit change tracking).
+    "apps.core.middleware.request_context.RequestContextMiddleware",
+    # API ingress telemetry writer (observability pages). After org
+    # resolution; best-effort and never raises into the request.
+    "apps.audit.middleware.telemetry.APITelemetryMiddleware",
     "apps.core.middleware.MaintenanceMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
