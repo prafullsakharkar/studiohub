@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.audit.services.background_job import BackgroundJobService
 from apps.core.api.pagination import StandardPagination
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
@@ -89,13 +90,33 @@ class PublishingViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMis
         serializer = PublishRepublishSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        new_publish = republish(
-            publish_id=str(publish.id),
-            user_id=str(request.user.id) if request.user.is_authenticated else None,
+        job = BackgroundJobService.enqueue_and_run(
+            job_type="export",
             organization_id=str(request.organization.id),
+            description=f"Republish {getattr(publish, 'code', '') or publish.entity_name}",
+            executor=republish,
+            executor_kwargs={
+                "publish_id": str(publish.id),
+                "user_id": str(request.user.id) if request.user.is_authenticated else None,
+                "organization_id": str(request.organization.id),
+            },
         )
 
-        return Response(PublishDetailSerializer(new_publish).data, status=status.HTTP_201_CREATED)
+        result_id = (job.result_data or {}).get("result_id")
+        new_publish = (
+            PublishSelector.model.objects.filter(
+                pk=result_id,
+                organization_id=request.organization.id,
+            ).first()
+            if result_id
+            else None
+        )
+
+        return Response(
+            PublishDetailSerializer(new_publish).data,
+            status=status.HTTP_201_CREATED,
+            headers={"X-Background-Job": job.job_id},
+        )
 
     @action(detail=True, methods=["post"], url_path="unpublish")
     def unpublish(self, request, *args, **kwargs):

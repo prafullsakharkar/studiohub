@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.audit.services.background_job import BackgroundJobService
 from apps.core.api.pagination import StandardPagination
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.deliveries.api.serializers.delivery import (
@@ -168,13 +169,23 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
         serializer = DeliverySubmitSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        result = submit_delivery(
-            delivery_id=str(delivery.id),
-            user_id=str(request.user.id),
+        job = BackgroundJobService.enqueue_and_run(
+            job_type="export",
             organization_id=str(request.organization.id),
+            description=f"Submit delivery {delivery.code or delivery.name}",
+            executor=submit_delivery,
+            executor_kwargs={
+                "delivery_id": str(delivery.id),
+                "user_id": str(request.user.id),
+                "organization_id": str(request.organization.id),
+            },
         )
 
-        return Response(self._frontend_result(result))
+        result = (job.result_data or {}).get("result")
+        return Response(
+            self._frontend_result(result or {}),
+            headers={"X-Background-Job": job.job_id},
+        )
 
     @action(detail=True, methods=["post"], url_path="approve")
     def approve(self, request, *args, **kwargs):
