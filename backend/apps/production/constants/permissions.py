@@ -97,3 +97,17 @@ class SchedulingPermissions:
 
 class AnalyticsPermissions:
     VIEW = "analytics:read"
+
+
+class EditorialTrackPermissions:
+    VIEW = "tracks:read"
+    CREATE = "tracks:create"
+    UPDATE = "tracks:update"
+    DELETE = "tracks:delete"
+
+
+class ShowPermissions:
+    VIEW = "shows:read"
+    CREATE = "shows:create"
+    UPDATE = "shows:update"
+    DELETE = "shows:delete"
