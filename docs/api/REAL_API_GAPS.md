@@ -23,6 +23,9 @@ verified 2026-09-12; frontend unchanged since 2026-09-10. Prior revision of this
 | P2-1 | Show entity/routes absent (MSW orphans, no model) | **RESOLVED** | `production.Show` model + org-scoped CRUD (`/api/v1/shows/`, id-or-code), seeded primary show per project, frontend `show_id` values are real UUIDs |
 | P2-2 | Analytics dashboards hardcoded (prod kpis/departments literals; intel 1-KPI stub) | **RESOLVED (prod)** | KPIs/departments compute from real models org-scoped; unmeasurable farm telemetry returns null (UI renders unknown). Intel 1-KPI stub remains DOCUMENTED-STUB |
 | P2-3 | Attachment entity-link via metadata vs frontend `entity_type/entity_id` | OPEN (narrowed) | Compat list shape confirmed bare-array (MATCH); only the entity-link mapping layer remains |
+| P2-4 | Project command-center dashboard had no backend (`GET …/projects/{id}/dashboard/`) | **RESOLVED (Phase 6, 2026-09-17)** | `ProjectDashboardSelector.build` aggregates real Shot/Task/Asset/Review/DeliveryPackage/ChangeLog rows into the exact `ProjectDashboardData` shape (primary `@action` + nested `/api/organizations/…/projects/…/dashboard` fallback); zod-validated; 13 tests |
+| P2-5 | Audit FilterSets silently dropped on namespaced resources (`.queryset` vs `.qs`) | **RESOLVED (Phase 6)** | 8 viewsets return `.qs`; regression tests with negative controls; also added `?organization_id=` alias, flat detail route, `/api/v1/activity/` fallback alias |
+| P2-6 | `analytics/kpis/` field skew vs `ProductionKpis` (`quota_tb`, missing project/artist counts) + zeroed org scope for JWT callers | **RESOLVED (Phase 6)** | Exact contract fields (`storage_quota_tb`, `average_render_time_mins`, `total_active_projects`, `active_artists`); org context resolved in-view; also fixed swapped storage used/quota unpacking |
 
 ## P1-4 stub triage (decided 2026-09-12 — implement in build phase, not here)
 

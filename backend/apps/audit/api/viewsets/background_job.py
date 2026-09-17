@@ -37,7 +37,7 @@ class BackgroundJobViewSet(
             request=self.request,
             view=self,
         )
-        return self.filter_class(queryset, data=self.request.query_params).queryset
+        return self.filter_class(queryset, data=self.request.query_params).qs
 
     @action(detail=True, methods=["post"])
     def retry(self, request, *args, **kwargs):

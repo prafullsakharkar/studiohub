@@ -7,6 +7,10 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.organization.middleware.organization_context import (
+    resolve_organization_context,
+)
+
 
 class DummySerializer(serializers.Serializer[Any]):
     pass
@@ -21,9 +25,10 @@ class AnalyticsKpisView(GenericAPIView):  # pyright: ignore[reportMissingTypeArg
     """
     Real aggregates computed from production models, org-scoped.
 
-    Fields with no data source yet (render-farm telemetry, render-time
-    averages) return ``null`` so the UI renders an honest unknown instead
-    of illustrative literals.
+    Response matches the frontend ``ProductionKpis`` contract
+    (``src/types/analytics.ts``). Fields with no data source yet
+    (render-farm telemetry, render-time averages) return ``null`` so the UI
+    renders an honest unknown instead of illustrative literals.
     """
 
     permission_classes = (IsAuthenticated,)
@@ -31,28 +36,51 @@ class AnalyticsKpisView(GenericAPIView):  # pyright: ignore[reportMissingTypeArg
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
+        from apps.production.constants.project import ProjectStatus
         from apps.production.constants.shot import ShotStatus
-        from apps.production.models import Shot
+        from apps.production.models import Project, Shot, Task
 
+        # Plain APIViews never run the viewset org-context resolution, and
+        # the middleware runs before DRF JWT authentication, so resolve here
+        # (fail-closed) or every caller renders zeros.
+        resolve_organization_context(request, force=True)
         org = _resolve_org(request)
         shots = Shot.objects.filter(organization=org) if org is not None else Shot.objects.none()
         total = shots.count()
         approved = shots.filter(status=ShotStatus.APPROVED).count()
         in_progress = shots.filter(status=ShotStatus.IN_PROGRESS).count()
         pending_review = shots.filter(status=ShotStatus.PENDING_REVIEW).count()
-        quota_tb, used_tb = _storage_figures(org)
+        if org is not None:
+            active_projects = (
+                Project.objects.filter(organization=org, is_deleted=False)
+                .exclude(status=ProjectStatus.ARCHIVED)
+                .count()
+            )
+            active_artists = (
+                Task.objects.filter(organization=org, is_deleted=False)
+                .exclude(assignee__isnull=True)
+                .values("assignee")
+                .distinct()
+                .count()
+            )
+        else:
+            active_projects = 0
+            active_artists = 0
+        used_tb, quota_tb = _storage_figures(org)
         return Response(
             {
+                "total_active_projects": active_projects,
                 "total_shots": total,
                 "approved_shots": approved,
-                "in_progress_shots": in_progress,
                 "pending_review_shots": pending_review,
+                "in_progress_shots": in_progress,
                 "approval_rate_percentage": round(approved / total * 100, 1) if total else 0.0,
+                "active_artists": active_artists,
                 "storage_usage_tb": used_tb,
-                "quota_tb": quota_tb,
+                "storage_quota_tb": quota_tb,
                 "render_nodes_busy": None,
                 "render_nodes_total": None,
-                "avg_render_time_mins": None,
+                "average_render_time_mins": None,
             }
         )
 
@@ -85,6 +113,7 @@ class AnalyticsDepartmentsView(GenericAPIView):  # pyright: ignore[reportMissing
         from apps.production.constants.task import TaskStatus
         from apps.production.models import Task
 
+        resolve_organization_context(request, force=True)
         org = _resolve_org(request)
         base = Task.objects.filter(organization=org) if org is not None else Task.objects.none()
         rows = (

@@ -25,8 +25,14 @@ router.register(r"tracks", TrackViewSet, basename="track")
 
 
 urlpatterns = [
-    # Flat frontend-contract alias (list only; audit stays append-only).
+    # Flat frontend-contract alias (list + retrieve; audit stays append-only,
+    # no POST/PATCH/DELETE).
     path("", AuditCompatViewSet.as_view({"get": "list"}), name="audit-flat-list"),
+    path(
+        "<uuid:uuid>/",
+        AuditCompatViewSet.as_view({"get": "retrieve"}),
+        name="audit-flat-detail",
+    ),
     # Flat frontend-contract activity feed (paginated frontend shape).
     path(
         "activity/",

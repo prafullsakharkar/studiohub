@@ -36,7 +36,7 @@ class ActivityViewSet(
             request=self.request,
             view=self,
         )
-        return self.filter_class(queryset, data=self.request.query_params).queryset
+        return self.filter_class(queryset, data=self.request.query_params).qs
 
 
 class ActivityCompatViewSet(ActivityViewSet):  # pyright: ignore[reportMissingTypeArgument]
@@ -60,7 +60,7 @@ class ActivityCompatViewSet(ActivityViewSet):  # pyright: ignore[reportMissingTy
             view=self,
         )
         queryset = cast(
-            Any, self.filter_class(base, data=self.request.query_params).queryset
+            Any, self.filter_class(base, data=self.request.query_params).qs
         )
         lookup = self.kwargs.get("organization_id")
         if not lookup:

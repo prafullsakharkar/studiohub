@@ -19,6 +19,12 @@ class AuditLogFilter(AuditBaseFilter):
     # auto-generated ChoiceFilter (which 400/empties on frontend values).
     action = django_filters.CharFilter(field_name="action", lookup_expr="iexact")
 
+    # Frontend contract (`AuditLogsPage`) filters with `?organization_id=`
+    # while the model field is `organization`: alias it. The selector already
+    # scopes the base queryset to the caller's organizations, so narrowing by
+    # this parameter can never leak another tenant's rows.
+    organization_id = django_filters.UUIDFilter(field_name="organization")
+
     class Meta:
         model = AuditLog
         fields = {

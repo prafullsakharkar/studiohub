@@ -8,6 +8,7 @@ under its own ``app_name``. This module aggregates them under the versioned
 
 from django.urls import include, path
 
+from apps.audit.api.viewsets.activity import ActivityCompatViewSet
 from apps.identity.api.views.auth_compat import AuthMembershipsView
 
 app_name = "v1"
@@ -39,6 +40,14 @@ urlpatterns = [
     path("settings/", include(("apps.settings.api.urls", "settings"))),
     # Audit (audit logs, login history, change logs, API requests)
     path("audit/", include(("apps.audit.api.urls", "audit"))),
+    # Frontend-contract fallback for `organizationApi.getActivity()` when no
+    # active organization is selected: paginated activity feed, same viewset
+    # as the nested `/api/organizations/<org>/activity/` route.
+    path(
+        "activity/",
+        ActivityCompatViewSet.as_view({"get": "list"}),
+        name="activity-flat-list",
+    ),
     # Deliveries (client turnover packages)
     path("deliveries/", include("apps.deliveries.api.urls")),
     # Publishing (DCC publish items)

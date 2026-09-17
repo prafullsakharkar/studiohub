@@ -9,6 +9,7 @@ from apps.production.api.serializers.project.list import ProjectListSerializer
 from apps.production.api.serializers.project.update import ProjectUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.constants.permissions import ProjectPermissions
+from apps.production.selectors.dashboard import ProjectDashboardSelector
 from apps.production.selectors.project import ProjectSelector
 from apps.production.services.project import ProjectService
 
@@ -35,6 +36,7 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         "partial_update": (ProjectPermissions.UPDATE,),
         "destroy": (ProjectPermissions.DELETE,),
         "statistics": (ProjectPermissions.VIEW,),
+        "dashboard": (ProjectPermissions.VIEW,),
     }
 
     search_fields = ("name", "code", "description", "client_name")
@@ -45,3 +47,14 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         """Frontend contract: GET /api/v1/projects/{id}/statistics/."""
         instance = self.get_object()
         return Response(ProjectSelector.summary_counts(instance))
+
+    @action(detail=True, methods=["get"], url_path="dashboard")
+    def dashboard(self, request, *args, **kwargs):
+        """Frontend contract: GET /api/v1/projects/{id}/dashboard/.
+
+        Consolidated project-scoped telemetry for the Project Command
+        Center. Detail lookup accepts UUID or code (case-insensitive);
+        unknown projects 404 via ``get_object``.
+        """
+        instance = self.get_object()
+        return Response(ProjectDashboardSelector.build(instance))

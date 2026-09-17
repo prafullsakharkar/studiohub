@@ -72,6 +72,7 @@ from apps.production.models import (
     Workflow,
 )
 from apps.production.selectors.asset import AssetSelector
+from apps.production.selectors.dashboard import ProjectDashboardSelector
 from apps.production.selectors.media import MediaSelector
 from apps.production.selectors.project import ProjectSelector
 from apps.production.selectors.project_scoped import (
@@ -319,6 +320,18 @@ class ProjectSummaryView(ProjectScopedAPIView):
                 "project_id": str(self.project.id),
             }
         )
+
+
+class ProjectDashboardView(ProjectScopedAPIView):
+    """Frontend-contract fallback: GET .../projects/{project}/dashboard.
+
+    Same payload as ``GET /api/v1/projects/{id}/dashboard/`` (the frontend
+    calls the primary first and falls back here). ``<project>`` accepts UUID
+    or code; unknown values 404 and non-members 403 via the scope mixin.
+    """
+
+    def get(self, request, *args, **kwargs):
+        return Response(ProjectDashboardSelector.build(self.project))
 
 
 # ----------------------------------------------------------------------
