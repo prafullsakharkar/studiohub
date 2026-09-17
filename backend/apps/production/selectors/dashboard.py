@@ -62,44 +62,97 @@ class ProjectDashboardSelector(ProductionBaseSelector):
 
     # -- entry point ----------------------------------------------------
 
+    @staticmethod
+    def _status_counts(grouped_rows) -> dict[str, int]:
+        """Collapse ``values("status").annotate(count=…)`` rows to a dict."""
+        counts: dict[str, int] = {}
+        for row in grouped_rows:
+            counts[row["status"] or "Not Started"] = row["count"]
+        return counts
+
     @classmethod
     def build(cls, project) -> dict[str, Any]:
-        """Aggregate the full dashboard payload for ``project``."""
+        """Aggregate the full dashboard payload for ``project``.
+
+        Counts are aggregated database-side (``GROUP BY status`` /
+        filtered ``COUNT``) so totals stay exact at any project size —
+        the payload never counts a paginated or truncated page. Only the
+        small `recent_*` example lists are sliced.
+        """
+        from django.db.models import Count
+
         from apps.deliveries.models import DeliveryPackage
         from apps.production.models import Asset, Review, Shot, Task
 
         organization = project.organization
         today = timezone.localdate()
+        scope = {"organization": organization, "project": project}
 
-        shots = list(
-            Shot.objects.filter(organization=organization, project=project)
+        shot_statuses = (
+            Shot.objects.filter(**scope).values("status").annotate(count=Count("id"))
+        )
+        task_statuses = (
+            Task.objects.filter(**scope).values("status").annotate(count=Count("id"))
+        )
+        asset_statuses = (
+            Asset.objects.filter(**scope).values("status").annotate(count=Count("id"))
+        )
+        review_statuses = (
+            Review.objects.filter(**scope).values("status").annotate(count=Count("id"))
+        )
+        delivery_rows = list(
+            DeliveryPackage.objects.filter(**scope).values("status", "expires_at")
+        )
+
+        from django.db.models.functions import Lower
+
+        # Lower-cased status annotation keeps the case-insensitive bucket
+        # semantics of the contract without Q-object gymnastics.
+        task_base = Task.objects.filter(**scope).annotate(_ls=Lower("status"))
+        done_statuses = ("completed", "approved", "done")
+        overdue_count = (
+            task_base.filter(due_date__lt=today).exclude(_ls__in=done_statuses).count()
+        )
+        blocked_count = task_base.filter(_ls="blocked").count()
+        overlap_count = (
+            task_base.filter(_ls="blocked", due_date__lt=today)
+            .exclude(_ls__in=done_statuses)
+            .count()
+        )
+        # Exact union of overdue-or-blocked for the watchlist header (not
+        # derived from the truncated recent list).
+        critical_count = overdue_count + blocked_count - overlap_count
+
+        recent_shots = list(
+            Shot.objects.filter(**scope)
             .select_related("assigned_artist")
-            .order_by("-updated_at")[:5000]
+            .order_by("-updated_at")[:8]
         )
-        tasks = list(
-            Task.objects.filter(organization=organization, project=project)
+        recent_tasks = list(
+            Task.objects.filter(**scope)
             .select_related("assignee")
-            .order_by("-updated_at")[:5000]
+            .order_by("-updated_at")[:8]
         )
-        assets = list(
-            Asset.objects.filter(organization=organization, project=project)[:5000]
-        )
-        reviews = list(
-            Review.objects.filter(organization=organization, project=project)
+        recent_reviews = list(
+            Review.objects.filter(**scope)
             .select_related("lead_reviewer")
-            .order_by("-updated_at")[:500]
+            .order_by("-updated_at")[:6]
         )
-        deliveries = list(
-            DeliveryPackage.objects.filter(organization=organization, project=project)
+        recent_deliveries = list(
+            DeliveryPackage.objects.filter(**scope)
             .select_related("client")
-            .order_by("-updated_at")[:500]
+            .order_by("-updated_at")[:6]
         )
 
-        shot_stats = cls._shot_stats(shots)
-        task_stats = cls._task_stats(tasks, today)
-        asset_stats = cls._asset_stats(assets)
-        review_stats = cls._review_stats(reviews)
-        delivery_stats = cls._delivery_stats(deliveries, timezone.now())
+        shot_stats = cls._shot_stats(cls._status_counts(shot_statuses))
+        task_stats = cls._task_stats(
+            task_statuses,
+            overdue=overdue_count,
+            critical=critical_count,
+        )
+        asset_stats = cls._asset_stats(cls._status_counts(asset_statuses))
+        review_stats = cls._review_stats(cls._status_counts(review_statuses))
+        delivery_stats = cls._delivery_stats(delivery_rows, timezone.now())
 
         overall = cls._overall_progress(
             shot_stats["completion_pct"],
@@ -108,7 +161,12 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             total_tasks=task_stats["total"],
         )
         schedule = cls._schedule(
-            project, overall, task_stats["overdue"], delivery_stats["late"], tasks, deliveries, today
+            project,
+            overall,
+            task_stats["overdue"],
+            delivery_stats["late"],
+            organization,
+            today,
         )
 
         return {
@@ -133,6 +191,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
                 "pending_reviews": review_stats["pending"],
                 "approved_reviews": review_stats["approved"],
                 "changes_requested_reviews": review_stats["changes_requested"],
+                "rejected_reviews": review_stats["rejected"],
                 "total_deliveries": delivery_stats["total"],
                 "upcoming_deliveries": delivery_stats["upcoming"],
                 "delivered_deliveries": delivery_stats["delivered"],
@@ -149,7 +208,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             "shots": {
                 "total": shot_stats["total"],
                 "by_status": shot_stats["by_status"],
-                "recent_shots": [cls._shot_item(s) for s in shots[:8]],
+                "recent_shots": [cls._shot_item(s) for s in recent_shots],
             },
             "tasks": {
                 "total": task_stats["total"],
@@ -159,25 +218,26 @@ class ProjectDashboardSelector(ProductionBaseSelector):
                 "review": task_stats["review"],
                 "completed": task_stats["completed"],
                 "overdue": task_stats["overdue"],
-                "recent_tasks": [cls._task_item(t, today) for t in tasks[:8]],
+                "critical": task_stats["critical"],
+                "recent_tasks": [cls._task_item(t, today) for t in recent_tasks],
             },
             "reviews": {
                 "pending": review_stats["pending"],
                 "approved": review_stats["approved"],
                 "changes_requested": review_stats["changes_requested"],
                 "rejected": review_stats["rejected"],
-                "recent_reviews": [cls._review_item(r) for r in reviews[:6]],
+                "recent_reviews": [cls._review_item(r) for r in recent_reviews],
             },
             "schedule": schedule,
-            "workload": {"team_members": cls._workload(tasks, today)},
+            "workload": {"team_members": cls._workload(organization, project, today)},
             "deliveries": {
                 "total": delivery_stats["total"],
                 "upcoming": delivery_stats["upcoming"],
                 "delivered": delivery_stats["delivered"],
                 "late": delivery_stats["late"],
-                "items": [cls._delivery_item(d) for d in deliveries[:6]],
+                "items": [cls._delivery_item(d) for d in recent_deliveries],
             },
-            "activity": cls._activity(project, organization, shots, tasks),
+            "activity": cls._activity(project, organization, recent_shots, recent_tasks),
         }
 
     # -- project ----------------------------------------------------------
@@ -218,12 +278,10 @@ class ProjectDashboardSelector(ProductionBaseSelector):
     # -- shots ------------------------------------------------------------
 
     @classmethod
-    def _shot_stats(cls, shots: list) -> dict[str, Any]:
-        by_status: dict[str, int] = {key: 0 for key in cls.SHOT_STATUS_SEED}
-        for shot in shots:
-            status = shot.status or "Not Started"
-            by_status[status] = by_status.get(status, 0) + 1
-        total = len(shots)
+    def _shot_stats(cls, by_status: dict[str, int]) -> dict[str, Any]:
+        for key in cls.SHOT_STATUS_SEED:
+            by_status.setdefault(key, 0)
+        total = sum(by_status.values())
         approved = by_status.get("Approved", 0) + by_status.get("Final", 0)
         in_progress = (
             by_status.get("In Progress", 0)
@@ -301,18 +359,18 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         return (task.status or "").lower() not in done
 
     @classmethod
-    def _task_stats(cls, tasks: list, today: date) -> dict[str, Any]:
+    def _task_stats(cls, status_rows, *, overdue: int, critical: int) -> dict[str, Any]:
         buckets = {"open": 0, "in_progress": 0, "blocked": 0, "review": 0, "completed": 0}
-        overdue = 0
-        for task in tasks:
-            buckets[cls._task_bucket(task.status)] += 1
-            if cls._is_task_overdue(task, today):
-                overdue += 1
-        total = len(tasks)
+        total = 0
+        for row in status_rows:
+            count = row["count"]
+            buckets[cls._task_bucket(row["status"])] += count
+            total += count
         return {
             **buckets,
             "total": total,
             "overdue": overdue,
+            "critical": critical,
             "completion_pct": round(buckets["completed"] / total * 100) if total else 0,
         }
 
@@ -342,15 +400,15 @@ class ProjectDashboardSelector(ProductionBaseSelector):
     # -- assets / reviews / deliveries ------------------------------------
 
     @classmethod
-    def _asset_stats(cls, assets: list) -> dict[str, Any]:
+    def _asset_stats(cls, status_counts: dict[str, int]) -> dict[str, Any]:
         approved = needs_revision = 0
-        for asset in assets:
-            normalized = (asset.status or "").lower()
+        for status, count in status_counts.items():
+            normalized = (status or "").lower()
             if normalized in ("approved", "ready", "released", "final"):
-                approved += 1
+                approved += count
             elif normalized in ("revision", "rejected", "needs revision", "retake"):
-                needs_revision += 1
-        total = len(assets)
+                needs_revision += count
+        total = sum(status_counts.values())
         return {
             "total": total,
             "approved": approved,
@@ -359,17 +417,17 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         }
 
     @classmethod
-    def _review_stats(cls, reviews: list) -> dict[str, Any]:
+    def _review_stats(cls, status_counts: dict[str, int]) -> dict[str, Any]:
         approved = changes_requested = rejected = 0
-        for review in reviews:
-            normalized = (review.status or "").lower()
+        for status, count in status_counts.items():
+            normalized = (status or "").lower()
             if normalized in ("approved", "closed", "completed"):
-                approved += 1
+                approved += count
             elif normalized in ("changes requested", "retake"):
-                changes_requested += 1
+                changes_requested += count
             elif normalized == "rejected":
-                rejected += 1
-        total = len(reviews)
+                rejected += count
+        total = sum(status_counts.values())
         return {
             "total": total,
             "approved": approved,
@@ -393,11 +451,11 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         }
 
     @classmethod
-    def _delivery_stats(cls, deliveries: list, now) -> dict[str, Any]:
+    def _delivery_stats(cls, rows: list[dict[str, Any]], now) -> dict[str, Any]:
         delivered = late = 0
-        for delivery in deliveries:
-            normalized = (delivery.status or "").lower()
-            expires_at = getattr(delivery, "expires_at", None)
+        for delivery in rows:
+            normalized = (delivery["status"] or "").lower()
+            expires_at = delivery["expires_at"]
             is_late = (
                 expires_at is not None
                 and expires_at < now
@@ -407,7 +465,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
                 late += 1
             elif normalized in ("delivered", "approved", "sent", "accepted", "complete"):
                 delivered += 1
-        total = len(deliveries)
+        total = len(rows)
         return {
             "total": total,
             "delivered": delivered,
@@ -453,7 +511,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
     @classmethod
     def _schedule(
         cls, project, overall: int, overdue_tasks: int, late_deliveries: int,
-        tasks: list, deliveries: list, today: date,
+        organization, today: date,
     ) -> dict[str, Any]:
         # Same defaulting rule as the project-scoped schedule view: a project
         # without dates still yields a well-formed schedule section.
@@ -507,41 +565,41 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             "is_delayed": late_deliveries > 0 or overdue_tasks > 2,
             "milestones": milestones,
         }
-        deadline = cls._next_deadline(tasks, deliveries, today)
+        deadline = cls._next_deadline(organization, project, today)
         if deadline is not None:
             payload["next_deadline"] = deadline
         return payload
 
     @classmethod
-    def _next_deadline(cls, tasks: list, deliveries: list, today: date) -> dict | None:
-        upcoming_task = None
-        for task in sorted(
-            (t for t in tasks if t.due_date and t.due_date >= today),
-            key=lambda t: t.due_date,
-        ):
-            upcoming_task = task
-            break
-        if upcoming_task is not None:
+    def _next_deadline(cls, organization, project, today: date) -> dict | None:
+        from apps.deliveries.models import DeliveryPackage
+        from apps.production.models import Task
+
+        upcoming_task = (
+            Task.objects.filter(
+                organization=organization, project=project, due_date__gte=today
+            )
+            .order_by("due_date")
+            .first()
+        )
+        if upcoming_task is not None and upcoming_task.due_date is not None:
             return {
                 "title": upcoming_task.title,
                 "date": upcoming_task.due_date.isoformat(),
                 "days_away": max(0, (upcoming_task.due_date - today).days),
                 "type": "Task",
             }
-        upcoming_delivery = None
-        for delivery in sorted(
-            (
-                d
-                for d in deliveries
-                if getattr(d, "expires_at", None) is not None
-                and getattr(d, "expires_at").date() >= today
-            ),
-            key=lambda d: getattr(d, "expires_at"),
-        ):
-            upcoming_delivery = delivery
-            break
-        if upcoming_delivery is not None:
-            due = getattr(upcoming_delivery, "expires_at").date()
+        upcoming_delivery = (
+            DeliveryPackage.objects.filter(
+                organization=organization,
+                project=project,
+                expires_at__date__gte=today,
+            )
+            .order_by("expires_at")
+            .first()
+        )
+        if upcoming_delivery is not None and upcoming_delivery.expires_at is not None:
+            due = upcoming_delivery.expires_at.date()
             return {
                 "title": upcoming_delivery.name,
                 "date": due.isoformat(),
@@ -551,59 +609,96 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         return None
 
     @classmethod
-    def _workload(cls, tasks: list, today: date) -> list[dict[str, Any]]:
+    def _workload(cls, organization, project, today: date) -> list[dict[str, Any]]:
+        from django.db.models import Count
+
+        from apps.production.models import Task
+
+        # Per-(assignee, department) aggregates in one query; merged per
+        # assignee below with the busiest department as representative.
+        rows = list(
+            Task.objects.filter(organization=organization, project=project)
+            .values("assignee", "department")
+            .annotate(
+                assigned=Count("id"),
+                in_progress=Count("id", filter=Q(status__iexact="in progress")),
+                overdue=Count(
+                    "id",
+                    filter=Q(~Q(status__iexact="completed"), due_date__lt=today),
+                ),
+            )
+        )
+        user_ids = {row["assignee"] for row in rows if row["assignee"] is not None}
+        users = cls._users_by_id(user_ids)
         members: dict[str, dict[str, Any]] = {}
-        for task in tasks:
-            assignee = getattr(task, "assignee", None)
-            if assignee is not None:
-                key = f"user-{assignee.id}"
-                name = cls._user_display_name(assignee) or "Unassigned"
-                avatar = cls._user_avatar(assignee)
-                role = ""
-                department = task.department or ""
+        for row in rows:
+            assignee_id = row["assignee"]
+            if assignee_id is not None:
+                key = f"user-{assignee_id}"
+                user = users.get(assignee_id)
+                name = cls._user_display_name(user) or "Unassigned"
+                avatar = cls._user_avatar(user)
             else:
                 key = "unassigned"
                 name = "Unassigned"
                 avatar = None
-                role = ""
-                department = task.department or ""
             member = members.get(key)
             if member is None:
                 member = {
                     "id": key,
                     "name": name,
-                    "role": role,
-                    "department": department,
+                    "role": "",
+                    "department": row["department"] or "",
                     "assigned_count": 0,
                     "in_progress_count": 0,
                     "overdue_count": 0,
                     "workload_level": "normal",
+                    "_best_department_count": 0,
                 }
                 if avatar:
                     member["avatar_url"] = avatar
                 members[key] = member
-            member["assigned_count"] += 1
-            if (task.status or "").lower() == "in progress":
-                member["in_progress_count"] += 1
-            if cls._is_task_overdue(task, today, completed_only=True):
-                member["overdue_count"] += 1
+            member["assigned_count"] += row["assigned"]
+            member["in_progress_count"] += row["in_progress"]
+            member["overdue_count"] += row["overdue"]
+            if row["assigned"] > member["_best_department_count"] and row["department"]:
+                member["department"] = row["department"]
+                member["_best_department_count"] = row["assigned"]
+        result = []
+        for member in members.values():
             if member["assigned_count"] >= 5 or member["overdue_count"] >= 2:
                 member["workload_level"] = "overloaded"
             elif member["assigned_count"] >= 3:
                 member["workload_level"] = "high"
-        return list(members.values())
+            member.pop("_best_department_count", None)
+            result.append(member)
+        result.sort(key=lambda member: member["assigned_count"], reverse=True)
+        return result
+
+    @staticmethod
+    def _users_by_id(user_ids: set) -> dict:
+        if not user_ids:
+            return {}
+        try:
+            from apps.identity.models import User
+
+            return User.objects.filter(id__in=user_ids).in_bulk()
+        except Exception:  # noqa: BLE001
+            return {}
 
     # -- activity -----------------------------------------------------------
 
     @classmethod
-    def _activity(cls, project, organization, shots: list, tasks: list) -> list[dict]:
+    def _activity(
+        cls, project, organization, recent_shots: list, recent_tasks: list
+    ) -> list[dict]:
         items = cls._activity_from_changelog(project, organization)
         if items:
             return items
         # No recorded changes yet: surface the most recently touched
         # entities as contextual activity (same fallback as the mock, with
         # real names instead of illustrative literals).
-        for shot in shots[:3]:
+        for shot in recent_shots[:3]:
             name = cls._user_display_name(getattr(shot, "assigned_artist", None))
             items.append(
                 {
@@ -619,7 +714,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
                     "description": f"Shot {shot.code} set to {shot.status} for {project.name}",
                 }
             )
-        for task in tasks[:3]:
+        for task in recent_tasks[:3]:
             name = cls._user_display_name(getattr(task, "assignee", None))
             items.append(
                 {

@@ -98,3 +98,42 @@ Known rest-mode follow-up (frontend, out of scope here): the production store
 defaults `activeProjectId` to the mock id `proj-001`, so a cold boot fires one
 404 round (error toast) before the app resolves a real project. The e2e visual
 spec works around this with API bootstrap + a steady-state gate.
+
+## Metric provenance (UI → query → endpoint → filter → records)
+
+Every dashboard number traces to project-scoped records; the single source is
+`GET …/dashboard/` (TanStack key `['dashboard', organizationId, projectId]`,
+placeholder data never crosses projects, error state on failure — no mock
+fallback). Widget derivations live in
+`studiohub-react/src/features/dashboard/utils/dashboardMetrics.ts`.
+
+| UI metric | Frontend derivation | Endpoint field | DB aggregation |
+| --------- | ------------------- | -------------- | -------------- |
+| KPI cards (shots/tasks/assets/reviews/deliveries) | direct render | `summary.*` | exact `COUNT`s per entity |
+| Task pie + status list | `getTaskStatusDistribution` (sums to `total`) | `tasks.*` | `GROUP BY status` buckets |
+| Domain comparison bars | `getCategoryComparison` (`?? 0`, Risk incl. rejected reviews) | `summary.*` + `tasks.*` | grouped counts |
+| Health Index | `getHealthMetrics` (50/50 blend − penalties, 0 on empty scope) | `summary.*` + `tasks.*` | same counts |
+| Velocity tab | honest empty state — completed-task timestamps are not collected | n/a (documented gap) | n/a |
+| Progress bar + methodology | direct render of `overall_progress_pct` | `production.*` | 60/40 rule in selector |
+| Shot matrix | direct render of `by_status` + `recent_shots` | `shots.*` | grouped counts + 8-row slice |
+| Schedule/milestones | direct render; `TBD` when undated | `schedule.*` | project dates + progress |
+| Workload roster | direct render (top 5 of full list) | `workload.team_members` | per-assignee grouped annotation |
+| Watchlist header | `tasks.critical` (exact overdue∪blocked) | `tasks.critical` | union count |
+| Activity stream | direct render, safe timestamps | `activity[]` | ChangeLog attribution + entity fallback |
+
+Accuracy hardening (Phase 6b): backend counts moved from capped in-memory
+slices (`[:5000]`) to database-side aggregation so totals stay exact at any
+project scale; `tasks.critical` and `summary.rejected_reviews` added for exact
+widget headers; frontend sample literals (`45/18/24/…`, `Wk 1…Wk 5`, `96.2%`)
+and the fabricated velocity series removed; persisted real project selections
+survive reload (`resetActiveProjectForOrg` trusts non-mock ids).
+
+## Tests
+
+* Backend: `apps/production/tests/test_dashboard.py` (15 tests incl.
+  bucket↔total reconciliation and critical-union correctness).
+* Frontend unit: `features/dashboard/utils/__tests__/dashboardMetrics.test.ts`
+  (11 tests: partitions, reconciliation, zero-scope, NaN safety).
+* E2E: `e2e/dashboard-accuracy.spec.ts` (5 tests: UI==API equality,
+  A→B→A switching via the real switcher, refresh survival, empty project,
+  API-failure error state).

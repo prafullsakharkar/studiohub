@@ -216,6 +216,56 @@ class TestProjectDashboardPrimary:
         assert resp_a.data["summary"]["shots_completion_pct"] == 100
         assert resp_b.data["summary"]["total_shots"] == 0
 
+    def test_task_buckets_reconcile_with_total(self, staff_client):
+        """open+in_progress+blocked+review+completed == total (chart partition)."""
+        org, project, _ = self._seed()
+        resp = staff_client.get(_dashboard_url(project), **_org_header(org))
+
+        assert resp.status_code == status.HTTP_200_OK, resp.data
+        tasks = resp.data["tasks"]
+        assert (
+            tasks["open"]
+            + tasks["in_progress"]
+            + tasks["blocked"]
+            + tasks["review"]
+            + tasks["completed"]
+            == tasks["total"]
+            == 4
+        )
+        assert tasks["critical"] == 1  # TSK002 overdue; nothing blocked
+        assert sum(item["count"] for item in resp.data["production"]["status_breakdown"]) == 4
+        reviews = resp.data["reviews"]
+        assert (
+            reviews["pending"]
+            + reviews["approved"]
+            + reviews["changes_requested"]
+            + reviews["rejected"]
+            == 2
+        )
+
+    def test_critical_counts_blocked_plus_overdue_union(self, staff_client):
+        org = OrganizationFactory.create()
+        project = ProjectFactory.create(organization=org, code="CRIT01")
+        today = timezone.localdate()
+        TaskFactory.create(
+            organization=org, project=project, code="CRIT-T1",
+            status="Blocked", due_date=today - timedelta(days=1),
+        )
+        TaskFactory.create(
+            organization=org, project=project, code="CRIT-T2",
+            status="Not Started", due_date=today - timedelta(days=1),
+        )
+        TaskFactory.create(
+            organization=org, project=project, code="CRIT-T3", status="Blocked",
+        )
+        resp = staff_client.get(_dashboard_url(project), **_org_header(org))
+
+        assert resp.status_code == status.HTTP_200_OK, resp.data
+        # Union, not sum: CRIT-T1 is both blocked and overdue.
+        assert resp.data["tasks"]["overdue"] == 2
+        assert resp.data["tasks"]["blocked"] == 2
+        assert resp.data["tasks"]["critical"] == 3
+
     def test_workload_buckets_by_assignee(self, staff_client):
         from apps.identity.tests.factories import UserFactory
 
