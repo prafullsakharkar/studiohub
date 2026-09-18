@@ -3,13 +3,12 @@ Login History ViewSet.
 """
 from rest_framework import mixins
 
-from apps.core.api.pagination import StandardPagination
-
 from apps.audit.api.viewsets.base import AuditEntityViewSet
 from apps.audit.filters.login_history import LoginHistoryFilter
 from apps.audit.selectors.login_history import LoginHistorySelector
 from apps.audit.serializers.login_history import LoginHistorySerializer
 from apps.audit.services.login_history import LoginHistoryService
+from apps.core.api.pagination import StandardPagination
 
 
 class LoginHistoryViewSet(

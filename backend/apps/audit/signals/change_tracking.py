@@ -17,7 +17,6 @@ Bounded by design:
 from __future__ import annotations
 
 from django.db.models.signals import post_delete, post_save, pre_save
-from django.dispatch import receiver
 
 # Fields too noisy or sensitive for before/after snapshots.
 _SKIP_FIELDS = frozenset(
@@ -89,7 +88,7 @@ def _values_equal(left, right) -> bool:
     if left == right:
         return True
     try:
-        from decimal import Decimal, InvalidOperation
+        from decimal import Decimal
 
         if left is None or right is None or left == "" or right == "":
             return left == right

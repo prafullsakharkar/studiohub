@@ -15,6 +15,7 @@ omitted (optional fields) rather than fabricated.
 
 from __future__ import annotations
 
+import contextlib
 from datetime import date, timedelta
 from typing import Any
 
@@ -326,10 +327,8 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         avatar = cls._user_avatar(artist)
         if avatar:
             item["assigned_artist_avatar"] = avatar
-        try:
+        with contextlib.suppress(Exception):
             item["frame_count"] = shot.frame_count
-        except Exception:  # noqa: BLE001
-            pass
         if shot.current_version:
             item["current_version"] = shot.current_version
         return item
@@ -528,10 +527,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         def _point(fraction: float) -> str:
             return (start + timedelta(seconds=round(total_seconds * fraction))).isoformat()
 
-        if overall >= 25:
-            m2 = "completed"
-        else:
-            m2 = "in_progress"
+        m2 = "completed" if overall >= 25 else "in_progress"
         if overall >= 50:
             m3 = "completed"
         elif overall >= 30:

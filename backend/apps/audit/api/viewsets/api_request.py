@@ -3,13 +3,12 @@ API Request ViewSet.
 """
 from rest_framework import mixins
 
-from apps.core.api.pagination import StandardPagination
-
 from apps.audit.api.viewsets.base import AuditEntityViewSet
 from apps.audit.filters.api_request import APIRequestFilter
 from apps.audit.selectors.api_request import APIRequestSelector
 from apps.audit.serializers.api_request import APIRequestSerializer
 from apps.audit.services.api_request import APIRequestService
+from apps.core.api.pagination import StandardPagination
 
 
 class APIRequestViewSet(

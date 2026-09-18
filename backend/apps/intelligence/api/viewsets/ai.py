@@ -8,7 +8,7 @@ literals. Fields with no data source yet (e.g. budget burn rate) return
 ``null`` so the UI renders an honest unknown instead of fabricated values.
 """
 
-from typing import Any, Optional
+from typing import Any
 
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema

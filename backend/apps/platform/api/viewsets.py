@@ -9,13 +9,13 @@ from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
 from apps.organization.api.viewsets.scoped import OrganizationScopedViewSet
 from apps.platform.constants.permissions import PlatformPermissions
-from apps.platform.serializers import (
-    ProductionReportSerializer,
-    StudioNotificationSerializer,
-)
 from apps.platform.selectors import (
     ProductionReportSelector,
     StudioNotificationSelector,
+)
+from apps.platform.serializers import (
+    ProductionReportSerializer,
+    StudioNotificationSerializer,
 )
 
 

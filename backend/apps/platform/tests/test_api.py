@@ -83,7 +83,7 @@ class TestNotificationApiContract:
 
     def test_notification_contract_fields(self, staff_client):
         org = OrganizationFactory.create()
-        notif = _notification(org)
+        _notification(org)
         resp = staff_client.get(
             _notif_url(), HTTP_X_ORGANIZATION_ID=str(org.id)
         )

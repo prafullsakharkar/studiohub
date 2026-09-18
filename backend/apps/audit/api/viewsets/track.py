@@ -3,13 +3,12 @@ Track ViewSet.
 """
 from rest_framework import mixins
 
-from apps.core.api.pagination import StandardPagination
-
 from apps.audit.api.viewsets.base import AuditEntityViewSet
 from apps.audit.filters.track import TrackFilter
 from apps.audit.selectors.track import TrackSelector
 from apps.audit.serializers.track import TrackIngestSerializer, TrackSerializer
 from apps.audit.services.track import TrackService
+from apps.core.api.pagination import StandardPagination
 
 
 class TrackViewSet(

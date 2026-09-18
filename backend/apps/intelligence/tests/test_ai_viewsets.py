@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import pytest
 from django.urls import reverse
-from rest_framework.test import APIClient
 
 from apps.identity.tests.factories import UserFactory
 from apps.organization.tests.factories import (
@@ -24,7 +23,6 @@ from apps.production.tests.factories import (
     ShotFactory,
     TaskFactory,
 )
-from apps.production.models import Shot, Task
 
 
 def _org_header(org):
@@ -276,7 +274,7 @@ class TestAIPermissionContext:
     @pytest.mark.django_db
     def test_real_context(self, staff_client, staff_user, member_user):
         _, org = member_user
-        project = ProjectFactory.create(organization=org, code="CTX01")
+        ProjectFactory.create(organization=org, code="CTX01")
         resp = staff_client.get(
             _url("intelligence-ai-permission-context"), **_org_header(org)
         )

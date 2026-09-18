@@ -40,11 +40,11 @@ class BackgroundJobService(AuditBaseService):
         can be swapped for a deferred ``.delay()`` without changing the
         producer call sites.
         """
+        import uuid as _uuid
+
         from django.utils import timezone
 
         from apps.audit.models.background_job import BackgroundJob
-
-        import uuid as _uuid
 
         job = cls.model.objects.create(
             job_type=job_type,

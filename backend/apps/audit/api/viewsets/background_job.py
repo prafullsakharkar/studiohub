@@ -4,14 +4,13 @@ Background Job ViewSet.
 from rest_framework import mixins
 from rest_framework.decorators import action
 
-from apps.core.api.pagination import StandardPagination
-
 from apps.audit.api.viewsets.base import AuditEntityViewSet
 from apps.audit.constants.permissions import AuditPermissions
 from apps.audit.filters.background_job import BackgroundJobFilter
 from apps.audit.selectors.background_job import BackgroundJobSelector
 from apps.audit.serializers.background_job import BackgroundJobSerializer
 from apps.audit.services.background_job import BackgroundJobService
+from apps.core.api.pagination import StandardPagination
 
 
 class BackgroundJobViewSet(

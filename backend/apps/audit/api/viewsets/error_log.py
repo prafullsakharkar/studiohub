@@ -2,8 +2,6 @@
 Error Log ViewSet.
 """
 from rest_framework import mixins
-
-from apps.core.api.pagination import StandardPagination
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -13,6 +11,7 @@ from apps.audit.filters.error_log import ErrorLogFilter
 from apps.audit.selectors.error_log import ErrorLogSelector
 from apps.audit.serializers.error_log import ErrorLogSerializer
 from apps.audit.services.error_log import ErrorLogService
+from apps.core.api.pagination import StandardPagination
 
 
 class ErrorLogViewSet(

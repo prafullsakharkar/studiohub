@@ -111,7 +111,7 @@ def remove_version_from_delivery(
     organization_id: str,
 ) -> DeliveryPackage:
     """Remove a version reference from a delivery (frontend ``removeVersion``)."""
-    from apps.deliveries.models import DeliveryPackage, DeliveryVersionRef
+    from apps.deliveries.models import DeliveryPackage
 
     delivery = DeliveryPackage.objects.get(
         id=delivery_id,

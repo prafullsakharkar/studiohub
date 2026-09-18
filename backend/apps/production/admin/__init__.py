@@ -38,5 +38,7 @@ __all__ = [
     "WorkflowAdmin",
     "ProjectMembershipAdmin",
     "EditorialCutAdmin",
+    "EditorialTrackAdmin",
+    "ShowAdmin",
     "ProjectNoteAdmin",
 ]

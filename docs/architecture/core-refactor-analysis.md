@@ -94,7 +94,7 @@ Findings:
 
 - There's also [models/bases/project.py](../../backend/apps/core/models/bases/project.py) exposing a ProjectEntityModel.
 
-- Other domain-adjacent files: permissions like [api/permissions/project.py](../../backend/apps/core/api/permissions/project.py) and permission exceptions referencing "ProjectPermissionException".
+- Other domain-adjacent files: project access now enforced in [production/api/views/project_scoped.py](../../backend/apps/production/api/views/project_scoped.py) (moved out of core per ADR-0032) and permission exceptions referencing "ProjectPermissionException".
 
 Classification and reasoning:
 - OrganizationScopedModel: KEEP in core (Organization is a platform-level, tenant concept; keeping tenant abstractions in core is reasonable). It is generic if the naming remains generic.
@@ -163,7 +163,7 @@ Short list of recommended moves:
   - [backend/apps/core/models/bases/project.py](../../backend/apps/core/models/bases/project.py) -> RE-EVALUATE. If StudioHub is project-driven, keep; otherwise move to "workspaces" plugin.
 
 - Permissions tied to project/roles:
-  - [backend/apps/core/api/permissions/project.py](../../backend/apps/core/api/permissions/project.py) -> move to domain app unless "project" is core concept.
+  - [backend/apps/production/api/views/project_scoped.py](../../backend/apps/production/api/views/project_scoped.py) -> moved to domain app per ADR-0032 (project access is a production-domain concern).
   - Reviewer & staff permissions: keep IsStaff (platform-level). Move IsReviewer to domain if reviewer semantics tie to production review flows.
 
 - Any selectors/operators refer specifically to shots/sequences/tasks -> move to domain.
@@ -253,7 +253,7 @@ Services
 
 API
 - api builders, viewsets, serializers, renderers, permissions — KEEP but audit for domain-specific permissions (e.g., project permissions) and move domain-specific ones.
-  - [backend/apps/core/api/permissions/project.py](../../backend/apps/core/api/permissions/project.py) — DEFER/MOVE depending on project being a core concept.
+  - [backend/apps/production/api/views/project_scoped.py](../../backend/apps/production/api/views/project_scoped.py) — MOVED to the domain app per ADR-0032.
   - Staff & admin permission helpers — KEEP.
 
 Middleware, events, signals
@@ -295,7 +295,7 @@ Appendix: Notable files referenced during audit
 - [backend/apps/core/services/base.py](../../backend/apps/core/services/base.py)
 - [backend/apps/core/selectors/base.py](../../backend/apps/core/selectors/base.py)
 - [backend/apps/core/exceptions/base.py](../../backend/apps/core/exceptions/base.py)
-- [backend/apps/core/api/permissions/project.py](../../backend/apps/core/api/permissions/project.py)
+- [backend/apps/production/api/views/project_scoped.py](../../backend/apps/production/api/views/project_scoped.py)
 
 Concise summary / Recommended priority list
 ------------------------------------------

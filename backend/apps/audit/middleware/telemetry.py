@@ -11,6 +11,7 @@ the request it observes.
 
 from __future__ import annotations
 
+import contextlib
 import time
 
 # Paths that are never telemetry (docs, schema, health, non-API traffic).
@@ -65,10 +66,9 @@ class APITelemetryMiddleware:
         response = self.get_response(request)
         elapsed_ms = int((time.monotonic() - start) * 1000)
 
-        try:
+        # Telemetry must never raise.
+        with contextlib.suppress(Exception):
             self._record(request, response, elapsed_ms)
-        except Exception:  # noqa: BLE001 - telemetry must never raise
-            pass
         return response
 
     def _record(self, request, response, elapsed_ms: int) -> None:

@@ -74,7 +74,7 @@ class Command(BaseCommand):
             users = self._seed_users(org, departments, teams, offices, roles)
             # Production seeding (idempotent)
             projects = self._seed_projects(org, users)
-            shows = self._seed_shows(org, projects)
+            self._seed_shows(org, projects)
             shots = self._seed_shots(org, projects, users)
             assets = self._seed_assets(org, projects, users, departments, teams)
             tasks = self._seed_tasks(org, projects, shots, assets, users, departments, teams)

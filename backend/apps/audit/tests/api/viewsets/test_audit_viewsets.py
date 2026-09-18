@@ -154,11 +154,11 @@ class TestTrackIngest:
 
     @pytest.mark.django_db
     def test_ingest_track_with_aliases(self, staff_client) -> None:
+        from apps.identity.tests.factories import UserFactory
         from apps.organization.tests.factories import (
             OrganizationFactory,
             OrganizationMembershipFactory,
         )
-        from apps.identity.tests.factories import UserFactory
 
         user = UserFactory.create()
         org = OrganizationFactory.create()
@@ -237,11 +237,11 @@ class TestTelemetryWriters:
     @pytest.mark.django_db
     def test_api_middleware_records_request(self, staff_client) -> None:
         from apps.audit.models import APIRequest
+        from apps.identity.tests.factories import UserFactory
         from apps.organization.tests.factories import (
             OrganizationFactory,
             OrganizationMembershipFactory,
         )
-        from apps.identity.tests.factories import UserFactory
 
         user = UserFactory.create()
         org = OrganizationFactory.create()

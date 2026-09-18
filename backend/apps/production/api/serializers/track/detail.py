@@ -1,8 +1,5 @@
-from typing import Any
 
-from apps.core.api.serializers.base import BaseModelSerializer
 from apps.production.api.serializers.track.list import TrackListSerializer
-from apps.production.models import EditorialTrack
 
 
 class TrackDetailSerializer(TrackListSerializer):
