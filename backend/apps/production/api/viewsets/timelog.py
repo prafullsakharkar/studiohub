@@ -43,9 +43,13 @@ class TimelogViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
     ordering_fields = ("date", "created_at", "duration_hours")
 
     def perform_create(self, serializer):
+        from rest_framework.exceptions import ValidationError
+
         task = serializer.validated_data.get("task")
         project = serializer.validated_data.get("project") or getattr(task, "project", None)
         org = self.resolve_organization(instance=project)
+        if org is None:
+            raise ValidationError({"organization": "An active organization is required."})
         person = serializer.validated_data.get("person") or self.request.user
         extra = {}
         if task:

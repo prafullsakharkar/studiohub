@@ -1,5 +1,3 @@
-import contextlib
-
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
@@ -49,15 +47,14 @@ class ClientViewSet(
 
     def get_queryset(self):
         qs = Client.objects.select_related("organization").all()
-        # Scope by organization header
-        org_id = self.request.headers.get("X-Organization-Id") or self.request.headers.get("X-Organization") or getattr(self.request, "organization", None)
-        if org_id:
-            try:
-                pk = org_id.id if hasattr(org_id, "id") else org_id
-                qs = qs.filter(organization_id=pk)
-            except Exception:
-                pass
-        return qs
+        # Scope by the resolved organization context (header or nested URL,
+        # resolved post-authentication by OrganizationContextMixin). The raw
+        # header is never trusted directly, and a missing context fails
+        # closed instead of returning unscoped rows.
+        org = getattr(self.request, "organization", None)
+        if org is None:
+            return qs.none()
+        return qs.filter(organization=org)
 
     def get_object(self):
         """
@@ -89,16 +86,13 @@ class ClientViewSet(
         raise Http404
 
     def perform_create(self, serializer):
+        from rest_framework.exceptions import ValidationError
+
         org = getattr(self.request, "organization", None)
-        if not org:
-            org_id = self.request.headers.get("X-Organization-Id")
-            if org_id:
-                from apps.organization.models import Organization
-                with contextlib.suppress(Exception):
-                    org = Organization.objects.get(pk=org_id)
-        if not org:
-            from apps.organization.models import Organization
-            org = Organization.objects.first()
+        if org is None:
+            # Fail closed: never assign to an arbitrary organization (the
+            # previous Organization.objects.first() fallback).
+            raise ValidationError({"organization": "An active organization is required."})
         serializer.save(organization=org)
 
     def perform_destroy(self, instance):
@@ -110,10 +104,12 @@ class ClientViewSet(
     def restore(self, request, *args, **kwargs):
         """Recover a soft-deleted client."""
         lookup_value = self.kwargs.get(self.lookup_url_kwarg or self.lookup_field)
-        queryset = Client.all_objects.filter(is_deleted=True)
         org = getattr(request, "organization", None)
-        if org is not None:
-            queryset = queryset.filter(organization=org)
+        if org is None:
+            # Fail closed: restoring without an organization context could
+            # expose or mutate another organization's rows.
+            raise Http404
+        queryset = Client.all_objects.filter(is_deleted=True, organization=org)
         instance = queryset.filter(id=lookup_value).first()
         if instance is None:
             instance = queryset.filter(code__iexact=lookup_value).first()

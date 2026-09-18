@@ -68,6 +68,10 @@ class UserViewSet(
     permission_map = {
         # NOTE: list/retrieve/me stay open to any authenticated user
         # (member-directory / self-service contract asserted by tests).
+        # Explicit empty tuples: HasPermission denies actions with no entry.
+        "list": (),
+        "retrieve": (),
+        "me": (),
         "create": (UserPermissions.CREATE,),
         "update": (UserPermissions.UPDATE,),
         "partial_update": (UserPermissions.UPDATE,),

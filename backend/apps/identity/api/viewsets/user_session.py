@@ -40,6 +40,25 @@ class UserSessionViewSet(
 
     serializer_class = UserSessionBaseSerializer
 
+    # Standard/self actions stay open to any authenticated user but the
+    # selector scopes them to the request user's own sessions. The admin_*
+    # actions keep their explicit _is_admin check below. Explicit empty
+    # tuples: HasPermission denies actions with no entry.
+    permission_map = {
+        "list": (),
+        "retrieve": (),
+        "create": (),
+        "update": (),
+        "partial_update": (),
+        "destroy": (),
+        "current": (),
+        "revoke": (),
+        "revoke_all_other": (),
+        "activity": (),
+        "admin_list": (),
+        "admin_revoke_all": (),
+    }
+
     admin_actions = (
         "admin_list",
         "admin_revoke_all",

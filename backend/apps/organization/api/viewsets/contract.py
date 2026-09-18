@@ -110,24 +110,19 @@ class ClientContractViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet): 
         """
         Resolve the parent client from the URL.
 
-        Non-staff lookups are scoped to the request's organization so a
-        user can never attach contracts to another organization's client.
+        Always scoped to the request's organization (including for staff):
+        a user can never attach contracts to another organization's client.
+        Without an organization context the parent does not resolve (404).
         """
         client_pk = self.kwargs.get("client_pk")
         if not client_pk:
             return None
 
-        qs = Client.objects.all()
-
-        user = getattr(self.request, "user", None)
         organization = getattr(self.request, "organization", None)
+        if organization is None:
+            return None
 
-        if organization is not None and not (
-            user is not None and (user.is_staff or user.is_superuser)
-        ):
-            qs = qs.filter(organization=organization)
-
-        return qs.filter(id=client_pk).first()
+        return Client.objects.filter(id=client_pk, organization=organization).first()
 
     def perform_create(self, serializer):
         client = self._get_parent_client()
@@ -218,24 +213,19 @@ class VendorContractViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet): 
         """
         Resolve the parent vendor from the URL.
 
-        Non-staff lookups are scoped to the request's organization so a
-        user can never attach contracts to another organization's vendor.
+        Always scoped to the request's organization (including for staff):
+        a user can never attach contracts to another organization's vendor.
+        Without an organization context the parent does not resolve (404).
         """
         vendor_pk = self.kwargs.get("vendor_pk")
         if not vendor_pk:
             return None
 
-        qs = Vendor.objects.all()
-
-        user = getattr(self.request, "user", None)
         organization = getattr(self.request, "organization", None)
+        if organization is None:
+            return None
 
-        if organization is not None and not (
-            user is not None and (user.is_staff or user.is_superuser)
-        ):
-            qs = qs.filter(organization=organization)
-
-        return qs.filter(id=vendor_pk).first()
+        return Vendor.objects.filter(id=vendor_pk, organization=organization).first()
 
     def perform_create(self, serializer):
         vendor = self._get_parent_vendor()

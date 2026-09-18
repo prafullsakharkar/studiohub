@@ -40,6 +40,13 @@ class UserService(
     }
 
     @classmethod
+    def invalidate_cache(cls, instance):
+        super().invalidate_cache(instance)
+        from apps.identity.services.permission_cache import PermissionCacheService
+
+        PermissionCacheService.invalidate(user=instance)
+
+    @classmethod
     def create(
         cls,
         *,

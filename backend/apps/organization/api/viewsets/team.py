@@ -133,11 +133,12 @@ class TeamViewSet(
             user = User.objects.get(pk=user_id)
         except User.DoesNotExist:
             return Response({"detail": "User not found."}, status=404)
-        # Resolve role if provided as string name
+        # Resolve role if provided as string name (scoped to the team's
+        # organization so a sibling org's role can never be attached).
         role_obj = None
         if role:
             try:
-                role_obj = Role.objects.filter(code=role, organization=instance.organization).first() or Role.objects.filter(name=role).first()
+                role_obj = Role.objects.filter(code=role, organization=instance.organization).first() or Role.objects.filter(name=role, organization=instance.organization).first()
             except Exception:
                 role_obj = None
         # Ensure membership exists — ensure a role is available (create fallback if needed)

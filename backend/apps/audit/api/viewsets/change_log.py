@@ -22,6 +22,12 @@ class ChangeLogViewSet(
     """
     
     serializer_class = ChangeLogSerializer
+
+    # Reads stay open to authenticated users (org-scoped selectors).
+    permission_map = {
+        "list": (),
+        "retrieve": (),
+    }
     service_class = ChangeLogService
     pagination_class = StandardPagination
     selector_class = ChangeLogSelector

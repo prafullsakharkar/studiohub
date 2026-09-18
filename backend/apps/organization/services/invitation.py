@@ -53,13 +53,13 @@ class InvitationService(BusinessService):
 
     @classmethod
     @transaction.atomic
-    def accept(cls, instance):
+    def accept(cls, instance, *, user=None):
         cls.validate(
             "accept",
             instance=instance,
         )
 
-        instance.accept()
+        instance.accept(user)
 
         cls.publish_event(
             "accept",
@@ -72,13 +72,13 @@ class InvitationService(BusinessService):
 
     @classmethod
     @transaction.atomic
-    def decline(cls, instance):
+    def decline(cls, instance, *, user=None):
         cls.validate(
             "decline",
             instance=instance,
         )
 
-        instance.decline()
+        instance.decline(user)
 
         cls.publish_event(
             "decline",

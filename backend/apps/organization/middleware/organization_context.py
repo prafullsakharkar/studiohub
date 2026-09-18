@@ -76,6 +76,23 @@ def resolve_organization_context(request, *, force=False):
     return request.organization
 
 
+def has_organization_access(request) -> bool:
+    """
+    Whether the request may access the resolved organization.
+
+    Staff/superusers have cross-organization admin context; everyone else
+    needs a (non-deleted) membership in the resolved organization. Used by
+    views that cannot use ``HasPermission`` directly (plain APIViews) so a
+    bare ``X-Organization`` header never grants cross-organization reads.
+    """
+    user = getattr(request, "user", None)
+    if user is not None and (
+        getattr(user, "is_staff", False) or getattr(user, "is_superuser", False)
+    ):
+        return True
+    return getattr(request, "membership", None) is not None
+
+
 class OrganizationContextMiddleware:
     """
     Resolve the current organization context onto the request.

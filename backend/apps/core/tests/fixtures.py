@@ -51,9 +51,12 @@ def authenticated_client(user):
 
 @pytest.fixture
 def staff_client(staff_user):
-    """Get a staff API client."""
+    """Get a staff API client (staff holds explicit full permission grants)."""
     from rest_framework.test import APIClient
 
+    from apps.organization.tests.rbac_helpers import grant_all_known_codes
+
+    grant_all_known_codes(staff_user)
     client = APIClient()
     client.force_authenticate(user=staff_user)
     return client

@@ -185,6 +185,32 @@ class ProjectScopeMixin:
             .first()
         )
 
+    def _require_member_management(self, request):
+        """
+        Adding project members is privileged: staff/superusers or members
+        holding the organization ADMIN role. Plain members (or project-only
+        members) cannot grow project access.
+        """
+        from rest_framework.exceptions import PermissionDenied
+
+        from apps.organization.choices.role_priority import RolePriority
+
+        user = getattr(request, "user", None)
+        if user is not None and (
+            getattr(user, "is_staff", False) or getattr(user, "is_superuser", False)
+        ):
+            return
+        membership = getattr(request, "membership", None)
+        role = getattr(membership, "role", None)
+        if (
+            membership is not None
+            and getattr(membership, "status", None) == "active"
+            and role is not None
+            and getattr(role, "priority", None) == RolePriority.ADMIN
+        ):
+            return
+        raise PermissionDenied("Only organization admins may manage project members.")
+
     def _has_access(self, request):
         user = getattr(request, "user", None)
         if user is None or not getattr(user, "is_authenticated", False):
@@ -272,6 +298,7 @@ class ProjectMembersView(ProjectScopedAPIView):
     def post(self, request, *args, **kwargs):
         from rest_framework import status as http_status
 
+        self._require_member_management(request)
         serializer = ProjectMembershipCreateSerializer(data=request.data or {})
         serializer.is_valid(raise_exception=True)
         payload = cast(dict[str, Any], serializer.validated_data)

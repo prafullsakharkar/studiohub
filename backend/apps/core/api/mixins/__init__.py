@@ -13,6 +13,7 @@ from .response import ResponseMixin
 from .selector import SelectorMixin
 from .serializer import SerializerMixin
 from .service import ServiceMixin
+from .staff_writes import StaffWritesRequiredMixin
 from .validation import ValidationMixin
 
 __all__ = [
@@ -31,5 +32,6 @@ __all__ = [
     "SelectorMixin",
     "SerializerMixin",
     "ServiceMixin",
+    "StaffWritesRequiredMixin",
     "ValidationMixin",
 ]

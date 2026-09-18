@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from apps.core.api.pagination import StandardPagination
 
 from apps.audit.api.viewsets.base import AuditEntityViewSet
+from apps.audit.constants.permissions import AuditPermissions
 from apps.audit.filters.background_job import BackgroundJobFilter
 from apps.audit.selectors.background_job import BackgroundJobSelector
 from apps.audit.serializers.background_job import BackgroundJobSerializer
@@ -23,6 +24,15 @@ class BackgroundJobViewSet(
     """
     
     serializer_class = BackgroundJobSerializer
+
+    # Reads stay open to authenticated users (org-scoped selectors);
+    # retry/cancel re-drive privileged work and require the UPDATE grant.
+    permission_map = {
+        "list": (),
+        "retrieve": (),
+        "retry": (AuditPermissions.UPDATE,),
+        "cancel": (AuditPermissions.UPDATE,),
+    }
     service_class = BackgroundJobService
     pagination_class = StandardPagination
     selector_class = BackgroundJobSelector

@@ -60,6 +60,8 @@ class RoleViewSet(
         "unassign_user": (RolePermissions.REVOKE_PERMISSION,),
         "assign_group": (RolePermissions.GRANT_PERMISSION,),
         "unassign_group": (RolePermissions.REVOKE_PERMISSION,),
+        "list_users": (RolePermissions.VIEW,),
+        "list_groups": (RolePermissions.VIEW,),
     }
 
     @action(detail=True, methods=["post"], url_path="clone")

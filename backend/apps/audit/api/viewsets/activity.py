@@ -27,6 +27,12 @@ class ActivityViewSet(
     """
     
     serializer_class = ActivitySerializer
+
+    # Reads stay open to authenticated users (org-scoped selectors).
+    permission_map = {
+        "list": (),
+        "retrieve": (),
+    }
     service_class = ActivityService
     selector_class = ActivitySelector
     filter_class = ActivityFilter

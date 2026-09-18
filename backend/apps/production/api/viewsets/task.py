@@ -59,26 +59,61 @@ class TaskViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignore
 
     @action(detail=False, methods=["post"], url_path="bulk-assign")
     def bulk_assign(self, request, *args, **kwargs):
+        from rest_framework.exceptions import ValidationError
+
+        from apps.organization.models import OrganizationMembership, Team
+
         task_ids = request.data.get("task_ids", [])
         assignee_id = request.data.get("assignee_id")
         team_id = request.data.get("team_id")
+        org = self._organization()
+        assignee = None
+        if assignee_id:
+            from django.contrib.auth import get_user_model
+
+            assignee = get_user_model().objects.filter(id=assignee_id).first()
+            if assignee is None or not OrganizationMembership.objects.filter(
+                user=assignee,
+                organization=org,
+                status="active",
+                is_deleted=False,
+            ).exists():
+                raise ValidationError(
+                    {"assignee_id": "Assignee must be an active member of the organization."}
+                )
+        team = None
+        if team_id:
+            team = Team.objects.filter(id=team_id, organization=org).first()
+            if team is None:
+                raise ValidationError(
+                    {"team_id": "Team does not belong to the organization."}
+                )
         updated = 0
         qs = self.get_queryset().filter(id__in=task_ids)
         for task in qs:
-            if assignee_id:
-                task.assignee_id = assignee_id
-            if team_id:
-                task.team_id = team_id
-            task.save(update_fields=["assignee", "team"] if team_id else ["assignee"])
+            if assignee is not None:
+                task.assignee = assignee
+            if team is not None:
+                task.team = team
+            task.save(update_fields=["assignee", "team"] if team is not None else ["assignee"])
             updated += 1
         return Response({"success": True, "updated_count": updated})
 
     @action(detail=False, methods=["post"], url_path="bulk-status")
     def bulk_status(self, request, *args, **kwargs):
+        from rest_framework.exceptions import ValidationError
+
+        from apps.production.constants.task import TaskStatus
+
         task_ids = request.data.get("task_ids", [])
         status_val = request.data.get("status")
         if not status_val:
             return Response({"detail": "status is required."}, status=400)
+        valid_statuses = [choice[0] for choice in TaskStatus.choices]
+        if status_val not in valid_statuses:
+            raise ValidationError(
+                {"status": f"Invalid status. Valid values: {valid_statuses}."}
+            )
         updated = self.get_queryset().filter(id__in=task_ids).update(status=status_val)
         return Response({"success": True, "updated_count": updated})
 
@@ -137,8 +172,11 @@ class TaskViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignore
 
     @action(detail=False, methods=["post"], url_path="bulk-delete")
     def bulk_delete(self, request, *args, **kwargs):
+        # Soft-delete per instance through the service layer (queryset
+        # .delete() would hard-delete rows and skip services/events).
         task_ids = request.data.get("task_ids", [])
-        qs = self.get_queryset().filter(id__in=task_ids)
-        count = qs.count()
-        qs.delete()
-        return Response({"success": True, "deleted_count": count})
+        deleted = 0
+        for task in self.get_queryset().filter(id__in=task_ids):
+            self.service_class.delete(task, user=request.user)
+            deleted += 1
+        return Response({"success": True, "deleted_count": deleted})

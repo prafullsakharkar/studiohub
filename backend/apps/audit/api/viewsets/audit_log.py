@@ -27,6 +27,12 @@ class AuditLogViewSet(
     """
     
     serializer_class = AuditLogSerializer
+
+    # Reads stay open to authenticated users (org-scoped selectors).
+    permission_map = {
+        "list": (),
+        "retrieve": (),
+    }
     service_class = AuditLogService
     selector_class = AuditLogSelector
     filter_class = AuditLogFilter

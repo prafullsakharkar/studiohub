@@ -11,6 +11,7 @@ from apps.organization.api.serializers.billing import (
     OrganizationBillingUpdateSerializer,
 )
 from apps.organization.middleware.organization_context import (
+    has_organization_access,
     resolve_organization_context,
 )
 from apps.organization.models import Organization, OrganizationBilling
@@ -52,12 +53,19 @@ class BillingView(APIView):
 
     @extend_schema(responses=OrganizationBillingSerializer)
     def get(self, request):
-        billing = self._get_billing(request)
-        if billing is None:
+        organization = _resolve_billing_organization(request)
+        # A resolved header alone grants nothing: billing is sensitive, so
+        # non-staff callers need a membership in the organization.
+        if organization is not None and not has_organization_access(request):
+            organization = None
+        if organization is None:
             return Response(
                 {"detail": "No organization found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
+        billing, _ = OrganizationBilling.objects.get_or_create(
+            organization=organization
+        )
         return Response(OrganizationBillingSerializer(billing).data)
 
     @extend_schema(

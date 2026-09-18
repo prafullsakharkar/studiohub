@@ -184,9 +184,31 @@ class OrganizationViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissing
             serializer = OrganizationSettingsDetailSerializer(settings_obj)
             return Response(serializer.data)
         # PATCH
+        # Mutating settings requires the UPDATE grant even though reads only
+        # need VIEW (single action serves both methods, so the check runs
+        # here rather than in permission_map).
+        if not self._can_update_organization_settings(request):
+            from rest_framework.exceptions import PermissionDenied
+
+            raise PermissionDenied(
+                "You do not have permission to update organization settings."
+            )
         # Frontend sends { settings: {...} } or flat dict; support both.
         data = request.data.get("settings", request.data)
         serializer = OrganizationSettingsDetailSerializer(settings_obj, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+    def _can_update_organization_settings(self, request):
+        """UPDATE grant (or superuser break-glass) for settings mutation."""
+        user = getattr(request, "user", None)
+        if user is not None and getattr(user, "is_superuser", False):
+            return True
+        from apps.identity.services.permission_cache import PermissionCacheService
+
+        return PermissionCacheService.has_permission(
+            user=user,
+            permission=OrganizationPermissions.UPDATE,
+            organization=getattr(request, "organization", None),
+        )

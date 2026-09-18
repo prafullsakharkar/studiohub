@@ -62,7 +62,14 @@ class AuthenticationValidator(
         cls,
         user,
     ):
-        if hasattr(user, "email_verified") and user.email_verified:
+        # NOTE: fixed to reference the real ``is_email_verified`` field with
+        # the correct polarity (was: nonexistent ``email_verified`` attr with
+        # inverted logic, so it could never raise). Kept as an explicit
+        # opt-in primitive — the login chain does NOT call it because email
+        # verification is currently not a login gate (de facto contract:
+        # factory/seed users log in unverified). Wire it into a flow only
+        # when the product decides to enforce verification.
+        if not getattr(user, "is_email_verified", False):
             raise EmailNotVerified()
 
     @classmethod
@@ -165,9 +172,9 @@ class AuthenticationValidator(
             user,
         )
 
-        cls.validate_email_verified(
-            user,
-        )
+        # NOTE: email verification is intentionally not enforced here (see
+        # validate_email_verified). Verification state must not lock users
+        # out of login until the product adopts it as a gate.
 
         cls.validate_user_locked(
             user,

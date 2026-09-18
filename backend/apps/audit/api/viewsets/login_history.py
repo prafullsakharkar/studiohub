@@ -25,6 +25,12 @@ class LoginHistoryViewSet(
     """
     
     serializer_class = LoginHistorySerializer
+
+    # Reads stay open to authenticated users (org-scoped selectors).
+    permission_map = {
+        "list": (),
+        "retrieve": (),
+    }
     service_class = LoginHistoryService
     pagination_class = StandardPagination
     selector_class = LoginHistorySelector

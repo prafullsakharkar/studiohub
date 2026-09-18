@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.audit.api.viewsets.base import AuditEntityViewSet
+from apps.audit.constants.permissions import AuditPermissions
 from apps.audit.filters.error_log import ErrorLogFilter
 from apps.audit.selectors.error_log import ErrorLogSelector
 from apps.audit.serializers.error_log import ErrorLogSerializer
@@ -24,6 +25,14 @@ class ErrorLogViewSet(
     """
     
     serializer_class = ErrorLogSerializer
+
+    # Reads stay open to authenticated users (org-scoped selectors);
+    # resolving an error is a privileged mutation.
+    permission_map = {
+        "list": (),
+        "retrieve": (),
+        "resolve": (AuditPermissions.UPDATE,),
+    }
     service_class = ErrorLogService
     pagination_class = StandardPagination
     selector_class = ErrorLogSelector

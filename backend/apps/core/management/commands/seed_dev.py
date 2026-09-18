@@ -280,8 +280,11 @@ class Command(BaseCommand):
             ("scheduling:update", "scheduling", "update"),
             ("scheduling:delete", "scheduling", "delete"),
             ("audit:read", "audit", "read"),
+            ("audit:update", "audit", "update"),
             ("settings:update", "settings", "update"),
             ("users:manage", "users", "manage"),
+            ("organization.master_data.configure", "master_data", "configure"),
+            ("organization.master_data.create", "master_data", "create"),
             # Organization domain (enforced by OrganizationEntityViewSet
             # permission_map; Phase 6 found zero roles held these, locking
             # every non-superuser out of /api/organizations/* and the flat

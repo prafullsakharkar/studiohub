@@ -121,3 +121,18 @@ class OrganizationMembership(EntityModel):
 
     def __str__(self):
         return f"{self.user} @ {self.organization}"
+
+    def accept(self):
+        """Mark an invited membership active."""
+        self.status = "active"
+        self.save(update_fields=["status", "updated_at"])
+
+    def suspend(self):
+        """Suspend a membership (stops conferring permissions)."""
+        self.status = "suspended"
+        self.save(update_fields=["status", "updated_at"])
+
+    def reactivate(self):
+        """Reactivate a suspended membership."""
+        self.status = "active"
+        self.save(update_fields=["status", "updated_at"])

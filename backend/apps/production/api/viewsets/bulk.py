@@ -78,7 +78,13 @@ class BulkContractViewSetMixin:
     def _fetch_instance(self, instance_id):
         model = self.service_class.model
         try:
-            return model.all_objects.filter(id=instance_id).first()
+            qs = model.all_objects.filter(id=instance_id)
+            # Scope to the active organization: existence-check responses must
+            # never leak rows from another organization.
+            organization = getattr(self.request, "organization", None)
+            if organization is not None and hasattr(model, "organization"):
+                qs = qs.filter(organization=organization)
+            return qs.first()
         except (ValueError, TypeError):
             return None
 
@@ -352,6 +358,18 @@ class BulkContractViewSetMixin:
                 "status": service.INVALID, "code": code,
                 "error": "No archived row found to recover.",
             }
+        if project_id and hasattr(instance, "project_id"):
+            # The caller named a project: the recovered row must belong to
+            # it (org-scoped resolve; cross-project recovery is rejected as
+            # an invalid item rather than silently applied).
+            project = service._get_project(
+                organization=organization, project_id=project_id,
+            )
+            if project is None or instance.project_id != project.id:
+                return {
+                    "status": service.INVALID, "code": code,
+                    "error": "Archived row does not belong to the given project.",
+                }
         service.restore(instance)
         return {"status": "recovered", "id": str(instance.id), "code": code, "entity": instance}
 

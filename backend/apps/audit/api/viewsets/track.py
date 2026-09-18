@@ -23,6 +23,14 @@ class TrackViewSet(
     """
     
     serializer_class = TrackSerializer
+
+    # Reads and telemetry ingest stay open to authenticated users
+    # (org-scoped selectors).
+    permission_map = {
+        "list": (),
+        "retrieve": (),
+        "create": (),
+    }
     service_class = TrackService
     pagination_class = StandardPagination
     selector_class = TrackSelector

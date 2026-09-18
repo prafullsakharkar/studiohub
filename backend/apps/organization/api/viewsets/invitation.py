@@ -68,8 +68,10 @@ class InvitationViewSet(
         "partial_update": (InvitationPermissions.UPDATE,),
         "destroy": (InvitationPermissions.DELETE,),
         "resend": (InvitationPermissions.UPDATE,),
-        "accept": (InvitationPermissions.UPDATE,),
-        "decline": (InvitationPermissions.UPDATE,),
+        # accept/decline are invitee self-service: the permission gate runs
+        # inside the action (invitee email match OR invitation UPDATE grant).
+        "accept": (),
+        "decline": (),
     }
 
     frontend_status_map = {
@@ -100,16 +102,45 @@ class InvitationViewSet(
             instance.save(update_fields=["updated_at"])
         return Response({"success": True})
 
+    def _check_accept_decline(self, request, instance):
+        """
+        Accept/decline gate: the invitee (email match, case-insensitive) may
+        act on their own invitation; otherwise the caller needs the
+        invitation UPDATE grant (admin flow) or superuser break-glass.
+        """
+        from rest_framework.exceptions import PermissionDenied
+
+        user = request.user
+        invitee_email = (getattr(instance, "email", "") or "").strip().lower()
+        user_email = (getattr(user, "email", "") or "").strip().lower()
+        if invitee_email and invitee_email == user_email:
+            return
+        if getattr(user, "is_superuser", False):
+            return
+        from apps.identity.services.permission_cache import PermissionCacheService
+
+        if PermissionCacheService.has_permission(
+            user=user,
+            permission=InvitationPermissions.UPDATE,
+            organization=getattr(request, "organization", None),
+        ):
+            return
+        raise PermissionDenied(
+            "Only the invitee or an organization admin may act on this invitation."
+        )
+
     @action(detail=True, methods=["post"], url_path="accept")
     def accept(self, request, *args, **kwargs):
         instance = self.get_object()
-        self.service_class.accept(instance)
+        self._check_accept_decline(request, instance)
+        self.service_class.accept(instance, user=request.user)
         serializer = InvitationDetailSerializer(instance)
         return Response(serializer.data)
 
     @action(detail=True, methods=["post"], url_path="decline")
     def decline(self, request, *args, **kwargs):
         instance = self.get_object()
-        self.service_class.decline(instance)
+        self._check_accept_decline(request, instance)
+        self.service_class.decline(instance, user=request.user)
         serializer = InvitationDetailSerializer(instance)
         return Response(serializer.data)

@@ -22,6 +22,12 @@ class APIRequestViewSet(
     """
     
     serializer_class = APIRequestSerializer
+
+    # Reads stay open to authenticated users (org-scoped selectors).
+    permission_map = {
+        "list": (),
+        "retrieve": (),
+    }
     service_class = APIRequestService
     pagination_class = StandardPagination
     selector_class = APIRequestSelector

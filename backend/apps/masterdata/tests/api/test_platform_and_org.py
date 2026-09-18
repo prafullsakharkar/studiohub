@@ -36,6 +36,11 @@ def other_user(db):
 
 
 @pytest.fixture
+def staff_user(db):
+    return UserFactory.create(is_staff=True)
+
+
+@pytest.fixture
 def api_client():
     from rest_framework.test import APIClient
 
@@ -57,6 +62,15 @@ def other_client(other_user):
 
     client = APIClient()
     client.force_authenticate(user=other_user)
+    return client
+
+
+@pytest.fixture
+def staff_client(staff_user):
+    from rest_framework.test import APIClient
+
+    client = APIClient()
+    client.force_authenticate(user=staff_user)
     return client
 
 
@@ -111,14 +125,14 @@ def test_platform_software_list_includes_archived(auth_client):
     assert {s["code"] for s in resp.json()} == {"MAYA"}
 
 
-def test_platform_software_archive_and_restore(auth_client):
+def test_platform_software_archive_and_restore(staff_client):
     software = Software.objects.create(
         name="Maya",
         code="MAYA",
         scope=MasterDataScope.GLOBAL,
     )
 
-    archive = auth_client.post(f"/api/v1/platform/master-data/software/{software.id}/archive")
+    archive = staff_client.post(f"/api/v1/platform/master-data/software/{software.id}/archive")
     assert archive.status_code == 200
     assert archive.json()["success"] is True
     assert archive.json()["data"]["status"] == "archived"
@@ -126,19 +140,19 @@ def test_platform_software_archive_and_restore(auth_client):
     software.refresh_from_db()
     assert software.status == "archived"
 
-    restore = auth_client.post(f"/api/v1/platform/master-data/software/{software.id}/restore")
+    restore = staff_client.post(f"/api/v1/platform/master-data/software/{software.id}/restore")
     assert restore.status_code == 200
     assert restore.json()["data"]["status"] == "active"
 
 
-def test_platform_software_delete_returns_success_message(auth_client):
+def test_platform_software_delete_returns_success_message(staff_client):
     software = Software.objects.create(
         name="Maya",
         code="MAYA",
         scope=MasterDataScope.GLOBAL,
     )
 
-    resp = auth_client.delete(f"/api/v1/platform/master-data/software/{software.id}")
+    resp = staff_client.delete(f"/api/v1/platform/master-data/software/{software.id}")
 
     assert resp.status_code == 200
     assert resp.json() == {"success": True, "message": "Software archived."}
