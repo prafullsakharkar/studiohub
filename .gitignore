@@ -468,3 +468,5 @@ backups/
 !yarn.lock
 !pnpm-lock.yaml
 !uv.lock
+# Added by code-review-graph
+.code-review-graph/

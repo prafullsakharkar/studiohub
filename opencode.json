@@ -53,6 +53,16 @@
         },
         "enabled": true
       }
+    },
+    "code-review-graph": {
+      "type": "local",
+      "command": [
+        "uvx",
+        "code-review-graph",
+        "serve",
+        "--repo",
+        "/srv/local/code/studiohub"
+      ]
     }
   },
   "provider": {
