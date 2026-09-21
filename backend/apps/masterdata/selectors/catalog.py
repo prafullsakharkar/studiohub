@@ -227,7 +227,8 @@ class PlatformRoleSelector(BaseSelector):
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[PlatformRole]:
-        return PlatformRole.objects.prefetch_related("groups")
+        # No M2M/FK to prefetch (groups lives as JSON on PlatformGroup). prefetch_related("groups") raised AttributeError once rows existed.
+        return PlatformRole.objects.all()
 
     @classmethod
     def annotate_user_count(cls, queryset: QuerySet[PlatformRole] | None = None) -> QuerySet[PlatformRole]:
@@ -240,7 +241,8 @@ class PlatformGroupSelector(BaseSelector):
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[PlatformGroup]:
-        return PlatformGroup.objects.prefetch_related("roles", "members")
+        # roles is a JSONField and there is no members relation; prefetch raised ValueError once rows existed.
+        return PlatformGroup.objects.all()
 
     @classmethod
     def annotate_member_count(cls, queryset: QuerySet[PlatformGroup] | None = None) -> QuerySet[PlatformGroup]:
@@ -266,4 +268,5 @@ class PlatformPositionSelector(BaseSelector):
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[PlatformPosition]:
-        return PlatformPosition.objects.select_related("department")
+        # department is a CharField (not a FK), so select_related() raises FieldError -> 500.
+        return PlatformPosition.objects.all()
