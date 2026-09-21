@@ -1,0 +1,52 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Environment / secrets (never copied into the image). `**/` is required so
+# the patterns match files in subdirectories (e.g. backend/.env.local).
+**/.env
+**/.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.pydeps/
+
+# Virtual environments
+.venv/
+venv/
+
+# Node / frontend build artefacts
+node_modules/
+dist/
+build/
+
+# Local databases and generated media (collectstatic runs inside the image)
+db.sqlite3
+media/
+static/
+staticfiles/
+
+# Celery beat / runtime scratch files
+celerybeat-schedule*
+*.log
+
+# IDEs / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# CI / tooling
+.github/
+scripts/
+infrastructure/compose/.env
