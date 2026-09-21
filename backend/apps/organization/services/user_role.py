@@ -19,3 +19,10 @@ class UserRoleService(BusinessService):
         "update": UserRoleAssigned,
         "delete": UserRoleRevoked,
     }
+
+    @classmethod
+    def invalidate_cache(cls, instance):
+        super().invalidate_cache(instance)
+        from apps.identity.services.permission_cache import PermissionCacheService
+
+        PermissionCacheService.invalidate_by_id(getattr(instance, "user_id", None))

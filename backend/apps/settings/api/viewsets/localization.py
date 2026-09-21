@@ -6,6 +6,7 @@ from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.core.api.mixins import StaffWritesRequiredMixin
 from apps.settings.api.viewsets.base import SettingsBaseViewSet
 from apps.settings.filters.localization import LocalizationFilter
 from apps.settings.selectors.localization import LocalizationSelector
@@ -14,6 +15,7 @@ from apps.settings.services.localization import LocalizationService
 
 
 class LocalizationViewSet(
+    StaffWritesRequiredMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,

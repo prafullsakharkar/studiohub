@@ -119,7 +119,7 @@ Every feature should follow these principles.
 ## Backend
 
 ```text
-Python 3.14
+Python 3.13
 
 Django 6
 

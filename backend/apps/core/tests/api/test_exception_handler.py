@@ -51,7 +51,9 @@ class TestCustomExceptionHandler:
         response = custom_exception_handler(ValueError("boom"), _context())
 
         assert response.status_code == 500
-        assert response.data == {"detail": "Internal server error."}
+        assert response.data["detail"] == "Internal server error."
+        assert response.data["error"]["code"] == "internal_server_error"
+        assert response.data["error"]["request_id"] is not None
 
 
 class TestServerErrorView:
@@ -59,4 +61,7 @@ class TestServerErrorView:
         response = server_error(RequestFactory().get("/"))
 
         assert response.status_code == 500
-        assert json.loads(response.content) == {"detail": "Internal server error."}
+        body = json.loads(response.content)
+        assert body["detail"] == "Internal server error."
+        assert body["error"]["code"] == "internal_server_error"
+        assert body["error"]["request_id"] is not None

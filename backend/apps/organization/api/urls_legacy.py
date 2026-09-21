@@ -17,7 +17,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
 
-from apps.organization.api.viewsets.billing import BillingView, NotificationsView, ReportsView
+from apps.organization.api.viewsets.billing import BillingView
 from apps.organization.api.viewsets.client import ClientViewSet
 from apps.organization.api.viewsets.contact import ClientContactViewSet, VendorContactViewSet
 from apps.organization.api.viewsets.contract import ClientContractViewSet, VendorContractViewSet
@@ -36,9 +36,9 @@ from apps.organization.api.viewsets.legacy import (
     LegacyDepartmentViewSet,
     LegacyOfficeViewSet,
     LegacyOrganizationViewSet,
-    LegacyPersonViewSet,
     LegacyTeamViewSet,
 )
+from apps.organization.api.viewsets.person import PersonViewSet
 from apps.organization.api.viewsets.vendor import VendorViewSet
 
 router = DefaultRouter()
@@ -47,7 +47,7 @@ router.register(r"organizations", LegacyOrganizationViewSet, basename="legacy-or
 router.register(r"departments", LegacyDepartmentViewSet, basename="legacy-department")
 router.register(r"teams", LegacyTeamViewSet, basename="legacy-team")
 router.register(r"offices", LegacyOfficeViewSet, basename="legacy-office")
-router.register(r"people", LegacyPersonViewSet, basename="legacy-person")
+router.register(r"people", PersonViewSet, basename="legacy-person")
 router.register(r"positions", CompatPositionViewSet, basename="legacy-position")
 router.register(r"invitations", CompatInvitationViewSet, basename="legacy-invitation")
 router.register(r"work-calendars", CompatWorkCalendarViewSet, basename="legacy-work-calendar")
@@ -121,6 +121,4 @@ class LegacyOrganizationSingletonView(GenericAPIView):  # pyright: ignore[report
 urlpatterns = [
     path("organization/", LegacyOrganizationSingletonView.as_view(), name="legacy-organization-singleton"),
     path("billing/", BillingView.as_view(), name="legacy-billing"),
-    path("reports/", ReportsView.as_view(), name="legacy-reports"),
-    path("notifications/", NotificationsView.as_view(), name="legacy-notifications"),
 ] + router.urls

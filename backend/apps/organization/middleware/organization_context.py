@@ -49,15 +49,12 @@ def resolve_organization_context(request, *, force=False):
     user = getattr(request, "user", None)
 
     if org_ref and user is not None and user.is_authenticated:
-        Organization = _organization_model()
+        from apps.organization.selectors.organization import OrganizationSelector
+
         OrganizationMembership = _membership_model()
 
-        org = None
         try:
-            org = Organization.objects.filter(
-                id=org_ref,
-                is_deleted=False,
-            ).first()
+            org = OrganizationSelector.resolve_by_lookup(org_ref)
         except (ValidationError, ValueError, TypeError):
             # Malformed organization identifier (e.g. a non-UUID header
             # value): resolve to no organization context (fail closed)
@@ -79,6 +76,23 @@ def resolve_organization_context(request, *, force=False):
     return request.organization
 
 
+def has_organization_access(request) -> bool:
+    """
+    Whether the request may access the resolved organization.
+
+    Staff/superusers have cross-organization admin context; everyone else
+    needs a (non-deleted) membership in the resolved organization. Used by
+    views that cannot use ``HasPermission`` directly (plain APIViews) so a
+    bare ``X-Organization`` header never grants cross-organization reads.
+    """
+    user = getattr(request, "user", None)
+    if user is not None and (
+        getattr(user, "is_staff", False) or getattr(user, "is_superuser", False)
+    ):
+        return True
+    return getattr(request, "membership", None) is not None
+
+
 class OrganizationContextMiddleware:
     """
     Resolve the current organization context onto the request.
@@ -91,12 +105,6 @@ class OrganizationContextMiddleware:
         resolve_organization_context(request)
 
         return self.get_response(request)
-
-
-def _organization_model():
-    from apps.organization.models.organization import Organization
-
-    return Organization
 
 
 def _membership_model():

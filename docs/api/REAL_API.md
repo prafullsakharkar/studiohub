@@ -10,6 +10,8 @@ Global contract (all endpoints):
 - **Organization scope**: `X-Organization-Id` (or `X-Organization`) header.
   Resolved server-side to org + membership; client-supplied org ids in bodies
   are ignored for scoping. No context → fail closed (400/403/empty).
+  Intelligence knowledge/search additionally require a live membership in the
+  resolved org for non-staff (header alone never grants access — Phase 6).
 - **Pagination**: `?page=&page_size=` (`limit` alias); envelope
   `{count,next,previous,results}`. Endpoints marked `RAW[]` return bare arrays.
 - **Filtering**: `?search=` (icontains OR over endpoint fields); other params exact
@@ -40,7 +42,7 @@ Global contract (all endpoints):
 | POST | `/logout/` | → `{detail}` |
 | GET | `/me/` | → `FrontendUser` |
 | GET | `/memberships/` | → `OrganizationMembership[]` (frontend shape) |
-| GET | `/users/me/memberships/` | alias of above |
+| GET | `/users/me/memberships/` | alias of above; frontend hydrates `user.memberships` from it on login + session bootstrap (best effort) |
 
 ## Production `/api/v1/`
 
@@ -48,14 +50,14 @@ CRUD = `GET+POST /`, `GET+PUT+PATCH+DELETE /{id}/` (id-or-code). All org-scoped.
 
 | Prefix | Filters/search | Actions |
 |---|---|---|
-| `projects/` | search name/code/description/client_name | `GET {id}/statistics/` → counts dict |
+| `projects/` | search name/code/description/client_name; `organization_id` accepted (server-resolved, fail-closed) | `GET {id}/statistics/` → counts dict |
 | `sequences/` | search code/name/description/department/lead_artist_name | `check-existence/`, `bulk-create|update|archive|restore/`, `{id}/archive|restore/`, `GET archived/` |
-| `shots/` | +`sequence` alias, `include_deleted` | same set + `{id}/approve/` |
-| `assets/` | +`include_archived` | same set (no approve) |
-| `tasks/` | assignee/vendor/team/entity/include_archived | same set + `bulk-assign|status|delete/` (`{success,updated_count}`) |
+| `shots/` | `sequence` (=`sequence_code`) alias, `include_deleted` | same set + `{id}/approve/` |
+| `assets/` | `include_archived` | same set (no approve) |
+| `tasks/` | `project_id` (UUID/code/mock-id via `ProjectSelector.resolve_by_lookup`, fail-closed), `team_id/assignee_id` (tolerant UUID, garbage→empty, never 400), `vendor_id` iexact, entity/is_archived; `show_id` accepts real show UUIDs (`production.Show`) | same set + `bulk-assign|status|delete/` (`{success,updated_count}`) |
 | `timelogs/` | date-desc default | `{id}/approve|reject/` |
 | `versions/` | entity/status/published | `publish|unpublish|archive|promote|add-to-playlist/` |
-| `reviews/` | +`client_only` | `submit|start-review|approve|reject|request-changes|close|verdict|annotations|comments|comments/{cid}/resolve|reopen|notes|participant-verdict/` |
+| `reviews/` | search title/code/entity_code (no `client_only` — Playlist field) | `submit|start-review|approve|reject|request-changes|close|verdict|annotations|comments|comments/{cid}/resolve|reopen|notes|participant-verdict/` |
 | `media/` | RAW[] bare array; search title/code/file_name/name/file_format/category | CRUD |
 | `playlists/` | paginated | `add-entry|remove-entry|reorder|share|archive|restore/` |
 | `workflows/` | — | `simulate|clone|activate|deactivate|archive/` |
@@ -69,7 +71,9 @@ Flat `/api/v1/` (legacy aliases): `organizations/` (array unless page params),
 `departments|teams|offices/` (RAW[]), `people|clients|vendors/` (paginated),
 `positions|invitations|work-calendars|work-hours|calendars|holidays|roles|
 groups|permissions|api-keys|pats/` (RAW[]), `organization/` singleton,
-`billing/` (GET|PATCH), `reports|notifications/` (stubs). Detail id-or-code.
+`billing/` (GET|PATCH). Detail id-or-code. `reports|notifications/` are served by the
+`platform` domain (`apps/platform/api/urls.py`, bare-array GET lists; notifications also
+`mark-read`/`mark-all-read` PATCH actions).
 Status-word mapping on update: invitations `Revoked→cancelled` (output
 `Pending|Accepted|Expired|Revoked`); api-keys/pats `status↔is_active`
 (output `Active|Revoked`). Invitations keep `resend|accept|decline/`.
@@ -77,8 +81,12 @@ Status-word mapping on update: invitations `Revoked→cancelled` (output
 Namespaced `/api/v1/organization/<resource>/` (paginated, full RBAC): unchanged.
 
 Nested `/api/organizations/<org>/<resource>/` (no `/v1/`, trailing slash
-optional; `<org>` = id/code/slug, wins over header): same 17 resources with
-contract pagination (clients/vendors/people paginated, rest RAW[]).
+optional; `<org>` = id/code/slug/mock-id like `org-apex-01`, wins over header):
+same 17 resources with contract pagination (clients/vendors/people paginated,
+rest RAW[]). RBAC: seed roles hold org-domain codes (`organization.view`,
+`organization.team.view`, `person.view`, … — directory views org-wide,
+mutations with `org-admin`; enforced by `OrganizationEntityViewSet`
+`permission_map`, staff/superuser short-circuit).
 
 ## Project-scoped `/api/organizations/<org>/projects/<project>/…`
 
@@ -104,8 +112,11 @@ aggregate stubs return `[]` / `{success,message}` shapes.
 (+`add-version|validate|prepare|submit|approve|reject|complete|cancel/`),
 `/api/v1/publishing/` (+`validate|republish|unpublish|retry/`),
 `/api/v1/scheduling/events|resources|schedules|leaves|holidays/`,
-`/api/v1/audit/*` (read-only), `/api/v1/settings/*`,
-`/api/v1/intelligence/*` (stubs + knowledge), `/api/v1/core/tags/`,
+`/api/v1/audit/` (flat list-only alias, frontend shape) + `/api/v1/audit/*` (paginated reads; writes: job retry/cancel, error resolve, track ingest; simulators are mock-only), `/api/v1/settings/*` (no `pipeline/` — mock-only, no caller),
+`/api/v1/intelligence/*` (knowledge + AI; `ai/risks` GET lists real
+org-scoped risks and POST is an advisory echo, `ai/chat` rule-based assistant,
+`ai/task-recommendations`, `ai/{project|shot}-summary/<code>/`,
+`ai/permission-context`), `/api/v1/core/tags/`,
 `/api/v1/attachments/` (RAW[] compat) + `/api/v1/core/attachments/` (paginated).
 
 ## Permissions

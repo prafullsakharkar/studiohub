@@ -3,8 +3,10 @@ from __future__ import annotations
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
+from apps.core.api.mixins.diagnostics import DiagnosticContextMixin
 
-class BaseAPIView(APIView):
+
+class BaseAPIView(DiagnosticContextMixin, APIView):
     """
     Base APIView.
     """

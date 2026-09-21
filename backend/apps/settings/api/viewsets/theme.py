@@ -6,6 +6,7 @@ from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.core.api.mixins import StaffWritesRequiredMixin
 from apps.settings.api.viewsets.base import SettingsBaseViewSet
 from apps.settings.filters.theme import ThemeFilter
 from apps.settings.selectors.theme import ThemeSelector
@@ -14,6 +15,7 @@ from apps.settings.services.theme import ThemeService
 
 
 class ThemeViewSet(
+    StaffWritesRequiredMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,

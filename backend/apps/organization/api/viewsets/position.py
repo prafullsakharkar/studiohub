@@ -1,3 +1,8 @@
+"""
+Position API viewset.
+"""
+
+from apps.core.api.pagination import StandardPagination
 from apps.organization.api.filtersets.position import (
     PositionFilterSet,
 )
@@ -10,6 +15,8 @@ from apps.organization.api.serializers.position import (
 from apps.organization.api.viewsets.base import (
     OrganizationEntityViewSet,
 )
+from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import (
     PositionPermissions,
 )
@@ -25,6 +32,8 @@ from apps.organization.services.position import (
 
 
 class PositionViewSet(
+    OrganizationContextMixin,
+    IdOrCodeDetailMixin,
     OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
@@ -45,6 +54,8 @@ class PositionViewSet(
         "update": PositionUpdateSerializer,
         "partial_update": PositionUpdateSerializer,
     }
+
+    pagination_class = StandardPagination
 
     permission_map = {
         "list": (PositionPermissions.VIEW,),

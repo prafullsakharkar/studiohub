@@ -6,7 +6,7 @@ from apps.core.api.viewsets.service import ServiceModelViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
 from apps.organization.middleware.organization_context import (
-    resolve_organization_context,
+    resolve_organization_context as _resolve_organization_context,
 )
 from apps.organization.selectors.base import OrganizationBaseSelector
 
@@ -51,13 +51,19 @@ class OrganizationEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportM
         checks. Resolving the org context (header → Organization instance +
         membership) here guarantees it is available to ``HasPermission``
         before any permission check runs.
+
+        Overridable via ``resolve_organization_context(self, request)`` hook.
         """
         response = super().perform_authentication(request)
-        resolve_organization_context(request, force=True)
+        self.resolve_organization_context(request)
         return response
 
+    def resolve_organization_context(self, request):
+        """Resolve header-derived org context post-authentication (hook)."""
+        _resolve_organization_context(request, force=True)
+
     def get_queryset(self):
-        resolve_organization_context(self.request)
+        _resolve_organization_context(self.request)
         qs = self.selector_class.get_queryset(
             request=self.request,
             view=self,

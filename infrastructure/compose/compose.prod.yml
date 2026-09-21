@@ -1,21 +1,157 @@
+# StudioHub production overlay.
+#
+# Merge with the base compose file:
+#   docker compose -f infrastructure/compose/compose.yml \
+#                  -f infrastructure/compose/compose.prod.yml \
+#                  --env-file infrastructure/compose/.env up -d --build
+#
+# Only Nginx is exposed publicly. All other services live on the internal
+# `backend` network. PostgreSQL, Redis and MinIO data persist on named volumes.
+#
+# Migrations are a controlled step and are NOT run by the Django container:
+#   docker compose -f infrastructure/compose/compose.yml \
+#                  -f infrastructure/compose/compose.prod.yml \
+#                  exec django python manage.py migrate --noinput
+
 services:
 
-  django:
-
-    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4 --threads 4 --timeout 300
-
-    restart: always
-
+  # ------------------------------------------------------------------ Nginx
   nginx:
-
     build:
-      context: ..
-      dockerfile: docker/nginx/Dockerfile
-
+      context: ../..
+      dockerfile: infrastructure/docker/nginx/Dockerfile
     restart: always
-
     ports:
       - "80:80"
-
+      - "443:443"
     depends_on:
       - django
+    volumes:
+      - static_volume:/static:ro
+      - media_volume:/media:ro
+      - ../docker/nginx/certs:/etc/nginx/certs:ro   # TLS certificates (self-signed for validation)
+    networks:
+      - public
+      - backend
+
+  # ------------------------------------------------------------------ Django
+  django:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/django/Dockerfile
+    command: /start-prod.sh
+    env_file:
+      - .env
+    restart: always
+    expose:
+      - "8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    volumes:
+      - static_volume:/app/static
+      - media_volume:/app/media
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -H 'X-Forwarded-Proto: https' http://localhost:8000/health/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - backend
+
+  # ------------------------------------------------------------------ Celery
+  celery:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/django/Dockerfile
+    command: /start-celery.sh
+    env_file:
+      - .env
+    restart: always
+    depends_on:
+      django:
+        condition: service_healthy
+    networks:
+      - backend
+
+  celery-beat:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/django/Dockerfile
+    command: /start-beat.sh
+    env_file:
+      - .env
+    restart: always
+    depends_on:
+      django:
+        condition: service_healthy
+    networks:
+      - backend
+
+  # Flower is optional and NOT part of the default stack. It is only started
+  # explicitly with `--profile monitoring` and is bound to localhost. In real
+  # production, put Flower behind an authenticated reverse proxy — never expose
+  # it to the public internet unauthenticated.
+  flower:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/django/Dockerfile
+    command: /start-flower.sh
+    env_file:
+      - .env
+    restart: unless-stopped
+    profiles: ["monitoring"]
+    ports:
+      - "127.0.0.1:5555:5555"
+    depends_on:
+      django:
+        condition: service_healthy
+    networks:
+      - backend
+
+  # ----------------------------------------------------- PostgreSQL (override)
+  postgres:
+    restart: always
+    networks:
+      - backend
+
+  # ----------------------------------------------------------- Redis (override)
+  redis:
+    restart: always
+    networks:
+      - backend
+
+  # ----------------------------------------------------------- MinIO (override)
+  minio:
+    env_file:
+      - .env
+    restart: always
+    networks:
+      - backend
+
+  # ------------------------------------------ MinIO bucket bootstrap (one-shot)
+  minio-init:
+    image: quay.io/minio/mc:latest
+    env_file:
+      - .env
+    entrypoint: ["/bin/sh", "/create-buckets.sh"]
+    volumes:
+      - ../docker/minio/create-buckets.sh:/create-buckets.sh:ro
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - backend
+
+volumes:
+  static_volume:
+  media_volume:
+
+networks:
+  public:

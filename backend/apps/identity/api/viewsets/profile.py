@@ -47,7 +47,13 @@ class ProfileViewSet(
     # NOTE: reads/writes stay open to any authenticated user, but the
     # selector scopes them to the request user's own profile (staff see
     # all). Object-level scoping — not permission codes — is the control.
+    # Explicit empty tuples: HasPermission denies actions with no entry.
     permission_map = {
+        "list": (),
+        "retrieve": (),
+        "create": (),
+        "update": (),
+        "partial_update": (),
         "destroy": (ProfilePermissions.DELETE,),
     }
 

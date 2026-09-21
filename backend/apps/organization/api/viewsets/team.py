@@ -10,13 +10,19 @@ from apps.organization.api.serializers.team.update import TeamUpdateSerializer
 from apps.organization.api.viewsets.base import (
     OrganizationEntityViewSet,
 )
+from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import TeamPermissions
 from apps.organization.models.team import Team
 from apps.organization.selectors.team import TeamSelector
 from apps.organization.services.team import TeamService
 
 
-class TeamViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class TeamViewSet(
+    OrganizationContextMixin,
+    IdOrCodeDetailMixin,
+    OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
+):
     """
     API endpoint for Team entity.
     """
@@ -30,7 +36,6 @@ class TeamViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTy
     service_class = TeamService
     filterset_class = TeamFilterSet
 
-    pagination_class = StandardPagination
 
     # -----------------------------
     # Serializer mapping
@@ -46,6 +51,8 @@ class TeamViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTy
     # -----------------------------
     # Permission mapping
     # -----------------------------
+    pagination_class = StandardPagination
+
     permission_map = {
         "list": (TeamPermissions.VIEW,),
         "retrieve": (TeamPermissions.VIEW,),
@@ -126,11 +133,12 @@ class TeamViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTy
             user = User.objects.get(pk=user_id)
         except User.DoesNotExist:
             return Response({"detail": "User not found."}, status=404)
-        # Resolve role if provided as string name
+        # Resolve role if provided as string name (scoped to the team's
+        # organization so a sibling org's role can never be attached).
         role_obj = None
         if role:
             try:
-                role_obj = Role.objects.filter(code=role, organization=instance.organization).first() or Role.objects.filter(name=role).first()
+                role_obj = Role.objects.filter(code=role, organization=instance.organization).first() or Role.objects.filter(name=role, organization=instance.organization).first()
             except Exception:
                 role_obj = None
         # Ensure membership exists — ensure a role is available (create fallback if needed)

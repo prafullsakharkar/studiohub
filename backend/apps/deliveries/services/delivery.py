@@ -104,6 +104,30 @@ def add_version_to_delivery(
 
 
 @transaction.atomic
+def remove_version_from_delivery(
+    *,
+    delivery_id: str,
+    version_ref_id: str,
+    organization_id: str,
+) -> DeliveryPackage:
+    """Remove a version reference from a delivery (frontend ``removeVersion``)."""
+    from apps.deliveries.models import DeliveryPackage
+
+    delivery = DeliveryPackage.objects.get(
+        id=delivery_id,
+        organization_id=organization_id,
+    )
+    ref = delivery.versions.get(id=version_ref_id)
+
+    delivery.total_size_bytes = max(0, (delivery.total_size_bytes or 0) - (ref.file_size_bytes or 0))
+    delivery.total_frames = max(0, (delivery.total_frames or 0) - (ref.frame_count or 0))
+    delivery.save(update_fields=["total_size_bytes", "total_frames"])
+    ref.delete()
+
+    return delivery
+
+
+@transaction.atomic
 def validate_delivery(
     *,
     delivery_id: str,
@@ -412,6 +436,43 @@ def cancel_delivery(
         target_id=str(delivery_id),
         target_name=delivery.name,
         description=f"Delivery {delivery.code} cancelled: {cancellation_reason}",
+        actor_id=user_id,
+        organization=delivery.organization,
+    )
+
+    return delivery
+
+
+@transaction.atomic
+def retry_delivery(
+    *,
+    delivery_id: str,
+    user_id: str,
+    organization_id: str,
+) -> DeliveryPackage:
+    """Retry a delivery: reset to Prepared so it re-enters the submit flow.
+
+    Frontend contract verb (``retryDelivery`` → ``Preparing``); the backend
+    ``Prepared`` state is the equivalent re-queue point.
+    """
+    from apps.audit.models import AuditLog
+    from apps.deliveries.models import DeliveryPackage
+
+    delivery = DeliveryPackage.objects.get(
+        id=delivery_id,
+        organization_id=organization_id,
+    )
+
+    delivery.status = DeliveryPackage.STATUS_PREPARED
+    delivery.save(update_fields=["status"])
+
+    # Create audit log
+    AuditLog.objects.create(
+        action=AuditLog.ACTION_UPDATE,
+        target_type=AuditLog.TARGET_BILLING,
+        target_id=str(delivery_id),
+        target_name=delivery.name,
+        description=f"Delivery {delivery.code} queued for retry",
         actor_id=user_id,
         organization=delivery.organization,
     )

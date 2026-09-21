@@ -38,7 +38,10 @@ class TestProjectOrganizationScoping:
         assert project.organization_id == org.id
 
     def test_create_falls_back_to_user_membership_org(self, staff_user, staff_client):
-        """Without a header, the create path uses the user's membership org."""
+        """Without a header, create fails closed (no arbitrary membership org).
+
+        With an explicit header, the header organization wins.
+        """
         from apps.organization.tests.factories import OrganizationMembershipFactory
 
         org = OrganizationFactory.create()
@@ -46,6 +49,13 @@ class TestProjectOrganizationScoping:
         resp = staff_client.post(
             self._list_url(),
             data={"code": "PROJX02", "name": "Membership Org Project"},
+            format="json",
+        )
+        assert resp.status_code == status.HTTP_400_BAD_REQUEST, resp.data
+        resp = staff_client.post(
+            self._list_url(),
+            data={"code": "PROJX02", "name": "Membership Org Project"},
+            HTTP_X_ORGANIZATION_ID=str(org.id),
             format="json",
         )
         assert resp.status_code == status.HTTP_201_CREATED, resp.data

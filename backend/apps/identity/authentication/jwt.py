@@ -9,7 +9,10 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
 from apps.identity.authentication.exceptions import (
+    ExpiredToken,
     InvalidToken,
+    RefreshTokenExpired,
+    SessionRevoked,
 )
 
 
@@ -78,7 +81,7 @@ class JWTService:
             )
 
         except TokenError as exc:
-            raise InvalidToken() from exc
+            raise cls._translate_token_error(exc, refresh=False) from exc
 
     @classmethod
     def decode_refresh_token(
@@ -91,7 +94,39 @@ class JWTService:
             )
 
         except TokenError as exc:
-            raise InvalidToken() from exc
+            raise cls._translate_token_error(exc, refresh=True) from exc
+
+    @classmethod
+    def _translate_token_error(
+        cls,
+        exc: TokenError,
+        *,
+        refresh: bool,
+    ):
+        """
+        Preserve the failure cause instead of collapsing every token
+        problem into a generic ``InvalidToken``.
+
+        Distinct subclasses let the API diagnostics (and clients) tell
+        expired credentials apart from revoked ones without parsing
+        message text.
+        """
+
+        try:
+            message = str(exc).lower()
+        except Exception:
+            message = ""
+
+        if "expir" in message:
+            if refresh:
+                return RefreshTokenExpired()
+
+            return ExpiredToken()
+
+        if "blacklist" in message or "revok" in message:
+            return SessionRevoked()
+
+        return InvalidToken()
 
     # ---------------------------------------------------------
     # Validation

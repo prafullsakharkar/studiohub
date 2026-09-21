@@ -36,6 +36,25 @@ class TrimmedCharField(serializers.CharField):
         return super().to_internal_value(data.strip())
 
 
+class CaseInsensitiveChoiceField(serializers.ChoiceField):
+    """
+    ChoiceField accepting frontend Title Case values for lowercase DB choices.
+
+    The frontend contract sends statuses like ``Active`` / ``In Progress``
+    while models store lowercase choices (``active``). Exact matches pass
+    through; otherwise the first case-insensitive match wins; anything else
+    raises the standard invalid-choice error (fail closed).
+    """
+
+    def to_internal_value(self, data):
+        if isinstance(data, str):
+            lowered = data.strip().lower()
+            for key, _display in self.choices.items():
+                if str(key).lower() == lowered:
+                    return key
+        return super().to_internal_value(data)
+
+
 class ChoiceDisplayField(serializers.Field[Any, Any, Any, Any]):
     """
     Serialize a model choice display value.

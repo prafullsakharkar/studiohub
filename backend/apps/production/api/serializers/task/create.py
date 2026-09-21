@@ -3,10 +3,14 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseWriteSerializer
+from apps.production.api.serializers.common import (
+    LenientUniqueTogetherValidator,
+    ProjectReferenceMixin,
+)
 from apps.production.models import Task
 
 
-class TaskCreateSerializer(BaseWriteSerializer[Any]):
+class TaskCreateSerializer(ProjectReferenceMixin, BaseWriteSerializer[Any]):
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
 
@@ -18,6 +22,8 @@ class TaskCreateSerializer(BaseWriteSerializer[Any]):
             "title",
             "code",
             "project",
+            "project_id",
+            "project_code",
             "entity_type",
             "entity_id",
             "entity_code",
@@ -44,3 +50,10 @@ class TaskCreateSerializer(BaseWriteSerializer[Any]):
             "logged_hours",
         )
         read_only_fields = ("id", "uuid")
+        extra_kwargs = {"project": {"required": False}}
+        validators = [
+            LenientUniqueTogetherValidator(
+                queryset=Task.objects.all(),
+                fields=["project", "code"],
+            )
+        ]

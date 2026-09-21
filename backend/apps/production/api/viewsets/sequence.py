@@ -1,6 +1,7 @@
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.core.api.mixins.bulk import BulkActionsMixin
 from apps.core.api.pagination import StandardPagination
 from apps.production.api.filtersets.sequence import SequenceFilterSet
 from apps.production.api.serializers.sequence.create import SequenceCreateSerializer
@@ -8,14 +9,13 @@ from apps.production.api.serializers.sequence.detail import SequenceDetailSerial
 from apps.production.api.serializers.sequence.list import SequenceListSerializer
 from apps.production.api.serializers.sequence.update import SequenceUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
-from apps.production.api.viewsets.bulk import BulkContractViewSetMixin
 from apps.production.constants.permissions import SequencePermissions
 from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.sequence import SequenceSelector
 from apps.production.services.sequence import SequenceService
 
 
-class SequenceViewSet(BulkContractViewSetMixin, ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class SequenceViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = SequenceSelector
     service_class = SequenceService
     pagination_class = StandardPagination

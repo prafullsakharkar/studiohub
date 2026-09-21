@@ -74,6 +74,7 @@ class Command(BaseCommand):
             users = self._seed_users(org, departments, teams, offices, roles)
             # Production seeding (idempotent)
             projects = self._seed_projects(org, users)
+            self._seed_shows(org, projects)
             shots = self._seed_shots(org, projects, users)
             assets = self._seed_assets(org, projects, users, departments, teams)
             tasks = self._seed_tasks(org, projects, shots, assets, users, departments, teams)
@@ -266,13 +267,59 @@ class Command(BaseCommand):
             ("publishing:read", "publishing", "read"),
             ("publishing:update", "publishing", "update"),
             ("publishing:delete", "publishing", "delete"),
+            ("tracks:create", "tracks", "create"),
+            ("tracks:read", "tracks", "read"),
+            ("tracks:update", "tracks", "update"),
+            ("tracks:delete", "tracks", "delete"),
+            ("shows:create", "shows", "create"),
+            ("shows:read", "shows", "read"),
+            ("shows:update", "shows", "update"),
+            ("shows:delete", "shows", "delete"),
             ("scheduling:create", "scheduling", "create"),
             ("scheduling:read", "scheduling", "read"),
             ("scheduling:update", "scheduling", "update"),
             ("scheduling:delete", "scheduling", "delete"),
             ("audit:read", "audit", "read"),
+            ("audit:update", "audit", "update"),
             ("settings:update", "settings", "update"),
             ("users:manage", "users", "manage"),
+            ("organization.master_data.configure", "master_data", "configure"),
+            ("organization.master_data.create", "master_data", "create"),
+            # Organization domain (enforced by OrganizationEntityViewSet
+            # permission_map; Phase 6 found zero roles held these, locking
+            # every non-superuser out of /api/organizations/* and the flat
+            # org endpoints). Codes must match
+            # apps/organization/constants/permissions.py exactly.
+            ("organization.view", "organization", "view"),
+            ("organization.create", "organization", "create"),
+            ("organization.update", "organization", "update"),
+            ("organization.delete", "organization", "delete"),
+            ("organization.department.view", "department", "view"),
+            ("organization.department.create", "department", "create"),
+            ("organization.department.update", "department", "update"),
+            ("organization.department.delete", "department", "delete"),
+            ("organization.team.view", "team", "view"),
+            ("organization.team.create", "team", "create"),
+            ("organization.team.update", "team", "update"),
+            ("organization.team.delete", "team", "delete"),
+            ("organization.office.view", "office", "view"),
+            ("organization.office.create", "office", "create"),
+            ("organization.office.update", "office", "update"),
+            ("organization.office.delete", "office", "delete"),
+            ("person.view", "user", "view"),
+            ("person.create", "user", "create"),
+            ("person.update", "user", "update"),
+            ("person.delete", "user", "delete"),
+            ("position.view", "position", "view"),
+            ("position.create", "position", "create"),
+            ("position.update", "position", "update"),
+            ("position.delete", "position", "delete"),
+            # Platform domain (notifications, reports). Codes must match
+            # apps/platform/constants/permissions.py exactly.
+            ("reports:read", "reports", "read"),
+            ("reports:create", "reports", "create"),
+            ("notifications:read", "notifications", "read"),
+            ("notifications:update", "notifications", "update"),
         ]
         perms = []
         for code, module, action in perm_specs:
@@ -296,10 +343,33 @@ class Command(BaseCommand):
             perms.append(perm)
         return perms
 
-    def _seed_roles(self, org, perms):
-        from apps.organization.models import Role, RolePermission
+    def _role_perm_matrix(self, perm_by_code):
+        """Role-code -> wanted permission codes (single source of truth).
 
-        perm_by_code = {p.code: p for p in perms}
+        Org-directory reads granted org-wide (company directory is
+        readable); org-entity mutations stay with org-admin. Phase 6:
+        previously zero roles held any organization.* code, so every
+        non-superuser got 403 on all org endpoints.
+        """
+        org_views = [
+            "organization.view",
+            "organization.department.view",
+            "organization.team.view",
+            "organization.office.view",
+            "person.view",
+            "position.view",
+        ]
+        org_crud = [
+            "organization.view", "organization.create", "organization.update", "organization.delete",
+            "organization.department.view", "organization.department.create",
+            "organization.department.update", "organization.department.delete",
+            "organization.team.view", "organization.team.create",
+            "organization.team.update", "organization.team.delete",
+            "organization.office.view", "organization.office.create",
+            "organization.office.update", "organization.office.delete",
+            "person.view", "person.create", "person.update", "person.delete",
+            "position.view", "position.create", "position.update", "position.delete",
+        ]
         # Define which permissions each role gets (mirrors frontend mockUsers)
         role_perms = {
             "platform-admin": list(perm_by_code.keys()),
@@ -312,21 +382,27 @@ class Command(BaseCommand):
                 "deliveries:create", "deliveries:read", "deliveries:update",
                 "publishing:create", "publishing:read", "publishing:update",
                 "scheduling:create", "scheduling:read", "scheduling:update",
+                "tracks:create", "tracks:read", "tracks:update", "tracks:delete",
+                "shows:create", "shows:read", "shows:update", "shows:delete",
                 "audit:read",
-            ],
+            ] + org_views,
             "lead-artist": [
                 "projects:read", "shots:read", "shots:update",
                 "assets:read", "assets:update",
                 "tasks:create", "tasks:read", "tasks:update",
                 "reviews:create", "reviews:read",
                 "deliveries:read", "publishing:read", "scheduling:read",
+                "tracks:read",
+                "shows:read",
                 "audit:read",
-            ],
+            ] + org_views,
             "artist": [
                 "projects:read", "shots:read", "tasks:read", "tasks:update",
                 "assets:read", "reviews:read",
                 "deliveries:read", "publishing:read", "scheduling:read",
-            ],
+                "tracks:read",
+                "shows:read",
+            ] + org_views,
             "org-admin": [
                 "projects:create", "projects:read", "projects:update", "projects:delete",
                 "shots:create", "shots:read", "shots:update", "shots:delete", "shots:approve",
@@ -336,10 +412,34 @@ class Command(BaseCommand):
                 "deliveries:create", "deliveries:read", "deliveries:update", "deliveries:delete",
                 "publishing:create", "publishing:read", "publishing:update", "publishing:delete",
                 "scheduling:create", "scheduling:read", "scheduling:update", "scheduling:delete",
+                "tracks:create", "tracks:read", "tracks:update", "tracks:delete",
+                "shows:create", "shows:read", "shows:update", "shows:delete",
                 "audit:read", "settings:update", "users:manage",
-            ],
-            "client-reviewer": ["projects:read", "shots:read", "reviews:read", "reviews:approve", "deliveries:read", "publishing:read"],
+            ] + org_crud,
+            "client-reviewer": ["projects:read", "shots:read", "reviews:read", "reviews:approve", "deliveries:read", "publishing:read",
+                                "organization.view"],
         }
+        return role_perms
+
+    def _assign_role_permissions(self, role, perm_by_code, role_perms):
+        """Grant a role its matrix permissions idempotently."""
+        from apps.organization.models import RolePermission
+
+        wanted = role_perms.get(role.code, [])
+        for perm_code in wanted:
+            perm = perm_by_code.get(perm_code)
+            if perm:
+                RolePermission.objects.get_or_create(
+                    role=role,
+                    permission=perm,
+                    defaults={"granted": True},
+                )
+
+    def _seed_roles(self, org, perms):
+        from apps.organization.models import Role
+
+        perm_by_code = {p.code: p for p in perms}
+        role_perms = self._role_perm_matrix(perm_by_code)
         roles = {}
         for code, name in self._seed_roles_spec():
             role, _ = Role.objects.get_or_create(
@@ -353,15 +453,7 @@ class Command(BaseCommand):
                 },
             )
             # Assign permissions idempotently
-            wanted = role_perms.get(code, [])
-            for perm_code in wanted:
-                perm = perm_by_code.get(perm_code)
-                if perm:
-                    RolePermission.objects.get_or_create(
-                        role=role,
-                        permission=perm,
-                        defaults={"granted": True},
-                    )
+            self._assign_role_permissions(role, perm_by_code, role_perms)
             roles[code] = role
         return roles
 
@@ -455,164 +547,204 @@ class Command(BaseCommand):
     # Production seeding (full mock) — delegates to seed_production_mocks logic
     # ------------------------------------------------------------------
 
+    def _seed_shows(self, org, projects):
+        from apps.production.models import Show
+
+        for project in projects:
+            Show.objects.update_or_create(
+                organization=org,
+                project=project,
+                code=f"{project.code}-MAIN",
+                defaults={
+                    "name": f"{project.name} Main Cut",
+                    "show_type": "Feature Film",
+                    "status": "In Progress",
+                    "description": f"Primary distributable cut for {project.name}.",
+                    "is_primary": True,
+                },
+            )
+        return list(Show.objects.filter(organization=org))
+
     def _seed_projects(self, org, users):
-        from pathlib import Path
         from unittest.mock import MagicMock
 
         from apps.production.management.commands.seed_production_mocks import (
             Command as ProdMockCommand,
+        )
+        from apps.production.management.commands.seed_production_mocks import (
+            _resolve_mock_root,
         )
         from apps.production.models import Project
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
-        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        frontend_root = _resolve_mock_root()
         cmd._seed_projects(frontend_root / "production" / "projects.ts", org)
         return list(Project.objects.filter(organization=org))
 
     def _seed_shots(self, org, projects, users):
-        from pathlib import Path
         from unittest.mock import MagicMock
 
         from apps.production.management.commands.seed_production_mocks import (
             Command as ProdMockCommand,
+        )
+        from apps.production.management.commands.seed_production_mocks import (
+            _resolve_mock_root,
         )
         from apps.production.models import Shot
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
-        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        frontend_root = _resolve_mock_root()
         cmd._seed_shots(frontend_root / "production" / "shots.ts", org)
         return list(Shot.objects.filter(organization=org))
 
     def _seed_assets(self, org, projects, users, departments, teams):
-        from pathlib import Path
         from unittest.mock import MagicMock
 
         from apps.production.management.commands.seed_production_mocks import (
             Command as ProdMockCommand,
+        )
+        from apps.production.management.commands.seed_production_mocks import (
+            _resolve_mock_root,
         )
         from apps.production.models import Asset
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
-        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        frontend_root = _resolve_mock_root()
         cmd._seed_assets(frontend_root / "assets" / "assets.ts", org)
         return list(Asset.objects.filter(organization=org))
 
     def _seed_tasks(self, org, projects, shots, assets, users, departments, teams):
-        from pathlib import Path
         from unittest.mock import MagicMock
 
         from apps.production.management.commands.seed_production_mocks import (
             Command as ProdMockCommand,
+        )
+        from apps.production.management.commands.seed_production_mocks import (
+            _resolve_mock_root,
         )
         from apps.production.models import Task
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
-        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        frontend_root = _resolve_mock_root()
         cmd._seed_tasks(frontend_root / "tasks" / "tasks.ts", org)
         return list(Task.objects.filter(organization=org))
 
     def _seed_timelogs(self, org, tasks, users):
-        from pathlib import Path
         from unittest.mock import MagicMock
 
         from apps.production.management.commands.seed_production_mocks import (
             Command as ProdMockCommand,
+        )
+        from apps.production.management.commands.seed_production_mocks import (
+            _resolve_mock_root,
         )
         from apps.production.models import Timelog
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
-        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        frontend_root = _resolve_mock_root()
         cmd._seed_timelogs(frontend_root / "production" / "timelogs.ts", org)
         return list(Timelog.objects.filter(organization=org))
 
     def _seed_versions(self, org, projects, shots, assets, tasks, users):
-        from pathlib import Path
         from unittest.mock import MagicMock
 
         from apps.production.management.commands.seed_production_mocks import (
             Command as ProdMockCommand,
+        )
+        from apps.production.management.commands.seed_production_mocks import (
+            _resolve_mock_root,
         )
         from apps.production.models import Version
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
-        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        frontend_root = _resolve_mock_root()
         cmd._seed_versions(frontend_root / "versions" / "versions.ts", org)
         return list(Version.objects.filter(organization=org))
 
     def _seed_reviews(self, org, projects, shots, versions, users):
-        from pathlib import Path
         from unittest.mock import MagicMock
 
         from apps.production.management.commands.seed_production_mocks import (
             Command as ProdMockCommand,
+        )
+        from apps.production.management.commands.seed_production_mocks import (
+            _resolve_mock_root,
         )
         from apps.production.models import Review
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
-        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        frontend_root = _resolve_mock_root()
         cmd._seed_reviews(frontend_root / "reviews" / "reviews.ts", org)
         return list(Review.objects.filter(organization=org))
 
     def _seed_playlists(self, org, projects, versions, reviews):
-        from pathlib import Path
         from unittest.mock import MagicMock
 
         from apps.production.management.commands.seed_production_mocks import (
             Command as ProdMockCommand,
+        )
+        from apps.production.management.commands.seed_production_mocks import (
+            _resolve_mock_root,
         )
         from apps.production.models import Playlist
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
-        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        frontend_root = _resolve_mock_root()
         cmd._seed_playlists(frontend_root / "production" / "playlists.ts", org)
         return list(Playlist.objects.filter(organization=org))
 
     def _seed_media(self, org, projects, shots, assets):
-        from pathlib import Path
         from unittest.mock import MagicMock
 
         from apps.production.management.commands.seed_production_mocks import (
             Command as ProdMockCommand,
+        )
+        from apps.production.management.commands.seed_production_mocks import (
+            _resolve_mock_root,
         )
         from apps.production.models import Media
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
-        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        frontend_root = _resolve_mock_root()
         cmd._seed_media(frontend_root / "production" / "media.ts", org)
         return list(Media.objects.filter(organization=org))
 
     def _seed_workflows(self, org, projects):
-        from pathlib import Path
         from unittest.mock import MagicMock
 
         from apps.production.management.commands.seed_production_mocks import (
             Command as ProdMockCommand,
         )
+        from apps.production.management.commands.seed_production_mocks import (
+            _resolve_mock_root,
+        )
         from apps.production.models import Workflow
 
         cmd = ProdMockCommand()
         cmd.stdout = MagicMock()
-        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        frontend_root = _resolve_mock_root()
         cmd._seed_workflows(frontend_root / "production" / "workflow.ts", org)
         return list(Workflow.objects.filter(organization=org))
 
     def _seed_clients(self, org):
         # Seed from frontend mockClients
-        from pathlib import Path
 
         from apps.organization.models import Client
-        from apps.production.management.commands.seed_production_mocks import _load_ts_mock_array
+        from apps.production.management.commands.seed_production_mocks import (
+            _load_ts_mock_array,
+            _resolve_mock_root,
+        )
 
-        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        frontend_root = _resolve_mock_root()
         data = _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockClients")
         count = 0
         for item in data:
@@ -655,12 +787,14 @@ class Command(BaseCommand):
         return list(Client.objects.filter(organization=org))
 
     def _seed_vendors(self, org):
-        from pathlib import Path
 
         from apps.organization.models import Vendor
-        from apps.production.management.commands.seed_production_mocks import _load_ts_mock_array
+        from apps.production.management.commands.seed_production_mocks import (
+            _load_ts_mock_array,
+            _resolve_mock_root,
+        )
 
-        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        frontend_root = _resolve_mock_root()
         data = _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockVendors")
         count = 0
         for item in data:
@@ -698,7 +832,6 @@ class Command(BaseCommand):
 
     def _seed_contacts(self, org):
         """Seed client/vendor contacts from frontend mock data."""
-        from pathlib import Path
 
         from apps.organization.models import (
             Client,
@@ -706,9 +839,12 @@ class Command(BaseCommand):
             Vendor,
             VendorContact,
         )
-        from apps.production.management.commands.seed_production_mocks import _load_ts_mock_array
+        from apps.production.management.commands.seed_production_mocks import (
+            _load_ts_mock_array,
+            _resolve_mock_root,
+        )
 
-        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        frontend_root = _resolve_mock_root()
 
         # Mock contacts reference mock parent ids; map them to seeded codes.
         client_id_to_code = {
@@ -775,7 +911,6 @@ class Command(BaseCommand):
 
     def _seed_contracts(self, org):
         """Seed client/vendor contracts from frontend mock data."""
-        from pathlib import Path
 
         from apps.organization.models import (
             Client,
@@ -783,9 +918,12 @@ class Command(BaseCommand):
             Vendor,
             VendorContract,
         )
-        from apps.production.management.commands.seed_production_mocks import _load_ts_mock_array
+        from apps.production.management.commands.seed_production_mocks import (
+            _load_ts_mock_array,
+            _resolve_mock_root,
+        )
 
-        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        frontend_root = _resolve_mock_root()
 
         # Mock contracts reference mock parent ids; map them to seeded codes.
         client_id_to_code = {
@@ -878,12 +1016,14 @@ class Command(BaseCommand):
 
     def _seed_knowledge(self, org):
         """Seed knowledge-base documents from frontend mock data."""
-        from pathlib import Path
 
         from apps.intelligence.models import KnowledgeDocument
-        from apps.production.management.commands.seed_production_mocks import _load_ts_mock_array
+        from apps.production.management.commands.seed_production_mocks import (
+            _load_ts_mock_array,
+            _resolve_mock_root,
+        )
 
-        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        frontend_root = _resolve_mock_root()
         count = 0
         for item in _load_ts_mock_array(
             frontend_root / "intelligence" / "knowledge.ts", "mockKnowledgeDocuments"
@@ -915,12 +1055,14 @@ class Command(BaseCommand):
         return count
 
     def _seed_people(self, org):
-        from pathlib import Path
 
         from apps.organization.models import Person
-        from apps.production.management.commands.seed_production_mocks import _load_ts_mock_array
+        from apps.production.management.commands.seed_production_mocks import (
+            _load_ts_mock_array,
+            _resolve_mock_root,
+        )
 
-        frontend_root = Path(__file__).resolve().parents[5] / "frontend" / "src" / "mocks" / "db"
+        frontend_root = _resolve_mock_root()
         data = _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockPeople")
         count = 0
         for item in data:

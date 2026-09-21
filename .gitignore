@@ -468,3 +468,13 @@ backups/
 !yarn.lock
 !pnpm-lock.yaml
 !uv.lock
+# Added by code-review-graph
+.code-review-graph/
+
+# ============================================================
+
+# Generated TLS certificates (replace with real certs in production)
+
+# ============================================================
+
+infrastructure/docker/nginx/certs/

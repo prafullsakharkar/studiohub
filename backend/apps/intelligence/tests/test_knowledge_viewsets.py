@@ -97,6 +97,36 @@ class TestKnowledgeListCreate:
         assert response.status_code == 200
         assert len(response.json()) == 1
 
+    @pytest.mark.django_db
+    def test_list_cross_org_header_leaks_nothing(self, db):
+        """A caller must not read another org's docs via X-Organization-Id."""
+        org_a = OrganizationFactory.create()
+        org_b = OrganizationFactory.create()
+        KnowledgeDocumentFactory.create(organization=org_a)
+        user = UserFactory.create()
+        OrganizationMembershipFactory.create(organization=org_b, user=user)
+        api = APIClient()
+        api.force_authenticate(user=user)
+        api.credentials(HTTP_X_ORGANIZATION_ID=str(org_a.id))
+
+        response = api.get(LIST_URL)
+
+        assert response.status_code == 200
+        assert response.json() == []
+
+    @pytest.mark.django_db
+    def test_retrieve_cross_org_header_404(self, db):
+        org_a = OrganizationFactory.create()
+        org_b = OrganizationFactory.create()
+        doc = KnowledgeDocumentFactory.create(organization=org_a)
+        user = UserFactory.create()
+        OrganizationMembershipFactory.create(organization=org_b, user=user)
+        api = APIClient()
+        api.force_authenticate(user=user)
+        api.credentials(HTTP_X_ORGANIZATION_ID=str(org_a.id))
+
+        assert api.get(_detail_url(doc)).status_code == 404
+
 
 class TestKnowledgeDetail:
     @pytest.mark.django_db

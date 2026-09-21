@@ -48,7 +48,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.14"
+          python-version: "3.13"
 
       - name: Install dependencies
         run: uv sync --frozen
@@ -59,37 +59,17 @@ jobs:
       - name: Django system check
         run: uv run python manage.py check
 
+      - name: Migration check
+        run: uv run python manage.py makemigrations --check
+
       - name: Run tests
         run: uv run pytest -q
 
-  frontend:
-    name: Frontend (tsc + vitest)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-          cache-dependency-path: frontend/pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Typecheck
-        run: pnpm run lint
-
-      - name: Unit tests
-        run: pnpm test
+  # NOTE (Phase 7): the frontend lives in the sibling studiohub-react repo,
+  # so there is intentionally no frontend job here (a working-directory of
+  # `frontend/` does not exist in this repo and can never pass). Frontend
+  # contract protection runs in studiohub-react/.github/workflows/ci.yml
+  # (tsc + vitest incl. contract conformance + build).
 
   docs:
     name: Docs (link check)
@@ -101,7 +81,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.14"
+          python-version: "3.13"
 
       - name: Check documentation links
         run: uv run python scripts/check_docs_links.py

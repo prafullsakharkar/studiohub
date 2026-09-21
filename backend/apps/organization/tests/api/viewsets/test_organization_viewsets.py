@@ -392,3 +392,64 @@ class TestOrganizationViewSet:
         )
 
         assert response.status_code == 403
+
+
+class TestOrganizationStatusCaseContract:
+    """Frontend sends Title Case statuses (`Active`/`Archived`); DB is lowercase.
+
+    Regression: POST /api/v1/organizations/ with `status: "Active"` 400ed with
+    `"Active" is not a valid choice`. Input is now case-insensitive; invalid
+    values still 400 and stored values stay canonical lowercase.
+    """
+
+    @pytest.mark.django_db
+    def test_create_accepts_title_case_status(self, staff_client):
+        response = staff_client.post(
+            "/api/v1/organizations/",
+            {
+                "code": "CASE1",
+                "name": "Case Org",
+                "organization_type": "studio",
+                "status": "Active",
+            },
+            format="json",
+        )
+        assert response.status_code == 201, response.data
+        assert response.data["status"] == "active"
+
+    @pytest.mark.django_db
+    def test_archive_restore_title_case(self, staff_client):
+        organization = OrganizationFactory.create(code="CASE2")
+
+        response = staff_client.patch(
+            f"/api/v1/organizations/{organization.id}/",
+            {"status": "Archived"},
+            format="json",
+        )
+        assert response.status_code == 200, response.data
+        organization.refresh_from_db()
+        assert organization.status == "archived"
+
+        response = staff_client.patch(
+            f"/api/v1/organizations/{organization.id}/",
+            {"status": "Active"},
+            format="json",
+        )
+        assert response.status_code == 200, response.data
+        organization.refresh_from_db()
+        assert organization.status == "active"
+
+    @pytest.mark.django_db
+    def test_invalid_status_still_400s(self, staff_client):
+        response = staff_client.post(
+            "/api/v1/organizations/",
+            {
+                "code": "CASE3",
+                "name": "Case Org",
+                "organization_type": "studio",
+                "status": "Bogus",
+            },
+            format="json",
+        )
+        assert response.status_code == 400
+        assert "status" in response.data

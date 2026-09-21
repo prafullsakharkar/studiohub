@@ -1,3 +1,8 @@
+"""
+Group API viewset.
+"""
+
+from apps.core.api.pagination import StandardPagination
 from apps.organization.api.filtersets.group import GroupFilterSet
 from apps.organization.api.serializers.group import (
     GroupCreateSerializer,
@@ -6,13 +11,19 @@ from apps.organization.api.serializers.group import (
     GroupUpdateSerializer,
 )
 from apps.organization.api.viewsets.base import OrganizationEntityViewSet
+from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import GroupPermissions
 from apps.organization.models.group import Group
 from apps.organization.selectors.group import GroupSelector
 from apps.organization.services.group import GroupService
 
 
-class GroupViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class GroupViewSet(
+    OrganizationContextMixin,
+    IdOrCodeDetailMixin,
+    OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
+):
     """
     API endpoint for Group.
     """
@@ -23,6 +34,8 @@ class GroupViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingT
     service_class = GroupService
 
     filterset_class = GroupFilterSet
+
+    pagination_class = StandardPagination
 
     serializer_map = {
         "list": GroupListSerializer,

@@ -69,7 +69,7 @@ class PersonSerializer(BaseReadSerializer[Any]):
 
     @extend_schema_field(serializers.UUIDField(allow_null=True))
     def get_organization_id(self, obj):
-        return None
+        return obj.organization_id
 
     @extend_schema_field(serializers.UUIDField(allow_null=True))
     def get_department_id(self, obj):

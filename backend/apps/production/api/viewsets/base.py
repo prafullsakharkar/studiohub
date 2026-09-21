@@ -59,9 +59,11 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
 
     def get_queryset(self):
         resolve_organization_context(self.request)
-        if self._include_deleted():
+        if self._include_deleted() and self._may_view_deleted():
             # Frontend contract: ?include_deleted / ?include_archived opts into
-            # soft-deleted rows (still strictly organization scoped).
+            # soft-deleted rows (still strictly organization scoped). Viewing
+            # deleted rows requires the resource DELETE grant (or superuser);
+            # otherwise the flag is ignored and live rows are returned.
             qs = self.service_class.model.all_objects.all()
         else:
             qs = self.selector_class.get_queryset(
@@ -72,6 +74,28 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
             qs,
             request=self.request,
             view=self,
+        )
+
+    def _may_view_deleted(self):
+        """Whether the caller may list soft-deleted rows (DELETE grant)."""
+        from apps.identity.services.permission_cache import PermissionCacheService
+
+        user = getattr(self.request, "user", None)
+        if user is None or not getattr(user, "is_authenticated", False):
+            return False
+        if getattr(user, "is_superuser", False):
+            return True
+        codes = self.permission_map.get("destroy", ())
+        if not codes:
+            return False
+        organization = getattr(self.request, "organization", None)
+        return all(
+            PermissionCacheService.has_permission(
+                user=user,
+                permission=code,
+                organization=organization,
+            )
+            for code in codes
         )
 
     def _include_deleted(self):
@@ -112,9 +136,8 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         Resolve the owning organization for a create/update operation.
 
         Priority: the active request context, then the related project
-        instance, then the authenticated user's first membership. Returns
-        ``None`` when none can be resolved so the caller fails closed rather
-        than assigning to an arbitrary organization.
+        instance. Returns ``None`` when neither resolves so the caller fails
+        closed — never fall back to an arbitrary membership organization.
         """
         org = getattr(self.request, "organization", None)
         if org is not None:
@@ -123,18 +146,68 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
             related = getattr(instance, "organization", None)
             if related is not None:
                 return related
-        if self.request.user.is_authenticated:
-            from apps.organization.models import OrganizationMembership
-
-            membership = OrganizationMembership.objects.filter(
-                user=self.request.user
-            ).first()
-            if membership is not None:
-                return membership.organization
         return None
 
+    def _resolve_project_from_input(self, serializer):
+        """
+        Resolve the related project for a create operation.
+
+        The frontend contract sends ``project_id`` (UUID string, real id or
+        mock id) or ``project_code`` instead of the ``project`` PK field; the
+        write serializers land those in ``validated_data["project"]`` as raw
+        strings. Resolve org-scoped via the project selector (UUID/code/
+        mock-id aware); fail closed with a 400 when a reference was supplied
+        but resolves to nothing (including cross-organization ids). Returns
+        None only when the input carried no project reference at all.
+        """
+        from rest_framework.exceptions import ValidationError
+
+        from apps.production.selectors.project import ProjectSelector
+
+        # Skip project resolution for models without a project field
+        # (e.g., Project itself doesn't have a project field)
+        model = self.get_queryset().model
+        if not hasattr(model, "project"):
+            return None
+
+        validated = serializer.validated_data
+        data = validated if isinstance(validated, dict) else {}
+        project = data.get("project")
+        if project is not None and not isinstance(project, str):
+            return project
+        raw = serializer.initial_data or {}
+        ref = project if isinstance(project, str) else None
+        ref = ref or raw.get("project_id", None) or raw.get("project_code", None)
+        if ref is None:
+            return None
+        resolved = ProjectSelector.resolve_by_lookup(
+            getattr(self.request, "organization", None), ref
+        )
+        if resolved is None:
+            raise ValidationError({"project_id": "Unknown project."})
+        return resolved
+
     def perform_create(self, serializer):
-        project = serializer.validated_data.get("project")
+        validated = serializer.validated_data
+        data = validated if isinstance(validated, dict) else {}
+        model = self.get_queryset().model
+        if not hasattr(model, "project"):
+            # Models without a project field (e.g., Project itself) don't need
+            # project resolution; org is resolved from context directly.
+            org = self.resolve_organization()
+            if org is None:
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError({"organization": "An active organization is required."})
+            serializer.save(organization=org)
+            return
+
+        project = data.get("project")
+        if project is None or isinstance(project, str):
+            project = self._resolve_project_from_input(serializer)
+        if project is None:
+            from rest_framework.exceptions import ValidationError
+
+            raise ValidationError({"project": "This field is required."})
         org = self.resolve_organization(instance=project)
         if org is None:
             from rest_framework.exceptions import ValidationError
@@ -142,4 +215,42 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
             raise ValidationError(
                 {"organization": "An active organization is required."}
             )
-        serializer.save(organization=org)
+        self._enforce_natural_key_uniqueness(project, data)
+        # Always pass the resolved instance: validated_data may carry the
+        # raw reference string from the project_id/project_code aliases,
+        # which the ORM cannot assign to the FK directly.
+        serializer.save(organization=org, project=project)
+
+    def _enforce_natural_key_uniqueness(self, project, data):
+        """
+        Fail closed on duplicate natural keys instead of 500ing.
+
+        The write serializers skip unique-together validation for unresolved
+        project references (mock ids/codes); by save time the project is
+        resolved, so enforce the model's ``unique_together`` constraints
+        here — including against soft-deleted rows (which the default
+        manager hides and would otherwise explode as IntegrityError).
+        Models without project-scoped unique constraints are unaffected.
+        """
+        model = self.get_queryset().model
+        manager = getattr(model, "all_objects", model.objects)
+        for unique_set in getattr(model._meta, "unique_together", None) or []:
+            if "project" not in unique_set:
+                continue
+            lookup = {"project": project}
+            complete = True
+            for field_name in unique_set:
+                if field_name == "project":
+                    continue
+                if field_name not in data:
+                    complete = False
+                    break
+                lookup[field_name] = data[field_name]
+            if not complete:
+                continue
+            if manager.filter(**lookup).first() is not None:
+                from rest_framework.exceptions import ValidationError
+
+                raise ValidationError(
+                    {unique_set[-1]: "A record with these values already exists."}
+                )

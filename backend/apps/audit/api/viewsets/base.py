@@ -3,6 +3,8 @@ Base ViewSet for Audit entities.
 """
 
 from apps.core.api.viewsets.base import ServiceModelViewSet
+from apps.core.permissions.base import IsAuthenticatedPermission
+from apps.identity.permissions import HasPermission
 
 
 class AuditEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissingTypeArgument]
@@ -13,7 +15,15 @@ class AuditEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissingT
 
         • AuditLog
         • AuditTrail
+
+    Reads are open to authenticated users (org-scoped selectors); mutations
+    require explicit codes in each viewset's ``permission_map``.
     """
+
+    permission_classes = (
+        IsAuthenticatedPermission,
+        HasPermission,
+    )
 
     lookup_field = "uuid"
 

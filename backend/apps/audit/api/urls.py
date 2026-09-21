@@ -4,9 +4,9 @@ URLs for Audit API.
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from apps.audit.api.viewsets.activity import ActivityViewSet
+from apps.audit.api.viewsets.activity import ActivityCompatViewSet, ActivityViewSet
 from apps.audit.api.viewsets.api_request import APIRequestViewSet
-from apps.audit.api.viewsets.audit_log import AuditLogViewSet
+from apps.audit.api.viewsets.audit_log import AuditCompatViewSet, AuditLogViewSet
 from apps.audit.api.viewsets.background_job import BackgroundJobViewSet
 from apps.audit.api.viewsets.change_log import ChangeLogViewSet
 from apps.audit.api.viewsets.error_log import ErrorLogViewSet
@@ -25,5 +25,19 @@ router.register(r"tracks", TrackViewSet, basename="track")
 
 
 urlpatterns = [
+    # Flat frontend-contract alias (list + retrieve; audit stays append-only,
+    # no POST/PATCH/DELETE).
+    path("", AuditCompatViewSet.as_view({"get": "list"}), name="audit-flat-list"),
+    path(
+        "<uuid:uuid>/",
+        AuditCompatViewSet.as_view({"get": "retrieve"}),
+        name="audit-flat-detail",
+    ),
+    # Flat frontend-contract activity feed (paginated frontend shape).
+    path(
+        "activity/",
+        ActivityCompatViewSet.as_view({"get": "list"}),
+        name="activity-flat-list",
+    ),
     path("", include(router.urls)),
 ]

@@ -90,9 +90,9 @@ class OrganizationViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissing
             return qs.none()
 
         if user.is_staff or user.is_superuser:
-            return qs
+            return qs.optimized_for_list()
 
-        return qs.filter(memberships__user=user)
+        return qs.filter(memberships__user=user).optimized_for_list()
 
     @action(detail=False, methods=["get"], url_path="my")
     def my(self, request, *args, **kwargs):
@@ -119,7 +119,33 @@ class OrganizationViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissing
 
     @action(detail=True, methods=["post"], url_path="restore")
     def restore(self, request, *args, **kwargs):
-        instance = self.get_object()
+        # get_object() only sees live rows, so a soft-deleted organization
+        # would 404 here and the action could never restore anything.
+        # Resolve from the deleted set explicitly (client/vendor precedent).
+        from django.http import Http404
+
+        from apps.organization.models import Organization
+
+        lookup = self.kwargs.get(self.lookup_url_kwarg or self.lookup_field)
+        queryset = Organization.all_objects.filter(is_deleted=True)
+        user = getattr(request, "user", None)
+        if user is not None and not (
+            getattr(user, "is_staff", False) or getattr(user, "is_superuser", False)
+        ):
+            queryset = queryset.filter(memberships__user=user)
+        instance = None
+        try:
+            instance = queryset.filter(id=lookup).first()
+        except (ValueError, TypeError, Exception):
+            instance = None
+        if instance is None:
+            try:
+                instance = queryset.filter(code__iexact=lookup).first()
+            except Exception:
+                instance = None
+        if instance is None:
+            raise Http404
+        self.check_object_permissions(request, instance)
         with contextlib.suppress(Exception):
             self.service_class.restore(instance)
         serializer = OrganizationDetailSerializer(instance)
@@ -158,9 +184,31 @@ class OrganizationViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissing
             serializer = OrganizationSettingsDetailSerializer(settings_obj)
             return Response(serializer.data)
         # PATCH
+        # Mutating settings requires the UPDATE grant even though reads only
+        # need VIEW (single action serves both methods, so the check runs
+        # here rather than in permission_map).
+        if not self._can_update_organization_settings(request):
+            from rest_framework.exceptions import PermissionDenied
+
+            raise PermissionDenied(
+                "You do not have permission to update organization settings."
+            )
         # Frontend sends { settings: {...} } or flat dict; support both.
         data = request.data.get("settings", request.data)
         serializer = OrganizationSettingsDetailSerializer(settings_obj, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+    def _can_update_organization_settings(self, request):
+        """UPDATE grant (or superuser break-glass) for settings mutation."""
+        user = getattr(request, "user", None)
+        if user is not None and getattr(user, "is_superuser", False):
+            return True
+        from apps.identity.services.permission_cache import PermissionCacheService
+
+        return PermissionCacheService.has_permission(
+            user=user,
+            permission=OrganizationPermissions.UPDATE,
+            organization=getattr(request, "organization", None),
+        )

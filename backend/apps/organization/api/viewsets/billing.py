@@ -11,6 +11,7 @@ from apps.organization.api.serializers.billing import (
     OrganizationBillingUpdateSerializer,
 )
 from apps.organization.middleware.organization_context import (
+    has_organization_access,
     resolve_organization_context,
 )
 from apps.organization.models import Organization, OrganizationBilling
@@ -52,12 +53,19 @@ class BillingView(APIView):
 
     @extend_schema(responses=OrganizationBillingSerializer)
     def get(self, request):
-        billing = self._get_billing(request)
-        if billing is None:
+        organization = _resolve_billing_organization(request)
+        # A resolved header alone grants nothing: billing is sensitive, so
+        # non-staff callers need a membership in the organization.
+        if organization is not None and not has_organization_access(request):
+            organization = None
+        if organization is None:
             return Response(
                 {"detail": "No organization found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
+        billing, _ = OrganizationBilling.objects.get_or_create(
+            organization=organization
+        )
         return Response(OrganizationBillingSerializer(billing).data)
 
     @extend_schema(
@@ -82,34 +90,6 @@ class BillingView(APIView):
             billing, user=user, **serializer.validated_data
         )
         return Response(OrganizationBillingSerializer(updated).data)
-
-
-class ReportsView(APIView):
-    """
-    Explicit stub: the reporting domain has no backend models yet.
-
-    Returns an empty list (never fake records) until the domain is built.
-    """
-
-    permission_classes = (IsAuthenticated,)
-
-    @extend_schema(responses=OpenApiTypes.OBJECT)
-    def get(self, request):
-        return Response([])
-
-
-class NotificationsView(APIView):
-    """
-    Explicit stub: the notifications domain has no backend models yet.
-
-    Returns an empty list (never fake records) until the domain is built.
-    """
-
-    permission_classes = (IsAuthenticated,)
-
-    @extend_schema(responses=OpenApiTypes.OBJECT)
-    def get(self, request):
-        return Response([])
 
 
 class OrganizationSingletonLegacyView(APIView):

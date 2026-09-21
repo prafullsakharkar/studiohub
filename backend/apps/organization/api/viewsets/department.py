@@ -1,3 +1,7 @@
+"""
+Department API viewset.
+"""
+
 from apps.core.api.pagination import StandardPagination
 from apps.organization.api.filtersets.department import DepartmentFilterSet
 from apps.organization.api.serializers.department import (
@@ -9,22 +13,22 @@ from apps.organization.api.serializers.department import (
 from apps.organization.api.viewsets.base import (
     OrganizationEntityViewSet,
 )
+from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import DepartmentPermissions
 from apps.organization.selectors.department import DepartmentSelector
 from apps.organization.services.department import DepartmentService
 
 
 class DepartmentViewSet(
+    OrganizationContextMixin,
+    IdOrCodeDetailMixin,
     OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
 
     selector_class = DepartmentSelector
-
     service_class = DepartmentService
-
     filterset_class = DepartmentFilterSet
-
-    pagination_class = StandardPagination
 
     serializer_map = {
         "list": DepartmentListSerializer,
@@ -33,6 +37,8 @@ class DepartmentViewSet(
         "update": DepartmentUpdateSerializer,
         "partial_update": DepartmentUpdateSerializer,
     }
+
+    pagination_class = StandardPagination
 
     permission_map = {
         "list": (DepartmentPermissions.VIEW,),

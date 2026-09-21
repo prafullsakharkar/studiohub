@@ -43,3 +43,68 @@ class AuditLogSerializer(serializers.ModelSerializer[AuditLog]):
             "created_at",
             "updated_at",
         )
+
+
+class AuditLogFrontendSerializer(serializers.ModelSerializer[AuditLog]):
+    """
+    Frontend-contract shape for the flat ``GET /api/v1/audit/`` alias.
+
+    Maps the backend ``target_*/actor`` columns onto the frontend
+    ``AuditLog`` type (``entity_type/entity_id/entity_code/user_*``) so the
+    AuditLogsPage renders without a frontend change. Read-only; the alias
+    exposes list only (audit stays append-only, no POST).
+    """
+
+    organization_id = serializers.UUIDField(read_only=True)
+    user_id = serializers.UUIDField(source="actor_id", read_only=True)
+    user_name = serializers.SerializerMethodField()
+    user_email = serializers.SerializerMethodField()
+    entity_type = serializers.CharField(source="target_type", read_only=True)
+    entity_id = serializers.CharField(source="target_id", read_only=True)
+    entity_code = serializers.CharField(source="target_name", read_only=True)
+    changes_diff = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AuditLog
+        fields = (
+            "id",
+            "uuid",
+            "organization_id",
+            "user_id",
+            "user_name",
+            "user_email",
+            "action",
+            "entity_type",
+            "entity_id",
+            "entity_code",
+            "description",
+            "ip_address",
+            "changes_diff",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = fields
+
+    def get_user_name(self, obj) -> str:
+        actor = getattr(obj, "actor", None)
+        if actor is None:
+            return ""
+        profile = getattr(actor, "profile", None)
+        if profile is None:
+            try:
+                from apps.identity.models import Profile
+
+                profile = Profile.objects.filter(user=actor).first()
+            except Exception:
+                profile = None
+        return (
+            getattr(profile, "display_name", "") or ""
+        ) or getattr(actor, "email", "") or ""
+
+    def get_user_email(self, obj) -> str:
+        actor = getattr(obj, "actor", None)
+        return getattr(actor, "email", "") or ""
+
+    def get_changes_diff(self, obj):
+        metadata = getattr(obj, "metadata", None)
+        return metadata or None

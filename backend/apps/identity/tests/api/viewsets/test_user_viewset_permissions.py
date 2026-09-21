@@ -1,7 +1,8 @@
 """
 User lifecycle + IP blacklist action permission tests.
 
-Lifecycle/admin mutations require explicit permissions (staff bypasses);
+Lifecycle/admin mutations require explicit permissions (staff resolve them
+through grants like everyone else; only superusers bypass);
 member-directory reads (list/retrieve/me) stay open to any authenticated
 user by deliberate contract decision (see permission_map note in UserViewSet).
 """

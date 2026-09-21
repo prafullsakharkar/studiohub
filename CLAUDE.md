@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 StudioHub is an enterprise VFX/Animation/Game-Dev production management platform. It is a monorepo with two independently-run pieces:
 
-- `backend/` — Django 6 + DRF modular monolith (Python 3.14, managed with `uv`).
+- `backend/` — Django 6 + DRF modular monolith (Python 3.13, managed with `uv`).
 - `frontend/` — React 19 + TypeScript + Vite SPA (originally generated in Google AI Studio, now evolving independently).
 
 **Important:** the frontend is far ahead of the backend in scope. It ships its own MSW mock server (`frontend/src/mocks/`) and talks to those mocks by default instead of the real Django API — see "Frontend/backend integration status" below before assuming an endpoint exists.

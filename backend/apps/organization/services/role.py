@@ -30,6 +30,13 @@ class RoleService(BusinessService):
     }
 
     @classmethod
+    def invalidate_cache(cls, instance):
+        super().invalidate_cache(instance)
+        from apps.identity.services.permission_cache import PermissionCacheService
+
+        PermissionCacheService.invalidate_role_holders(instance)
+
+    @classmethod
     @transaction.atomic
     def clone(cls, role, *, name, code, user=None):
         """
@@ -82,7 +89,7 @@ class RoleService(BusinessService):
         unknown = [c for c in codes if c not in found]
         added = []
         for permission in permissions:
-            _, created = RolePermission.objects.get_or_create(
+            role_permission, _ = RolePermission.objects.get_or_create(
                 role=role,
                 permission=permission,
                 defaults={
@@ -90,6 +97,11 @@ class RoleService(BusinessService):
                     "granted_by": user if user is not None and user.is_authenticated else None,
                 },
             )
+            if not role_permission.granted:
+                # Re-granting a previously revoked row must flip it back;
+                # get_or_create alone would leave the denial in place.
+                role_permission.granted = True
+                role_permission.save(update_fields=["granted", "updated_at"])
             added.append(permission.code)
             cls.publish_event(
                 "grant_permission",
@@ -97,6 +109,7 @@ class RoleService(BusinessService):
                 permission=permission,
                 user=user,
             )
+        cls.invalidate_cache(role)
         return added, unknown
 
     @classmethod
@@ -133,6 +146,7 @@ class RoleService(BusinessService):
             )
             cls.grant_permissions(instance, list(wanted - current), user=user)
             cls.revoke_permissions(instance, list(current - wanted), user=user)
+        cls.invalidate_cache(instance)
         return instance
 
     @classmethod
@@ -161,4 +175,78 @@ class RoleService(BusinessService):
                     permission=permission,
                     user=user,
                 )
+        if removed:
+            cls.invalidate_cache(role)
         return removed, unknown
+
+    # --- User role assignments ---
+    @classmethod
+    @transaction.atomic
+    def assign_user(cls, role, user_id, *, user=None):
+        """Assign role to a user (create UserRole)."""
+        from django.contrib.auth import get_user_model
+
+        from apps.organization.models import UserRole
+
+        User = get_user_model()
+        user_obj = User.objects.filter(id=user_id).first()
+        if not user_obj:
+            return None, "User not found"
+        user_role, created = UserRole.objects.get_or_create(
+            user=user_obj,
+            role=role,
+            defaults={"assigned_by": user if user is not None and user.is_authenticated else None},
+        )
+        if created:
+            cls.publish_event("assign_user", instance=role, user=user_obj, assigned_by=user)
+            from apps.identity.services.permission_cache import PermissionCacheService
+
+            PermissionCacheService.invalidate(user=user_obj)
+        return user_role, None
+
+    @classmethod
+    @transaction.atomic
+    def unassign_user(cls, role, user_id, *, user=None):
+        """Remove role from a user (delete UserRole)."""
+        from apps.organization.models import UserRole
+
+        deleted, _ = UserRole.objects.filter(user_id=user_id, role=role).delete()
+        if deleted:
+            cls.publish_event("unassign_user", instance=role, user_id=user_id, user=user)
+            from apps.identity.services.permission_cache import PermissionCacheService
+
+            PermissionCacheService.invalidate_by_id(user_id)
+        return deleted > 0, None
+
+    # --- Group role assignments ---
+    @classmethod
+    @transaction.atomic
+    def assign_group(cls, role, group_id, *, user=None):
+        """Assign role to a group (create GroupRole)."""
+        from apps.organization.models import GroupRole
+
+        group_role, created = GroupRole.objects.get_or_create(
+            group_id=group_id,
+            role=role,
+            defaults={"assigned_by": user if user is not None and user.is_authenticated else None},
+        )
+        if created:
+            cls.publish_event("assign_group", instance=role, group_id=group_id, user=user)
+            from apps.identity.services.permission_cache import PermissionCacheService
+
+            PermissionCacheService.invalidate_group_members(group_id)
+        return group_role, None
+
+    @classmethod
+    @transaction.atomic
+    def unassign_group(cls, role, group_id, *, user=None):
+        """Remove role from a group (delete GroupRole)."""
+        from apps.organization.models import GroupRole
+
+        deleted, _ = GroupRole.objects.filter(group_id=group_id, role=role).delete()
+        if deleted:
+            cls.publish_event("unassign_group", instance=role, group_id=group_id, user=user)
+            from apps.identity.services.permission_cache import PermissionCacheService
+
+            PermissionCacheService.invalidate_group_members(group_id)
+        return deleted > 0, None

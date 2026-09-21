@@ -35,15 +35,28 @@ def _resolve_organization(request):
     """
     Resolve the knowledge organization: explicit request context first,
     then the first org for staff (admin context).
+
+    Non-staff callers must hold a live membership in the resolved org
+    (fail closed); otherwise the client-supplied org header alone would
+    expose another organization's documents. Mirrors the membership gate
+    in ``apps.audit.api.viewsets.activity.ActivityCompatViewSet``.
     """
     resolve_organization_context(request, force=True)
     organization = getattr(request, "organization", None)
-    if organization is not None:
-        return organization
     user = getattr(request, "user", None)
-    if user is not None and (user.is_staff or user.is_superuser):
-        return Organization.objects.first()
-    return None
+    if organization is None:
+        if user is not None and (user.is_staff or user.is_superuser):
+            return Organization.objects.first()
+        return None
+    if user is not None and not (user.is_staff or user.is_superuser):
+        from apps.organization.models import OrganizationMembership
+
+        member = OrganizationMembership.objects.filter(
+            user=user, organization=organization, is_deleted=False
+        ).exists()
+        if not member:
+            return None
+    return organization
 
 
 def _scoped_queryset(request):

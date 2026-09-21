@@ -95,12 +95,19 @@ def _contract_payload(**overrides):
     return data
 
 
+def _use_org(client, parent):
+    """Attach the parent's organization header (required request context)."""
+    client.credentials(HTTP_X_ORGANIZATION_ID=str(parent.organization_id))
+    return client
+
+
 class TestClientContactBulk:
     """Bulk operations on client contacts."""
 
     @pytest.mark.django_db
     def test_bulk_create_mixed_results(self, staff_client):
         parent = ClientFactory.create()
+        _use_org(staff_client, parent)
 
         response = staff_client.post(
             _contact_bulk_url(parent, "bulk-create"),
@@ -126,6 +133,7 @@ class TestClientContactBulk:
     @pytest.mark.django_db
     def test_bulk_create_rejects_non_list(self, staff_client):
         parent = ClientFactory.create()
+        _use_org(staff_client, parent)
 
         response = staff_client.post(
             _contact_bulk_url(parent, "bulk-create"),
@@ -138,6 +146,7 @@ class TestClientContactBulk:
     @pytest.mark.django_db
     def test_bulk_update_and_archive(self, staff_client):
         parent = ClientFactory.create()
+        _use_org(staff_client, parent)
         first = ClientContactFactory.create(client=parent)
         second = ClientContactFactory.create(client=parent)
 
@@ -168,6 +177,7 @@ class TestClientContactBulk:
         from uuid import uuid4
 
         parent = ClientFactory.create()
+        _use_org(staff_client, parent)
 
         response = staff_client.patch(
             _contact_bulk_url(parent, "bulk-update"),
@@ -181,6 +191,7 @@ class TestClientContactBulk:
     @pytest.mark.django_db
     def test_restore_single_contact(self, staff_client):
         parent = ClientFactory.create()
+        _use_org(staff_client, parent)
         contact = ClientContactFactory.create(client=parent)
         staff_client.delete(
             reverse(
@@ -208,6 +219,7 @@ class TestClientContactBulk:
     @pytest.mark.django_db
     def test_bulk_restore(self, staff_client):
         parent = ClientFactory.create()
+        _use_org(staff_client, parent)
         contact = ClientContactFactory.create(client=parent)
         contact.delete()
 
@@ -275,6 +287,7 @@ class TestClientContractValidation:
     @pytest.mark.django_db
     def test_create_inverted_dates_400(self, staff_client):
         parent = ClientFactory.create()
+        _use_org(staff_client, parent)
 
         response = staff_client.post(
             reverse(
@@ -293,6 +306,7 @@ class TestClientContractValidation:
     @pytest.mark.django_db
     def test_create_duplicate_number_409(self, staff_client):
         parent = ClientFactory.create()
+        _use_org(staff_client, parent)
         ClientContractFactory.create(client=parent, contract_number="SOW-DUP-01")
 
         response = staff_client.post(
@@ -324,6 +338,7 @@ class TestClientContractValidation:
     def test_same_number_different_client_ok(self, staff_client):
         first = ClientFactory.create()
         second = ClientFactory.create()
+        _use_org(staff_client, second)
         ClientContractFactory.create(client=first, contract_number="SOW-SHARED-01")
 
         response = staff_client.post(
@@ -340,6 +355,7 @@ class TestClientContractValidation:
     @pytest.mark.django_db
     def test_restore_single_contract(self, staff_client):
         parent = ClientFactory.create()
+        _use_org(staff_client, parent)
         contract = ClientContractFactory.create(client=parent)
         staff_client.delete(_contract_detail_url(parent, contract.uuid))
 
@@ -353,6 +369,7 @@ class TestClientContractValidation:
     @pytest.mark.django_db
     def test_bulk_create_contracts(self, staff_client):
         parent = ClientFactory.create()
+        _use_org(staff_client, parent)
 
         response = staff_client.post(
             _contract_bulk_url(parent, "bulk-create"),
@@ -379,6 +396,7 @@ class TestClientContractValidation:
     @pytest.mark.django_db
     def test_bulk_create_duplicate_number(self, staff_client):
         parent = ClientFactory.create()
+        _use_org(staff_client, parent)
         ClientContractFactory.create(client=parent, contract_number="SOW-DUP-B-01")
 
         response = staff_client.post(
@@ -399,6 +417,7 @@ class TestVendorContractBulk:
     @pytest.mark.django_db
     def test_bulk_create_vendor_contracts(self, staff_client):
         vendor = VendorFactory.create()
+        _use_org(staff_client, vendor)
 
         response = staff_client.post(
             _vendor_contract_bulk_url(vendor, "bulk-create"),
@@ -431,6 +450,7 @@ class TestVendorContractBulk:
     @pytest.mark.django_db
     def test_bulk_archive_and_restore_vendor_contact(self, staff_client):
         vendor = VendorFactory.create()
+        _use_org(staff_client, vendor)
         contact = VendorContactFactory.create(vendor=vendor)
         bulk_url = reverse(
             "api:v1:organization-legacy:legacy-vendor-contact-bulk-archive",
@@ -460,6 +480,7 @@ class TestClientVendorRestore:
     @pytest.mark.django_db
     def test_restore_client(self, staff_client):
         parent = ClientFactory.create()
+        _use_org(staff_client, parent)
         detail_url = reverse(
             "api:v1:organization-legacy:legacy-client-detail",
             kwargs={"uuid": str(parent.id)},
@@ -484,6 +505,7 @@ class TestClientVendorRestore:
     @pytest.mark.django_db
     def test_restore_vendor(self, staff_client):
         vendor = VendorFactory.create()
+        _use_org(staff_client, vendor)
         detail_url = reverse(
             "api:v1:organization-legacy:legacy-vendor-detail",
             kwargs={"uuid": str(vendor.id)},

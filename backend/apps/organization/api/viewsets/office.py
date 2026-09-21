@@ -1,3 +1,7 @@
+"""
+Office API viewset.
+"""
+
 from apps.core.api.pagination import StandardPagination
 from apps.organization.api.filtersets.office import OfficeFilterSet
 from apps.organization.api.serializers.office import (
@@ -9,13 +13,19 @@ from apps.organization.api.serializers.office import (
 from apps.organization.api.viewsets.base import (
     OrganizationEntityViewSet,
 )
+from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import OfficePermissions
 from apps.organization.models.office import Office
 from apps.organization.selectors.office import OfficeSelector
 from apps.organization.services.office import OfficeService
 
 
-class OfficeViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class OfficeViewSet(
+    OrganizationContextMixin,
+    IdOrCodeDetailMixin,
+    OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
+):
     """
     API endpoint for Office.
     """
@@ -27,8 +37,6 @@ class OfficeViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissing
 
     filterset_class = OfficeFilterSet
 
-    pagination_class = StandardPagination
-
     serializer_map = {
         "list": OfficeListSerializer,
         "retrieve": OfficeDetailSerializer,
@@ -36,6 +44,8 @@ class OfficeViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissing
         "update": OfficeUpdateSerializer,
         "partial_update": OfficeUpdateSerializer,
     }
+
+    pagination_class = StandardPagination
 
     permission_map = {
         "list": (OfficePermissions.VIEW,),

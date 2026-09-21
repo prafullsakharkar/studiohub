@@ -51,19 +51,20 @@ class OrganizationBaseSelector(BaseSelector):
         """
         Scope an organization-owned queryset to the request's organization.
 
-        - Staff/superusers see everything (admin context).
+        - An explicit organization context always scopes — including for
+          staff/superusers (a header-selected org must never leak sibling
+          org rows; staff listing across orgs happens with no header).
         - Authenticated users are scoped to ``request.organization`` (the
           resolved ``X-Organization`` header).
-        - No organization context means no rows (fail closed).
+        - No organization context means no rows (fail closed), except for
+          staff/superusers who retain the legacy unscoped admin listing.
         """
         user = getattr(request, "user", None) if request is not None else None
-
-        if user is not None and (user.is_staff or user.is_superuser):
-            return qs
-
         org = getattr(request, "organization", None) if request is not None else None
 
         if org is None:
+            if user is not None and (user.is_staff or user.is_superuser):
+                return qs
             return qs.none()
 
         model = qs.model

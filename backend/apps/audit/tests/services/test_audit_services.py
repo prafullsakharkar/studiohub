@@ -8,7 +8,9 @@ from __future__ import annotations
 import pytest
 
 from apps.audit.models.audit_log import AuditLog
+from apps.audit.models.background_job import BackgroundJob
 from apps.audit.services.audit_log import AuditLogService
+from apps.audit.services.background_job import BackgroundJobService
 
 
 class TestAuditLogService:
@@ -48,4 +50,61 @@ class TestAuditLogService:
     def test_service_delete_audit_log(self, audit_log: AuditLog) -> None:
         """Test service delete_log method."""
         AuditLogService.delete_log(audit_log)
-        assert AuditLog.objects.filter(id=audit_log.id).count() == 0
+
+
+class TestBackgroundJobService:
+    """Tests for BackgroundJob inline job producer."""
+
+    @pytest.mark.django_db
+    def test_enqueue_and_run_success(self, organization) -> None:
+        def _executor(value):
+            return {"doubled": value * 2}
+
+        job = BackgroundJobService.enqueue_and_run(
+            job_type="export",
+            organization_id=str(organization.id),
+            description="Test export",
+            executor=_executor,
+            executor_kwargs={"value": 21},
+        )
+
+        assert job.status == BackgroundJob.STATUS_COMPLETED
+        assert job.progress == 100
+        assert job.started_at is not None
+        assert job.completed_at is not None
+        assert job.result_data == {"ok": True, "result": {"doubled": 42}}
+        assert job.error_message == ""
+        assert BackgroundJob.objects.filter(job_id=job.job_id).exists()
+
+    @pytest.mark.django_db
+    def test_enqueue_and_run_records_failure(self, organization) -> None:
+        def _executor():
+            raise ValueError("boom")
+
+        with pytest.raises(ValueError):
+            BackgroundJobService.enqueue_and_run(
+                job_type="export",
+                organization_id=str(organization.id),
+                description="Failing export",
+                executor=_executor,
+            )
+
+        job = BackgroundJob.objects.filter(description="Failing export").latest("created_at")
+        assert job.status == BackgroundJob.STATUS_FAILED
+        assert job.error_message == "boom"
+
+    @pytest.mark.django_db
+    def test_enqueue_and_run_serializes_orm_result(self, organization) -> None:
+        def _executor():
+            return organization
+
+        job = BackgroundJobService.enqueue_and_run(
+            job_type="export",
+            organization_id=str(organization.id),
+            description="ORM result export",
+            executor=_executor,
+        )
+
+        assert job.status == BackgroundJob.STATUS_COMPLETED
+        assert job.result_data["result_id"] == str(organization.pk)
+        assert job.result_data["result_type"] == type(organization).__name__

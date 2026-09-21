@@ -40,7 +40,7 @@ from apps.core.api.pagination import StandardPagination
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.deliveries.api.serializers.delivery import DeliveryListSerializer
 from apps.deliveries.selectors.delivery import DeliverySelector
-from apps.organization.models import Organization, OrganizationMembership
+from apps.organization.models import OrganizationMembership
 from apps.production.api.serializers.asset.list import AssetListSerializer
 from apps.production.api.serializers.editorial import EditorialCutSerializer
 from apps.production.api.serializers.media.list import MediaListSerializer
@@ -72,6 +72,7 @@ from apps.production.models import (
     Workflow,
 )
 from apps.production.selectors.asset import AssetSelector
+from apps.production.selectors.dashboard import ProjectDashboardSelector
 from apps.production.selectors.media import MediaSelector
 from apps.production.selectors.project import ProjectSelector
 from apps.production.selectors.project_scoped import (
@@ -142,23 +143,11 @@ class ProjectScopeMixin:
 
     @staticmethod
     def _resolve_organization(lookup):
-        from django.core.exceptions import ValidationError as DjangoValidationError
-
         if not lookup:
             raise Http404("Organization not found.")
-        org = None
-        try:
-            org = Organization.objects.filter(id=lookup, is_deleted=False).first()
-        except (ValueError, TypeError, DjangoValidationError):
-            org = None
-        if org is None:
-            from django.db.models import Q
+        from apps.organization.selectors.organization import OrganizationSelector
 
-            org = (
-                Organization.objects.filter(is_deleted=False)
-                .filter(Q(code__iexact=lookup) | Q(slug__iexact=lookup))
-                .first()
-            )
+        org = OrganizationSelector.resolve_by_lookup(lookup)
         if org is None:
             raise Http404(f"Project {lookup} not found in organization.")
         return org
@@ -195,6 +184,32 @@ class ProjectScopeMixin:
             .select_related("role")
             .first()
         )
+
+    def _require_member_management(self, request):
+        """
+        Adding project members is privileged: staff/superusers or members
+        holding the organization ADMIN role. Plain members (or project-only
+        members) cannot grow project access.
+        """
+        from rest_framework.exceptions import PermissionDenied
+
+        from apps.organization.choices.role_priority import RolePriority
+
+        user = getattr(request, "user", None)
+        if user is not None and (
+            getattr(user, "is_staff", False) or getattr(user, "is_superuser", False)
+        ):
+            return
+        membership = getattr(request, "membership", None)
+        role = getattr(membership, "role", None)
+        if (
+            membership is not None
+            and getattr(membership, "status", None) == "active"
+            and role is not None
+            and getattr(role, "priority", None) == RolePriority.ADMIN
+        ):
+            return
+        raise PermissionDenied("Only organization admins may manage project members.")
 
     def _has_access(self, request):
         user = getattr(request, "user", None)
@@ -283,6 +298,7 @@ class ProjectMembersView(ProjectScopedAPIView):
     def post(self, request, *args, **kwargs):
         from rest_framework import status as http_status
 
+        self._require_member_management(request)
         serializer = ProjectMembershipCreateSerializer(data=request.data or {})
         serializer.is_valid(raise_exception=True)
         payload = cast(dict[str, Any], serializer.validated_data)
@@ -331,6 +347,18 @@ class ProjectSummaryView(ProjectScopedAPIView):
                 "project_id": str(self.project.id),
             }
         )
+
+
+class ProjectDashboardView(ProjectScopedAPIView):
+    """Frontend-contract fallback: GET .../projects/{project}/dashboard.
+
+    Same payload as ``GET /api/v1/projects/{id}/dashboard/`` (the frontend
+    calls the primary first and falls back here). ``<project>`` accepts UUID
+    or code; unknown values 404 and non-members 403 via the scope mixin.
+    """
+
+    def get(self, request, *args, **kwargs):
+        return Response(ProjectDashboardSelector.build(self.project))
 
 
 # ----------------------------------------------------------------------

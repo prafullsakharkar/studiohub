@@ -21,3 +21,12 @@ class GroupRoleService(BusinessService):
         "update": GroupRoleUpdated,
         "delete": GroupRoleRemoved,
     }
+
+    @classmethod
+    def invalidate_cache(cls, instance):
+        super().invalidate_cache(instance)
+        from apps.identity.services.permission_cache import PermissionCacheService
+
+        PermissionCacheService.invalidate_group_members(
+            getattr(instance, "group_id", None)
+        )

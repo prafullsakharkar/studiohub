@@ -44,7 +44,9 @@ class PublishItem(EntityModel):
     TOOL_MAYA_LIGHT = "Maya Light"
     TOOL_CINEMA_4D = "Cinema 4D"
     TOOL_MAX = "3ds Max"
-    
+    TOOL_UNREAL = "Unreal"
+    TOOL_USD = "USD"
+
     TOOL_CHOICES = [
         (TOOL_MAYA, "Maya"),
         (TOOL_HOUDINI, "Houdini"),
@@ -53,6 +55,8 @@ class PublishItem(EntityModel):
         (TOOL_MAYA_LIGHT, "Maya Light"),
         (TOOL_CINEMA_4D, "Cinema 4D"),
         (TOOL_MAX, "3ds Max"),
+        (TOOL_UNREAL, "Unreal"),
+        (TOOL_USD, "USD"),
     ]
     
     # Entity types

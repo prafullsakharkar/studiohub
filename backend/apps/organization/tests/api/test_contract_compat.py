@@ -12,6 +12,7 @@ import pytest
 from rest_framework import status
 
 from apps.identity.tests.factories import UserFactory
+from apps.organization.choices.role_priority import RolePriority
 from apps.organization.tests.factories import (
     APIKeyFactory,
     ClientFactory,
@@ -20,6 +21,8 @@ from apps.organization.tests.factories import (
     OrganizationFactory,
     OrganizationMembershipFactory,
     PositionFactory,
+    RoleFactory,
+    VendorFactory,
 )
 from apps.production.models import EditorialCut
 from apps.production.tests.factories import (
@@ -39,11 +42,15 @@ def _membered_client(org):
 
     Several selectors (invitations, api-keys, project scope) restrict rows
     to the user's organizations even for staff, so tests need the membership.
+    Staff also holds explicit permission grants (no bypass).
     """
     from rest_framework.test import APIClient
 
+    from apps.organization.tests.rbac_helpers import grant_all_known_codes
+
     user = UserFactory.create(is_staff=True)
     OrganizationMembershipFactory.create(user=user, organization=org)
+    grant_all_known_codes(user)
     client = APIClient()
     client.force_authenticate(user=user)
     return client, user
@@ -78,6 +85,22 @@ class TestNestedOrganizationRoutes:
         )
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert isinstance(resp.data, list)
+
+    def test_nested_org_accepts_frontend_mock_id(self, staff_client):
+        """Regression: frontend sends mock id org-apex-01 (was 404)."""
+        org = OrganizationFactory.create(code="APEX", slug="apex-digital")
+        ClientFactory.create(organization=org, name="Acme")
+        VendorFactory.create(organization=org, name="Vendor One")
+        clients = staff_client.get(
+            "/api/organizations/org-apex-01/clients/", **_org_header(org)
+        )
+        assert clients.status_code == status.HTTP_200_OK, clients.data
+        assert clients.data["count"] == 1
+        vendors = staff_client.get(
+            "/api/organizations/org-apex-01/vendors/", **_org_header(org)
+        )
+        assert vendors.status_code == status.HTTP_200_OK, vendors.data
+        assert vendors.data["count"] == 1
 
     def test_nested_unknown_org_404(self, staff_client):
         resp = staff_client.get("/api/organizations/nope/departments/")
@@ -246,6 +269,47 @@ class TestProjectScopedAPI:
             format="json",
         )
         assert resp.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_members_forbidden_for_plain_member(self):
+        from rest_framework.test import APIClient
+
+        org = OrganizationFactory.create()
+        project = ProjectFactory.create(organization=org)
+        user = UserFactory.create()
+        OrganizationMembershipFactory.create(user=user, organization=org)
+        client = APIClient()
+        client.force_authenticate(user=user)
+        newcomer = UserFactory.create()
+        resp = client.post(
+            self._url(org, project, "members"),
+            data={"email": newcomer.email, "role": "Artist"},
+            **_org_header(org),
+            format="json",
+        )
+        assert resp.status_code == status.HTTP_403_FORBIDDEN, resp.data
+
+    def test_members_allowed_for_org_admin(self):
+        from rest_framework.test import APIClient
+
+        org = OrganizationFactory.create()
+        project = ProjectFactory.create(organization=org)
+        admin_role = RoleFactory.create(
+            organization=org, priority=RolePriority.ADMIN, code="org-admin"
+        )
+        user = UserFactory.create()
+        OrganizationMembershipFactory.create(
+            user=user, organization=org, role=admin_role
+        )
+        client = APIClient()
+        client.force_authenticate(user=user)
+        newcomer = UserFactory.create()
+        resp = client.post(
+            self._url(org, project, "members"),
+            data={"email": newcomer.email, "role": "Artist"},
+            **_org_header(org),
+            format="json",
+        )
+        assert resp.status_code == status.HTTP_201_CREATED, resp.data
 
     def test_entity_lists_are_paginated_and_scoped(self):
         org, project, client = self._setup()

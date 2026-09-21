@@ -32,6 +32,10 @@ class AuthenticationValidator(
     """
 
     MAX_LOGIN_ATTEMPTS = 5
+    # Throttle window: only failures inside this window count. Without a
+    # window, stale failures accumulated permanently and locked accounts
+    # forever (successes never reset the counter).
+    MAX_LOGIN_ATTEMPT_WINDOW_MINUTES = 15
 
     # ---------------------------------------------------------
     # User
@@ -58,7 +62,14 @@ class AuthenticationValidator(
         cls,
         user,
     ):
-        if hasattr(user, "email_verified") and user.email_verified:
+        # NOTE: fixed to reference the real ``is_email_verified`` field with
+        # the correct polarity (was: nonexistent ``email_verified`` attr with
+        # inverted logic, so it could never raise). Kept as an explicit
+        # opt-in primitive — the login chain does NOT call it because email
+        # verification is currently not a login gate (de facto contract:
+        # factory/seed users log in unverified). Wire it into a flow only
+        # when the product decides to enforce verification.
+        if not getattr(user, "is_email_verified", False):
             raise EmailNotVerified()
 
     @classmethod
@@ -99,6 +110,7 @@ class AuthenticationValidator(
                 username=username,
                 ip_address=ip_address,
             )
+            .recent(cls.MAX_LOGIN_ATTEMPT_WINDOW_MINUTES)
             .count()
         )
 
@@ -160,9 +172,9 @@ class AuthenticationValidator(
             user,
         )
 
-        cls.validate_email_verified(
-            user,
-        )
+        # NOTE: email verification is intentionally not enforced here (see
+        # validate_email_verified). Verification state must not lock users
+        # out of login until the product adopts it as a gate.
 
         cls.validate_user_locked(
             user,

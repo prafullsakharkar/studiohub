@@ -26,3 +26,17 @@ def _clear_django_cache():
 
     # Clear the app registry to ensure clean state between tests
     apps.clear_cache()
+
+
+@pytest.fixture(autouse=True)
+def _clear_permission_cache():
+    """Clear the cache between tests.
+
+    Permission resolution is cached (1h TTL); without this, grants created in
+    one test leak into another when user PKs collide across rolled-back tests.
+    """
+    from django.core.cache import cache
+
+    cache.clear()
+    yield
+    cache.clear()

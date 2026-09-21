@@ -61,7 +61,7 @@ class TestThemeViewSet:
 
     @pytest.mark.django_db
     def test_create_viewset(self, authenticated_client) -> None:
-        """Test create endpoint."""
+        """Non-staff users cannot create themes (staff-only writes)."""
         url = "/api/v1/settings/themes/"
         data = {
             "name": "Test Theme",
@@ -69,6 +69,19 @@ class TestThemeViewSet:
             "theme_type": "light",
         }
         response = authenticated_client.post(url, data, format="json")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert not Theme.objects.filter(code="viewset_test_theme").exists()
+
+    @pytest.mark.django_db
+    def test_create_viewset_staff(self, staff_client) -> None:
+        """Staff users can create themes."""
+        url = "/api/v1/settings/themes/"
+        data = {
+            "name": "Test Theme",
+            "code": "viewset_test_theme",
+            "theme_type": "light",
+        }
+        response = staff_client.post(url, data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
         assert Theme.objects.filter(code="viewset_test_theme").exists()
 

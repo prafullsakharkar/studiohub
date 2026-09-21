@@ -5,9 +5,11 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.audit.services.background_job import BackgroundJobService
 from apps.core.api.pagination import StandardPagination
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.deliveries.api.serializers.delivery import (
+    STATUS_OUTPUT_MAP,
     DeliveryAddVersionSerializer,
     DeliveryApproveSerializer,
     DeliveryCreateSerializer,
@@ -15,6 +17,7 @@ from apps.deliveries.api.serializers.delivery import (
     DeliveryListSerializer,
     DeliveryPrepareSerializer,
     DeliveryRejectSerializer,
+    DeliveryRemoveVersionSerializer,
     DeliverySubmitSerializer,
     DeliveryUpdateSerializer,
     DeliveryValidateSerializer,
@@ -28,6 +31,8 @@ from apps.deliveries.services.delivery import (
     complete_delivery,
     prepare_delivery,
     reject_delivery,
+    remove_version_from_delivery,
+    retry_delivery,
     submit_delivery,
     validate_delivery,
 )
@@ -58,6 +63,7 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
         "partial_update": (DeliveryPermissions.UPDATE,),
         "destroy": (DeliveryPermissions.DELETE,),
         "add_version": (DeliveryPermissions.UPDATE,),
+        "remove_version": (DeliveryPermissions.UPDATE,),
         "validate": (DeliveryPermissions.UPDATE,),
         "prepare": (DeliveryPermissions.UPDATE,),
         "submit": (DeliveryPermissions.UPDATE,),
@@ -65,10 +71,21 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
         "reject": (DeliveryPermissions.UPDATE,),
         "complete": (DeliveryPermissions.UPDATE,),
         "cancel": (DeliveryPermissions.UPDATE,),
+        "retry": (DeliveryPermissions.UPDATE,),
     }
 
     search_fields = ("name", "code", "client__name")
     ordering_fields = ("name", "created_at", "status")
+
+    @staticmethod
+    def _frontend_result(result):
+        """Map backend status words in action result dicts to contract words."""
+        if isinstance(result, dict) and "status" in result:
+            result = {
+                **result,
+                "status": STATUS_OUTPUT_MAP.get(result["status"], result["status"]),
+            }
+        return result
 
     def get_perform_create_kwargs(self):
         user = self.request.user
@@ -100,6 +117,21 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
 
         return Response(DeliveryDetailSerializer(delivery).data, status=status.HTTP_201_CREATED)
 
+    @action(detail=True, methods=["post"], url_path="remove-version")
+    def remove_version(self, request, *args, **kwargs):
+        """Remove a version reference from the delivery."""
+        delivery = self.get_object()
+        serializer = DeliveryRemoveVersionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        delivery = remove_version_from_delivery(
+            delivery_id=str(delivery.id),
+            version_ref_id=str(serializer.validated_data["version_ref_id"]),
+            organization_id=str(request.organization.id),
+        )
+
+        return Response(DeliveryDetailSerializer(delivery).data)
+
     @action(detail=True, methods=["post"], url_path="validate")
     def validate(self, request, *args, **kwargs):
         """Validate delivery package contents."""
@@ -113,7 +145,7 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
             organization_id=str(request.organization.id),
         )
 
-        return Response(result)
+        return Response(self._frontend_result(result))
 
     @action(detail=True, methods=["post"], url_path="prepare")
     def prepare(self, request, *args, **kwargs):
@@ -128,7 +160,7 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
             organization_id=str(request.organization.id),
         )
 
-        return Response(result)
+        return Response(self._frontend_result(result))
 
     @action(detail=True, methods=["post"], url_path="submit")
     def submit(self, request, *args, **kwargs):
@@ -137,13 +169,23 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
         serializer = DeliverySubmitSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        result = submit_delivery(
-            delivery_id=str(delivery.id),
-            user_id=str(request.user.id),
+        job = BackgroundJobService.enqueue_and_run(
+            job_type="export",
             organization_id=str(request.organization.id),
+            description=f"Submit delivery {delivery.code or delivery.name}",
+            executor=submit_delivery,
+            executor_kwargs={
+                "delivery_id": str(delivery.id),
+                "user_id": str(request.user.id),
+                "organization_id": str(request.organization.id),
+            },
         )
 
-        return Response(result)
+        result = (job.result_data or {}).get("result")
+        return Response(
+            self._frontend_result(result or {}),
+            headers={"X-Background-Job": job.job_id},
+        )
 
     @action(detail=True, methods=["post"], url_path="approve")
     def approve(self, request, *args, **kwargs):
@@ -199,6 +241,19 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
             delivery_id=str(delivery.id),
             user_id=str(request.user.id),
             cancellation_reason=request.data.get("cancellation_reason", ""),
+            organization_id=str(request.organization.id),
+        )
+
+        return Response(DeliveryDetailSerializer(delivery).data)
+
+    @action(detail=True, methods=["post"], url_path="retry")
+    def retry(self, request, *args, **kwargs):
+        """Retry a delivery: reset to Prepared (frontend `retryDelivery`)."""
+        delivery = self.get_object()
+
+        delivery = retry_delivery(
+            delivery_id=str(delivery.id),
+            user_id=str(request.user.id),
             organization_id=str(request.organization.id),
         )
 

@@ -42,6 +42,7 @@ class UserRoleViewSet(OrganizationEntityViewSet):  # pyright: ignore[reportMissi
     permission_map = {
         "list": (UserRolePermissions.ASSIGN,),
         "retrieve": (UserRolePermissions.ASSIGN,),
+        "create": (UserRolePermissions.ASSIGN,),
         "assign": (UserRolePermissions.ASSIGN,),
         "revoke": (UserRolePermissions.REVOKE,),
         "update": (UserRolePermissions.ASSIGN,),

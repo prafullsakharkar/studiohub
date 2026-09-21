@@ -121,6 +121,11 @@ def _org_parent(organization=None):
     return parent
 
 
+def _hdr(parent):
+    """Organization header for the parent's organization (required context)."""
+    return {"HTTP_X_ORGANIZATION_ID": str(parent.organization_id)}
+
+
 class TestClientContractViewSetAuth:
     """Authentication and permission tests."""
 
@@ -192,7 +197,10 @@ class TestClientContractViewSetCRUD:
         parent = _org_parent()
 
         response = staff_client.post(
-            _client_list_url(parent), _contract_payload(), format="json"
+            _client_list_url(parent),
+            _contract_payload(),
+            format="json",
+            **_hdr(parent),
         )
 
         assert response.status_code == 201
@@ -219,7 +227,10 @@ class TestClientContractViewSetCRUD:
         payload["organization_id"] = str(other_parent.organization_id)
 
         response = staff_client.post(
-            _client_list_url(parent), payload, format="json"
+            _client_list_url(parent),
+            payload,
+            format="json",
+            **_hdr(parent),
         )
 
         assert response.status_code == 201
@@ -414,7 +425,10 @@ class TestVendorContractViewSet:
         vendor = VendorFactory.create()
 
         response = staff_client.post(
-            _vendor_list_url(vendor), _vendor_contract_payload(), format="json"
+            _vendor_list_url(vendor),
+            _vendor_contract_payload(),
+            format="json",
+            **_hdr(vendor),
         )
 
         assert response.status_code == 201

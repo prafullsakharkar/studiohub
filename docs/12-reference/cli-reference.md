@@ -6,7 +6,7 @@ This document provides a centralized reference for commonly used command-line op
 
 The examples assume the project's recommended technology stack:
 
-- Python 3.14+
+- Python 3.13+
 - Django 6
 - React 19
 - Vite

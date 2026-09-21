@@ -1,5 +1,11 @@
 services:
 
+  mailpit:
+    image: axllent/mailpit
+
+    networks:
+      - backend
+
   django:
     build:
       context: ../..

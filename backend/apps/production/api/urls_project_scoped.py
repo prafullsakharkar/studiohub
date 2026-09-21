@@ -11,6 +11,7 @@ from django.urls import path
 from apps.production.api.views.project_scoped import (
     ProjectActivityView,
     ProjectAssetsView,
+    ProjectDashboardView,
     ProjectDeliveriesView,
     ProjectEditorialView,
     ProjectFilesView,
@@ -33,6 +34,7 @@ PROJECT = "<str:project_id>"
 _ROUTES = [
     ("members", ProjectMembersView),
     ("summary", ProjectSummaryView),
+    ("dashboard", ProjectDashboardView),
     ("sequences", ProjectSequencesView),
     ("shots", ProjectShotsView),
     ("tasks", ProjectTasksView),

@@ -31,6 +31,8 @@ LOCAL_APPS = [
     "apps.deliveries",
     "apps.publishing",
     "apps.scheduling",
+    "apps.masterdata",
+    "apps.platform",
 ]
 
 INSTALLED_APPS = (

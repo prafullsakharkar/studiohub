@@ -110,6 +110,11 @@ def _org_client(organization=None):
     return client
 
 
+def _hdr(parent):
+    """Organization header for the parent's organization (required context)."""
+    return {"HTTP_X_ORGANIZATION_ID": str(parent.organization_id)}
+
+
 class TestClientContactViewSetAuth:
     """Authentication and permission tests."""
 
@@ -181,7 +186,10 @@ class TestClientContactViewSetCRUD:
         parent = _org_client()
 
         response = staff_client.post(
-            _client_list_url(parent), _contact_payload(), format="json"
+            _client_list_url(parent),
+            _contact_payload(),
+            format="json",
+            **_hdr(parent),
         )
 
         assert response.status_code == 201
@@ -208,7 +216,10 @@ class TestClientContactViewSetCRUD:
         payload["organization_id"] = str(other_client.organization_id)
 
         response = staff_client.post(
-            _client_list_url(parent), payload, format="json"
+            _client_list_url(parent),
+            payload,
+            format="json",
+            **_hdr(parent),
         )
 
         assert response.status_code == 201
@@ -411,7 +422,12 @@ class TestVendorContactViewSet:
             "is_primary": True,
         }
 
-        response = staff_client.post(_vendor_list_url(vendor), payload, format="json")
+        response = staff_client.post(
+            _vendor_list_url(vendor),
+            payload,
+            format="json",
+            **_hdr(vendor),
+        )
 
         assert response.status_code == 201
         data = response.json()

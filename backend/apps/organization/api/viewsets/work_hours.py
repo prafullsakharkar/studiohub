@@ -1,3 +1,8 @@
+"""
+WorkHours API viewset.
+"""
+
+from apps.core.api.pagination import StandardPagination
 from apps.organization.api.filtersets.work_hours import (
     WorkHoursFilterSet,
 )
@@ -10,6 +15,8 @@ from apps.organization.api.serializers.work_hours import (
 from apps.organization.api.viewsets.base import (
     OrganizationEntityViewSet,
 )
+from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import (
     WorkHoursPermissions,
 )
@@ -25,6 +32,8 @@ from apps.organization.services.work_hours import (
 
 
 class WorkHoursViewSet(
+    OrganizationContextMixin,
+    IdOrCodeDetailMixin,
     OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
     """
@@ -45,6 +54,8 @@ class WorkHoursViewSet(
         "update": WorkHoursUpdateSerializer,
         "partial_update": WorkHoursUpdateSerializer,
     }
+
+    pagination_class = StandardPagination
 
     permission_map = {
         "list": (WorkHoursPermissions.VIEW,),

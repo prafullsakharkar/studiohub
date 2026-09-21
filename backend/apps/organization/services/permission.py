@@ -20,3 +20,10 @@ class PermissionService(BusinessService):
         "update": PermissionUpdated,
         "delete": PermissionDeleted,
     }
+
+    @classmethod
+    def invalidate_cache(cls, instance):
+        super().invalidate_cache(instance)
+        from apps.identity.services.permission_cache import PermissionCacheService
+
+        PermissionCacheService.invalidate_permission_holders(instance)

@@ -27,11 +27,15 @@ class InvitationSelector(OrganizationBaseSelector):
         view=None,
     ) -> InvitationQuerySet:
         """
-        Return invitations scoped to the requesting user's organizations.
+        Return invitations scoped to the requesting user's organizations,
+        plus invitations addressed to the user (invitees are not members
+        yet, but must see and act on their own invitations).
 
         Staff users may see all invitations; regular users are limited
         to organizations they belong to.
         """
+        from django.db.models import Q
+
         queryset = Invitation.objects.select_related(
             "organization",
             "role",
@@ -45,9 +49,11 @@ class InvitationSelector(OrganizationBaseSelector):
             user = request.user
 
             if not user.is_superuser:
-                queryset = queryset.filter(
-                    organization__in=user.organizations.all(),
-                )
+                scope = Q(organization__in=user.organizations.all())
+                user_email = (getattr(user, "email", "") or "").strip()
+                if getattr(user, "is_authenticated", False) and user_email:
+                    scope = scope | Q(email__iexact=user_email)
+                queryset = queryset.filter(scope)
 
         return queryset
 

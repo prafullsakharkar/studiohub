@@ -10,7 +10,7 @@ lint.select = [
     "DJ"
     ]
 # select = ["E", "F", "I", "D"]
-target-version = "py314"
+target-version = "py313"
 lint.ignore = ["E501", "F403", "F405", "DJ008",]
 # ignore = ["E501", "D100", "D101", "D102"]
 exclude = [

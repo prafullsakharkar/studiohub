@@ -11,6 +11,7 @@ from rest_framework import viewsets
 
 from apps.core.api.mixins import (
     ContextMixin,
+    DiagnosticContextMixin,
     ErrorMixin,
     FilteringMixin,
     PaginationMixin,
@@ -24,6 +25,7 @@ from apps.core.permissions.base import IsAuthenticatedPermission
 class BaseViewSet(
     ResponseMixin,
     ContextMixin,
+    DiagnosticContextMixin,
     ErrorMixin,
     FilteringMixin,
     PaginationMixin,
@@ -88,15 +90,30 @@ class BaseViewSet(
         Returns the full tuple from ``permission_map`` so consumers (e.g.
         ``apps.identity.permissions.HasPermission``) can iterate over every
         required permission code.
+
+        Returns ``None`` when the action has no entry — consumers must treat
+        that as DENY (fail closed). An action that is intentionally open to
+        every authenticated user must declare an explicit empty tuple ().
+        When no action was routed at all (``action`` is None, e.g. a wrong
+        HTTP method on a valid route), returns () so DRF's own 405 handling
+        applies after permission checks pass.
         """
 
+        action = getattr(self, "action", None)
+
+        if not action:
+            return ()
+
+        if action not in self.permission_map:
+            return None
+
         permissions = self.permission_map.get(
-            self.action,
+            action,
             (),
         )
 
         if not permissions:
-            return None
+            return ()
 
         return permissions
 

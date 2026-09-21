@@ -8,6 +8,7 @@ from apps.audit.filters.login_history import LoginHistoryFilter
 from apps.audit.selectors.login_history import LoginHistorySelector
 from apps.audit.serializers.login_history import LoginHistorySerializer
 from apps.audit.services.login_history import LoginHistoryService
+from apps.core.api.pagination import StandardPagination
 
 
 class LoginHistoryViewSet(
@@ -23,7 +24,14 @@ class LoginHistoryViewSet(
     """
     
     serializer_class = LoginHistorySerializer
+
+    # Reads stay open to authenticated users (org-scoped selectors).
+    permission_map = {
+        "list": (),
+        "retrieve": (),
+    }
     service_class = LoginHistoryService
+    pagination_class = StandardPagination
     selector_class = LoginHistorySelector
     filter_class = LoginHistoryFilter
     ordering = ("-created_at",)
@@ -35,4 +43,4 @@ class LoginHistoryViewSet(
             request=self.request,
             view=self,
         )
-        return self.filter_class(queryset, data=self.request.query_params).queryset
+        return self.filter_class(queryset, data=self.request.query_params).qs

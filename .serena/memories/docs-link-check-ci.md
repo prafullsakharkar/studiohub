@@ -19,4 +19,5 @@ Implemented the remaining P0 item from `docs/architecture/documentation-audit.md
 
 ## Conventions to remember
 - When deleting/renaming backend files, grep docs for the old path — docs link-check CI will fail on broken references.
+- 2026-09-18 incident proving the above: deleting the duplicated `backend/apps/core/api/permissions/*` modules (ADR-0032) broke 4 links in `docs/architecture/core-refactor-analysis.md`; repointed at `backend/apps/production/api/views/project_scoped.py` (the domain implementation the doc itself had recommended). Verify with `python scripts/check_docs_links.py` before pushing deletions.
 - Remaining audit TODO (P1, not done): adr-consolidation — reconcile ADR-0005 (event-driven architecture) vs ADR-0018 (event bus architecture).

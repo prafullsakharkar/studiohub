@@ -7,13 +7,47 @@ from rest_framework import serializers
 
 from apps.publishing.models import PublishItem
 
+# Backend status -> frontend contract words (types/publishing.ts
+# PublishStatus). DB keeps backend words; only the read shape is mapped.
+# Archived items (via unpublish) read as Unpublished.
+STATUS_OUTPUT_MAP = {
+    PublishItem.STATUS_PENDING: "Queued",
+    PublishItem.STATUS_VALIDATING: "Validating",
+    PublishItem.STATUS_VALIDATED: "Published",
+    PublishItem.STATUS_EXPORTING: "Publishing",
+    PublishItem.STATUS_EXPORTED: "Published",
+    PublishItem.STATUS_FAILED: "Failed",
+    PublishItem.STATUS_CANCELLED: "Unpublished",
+}
+
+
+def frontend_status(item):
+    """Map a PublishItem to its frontend contract status word."""
+    if item.is_archived:
+        return "Unpublished"
+    return STATUS_OUTPUT_MAP.get(item.status, item.status)
+
+
+def frontend_result_status(result):
+    """Map backend status words in action result dicts to contract words."""
+    if isinstance(result, dict) and "status" in result:
+        return {
+            **result,
+            "status": STATUS_OUTPUT_MAP.get(result["status"], result["status"]),
+        }
+    return result
+
 
 class PublishListSerializer(serializers.ModelSerializer[PublishItem]):
     """Serializer for publish list view."""
-    
+
     client_name = serializers.CharField(source="project.name", read_only=True)
     entity_type_display = serializers.CharField(source="get_entity_type_display", read_only=True)
     dcc_tool_display = serializers.CharField(source="get_dcc_tool_display", read_only=True)
+    status = serializers.SerializerMethodField()
+
+    def get_status(self, obj):
+        return frontend_status(obj)
     
     class Meta:
         model = PublishItem
@@ -59,6 +93,10 @@ class PublishDetailSerializer(serializers.ModelSerializer[PublishItem]):
     project_name = serializers.CharField(source="project.name", read_only=True)
     entity_type_display = serializers.CharField(source="get_entity_type_display", read_only=True)
     dcc_tool_display = serializers.CharField(source="get_dcc_tool_display", read_only=True)
+    status = serializers.SerializerMethodField()
+
+    def get_status(self, obj):
+        return frontend_status(obj)
     
     class Meta:
         model = PublishItem
@@ -116,9 +154,7 @@ class PublishCreateSerializer(serializers.Serializer[Any]):
     entity_code = serializers.CharField(required=True, max_length=255)
     entity_name = serializers.CharField(required=True, max_length=255)
     dcc_tool = serializers.ChoiceField(
-        choices=[
-            "Maya", "Houdini", "Blender", "Nuke", "Maya Light", "Cinema 4D", "3ds Max"
-        ],
+        choices=[c[0] for c in PublishItem.TOOL_CHOICES],
         required=True,
     )
     dcc_version = serializers.CharField(required=False, allow_blank=True, max_length=50)

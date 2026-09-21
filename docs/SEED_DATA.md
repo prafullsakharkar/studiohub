@@ -2,6 +2,9 @@
 
 Canonical command: `uv run python manage.py seed_studiohub --force`
 
+Demo command (foundation + Phase 1-3 gap entities):
+`uv run python manage.py seed_demo_data --force`
+
 ## Source of truth
 
 `studiohub-react/src/mocks/db/**` (resolved via `$STUDIOHUB_REACT_MOCKS`,
@@ -42,7 +45,42 @@ unresolvable references are skipped and reported, never guessed.
 | activities (seed_dev) | audit.Activity | `(description, user)` | `metadata.project_id/code` linked post-seed |
 | mockClients/Vendors/People/Depts… | organization.* (seed_dev) | code/email per model | unchanged foundation |
 
-## Command options
+## `seed_demo_data` (Phase 4)
+
+`apps/core/management/commands/seed_demo_data.py` runs the full
+`seed_studiohub` chain, then seeds the contract entities `seed_studiohub`
+predates: masterdata catalog + org configs (`masterData/initialMasterData.ts`),
+automation rules/logs (`production/workflow.ts` — the served dataset),
+scheduling resources/schedules/leaves/holidays/events
+(`production/scheduling.ts`), saved/recent searches (`intelligence/search.ts`).
+
+```bash
+seed_demo_data --force [--dry-run] [--skip-base] [--skip-validate]
+               [--only masterdata,automations,scheduling,search]
+```
+
+- Same idempotency contract as `seed_studiohub` (natural keys,
+  restore-instead-of-duplicate, re-runnable with zero creates).
+- Mock-root resolution is shared (`_resolve_mock_root` in
+  `seed_production_mocks.py`): `STUDIOHUB_REACT_MOCKS` → sibling
+  `studiohub-react/` → legacy in-repo `frontend/`. This also fixed
+  `seed_dev`/`seed_production_mocks`, which hardcoded the in-repo path and
+  crashed with `FileNotFoundError`.
+- `update_or_create` in `seed_production_mocks.py` is restore-aware
+  (`_update_or_create`): re-runs no longer re-INSERT soft-deleted natural
+  keys (was `IntegrityError` on shots); timelog seeding dedupes on
+  (task, person, date, duration).
+- Deterministic seed decisions (reported, never silent): saved/recent
+  searches go to the primary demo user (`usr-001`) in their first org;
+  studio holidays are seeded into every org (`(organization, date)` key);
+  `SoftwareVersion.code` reuses the unique `version_code`;
+  `MasterFileType.code` is derived from the extension; the two reused
+  status codes keep the bare code for the first-seen entity type and get
+  `{entity_type}_{code}` afterwards (`shot_in_progress`, `asset_approved`);
+  mock `workflow_id`/`user_id`-style string ids that resolve to nothing are
+  left unlinked.
+
+## Command options (seed_studiohub)
 
 ```bash
 seed_studiohub --force [--reset] [--skip-base] [--dry-run] [--skip-validate]
