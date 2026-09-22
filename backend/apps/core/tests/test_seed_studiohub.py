@@ -237,3 +237,54 @@ class TestSeedStudiohub:
             production=True, verbosity=0,
         )
         assert Project.objects.filter(code="PRJ1").exists()
+
+    def test_platform_phase_seeds_masterdata_and_notifications(self, mock_root):
+        # Extend the fixture with platform + masterdata mock sources.
+        org_file = mock_root / "organization" / "organization.ts"
+        org_file.write_text(
+            org_file.read_text()
+            + 'export const mockStudioNotifications = [{"id":"notif-t1","title":"N",'
+            '"message":"M","type":"info","category":"","read":false,"link":"",'
+            '"timestamp":"","org_code":"TST1"}];\n'
+            + 'export const mockProductionReports = [{"id":"rep-t1","title":"R",'
+            '"org_code":"TST1","category":"","status":"Complete","generated_at":"",'
+            '"generated_by":"","summary_metrics":{},"download_url":""}];\n'
+        )
+        master_dir = mock_root / "masterData"
+        master_dir.mkdir(parents=True, exist_ok=True)
+        (master_dir / "initialMasterData.ts").write_text(
+            'export const mockGlobalSoftware = [{"id":"sw-t1","code":"SW1","name":"Soft",'
+            '"vendor":"V","category":"","scope":"GLOBAL"}];\n'
+            'export const mockCustomSoftware = [];\n'
+            'export const mockSoftwareVersions = [];\n'
+            'export const mockCustomSoftwareVersions = [];\n'
+            'export const mockMasterStatuses = [{"id":"st-t1","code":"todo","name":"Todo",'
+            '"entity_type":"Task","category":"","color":"","order":0,"is_default":false,'
+            '"is_final":false,"status":"active","scope":"GLOBAL"}];\n'
+            'export const mockMasterTaskTypes = [{"id":"tt-t1","code":"anim",'
+            '"name":"Animation","category":"","department_code":"","department_name":"",'
+            '"color":"","icon":""}];\n'
+            'export const mockMasterAssetTypes = [];\n'
+            'export const mockMasterShotTypes = [];\n'
+            'export const mockMasterReviewTypes = [];\n'
+            'export const mockMasterFileTypes = [];\n'
+            'export const mockOrganizationSoftwareConfigs = [];\n'
+            'export const mockOrganizationStatusConfigs = [];\n'
+        )
+
+        call_command(
+            "seed_studiohub", force=True, skip_base=True, skip_validate=True,
+            platform=True, verbosity=0,
+        )
+
+        from apps.masterdata.models import MasterStatus, MasterTaskType, Software
+        from apps.platform.models import ProductionReport, StudioNotification
+
+        org = Organization.objects.get(code="TST1")
+        assert Software.objects.filter(code="SW1").exists()
+        assert MasterStatus.objects.filter(code="todo").exists()
+        assert MasterTaskType.objects.filter(code="anim").exists()
+        # Mock string ids become deterministic UUIDs, not opaque labels.
+        notif = StudioNotification.objects.get(organization=org)
+        assert isinstance(str(notif.id), str) and "-" in str(notif.id)
+        assert ProductionReport.objects.filter(organization=org).exists()

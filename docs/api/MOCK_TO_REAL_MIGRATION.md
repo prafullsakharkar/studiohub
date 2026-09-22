@@ -78,6 +78,20 @@ sequence `VEL1` → `VEL01` (mock typo; file untouched). Seeded: 4 orgs,
 19 users, 23 org memberships, 8 projects (4/2/1/1), 9 sequences, 9 shots,
 11 assets, 11 tasks, 8 timelogs, 5 versions, 4 reviews, 2 playlists, 5 media,
 3 workflows, 3 editorial, 3 notes, 23 project memberships, 14 activity links.
+
+The `platform` phase additionally seeds the Platform Admin masterdata catalog
+and platform notifications/reports by reusing `seed_demo_data`'s deterministic
+phase (`_seed_overlay_masterdata` → `_build_context` + `_seed_masterdata`), so a
+canonical `seed_studiohub --force` run populates the catalog with the same
+records `seed_demo_data` would. Catalog rows get stable UUID ids (mock string
+ids like `notif-01`/`rep-001` are hashed via `uuid5(NAMESPACE_OID, ...)`), and
+the overlay is idempotent (restore + `update_or_create`). If the
+`masterData/initialMasterData.ts` mock source is absent (e.g. minimal seed
+test fixtures), the phase reports `masterdata: skipped` instead of failing.
+Seeded catalog: 8 software, 26 statuses, 9 task types, 8 asset types,
+4 shot types, 3 review types, 7 file types, 4 notifications, 3 reports
+(platform roles/groups/departments/positions have no mock source and remain 0
+by design — see `docs/SEED_DATA.md`).
 Full detail: `docs/SEED_DATA.md`.
 
 ## Frontend switch (no frontend code changes)

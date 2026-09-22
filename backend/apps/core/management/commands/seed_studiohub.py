@@ -20,6 +20,9 @@ What it does:
    entities per organization, mock-driven user/roleenburg memberships,
    supplemental persona users, editorial cuts, project notes, and activity
    project linkage.
+3. Seeds the masterdata catalog (software/versions, statuses, entity types,
+   org configs) plus platform notifications/reports so the Platform Admin
+   surfaces real data against the API.
 3. Validates relationships and integrity afterwards (fails on critical
    violations unless ``--skip-validate``).
 
@@ -41,6 +44,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -48,6 +52,16 @@ from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+
+def _stable_uuid(seed: str) -> uuid.UUID:
+    """Derive a deterministic UUID from a mock string id (e.g. ``notif-01``).
+
+    Mock ids are opaque frontend labels, but platform models use UUID primary
+    keys. Mapping through a fixed namespace keeps seeding idempotent while
+    producing valid model ids.
+    """
+    return uuid.uuid5(uuid.NAMESPACE_OID, seed)
+
 
 REACT_MOCK_FILES = {
     "organizations": ("organization/organization.ts", "mockOrganizations"),
@@ -267,7 +281,7 @@ class Command(BaseCommand):
         parser.add_argument("--content", action="store_true",
                             help="Only seed editorial/notes/activity linkage.")
         parser.add_argument("--platform", action="store_true",
-                            help="Only seed notifications/reports (+ orgs/content).")
+                            help="Only seed notifications/reports + masterdata catalog (+ orgs/content).")
 
     # ------------------------------------------------------------------
     # Entry point
@@ -334,6 +348,7 @@ class Command(BaseCommand):
         if "platform" in phases:
             org_by_code = org_by_code or self._seed_overlay_orgs(mock_root, reporter)
             self._seed_overlay_platform(mock_root, reporter, org_by_code)
+            self._seed_overlay_masterdata(mock_root, reporter)
         self.stdout.write(reporter.summary())
         if not options["skip_validate"]:
             criticals = self._validate(reporter)
@@ -1065,13 +1080,13 @@ class Command(BaseCommand):
                 continue
             self._restore_matching(
                 StudioNotification,
-                {"organization": org, "id": item["id"]},
+                {"organization": org, "id": _stable_uuid(item["id"])},
                 reporter,
                 "notifications",
             )
             _, was_created = StudioNotification.objects.update_or_create(
                 organization=org,
-                id=item["id"],
+                id=_stable_uuid(item["id"]),
                 defaults={
                     "title": item.get("title", ""),
                     "message": item.get("message", ""),
@@ -1093,13 +1108,13 @@ class Command(BaseCommand):
                 continue
             self._restore_matching(
                 ProductionReport,
-                {"organization": org, "id": item["id"]},
+                {"organization": org, "id": _stable_uuid(item["id"])},
                 reporter,
                 "reports",
             )
             _, was_created = ProductionReport.objects.update_or_create(
                 organization=org,
-                id=item["id"],
+                id=_stable_uuid(item["id"]),
                 defaults={
                     "title": item.get("title", ""),
                     "project_code": item.get("project_code", ""),
@@ -1114,6 +1129,22 @@ class Command(BaseCommand):
                 },
             )
             reporter.add("reports", "created" if was_created else "updated")
+
+    def _seed_overlay_masterdata(self, mock_root, reporter):
+        """Seed the masterdata catalog (software/versions, statuses, entity
+        types, org configs) by reusing ``seed_demo_data``'s deterministic
+        phase, so a canonical ``seed_studiohub`` run populates the Platform
+        Admin catalog. Idempotent and safe if ``seed_demo_data`` later runs."""
+        from apps.core.management.commands.seed_demo_data import Command as DemoCommand
+
+        if not (mock_root / "masterData" / "initialMasterData.ts").is_file():
+            reporter.add("masterdata", "skipped")
+            reporter.note("masterdata", "no masterData/initialMasterData.ts mock source")
+            return
+
+        demo = DemoCommand()
+        context = demo._build_context(mock_root, reporter)
+        demo._seed_masterdata(mock_root, reporter, context)
 
     # ------------------------------------------------------------------
     # Activity linkage
