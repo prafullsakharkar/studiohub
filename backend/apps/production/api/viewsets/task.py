@@ -52,6 +52,7 @@ class TaskViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignore
         "existence_check": (TaskPermissions.CREATE,),
         "archive": (TaskPermissions.UPDATE,),
         "restore": (TaskPermissions.UPDATE,),
+        "archived": (TaskPermissions.VIEW,),
     }
 
     search_fields = ("title", "code", "description")

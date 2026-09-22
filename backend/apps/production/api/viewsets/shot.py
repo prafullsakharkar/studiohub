@@ -45,6 +45,7 @@ class ShotViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignore
         "existence_check": (ShotPermissions.CREATE,),
         "archive": (ShotPermissions.DELETE,),
         "restore": (ShotPermissions.UPDATE,),
+        "archived": (ShotPermissions.VIEW,),
     }
 
     search_fields = ("code", "name", "description", "sequence_code")

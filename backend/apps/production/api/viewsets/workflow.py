@@ -42,6 +42,8 @@ class WorkflowViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissing
         "activate": (WorkflowPermissions.UPDATE,),
         "deactivate": (WorkflowPermissions.UPDATE,),
         "archive": (WorkflowPermissions.DELETE,),
+        "archived": (WorkflowPermissions.VIEW,),
+        "restore": (WorkflowPermissions.UPDATE,),
     }
 
     search_fields = ("name", "code", "description")

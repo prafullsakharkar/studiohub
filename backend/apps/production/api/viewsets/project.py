@@ -37,6 +37,8 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         "destroy": (ProjectPermissions.DELETE,),
         "statistics": (ProjectPermissions.VIEW,),
         "dashboard": (ProjectPermissions.VIEW,),
+        "archived": (ProjectPermissions.VIEW,),
+        "restore": (ProjectPermissions.UPDATE,),
     }
 
     search_fields = ("name", "code", "description", "client_name")

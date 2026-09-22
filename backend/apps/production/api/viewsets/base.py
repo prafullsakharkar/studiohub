@@ -5,6 +5,9 @@ Base ViewSet for Production entities.
 from __future__ import annotations
 
 from django.http import Http404
+from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.response import Response
 
 from apps.core.api.viewsets.service import ServiceModelViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
@@ -130,6 +133,49 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
             raise Http404
         self.check_object_permissions(self.request, obj)
         return obj
+
+    def _organization(self):
+        """Active organization context; fail closed when missing."""
+        org = getattr(self.request, "organization", None)
+        if org is None:
+            raise ValidationError({"organization": "An active organization is required."})
+        return org
+
+    # ------------------------------------------------------------------
+    # Soft-delete archive listing / restore
+    # ------------------------------------------------------------------
+
+    @action(detail=False, methods=["get"], url_path="archived")
+    def archived(self, request):
+        """List soft-deleted records of the active organization."""
+        if not hasattr(self.service_class, "get_archived"):
+            raise NotFound("Archived listing not supported.")
+        project_id = request.query_params.get("project_id")
+        qs = self.service_class.get_archived(
+            organization=self._organization(),
+            project_id=project_id,
+        )
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], url_path="restore")
+    def restore(self, request, *args, **kwargs):
+        """Restore a soft-deleted record of the active organization."""
+        model = self.service_class.model
+        instance = model.all_objects.filter(
+            organization=self._organization(),
+            pk=self.kwargs.get(self.lookup_url_kwarg or self.lookup_field),
+        ).first()
+        if instance is None or not instance.is_deleted:
+            raise NotFound(f"{model.__name__} not found.")
+        serializer = self.get_serializer(
+            self.service_class.restore(instance, user=request.user),
+        )
+        return Response(serializer.data)
 
     def resolve_organization(self, *, instance=None):
         """

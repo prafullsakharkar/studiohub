@@ -27,6 +27,8 @@ class MediaViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTyp
         "update": (MediaPermissions.UPDATE,),
         "partial_update": (MediaPermissions.UPDATE,),
         "destroy": (MediaPermissions.DELETE,),
+        "archived": (MediaPermissions.VIEW,),
+        "restore": (MediaPermissions.UPDATE,),
     }
 
     search_fields = ("title", "code", "file_name", "name", "file_format", "category")

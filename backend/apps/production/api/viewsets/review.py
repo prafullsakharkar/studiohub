@@ -50,6 +50,8 @@ class ReviewViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTy
         "reopen_comment": (ReviewPermissions.UPDATE,),
         "notes": (ReviewPermissions.UPDATE,),
         "participant_verdict": (ReviewPermissions.UPDATE,),
+        "archived": (ReviewPermissions.VIEW,),
+        "restore": (ReviewPermissions.UPDATE,),
     }
 
     search_fields = ("title", "code", "entity_code")

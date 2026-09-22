@@ -96,3 +96,19 @@ class SoftDeleteMixin:
         )
 
         cls.invalidate_cache(instance)
+
+    @classmethod
+    def get_archived(cls, *, organization, project_id=None):
+        """
+        Soft-deleted records of an organization (optionally one project).
+
+        Shared by every ``BusinessService`` subclass; the ``project_id``
+        filter only applies when the model actually has a project field.
+        """
+        qs = cls.model.all_objects.filter(
+            organization=organization,
+            is_deleted=True,
+        )
+        if project_id and hasattr(cls.model, "project"):
+            qs = qs.filter(project_id=project_id)
+        return qs

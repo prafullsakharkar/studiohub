@@ -40,6 +40,7 @@ class PlaylistViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissing
         "share": (PlaylistPermissions.UPDATE,),
         "archive": (PlaylistPermissions.UPDATE,),
         "restore": (PlaylistPermissions.UPDATE,),
+        "archived": (PlaylistPermissions.VIEW,),
     }
 
     search_fields = ("name", "code")

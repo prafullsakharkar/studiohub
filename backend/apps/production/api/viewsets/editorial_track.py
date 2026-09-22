@@ -33,6 +33,8 @@ class EditorialTrackViewSet(ProductionEntityViewSet):  # pyright: ignore[reportM
         "update": (EditorialTrackPermissions.UPDATE,),
         "partial_update": (EditorialTrackPermissions.UPDATE,),
         "destroy": (EditorialTrackPermissions.DELETE,),
+        "archived": (EditorialTrackPermissions.VIEW,),
+        "restore": (EditorialTrackPermissions.UPDATE,),
     }
 
     search_fields = ("name", "track_type", "status", "cut_name")

@@ -33,6 +33,8 @@ class ShowViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingType
         "update": (ShowPermissions.UPDATE,),
         "partial_update": (ShowPermissions.UPDATE,),
         "destroy": (ShowPermissions.DELETE,),
+        "archived": (ShowPermissions.VIEW,),
+        "restore": (ShowPermissions.UPDATE,),
     }
 
     search_fields = ("name", "code", "description")

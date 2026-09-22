@@ -37,6 +37,8 @@ class TimelogViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         "destroy": (TimelogPermissions.DELETE,),
         "approve": (TimelogPermissions.APPROVE,),
         "reject": (TimelogPermissions.APPROVE,),
+        "archived": (TimelogPermissions.VIEW,),
+        "restore": (TimelogPermissions.UPDATE,),
     }
 
     search_fields = ("notes",)

@@ -15,8 +15,6 @@ from __future__ import annotations
 
 from typing import Any, ClassVar
 
-from django.db.models import QuerySet
-
 from apps.core.services.business import BusinessService
 
 
@@ -323,13 +321,5 @@ class BulkOperationService(BusinessService):
             )
         return results
 
-    # ------------------------------------------------------------------
-    # Bulk fetch (for archive/restore UI)
-    # ------------------------------------------------------------------
-
-    @classmethod
-    def get_archived(cls, *, organization, project_id=None) -> QuerySet[Any, Any]:
-        qs = cls.model.all_objects.filter(organization=organization, is_deleted=True)
-        if project_id:
-            qs = qs.filter(project_id=project_id)
-        return qs
+    # Bulk fetch (for archive/restore UI) is inherited from
+    # ``apps.core.services.mixins.soft_delete.SoftDeleteMixin.get_archived``.

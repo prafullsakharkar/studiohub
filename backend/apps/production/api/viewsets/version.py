@@ -38,6 +38,8 @@ class VersionViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         "archive": (VersionPermissions.UPDATE,),
         "promote": (VersionPermissions.PUBLISH,),
         "add_to_playlist": (VersionPermissions.UPDATE,),
+        "archived": (VersionPermissions.VIEW,),
+        "restore": (VersionPermissions.UPDATE,),
     }
 
     search_fields = ("code", "version_number", "entity_code")

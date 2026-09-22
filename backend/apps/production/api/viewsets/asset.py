@@ -41,6 +41,7 @@ class AssetViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignor
         "existence_check": (AssetPermissions.CREATE,),
         "archive": (AssetPermissions.DELETE,),
         "restore": (AssetPermissions.UPDATE,),
+        "archived": (AssetPermissions.VIEW,),
     }
 
     search_fields = ("name", "code", "category", "description")
