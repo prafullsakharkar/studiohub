@@ -53,6 +53,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
+
 def _stable_uuid(seed: str) -> uuid.UUID:
     """Derive a deterministic UUID from a mock string id (e.g. ``notif-01``).
 
