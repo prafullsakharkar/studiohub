@@ -517,6 +517,19 @@ class Command(BaseCommand):
             obj.save(update_fields=["is_deleted", "deleted_at", "updated_at"])
             reporter.add(entity, "restored")
 
+    @staticmethod
+    def _timestamp_defaults(item):
+        """Return mock `created_at`/`updated_at` for seed defaults when the
+        mock provides them. Passing ``None`` for the auto_now_add/auto_now
+        timestamps breaks idempotent re-runs: UPDATE would NULL a NOT NULL
+        column (``IntegrityError`` on the second run)."""
+        defaults = {}
+        if item.get("created_at"):
+            defaults["created_at"] = item["created_at"]
+        if item.get("updated_at"):
+            defaults["updated_at"] = item["updated_at"]
+        return defaults
+
     def _seed_overlay_production(self, mock_root, reporter, org_by_code=None):
         from unittest.mock import MagicMock
 
@@ -1096,8 +1109,7 @@ class Command(BaseCommand):
                     "read": item.get("read", False),
                     "link": item.get("link", ""),
                     "timestamp": item.get("timestamp", ""),
-                    "created_at": item.get("created_at") or None,
-                    "updated_at": item.get("updated_at") or None,
+                    **self._timestamp_defaults(item),
                 },
             )
             reporter.add("notifications", "created" if was_created else "updated")
@@ -1125,8 +1137,7 @@ class Command(BaseCommand):
                     "status": item.get("status", "Complete"),
                     "summary_metrics": item.get("summary_metrics", {}),
                     "download_url": item.get("download_url", ""),
-                    "created_at": item.get("created_at") or None,
-                    "updated_at": item.get("updated_at") or None,
+                    **self._timestamp_defaults(item),
                 },
             )
             reporter.add("reports", "created" if was_created else "updated")

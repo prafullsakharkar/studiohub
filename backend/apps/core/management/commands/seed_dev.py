@@ -90,7 +90,6 @@ class Command(BaseCommand):
             contacts = self._seed_contacts(org)
             contracts = self._seed_contracts(org)
             billing = self._seed_billing(org)
-            knowledge = self._seed_knowledge(org)
             activities = self._seed_activities(org, users)
             deliveries = self._seed_deliveries(org, projects, users)
             publishes = self._seed_publishes(org, projects, users)
@@ -108,7 +107,6 @@ class Command(BaseCommand):
         self.stdout.write(f"  Client/Vendor Contacts: {contacts}")
         self.stdout.write(f"  Client/Vendor Contracts: {contracts}")
         self.stdout.write(f"  Billing: {billing}")
-        self.stdout.write(f"  Knowledge documents: {knowledge}")
         self.stdout.write(f"  Activities: {activities}")
         self.stdout.write(f"  Deliveries: {deliveries}  Publishes: {publishes}  Destinations: {destinations}  Pipeline Settings: {pipeline_settings}")
         self.stdout.write(self.style.NOTICE("  Default password for seeded users: password123"))
@@ -1013,46 +1011,6 @@ class Command(BaseCommand):
             },
         )
         return billing.tier
-
-    def _seed_knowledge(self, org):
-        """Seed knowledge-base documents from frontend mock data."""
-
-        from apps.intelligence.models import KnowledgeDocument
-        from apps.production.management.commands.seed_production_mocks import (
-            _load_ts_mock_array,
-            _resolve_mock_root,
-        )
-
-        frontend_root = _resolve_mock_root()
-        count = 0
-        for item in _load_ts_mock_array(
-            frontend_root / "intelligence" / "knowledge.ts", "mockKnowledgeDocuments"
-        ):
-            slug = item.get("slug")
-            if not slug:
-                continue
-            KnowledgeDocument.objects.update_or_create(
-                organization=org,
-                slug=slug,
-                defaults={
-                    "title": item.get("title", ""),
-                    "summary": item.get("summary", ""),
-                    "content_markdown": item.get("content_markdown", ""),
-                    "category": item.get("category", "general"),
-                    "department_name": item.get("department_name", ""),
-                    "project_code": item.get("project_code", ""),
-                    "tags": item.get("tags", []),
-                    "author_name": item.get("author_name", ""),
-                    "author_role": item.get("author_role", ""),
-                    "author_avatar": item.get("author_avatar", ""),
-                    "version": item.get("version", "1.0"),
-                    "is_pinned": item.get("is_pinned", False),
-                    "is_verified": item.get("is_verified", False),
-                    "linked_entities": item.get("linked_entities", []),
-                },
-            )
-            count += 1
-        return count
 
     def _seed_people(self, org):
 

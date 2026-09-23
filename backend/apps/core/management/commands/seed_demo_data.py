@@ -14,7 +14,7 @@ What it does:
    + react-mock overlay + validation).
 2. Seeds the contract entities ``seed_studiohub`` predates (Phase 1-3 work):
    masterdata catalog + org configs, automation rules/logs, scheduling
-   resources/schedules/leaves/holidays/events, saved/recent searches.
+   resources/schedules/leaves/holidays/events.
 
 Contract rules honored (same as ``seed_studiohub``):
 
@@ -29,8 +29,6 @@ Contract rules honored (same as ``seed_studiohub``):
 
 Documented seed decisions (mock has no equivalent — deterministic, reported):
 
-- Saved/recent searches carry no org (recent ones not even a user): they are
-  seeded for the primary demo user (``usr-001``) in that user's first org.
 - Studio holidays reference offices, not orgs: each holiday is seeded into
   every org (studio-wide semantics; natural key is ``(organization, date)``).
 - Scheduling resources without a resolvable project org are skipped.
@@ -84,9 +82,7 @@ EVENT_TYPE_MAP = {
     "availability": "Meeting",
 }
 
-PRIMARY_DEMO_USER_ID = "usr-001"
-
-GAP_PHASES = ("masterdata", "automations", "scheduling", "search")
+GAP_PHASES = ("masterdata", "automations", "scheduling")
 
 
 class Command(BaseCommand):
@@ -146,8 +142,6 @@ class Command(BaseCommand):
             self._seed_automations(mock_root, reporter, context)
         if not only or "scheduling" in only:
             self._seed_scheduling(mock_root, reporter, context)
-        if not only or "search" in only:
-            self._seed_search(mock_root, reporter, context)
         self.stdout.write(reporter.summary())
         if not options["skip_validate"]:
             call_command("seed_studiohub", validate_only=True, verbosity=options["verbosity"])
@@ -819,59 +813,3 @@ class Command(BaseCommand):
                 "scheduling_overbooking_alerts",
                 "mock alerts superseded by live capacity computation — not stored",
             )
-
-    # ------------------------------------------------------------------
-    # Phase: search (db/intelligence/search.ts)
-    # ------------------------------------------------------------------
-
-    def _seed_search(self, mock_root, reporter, context):
-        from apps.intelligence.models import RecentSearch, SavedSearch
-
-        path = mock_root / "intelligence" / "search.ts"
-        demo_user = context["id_to_user"].get(PRIMARY_DEMO_USER_ID)
-        demo_org = self._first_org_of(context, demo_user) if demo_user else None
-        if demo_user is None or demo_org is None:
-            reporter.note("search", "demo user/org unresolvable — saved+recent skipped")
-            return
-
-        for item in _load_ts_mock_array(path, "mockSavedSearches"):
-            if not item.get("name"):
-                reporter.add("search_saved", "skipped")
-                continue
-            _, created = _update_or_create(
-                SavedSearch,
-                organization=demo_org,
-                user=demo_user,
-                name=item["name"],
-                defaults={
-                    "description": item.get("description", ""),
-                    "filters": item.get("filters") or {},
-                    "is_favorite": bool(item.get("is_favorite", False)),
-                },
-            )
-            reporter.add("search_saved", "created" if created else "updated")
-
-        for item in _load_ts_mock_array(path, "mockRecentSearches"):
-            if not (item.get("query") or "").strip():
-                reporter.add("search_recent", "skipped")
-                continue
-            _, created = _update_or_create(
-                RecentSearch,
-                organization=demo_org,
-                user=demo_user,
-                query=item["query"].strip(),
-                defaults={"filters_snapshot": item.get("filters_snapshot") or {}},
-            )
-            reporter.add("search_recent", "created" if created else "updated")
-
-    @staticmethod
-    def _first_org_of(context, user):
-        from apps.organization.models import OrganizationMembership
-
-        membership = (
-            OrganizationMembership.objects.filter(user=user, is_deleted=False)
-            .select_related("organization")
-            .order_by("organization__code")
-            .first()
-        )
-        return membership.organization if membership else None
