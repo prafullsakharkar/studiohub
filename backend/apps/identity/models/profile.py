@@ -40,6 +40,15 @@ class Profile(EntityModel):
         null=True,
     )
 
+    # Remote avatar URL (frontend mock `avatar_url`, e.g. Unsplash). Mirrors
+    # the org Client/Vendor `logo_url` pattern; uploaded files still use
+    # `avatar`. The API prefers `avatar_url` when set.
+    avatar_url = models.URLField(
+        max_length=500,
+        blank=True,
+        default="",
+    )
+
     phone = models.CharField(
         max_length=30,
         blank=True,

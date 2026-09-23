@@ -8,6 +8,7 @@ soft-delete restore, mock compatibility, and dry-run safety.
 """
 
 import json
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -36,7 +37,12 @@ def _write_fixture_root(tmp_path):
                 {"id": "usr-t1", "email": "alpha@example.com",
                  "first_name": "Alpha", "last_name": "One",
                  "full_name": "Alpha One",
-                 "memberships": [{"organization_id": "org-t1", "role": "Artist"}],
+                 "avatar_url": "https://example.com/alpha.png",
+                 "is_active": True, "is_staff": True, "is_superuser": True,
+                 "memberships": [{"organization_id": "org-t1", "role": "Artist",
+                                  "is_default": True, "status": "Active",
+                                  "department": "Editorial",
+                                  "joined_at": "2024-01-01T00:00:00Z"}],
                  "project_memberships": [
                      {"projectId": "proj-t1", "role": "Artist",
                       "roles": ["Artist"], "scope": "PROJECT", "status": "Active"}
@@ -44,7 +50,12 @@ def _write_fixture_root(tmp_path):
                 {"id": "usr-t2", "email": "beta@example.com",
                  "first_name": "Beta", "last_name": "Two",
                  "full_name": "Beta Two",
-                 "memberships": [{"organization_id": "org-t2", "role": "Viewer"}],
+                 "avatar_url": "https://example.com/beta.png",
+                 "is_active": True, "is_staff": False, "is_superuser": False,
+                 "memberships": [{"organization_id": "org-t2", "role": "Viewer",
+                                  "is_default": False, "status": "Active",
+                                  "department": "Pipeline TD",
+                                  "joined_at": "2024-02-02T00:00:00Z"}],
                  "project_memberships": []},
             ],
         ),
@@ -144,6 +155,73 @@ class TestSeedStudiohub:
         assert not ProjectMembership.objects.filter(
             user__email="beta@example.com"
         ).exists()
+
+    def test_user_data_syncs_to_mock(self, mock_root):
+        """§9: user/membership fields must match the mock source of truth."""
+        from django.contrib.auth import get_user_model
+
+        from apps.identity.models import Profile
+
+        _seed()
+        alpha = get_user_model().objects.get(email="alpha@example.com")
+        # Account flags reconciled from mock.
+        assert (alpha.is_active, alpha.is_staff, alpha.is_superuser) == (
+            True, True, True,
+        )
+        # Profile names + avatar_url reconciled from mock.
+        profile = Profile.objects.get(user=alpha)
+        assert profile.first_name == "Alpha"
+        assert profile.last_name == "One"
+        assert profile.display_name == "Alpha One"
+        assert profile.avatar_url == "https://example.com/alpha.png"
+        # Membership role/status/department/is_primary/joined_at from mock.
+        membership = OrganizationMembership.objects.get(
+            user=alpha, organization__code="TST1"
+        )
+        assert membership.status == "active"
+        assert membership.is_primary is True
+        assert membership.department is not None
+        assert membership.department.name == "Editorial"
+        assert membership.joined_at == date(2024, 1, 1)
+
+        beta = get_user_model().objects.get(email="beta@example.com")
+        assert (beta.is_active, beta.is_staff, beta.is_superuser) == (
+            True, False, False,
+        )
+        beta_membership = OrganizationMembership.objects.get(
+            user=beta, organization__code="TST2"
+        )
+        assert beta_membership.is_primary is False
+        assert beta_membership.department.name == "Pipeline TD"
+        assert beta_membership.joined_at == date(2024, 2, 2)
+
+    def test_user_sync_is_idempotent(self, mock_root):
+        """Re-running the overlay leaves synced fields unchanged."""
+        from datetime import date
+
+        from django.contrib.auth import get_user_model
+
+        from apps.identity.models import Profile
+
+        _seed()
+
+        def snapshot():
+            alpha = get_user_model().objects.get(email="alpha@example.com")
+            profile = Profile.objects.get(user=alpha)
+            membership = OrganizationMembership.objects.get(
+                user=alpha, organization__code="TST1"
+            )
+            return (
+                alpha.is_staff, alpha.is_superuser,
+                profile.first_name, profile.avatar_url,
+                membership.is_primary,
+                membership.department.name if membership.department else None,
+                membership.joined_at,
+            )
+
+        before = snapshot()
+        _seed()
+        assert snapshot() == before
 
     def test_idempotent_double_run(self, mock_root):
         _seed()

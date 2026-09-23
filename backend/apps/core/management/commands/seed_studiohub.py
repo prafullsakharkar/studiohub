@@ -175,6 +175,14 @@ _CLIENT_PERMS = [
     "publishing:read",
 ]
 
+# Mock membership display status -> backend status choice.
+MOCK_MEMBERSHIP_STATUS = {
+    "Active": "active",
+    "On Leave": "on_leave",
+    "Terminated": "terminated",
+    "Suspended": "suspended",
+}
+
 # Supplemental global roles (mock names with no seeded equivalent).
 # code: (display name, permission codes). Least privilege by design.
 SUPPLEMENTAL_ROLES = {
@@ -828,8 +836,56 @@ class Command(BaseCommand):
         reporter.add("roles", "created")
         return role
 
+    @staticmethod
+    def _resolve_department(org, name):
+        """Resolve the org department matching a mock membership `department`
+        string, creating it (idempotently) when absent so the API payload
+        syncs with the mock."""
+        from apps.organization.models import Department
+
+        if not name:
+            return None
+        department = Department.objects.filter(
+            organization=org, name=name
+        ).first()
+        if department is not None:
+            return department
+        slug = "".join(
+            c if c.isalnum() else "-" for c in name.strip().upper()
+        ).strip("-")[:24] or "GEN"
+        while "--" in slug:
+            slug = slug.replace("--", "-")
+        department, _ = Department.objects.get_or_create(
+            organization=org,
+            name=name,
+            defaults={
+                "code": f"DEPT-{slug}",
+                "description": f"Seeded from mock membership '{name}'",
+                "department_type": "creative",
+            },
+        )
+        return department
+
+    @staticmethod
+    def _parse_mock_date(value):
+        """Parse a mock ISO-8601 timestamp into a date (or None)."""
+        if not value:
+            return None
+        try:
+            from datetime import datetime
+
+            return datetime.fromisoformat(str(value).replace("Z", "+00:00")).date()
+        except (TypeError, ValueError):
+            return None
+
     def _seed_overlay_access_users(self, mock_root, reporter, org_by_code=None):
-        """Supplemental accounts + mock-driven org memberships (no blanket grants)."""
+        """Supplemental accounts + mock-driven org memberships (no blanket grants).
+
+        Syncs the mock user payload to the backend so API data matches the
+        frontend source of truth: account flags (is_active/is_staff/is_superuser),
+        profile names/avatar_url, and membership role/status/department/
+        is_primary/joined_at. All writes are idempotent.
+        """
         from django.contrib.auth import get_user_model
 
         from apps.identity.models import Profile
@@ -854,7 +910,12 @@ class Command(BaseCommand):
                 continue
             user, created = user_model.objects.get_or_create(
                 email=email,
-                defaults={"is_active": True, "is_staff": False, "is_superuser": False},
+                defaults={
+                    "is_active": True,
+                    "is_staff": False,
+                    "is_superuser": False,
+                    **self._timestamp_defaults(mock_user),
+                },
             )
             if created:
                 user.set_password("password123")
@@ -862,23 +923,50 @@ class Command(BaseCommand):
                 reporter.add("users", "created")
             else:
                 reporter.add("users", "existing")
+
+            # Reconcile account flags to the mock (idempotent for both paths).
+            flag_updates = {}
+            for flag in ("is_active", "is_staff", "is_superuser"):
+                mock_value = mock_user.get(flag)
+                if mock_value is not None and getattr(user, flag) != mock_value:
+                    flag_updates[flag] = mock_value
+            if flag_updates:
+                user_model.objects.filter(pk=user.pk).update(**flag_updates)
+                reporter.add("users", "updated")
+
             first = mock_user.get("first_name") or ""
             last = mock_user.get("last_name") or ""
             if not first and mock_user.get("full_name"):
                 parts = mock_user["full_name"].split()
                 first, last = parts[0], " ".join(parts[1:])
-            _, profile_created = Profile.objects.get_or_create(
+            display_name = mock_user.get("full_name") or f"{first} {last}".strip()
+            avatar_url = mock_user.get("avatar_url") or ""
+            profile, profile_created = Profile.objects.get_or_create(
                 user=user,
                 defaults={
                     "first_name": first,
                     "last_name": last,
-                    "display_name": mock_user.get("full_name") or f"{first} {last}".strip(),
+                    "display_name": display_name,
+                    "avatar_url": avatar_url,
                     "timezone": "Asia/Kolkata",
                     "language": "en",
                 },
             )
             if profile_created:
                 reporter.add("profiles", "created")
+            else:
+                profile_updates = {}
+                if first and profile.first_name != first:
+                    profile_updates["first_name"] = first
+                if last and profile.last_name != last:
+                    profile_updates["last_name"] = last
+                if display_name and profile.display_name != display_name:
+                    profile_updates["display_name"] = display_name
+                if avatar_url and profile.avatar_url != avatar_url:
+                    profile_updates["avatar_url"] = avatar_url
+                if profile_updates:
+                    Profile.objects.filter(pk=profile.pk).update(**profile_updates)
+                    reporter.add("profiles", "updated")
 
         # Org memberships strictly from mock (reconcile role to mock value).
         email_to_user = {
@@ -889,6 +977,7 @@ class Command(BaseCommand):
             user = email_to_user.get((mock_user.get("email") or "").lower())
             if user is None:
                 continue
+            default_org_id = None
             for membership in mock_user.get("memberships") or []:
                 org = org_by_code.get(
                     mock_org_id_to_code.get(membership.get("organization_id"), "")
@@ -900,18 +989,47 @@ class Command(BaseCommand):
                 if role is None:
                     reporter.add("organization_memberships", "skipped")
                     continue
+                status = MOCK_MEMBERSHIP_STATUS.get(
+                    membership.get("status") or "Active", "active"
+                )
+                department = self._resolve_department(
+                    org, membership.get("department")
+                )
+                joined_at = self._parse_mock_date(membership.get("joined_at"))
+                is_primary = bool(membership.get("is_default", False))
+                if is_primary:
+                    default_org_id = org.id
+                defaults = {
+                    "role": role,
+                    "status": status,
+                    "department": department,
+                    "joined_at": joined_at,
+                    "is_primary": is_primary,
+                    **self._timestamp_defaults(membership),
+                }
                 _, created = OrganizationMembership.objects.get_or_create(
                     user=user,
                     organization=org,
-                    defaults={"role": role, "status": "active"},
+                    defaults=defaults,
                 )
                 if created:
                     reporter.add("organization_memberships", "created")
                 else:
                     OrganizationMembership.objects.filter(
                         user=user, organization=org
-                    ).update(role=role, status="active")
+                    ).update(
+                        role=role,
+                        status=status,
+                        department=department,
+                        joined_at=joined_at,
+                        is_primary=is_primary,
+                    )
                     reporter.add("organization_memberships", "updated")
+            # Keep at most one primary membership per user (mock is_default).
+            if default_org_id is not None:
+                OrganizationMembership.objects.filter(
+                    user=user, is_primary=True
+                ).exclude(organization_id=default_org_id).update(is_primary=False)
 
         return mock_users
 

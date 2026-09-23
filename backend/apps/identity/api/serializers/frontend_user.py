@@ -40,11 +40,16 @@ def serialize_frontend_user(user, request=None) -> dict[str, Any]:
         full_name = (f"{first_name} {last_name}").strip() or user.email
 
     avatar_url = None
-    if profile and getattr(profile, "avatar", None):
-        try:
-            avatar_url = profile.avatar.url if profile.avatar else None
-        except Exception:
-            avatar_url = None
+    if profile is not None:
+        # Prefer the remote avatar URL (seeded from mock); fall back to any
+        # uploaded avatar file.
+        if getattr(profile, "avatar_url", ""):
+            avatar_url = profile.avatar_url
+        elif getattr(profile, "avatar", None):
+            try:
+                avatar_url = profile.avatar.url if profile.avatar else None
+            except Exception:
+                avatar_url = None
 
     # Organization context: prefer header-driven org, then primary membership
     organization_id = ""
