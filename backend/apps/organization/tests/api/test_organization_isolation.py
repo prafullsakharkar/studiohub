@@ -184,16 +184,17 @@ class TestGetQuerysetScoping:
 
         assert qs.count() == 0
 
-    def test_staff_sees_all(self, staff_user):
+    def test_superuser_sees_all(self, admin_user):
+        """Only superusers bypass membership scoping (ADR-0033 D4/D6)."""
         from apps.organization.models import Organization
 
         keep = OrganizationFactory.create()
         OrganizationFactory.create()
 
-        assert set(self._view(staff_user).get_queryset()) == set(
+        assert set(self._view(admin_user).get_queryset()) == set(
             Organization.objects.all()
         )
-        assert keep in self._view(staff_user).get_queryset()
+        assert keep in self._view(admin_user).get_queryset()
 
     def test_member_sees_only_own(self, user):
         from apps.organization.tests.factories import OrganizationMembershipFactory
@@ -221,8 +222,11 @@ class TestOrganizationListEdges:
         assert response.status_code == 404
         assert "detail" in response.data
 
-    def test_invalid_ordering_is_ignored(self, staff_client):
+    def test_invalid_ordering_is_ignored(self, staff_client, staff_user):
+        from apps.organization.tests.rbac_helpers import grant_all_known_codes
+
         org = OrganizationFactory.create(name="Edge Org")
+        grant_all_known_codes(staff_user, organization=org)
 
         response = staff_client.get(_list_url(), {"ordering": "bogus_field"})
 
@@ -262,9 +266,12 @@ class TestOrganizationListEdges:
         assert response.status_code == 200
 
     def test_retrieve_query_count_bounded(
-        self, staff_client, django_assert_num_queries
+        self, staff_client, staff_user, django_assert_num_queries
     ):
+        from apps.organization.tests.rbac_helpers import grant_all_known_codes
+
         org = OrganizationFactory.create()
+        grant_all_known_codes(staff_user, organization=org)
 
         with django_assert_num_queries(10, exact=False):
             response = staff_client.get(_detail_url(org))

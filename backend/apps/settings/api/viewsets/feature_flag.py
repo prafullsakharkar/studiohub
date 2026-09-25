@@ -6,7 +6,9 @@ from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.core.api.mixins import StaffWritesRequiredMixin
+from apps.core.permissions.base import IsAuthenticatedPermission
+from apps.identity.permissions import HasPermission
+from apps.platform.constants.permissions import SettingsPermissions
 from apps.settings.api.viewsets.base import SettingsBaseViewSet
 from apps.settings.filters.feature_flag import FeatureFlagFilter
 from apps.settings.selectors.feature_flag import FeatureFlagSelector
@@ -15,7 +17,6 @@ from apps.settings.services.feature_flag import FeatureFlagService
 
 
 class FeatureFlagViewSet(
-    StaffWritesRequiredMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
@@ -26,6 +27,23 @@ class FeatureFlagViewSet(
     """
     ViewSet for FeatureFlag.
     """
+
+    permission_classes = (
+        IsAuthenticatedPermission,
+        HasPermission,
+    )
+
+    permission_map = {
+        "list": (),
+        "retrieve": (),
+        "create": (SettingsPermissions.MANAGE,),
+        "update": (SettingsPermissions.MANAGE,),
+        "partial_update": (SettingsPermissions.MANAGE,),
+        "destroy": (SettingsPermissions.MANAGE,),
+        "enable": (SettingsPermissions.MANAGE,),
+        "disable": (SettingsPermissions.MANAGE,),
+        "schedule": (SettingsPermissions.MANAGE,),
+    }
 
     serializer_class = FeatureFlagSerializer
     service_class = FeatureFlagService

@@ -110,6 +110,23 @@ def grant_all_known_codes(user, organization=None) -> Role:
     return grant_permissions(user, *all_known_permission_codes(), organization=organization)
 
 
+def grant_org_admin(user, organization) -> Role:
+    """
+    Grant ``user`` an ADMIN-priority active membership role in
+    ``organization`` with every known permission code.
+
+    ADR-0033 D1: org-wide visibility of production entities requires a
+    superuser or an active org membership whose role priority is ADMIN.
+    """
+    from apps.organization.choices.role_priority import RolePriority
+
+    role = grant_all_known_codes(user, organization=organization)
+    role.priority = RolePriority.ADMIN
+    role.save(update_fields=["priority", "updated_at"])
+    PermissionCacheService.invalidate(user=user)
+    return role
+
+
 def grant_permissions(user, *codes: str, organization=None) -> Role:
     """
     Grant permission ``codes`` to ``user`` and invalidate cached permissions.

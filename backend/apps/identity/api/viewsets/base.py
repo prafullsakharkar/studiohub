@@ -29,6 +29,22 @@ class IdentityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissingType
 
     ordering = ("created_at",)
 
+    def perform_authentication(self, request):
+        """
+        Resolve the organization context after authentication.
+
+        Middleware runs before DRF authentication, so org context must be
+        re-resolved here (fail-closed) before selectors scope by it
+        (ADR-0033 D6: the user directory is organization-scoped).
+        """
+        response = super().perform_authentication(request)
+        from apps.organization.middleware.organization_context import (
+            resolve_organization_context,
+        )
+
+        resolve_organization_context(request, force=True)
+        return response
+
     def get_queryset(self):
         if hasattr(
             self,

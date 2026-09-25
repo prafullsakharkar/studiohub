@@ -8,7 +8,7 @@ organization context, but the permission codes are scheduling-specific.
 
 
 class SchedulingPermissions:
-    VIEW = "scheduling:read"
-    CREATE = "scheduling:create"
-    UPDATE = "scheduling:update"
-    DELETE = "scheduling:delete"
+    VIEW = "schedule.view"
+    CREATE = "schedule.create"
+    UPDATE = "schedule.update"
+    DELETE = "schedule.delete"

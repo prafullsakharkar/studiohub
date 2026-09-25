@@ -1,5 +1,14 @@
 # StudioHub Backend Authorization Analysis
 
+> **Superseded (2026-09-23):** decision 7 / "org-wide, no per-project gate" is
+> replaced by **ADR-0033** (`docs/adr/ADR-0033-canonical-authorization-model.md`):
+> per-project RBAC is canonical — production entities are scoped by active
+> `ProjectMembership` unless an ADMIN-priority organization role applies, SHOW is
+> a first-class scope tier, permission codes are dot-notation, and `is_staff` is
+> not an authorization tier. The remainder of this document's gate-hardening
+> findings (ADR-0032) still stand.
+
+
 > **Scope:** backend only. No frontend files were modified.
 > **Date:** 2026-09-18
 > **Required docs status:** all present — `AGENTS.md`, `backend/AGENTS.md`,
@@ -8,7 +17,7 @@
 > `docs/APP_ARCHITECTURE_TEMPLATE.md`. No missing document to report.
 >
 > **Implementation status (2026-09-18): ALL findings implemented.**
-> Decisions recorded in `docs/adr/ADR-0032-backend-authorization-hardening.md`.
+> Decisions recorded in `docs/adr/ADR-0032-backend-authorization-hardening.md` (superseded in part by `ADR-0033`).
 > Full backend suite green (2000 passed, 1 skipped). Corrections to the
 > original analysis discovered during implementation are listed in
 > Appendix B.

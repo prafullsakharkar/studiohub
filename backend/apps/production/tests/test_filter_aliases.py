@@ -20,6 +20,7 @@ from apps.organization.tests.factories import (
     OrganizationMembershipFactory,
     TeamFactory,
 )
+from apps.organization.tests.rbac_helpers import grant_org_admin
 from apps.production.tests.factories import (
     AssetFactory,
     ProjectFactory,
@@ -43,20 +44,21 @@ def _member_client(org):
 
     user = UserFactory.create()
     permission = PermissionFactory.create(
-        code="projects:read", module="projects", action="read", is_active=True
+        code="project.view", module="projects", action="read", is_active=True
     )
     role = RoleFactory.create(organization=org)
     RolePermissionFactory.create(role=role, permission=permission)
     OrganizationMembershipFactory.create(user=user, organization=org, role=role)
     client = APIClient()
     client.force_authenticate(user=user)
-    return client
+    return client, user
 
 
 @pytest.mark.django_db
 class TestTaskFilterAliases:
-    def test_project_id_team_id_assignee_id_vendor_id(self, staff_client):
+    def test_project_id_team_id_assignee_id_vendor_id(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project = ProjectFactory.create(organization=org)
         other_project = ProjectFactory.create(organization=org)
         assignee = UserFactory.create()
@@ -83,9 +85,10 @@ class TestTaskFilterAliases:
             assert resp.status_code == status.HTTP_200_OK, (param, resp.data)
             assert [row["code"] for row in resp.data["results"]] == [wanted.code], param
 
-    def test_project_mock_id_and_unknown_values(self, staff_client):
+    def test_project_mock_id_and_unknown_values(self, staff_client, staff_user):
         """Regression: `?project_id=proj-001` (mock id) 400ed; must resolve."""
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project = ProjectFactory.create(organization=org, code="NK99")
         wanted = TaskFactory.create(organization=org, project=project)
         other = ProjectFactory.create(organization=org, code="AETH2")
@@ -105,8 +108,9 @@ class TestTaskFilterAliases:
             assert resp.status_code == status.HTTP_200_OK, (url, resp.data)
             assert resp.data["results"] == [], url
 
-    def test_show_id_tolerated_until_show_epic(self, staff_client):
+    def test_show_id_tolerated_until_show_epic(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project = ProjectFactory.create(organization=org)
         TaskFactory.create(organization=org, project=project)
 
@@ -121,8 +125,9 @@ class TestTaskFilterAliases:
 
 @pytest.mark.django_db
 class TestShotSequenceAlias:
-    def test_sequence_alias_matches_sequence_code(self, staff_client):
+    def test_sequence_alias_matches_sequence_code(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project = ProjectFactory.create(organization=org)
         wanted = ShotFactory.create(
             organization=org, project=project, sequence_code="NK_010"
@@ -136,8 +141,9 @@ class TestShotSequenceAlias:
 
 @pytest.mark.django_db
 class TestProjectOrganizationFilterAndSearch:
-    def test_search_matches_client_name(self, staff_client):
+    def test_search_matches_client_name(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         wanted = ProjectFactory.create(
             organization=org, name="Alpha", code="ALP1", client_name="Warner Nexus"
         )
@@ -150,11 +156,18 @@ class TestProjectOrganizationFilterAndSearch:
         assert [row["code"] for row in resp.data["results"]] == [wanted.code]
 
     def test_organization_id_filter(self):
+        from apps.production.models import ProjectMembership
+
         org = OrganizationFactory.create()
         other = OrganizationFactory.create()
         mine = ProjectFactory.create(organization=org)
         ProjectFactory.create(organization=other)
-        client = _member_client(org)
+        client, user = _member_client(org)
+        # ADR-0033 D1: org membership alone grants no production data;
+        # per-project visibility requires an explicit ProjectMembership.
+        ProjectMembership.objects.create(
+            organization=org, project=mine, user=user, status="Active"
+        )
 
         resp = client.get(f"/api/v1/projects/?organization_id={org.id}", **_org_header(org))
         assert resp.status_code == status.HTTP_200_OK, resp.data
@@ -194,9 +207,10 @@ class TestProjectIdAliasAcrossResources:
         ],
     )
     def test_project_id_filters_to_owning_project(
-        self, staff_client, resource, factory, path
+        self, staff_client, staff_user, resource, factory, path
     ):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project_a = ProjectFactory.create(organization=org, code="PAA")
         project_b = ProjectFactory.create(organization=org, code="PBB")
         in_a = factory.create(organization=org, project=project_a)

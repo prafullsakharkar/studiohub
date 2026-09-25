@@ -21,6 +21,7 @@ from apps.organization.tests.factories import (
     RolePermissionFactory,
     UserRoleFactory,
 )
+from apps.organization.tests.rbac_helpers import grant_permissions
 
 pytestmark = pytest.mark.django_db
 
@@ -125,7 +126,8 @@ def test_platform_software_list_includes_archived(auth_client):
     assert {s["code"] for s in resp.json()} == {"MAYA"}
 
 
-def test_platform_software_archive_and_restore(staff_client):
+def test_platform_software_archive_and_restore(staff_user, staff_client):
+    grant_permissions(staff_user, "platform.master_data.configure")
     software = Software.objects.create(
         name="Maya",
         code="MAYA",
@@ -145,7 +147,8 @@ def test_platform_software_archive_and_restore(staff_client):
     assert restore.json()["data"]["status"] == "active"
 
 
-def test_platform_software_delete_returns_success_message(staff_client):
+def test_platform_software_delete_returns_success_message(staff_user, staff_client):
+    grant_permissions(staff_user, "platform.master_data.configure")
     software = Software.objects.create(
         name="Maya",
         code="MAYA",
@@ -182,7 +185,7 @@ def test_org_bundle_requires_membership(auth_client, other_client, organization,
     assert forbidden.json()["detail"] == "Access to this organization denied."
 
 
-def test_org_type_list_requires_membership_except_file_types(
+def test_org_type_list_requires_membership_including_file_types(
     auth_client,
     other_client,
     organization,
@@ -195,8 +198,9 @@ def test_org_type_list_requires_membership_except_file_types(
     forbidden = other_client.get(f"/api/v1/organizations/{organization.id}/master-data/software")
     assert forbidden.status_code == 403
 
+    # ADR-0033 D4: file-types no longer bypasses membership checks.
     file_types = other_client.get(f"/api/v1/organizations/{organization.id}/master-data/file-types")
-    assert file_types.status_code == 200
+    assert file_types.status_code == 403
 
 
 def test_org_config_put_requires_configure_permission(

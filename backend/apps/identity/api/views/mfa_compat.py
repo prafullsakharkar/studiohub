@@ -265,7 +265,7 @@ class MFAAdminResetView(BaseAPIView):
         if not user_id:
             return Response({"detail": "userId is required."}, status=400)
         # Only staff/superuser can reset others' MFA
-        if not (request.user.is_staff or request.user.is_superuser):
+        if not (request.user.is_superuser):
             return Response({"detail": "Permission denied."}, status=403)
         try:
             from django.contrib.auth import get_user_model

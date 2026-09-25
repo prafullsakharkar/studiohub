@@ -69,22 +69,22 @@ class TestAutomationRules:
         listed = staff_client.get(RULES_URL, **_org_header(org))
         assert [row["id"] for row in listed.data] == [rule_id]
 
-        detail = staff_client.get(_rule_detail_url(rule_id))
+        detail = staff_client.get(_rule_detail_url(rule_id), **_org_header(org))
         assert detail.status_code == 200
 
         patched = staff_client.patch(
-            _rule_detail_url(rule_id), {"is_active": False}, format="json"
+            _rule_detail_url(rule_id), {"is_active": False}, **_org_header(org), format="json"
         )
         assert patched.status_code == 200
         assert patched.data["is_active"] is False
 
         put = staff_client.put(
-            _rule_detail_url(rule_id), _rule_payload(name="Renamed"), format="json"
+            _rule_detail_url(rule_id), _rule_payload(name="Renamed"), **_org_header(org), format="json"
         )
         assert put.status_code == 200
         assert put.data["name"] == "Renamed"
 
-        deleted = staff_client.delete(_rule_detail_url(rule_id))
+        deleted = staff_client.delete(_rule_detail_url(rule_id), **_org_header(org))
         assert deleted.status_code == 204
         assert AutomationRule.objects.filter(id=rule_id).count() == 0
 

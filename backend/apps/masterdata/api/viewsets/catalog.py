@@ -18,8 +18,9 @@ from rest_framework import filters, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.core.api.mixins import StaffWritesRequiredMixin
 from apps.core.api.viewsets.base import BaseViewSet
+from apps.core.permissions.base import IsAuthenticatedPermission
+from apps.identity.permissions import HasPermission
 from apps.masterdata.api.serializers.catalog import (
     MasterAssetTypeSerializer,
     MasterFileTypeSerializer,
@@ -54,6 +55,33 @@ from apps.masterdata.selectors.catalog import (
 from apps.masterdata.services.resolution import (
     get_platform_overview,
 )
+from apps.platform.constants.permissions import PlatformMasterDataPermissions
+
+
+class MasterDataCatalogGuard:
+    """
+    Global master-data catalog gate (ADR-0033 D4).
+
+    Reads stay open to every authenticated user (the catalog is shared
+    reference data); state-changing actions require the platform-level
+    ``platform.master_data.configure`` grant instead of Django staff status.
+    """
+
+    permission_classes = (
+        IsAuthenticatedPermission,
+        HasPermission,
+    )
+
+    permission_map = {
+        "list": (),
+        "retrieve": (),
+        "create": (PlatformMasterDataPermissions.CONFIGURE,),
+        "update": (PlatformMasterDataPermissions.CONFIGURE,),
+        "partial_update": (PlatformMasterDataPermissions.CONFIGURE,),
+        "destroy": (PlatformMasterDataPermissions.CONFIGURE,),
+        "archive": (PlatformMasterDataPermissions.CONFIGURE,),
+        "restore": (PlatformMasterDataPermissions.CONFIGURE,),
+    }
 
 
 class ArchiveRestoreMixin:
@@ -93,7 +121,7 @@ class ArchiveRestoreMixin:
         )
 
 
-class SoftwareViewSet(StaffWritesRequiredMixin, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
+class SoftwareViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
     serializer_class = SoftwareSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["status", "scope", "category"]
@@ -110,7 +138,7 @@ class SoftwareViewSet(StaffWritesRequiredMixin, ArchiveRestoreMixin, mixins.List
         ).filter(scope=MasterDataScope.GLOBAL)
 
 
-class SoftwareVersionViewSet(StaffWritesRequiredMixin, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
+class SoftwareVersionViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
     serializer_class = SoftwareVersionSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["status", "scope"]
@@ -130,7 +158,7 @@ class SoftwareVersionViewSet(StaffWritesRequiredMixin, ArchiveRestoreMixin, mixi
         return queryset
 
 
-class MasterStatusViewSet(StaffWritesRequiredMixin, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
+class MasterStatusViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
     serializer_class = MasterStatusSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["entity_type", "status", "scope", "is_default", "is_final"]
@@ -146,7 +174,7 @@ class MasterStatusViewSet(StaffWritesRequiredMixin, ArchiveRestoreMixin, mixins.
         ).filter(scope=MasterDataScope.GLOBAL)
 
 
-class MasterTaskTypeViewSet(StaffWritesRequiredMixin, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
+class MasterTaskTypeViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
     serializer_class = MasterTaskTypeSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["status", "scope", "category", "department_code"]
@@ -162,7 +190,7 @@ class MasterTaskTypeViewSet(StaffWritesRequiredMixin, ArchiveRestoreMixin, mixin
         ).filter(scope=MasterDataScope.GLOBAL)
 
 
-class MasterAssetTypeViewSet(StaffWritesRequiredMixin, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
+class MasterAssetTypeViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
     serializer_class = MasterAssetTypeSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["status", "scope"]
@@ -178,7 +206,7 @@ class MasterAssetTypeViewSet(StaffWritesRequiredMixin, ArchiveRestoreMixin, mixi
         ).filter(scope=MasterDataScope.GLOBAL)
 
 
-class MasterShotTypeViewSet(StaffWritesRequiredMixin, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
+class MasterShotTypeViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
     serializer_class = MasterShotTypeSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["status", "scope"]
@@ -194,7 +222,7 @@ class MasterShotTypeViewSet(StaffWritesRequiredMixin, ArchiveRestoreMixin, mixin
         ).filter(scope=MasterDataScope.GLOBAL)
 
 
-class MasterReviewTypeViewSet(StaffWritesRequiredMixin, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
+class MasterReviewTypeViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
     serializer_class = MasterReviewTypeSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["status", "scope"]
@@ -210,7 +238,7 @@ class MasterReviewTypeViewSet(StaffWritesRequiredMixin, ArchiveRestoreMixin, mix
         ).filter(scope=MasterDataScope.GLOBAL)
 
 
-class MasterFileTypeViewSet(StaffWritesRequiredMixin, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
+class MasterFileTypeViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
     serializer_class = MasterFileTypeSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["status", "scope", "category"]
@@ -226,7 +254,7 @@ class MasterFileTypeViewSet(StaffWritesRequiredMixin, ArchiveRestoreMixin, mixin
         ).filter(scope=MasterDataScope.GLOBAL)
 
 
-class PlatformRoleViewSet(StaffWritesRequiredMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
+class PlatformRoleViewSet(MasterDataCatalogGuard, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
     serializer_class = PlatformRoleSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["scope", "is_system"]
@@ -239,7 +267,7 @@ class PlatformRoleViewSet(StaffWritesRequiredMixin, mixins.ListModelMixin, mixin
         return PlatformRoleSelector.get_queryset(request=self.request, view=self)
 
 
-class PlatformGroupViewSet(StaffWritesRequiredMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
+class PlatformGroupViewSet(MasterDataCatalogGuard, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
     serializer_class = PlatformGroupSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = []
@@ -252,7 +280,7 @@ class PlatformGroupViewSet(StaffWritesRequiredMixin, mixins.ListModelMixin, mixi
         return PlatformGroupSelector.get_queryset(request=self.request, view=self)
 
 
-class PlatformDepartmentViewSet(StaffWritesRequiredMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
+class PlatformDepartmentViewSet(MasterDataCatalogGuard, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
     serializer_class = PlatformDepartmentSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = []
@@ -265,7 +293,7 @@ class PlatformDepartmentViewSet(StaffWritesRequiredMixin, mixins.ListModelMixin,
         return PlatformDepartmentSelector.get_queryset(request=self.request, view=self)
 
 
-class PlatformPositionViewSet(StaffWritesRequiredMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
+class PlatformPositionViewSet(MasterDataCatalogGuard, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
     serializer_class = PlatformPositionSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["status", "department"]

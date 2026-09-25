@@ -300,6 +300,21 @@ class BulkActionsMixin:
         )
         return Response(base)
 
+    def _scope_ids_to_lifecycle(self, ids):
+        """
+        ADR-0033 D1: bulk update/archive/restore may only touch ids inside
+        the caller's scoped (org + project-membership) rows. Out-of-scope
+        ids are dropped and reported as per-item ``not_found`` by the
+        services, matching single-row behavior (no existence leak).
+        """
+        if not ids:
+            return ids
+        model = getattr(self.get_queryset(), "model", None)
+        if model is None:
+            return ids
+        queryset = self._narrow_lifecycle_queryset(model.all_objects.filter(pk__in=ids))
+        return [str(pk) for pk in queryset.values_list("pk", flat=True)]
+
     @action(detail=False, methods=["post"], url_path="bulk-create")
     def bulk_create(self, request, *args, **kwargs):
         data = request.data or {}
@@ -464,7 +479,7 @@ class BulkActionsMixin:
     @action(detail=False, methods=["post"], url_path="bulk-archive")
     def bulk_archive(self, request, *args, **kwargs):
         results = self.service_class.bulk_archive(
-            self._ids_list(),
+            self._scope_ids_to_lifecycle(self._ids_list()),
             organization=self._organization(),
             user=request.user,
         )
@@ -473,7 +488,7 @@ class BulkActionsMixin:
     @action(detail=False, methods=["post"], url_path="bulk-restore")
     def bulk_restore(self, request, *args, **kwargs):
         results = self.service_class.bulk_restore(
-            self._ids_list(),
+            self._scope_ids_to_lifecycle(self._ids_list()),
             organization=self._organization(),
             user=request.user,
         )
@@ -483,11 +498,31 @@ class BulkActionsMixin:
     # Single archive / restore
     # ------------------------------------------------------------------
 
+    def _narrow_lifecycle_queryset(self, queryset):
+        """
+        Scope hook for archive/restore/archived resolution.
+
+        Core default: consult the viewset's ``selector_class`` for a
+        ``scope_lifecycle_queryset`` hook (production selectors narrow by
+        project membership per ADR-0033 D1); otherwise identity.
+        """
+        selector = getattr(self, "selector_class", None)
+        hook = (
+            getattr(selector, "scope_lifecycle_queryset", None)
+            if selector is not None and isinstance(selector, type)
+            else None
+        )
+        if hook is not None:
+            return hook(queryset, request=self.request)
+        return queryset
+
     @action(detail=True, methods=["post"], url_path="archive")
     def archive(self, request, *args, **kwargs):
-        instance = self.service_class.model.objects.filter(
-            organization=self._organization(),
-            id=self._lookup_id(kwargs),
+        instance = self._narrow_lifecycle_queryset(
+            self.service_class.model.objects.filter(
+                organization=self._organization(),
+                id=self._lookup_id(kwargs),
+            )
         ).first()
         if instance is None:
             raise NotFound(f"{self.service_class.model.__name__} not found.")
@@ -497,9 +532,11 @@ class BulkActionsMixin:
 
     @action(detail=True, methods=["post"], url_path="restore")
     def restore(self, request, *args, **kwargs):
-        instance = self.service_class.model.all_objects.filter(
-            organization=self._organization(),
-            id=self._lookup_id(kwargs),
+        instance = self._narrow_lifecycle_queryset(
+            self.service_class.model.all_objects.filter(
+                organization=self._organization(),
+                id=self._lookup_id(kwargs),
+            )
         ).first()
         if instance is None or not instance.is_deleted:
             raise NotFound(f"{self.service_class.model.__name__} not found.")
@@ -521,6 +558,7 @@ class BulkActionsMixin:
             organization=self._organization(),
             project_id=project_id,
         )
+        qs = self._narrow_lifecycle_queryset(qs)
         page = self.paginate_queryset(qs)
         if page is not None:
             serializer = self.get_serializer(page, many=True)

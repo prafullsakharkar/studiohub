@@ -56,6 +56,7 @@ class TestSavedSearch:
     @pytest.mark.django_db
     def test_create_list_detail_delete_round_trip(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(user=staff_user, organization=org)
         payload = {
             "name": "Comp shots",
             "description": "All comp work",
@@ -77,19 +78,20 @@ class TestSavedSearch:
         assert listed.status_code == 200
         assert [row["id"] for row in listed.data] == [created.data["id"]]
 
-        detail = staff_client.get(_saved_detail_url(created.data["id"]))
+        detail = staff_client.get(_saved_detail_url(created.data["id"]), **_org_header(org))
         assert detail.status_code == 200
         assert detail.data["name"] == "Comp shots"
 
         deleted = staff_client.delete(
-            _saved_detail_url(created.data["id"])
+            _saved_detail_url(created.data["id"]), **_org_header(org)
         )
         assert deleted.status_code == 204
         assert SavedSearch.objects.filter(id=created.data["id"]).count() == 0
 
     @pytest.mark.django_db
-    def test_create_requires_name(self, staff_client):
+    def test_create_requires_name(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(user=staff_user, organization=org)
         resp = staff_client.post(SAVED_URL, {"filters": {}}, **_org_header(org), format="json")
         assert resp.status_code == 400
 
@@ -126,8 +128,9 @@ class TestRecentSearch:
         assert api_client.get(RECENT_URL).status_code == 401
 
     @pytest.mark.django_db
-    def test_create_list_clear_round_trip(self, staff_client):
+    def test_create_list_clear_round_trip(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(user=staff_user, organization=org)
         created = staff_client.post(
             RECENT_URL,
             {"query": " pyro  ", "filters_snapshot": {"departments": ["FX"]}},
@@ -149,8 +152,9 @@ class TestRecentSearch:
         assert staff_client.get(RECENT_URL, **_org_header(org)).data == []
 
     @pytest.mark.django_db
-    def test_blank_query_400(self, staff_client):
+    def test_blank_query_400(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(user=staff_user, organization=org)
         resp = staff_client.post(RECENT_URL, {"query": "   "}, **_org_header(org), format="json")
         assert resp.status_code == 400
 

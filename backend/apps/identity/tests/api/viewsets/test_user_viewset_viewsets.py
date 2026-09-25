@@ -8,6 +8,16 @@ import pytest
 from django.urls import reverse
 
 from apps.identity.tests.factories import UserFactory
+from apps.organization.tests.factories import OrganizationFactory, OrganizationMembershipFactory
+from apps.organization.tests.rbac_helpers import grant_all_known_codes
+
+
+def _org_admin_client(staff_client, staff_user, target):
+    """Share an organization between the staff actor and target (ADR-0033 D6)."""
+    org = OrganizationFactory.create()
+    grant_all_known_codes(staff_user, organization=org)
+    OrganizationMembershipFactory.create(user=target, organization=org, status="active")
+    return {"HTTP_X_ORGANIZATION_ID": str(org.pk)}
 
 
 class TestUserViewSet:
@@ -21,9 +31,9 @@ class TestUserViewSet:
 
     @pytest.mark.django_db
     def test_list_users_authenticated(self, authenticated_client):
-        """Test listing users with authentication."""
+        """ADR-0033 D6: directory list requires the identity.user.view grant."""
         response = authenticated_client.get(reverse("api:v1:identity:user-list"))
-        assert response.status_code == 200
+        assert response.status_code == 403
 
     @pytest.mark.django_db
     def test_list_users_staff(self, staff_client):
@@ -48,11 +58,17 @@ class TestUserViewSet:
 
     @pytest.mark.django_db
     def test_retrieve_user_authenticated(self, authenticated_client):
-        """Test retrieving user with authentication."""
+        """Regular users cannot retrieve other users without the view grant."""
         user = UserFactory.create()
         response = authenticated_client.get(
             reverse("api:v1:identity:user-detail", kwargs={"pk": user.id})
         )
+        assert response.status_code == 403
+
+    @pytest.mark.django_db
+    def test_retrieve_self_via_me_endpoint(self, authenticated_client):
+        """Self-service goes through ``me`` (no identity.user.view needed)."""
+        response = authenticated_client.get(reverse("api:v1:identity:user-me"))
         assert response.status_code == 200
 
     @pytest.mark.django_db
@@ -116,12 +132,15 @@ class TestUserViewSet:
         assert response.status_code == 403
 
     @pytest.mark.django_db
-    def test_update_user_staff(self, staff_client):
-        """Test updating user with staff privileges."""
+    def test_update_user_staff(self, staff_client, staff_user):
+        """Org-scoped admins can update users in their organization."""
         user = UserFactory.create()
+        headers = _org_admin_client(staff_client, staff_user, user)
         data = {"email": "updated@example.com"}
         response = staff_client.put(
-            reverse("api:v1:identity:user-detail", kwargs={"pk": user.id}), data
+            reverse("api:v1:identity:user-detail", kwargs={"pk": user.id}),
+            data,
+            **headers,
         )
         assert response.status_code == 200
 
@@ -156,12 +175,15 @@ class TestUserViewSet:
         assert response.status_code == 403
 
     @pytest.mark.django_db
-    def test_partial_update_user_staff(self, staff_client):
-        """Test partially updating user with staff privileges."""
+    def test_partial_update_user_staff(self, staff_client, staff_user):
+        """Org-scoped admins can partially update org users."""
         user = UserFactory.create()
+        headers = _org_admin_client(staff_client, staff_user, user)
         data = {"email": "updated@example.com"}
         response = staff_client.patch(
-            reverse("api:v1:identity:user-detail", kwargs={"pk": user.id}), data
+            reverse("api:v1:identity:user-detail", kwargs={"pk": user.id}),
+            data,
+            **headers,
         )
         assert response.status_code == 200
 
@@ -194,11 +216,13 @@ class TestUserViewSet:
         assert response.status_code == 403
 
     @pytest.mark.django_db
-    def test_destroy_user_staff(self, staff_client):
-        """Test deleting user with staff privileges."""
+    def test_destroy_user_staff(self, staff_client, staff_user):
+        """Org-scoped admins can delete users in their organization."""
         user = UserFactory.create()
+        headers = _org_admin_client(staff_client, staff_user, user)
         response = staff_client.delete(
-            reverse("api:v1:identity:user-detail", kwargs={"pk": user.id})
+            reverse("api:v1:identity:user-detail", kwargs={"pk": user.id}),
+            **headers,
         )
         assert response.status_code == 204
 

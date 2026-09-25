@@ -27,7 +27,7 @@ class TestBillingView:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_get_returns_org_billing_row(self, staff_client):
+    def test_get_returns_org_billing_row(self, admin_client):
         org = OrganizationFactory.create()
         OrganizationBillingFactory.create(
             organization=org,
@@ -35,7 +35,7 @@ class TestBillingView:
             farm_credits_used=120000,
         )
 
-        response = staff_client.get(BILLING_URL)
+        response = admin_client.get(BILLING_URL)
 
         assert response.status_code == 200
         data = response.json()
@@ -63,10 +63,11 @@ class TestBillingView:
         assert response.json()["tier"] == "Studio Pro"
 
     @pytest.mark.django_db
-    def test_patch_as_staff(self, staff_client):
+    def test_patch_as_superuser(self, admin_client):
+        """Billing mutation is superuser-only (ADR-0033 D4)."""
         OrganizationFactory.create()
 
-        response = staff_client.patch(
+        response = admin_client.patch(
             BILLING_URL, {"max_seats_count": 500}, format="json"
         )
 
@@ -74,13 +75,13 @@ class TestBillingView:
         assert response.json()["max_seats_count"] == 500
 
     @pytest.mark.django_db
-    def test_patch_rejects_overuse(self, staff_client):
+    def test_patch_rejects_overuse(self, admin_client):
         org = OrganizationFactory.create()
         OrganizationBillingFactory.create(
             organization=org, farm_credits_total=1000, farm_credits_used=100
         )
 
-        response = staff_client.patch(
+        response = admin_client.patch(
             BILLING_URL, {"farm_credits_used": 5000}, format="json"
         )
 
@@ -97,11 +98,11 @@ class TestBillingView:
         assert response.status_code == 403
 
     @pytest.mark.django_db
-    def test_billing_row_auto_created(self, staff_client):
+    def test_billing_row_auto_created(self, admin_client):
         org = OrganizationFactory.create()
         assert not OrganizationBilling.objects.filter(organization=org).exists()
 
-        response = staff_client.get(BILLING_URL)
+        response = admin_client.get(BILLING_URL)
 
         assert response.status_code == 200
         assert OrganizationBilling.objects.filter(organization=org).exists()

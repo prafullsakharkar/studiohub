@@ -37,19 +37,30 @@ def _org_header(org):
     return {"HTTP_X_ORGANIZATION_ID": str(org.id)}
 
 
-def _membered_client(org):
+def _membered_client(org, *, admin=False):
     """Staff client whose user holds a membership in org (scope gates).
 
     Several selectors (invitations, api-keys, project scope) restrict rows
     to the user's organizations even for staff, so tests need the membership.
     Staff also holds explicit permission grants (no bypass).
+
+    ADR-0033 D1: project-scoped production routes require either an active
+    ProjectMembership or an active org membership whose role priority is
+    ADMIN. ``admin=True`` upgrades the membership role to ADMIN priority.
     """
     from rest_framework.test import APIClient
 
     from apps.organization.tests.rbac_helpers import grant_all_known_codes
 
     user = UserFactory.create(is_staff=True)
-    OrganizationMembershipFactory.create(user=user, organization=org)
+    role_kwargs = {}
+    if admin:
+        role_kwargs = {"priority": RolePriority.ADMIN, "code": "org-admin"}
+    OrganizationMembershipFactory.create(
+        user=user,
+        organization=org,
+        role=RoleFactory.create(organization=org, **role_kwargs),
+    )
     grant_all_known_codes(user)
     client = APIClient()
     client.force_authenticate(user=user)
@@ -67,8 +78,10 @@ class TestNestedOrganizationRoutes:
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert set(("count", "results")) <= set(resp.data.keys())
 
-    def test_nested_departments_bare_array_slashless(self, staff_client):
+    def test_nested_departments_bare_array_slashless(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        from apps.organization.tests.rbac_helpers import grant_all_known_codes
+        grant_all_known_codes(staff_user, organization=org)
         DepartmentFactory.create(organization=org, name="FX")
         resp = staff_client.get(
             f"/api/organizations/{org.id}/departments", **_org_header(org)
@@ -106,8 +119,10 @@ class TestNestedOrganizationRoutes:
         resp = staff_client.get("/api/organizations/nope/departments/")
         assert resp.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_nested_positions_flat_and_nested(self, staff_client):
+    def test_nested_positions_flat_and_nested(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        from apps.organization.tests.rbac_helpers import grant_all_known_codes
+        grant_all_known_codes(staff_user, organization=org)
         PositionFactory.create(organization=org)
         flat = staff_client.get("/api/v1/positions/", **_org_header(org))
         assert flat.status_code == status.HTTP_200_OK, flat.data
@@ -208,7 +223,9 @@ class TestProjectScopedAPI:
     def _setup(self):
         org = OrganizationFactory.create()
         project = ProjectFactory.create(organization=org)
-        client, _ = _membered_client(org)
+        # ADR-0033 D1: the actor needs an ADMIN-priority org membership
+        # (or a ProjectMembership) to read project-scoped production data.
+        client, _ = _membered_client(org, admin=True)
         return org, project, client
 
     def _url(self, org, project, sub):
@@ -428,12 +445,14 @@ class TestOrganizationContractFields:
     and overview tabs read must be present with crash-safe types.
     """
 
-    def test_list_carries_switcher_contract(self, staff_client):
+    def test_list_carries_switcher_contract(self):
         org = OrganizationFactory.create(
             headquarters="Montreal, QC, Canada",
             primary_contact_name="Alex Chen",
         )
-        resp = staff_client.get("/api/v1/organizations/", **_org_header(org))
+        # ADR-0033 D6: org listing shows only member orgs for non-superusers.
+        client, _ = _membered_client(org)
+        resp = client.get("/api/v1/organizations/", **_org_header(org))
         assert resp.status_code == status.HTTP_200_OK, resp.data
         row = resp.data[0] if isinstance(resp.data, list) else resp.data["results"][0]
         assert row["headquarters"] == "Montreal, QC, Canada"
@@ -450,9 +469,11 @@ class TestOrganizationContractFields:
         assert row["headquarters"].split(",")[0] == "Montreal"
         assert isinstance(row["tier"].replace("Enterprise ", ""), str)
 
-    def test_detail_carries_contract(self, staff_client):
+    def test_detail_carries_contract(self):
         org = OrganizationFactory.create(headquarters="London, United Kingdom")
-        resp = staff_client.get(
+        # ADR-0033 D6: org detail is scoped to member orgs for non-superusers.
+        client, _ = _membered_client(org)
+        resp = client.get(
             f"/api/v1/organizations/{org.id}/", **_org_header(org)
         )
         assert resp.status_code == status.HTTP_200_OK, resp.data

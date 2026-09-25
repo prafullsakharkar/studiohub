@@ -19,6 +19,7 @@ from apps.organization.tests.factories import (
     RolePermissionFactory,
     UserRoleFactory,
 )
+from apps.organization.tests.rbac_helpers import grant_all_known_codes
 
 ROLE_PERMISSION_CODES = (
     RolePermissions.VIEW,
@@ -60,6 +61,10 @@ def _remove_url(role):
     )
 
 
+def _org_header_for(role):
+    return {"HTTP_X_ORGANIZATION_ID": str(role.organization_id)}
+
+
 class TestRoleClone:
     @pytest.mark.django_db
     def test_clone_unauthenticated_401(self, api_client):
@@ -70,8 +75,9 @@ class TestRoleClone:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_clone_copies_role_and_permissions(self, staff_client):
+    def test_clone_copies_role_and_permissions(self, staff_client, staff_user):
         role = RoleFactory.create(name="Producer", code="PRODUCER")
+        grant_all_known_codes(staff_user, organization=role.organization)
         perm = _role_permission("organization.view")
         RolePermissionFactory.create(role=role, permission=perm)
 
@@ -79,6 +85,7 @@ class TestRoleClone:
             _clone_url(role),
             {"name": "Senior Producer", "code": "SENIOR-PRODUCER"},
             format="json",
+            **_org_header_for(role),
         )
 
         assert response.status_code == 201
@@ -90,22 +97,27 @@ class TestRoleClone:
         ).exists()
 
     @pytest.mark.django_db
-    def test_clone_requires_name_and_code(self, staff_client):
+    def test_clone_requires_name_and_code(self, staff_client, staff_user):
         role = RoleFactory.create()
+        grant_all_known_codes(staff_user, organization=role.organization)
 
-        response = staff_client.post(_clone_url(role), {"name": "No Code"}, format="json")
+        response = staff_client.post(
+            _clone_url(role), {"name": "No Code"}, format="json", **_org_header_for(role)
+        )
 
         assert response.status_code == 400
 
     @pytest.mark.django_db
-    def test_clone_duplicate_code_409(self, staff_client):
+    def test_clone_duplicate_code_409(self, staff_client, staff_user):
         role = RoleFactory.create()
-        RoleFactory.create(code="TAKEN-CODE")
+        grant_all_known_codes(staff_user, organization=role.organization)
+        RoleFactory.create(code="TAKEN-CODE", organization=role.organization)
 
         response = staff_client.post(
             _clone_url(role),
             {"name": "Copy", "code": "TAKEN-CODE"},
             format="json",
+            **_org_header_for(role),
         )
 
         assert response.status_code == 409
@@ -113,22 +125,27 @@ class TestRoleClone:
 
 class TestRolePermissionActions:
     @pytest.mark.django_db
-    def test_add_and_remove_permissions(self, staff_client):
+    def test_add_and_remove_permissions(self, staff_client, staff_user):
         role = RoleFactory.create()
+        grant_all_known_codes(staff_user, organization=role.organization)
         perm = _role_permission("organization.view")
 
-        response = staff_client.post(_add_url(role), {"codes": [perm.code]}, format="json")
+        response = staff_client.post(
+            _add_url(role), {"codes": [perm.code]}, format="json", **_org_header_for(role)
+        )
 
         assert response.status_code == 200
         assert response.json()["added"] == [perm.code]
         assert RolePermission.objects.filter(role=role, permission=perm).exists()
 
         # Idempotent re-add.
-        response = staff_client.post(_add_url(role), {"codes": [perm.code]}, format="json")
+        response = staff_client.post(
+            _add_url(role), {"codes": [perm.code]}, format="json", **_org_header_for(role)
+        )
         assert response.status_code == 200
 
         response = staff_client.post(
-            _remove_url(role), {"codes": [perm.code]}, format="json"
+            _remove_url(role), {"codes": [perm.code]}, format="json", **_org_header_for(role)
         )
 
         assert response.status_code == 200
@@ -136,21 +153,25 @@ class TestRolePermissionActions:
         assert not RolePermission.objects.filter(role=role, permission=perm).exists()
 
     @pytest.mark.django_db
-    def test_unknown_codes_reported(self, staff_client):
+    def test_unknown_codes_reported(self, staff_client, staff_user):
         role = RoleFactory.create()
+        grant_all_known_codes(staff_user, organization=role.organization)
 
         response = staff_client.post(
-            _add_url(role), {"codes": ["nope.missing"]}, format="json"
+            _add_url(role), {"codes": ["nope.missing"]}, format="json", **_org_header_for(role)
         )
 
         assert response.status_code == 200
         assert response.json()["unknown"] == ["nope.missing"]
 
     @pytest.mark.django_db
-    def test_codes_must_be_list(self, staff_client):
+    def test_codes_must_be_list(self, staff_client, staff_user):
         role = RoleFactory.create()
+        grant_all_known_codes(staff_user, organization=role.organization)
 
-        response = staff_client.post(_add_url(role), {"codes": "organization.view"})
+        response = staff_client.post(
+            _add_url(role), {"codes": "organization.view"}, **_org_header_for(role)
+        )
 
         assert response.status_code == 400
 

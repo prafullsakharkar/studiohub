@@ -65,13 +65,13 @@ class TestProfileViewSet:
         assert response.status_code == 404
 
     @pytest.mark.django_db
-    def test_retrieve_profile_staff_sees_all(self, staff_client):
-        """Test staff can retrieve any profile."""
+    def test_retrieve_profile_staff_is_self_scoped(self, staff_client):
+        """ADR-0033 D4: staff is not an authorization tier; other users' records are 404."""
         profile = ProfileFactory.create()
         response = staff_client.get(
             reverse("api:v1:identity:profile-detail", kwargs={"pk": profile.id})
         )
-        assert response.status_code == 200
+        assert response.status_code == 404
 
     @pytest.mark.django_db
     def test_create_profile_unauthenticated(self, api_client):

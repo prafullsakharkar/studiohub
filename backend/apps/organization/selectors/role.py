@@ -30,7 +30,7 @@ class RoleSelector(BaseSelector):
         # OrganizationBaseSelector.scope_by_request). Other users can
         # see roles in their organizations.
         user = getattr(request, "user", None) if request else None
-        if user is not None and not (user.is_staff or user.is_superuser):
+        if user is not None and not (user.is_superuser):
             queryset = queryset.filter(
                 organization__in=user.organizations.all()
             )

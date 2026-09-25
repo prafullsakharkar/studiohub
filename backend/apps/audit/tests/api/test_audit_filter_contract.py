@@ -23,7 +23,15 @@ from apps.audit.tests.factories import (
     TrackFactory,
 )
 from apps.identity.tests.factories import UserFactory
-from apps.organization.tests.factories import OrganizationFactory
+from apps.organization.tests.factories import (
+    OrganizationFactory,
+    OrganizationMembershipFactory,
+)
+
+
+def _member(user, org):
+    """Active org membership (ADR-0033 D6: audit visibility is org-scoped)."""
+    return OrganizationMembershipFactory.create(user=user, organization=org)
 
 
 def _org_header(org):
@@ -32,9 +40,11 @@ def _org_header(org):
 
 @pytest.mark.django_db
 class TestAuditOrganizationIdAlias:
-    def test_organization_id_narrows_within_caller_orgs(self, staff_client):
+    def test_organization_id_narrows_within_caller_orgs(self, staff_client, staff_user):
         org_a = OrganizationFactory.create()
         org_b = OrganizationFactory.create()
+        _member(staff_user, org_a)
+        _member(staff_user, org_b)
         AuditLogFactory.create(organization=org_a, action="UPDATE", target_type="Shot")
         AuditLogFactory.create(organization=org_b, action="UPDATE", target_type="Shot")
 
@@ -45,22 +55,21 @@ class TestAuditOrganizationIdAlias:
         assert resp.data["count"] == 1
         assert resp.data["results"][0]["organization_id"] == str(org_a.id)
 
-    def test_organization_id_cannot_leak_other_tenants(self, staff_client):
+    def test_organization_id_cannot_leak_other_tenants(self, staff_client, staff_user):
         org_a = OrganizationFactory.create()
         org_b = OrganizationFactory.create()
+        _member(staff_user, org_a)
         AuditLogFactory.create(organization=org_b, action="UPDATE", target_type="Shot")
 
-        # Staff bypasses scoping (existing selector behavior); a scoped
-        # member asking for another org still only narrows within reach.
+        # ADR-0033 D4: is_staff no longer bypasses tenant scoping — a member
+        # of org_a asking for org_b rows sees nothing.
         resp = staff_client.get(
             f"/api/v1/audit/?organization_id={org_b.id}", **_org_header(org_a)
         )
         assert resp.status_code == status.HTTP_200_OK, resp.data
-        assert resp.data["count"] == 1
+        assert resp.data["count"] == 0
 
     def test_member_cannot_read_foreign_org_rows(self, authenticated_client):
-        from apps.organization.tests.factories import OrganizationMembershipFactory
-
         org_a = OrganizationFactory.create()
         org_b = OrganizationFactory.create()
         user = UserFactory.create()
@@ -75,8 +84,9 @@ class TestAuditOrganizationIdAlias:
 
 @pytest.mark.django_db
 class TestAuditFlatDetail:
-    def test_detail_returns_frontend_shape(self, staff_client):
+    def test_detail_returns_frontend_shape(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        _member(staff_user, org)
         log = AuditLogFactory.create(
             organization=org, action="APPROVE", target_type="Review",
             target_id="rev-1", target_name="REV-1",
@@ -115,8 +125,9 @@ class TestActivityFlatAlias:
 class TestNamespacedFilteringRegression:
     """Filters on namespaced resources must apply (negative controls)."""
 
-    def test_change_logs_filter_by_change_type(self, staff_client):
+    def test_change_logs_filter_by_change_type(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        _member(staff_user, org)
         ChangeLogFactory.create(
             organization=org, change_type="create", target_type="Shot", target_id="s-1"
         )
@@ -130,8 +141,9 @@ class TestNamespacedFilteringRegression:
         assert resp.data["count"] == 1
         assert resp.data["results"][0]["target_id"] == "s-1"
 
-    def test_tracks_filter_by_event_type(self, staff_client):
+    def test_tracks_filter_by_event_type(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        _member(staff_user, org)
         TrackFactory.create(organization=org, event_type=Track.EVENT_CLICK)
         TrackFactory.create(organization=org, event_type=Track.EVENT_FORM_SUBMIT)
         resp = staff_client.get(
@@ -142,8 +154,9 @@ class TestNamespacedFilteringRegression:
         assert resp.data["count"] == 1
         assert resp.data["results"][0]["event_type"] == Track.EVENT_CLICK
 
-    def test_tracks_search_and_ordering(self, staff_client):
+    def test_tracks_search_and_ordering(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        _member(staff_user, org)
         TrackFactory.create(
             organization=org, event_type=Track.EVENT_CLICK, event_name="open-shot"
         )
@@ -158,8 +171,9 @@ class TestNamespacedFilteringRegression:
         assert resp.data["count"] == 1
         assert resp.data["results"][0]["event_name"] == "open-shot"
 
-    def test_change_logs_before_after_and_actor_shape(self, staff_client):
+    def test_change_logs_before_after_and_actor_shape(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        _member(staff_user, org)
         actor = UserFactory.create(email="sam.rivera@example.com")
         ChangeLogFactory.create(
             organization=org, user=actor, change_type="update",

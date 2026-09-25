@@ -77,7 +77,7 @@ class ActivityCompatViewSet(ActivityViewSet):  # pyright: ignore[reportMissingTy
         if org is None:
             raise Http404("Organization not found.")
         user = getattr(self.request, "user", None)
-        if user is not None and not (user.is_staff or user.is_superuser):
+        if user is not None and not (user.is_superuser):
             from apps.organization.models import OrganizationMembership
 
             member = OrganizationMembership.objects.filter(

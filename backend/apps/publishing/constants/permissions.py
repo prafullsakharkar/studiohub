@@ -8,7 +8,7 @@ organization context, but the permission codes are publishing-specific.
 
 
 class PublishPermissions:
-    VIEW = "publishing:read"
-    CREATE = "publishing:create"
-    UPDATE = "publishing:update"
-    DELETE = "publishing:delete"
+    VIEW = "publishing.view"
+    CREATE = "publishing.create"
+    UPDATE = "publishing.update"
+    DELETE = "publishing.delete"

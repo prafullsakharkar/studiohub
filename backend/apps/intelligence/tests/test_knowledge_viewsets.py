@@ -19,6 +19,15 @@ from apps.organization.tests.factories import (
 LIST_URL = reverse("api:v1:intelligence:intelligence-knowledge-list")
 
 
+def _org_header(org):
+    return {"HTTP_X_ORGANIZATION_ID": str(org.id)}
+
+
+def _join(user, org):
+    """Active org membership (ADR-0033 D6: endpoints need org context)."""
+    return OrganizationMembershipFactory.create(user=user, organization=org)
+
+
 def _detail_url(doc):
     return reverse(
         "api:v1:intelligence:intelligence-knowledge-detail",
@@ -50,8 +59,9 @@ class TestKnowledgeListCreate:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_list_and_filter(self, staff_client):
+    def test_list_and_filter(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        _join(staff_user, org)
         match = KnowledgeDocumentFactory.create(
             organization=org, category="pipeline", title="USD Guide"
         )
@@ -59,22 +69,23 @@ class TestKnowledgeListCreate:
             organization=org, category="security", title="Vault Policy"
         )
 
-        response = staff_client.get(LIST_URL)
+        response = staff_client.get(LIST_URL, **_org_header(org))
 
         assert response.status_code == 200
         assert len(response.json()) == 2
 
-        response = staff_client.get(LIST_URL, {"category": "pipeline"})
+        response = staff_client.get(LIST_URL, {"category": "pipeline"}, **_org_header(org))
         assert [row["id"] for row in response.json()] == [str(match.id)]
 
-        response = staff_client.get(LIST_URL, {"search": "vault"})
+        response = staff_client.get(LIST_URL, {"search": "vault"}, **_org_header(org))
         assert len(response.json()) == 1
 
     @pytest.mark.django_db
-    def test_create_persists(self, staff_client):
-        OrganizationFactory.create()
+    def test_create_persists(self, staff_client, staff_user):
+        org = OrganizationFactory.create()
+        _join(staff_user, org)
 
-        response = staff_client.post(LIST_URL, _doc_payload(), format="json")
+        response = staff_client.post(LIST_URL, _doc_payload(), format="json", **_org_header(org))
 
         assert response.status_code == 201
         assert response.json()["slug"] == "openusd-standard"
@@ -130,10 +141,11 @@ class TestKnowledgeListCreate:
 
 class TestKnowledgeDetail:
     @pytest.mark.django_db
-    def test_retrieve_increments_views(self, staff_client):
+    def test_retrieve_increments_views(self, staff_client, staff_user):
         doc = KnowledgeDocumentFactory.create()
+        _join(staff_user, doc.organization)
 
-        response = staff_client.get(_detail_url(doc))
+        response = staff_client.get(_detail_url(doc), **_org_header(doc.organization))
 
         assert response.status_code == 200
         assert response.json()["views_count"] == 1
@@ -152,44 +164,49 @@ class TestKnowledgeDetail:
         assert staff_client.get(url).status_code == 404
 
     @pytest.mark.django_db
-    def test_patch_and_delete(self, staff_client):
+    def test_patch_and_delete(self, staff_client, staff_user):
         doc = KnowledgeDocumentFactory.create()
+        _join(staff_user, doc.organization)
+        hdr = _org_header(doc.organization)
 
         response = staff_client.patch(
-            _detail_url(doc), {"title": "Renamed"}, format="json"
+            _detail_url(doc), {"title": "Renamed"}, format="json", **hdr
         )
 
         assert response.status_code == 200
         assert response.json()["title"] == "Renamed"
 
-        response = staff_client.delete(_detail_url(doc))
+        response = staff_client.delete(_detail_url(doc), **hdr)
 
         assert response.status_code == 204
-        assert staff_client.get(_detail_url(doc)).status_code == 404
+        assert staff_client.get(_detail_url(doc), **hdr).status_code == 404
 
     @pytest.mark.django_db
-    def test_like(self, staff_client):
+    def test_like(self, staff_client, staff_user):
         doc = KnowledgeDocumentFactory.create()
+        _join(staff_user, doc.organization)
         url = reverse(
             "api:v1:intelligence:intelligence-knowledge-like",
             kwargs={"pk": str(doc.id)},
         )
 
-        response = staff_client.post(url)
+        response = staff_client.post(url, **_org_header(doc.organization))
 
         assert response.status_code == 200
         assert response.json() == {"likes_count": 1}
 
     @pytest.mark.django_db
-    def test_link_and_unlink_entity(self, staff_client):
+    def test_link_and_unlink_entity(self, staff_client, staff_user):
         doc = KnowledgeDocumentFactory.create()
+        _join(staff_user, doc.organization)
+        hdr = _org_header(doc.organization)
         link_url = reverse(
             "api:v1:intelligence:intelligence-knowledge-link-entity",
             kwargs={"pk": str(doc.id)},
         )
 
         response = staff_client.post(
-            link_url, {"entity_type": "shot", "entity_id": "shot-1"}, format="json"
+            link_url, {"entity_type": "shot", "entity_id": "shot-1"}, format="json", **hdr
         )
 
         assert response.status_code == 200
@@ -200,7 +217,7 @@ class TestKnowledgeDetail:
             "api:v1:intelligence:intelligence-knowledge-unlink-entity",
             kwargs={"pk": str(doc.id), "link_id": links[0]["id"]},
         )
-        response = staff_client.delete(unlink_url)
+        response = staff_client.delete(unlink_url, **hdr)
 
         assert response.status_code == 200
         assert response.json()["linked_entities"] == []

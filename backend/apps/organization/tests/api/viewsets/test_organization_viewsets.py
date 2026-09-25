@@ -13,6 +13,7 @@ import pytest
 from django.urls import reverse
 
 from apps.organization.tests.factories import OrganizationFactory
+from apps.organization.tests.rbac_helpers import grant_all_known_codes
 
 
 def _detail_url(org):
@@ -37,12 +38,12 @@ class TestOrganizationViewSet:
     """Tests for OrganizationViewSet."""
 
     @pytest.mark.django_db
-    def test_list_organizations(self, staff_client):
-        """Test listing organizations."""
+    def test_list_organizations(self, admin_client):
+        """Test listing organizations (superuser sees the full directory)."""
         OrganizationFactory.create_batch(3)
 
         url = reverse("api:v1:organization:organization-list")
-        response = staff_client.get(url)
+        response = admin_client.get(url)
 
         assert response.status_code == 200
         assert response["Content-Type"] == "application/json"
@@ -66,9 +67,10 @@ class TestOrganizationViewSet:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_retrieve_organization(self, staff_client):
+    def test_retrieve_organization(self, staff_client, staff_user):
         """Test retrieving a single organization."""
         organization = OrganizationFactory.create()
+        grant_all_known_codes(staff_user, organization=organization)
 
         response = staff_client.get(_detail_url(organization))
 
@@ -128,9 +130,10 @@ class TestOrganizationViewSet:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_update_organization(self, staff_client):
+    def test_update_organization(self, staff_client, staff_user):
         """Test updating an organization."""
         organization = OrganizationFactory.create()
+        grant_all_known_codes(staff_user, organization=organization)
 
         data = {
             "name": "Updated Organization",
@@ -148,9 +151,10 @@ class TestOrganizationViewSet:
         assert organization.description == "Updated description"
 
     @pytest.mark.django_db
-    def test_partial_update_organization(self, staff_client):
+    def test_partial_update_organization(self, staff_client, staff_user):
         """Test partially updating an organization."""
         organization = OrganizationFactory.create(name="Original Name")
+        grant_all_known_codes(staff_user, organization=organization)
 
         data = {"name": "Updated Name"}
 
@@ -177,9 +181,10 @@ class TestOrganizationViewSet:
         assert response.status_code == 404
 
     @pytest.mark.django_db
-    def test_delete_organization(self, staff_client):
+    def test_delete_organization(self, staff_client, staff_user):
         """Test deleting an organization (soft delete)."""
         organization = OrganizationFactory.create()
+        grant_all_known_codes(staff_user, organization=organization)
 
         response = staff_client.delete(_detail_url(organization))
 
@@ -200,14 +205,14 @@ class TestOrganizationViewSet:
         assert response.status_code == 404
 
     @pytest.mark.django_db
-    def test_search_organizations(self, staff_client):
+    def test_search_organizations(self, admin_client):
         """Test searching organizations."""
         OrganizationFactory.create(name="Test Organization 1")
         OrganizationFactory.create(name="Test Organization 2")
         OrganizationFactory.create(name="Another Organization")
 
         url = reverse("api:v1:organization:organization-list")
-        response = staff_client.get(url, {"search": "Test Organization"})
+        response = admin_client.get(url, {"search": "Test Organization"})
 
         assert response.status_code == 200
 
@@ -216,14 +221,14 @@ class TestOrganizationViewSet:
         assert len(items) == 2
 
     @pytest.mark.django_db
-    def test_filter_organizations_by_type(self, staff_client):
+    def test_filter_organizations_by_type(self, admin_client):
         """Test filtering organizations by type."""
         OrganizationFactory.create(organization_type="studio")
         OrganizationFactory.create(organization_type="client")
         OrganizationFactory.create(organization_type="vendor")
 
         url = reverse("api:v1:organization:organization-list")
-        response = staff_client.get(
+        response = admin_client.get(
             url, {"organization_type": "studio"}
         )
 
@@ -234,14 +239,14 @@ class TestOrganizationViewSet:
         assert len(items) == 1
 
     @pytest.mark.django_db
-    def test_order_organizations(self, staff_client):
+    def test_order_organizations(self, admin_client):
         """Test ordering organizations."""
         OrganizationFactory.create(name="Z Organization")
         OrganizationFactory.create(name="A Organization")
         OrganizationFactory.create(name="M Organization")
 
         url = reverse("api:v1:organization:organization-list")
-        response = staff_client.get(url, {"ordering": "name"})
+        response = admin_client.get(url, {"ordering": "name"})
 
         assert response.status_code == 200
 
@@ -251,14 +256,14 @@ class TestOrganizationViewSet:
         assert items[0]["name"] == "A Organization"
 
     @pytest.mark.django_db
-    def test_filter_by_status(self, staff_client):
+    def test_filter_by_status(self, admin_client):
         """Test filtering organizations by status."""
         OrganizationFactory.create(status="active")
         OrganizationFactory.create(status="inactive")
         OrganizationFactory.create(status="active")
 
         url = reverse("api:v1:organization:organization-list")
-        response = staff_client.get(url, {"status": "active"})
+        response = admin_client.get(url, {"status": "active"})
 
         assert response.status_code == 200
 
@@ -267,14 +272,14 @@ class TestOrganizationViewSet:
         assert len(items) == 2
 
     @pytest.mark.django_db
-    def test_filter_by_country(self, staff_client):
+    def test_filter_by_country(self, admin_client):
         """Test filtering organizations by country."""
         OrganizationFactory.create(country="US")
         OrganizationFactory.create(country="UK")
         OrganizationFactory.create(country="US")
 
         url = reverse("api:v1:organization:organization-list")
-        response = staff_client.get(url, {"country": "US"})
+        response = admin_client.get(url, {"country": "US"})
 
         assert response.status_code == 200
 
@@ -292,9 +297,10 @@ class TestOrganizationViewSet:
         assert response.status_code == 200
 
     @pytest.mark.django_db
-    def test_staff_can_view(self, staff_client):
-        """Test staff can view an organization."""
+    def test_staff_can_view(self, staff_client, staff_user):
+        """Test staff can view an organization they are a member of."""
         organization = OrganizationFactory.create()
+        grant_all_known_codes(staff_user, organization=organization)
 
         response = staff_client.get(_detail_url(organization))
 
@@ -418,8 +424,9 @@ class TestOrganizationStatusCaseContract:
         assert response.data["status"] == "active"
 
     @pytest.mark.django_db
-    def test_archive_restore_title_case(self, staff_client):
+    def test_archive_restore_title_case(self, staff_client, staff_user):
         organization = OrganizationFactory.create(code="CASE2")
+        grant_all_known_codes(staff_user, organization=organization)
 
         response = staff_client.patch(
             f"/api/v1/organizations/{organization.id}/",

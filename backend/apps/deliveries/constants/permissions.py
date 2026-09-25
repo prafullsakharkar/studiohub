@@ -8,7 +8,7 @@ organization context, but the permission codes are deliveries-specific.
 
 
 class DeliveryPermissions:
-    VIEW = "deliveries:read"
-    CREATE = "deliveries:create"
-    UPDATE = "deliveries:update"
-    DELETE = "deliveries:delete"
+    VIEW = "delivery.view"
+    CREATE = "delivery.create"
+    UPDATE = "delivery.update"
+    DELETE = "delivery.delete"

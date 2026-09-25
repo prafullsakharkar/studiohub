@@ -154,8 +154,9 @@ class OrganizationMasterDataViewSet(BaseViewSet):
     def list_type(self, request, organization_id=None, data_type=None):
         assert data_type is not None
         organization = self._get_organization(organization_id)
-        if data_type != "file-types":
-            self._require_organization_access(organization)
+        # ADR-0033: organization master data always requires org membership —
+        # no per-type bypass (previously file-types skipped this check).
+        self._require_organization_access(organization)
         resolver = self.RESOLVERS.get(data_type)
         if resolver is None:
             raise NotFound({"detail": "Unknown master data type."})

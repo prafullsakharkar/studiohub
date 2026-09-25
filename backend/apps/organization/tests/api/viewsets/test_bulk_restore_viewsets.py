@@ -95,9 +95,16 @@ def _contract_payload(**overrides):
     return data
 
 
-def _use_org(client, parent):
-    """Attach the parent's organization header (required request context)."""
+def _use_org(client, parent, user=None):
+    """
+    Attach the parent's organization context. ADR-0033 D1/D6: org context
+    only resolves for members — grant the acting user an org membership.
+    """
     client.credentials(HTTP_X_ORGANIZATION_ID=str(parent.organization_id))
+    if user is not None:
+        from apps.organization.tests.rbac_helpers import grant_all_known_codes
+
+        grant_all_known_codes(user, organization=parent.organization)
     return client
 
 
@@ -105,9 +112,9 @@ class TestClientContactBulk:
     """Bulk operations on client contacts."""
 
     @pytest.mark.django_db
-    def test_bulk_create_mixed_results(self, staff_client):
+    def test_bulk_create_mixed_results(self, staff_client, staff_user):
         parent = ClientFactory.create()
-        _use_org(staff_client, parent)
+        _use_org(staff_client, parent, user=staff_user)
 
         response = staff_client.post(
             _contact_bulk_url(parent, "bulk-create"),
@@ -131,9 +138,9 @@ class TestClientContactBulk:
         assert data["results"][2]["status"] == "created"
 
     @pytest.mark.django_db
-    def test_bulk_create_rejects_non_list(self, staff_client):
+    def test_bulk_create_rejects_non_list(self, staff_client, staff_user):
         parent = ClientFactory.create()
-        _use_org(staff_client, parent)
+        _use_org(staff_client, parent, user=staff_user)
 
         response = staff_client.post(
             _contact_bulk_url(parent, "bulk-create"),
@@ -144,9 +151,9 @@ class TestClientContactBulk:
         assert response.status_code == 400
 
     @pytest.mark.django_db
-    def test_bulk_update_and_archive(self, staff_client):
+    def test_bulk_update_and_archive(self, staff_client, staff_user):
         parent = ClientFactory.create()
-        _use_org(staff_client, parent)
+        _use_org(staff_client, parent, user=staff_user)
         first = ClientContactFactory.create(client=parent)
         second = ClientContactFactory.create(client=parent)
 
@@ -173,11 +180,11 @@ class TestClientContactBulk:
         assert second.is_deleted is True
 
     @pytest.mark.django_db
-    def test_bulk_update_not_found(self, staff_client):
+    def test_bulk_update_not_found(self, staff_client, staff_user):
         from uuid import uuid4
 
         parent = ClientFactory.create()
-        _use_org(staff_client, parent)
+        _use_org(staff_client, parent, user=staff_user)
 
         response = staff_client.patch(
             _contact_bulk_url(parent, "bulk-update"),
@@ -189,9 +196,9 @@ class TestClientContactBulk:
         assert response.json()["results"][0]["status"] == "not_found"
 
     @pytest.mark.django_db
-    def test_restore_single_contact(self, staff_client):
+    def test_restore_single_contact(self, staff_client, staff_user):
         parent = ClientFactory.create()
-        _use_org(staff_client, parent)
+        _use_org(staff_client, parent, user=staff_user)
         contact = ClientContactFactory.create(client=parent)
         staff_client.delete(
             reverse(
@@ -208,7 +215,7 @@ class TestClientContactBulk:
         assert contact.is_deleted is False
 
     @pytest.mark.django_db
-    def test_restore_non_deleted_contact_404(self, staff_client):
+    def test_restore_non_deleted_contact_404(self, staff_client, staff_user):
         parent = ClientFactory.create()
         contact = ClientContactFactory.create(client=parent)
 
@@ -217,9 +224,9 @@ class TestClientContactBulk:
         assert response.status_code == 404
 
     @pytest.mark.django_db
-    def test_bulk_restore(self, staff_client):
+    def test_bulk_restore(self, staff_client, staff_user):
         parent = ClientFactory.create()
-        _use_org(staff_client, parent)
+        _use_org(staff_client, parent, user=staff_user)
         contact = ClientContactFactory.create(client=parent)
         contact.delete()
 
@@ -285,9 +292,9 @@ class TestClientContractValidation:
     """Lifecycle validation: dates (400) and duplicate numbers (409)."""
 
     @pytest.mark.django_db
-    def test_create_inverted_dates_400(self, staff_client):
+    def test_create_inverted_dates_400(self, staff_client, staff_user):
         parent = ClientFactory.create()
-        _use_org(staff_client, parent)
+        _use_org(staff_client, parent, user=staff_user)
 
         response = staff_client.post(
             reverse(
@@ -304,9 +311,9 @@ class TestClientContractValidation:
         assert response.status_code == 400
 
     @pytest.mark.django_db
-    def test_create_duplicate_number_409(self, staff_client):
+    def test_create_duplicate_number_409(self, staff_client, staff_user):
         parent = ClientFactory.create()
-        _use_org(staff_client, parent)
+        _use_org(staff_client, parent, user=staff_user)
         ClientContractFactory.create(client=parent, contract_number="SOW-DUP-01")
 
         response = staff_client.post(
@@ -321,8 +328,9 @@ class TestClientContractValidation:
         assert response.status_code == 409
 
     @pytest.mark.django_db
-    def test_update_duplicate_number_409(self, staff_client):
+    def test_update_duplicate_number_409(self, staff_client, staff_user):
         parent = ClientFactory.create()
+        _use_org(staff_client, parent, user=staff_user)
         ClientContractFactory.create(client=parent, contract_number="SOW-KEEP-01")
         other = ClientContractFactory.create(client=parent, contract_number="SOW-OLD-02")
 
@@ -335,7 +343,7 @@ class TestClientContractValidation:
         assert response.status_code == 409
 
     @pytest.mark.django_db
-    def test_same_number_different_client_ok(self, staff_client):
+    def test_same_number_different_client_ok(self, staff_client, staff_user):
         first = ClientFactory.create()
         second = ClientFactory.create()
         _use_org(staff_client, second)
@@ -353,9 +361,9 @@ class TestClientContractValidation:
         assert response.status_code == 201
 
     @pytest.mark.django_db
-    def test_restore_single_contract(self, staff_client):
+    def test_restore_single_contract(self, staff_client, staff_user):
         parent = ClientFactory.create()
-        _use_org(staff_client, parent)
+        _use_org(staff_client, parent, user=staff_user)
         contract = ClientContractFactory.create(client=parent)
         staff_client.delete(_contract_detail_url(parent, contract.uuid))
 
@@ -367,9 +375,9 @@ class TestClientContractValidation:
         assert contract.is_deleted is False
 
     @pytest.mark.django_db
-    def test_bulk_create_contracts(self, staff_client):
+    def test_bulk_create_contracts(self, staff_client, staff_user):
         parent = ClientFactory.create()
-        _use_org(staff_client, parent)
+        _use_org(staff_client, parent, user=staff_user)
 
         response = staff_client.post(
             _contract_bulk_url(parent, "bulk-create"),
@@ -394,9 +402,9 @@ class TestClientContractValidation:
         assert data["results"][1]["status"] == "invalid"
 
     @pytest.mark.django_db
-    def test_bulk_create_duplicate_number(self, staff_client):
+    def test_bulk_create_duplicate_number(self, staff_client, staff_user):
         parent = ClientFactory.create()
-        _use_org(staff_client, parent)
+        _use_org(staff_client, parent, user=staff_user)
         ClientContractFactory.create(client=parent, contract_number="SOW-DUP-B-01")
 
         response = staff_client.post(
@@ -415,7 +423,7 @@ class TestVendorContractBulk:
     """Vendor-side bulk + restore mirror."""
 
     @pytest.mark.django_db
-    def test_bulk_create_vendor_contracts(self, staff_client):
+    def test_bulk_create_vendor_contracts(self, staff_client, staff_user):
         vendor = VendorFactory.create()
         _use_org(staff_client, vendor)
 
@@ -448,7 +456,7 @@ class TestVendorContractBulk:
         assert data["successful"] == 2
 
     @pytest.mark.django_db
-    def test_bulk_archive_and_restore_vendor_contact(self, staff_client):
+    def test_bulk_archive_and_restore_vendor_contact(self, staff_client, staff_user):
         vendor = VendorFactory.create()
         _use_org(staff_client, vendor)
         contact = VendorContactFactory.create(vendor=vendor)
@@ -478,9 +486,9 @@ class TestClientVendorRestore:
     """Restore actions on the top-level client/vendor viewsets."""
 
     @pytest.mark.django_db
-    def test_restore_client(self, staff_client):
+    def test_restore_client(self, staff_client, staff_user):
         parent = ClientFactory.create()
-        _use_org(staff_client, parent)
+        _use_org(staff_client, parent, user=staff_user)
         detail_url = reverse(
             "api:v1:organization-legacy:legacy-client-detail",
             kwargs={"uuid": str(parent.id)},
@@ -503,7 +511,7 @@ class TestClientVendorRestore:
         assert parent.is_deleted is False
 
     @pytest.mark.django_db
-    def test_restore_vendor(self, staff_client):
+    def test_restore_vendor(self, staff_client, staff_user):
         vendor = VendorFactory.create()
         _use_org(staff_client, vendor)
         detail_url = reverse(
@@ -525,7 +533,7 @@ class TestClientVendorRestore:
         assert vendor.is_deleted is False
 
     @pytest.mark.django_db
-    def test_restore_non_deleted_client_404(self, staff_client):
+    def test_restore_non_deleted_client_404(self, staff_client, staff_user):
         parent = ClientFactory.create()
         restore_url = reverse(
             "api:v1:organization-legacy:legacy-client-restore",

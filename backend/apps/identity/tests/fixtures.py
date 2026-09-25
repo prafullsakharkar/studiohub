@@ -159,3 +159,28 @@ def admin_client(admin_user):
     client = APIClient()
     client.force_authenticate(user=admin_user)
     return client
+
+
+@pytest.fixture
+def org_admin_context(staff_user):
+    """
+    ADR-0033 (D4/D6): bind the staff user to an organization with full
+    grants; returned helper adds a target user to the same org and yields
+    the organization-context headers for API calls.
+    """
+    from apps.organization.tests.factories import (
+        OrganizationFactory,
+        OrganizationMembershipFactory,
+    )
+    from apps.organization.tests.rbac_helpers import grant_all_known_codes
+
+    org = OrganizationFactory.create()
+    grant_all_known_codes(staff_user, organization=org)
+
+    def add_member(target_user):
+        OrganizationMembershipFactory.create(
+            user=target_user, organization=org, status="active"
+        )
+        return {"HTTP_X_ORGANIZATION_ID": str(org.pk)}
+
+    return add_member

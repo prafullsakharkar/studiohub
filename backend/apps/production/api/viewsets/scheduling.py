@@ -34,7 +34,7 @@ def _resolve_organization(request):
     if organization is not None:
         return organization
     user = getattr(request, "user", None)
-    if user is not None and (user.is_staff or user.is_superuser):
+    if user is not None and (user.is_superuser):
         return Organization.objects.first()
     return None
 

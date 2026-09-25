@@ -21,6 +21,7 @@ from apps.organization.tests.factories import (
     RoleFactory,
     RolePermissionFactory,
 )
+from apps.organization.tests.rbac_helpers import grant_all_known_codes
 
 
 def _member_client(org, *perm_codes):
@@ -74,8 +75,9 @@ class TestMyAction:
 
 @pytest.mark.django_db
 class TestArchiveAction:
-    def test_archive_sets_archived_status(self, staff_client):
+    def test_archive_sets_archived_status(self, staff_client, staff_user):
         org = OrganizationFactory.create(status="active")
+        grant_all_known_codes(staff_user, organization=org)
 
         response = staff_client.post(_action_url(org, "archive"), **_org_header(org))
 
@@ -103,13 +105,14 @@ class TestArchiveAction:
 
         assert response.status_code == 401
 
-    def test_archive_falls_back_to_soft_delete(self, staff_client):
+    def test_archive_falls_back_to_soft_delete(self, staff_client, staff_user):
         """Service failure still archives via soft delete (no 500, no loss)."""
         from unittest import mock
 
         from apps.organization.services import OrganizationService
 
         org = OrganizationFactory.create(status="active")
+        grant_all_known_codes(staff_user, organization=org)
         with mock.patch.object(
             OrganizationService, "archive", side_effect=RuntimeError("boom")
         ):
@@ -135,12 +138,12 @@ class TestArchiveAction:
 
 @pytest.mark.django_db
 class TestRestoreAction:
-    def test_restore_soft_deleted(self, staff_client):
+    def test_restore_soft_deleted(self, admin_client):
         org = OrganizationFactory.create()
         org.delete()
         assert org.is_deleted is True
 
-        response = staff_client.post(_action_url(org, "restore"), **_org_header(org))
+        response = admin_client.post(_action_url(org, "restore"), **_org_header(org))
 
         assert response.status_code == 200
         org.refresh_from_db()
@@ -210,33 +213,35 @@ class TestRestoreAction:
 
 @pytest.mark.django_db
 class TestExportAction:
-    def test_export_returns_download_url(self, staff_client):
+    def test_export_returns_download_url(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_all_known_codes(staff_user, organization=org)
 
         response = staff_client.post(_action_url(org, "export"), **_org_header(org))
 
         assert response.status_code == 200
         assert response.data["download_url"].endswith(f"{org.id}.zip")
 
-    def test_export_unknown_org_404(self, staff_client):
+    def test_export_unknown_org_404(self, admin_client):
         org = OrganizationFactory.create()
         other = OrganizationFactory.create()
         url = _action_url(other, "export")
 
-        response = staff_client.post(url, **_org_header(org))
+        response = admin_client.post(url, **_org_header(org))
 
-        # Staff sees all orgs, so an existing org exports fine…
+        # Superuser sees all orgs, so an existing org exports fine…
         assert response.status_code == 200
 
         missing = url.replace(str(other.uuid), "00000000-0000-0000-0000-000000000000")
-        response = staff_client.post(missing, **_org_header(org))
+        response = admin_client.post(missing, **_org_header(org))
         assert response.status_code == 404
 
 
 @pytest.mark.django_db
 class TestSwitchAction:
-    def test_switch_returns_success(self, staff_client):
+    def test_switch_returns_success(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_all_known_codes(staff_user, organization=org)
 
         response = staff_client.post(_action_url(org, "switch"), **_org_header(org))
 
@@ -253,8 +258,9 @@ class TestSwitchAction:
 
 @pytest.mark.django_db
 class TestSettingsAction:
-    def test_get_creates_and_returns_settings(self, staff_client):
+    def test_get_creates_and_returns_settings(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_all_known_codes(staff_user, organization=org)
 
         response = staff_client.get(_action_url(org, "settings"), **_org_header(org))
 
@@ -262,8 +268,9 @@ class TestSettingsAction:
         assert response.data["timezone"] == "UTC"
         assert response.data["language"] == "en"
 
-    def test_patch_flat_payload(self, staff_client):
+    def test_patch_flat_payload(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_all_known_codes(staff_user, organization=org)
 
         response = staff_client.patch(
             _action_url(org, "settings"),
@@ -275,8 +282,9 @@ class TestSettingsAction:
         assert response.status_code == 200, response.data
         assert response.data["timezone"] == "Asia/Kolkata"
 
-    def test_patch_nested_settings_payload(self, staff_client):
+    def test_patch_nested_settings_payload(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_all_known_codes(staff_user, organization=org)
 
         response = staff_client.patch(
             _action_url(org, "settings"),

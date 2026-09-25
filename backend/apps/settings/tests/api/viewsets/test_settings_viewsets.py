@@ -20,11 +20,18 @@ class TestThemeViewSet:
     """Tests for ThemeViewSet."""
 
     @pytest.mark.django_db
-    def test_list_viewset(self, authenticated_client, theme: Theme) -> None:
-        """Test list endpoint."""
+    def test_list_viewset(self, staff_client, theme: Theme) -> None:
+        """Granted users can list themes."""
+        url = "/api/v1/settings/themes/"
+        response = staff_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+    @pytest.mark.django_db
+    def test_list_requires_grant(self, authenticated_client, theme: Theme) -> None:
+        """ADR-0033 D4: users without the view grant are denied."""
         url = "/api/v1/settings/themes/"
         response = authenticated_client.get(url)
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
     @pytest.mark.django_db
     def test_list_unauthenticated(self, api_client, theme: Theme) -> None:
@@ -34,20 +41,20 @@ class TestThemeViewSet:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     @pytest.mark.django_db
-    def test_retrieve_viewset(self, staff_client, theme: Theme) -> None:
-        """Test retrieve endpoint."""
+    def test_retrieve_viewset(self, admin_client, theme: Theme) -> None:
+        """Superusers can retrieve platform-default themes."""
         url = f"/api/v1/settings/themes/{theme.uuid}/"
-        response = staff_client.get(url)
+        response = admin_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(theme.id)
 
     @pytest.mark.django_db
     def test_retrieve_other_org_theme_isolated(
-        self, authenticated_client, theme: Theme
+        self, staff_client, theme: Theme
     ) -> None:
-        """A user cannot retrieve another org's theme."""
+        """A user cannot retrieve a theme of an org they do not belong to."""
         url = f"/api/v1/settings/themes/{theme.uuid}/"
-        response = authenticated_client.get(url)
+        response = staff_client.get(url)
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     @pytest.mark.django_db
@@ -86,22 +93,22 @@ class TestThemeViewSet:
         assert Theme.objects.filter(code="viewset_test_theme").exists()
 
     @pytest.mark.django_db
-    def test_update_viewset(self, staff_client, theme: Theme) -> None:
-        """Test update endpoint."""
+    def test_update_viewset(self, admin_client, theme: Theme) -> None:
+        """Superusers can update platform-default themes."""
         url = f"/api/v1/settings/themes/{theme.uuid}/"
         data = {
             "name": "Updated Theme",
         }
-        response = staff_client.patch(url, data, format="json")
+        response = admin_client.patch(url, data, format="json")
         assert response.status_code == status.HTTP_200_OK
         theme.refresh_from_db()
         assert theme.name == "Updated Theme"
 
     @pytest.mark.django_db
-    def test_delete_viewset(self, staff_client, theme: Theme) -> None:
-        """Test delete endpoint."""
+    def test_delete_viewset(self, admin_client, theme: Theme) -> None:
+        """Superusers can delete platform-default themes."""
         url = f"/api/v1/settings/themes/{theme.uuid}/"
-        response = staff_client.delete(url)
+        response = admin_client.delete(url)
         assert response.status_code == status.HTTP_204_NO_CONTENT
         assert Theme.objects.filter(id=theme.id).count() == 0
 
@@ -188,15 +195,25 @@ class TestOtherViewSets:
         assert response.status_code == status.HTTP_200_OK
 
     @pytest.mark.django_db
-    def test_localizations_list(self, authenticated_client) -> None:
-        """Authenticated users can list localizations."""
-        response = authenticated_client.get("/api/v1/settings/localizations/")
+    def test_localizations_list(self, staff_client) -> None:
+        """Granted users can list localizations."""
+        response = staff_client.get("/api/v1/settings/localizations/")
         assert response.status_code == status.HTTP_200_OK
 
     @pytest.mark.django_db
-    def test_organization_settings_list(self, authenticated_client) -> None:
-        """Authenticated users can list organization settings."""
-        response = authenticated_client.get(
+    def test_organization_settings_list(self, staff_client) -> None:
+        """Granted users can list organization settings."""
+        response = staff_client.get(
             "/api/v1/settings/organization-settings/"
         )
         assert response.status_code == status.HTTP_200_OK
+
+    @pytest.mark.django_db
+    def test_organization_settings_list_requires_grant(
+        self, authenticated_client
+    ) -> None:
+        """Users without the org-settings view grant are denied."""
+        response = authenticated_client.get(
+            "/api/v1/settings/organization-settings/"
+        )
+        assert response.status_code == status.HTTP_403_FORBIDDEN

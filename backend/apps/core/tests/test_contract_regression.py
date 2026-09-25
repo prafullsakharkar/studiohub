@@ -71,10 +71,12 @@ class TestContractResponseShapes:
     """
 
     @pytest.mark.django_db
-    def test_project_list_and_detail_shape(self, staff_client):
+    def test_project_list_and_detail_shape(self, staff_client, staff_user):
+        from apps.organization.tests.rbac_helpers import grant_org_admin
         from apps.production.tests.factories import ProjectFactory
 
         project = ProjectFactory.create()
+        grant_org_admin(staff_user, project.organization)
         client = _scoped(staff_client, project.organization)
 
         item = client.get("/api/v1/projects/").json()["results"][0]
@@ -89,10 +91,12 @@ class TestContractResponseShapes:
         assert isinstance(detail["name"], str)
 
     @pytest.mark.django_db
-    def test_shot_list_and_detail_shape(self, staff_client):
+    def test_shot_list_and_detail_shape(self, staff_client, staff_user):
+        from apps.organization.tests.rbac_helpers import grant_org_admin
         from apps.production.tests.factories import ShotFactory
 
         shot = ShotFactory.create()
+        grant_org_admin(staff_user, shot.organization)
         client = _scoped(staff_client, shot.organization)
 
         item = client.get("/api/v1/shots/").json()["results"][0]
@@ -106,10 +110,12 @@ class TestContractResponseShapes:
         assert detail["code"] == shot.code
 
     @pytest.mark.django_db
-    def test_nested_team_list_shape(self, staff_client):
+    def test_nested_team_list_shape(self, staff_client, staff_user):
         from apps.organization.tests.factories import TeamFactory
+        from apps.organization.tests.rbac_helpers import grant_all_known_codes
 
         team = TeamFactory.create()
+        grant_all_known_codes(staff_user, organization=team.organization)
         resp = _scoped(staff_client, team.organization).get(
             f"/api/organizations/{team.organization.id}/teams/"
         )
@@ -121,10 +127,14 @@ class TestContractResponseShapes:
         assert "uuid" in rows[0]
 
     @pytest.mark.django_db
-    def test_organization_list_shape(self, staff_client):
-        from apps.organization.tests.factories import OrganizationFactory
+    def test_organization_list_shape(self, staff_client, staff_user):
+        from apps.organization.tests.factories import (
+            OrganizationFactory,
+            OrganizationMembershipFactory,
+        )
 
         org = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(user=staff_user, organization=org)
         rows = _scoped(staff_client, org).get("/api/v1/organizations/").json()
         rows = rows["results"] if isinstance(rows, dict) else rows
         match = [r for r in rows if r["id"] == str(org.id)]
@@ -150,10 +160,14 @@ class TestContractResponseShapes:
         assert row["status"] == "Active"
 
     @pytest.mark.django_db
-    def test_knowledge_list_and_detail_shape(self, staff_client):
+    def test_knowledge_list_and_detail_shape(self, staff_client, staff_user):
         from apps.intelligence.tests.factories import KnowledgeDocumentFactory
+        from apps.organization.tests.factories import OrganizationMembershipFactory
 
         doc = KnowledgeDocumentFactory.create()
+        OrganizationMembershipFactory.create(
+            user=staff_user, organization=doc.organization
+        )
         client = _scoped(staff_client, doc.organization)
 
         rows = client.get("/api/v1/intelligence/knowledge/").json()
@@ -329,10 +343,12 @@ class TestContractFiltering:
     """search / ordering params keep working on flagship lists."""
 
     @pytest.mark.django_db
-    def test_shot_search_and_ordering(self, staff_client):
+    def test_shot_search_and_ordering(self, staff_client, staff_user):
+        from apps.organization.tests.rbac_helpers import grant_org_admin
         from apps.production.tests.factories import ProjectFactory, ShotFactory
 
         project = ProjectFactory.create()
+        grant_org_admin(staff_user, project.organization)
         client = _scoped(staff_client, project.organization)
         ShotFactory.create(
             project=project, code="CTR_A001", organization=project.organization

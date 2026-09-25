@@ -43,7 +43,7 @@ class AuditBaseSelector(BaseSelector):
         Restrict audit records to the caller's organizations.
 
         Audit data is sensitive; regular users must only see records for
-        organizations they belong to. Staff and superusers see everything.
+        organizations they belong to. Only superusers (break-glass) see everything — ADR-0033 D4.
         Models with a nullable ``organization`` (e.g. pre-auth login
         history) additionally expose system-wide rows (``organization=None``)
         only to staff.
@@ -56,7 +56,7 @@ class AuditBaseSelector(BaseSelector):
         if user is None or not user.is_authenticated:
             return queryset.none()
 
-        if user.is_staff or user.is_superuser:
+        if user.is_superuser:
             return queryset
 
         organization_ids = list(
@@ -83,7 +83,7 @@ class AuditBaseSelector(BaseSelector):
         if user is None or not user.is_authenticated:
             return queryset.none()
 
-        if user.is_staff or user.is_superuser:
+        if user.is_superuser:
             return queryset
 
         organization_ids = list(

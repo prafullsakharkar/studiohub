@@ -64,6 +64,16 @@ def authenticated_client(user):
 
 
 @pytest.fixture
+def admin_client(admin_user):
+    """Get a superuser API client (break-glass, ADR-0033 D4)."""
+    from rest_framework.test import APIClient
+
+    client = APIClient()
+    client.force_authenticate(user=admin_user)
+    return client
+
+
+@pytest.fixture
 def staff_client(staff_user):
     """Get a staff API client (staff holds explicit full permission grants)."""
     from rest_framework.test import APIClient

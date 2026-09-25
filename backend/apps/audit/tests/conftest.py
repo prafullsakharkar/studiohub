@@ -47,13 +47,12 @@ def authenticated_client(api_client: APIClient) -> APIClient:
 
 
 @pytest.fixture
-def staff_client(api_client: APIClient) -> APIClient:
+def staff_client(api_client: APIClient, staff_user) -> APIClient:
     """Staff user authenticated API client fixture (explicit full grants)."""
     from apps.organization.tests.rbac_helpers import grant_all_known_codes
 
-    user = UserFactory(is_staff=True)
-    grant_all_known_codes(user)
-    api_client.force_authenticate(user=user)
+    grant_all_known_codes(staff_user)
+    api_client.force_authenticate(user=staff_user)
     return api_client
 
 

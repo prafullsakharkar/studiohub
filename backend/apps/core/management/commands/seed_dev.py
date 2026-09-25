@@ -126,7 +126,7 @@ class Command(BaseCommand):
         Team.objects.filter(code__startswith="TEAM-").delete()
         Department.objects.filter(code__startswith="DEPT-").delete()
         Office.objects.filter(code__startswith="OFF-").delete()
-        Role.objects.filter(code__in=[c for c, _ in self._seed_roles_spec()]).delete()
+        Role.objects.filter(code__in=[s[0] for s in self._seed_roles_spec()]).delete()
         Organization.objects.filter(code="APEX").delete()
 
     def _seed_emails(self):
@@ -220,67 +220,56 @@ class Command(BaseCommand):
             offices.append(office)
         return offices
 
-    def _seed_roles_spec(self):
-        # (code, name) — must match frontend Role strings where appropriate
-        return [
-            ("platform-admin", "Platform Admin"),
-            ("org-admin", "Organization Admin"),
-            ("vfx-supervisor", "VFX Supervisor"),
-            ("lead-artist", "Lead Artist"),
-            ("artist", "Artist"),
-            ("client-reviewer", "Client Reviewer"),
-        ]
-
     def _seed_permissions(self):
         from apps.organization.models import Permission
 
         # Use get_or_create to avoid duplicate permission creation; org permissions may already be seeded via migrations.
-        # Frontend codes like "projects:create" use module names outside backend choices; map to a valid module.
+        # Frontend codes like "project.create" use module names outside backend choices; map to a valid module.
         perm_specs = [
-            ("projects:create", "projects", "create"),
-            ("projects:read", "projects", "read"),
-            ("projects:update", "projects", "update"),
-            ("projects:delete", "projects", "delete"),
-            ("shots:create", "shots", "create"),
-            ("shots:read", "shots", "read"),
-            ("shots:update", "shots", "update"),
-            ("shots:delete", "shots", "delete"),
-            ("shots:approve", "shots", "approve"),
-            ("assets:create", "assets", "create"),
-            ("assets:read", "assets", "read"),
-            ("assets:update", "assets", "update"),
-            ("assets:delete", "assets", "delete"),
-            ("tasks:create", "tasks", "create"),
-            ("tasks:read", "tasks", "read"),
-            ("tasks:update", "tasks", "update"),
-            ("tasks:delete", "tasks", "delete"),
-            ("reviews:create", "reviews", "create"),
-            ("reviews:read", "reviews", "read"),
-            ("reviews:approve", "reviews", "approve"),
-            ("deliveries:create", "deliveries", "create"),
-            ("deliveries:read", "deliveries", "read"),
-            ("deliveries:update", "deliveries", "update"),
-            ("deliveries:delete", "deliveries", "delete"),
-            ("publishing:create", "publishing", "create"),
-            ("publishing:read", "publishing", "read"),
-            ("publishing:update", "publishing", "update"),
-            ("publishing:delete", "publishing", "delete"),
-            ("tracks:create", "tracks", "create"),
-            ("tracks:read", "tracks", "read"),
-            ("tracks:update", "tracks", "update"),
-            ("tracks:delete", "tracks", "delete"),
-            ("shows:create", "shows", "create"),
-            ("shows:read", "shows", "read"),
-            ("shows:update", "shows", "update"),
-            ("shows:delete", "shows", "delete"),
-            ("scheduling:create", "scheduling", "create"),
-            ("scheduling:read", "scheduling", "read"),
-            ("scheduling:update", "scheduling", "update"),
-            ("scheduling:delete", "scheduling", "delete"),
-            ("audit:read", "audit", "read"),
-            ("audit:update", "audit", "update"),
-            ("settings:update", "settings", "update"),
-            ("users:manage", "users", "manage"),
+            ("project.create", "projects", "create"),
+            ("project.view", "projects", "read"),
+            ("project.update", "projects", "update"),
+            ("project.delete", "projects", "delete"),
+            ("shot.create", "shots", "create"),
+            ("shot.view", "shots", "read"),
+            ("shot.update", "shots", "update"),
+            ("shot.delete", "shots", "delete"),
+            ("shot.approve", "shots", "approve"),
+            ("asset.create", "assets", "create"),
+            ("asset.view", "assets", "read"),
+            ("asset.update", "assets", "update"),
+            ("asset.delete", "assets", "delete"),
+            ("task.create", "tasks", "create"),
+            ("task.view", "tasks", "read"),
+            ("task.update", "tasks", "update"),
+            ("task.delete", "tasks", "delete"),
+            ("review.create", "reviews", "create"),
+            ("review.view", "reviews", "read"),
+            ("review.approve", "reviews", "approve"),
+            ("delivery.create", "deliveries", "create"),
+            ("delivery.view", "deliveries", "read"),
+            ("delivery.update", "deliveries", "update"),
+            ("delivery.delete", "deliveries", "delete"),
+            ("publishing.create", "publishing", "create"),
+            ("publishing.view", "publishing", "read"),
+            ("publishing.update", "publishing", "update"),
+            ("publishing.delete", "publishing", "delete"),
+            ("track.create", "tracks", "create"),
+            ("track.view", "tracks", "read"),
+            ("track.update", "tracks", "update"),
+            ("track.delete", "tracks", "delete"),
+            ("show.create", "shows", "create"),
+            ("show.view", "shows", "read"),
+            ("show.update", "shows", "update"),
+            ("show.delete", "shows", "delete"),
+            ("schedule.create", "scheduling", "create"),
+            ("schedule.view", "scheduling", "read"),
+            ("schedule.update", "scheduling", "update"),
+            ("schedule.delete", "scheduling", "delete"),
+            ("audit.view", "audit", "read"),
+            ("audit.update", "audit", "update"),
+            ("settings.update", "settings", "update"),
+            ("user.manage", "users", "manage"),
             ("organization.master_data.configure", "master_data", "configure"),
             ("organization.master_data.create", "master_data", "create"),
             # Organization domain (enforced by OrganizationEntityViewSet
@@ -314,10 +303,10 @@ class Command(BaseCommand):
             ("position.delete", "position", "delete"),
             # Platform domain (notifications, reports). Codes must match
             # apps/platform/constants/permissions.py exactly.
-            ("reports:read", "reports", "read"),
-            ("reports:create", "reports", "create"),
-            ("notifications:read", "notifications", "read"),
-            ("notifications:update", "notifications", "update"),
+            ("report.view", "reports", "read"),
+            ("report.create", "reports", "create"),
+            ("notification.view", "notifications", "read"),
+            ("notification.update", "notifications", "update"),
         ]
         perms = []
         for code, module, action in perm_specs:
@@ -341,83 +330,30 @@ class Command(BaseCommand):
             perms.append(perm)
         return perms
 
-    def _role_perm_matrix(self, perm_by_code):
-        """Role-code -> wanted permission codes (single source of truth).
-
-        Org-directory reads granted org-wide (company directory is
-        readable); org-entity mutations stay with org-admin. Phase 6:
-        previously zero roles held any organization.* code, so every
-        non-superuser got 403 on all org endpoints.
+    def _seed_roles_spec(self):
         """
-        org_views = [
-            "organization.view",
-            "organization.department.view",
-            "organization.team.view",
-            "organization.office.view",
-            "person.view",
-            "position.view",
-        ]
-        org_crud = [
-            "organization.view", "organization.create", "organization.update", "organization.delete",
-            "organization.department.view", "organization.department.create",
-            "organization.department.update", "organization.department.delete",
-            "organization.team.view", "organization.team.create",
-            "organization.team.update", "organization.team.delete",
-            "organization.office.view", "organization.office.create",
-            "organization.office.update", "organization.office.delete",
-            "person.view", "person.create", "person.update", "person.delete",
-            "position.view", "position.create", "position.update", "position.delete",
-        ]
-        # Define which permissions each role gets (mirrors frontend mockUsers)
-        role_perms = {
-            "platform-admin": list(perm_by_code.keys()),
-            "vfx-supervisor": [
-                "projects:create", "projects:read", "projects:update",
-                "shots:create", "shots:read", "shots:update", "shots:approve",
-                "assets:create", "assets:read", "assets:update",
-                "tasks:create", "tasks:read", "tasks:update",
-                "reviews:create", "reviews:read", "reviews:approve",
-                "deliveries:create", "deliveries:read", "deliveries:update",
-                "publishing:create", "publishing:read", "publishing:update",
-                "scheduling:create", "scheduling:read", "scheduling:update",
-                "tracks:create", "tracks:read", "tracks:update", "tracks:delete",
-                "shows:create", "shows:read", "shows:update", "shows:delete",
-                "audit:read",
-            ] + org_views,
-            "lead-artist": [
-                "projects:read", "shots:read", "shots:update",
-                "assets:read", "assets:update",
-                "tasks:create", "tasks:read", "tasks:update",
-                "reviews:create", "reviews:read",
-                "deliveries:read", "publishing:read", "scheduling:read",
-                "tracks:read",
-                "shows:read",
-                "audit:read",
-            ] + org_views,
-            "artist": [
-                "projects:read", "shots:read", "tasks:read", "tasks:update",
-                "assets:read", "reviews:read",
-                "deliveries:read", "publishing:read", "scheduling:read",
-                "tracks:read",
-                "shows:read",
-            ] + org_views,
-            "org-admin": [
-                "projects:create", "projects:read", "projects:update", "projects:delete",
-                "shots:create", "shots:read", "shots:update", "shots:delete", "shots:approve",
-                "assets:create", "assets:read", "assets:update", "assets:delete",
-                "tasks:create", "tasks:read", "tasks:update", "tasks:delete",
-                "reviews:create", "reviews:read", "reviews:approve",
-                "deliveries:create", "deliveries:read", "deliveries:update", "deliveries:delete",
-                "publishing:create", "publishing:read", "publishing:update", "publishing:delete",
-                "scheduling:create", "scheduling:read", "scheduling:update", "scheduling:delete",
-                "tracks:create", "tracks:read", "tracks:update", "tracks:delete",
-                "shows:create", "shows:read", "shows:update", "shows:delete",
-                "audit:read", "settings:update", "users:manage",
-            ] + org_crud,
-            "client-reviewer": ["projects:read", "shots:read", "reviews:read", "reviews:approve", "deliveries:read", "publishing:read",
-                                "organization.view"],
-        }
-        return role_perms
+        Role seed specs come from the canonical catalog (ADR-0033 D1) so dev
+        seeds and organization provisioning stay in lock-step.
+        """
+        from apps.organization.constants import DEFAULT_ROLE_SPECS
+
+        return [(s["code"], s["name"], s["priority"], s["scope"]) for s in DEFAULT_ROLE_SPECS]
+
+    def _role_perm_matrix(self, perm_by_code):
+        """Role-code -> permission codes from the canonical catalog."""
+        from apps.organization.choices import RoleScope
+        from apps.organization.constants import DEFAULT_ROLE_SPECS, ORG_VIEW_PERMISSIONS
+
+        matrix = {}
+        for spec in DEFAULT_ROLE_SPECS:
+            perms = spec["permissions"]
+            codes = list(perm_by_code.keys()) if perms is None else list(perms)
+            # Production-tier roles keep org directory reads (contract parity:
+            # org listing is visible to all org members).
+            if spec["scope"] == RoleScope.PROJECT:
+                codes = list(dict.fromkeys(codes + ORG_VIEW_PERMISSIONS))
+            matrix[spec["code"]] = codes
+        return matrix
 
     def _assign_role_permissions(self, role, perm_by_code, role_perms):
         """Grant a role its matrix permissions idempotently."""
@@ -439,13 +375,15 @@ class Command(BaseCommand):
         perm_by_code = {p.code: p for p in perms}
         role_perms = self._role_perm_matrix(perm_by_code)
         roles = {}
-        for code, name in self._seed_roles_spec():
+        for code, name, priority, scope in self._seed_roles_spec():
             role, _ = Role.objects.get_or_create(
                 code=code,
                 organization=org,
                 defaults={
                     "name": name,
                     "description": f"Seeded role: {name}",
+                    "priority": priority,
+                    "scope": scope,
                     "is_system": True,
                     "is_active": True,
                 },

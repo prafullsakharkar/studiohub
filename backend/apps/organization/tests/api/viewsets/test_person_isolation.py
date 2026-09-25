@@ -2,8 +2,8 @@
 Person organization-isolation tests (Phase 3 gap P0-2).
 
 People are organization-scoped: scoped reads only return rows belonging to the
-request organization (fail closed), staff/superusers stay unscoped, and creates
-default to the request organization when the payload names none.
+request organization (fail closed), superusers stay unscoped (ADR-0033 D4),
+and creates default to the request organization when the payload names none.
 """
 
 from __future__ import annotations
@@ -84,14 +84,15 @@ class TestPersonIsolation:
         assert response.status_code == 200, response.data
         assert response.data["count"] == 0
 
-    def test_staff_sees_all_orgs(self, staff_client):
+    def test_staff_sees_all_orgs(self, admin_client):
+        """Superuser break-glass stays unscoped; plain staff does not (D4)."""
         org_a = OrganizationFactory.create()
         org_b = OrganizationFactory.create()
         PersonFactory.create(organization=org_a)
         PersonFactory.create(organization=org_b)
         PersonFactory.create(organization=None)
 
-        response = staff_client.get(_list_url())
+        response = admin_client.get(_list_url())
 
         assert response.status_code == 200, response.data
         assert response.data["count"] == 3

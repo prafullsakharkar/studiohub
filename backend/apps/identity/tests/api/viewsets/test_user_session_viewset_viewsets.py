@@ -142,7 +142,7 @@ class TestUserSessionViewSet:
         )
         assert response.status_code == 403
 
-    def test_admin_list_staff(self, staff_client):
+    def test_admin_list_superuser(self, admin_client):
         target = UserFactory.create()
 
         UserSessionFactory.create_batch(
@@ -150,7 +150,7 @@ class TestUserSessionViewSet:
             user=target,
         )
 
-        response = staff_client.get(
+        response = admin_client.get(
             reverse(
                 "api:v1:identity:session-admin-list",
                 kwargs={"user_id": target.id},
@@ -161,7 +161,7 @@ class TestUserSessionViewSet:
         results = response.data["results"] if isinstance(response.data, dict) else response.data
         assert len(results) == 2
 
-    def test_admin_revoke_all_staff(self, staff_client):
+    def test_admin_revoke_all_superuser(self, admin_client):
         target = UserFactory.create()
 
         UserSessionFactory.create_batch(
@@ -169,7 +169,7 @@ class TestUserSessionViewSet:
             user=target,
         )
 
-        response = staff_client.post(
+        response = admin_client.post(
             reverse(
                 "api:v1:identity:session-admin-revoke-all",
                 kwargs={"user_id": target.id},
@@ -178,8 +178,8 @@ class TestUserSessionViewSet:
         assert response.status_code == 200
         assert response.data["sessions"] == 2
 
-    def test_admin_revoke_all_unknown_user(self, staff_client):
-        response = staff_client.post(
+    def test_admin_revoke_all_unknown_user(self, admin_client):
+        response = admin_client.post(
             reverse(
                 "api:v1:identity:session-admin-revoke-all",
                 kwargs={"user_id": 999999},

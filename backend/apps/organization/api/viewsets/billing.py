@@ -28,7 +28,7 @@ def _resolve_billing_organization(request):
     if organization is not None:
         return organization
     user = getattr(request, "user", None)
-    if user is not None and (user.is_staff or user.is_superuser):
+    if user is not None and (user.is_superuser):
         return Organization.objects.first()
     return None
 
@@ -74,7 +74,7 @@ class BillingView(APIView):
     )
     def patch(self, request):
         user = getattr(request, "user", None)
-        if user is None or not (user.is_staff or user.is_superuser):
+        if user is None or not (user.is_superuser):
             raise PermissionDenied("Only staff can update billing.")
         billing = self._get_billing(request)
         if billing is None:
@@ -102,7 +102,7 @@ class OrganizationSingletonLegacyView(APIView):
 
         qs = Organization.objects.all()
         user = request.user
-        if user and not (user.is_staff or user.is_superuser):
+        if user and not (user.is_superuser):
             qs = qs.filter(memberships__user=user)
         org = qs.first()
         if not org:

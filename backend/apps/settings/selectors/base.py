@@ -44,7 +44,7 @@ class SettingsBaseSelector(BaseSelector):
         Restrict org-scoped settings to the caller's organizations.
 
         Regular users only see settings for organizations they belong to.
-        Staff and superusers see everything. When the model supports a
+        Only superusers (break-glass) see everything. When the model supports a
         ``null`` organization (default themes / localizations), those
         platform defaults remain visible to all authenticated users.
         """
@@ -56,7 +56,7 @@ class SettingsBaseSelector(BaseSelector):
         if user is None or not user.is_authenticated:
             return queryset.none()
 
-        if user.is_staff or user.is_superuser:
+        if user.is_superuser:
             return queryset
 
         from django.db.models import Q

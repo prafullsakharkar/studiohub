@@ -89,7 +89,7 @@ class OrganizationViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissing
         if user is None or not user.is_authenticated:
             return qs.none()
 
-        if user.is_staff or user.is_superuser:
+        if user.is_superuser:
             return qs.optimized_for_list()
 
         return qs.filter(memberships__user=user).optimized_for_list()
@@ -130,7 +130,7 @@ class OrganizationViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissing
         queryset = Organization.all_objects.filter(is_deleted=True)
         user = getattr(request, "user", None)
         if user is not None and not (
-            getattr(user, "is_staff", False) or getattr(user, "is_superuser", False)
+            getattr(user, "is_superuser", False)
         ):
             queryset = queryset.filter(memberships__user=user)
         instance = None

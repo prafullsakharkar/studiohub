@@ -12,6 +12,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from apps.organization.tests.factories import OrganizationFactory
+from apps.organization.tests.rbac_helpers import grant_org_admin
 from apps.production.models import Review
 from apps.production.tests.factories import (
     AssetFactory,
@@ -208,8 +209,11 @@ class TestBulkUpdateArchiveContract:
         seq.refresh_from_db()
         assert seq.name == "Renamed"
 
-    def test_bulk_archive_union_shape(self, staff_client):
+    def test_bulk_archive_union_shape(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        from apps.organization.tests.rbac_helpers import grant_org_admin
+        grant_org_admin(staff_user, org)
+
         seq = SequenceFactory.create(organization=org, code="ARC01")
         resp = staff_client.post(
             reverse("api:v1:production:sequence-bulk-archive"),
@@ -225,10 +229,11 @@ class TestBulkUpdateArchiveContract:
         seq.refresh_from_db()
         assert seq.is_deleted is True
 
-    def test_bulk_restore_union_shape(self, staff_client):
+    def test_bulk_restore_union_shape(self, staff_client, staff_user):
         from apps.core.services.soft_delete import SoftDeleteService
 
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         seq = SequenceFactory.create(organization=org, code="RST01")
         SoftDeleteService.delete(seq)
         resp = staff_client.post(
@@ -240,8 +245,9 @@ class TestBulkUpdateArchiveContract:
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert resp.data["summary"]["restoredCount"] == 1
 
-    def test_single_archive_flips_status(self, staff_client):
+    def test_single_archive_flips_status(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         shot = ShotFactory.create(organization=org, code="SHARC01")
         resp = staff_client.post(
             reverse("api:v1:production:shot-archive", args=[shot.id]),
@@ -276,8 +282,9 @@ class TestBulkUpdateArchiveContract:
         assert task.status == "Archived"
         assert task.is_deleted is True
 
-    def test_asset_archive_restore(self, staff_client):
+    def test_asset_archive_restore(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         asset = AssetFactory.create(organization=org, code="ASTARC01")
         resp = staff_client.post(
             reverse("api:v1:production:asset-archive", args=[asset.id]),
@@ -294,8 +301,9 @@ class TestBulkUpdateArchiveContract:
         )
         assert resp.status_code == status.HTTP_200_OK, resp.data
 
-    def test_sequence_archive_endpoint_exists(self, staff_client):
+    def test_sequence_archive_endpoint_exists(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         seq = SequenceFactory.create(organization=org, code="SQARC01")
         resp = staff_client.post(
             reverse("api:v1:production:sequence-archive", args=[seq.id]),
@@ -321,8 +329,9 @@ class TestReviewAndProjectContract:
             ],
         )
 
-    def test_participant_verdict(self, staff_client):
+    def test_participant_verdict(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project = ProjectFactory.create(organization=org)
         review = self._make_review(org, project)
         resp = staff_client.post(
@@ -347,8 +356,9 @@ class TestReviewAndProjectContract:
         )
         assert resp.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_project_statistics(self, staff_client):
+    def test_project_statistics(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project = ProjectFactory.create(organization=org)
         SequenceFactory.create(organization=org, project=project, code="ST1")
         ShotFactory.create(organization=org, project=project, code="SH1")
@@ -375,10 +385,11 @@ class TestReviewAndProjectContract:
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert isinstance(resp.data, list)
 
-    def test_sequence_lead_artist_contract(self, staff_client):
+    def test_sequence_lead_artist_contract(self, staff_client, staff_user):
         from apps.identity.tests.factories import UserFactory
 
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project = ProjectFactory.create(organization=org)
         user = UserFactory.create()
         seq = SequenceFactory.create(
@@ -402,10 +413,11 @@ class TestReviewAndProjectContract:
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert {s["code"] for s in resp.data["results"]} == {"LEAD01"}
 
-    def test_media_code_name_search_contract(self, staff_client):
+    def test_media_code_name_search_contract(self, staff_client, staff_user):
         from apps.production.models import Media
 
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project = ProjectFactory.create(organization=org)
         Media.objects.create(
             organization=org,

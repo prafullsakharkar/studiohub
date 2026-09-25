@@ -129,6 +129,25 @@ class OrganizationShotTypeConfig(OrgConfigModel):
         ]
 
 
+class OrganizationFileTypeConfig(OrgConfigModel):
+    file_type = models.ForeignKey(
+        "masterdata.MasterFileType",
+        on_delete=models.CASCADE,
+        related_name="org_configs",
+        db_index=True,
+    )
+    name_override = models.CharField(max_length=255, null=True, blank=True)  # noqa: DJ001
+
+    class Meta:
+        db_table = "masterdata_org_filetype_config"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "file_type"],
+                name="uq_org_filetype_config",
+            ),
+        ]
+
+
 class OrganizationReviewTypeConfig(OrgConfigModel):
     review_type = models.ForeignKey(
         "masterdata.MasterReviewType",

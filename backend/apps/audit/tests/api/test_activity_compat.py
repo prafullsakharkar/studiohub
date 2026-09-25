@@ -42,8 +42,9 @@ def _member_client(user, organization):
 
 @pytest.mark.django_db
 class TestActivityCompatFeed:
-    def test_flat_returns_paginated_frontend_shape(self, staff_client):
+    def test_flat_returns_paginated_frontend_shape(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(user=staff_user, organization=org)
         ActivityFactory.create(organization=org, description="did a thing")
 
         response = staff_client.get(_flat_url())

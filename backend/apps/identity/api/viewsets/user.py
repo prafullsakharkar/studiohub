@@ -66,11 +66,13 @@ class UserViewSet(
     }
 
     permission_map = {
-        # NOTE: list/retrieve/me stay open to any authenticated user
-        # (member-directory / self-service contract asserted by tests).
-        # Explicit empty tuples: HasPermission denies actions with no entry.
-        "list": (),
-        "retrieve": (),
+        # ADR-0033 D6: the user directory is organization-scoped.
+        # list/retrieve require the identity.user.view grant and are
+        # narrowed to users sharing an active membership in the request
+        # organization (superusers see all). ``me`` stays open for
+        # self-service.
+        "list": (UserPermissions.VIEW,),
+        "retrieve": (UserPermissions.VIEW,),
         "me": (),
         "create": (UserPermissions.CREATE,),
         "update": (UserPermissions.UPDATE,),

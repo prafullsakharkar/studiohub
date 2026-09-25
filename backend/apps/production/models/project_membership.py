@@ -32,6 +32,18 @@ class ProjectMembership(EntityModel):
         related_name="memberships",
         db_index=True,
     )
+    show = models.ForeignKey(
+        "production.Show",
+        on_delete=models.CASCADE,
+        related_name="memberships",
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text=(
+            "Optional show binding (ADR-0033 D2): narrows this membership to "
+            "a single show within the project."
+        ),
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -49,6 +61,15 @@ class ProjectMembership(EntityModel):
     team_id = models.CharField(max_length=50, blank=True, default="")
     vendor_id = models.CharField(max_length=50, blank=True, default="")
     client_id = models.CharField(max_length=50, blank=True, default="")
+
+    def save(self, *args, **kwargs):
+        # ADR-0033 D2: a show-bound membership is SHOW scope by definition.
+        if self.show_id:
+            self.scope = "SHOW"
+        elif self.scope == "SHOW":
+            # show removed → fall back to the project container
+            self.scope = "PROJECT"
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = "production_project_membership"

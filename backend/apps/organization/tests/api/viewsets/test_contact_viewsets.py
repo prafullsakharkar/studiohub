@@ -27,6 +27,7 @@ from apps.organization.tests.factories import (
     VendorContactFactory,
     VendorFactory,
 )
+from apps.organization.tests.rbac_helpers import grant_all_known_codes
 
 ORG_PERMISSION_CODES = (
     OrganizationPermissions.VIEW,
@@ -110,8 +111,16 @@ def _org_client(organization=None):
     return client
 
 
-def _hdr(parent):
-    """Organization header for the parent's organization (required context)."""
+def _staff_hdr(staff_user, parent):
+    """
+    Bind the staff user to the parent's organization (active membership +
+    permission grants) and return the organization context headers.
+
+    ADR-0033: a non-superuser request without organization context sees an
+    empty queryset, and resolving the X-Organization-Id header requires an
+    active membership in that organization.
+    """
+    grant_all_known_codes(staff_user, organization=parent.organization)
     return {"HTTP_X_ORGANIZATION_ID": str(parent.organization_id)}
 
 
@@ -152,13 +161,15 @@ class TestClientContactViewSetCRUD:
     """CRUD tests as staff (admin context)."""
 
     @pytest.mark.django_db
-    def test_list_contacts(self, staff_client):
+    def test_list_contacts(self, staff_client, staff_user):
         parent = _org_client()
         contacts = ClientContactFactory.create_batch(3, client=parent)
         # Contact under another client must not appear
         ClientContactFactory.create()
 
-        response = staff_client.get(_client_list_url(parent))
+        response = staff_client.get(
+            _client_list_url(parent), **_staff_hdr(staff_user, parent)
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -168,11 +179,14 @@ class TestClientContactViewSetCRUD:
         assert returned_ids == {str(c.id) for c in contacts}
 
     @pytest.mark.django_db
-    def test_retrieve_contact(self, staff_client):
+    def test_retrieve_contact(self, staff_client, staff_user):
         parent = _org_client()
         contact = ClientContactFactory.create(client=parent)
 
-        response = staff_client.get(_client_detail_url(parent, contact.uuid))
+        response = staff_client.get(
+            _client_detail_url(parent, contact.uuid),
+            **_staff_hdr(staff_user, parent),
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -182,14 +196,14 @@ class TestClientContactViewSetCRUD:
         assert data["portal_access"] is True
 
     @pytest.mark.django_db
-    def test_create_contact(self, staff_client):
+    def test_create_contact(self, staff_client, staff_user):
         parent = _org_client()
 
         response = staff_client.post(
             _client_list_url(parent),
             _contact_payload(),
             format="json",
-            **_hdr(parent),
+            **_staff_hdr(staff_user, parent),
         )
 
         assert response.status_code == 201
@@ -199,14 +213,19 @@ class TestClientContactViewSetCRUD:
         assert data["portal_access"] is True
 
         # Parent linkage is exposed by the read serializer.
-        detail = staff_client.get(_client_detail_url(parent, data["id"]))
+        detail = staff_client.get(
+            _client_detail_url(parent, data["id"]),
+            **_staff_hdr(staff_user, parent),
+        )
         assert detail.status_code == 200
         detail_data = detail.json()
         assert detail_data["client_id"] == str(parent.id)
         assert detail_data["organization_id"] == str(parent.organization_id)
 
     @pytest.mark.django_db
-    def test_create_contact_parent_from_url_not_payload(self, staff_client):
+    def test_create_contact_parent_from_url_not_payload(
+        self, staff_client, staff_user
+    ):
         """A payload parent/organization must be ignored — URL parent wins."""
         parent = _org_client()
         other_client = _org_client()
@@ -219,13 +238,16 @@ class TestClientContactViewSetCRUD:
             _client_list_url(parent),
             payload,
             format="json",
-            **_hdr(parent),
+            **_staff_hdr(staff_user, parent),
         )
 
         assert response.status_code == 201
         created_id = response.json()["id"]
 
-        detail = staff_client.get(_client_detail_url(parent, created_id))
+        detail = staff_client.get(
+            _client_detail_url(parent, created_id),
+            **_staff_hdr(staff_user, parent),
+        )
         assert detail.status_code == 200
         detail_data = detail.json()
         assert detail_data["client_id"] == str(parent.id)
@@ -243,7 +265,7 @@ class TestClientContactViewSetCRUD:
         assert response.status_code == 404
 
     @pytest.mark.django_db
-    def test_update_contact(self, staff_client):
+    def test_update_contact(self, staff_client, staff_user):
         parent = _org_client()
         contact = ClientContactFactory.create(client=parent)
 
@@ -251,17 +273,21 @@ class TestClientContactViewSetCRUD:
             _client_detail_url(parent, contact.uuid),
             {"role": "Senior VFX Producer"},
             format="json",
+            **_staff_hdr(staff_user, parent),
         )
 
         assert response.status_code == 200
         assert response.json()["role"] == "Senior VFX Producer"
 
     @pytest.mark.django_db
-    def test_delete_contact_soft_deletes(self, staff_client):
+    def test_delete_contact_soft_deletes(self, staff_client, staff_user):
         parent = _org_client()
         contact = ClientContactFactory.create(client=parent)
 
-        response = staff_client.delete(_client_detail_url(parent, contact.uuid))
+        response = staff_client.delete(
+            _client_detail_url(parent, contact.uuid),
+            **_staff_hdr(staff_user, parent),
+        )
 
         assert response.status_code == 204
         contact.refresh_from_db()
@@ -357,13 +383,15 @@ class TestClientContactViewSetFiltering:
     """Filter and search tests."""
 
     @pytest.mark.django_db
-    def test_filter_is_primary(self, staff_client):
+    def test_filter_is_primary(self, staff_client, staff_user):
         parent = _org_client()
         primary = ClientContactFactory.create(client=parent, is_primary=True)
         ClientContactFactory.create(client=parent, is_primary=False)
 
         response = staff_client.get(
-            _client_list_url(parent), {"is_primary": "true"}
+            _client_list_url(parent),
+            {"is_primary": "true"},
+            **_staff_hdr(staff_user, parent),
         )
 
         assert response.status_code == 200
@@ -373,7 +401,7 @@ class TestClientContactViewSetFiltering:
         assert results[0]["id"] == str(primary.id)
 
     @pytest.mark.django_db
-    def test_search_by_name(self, staff_client):
+    def test_search_by_name(self, staff_client, staff_user):
         parent = _org_client()
         match = ClientContactFactory.create(
             client=parent, name="Rachel Steinberg"
@@ -381,7 +409,9 @@ class TestClientContactViewSetFiltering:
         ClientContactFactory.create(client=parent, name="Harrison Vance")
 
         response = staff_client.get(
-            _client_list_url(parent), {"search": "Rachel"}
+            _client_list_url(parent),
+            {"search": "Rachel"},
+            **_staff_hdr(staff_user, parent),
         )
 
         assert response.status_code == 200
@@ -395,12 +425,14 @@ class TestVendorContactViewSet:
     """Vendor contact tests (mirror of client contact coverage)."""
 
     @pytest.mark.django_db
-    def test_list_contacts(self, staff_client):
+    def test_list_contacts(self, staff_client, staff_user):
         vendor = VendorFactory.create()
         contacts = VendorContactFactory.create_batch(3, vendor=vendor)
         VendorContactFactory.create()
 
-        response = staff_client.get(_vendor_list_url(vendor))
+        response = staff_client.get(
+            _vendor_list_url(vendor), **_staff_hdr(staff_user, vendor)
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -410,7 +442,7 @@ class TestVendorContactViewSet:
         assert returned_ids == {str(c.id) for c in contacts}
 
     @pytest.mark.django_db
-    def test_create_contact(self, staff_client):
+    def test_create_contact(self, staff_client, staff_user):
         vendor = VendorFactory.create()
 
         payload = {
@@ -426,7 +458,7 @@ class TestVendorContactViewSet:
             _vendor_list_url(vendor),
             payload,
             format="json",
-            **_hdr(vendor),
+            **_staff_hdr(staff_user, vendor),
         )
 
         assert response.status_code == 201
@@ -437,7 +469,10 @@ class TestVendorContactViewSet:
         assert "portal_access" not in data
 
         # Parent linkage is exposed by the read serializer.
-        detail = staff_client.get(_vendor_detail_url(vendor, data["id"]))
+        detail = staff_client.get(
+            _vendor_detail_url(vendor, data["id"]),
+            **_staff_hdr(staff_user, vendor),
+        )
         assert detail.status_code == 200
         detail_data = detail.json()
         assert detail_data["vendor_id"] == str(vendor.id)
@@ -445,7 +480,7 @@ class TestVendorContactViewSet:
         assert "portal_access" not in detail_data
 
     @pytest.mark.django_db
-    def test_update_contact(self, staff_client):
+    def test_update_contact(self, staff_client, staff_user):
         vendor = VendorFactory.create()
         contact = VendorContactFactory.create(vendor=vendor)
 
@@ -453,17 +488,21 @@ class TestVendorContactViewSet:
             _vendor_detail_url(vendor, contact.uuid),
             {"role": "Lead Coordinator"},
             format="json",
+            **_staff_hdr(staff_user, vendor),
         )
 
         assert response.status_code == 200
         assert response.json()["role"] == "Lead Coordinator"
 
     @pytest.mark.django_db
-    def test_delete_contact(self, staff_client):
+    def test_delete_contact(self, staff_client, staff_user):
         vendor = VendorFactory.create()
         contact = VendorContactFactory.create(vendor=vendor)
 
-        response = staff_client.delete(_vendor_detail_url(vendor, contact.uuid))
+        response = staff_client.delete(
+            _vendor_detail_url(vendor, contact.uuid),
+            **_staff_hdr(staff_user, vendor),
+        )
 
         assert response.status_code == 204
         contact.refresh_from_db()

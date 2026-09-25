@@ -15,6 +15,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from apps.organization.tests.factories import OrganizationFactory
+from apps.organization.tests.rbac_helpers import grant_org_admin
 from apps.production.models import Sequence
 from apps.production.tests.factories import ProjectFactory, SequenceFactory
 
@@ -33,8 +34,9 @@ def _action_url(name):
 
 @pytest.mark.django_db
 class TestSequenceCRUD:
-    def test_create_auto_assigns_organization(self, staff_client):
+    def test_create_auto_assigns_organization(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project = ProjectFactory.create(organization=org)
         resp = staff_client.post(
             _list_url(),
@@ -56,9 +58,10 @@ class TestSequenceCRUD:
         assert resp.status_code == status.HTTP_400_BAD_REQUEST
         assert not Sequence.objects.filter(code="SQX99").exists()
 
-    def test_list_is_scoped_to_organization(self, staff_client):
+    def test_list_is_scoped_to_organization(self, staff_client, staff_user):
         org_a = OrganizationFactory.create()
         org_b = OrganizationFactory.create()
+        grant_org_admin(staff_user, org_a)
         SequenceFactory.create(organization=org_a, code="SQA01")
         SequenceFactory.create(organization=org_b, code="SQB01")
         resp = staff_client.get(_list_url(), HTTP_X_ORGANIZATION_ID=str(org_a.id))
@@ -77,8 +80,9 @@ class TestSequenceCRUD:
         )
         assert resp.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_destroy_soft_deletes(self, staff_client):
+    def test_destroy_soft_deletes(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         seq = SequenceFactory.create(organization=org, code="SQD01")
         resp = staff_client.delete(
             _detail_url(seq),
@@ -88,8 +92,9 @@ class TestSequenceCRUD:
         seq.refresh_from_db()
         assert seq.is_deleted is True
 
-    def test_restore_restores_soft_deleted(self, staff_client):
+    def test_restore_restores_soft_deleted(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         seq = SequenceFactory.create(organization=org, code="SQE01")
         from apps.core.services.soft_delete import SoftDeleteService
 
@@ -279,8 +284,11 @@ class TestSequenceBulkUpdateArchiveRestore:
         seq.refresh_from_db()
         assert seq.name != "Nope"
 
-    def test_bulk_archive_soft_deletes(self, staff_client):
+    def test_bulk_archive_soft_deletes(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        from apps.organization.tests.rbac_helpers import grant_org_admin
+        grant_org_admin(staff_user, org)
+
         seq = SequenceFactory.create(organization=org, code="BAR01")
         resp = staff_client.post(
             _action_url("bulk-archive"),
@@ -292,8 +300,11 @@ class TestSequenceBulkUpdateArchiveRestore:
         seq.refresh_from_db()
         assert seq.is_deleted is True
 
-    def test_bulk_archive_cannot_touch_other_org(self, staff_client):
+    def test_bulk_archive_cannot_touch_other_org(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        from apps.organization.tests.rbac_helpers import grant_org_admin
+        grant_org_admin(staff_user, org)
+
         other_org = OrganizationFactory.create()
         seq = SequenceFactory.create(organization=other_org, code="BAR02")
         resp = staff_client.post(
@@ -306,8 +317,11 @@ class TestSequenceBulkUpdateArchiveRestore:
         seq.refresh_from_db()
         assert seq.is_deleted is False
 
-    def test_bulk_restore_restores(self, staff_client):
+    def test_bulk_restore_restores(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        from apps.organization.tests.rbac_helpers import grant_org_admin
+        grant_org_admin(staff_user, org)
+
         seq = SequenceFactory.create(organization=org, code="BR01")
         from apps.core.services.soft_delete import SoftDeleteService
 
@@ -324,8 +338,11 @@ class TestSequenceBulkUpdateArchiveRestore:
         seq.refresh_from_db()
         assert seq.is_deleted is False
 
-    def test_bulk_restore_cannot_touch_other_org(self, staff_client):
+    def test_bulk_restore_cannot_touch_other_org(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        from apps.organization.tests.rbac_helpers import grant_org_admin
+        grant_org_admin(staff_user, org)
+
         other_org = OrganizationFactory.create()
         seq = SequenceFactory.create(organization=other_org, code="BR02")
         from apps.core.services.soft_delete import SoftDeleteService
@@ -349,9 +366,11 @@ class TestSequenceBulkUpdateArchiveRestore:
         )
         assert resp.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_archived_lists_only_soft_deleted_scoped_to_org(self, staff_client):
+    def test_archived_lists_only_soft_deleted_scoped_to_org(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         other_org = OrganizationFactory.create()
+        grant_org_admin(staff_user, other_org)
         SequenceFactory.create(organization=org, code="ACT01")
         archived = SequenceFactory.create(organization=org, code="ARC01")
         SequenceFactory.create(organization=other_org, code="OTH01")

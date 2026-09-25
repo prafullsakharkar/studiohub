@@ -11,6 +11,7 @@ from apps.masterdata.models.catalog import (
 )
 from apps.masterdata.models.config import (
     OrganizationAssetTypeConfig,
+    OrganizationFileTypeConfig,
     OrganizationReviewTypeConfig,
     OrganizationShotTypeConfig,
     OrganizationSoftwareConfig,
@@ -35,6 +36,7 @@ __all__ = [
     "MasterTaskType",
     "OrgConfigModel",
     "OrganizationAssetTypeConfig",
+    "OrganizationFileTypeConfig",
     "OrganizationReviewTypeConfig",
     "OrganizationShotTypeConfig",
     "OrganizationSoftwareConfig",

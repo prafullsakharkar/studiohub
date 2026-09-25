@@ -14,6 +14,7 @@ from apps.organization.tests.factories import (
     OrganizationFactory,
     OrganizationMembershipFactory,
 )
+from apps.organization.tests.rbac_helpers import grant_org_admin
 from apps.production.models import EditorialTrack
 from apps.production.tests.factories import ProjectFactory
 
@@ -36,8 +37,9 @@ class TestEditorialTrackEndpoints:
     def _list_url(self):
         return reverse("api:v1:production:editorial-track-list")
 
-    def test_crud_lifecycle(self, staff_client):
+    def test_crud_lifecycle(self, staff_client, staff_user):
         org = _seed_org()
+        grant_org_admin(staff_user, org)
         project = ProjectFactory.create(organization=org)
 
         create = staff_client.post(

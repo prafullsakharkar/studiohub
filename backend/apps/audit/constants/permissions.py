@@ -7,5 +7,5 @@ are product surface). State-changing operations require ``audit:update``.
 
 
 class AuditPermissions:
-    VIEW = "audit:read"
-    UPDATE = "audit:update"
+    VIEW = "audit.view"
+    UPDATE = "audit.update"

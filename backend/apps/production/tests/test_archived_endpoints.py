@@ -20,6 +20,7 @@ from rest_framework import status
 
 from apps.core.services.soft_delete import SoftDeleteService
 from apps.organization.tests.factories import OrganizationFactory
+from apps.organization.tests.rbac_helpers import grant_org_admin
 from apps.production.tests.factories import (
     EditorialTrackFactory,
     MediaFactory,
@@ -61,10 +62,11 @@ RESTORE_CASES = [
 @pytest.mark.django_db
 @pytest.mark.parametrize("basename,factory_cls", ARCHIVED_CASES)
 def test_archived_lists_only_soft_deleted_scoped_to_org(
-    staff_client, basename, factory_cls
+    staff_client, staff_user, basename, factory_cls
 ):
     org = OrganizationFactory.create()
     other_org = OrganizationFactory.create()
+    grant_org_admin(staff_user, org)
     active = factory_cls.create(organization=org)
     archived = factory_cls.create(organization=org)
     SoftDeleteService.delete(archived)
@@ -105,8 +107,9 @@ def test_archived_without_org_context_fails_closed(staff_client, basename, facto
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("basename,factory_cls", RESTORE_CASES)
-def test_restore_restores_soft_deleted(staff_client, basename, factory_cls):
+def test_restore_restores_soft_deleted(staff_client, staff_user, basename, factory_cls):
     org = OrganizationFactory.create()
+    grant_org_admin(staff_user, org)
     instance = factory_cls.create(organization=org)
     SoftDeleteService.delete(instance)
     instance.refresh_from_db()

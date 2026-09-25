@@ -154,19 +154,23 @@ class OrganizationAuthenticationTests(TestCase):
         assert website.startswith("https://") or website.startswith("http://")
 
     def test_regular_user_cannot_manage_organization(self) -> None:
-        """Test a regular user without membership cannot manage."""
+        """A user without the org update grant is denied by the canonical gate."""
         from typing import Any
 
-        from django.test import RequestFactory
-        from rest_framework.views import APIView
+        from rest_framework.test import APIRequestFactory
 
-        from apps.organization.permissions import CanManageOrganization
+        from apps.identity.permissions import HasPermission
 
-        request: Any = RequestFactory().post("/api/organizations/")
+        factory = APIRequestFactory()
+        request: Any = factory.patch("/api/v1/organizations/x/")
         request.user = self.user
+        request.organization = self.organization
 
-        permission = CanManageOrganization()
+        class _View:
+            action = "update"
+            permission_map = {"update": ("organization.update",)}
 
-        assert not permission.has_object_permission(
-            request, APIView(), self.organization
-        )
+            def get_permission_required(self):
+                return self.permission_map[self.action]
+
+        assert HasPermission().has_permission(request, _View()) is False

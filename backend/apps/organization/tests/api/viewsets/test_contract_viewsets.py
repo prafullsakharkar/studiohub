@@ -27,6 +27,7 @@ from apps.organization.tests.factories import (
     VendorContractFactory,
     VendorFactory,
 )
+from apps.organization.tests.rbac_helpers import grant_all_known_codes
 
 ORG_PERMISSION_CODES = (
     OrganizationPermissions.VIEW,
@@ -121,8 +122,16 @@ def _org_parent(organization=None):
     return parent
 
 
-def _hdr(parent):
-    """Organization header for the parent's organization (required context)."""
+def _staff_hdr(staff_user, parent):
+    """
+    Bind the staff user to the parent's organization (active membership +
+    permission grants) and return the organization context headers.
+
+    ADR-0033: a non-superuser request without organization context sees an
+    empty queryset, and resolving the X-Organization-Id header requires an
+    active membership in that organization.
+    """
+    grant_all_known_codes(staff_user, organization=parent.organization)
     return {"HTTP_X_ORGANIZATION_ID": str(parent.organization_id)}
 
 
@@ -163,13 +172,15 @@ class TestClientContractViewSetCRUD:
     """CRUD tests as staff (admin context)."""
 
     @pytest.mark.django_db
-    def test_list_contracts(self, staff_client):
+    def test_list_contracts(self, staff_client, staff_user):
         parent = _org_parent()
         contracts = ClientContractFactory.create_batch(3, client=parent)
         # Contract under another client must not appear
         ClientContractFactory.create()
 
-        response = staff_client.get(_client_list_url(parent))
+        response = staff_client.get(
+            _client_list_url(parent), **_staff_hdr(staff_user, parent)
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -179,11 +190,14 @@ class TestClientContractViewSetCRUD:
         assert returned_ids == {str(c.id) for c in contracts}
 
     @pytest.mark.django_db
-    def test_retrieve_contract(self, staff_client):
+    def test_retrieve_contract(self, staff_client, staff_user):
         parent = _org_parent()
         contract = ClientContractFactory.create(client=parent)
 
-        response = staff_client.get(_client_detail_url(parent, contract.uuid))
+        response = staff_client.get(
+            _client_detail_url(parent, contract.uuid),
+            **_staff_hdr(staff_user, parent),
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -193,14 +207,14 @@ class TestClientContractViewSetCRUD:
         assert data["value_usd"] == contract.value_usd
 
     @pytest.mark.django_db
-    def test_create_contract(self, staff_client):
+    def test_create_contract(self, staff_client, staff_user):
         parent = _org_parent()
 
         response = staff_client.post(
             _client_list_url(parent),
             _contract_payload(),
             format="json",
-            **_hdr(parent),
+            **_staff_hdr(staff_user, parent),
         )
 
         assert response.status_code == 201
@@ -210,14 +224,19 @@ class TestClientContractViewSetCRUD:
         assert data["nda_signed"] is True
 
         # Parent linkage is exposed by the read serializer.
-        detail = staff_client.get(_client_detail_url(parent, data["id"]))
+        detail = staff_client.get(
+            _client_detail_url(parent, data["id"]),
+            **_staff_hdr(staff_user, parent),
+        )
         assert detail.status_code == 200
         detail_data = detail.json()
         assert detail_data["client_id"] == str(parent.id)
         assert detail_data["organization_id"] == str(parent.organization_id)
 
     @pytest.mark.django_db
-    def test_create_contract_parent_from_url_not_payload(self, staff_client):
+    def test_create_contract_parent_from_url_not_payload(
+        self, staff_client, staff_user
+    ):
         """A payload parent/organization must be ignored — URL parent wins."""
         parent = _org_parent()
         other_parent = _org_parent()
@@ -230,13 +249,16 @@ class TestClientContractViewSetCRUD:
             _client_list_url(parent),
             payload,
             format="json",
-            **_hdr(parent),
+            **_staff_hdr(staff_user, parent),
         )
 
         assert response.status_code == 201
         created_id = response.json()["id"]
 
-        detail = staff_client.get(_client_detail_url(parent, created_id))
+        detail = staff_client.get(
+            _client_detail_url(parent, created_id),
+            **_staff_hdr(staff_user, parent),
+        )
         assert detail.status_code == 200
         detail_data = detail.json()
         assert detail_data["client_id"] == str(parent.id)
@@ -254,7 +276,7 @@ class TestClientContractViewSetCRUD:
         assert response.status_code == 404
 
     @pytest.mark.django_db
-    def test_update_contract(self, staff_client):
+    def test_update_contract(self, staff_client, staff_user):
         parent = _org_parent()
         contract = ClientContractFactory.create(client=parent)
 
@@ -262,17 +284,21 @@ class TestClientContractViewSetCRUD:
             _client_detail_url(parent, contract.uuid),
             {"status": "Expired"},
             format="json",
+            **_staff_hdr(staff_user, parent),
         )
 
         assert response.status_code == 200
         assert response.json()["status"] == "Expired"
 
     @pytest.mark.django_db
-    def test_delete_contract_soft_deletes(self, staff_client):
+    def test_delete_contract_soft_deletes(self, staff_client, staff_user):
         parent = _org_parent()
         contract = ClientContractFactory.create(client=parent)
 
-        response = staff_client.delete(_client_detail_url(parent, contract.uuid))
+        response = staff_client.delete(
+            _client_detail_url(parent, contract.uuid),
+            **_staff_hdr(staff_user, parent),
+        )
 
         assert response.status_code == 204
         contract.refresh_from_db()
@@ -368,13 +394,15 @@ class TestClientContractViewSetFiltering:
     """Filter and search tests."""
 
     @pytest.mark.django_db
-    def test_filter_status(self, staff_client):
+    def test_filter_status(self, staff_client, staff_user):
         parent = _org_parent()
         active = ClientContractFactory.create(client=parent, status="Active")
         ClientContractFactory.create(client=parent, status="Expired")
 
         response = staff_client.get(
-            _client_list_url(parent), {"status": "Active"}
+            _client_list_url(parent),
+            {"status": "Active"},
+            **_staff_hdr(staff_user, parent),
         )
 
         assert response.status_code == 200
@@ -384,7 +412,7 @@ class TestClientContractViewSetFiltering:
         assert results[0]["id"] == str(active.id)
 
     @pytest.mark.django_db
-    def test_search_by_contract_number(self, staff_client):
+    def test_search_by_contract_number(self, staff_client, staff_user):
         parent = _org_parent()
         match = ClientContractFactory.create(
             client=parent, contract_number="SOW-NK99-PHASE2"
@@ -392,7 +420,9 @@ class TestClientContractViewSetFiltering:
         ClientContractFactory.create(client=parent, contract_number="MSA-OTHER-01")
 
         response = staff_client.get(
-            _client_list_url(parent), {"search": "NK99"}
+            _client_list_url(parent),
+            {"search": "NK99"},
+            **_staff_hdr(staff_user, parent),
         )
 
         assert response.status_code == 200
@@ -406,12 +436,14 @@ class TestVendorContractViewSet:
     """Vendor contract tests (mirror of client contract coverage)."""
 
     @pytest.mark.django_db
-    def test_list_contracts(self, staff_client):
+    def test_list_contracts(self, staff_client, staff_user):
         vendor = VendorFactory.create()
         contracts = VendorContractFactory.create_batch(3, vendor=vendor)
         VendorContractFactory.create()
 
-        response = staff_client.get(_vendor_list_url(vendor))
+        response = staff_client.get(
+            _vendor_list_url(vendor), **_staff_hdr(staff_user, vendor)
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -421,14 +453,14 @@ class TestVendorContractViewSet:
         assert returned_ids == {str(c.id) for c in contracts}
 
     @pytest.mark.django_db
-    def test_create_contract(self, staff_client):
+    def test_create_contract(self, staff_client, staff_user):
         vendor = VendorFactory.create()
 
         response = staff_client.post(
             _vendor_list_url(vendor),
             _vendor_contract_payload(),
             format="json",
-            **_hdr(vendor),
+            **_staff_hdr(staff_user, vendor),
         )
 
         assert response.status_code == 201
@@ -440,7 +472,10 @@ class TestVendorContractViewSet:
         assert "document_url" not in data
 
         # Parent linkage is exposed by the read serializer.
-        detail = staff_client.get(_vendor_detail_url(vendor, data["id"]))
+        detail = staff_client.get(
+            _vendor_detail_url(vendor, data["id"]),
+            **_staff_hdr(staff_user, vendor),
+        )
         assert detail.status_code == 200
         detail_data = detail.json()
         assert detail_data["vendor_id"] == str(vendor.id)
@@ -448,7 +483,7 @@ class TestVendorContractViewSet:
         assert "document_url" not in detail_data
 
     @pytest.mark.django_db
-    def test_update_contract(self, staff_client):
+    def test_update_contract(self, staff_client, staff_user):
         vendor = VendorFactory.create()
         contract = VendorContractFactory.create(vendor=vendor)
 
@@ -456,17 +491,21 @@ class TestVendorContractViewSet:
             _vendor_detail_url(vendor, contract.uuid),
             {"status": "Pending Renewal"},
             format="json",
+            **_staff_hdr(staff_user, vendor),
         )
 
         assert response.status_code == 200
         assert response.json()["status"] == "Pending Renewal"
 
     @pytest.mark.django_db
-    def test_delete_contract(self, staff_client):
+    def test_delete_contract(self, staff_client, staff_user):
         vendor = VendorFactory.create()
         contract = VendorContractFactory.create(vendor=vendor)
 
-        response = staff_client.delete(_vendor_detail_url(vendor, contract.uuid))
+        response = staff_client.delete(
+            _vendor_detail_url(vendor, contract.uuid),
+            **_staff_hdr(staff_user, vendor),
+        )
 
         assert response.status_code == 204
         contract.refresh_from_db()

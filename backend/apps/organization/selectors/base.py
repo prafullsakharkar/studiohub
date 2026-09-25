@@ -52,23 +52,45 @@ class OrganizationBaseSelector(BaseSelector):
         Scope an organization-owned queryset to the request's organization.
 
         - An explicit organization context always scopes — including for
-          staff/superusers (a header-selected org must never leak sibling
-          org rows; staff listing across orgs happens with no header).
+          superusers (a header-selected org must never leak sibling
+          org rows).
         - Authenticated users are scoped to ``request.organization`` (the
           resolved ``X-Organization`` header).
         - No organization context means no rows (fail closed), except for
-          staff/superusers who retain the legacy unscoped admin listing.
+          superusers who retain the platform-wide break-glass listing
+          (ADR-0033 D4: ``is_staff`` is not an authorization tier).
         """
         user = getattr(request, "user", None) if request is not None else None
         org = getattr(request, "organization", None) if request is not None else None
 
         if org is None:
-            if user is not None and (user.is_staff or user.is_superuser):
+            if user is not None and user.is_superuser:
                 return qs
             return qs.none()
 
         model = qs.model
         field_names = {f.name for f in model._meta.fields}
+
+        # Self-service carve-out (only when the caller has no membership in
+        # this org): a pending invitation addressed to the caller's email
+        # stays actionable without a pre-existing membership. Members use
+        # normal organization scoping.
+        membership = getattr(request, "membership", None)
+        is_member = membership is not None
+
+        if (
+            not is_member
+            and user is not None
+            and user.is_authenticated
+            and "email" in field_names
+            and model.__name__ == "Invitation"
+        ):
+            return qs.filter(organization=org, email__iexact=user.email)
+
+        # ADR-0033 D1/D6: a header-named organization is a boundary, not a
+        # filter — a caller with no active membership in it sees nothing.
+        if user is not None and user.is_authenticated and not user.is_superuser and not is_member:
+            return qs.none()
 
         if "organization" in field_names:
             return qs.filter(organization=org)

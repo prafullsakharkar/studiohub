@@ -38,10 +38,10 @@ def _resolve_organization(request):
     organization = getattr(request, "organization", None)
     user = getattr(request, "user", None)
     if organization is None:
-        if user is not None and (user.is_staff or user.is_superuser):
+        if user is not None and (user.is_superuser):
             return Organization.objects.first()
         return None
-    if user is not None and not (user.is_staff or user.is_superuser):
+    if user is not None and not (user.is_superuser):
         from apps.organization.models import OrganizationMembership
 
         member = OrganizationMembership.objects.filter(

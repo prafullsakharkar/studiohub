@@ -17,6 +17,7 @@ from django.urls import reverse
 
 from apps.organization.models import Organization
 from apps.organization.tests.factories import OrganizationFactory
+from apps.organization.tests.rbac_helpers import grant_all_known_codes
 
 
 def _org_header(org):
@@ -49,7 +50,7 @@ def _visible_ids(client, org):
 
 @pytest.mark.django_db
 class TestOrganizationLifecycle:
-    def test_full_lifecycle(self, staff_client):
+    def test_full_lifecycle(self, staff_client, staff_user):
         # CREATE → ACTIVE
         response = staff_client.post(
             _list_url(),
@@ -63,6 +64,7 @@ class TestOrganizationLifecycle:
         )
         assert response.status_code == 201, response.data
         org = Organization.objects.get(code="LIFE1")
+        grant_all_known_codes(staff_user, organization=org)
         assert org.status == "active"
         assert org.is_deleted is False
         assert str(org.id) in _visible_ids(staff_client, org)
@@ -124,8 +126,9 @@ class TestOrganizationLifecycle:
         org.refresh_from_db()
         assert org.is_deleted is True
 
-    def test_invalid_transitions(self, staff_client):
+    def test_invalid_transitions(self, staff_client, staff_user):
         org = OrganizationFactory.create(status="active")
+        grant_all_known_codes(staff_user, organization=org)
 
         # Active → Restore: nothing deleted (404, client/vendor precedent).
         assert (

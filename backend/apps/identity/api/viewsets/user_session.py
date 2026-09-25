@@ -68,7 +68,7 @@ class UserSessionViewSet(
         self,
         request,
     ):
-        return request.user.is_staff or request.user.is_superuser
+        return request.user.is_superuser
 
     @action(
         detail=False,

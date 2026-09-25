@@ -16,6 +16,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from apps.organization.tests.factories import OrganizationFactory
+from apps.organization.tests.rbac_helpers import grant_org_admin
 from apps.production.models import Shot
 from apps.production.tests.factories import ProjectFactory, ShotFactory
 
@@ -34,8 +35,9 @@ def _action_url(name):
 
 @pytest.mark.django_db
 class TestShotCRUD:
-    def test_create_auto_assigns_organization(self, staff_client):
+    def test_create_auto_assigns_organization(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project = ProjectFactory.create(organization=org)
         resp = staff_client.post(
             _list_url(),
@@ -57,9 +59,10 @@ class TestShotCRUD:
         assert resp.status_code == status.HTTP_400_BAD_REQUEST
         assert not Shot.objects.filter(code="SHX99").exists()
 
-    def test_list_is_scoped_to_organization(self, staff_client):
+    def test_list_is_scoped_to_organization(self, staff_client, staff_user):
         org_a = OrganizationFactory.create()
         org_b = OrganizationFactory.create()
+        grant_org_admin(staff_user, org_a)
         ShotFactory.create(organization=org_a, code="SHA01")
         ShotFactory.create(organization=org_b, code="SHB01")
         resp = staff_client.get(_list_url(), HTTP_X_ORGANIZATION_ID=str(org_a.id))
@@ -78,8 +81,9 @@ class TestShotCRUD:
         )
         assert resp.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_destroy_soft_deletes(self, staff_client):
+    def test_destroy_soft_deletes(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         shot = ShotFactory.create(organization=org, code="SHD01")
         resp = staff_client.delete(
             _detail_url(shot),
@@ -89,8 +93,9 @@ class TestShotCRUD:
         shot.refresh_from_db()
         assert shot.is_deleted is True
 
-    def test_restore_restores_soft_deleted(self, staff_client):
+    def test_restore_restores_soft_deleted(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         shot = ShotFactory.create(organization=org, code="SHE01")
         from apps.core.services.soft_delete import SoftDeleteService
 
@@ -280,8 +285,11 @@ class TestShotBulkUpdateArchiveRestore:
         shot.refresh_from_db()
         assert shot.name != "Nope"
 
-    def test_bulk_archive_soft_deletes(self, staff_client):
+    def test_bulk_archive_soft_deletes(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        from apps.organization.tests.rbac_helpers import grant_org_admin
+        grant_org_admin(staff_user, org)
+
         shot = ShotFactory.create(organization=org, code="BAR01")
         resp = staff_client.post(
             _action_url("bulk-archive"),
@@ -293,8 +301,11 @@ class TestShotBulkUpdateArchiveRestore:
         shot.refresh_from_db()
         assert shot.is_deleted is True
 
-    def test_bulk_archive_cannot_touch_other_org(self, staff_client):
+    def test_bulk_archive_cannot_touch_other_org(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        from apps.organization.tests.rbac_helpers import grant_org_admin
+        grant_org_admin(staff_user, org)
+
         other_org = OrganizationFactory.create()
         shot = ShotFactory.create(organization=other_org, code="BAR02")
         resp = staff_client.post(
@@ -307,8 +318,11 @@ class TestShotBulkUpdateArchiveRestore:
         shot.refresh_from_db()
         assert shot.is_deleted is False
 
-    def test_bulk_restore_restores(self, staff_client):
+    def test_bulk_restore_restores(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        from apps.organization.tests.rbac_helpers import grant_org_admin
+        grant_org_admin(staff_user, org)
+
         shot = ShotFactory.create(organization=org, code="BR01")
         from apps.core.services.soft_delete import SoftDeleteService
 
@@ -325,8 +339,11 @@ class TestShotBulkUpdateArchiveRestore:
         shot.refresh_from_db()
         assert shot.is_deleted is False
 
-    def test_bulk_restore_cannot_touch_other_org(self, staff_client):
+    def test_bulk_restore_cannot_touch_other_org(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        from apps.organization.tests.rbac_helpers import grant_org_admin
+        grant_org_admin(staff_user, org)
+
         other_org = OrganizationFactory.create()
         shot = ShotFactory.create(organization=other_org, code="BR02")
         from apps.core.services.soft_delete import SoftDeleteService
@@ -350,9 +367,11 @@ class TestShotBulkUpdateArchiveRestore:
         )
         assert resp.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_archived_lists_only_soft_deleted_scoped_to_org(self, staff_client):
+    def test_archived_lists_only_soft_deleted_scoped_to_org(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         other_org = OrganizationFactory.create()
+        grant_org_admin(staff_user, other_org)
         ShotFactory.create(organization=org, code="ACT01")
         archived = ShotFactory.create(organization=org, code="ARC01")
         ShotFactory.create(organization=other_org, code="OTH01")
@@ -375,8 +394,9 @@ class TestShotBulkUpdateArchiveRestore:
 
 @pytest.mark.django_db
 class TestShotApprove:
-    def test_approve_sets_status_flags_and_pipeline(self, staff_client):
+    def test_approve_sets_status_flags_and_pipeline(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         shot = ShotFactory.create(
             organization=org,
             code="AP01",

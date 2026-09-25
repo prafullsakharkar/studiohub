@@ -10,7 +10,6 @@ from .ownership import (
     IsSelf,
 )
 from .permission import HasPermission
-from .role import HasRole
 from .team import IsTeamLead
 
 __all__ = (
@@ -23,6 +22,5 @@ __all__ = (
     "HasPermission",
     "IsOwner",
     "IsSelf",
-    "HasRole",
     "IsTeamLead",
 )

@@ -18,7 +18,7 @@ class TrustedDeviceSelector(IdentityBaseSelector):
 
         user = getattr(request, "user", None)
 
-        if user is None or user.is_staff or user.is_superuser:
+        if user is None or user.is_superuser:
             return queryset
 
         if not getattr(user, "is_authenticated", False):

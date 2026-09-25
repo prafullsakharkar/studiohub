@@ -6,8 +6,9 @@ from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.core.api.permissions.staff import IsStaff
 from apps.core.permissions.base import IsAuthenticatedPermission
+from apps.identity.permissions import HasPermission
+from apps.platform.constants.permissions import SettingsPermissions
 from apps.settings.api.viewsets.base import SettingsBaseViewSet
 from apps.settings.filters.system import SystemSettingFilter
 from apps.settings.selectors.system import SystemSettingSelector
@@ -32,8 +33,21 @@ class SystemSettingViewSet(
 
     permission_classes = (
         IsAuthenticatedPermission,
-        IsStaff,
+        HasPermission,
     )
+
+    # ADR-0033 D4: platform settings are gated by explicit permission codes,
+    # not by the ``is_staff`` attribute.
+    permission_map = {
+        "list": (SettingsPermissions.VIEW,),
+        "retrieve": (SettingsPermissions.VIEW,),
+        "create": (SettingsPermissions.MANAGE,),
+        "update": (SettingsPermissions.MANAGE,),
+        "partial_update": (SettingsPermissions.MANAGE,),
+        "destroy": (SettingsPermissions.MANAGE,),
+        "lock": (SettingsPermissions.MANAGE,),
+        "unlock": (SettingsPermissions.MANAGE,),
+    }
 
     serializer_class = SystemSettingSerializer
     service_class = SystemSettingService

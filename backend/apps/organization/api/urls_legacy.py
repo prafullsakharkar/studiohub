@@ -109,7 +109,7 @@ class LegacyOrganizationSingletonView(GenericAPIView):  # pyright: ignore[report
         qs = Organization.objects.all()
         # Scope to user's orgs if not staff
         user = request.user
-        if user and not (user.is_staff or user.is_superuser):
+        if user and not (user.is_superuser):
             qs = qs.filter(memberships__user=user)
         org = qs.first()
         if not org:

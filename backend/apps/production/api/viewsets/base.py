@@ -73,10 +73,16 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
                 request=self.request,
                 view=self,
             )
-        return ProductionBaseSelector.scope_by_request(
+        qs = ProductionBaseSelector.scope_by_request(
             qs,
             request=self.request,
             view=self,
+        )
+        # ADR-0033 D1: per-project membership scoping on flat endpoints —
+        # org membership alone never exposes project-scoped production data.
+        return ProductionBaseSelector.scope_by_project_membership(
+            qs,
+            request=self.request,
         )
 
     def _may_view_deleted(self):
@@ -142,7 +148,7 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         return org
 
     # ------------------------------------------------------------------
-    # Soft-delete archive listing / restore
+    # Soft-delete archive listing / restore (BulkActionsMixin hooks)
     # ------------------------------------------------------------------
 
     @action(detail=False, methods=["get"], url_path="archived")
@@ -155,6 +161,7 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
             organization=self._organization(),
             project_id=project_id,
         )
+        qs = ProductionBaseSelector.scope_by_project_membership(qs, request=request)
         page = self.paginate_queryset(qs)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -166,10 +173,15 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
     def restore(self, request, *args, **kwargs):
         """Restore a soft-deleted record of the active organization."""
         model = self.service_class.model
-        instance = model.all_objects.filter(
+        queryset = model.all_objects.filter(
             organization=self._organization(),
             pk=self.kwargs.get(self.lookup_url_kwarg or self.lookup_field),
-        ).first()
+        )
+        queryset = ProductionBaseSelector.scope_by_project_membership(
+            queryset,
+            request=request,
+        )
+        instance = queryset.first()
         if instance is None or not instance.is_deleted:
             raise NotFound(f"{model.__name__} not found.")
         serializer = self.get_serializer(
@@ -243,6 +255,7 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
             org = self.resolve_organization()
             if org is None:
                 from rest_framework.exceptions import ValidationError
+
                 raise ValidationError({"organization": "An active organization is required."})
             serializer.save(organization=org)
             return
@@ -253,10 +266,22 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         if project is None:
             from rest_framework.exceptions import ValidationError
 
+
             raise ValidationError({"project": "This field is required."})
+        # ADR-0033 D1: creating into a project outside the caller's
+        # membership/admin scope fails closed without an existence leak.
+        if not ProductionBaseSelector.user_has_project_access(
+            request=self.request,
+            project=project,
+        ):
+            from rest_framework.exceptions import ValidationError
+
+
+            raise ValidationError({"project_id": "Unknown project."})
         org = self.resolve_organization(instance=project)
         if org is None:
             from rest_framework.exceptions import ValidationError
+
 
             raise ValidationError(
                 {"organization": "An active organization is required."}
@@ -296,6 +321,7 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
                 continue
             if manager.filter(**lookup).first() is not None:
                 from rest_framework.exceptions import ValidationError
+
 
                 raise ValidationError(
                     {unique_set[-1]: "A record with these values already exists."}

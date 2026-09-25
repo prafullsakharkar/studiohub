@@ -14,7 +14,7 @@ from apps.organization.tests.factories import (
     OrganizationMembershipFactory,
     TeamFactory,
 )
-from apps.organization.tests.rbac_helpers import grant_all_known_codes
+from apps.organization.tests.rbac_helpers import grant_org_admin
 from apps.production.tests.factories import ProjectFactory, TaskFactory
 
 
@@ -28,7 +28,7 @@ class TestTaskBulkAuthorization:
         org = OrganizationFactory.create()
         project = ProjectFactory.create(organization=org)
         staff = UserFactory.create(is_staff=True)
-        grant_all_known_codes(staff)
+        grant_org_admin(staff, org)
         client = APIClient()
         client.force_authenticate(user=staff)
         task = TaskFactory.create(organization=org, project=project)

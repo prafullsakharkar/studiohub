@@ -12,7 +12,10 @@ from rest_framework import status
 
 from apps.audit.tests.factories import AuditLogFactory
 from apps.identity.tests.factories import ProfileFactory, UserFactory
-from apps.organization.tests.factories import OrganizationFactory
+from apps.organization.tests.factories import (
+    OrganizationFactory,
+    OrganizationMembershipFactory,
+)
 
 
 def _org_header(org):
@@ -36,8 +39,9 @@ class TestAuditFlatAlias:
         defaults.update(kwargs)
         return AuditLogFactory.create(**defaults)
 
-    def test_list_frontend_shape(self, staff_client):
+    def test_list_frontend_shape(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(user=staff_user, organization=org)
         log = self._make_log(org)
 
         resp = staff_client.get("/api/v1/audit/", **_org_header(org))
@@ -55,8 +59,9 @@ class TestAuditFlatAlias:
         assert row["entity_code"] == "NK_010_010"
         assert "description" in row and "ip_address" in row
 
-    def test_search_and_action_filter(self, staff_client):
+    def test_search_and_action_filter(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(user=staff_user, organization=org)
         self._make_log(org, action="UPDATE", target_type="Shot")
         self._make_log(
             org,

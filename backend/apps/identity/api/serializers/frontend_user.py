@@ -111,7 +111,7 @@ def serialize_frontend_user(user, request=None) -> dict[str, Any]:
             try:
                 from apps.organization.models import Permission
 
-                # Use code field which matches frontend strings like "projects:create"
+                # Use code field which matches frontend strings like "project.create"
                 perms_qs = Permission.objects.filter(
                     role_permissions__role=membership.role,
                     role_permissions__granted=True,
@@ -122,20 +122,55 @@ def serialize_frontend_user(user, request=None) -> dict[str, Any]:
             except Exception:
                 permissions = []
 
-    # Staff / superuser fallback: if no membership but is_staff/superuser, give broad permissions
-    if not permissions and (user.is_staff or user.is_superuser):
+    # Superuser break-glass fallback: no membership but is_superuser gets broad permissions (ADR-0033 D4).
+    if not permissions and (user.is_superuser):
         # Minimal broad set for admin users without explicit role
         permissions = [
-            "projects:create", "projects:read", "projects:update", "projects:delete",
-            "shots:create", "shots:read", "shots:update", "shots:delete", "shots:approve",
-            "assets:create", "assets:read", "assets:update", "assets:delete",
-            "tasks:create", "tasks:read", "tasks:update", "tasks:delete",
-            "reviews:create", "reviews:read", "reviews:approve",
-            "audit:read", "settings:update", "users:manage",
+            "project.create", "project.view", "project.update", "project.delete",
+            "shot.create", "shot.view", "shot.update", "shot.delete", "shot.approve",
+            "asset.create", "asset.view", "asset.update", "asset.delete",
+            "task.create", "task.view", "task.update", "task.delete",
+            "review.create", "review.view", "review.approve",
+            "audit.view", "settings.update", "user.manage",
         ]
 
     # Ensure role string matches one of frontend expected roles; fallback already Artist
     # Frontend role strings are display names, not codes.
+
+    # ADR-0033 D1/D2: project/show memberships travel with the user payload so
+    # the frontend route guards and canonical engine can evaluate production
+    # scope without guessing org linkage from fixtures.
+    from apps.production.models.project_membership import ProjectMembership
+
+    project_memberships: list[dict[str, Any]] = []
+    try:
+        pms = (
+            ProjectMembership.objects.filter(user=user, is_deleted=False)
+            .select_related("project", "organization", "show")
+        )
+        project_memberships = [
+            {
+                "id": str(pm.id),
+                "user_id": str(pm.user_id),
+                "organization_id": str(pm.organization_id),
+                "project_id": str(pm.project_id),
+                "project_code": getattr(pm.project, "code", "") or "",
+                "show_id": str(pm.show_id) if pm.show_id else None,
+                "role": pm.role,
+                "roles": pm.roles or ([pm.role] if pm.role else []),
+                "scope": pm.scope,
+                "status": pm.status,
+                "department": pm.department,
+                "department_id": pm.department_id,
+                "team_id": pm.team_id,
+                "vendor_id": pm.vendor_id,
+                "client_id": pm.client_id,
+            }
+            for pm in pms
+        ]
+    except Exception:
+        project_memberships = []
+
     return {
         "id": str(user.id),
         "email": user.email,
@@ -148,6 +183,7 @@ def serialize_frontend_user(user, request=None) -> dict[str, Any]:
         "organization_id": organization_id,
         "organization_name": organization_name,
         "department": department_name,
+        "project_memberships": project_memberships,
         "is_active": user.is_active,
         "is_staff": user.is_staff,
         "is_superuser": getattr(user, "is_superuser", False),

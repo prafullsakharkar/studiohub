@@ -19,6 +19,7 @@ from rest_framework import status
 
 from apps.deliveries.models import DeliveryPackage
 from apps.organization.tests.factories import OrganizationFactory
+from apps.organization.tests.rbac_helpers import grant_org_admin
 from apps.production.models import Review
 from apps.production.tests.factories import (
     AssetFactory,
@@ -90,8 +91,9 @@ class TestProjectDashboardPrimary:
         )
         return org, project, today
 
-    def test_full_contract_shape_with_real_values(self, staff_client):
+    def test_full_contract_shape_with_real_values(self, staff_client, staff_user):
         org, project, today = self._seed()
+        grant_org_admin(staff_user, org)
         resp = staff_client.get(_dashboard_url(project), **_org_header(org))
 
         assert resp.status_code == status.HTTP_200_OK, resp.data
@@ -163,8 +165,9 @@ class TestProjectDashboardPrimary:
         for key in ("id", "entity_type", "entity_id", "action", "user_name", "timestamp", "description"):
             assert key in first, key
 
-    def test_lookup_by_code_and_unknown_404(self, staff_client):
+    def test_lookup_by_code_and_unknown_404(self, staff_client, staff_user):
         org, project, _ = self._seed()
+        grant_org_admin(staff_user, org)
         resp = staff_client.get("/api/v1/projects/dash01/dashboard/", **_org_header(org))
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert resp.data["project"]["id"] == str(project.id)
@@ -183,8 +186,9 @@ class TestProjectDashboardPrimary:
         resp = staff_client.get(_dashboard_url(project), **_org_header(other))
         assert resp.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_empty_project_returns_well_formed_zeros(self, staff_client):
+    def test_empty_project_returns_well_formed_zeros(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project = ProjectFactory.create(organization=org, code="EMPTY01")
         resp = staff_client.get(_dashboard_url(project), **_org_header(org))
 
@@ -203,8 +207,9 @@ class TestProjectDashboardPrimary:
         assert resp.data["activity"][0]["action"] == "Created Project"
         assert resp.data["schedule"]["days_total"] >= 1
 
-    def test_switching_projects_returns_each_projects_data(self, staff_client):
+    def test_switching_projects_returns_each_projects_data(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project_a = ProjectFactory.create(organization=org, code="SWA01")
         project_b = ProjectFactory.create(organization=org, code="SWB01")
         ShotFactory.create(organization=org, project=project_a, code="SHA01", status="Approved")
@@ -216,9 +221,10 @@ class TestProjectDashboardPrimary:
         assert resp_a.data["summary"]["shots_completion_pct"] == 100
         assert resp_b.data["summary"]["total_shots"] == 0
 
-    def test_task_buckets_reconcile_with_total(self, staff_client):
+    def test_task_buckets_reconcile_with_total(self, staff_client, staff_user):
         """open+in_progress+blocked+review+completed == total (chart partition)."""
         org, project, _ = self._seed()
+        grant_org_admin(staff_user, org)
         resp = staff_client.get(_dashboard_url(project), **_org_header(org))
 
         assert resp.status_code == status.HTTP_200_OK, resp.data
@@ -243,8 +249,9 @@ class TestProjectDashboardPrimary:
             == 2
         )
 
-    def test_critical_counts_blocked_plus_overdue_union(self, staff_client):
+    def test_critical_counts_blocked_plus_overdue_union(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project = ProjectFactory.create(organization=org, code="CRIT01")
         today = timezone.localdate()
         TaskFactory.create(
@@ -266,10 +273,11 @@ class TestProjectDashboardPrimary:
         assert resp.data["tasks"]["blocked"] == 2
         assert resp.data["tasks"]["critical"] == 3
 
-    def test_workload_buckets_by_assignee(self, staff_client):
+    def test_workload_buckets_by_assignee(self, staff_client, staff_user):
         from apps.identity.tests.factories import UserFactory
 
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project = ProjectFactory.create(organization=org, code="WL01")
         artist = UserFactory.create()
         today = timezone.localdate()
@@ -293,8 +301,9 @@ class TestProjectDashboardPrimary:
 
 @pytest.mark.django_db
 class TestProjectDashboardNestedFallback:
-    def test_nested_route_matches_primary_payload(self, staff_client):
+    def test_nested_route_matches_primary_payload(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project = ProjectFactory.create(organization=org, code="NEST01")
         ShotFactory.create(organization=org, project=project, code="SHN01", status="Approved")
 
@@ -325,8 +334,9 @@ class TestProjectDashboardNestedFallback:
 
 @pytest.mark.django_db
 class TestAnalyticsKpisContract:
-    def test_kpis_match_production_kpis_shape(self, staff_client):
+    def test_kpis_match_production_kpis_shape(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project = ProjectFactory.create(organization=org, code="KPI01")
         ShotFactory.create(organization=org, project=project, code="SHK01", status="Approved")
         ShotFactory.create(organization=org, project=project, code="SHK02", status="In Progress")
@@ -351,8 +361,9 @@ class TestAnalyticsKpisContract:
         assert resp.data["render_nodes_busy"] is None
         assert resp.data["average_render_time_mins"] is None
 
-    def test_archived_projects_excluded_from_active_count(self, staff_client):
+    def test_archived_projects_excluded_from_active_count(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         ProjectFactory.create(organization=org, code="KPA01", status="In Progress")
         ProjectFactory.create(organization=org, code="KPA02", status="Archived")
 

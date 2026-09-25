@@ -19,7 +19,7 @@ from apps.organization.tests.factories import (
     RoleFactory,
     RolePermissionFactory,
 )
-from apps.organization.tests.rbac_helpers import grant_permissions
+from apps.organization.tests.rbac_helpers import grant_all_known_codes, grant_permissions
 
 
 def _hdr(org):
@@ -62,8 +62,9 @@ class TestOrganizationSettingsMutationCode:
         )
         assert response.status_code == 403, response.data
 
-    def test_settings_patch_allowed_with_update_grant(self, staff_client):
+    def test_settings_patch_allowed_with_update_grant(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        grant_all_known_codes(staff_user, organization=org)
         response = staff_client.patch(
             self._settings_url(org),
             {"timezone": "UTC"},
@@ -95,13 +96,14 @@ class TestAuditMutationCodes:
         response = client.post(url, **_hdr(org))
         assert response.status_code == 403, response.data
 
-    def test_background_job_retry_allowed_with_grant(self, staff_client):
+    def test_background_job_retry_allowed_with_grant(self, admin_client):
+        """Flat audit endpoints fail closed without superuser break-glass (D4)."""
         from apps.audit.tests.factories import BackgroundJobFactory
 
         org = OrganizationFactory.create()
         job = BackgroundJobFactory.create(organization=org)
         url = f"/api/v1/audit/background-jobs/{job.uuid}/retry/"
-        response = staff_client.post(url, **_hdr(org))
+        response = admin_client.post(url, **_hdr(org))
         assert response.status_code == 200, response.data
 
     def test_audit_log_list_open_to_members(self):
@@ -136,7 +138,7 @@ class TestIncludeDeletedGate:
         org = OrganizationFactory.create()
         user = UserFactory.create()
         grant_permissions(
-            user, "projects:read", organization=org
+            user, "project.view", organization=org
         )
         project = ProjectFactory.create(organization=org)
         project.delete()
@@ -149,13 +151,18 @@ class TestIncludeDeletedGate:
         assert all(str(row["id"]) != str(project.id) for row in results)
 
     def test_delete_grant_sees_deleted_with_flag(self):
+        from apps.organization.choices.role_priority import RolePriority
         from apps.production.tests.factories import ProjectFactory
 
         org = OrganizationFactory.create()
         user = UserFactory.create()
-        grant_permissions(
-            user, "projects:read", "projects:delete", organization=org
+        # ADMIN-priority org role grants org-wide production visibility
+        # (ADR-0033 D1); the DELETE grant then opts into deleted rows.
+        role = grant_permissions(
+            user, "project.view", "project.delete", organization=org
         )
+        role.priority = RolePriority.ADMIN
+        role.save(update_fields=["priority"])
         project = ProjectFactory.create(organization=org)
         project.delete()
         client = _client_for(user)

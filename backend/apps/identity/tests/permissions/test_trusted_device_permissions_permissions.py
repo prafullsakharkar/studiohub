@@ -98,14 +98,14 @@ class TestTrustedDevicePermissions:
         assert response.status_code == 200
 
     @pytest.mark.django_db
-    def test_staff_user_can_update_trusted_device(self, staff_client):
-        """Test that staff user can update trusted device."""
+    def test_staff_user_cannot_update_other_device(self, staff_client):
+        """ADR-0033 D4: staff is not an authorization tier."""
         device = TrustedDeviceFactory.create()
         response = staff_client.patch(
             f"/api/v1/identity/trusted-devices/{device.id}/",
             {"browser": "Chrome"},
         )
-        assert response.status_code == 200
+        assert response.status_code == 404
 
     @pytest.mark.django_db
     def test_admin_user_can_update_trusted_device(self, admin_client):
@@ -136,11 +136,11 @@ class TestTrustedDevicePermissions:
         assert response.status_code == 403
 
     @pytest.mark.django_db
-    def test_staff_user_can_delete_trusted_device(self, staff_client):
-        """Test that staff user can delete trusted device."""
+    def test_staff_user_cannot_delete_other_device(self, staff_client):
+        """ADR-0033 D4: staff is not an authorization tier."""
         device = TrustedDeviceFactory.create()
         response = staff_client.delete(f"/api/v1/identity/trusted-devices/{device.id}/")
-        assert response.status_code == 204
+        assert response.status_code == 404
 
     @pytest.mark.django_db
     def test_admin_user_can_delete_trusted_device(self, admin_client):

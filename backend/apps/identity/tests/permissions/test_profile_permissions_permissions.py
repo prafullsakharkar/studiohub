@@ -98,14 +98,15 @@ class TestProfilePermissions:
         assert response.status_code == 200
 
     @pytest.mark.django_db
-    def test_staff_user_can_update_profile(self, staff_client):
-        """Test that staff user can update profile."""
+    def test_staff_user_cannot_update_other_profile(self, staff_client):
+        """ADR-0033 D4: staff is not an authorization tier — other users'
+        profiles are not in the staff user's scoped queryset."""
         profile = ProfileFactory.create()
         response = staff_client.patch(
             f"/api/v1/identity/profiles/{profile.id}/",
             {"first_name": "Updated"},
         )
-        assert response.status_code == 200
+        assert response.status_code == 404
 
     @pytest.mark.django_db
     def test_admin_user_can_update_profile(self, admin_client):
@@ -132,11 +133,11 @@ class TestProfilePermissions:
         assert response.status_code == 403
 
     @pytest.mark.django_db
-    def test_staff_user_can_delete_profile(self, staff_client):
-        """Test that staff user can delete profile."""
+    def test_staff_user_cannot_delete_other_profile(self, staff_client):
+        """Test that staff user cannot delete another user's profile."""
         profile = ProfileFactory.create()
         response = staff_client.delete(f"/api/v1/identity/profiles/{profile.id}/")
-        assert response.status_code == 204
+        assert response.status_code == 404
 
     @pytest.mark.django_db
     def test_admin_user_can_delete_profile(self, admin_client):

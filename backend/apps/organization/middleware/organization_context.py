@@ -80,15 +80,14 @@ def has_organization_access(request) -> bool:
     """
     Whether the request may access the resolved organization.
 
-    Staff/superusers have cross-organization admin context; everyone else
-    needs a (non-deleted) membership in the resolved organization. Used by
-    views that cannot use ``HasPermission`` directly (plain APIViews) so a
-    bare ``X-Organization`` header never grants cross-organization reads.
+    Superusers have cross-organization break-glass context (ADR-0033 D4:
+    ``is_staff`` is not an authorization tier); everyone else needs a
+    (non-deleted) membership in the resolved organization. Used by views
+    that cannot use ``HasPermission`` directly (plain APIViews) so a bare
+    ``X-Organization`` header never grants cross-organization reads.
     """
     user = getattr(request, "user", None)
-    if user is not None and (
-        getattr(user, "is_staff", False) or getattr(user, "is_superuser", False)
-    ):
+    if user is not None and getattr(user, "is_superuser", False):
         return True
     return getattr(request, "membership", None) is not None
 

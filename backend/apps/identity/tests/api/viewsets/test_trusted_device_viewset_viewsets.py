@@ -63,13 +63,13 @@ class TestTrustedDeviceViewSet:
         assert response.status_code == 404
 
     @pytest.mark.django_db
-    def test_retrieve_trusted_device_staff_sees_all(self, staff_client):
-        """Test staff can retrieve any trusted device."""
+    def test_retrieve_trusted_device_staff_is_self_scoped(self, staff_client):
+        """ADR-0033 D4: staff is not an authorization tier; other users' records are 404."""
         device = TrustedDeviceFactory.create()
         response = staff_client.get(
             reverse("api:v1:identity:trusted-device-detail", kwargs={"pk": device.id})
         )
-        assert response.status_code == 200
+        assert response.status_code == 404
 
     @pytest.mark.django_db
     def test_create_trusted_device_unauthenticated(self, api_client):

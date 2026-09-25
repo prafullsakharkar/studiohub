@@ -12,6 +12,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from apps.organization.tests.factories import OrganizationFactory
+from apps.organization.tests.rbac_helpers import grant_org_admin
 from apps.production.tests.factories import ProjectFactory
 
 
@@ -64,9 +65,10 @@ class TestProjectOrganizationScoping:
         project = Project.objects.get(code="PROJX02")
         assert project.organization_id == org.id
 
-    def test_update_cannot_change_organization(self, staff_client):
+    def test_update_cannot_change_organization(self, staff_client, staff_user):
         org = OrganizationFactory.create()
         other_org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
         project = ProjectFactory.create(organization=org, code="PROJX03")
         resp = staff_client.patch(
             self._detail_url(project),
@@ -79,9 +81,10 @@ class TestProjectOrganizationScoping:
         assert project.organization_id == org.id
         assert project.name == "Renamed"
 
-    def test_list_is_scoped_to_organization_header(self, staff_client):
+    def test_list_is_scoped_to_organization_header(self, staff_client, staff_user):
         org_a = OrganizationFactory.create()
         org_b = OrganizationFactory.create()
+        grant_org_admin(staff_user, org_a)
         ProjectFactory.create(organization=org_a, code="ORGAA01")
         ProjectFactory.create(organization=org_b, code="ORGBB01")
         resp = staff_client.get(self._list_url(), HTTP_X_ORGANIZATION_ID=str(org_a.id))
@@ -90,9 +93,11 @@ class TestProjectOrganizationScoping:
         assert "ORGAA01" in codes
         assert "ORGBB01" not in codes
 
-    def test_switching_organization_header_changes_results(self, staff_client):
+    def test_switching_organization_header_changes_results(self, staff_client, staff_user):
         org_a = OrganizationFactory.create()
         org_b = OrganizationFactory.create()
+        grant_org_admin(staff_user, org_a)
+        grant_org_admin(staff_user, org_b)
         ProjectFactory.create(organization=org_a, code="ORGAA02")
         ProjectFactory.create(organization=org_b, code="ORGBB02")
         list_url = self._list_url()
