@@ -53,21 +53,38 @@ class EpisodeCreateSerializer(ProjectReferenceMixin, BaseWriteSerializer[Any]):
             data = data.copy()
         code = data.get("code")
         if not (isinstance(code, str) and code.strip()):
-            episode_number = data.get("episode_number")
             try:
-                episode_number = int(episode_number)
+                episode_number = int(data.get("episode_number"))
             except (TypeError, ValueError):
                 episode_number = None
             if episode_number is not None:
+                season_raw = data.get("season_number")
+                season_missing = season_raw is None or (
+                    isinstance(season_raw, str) and not season_raw.strip()
+                )
                 try:
-                    season_number = int(data.get("season_number") or 1)
+                    season_number = int(season_raw or 1)
                 except (TypeError, ValueError):
                     season_number = 1
                 data["code"] = f"EP{season_number}{episode_number:02d}"
+                # Keep the stored season consistent with the derived code.
+                if season_missing:
+                    data["season_number"] = season_number
+        else:
+            data["code"] = code.strip()
+        # Keep the key present so ``validate`` owns the 400 instead of an
+        # IntegrityError on the (project, code) unique constraint.
+        data.setdefault("code", "")
         return super().to_internal_value(data)
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
-        if isinstance(attrs.get("code"), str):
-            attrs["code"] = attrs["code"].strip().upper()
+        code = attrs.get("code")
+        if isinstance(code, str):
+            code = code.strip().upper()
+            attrs["code"] = code
+        if not code:
+            raise serializers.ValidationError(
+                {"code": ["Episode code is required when season/episode numbers cannot derive one."]}
+            )
         return attrs

@@ -59,6 +59,36 @@ class TestEpisodeCreateAndScopedList:
         assert list_r.status_code == status.HTTP_200_OK
         assert any(e["name"] == "Pilot" for e in list_r.data["results"])
 
+    def test_create_without_code_and_numbers_returns_400(self, staff_client, staff_user):
+        org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
+        project = ProjectFactory.create(organization=org)
+
+        r = staff_client.post(
+            _list_url(),
+            {"project": str(project.id), "name": "No Code"},
+            format="json",
+            HTTP_X_ORGANIZATION_ID=str(org.id),
+        )
+        assert r.status_code == status.HTTP_400_BAD_REQUEST
+        assert "code" in r.data
+        assert not Episode.objects.filter(project=project).exists()
+
+    def test_create_derives_season_number_with_code(self, staff_client, staff_user):
+        org = OrganizationFactory.create()
+        grant_org_admin(staff_user, org)
+        project = ProjectFactory.create(organization=org)
+
+        r = staff_client.post(
+            _list_url(),
+            {"project": str(project.id), "name": "Derived", "episode_number": 3},
+            format="json",
+            HTTP_X_ORGANIZATION_ID=str(org.id),
+        )
+        assert r.status_code == status.HTTP_201_CREATED, r.data
+        assert r.data["code"] == "EP103"
+        assert r.data["season_number"] == 1
+
     def test_list_filter_by_project_id_excludes_other_projects(
         self, staff_client, staff_user
     ):
