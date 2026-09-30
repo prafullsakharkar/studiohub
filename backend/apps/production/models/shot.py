@@ -28,6 +28,17 @@ class Shot(EntityModel):
         related_name="shots",
         db_index=True,
     )
+    # Optional episodic hookup: required-by-validation (not by schema) when the
+    # parent project is ``workflow_type == episodic``; the episode must belong
+    # to the shot's project. Enforced in the shot viewset chain rules.
+    episode = models.ForeignKey(
+        "production.Episode",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="shots",
+        db_index=True,
+    )
     sequence_code = models.CharField(max_length=20, blank=True, default="", db_index=True)
     code = models.CharField(max_length=30, db_index=True)
     name = models.CharField(max_length=255, blank=True, default="")

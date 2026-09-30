@@ -14,6 +14,9 @@ class ShotFilterSet(BaseFilterSet):
     # ids, so the alias resolves tolerantly: unresolvable → no rows (mock
     # exact-match semantics), never a 400.
     project_id = django_filters.CharFilter(method="filter_project")
+    # Same tolerant-resolution contract as ``project_id``: UUID, episode code,
+    # or mock id; unresolvable → no rows, never a 400.
+    episode_id = django_filters.CharFilter(method="filter_episode")
     sequence_code = django_filters.CharFilter(field_name="sequence_code", lookup_expr="iexact")
     # Frontend-contract alias (defensive; no current caller sends bare `sequence`).
     sequence = django_filters.CharFilter(field_name="sequence_code", lookup_expr="iexact")
@@ -21,7 +24,7 @@ class ShotFilterSet(BaseFilterSet):
 
     class Meta:
         model = Shot
-        fields = ["status", "project", "project_id", "sequence_code", "sequence", "code"]
+        fields = ["status", "project", "project_id", "episode_id", "sequence_code", "sequence", "code"]
 
     def _org(self):
         return getattr(getattr(self, "request", None), "organization", None)
@@ -35,6 +38,16 @@ class ShotFilterSet(BaseFilterSet):
         if project is None:
             return queryset.none()
         return queryset.filter(project=project)
+
+    def filter_episode(self, queryset, name, value):
+        if not value:
+            return queryset
+        from apps.production.selectors.episode import EpisodeSelector
+
+        episode = EpisodeSelector.resolve_by_lookup(self._org(), value)
+        if episode is None:
+            return queryset.none()
+        return queryset.filter(episode=episode)
 
     def filter_search(self, queryset, name, value):
         if not value:

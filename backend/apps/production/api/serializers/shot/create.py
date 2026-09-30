@@ -13,6 +13,17 @@ from apps.production.models import Shot
 class ShotCreateSerializer(ProjectReferenceMixin, BaseWriteSerializer[Any]):
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
+    # Frontend contract: ``episode_id``/``sequence_id`` arrive as raw
+    # reference strings (UUID, code, or mock id). They land in
+    # ``validated_data`` as strings (``episode`` mirrors the
+    # ProjectReferenceMixin pattern); the viewset resolves them org- and
+    # project-scoped and enforces the episodic chain before saving.
+    episode_id = serializers.CharField(
+        source="episode", write_only=True, required=False, allow_blank=True
+    )
+    sequence_id = serializers.CharField(
+        source="sequence_ref", write_only=True, required=False, allow_blank=True
+    )
 
     class Meta:
         model = Shot
@@ -22,6 +33,8 @@ class ShotCreateSerializer(ProjectReferenceMixin, BaseWriteSerializer[Any]):
             "project",
             "project_id",
             "project_code",
+            "episode_id",
+            "sequence_id",
             "sequence_code",
             "code",
             "name",

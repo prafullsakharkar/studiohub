@@ -9,6 +9,7 @@ from apps.production.models import Shot
 class ShotSerializer(BaseReadSerializer[Any]):
     project_id = serializers.UUIDField(read_only=True)
     project_code = serializers.SerializerMethodField()
+    episode_id = serializers.UUIDField(read_only=True, allow_null=True)
     sequence_code = serializers.CharField(read_only=True)
     frame_count = serializers.IntegerField(read_only=True)
     assigned_artist_id = serializers.UUIDField(read_only=True, allow_null=True)
@@ -22,6 +23,7 @@ class ShotSerializer(BaseReadSerializer[Any]):
             "uuid",
             "project_id",
             "project_code",
+            "episode_id",
             "sequence_code",
             "code",
             "name",
