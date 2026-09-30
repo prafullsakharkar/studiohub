@@ -95,9 +95,10 @@ class PersonSerializer(BaseReadSerializer[Any]):
     def get_office_name(self, obj):
         return ""
 
-    @extend_schema_field(serializers.CharField())
+    @extend_schema_field(serializers.CharField(allow_blank=True))
     def get_role(self, obj):
-        return "Artist"
+        # Server-derived from the linked Position (Task A-3); no mock value.
+        return obj.role.name if obj.role_id else ""
 
     @extend_schema_field(serializers.ListField(child=serializers.CharField()))
     def get_skills(self, obj):

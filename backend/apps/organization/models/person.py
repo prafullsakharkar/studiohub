@@ -29,6 +29,15 @@ class Person(LifecycleModel, NamedEntityModel):
         db_index=True,
     )
 
+    role = models.ForeignKey(
+        "organization.Position",
+        on_delete=models.SET_NULL,
+        related_name="persons",
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+
     email = models.EmailField(
         _("Email"),
         blank=True,

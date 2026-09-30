@@ -11,7 +11,34 @@ from apps.organization.models.base import (
 class Position(OrganizationEntityModel):
     """
     Organization job position.
+
+    ``scope`` distinguishes platform-wide master catalog rows
+    (``global_master``, organization is NULL) from organization-linked
+    custom rows (``organization_custom``, the default, organization
+    required).
     """
+
+    class Scope(models.TextChoices):
+        GLOBAL_MASTER = "global_master"
+        ORGANIZATION_CUSTOM = "organization_custom"
+
+    # Overrides OrganizationEntityModel.organization: global master rows
+    # are organization-agnostic; customs must link an organization.
+    organization = models.ForeignKey(
+        "organization.Organization",
+        on_delete=models.CASCADE,
+        related_name="%(app_label)s_%(class)ss",
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+
+    scope = models.CharField(
+        max_length=32,
+        choices=Scope.choices,
+        default=Scope.ORGANIZATION_CUSTOM,
+        db_index=True,
+    )
 
     department = models.ForeignKey(
         "organization.Department",
@@ -45,4 +72,17 @@ class Position(OrganizationEntityModel):
         ordering = (
             "level",
             "name",
+        )
+
+        constraints = (
+            models.CheckConstraint(
+                condition=(
+                    models.Q(
+                        scope="organization_custom",
+                        organization__isnull=False,
+                    )
+                    | models.Q(scope="global_master")
+                ),
+                name="position_scope_organization_link",
+            ),
         )

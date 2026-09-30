@@ -19,6 +19,7 @@ class PositionBaseSerializer(
 
         fields = (
             *OrganizationEntitySerializer.Meta.fields,
+            "scope",
             "department",
             "parent",
             "level",

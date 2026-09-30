@@ -15,6 +15,7 @@ class PositionListSerializer(
             "code",
             "name",
             "organization",
+            "scope",
             "department",
             "level",
             "is_managerial",

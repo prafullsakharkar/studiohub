@@ -72,13 +72,28 @@ class PositionViewSet(
 
     @action(detail=False, methods=["get"], url_path="available")
     def available(self, request, *args, **kwargs):
-        """Org-scoped role catalog for the People-page role select."""
-        queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.get_serializer(queryset, many=True)
+        """Org-scoped role catalog for the People-page role select.
+
+        Returns the requesting organization's custom positions only —
+        sibling-org customs are never included. With
+        ``?include=all_masters`` the organization-agnostic global master
+        catalog is appended.
+        """
+        customs = self.filter_queryset(self.get_queryset()).filter(
+            scope=Position.Scope.ORGANIZATION_CUSTOM
+        )
+        positions = list(customs)
+        if request.query_params.get("include") == "all_masters":
+            positions.extend(
+                Position.objects.filter(
+                    organization__isnull=True,
+                    scope=Position.Scope.GLOBAL_MASTER,
+                )
+            )
+        serializer = self.get_serializer(positions, many=True)
         items = serializer.data
         for item in items:
             item["title"] = item.get("name")
             organization = item.get("organization")
             item["organization_id"] = str(organization) if organization is not None else None
-            item["scope"] = "organization_custom"
         return Response(items)
