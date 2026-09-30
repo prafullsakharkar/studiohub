@@ -1,6 +1,7 @@
 from .asset import Asset
 from .automation import AutomationAuditLog, AutomationRule
 from .editorial import EditorialCut, EditorialTrack
+from .episode import Episode
 from .media import Media
 from .playlist import Playlist
 from .project import Project
@@ -32,6 +33,7 @@ __all__ = [
     "ProjectMembership",
     "EditorialCut",
     "EditorialTrack",
+    "Episode",
     "ProjectNote",
     "Show",
 ]

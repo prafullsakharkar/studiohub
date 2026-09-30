@@ -21,6 +21,13 @@ class SequencePermissions:
     DELETE = "sequence.delete"
 
 
+class EpisodePermissions:
+    VIEW = "episode.view"
+    CREATE = "episode.create"
+    UPDATE = "episode.update"
+    DELETE = "episode.delete"
+
+
 class ShotPermissions:
     VIEW = "shot.view"
     CREATE = "shot.create"

@@ -12,6 +12,7 @@ from rest_framework.routers import DefaultRouter
 from apps.production.api.viewsets.analytics import AnalyticsDepartmentsView, AnalyticsKpisView
 from apps.production.api.viewsets.asset import AssetViewSet
 from apps.production.api.viewsets.editorial_track import EditorialTrackViewSet
+from apps.production.api.viewsets.episode import EpisodeViewSet
 from apps.production.api.viewsets.media import MediaViewSet
 from apps.production.api.viewsets.playlist import PlaylistViewSet
 from apps.production.api.viewsets.project import ProjectViewSet
@@ -42,6 +43,7 @@ router.register(r"timelogs", TimelogViewSet, basename="timelog")
 router.register(r"versions", VersionViewSet, basename="version")
 router.register(r"reviews", ReviewViewSet, basename="review")
 router.register(r"sequences", SequenceViewSet, basename="sequence")
+router.register(r"episodes", EpisodeViewSet, basename="episode")
 router.register(r"media", MediaViewSet, basename="media")
 router.register(r"playlists", PlaylistViewSet, basename="playlist")
 router.register(r"workflows", WorkflowViewSet, basename="workflow")

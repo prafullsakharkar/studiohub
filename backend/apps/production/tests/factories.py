@@ -7,6 +7,7 @@ from apps.organization.tests.factories import OrganizationFactory
 from apps.production.models import (
     Asset,
     EditorialTrack,
+    Episode,
     Media,
     Playlist,
     Project,
@@ -79,6 +80,25 @@ class SequenceFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeA
     frame_out = 1100
     department = ""
     tags = factory.LazyFunction(list)
+
+
+class EpisodeFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = Episode
+        django_get_or_create = ("code", "project")
+
+    organization = factory.SubFactory(OrganizationFactory)
+    project = factory.SubFactory(
+        ProjectFactory,
+        organization=factory.SelfAttribute("..organization"),
+    )
+    code = factory.Sequence(lambda n: f"EP{n:03d}")
+    name = factory.Sequence(lambda n: f"Episode {n}")
+    season_number = 1
+    episode_number = factory.Sequence(lambda n: n + 1)
+    status = "Not Started"
+    frame_in = 1001
+    frame_out = 1100
 
 
 class AssetFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
