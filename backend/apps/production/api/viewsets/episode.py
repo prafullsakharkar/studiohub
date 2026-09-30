@@ -1,3 +1,5 @@
+from rest_framework.exceptions import ValidationError
+
 from apps.core.api.mixins.bulk import BulkActionsMixin
 from apps.core.api.pagination import StandardPagination
 from apps.production.api.filtersets.episode import EpisodeFilterSet
@@ -6,6 +8,7 @@ from apps.production.api.serializers.episode.detail import EpisodeDetailSerializ
 from apps.production.api.serializers.episode.list import EpisodeListSerializer
 from apps.production.api.serializers.episode.update import EpisodeUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
+from apps.production.constants import ProjectWorkflowType
 from apps.production.constants.permissions import EpisodePermissions
 from apps.production.selectors.episode import EpisodeSelector
 from apps.production.services.episode import EpisodeService
@@ -46,3 +49,19 @@ class EpisodeViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ign
 
     search_fields = ("code", "name", "description")
     ordering_fields = ("code", "name", "season_number", "episode_number", "created_at", "status")
+
+    def perform_create(self, serializer):
+        """Gate episode creation on the project's workflow type.
+
+        Episodes belong to ``episodic`` projects only; ``standard`` projects
+        reject episode creation with 400 (fail closed without leaking).
+        """
+        validated = serializer.validated_data
+        project = validated.get("project") if isinstance(validated, dict) else None
+        if project is None or isinstance(project, str):
+            project = self._resolve_project_from_input(serializer)
+        if project is not None and project.workflow_type != ProjectWorkflowType.EPISODIC:
+            raise ValidationError(
+                {"project": "Episodes can only be created on episodic projects."}
+            )
+        super().perform_create(serializer)

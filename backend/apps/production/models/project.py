@@ -7,7 +7,11 @@ from __future__ import annotations
 from django.conf import settings
 from django.db import models
 
-from apps.production.constants import ProjectStatus, ProjectType
+from apps.production.constants import (
+    ProjectStatus,
+    ProjectType,
+    ProjectWorkflowType,
+)
 from apps.production.models.base import ProductionEntityModel
 
 
@@ -34,6 +38,16 @@ class Project(ProductionEntityModel):
         choices=ProjectStatus.choices,
         default=ProjectStatus.IN_PROGRESS,
         db_index=True,
+    )
+    workflow_type = models.CharField(
+        max_length=20,
+        choices=ProjectWorkflowType.choices,
+        default=ProjectWorkflowType.STANDARD,
+        db_index=True,
+        help_text=(
+            "'episodic' projects bootstrap an initial episode on create and "
+            "allow episode creation; 'standard' projects have no episodes."
+        ),
     )
 
     fps = models.DecimalField(max_digits=5, decimal_places=3, default=24)

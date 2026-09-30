@@ -8,7 +8,9 @@ from apps.production.api.serializers.project.detail import ProjectDetailSerializ
 from apps.production.api.serializers.project.list import ProjectListSerializer
 from apps.production.api.serializers.project.update import ProjectUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
+from apps.production.constants import ProjectWorkflowType
 from apps.production.constants.permissions import ProjectPermissions
+from apps.production.models import Episode
 from apps.production.selectors.dashboard import ProjectDashboardSelector
 from apps.production.selectors.project import ProjectSelector
 from apps.production.services.project import ProjectService
@@ -43,6 +45,23 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
 
     search_fields = ("name", "code", "description", "client_name")
     ordering_fields = ("name", "code", "created_at", "status")
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        self._bootstrap_initial_episode(serializer.instance)
+
+    def _bootstrap_initial_episode(self, project):
+        """Episodic projects start with an initial EP101 episode."""
+        if project is None or project.workflow_type != ProjectWorkflowType.EPISODIC:
+            return
+        Episode.objects.create(
+            organization=project.organization,
+            project=project,
+            code="EP101",
+            name="Episode 1",
+            season_number=1,
+            episode_number=1,
+        )
 
     @action(detail=True, methods=["get"], url_path="statistics")
     def statistics(self, request, *args, **kwargs):

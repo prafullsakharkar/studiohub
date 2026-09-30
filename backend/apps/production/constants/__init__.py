@@ -1,11 +1,12 @@
 from .asset import AssetCategory, AssetSoftware
-from .project import ProjectStatus, ProjectType
+from .project import ProjectStatus, ProjectType, ProjectWorkflowType, ProjectWorkflowType
 from .shot import ProductionStatus, ShotStatus
 from .task import TaskPriority, TaskStatus
 
 __all__ = [
     "ProjectType",
     "ProjectStatus",
+    "ProjectWorkflowType",
     "ShotStatus",
     "AssetCategory",
     "AssetSoftware",

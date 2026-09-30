@@ -26,6 +26,7 @@ class ProjectSerializer(BaseReadSerializer[Any]):
             "description",
             "type",
             "status",
+            "workflow_type",
             "fps",
             "resolution",
             "aspect_ratio",
