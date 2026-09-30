@@ -156,6 +156,65 @@ class TestNestedOrganizationRoutes:
         assert item["organization_id"] == str(org.id)
         assert item["scope"] == "organization_custom"
 
+    def test_nested_positions_create_accepts_frontend_payload_shape(
+        self, staff_client, staff_user
+    ):
+        """Clone/create from the Positions UI posts title + organization_id."""
+        org = OrganizationFactory.create()
+        from apps.organization.tests.rbac_helpers import grant_all_known_codes
+        grant_all_known_codes(staff_user, organization=org)
+        resp = staff_client.post(
+            f"/api/organizations/{org.id}/positions/",
+            data={
+                "title": "Animator",
+                "code": "ANIM",
+                "organization_id": str(org.id),
+                "status": "Active",
+            },
+            format="json",
+            **_org_header(org),
+        )
+        assert resp.status_code == status.HTTP_201_CREATED, resp.data
+        from apps.organization.models import Position
+
+        position = Position.objects.get(id=resp.data["id"])
+        assert position.name == "Animator"
+        assert position.organization_id == org.id
+
+    def test_nested_positions_create_rejects_unknown_organization(
+        self, staff_client, staff_user
+    ):
+        org = OrganizationFactory.create()
+        from apps.organization.tests.rbac_helpers import grant_all_known_codes
+        grant_all_known_codes(staff_user, organization=org)
+        resp = staff_client.post(
+            f"/api/organizations/{org.id}/positions/",
+            data={
+                "title": "Animator",
+                "code": "ANIM",
+                "organization_id": "00000000-0000-0000-0000-000000000000",
+            },
+            format="json",
+            **_org_header(org),
+        )
+        assert resp.status_code == status.HTTP_400_BAD_REQUEST, resp.data
+
+    def test_nested_positions_available_ignores_unknown_include_param(
+        self, staff_client, staff_user
+    ):
+        """Unknown include params fall back to the org-custom catalog."""
+        org = OrganizationFactory.create()
+        from apps.organization.tests.rbac_helpers import grant_all_known_codes
+        grant_all_known_codes(staff_user, organization=org)
+        PositionFactory.create(organization=org, name="Creature Lead")
+        resp = staff_client.get(
+            f"/api/organizations/{org.id}/positions/available/?include=all_masters",
+            **_org_header(org),
+        )
+        assert resp.status_code == status.HTTP_200_OK, resp.data
+        assert [item["title"] for item in resp.data] == ["Creature Lead"]
+        assert {item["scope"] for item in resp.data} == {"organization_custom"}
+
 
 @pytest.mark.django_db
 class TestCompatStatusMapping:
