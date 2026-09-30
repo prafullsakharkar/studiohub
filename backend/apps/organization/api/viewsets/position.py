@@ -2,6 +2,9 @@
 Position API viewset.
 """
 
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from apps.core.api.pagination import StandardPagination
 from apps.organization.api.filtersets.position import (
     PositionFilterSet,
@@ -60,8 +63,22 @@ class PositionViewSet(
     permission_map = {
         "list": (PositionPermissions.VIEW,),
         "retrieve": (PositionPermissions.VIEW,),
+        "available": (PositionPermissions.VIEW,),
         "create": (PositionPermissions.CREATE,),
         "update": (PositionPermissions.UPDATE,),
         "partial_update": (PositionPermissions.UPDATE,),
         "destroy": (PositionPermissions.DELETE,),
     }
+
+    @action(detail=False, methods=["get"], url_path="available")
+    def available(self, request, *args, **kwargs):
+        """Org-scoped role catalog for the People-page role select."""
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        items = serializer.data
+        for item in items:
+            item["title"] = item.get("name")
+            organization = item.get("organization")
+            item["organization_id"] = str(organization) if organization is not None else None
+            item["scope"] = "organization_custom"
+        return Response(items)

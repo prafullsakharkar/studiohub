@@ -134,6 +134,28 @@ class TestNestedOrganizationRoutes:
         assert isinstance(nested.data, list)
         assert len(nested.data) == len(flat.data) == 1
 
+    def test_nested_positions_available_matches_frontend_role_shape(
+        self, staff_client, staff_user
+    ):
+        """Regression: People-page role select hits positions/available (was 404)."""
+        org = OrganizationFactory.create()
+        from apps.organization.tests.rbac_helpers import grant_all_known_codes
+        grant_all_known_codes(staff_user, organization=org)
+        position = PositionFactory.create(
+            organization=org, code="ANIM", name="Animator"
+        )
+        resp = staff_client.get(
+            f"/api/organizations/{org.id}/positions/available/", **_org_header(org)
+        )
+        assert resp.status_code == status.HTTP_200_OK, resp.data
+        assert isinstance(resp.data, list)
+        assert len(resp.data) == 1
+        item = resp.data[0]
+        assert item["id"] == str(position.id)
+        assert item["title"] == "Animator"
+        assert item["organization_id"] == str(org.id)
+        assert item["scope"] == "organization_custom"
+
 
 @pytest.mark.django_db
 class TestCompatStatusMapping:
