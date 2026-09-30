@@ -19,8 +19,3 @@ class ProjectStatus(models.TextChoices):
 class ProjectWorkflowType(models.TextChoices):
     STANDARD = "standard", "Standard"
     EPISODIC = "episodic", "Episodic"
-
-
-class ProjectWorkflowType(models.TextChoices):
-    STANDARD = "standard", "Standard"
-    EPISODIC = "episodic", "Episodic"
