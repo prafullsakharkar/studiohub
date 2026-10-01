@@ -34,6 +34,11 @@ class OrganizationSerializer(BaseReadSerializer[Any]):
     storage_quota_tb = serializers.SerializerMethodField()
     storage_used_tb = serializers.SerializerMethodField()
     primary_contact_email = serializers.CharField(source="email", read_only=True)
+    # Flat FK id the frontend contract reads (supervisor selector).
+    headquarters_office_id = serializers.UUIDField(read_only=True, allow_null=True)
+    primary_contact_person_id = serializers.UUIDField(
+        source="primary_supervisor_id", read_only=True, allow_null=True
+    )
 
     class Meta:
         model = Organization

@@ -55,6 +55,50 @@ class OrganizationSettings(OrganizationEntityModel):
         default=False,
     )
 
+    # Pipeline defaults read by the frontend (studio settings + project
+    # creation). Added to the model with DB-matching types/defaults after
+    # these columns were found live in production schema without a model
+    # counterpart — bare creates (tenant provisioning) 500/409d on their
+    # NOT NULL constraints.
+    allow_guest_reviewers = models.BooleanField(
+        default=False,
+    )
+
+    enable_two_factor = models.BooleanField(
+        default=False,
+    )
+
+    sso_enforced = models.BooleanField(
+        default=False,
+    )
+
+    default_fps = models.FloatField(
+        default=24.0,
+    )
+
+    default_color_space = models.CharField(
+        max_length=64,
+        default="ACEScg",
+    )
+
+    default_resolution = models.CharField(
+        max_length=64,
+        default="1920x1080",
+        blank=True,
+    )
+
+    usd_schema_version = models.CharField(
+        max_length=64,
+        default="24.08",
+        blank=True,
+    )
+
+    render_farm_region = models.CharField(
+        max_length=255,
+        default="",
+        blank=True,
+    )
+
     objects: OrganizationSettingsManager = OrganizationSettingsManager()
 
     class Meta:

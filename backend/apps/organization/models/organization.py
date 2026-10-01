@@ -5,6 +5,7 @@ Organization model.
 from __future__ import annotations
 
 from django.db import models
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.i18n.constants import (
@@ -89,11 +90,31 @@ class Organization(
         help_text=_("Display location required by the frontend contract."),
     )
 
+    headquarters_office = models.ForeignKey(
+        "organization.Office",
+        verbose_name=_("Headquarters Office"),
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="headquartered_organizations",
+        help_text=_("Office backing the headquarters location selector."),
+    )
+
     primary_contact_name = models.CharField(
         _("Primary Contact Name"),
         max_length=255,
         blank=True,
         default="",
+    )
+
+    primary_supervisor = models.ForeignKey(
+        "organization.Person",
+        verbose_name=_("Primary Supervisor"),
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="supervised_organizations",
+        help_text=_("Person backing the primary supervisor selector."),
     )
 
     country = models.CharField(
@@ -159,6 +180,25 @@ class Organization(
 
     def __str__(self) -> str:
         return self.name
+
+    def save(self, *args, **kwargs):
+        # The create API never sends a slug (serializer excludes it), and the
+        # column is unique — an ungenerated slug persists as '' and every
+        # second-ever create 409s on uq_organization_slug. Derive from the
+        # name/code with a counter fallback (same pattern as role codes).
+        if not self.slug:
+            base = slugify(self.name or self.code or "org")[:90] or "org"
+            candidate, counter = base, 2
+            while (
+                Organization.objects.filter(slug=candidate)
+                .exclude(pk=self.pk)
+                .exists()
+            ):
+                suffix = f"-{counter}"
+                candidate = f"{base[:90 - len(suffix)]}{suffix}"
+                counter += 1
+            self.slug = candidate
+        super().save(*args, **kwargs)
 
     def natural_key(self):
         """

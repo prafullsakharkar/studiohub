@@ -29,4 +29,12 @@ class OrganizationSettingsBaseSerializer(
             "fiscal_year_start",
             "allow_remote_work",
             "allow_overtime",
+            "allow_guest_reviewers",
+            "enable_two_factor",
+            "sso_enforced",
+            "default_fps",
+            "default_color_space",
+            "default_resolution",
+            "usd_schema_version",
+            "render_farm_region",
         )
