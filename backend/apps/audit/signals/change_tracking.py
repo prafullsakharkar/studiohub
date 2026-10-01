@@ -219,6 +219,10 @@ _TRACKED_MODEL_PATHS = (
     "apps.organization.models.Department",
     "apps.organization.models.Team",
     "apps.organization.models.Office",
+    "apps.organization.models.OrganizationMembership",
+    "apps.organization.models.UserRole",
+    "apps.organization.models.GroupMember",
+    "apps.organization.models.RolePermission",
 )
 
 
