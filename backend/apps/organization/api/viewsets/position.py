@@ -104,12 +104,21 @@ class PositionViewSet(
         )
         positions = list(customs)
         if request.query_params.get("include") == "all_masters":
-            positions.extend(
-                Position.objects.filter(
-                    organization__isnull=True,
-                    scope=Position.Scope.GLOBAL_MASTER,
-                )
+            # Skip masters already cloned into this org: codes are
+            # normalized (case/hyphen/underscore-insensitive).
+            custom_codes = {
+                (master.code or "").strip().lower().replace("-", "_")
+                for master in customs
+            }
+            masters_qs = Position.objects.filter(
+                organization__isnull=True,
+                scope=Position.Scope.GLOBAL_MASTER,
             )
+            for master in masters_qs:
+                norm = (master.code or "").strip().lower().replace("-", "_")
+                if norm and norm in custom_codes:
+                    continue
+                positions.append(master)
         serializer = self.get_serializer(positions, many=True)
         items = serializer.data
         for item in items:
