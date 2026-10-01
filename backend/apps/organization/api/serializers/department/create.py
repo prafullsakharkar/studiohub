@@ -11,11 +11,14 @@ class DepartmentCreateSerializer(
     class Meta:
         model = Department
 
+        # `id` is read-only (server-set) but must be returned on create so the
+        # frontend can navigate to the new department.
         exclude = (
-            "id",
             "created_at",
             "updated_at",
             "created_by",
             "updated_by",
             "deleted_at",
         )
+
+        read_only_fields = ("id", "uuid")

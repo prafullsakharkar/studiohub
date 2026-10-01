@@ -106,7 +106,21 @@ def _target_name(instance) -> str:
 
 
 def _organization(instance):
-    return getattr(instance, "organization", None)
+    # Most tracked models carry an ``organization`` FK; Organization itself
+    # is the tenant (its own row *is* the organization). Legacy Person rows
+    # (nullable organization) fall back to the active request tenant.
+    org = getattr(instance, "organization", None)
+    if org is None and type(instance).__name__ == "Organization":
+        org = instance
+    if org is None:
+        try:
+            from apps.core.middleware.request_context import get_current_request
+
+            request = get_current_request()
+            org = getattr(request, "organization", None) if request else None
+        except Exception:
+            org = None
+    return org
 
 
 def _record(change_type: str, instance, before: dict, after: dict) -> None:
@@ -196,6 +210,15 @@ _TRACKED_MODEL_PATHS = (
     "apps.production.models.Version",
     "apps.deliveries.models.DeliveryPackage",
     "apps.publishing.models.PublishItem",
+    # Organization-family entities — edit-page writes must produce the same
+    # field-diff rows as production entities (who/when/entity/old→new).
+    "apps.organization.models.Organization",
+    "apps.organization.models.Client",
+    "apps.organization.models.Vendor",
+    "apps.organization.models.Person",
+    "apps.organization.models.Department",
+    "apps.organization.models.Team",
+    "apps.organization.models.Office",
 )
 
 

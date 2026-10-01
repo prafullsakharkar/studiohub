@@ -24,6 +24,12 @@ class OrganizationUpdateSerializer(
     primary_contact_person_id = serializers.UUIDField(
         required=False, allow_null=True
     )
+    # Write alias: the edit form syncs this from the selected supervisor; it
+    # backs the organization `email` column (read contract exposes it as
+    # `primary_contact_email`).
+    primary_contact_email = serializers.EmailField(
+        required=False, allow_blank=True
+    )
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
@@ -53,13 +59,18 @@ class OrganizationUpdateSerializer(
                         {"primary_contact_person_id": "Unknown person."}
                     )
                 attrs["primary_supervisor"] = person
+        if "primary_contact_email" in attrs:
+            email = attrs.pop("primary_contact_email")
+            attrs["email"] = email
         return attrs
     def to_representation(self, instance):
-        # The writable alias above has no model attname behind it, so the
-        # default renderer would drop it — surface the FK value explicitly.
+        # The writable aliases above have no model attname behind them (or are
+        # write-only), so the default renderer would drop them — surface the
+        # FK values explicitly.
         data = super().to_representation(instance)
         sup_id = getattr(instance, "primary_supervisor_id", None)
         data["primary_contact_person_id"] = str(sup_id) if sup_id else None
+        data["primary_contact_email"] = getattr(instance, "email", "") or ""
         return data
 
 

@@ -38,6 +38,44 @@ class Person(LifecycleModel, NamedEntityModel):
         db_index=True,
     )
 
+    # Org-structure memberships edited from the person edit form.
+    department = models.ForeignKey(
+        "organization.Department",
+        on_delete=models.SET_NULL,
+        related_name="persons",
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+
+    team = models.ForeignKey(
+        "organization.Team",
+        on_delete=models.SET_NULL,
+        related_name="persons",
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+
+    office = models.ForeignKey(
+        "organization.Office",
+        on_delete=models.SET_NULL,
+        related_name="persons",
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+
+    seniority = models.CharField(max_length=32, blank=True, default="")
+
+    skills = models.JSONField(default=list, blank=True)
+
+    timezone = models.CharField(max_length=100, blank=True, default="")
+
+    security_clearance = models.CharField(max_length=64, blank=True, default="")
+
+    availability_status = models.CharField(max_length=32, blank=True, default="")
+
     email = models.EmailField(
         _("Email"),
         blank=True,

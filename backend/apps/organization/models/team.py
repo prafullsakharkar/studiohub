@@ -17,12 +17,18 @@ class Team(OrganizationEntityModel):
     )
 
     lead = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        "organization.Person",
         null=True,
         blank=True,
         related_name="organization_led_teams",
         on_delete=models.SET_NULL,
     )
+
+    focus_discipline = models.CharField(max_length=64, blank=True, default="")
+
+    current_project_code = models.CharField(max_length=16, blank=True, default="")
+
+    utilization_percentage = models.FloatField(default=0)
 
     color = models.CharField(
         max_length=20,

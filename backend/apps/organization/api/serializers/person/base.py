@@ -25,6 +25,7 @@ class PersonSerializer(BaseReadSerializer[Any]):
     office_id = serializers.SerializerMethodField()
     office_name = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
+    role_id = serializers.UUIDField(read_only=True, allow_null=True)
     skills = serializers.SerializerMethodField()
     seniority = serializers.SerializerMethodField()
     availability_status = serializers.SerializerMethodField()
@@ -55,6 +56,7 @@ class PersonSerializer(BaseReadSerializer[Any]):
             "office_id",
             "office_name",
             "role",
+            "role_id",
             "skills",
             "seniority",
             "availability_status",
@@ -73,27 +75,30 @@ class PersonSerializer(BaseReadSerializer[Any]):
 
     @extend_schema_field(serializers.UUIDField(allow_null=True))
     def get_department_id(self, obj):
-        return None
+        return obj.department_id
 
     @extend_schema_field(serializers.CharField())
     def get_department_name(self, obj):
-        return ""
+        dept = getattr(obj, "department", None)
+        return dept.name if dept else ""
 
     @extend_schema_field(serializers.UUIDField(allow_null=True))
     def get_team_id(self, obj):
-        return None
+        return obj.team_id
 
     @extend_schema_field(serializers.CharField())
     def get_team_name(self, obj):
-        return ""
+        team = getattr(obj, "team", None)
+        return team.name if team else ""
 
     @extend_schema_field(serializers.UUIDField(allow_null=True))
     def get_office_id(self, obj):
-        return None
+        return obj.office_id
 
     @extend_schema_field(serializers.CharField())
     def get_office_name(self, obj):
-        return ""
+        office = getattr(obj, "office", None)
+        return office.name if office else ""
 
     @extend_schema_field(serializers.CharField(allow_blank=True))
     def get_role(self, obj):
@@ -102,20 +107,20 @@ class PersonSerializer(BaseReadSerializer[Any]):
 
     @extend_schema_field(serializers.ListField(child=serializers.CharField()))
     def get_skills(self, obj):
-        return []
+        return obj.skills or []
 
     @extend_schema_field(serializers.CharField())
     def get_seniority(self, obj):
-        return "Mid"
+        return obj.seniority or ""
 
     @extend_schema_field(serializers.CharField())
     def get_availability_status(self, obj):
-        return "Available"
+        return obj.availability_status or ""
 
     @extend_schema_field(serializers.CharField())
     def get_security_clearance(self, obj):
-        return ""
+        return obj.security_clearance or ""
 
     @extend_schema_field(serializers.CharField())
     def get_timezone(self, obj):
-        return "UTC"
+        return obj.timezone or ""

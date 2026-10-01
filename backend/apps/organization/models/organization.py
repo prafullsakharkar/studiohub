@@ -107,6 +107,25 @@ class Organization(
         default="",
     )
 
+    # External asset URLs edited from the branding tab of the edit form.
+    # (The columns existed without a model counterpart and were dropped in
+    # 0024; the form legitimately owns them — they return here, modeled.)
+    logo_url = models.URLField(
+        _("Logo URL"),
+        max_length=500,
+        blank=True,
+        default="",
+        help_text=_("External logo URL (fallback for the uploaded logo)."),
+    )
+
+    banner_url = models.URLField(
+        _("Banner URL"),
+        max_length=500,
+        blank=True,
+        default="",
+        help_text=_("External banner image URL shown on the workspace."),
+    )
+
     primary_supervisor = models.ForeignKey(
         "organization.Person",
         verbose_name=_("Primary Supervisor"),

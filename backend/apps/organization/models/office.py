@@ -50,12 +50,22 @@ class Office(OrganizationEntityModel):
     )
 
     manager = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        "organization.Person",
         null=True,
         blank=True,
         related_name="managed_offices",
         on_delete=models.SET_NULL,
     )
+
+    working_hours = models.CharField(max_length=32, blank=True, default="")
+
+    headcount = models.PositiveIntegerField(default=0)
+
+    workstations_count = models.PositiveIntegerField(default=0)
+
+    render_nodes_count = models.PositiveIntegerField(default=0)
+
+    is_active = models.BooleanField(default=True)
 
     is_headquarters = models.BooleanField(
         default=False,

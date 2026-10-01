@@ -134,8 +134,11 @@ class TestNamespacedFilteringRegression:
         ChangeLogFactory.create(
             organization=org, change_type="update", target_type="Shot", target_id="s-2"
         )
+        # Scope by target_type too: the created Organization itself now logs a
+        # create row (org entities joined the tracked set).
         resp = staff_client.get(
-            "/api/v1/audit/change-logs/?change_type=create", **_org_header(org)
+            "/api/v1/audit/change-logs/?change_type=create&target_type=Shot",
+            **_org_header(org),
         )
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert resp.data["count"] == 1

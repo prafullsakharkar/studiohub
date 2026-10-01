@@ -49,6 +49,9 @@ class OrganizationSerializer(BaseReadSerializer[Any]):
         return getattr(billing, "tier", "") or ""
 
     def get_logo_url(self, obj) -> str:
+        # Prefer the explicitly-managed URL (edit form) over the upload.
+        if getattr(obj, "logo_url", ""):
+            return obj.logo_url
         logo = getattr(obj, "logo", None)
         if not logo:
             return ""

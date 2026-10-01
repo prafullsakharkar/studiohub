@@ -95,6 +95,11 @@ class ClientViewSet(
             raise ValidationError({"organization": "An active organization is required."})
         serializer.save(organization=org)
 
+    def perform_update(self, serializer):
+        # Consistent with perform_create: Client defines no service_class —
+        # persist through the serializer instead of raising from the mixin.
+        serializer.save()
+
     def perform_destroy(self, instance):
         # This legacy viewset defines no service_class, so the service
         # mixin cannot soft-delete — invoke the model helper directly.

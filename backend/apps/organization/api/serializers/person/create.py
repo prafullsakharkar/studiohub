@@ -5,7 +5,7 @@ from django.db import models
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseWriteSerializer
-from apps.organization.models import Person, Position
+from apps.organization.models import Department, Office, Person, Position, Team
 
 
 def resolve_person_role(role_ref, organization):
@@ -40,6 +40,11 @@ class PersonCreateSerializer(BaseWriteSerializer[Any]):
         source="role",
     )
 
+    # Flat relation ids accepted by the person forms; resolved in validate.
+    department_id = serializers.UUIDField(required=False, allow_null=True)
+    team_id = serializers.UUIDField(required=False, allow_null=True)
+    office_id = serializers.UUIDField(required=False, allow_null=True)
+
     def to_internal_value(self, data):
         # Frontend contract posts `full_name`; the model uses `name`.
         if isinstance(data, dict):
@@ -58,8 +63,58 @@ class PersonCreateSerializer(BaseWriteSerializer[Any]):
             attrs["role"] = resolve_person_role(role_ref, organization)
         elif role_ref is None and "role" in attrs and attrs["role"] is None:
             attrs.pop("role")
+
+        region = attrs.get("organization")
+        if region is None:
+            request = self.context.get("request")
+            region = getattr(request, "organization", None)
+        for key, model, relation in (
+            ("department_id", Department, "department"),
+            ("team_id", Team, "team"),
+            ("office_id", Office, "office"),
+        ):
+            if key not in attrs:
+                continue
+            ref = attrs.pop(key)
+            if ref is None:
+                continue
+            qs = model.objects.filter(id=ref, is_deleted=False)
+            if region is not None:
+                if model.__name__ == "Person":
+                    # Person.organization is nullable for legacy rows (model
+                    # contract): accept org members and unscoped legacy rows.
+                    qs = qs.filter(
+                        models.Q(organization_id=region.id)
+                        | models.Q(organization__isnull=True)
+                    )
+                else:
+                    qs = qs.filter(organization_id=region.id)
+            target = qs.first()
+            if target is None:
+                raise serializers.ValidationError({key: "Unknown record."})
+            attrs[relation] = target
         return attrs
 
     class Meta:
         model = Person
-        fields = ("name", "email", "phone", "date_of_birth", "nationality", "description", "organization", "role_id")
+        fields = (
+            "id",
+            "uuid",
+            "name",
+            "email",
+            "phone",
+            "date_of_birth",
+            "nationality",
+            "description",
+            "organization",
+            "role_id",
+            "department_id",
+            "team_id",
+            "office_id",
+            "seniority",
+            "skills",
+            "timezone",
+            "security_clearance",
+            "availability_status",
+        )
+        read_only_fields = ("id", "uuid")

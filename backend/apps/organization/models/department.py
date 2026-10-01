@@ -25,12 +25,20 @@ class Department(OrganizationEntityModel):
     )
 
     manager = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        "organization.Person",
         null=True,
         blank=True,
         related_name="managed_departments",
         on_delete=models.SET_NULL,
     )
+
+    color = models.CharField(max_length=20, blank=True, default="")
+
+    software_stack = models.JSONField(default=list, blank=True)
+
+    capacity_hours_weekly = models.PositiveIntegerField(default=160)
+
+    utilization_percentage = models.FloatField(default=0)
 
     objects: DepartmentManager = DepartmentManager()
 
