@@ -15,12 +15,17 @@ from apps.organization.api.viewsets.base import OrganizationEntityViewSet
 from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
 from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import RolePermissions
+from apps.organization.models.role import Role, RolePriority
+from apps.organization.services.clone_master import normalize_code
 from apps.organization.models.role import Role
 from apps.organization.selectors.role import RoleSelector
 from apps.organization.services.role import RoleService
+from apps.organization.api.viewsets.clone_master import CloneMasterMixin
+from apps.masterdata.models.platform import PlatformRole
 
 
 class RoleViewSet(
+    CloneMasterMixin,
     OrganizationContextMixin,
     IdOrCodeDetailMixin,
     OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
@@ -35,6 +40,24 @@ class RoleViewSet(
     service_class = RoleService
 
     filterset_class = RoleFilterSet
+
+    clone_source_model = PlatformRole
+    clone_target_model = Role
+    clone_label = "Master Roles"
+
+    @staticmethod
+    def clone_build_kwargs(master):
+        raw = master.code or master.name or "role"
+        code = normalize_code(raw, master.name or master.code).lower().replace("_", "-")
+        return {
+            "name": master.name or master.code,
+            "code": code,
+            "description": master.description or "",
+            "scope": "organization",
+            "priority": RolePriority.MEMBER,
+            "is_system": False,
+            "is_active": True,
+        }
 
     serializer_map = {
         "list": RoleListSerializer,
@@ -53,6 +76,8 @@ class RoleViewSet(
         "update": (RolePermissions.UPDATE,),
         "partial_update": (RolePermissions.UPDATE,),
         "destroy": (RolePermissions.DELETE,),
+        "clone_master": (RolePermissions.CREATE,),
+
         "clone": (RolePermissions.CREATE,),
         "add_permissions": (RolePermissions.GRANT_PERMISSION,),
         "remove_permissions": (RolePermissions.REVOKE_PERMISSION,),

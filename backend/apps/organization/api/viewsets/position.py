@@ -32,9 +32,13 @@ from apps.organization.selectors.position import (
 from apps.organization.services.position import (
     PositionService,
 )
+from apps.organization.api.viewsets.clone_master import CloneMasterMixin
+from apps.organization.services.clone_master import normalize_code
+from apps.masterdata.models.platform import PlatformPosition
 
 
 class PositionViewSet(
+    CloneMasterMixin,
     OrganizationContextMixin,
     IdOrCodeDetailMixin,
     OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
@@ -49,6 +53,21 @@ class PositionViewSet(
     service_class = PositionService
 
     filterset_class = PositionFilterSet
+
+    clone_source_model = PlatformPosition
+    clone_target_model = Position
+    clone_label = "Master Positions"
+
+    @staticmethod
+    def clone_build_kwargs(master):
+        return {
+            "name": master.title or master.code,
+            "code": normalize_code(master.code, master.title),
+            "description": getattr(master, "description", "") or "",
+            "scope": Position.Scope.ORGANIZATION_CUSTOM,
+            "is_managerial": False,
+            "level": 1,
+        }
 
     serializer_map = {
         "list": PositionListSerializer,
@@ -68,6 +87,7 @@ class PositionViewSet(
         "update": (PositionPermissions.UPDATE,),
         "partial_update": (PositionPermissions.UPDATE,),
         "destroy": (PositionPermissions.DELETE,),
+        "clone_master": (PositionPermissions.CREATE,),
     }
 
     @action(detail=False, methods=["get"], url_path="available")

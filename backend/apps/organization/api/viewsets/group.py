@@ -17,9 +17,14 @@ from apps.organization.constants.permissions import GroupPermissions
 from apps.organization.models.group import Group
 from apps.organization.selectors.group import GroupSelector
 from apps.organization.services.group import GroupService
+from apps.organization.api.viewsets.clone_master import CloneMasterMixin
+from apps.organization.services.clone_master import normalize_code
+from apps.masterdata.models.platform import PlatformGroup
+from apps.organization.models import Group
 
 
 class GroupViewSet(
+    CloneMasterMixin,
     OrganizationContextMixin,
     IdOrCodeDetailMixin,
     OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
@@ -37,6 +42,19 @@ class GroupViewSet(
 
     pagination_class = StandardPagination
 
+    clone_source_model = PlatformGroup
+    clone_target_model = Group
+    clone_label = "Master Groups"
+
+    @staticmethod
+    def clone_build_kwargs(master):
+        return {
+            "name": master.name or master.code,
+            "code": normalize_code(master.code, master.name),
+            "description": master.description or "",
+            "is_system": False,
+        }
+
     serializer_map = {
         "list": GroupListSerializer,
         "retrieve": GroupDetailSerializer,
@@ -52,4 +70,5 @@ class GroupViewSet(
         "update": (GroupPermissions.UPDATE,),
         "partial_update": (GroupPermissions.UPDATE,),
         "destroy": (GroupPermissions.DELETE,),
+        "clone_master": (GroupPermissions.CREATE,),
     }
