@@ -8,7 +8,11 @@ import pytest
 from rest_framework.test import APIClient
 
 from apps.identity.tests.factories import UserFactory
-from apps.masterdata.models import MasterFileType, MasterTaskType
+from apps.masterdata.models import (
+    MasterFileType,
+    MasterTaskType,
+    OrganizationTaskTypeConfig,
+)
 from apps.organization.tests.factories import OrganizationFactory
 from apps.organization.tests.rbac_helpers import grant_permissions
 
@@ -95,6 +99,43 @@ def test_bulk_enable_file_types(api_client, organization, org_admin):
     res = api_client.post(
         f"/api/v1/organizations/{organization.id}/master-data/file-types/bulk-enable",
         {"ids": [str(f1.id)]},
+        format="json",
+    )
+    assert res.status_code == 200, res.content
+    assert res.data["enabled_count"] == 1
+
+
+@pytest.mark.django_db
+def test_bulk_enable_reenables_disabled_config(api_client, organization, org_admin):
+    t1 = MasterTaskType.objects.create(name="Comp", code="COMP")
+    cfg = OrganizationTaskTypeConfig.objects.create(
+        organization=organization,
+        task_type=t1,
+        enabled=False,
+        name_override="Custom Name",
+        color_override=None,
+    )
+    api_client.force_authenticate(org_admin)
+    res = api_client.post(
+        f"/api/v1/organizations/{organization.id}/master-data/task-types/bulk-enable",
+        {"ids": [str(t1.id)]},
+        format="json",
+    )
+    assert res.status_code == 200, res.content
+    assert res.data["enabled_count"] == 1
+    cfg.refresh_from_db()
+    assert cfg.enabled is True
+    assert cfg.name_override == "Custom Name"
+    assert cfg.color_override is None
+
+
+@pytest.mark.django_db
+def test_bulk_enable_accepts_uppercase_uuid(api_client, organization, org_admin):
+    t1 = MasterTaskType.objects.create(name="Edit", code="EDIT")
+    api_client.force_authenticate(org_admin)
+    res = api_client.post(
+        f"/api/v1/organizations/{organization.id}/master-data/task-types/bulk-enable",
+        {"ids": [str(t1.id).upper()]},
         format="json",
     )
     assert res.status_code == 200, res.content

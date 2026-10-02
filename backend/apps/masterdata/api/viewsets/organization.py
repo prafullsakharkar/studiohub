@@ -256,18 +256,22 @@ class OrganizationMasterDataViewSet(BaseViewSet):
             if raw_ids
             else []
         )
-        valid_set = {str(v) for v in valid}
+        valid_set = set(valid)
         enabled, existing = [], []
         with transaction.atomic():
-            for raw in raw_ids:
-                if raw not in valid_set:
+            for raw, parsed_id in zip(raw_ids, parsed):
+                if parsed_id not in valid_set:
                     continue
-                _obj, created = config_model.objects.get_or_create(
+                obj, created = config_model.objects.get_or_create(
                     organization=organization,
-                    **{fk_field: raw},
+                    **{fk_field: parsed_id},
                     defaults={"enabled": True},
                 )
                 if created:
+                    enabled.append(raw)
+                elif not obj.enabled:
+                    obj.enabled = True
+                    obj.save(update_fields=["enabled"])
                     enabled.append(raw)
                 else:
                     existing.append(raw)
