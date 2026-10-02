@@ -33,6 +33,7 @@ from apps.masterdata.api.serializers.catalog import (
 )
 from apps.masterdata.api.serializers.config import (
     OrganizationAssetTypeConfigSerializer,
+    OrganizationFileTypeConfigSerializer,
     OrganizationReviewTypeConfigSerializer,
     OrganizationShotTypeConfigSerializer,
     OrganizationSoftwareConfigSerializer,
@@ -42,11 +43,13 @@ from apps.masterdata.api.serializers.config import (
 from apps.masterdata.models import (
     MasterAssetType,
     MasterDataScope,
+    MasterFileType,
     MasterReviewType,
     MasterShotType,
     MasterStatus,
     MasterTaskType,
     OrganizationAssetTypeConfig,
+    OrganizationFileTypeConfig,
     OrganizationReviewTypeConfig,
     OrganizationShotTypeConfig,
     OrganizationSoftwareConfig,
@@ -86,6 +89,7 @@ class OrganizationMasterDataViewSet(BaseViewSet):
         "asset-types": (OrganizationAssetTypeConfig, OrganizationAssetTypeConfigSerializer, "asset_type_id", MasterAssetType),
         "shot-types": (OrganizationShotTypeConfig, OrganizationShotTypeConfigSerializer, "shot_type_id", MasterShotType),
         "review-types": (OrganizationReviewTypeConfig, OrganizationReviewTypeConfigSerializer, "review_type_id", MasterReviewType),
+        "file-types": (OrganizationFileTypeConfig, OrganizationFileTypeConfigSerializer, "file_type_id", MasterFileType),
     }
 
     CREATE_MAP = {
@@ -218,3 +222,65 @@ class OrganizationMasterDataViewSet(BaseViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(scope=MasterDataScope.ORGANIZATION, organization=organization)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=["post"])
+    def bulk_enable(self, request, organization_id=None, data_type=None):
+        import uuid as _uuid
+
+        from django.db import transaction
+
+        assert data_type is not None
+        organization = self._get_organization(organization_id)
+        self._require_organization_access(organization)
+        self._require_permission(
+            request.user,
+            organization,
+            self.CONFIG_PERMISSION,
+            "Permission denied: cannot configure organization master data.",
+        )
+
+        entry = self.CONFIG_MAP.get(data_type)
+        if entry is None:
+            raise NotFound({"detail": "Unknown master data type."})
+        config_model, _serializer_class, fk_field, parent_model = entry
+
+        raw_ids = (request.data or {}).get("ids", [])
+        if not isinstance(raw_ids, list) or not all(isinstance(v, str) for v in raw_ids):
+            return Response({"detail": "ids must be a list of UUID strings."}, status=400)
+        try:
+            parsed = [_uuid.UUID(v) for v in raw_ids]
+        except (ValueError, AttributeError):
+            return Response({"detail": "ids must be a list of UUID strings."}, status=400)
+        valid = (
+            parent_model.objects.filter(id__in=parsed).values_list("id", flat=True)
+            if raw_ids
+            else []
+        )
+        valid_set = {str(v) for v in valid}
+        enabled, existing = [], []
+        with transaction.atomic():
+            for raw in raw_ids:
+                if raw not in valid_set:
+                    continue
+                _obj, created = config_model.objects.get_or_create(
+                    organization=organization,
+                    **{fk_field: raw},
+                    defaults={"enabled": True},
+                )
+                if created:
+                    enabled.append(raw)
+                else:
+                    existing.append(raw)
+        return Response(
+            {
+                "enabled_count": len(enabled),
+                "existing_count": len(existing),
+                "enabled": enabled,
+                "existing": existing,
+                "message": (
+                    "Master records enabled successfully."
+                    if enabled
+                    else "All selected records are already enabled for this organization."
+                ),
+            }
+        )

@@ -179,6 +179,11 @@ urlpatterns = [
         name="organization-master-data-config",
     ),
     path(
+        "organizations/<uuid:organization_id>/master-data/<str:data_type>/bulk-enable",
+        OrganizationMasterDataViewSet.as_view({"post": "bulk_enable"}),
+        name="organization-master-data-bulk-enable",
+    ),
+    path(
         "organizations/<uuid:organization_id>/master-data/<str:data_type>",
         OrganizationMasterDataViewSet.as_view({"get": "list_type"}),
         name="organization-master-data-type",

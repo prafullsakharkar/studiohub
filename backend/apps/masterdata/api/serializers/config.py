@@ -8,6 +8,7 @@ from rest_framework import serializers
 
 from apps.masterdata.models import (
     OrganizationAssetTypeConfig,
+    OrganizationFileTypeConfig,
     OrganizationReviewTypeConfig,
     OrganizationShotTypeConfig,
     OrganizationSoftwareConfig,
@@ -108,6 +109,22 @@ class OrganizationShotTypeConfigSerializer(serializers.ModelSerializer[Organizat
             "updated_at",
         )
         read_only_fields = ("id", "organization_id", "shot_type_id", "updated_at")
+
+
+class OrganizationFileTypeConfigSerializer(serializers.ModelSerializer[OrganizationFileTypeConfig]):
+    file_type_id = serializers.UUIDField(source="file_type_id", read_only=True)
+
+    class Meta:
+        model = OrganizationFileTypeConfig
+        fields = (
+            "id",
+            "organization_id",
+            "file_type_id",
+            "enabled",
+            "name_override",
+            "updated_at",
+        )
+        read_only_fields = ("id", "organization_id", "file_type_id", "updated_at")
 
 
 class OrganizationReviewTypeConfigSerializer(serializers.ModelSerializer[OrganizationReviewTypeConfig]):
