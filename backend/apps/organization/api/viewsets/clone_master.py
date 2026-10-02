@@ -6,6 +6,7 @@ into the active organization via ``clone_master_records``.
 
 from __future__ import annotations
 
+import uuid as _uuid
 from typing import Any
 
 from rest_framework.decorators import action
@@ -49,9 +50,32 @@ class CloneMasterMixin:
             )
 
         source_model, target_model = self._clone_models()
+        data = request.data if isinstance(request.data, dict) else {}
+        master_ids = data.get("master_ids", None)
         masters = source_model.objects.filter(is_deleted=False)
         if hasattr(source_model, "is_active"):
             masters = masters.filter(is_active=True)
+        if master_ids is not None:
+            if not isinstance(master_ids, list) or not all(
+                isinstance(v, str) for v in master_ids
+            ):
+                return Response(
+                    {"detail": "master_ids must be a list of UUID strings."},
+                    status=400,
+                )
+            if master_ids:
+                # Non-empty list: selective clone. An empty list preserves the
+                # legacy select-all behavior (spec 2.2: absent or empty = all).
+                parsed = []
+                for raw in master_ids:
+                    try:
+                        parsed.append(_uuid.UUID(str(raw)))
+                    except ValueError:
+                        return Response(
+                            {"detail": f"Invalid master id: {raw}."},
+                            status=400,
+                        )
+                masters = masters.filter(id__in=parsed)
 
         result = clone_master_records(
             masters=masters,
