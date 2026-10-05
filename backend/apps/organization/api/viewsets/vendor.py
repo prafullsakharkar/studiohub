@@ -66,13 +66,21 @@ class VendorViewSet(
         return qs.filter(organization=org)
 
     def perform_create(self, serializer):
-        from rest_framework.exceptions import ValidationError
+        from apps.organization.middleware.organization_context import (
+            has_organization_access,
+        )
+        from rest_framework.exceptions import PermissionDenied, ValidationError
 
         org = getattr(self.request, "organization", None)
         if org is None:
             # Fail closed: never assign to an arbitrary organization (the
             # previous Organization.objects.first() fallback).
             raise ValidationError({"organization": "An active organization is required."})
+        if not has_organization_access(self.request):
+            # A resolved context alone grants nothing: creating into an
+            # organization without a valid membership is denied
+            # (superusers retain break-glass).
+            raise PermissionDenied({"detail": "Access to this organization denied."})
         serializer.save(organization=org)
 
     def perform_update(self, serializer):
@@ -88,11 +96,19 @@ class VendorViewSet(
     @action(detail=True, methods=["post"], url_path="restore")
     def restore(self, request, *args, **kwargs):
         """Recover a soft-deleted vendor."""
+        from apps.organization.middleware.organization_context import (
+            has_organization_access,
+        )
+
         lookup_value = self.kwargs.get(self.lookup_url_kwarg or self.lookup_field)
         org = getattr(request, "organization", None)
         if org is None:
             # Fail closed: restoring without an organization context could
             # expose or mutate another organization's rows.
+            raise Http404
+        if not has_organization_access(request):
+            # Same gate for a context without membership (superusers retain
+            # break-glass): deleted rows of another org stay undiscoverable.
             raise Http404
         queryset = Vendor.all_objects.filter(is_deleted=True, organization=org)
         instance = queryset.filter(id=lookup_value).first()

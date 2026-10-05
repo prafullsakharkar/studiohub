@@ -463,3 +463,221 @@ def test_masterdata_bundle_of_unpermitted_org_denied():
     )
 
     assert res.status_code in (403, 404)
+
+
+@pytest.mark.django_db
+def test_superuser_can_open_masterdata_bundle():
+    """Superuser break-glass: bundle for an org with no membership → 200."""
+    org_a, org_b, org_c, user, api = _setup_ab_member()
+    admin = UserFactory.create(is_staff=True, is_superuser=True)
+    admin_api = APIClient()
+    admin_api.force_authenticate(user=admin)
+
+    res = admin_api.get(
+        reverse(
+            "api:v1:masterdata:organization-master-data-bundle",
+            kwargs={"organization_id": str(org_c.id)},
+        )
+    )
+
+    assert res.status_code == 200
+
+
+# ----------------------------------------------------------------------
+# Task 2 round 1: write matrix (POST/PUT/PATCH/DELETE + restore).
+#
+# Member of A+B with global grants attempts writes scoped to org C.
+# Every attempt must be rejected (403/404) with no row created/mutated.
+# ----------------------------------------------------------------------
+
+def _client_payload(**overrides):
+    data = {
+        "name": "C-Intruder Client",
+        "code": "INTR-C9",
+        "contact_name": "Intruder",
+        "email": "intruder@example.com",
+        "status": "Active",
+    }
+    data.update(overrides)
+    return data
+
+
+def _vendor_payload(**overrides):
+    data = {
+        "name": "C-Intruder Vendor",
+        "code": "INTR-V9",
+        "contact_name": "Intruder",
+        "email": "intruder-v@example.com",
+        "status": "Approved Partner",
+    }
+    data.update(overrides)
+    return data
+
+
+def _write_contract_payload(**overrides):
+    data = {
+        "contract_number": "SOW-INTRUDER-01",
+        "title": "Intruder SOW",
+        "type": "SOW",
+        "effective_date": "2025-11-15",
+        "expiry_date": "2026-10-30",
+        "value_usd": 1000,
+        "status": "Active",
+        "nda_signed": True,
+        "document_url": "https://vault.example.com/intruder.pdf",
+    }
+    data.update(overrides)
+    return data
+
+
+def _write_contact_payload(**overrides):
+    data = {
+        "name": "Intruder Contact",
+        "role": "Producer",
+        "email": "intruder.contact@example.com",
+        "phone": "+15550001111",
+        "portal_access": False,
+        "is_primary": False,
+    }
+    data.update(overrides)
+    return data
+
+
+@pytest.mark.django_db
+def test_member_cannot_create_client_in_unpermitted_org():
+    """POST /api/v1/clients/ with X-Organization-Id: C → 403, no row."""
+    from apps.organization.models import Client
+
+    org_a, org_b, org_c, user, api = _setup_ab_member()
+
+    res = api.post("/api/v1/clients/", _client_payload(), format="json", **_org_header(org_c))
+
+    assert res.status_code in (403, 404)
+    assert Client.objects.filter(code="INTR-C9").count() == 0
+
+
+@pytest.mark.django_db
+def test_member_cannot_create_client_via_nested_unpermitted_org():
+    """POST nested /api/organizations/<C>/clients/ → 404, no row."""
+    from apps.organization.models import Client
+
+    org_a, org_b, org_c, user, api = _setup_ab_member()
+
+    res = api.post(
+        _nested_list_url(org_c, "clients"), _client_payload(), format="json"
+    )
+
+    assert res.status_code in (403, 404)
+    assert Client.objects.filter(code="INTR-C9").count() == 0
+
+
+@pytest.mark.django_db
+def test_member_cannot_create_vendor_in_unpermitted_org():
+    """POST /api/v1/vendors/ with X-Organization-Id: C → 403, no row."""
+    from apps.organization.models import Vendor
+
+    org_a, org_b, org_c, user, api = _setup_ab_member()
+
+    res = api.post("/api/v1/vendors/", _vendor_payload(), format="json", **_org_header(org_c))
+
+    assert res.status_code in (403, 404)
+    assert Vendor.objects.filter(code="INTR-V9").count() == 0
+
+
+@pytest.mark.django_db
+def test_member_cannot_update_client_in_unpermitted_org():
+    """PUT/PATCH /api/v1/clients/<C-id>/ → 404, row unchanged."""
+    org_a, org_b, org_c, user, api = _setup_ab_member()
+    row = ClientFactory.create(organization=org_c, name="C-Only Client P4")
+    url = f"/api/v1/clients/{row.id}/"
+
+    put_res = api.put(url, _client_payload(name="Mutated"), format="json", **_org_header(org_c))
+    patch_res = api.patch(url, {"name": "Mutated"}, format="json", **_org_header(org_c))
+
+    assert put_res.status_code in (403, 404)
+    assert patch_res.status_code in (403, 404)
+    row.refresh_from_db()
+    assert row.name == "C-Only Client P4"
+
+
+@pytest.mark.django_db
+def test_member_cannot_delete_client_in_unpermitted_org():
+    """DELETE /api/v1/clients/<C-id>/ → 404, row stays live."""
+    org_a, org_b, org_c, user, api = _setup_ab_member()
+    row = ClientFactory.create(organization=org_c, name="C-Only Client P4")
+
+    res = api.delete(f"/api/v1/clients/{row.id}/", **_org_header(org_c))
+
+    assert res.status_code in (403, 404)
+    row.refresh_from_db()
+    assert row.is_deleted is False
+
+
+@pytest.mark.django_db
+def test_member_cannot_restore_client_in_unpermitted_org():
+    """POST restore on a soft-deleted C client → 404, stays deleted."""
+    org_a, org_b, org_c, user, api = _setup_ab_member()
+    row = ClientFactory.create(organization=org_c, name="C-Deleted Client")
+    row.soft_delete(user=user)
+
+    res = api.post(f"/api/v1/clients/{row.id}/restore/", **_org_header(org_c))
+
+    assert res.status_code in (403, 404)
+    row.refresh_from_db()
+    assert row.is_deleted is True
+
+
+@pytest.mark.django_db
+def test_member_cannot_create_contract_under_unpermitted_org_client():
+    """POST contracts under a C client → 404, no row (single-create choke)."""
+    from apps.organization.models import ClientContract
+
+    org_a, org_b, org_c, user, api = _setup_ab_member()
+    parent = ClientFactory.create(organization=org_c, name="C-Only Client P4")
+    url = reverse(
+        "api:v1:organization-legacy:legacy-client-contract-list",
+        kwargs={"client_pk": str(parent.id)},
+    )
+
+    res = api.post(url, _write_contract_payload(), format="json", **_org_header(org_c))
+
+    assert res.status_code in (403, 404)
+    assert ClientContract.objects.filter(contract_number="SOW-INTRUDER-01").count() == 0
+
+
+@pytest.mark.django_db
+def test_member_cannot_create_contact_under_unpermitted_org_client():
+    """POST contacts under a C client → 404, no row (single-create choke)."""
+    from apps.organization.models import ClientContact
+
+    org_a, org_b, org_c, user, api = _setup_ab_member()
+    parent = ClientFactory.create(organization=org_c, name="C-Only Client P4")
+    url = reverse(
+        "api:v1:organization-legacy:legacy-client-contact-list",
+        kwargs={"client_pk": str(parent.id)},
+    )
+
+    res = api.post(url, _write_contact_payload(), format="json", **_org_header(org_c))
+
+    assert res.status_code in (403, 404)
+    assert ClientContact.objects.filter(email="intruder.contact@example.com").count() == 0
+
+
+@pytest.mark.django_db
+def test_member_cannot_create_vendor_contract_in_unpermitted_org():
+    """POST contracts under a C vendor → 404, no row (vendor choke)."""
+    from apps.organization.models import VendorContract
+
+    org_a, org_b, org_c, user, api = _setup_ab_member()
+    parent = VendorFactory.create(organization=org_c, name="C-Only Vendor P4")
+    url = reverse(
+        "api:v1:organization-legacy:legacy-vendor-contract-list",
+        kwargs={"vendor_pk": str(parent.id)},
+    )
+    payload = _write_contract_payload()
+    payload["total_value_usd"] = payload.pop("value_usd")
+
+    res = api.post(url, payload, format="json", **_org_header(org_c))
+
+    assert res.status_code in (403, 404)
+    assert VendorContract.objects.filter(contract_number="SOW-INTRUDER-01").count() == 0

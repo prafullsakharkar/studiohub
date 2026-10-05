@@ -115,6 +115,11 @@ class OrganizationMasterDataViewSet(BaseViewSet):
             raise NotFound({"detail": "Organization not found."}) from None
 
     def _require_organization_access(self, organization):
+        user = getattr(self.request, "user", None)
+        if user is not None and getattr(user, "is_superuser", False):
+            # Spec §1 core rule: superusers access all organizations
+            # (break-glass, no membership required).
+            return
         from apps.organization.models import OrganizationMembership
 
         has_access = OrganizationMembership.objects.filter(

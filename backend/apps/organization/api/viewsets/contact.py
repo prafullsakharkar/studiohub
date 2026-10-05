@@ -112,6 +112,16 @@ class ClientContactViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet):  
         if organization is None:
             return None
 
+        from apps.organization.middleware.organization_context import (
+            has_organization_access,
+        )
+
+        if not has_organization_access(self.request):
+            # A resolved context alone grants nothing: without a valid
+            # membership (superusers retain break-glass) the parent never
+            # resolves, so cross-org writes 404 (single + bulk creates).
+            return None
+
         return Client.objects.filter(id=client_pk, organization=organization).first()
 
     def perform_create(self, serializer):
@@ -203,6 +213,16 @@ class VendorContactViewSet(NestedBulkActionsMixin, OrganizationEntityViewSet):  
 
         organization = getattr(self.request, "organization", None)
         if organization is None:
+            return None
+
+        from apps.organization.middleware.organization_context import (
+            has_organization_access,
+        )
+
+        if not has_organization_access(self.request):
+            # A resolved context alone grants nothing: without a valid
+            # membership (superusers retain break-glass) the parent never
+            # resolves, so cross-org writes 404 (single + bulk creates).
             return None
 
         return Vendor.objects.filter(id=vendor_pk, organization=organization).first()
