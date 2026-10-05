@@ -77,7 +77,8 @@ class OrganizationViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissing
 
         The Organization model itself has no ``organization`` FK, so the
         generic ``scope_by_request`` does not apply. Users see the
-        organizations they belong to; staff see everything.
+        organizations of their valid (``is_deleted=False``) memberships;
+        only superusers see everything.
         """
         if getattr(self, "swagger_fake_view", False):
             return super().get_queryset().none()
@@ -92,7 +93,11 @@ class OrganizationViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissing
         if user.is_superuser:
             return qs.optimized_for_list()
 
-        return qs.filter(memberships__user=user).optimized_for_list()
+        return (
+            qs.filter(memberships__user=user, memberships__is_deleted=False)
+            .distinct()
+            .optimized_for_list()
+        )
 
     @action(detail=False, methods=["get"], url_path="my")
     def my(self, request, *args, **kwargs):

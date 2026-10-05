@@ -106,11 +106,13 @@ class LegacyOrganizationSingletonView(GenericAPIView):  # pyright: ignore[report
         from apps.organization.api.serializers.organization import OrganizationDetailSerializer
         from apps.organization.models import Organization
 
-        qs = Organization.objects.all()
-        # Scope to user's orgs if not staff
+        qs = Organization.objects.filter(is_deleted=False)
+        # Scope to the user's valid memberships; only superusers see everything.
         user = request.user
         if user and not (user.is_superuser):
-            qs = qs.filter(memberships__user=user)
+            qs = qs.filter(
+                memberships__user=user, memberships__is_deleted=False
+            ).distinct()
         org = qs.first()
         if not org:
             return Response({"detail": "No organization found."}, status=404)

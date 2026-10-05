@@ -21,7 +21,7 @@ from apps.organization.services.billing import OrganizationBillingService
 def _resolve_billing_organization(request):
     """
     Resolve the billing organization: explicit request context first,
-    then the first org for staff (admin context).
+    then the first org for superusers (admin break-glass context).
     """
     resolve_organization_context(request, force=True)
     organization = getattr(request, "organization", None)
@@ -55,7 +55,7 @@ class BillingView(APIView):
     def get(self, request):
         organization = _resolve_billing_organization(request)
         # A resolved header alone grants nothing: billing is sensitive, so
-        # non-staff callers need a membership in the organization.
+        # non-superuser callers need a membership in the organization.
         if organization is not None and not has_organization_access(request):
             organization = None
         if organization is None:
@@ -75,7 +75,7 @@ class BillingView(APIView):
     def patch(self, request):
         user = getattr(request, "user", None)
         if user is None or not (user.is_superuser):
-            raise PermissionDenied("Only staff can update billing.")
+            raise PermissionDenied("Only superusers can update billing.")
         billing = self._get_billing(request)
         if billing is None:
             return Response(
@@ -100,10 +100,12 @@ class OrganizationSingletonLegacyView(APIView):
         from apps.organization.api.serializers.organization import OrganizationDetailSerializer
         from apps.organization.models import Organization
 
-        qs = Organization.objects.all()
+        qs = Organization.objects.filter(is_deleted=False)
         user = request.user
         if user and not (user.is_superuser):
-            qs = qs.filter(memberships__user=user)
+            qs = qs.filter(
+                memberships__user=user, memberships__is_deleted=False
+            ).distinct()
         org = qs.first()
         if not org:
             return Response({"detail": "No organization found."}, status=404)
