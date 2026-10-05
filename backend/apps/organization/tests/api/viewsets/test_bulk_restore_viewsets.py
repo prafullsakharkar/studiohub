@@ -346,7 +346,7 @@ class TestClientContractValidation:
     def test_same_number_different_client_ok(self, staff_client, staff_user):
         first = ClientFactory.create()
         second = ClientFactory.create()
-        _use_org(staff_client, second)
+        _use_org(staff_client, second, user=staff_user)
         ClientContractFactory.create(client=first, contract_number="SOW-SHARED-01")
 
         response = staff_client.post(
@@ -425,7 +425,7 @@ class TestVendorContractBulk:
     @pytest.mark.django_db
     def test_bulk_create_vendor_contracts(self, staff_client, staff_user):
         vendor = VendorFactory.create()
-        _use_org(staff_client, vendor)
+        _use_org(staff_client, vendor, user=staff_user)
 
         response = staff_client.post(
             _vendor_contract_bulk_url(vendor, "bulk-create"),
@@ -458,7 +458,7 @@ class TestVendorContractBulk:
     @pytest.mark.django_db
     def test_bulk_archive_and_restore_vendor_contact(self, staff_client, staff_user):
         vendor = VendorFactory.create()
-        _use_org(staff_client, vendor)
+        _use_org(staff_client, vendor, user=staff_user)
         contact = VendorContactFactory.create(vendor=vendor)
         bulk_url = reverse(
             "api:v1:organization-legacy:legacy-vendor-contact-bulk-archive",
@@ -513,7 +513,7 @@ class TestClientVendorRestore:
     @pytest.mark.django_db
     def test_restore_vendor(self, staff_client, staff_user):
         vendor = VendorFactory.create()
-        _use_org(staff_client, vendor)
+        _use_org(staff_client, vendor, user=staff_user)
         detail_url = reverse(
             "api:v1:organization-legacy:legacy-vendor-detail",
             kwargs={"uuid": str(vendor.id)},
