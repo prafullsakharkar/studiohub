@@ -802,3 +802,11 @@ All 10 implementation phases complete. Acceptance checklist from the analysis:
   invitations, plain-view gates, task bulk, negatives, member management).
 - **Phase 10 — Verification:** `manage.py check` clean; full backend suite
   2000 passed / 1 skipped; ruff clean on all touched files; ADR-0032.
+---
+
+## 15. Closing notes (strict superuser monitoring)
+
+- The only break-glass identifier is `User.is_superuser`. `is_staff`, org-owner/admin labels, and role-name shortcuts are not bypasses.
+- `OrganizationMembership.is_deleted=False` (or hard-delete) is the immediate source of truth for org access; membership revocation flips detail `403/404` + drops the org from `me/organizations/` instantly.
+- Org-scoped **list** queries stay 200-empty (selector-scoped); **detail/write** accesses on foreign orgs are 404/403 by the membership/`permission_map` contract.
+- `GET /api/v1/info/version/` is public metadata (`{version, environment}`); nothing secret is exposed there.
