@@ -46,13 +46,22 @@ class ClientViewSet(
     ordering_fields = ("name", "code", "created_at")
 
     def get_queryset(self):
+        from apps.organization.middleware.organization_context import (
+            has_organization_access,
+        )
+
         qs = Client.objects.select_related("organization").all()
         # Scope by the resolved organization context (header or nested URL,
         # resolved post-authentication by OrganizationContextMixin). The raw
         # header is never trusted directly, and a missing context fails
-        # closed instead of returning unscoped rows.
+        # closed instead of returning unscoped rows. A resolved context
+        # alone grants nothing: without a valid membership (superusers
+        # retain break-glass) the queryset is empty, so a bare
+        # X-Organization-Id header can never scope another org's rows.
         org = getattr(self.request, "organization", None)
         if org is None:
+            return qs.none()
+        if not has_organization_access(self.request):
             return qs.none()
         return qs.filter(organization=org)
 

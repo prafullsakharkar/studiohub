@@ -69,8 +69,10 @@ def _membered_client(org, *, admin=False):
 
 @pytest.mark.django_db
 class TestNestedOrganizationRoutes:
-    def test_nested_clients_paginated(self, staff_client):
+    def test_nested_clients_paginated(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        from apps.organization.tests.rbac_helpers import grant_all_known_codes
+        grant_all_known_codes(staff_user, organization=org)
         ClientFactory.create(organization=org, name="Acme")
         resp = staff_client.get(
             f"/api/organizations/{org.id}/clients/", **_org_header(org)
@@ -90,8 +92,10 @@ class TestNestedOrganizationRoutes:
         assert isinstance(resp.data, list)
         assert resp.data[0]["name"] == "FX"
 
-    def test_nested_org_accepts_code(self, staff_client):
+    def test_nested_org_accepts_code(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        from apps.organization.tests.rbac_helpers import grant_all_known_codes
+        grant_all_known_codes(staff_user, organization=org)
         DepartmentFactory.create(organization=org, name="Comp")
         resp = staff_client.get(
             f"/api/organizations/{org.code}/departments/", **_org_header(org)
@@ -99,9 +103,11 @@ class TestNestedOrganizationRoutes:
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert isinstance(resp.data, list)
 
-    def test_nested_org_accepts_frontend_mock_id(self, staff_client):
+    def test_nested_org_accepts_frontend_mock_id(self, staff_client, staff_user):
         """Regression: frontend sends mock id org-apex-01 (was 404)."""
         org = OrganizationFactory.create(code="APEX", slug="apex-digital")
+        from apps.organization.tests.rbac_helpers import grant_all_known_codes
+        grant_all_known_codes(staff_user, organization=org)
         ClientFactory.create(organization=org, name="Acme")
         VendorFactory.create(organization=org, name="Vendor One")
         clients = staff_client.get(

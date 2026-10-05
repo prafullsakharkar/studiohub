@@ -13,7 +13,10 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
-from apps.organization.tests.factories import OrganizationFactory
+from apps.organization.tests.factories import (
+    OrganizationFactory,
+    OrganizationMembershipFactory,
+)
 from apps.platform.models import ProductionReport, StudioNotification
 
 
@@ -33,9 +36,10 @@ def _report_url(**kwargs):
 
 @pytest.mark.django_db
 class TestNotificationOrganizationScoping:
-    def test_list_is_scoped_to_organization_header(self, staff_client):
+    def test_list_is_scoped_to_organization_header(self, staff_client, staff_user):
         org_a = OrganizationFactory.create()
         org_b = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(user=staff_user, organization=org_a)
         StudioNotification.objects.create(
             title="A", type="info", organization=org_a
         )
@@ -50,9 +54,10 @@ class TestNotificationOrganizationScoping:
         assert "A" in titles
         assert "B" not in titles
 
-    def test_switching_organization_header_changes_results(self, staff_client):
+    def test_switching_organization_header_changes_results(self, staff_client, staff_user):
         org_a = OrganizationFactory.create()
         org_b = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(user=staff_user, organization=org_b)
         StudioNotification.objects.create(
             title="A2", type="info", organization=org_a
         )
@@ -98,9 +103,10 @@ class TestNotificationOrganizationScoping:
 
 @pytest.mark.django_db
 class TestReportOrganizationScoping:
-    def test_list_is_scoped_to_organization_header(self, staff_client):
+    def test_list_is_scoped_to_organization_header(self, staff_client, staff_user):
         org_a = OrganizationFactory.create()
         org_b = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(user=staff_user, organization=org_a)
         ProductionReport.objects.create(
             title="R A", category="Production", organization=org_a
         )

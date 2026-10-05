@@ -32,8 +32,17 @@ class StudioNotificationSelector:
         request=None,
         view=None,
     ) -> QuerySet[Any, Any]:
+        from apps.organization.middleware.organization_context import (
+            has_organization_access,
+        )
+
         organization = getattr(request, "organization", None) if request else None
         if organization is None:
+            return queryset.none()
+        if not has_organization_access(request):
+            # A resolved header alone grants nothing: without a valid
+            # membership (superusers retain break-glass) rows of another
+            # organization stay invisible (fail closed).
             return queryset.none()
         return queryset.filter(organization=organization)
 
@@ -60,7 +69,16 @@ class ProductionReportSelector:
         request=None,
         view=None,
     ) -> QuerySet[Any, Any]:
+        from apps.organization.middleware.organization_context import (
+            has_organization_access,
+        )
+
         organization = getattr(request, "organization", None) if request else None
         if organization is None:
+            return queryset.none()
+        if not has_organization_access(request):
+            # A resolved header alone grants nothing: without a valid
+            # membership (superusers retain break-glass) rows of another
+            # organization stay invisible (fail closed).
             return queryset.none()
         return queryset.filter(organization=organization)

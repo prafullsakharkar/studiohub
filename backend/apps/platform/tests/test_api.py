@@ -8,7 +8,10 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
-from apps.organization.tests.factories import OrganizationFactory
+from apps.organization.tests.factories import (
+    OrganizationFactory,
+    OrganizationMembershipFactory,
+)
 from apps.platform.models import ProductionReport, StudioNotification
 
 
@@ -70,8 +73,9 @@ def _report(org, **overrides):
 
 @pytest.mark.django_db
 class TestNotificationApiContract:
-    def test_list_returns_bare_array(self, staff_client):
+    def test_list_returns_bare_array(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(user=staff_user, organization=org)
         _notification(org, title="A")
         _notification(org, title="B")
         resp = staff_client.get(
@@ -81,8 +85,9 @@ class TestNotificationApiContract:
         assert isinstance(resp.data, list)
         assert {n["title"] for n in resp.data} == {"A", "B"}
 
-    def test_notification_contract_fields(self, staff_client):
+    def test_notification_contract_fields(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(user=staff_user, organization=org)
         _notification(org)
         resp = staff_client.get(
             _notif_url(), HTTP_X_ORGANIZATION_ID=str(org.id)
@@ -105,8 +110,9 @@ class TestNotificationApiContract:
         assert item["type"] == "success"
         assert item["read"] is False
 
-    def test_mark_read_single(self, staff_client):
+    def test_mark_read_single(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(user=staff_user, organization=org)
         notif = _notification(org)
         url = _notif_read(notif)
         resp = staff_client.patch(
@@ -118,8 +124,9 @@ class TestNotificationApiContract:
         notif.refresh_from_db()
         assert notif.read is True
 
-    def test_mark_all_read(self, staff_client):
+    def test_mark_all_read(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(user=staff_user, organization=org)
         _notification(org)
         _notification(org)
         url = _notif_read_all()
@@ -134,8 +141,9 @@ class TestNotificationApiContract:
 
 @pytest.mark.django_db
 class TestReportApiContract:
-    def test_list_returns_bare_array(self, staff_client):
+    def test_list_returns_bare_array(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(user=staff_user, organization=org)
         _report(org)
         resp = staff_client.get(
             _report_url(), HTTP_X_ORGANIZATION_ID=str(org.id)
@@ -144,8 +152,9 @@ class TestReportApiContract:
         assert isinstance(resp.data, list)
         assert resp.data[0]["title"] == "Weekly Production Report"
 
-    def test_report_contract_fields(self, staff_client):
+    def test_report_contract_fields(self, staff_client, staff_user):
         org = OrganizationFactory.create()
+        OrganizationMembershipFactory.create(user=staff_user, organization=org)
         _report(org)
         resp = staff_client.get(
             _report_url(), HTTP_X_ORGANIZATION_ID=str(org.id)
