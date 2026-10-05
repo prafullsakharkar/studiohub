@@ -9,6 +9,7 @@ under its own ``app_name``. This module aggregates them under the versioned
 from django.urls import include, path
 
 from apps.audit.api.viewsets.activity import ActivityCompatViewSet
+from apps.core.api.views.version import VersionInfoView
 from apps.identity.api.views.auth_compat import AuthMembershipsView
 
 app_name = "v1"
@@ -16,6 +17,8 @@ app_name = "v1"
 urlpatterns = [
     # Foundation
     path("core/", include("apps.core.api.urls")),
+    # Public application info surfaced in the frontend header
+    path("info/version/", VersionInfoView.as_view(), name="info-version"),
     # Frontend-compatible aliases (must precede legacy paths for routing clarity)
     path("auth/", include("apps.identity.api.urls_auth_compat")),
     path("attachments/", include("apps.core.api.urls_compat")),

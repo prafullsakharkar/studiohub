@@ -152,6 +152,27 @@ class Command(BaseCommand):
         )
         if created:
             self.stdout.write(f"  Created organization {org.code}")
+
+        # Second tenant so multi-org access, switcher visibility, and org
+        # isolation can be exercised end-to-end (used by e2e org-access +
+        # organization-isolation specs).
+        foreign_org, created = Organization.objects.get_or_create(
+            code="VANGUARD",
+            defaults={
+                "name": "Vanguard VFX Global",
+                "slug": "vanguard-vfx-global",
+                "organization_type": "studio",
+                "email": "contact@vanguard-vfx.global",
+                "country": "US",
+                "language": "en",
+                "currency": "USD",
+                "timezone": "America/Los_Angeles",
+                "description": "Secondary development organization for access-matrix E2E coverage.",
+                "status": "active",
+            },
+        )
+        if created:
+            self.stdout.write(f"  Created organization {foreign_org.code}")
         return org
 
     def _seed_departments(self, org):
@@ -400,6 +421,9 @@ class Command(BaseCommand):
             ("admin@studiohub.vfx", "platform-admin", "DEPT-PIPELINE", True, True),
             ("lead@studiohub.vfx", "lead-artist", "DEPT-COMP", False, False),
             ("artist@studiohub.vfx", "artist", "DEPT-COMP", False, False),
+            # Multi-org member for E2E access matrix (apex + vanguard; not
+            # cinematrix or any other org).
+            ("vfx.supervisor@studiohub.vfx", "vfx-supervisor", "DEPT-EDIT", False, False),
         ]
 
     def _seed_users(self, org, departments, teams, offices, roles):
@@ -477,6 +501,34 @@ class Command(BaseCommand):
                     },
                 )
             created_users.append(user)
+
+        # Multi-org seeding for E2E coverage: vfx.supervisor@studiohub.vfx is
+        # also a member of the auxiliary organization, so workspace switching
+        # rules (2+ orgs → org switcher visible, foreign-org reads denied)
+        # can be exercised deterministically. Idempotent via get_or_create.
+        from apps.organization.models import Organization
+
+        vanguard = Organization.objects.filter(code="VANGUARD", is_deleted=False).first()
+        if vanguard is not None:
+            multi_org_user = next(
+                (u for u in created_users if u.email == "vfx.supervisor@studiohub.vfx"),
+                None,
+            )
+            if multi_org_user is not None:
+                supporting_role = next(
+                    (r for r in roles.values() if r.is_active),
+                    None,
+                )
+                if supporting_role is not None:
+                    OrganizationMembership.objects.get_or_create(
+                        user=multi_org_user,
+                        organization=vanguard,
+                        defaults={
+                            "role": supporting_role,
+                            "is_primary": False,
+                            "status": "active",
+                        },
+                    )
         return created_users
 
 # ------------------------------------------------------------------
