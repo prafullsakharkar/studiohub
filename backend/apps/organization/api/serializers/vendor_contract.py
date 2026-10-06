@@ -1,7 +1,11 @@
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseReadSerializer, BaseWriteSerializer
-from apps.organization.models import VendorContract
+from apps.organization.api.serializers.client import (
+    validate_organization_ref,
+    validate_relation_ref,
+)
+from apps.organization.models import Vendor, VendorContract
 
 
 class VendorContractSerializer(BaseReadSerializer[VendorContract]):
@@ -42,11 +46,25 @@ class VendorContractCreateSerializer(BaseWriteSerializer[VendorContract]):
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
 
+    # Flat relation ids accepted by the contract forms; validated in
+    # validate(). Organization and vendor stay assigned server-side from
+    # the nested URL (see VendorContractViewSet).
+    organization_id = serializers.UUIDField(
+        required=False, allow_null=True, write_only=True
+    )
+    vendor_id = serializers.UUIDField(required=False, allow_null=True, write_only=True)
+
+    def validate(self, attrs):
+        attrs = validate_organization_ref(self, attrs)
+        return validate_relation_ref(self, attrs, "vendor_id", Vendor)
+
     class Meta:
         model = VendorContract
         fields = (
             "id",
             "uuid",
+            "organization_id",
+            "vendor_id",
             "contract_number",
             "title",
             "type",
@@ -61,9 +79,20 @@ class VendorContractCreateSerializer(BaseWriteSerializer[VendorContract]):
 
 
 class VendorContractUpdateSerializer(BaseWriteSerializer[VendorContract]):
+    organization_id = serializers.UUIDField(
+        required=False, allow_null=True, write_only=True
+    )
+    vendor_id = serializers.UUIDField(required=False, allow_null=True, write_only=True)
+
+    def validate(self, attrs):
+        attrs = validate_organization_ref(self, attrs)
+        return validate_relation_ref(self, attrs, "vendor_id", Vendor)
+
     class Meta:
         model = VendorContract
         fields = (
+            "organization_id",
+            "vendor_id",
             "contract_number",
             "title",
             "type",

@@ -226,13 +226,14 @@ class TestClientContactViewSetCRUD:
     def test_create_contact_parent_from_url_not_payload(
         self, staff_client, staff_user
     ):
-        """A payload parent/organization must be ignored — URL parent wins."""
-        parent = _org_client()
-        other_client = _org_client()
+        """Same-org payload parent/organization is ignored — URL parent wins."""
+        organization = OrganizationFactory.create()
+        parent = _org_client(organization)
+        other_client = _org_client(organization)
 
         payload = _contact_payload()
         payload["client_id"] = str(other_client.id)
-        payload["organization_id"] = str(other_client.organization_id)
+        payload["organization_id"] = str(organization.id)
 
         response = staff_client.post(
             _client_list_url(parent),
@@ -252,6 +253,28 @@ class TestClientContactViewSetCRUD:
         detail_data = detail.json()
         assert detail_data["client_id"] == str(parent.id)
         assert detail_data["organization_id"] == str(parent.organization_id)
+
+    @pytest.mark.django_db
+    def test_create_contact_rejects_other_org_payload_ids(
+        self, staff_client, staff_user
+    ):
+        """Cross-organization payload relation ids are rejected, never ignored."""
+        parent = _org_client()
+        other_client = _org_client()  # different organization
+
+        payload = _contact_payload()
+        payload["client_id"] = str(other_client.id)
+        payload["organization_id"] = str(other_client.organization_id)
+
+        response = staff_client.post(
+            _client_list_url(parent),
+            payload,
+            format="json",
+            **_staff_hdr(staff_user, parent),
+        )
+
+        assert response.status_code == 400
+        assert "organization" in str(response.json()).lower()
 
     @pytest.mark.django_db
     def test_create_contact_unknown_parent_404(self, staff_client):
