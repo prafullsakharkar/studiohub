@@ -26,6 +26,7 @@ class PersonSerializer(BaseReadSerializer[Any]):
     office_name = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
     role_id = serializers.UUIDField(read_only=True, allow_null=True)
+    user_id = serializers.UUIDField(read_only=True, allow_null=True)
     skills = serializers.SerializerMethodField()
     seniority = serializers.SerializerMethodField()
     availability_status = serializers.SerializerMethodField()
@@ -57,6 +58,7 @@ class PersonSerializer(BaseReadSerializer[Any]):
             "office_name",
             "role",
             "role_id",
+            "user_id",
             "skills",
             "seniority",
             "availability_status",

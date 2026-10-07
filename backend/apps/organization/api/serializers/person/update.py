@@ -10,7 +10,7 @@ from apps.core.api.serializers.fields import CaseInsensitiveChoiceField
 from apps.core.choices.lifecycle import LifecycleStatus
 from apps.organization.models import Department, Office, Person, Team
 
-from .create import resolve_person_role
+from .create import resolve_person_role, resolve_person_user
 
 
 class PersonUpdateSerializer(BaseWriteSerializer[Any]):
@@ -28,12 +28,17 @@ class PersonUpdateSerializer(BaseWriteSerializer[Any]):
     department_id = serializers.UUIDField(required=False, allow_null=True)
     team_id = serializers.UUIDField(required=False, allow_null=True)
     office_id = serializers.UUIDField(required=False, allow_null=True)
+    # Linked auth identity (N1); resolved in validate, fail closed.
+    user_id = serializers.UUIDField(required=False, allow_null=True, write_only=True)
     # Frontend contract sends Title Case ("Active"); DB stores lowercase.
     status = CaseInsensitiveChoiceField(
         choices=LifecycleStatus.choices, required=False
     )
 
     def validate(self, attrs):
+        if "user_id" in attrs:
+            # See create.py: ``user`` is reserved for the acting user.
+            attrs["linked_user"] = resolve_person_user(attrs.pop("user_id"))
         role_ref = attrs.get("role")
         if role_ref:
             organization = getattr(self.instance, "organization", None)
@@ -82,6 +87,7 @@ class PersonUpdateSerializer(BaseWriteSerializer[Any]):
             "description",
             "status",
             "role_id",
+            "user_id",
             "department_id",
             "team_id",
             "office_id",

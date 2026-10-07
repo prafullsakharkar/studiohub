@@ -8,6 +8,22 @@ from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.organization.models import Department, Office, Person, Position, Team
 
 
+def resolve_person_user(user_ref):
+    """Resolve a ``user_id`` against the auth user table.
+
+    Users are global identities (no org scoping on the User row itself);
+    unknown ids are rejected — fail closed. ``None`` clears the link.
+    """
+    from django.contrib.auth import get_user_model
+
+    if user_ref is None:
+        return None
+    target = get_user_model().objects.filter(id=user_ref).first()
+    if target is None:
+        raise serializers.ValidationError({"user_id": "Unknown user."})
+    return target
+
+
 def resolve_person_role(role_ref, organization):
     """Resolve a ``role_id`` against the org-scoped position catalog.
 
@@ -45,6 +61,9 @@ class PersonCreateSerializer(BaseWriteSerializer[Any]):
     team_id = serializers.UUIDField(required=False, allow_null=True)
     office_id = serializers.UUIDField(required=False, allow_null=True)
 
+    # Linked auth identity (N1); resolved in validate, fail closed.
+    user_id = serializers.UUIDField(required=False, allow_null=True, write_only=True)
+
     def to_internal_value(self, data):
         # Frontend contract posts `full_name`; the model uses `name`.
         if isinstance(data, dict):
@@ -54,6 +73,11 @@ class PersonCreateSerializer(BaseWriteSerializer[Any]):
         return super().to_internal_value(data)
 
     def validate(self, attrs):
+        if "user_id" in attrs:
+            # NOTE: mapped to ``linked_user``, not ``user`` — BusinessService
+            # reserves the ``user`` kwarg for the acting user; PersonService
+            # translates it onto the model FK (see PersonService).
+            attrs["linked_user"] = resolve_person_user(attrs.pop("user_id"))
         role_ref = attrs.get("role")
         if role_ref:
             organization = attrs.get("organization")
@@ -108,6 +132,7 @@ class PersonCreateSerializer(BaseWriteSerializer[Any]):
             "description",
             "organization",
             "role_id",
+            "user_id",
             "department_id",
             "team_id",
             "office_id",
