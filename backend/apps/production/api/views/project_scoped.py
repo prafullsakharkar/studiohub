@@ -332,6 +332,7 @@ class ProjectMembersView(ProjectScopedAPIView):
             roles=roles,
             role_ref=payload.get("role_ref"),
             scope=payload.get("scope") or "PROJECT",
+            status=payload.get("status") or "active",
         )
         data = ProjectMembershipSerializer(
             membership, context={"request": request}

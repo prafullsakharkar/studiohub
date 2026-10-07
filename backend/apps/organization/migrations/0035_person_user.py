@@ -8,11 +8,18 @@ from django.db import migrations, models
 
 
 def ensure_person_user_column(apps, schema_editor):
-    # NOTE: database_operations see pre-state, so the field definition comes
-    # from the present-tense model (stable, defined in this same change).
-    from apps.organization.models import Person as CurrentPerson  # noqa: PLC0415
-
-    field = CurrentPerson._meta.get_field("user")
+    # NOTE: database_operations see pre-state, so the field is defined inline
+    # (migrations must not import live model state). Mirrors Person.user.
+    field = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.deletion.SET_NULL,
+        related_name="person_profiles",
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="Linked auth identity (N1 consolidation).",
+    )
+    field.set_attributes_from_name("user")
     with schema_editor.connection.cursor() as cursor:
         columns = {
             column.name

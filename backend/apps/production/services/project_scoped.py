@@ -47,6 +47,7 @@ class ProjectMembershipService(BusinessService):
         roles=None,
         role_ref=None,
         scope="PROJECT",
+        status="active",
         vendor_id="",
         client_id="",
         team_id="",
@@ -69,7 +70,7 @@ class ProjectMembershipService(BusinessService):
             if role_ref is not None:
                 membership.role_ref = role_ref
             membership.scope = scope or membership.scope
-            membership.status = "Active"
+            membership.status = status or membership.status
             membership.vendor_id = vendor_id or membership.vendor_id
             membership.client_id = client_id or membership.client_id
             membership.team_id = team_id or membership.team_id
@@ -84,7 +85,7 @@ class ProjectMembershipService(BusinessService):
             membership.roles = roles or [role or "Artist"]
             membership.role_ref = role_ref
             membership.scope = scope or "PROJECT"
-            membership.status = "Active"
+            membership.status = status or "active"
             membership.vendor_id = vendor_id or ""
             membership.client_id = client_id or ""
             membership.team_id = team_id or ""
@@ -99,7 +100,7 @@ class ProjectMembershipService(BusinessService):
             roles=roles or [role or "Artist"],
             role_ref=role_ref,
             scope=scope or "PROJECT",
-            status="Active",
+            status=status or "active",
             vendor_id=vendor_id or "",
             client_id=client_id or "",
             team_id=team_id or "",

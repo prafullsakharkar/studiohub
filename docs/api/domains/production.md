@@ -102,3 +102,15 @@ All core production entities now have DB models: **Project, Sequence, Shot, Asse
 3. Preserve denormalized `*_name` display fields via serializer annotations.
 4. Bulk endpoints belong behind services inside transactions, emitting one domain event
    per affected aggregate.
+
+## Phase 1 Consolidation Contract Notes (N2/N7)
+
+- ProjectMembership `status` is canonical lowercase
+  (`active|on_leave|terminated|suspended`); writes accept legacy Title Case
+  (`"Active"` → `"active"`), reject unknown values 400, and are honored on
+  member add (re-adding preserves the passed status, default `active`).
+- ProjectMembership read shape gains `role_id` (UUID of `role_ref`, null when
+  unmatched). Member-add writes accept `role_id` scoped to global + own-org
+  roles; unknown or sibling-org ids are rejected 400. The `role` Char remains
+  as the display snapshot. `role_id` is not changeable after creation (no
+  member-update endpoint).

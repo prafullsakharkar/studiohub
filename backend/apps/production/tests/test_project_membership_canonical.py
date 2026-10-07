@@ -168,3 +168,21 @@ def test_add_member_links_valid_role_id(admin_client):
 
     assert response.status_code == 201, response.data
     assert response.data["role_id"] == str(role.id)
+
+
+@pytest.mark.django_db
+def test_add_member_honors_requested_status(admin_client):
+    org, _ = _org_with_user("PMR6")
+    project = ProjectFactory.create(organization=org)
+    target = User.objects.create_user(email="target@pmr6.io", password="x")
+    url = f"/api/organizations/{org.id}/projects/{project.id}/members/"
+
+    response = admin_client.post(
+        url,
+        {"user_id": str(target.id), "role": "Artist", "status": "Suspended"},
+        format="json",
+        HTTP_X_ORGANIZATION_ID=str(org.id),
+    )
+
+    assert response.status_code == 201, response.data
+    assert response.data["status"] == "suspended"
