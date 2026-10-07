@@ -45,6 +45,7 @@ class ProjectMembershipService(BusinessService):
         user,
         role="Artist",
         roles=None,
+        role_ref=None,
         scope="PROJECT",
         vendor_id="",
         client_id="",
@@ -65,6 +66,8 @@ class ProjectMembershipService(BusinessService):
         if membership is not None and not membership.is_deleted:
             membership.role = role or membership.role
             membership.roles = roles or membership.roles
+            if role_ref is not None:
+                membership.role_ref = role_ref
             membership.scope = scope or membership.scope
             membership.status = "Active"
             membership.vendor_id = vendor_id or membership.vendor_id
@@ -79,6 +82,7 @@ class ProjectMembershipService(BusinessService):
             membership.deleted_at = None
             membership.role = role or "Artist"
             membership.roles = roles or [role or "Artist"]
+            membership.role_ref = role_ref
             membership.scope = scope or "PROJECT"
             membership.status = "Active"
             membership.vendor_id = vendor_id or ""
@@ -93,6 +97,7 @@ class ProjectMembershipService(BusinessService):
             user=user,
             role=role or "Artist",
             roles=roles or [role or "Artist"],
+            role_ref=role_ref,
             scope=scope or "PROJECT",
             status="Active",
             vendor_id=vendor_id or "",

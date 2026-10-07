@@ -309,7 +309,9 @@ class ProjectMembersView(ProjectScopedAPIView):
         from rest_framework import status as http_status
 
         self._require_member_management(request)
-        serializer = ProjectMembershipCreateSerializer(data=request.data or {})
+        serializer = ProjectMembershipCreateSerializer(
+            data=request.data or {}, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         payload = cast(dict[str, Any], serializer.validated_data)
         user = ProjectMembershipService.resolve_user(
@@ -328,6 +330,7 @@ class ProjectMembersView(ProjectScopedAPIView):
             user=user,
             role=payload.get("role") or "Artist",
             roles=roles,
+            role_ref=payload.get("role_ref"),
             scope=payload.get("scope") or "PROJECT",
         )
         data = ProjectMembershipSerializer(

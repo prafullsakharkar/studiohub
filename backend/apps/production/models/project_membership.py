@@ -60,6 +60,18 @@ class ProjectMembership(EntityModel):
 
     role = models.CharField(max_length=100, default="Artist", db_index=True)
     roles = models.JSONField(default=list, blank=True)
+    role_ref = models.ForeignKey(
+        "organization.Role",
+        on_delete=models.SET_NULL,
+        related_name="project_memberships",
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text=(
+            "Canonical RBAC role (N7 consolidation). "
+            "`role` Char stays as display snapshot."
+        ),
+    )
     scope = models.CharField(max_length=30, default="PROJECT", db_index=True)
     status = models.CharField(
         max_length=20,

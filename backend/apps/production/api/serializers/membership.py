@@ -34,6 +34,7 @@ class ProjectMembershipSerializer(BaseReadSerializer[Any]):
     userId = serializers.SerializerMethodField()
     organizationId = serializers.SerializerMethodField()
     projectId = serializers.SerializerMethodField()
+    role_id = serializers.UUIDField(source="role_ref_id", read_only=True, allow_null=True)
     organization_id = serializers.UUIDField(read_only=True)
     project_id = serializers.UUIDField(read_only=True)
     user_id = serializers.UUIDField(read_only=True)
@@ -59,6 +60,7 @@ class ProjectMembershipSerializer(BaseReadSerializer[Any]):
             "email",
             "avatar_url",
             "role",
+            "role_id",
             "roles",
             "scope",
             "status",
@@ -112,6 +114,8 @@ class ProjectMembershipCreateSerializer(BaseWriteSerializer[Any]):
         child=serializers.CharField(), required=False, default=list
     )
     scope = serializers.CharField(required=False, allow_blank=True, default="PROJECT")
+    # Canonical RBAC role (N7); resolved org-scoped in validate, fail closed.
+    role_id = serializers.UUIDField(required=False, allow_null=True, write_only=True)
     # Frontend contract sends Title Case ("Active"); DB stores lowercase.
     status = CaseInsensitiveChoiceField(
         choices=ProjectMembership.STATUS_CHOICES, required=False, default="active"
@@ -119,4 +123,33 @@ class ProjectMembershipCreateSerializer(BaseWriteSerializer[Any]):
 
     class Meta:
         model = ProjectMembership
-        fields = ("userId", "user_id", "email", "role", "roles", "scope", "status")
+        fields = ("userId", "user_id", "email", "role", "roles", "scope", "status", "role_id")
+
+    def validate(self, attrs):
+        role_ref = attrs.pop("role_id", None)
+        if role_ref is not None:
+            attrs["role_ref"] = self._resolve_role_ref(role_ref)
+        return attrs
+
+    def _resolve_role_ref(self, role_ref):
+        """Resolve a role id against global + own-org roles.
+
+        Global roles (organization null) and the request organization's own
+        roles resolve; unknown ids and sibling-org roles are rejected —
+        fail closed. Mirrors the person ``resolve_person_role`` contract.
+        """
+        from django.db import models as django_models
+
+        from apps.organization.models import Role
+
+        request = self.context.get("request")
+        organization = getattr(request, "organization", None)
+        scoped = django_models.Q(organization__isnull=True)
+        if organization is not None:
+            scoped |= django_models.Q(organization=organization)
+        role = Role.objects.filter(id=role_ref).filter(scoped).first()
+        if role is None:
+            raise serializers.ValidationError(
+                {"role_id": "Unknown or out-of-scope role for this organization."}
+            )
+        return role
