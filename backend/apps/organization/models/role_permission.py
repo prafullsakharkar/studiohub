@@ -46,7 +46,7 @@ class RolePermission(EntityModel):
 
     class Meta:
 
-        db_table = "organization_role_permissions"
+        db_table = "organization_role_permission"
 
         ordering = [
             "role",
