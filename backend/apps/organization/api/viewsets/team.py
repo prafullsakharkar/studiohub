@@ -36,6 +36,16 @@ class TeamViewSet(
     service_class = TeamService
     filterset_class = TeamFilterSet
 
+    def perform_create(self, serializer):
+        """Defaults paid halo to the request organization — strengthens isolation and
+        satisfies the model FK behind writes that nominate only identifiers."""
+        validated = getattr(serializer, "validated_data", {}) or {}
+        if not validated.get("organization"):
+            org = getattr(self.request, "organization", None)
+            if org is not None:
+                validated["organization"] = org
+        return super().perform_create(serializer)
+
 
     # -----------------------------
     # Serializer mapping
@@ -67,7 +77,16 @@ class TeamViewSet(
         "remove_member": (TeamPermissions.UPDATE,),
     }
 
-    @action(detail=True, methods=["post"], url_path="archive")
+    def perform_create(self, serializer):
+        # Nested /flat routes omit the FK from the branded payload; resolve
+        # the request org and hand the validated data to the service.
+        validated_data = getattr(serializer, "validated_data", None) or {}
+        if not validated_data.get("organization"):
+            org = getattr(self.request, "organization", None)
+            if org is not None:
+                validated_data["organization"] = org
+        instance = TeamService.create(**validated_data)
+        return instance
     def archive(self, request, *args, **kwargs):
         instance = self.get_object()
         # Use lifecycle via service if available, else soft-delete style
