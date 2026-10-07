@@ -41,7 +41,7 @@ class TestMeProjectMemberships:
         assert pms[0]["project_id"] == str(project.id)
         assert pms[0]["show_id"] == str(show.id)
         assert pms[0]["scope"] == "SHOW"
-        assert pms[0]["status"] == "Active"
+        assert pms[0]["status"] == "active"
 
     def test_payload_empty_for_membershipless_user(self):
         user = UserFactory.create()
