@@ -10,7 +10,6 @@ The per-org drops are defensive: some databases recorded 0033 without the
 constraints existing. Introspection-guarded, portable across vendors.
 """
 
-import django.db.models.deletion
 from django.db import migrations, models
 
 
@@ -31,12 +30,14 @@ def dedupe_group_codes(apps, schema_editor):
                     .first()
                 )
             suffix = org.code if org else "GLOBAL"
-            candidate = f"{group.code}_{suffix}"
             counter = 2
-            while Group.objects.filter(code=candidate).exists():
-                candidate = f"{group.code}_{suffix}_{counter}"
+            # Compare on the truncated value: two distinct long codes can
+            # truncate to the same 100 chars.
+            candidate = f"{group.code}_{suffix}"[:100]
+            while candidate in seen or Group.objects.filter(code=candidate).exists():
+                candidate = f"{group.code}_{suffix}_{counter}"[:100]
                 counter += 1
-            group.code = candidate[:100]
+            group.code = candidate
             group.save(update_fields=["code"])
             renamed += 1
         else:

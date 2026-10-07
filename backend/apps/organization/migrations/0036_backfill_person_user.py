@@ -12,7 +12,7 @@ from django.db import migrations
 def backfill_person_users(apps, schema_editor):
     Person = apps.get_model("organization", "Person")
     User = apps.get_model("identity", "User")
-    linked, unmatched = 0, 0
+    linked, ambiguous, unmatched = 0, 0, 0
     for person in (
         Person.objects.filter(user__isnull=True).exclude(email="").only("id", "email")
     ):
@@ -23,9 +23,15 @@ def backfill_person_users(apps, schema_editor):
             person.user_id = matches[0]
             person.save(update_fields=["user"])
             linked += 1
-        else:
+        elif len(matches) == 0:
             unmatched += 1
-    print(f"person_user backfill: linked={linked} unmatched={unmatched}")
+        else:
+            # Unreachable while User.email stays unique; kept defensive.
+            ambiguous += 1
+    print(
+        "person_user backfill: "
+        f"linked={linked} ambiguous={ambiguous} unmatched={unmatched}"
+    )
 
 
 class Migration(migrations.Migration):

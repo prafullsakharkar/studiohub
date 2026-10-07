@@ -20,6 +20,9 @@ class PersonService(BusinessService):
     def create(cls, **validated_data):
         # ``user`` is reserved by BusinessService for the acting user, so the
         # serializer passes the linked identity as ``linked_user``.
+        # NOTE: the creation event fires inside super().create(), i.e. before
+        # the link attach below — event consumers observe the Person without
+        # its user. Acceptable: no consumer reads Person.user from events.
         linked_user = validated_data.pop("linked_user", _UNSET)
         instance = super().create(**validated_data)
         if linked_user is not _UNSET:
