@@ -20,6 +20,13 @@ class ProjectMembership(EntityModel):
     Membership of a user on a project (frontend contract entity).
     """
 
+    STATUS_CHOICES = (
+        ("active", "Active"),
+        ("on_leave", "On Leave"),
+        ("terminated", "Terminated"),
+        ("suspended", "Suspended"),
+    )
+
     organization = models.ForeignKey(
         "organization.Organization",
         on_delete=models.CASCADE,
@@ -54,7 +61,12 @@ class ProjectMembership(EntityModel):
     role = models.CharField(max_length=100, default="Artist", db_index=True)
     roles = models.JSONField(default=list, blank=True)
     scope = models.CharField(max_length=30, default="PROJECT", db_index=True)
-    status = models.CharField(max_length=20, default="Active", db_index=True)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="active",
+        db_index=True,
+    )
 
     department = models.CharField(max_length=100, blank=True, default="")
     department_id = models.CharField(max_length=50, blank=True, default="")
@@ -69,6 +81,11 @@ class ProjectMembership(EntityModel):
         elif self.scope == "SHOW":
             # show removed → fall back to the project container
             self.scope = "PROJECT"
+        # N2: normalize known statuses case-insensitively (frontend sends
+        # Title Case). Unknown values are left for full_clean/API to reject.
+        normalized = (self.status or "").strip().lower()
+        if normalized in dict(self.STATUS_CHOICES):
+            self.status = normalized
         super().save(*args, **kwargs)
 
     class Meta:

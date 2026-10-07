@@ -3,6 +3,7 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseReadSerializer, BaseWriteSerializer
+from apps.core.api.serializers.fields import CaseInsensitiveChoiceField
 from apps.production.models import ProjectMembership
 
 
@@ -111,7 +112,11 @@ class ProjectMembershipCreateSerializer(BaseWriteSerializer[Any]):
         child=serializers.CharField(), required=False, default=list
     )
     scope = serializers.CharField(required=False, allow_blank=True, default="PROJECT")
+    # Frontend contract sends Title Case ("Active"); DB stores lowercase.
+    status = CaseInsensitiveChoiceField(
+        choices=ProjectMembership.STATUS_CHOICES, required=False, default="active"
+    )
 
     class Meta:
         model = ProjectMembership
-        fields = ("userId", "user_id", "email", "role", "roles", "scope")
+        fields = ("userId", "user_id", "email", "role", "roles", "scope", "status")
