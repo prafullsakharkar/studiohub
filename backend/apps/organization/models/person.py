@@ -2,6 +2,7 @@
 Person model.
 """
 
+from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -18,6 +19,10 @@ class Person(LifecycleModel, NamedEntityModel):
     (fail-closed) only return rows belonging to the request organization,
     while staff/superusers remain unscoped. New rows created through the API
     default to the request organization (see PersonViewSet.perform_create).
+
+    ``user`` links the optional auth identity (N1 consolidation). Backfilled
+    once by case-insensitive email match; nullable by design and never
+    required for workforce records.
     """
 
     organization = models.ForeignKey(
@@ -27,6 +32,16 @@ class Person(LifecycleModel, NamedEntityModel):
         null=True,
         blank=True,
         db_index=True,
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="person_profiles",
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="Linked auth identity (N1 consolidation).",
     )
 
     role = models.ForeignKey(
@@ -107,6 +122,12 @@ class Person(LifecycleModel, NamedEntityModel):
         ordering = ["name"]
         indexes = [
             models.Index(fields=["organization", "name"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "organization"],
+                name="uq_person_user_organization",
+            )
         ]
 
     def __str__(self):
