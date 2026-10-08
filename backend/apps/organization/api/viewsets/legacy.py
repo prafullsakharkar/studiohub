@@ -15,9 +15,10 @@ at the top-level /api/v1/ prefix (outside /organization/).
 Contract pagination (frontend `organizationApi.ts` parity) is preserved here:
 
 - Paginated: organizations, clients, vendors, people.
-- Bare arrays: departments, teams, offices, positions, invitations,
-  work-calendars, work-hours, calendars, holidays, roles, groups,
-  permissions, api-keys, pats.
+- Bare arrays by default (opt-in pagination via ?page= / ?page_size=):
+  departments, teams, offices, positions, invitations,
+  work-calendars, work-hours, calendars, holidays.
+- Always bare arrays: roles, groups, permissions, api-keys, pats.
 
 The same bare-array subclasses serve the nested
 /api/organizations/<org>/<resource>/ tree (`urls_nested`): the shared
@@ -27,6 +28,7 @@ so no separate Nested* subclasses are needed.
 
 from __future__ import annotations
 
+from apps.core.api.pagination import StandardPagination
 from apps.organization.api.viewsets.api_key import APIKeyViewSet
 from apps.organization.api.viewsets.calendar import CalendarViewSet
 from apps.organization.api.viewsets.department import DepartmentViewSet
@@ -83,64 +85,79 @@ class LegacyOrganizationViewSet(OrganizationViewSet):  # pyright: ignore[reportM
 # Bare-array compat viewsets (flat /api/v1/ + nested /api/organizations/<org>/).
 #
 # Canonical viewsets paginate with StandardPagination; the frontend contract
-# expects bare arrays for these resources on both compat trees, so each alias
-# only disables pagination. Detail lookup (id-or-code), status-word compat,
-# permissions, and org scoping are inherited from the canonical viewsets.
+# expects bare arrays for these resources on both compat trees when no
+# paging params are present, so the entity-table aliases below use
+# OptionalPagination (envelope only on ?page= / ?page_size=). Detail lookup
+# (id-or-code), status-word compat, permissions, and org scoping are
+# inherited from the canonical viewsets.
 # ----------------------------------------------------------------------
 
 
-class LegacyDepartmentViewSet(DepartmentViewSet):  # pyright: ignore[reportMissingTypeArgument]
-    """Flat/nested departments — always bare array, id-or-code lookup."""
+class OptionalPagination(StandardPagination):
+    """Paginate only when the client asks (?page= or ?page_size= present).
 
-    pagination_class = None
+    Preserves the bare-array contract for existing callers (OrgEntitySelector
+    dropdowns, tab lists) while enabling server-driven tables.
+    """
+
+    def paginate_queryset(self, queryset, request, view=None):
+        if 'page' not in request.query_params and 'page_size' not in request.query_params:
+            return None
+        return super().paginate_queryset(queryset, request, view=view)
+
+
+class LegacyDepartmentViewSet(DepartmentViewSet):  # pyright: ignore[reportMissingTypeArgument]
+    """Flat/nested departments — bare array by default, id-or-code lookup."""
+
+    pagination_class = OptionalPagination
 
 
 class LegacyTeamViewSet(TeamViewSet):  # pyright: ignore[reportMissingTypeArgument]
-    """Flat/nested teams — always bare array, id-or-code lookup."""
+    """Flat/nested teams — bare array by default, id-or-code lookup."""
 
-    pagination_class = None
+    pagination_class = OptionalPagination
 
 
 class LegacyOfficeViewSet(OfficeViewSet):  # pyright: ignore[reportMissingTypeArgument]
-    """Flat/nested offices — always bare array, id-or-code lookup."""
+    """Flat/nested offices — bare array by default, id-or-code lookup."""
 
-    pagination_class = None
+    pagination_class = OptionalPagination
 
 
 class CompatPositionViewSet(PositionViewSet):  # pyright: ignore[reportMissingTypeArgument]
-    """Flat/nested positions — always bare array, id-or-code lookup."""
+    """Flat/nested positions — bare array by default, id-or-code lookup."""
 
-    pagination_class = None
+    pagination_class = OptionalPagination
 
 
 class CompatInvitationViewSet(InvitationViewSet):  # pyright: ignore[reportMissingTypeArgument]
-    """Flat/nested invitations — always bare array, id-or-code lookup."""
+    """Flat/nested invitations — bare array by default, id-or-code lookup."""
 
-    pagination_class = None
+    pagination_class = OptionalPagination
 
 
 class CompatWorkCalendarViewSet(WorkCalendarViewSet):  # pyright: ignore[reportMissingTypeArgument]
-    """Flat/nested work-calendars — always bare array, id-or-code lookup."""
+    """Flat/nested work-calendars — bare array by default, id-or-code lookup."""
 
-    pagination_class = None
+    pagination_class = OptionalPagination
 
 
 class CompatWorkHoursViewSet(WorkHoursViewSet):  # pyright: ignore[reportMissingTypeArgument]
-    """Flat/nested work-hours — always bare array, id-or-code lookup."""
+    """Flat/nested work-hours — bare array by default, id-or-code lookup."""
 
-    pagination_class = None
+    pagination_class = OptionalPagination
 
 
 class CompatCalendarViewSet(CalendarViewSet):  # pyright: ignore[reportMissingTypeArgument]
-    """Flat/nested calendars — always bare array, id-or-code lookup."""
+    """Flat/nested calendars — bare array by default, id-or-code lookup."""
 
-    pagination_class = None
+    pagination_class = OptionalPagination
 
 
 class CompatHolidayViewSet(HolidayViewSet):  # pyright: ignore[reportMissingTypeArgument]
-    """Flat/nested holidays — always bare array, id-or-code lookup."""
+    """Flat/nested holidays — bare array by default, id-or-code lookup."""
 
-    pagination_class = None
+    pagination_class = OptionalPagination
 
 
 class CompatRoleViewSet(RoleViewSet):  # pyright: ignore[reportMissingTypeArgument]
