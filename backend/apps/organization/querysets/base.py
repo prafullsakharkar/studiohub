@@ -25,16 +25,19 @@ class OrganizationEntityQuerySet(BaseQuerySet):
         """
         Return active records.
 
-        Only models exposing a ``status`` field are filtered; other
-        organization entities (e.g. Department, Team, Office) do not
-        define one and return the full queryset instead.
+        Models exposing a ``status`` field are filtered on it; models
+        with soft-delete support (``is_deleted``, e.g. Department, Team,
+        Office) additionally exclude soft-deleted rows.
         """
+        qs = self.all()
         if hasattr(self.model, "status"):
-            return self.filter(
+            qs = qs.filter(
                 status=RecordStatus.ACTIVE,
             )
+        if hasattr(self.model, "is_deleted"):
+            qs = qs.filter(is_deleted=False)
 
-        return self.all()
+        return qs
 
     def inactive(self):
         """
