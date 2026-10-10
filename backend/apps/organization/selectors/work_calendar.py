@@ -22,6 +22,6 @@ class WorkCalendarSelector(
         request=None,
         view=None,
     ) -> WorkCalendarQuerySet:
-        return WorkCalendar.objects.prefetch_related(
+        return WorkCalendar.objects.active().prefetch_related(
             "holidays",
         )

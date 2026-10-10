@@ -23,11 +23,6 @@ class HolidaySerializer(
             "is_recurring",
         )
 
-        read_only_fields = (
-            *OrganizationEntitySerializer.Meta.read_only_fields,
-            "work_calendar",
-            "date",
-            "holiday_type",
-            "is_paid",
-            "is_recurring",
-        )
+        # NOTE: work_calendar/date/holiday_type/is_paid/is_recurring must
+        # stay writable — the create endpoint depends on them (read-only
+        # here previously forced null work_calendar → IntegrityError/409).

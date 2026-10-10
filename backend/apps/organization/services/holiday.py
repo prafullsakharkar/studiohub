@@ -18,6 +18,31 @@ class HolidayService(BusinessService):
 
     validator_class = HolidayValidator
 
+    @classmethod
+    def before_create(
+        cls,
+        **validated_data,
+    ):
+        # A holiday must belong to a calendar; default to the org's
+        # default work calendar when the client sends none (the workspace
+        # UI does not pick one).
+        if not validated_data.get("work_calendar"):
+            org = validated_data.get("organization")
+            if org is not None:
+                from apps.organization.models import WorkCalendar
+
+                default = (
+                    WorkCalendar.objects.filter(
+                        organization=org, is_default=True, is_deleted=False
+                    ).first()
+                    or WorkCalendar.objects.filter(
+                        organization=org, is_deleted=False
+                    ).first()
+                )
+                if default is not None:
+                    validated_data["work_calendar"] = default
+        return validated_data
+
     event_map = {
         "create": HolidayCreated,
         "update": HolidayUpdated,

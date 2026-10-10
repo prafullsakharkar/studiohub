@@ -18,6 +18,6 @@ class CalendarSelector(
         request=None,
         view=None,
     ) -> CalendarQuerySet:
-        return Calendar.objects.select_related(
+        return Calendar.objects.active().select_related(
             "organization",
         )

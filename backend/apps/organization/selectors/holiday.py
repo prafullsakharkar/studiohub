@@ -18,7 +18,7 @@ class HolidaySelector(
         request=None,
         view=None,
     ) -> HolidayQuerySet:
-        return Holiday.objects.select_related(
+        return Holiday.objects.active().select_related(
             "organization",
             "work_calendar",
         )
