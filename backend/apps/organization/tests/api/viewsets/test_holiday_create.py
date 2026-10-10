@@ -42,3 +42,29 @@ def test_nested_holiday_create_defaults_work_calendar(staff_client, staff_user):
     assert data["code"] == "HOL-XMAS26"
     assert data["work_calendar"] == str(default_cal.id)
     assert Holiday.objects.filter(code="HOL-XMAS26").exists()
+
+
+@pytest.mark.django_db
+def test_nested_holiday_create_provisions_default_calendar(staff_client, staff_user):
+    from apps.organization.models import Holiday, WorkCalendar
+
+    org = OrganizationFactory.create()
+    grant_all_known_codes(staff_user, org)
+
+    response = staff_client.post(
+        f"/api/organizations/{org.id}/holidays/",
+        {
+            "organization": str(org.id),
+            "code": "HOL-PROV1",
+            "name": "Provision Test",
+            "date": "2026-12-31",
+            "holiday_type": "company",
+            "is_paid": False,
+        },
+        format="json",
+        HTTP_X_ORGANIZATION_ID=str(org.id),
+    )
+
+    assert response.status_code == 201, response.content[:500]
+    assert WorkCalendar.objects.filter(organization=org, is_default=True).exists()
+    assert Holiday.objects.filter(code="HOL-PROV1").exists()

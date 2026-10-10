@@ -25,7 +25,8 @@ class HolidayService(BusinessService):
     ):
         # A holiday must belong to a calendar; default to the org's
         # default work calendar when the client sends none (the workspace
-        # UI does not pick one).
+        # UI does not pick one). Provision the default calendar on demand
+        # when the org has none yet, so holiday create never 409s.
         if not validated_data.get("work_calendar"):
             org = validated_data.get("organization")
             if org is not None:
@@ -39,8 +40,17 @@ class HolidayService(BusinessService):
                         organization=org, is_deleted=False
                     ).first()
                 )
-                if default is not None:
-                    validated_data["work_calendar"] = default
+                if default is None:
+                    default, _ = WorkCalendar.objects.get_or_create(
+                        organization=org,
+                        code="WC-DEF",
+                        defaults={
+                            "name": "Default Work Calendar",
+                            "timezone": "UTC",
+                            "is_default": True,
+                        },
+                    )
+                validated_data["work_calendar"] = default
         return validated_data
 
     event_map = {

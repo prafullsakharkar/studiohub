@@ -17,4 +17,5 @@ class HolidayListSerializer(
             "work_calendar",
             "date",
             "holiday_type",
+            "is_paid",
         )
