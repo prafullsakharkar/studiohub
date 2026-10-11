@@ -567,3 +567,18 @@ class TestOrganizationContractFields:
         assert resp.data["headquarters"] == "London, United Kingdom"
         assert isinstance(resp.data["tier"], str)
         assert isinstance(resp.data["crew_count"], int)
+
+
+@pytest.mark.django_db
+class TestNestedPaginationLimitAlias:
+    def test_limit_param_triggers_envelope(self, staff_client, staff_user):
+        from apps.organization.tests.rbac_helpers import grant_all_known_codes
+
+        org = OrganizationFactory.create()
+        grant_all_known_codes(staff_user, organization=org)
+        DepartmentFactory.create(organization=org, name="FXL")
+        resp = staff_client.get(
+            f"/api/organizations/{org.id}/departments/?limit=1", **_org_header(org)
+        )
+        assert resp.status_code == status.HTTP_200_OK, resp.data
+        assert set(("count", "results")) <= set(resp.data.keys())

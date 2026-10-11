@@ -95,14 +95,18 @@ class LegacyOrganizationViewSet(OrganizationViewSet):  # pyright: ignore[reportM
 
 
 class OptionalPagination(StandardPagination):
-    """Paginate only when the client asks (?page= or ?page_size= present).
+    """Paginate only when the client asks (?page=, ?page_size= or ?limit= present).
 
     Preserves the bare-array contract for existing callers (OrgEntitySelector
     dropdowns, tab lists) while enabling server-driven tables.
     """
 
     def paginate_queryset(self, queryset, request, view=None):
-        if 'page' not in request.query_params and 'page_size' not in request.query_params:
+        if (
+            'page' not in request.query_params
+            and 'page_size' not in request.query_params
+            and 'limit' not in request.query_params
+        ):
             return None
         return super().paginate_queryset(queryset, request, view=view)
 

@@ -64,6 +64,24 @@ class Position(OrganizationEntityModel):
         default=False,
     )
 
+    band_level = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+    )
+
+    salary_range = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+    )
+
+    employment_type = models.CharField(
+        max_length=30,
+        blank=True,
+        default="",
+    )
+
     objects: PositionManager = PositionManager()
 
     class Meta:
