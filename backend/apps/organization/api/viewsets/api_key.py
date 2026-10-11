@@ -63,3 +63,31 @@ class APIKeyViewSet(
     frontend_status_target = "is_active"
     frontend_status_target_map = {"revoked": False, "expired": False, "active": True}
     frontend_status_output = {"is_active": {True: "Active", False: "Revoked"}}
+
+    def perform_create(self, serializer):
+        # Server-minted secrets: clients must never supply key material.
+        # The plaintext is exposed once via plain_secret on the create
+        # response and never persisted.
+        from apps.identity.api_keys.generator import APIKeyGenerator
+        from apps.identity.api_keys.hashing import APIKeyHasher
+
+        prefix, _secret, combined = APIKeyGenerator.api_key()
+        organization = getattr(self.request, "organization", None)
+        if organization is None:
+            from rest_framework.exceptions import ValidationError
+
+            raise ValidationError(
+                {"organization": "An active organization is required."}
+            )
+        instance = self.get_service().create(
+            user=self.request.user,
+            **{
+                **serializer.validated_data,
+                "organization": organization,
+                "prefix": prefix,
+                "hashed_key": APIKeyHasher.hash(combined),
+                "owner": self.request.user,
+            },
+        )
+        instance._plain_secret = combined
+        serializer.instance = instance

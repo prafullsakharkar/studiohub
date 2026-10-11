@@ -15,9 +15,12 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        # JWTAuthentication is the primary (and only) contract-facing scheme.
+        # JWTAuthentication stays first: the PAT scheme shares the Bearer
+        # keyword, so JWT must win for JWTs (DRF stops at first success).
         # Tokens are issued via JWTService using stock SimpleJWT AccessToken/RefreshToken.
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "apps.identity.authentication.personal_access_token.PersonalAccessTokenAuthentication",
+        "apps.identity.authentication.api_key.APIKeyAuthentication",
     ],
     "DEFAULT_RENDERER_CLASSES": (
         "apps.core.api.renderers.StandardJSONRenderer",

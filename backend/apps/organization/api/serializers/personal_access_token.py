@@ -42,7 +42,18 @@ class PersonalAccessTokenCreateSerializer(PersonalAccessTokenBaseSerializer):
     Serializer for creating PersonalAccessToken.
     """
 
+    # One-time plaintext reveal: populated by the viewset from the
+    # server-minted secret. Never present on list/detail responses.
+    plain_secret = serializers.SerializerMethodField()
+
+    def get_plain_secret(self, obj):
+        return getattr(obj, "_plain_secret", None)
+
     class Meta(PersonalAccessTokenBaseSerializer.Meta):
+        fields = (
+            *PersonalAccessTokenBaseSerializer.Meta.fields,
+            "plain_secret",
+        )
         read_only_fields = (
             *PersonalAccessTokenBaseSerializer.Meta.read_only_fields,
             "user",

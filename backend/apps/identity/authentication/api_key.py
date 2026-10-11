@@ -39,7 +39,7 @@ class APIKeyAuthentication(
 
         # Imported lazily to avoid a circular import between
         # apps.identity.services and apps.identity.authentication.
-        from apps.identity.services import APIKeyService
+        from apps.organization.services.api_key import APIKeyService
 
         api_key = APIKeyService.verify(
             token,

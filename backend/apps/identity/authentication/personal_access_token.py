@@ -8,25 +8,21 @@ from apps.identity.authentication.base import (
 class PersonalAccessTokenAuthentication(
     IdentityAuthentication,
 ):
-    keyword = "Bearer"
+    # Distinct from JWT's Bearer keyword on purpose: DRF re-raises the
+    # first AuthenticationFailed immediately, so two Bearer schemes would
+    # let only the first one listed ever succeed.
+    keyword = "Token"
 
     def authenticate_token(
         self,
         token,
         request,
     ):
-        from apps.organization.models import (
-            PersonalAccessToken,
+        from apps.organization.services.personal_access_token import (
+            PersonalAccessTokenService,
         )
 
-        pat = (
-            PersonalAccessToken.objects.filter(
-                hashed_token=token,
-                is_active=True,
-            )
-            .select_related("user")
-            .first()
-        )
+        pat = PersonalAccessTokenService.verify(token)
 
         if pat is None:
             return None
