@@ -24,4 +24,7 @@ class PositionBaseSerializer(
             "parent",
             "level",
             "is_managerial",
+            "band_level",
+            "salary_range",
+            "employment_type",
         )

@@ -37,3 +37,26 @@ def test_position_list_exposes_band_comp_and_headcount():
     assert data["salary_range"] == "$130,000 - $160,000"
     assert data["employment_type"] == "Full-Time Staff"
     assert data["headcount"] == 2
+
+
+@pytest.mark.django_db
+def test_position_update_persists_band_fields(staff_client, staff_user):
+    from apps.organization.models import Position
+    from apps.organization.tests.factories import OrganizationFactory, PositionFactory
+    from apps.organization.tests.rbac_helpers import grant_all_known_codes
+
+    org = OrganizationFactory.create()
+    grant_all_known_codes(staff_user, org)
+    pos = PositionFactory.create(organization=org, name="Band Test")
+
+    response = staff_client.patch(
+        f"/api/organizations/{org.id}/positions/{pos.id}/",
+        {"band_level": "L6 - Principal", "salary_range": "$1 - $2"},
+        format="json",
+        HTTP_X_ORGANIZATION_ID=str(org.id),
+    )
+
+    assert response.status_code == 200, response.content[:500]
+    pos.refresh_from_db()
+    assert pos.band_level == "L6 - Principal"
+    assert pos.salary_range == "$1 - $2"
