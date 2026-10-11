@@ -23,6 +23,7 @@ from apps.organization.api.viewsets.contact import ClientContactViewSet, VendorC
 from apps.organization.api.viewsets.contract import ClientContractViewSet, VendorContractViewSet
 from apps.organization.api.viewsets.legacy import (
     CompatAPIKeyViewSet,
+    CompatCalendarEventViewSet,
     CompatCalendarViewSet,
     CompatGroupViewSet,
     CompatHolidayViewSet,
@@ -53,6 +54,7 @@ router.register(r"invitations", CompatInvitationViewSet, basename="legacy-invita
 router.register(r"work-calendars", CompatWorkCalendarViewSet, basename="legacy-work-calendar")
 router.register(r"work-hours", CompatWorkHoursViewSet, basename="legacy-work-hours")
 router.register(r"calendars", CompatCalendarViewSet, basename="legacy-calendar")
+router.register(r"calendar-events", CompatCalendarEventViewSet, basename="legacy-calendar-event")
 router.register(r"holidays", CompatHolidayViewSet, basename="legacy-holiday")
 router.register(r"roles", CompatRoleViewSet, basename="legacy-role")
 router.register(r"groups", CompatGroupViewSet, basename="legacy-group")

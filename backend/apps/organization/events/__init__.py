@@ -6,6 +6,7 @@ from apps.organization.events.api_key import *
 from apps.organization.events.billing import *
 from apps.organization.events.branding import *
 from apps.organization.events.calendar import *
+from apps.organization.events.calendar_event import *
 from apps.organization.events.contact import *
 from apps.organization.events.contract import *
 from apps.organization.events.department import *
@@ -96,6 +97,14 @@ __all__ = [
     "GroupRoleAdded",
     "GroupRoleRemoved",
     "GroupRoleUpdated",
+    # CalendarEvent
+    "CalendarEventCreated",
+    "CalendarEventUpdated",
+    "CalendarEventArchived",
+    "CalendarEventActivated",
+    "CalendarEventDeactivated",
+    "CalendarEventRestored",
+    "CalendarEventDeleted",
     # Holiday
     "HolidayCreated",
     "HolidayUpdated",

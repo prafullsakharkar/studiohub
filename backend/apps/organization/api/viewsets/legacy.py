@@ -31,6 +31,7 @@ from __future__ import annotations
 from apps.core.api.pagination import StandardPagination
 from apps.organization.api.viewsets.api_key import APIKeyViewSet
 from apps.organization.api.viewsets.calendar import CalendarViewSet
+from apps.organization.api.viewsets.calendar_event import CalendarEventViewSet
 from apps.organization.api.viewsets.department import DepartmentViewSet
 from apps.organization.api.viewsets.group import GroupViewSet
 from apps.organization.api.viewsets.holiday import HolidayViewSet
@@ -150,6 +151,12 @@ class CompatWorkHoursViewSet(WorkHoursViewSet):  # pyright: ignore[reportMissing
 
 class CompatCalendarViewSet(CalendarViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """Flat/nested calendars — bare array by default, id-or-code lookup."""
+
+    pagination_class = OptionalPagination
+
+
+class CompatCalendarEventViewSet(CalendarEventViewSet):  # pyright: ignore[reportMissingTypeArgument]
+    """Flat/nested calendar events — bare array by default, id-or-code lookup."""
 
     pagination_class = OptionalPagination
 

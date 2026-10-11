@@ -71,6 +71,13 @@ class CalendarPermissions:
     DELETE = "calendar.delete"
 
 
+class CalendarEventPermissions:
+    VIEW = "calendar_event.view"
+    CREATE = "calendar_event.create"
+    UPDATE = "calendar_event.update"
+    DELETE = "calendar_event.delete"
+
+
 class PositionPermissions:
     VIEW = "position.view"
     CREATE = "position.create"

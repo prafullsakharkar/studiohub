@@ -24,6 +24,7 @@ from apps.audit.api.viewsets.activity import ActivityCompatViewSet
 from apps.organization.api.viewsets.client import ClientViewSet
 from apps.organization.api.viewsets.legacy import (
     CompatAPIKeyViewSet,
+    CompatCalendarEventViewSet,
     CompatCalendarViewSet,
     CompatGroupViewSet,
     CompatHolidayViewSet,
@@ -106,6 +107,11 @@ router.register(
     r"(?P<organization_id>[^/.]+)/calendars",
     CompatCalendarViewSet,
     basename="nested-calendar",
+)
+router.register(
+    r"(?P<organization_id>[^/.]+)/calendar-events",
+    CompatCalendarEventViewSet,
+    basename="nested-calendar-event",
 )
 router.register(
     r"(?P<organization_id>[^/.]+)/holidays",

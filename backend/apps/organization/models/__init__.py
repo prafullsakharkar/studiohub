@@ -2,6 +2,7 @@ from .api_key import APIKey
 from .billing import OrganizationBilling
 from .branding import Branding
 from .calendar import Calendar
+from .calendar_event import CalendarEvent
 from .client import Client
 from .client_contact import ClientContact
 from .client_contract import ClientContract
@@ -42,6 +43,7 @@ __all__ = [
     "WorkCalendar",
     "WorkHours",
     "Calendar",
+    "CalendarEvent",
     "Position",
     "Invitation",
     "OrganizationMembership",
