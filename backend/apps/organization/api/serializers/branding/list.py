@@ -14,4 +14,6 @@ class BrandingListSerializer(
             "organization",
             "theme",
             "primary_color",
+            "secondary_color",
+            "accent_color",
         )

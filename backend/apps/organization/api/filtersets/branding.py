@@ -32,7 +32,7 @@ class BrandingFilterSet(
     )
 
     organization = CharFilter(
-        field_name="organization__uuid",
+        field_name="organization__id",
     )
 
     theme = CharFilter(

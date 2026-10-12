@@ -50,8 +50,7 @@ class ClientViewSet(
             has_organization_access,
         )
 
-        qs = Client.objects.select_related("organization").all()
-        # Scope by the resolved organization context (header or nested URL,
+        qs = Client.objects.select_related("organization").filter(is_deleted=False)        # Scope by the resolved organization context (header or nested URL,
         # resolved post-authentication by OrganizationContextMixin). The raw
         # header is never trusted directly, and a missing context fails
         # closed instead of returning unscoped rows. A resolved context

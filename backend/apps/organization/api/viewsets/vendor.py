@@ -50,7 +50,7 @@ class VendorViewSet(
             has_organization_access,
         )
 
-        qs = Vendor.objects.select_related("organization").all()
+        qs = Vendor.objects.select_related("organization").filter(is_deleted=False)
         # Scope by the resolved organization context (header or nested URL,
         # resolved post-authentication by OrganizationContextMixin). The raw
         # header is never trusted directly, and a missing context fails
