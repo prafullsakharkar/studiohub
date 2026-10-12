@@ -60,3 +60,69 @@ def test_position_update_persists_band_fields(staff_client, staff_user):
     pos.refresh_from_db()
     assert pos.band_level == "L6 - Principal"
     assert pos.salary_range == "$1 - $2"
+
+
+@pytest.mark.django_db
+def test_position_list_headcount_scales_without_n_plus_one():
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
+
+    from apps.organization.api.serializers.position import PositionListSerializer
+    from apps.organization.selectors.position import PositionSelector
+    from apps.organization.tests.factories import PositionFactory
+
+    positions = [PositionFactory.create(name=f"Scale {i}") for i in range(4)]
+    queryset = PositionSelector.get_queryset().filter(
+        pk__in=[p.pk for p in positions]
+    )
+
+    with CaptureQueriesContext(connection) as ctx:
+        data = PositionListSerializer(instance=queryset, many=True).data
+
+    assert [d["headcount"] for d in data] == [0, 0, 0, 0]
+    assert len(ctx) <= 2, [q["sql"][:120] for q in ctx.captured_queries]
+
+
+@pytest.mark.django_db
+def test_position_list_headcount_ignores_soft_deleted_people():
+    from apps.organization.api.serializers.position import PositionListSerializer
+    from apps.organization.models import Person
+    from apps.organization.tests.factories import PersonFactory, PositionFactory
+
+    pos = PositionFactory.create(name="Attrition Lead")
+    PersonFactory.create(role=pos)
+    gone = PersonFactory.create(role=pos)
+    Person.objects.filter(pk=gone.pk).update(is_deleted=True)
+
+    data = PositionListSerializer(instance=pos).data
+
+    assert data["headcount"] == 1
+
+
+@pytest.mark.django_db
+def test_position_list_field_set_matches_workspace_columns():
+    # The Positions workspace table renders title/code/department_name/
+    # level/band_level/salary_range/employment_type/headcount — every one
+    # must come from the real serializer, never guessed client-side.
+    from apps.organization.api.serializers.position import PositionListSerializer
+    from apps.organization.tests.factories import PositionFactory
+
+    pos = PositionFactory.create(name="Aligned Lead")
+
+    assert set(PositionListSerializer(instance=pos).data.keys()) == {
+        "id",
+        "uuid",
+        "code",
+        "name",
+        "title",
+        "organization",
+        "scope",
+        "department",
+        "department_name",
+        "level",
+        "is_managerial",
+        "band_level",
+        "salary_range",
+        "employment_type",
+        "headcount",
+    }

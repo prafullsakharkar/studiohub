@@ -17,6 +17,11 @@ class PositionListSerializer(
     headcount = serializers.SerializerMethodField()
 
     def get_headcount(self, obj):
+        # Prefer the selector annotation (single query for the whole list);
+        # fall back to a per-object count when serializing outside it.
+        annotated = getattr(obj, "headcount_value", None)
+        if annotated is not None:
+            return annotated
         return obj.persons.filter(is_deleted=False).count()
 
     class Meta(
