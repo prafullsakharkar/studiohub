@@ -11,6 +11,7 @@ from apps.organization.api.viewsets.base import (
     OrganizationEntityViewSet,
 )
 from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.bulk_delete import BulkDeleteMixin
 from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import TeamPermissions
 from apps.organization.models.team import Team
@@ -19,6 +20,7 @@ from apps.organization.services.team import TeamService
 
 
 class TeamViewSet(
+    BulkDeleteMixin,
     OrganizationContextMixin,
     IdOrCodeDetailMixin,
     OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
@@ -70,6 +72,7 @@ class TeamViewSet(
         "update": (TeamPermissions.UPDATE,),
         "partial_update": (TeamPermissions.UPDATE,),
         "destroy": (TeamPermissions.DELETE,),
+        "bulk_delete": (TeamPermissions.DELETE,),
         "archive": (TeamPermissions.UPDATE,),
         "transfer_ownership": (TeamPermissions.UPDATE,),
         "members": (TeamPermissions.VIEW,),

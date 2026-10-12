@@ -14,6 +14,7 @@ from apps.organization.api.viewsets.base import (
     OrganizationEntityViewSet,
 )
 from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.bulk_delete import BulkDeleteMixin
 from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import DepartmentPermissions
 from apps.organization.selectors.department import DepartmentSelector
@@ -25,6 +26,7 @@ from apps.organization.models import Department
 
 
 class DepartmentViewSet(
+    BulkDeleteMixin,
     CloneMasterMixin,
     OrganizationContextMixin,
     IdOrCodeDetailMixin,
@@ -68,5 +70,6 @@ class DepartmentViewSet(
         "update": (DepartmentPermissions.UPDATE,),
         "partial_update": (DepartmentPermissions.UPDATE,),
         "destroy": (DepartmentPermissions.DELETE,),
+        "bulk_delete": (DepartmentPermissions.DELETE,),
         "clone_master": (DepartmentPermissions.CREATE,),
     }

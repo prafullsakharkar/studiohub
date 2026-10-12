@@ -13,6 +13,7 @@ from apps.organization.api.serializers.person import (
 )
 from apps.organization.api.viewsets.base import OrganizationEntityViewSet
 from apps.organization.api.viewsets.context import OrganizationContextMixin
+from apps.organization.api.viewsets.bulk_delete import BulkDeleteMixin
 from apps.organization.constants.permissions import PersonPermissions
 from apps.organization.models.person import Person
 from apps.organization.selectors.person import PersonSelector
@@ -20,6 +21,7 @@ from apps.organization.services.person import PersonService
 
 
 class PersonViewSet(
+    BulkDeleteMixin,
     OrganizationContextMixin,
     OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
@@ -55,6 +57,7 @@ class PersonViewSet(
         "update": (PersonPermissions.UPDATE,),
         "partial_update": (PersonPermissions.UPDATE,),
         "destroy": (PersonPermissions.DELETE,),
+        "bulk_delete": (PersonPermissions.DELETE,),
         "set_password": (PersonPermissions.UPDATE,),
     }
 

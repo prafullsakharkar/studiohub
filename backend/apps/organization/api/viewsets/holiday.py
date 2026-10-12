@@ -14,6 +14,7 @@ from apps.organization.api.viewsets.base import (
     OrganizationEntityViewSet,
 )
 from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.bulk_delete import BulkDeleteMixin
 from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import (
     HolidayPermissions,
@@ -24,6 +25,7 @@ from apps.organization.services.holiday import HolidayService
 
 
 class HolidayViewSet(
+    BulkDeleteMixin,
     OrganizationContextMixin,
     IdOrCodeDetailMixin,
     OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
@@ -56,4 +58,5 @@ class HolidayViewSet(
         "update": (HolidayPermissions.UPDATE,),
         "partial_update": (HolidayPermissions.UPDATE,),
         "destroy": (HolidayPermissions.DELETE,),
+        "bulk_delete": (HolidayPermissions.DELETE,),
     }

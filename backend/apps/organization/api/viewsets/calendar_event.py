@@ -14,6 +14,7 @@ from apps.organization.api.viewsets.base import (
     OrganizationEntityViewSet,
 )
 from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.bulk_delete import BulkDeleteMixin
 from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import CalendarEventPermissions
 from apps.organization.models.calendar_event import CalendarEvent
@@ -22,6 +23,7 @@ from apps.organization.services.calendar_event import CalendarEventService
 
 
 class CalendarEventViewSet(
+    BulkDeleteMixin,
     OrganizationContextMixin,
     IdOrCodeDetailMixin,
     OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
@@ -54,4 +56,5 @@ class CalendarEventViewSet(
         "update": (CalendarEventPermissions.UPDATE,),
         "partial_update": (CalendarEventPermissions.UPDATE,),
         "destroy": (CalendarEventPermissions.DELETE,),
+        "bulk_delete": (CalendarEventPermissions.DELETE,),
     }

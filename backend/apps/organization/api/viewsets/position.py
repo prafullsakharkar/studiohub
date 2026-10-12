@@ -19,6 +19,7 @@ from apps.organization.api.viewsets.base import (
     OrganizationEntityViewSet,
 )
 from apps.organization.api.viewsets.compat import IdOrCodeDetailMixin
+from apps.organization.api.viewsets.bulk_delete import BulkDeleteMixin
 from apps.organization.api.viewsets.context import OrganizationContextMixin
 from apps.organization.constants.permissions import (
     PositionPermissions,
@@ -39,6 +40,7 @@ from apps.masterdata.models.platform import PlatformPosition
 
 class PositionViewSet(
     CloneMasterMixin,
+    BulkDeleteMixin,
     OrganizationContextMixin,
     IdOrCodeDetailMixin,
     OrganizationEntityViewSet,  # pyright: ignore[reportMissingTypeArgument]
@@ -87,6 +89,7 @@ class PositionViewSet(
         "update": (PositionPermissions.UPDATE,),
         "partial_update": (PositionPermissions.UPDATE,),
         "destroy": (PositionPermissions.DELETE,),
+        "bulk_delete": (PositionPermissions.DELETE,),
         "clone_master": (PositionPermissions.CREATE,),
     }
 
