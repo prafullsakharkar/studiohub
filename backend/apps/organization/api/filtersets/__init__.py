@@ -15,6 +15,7 @@ from .office import OfficeFilterSet
 from .organization import OrganizationFilterSet
 from .organization_settings import OrganizationSettingsFilterSet
 from .permission import PermissionFilterSet
+from .person import PersonFilterSet
 from .personal_access_token import PersonalAccessTokenFilterSet
 from .position import PositionFilterSet
 from .role import RoleFilterSet
@@ -48,6 +49,7 @@ __all__ = [
     "GroupRoleFilterSet",
     "RoleFilterSet",
     "PermissionFilterSet",
+    "PersonFilterSet",
     "UserRoleFilterSet",
     "RolePermissionFilterSet",
     "ClientContactFilterSet",

@@ -4,6 +4,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from apps.core.api.pagination import StandardPagination
+from apps.organization.api.filtersets.person import PersonFilterSet
 from apps.organization.api.serializers.person import (
     PersonCreateSerializer,
     PersonDetailSerializer,
@@ -34,6 +35,8 @@ class PersonViewSet(
 
     selector_class = PersonSelector
     service_class = PersonService
+
+    filterset_class = PersonFilterSet
 
     pagination_class = StandardPagination
 
