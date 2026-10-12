@@ -13,7 +13,7 @@ class TeamSelector(OrganizationBaseSelector):
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> TeamQuerySet:
-        return cls.model.objects.select_related(
+        return cls.model.objects.active().select_related(
             "organization",
             "department",
             "lead",

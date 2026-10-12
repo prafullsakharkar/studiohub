@@ -18,7 +18,7 @@ class PositionSelector(
         request=None,
         view=None,
     ) -> PositionQuerySet:
-        return Position.objects.select_related(
+        return Position.objects.active().select_related(
             "organization",
             "department",
             "parent",

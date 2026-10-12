@@ -18,7 +18,7 @@ class OfficeSelector(OrganizationBaseSelector):
         """
         Optimized queryset for Office APIs.
         """
-        return cls.model.objects.select_related(
+        return cls.model.objects.active().select_related(
             "organization",
             "manager",
         )
