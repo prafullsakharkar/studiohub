@@ -17,7 +17,6 @@ from .factories import (
     GroupMemberFactory,
     GroupRoleFactory,
     HolidayFactory,
-    InvitationFactory,
     LoginHistoryFactory,
     OfficeFactory,
     OrganizationFactory,
@@ -179,33 +178,6 @@ def holiday(db):
 def active_holiday(db):
     """Create an active holiday."""
     return HolidayFactory.create(status="active")
-
-
-@pytest.fixture
-def invitation(db):
-    """Create an invitation."""
-    return InvitationFactory.create()
-
-
-@pytest.fixture
-def pending_invitation(db):
-    """Create a pending invitation."""
-    return InvitationFactory.create(status="pending")
-
-
-@pytest.fixture
-def accepted_invitation(db):
-    """Create an accepted invitation."""
-    return InvitationFactory.create(status="accepted")
-
-
-@pytest.fixture
-def expired_invitation(db):
-    """Create an expired invitation."""
-    return InvitationFactory.create(
-        status="pending",
-        expires_at=None,
-    )
 
 
 @pytest.fixture

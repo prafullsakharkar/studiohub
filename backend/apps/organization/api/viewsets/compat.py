@@ -65,7 +65,7 @@ class FrontendStatusCompatMixin:
     """Map frontend status words to backend values (compat aliases only).
 
     - ``frontend_status_map``: same-field value mapping applied to incoming
-      ``status`` (e.g. invitations ``revoked`` -> ``cancelled``).
+      ``status`` (e.g. legacy ``revoked`` -> ``cancelled``).
     - ``frontend_status_target`` + ``frontend_status_target_map``: map
       incoming ``status`` onto a different field (e.g. api keys
       ``status`` -> ``is_active`` boolean).

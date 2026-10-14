@@ -22,7 +22,6 @@ class OrganizationBaseSelector(BaseSelector):
         - Team
         - Membership
         - Office
-        - Invitation
     """
 
     @classmethod
@@ -71,21 +70,8 @@ class OrganizationBaseSelector(BaseSelector):
         model = qs.model
         field_names = {f.name for f in model._meta.fields}
 
-        # Self-service carve-out (only when the caller has no membership in
-        # this org): a pending invitation addressed to the caller's email
-        # stays actionable without a pre-existing membership. Members use
-        # normal organization scoping.
         membership = getattr(request, "membership", None)
         is_member = membership is not None
-
-        if (
-            not is_member
-            and user is not None
-            and user.is_authenticated
-            and "email" in field_names
-            and model.__name__ == "Invitation"
-        ):
-            return qs.filter(organization=org, email__iexact=user.email)
 
         # ADR-0033 D1/D6: a header-named organization is a boundary, not a
         # filter — a caller with no active membership in it sees nothing.

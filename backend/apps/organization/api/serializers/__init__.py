@@ -54,7 +54,6 @@ from .group_role import (
     GroupRoleRemoveSerializer,
 )
 from .holiday import HolidaySerializer
-from .invitation import InvitationBaseSerializer
 from .membership import OrganizationMembershipBaseSerializer
 from .office import OfficeBaseSerializer
 from .organization import OrganizationSerializer
@@ -133,7 +132,6 @@ __all__ = [
     "WorkHoursBaseSerializer",
     "CalendarBaseSerializer",
     "PositionBaseSerializer",
-    "InvitationBaseSerializer",
     "OrganizationMembershipBaseSerializer",
     "APIKeyBaseSerializer",
     "APIKeyCreateSerializer",

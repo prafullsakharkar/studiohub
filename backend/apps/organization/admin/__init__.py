@@ -11,7 +11,6 @@ from .group import GroupAdmin
 from .group_member import GroupMemberAdmin
 from .group_role import GroupRoleAdmin
 from .holiday import HolidayAdmin
-from .invitation import InvitationAdmin
 from .membership import OrganizationMembershipAdmin
 from .office import OfficeAdmin
 from .organization import OrganizationAdmin
@@ -46,7 +45,6 @@ __all__ = [
     "WorkHoursAdmin",
     "CalendarAdmin",
     "PositionAdmin",
-    "InvitationAdmin",
     "OrganizationMembershipAdmin",
     "APIKeyAdmin",
     "OrganizationBillingAdmin",

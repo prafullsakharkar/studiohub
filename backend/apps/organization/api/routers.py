@@ -9,7 +9,6 @@ from apps.organization.api.viewsets import (
     GroupRoleViewSet,
     GroupViewSet,
     HolidayViewSet,
-    InvitationViewSet,
     OfficeViewSet,
     OrganizationMembershipViewSet,
     OrganizationSettingsViewSet,
@@ -104,12 +103,6 @@ router.register(
     "personal-access-tokens",
     PersonalAccessTokenViewSet,
     basename="personal_access_token",
-)
-
-router.register(
-    "invitations",
-    InvitationViewSet,
-    basename="invitation",
 )
 
 router.register(

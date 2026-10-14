@@ -29,7 +29,6 @@ from apps.organization.models.group import Group
 from apps.organization.models.group_member import GroupMember
 from apps.organization.models.group_role import GroupRole
 from apps.organization.models.holiday import Holiday
-from apps.organization.models.invitation import Invitation
 from apps.organization.models.membership import OrganizationMembership
 from apps.organization.models.office import Office
 from apps.organization.models.organization import Organization
@@ -324,23 +323,6 @@ class GroupRoleFactory(DjangoModelFactory):  # pyright: ignore[reportMissingType
 
     group = factory.SubFactory(GroupFactory)
     role = factory.SubFactory(RoleFactory)
-
-
-class InvitationFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
-    """Factory for Invitation model."""
-
-    class Meta:
-        model = Invitation
-        django_get_or_create = ("email", "organization")
-
-    organization = factory.SubFactory(OrganizationFactory)
-    email = factory.LazyAttribute(lambda o: f"invite{o.organization.code}@example.com")
-    role = factory.SubFactory(RoleFactory)
-    status = "pending"
-    expires_at = factory.LazyFunction(
-        lambda: timezone.now() + timezone.timedelta(days=7)
-    )
-    invited_by = factory.SubFactory(UserFactory)
 
 
 class OfficeFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]

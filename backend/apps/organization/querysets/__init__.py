@@ -6,7 +6,6 @@ from .group import GroupQuerySet
 from .group_member import GroupMemberQuerySet
 from .group_role import GroupRoleQuerySet
 from .holiday import HolidayQuerySet
-from .invitation import InvitationQuerySet
 from .membership import OrganizationMembershipQuerySet
 from .office import OfficeQuerySet
 from .organization import OrganizationQuerySet
@@ -35,7 +34,6 @@ __all__ = [
     "WorkHoursQuerySet",
     "CalendarQuerySet",
     "PositionQuerySet",
-    "InvitationQuerySet",
     "OrganizationMembershipQuerySet",
     "APIKeyQuerySet",
     "PersonalAccessTokenQuerySet",

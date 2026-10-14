@@ -14,7 +14,6 @@ from apps.organization.events.group import *
 from apps.organization.events.group_member import *
 from apps.organization.events.group_role import *
 from apps.organization.events.holiday import *
-from apps.organization.events.invitation import *
 from apps.organization.events.membership import *
 from apps.organization.events.office import *
 from apps.organization.events.organization import *
@@ -113,19 +112,6 @@ __all__ = [
     "HolidayDeactivated",
     "HolidayRestored",
     "HolidayDeleted",
-    # Invitation
-    "InvitationCreated",
-    "InvitationSent",
-    "InvitationAccepted",
-    "InvitationDeclined",
-    "InvitationCancelled",
-    "InvitationExpired",
-    "InvitationActivated",
-    "InvitationDeactivated",
-    "InvitationArchived",
-    "InvitationDeleted",
-    "InvitationResent",
-    "InvitationRestored",
     # Membership
     "MembershipCreated",
     "MembershipUpdated",

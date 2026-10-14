@@ -11,7 +11,6 @@ from .group import Group
 from .group_member import GroupMember
 from .group_role import GroupRole
 from .holiday import Holiday
-from .invitation import Invitation
 from .membership import OrganizationMembership
 from .office import Office
 from .organization import Organization
@@ -45,7 +44,6 @@ __all__ = [
     "Calendar",
     "CalendarEvent",
     "Position",
-    "Invitation",
     "OrganizationMembership",
     "APIKey",
     "OrganizationBilling",

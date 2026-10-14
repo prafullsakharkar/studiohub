@@ -9,7 +9,6 @@ from .group import GroupService
 from .group_member import GroupMemberService
 from .group_role import GroupRoleService
 from .holiday import HolidayService
-from .invitation import InvitationService
 from .office import OfficeService
 from .organization import OrganizationService
 from .organization_settings import OrganizationSettingsService
@@ -38,7 +37,6 @@ __all__ = [
     "OrganizationStatisticsService",
     "OrganizationSettingsService",
     "HolidayService",
-    "InvitationService",
     "OfficeService",
     "DepartmentService",
     "CalendarService",

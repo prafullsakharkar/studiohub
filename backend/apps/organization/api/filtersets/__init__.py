@@ -9,7 +9,6 @@ from .group import GroupFilterSet
 from .group_member import GroupMemberFilterSet
 from .group_role import GroupRoleFilterSet
 from .holiday import HolidayFilterSet
-from .invitation import InvitationFilterSet
 from .membership import OrganizationMembershipFilterSet
 from .office import OfficeFilterSet
 from .organization import OrganizationFilterSet
@@ -40,7 +39,6 @@ __all__ = [
     "WorkCalendarFilterSet",
     "WorkHoursFilterSet",
     "PositionFilterSet",
-    "InvitationFilterSet",
     "OrganizationMembershipFilterSet",
     "APIKeyFilterSet",
     "PersonalAccessTokenFilterSet",

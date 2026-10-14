@@ -3,7 +3,7 @@ Frontend-contract tests for organization compat routes (studiohub-react parity).
 
 - Nested /api/organizations/<org>/<resource>/ (slash-optional).
 - Flat /api/v1/<resource>/ bare-array fallbacks.
-- Frontend status-word mapping (invitations, api-keys).
+- Frontend status-word mapping (api-keys).
 - Auth membership endpoints.
 - Project-scoped nested API (summary/members/lists/notes/derived objects).
 """
@@ -17,7 +17,6 @@ from apps.organization.tests.factories import (
     APIKeyFactory,
     ClientFactory,
     DepartmentFactory,
-    InvitationFactory,
     OrganizationFactory,
     OrganizationMembershipFactory,
     PositionFactory,
@@ -40,7 +39,7 @@ def _org_header(org):
 def _membered_client(org, *, admin=False):
     """Staff client whose user holds a membership in org (scope gates).
 
-    Several selectors (invitations, api-keys, project scope) restrict rows
+    Several selectors (api-keys, project scope) restrict rows
     to the user's organizations even for staff, so tests need the membership.
     Staff also holds explicit permission grants (no bypass).
 
@@ -228,26 +227,6 @@ class TestCompatStatusMapping:
         org = OrganizationFactory.create()
         client, _ = _membered_client(org)
         return org, client
-
-    def test_invitation_revoke_maps_to_cancelled(self):
-        org, client = self._setup()
-        invite = InvitationFactory.create(organization=org)
-        resp = client.patch(
-            f"/api/v1/invitations/{invite.id}/",
-            data={"status": "Revoked"},
-            **_org_header(org),
-            format="json",
-        )
-        assert resp.status_code == status.HTTP_200_OK, resp.data
-        invite.refresh_from_db()
-        assert invite.status == "cancelled"
-
-    def test_invitation_list_outputs_frontend_words(self):
-        org, client = self._setup()
-        InvitationFactory.create(organization=org)
-        resp = client.get("/api/v1/invitations/", **_org_header(org))
-        assert resp.status_code == status.HTTP_200_OK, resp.data
-        assert resp.data[0]["status"] == "Pending"
 
     def test_api_key_revoke_maps_to_is_active(self):
         org, client = self._setup()

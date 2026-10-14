@@ -16,7 +16,6 @@ Contract pagination (frontend `organizationApi.ts` parity) is preserved here:
 
 - Paginated: organizations, clients, vendors, people.
 - Bare arrays by default (opt-in pagination via ?page= / ?page_size=):
-  departments, teams, offices, positions, invitations,
   work-calendars, work-hours, calendars, holidays.
 - Always bare arrays: roles, groups, permissions, api-keys, pats.
 
@@ -35,7 +34,6 @@ from apps.organization.api.viewsets.calendar_event import CalendarEventViewSet
 from apps.organization.api.viewsets.department import DepartmentViewSet
 from apps.organization.api.viewsets.group import GroupViewSet
 from apps.organization.api.viewsets.holiday import HolidayViewSet
-from apps.organization.api.viewsets.invitation import InvitationViewSet
 from apps.organization.api.viewsets.office import OfficeViewSet
 from apps.organization.api.viewsets.organization import OrganizationViewSet
 from apps.organization.api.viewsets.permission import PermissionViewSet
@@ -131,12 +129,6 @@ class LegacyOfficeViewSet(OfficeViewSet):  # pyright: ignore[reportMissingTypeAr
 
 class CompatPositionViewSet(PositionViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """Flat/nested positions — bare array by default, id-or-code lookup."""
-
-    pagination_class = OptionalPagination
-
-
-class CompatInvitationViewSet(InvitationViewSet):  # pyright: ignore[reportMissingTypeArgument]
-    """Flat/nested invitations — bare array by default, id-or-code lookup."""
 
     pagination_class = OptionalPagination
 

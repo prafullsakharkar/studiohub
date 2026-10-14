@@ -18,7 +18,6 @@ class PermissionCategory(models.TextChoices):
     CALENDARS = "calendars", "Calendars"
     WORK_HOURS = "work_hours", "Work Hours"
     POSITIONS = "positions", "Positions"
-    INVITATIONS = "invitations", "Invitations"
     MEMBERSHIPS = "memberships", "Memberships"
     API_KEYS = "api_keys", "API Keys"
     ACCESS_TOKENS = "access_tokens", "Access Tokens"

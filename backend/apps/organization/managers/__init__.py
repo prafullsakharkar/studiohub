@@ -7,7 +7,6 @@ from .group import GroupManager
 from .group_member import GroupMemberManager
 from .group_role import GroupRoleManager
 from .holiday import HolidayManager
-from .invitation import InvitationManager
 from .membership import OrganizationMembershipManager
 from .organization import OrganizationManager
 from .organization_settings import OrganizationSettingsManager
@@ -35,7 +34,6 @@ __all__ = [
     "CalendarManager",
     "WorkHoursManager",
     "PositionManager",
-    "InvitationManager",
     "OrganizationMembershipManager",
     "APIKeyManager",
     "PersonalAccessTokenManager",

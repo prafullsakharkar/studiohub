@@ -19,7 +19,6 @@ class PermissionModule(models.TextChoices):
     CALENDAR = "calendar", "Calendar"
     WORK_HOURS = "work_hours", "Work Hours"
     POSITION = "position", "Position"
-    INVITATION = "invitation", "Invitation"
     MEMBERSHIP = "membership", "Membership"
     API_KEY = "api_key", "API Key"
     PERSONAL_ACCESS_TOKEN = "personal_access_token", "Personal Access Token"

@@ -13,7 +13,6 @@ Provides organization management capabilities including:
 - Branding
 - Organization Settings
 - Memberships
-- Invitations
 - API Keys
 - Personal Access Tokens
 - Groups

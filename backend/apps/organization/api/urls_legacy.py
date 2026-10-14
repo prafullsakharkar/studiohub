@@ -27,7 +27,6 @@ from apps.organization.api.viewsets.legacy import (
     CompatCalendarViewSet,
     CompatGroupViewSet,
     CompatHolidayViewSet,
-    CompatInvitationViewSet,
     CompatPermissionViewSet,
     CompatPersonalAccessTokenViewSet,
     CompatPositionViewSet,
@@ -50,7 +49,6 @@ router.register(r"teams", LegacyTeamViewSet, basename="legacy-team")
 router.register(r"offices", LegacyOfficeViewSet, basename="legacy-office")
 router.register(r"people", PersonViewSet, basename="legacy-person")
 router.register(r"positions", CompatPositionViewSet, basename="legacy-position")
-router.register(r"invitations", CompatInvitationViewSet, basename="legacy-invitation")
 router.register(r"work-calendars", CompatWorkCalendarViewSet, basename="legacy-work-calendar")
 router.register(r"work-hours", CompatWorkHoursViewSet, basename="legacy-work-hours")
 router.register(r"calendars", CompatCalendarViewSet, basename="legacy-calendar")

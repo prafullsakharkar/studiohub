@@ -2,8 +2,6 @@ from .calendar_type import HolidayType
 from .department_type import DepartmentType
 from .event_type import CalendarEventType
 from .employment_type import EmploymentType
-from .invitation_status import InvitationStatus
-from .invitation_type import InvitationType
 from .membership_status import MembershipStatus
 from .office_type import OfficeType
 from .organization_type import OrganizationType
@@ -20,8 +18,6 @@ __all__ = [
     "DepartmentType",
     "CalendarEventType",
     "EmploymentType",
-    "InvitationStatus",
-    "InvitationType",
     "MembershipStatus",
     "OfficeType",
     "OrganizationType",

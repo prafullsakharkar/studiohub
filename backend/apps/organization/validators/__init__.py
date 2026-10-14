@@ -6,7 +6,6 @@ from .department import DepartmentValidator
 from .group import GroupValidator
 from .group_member import GroupMemberValidator
 from .group_role import GroupRoleValidator
-from .invitation import InvitationValidator
 from .membership import OrganizationMembershipValidator
 from .office import OfficeValidator
 from .organization import OrganizationValidator
@@ -27,7 +26,6 @@ __all__ = [
     "OfficeValidator",
     "OrganizationValidator",
     "OrganizationMembershipValidator",
-    "InvitationValidator",
     "TeamValidator",
     "BrandingValidator",
     "OrganizationSettingsValidator",

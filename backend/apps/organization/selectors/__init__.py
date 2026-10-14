@@ -8,7 +8,6 @@ from .group import GroupSelector
 from .group_member import GroupMemberSelector
 from .group_role import GroupRoleSelector
 from .holiday import HolidaySelector
-from .invitation import InvitationSelector
 from .membership import OrganizationMembershipSelector
 from .office import OfficeSelector
 from .organization import OrganizationSelector
@@ -41,7 +40,6 @@ __all__ = [
     "BrandingSelector",
     "OrganizationSettingsSelector",
     "PositionSelector",
-    "InvitationSelector",
     "OrganizationMembershipSelector",
     "APIKeySelector",
     "PersonalAccessTokenSelector",

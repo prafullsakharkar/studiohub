@@ -11,7 +11,6 @@ from .group import GroupViewSet
 from .group_member import GroupMemberViewSet
 from .group_role import GroupRoleViewSet
 from .holiday import HolidayViewSet
-from .invitation import InvitationViewSet
 from .membership import OrganizationMembershipViewSet
 from .office import OfficeViewSet
 from .organization import OrganizationViewSet
@@ -46,7 +45,6 @@ __all__ = [
     "GroupMemberViewSet",
     "GroupRoleViewSet",
     "HolidayViewSet",
-    "InvitationViewSet",
     "OrganizationMembershipViewSet",
     "RoleViewSet",
     "PermissionViewSet",

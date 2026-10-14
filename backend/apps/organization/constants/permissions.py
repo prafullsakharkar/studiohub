@@ -85,16 +85,6 @@ class PositionPermissions:
     DELETE = "position.delete"
 
 
-class InvitationPermissions:
-    VIEW = "invitation.view"
-    CREATE = "invitation.create"
-    UPDATE = "invitation.update"
-    DELETE = "invitation.delete"
-    ACCEPT = "invitation.accept"
-    DECLINE = "invitation.decline"
-    CANCEL = "invitation.cancel"
-
-
 class OrganizationMembershipPermissions:
     VIEW = "organization_membership.view"
     CREATE = "organization_membership.create"

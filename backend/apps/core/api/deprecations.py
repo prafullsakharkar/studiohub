@@ -31,7 +31,7 @@ DEPRECATED_API_PATHS: tuple[tuple[re.Pattern[str], str], ...] = (
     (
         re.compile(
             r"^/api/v1/"
-            r"(departments|teams|offices|people|positions|invitations"
+            r"(departments|teams|offices|people|positions"
             r"|work-calendars|work-hours|calendars|holidays"
             r"|roles|groups|permissions|api-keys|pats|clients|vendors)"
             r"(/|$)"

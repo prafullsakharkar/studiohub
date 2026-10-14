@@ -99,8 +99,7 @@ class OrganizationContextMixin:
                 # A named organization in the URL is a boundary, not a
                 # filter: without a valid membership the organization is
                 # undiscoverable, so the request 404s like an unknown org
-                # (superusers retain break-glass; invitation self-service
-                # keeps its email carve-out below).
+                # (superusers retain break-glass).
                 raise Http404("Organization not found.")
             return
 
@@ -122,15 +121,10 @@ class OrganizationContextMixin:
 
     def _allows_non_member_nested_access(self):
         """
-        Invitee self-service carve-out for nested URLs.
+        Non-member nested-URL carve-outs (none currently).
 
-        A pending invitation addressed to the caller's email stays
-        actionable without a pre-existing membership (mirrors the
-        ``Invitation`` carve-out in
-        ``OrganizationBaseSelector.scope_by_request``); every other
-        resource requires a valid membership in the URL organization.
+        Every nested resource requires a valid membership in the URL
+        organization; the former invitee self-service carve-out was
+        removed with the invitation flow.
         """
-        from apps.organization.models import Invitation
-
-        selector = getattr(self, "selector_class", None)
-        return getattr(selector, "model", None) is Invitation
+        return False

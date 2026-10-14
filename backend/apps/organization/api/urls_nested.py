@@ -8,7 +8,6 @@ implementation with the contract pagination behavior (bare-array resources
 use thin `legacy` aliases that only disable pagination):
 
 - Paginated: clients, vendors, people.
-- Bare arrays: departments, teams, offices, positions, invitations,
   work-calendars, work-hours, calendars, holidays, roles, groups,
   permissions, api-keys, pats.
 - Paginated activity feed: activity (audit domain alias).
@@ -28,7 +27,6 @@ from apps.organization.api.viewsets.legacy import (
     CompatCalendarViewSet,
     CompatGroupViewSet,
     CompatHolidayViewSet,
-    CompatInvitationViewSet,
     CompatPermissionViewSet,
     CompatPersonalAccessTokenViewSet,
     CompatPositionViewSet,
@@ -87,11 +85,6 @@ router.register(
     r"(?P<organization_id>[^/.]+)/positions",
     CompatPositionViewSet,
     basename="nested-position",
-)
-router.register(
-    r"(?P<organization_id>[^/.]+)/invitations",
-    CompatInvitationViewSet,
-    basename="nested-invitation",
 )
 router.register(
     r"(?P<organization_id>[^/.]+)/work-calendars",
