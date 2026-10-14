@@ -35,7 +35,9 @@ class TestBillingView:
             farm_credits_used=120000,
         )
 
-        response = admin_client.get(BILLING_URL)
+        response = admin_client.get(
+            BILLING_URL, HTTP_X_ORGANIZATION_ID=str(org.id)
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -65,10 +67,13 @@ class TestBillingView:
     @pytest.mark.django_db
     def test_patch_as_superuser(self, admin_client):
         """Billing mutation is superuser-only (ADR-0033 D4)."""
-        OrganizationFactory.create()
+        org = OrganizationFactory.create()
 
         response = admin_client.patch(
-            BILLING_URL, {"max_seats_count": 500}, format="json"
+            BILLING_URL,
+            {"max_seats_count": 500},
+            format="json",
+            HTTP_X_ORGANIZATION_ID=str(org.id),
         )
 
         assert response.status_code == 200
@@ -82,7 +87,10 @@ class TestBillingView:
         )
 
         response = admin_client.patch(
-            BILLING_URL, {"farm_credits_used": 5000}, format="json"
+            BILLING_URL,
+            {"farm_credits_used": 5000},
+            format="json",
+            HTTP_X_ORGANIZATION_ID=str(org.id),
         )
 
         assert response.status_code == 400
@@ -102,7 +110,19 @@ class TestBillingView:
         org = OrganizationFactory.create()
         assert not OrganizationBilling.objects.filter(organization=org).exists()
 
-        response = admin_client.get(BILLING_URL)
+        response = admin_client.get(
+            BILLING_URL, HTTP_X_ORGANIZATION_ID=str(org.id)
+        )
 
         assert response.status_code == 200
         assert OrganizationBilling.objects.filter(organization=org).exists()
+
+
+@pytest.mark.django_db
+def test_get_without_header_never_guesses_organization(admin_client):
+    org = OrganizationFactory.create()
+    OrganizationBillingFactory.create(organization=org)
+
+    response = admin_client.get(BILLING_URL)
+
+    assert response.status_code == 404

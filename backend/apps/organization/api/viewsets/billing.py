@@ -14,23 +14,19 @@ from apps.organization.middleware.organization_context import (
     has_organization_access,
     resolve_organization_context,
 )
-from apps.organization.models import Organization, OrganizationBilling
+from apps.organization.models import OrganizationBilling
 from apps.organization.services.billing import OrganizationBillingService
 
 
 def _resolve_billing_organization(request):
     """
-    Resolve the billing organization: explicit request context first,
-    then the first org for superusers (admin break-glass context).
+    Resolve the billing organization from explicit request context only.
+
+    No guessing: a missing header yields ``None`` (the view answers 404)
+    instead of silently picking ``Organization.objects.first()``.
     """
     resolve_organization_context(request, force=True)
-    organization = getattr(request, "organization", None)
-    if organization is not None:
-        return organization
-    user = getattr(request, "user", None)
-    if user is not None and (user.is_superuser):
-        return Organization.objects.first()
-    return None
+    return getattr(request, "organization", None)
 
 
 class BillingView(APIView):
