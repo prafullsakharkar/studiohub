@@ -27,12 +27,14 @@ class TeamBaseSerializer(serializers.ModelSerializer[Any]):
         # normalize onto the model's FK names.
         if isinstance(data, dict):
             data = dict(data)
+            # Only normalize keys the caller actually sent: injecting
+            # ``None`` for absent keys wipes relations (e.g. department)
+            # on every partial update that omits them.
             for fk in ("department", "lead", "organization"):
-                raw = data.get(fk)
-                if raw not in (None, ""):
-                    data[f"{fk}_id"] = raw
-                else:
-                    data[f"{fk}_id"] = None
+                if fk not in data:
+                    continue
+                raw = data[fk]
+                data[f"{fk}_id"] = None if raw in (None, "") else raw
         return super().to_internal_value(data)
 
     def get_department_name(self, obj):

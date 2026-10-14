@@ -73,3 +73,16 @@ class OrganizationEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportM
             request=self.request,
             view=self,
         )
+
+    def perform_update(self, serializer):
+        """Updates can never reassign the organization.
+
+        The URL/header context owns the row's org (mirroring create, which
+        stamps it server-side). A payload ``organization`` — same value
+        echoed back or a foreign id — is dropped so rows cannot move
+        between tenants through update payloads.
+        """
+        validated = serializer.validated_data
+        if isinstance(validated, dict):
+            validated.pop("organization", None)
+        return super().perform_update(serializer)
