@@ -64,10 +64,15 @@ class APIResponseCache:
         )
         
         # Create a hash of the request data
+        # The organization header partitions the key: the same user and
+        # path under different organizations must never share entries.
         request_data = {
             "path": path,
             "query_params": query_params,
             "user_id": user_id,
+            "organization_id": request.META.get("HTTP_X_ORGANIZATION_ID")
+            or request.META.get("HTTP_X_ORGANIZATION")
+            or "",
         }
         
         data_hash = hashlib.md5(

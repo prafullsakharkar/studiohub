@@ -122,3 +122,72 @@ def test_minted_pat_authenticates_bearer_request(staff_client, staff_user):
         HTTP_AUTHORIZATION=f"Token {plain}",
     )
     assert response.status_code != 401, response.content[:300]
+
+
+@pytest.mark.django_db
+def test_expired_api_key_never_verifies(staff_client, staff_user):
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.organization.models import APIKey
+    from apps.organization.services.api_key import APIKeyService
+
+    org = OrganizationFactory.create()
+    grant_all_known_codes(staff_user, org)
+
+    created = staff_client.post(
+        f"/api/organizations/{org.id}/api-keys/",
+        {"organization": str(org.id), "name": "Short Lived"},
+        format="json",
+        HTTP_X_ORGANIZATION_ID=str(org.id),
+    )
+    assert created.status_code == 201, created.content[:500]
+    plain = created.json()["plain_secret"]
+    assert APIKeyService.verify(plain) is not None
+
+    APIKey.objects.filter(name="Short Lived").update(
+        expires_at=timezone.now() - timedelta(seconds=1)
+    )
+    assert APIKeyService.verify(plain) is None
+
+
+@pytest.mark.django_db
+def test_api_key_bound_to_its_organization(staff_client, staff_user):
+    from rest_framework.test import APIClient
+
+    from apps.organization.services.api_key import APIKeyService
+
+    org_a = OrganizationFactory.create()
+    org_b = OrganizationFactory.create()
+    grant_all_known_codes(staff_user, org_a)
+    grant_all_known_codes(staff_user, org_b)
+
+    created = staff_client.post(
+        f"/api/organizations/{org_a.id}/api-keys/",
+        {"organization": str(org_a.id), "name": "Bound Key"},
+        format="json",
+        HTTP_X_ORGANIZATION_ID=str(org_a.id),
+    )
+    assert created.status_code == 201, created.content[:500]
+    plain = created.json()["plain_secret"]
+
+    home = APIClient()
+    home_response = home.get(
+        "/api/v1/organizations/",
+        HTTP_AUTHORIZATION=f"Api-Key {plain}",
+        HTTP_X_ORGANIZATION_ID=str(org_a.id),
+    )
+    assert home_response.status_code != 401, home_response.content[:300]
+
+    foreign = APIClient()
+    foreign_response = foreign.get(
+        "/api/v1/organizations/",
+        HTTP_AUTHORIZATION=f"Api-Key {plain}",
+        HTTP_X_ORGANIZATION_ID=str(org_b.id),
+    )
+    assert foreign_response.status_code == 401, foreign_response.content[:300]
+
+    # Service-level binding agrees with the auth gate.
+    assert APIKeyService.verify(plain, organization=org_a) is not None
+    assert APIKeyService.verify(plain, organization=org_b) is None

@@ -59,6 +59,18 @@ class AuditBaseSelector(BaseSelector):
         if user.is_superuser:
             return queryset
 
+        # Prefer the active request organization (resolved post-auth by the
+        # viewset) — but only when the caller actually belongs to it
+        # (request.membership is the membership in that org, or None).
+        # Otherwise fall back to member orgs so a foreign header grants
+        # nothing (ADR-0033 D4).
+        active_org = getattr(request, "organization", None)
+        active_org_id = getattr(active_org, "id", None) or (
+            active_org if active_org else None
+        )
+        if active_org_id is not None and getattr(request, "membership", None):
+            return queryset.filter(organization_id=active_org_id)
+
         organization_ids = list(
             user.organizations.values_list("id", flat=True),
         )
@@ -86,11 +98,23 @@ class AuditBaseSelector(BaseSelector):
         if user.is_superuser:
             return queryset
 
+        from django.db.models import Q
+
+        # Prefer the active request organization; fall back to the user's
+        # own rows plus member orgs when the caller does not belong to it
+        # (a foreign header must grant nothing — ADR-0033 D4).
+        active_org = getattr(request, "organization", None)
+        active_org_id = getattr(active_org, "id", None) or (
+            active_org if active_org else None
+        )
+        if active_org_id is not None and getattr(request, "membership", None):
+            return queryset.filter(
+                Q(user_id=user.id) | Q(organization_id=active_org_id),
+            )
+
         organization_ids = list(
             user.organizations.values_list("id", flat=True),
         )
-
-        from django.db.models import Q
 
         return queryset.filter(
             Q(user_id=user.id) | Q(organization_id__in=organization_ids),

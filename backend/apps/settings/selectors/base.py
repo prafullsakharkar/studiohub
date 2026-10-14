@@ -61,6 +61,18 @@ class SettingsBaseSelector(BaseSelector):
 
         from django.db.models import Q
 
+        # Prefer the active request organization (resolved post-auth by the
+        # viewset) — but only when the caller belongs to it; platform
+        # defaults stay visible in every case.
+        active_org = getattr(request, "organization", None)
+        active_org_id = getattr(active_org, "id", None) or (
+            active_org if active_org else None
+        )
+        if active_org_id is not None and getattr(request, "membership", None):
+            return queryset.filter(
+                Q(organization_id=active_org_id) | Q(organization__isnull=True),
+            )
+
         organization_ids = list(
             user.organizations.values_list("id", flat=True),
         )

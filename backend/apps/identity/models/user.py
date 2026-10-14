@@ -87,6 +87,7 @@ class User(EntityModel, AbstractBaseUser, PermissionsMixin):
 
         return Organization.objects.filter(
             memberships__user=self,
+            memberships__is_deleted=False,
         )
 
     @property

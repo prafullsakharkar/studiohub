@@ -40,9 +40,22 @@ class APIKeyAuthentication(
         # Imported lazily to avoid a circular import between
         # apps.identity.services and apps.identity.authentication.
         from apps.organization.services.api_key import APIKeyService
+        from apps.organization.selectors.organization import OrganizationSelector
+
+        # Bind the secret to the request organization: a key minted in
+        # org A must not authenticate org B traffic, even when its creator
+        # belongs to both. No header → no binding (downstream context
+        # resolution denies org-less requests as before).
+        request_org = None
+        org_ref = request.headers.get("X-Organization-Id") or request.headers.get(
+            "X-Organization"
+        )
+        if org_ref:
+            request_org = OrganizationSelector.resolve_by_lookup(org_ref)
 
         api_key = APIKeyService.verify(
             token,
+            organization=request_org,
         )
 
         if api_key is None:
