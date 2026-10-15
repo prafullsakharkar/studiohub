@@ -69,6 +69,9 @@ class AuthenticationService(
         department=None,
         team=None,
     ):
+        # ``organization``/``office``/``department``/``team`` are accepted
+        # for backwards compatibility but ignored: login creates a
+        # platform-global session with no org context.
         ip_address = AuthenticationUtils.get_client_ip(
             request,
         )
@@ -122,10 +125,6 @@ class AuthenticationService(
         tokens = TokenService.create_session(
             request=request,
             user=user,
-            organization=organization,
-            office=office,
-            department=department,
-            team=team,
         )
 
         UserLoggedIn.dispatch(

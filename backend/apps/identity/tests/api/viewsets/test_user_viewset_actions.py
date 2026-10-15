@@ -7,8 +7,7 @@ from __future__ import annotations
 import pytest
 from django.urls import reverse
 
-from apps.identity.tests.factories import UserFactory
-from apps.organization.tests.factories import UserSessionFactory
+from apps.identity.tests.factories import UserFactory, UserSessionFactory
 
 
 @pytest.mark.django_db
@@ -101,4 +100,4 @@ class TestUserAccountActions:
         assert response.status_code == 200
         assert response.data["sessions"] == 2
 
-        user.organization_sessions.all().delete()
+        user.identity_sessions.all().delete()

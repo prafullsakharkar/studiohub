@@ -1,10 +1,6 @@
 from .authentication import IsAuthenticated
 from .department import IsDepartmentManager
 from .ip_blacklist import IsAdminOrReadOnly, IsIPBlacklistOwner
-from .organization import (
-    IsOrganizationMember,
-    IsOrganizationOwner,
-)
 from .ownership import (
     IsOwner,
     IsSelf,
@@ -17,8 +13,6 @@ __all__ = (
     "IsDepartmentManager",
     "IsAdminOrReadOnly",
     "IsIPBlacklistOwner",
-    "IsOrganizationMember",
-    "IsOrganizationOwner",
     "HasPermission",
     "IsOwner",
     "IsSelf",

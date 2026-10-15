@@ -18,11 +18,11 @@ from apps.identity.events.user_session import (
     SessionTrusted,
     SessionUpdated,
 )
-from apps.organization.models import UserSession
-from apps.organization.selectors.user_session import (
+from apps.identity.models import UserSession
+from apps.identity.selectors.user_session import (
     UserSessionSelector,
 )
-from apps.organization.validators.user_session import (
+from apps.identity.validators.user_session import (
     UserSessionValidator,
 )
 

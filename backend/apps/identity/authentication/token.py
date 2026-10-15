@@ -31,6 +31,9 @@ class TokenService:
         team=None,
         authentication_method=AuthenticationMethod.PASSWORD,
     ):
+        # ``organization``/``office``/``department``/``team`` are accepted
+        # for backwards compatibility but ignored: sessions are
+        # platform-global and carry no org context.
         from apps.identity.services.login_history import LoginHistoryService
         from apps.identity.services.user_session import UserSessionService
 
@@ -52,10 +55,6 @@ class TokenService:
 
         session = UserSessionService.create_login_session(
             user=user,
-            organization=organization,
-            office=office,
-            department=department,
-            team=team,
             authentication_method=authentication_method,
             session_key=refresh["jti"],
             access_token_jti=JWTService.get_jti(access),

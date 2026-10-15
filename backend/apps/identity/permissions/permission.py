@@ -51,17 +51,11 @@ class HasPermission(
             PermissionCacheService,
         )
 
-        organization = getattr(
-            request,
-            "organization",
-            None,
-        )
-
+        # Platform-global resolution: no organization context is consulted.
         return all(
             PermissionCacheService.has_permission(
                 user=request.user,
                 permission=permission,
-                organization=organization,
             )
             for permission in permissions
         )
@@ -73,24 +67,9 @@ class HasPermission(
         obj,
     ):
         """
-        Defense-in-depth organization consistency check for detail routes.
+        Object-level check for platform-global resources.
 
-        Queryset scoping is the primary isolation mechanism; this denies the
-        request when the resolved object demonstrably belongs to a different
-        organization than the active request context (e.g. a code path that
-        fetched the object outside the scoped queryset).
+        Queryset scoping is the primary isolation mechanism; with no
+        organization partition there is no cross-tenant mismatch to deny.
         """
-        organization = getattr(request, "organization", None)
-        obj_organization = getattr(obj, "organization", None)
-        if (
-            organization is not None
-            and obj_organization is not None
-            and getattr(obj_organization, "pk", None) != getattr(organization, "pk", None)
-        ):
-            logger.warning(
-                "authorization_deny_object_org_mismatch",
-                view=getattr(view, "__class__", type(view)).__name__,
-                user_id=getattr(getattr(request, "user", None), "pk", None),
-            )
-            return False
         return True

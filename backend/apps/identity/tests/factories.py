@@ -12,6 +12,7 @@ from factory.django import DjangoModelFactory
 
 from apps.identity.choices import (
     SecurityEventType,
+    SessionStatus,
 )
 from apps.identity.models.backup_code import BackupCode
 from apps.identity.models.ip_blacklist import IPBlacklist
@@ -24,6 +25,7 @@ from apps.identity.models.security_event import SecurityEvent
 from apps.identity.models.trusted_device import TrustedDevice
 from apps.identity.models.user import User
 from apps.identity.models.user_mfa import UserMFA
+from apps.identity.models.user_session import UserSession
 
 
 class UserFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
@@ -236,3 +238,18 @@ class IPBlacklistFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTy
     last_hit_at = None
     hit_count = 0
     metadata = {}
+
+
+class UserSessionFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    """Factory for the identity-owned UserSession model."""
+
+    class Meta:
+        model = UserSession
+
+    user = factory.SubFactory(UserFactory)
+    session_key = factory.Faker("uuid4")
+    ip_address = factory.Faker("ipv4")
+    user_agent = factory.Faker("user_agent")
+    status = SessionStatus.ACTIVE
+    expires_at = factory.LazyFunction(lambda: timezone.now() + timedelta(days=30))
+    logged_out_at = None

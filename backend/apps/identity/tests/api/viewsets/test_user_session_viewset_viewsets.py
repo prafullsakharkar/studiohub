@@ -10,8 +10,7 @@ from django.urls import reverse
 from apps.identity.choices import (
     SessionStatus,
 )
-from apps.identity.tests.factories import UserFactory
-from apps.organization.tests.factories import UserSessionFactory
+from apps.identity.tests.factories import UserFactory, UserSessionFactory
 
 
 @pytest.mark.django_db

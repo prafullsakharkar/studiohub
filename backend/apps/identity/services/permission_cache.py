@@ -16,6 +16,15 @@ from apps.identity.resolvers.permission import (
 )
 
 
+def get_permission_cache_key(user_id, version=1) -> str:
+    """
+    Build the versioned cache key for a user's resolved permissions.
+
+    Platform-global: the key carries no organization segment.
+    """
+    return f"{PermissionCacheService.PERMISSION_PREFIX}:{user_id}:{version}"
+
+
 class PermissionCacheService:
     """
     Caches resolved permissions.
@@ -41,15 +50,9 @@ class PermissionCacheService:
         cls,
         *,
         user_id,
-        organization_id=None,
         version=1,
     ):
-        return (
-            f"{cls.PERMISSION_PREFIX}:"
-            f"{user_id}:"
-            f"{organization_id or 'global'}:"
-            f"{version}"
-        )
+        return get_permission_cache_key(user_id, version)
 
     @classmethod
     def get_permissions(
@@ -58,6 +61,9 @@ class PermissionCacheService:
         user,
         organization=None,
     ):
+        # ``organization`` is accepted for backwards compatibility with
+        # callers that have not been migrated off org-scoped resolution yet;
+        # it is ignored — the cache key is platform-global.
         key = None
 
         try:
@@ -68,11 +74,6 @@ class PermissionCacheService:
 
             key = cls._permission_key(
                 user_id=user.pk,
-                organization_id=getattr(
-                    organization,
-                    "pk",
-                    None,
-                ),
                 version=version,
             )
 
@@ -95,7 +96,6 @@ class PermissionCacheService:
 
             permissions = PermissionResolver.resolve(
                 user=user,
-                organization=organization,
             )
 
             with contextlib.suppress(Exception):
@@ -148,17 +148,17 @@ class PermissionCacheService:
         """
         Invalidate cached permissions for every user holding ``role``.
 
-        Covers direct assignments (UserRole), organization memberships using
-        the role, and group vessels (GroupRole + live GroupMember rows).
-        Queries intentionally ignore ``is_deleted``: a removed assignment
-        must still evict the previously cached grant.
+        Covers direct assignments (UserRole) and group vessels (GroupRole
+        + live GroupMember rows). Queries intentionally ignore
+        ``is_deleted``: a removed assignment must still evict the previously
+        cached grant.
         """
         cls.invalidate_role_holders_by_id(getattr(role, "pk", None))
 
     @classmethod
     def invalidate_group_members(cls, group_id) -> None:
         """Invalidate cached permissions for every member of a group."""
-        from apps.organization.models import GroupMember
+        from apps.identity.models import GroupMember
 
         if group_id is None:
             return
@@ -171,7 +171,7 @@ class PermissionCacheService:
     @classmethod
     def invalidate_permission_holders(cls, permission) -> None:
         """Invalidate cached permissions for holders of roles granting it."""
-        from apps.organization.models import RolePermission
+        from apps.identity.models import RolePermission
 
         permission_id = getattr(permission, "pk", None)
         if permission_id is None:
@@ -191,10 +191,9 @@ class PermissionCacheService:
     @classmethod
     def invalidate_role_holders_by_id(cls, role_id) -> None:
         """Invalidate cached permissions for every holder of a role id."""
-        from apps.organization.models import (
+        from apps.identity.models import (
             GroupMember,
             GroupRole,
-            OrganizationMembership,
             UserRole,
         )
 
@@ -202,11 +201,6 @@ class PermissionCacheService:
             return
         user_ids: set = set(
             UserRole.objects.filter(role_id=role_id).values_list("user_id", flat=True)
-        )
-        user_ids.update(
-            OrganizationMembership.objects.filter(role_id=role_id).values_list(
-                "user_id", flat=True
-            )
         )
         group_ids = list(
             GroupRole.objects.filter(role_id=role_id).values_list(

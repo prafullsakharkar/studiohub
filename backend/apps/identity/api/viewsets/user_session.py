@@ -10,6 +10,9 @@ from apps.identity.api.serializers.user_session import (
 from apps.identity.api.viewsets.base import (
     IdentityViewSet,
 )
+from apps.identity.models import (
+    UserSession,
+)
 from apps.identity.selectors.authentication import (
     AuthenticationSelector,
 )
@@ -18,9 +21,6 @@ from apps.identity.selectors.user_session import (
 )
 from apps.identity.services.user_session import (
     UserSessionService,
-)
-from apps.organization.models import (
-    UserSession,
 )
 
 

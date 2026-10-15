@@ -7,6 +7,7 @@ from .login_attempt import LoginAttemptValidator
 from .password import PasswordValidator
 from .trusted_device import TrustedDeviceValidator
 from .user_mfa import UserMFAValidator
+from .user_session import UserSessionValidator
 
 # Aliases for backwards compatibility
 BaseValidator = IdentityBaseValidator
@@ -21,5 +22,6 @@ __all__ = [
     "PasswordValidator",
     "TrustedDeviceValidator",
     "UserMFAValidator",
+    "UserSessionValidator",
     "BaseValidator",
 ]

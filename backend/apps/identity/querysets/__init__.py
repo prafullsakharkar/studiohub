@@ -6,6 +6,7 @@ from .security_event import SecurityEventQuerySet
 from .trusted_device import TrustedDeviceQuerySet
 from .user import UserQuerySet
 from .user_mfa import UserMFAQuerySet
+from .user_session import UserSessionQuerySet
 
 __all__ = [
     "BackupCodeQuerySet",
@@ -16,4 +17,5 @@ __all__ = [
     "TrustedDeviceQuerySet",
     "UserQuerySet",
     "UserMFAQuerySet",
+    "UserSessionQuerySet",
 ]

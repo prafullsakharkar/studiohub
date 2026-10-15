@@ -8,14 +8,14 @@ import pytest
 from django.urls import reverse
 
 from apps.identity.tests.factories import UserFactory
+from apps.identity.tests.rbac_helpers import grant_all_known_codes
 from apps.organization.tests.factories import OrganizationFactory, OrganizationMembershipFactory
-from apps.organization.tests.rbac_helpers import grant_all_known_codes
 
 
 def _org_admin_client(staff_client, staff_user, target):
-    """Share an organization between the staff actor and target (ADR-0033 D6)."""
+    """Share an organization between the staff actor and target (directory visibility)."""
     org = OrganizationFactory.create()
-    grant_all_known_codes(staff_user, organization=org)
+    grant_all_known_codes(staff_user)
     OrganizationMembershipFactory.create(user=target, organization=org, status="active")
     return {"HTTP_X_ORGANIZATION_ID": str(org.pk)}
 

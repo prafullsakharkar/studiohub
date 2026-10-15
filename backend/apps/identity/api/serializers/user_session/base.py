@@ -4,7 +4,7 @@ from rest_framework import serializers
 from apps.identity.api.serializers.base import (
     IdentitySerializer,
 )
-from apps.organization.models import (
+from apps.identity.models import (
     UserSession,
 )
 
