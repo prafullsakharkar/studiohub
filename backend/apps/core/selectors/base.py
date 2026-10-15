@@ -13,10 +13,10 @@ class BaseSelector:
 
     model = None
 
-    #: Model field used to scope querysets to the active organization.
-    #: Override for models without a direct organization foreign key
-    #: (e.g. ``"resource__organization"``).
-    scope_field = "organization"
+    #: Model field used to scope querysets to the active project.
+    #: Override for models without a direct project foreign key
+    #: (e.g. ``"resource__project"``).
+    scope_field = "project"
 
     @classmethod
     def get_queryset(
@@ -41,17 +41,22 @@ class BaseSelector:
         view=None,
     ) -> QuerySet[Any, Any]:
         """
-        Restrict a queryset to the request's active organization.
+        Restrict a queryset to the request's active project.
 
-        Fails closed: without an active organization no records are
-        returned, so unscoped requests can never leak other tenants' data.
+        Org-free: platform-global entities have no organization branch
+        and no tenant partition. Without an active project the queryset
+        is returned unchanged; when the request carries one and the
+        model supports the scope field, rows are narrowed to it.
         """
-        organization = getattr(request, "organization", None) if request else None
-        if organization is None:
-            return queryset.none()
-        return queryset.filter(
-            **{cls.scope_field: organization},
-        )
+        project = getattr(request, "project", None) if request else None
+        if project is None:
+            return queryset
+        field_names = {f.name for f in queryset.model._meta.fields}
+        if cls.scope_field in field_names:
+            return queryset.filter(
+                **{cls.scope_field: project},
+            )
+        return queryset
 
     @classmethod
     def all(

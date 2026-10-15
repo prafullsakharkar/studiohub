@@ -16,6 +16,7 @@ from .project import ProjectEntityModel
 from .publishable import PublishableModel
 from .scopes import (
     OrganizationScopedModel,
+    PlatformScopedModel,
     ProjectScopedModel,
     ReviewScopedModel,
     SequenceScopedModel,
@@ -38,6 +39,7 @@ __all__ = [
     "TimeStampedModel",
     "UUIDModel",
     "OrganizationScopedModel",
+    "PlatformScopedModel",
     "ProjectScopedModel",
     "ReviewScopedModel",
     "SequenceScopedModel",

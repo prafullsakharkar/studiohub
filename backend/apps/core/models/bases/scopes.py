@@ -21,6 +21,8 @@ import warnings
 
 from django.db import models
 
+from apps.core.models.bases.entity import EntityModel
+
 # NOTE: The following scope classes (SequenceScopedModel, ShotScopedModel,
 # TaskScopedModel, ReviewScopedModel) express domain-specific concepts used by
 # production/VFX workflows. Keeping them inside `apps.core` couples the shared
@@ -47,6 +49,13 @@ class OrganizationScopedModel(models.Model):
     This is a protocol/interface for domain applications to implement.
     Domain applications should define their own organization field.
     """
+
+    class Meta:
+        abstract = True
+
+
+class PlatformScopedModel(EntityModel):
+    """Global platform-scoped entity: no organization FK, no tenant partition."""
 
     class Meta:
         abstract = True

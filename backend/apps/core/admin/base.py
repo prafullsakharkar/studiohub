@@ -42,3 +42,12 @@ class StudioHubModelAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTyp
             if name in available and name not in fields:
                 fields.append(name)
         return tuple(fields)
+
+
+class PlatformScopedModelAdmin(StudioHubModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
+    """
+    Base admin for platform-global entities.
+
+    No organization scoping and no organization list filters:
+    platform data has no tenant partition.
+    """
