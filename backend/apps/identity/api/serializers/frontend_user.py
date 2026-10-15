@@ -83,7 +83,7 @@ def serialize_frontend_user(user, request=None) -> dict[str, Any]:
         )
         role = (
             Role.objects.filter(
-                id__in=(direct_ids or group_ids),
+                id__in=(direct_ids | group_ids),
                 is_deleted=False,
                 is_active=True,
             )
