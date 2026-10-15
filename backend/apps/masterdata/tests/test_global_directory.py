@@ -28,11 +28,15 @@ from apps.masterdata.models import (
 pytestmark = pytest.mark.django_db
 
 # Isolated URLconf: the project URLconf still mounts the legacy
-# organization flat routes ahead of masterdata's, so plain HTTP GETs on
-# /api/v1/departments|people/ resolve to the legacy viewsets until the
-# organization app is removed. These tests drive masterdata's viewsets
-# directly to prove the new global endpoints serve global rows.
-urlpatterns = [url_path("", include("apps.masterdata.api.urls"))]
+# organization flat routes ahead of the new global ones, so plain HTTP GETs
+# on /api/v1/departments|people|roles|groups|permissions/ resolve to the
+# legacy viewsets until the organization app is removed (Task 7). These
+# tests drive the new viewsets directly to prove the global endpoints serve
+# global rows.
+urlpatterns = [
+    url_path("", include("apps.masterdata.api.urls")),
+    url_path("", include(("apps.identity.api.urls_rbac", "identity-rbac"))),
+]
 
 
 @pytest.fixture
@@ -73,3 +77,51 @@ def test_flat_directory_endpoints_serve_global_rows(api_client, django_user):
     people = api_client.get(reverse("masterdata:person-list"))
     assert people.status_code == 200, people.content
     assert {row["name"] for row in people.data["results"]} >= {"Jane Doe"}
+
+
+@override_settings(ROOT_URLCONF="apps.masterdata.tests.test_global_directory")
+def test_flat_rbac_endpoints_serve_global_rows(api_client, django_user):
+    from apps.identity.models import Group, Permission, Role
+
+    Role.objects.create(name="Artist", code="artist")
+    Group.objects.create(name="Supervisors", code="supervisors")
+    Permission.objects.create(
+        name="Can view roles",
+        code="role.view",
+        module="role",
+        action="view",
+        category="general",
+    )
+
+    api_client.force_authenticate(user=django_user)
+    for route, key in [
+        ("identity-rbac:role-list", "artist"),
+        ("identity-rbac:group-list", "supervisors"),
+        ("identity-rbac:permission-list", "role.view"),
+    ]:
+        response = api_client.get(reverse(route))
+        assert response.status_code == 200, response.content
+        assert set(response.data) >= {"count", "next", "previous", "results"}
+        assert key in {row["code"] for row in response.data["results"]}, route
+
+
+@override_settings(ROOT_URLCONF="apps.masterdata.tests.test_global_directory")
+def test_flat_directory_list_is_paginated(api_client, django_user):
+    Department.objects.create(name="Compositing", code="COMP", department_type="creative")
+
+    api_client.force_authenticate(user=django_user)
+    response = api_client.get(reverse("masterdata:department-list"))
+    assert response.status_code == 200, response.content
+    assert set(response.data) >= {"count", "next", "previous", "results"}
+    assert response.data["count"] >= 1
+
+
+@override_settings(ROOT_URLCONF="apps.masterdata.tests.test_global_directory")
+def test_flat_directory_write_requires_configure_grant(api_client, django_user):
+    api_client.force_authenticate(user=django_user)
+    response = api_client.post(
+        reverse("masterdata:department-list"),
+        {"name": "Editing", "code": "EDIT", "department_type": "creative"},
+        format="json",
+    )
+    assert response.status_code == 403, response.content

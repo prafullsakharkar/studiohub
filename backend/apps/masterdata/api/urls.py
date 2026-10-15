@@ -46,28 +46,11 @@ directory_router.register(r"teams", TeamViewSet, basename="team")
 directory_router.register(r"offices", OfficeViewSet, basename="office")
 directory_router.register(r"positions", PositionViewSet, basename="position")
 directory_router.register(r"people", PersonViewSet, basename="person")
-# Nested contact/contract routes must precede the parent clients/vendors
-# registration so their regexes win over the parent detail routes.
-directory_router.register(
-    r"clients/(?P<client_pk>[^/.]+)/contacts",
-    ClientContactViewSet,
-    basename="client-contact",
-)
-directory_router.register(
-    r"vendors/(?P<vendor_pk>[^/.]+)/contacts",
-    VendorContactViewSet,
-    basename="vendor-contact",
-)
-directory_router.register(
-    r"clients/(?P<client_pk>[^/.]+)/contracts",
-    ClientContractViewSet,
-    basename="client-contract",
-)
-directory_router.register(
-    r"vendors/(?P<vendor_pk>[^/.]+)/contracts",
-    VendorContractViewSet,
-    basename="vendor-contract",
-)
+# Contacts/contracts stay flat: filter with ?client=<id> / ?vendor=<id>.
+directory_router.register(r"client-contacts", ClientContactViewSet, basename="client-contact")
+directory_router.register(r"vendor-contacts", VendorContactViewSet, basename="vendor-contact")
+directory_router.register(r"client-contracts", ClientContractViewSet, basename="client-contract")
+directory_router.register(r"vendor-contracts", VendorContractViewSet, basename="vendor-contract")
 directory_router.register(r"clients", ClientViewSet, basename="client")
 directory_router.register(r"vendors", VendorViewSet, basename="vendor")
 

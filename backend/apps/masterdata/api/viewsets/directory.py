@@ -141,13 +141,6 @@ class ClientContactViewSet(DirectoryModelViewSet):
     search_fields = ["name", "email"]
     ordering_fields = ["name", "created_at"]
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        client_pk = self.kwargs.get("client_pk")
-        if client_pk:
-            queryset = queryset.filter(client_id=client_pk)
-        return queryset
-
 
 class ClientContractViewSet(DirectoryModelViewSet):
     serializer_class = ClientContractSerializer
@@ -155,13 +148,6 @@ class ClientContractViewSet(DirectoryModelViewSet):
     filterset_fields = ["client", "status", "type"]
     search_fields = ["contract_number", "title"]
     ordering_fields = ["contract_number", "created_at"]
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        client_pk = self.kwargs.get("client_pk")
-        if client_pk:
-            queryset = queryset.filter(client_id=client_pk)
-        return queryset
 
 
 class VendorContactViewSet(DirectoryModelViewSet):
@@ -171,13 +157,6 @@ class VendorContactViewSet(DirectoryModelViewSet):
     search_fields = ["name", "email"]
     ordering_fields = ["name", "created_at"]
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        vendor_pk = self.kwargs.get("vendor_pk")
-        if vendor_pk:
-            queryset = queryset.filter(vendor_id=vendor_pk)
-        return queryset
-
 
 class VendorContractViewSet(DirectoryModelViewSet):
     serializer_class = VendorContractSerializer
@@ -185,10 +164,3 @@ class VendorContractViewSet(DirectoryModelViewSet):
     filterset_fields = ["vendor", "status", "type"]
     search_fields = ["contract_number", "title"]
     ordering_fields = ["contract_number", "created_at"]
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        vendor_pk = self.kwargs.get("vendor_pk")
-        if vendor_pk:
-            queryset = queryset.filter(vendor_id=vendor_pk)
-        return queryset

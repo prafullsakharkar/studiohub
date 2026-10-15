@@ -37,6 +37,9 @@ urlpatterns = [
     path("intelligence/", include("apps.intelligence.api.urls")),
     # Identity (authentication, users, security)
     path("identity/", include(("apps.identity.api.urls", "identity"))),
+    # Identity RBAC — flat platform-global roles/groups/permissions
+    # (top-level to match frontend /api/v1/{roles,groups,permissions}/)
+    path("", include(("apps.identity.api.urls_rbac", "identity-rbac"))),
     # Organization (tenants, departments, teams, offices, RBAC) — namespaced v2
     path("organization/", include(("apps.organization.api.urls", "organization"))),
     # Settings (categories, definitions, feature flags, themes, localization)

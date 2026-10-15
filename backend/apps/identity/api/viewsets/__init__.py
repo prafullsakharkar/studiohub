@@ -2,6 +2,7 @@ from .base import IdentityViewSet
 from .ip_blacklist import IPBlacklistViewSet
 from .login_attempt import LoginAttemptViewSet
 from .profile import ProfileViewSet
+from .rbac import GroupViewSet, PermissionViewSet, RoleViewSet
 from .security_event import SecurityEventViewSet
 from .trusted_device import TrustedDeviceViewSet
 from .user import UserViewSet
@@ -9,9 +10,12 @@ from .user_session import UserSessionViewSet
 
 __all__ = (
     "IdentityViewSet",
+    "GroupViewSet",
     "IPBlacklistViewSet",
     "LoginAttemptViewSet",
+    "PermissionViewSet",
     "ProfileViewSet",
+    "RoleViewSet",
     "SecurityEventViewSet",
     "TrustedDeviceViewSet",
     "UserSessionViewSet",
