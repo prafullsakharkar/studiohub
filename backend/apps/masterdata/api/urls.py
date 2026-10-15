@@ -6,6 +6,7 @@ effective master-data endpoints that match the frontend API contract.
 """
 
 from django.urls import path
+from rest_framework.routers import DefaultRouter
 
 from apps.masterdata.api.viewsets.catalog import (
     MasterAssetTypeViewSet,
@@ -22,9 +23,53 @@ from apps.masterdata.api.viewsets.catalog import (
     SoftwareVersionViewSet,
     SoftwareViewSet,
 )
+from apps.masterdata.api.viewsets.directory import (
+    ClientContactViewSet,
+    ClientContractViewSet,
+    ClientViewSet,
+    DepartmentViewSet,
+    OfficeViewSet,
+    PersonViewSet,
+    PositionViewSet,
+    TeamViewSet,
+    VendorContactViewSet,
+    VendorContractViewSet,
+    VendorViewSet,
+)
 from apps.masterdata.api.viewsets.organization import OrganizationMasterDataViewSet
 
 app_name = "masterdata"
+
+directory_router = DefaultRouter()
+directory_router.register(r"departments", DepartmentViewSet, basename="department")
+directory_router.register(r"teams", TeamViewSet, basename="team")
+directory_router.register(r"offices", OfficeViewSet, basename="office")
+directory_router.register(r"positions", PositionViewSet, basename="position")
+directory_router.register(r"people", PersonViewSet, basename="person")
+# Nested contact/contract routes must precede the parent clients/vendors
+# registration so their regexes win over the parent detail routes.
+directory_router.register(
+    r"clients/(?P<client_pk>[^/.]+)/contacts",
+    ClientContactViewSet,
+    basename="client-contact",
+)
+directory_router.register(
+    r"vendors/(?P<vendor_pk>[^/.]+)/contacts",
+    VendorContactViewSet,
+    basename="vendor-contact",
+)
+directory_router.register(
+    r"clients/(?P<client_pk>[^/.]+)/contracts",
+    ClientContractViewSet,
+    basename="client-contract",
+)
+directory_router.register(
+    r"vendors/(?P<vendor_pk>[^/.]+)/contracts",
+    VendorContractViewSet,
+    basename="vendor-contract",
+)
+directory_router.register(r"clients", ClientViewSet, basename="client")
+directory_router.register(r"vendors", VendorViewSet, basename="vendor")
 
 CATALOG_TYPES = {
     "statuses": MasterStatusViewSet,
@@ -189,6 +234,8 @@ urlpatterns = [
         name="organization-master-data-type",
     ),
 ]
+
+urlpatterns += directory_router.urls
 
 
 for _data_type, _viewset in CATALOG_TYPES.items():
