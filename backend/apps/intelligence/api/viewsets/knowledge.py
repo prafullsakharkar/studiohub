@@ -1,8 +1,8 @@
 """
 Knowledge-base endpoints backed by the ``KnowledgeDocument`` model.
 
-Same URL contract as the former in-memory stub store, now persisted per
-organization. List responses stay bare arrays.
+Same URL contract as the former in-memory stub store, now persisted
+platform-wide (no organization partition). List responses stay bare arrays.
 """
 
 from typing import Any
@@ -21,49 +21,19 @@ from apps.intelligence.serializers import (
     KnowledgeDocumentSerializer,
     KnowledgeDocumentUpdateSerializer,
 )
-from apps.organization.middleware.organization_context import (
-    resolve_organization_context,
-)
-from apps.organization.models import Organization
 
 
 class DummySerializer(serializers.Serializer[Any]):
     pass
 
 
-def _resolve_organization(request):
-    """
-    Resolve the knowledge organization: explicit request context first,
-    then the first org for staff (admin context).
-
-    Non-staff callers must hold a live membership in the resolved org
-    (fail closed); otherwise the client-supplied org header alone would
-    expose another organization's documents. Mirrors the membership gate
-    in ``apps.audit.api.viewsets.activity.ActivityCompatViewSet``.
-    """
-    resolve_organization_context(request, force=True)
-    organization = getattr(request, "organization", None)
-    user = getattr(request, "user", None)
-    if organization is None:
-        if user is not None and (user.is_superuser):
-            return Organization.objects.first()
-        return None
-    if user is not None and not (user.is_superuser):
-        from apps.organization.models import OrganizationMembership
-
-        member = OrganizationMembership.objects.filter(
-            user=user, organization=organization, is_deleted=False
-        ).exists()
-        if not member:
-            return None
-    return organization
-
-
 def _scoped_queryset(request):
-    organization = _resolve_organization(request)
-    if organization is None:
+    # Platform-global: documents carry no tenant partition. Authenticated
+    # callers see every document; anonymous callers see nothing.
+    user = getattr(request, "user", None)
+    if user is None or not getattr(user, "is_authenticated", False):
         return KnowledgeDocument.objects.none()
-    return KnowledgeDocument.objects.filter(organization=organization)
+    return KnowledgeDocument.objects.all()
 
 
 def _get_doc(request, pk):
@@ -90,12 +60,9 @@ class IntelligenceKnowledgeListView(GenericAPIView):  # pyright: ignore[reportMi
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def post(self, request):
-        organization = _resolve_organization(request)
-        if organization is None:
-            return Response({"detail": "No organization found."}, status=404)
         serializer = KnowledgeDocumentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        doc = serializer.save(organization=organization)
+        doc = serializer.save()
         return Response(KnowledgeDocumentSerializer(doc).data, status=201)
 
 

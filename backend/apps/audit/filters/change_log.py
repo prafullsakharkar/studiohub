@@ -19,6 +19,5 @@ class ChangeLogFilter(AuditBaseFilter):
             "target_type": ["exact"],
             "target_id": ["exact"],
             "user": ["exact"],
-            "organization": ["exact"],
             "created_at": ["exact", "gte", "lte"],
         }

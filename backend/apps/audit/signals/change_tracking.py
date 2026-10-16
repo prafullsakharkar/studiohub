@@ -7,8 +7,9 @@ Bounded by design:
 
 - explicit tracked-model list (no global receivers → no audit/identity
   noise, no self-trigger loops from ``ChangeLog`` itself);
-- writes resolve ``organization`` from the instance (rows without one are
-  skipped — the FK requires it);
+- platform-global: ``ChangeLog`` carries no tenant partition, so every
+  tracked write records a row (the former organization gate is gone —
+  rows without an organization are no longer skipped);
 - actor resolves from the thread-local request (may be ``None`` for
   background writes);
 - every receiver is best-effort: tracking must never break the write.
@@ -105,31 +106,10 @@ def _target_name(instance) -> str:
     return f"{type(instance).__name__} {instance.pk}"
 
 
-def _organization(instance):
-    # Most tracked models carry an ``organization`` FK; Organization itself
-    # is the tenant (its own row *is* the organization). Legacy Person rows
-    # (nullable organization) fall back to the active request tenant.
-    org = getattr(instance, "organization", None)
-    if org is None and type(instance).__name__ == "Organization":
-        org = instance
-    if org is None:
-        try:
-            from apps.core.middleware.request_context import get_current_request
-
-            request = get_current_request()
-            org = getattr(request, "organization", None) if request else None
-        except Exception:
-            org = None
-    return org
-
-
 def _record(change_type: str, instance, before: dict, after: dict) -> None:
     from apps.audit.models import ChangeLog
     from apps.core.middleware.request_context import get_current_user
 
-    organization = _organization(instance)
-    if organization is None:
-        return
     changed = sorted(
         {k for k in set(before) | set(after) if not _values_equal(before.get(k), after.get(k))}
     )
@@ -139,7 +119,6 @@ def _record(change_type: str, instance, before: dict, after: dict) -> None:
         target_id=str(instance.pk),
         target_name=_target_name(instance),
         user=get_current_user(),
-        organization=organization,
         before_values=before,
         after_values=after,
         changed_fields=changed,
@@ -210,19 +189,18 @@ _TRACKED_MODEL_PATHS = (
     "apps.production.models.Version",
     "apps.deliveries.models.DeliveryPackage",
     "apps.publishing.models.PublishItem",
-    # Organization-family entities — edit-page writes must produce the same
-    # field-diff rows as production entities (who/when/entity/old→new).
-    "apps.organization.models.Organization",
-    "apps.organization.models.Client",
-    "apps.organization.models.Vendor",
-    "apps.organization.models.Person",
-    "apps.organization.models.Department",
-    "apps.organization.models.Team",
-    "apps.organization.models.Office",
-    "apps.organization.models.OrganizationMembership",
-    "apps.organization.models.UserRole",
-    "apps.organization.models.GroupMember",
-    "apps.organization.models.RolePermission",
+    # Global directory / RBAC entities (post B2/B3 canonicals) — edit-page
+    # writes must produce the same field-diff rows as production entities
+    # (who/when/entity/old→new). Org-app entities die with B7.
+    "apps.masterdata.models.Client",
+    "apps.masterdata.models.Vendor",
+    "apps.masterdata.models.Person",
+    "apps.masterdata.models.Department",
+    "apps.masterdata.models.Team",
+    "apps.masterdata.models.Office",
+    "apps.identity.models.UserRole",
+    "apps.identity.models.GroupMember",
+    "apps.identity.models.RolePermission",
 )
 
 

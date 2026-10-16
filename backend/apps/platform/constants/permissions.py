@@ -2,8 +2,7 @@
 Platform permissions — canonical dot-notation codes — see ADR-0033 D3.
 
 Mapped to the frontend Permission union (e.g. ``report.view``,
-``notification.view``). Checked via HasPermission with organization
-context.
+``notification.view``). Checked via global HasPermission (no org context).
 """
 
 

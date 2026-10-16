@@ -12,7 +12,6 @@ from apps.settings.models.category import SettingCategory
 from apps.settings.models.definition import SettingDefinition
 from apps.settings.models.feature_flag import FeatureFlag
 from apps.settings.models.localization import Localization
-from apps.settings.models.organization import OrganizationSetting
 from apps.settings.models.system import SystemSetting
 from apps.settings.models.theme import Theme
 from apps.settings.tests.factories import (
@@ -60,11 +59,11 @@ class TestThemeModel:
         assert theme.theme_type in valid_choices
 
     @pytest.mark.django_db
-    def test_theme_organization_unique_together(self) -> None:
-        """Test organization + code unique constraint."""
-        org = ThemeFactory()
+    def test_theme_code_unique(self) -> None:
+        """Test code unique constraint."""
+        theme = ThemeFactory()
         with pytest.raises(IntegrityError):
-            ThemeFactory(code=org.code, organization=org.organization)
+            ThemeFactory(code=theme.code)
 
 
 class TestCategoryModel:
@@ -234,62 +233,6 @@ class TestLocalizationModel:
         valid_timezones = [t[0] for t in Localization.TIMEZONE_CHOICES]
         localization = LocalizationFactory()
         assert localization.timezone in valid_timezones
-
-
-class TestOrganizationSettingModel:
-    """Tests for OrganizationSetting model."""
-
-    @pytest.mark.django_db
-    def test_create_organization_setting(
-        self, organization_setting: OrganizationSetting
-    ) -> None:
-        """Test creating an organization setting instance."""
-        assert organization_setting.uuid is not None
-        assert organization_setting.value is not None
-
-    @pytest.mark.django_db
-    def test_organization_setting_str_method(
-        self, organization_setting: OrganizationSetting
-    ) -> None:
-        """Test __str__ method."""
-        expected = (
-            f"{organization_setting.organization.name}: {organization_setting.setting.name}"
-        )
-        assert str(organization_setting) == expected
-
-    @pytest.mark.django_db
-    def test_organization_setting_audit_fields(
-        self, organization_setting: OrganizationSetting
-    ) -> None:
-        """Test audit fields are present."""
-        assert organization_setting.created_at is not None
-        assert organization_setting.updated_at is not None
-
-    @pytest.mark.django_db
-    def test_organization_setting_soft_delete(
-        self, organization_setting: OrganizationSetting
-    ) -> None:
-        """Test soft delete functionality."""
-        assert organization_setting.deleted_at is None
-        organization_setting.soft_delete()
-        organization_setting.refresh_from_db()
-        assert organization_setting.deleted_at is not None
-
-    @pytest.mark.django_db
-    def test_organization_setting_value_parsed(
-        self, organization_setting: OrganizationSetting
-    ) -> None:
-        """Test value_parsed property."""
-        organization_setting.value = '{"key": "value"}'
-        assert organization_setting.value_parsed == {"key": "value"}
-
-    @pytest.mark.django_db
-    def test_organization_setting_set_value(
-        self, organization_setting: OrganizationSetting
-    ) -> None:
-        """Test set_value method."""
-        organization_setting.set_value({"key": "value"})
-        assert organization_setting.value == '{"key": "value"}'
 
 
 class TestSystemSettingModel:

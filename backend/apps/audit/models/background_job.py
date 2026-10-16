@@ -8,7 +8,6 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.models.bases.entity import EntityModel
 from apps.core.models.bases.timestamp import TimeStampedModel
-from apps.organization.models.organization import Organization
 
 
 class BackgroundJob(EntityModel, TimeStampedModel):
@@ -88,13 +87,6 @@ class BackgroundJob(EntityModel, TimeStampedModel):
         help_text="Description of the job",
     )
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="background_jobs",
-        db_index=True,
-        help_text="Organization context",
-    )
     
     # Job parameters
     job_id = models.CharField(

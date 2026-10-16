@@ -8,12 +8,10 @@ from __future__ import annotations
 import factory
 from factory.django import DjangoModelFactory
 
-from apps.organization.tests.factories import OrganizationFactory
 from apps.settings.models.category import SettingCategory
 from apps.settings.models.definition import SettingDefinition
 from apps.settings.models.feature_flag import FeatureFlag
 from apps.settings.models.localization import Localization
-from apps.settings.models.organization import OrganizationSetting
 from apps.settings.models.system import SystemSetting
 from apps.settings.models.theme import Theme
 
@@ -28,7 +26,6 @@ class ThemeFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgu
     name = factory.Sequence(lambda n: f"Theme {n}")
     description = factory.Faker("text", max_nb_chars=500)
     theme_type = factory.Faker("random_element", elements=["light", "dark", "custom"])
-    organization = factory.SubFactory(OrganizationFactory)
     primary_color = factory.Faker("hex_color")
     secondary_color = factory.Faker("hex_color")
     accent_color = factory.Faker("hex_color")
@@ -97,7 +94,6 @@ class FeatureFlagFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTy
     percentage = factory.Faker("random_int", min=0, max=100)
     start_date = factory.Faker("date_time_this_year")
     end_date = factory.Faker("date_time_this_year")
-    organization = factory.SubFactory(OrganizationFactory)
 
 
 class LocalizationFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
@@ -124,20 +120,7 @@ class LocalizationFactory(DjangoModelFactory):  # pyright: ignore[reportMissingT
         "random_element", elements=[n[0] for n in Localization.NUMBER_FORMAT_CHOICES]
     )
     currency_code = factory.Faker("currency_code")
-    organization = factory.SubFactory(OrganizationFactory)
     is_active = True
-
-
-class OrganizationSettingFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
-    """Factory for OrganizationSetting model."""
-
-    class Meta:
-        model = OrganizationSetting
-
-    setting = factory.SubFactory(DefinitionFactory)
-    organization = factory.SubFactory(OrganizationFactory)
-    value = factory.Faker("text", max_nb_chars=500)
-    is_locked = False
 
 
 class SystemSettingFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]

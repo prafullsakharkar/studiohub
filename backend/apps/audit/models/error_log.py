@@ -8,8 +8,21 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.models.bases.entity import EntityModel
 from apps.core.models.bases.timestamp import TimeStampedModel
+from apps.core.models.managers.soft_delete import SoftDeleteManager
 from apps.identity.models.user import User
-from apps.organization.models.organization import Organization
+
+
+class ErrorLogManager(SoftDeleteManager):
+    """Soft-delete manager that absorbs the legacy ``organization`` kwarg.
+
+    ``apps.core.api.exceptions.handlers._record_error_log`` (de-orged in B6)
+    still passes ``organization=``; error rows are platform-global, so the
+    value is dropped. Removed with the core compat layer in B6/B7.
+    """
+
+    def create(self, **kwargs):
+        kwargs.pop("organization", None)
+        return super().create(**kwargs)
 
 
 class ErrorLog(EntityModel, TimeStampedModel):
@@ -104,13 +117,6 @@ class ErrorLog(EntityModel, TimeStampedModel):
         help_text="User affected by the error",
     )
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="error_logs",
-        db_index=True,
-        help_text="Organization context",
-    )
     
     ip_address = models.GenericIPAddressField(
         null=True,
@@ -160,7 +166,9 @@ class ErrorLog(EntityModel, TimeStampedModel):
         related_name="resolved_error_logs",
         help_text="User who resolved the error",
     )
-    
+
+    objects = ErrorLogManager()
+
     class Meta:
         db_table = "error_logs"
         ordering = ("-created_at",)

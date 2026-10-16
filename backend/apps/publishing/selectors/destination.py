@@ -11,16 +11,11 @@ from apps.publishing.models import PublishDestination
 
 class DestinationSelector(BaseSelector):
     """
-    Read-side data access for publish destinations.
-
-    Organization scoping is applied by the viewset through
-    ``scope_by_request`` (fail closed).
+    Read-side data access for publish destinations (platform-global).
     """
 
     model = PublishDestination
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[PublishDestination]:
-        return cls.model.objects.select_related(
-            "organization",
-        )
+        return cls.model.objects.all()

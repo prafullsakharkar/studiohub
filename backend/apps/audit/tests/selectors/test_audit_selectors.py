@@ -28,14 +28,6 @@ class TestAuditLogSelector:
         assert retrieved == audit_log
 
     @pytest.mark.django_db
-    def test_selector_by_organization(self, audit_log: AuditLog) -> None:
-        """Test selector by_organization method."""
-        queryset = AuditLogSelector.by_organization(
-            str(audit_log.organization_id)
-        )
-        assert audit_log in queryset
-
-    @pytest.mark.django_db
     def test_selector_by_actor(self, audit_log: AuditLog) -> None:
         """Test selector by_actor method."""
         queryset = AuditLogSelector.by_actor(str(audit_log.actor_id))

@@ -3,10 +3,8 @@ Feature Flag selector.
 """
 from __future__ import annotations
 
-from django.db import models
 from django.db.models import QuerySet
 
-from apps.organization.models.organization import Organization
 from apps.settings.models.feature_flag import FeatureFlag
 
 from .base import SettingsBaseSelector
@@ -38,13 +36,7 @@ class FeatureFlagSelector(SettingsBaseSelector):
         """
         return cls.get_queryset().get(code=code)
     
-    @classmethod
-    def for_organization(cls, organization: Organization):
-        """
-        Get feature flags for a specific organization.
-        """
-        return cls.get_queryset().filter(organization=organization)
-    
+
     @classmethod
     def active(cls):
         """
@@ -53,19 +45,11 @@ class FeatureFlagSelector(SettingsBaseSelector):
         return cls.get_queryset().filter(status=FeatureFlag.STATUS_ENABLED)
     
     @classmethod
-    def for_user(cls, organization: Organization, user_id: str):
+    def for_user(cls, user_id: str):
         """
-        Get feature flags enabled for a specific user.
+        Get feature flags enabled for a specific user (global flags).
         """
-        queryset = cls.get_queryset()
-        
-        # System-wide flags (no organization)
-        queryset = queryset.filter(
-            models.Q(organization__isnull=True) |
-            models.Q(organization=organization)
+        return (
+            cls.get_queryset()
+            .filter(status=FeatureFlag.STATUS_ENABLED)
         )
-        
-        # Only enabled flags
-        queryset = queryset.filter(status=FeatureFlag.STATUS_ENABLED)
-        
-        return queryset

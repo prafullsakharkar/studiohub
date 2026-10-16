@@ -13,51 +13,19 @@ from apps.intelligence.serializers import (
     RecentSearchSerializer,
     SavedSearchSerializer,
 )
-from apps.organization.middleware.organization_context import (
-    resolve_organization_context,
-)
-from apps.organization.models import Organization
 
 
 class DummySerializer(serializers.Serializer[Any]):
     pass
 
 
-def _resolve_organization(request):
-    """
-    Resolve the search organization: explicit request context first,
-    then the first org for staff (admin context).
-
-    Non-staff callers must hold a live membership in the resolved org
-    (fail closed); otherwise the client-supplied org header alone would
-    scope another organization's data to the caller. Mirrors the
-    membership gate in
-    ``apps.audit.api.viewsets.activity.ActivityCompatViewSet``.
-    """
-    resolve_organization_context(request, force=True)
-    organization = getattr(request, "organization", None)
-    user = getattr(request, "user", None)
-    if organization is None:
-        if user is not None and (user.is_superuser):
-            return Organization.objects.first()
-        return None
-    if user is not None and not (user.is_superuser):
-        from apps.organization.models import OrganizationMembership
-
-        member = OrganizationMembership.objects.filter(
-            user=user, organization=organization, is_deleted=False
-        ).exists()
-        if not member:
-            return None
-    return organization
-
-
 def _user_scoped_queryset(request, model):
-    organization = _resolve_organization(request)
+    # Platform-global: searches are owned by the authenticated user with
+    # no organization partition.
     user = getattr(request, "user", None)
-    if organization is None or user is None or not user.is_authenticated:
+    if user is None or not getattr(user, "is_authenticated", False):
         return model.objects.none()
-    return model.objects.filter(organization=organization, user=user)
+    return model.objects.filter(user=user)
 
 
 def _get_saved_search(request, pk):
@@ -129,12 +97,9 @@ class IntelligenceSearchSavedView(GenericAPIView):  # pyright: ignore[reportMiss
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def post(self, request):
-        organization = _resolve_organization(request)
-        if organization is None:
-            return Response({"detail": "No organization found."}, status=404)
         serializer = SavedSearchSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        search = serializer.save(organization=organization, user=request.user)
+        search = serializer.save(user=request.user)
         return Response(SavedSearchSerializer(search).data, status=201)
 
 
@@ -168,16 +133,13 @@ class IntelligenceSearchRecentView(GenericAPIView):  # pyright: ignore[reportMis
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def post(self, request):
-        organization = _resolve_organization(request)
-        if organization is None:
-            return Response({"detail": "No organization found."}, status=404)
         serializer = RecentSearchSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         validated = serializer.validated_data
         query = validated.get("query") if isinstance(validated, dict) else ""
         if not (query or "").strip():
             return Response({"query": ["This field may not be blank."]}, status=400)
-        search = serializer.save(organization=organization, user=request.user)
+        search = serializer.save(user=request.user)
         return Response(RecentSearchSerializer(search).data, status=201)
 
     def delete(self, request):

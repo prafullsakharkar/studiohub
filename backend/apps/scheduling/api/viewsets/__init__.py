@@ -2,13 +2,13 @@
 Scheduling viewsets for API endpoints.
 """
 from django.core.exceptions import ValidationError
-from rest_framework import status
+from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.core.api.viewsets.platform import PlatformScopedViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
-from apps.organization.api.viewsets.scoped import OrganizationScopedViewSet
 from apps.scheduling.api.serializers import (
     CalendarEventCreateSerializer,
     CalendarEventDetailSerializer,
@@ -39,14 +39,57 @@ from apps.scheduling.services import (
     update_calendar_event_status,
 )
 
-_RESOURCE_ORG_ERROR = "Resource must belong to the active organization."
-_NO_USER_RESOURCE_ERROR = (
-    "No scheduling resource is associated with the current user "
-    "in this organization."
-)
+_NO_USER_RESOURCE_ERROR = "No scheduling resource is associated with the current user."
 
 
-class CalendarEventViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class PlatformCrudViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    PlatformScopedViewSet,
+):
+    """Platform-global CRUD (org-free).
+
+    Querysets come from the selector's org-free reads. Destroy honors
+    the Core soft-delete contract (same as the former org-scoped base).
+    """
+
+    # Same URL contract as the former org-scoped base: ``uuid`` kwarg
+    # resolving against the ``id`` primary key.
+    lookup_field = "id"
+    lookup_url_kwarg = "uuid"
+
+    serializer_map = {}
+
+    def get_serializer_class(self):
+        action = getattr(self, "action", None)
+        serializer = self.serializer_map.get(action)
+        if serializer:
+            return serializer
+        if self.serializer_map and (action is None or action not in self.serializer_map):
+            # Schema generation (drf-spectacular) introspects operations
+            # before dispatch (no action set) and for unmapped actions;
+            # fall back to the primary mapped serializer so OpenAPI can
+            # resolve. Runtime behavior for mapped actions is unchanged.
+            preferred = self.serializer_map.get("list")
+            return preferred or next(iter(self.serializer_map.values()))
+        return super().get_serializer_class()
+
+    def perform_destroy(self, instance):
+        from apps.core.services.soft_delete import SoftDeleteService
+
+        if hasattr(instance, "is_deleted"):
+            SoftDeleteService.delete(
+                instance,
+                user=getattr(self.request, "user", None),
+            )
+        else:
+            instance.delete()
+
+
+class CalendarEventViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for CalendarEvent."""
 
     selector_class = CalendarEventSelector
@@ -87,13 +130,12 @@ class CalendarEventViewSet(OrganizationScopedViewSet):  # pyright: ignore[report
             event_id=str(event.id),
             status=status_val,
             user_id=str(request.user.id) if request.user.is_authenticated else None,
-            organization_id=str(request.organization.id),
         )
 
         return Response(CalendarEventDetailSerializer(event).data)
 
 
-class ResourceViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class ResourceViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for Resource."""
 
     selector_class = ResourceSelector
@@ -146,7 +188,6 @@ class ResourceViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
             task_id=task_id,
             status=slot_status,
             notes=notes,
-            organization_id=str(request.organization.id),
         )
 
         return Response(ResourceScheduleSerializer(schedule).data, status=status.HTTP_201_CREATED)
@@ -168,13 +209,12 @@ class ResourceViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
             start_time=start_time,
             end_time=end_time,
             reason=reason,
-            organization_id=str(request.organization.id),
         )
 
         return Response(ResourceScheduleSerializer(schedule).data, status=status.HTTP_201_CREATED)
 
 
-class ResourceScheduleViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class ResourceScheduleViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for ResourceSchedule."""
 
     selector_class = ResourceScheduleSelector
@@ -203,21 +243,13 @@ class ResourceScheduleViewSet(OrganizationScopedViewSet):  # pyright: ignore[rep
     ordering_fields = ("start_time", "end_time", "created_at")
 
     def perform_create(self, serializer):
-        organization = self.require_organization()
-        resource = serializer.validated_data.get("resource")
-        if resource is None or resource.organization_id != organization.id:
-            raise ValidationError({"resource": _RESOURCE_ORG_ERROR})
         serializer.save()
 
     def perform_update(self, serializer):
-        organization = self.require_organization()
-        resource = serializer.validated_data.get("resource")
-        if resource is not None and resource.organization_id != organization.id:
-            raise ValidationError({"resource": _RESOURCE_ORG_ERROR})
         serializer.save()
 
 
-class ResourceLeaveViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class ResourceLeaveViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for ResourceLeave."""
 
     selector_class = ResourceLeaveSelector
@@ -248,22 +280,16 @@ class ResourceLeaveViewSet(OrganizationScopedViewSet):  # pyright: ignore[report
     ordering_fields = ("start_date", "created_at")
 
     def perform_create(self, serializer):
-        organization = self.require_organization()
         resource = serializer.validated_data.get("resource")
         if resource is None:
             resource = Resource.objects.filter(
                 user=self.request.user,
-                organization=organization,
             ).first()
-        if resource is None or resource.organization_id != organization.id:
+        if resource is None:
             raise ValidationError({"resource": _NO_USER_RESOURCE_ERROR})
         serializer.save(resource=resource)
 
     def perform_update(self, serializer):
-        organization = self.require_organization()
-        resource = serializer.validated_data.get("resource")
-        if resource is not None and resource.organization_id != organization.id:
-            raise ValidationError({"resource": _RESOURCE_ORG_ERROR})
         serializer.save()
 
     @action(detail=True, methods=["post"], url_path="approve")
@@ -274,7 +300,6 @@ class ResourceLeaveViewSet(OrganizationScopedViewSet):  # pyright: ignore[report
         leave = approve_leave(
             leave_id=str(leave.id),
             user_id=str(request.user.id) if request.user.is_authenticated else None,
-            organization_id=str(request.organization.id),
         )
 
         return Response(ResourceLeaveSerializer(leave).data)
@@ -291,13 +316,12 @@ class ResourceLeaveViewSet(OrganizationScopedViewSet):  # pyright: ignore[report
         leave = reject_leave(
             leave_id=str(leave.id),
             rejection_reason=rejection_reason,
-            organization_id=str(request.organization.id),
         )
 
         return Response(ResourceLeaveSerializer(leave).data)
 
 
-class HolidayViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class HolidayViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for Holiday."""
 
     selector_class = HolidaySelector

@@ -11,7 +11,6 @@ from apps.settings.models.category import SettingCategory
 from apps.settings.models.definition import SettingDefinition
 from apps.settings.models.feature_flag import FeatureFlag
 from apps.settings.models.localization import Localization
-from apps.settings.models.organization import OrganizationSetting
 from apps.settings.models.system import SystemSetting
 from apps.settings.models.theme import Theme
 from apps.settings.tests.factories import (
@@ -19,7 +18,6 @@ from apps.settings.tests.factories import (
     DefinitionFactory,
     FeatureFlagFactory,
     LocalizationFactory,
-    OrganizationSettingFactory,
     SystemSettingFactory,
     ThemeFactory,
 )
@@ -41,15 +39,6 @@ class TestThemeManager:
         theme1 = ThemeFactory(theme_type="light")
         theme2 = ThemeFactory(theme_type="dark")
         queryset = Theme.objects.filter(theme_type="light")
-        assert theme1 in queryset
-        assert theme2 not in queryset
-
-    @pytest.mark.django_db
-    def test_manager_filter_by_organization(self, organization: ThemeFactory) -> None:
-        """Test manager filter by organization."""
-        theme1 = ThemeFactory(organization=organization)
-        theme2 = ThemeFactory()
-        queryset = Theme.objects.filter(organization=organization)
         assert theme1 in queryset
         assert theme2 not in queryset
 
@@ -104,12 +93,12 @@ class TestDefinitionManager:
 
     @pytest.mark.django_db
     def test_manager_filter_by_scope(self) -> None:
-        """Test manager filter by scope."""
-        definition1 = DefinitionFactory(scope="organization")
+        """Test manager filter by scope (system-wide only)."""
+        definition1 = DefinitionFactory(scope="system")
         definition2 = DefinitionFactory(scope="system")
-        queryset = SettingDefinition.objects.filter(scope="organization")
+        queryset = SettingDefinition.objects.filter(scope="system")
         assert definition1 in queryset
-        assert definition2 not in queryset
+        assert definition2 in queryset
 
 
 class TestFeatureFlagManager:
@@ -168,28 +157,6 @@ class TestLocalizationManager:
         queryset = Localization.objects.filter(timezone="Asia/Kolkata")
         assert localization1 in queryset
         assert localization2 not in queryset
-
-
-class TestOrganizationSettingManager:
-    """Tests for OrganizationSetting manager."""
-
-    @pytest.mark.django_db
-    def test_manager_all(self) -> None:
-        """Test manager all method."""
-        setting = OrganizationSettingFactory()
-        queryset = OrganizationSetting.objects.all()
-        assert setting in queryset
-
-    @pytest.mark.django_db
-    def test_manager_filter_by_organization(
-        self, organization: OrganizationSettingFactory
-    ) -> None:
-        """Test manager filter by organization."""
-        setting1 = OrganizationSettingFactory(organization=organization)
-        setting2 = OrganizationSettingFactory()
-        queryset = OrganizationSetting.objects.filter(organization=organization)
-        assert setting1 in queryset
-        assert setting2 not in queryset
 
 
 class TestSystemSettingManager:

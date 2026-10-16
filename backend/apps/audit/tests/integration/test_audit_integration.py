@@ -10,7 +10,6 @@ from apps.audit.models.audit_log import AuditLog
 from apps.audit.selectors.audit_log import AuditLogSelector
 from apps.audit.services.audit_log import AuditLogService
 from apps.audit.tests.factories import AuditLogFactory
-from apps.organization.tests.factories import OrganizationFactory
 
 
 class TestAuditWorkflow:
@@ -19,13 +18,11 @@ class TestAuditWorkflow:
     @pytest.mark.django_db
     def test_create_audit_log_workflow(self) -> None:
         """Create an audit log through the service and verify persistence."""
-        organization = OrganizationFactory()
         log = AuditLogService.create_log(
             action=AuditLog.ACTION_CREATE,
             severity="info",
             target_type="user",
             target_id="u-1",
-            organization=organization,
             description="User created",
         )
         assert log.id is not None
@@ -48,14 +45,6 @@ class TestAuditWorkflow:
         log = AuditLogFactory()
         retrieved = AuditLogSelector.get_by_id(log.id)
         assert retrieved.id == log.id
-
-    @pytest.mark.django_db
-    def test_audit_log_by_organization(self) -> None:
-        """Selector scopes audit logs by organization."""
-        organization = OrganizationFactory()
-        log = AuditLogFactory(organization=organization)
-        qs = AuditLogSelector.by_organization(organization.id)
-        assert log in qs
 
     @pytest.mark.django_db
     def test_soft_delete_workflow(self) -> None:

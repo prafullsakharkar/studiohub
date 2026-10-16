@@ -18,32 +18,25 @@ from apps.scheduling.models import (
 
 
 class CalendarEventSelector(BaseSelector):
-    """
-    Read-side data access for calendar events.
-
-    Organization scoping is applied by the viewset through
-    ``scope_by_request`` (fail closed).
-    """
+    """Read-side data access for calendar events (platform-global)."""
 
     model = CalendarEvent
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
         return cls.model.objects.select_related(
-            "organization",
             "project",
         )
 
 
 class ResourceSelector(BaseSelector):
-    """Read-side data access for scheduling resources."""
+    """Read-side data access for scheduling resources (platform-global)."""
 
     model = Resource
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
         return cls.model.objects.select_related(
-            "organization",
             "department",
             "team",
             "user",
@@ -51,15 +44,9 @@ class ResourceSelector(BaseSelector):
 
 
 class ResourceScheduleSelector(BaseSelector):
-    """
-    Read-side data access for resource schedules.
-
-    Schedules have no direct organization foreign key; they are scoped
-    through the related resource.
-    """
+    """Read-side data access for resource schedules (platform-global)."""
 
     model = ResourceSchedule
-    scope_field = "resource__organization"
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
@@ -71,15 +58,9 @@ class ResourceScheduleSelector(BaseSelector):
 
 
 class ResourceLeaveSelector(BaseSelector):
-    """
-    Read-side data access for resource leaves.
-
-    Leaves have no direct organization foreign key; they are scoped
-    through the related resource.
-    """
+    """Read-side data access for resource leaves (platform-global)."""
 
     model = ResourceLeave
-    scope_field = "resource__organization"
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
@@ -90,10 +71,10 @@ class ResourceLeaveSelector(BaseSelector):
 
 
 class HolidaySelector(BaseSelector):
-    """Read-side data access for holidays."""
+    """Read-side data access for holidays (platform-global)."""
 
     model = Holiday
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
-        return cls.model.objects.select_related("organization")
+        return cls.model.objects.all()

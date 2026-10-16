@@ -25,7 +25,6 @@ class FeatureFlagSerializer(serializers.ModelSerializer[FeatureFlag]):
             "percentage",
             "start_date",
             "end_date",
-            "organization",
             "config",
             "created_by",
             "updated_by",

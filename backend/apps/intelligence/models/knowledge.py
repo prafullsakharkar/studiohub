@@ -11,12 +11,6 @@ class KnowledgeDocument(EntityModel):
     replacing the former in-memory stub store.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="knowledge_documents",
-        db_index=True,
-    )
     title = models.CharField(max_length=255, db_index=True)
     slug = models.SlugField(max_length=255, db_index=True)
     summary = models.TextField(blank=True, default="")
@@ -40,12 +34,12 @@ class KnowledgeDocument(EntityModel):
         ordering = ("title",)
         constraints = [
             models.UniqueConstraint(
-                fields=["organization", "slug"],
-                name="uq_knowledge_document_org_slug",
+                fields=["slug"],
+                name="uq_knowledge_document_slug",
             ),
         ]
         indexes = [
-            models.Index(fields=["organization", "category"]),
+            models.Index(fields=["category"]),
         ]
 
     def __str__(self):

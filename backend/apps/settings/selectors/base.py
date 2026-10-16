@@ -41,12 +41,10 @@ class SettingsBaseSelector(BaseSelector):
         request=None,
     ) -> QuerySet[Any, Any]:
         """
-        Restrict org-scoped settings to the caller's organizations.
+        Platform-global settings visibility (org-free).
 
-        Regular users only see settings for organizations they belong to.
-        Only superusers (break-glass) see everything. When the model supports a
-        ``null`` organization (default themes / localizations), those
-        platform defaults remain visible to all authenticated users.
+        Settings carry no tenant partition: every authenticated caller
+        sees the platform-wide rows; anonymous callers see nothing.
         """
         if request is None:
             return queryset
@@ -56,40 +54,7 @@ class SettingsBaseSelector(BaseSelector):
         if user is None or not user.is_authenticated:
             return queryset.none()
 
-        if user.is_superuser:
-            return queryset
-
-        from django.db.models import Q
-
-        # Prefer the active request organization (resolved post-auth by the
-        # viewset) — but only when the caller belongs to it; platform
-        # defaults stay visible in every case.
-        active_org = getattr(request, "organization", None)
-        active_org_id = getattr(active_org, "id", None) or (
-            active_org if active_org else None
-        )
-        if active_org_id is not None and getattr(request, "membership", None):
-            return queryset.filter(
-                Q(organization_id=active_org_id) | Q(organization__isnull=True),
-            )
-
-        organization_ids = list(
-            user.organizations.values_list("id", flat=True),
-        )
-
-        return queryset.filter(
-            Q(organization_id__in=organization_ids)
-            | Q(organization__isnull=True),
-        )
-
-    @classmethod
-    def for_organization(
-        cls,
-        organization,
-    ):
-        return cls.filter(
-            organization=organization,
-        )
+        return queryset
 
     @classmethod
     def active(cls):

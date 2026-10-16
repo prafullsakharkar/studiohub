@@ -9,19 +9,16 @@ from __future__ import annotations
 
 import pytest
 
-from apps.organization.tests.factories import OrganizationFactory
 from apps.settings.filters.category import SettingCategoryFilter
 from apps.settings.filters.definition import SettingDefinitionFilter
 from apps.settings.filters.feature_flag import FeatureFlagFilter
 from apps.settings.filters.localization import LocalizationFilter
-from apps.settings.filters.organization import OrganizationSettingFilter
 from apps.settings.filters.system import SystemSettingFilter
 from apps.settings.filters.theme import ThemeFilter
 from apps.settings.models.category import SettingCategory
 from apps.settings.models.definition import SettingDefinition
 from apps.settings.models.feature_flag import FeatureFlag
 from apps.settings.models.localization import Localization
-from apps.settings.models.organization import OrganizationSetting
 from apps.settings.models.system import SystemSetting
 from apps.settings.models.theme import Theme
 from apps.settings.tests.factories import (
@@ -29,7 +26,6 @@ from apps.settings.tests.factories import (
     DefinitionFactory,
     FeatureFlagFactory,
     LocalizationFactory,
-    OrganizationSettingFactory,
     SystemSettingFactory,
     ThemeFactory,
 )
@@ -87,20 +83,6 @@ class TestThemeFilter:
         )
         assert active in filterset.qs
         assert inactive not in filterset.qs
-
-    @pytest.mark.django_db
-    def test_filter_by_organization(self) -> None:
-        """Filter themes by organization."""
-        org1 = OrganizationFactory()
-        org2 = OrganizationFactory()
-        theme1 = ThemeFactory(organization=org1)
-        ThemeFactory(organization=org2)
-        filterset = ThemeFilter(
-            Theme.objects.all(),
-            data={"organization": str(org1.id)},
-        )
-        assert theme1 in filterset.qs
-        assert filterset.qs.count() == 1
 
     @pytest.mark.django_db
     def test_empty_data_returns_all(self) -> None:
@@ -237,22 +219,6 @@ class TestLocalizationFilter:
         )
         assert loc1 in filterset.qs
         assert loc2 not in filterset.qs
-
-
-class TestOrganizationSettingFilter:
-    """Tests for OrganizationSettingFilter."""
-
-    @pytest.mark.django_db
-    def test_filter_by_is_locked(self) -> None:
-        """Filter organization settings by locked flag."""
-        locked = OrganizationSettingFactory(is_locked=True)
-        unlocked = OrganizationSettingFactory(is_locked=False)
-        filterset = OrganizationSettingFilter(
-            OrganizationSetting.objects.all(),
-            data={"is_locked": "true"},
-        )
-        assert locked in filterset.qs
-        assert unlocked not in filterset.qs
 
 
 class TestSystemSettingFilter:

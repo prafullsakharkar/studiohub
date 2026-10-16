@@ -49,9 +49,8 @@ class APITelemetryMiddleware:
     """
     Record API ingress telemetry.
 
-    Place after ``OrganizationMiddleware`` so ``request.organization``
-    is resolved. Skips anonymous/system traffic (the organization FK is
-    required) and non-API paths.
+    Platform-global (org-free): one ``APIRequest`` row per API call.
+    Skips non-API paths.
     """
 
     def __init__(self, get_response):
@@ -75,10 +74,7 @@ class APITelemetryMiddleware:
         from apps.audit.models import APIRequest
 
         user = getattr(request, "user", None)
-        organization = getattr(request, "organization", None)
-        if organization is None:
-            return
-        if user is None or not getattr(user, "is_authenticated", False):
+        if user is not None and not getattr(user, "is_authenticated", False):
             user = None
 
         status_code = getattr(response, "status_code", 0) or 0
@@ -92,7 +88,6 @@ class APITelemetryMiddleware:
             request_size_bytes=int(request.META.get("CONTENT_LENGTH") or 0),
             response_size_bytes=0,
             user=user,
-            organization=organization,
             ip_address=self._client_ip(request),
             user_agent=(request.META.get("HTTP_USER_AGENT") or "")[:1000],
             api_version=_api_version(request.path),

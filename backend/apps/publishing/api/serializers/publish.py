@@ -167,10 +167,8 @@ class PublishCreateSerializer(serializers.Serializer[Any]):
         """Create a publish item."""
         from apps.publishing.models import PublishItem
 
-        organization = validated_data.pop("organization")
         created_by = validated_data.pop("created_by", None)
         return PublishItem.objects.create(
-            organization=organization,
             created_by=created_by,
             **validated_data,
         )

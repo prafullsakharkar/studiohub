@@ -17,7 +17,6 @@ if TYPE_CHECKING:
 def create_calendar_event(
     *,
     title: str,
-    organization_id: str,
     start_time: str,
     end_time: str,
     event_type: str = "Meeting",
@@ -31,14 +30,10 @@ def create_calendar_event(
     created_by_id: str | None = None,
 ) -> CalendarEvent:
     """Create a new calendar event."""
-    from apps.organization.models import Organization
     from apps.scheduling.models import CalendarEvent
-    
-    org = Organization.objects.get(id=organization_id)
-    
+
     event = CalendarEvent.objects.create(
         title=title,
-        organization=org,
         start_time=start_time,
         end_time=end_time,
         event_type=event_type,
@@ -60,15 +55,11 @@ def update_calendar_event_status(
     event_id: str,
     status: str,
     user_id: str | None = None,
-    organization_id: str,
 ) -> CalendarEvent:
     """Update calendar event status."""
     from apps.scheduling.models import CalendarEvent
     
-    event = CalendarEvent.objects.get(
-        id=event_id,
-        organization_id=organization_id,
-    )
+    event = CalendarEvent.objects.get(id=event_id)
     event.status = status
     event.save(update_fields=["status"])
     
@@ -84,15 +75,11 @@ def book_resource(
     task_id: str | None = None,
     status: str = "Booked",
     notes: str = "",
-    organization_id: str,
 ) -> ResourceSchedule:
     """Book a resource for a time slot."""
     from apps.scheduling.models import Resource, ResourceSchedule
     
-    resource = Resource.objects.get(
-        id=resource_id,
-        organization_id=organization_id,
-    )
+    resource = Resource.objects.get(id=resource_id)
     
     schedule = ResourceSchedule.objects.create(
         resource=resource,
@@ -113,15 +100,11 @@ def block_resource(
     start_time: str,
     end_time: str,
     reason: str = "",
-    organization_id: str,
 ) -> ResourceSchedule:
     """Block a resource (mark as unavailable)."""
     from apps.scheduling.models import Resource, ResourceSchedule
     
-    resource = Resource.objects.get(
-        id=resource_id,
-        organization_id=organization_id,
-    )
+    resource = Resource.objects.get(id=resource_id)
     
     schedule = ResourceSchedule.objects.create(
         resource=resource,
@@ -141,15 +124,11 @@ def submit_leave_request(
     start_date: str,
     end_date: str,
     reason: str = "",
-    organization_id: str,
 ) -> ResourceLeave:
     """Submit a leave request."""
     from apps.scheduling.models import Resource, ResourceLeave
     
-    resource = Resource.objects.get(
-        id=resource_id,
-        organization_id=organization_id,
-    )
+    resource = Resource.objects.get(id=resource_id)
     
     # Calculate total days
     from datetime import date
@@ -173,15 +152,11 @@ def approve_leave(
     *,
     leave_id: str,
     user_id: str,
-    organization_id: str,
 ) -> ResourceLeave:
     """Approve a leave request."""
     from apps.scheduling.models import ResourceLeave
     
-    leave = ResourceLeave.objects.get(
-        id=leave_id,
-        resource__organization_id=organization_id,
-    )
+    leave = ResourceLeave.objects.get(id=leave_id)
     leave.status = "Approved"
     leave.approved_by_id = user_id
     leave.approved_at = leave.updated_at
@@ -194,15 +169,11 @@ def reject_leave(
     *,
     leave_id: str,
     rejection_reason: str,
-    organization_id: str,
 ) -> ResourceLeave:
     """Reject a leave request."""
     from apps.scheduling.models import ResourceLeave
     
-    leave = ResourceLeave.objects.get(
-        id=leave_id,
-        resource__organization_id=organization_id,
-    )
+    leave = ResourceLeave.objects.get(id=leave_id)
     leave.status = "Rejected"
     leave.rejection_reason = rejection_reason
     leave.save(update_fields=["status", "rejection_reason"])
@@ -213,21 +184,16 @@ def reject_leave(
 def create_holiday(
     *,
     name: str,
-    organization_id: str,
     holiday_date: str,
     is_paid: bool = True,
     is_optional: bool = False,
     description: str = "",
 ) -> Holiday:
     """Create a company holiday."""
-    from apps.organization.models import Organization
     from apps.scheduling.models import Holiday
-    
-    org = Organization.objects.get(id=organization_id)
-    
+
     holiday = Holiday.objects.create(
         name=name,
-        organization=org,
         holiday_date=holiday_date,
         is_paid=is_paid,
         is_optional=is_optional,

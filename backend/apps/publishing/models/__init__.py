@@ -6,7 +6,6 @@ from __future__ import annotations
 from django.db import models
 
 from apps.core.models.bases.entity import EntityModel
-from apps.organization.models.organization import Organization
 
 
 class PublishItem(EntityModel):
@@ -79,13 +78,6 @@ class PublishItem(EntityModel):
         help_text="Publish code",
     )
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="publish_items",
-        db_index=True,
-        help_text="Organization context",
-    )
     
     project = models.ForeignKey(
         "production.Project",
@@ -221,13 +213,6 @@ class PublishValidationRule(models.Model):
     Validation rule for publish items.
     """
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="publish_validation_rules",
-        db_index=True,
-        help_text="Organization context",
-    )
     
     # Rule types
     RULE_FILE_EXISTS = "file_exists"
@@ -312,7 +297,7 @@ class PublishDestination(EntityModel):
     """
     Publish destination for DCC publish output routing.
 
-    Static reference data curated per organization (storage clusters,
+    Static reference data curated platform-wide (storage clusters,
     cloud buckets, client ingest points). Presented as dropdown options
     in publish creation flows.
     """
@@ -349,13 +334,6 @@ class PublishDestination(EntityModel):
         (PROTOCOL_LOCAL, "Local POSIX"),
     ]
 
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="publish_destinations",
-        db_index=True,
-        help_text="Organization context",
-    )
 
     name = models.CharField(
         max_length=255,
@@ -403,8 +381,8 @@ class PublishDestination(EntityModel):
         verbose_name_plural = "Publish Destinations"
         constraints = [
             models.UniqueConstraint(
-                fields=["organization", "name"],
-                name="uniq_publish_destination_name_per_org",
+                fields=["name"],
+                name="uniq_publish_destination_name",
             ),
         ]
 

@@ -8,7 +8,6 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.models.bases.entity import EntityModel
 from apps.core.models.bases.timestamp import TimeStampedModel
-from apps.organization.models.organization import Organization
 
 
 class AuditLog(EntityModel, TimeStampedModel):
@@ -169,13 +168,6 @@ class AuditLog(EntityModel, TimeStampedModel):
         help_text="User who performed the action",
     )
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="audit_logs",
-        db_index=True,
-        help_text="Organization context",
-    )
     
     ip_address = models.GenericIPAddressField(
         null=True,

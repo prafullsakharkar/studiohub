@@ -17,7 +17,6 @@ from apps.audit.models.error_log import ErrorLog
 from apps.audit.models.login_history import LoginHistory
 from apps.audit.models.track import Track
 from apps.identity.tests.factories import UserFactory
-from apps.organization.tests.factories import OrganizationFactory
 
 
 class AuditLogFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
@@ -26,7 +25,6 @@ class AuditLogFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeA
     class Meta:
         model = AuditLog
 
-    organization = factory.SubFactory(OrganizationFactory)
     actor = factory.SubFactory(UserFactory)
     action = factory.Faker(
         "random_element",
@@ -53,7 +51,6 @@ class ActivityFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeA
     class Meta:
         model = Activity
 
-    organization = factory.SubFactory(OrganizationFactory)
     user = factory.SubFactory(UserFactory)
     activity_type = factory.Faker(
         "random_element",
@@ -80,7 +77,6 @@ class APIRequestFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTyp
     class Meta:
         model = APIRequest
 
-    organization = factory.SubFactory(OrganizationFactory)
     user = factory.SubFactory(UserFactory)
     method = factory.Faker(
         "random_element", elements=["GET", "POST", "PUT", "PATCH", "DELETE"]
@@ -102,7 +98,6 @@ class BackgroundJobFactory(DjangoModelFactory):  # pyright: ignore[reportMissing
     class Meta:
         model = BackgroundJob
 
-    organization = factory.SubFactory(OrganizationFactory)
     job_type = factory.Faker(
         "random_element",
         elements=["email", "sms", "push", "report", "cleanup", "sync"],
@@ -129,7 +124,6 @@ class ChangeLogFactory(DjangoModelFactory):  # pyright: ignore[reportMissingType
     class Meta:
         model = ChangeLog
 
-    organization = factory.SubFactory(OrganizationFactory)
     user = factory.SubFactory(UserFactory)
     change_type = factory.Faker(
         "random_element",
@@ -154,7 +148,6 @@ class ErrorLogFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeA
     class Meta:
         model = ErrorLog
 
-    organization = factory.SubFactory(OrganizationFactory)
     user = factory.SubFactory(UserFactory)
     error_type = factory.Faker(
         "random_element",
@@ -188,7 +181,6 @@ class LoginHistoryFactory(DjangoModelFactory):  # pyright: ignore[reportMissingT
     class Meta:
         model = LoginHistory
 
-    organization = factory.SubFactory(OrganizationFactory)
     user = factory.SubFactory(UserFactory)
     login_type = factory.Faker(
         "random_element",
@@ -223,7 +215,6 @@ class TrackFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgu
     class Meta:
         model = Track
 
-    organization = factory.SubFactory(OrganizationFactory)
     user = factory.SubFactory(UserFactory)
     event_type = factory.Faker(
         "random_element",

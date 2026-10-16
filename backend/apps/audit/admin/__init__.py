@@ -12,11 +12,11 @@ from apps.audit.models.change_log import ChangeLog
 from apps.audit.models.error_log import ErrorLog
 from apps.audit.models.login_history import LoginHistory
 from apps.audit.models.track import Track
-from apps.organization.admin.base import OrganizationScopedModelAdmin
+from apps.core.admin.base import PlatformScopedModelAdmin
 
 
 @admin.register(AuditLog)
-class AuditLogAdmin(OrganizationScopedModelAdmin):
+class AuditLogAdmin(PlatformScopedModelAdmin):
     """Audit Log admin."""
 
     list_display = [
@@ -26,7 +26,6 @@ class AuditLogAdmin(OrganizationScopedModelAdmin):
         "target_type",
         "target_id",
         "actor",
-        "organization",
         "created_at",
     ]
     list_filter = [
@@ -35,7 +34,7 @@ class AuditLogAdmin(OrganizationScopedModelAdmin):
         "target_type",
         "created_at",
     ]
-    search_fields = ["id", "actor__email", "organization__name", "target_id"]
+    search_fields = ["id", "actor__email", "target_id"]
     readonly_fields = ["created_at", "updated_at"]
     date_hierarchy = "created_at"
 
@@ -60,12 +59,11 @@ class AuditLogAdmin(OrganizationScopedModelAdmin):
             },
         ),
         (
-            "Actor & Organization",
+            "Actor",
             {
                 "fields": (
                     "actor",
-                    "organization",
-                )
+                            )
             },
         ),
         (
@@ -83,7 +81,7 @@ class AuditLogAdmin(OrganizationScopedModelAdmin):
 
 
 @admin.register(Activity)
-class ActivityAdmin(OrganizationScopedModelAdmin):
+class ActivityAdmin(PlatformScopedModelAdmin):
     """Activity admin."""
 
     list_display = [
@@ -114,12 +112,11 @@ class ActivityAdmin(OrganizationScopedModelAdmin):
             },
         ),
         (
-            "User & Organization",
+            "User",
             {
                 "fields": (
                     "user",
-                    "organization",
-                )
+                            )
             },
         ),
         (
@@ -133,13 +130,12 @@ class ActivityAdmin(OrganizationScopedModelAdmin):
 
 
 @admin.register(LoginHistory)
-class LoginHistoryAdmin(OrganizationScopedModelAdmin):
+class LoginHistoryAdmin(PlatformScopedModelAdmin):
     """Login History admin."""
 
     list_display = [
         "id",
         "user",
-        "organization",
         "ip_address",
         "user_agent",
         "status",
@@ -149,7 +145,7 @@ class LoginHistoryAdmin(OrganizationScopedModelAdmin):
         "status",
         "created_at",
     ]
-    search_fields = ["id", "user__email", "organization__name", "ip_address"]
+    search_fields = ["id", "user__email", "ip_address"]
     readonly_fields = ["created_at", "updated_at"]
     date_hierarchy = "created_at"
 
@@ -160,8 +156,7 @@ class LoginHistoryAdmin(OrganizationScopedModelAdmin):
                 "fields": (
                     "id",
                     "user",
-                    "organization",
-                )
+                            )
             },
         ),
         (
@@ -185,7 +180,7 @@ class LoginHistoryAdmin(OrganizationScopedModelAdmin):
 
 
 @admin.register(ChangeLog)
-class ChangeLogAdmin(OrganizationScopedModelAdmin):
+class ChangeLogAdmin(PlatformScopedModelAdmin):
     """Change Log admin."""
 
     list_display = [
@@ -241,13 +236,12 @@ class ChangeLogAdmin(OrganizationScopedModelAdmin):
 
 
 @admin.register(APIRequest)
-class APIRequestAdmin(OrganizationScopedModelAdmin):
+class APIRequestAdmin(PlatformScopedModelAdmin):
     """API Request admin."""
 
     list_display = [
         "id",
         "user",
-        "organization",
         "path",
         "method",
         "status_code",
@@ -259,7 +253,7 @@ class APIRequestAdmin(OrganizationScopedModelAdmin):
         "status_code",
         "created_at",
     ]
-    search_fields = ["id", "user__email", "organization__name", "path"]
+    search_fields = ["id", "user__email", "path"]
     readonly_fields = ["created_at", "updated_at"]
     date_hierarchy = "created_at"
 
@@ -270,8 +264,7 @@ class APIRequestAdmin(OrganizationScopedModelAdmin):
                 "fields": (
                     "id",
                     "user",
-                    "organization",
-                )
+                            )
             },
         ),
         (
@@ -307,7 +300,7 @@ class APIRequestAdmin(OrganizationScopedModelAdmin):
 
 
 @admin.register(BackgroundJob)
-class BackgroundJobAdmin(OrganizationScopedModelAdmin):
+class BackgroundJobAdmin(PlatformScopedModelAdmin):
     """Background Job admin."""
 
     list_display = [
@@ -366,7 +359,7 @@ class BackgroundJobAdmin(OrganizationScopedModelAdmin):
 
 
 @admin.register(ErrorLog)
-class ErrorLogAdmin(OrganizationScopedModelAdmin):
+class ErrorLogAdmin(PlatformScopedModelAdmin):
     """Error Log admin."""
 
     list_display = [
@@ -375,7 +368,6 @@ class ErrorLogAdmin(OrganizationScopedModelAdmin):
         "error_type",
         "message",
         "user",
-        "organization",
         "created_at",
     ]
     list_filter = [
@@ -404,8 +396,7 @@ class ErrorLogAdmin(OrganizationScopedModelAdmin):
                 "fields": (
                     "stack_trace",
                     "user",
-                    "organization",
-                )
+                            )
             },
         ),
         (
@@ -419,7 +410,7 @@ class ErrorLogAdmin(OrganizationScopedModelAdmin):
 
 
 @admin.register(Track)
-class TrackAdmin(OrganizationScopedModelAdmin):
+class TrackAdmin(PlatformScopedModelAdmin):
     """Track admin."""
 
     list_display = [
@@ -427,14 +418,13 @@ class TrackAdmin(OrganizationScopedModelAdmin):
         "event_type",
         "event_name",
         "user",
-        "organization",
         "created_at",
     ]
     list_filter = [
         "event_type",
         "created_at",
     ]
-    search_fields = ["id", "user__email", "organization__name"]
+    search_fields = ["id", "user__email"]
     readonly_fields = ["created_at", "updated_at"]
     date_hierarchy = "created_at"
 
@@ -454,12 +444,11 @@ class TrackAdmin(OrganizationScopedModelAdmin):
             {"fields": ("metadata",)},
         ),
         (
-            "User & Organization",
+            "User",
             {
                 "fields": (
                     "user",
-                    "organization",
-                )
+                            )
             },
         ),
         (

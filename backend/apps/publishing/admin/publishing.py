@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedModelAdmin
+from apps.core.admin.base import PlatformScopedModelAdmin
 from apps.publishing.models import (
     PublishDestination,
     PublishItem,
@@ -9,11 +9,10 @@ from apps.publishing.models import (
 
 
 @admin.register(PublishItem)
-class PublishItemAdmin(OrganizationScopedModelAdmin):
+class PublishItemAdmin(PlatformScopedModelAdmin):
     list_display = (
         "code",
         "name",
-        "organization",
         "project",
         "entity_type",
         "entity_code",
@@ -28,7 +27,6 @@ class PublishItemAdmin(OrganizationScopedModelAdmin):
         "entity_type",
         "export_format",
         "is_archived",
-        "organization",
     )
 
     search_fields = (
@@ -38,18 +36,17 @@ class PublishItemAdmin(OrganizationScopedModelAdmin):
         "entity_name",
     )
 
-    autocomplete_fields = ("organization", "project")
+    autocomplete_fields = ("project",)
 
-    list_select_related = ("organization", "project")
+    list_select_related = ("project",)
 
     ordering = ("-created_at",)
 
 
 @admin.register(PublishDestination)
-class PublishDestinationAdmin(OrganizationScopedModelAdmin):
+class PublishDestinationAdmin(PlatformScopedModelAdmin):
     list_display = (
         "name",
-        "organization",
         "destination_type",
         "protocol",
         "region",
@@ -61,23 +58,17 @@ class PublishDestinationAdmin(OrganizationScopedModelAdmin):
         "destination_type",
         "is_default",
         "is_active",
-        "organization",
     )
 
     search_fields = ("name", "path")
-
-    autocomplete_fields = ("organization",)
-
-    list_select_related = ("organization",)
 
     ordering = ("name",)
 
 
 @admin.register(PublishValidationRule)
-class PublishValidationRuleAdmin(OrganizationScopedModelAdmin):
+class PublishValidationRuleAdmin(PlatformScopedModelAdmin):
     list_display = (
         "name",
-        "organization",
         "rule_type",
         "action",
         "is_active",
@@ -87,13 +78,8 @@ class PublishValidationRuleAdmin(OrganizationScopedModelAdmin):
     list_filter = (
         "rule_type",
         "is_active",
-        "organization",
     )
 
     search_fields = ("name",)
-
-    autocomplete_fields = ("organization",)
-
-    list_select_related = ("organization",)
 
     ordering = ("order",)

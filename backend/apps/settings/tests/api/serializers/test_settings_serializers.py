@@ -9,13 +9,11 @@ from typing import Any
 
 import pytest
 
-from apps.organization.tests.factories import OrganizationFactory
 from apps.settings.api.serializers.base import SettingsBaseSerializer
 from apps.settings.models.category import SettingCategory
 from apps.settings.models.definition import SettingDefinition
 from apps.settings.models.feature_flag import FeatureFlag
 from apps.settings.models.localization import Localization
-from apps.settings.models.organization import OrganizationSetting
 from apps.settings.models.system import SystemSetting
 from apps.settings.models.theme import Theme
 from apps.settings.tests.factories import (
@@ -39,7 +37,6 @@ class TestSettingsBaseSerializer:
                     "code",
                     "name",
                     "description",
-                    "organization",
                     "theme_type",
                     "created_at",
                     "updated_at",
@@ -213,36 +210,6 @@ class TestLocalizationSerializer:
             "language": "en",
         }
         serializer = LocalizationSerializer(data=data)
-        assert serializer.is_valid() is True
-
-
-class TestOrganizationSettingSerializer:
-    """Tests for OrganizationSetting serializer."""
-
-    @pytest.mark.django_db
-    def test_serializer_valid_data(self, organization_setting: OrganizationSetting) -> None:
-        """Test serializer with valid data."""
-        from apps.settings.api.serializers.organization import OrganizationSettingSerializer
-
-        serializer = OrganizationSettingSerializer(organization_setting)
-        data = serializer.data
-        assert "uuid" in data
-        assert "value" in data
-
-    @pytest.mark.django_db
-    def test_serializer_create(self) -> None:
-        """Test serializer create method."""
-        from apps.settings.api.serializers.organization import OrganizationSettingSerializer
-
-        definition = DefinitionFactory(
-            data_type=SettingDefinition.TYPE_JSON,
-        )
-        data = {
-            "setting": definition.id,
-            "organization": OrganizationFactory().id,
-            "value": '{"key": "value"}',
-        }
-        serializer = OrganizationSettingSerializer(data=data)
         assert serializer.is_valid() is True
 
 

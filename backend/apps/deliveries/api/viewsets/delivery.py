@@ -1,12 +1,13 @@
 """
 Delivery viewset for API endpoints.
 """
-from rest_framework import status
+from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.audit.services.background_job import BackgroundJobService
 from apps.core.api.pagination import StandardPagination
+from apps.core.api.viewsets.platform import PlatformScopedViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.deliveries.api.serializers.delivery import (
     STATUS_OUTPUT_MAP,
@@ -37,10 +38,56 @@ from apps.deliveries.services.delivery import (
     validate_delivery,
 )
 from apps.identity.permissions import HasPermission
-from apps.organization.api.viewsets.scoped import OrganizationScopedViewSet
 
 
-class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class PlatformCrudViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    PlatformScopedViewSet,
+):
+    """Platform-global CRUD (org-free).
+
+    Querysets come from the selector's org-free reads. Destroy honors
+    the Core soft-delete contract (same as the former org-scoped base).
+    """
+
+    # Same URL contract as the former org-scoped base: ``uuid`` kwarg
+    # resolving against the ``id`` primary key.
+    lookup_field = "id"
+    lookup_url_kwarg = "uuid"
+
+    serializer_map = {}
+
+    def get_serializer_class(self):
+        action = getattr(self, "action", None)
+        serializer = self.serializer_map.get(action)
+        if serializer:
+            return serializer
+        if self.serializer_map and (action is None or action not in self.serializer_map):
+            # Schema generation (drf-spectacular) introspects operations
+            # before dispatch (no action set) and for unmapped actions;
+            # fall back to the primary mapped serializer so OpenAPI can
+            # resolve. Runtime behavior for mapped actions is unchanged.
+            preferred = self.serializer_map.get("list")
+            return preferred or next(iter(self.serializer_map.values()))
+        return super().get_serializer_class()
+
+    def perform_destroy(self, instance):
+        from apps.core.services.soft_delete import SoftDeleteService
+
+        if hasattr(instance, "is_deleted"):
+            SoftDeleteService.delete(
+                instance,
+                user=getattr(self.request, "user", None),
+            )
+        else:
+            instance.delete()
+
+
+class DeliveryViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for DeliveryPackage."""
 
     selector_class = DeliverySelector
@@ -87,11 +134,9 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
             }
         return result
 
-    def get_perform_create_kwargs(self):
+    def perform_create(self, serializer):
         user = self.request.user
-        return {
-            "created_by": user if user.is_authenticated else None,
-        }
+        serializer.save(created_by=user if user.is_authenticated else None)
 
     @action(detail=True, methods=["post"], url_path="add-version")
     def add_version(self, request, *args, **kwargs):
@@ -112,7 +157,6 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
             file_path=serializer.validated_data["file_path"],
             checksum_md5=serializer.validated_data.get("checksum_md5", ""),
             checksum_sha256=serializer.validated_data.get("checksum_sha256", ""),
-            organization_id=str(request.organization.id),
         )
 
         return Response(DeliveryDetailSerializer(delivery).data, status=status.HTTP_201_CREATED)
@@ -127,7 +171,6 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
         delivery = remove_version_from_delivery(
             delivery_id=str(delivery.id),
             version_ref_id=str(serializer.validated_data["version_ref_id"]),
-            organization_id=str(request.organization.id),
         )
 
         return Response(DeliveryDetailSerializer(delivery).data)
@@ -142,7 +185,6 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
         result = validate_delivery(
             delivery_id=str(delivery.id),
             user_id=str(request.user.id),
-            organization_id=str(request.organization.id),
         )
 
         return Response(self._frontend_result(result))
@@ -157,7 +199,6 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
         result = prepare_delivery(
             delivery_id=str(delivery.id),
             user_id=str(request.user.id),
-            organization_id=str(request.organization.id),
         )
 
         return Response(self._frontend_result(result))
@@ -171,13 +212,11 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
 
         job = BackgroundJobService.enqueue_and_run(
             job_type="export",
-            organization_id=str(request.organization.id),
             description=f"Submit delivery {delivery.code or delivery.name}",
             executor=submit_delivery,
             executor_kwargs={
                 "delivery_id": str(delivery.id),
                 "user_id": str(request.user.id),
-                "organization_id": str(request.organization.id),
             },
         )
 
@@ -198,7 +237,6 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
             delivery_id=str(delivery.id),
             user_id=str(request.user.id),
             client_notes=serializer.validated_data.get("client_notes", ""),
-            organization_id=str(request.organization.id),
         )
 
         return Response(DeliveryDetailSerializer(delivery).data)
@@ -214,7 +252,6 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
             delivery_id=str(delivery.id),
             user_id=str(request.user.id),
             rejection_reason=serializer.validated_data["rejection_reason"],
-            organization_id=str(request.organization.id),
         )
 
         return Response(DeliveryDetailSerializer(delivery).data)
@@ -227,7 +264,6 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
         delivery = complete_delivery(
             delivery_id=str(delivery.id),
             user_id=str(request.user.id),
-            organization_id=str(request.organization.id),
         )
 
         return Response(DeliveryDetailSerializer(delivery).data)
@@ -241,7 +277,6 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
             delivery_id=str(delivery.id),
             user_id=str(request.user.id),
             cancellation_reason=request.data.get("cancellation_reason", ""),
-            organization_id=str(request.organization.id),
         )
 
         return Response(DeliveryDetailSerializer(delivery).data)
@@ -254,7 +289,6 @@ class DeliveryViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissi
         delivery = retry_delivery(
             delivery_id=str(delivery.id),
             user_id=str(request.user.id),
-            organization_id=str(request.organization.id),
         )
 
         return Response(DeliveryDetailSerializer(delivery).data)

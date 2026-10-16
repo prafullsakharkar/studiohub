@@ -43,13 +43,7 @@ class APIRequestSelector(AuditBaseSelector):
         """
         return cls.get_queryset().filter(user_id=user_id)
     
-    @classmethod
-    def by_organization(cls, organization_id: str):
-        """
-        Get API requests for an organization.
-        """
-        return cls.get_queryset().filter(organization_id=organization_id)
-    
+
     @classmethod
     def by_method(cls, method: str):
         """

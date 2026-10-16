@@ -70,7 +70,7 @@ def resolve_overbooking(
     except (ValueError, AttributeError, TypeError):
         raise DjangoValidationError("Unknown overbooking alert.") from None
 
-    resource = Resource.objects.filter(id=target_uuid, organization=organization).first()
+    resource = Resource.objects.filter(id=target_uuid).first()
     if resource is None:
         return None
 

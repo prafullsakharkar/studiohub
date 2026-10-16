@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
-from apps.organization.constants.permissions import OrganizationSettingsPermissions
+from apps.platform.constants.permissions import SettingsPermissions
 from apps.settings.api.viewsets.base import SettingsBaseViewSet
 from apps.settings.filters.theme import ThemeFilter
 from apps.settings.selectors.theme import ThemeSelector
@@ -34,16 +34,16 @@ class ThemeViewSet(
     )
 
     permission_map = {
-        "list": (OrganizationSettingsPermissions.VIEW,),
-        "retrieve": (OrganizationSettingsPermissions.VIEW,),
-        "create": (OrganizationSettingsPermissions.CREATE,),
-        "update": (OrganizationSettingsPermissions.UPDATE,),
-        "partial_update": (OrganizationSettingsPermissions.UPDATE,),
-        "destroy": (OrganizationSettingsPermissions.DELETE,),
-        "activate": (OrganizationSettingsPermissions.UPDATE,),
-        "deactivate": (OrganizationSettingsPermissions.UPDATE,),
-        "lock": (OrganizationSettingsPermissions.UPDATE,),
-        "unlock": (OrganizationSettingsPermissions.UPDATE,),
+        "list": (SettingsPermissions.VIEW,),
+        "retrieve": (SettingsPermissions.VIEW,),
+        "create": (SettingsPermissions.MANAGE,),
+        "update": (SettingsPermissions.MANAGE,),
+        "partial_update": (SettingsPermissions.MANAGE,),
+        "destroy": (SettingsPermissions.MANAGE,),
+        "activate": (SettingsPermissions.MANAGE,),
+        "deactivate": (SettingsPermissions.MANAGE,),
+        "lock": (SettingsPermissions.MANAGE,),
+        "unlock": (SettingsPermissions.MANAGE,),
     }
 
     serializer_class = ThemeSerializer

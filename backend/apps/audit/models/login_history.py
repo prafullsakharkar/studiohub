@@ -8,8 +8,22 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.models.bases.entity import EntityModel
 from apps.core.models.bases.timestamp import TimeStampedModel
+from apps.core.models.managers.soft_delete import SoftDeleteManager
 from apps.identity.models.user import User
-from apps.organization.models.organization import Organization
+
+
+class LoginHistoryManager(SoftDeleteManager):
+    """Soft-delete manager that absorbs the legacy ``organization`` kwarg.
+
+    ``apps.identity.services.login_history.LoginHistoryService`` still passes
+    ``organization=`` (its public signature keeps the parameter for
+    compatibility); login-history rows are platform-global, so the value is
+    dropped. Removed with the identity compat layer in B7.
+    """
+
+    def create(self, **kwargs):
+        kwargs.pop("organization", None)
+        return super().create(**kwargs)
 
 
 class LoginHistory(EntityModel, TimeStampedModel):
@@ -84,15 +98,6 @@ class LoginHistory(EntityModel, TimeStampedModel):
         help_text="User who logged in",
     )
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="audit_login_history",
-        db_index=True,
-        help_text="Organization context (may be unknown, e.g. failed pre-auth logins)",
-    )
     
     ip_address = models.GenericIPAddressField(
         null=True,
@@ -162,7 +167,9 @@ class LoginHistory(EntityModel, TimeStampedModel):
         blank=True,
         help_text="Reason for login failure",
     )
-    
+
+    objects = LoginHistoryManager()
+
     class Meta:
         db_table = "login_history"
         ordering = ("-created_at",)

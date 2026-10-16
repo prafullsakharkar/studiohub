@@ -1,15 +1,15 @@
 """
 Publishing viewset for API endpoints.
 """
-from rest_framework import status
+from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.audit.services.background_job import BackgroundJobService
 from apps.core.api.pagination import StandardPagination
+from apps.core.api.viewsets.platform import PlatformScopedViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
-from apps.organization.api.viewsets.scoped import OrganizationScopedViewSet
 from apps.publishing.api.serializers.publish import (
     PublishCreateSerializer,
     PublishDetailSerializer,
@@ -31,7 +31,54 @@ from apps.publishing.services.publish import (
 )
 
 
-class PublishingViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class PlatformCrudViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    PlatformScopedViewSet,
+):
+    """Platform-global CRUD (org-free).
+
+    Querysets come from the selector's org-free reads. Destroy honors
+    the Core soft-delete contract (same as the former org-scoped base).
+    """
+
+    # Same URL contract as the former org-scoped base: ``uuid`` kwarg
+    # resolving against the ``id`` primary key.
+    lookup_field = "id"
+    lookup_url_kwarg = "uuid"
+
+    serializer_map = {}
+
+    def get_serializer_class(self):
+        action = getattr(self, "action", None)
+        serializer = self.serializer_map.get(action)
+        if serializer:
+            return serializer
+        if self.serializer_map and (action is None or action not in self.serializer_map):
+            # Schema generation (drf-spectacular) introspects operations
+            # before dispatch (no action set) and for unmapped actions;
+            # fall back to the primary mapped serializer so OpenAPI can
+            # resolve. Runtime behavior for mapped actions is unchanged.
+            preferred = self.serializer_map.get("list")
+            return preferred or next(iter(self.serializer_map.values()))
+        return super().get_serializer_class()
+
+    def perform_destroy(self, instance):
+        from apps.core.services.soft_delete import SoftDeleteService
+
+        if hasattr(instance, "is_deleted"):
+            SoftDeleteService.delete(
+                instance,
+                user=getattr(self.request, "user", None),
+            )
+        else:
+            instance.delete()
+
+
+class PublishingViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for PublishItem."""
 
     selector_class = PublishSelector
@@ -62,11 +109,9 @@ class PublishingViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMis
     search_fields = ("name", "code", "entity_code", "entity_name")
     ordering_fields = ("name", "created_at", "status")
 
-    def get_perform_create_kwargs(self):
+    def perform_create(self, serializer):
         user = self.request.user
-        return {
-            "created_by": user if user.is_authenticated else None,
-        }
+        serializer.save(created_by=user if user.is_authenticated else None)
 
     @action(detail=True, methods=["post"], url_path="validate")
     def validate(self, request, *args, **kwargs):
@@ -78,7 +123,6 @@ class PublishingViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMis
         result = validate_publish(
             publish_id=str(publish.id),
             user_id=str(request.user.id) if request.user.is_authenticated else None,
-            organization_id=str(request.organization.id),
         )
 
         return Response(frontend_result_status(result))
@@ -92,22 +136,17 @@ class PublishingViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMis
 
         job = BackgroundJobService.enqueue_and_run(
             job_type="export",
-            organization_id=str(request.organization.id),
             description=f"Republish {getattr(publish, 'code', '') or publish.entity_name}",
             executor=republish,
             executor_kwargs={
                 "publish_id": str(publish.id),
                 "user_id": str(request.user.id) if request.user.is_authenticated else None,
-                "organization_id": str(request.organization.id),
             },
         )
 
         result_id = (job.result_data or {}).get("result_id")
         new_publish = (
-            PublishSelector.model.objects.filter(
-                pk=result_id,
-                organization_id=request.organization.id,
-            ).first()
+            PublishSelector.model.objects.filter(pk=result_id).first()
             if result_id
             else None
         )
@@ -128,7 +167,6 @@ class PublishingViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMis
         publish = unpublish(
             publish_id=str(publish.id),
             user_id=str(request.user.id) if request.user.is_authenticated else None,
-            organization_id=str(request.organization.id),
         )
 
         return Response(PublishDetailSerializer(publish).data)
@@ -143,7 +181,6 @@ class PublishingViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMis
         publish = retry_publish(
             publish_id=str(publish.id),
             user_id=str(request.user.id) if request.user.is_authenticated else None,
-            organization_id=str(request.organization.id),
         )
 
         return Response(PublishDetailSerializer(publish).data)

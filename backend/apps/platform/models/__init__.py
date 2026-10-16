@@ -6,7 +6,6 @@ from __future__ import annotations
 from django.db import models
 
 from apps.core.models.bases.entity import EntityModel
-from apps.organization.models.organization import Organization
 
 
 class StudioNotification(EntityModel):
@@ -14,8 +13,8 @@ class StudioNotification(EntityModel):
     A notification surfaced to studio users.
 
     Represents platform-level events such as dailies published, render
-    farm alerts, outsourced packages, and milestone deadlines. Scoped to
-    an organization.
+    farm alerts, outsourced packages, and milestone deadlines.
+    Platform-global: no organization partition.
     """
 
     # Notification types
@@ -74,13 +73,6 @@ class StudioNotification(EntityModel):
         help_text="Human-readable timestamp label",
     )
 
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="notifications",
-        db_index=True,
-        help_text="Organization context",
-    )
 
     metadata = models.JSONField(
         default=dict,
@@ -167,13 +159,6 @@ class ProductionReport(EntityModel):
         help_text="Report download URL",
     )
 
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="reports",
-        db_index=True,
-        help_text="Organization context",
-    )
 
     class Meta:
         db_table = "platform_production_report"

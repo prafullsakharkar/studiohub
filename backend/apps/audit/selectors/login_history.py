@@ -43,13 +43,7 @@ class LoginHistorySelector(AuditBaseSelector):
         """
         return cls.get_queryset().filter(user_id=user_id)
     
-    @classmethod
-    def by_organization(cls, organization_id: str):
-        """
-        Get login history for an organization.
-        """
-        return cls.get_queryset().filter(organization_id=organization_id)
-    
+
     @classmethod
     def by_type(cls, login_type: str):
         """

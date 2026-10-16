@@ -31,7 +31,6 @@ class TestAuditLogAdmin:
             "target_type",
             "target_id",
             "actor",
-            "organization",
             "created_at",
         ]
 
@@ -47,7 +46,6 @@ class TestAuditLogAdmin:
     def test_search_fields(self) -> None:
         """Verify the search fields."""
         assert "actor__email" in AuditLogAdmin.search_fields
-        assert "organization__name" in AuditLogAdmin.search_fields
 
     @pytest.mark.django_db
     def test_readonly_fields(self) -> None:

@@ -15,7 +15,6 @@ def create_delivery(
     *,
     name: str,
     code: str,
-    organization_id: str,
     project_id: str | None = None,
     client_id: str | None = None,
     delivery_method: str = "S3",
@@ -30,14 +29,10 @@ def create_delivery(
     from datetime import datetime
 
     from apps.deliveries.models import DeliveryPackage
-    from apps.organization.models import Organization
-
-    org = Organization.objects.get(id=organization_id)
 
     delivery = DeliveryPackage.objects.create(
         name=name,
         code=code,
-        organization=org,
         project_id=project_id,
         client_id=client_id,
         delivery_method=delivery_method,
@@ -66,20 +61,13 @@ def add_version_to_delivery(
     file_path: str = "",
     checksum_md5: str = "",
     checksum_sha256: str = "",
-    organization_id: str,
 ) -> DeliveryVersionRef:
     """Add a version reference to a delivery."""
     from apps.deliveries.models import DeliveryPackage, DeliveryVersionRef
     from apps.production.models import Version
 
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
-    version = Version.objects.get(
-        id=version_id,
-        organization_id=organization_id,
-    )
+    delivery = DeliveryPackage.objects.get(id=delivery_id)
+    version = Version.objects.get(id=version_id)
 
     ref = DeliveryVersionRef.objects.create(
         delivery=delivery,
@@ -108,15 +96,11 @@ def remove_version_from_delivery(
     *,
     delivery_id: str,
     version_ref_id: str,
-    organization_id: str,
 ) -> DeliveryPackage:
     """Remove a version reference from a delivery (frontend ``removeVersion``)."""
     from apps.deliveries.models import DeliveryPackage
 
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
+    delivery = DeliveryPackage.objects.get(id=delivery_id)
     ref = delivery.versions.get(id=version_ref_id)
 
     delivery.total_size_bytes = max(0, (delivery.total_size_bytes or 0) - (ref.file_size_bytes or 0))
@@ -132,16 +116,12 @@ def validate_delivery(
     *,
     delivery_id: str,
     user_id: str,
-    organization_id: str,
 ) -> dict[Any, Any]:
     """Validate delivery package contents."""
     from apps.audit.models import AuditLog
     from apps.deliveries.models import DeliveryPackage
 
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
+    delivery = DeliveryPackage.objects.get(id=delivery_id)
 
     # Validate all versions
     validation_results = []
@@ -174,7 +154,6 @@ def validate_delivery(
         target_name=delivery.name,
         description=f"Delivery {delivery.code} validated by user {user_id}",
         actor_id=user_id,
-        organization=delivery.organization,
         metadata={"validation_results": validation_results},
     )
 
@@ -192,16 +171,12 @@ def prepare_delivery(
     *,
     delivery_id: str,
     user_id: str,
-    organization_id: str,
 ) -> dict[Any, Any]:
     """Prepare delivery package for submission."""
     from apps.audit.models import AuditLog
     from apps.deliveries.models import DeliveryPackage
 
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
+    delivery = DeliveryPackage.objects.get(id=delivery_id)
 
     # Generate manifest
     manifest_data = {
@@ -241,7 +216,6 @@ def prepare_delivery(
         target_name=delivery.name,
         description=f"Delivery {delivery.code} prepared for submission",
         actor_id=user_id,
-        organization=delivery.organization,
         metadata={"manifest_generated": True},
     )
 
@@ -259,16 +233,12 @@ def submit_delivery(
     *,
     delivery_id: str,
     user_id: str,
-    organization_id: str,
 ) -> dict[Any, Any]:
     """Submit delivery to destination."""
     from apps.audit.models import AuditLog
     from apps.deliveries.models import DeliveryPackage
 
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
+    delivery = DeliveryPackage.objects.get(id=delivery_id)
 
     # Simulate submission (in production, this would call Aspera/S3/FTP)
     submission_result = {
@@ -289,7 +259,6 @@ def submit_delivery(
         target_name=delivery.name,
         description=f"Delivery {delivery.code} submitted via {delivery.delivery_method}",
         actor_id=user_id,
-        organization=delivery.organization,
         metadata=submission_result,
     )
 
@@ -307,16 +276,12 @@ def approve_delivery(
     delivery_id: str,
     user_id: str,
     client_notes: str = "",
-    organization_id: str,
 ) -> DeliveryPackage:
     """Approve delivery by client."""
     from apps.audit.models import AuditLog
     from apps.deliveries.models import DeliveryPackage
 
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
+    delivery = DeliveryPackage.objects.get(id=delivery_id)
 
     delivery.status = DeliveryPackage.STATUS_APPROVED
     delivery.client_status = DeliveryPackage.CLIENT_STATUS_APPROVED
@@ -331,7 +296,6 @@ def approve_delivery(
         target_name=delivery.name,
         description=f"Delivery {delivery.code} approved by client",
         actor_id=user_id,
-        organization=delivery.organization,
         metadata={"client_notes": client_notes},
     )
 
@@ -344,16 +308,12 @@ def reject_delivery(
     delivery_id: str,
     user_id: str,
     rejection_reason: str,
-    organization_id: str,
 ) -> DeliveryPackage:
     """Reject delivery with feedback."""
     from apps.audit.models import AuditLog
     from apps.deliveries.models import DeliveryPackage
 
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
+    delivery = DeliveryPackage.objects.get(id=delivery_id)
 
     delivery.status = DeliveryPackage.STATUS_REJECTED
     delivery.client_status = DeliveryPackage.CLIENT_STATUS_REJECTED
@@ -368,7 +328,6 @@ def reject_delivery(
         target_name=delivery.name,
         description=f"Delivery {delivery.code} rejected: {rejection_reason}",
         actor_id=user_id,
-        organization=delivery.organization,
         metadata={"rejection_reason": rejection_reason},
     )
 
@@ -380,16 +339,12 @@ def complete_delivery(
     *,
     delivery_id: str,
     user_id: str,
-    organization_id: str,
 ) -> DeliveryPackage:
     """Mark delivery as complete."""
     from apps.audit.models import AuditLog
     from apps.deliveries.models import DeliveryPackage
 
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
+    delivery = DeliveryPackage.objects.get(id=delivery_id)
 
     delivery.status = DeliveryPackage.STATUS_COMPLETE
     delivery.save(update_fields=["status"])
@@ -402,7 +357,6 @@ def complete_delivery(
         target_name=delivery.name,
         description=f"Delivery {delivery.code} marked as complete",
         actor_id=user_id,
-        organization=delivery.organization,
     )
 
     return delivery
@@ -414,16 +368,12 @@ def cancel_delivery(
     delivery_id: str,
     user_id: str,
     cancellation_reason: str = "",
-    organization_id: str,
 ) -> DeliveryPackage:
     """Cancel a delivery."""
     from apps.audit.models import AuditLog
     from apps.deliveries.models import DeliveryPackage
 
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
+    delivery = DeliveryPackage.objects.get(id=delivery_id)
 
     delivery.status = DeliveryPackage.STATUS_CANCELLED
     delivery.client_notes = cancellation_reason
@@ -437,7 +387,6 @@ def cancel_delivery(
         target_name=delivery.name,
         description=f"Delivery {delivery.code} cancelled: {cancellation_reason}",
         actor_id=user_id,
-        organization=delivery.organization,
     )
 
     return delivery
@@ -448,7 +397,6 @@ def retry_delivery(
     *,
     delivery_id: str,
     user_id: str,
-    organization_id: str,
 ) -> DeliveryPackage:
     """Retry a delivery: reset to Prepared so it re-enters the submit flow.
 
@@ -458,10 +406,7 @@ def retry_delivery(
     from apps.audit.models import AuditLog
     from apps.deliveries.models import DeliveryPackage
 
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
+    delivery = DeliveryPackage.objects.get(id=delivery_id)
 
     delivery.status = DeliveryPackage.STATUS_PREPARED
     delivery.save(update_fields=["status"])
@@ -474,7 +419,6 @@ def retry_delivery(
         target_name=delivery.name,
         description=f"Delivery {delivery.code} queued for retry",
         actor_id=user_id,
-        organization=delivery.organization,
     )
 
     return delivery

@@ -11,7 +11,6 @@ from apps.settings.models.category import SettingCategory
 from apps.settings.models.definition import SettingDefinition
 from apps.settings.models.feature_flag import FeatureFlag
 from apps.settings.models.localization import Localization
-from apps.settings.models.organization import OrganizationSetting
 from apps.settings.models.system import SystemSetting
 from apps.settings.models.theme import Theme
 from apps.settings.tests.factories import (
@@ -19,7 +18,6 @@ from apps.settings.tests.factories import (
     DefinitionFactory,
     FeatureFlagFactory,
     LocalizationFactory,
-    OrganizationSettingFactory,
     SystemSettingFactory,
     ThemeFactory,
 )
@@ -44,15 +42,6 @@ class TestThemeQueryPerformance:
         ThemeFactory.create_batch(10)
         with django_assert_num_queries(1):
             list(Theme.objects.all())
-
-    @pytest.mark.django_db
-    def test_theme_list_with_select_related_query_count(
-        self, django_assert_num_queries
-    ) -> None:
-        """Test query count for listing with select_related."""
-        ThemeFactory.create_batch(10)
-        with django_assert_num_queries(1):
-            list(Theme.objects.select_related("organization"))
 
     @pytest.mark.django_db
     def test_theme_filter_by_type_query_count(
@@ -146,29 +135,6 @@ class TestLocalizationQueryPerformance:
         LocalizationFactory.create_batch(10)
         with django_assert_num_queries(1):
             list(Localization.objects.all())
-
-
-class TestOrganizationSettingQueryPerformance:
-    """Tests for OrganizationSetting query performance."""
-
-    @pytest.mark.django_db
-    def test_organization_setting_get_by_uuid_query_count(
-        self,
-        django_assert_num_queries,
-        organization_setting: OrganizationSetting,
-    ) -> None:
-        """Test query count for getting by primary key."""
-        with django_assert_num_queries(1):
-            OrganizationSetting.objects.get(id=organization_setting.id)
-
-    @pytest.mark.django_db
-    def test_organization_setting_list_query_count(
-        self, django_assert_num_queries
-    ) -> None:
-        """Test query count for listing."""
-        OrganizationSettingFactory.create_batch(10)
-        with django_assert_num_queries(1):
-            list(OrganizationSetting.objects.all())
 
 
 class TestSystemSettingQueryPerformance:

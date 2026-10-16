@@ -11,7 +11,6 @@ from apps.settings.models.category import SettingCategory
 from apps.settings.models.definition import SettingDefinition
 from apps.settings.models.feature_flag import FeatureFlag
 from apps.settings.models.localization import Localization
-from apps.settings.models.organization import OrganizationSetting
 from apps.settings.models.system import SystemSetting
 from apps.settings.models.theme import Theme
 from apps.settings.tests.factories import (
@@ -19,7 +18,6 @@ from apps.settings.tests.factories import (
     DefinitionFactory,
     FeatureFlagFactory,
     LocalizationFactory,
-    OrganizationSettingFactory,
     SystemSettingFactory,
     ThemeFactory,
 )
@@ -172,34 +170,6 @@ class TestLocalizationSecurity:
     def test_localization_soft_delete(self, localization: Localization) -> None:
         """Test soft delete functionality."""
         _assert_soft_delete(localization)
-
-
-class TestOrganizationSettingSecurity:
-    """Security tests for OrganizationSetting model."""
-
-    @pytest.mark.django_db
-    def test_organization_setting_uuid_is_unique(self) -> None:
-        """Test UUID field is unique."""
-        setting1 = OrganizationSettingFactory()
-        setting2 = OrganizationSettingFactory()
-        assert setting1.uuid != setting2.uuid
-
-    @pytest.mark.django_db
-    def test_organization_setting_audit_fields(
-        self, organization_setting: OrganizationSetting
-    ) -> None:
-        """Test audit fields are present and nullable."""
-        assert organization_setting.created_at is not None
-        assert organization_setting.updated_at is not None
-        assert organization_setting.created_by is None
-        assert organization_setting.updated_by is None
-
-    @pytest.mark.django_db
-    def test_organization_setting_soft_delete(
-        self, organization_setting: OrganizationSetting
-    ) -> None:
-        """Test soft delete functionality."""
-        _assert_soft_delete(organization_setting)
 
 
 class TestSystemSettingSecurity:

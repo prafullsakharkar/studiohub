@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedModelAdmin
+from apps.core.admin.base import PlatformScopedModelAdmin
 from apps.scheduling.models import (
     CalendarEvent,
     Holiday,
@@ -11,11 +11,10 @@ from apps.scheduling.models import (
 
 
 @admin.register(Resource)
-class ResourceAdmin(OrganizationScopedModelAdmin):
+class ResourceAdmin(PlatformScopedModelAdmin):
     list_display = (
         "code",
         "name",
-        "organization",
         "resource_type",
         "status",
         "capacity_hours_per_week",
@@ -24,7 +23,6 @@ class ResourceAdmin(OrganizationScopedModelAdmin):
     list_filter = (
         "resource_type",
         "status",
-        "organization",
     )
 
     search_fields = (
@@ -32,18 +30,17 @@ class ResourceAdmin(OrganizationScopedModelAdmin):
         "name",
     )
 
-    autocomplete_fields = ("organization", "department", "team", "user")
 
-    list_select_related = ("organization",)
+
+    list_select_related = ()
 
     ordering = ("name",)
 
 
 @admin.register(CalendarEvent)
-class CalendarEventAdmin(OrganizationScopedModelAdmin):
+class CalendarEventAdmin(PlatformScopedModelAdmin):
     list_display = (
         "title",
-        "organization",
         "project",
         "event_type",
         "status",
@@ -57,7 +54,6 @@ class CalendarEventAdmin(OrganizationScopedModelAdmin):
         "status",
         "visibility",
         "is_all_day",
-        "organization",
     )
 
     search_fields = (
@@ -65,9 +61,9 @@ class CalendarEventAdmin(OrganizationScopedModelAdmin):
         "location",
     )
 
-    autocomplete_fields = ("organization", "project")
+    autocomplete_fields = ("project",)
 
-    list_select_related = ("organization", "project")
+    list_select_related = ("project",)
 
     date_hierarchy = "start_time"
 
@@ -75,10 +71,9 @@ class CalendarEventAdmin(OrganizationScopedModelAdmin):
 
 
 @admin.register(Holiday)
-class HolidayAdmin(OrganizationScopedModelAdmin):
+class HolidayAdmin(PlatformScopedModelAdmin):
     list_display = (
         "name",
-        "organization",
         "holiday_date",
         "is_paid",
         "is_optional",
@@ -87,14 +82,13 @@ class HolidayAdmin(OrganizationScopedModelAdmin):
     list_filter = (
         "is_paid",
         "is_optional",
-        "organization",
     )
 
     search_fields = ("name",)
 
-    autocomplete_fields = ("organization",)
 
-    list_select_related = ("organization",)
+
+    list_select_related = ()
 
     date_hierarchy = "holiday_date"
 
@@ -102,9 +96,7 @@ class HolidayAdmin(OrganizationScopedModelAdmin):
 
 
 @admin.register(ResourceLeave)
-class ResourceLeaveAdmin(OrganizationScopedModelAdmin):
-    organization_lookup = "resource__organization"
-
+class ResourceLeaveAdmin(PlatformScopedModelAdmin):
     list_display = (
         "resource",
         "leave_type",
@@ -131,9 +123,7 @@ class ResourceLeaveAdmin(OrganizationScopedModelAdmin):
 
 
 @admin.register(ResourceSchedule)
-class ResourceScheduleAdmin(OrganizationScopedModelAdmin):
-    organization_lookup = "resource__organization"
-
+class ResourceScheduleAdmin(PlatformScopedModelAdmin):
     list_display = (
         "resource",
         "start_time",

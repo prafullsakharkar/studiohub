@@ -11,10 +11,7 @@ from apps.publishing.models import PublishItem
 
 class PublishSelector(BaseSelector):
     """
-    Read-side data access for publish items.
-
-    Organization scoping is applied by the viewset through
-    ``scope_by_request`` (fail closed).
+    Read-side data access for publish items (platform-global).
     """
 
     model = PublishItem
@@ -22,7 +19,6 @@ class PublishSelector(BaseSelector):
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[PublishItem]:
         qs = cls.model.objects.select_related(
-            "organization",
             "project",
         )
 

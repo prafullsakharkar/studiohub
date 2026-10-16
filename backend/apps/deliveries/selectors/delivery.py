@@ -11,10 +11,7 @@ from apps.deliveries.models import DeliveryPackage
 
 class DeliverySelector(BaseSelector):
     """
-    Read-side data access for delivery packages.
-
-    Organization scoping is applied by the viewset through
-    ``scope_by_request`` (fail closed).
+    Read-side data access for delivery packages (platform-global).
     """
 
     model = DeliveryPackage
@@ -22,7 +19,6 @@ class DeliverySelector(BaseSelector):
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[DeliveryPackage]:
         qs = cls.model.objects.select_related(
-            "organization",
             "project",
             "client",
         ).prefetch_related("versions")

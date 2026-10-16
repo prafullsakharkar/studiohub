@@ -18,6 +18,5 @@ class ErrorLogFilter(AuditBaseFilter):
             "severity": ["exact"],
             "error_type": ["exact"],
             "user": ["exact"],
-            "organization": ["exact"],
             "created_at": ["exact", "gte", "lte"],
         }

@@ -1,5 +1,5 @@
 """
-Org-scoped AI insights computed from real production data using local
+Platform-global AI insights computed from real production data using local
 heuristics. No LLM API is called — every response is derived from live
 Django models (projects, shots, tasks, versions, reviews).
 
@@ -17,19 +17,9 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.organization.middleware.organization_context import (
-    resolve_organization_context,
-)
-
 
 class DummySerializer(serializers.Serializer[Any]):
     pass
-
-
-def _resolve_org(request):
-    """Resolve the org context from the request header (fail closed)."""
-    resolve_organization_context(request, force=True)
-    return getattr(request, "organization", None)
 
 
 def _priority_severity(priority):
@@ -42,8 +32,8 @@ def _priority_severity(priority):
     return "medium"
 
 
-def _build_risks(org, limit=20):
-    """Real risks detected from production data, org-scoped, local heuristics."""
+def _build_risks(org=None, limit=20):
+    """Real risks detected from production data (platform-global), local heuristics."""
     from datetime import timedelta
 
     from django.utils import timezone
@@ -52,14 +42,12 @@ def _build_risks(org, limit=20):
     from apps.production.constants.task import TaskPriority, TaskStatus
     from apps.production.models import Project, Shot, Task
 
-    if org is None:
-        return []
     today = timezone.localdate()
     now = timezone.now().isoformat()
     risks = []
 
     overdue = (
-        Task.objects.filter(organization=org, is_archived=False)
+        Task.objects.filter(is_archived=False)
         .exclude(status=TaskStatus.APPROVED)
         .filter(due_date__lt=today)
         .select_related("project")
@@ -89,9 +77,7 @@ def _build_risks(org, limit=20):
         )
 
     retake = (
-        Shot.objects.filter(
-            organization=org, status__in=[ShotStatus.RETAKE, ShotStatus.ON_HOLD]
-        )
+        Shot.objects.filter(status__in=[ShotStatus.RETAKE, ShotStatus.ON_HOLD])
         .select_related("project")
         .order_by("-updated_at")
     )
@@ -117,9 +103,7 @@ def _build_risks(org, limit=20):
         )
 
     unassigned = (
-        Task.objects.filter(
-            organization=org, is_archived=False, assignee_id=None
-        )
+        Task.objects.filter(is_archived=False, assignee_id=None)
         .exclude(status=TaskStatus.APPROVED)
         .filter(priority__in=[TaskPriority.CRITICAL, TaskPriority.HIGH])
         .select_related("project")
@@ -148,7 +132,6 @@ def _build_risks(org, limit=20):
         )
 
     near_delivery = Project.objects.filter(
-        organization=org,
         delivery_date__isnull=False,
         delivery_date__lte=today + timedelta(days=21),
     ).order_by("delivery_date")
@@ -205,7 +188,7 @@ def _executive_brief(project, total, approved, completion, overdue, retake, days
     return " ".join(parts)
 
 
-def _project_summary(org, project_code):
+def _project_summary(org, project_code):  # org ignored (platform-global)
     from django.db.models import Count, Q
     from django.utils import timezone
 
@@ -214,20 +197,18 @@ def _project_summary(org, project_code):
     from apps.production.models import Project, Shot, Task
 
     now = timezone.now().isoformat()
-    if org is None:
-        return None
-    project = Project.objects.filter(organization=org, code=project_code).first()
+    project = Project.objects.filter(code=project_code).first()
     if project is None:
         return None
 
-    shots = Shot.objects.filter(organization=org, project=project)
+    shots = Shot.objects.filter(project=project)
     total = shots.count()
     approved = shots.filter(status=ShotStatus.APPROVED).count()
     pending_review = shots.filter(status=ShotStatus.PENDING_REVIEW).count()
     retake = shots.filter(status=ShotStatus.RETAKE).count()
     on_hold = shots.filter(status=ShotStatus.ON_HOLD).count()
 
-    tasks = Task.objects.filter(organization=org, project=project, is_archived=False)
+    tasks = Task.objects.filter(project=project, is_archived=False)
     overdue = tasks.exclude(status=TaskStatus.APPROVED).filter(
         due_date__lt=timezone.localdate()
     ).count()
@@ -318,7 +299,7 @@ def _pipeline_stage(shot, versions):
     return shot.status
 
 
-def _shot_summary(org, shot_code):
+def _shot_summary(org, shot_code):  # org ignored (platform-global)
     from django.db.models import Q
     from django.utils import timezone
 
@@ -327,18 +308,16 @@ def _shot_summary(org, shot_code):
     from apps.production.models import Shot, Task, Version
 
     now = timezone.now().isoformat()
-    if org is None:
-        return None
-    shot = Shot.objects.filter(organization=org, code=shot_code).first()
+    shot = Shot.objects.filter(code=shot_code).first()
     if shot is None:
         return None
 
     shot_tasks = Task.objects.filter(
-        organization=org, project=shot.project, is_archived=False, entity_type="Shot"
+        project=shot.project, is_archived=False, entity_type="Shot"
     ).filter(Q(entity_id=str(shot.id)) | Q(entity_code=shot.code))
     active = shot_tasks.exclude(status=TaskStatus.APPROVED).count()
 
-    versions = Version.objects.filter(organization=org, shot=shot)
+    versions = Version.objects.filter(shot=shot)
     vcount = versions.count()
 
     overdue = shot_tasks.exclude(status=TaskStatus.APPROVED).filter(
@@ -372,17 +351,15 @@ def _shot_summary(org, shot_code):
     }
 
 
-def _task_recommendations(org):
+def _task_recommendations(org=None):
     from django.db.models import Count
     from django.utils import timezone
 
     from apps.production.constants.task import TaskPriority, TaskStatus
     from apps.production.models import Task
 
-    if org is None:
-        return []
     today = timezone.localdate()
-    open_tasks = Task.objects.filter(organization=org, is_archived=False).exclude(
+    open_tasks = Task.objects.filter(is_archived=False).exclude(
         status=TaskStatus.APPROVED
     )
     load_by_user = {
@@ -453,16 +430,14 @@ def _task_recommendations(org):
     return recs[:20]
 
 
-def _shot_status_overview(org):
+def _shot_status_overview(org=None):
     from django.db.models import Count
 
     from apps.production.constants.shot import ShotStatus
     from apps.production.models import Shot
 
-    if org is None:
-        return "No organization context."
     rows = (
-        Shot.objects.filter(organization=org)
+        Shot.objects.all()
         .values("status")
         .annotate(n=Count("id"))
         .order_by("-n")
@@ -481,15 +456,13 @@ def _shot_status_overview(org):
     return "Shot status: " + ", ".join(parts) if parts else "No shots yet."
 
 
-def _delivery_overview(org):
+def _delivery_overview(org=None):
     from django.utils import timezone
 
     from apps.production.models import Project
 
-    if org is None:
-        return "No organization context."
     today = timezone.localdate()
-    rows = Project.objects.filter(organization=org, delivery_date__isnull=False).order_by(
+    rows = Project.objects.filter(delivery_date__isnull=False).order_by(
         "delivery_date"
     )
     if not rows:
@@ -501,10 +474,10 @@ def _delivery_overview(org):
     return "Days to delivery: " + "; ".join(parts)
 
 
-def _assistant_reply(org, query):
+def _assistant_reply(org, query):  # org ignored (platform-global)
     from django.utils import timezone
 
-    org_name = getattr(org, "name", "your studio") if org else "your studio"
+    org_name = "your studio"
     q = (query or "").lower()
     now = timezone.now().isoformat()
 
@@ -605,7 +578,7 @@ def _assistant_reply(org, query):
 class AIChatView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     """
     Rule-based production assistant. Stateless: every reply is recomputed
-    from live org-scoped data (no LLM, no persisted transcript).
+    from live platform-global data (no LLM, no persisted transcript).
     """
 
     serializer_class = DummySerializer
@@ -613,7 +586,7 @@ class AIChatView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def get(self, request):
-        return Response([_assistant_reply(_resolve_org(request), "")])
+        return Response([_assistant_reply(None, "")])
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def post(self, request):
@@ -623,7 +596,7 @@ class AIChatView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
             or request.data.get("query")
             or ""
         )
-        return Response(_assistant_reply(_resolve_org(request), user_query))
+        return Response(_assistant_reply(None, user_query))
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=None)
     def delete(self, request):
@@ -631,14 +604,14 @@ class AIChatView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
 
 
 class AIRisksView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    """Real, org-scoped risks detected from production data via heuristics."""
+    """Real platform-global risks detected from production data via heuristics."""
 
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
-        return Response(_build_risks(_resolve_org(request)))
+        return Response(_build_risks())
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def post(self, request):
@@ -686,14 +659,14 @@ class AIRisksResolveView(GenericAPIView):  # pyright: ignore[reportMissingTypeAr
 
 
 class AITaskRecommendationsView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    """Real workload-rebalancing recommendations, org-scoped, via heuristics."""
+    """Real workload-rebalancing recommendations (platform-global) via heuristics."""
 
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
-        return Response(_task_recommendations(_resolve_org(request)))
+        return Response(_task_recommendations())
 
 
 class AITaskRecommendationsApplyView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
@@ -719,41 +692,41 @@ class AITaskRecommendationsApplyView(GenericAPIView):  # pyright: ignore[reportM
 
 
 class AIProjectSummaryView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    """Real org-scoped project summary aggregated from production data."""
+    """Real project summary aggregated from production data (platform-global)."""
 
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request, project_code=None):
-        summary = _project_summary(_resolve_org(request), project_code or "")
+        summary = _project_summary(None, project_code or "")
         if summary is None:
             return Response(
-                {"detail": "Project not found or not accessible in this organization."},
+                {"detail": "Project not found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
         return Response(summary)
 
 
 class AIShotSummaryView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    """Real org-scoped shot summary aggregated from production data."""
+    """Real shot summary aggregated from production data (platform-global)."""
 
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request, shot_code=None):
-        summary = _shot_summary(_resolve_org(request), shot_code or "")
+        summary = _shot_summary(None, shot_code or "")
         if summary is None:
             return Response(
-                {"detail": "Shot not found or not accessible in this organization."},
+                {"detail": "Shot not found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
         return Response(summary)
 
 
 class AIPermissionContextView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    """Real org/user permission context."""
+    """Real user permission context (platform-global)."""
 
     serializer_class = DummySerializer
     permission_classes = (IsAuthenticated,)
@@ -761,19 +734,16 @@ class AIPermissionContextView(GenericAPIView):  # pyright: ignore[reportMissingT
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
         user = request.user
-        org = _resolve_org(request)
         from apps.production.models import Project
 
-        first_project = (
-            Project.objects.filter(organization=org).first() if org is not None else None
-        )
+        first_project = Project.objects.first()
         return Response(
             {
-                "active_organization_id": str(org.id) if org else "",
-                "active_organization_name": getattr(org, "name", "") if org else "",
+                "active_organization_id": "",
+                "active_organization_name": "",
                 "active_project_code": first_project.code if first_project else "",
                 "user_role": "VFX Supervisor" if user.is_staff else "Artist",
                 "restricted_entities_count": 0,
-                "is_isolated": True,
+                "is_isolated": False,
             }
         )

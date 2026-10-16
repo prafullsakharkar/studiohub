@@ -10,13 +10,12 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.models.bases.entity import EntityModel
 from apps.core.models.bases.timestamp import TimeStampedModel
-from apps.organization.models.organization import Organization
 
 
 class Theme(EntityModel, TimeStampedModel):
     """
-    Theme configuration for organizations.
-    
+    Platform theme configuration.
+
     Supports multiple themes with customizable colors, fonts,
     and other visual properties.
     """
@@ -68,15 +67,6 @@ class Theme(EntityModel, TimeStampedModel):
         help_text="Type of theme",
     )
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="themes",
-        null=True,
-        blank=True,
-        db_index=True,
-        help_text="Organization this theme belongs to (null = default theme)",
-    )
     
     # Color palette
     primary_color = models.CharField(

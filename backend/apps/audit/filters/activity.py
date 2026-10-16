@@ -18,6 +18,5 @@ class ActivityFilter(AuditBaseFilter):
             "activity_type": ["exact"],
             "status": ["exact"],
             "user": ["exact"],
-            "organization": ["exact"],
             "created_at": ["exact", "gte", "lte"],
         }

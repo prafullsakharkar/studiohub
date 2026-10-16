@@ -65,12 +65,17 @@ def _overlap_hours(start, end, window_start, window_end) -> float:
     return max(0.0, overlap)
 
 
-def _week_slots(organization, week_start, week_end):
+def _week_slots(organization=None, week_start=None, week_end=None, **kwargs):
     from apps.scheduling.models import ResourceSchedule
 
+    # ``organization`` is accepted for backwards compatibility with callers
+    # that have not been migrated off org-scoped resolution yet (the
+    # production capacity proxies, owned by B7/final); it is ignored —
+    # capacity aggregates platform-wide.
+    if week_start is None or week_end is None:
+        week_start, week_end = current_week_bounds()
     return (
         ResourceSchedule.objects.filter(
-            resource__organization=organization,
             status__in=ALLOCATED_STATUSES,
             start_time__lt=week_end,
             end_time__gt=week_start,
@@ -80,7 +85,7 @@ def _week_slots(organization, week_start, week_end):
     )
 
 
-def _allocated_hours_by_resource(organization, week_start, week_end) -> dict:
+def _allocated_hours_by_resource(organization=None, week_start=None, week_end=None) -> dict:
     hours: dict[Any, float] = {}
     for slot in _week_slots(organization, week_start, week_end):
         hours[slot.resource_id] = (
@@ -90,15 +95,19 @@ def _allocated_hours_by_resource(organization, week_start, week_end) -> dict:
     return hours
 
 
-def get_capacity_summary(organization) -> list[dict[str, Any]]:
-    """Per-department capacity summary for the current week (frontend shape)."""
+def get_capacity_summary(organization=None) -> list[dict[str, Any]]:
+    """Per-department capacity summary for the current week (frontend shape).
+
+    Platform-global: ``organization`` (still passed by the production
+    capacity proxies) is ignored.
+    """
     from apps.scheduling.models import Resource
 
     week_start, week_end = current_week_bounds()
     hours = _allocated_hours_by_resource(organization, week_start, week_end)
 
     groups: dict[str, dict[str, Any]] = {}
-    resources = Resource.objects.filter(organization=organization).select_related("department")
+    resources = Resource.objects.all().select_related("department")
     for resource in resources:
         department = resource.department.name if resource.department else UNASSIGNED_DEPARTMENT
         group = groups.setdefault(
@@ -161,8 +170,8 @@ def _conflicting_event(slot) -> dict[str, Any]:
     }
 
 
-def get_overbooking_alerts(organization) -> list[dict[str, Any]]:
-    """Overbooking alerts for resources exceeding weekly capacity."""
+def get_overbooking_alerts(organization=None) -> list[dict[str, Any]]:
+    """Overbooking alerts for resources exceeding weekly capacity (global)."""
     from apps.scheduling.models import Resource
 
     week_start, week_end = current_week_bounds()
@@ -173,7 +182,7 @@ def get_overbooking_alerts(organization) -> list[dict[str, Any]]:
         slots_by_resource.setdefault(slot.resource_id, []).append(slot)
 
     alerts = []
-    resources = Resource.objects.filter(organization=organization).select_related("department")
+    resources = Resource.objects.all().select_related("department")
     for resource in resources:
         allocated = round(hours.get(resource.id, 0.0), 2)
         capacity = resource.capacity_hours_per_week

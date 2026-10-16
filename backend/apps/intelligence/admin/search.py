@@ -1,14 +1,13 @@
 from django.contrib import admin
 
+from apps.core.admin.base import PlatformScopedModelAdmin
 from apps.intelligence.models import RecentSearch, SavedSearch
-from apps.organization.admin.base import OrganizationScopedModelAdmin
 
 
 @admin.register(SavedSearch)
-class SavedSearchAdmin(OrganizationScopedModelAdmin):
+class SavedSearchAdmin(PlatformScopedModelAdmin):
     list_display = (
         "name",
-        "organization",
         "user",
         "is_favorite",
         "updated_at",
@@ -16,7 +15,6 @@ class SavedSearchAdmin(OrganizationScopedModelAdmin):
 
     list_filter = (
         "is_favorite",
-        "organization",
     )
 
     search_fields = (
@@ -24,28 +22,27 @@ class SavedSearchAdmin(OrganizationScopedModelAdmin):
         "description",
     )
 
-    autocomplete_fields = ("organization", "user")
+    autocomplete_fields = ("user",)
 
-    list_select_related = ("organization", "user")
+    list_select_related = ("user",)
 
     ordering = ("-updated_at",)
 
 
 @admin.register(RecentSearch)
-class RecentSearchAdmin(OrganizationScopedModelAdmin):
+class RecentSearchAdmin(PlatformScopedModelAdmin):
     list_display = (
         "query",
-        "organization",
         "user",
         "created_at",
     )
 
-    list_filter = ("organization",)
+    list_filter = ()
 
     search_fields = ("query",)
 
-    autocomplete_fields = ("organization", "user")
+    autocomplete_fields = ("user",)
 
-    list_select_related = ("organization", "user")
+    list_select_related = ("user",)
 
     ordering = ("-created_at",)

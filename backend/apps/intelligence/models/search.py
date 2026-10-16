@@ -6,7 +6,7 @@ from apps.core.models.bases import EntityModel
 
 class SavedSearch(EntityModel):
     """
-    Persisted global-search definition owned by a user within an organization.
+    Persisted global-search definition owned by a user (platform-global).
 
     Backs ``GET/POST /api/v1/intelligence/search/saved/`` and
     ``DELETE /api/v1/intelligence/search/saved/<id>/``, replacing the former
@@ -15,12 +15,6 @@ class SavedSearch(EntityModel):
     authenticated request user.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="saved_searches",
-        db_index=True,
-    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -36,7 +30,7 @@ class SavedSearch(EntityModel):
         db_table = "intelligence_saved_search"
         ordering = ("-updated_at",)
         indexes = [
-            models.Index(fields=["organization", "user"]),
+            models.Index(fields=["user"]),
         ]
 
     def __str__(self):
@@ -45,19 +39,13 @@ class SavedSearch(EntityModel):
 
 class RecentSearch(EntityModel):
     """
-    Persisted recent-search entry owned by a user within an organization.
+    Persisted recent-search entry owned by a user (platform-global).
 
     Backs ``GET/POST/DELETE /api/v1/intelligence/search/recent/``, replacing
     the former echo stub (hardcoded ``rec-001`` id). Collection DELETE clears
     the caller's scoped history.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="recent_searches",
-        db_index=True,
-    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -71,7 +59,7 @@ class RecentSearch(EntityModel):
         db_table = "intelligence_recent_search"
         ordering = ("-created_at",)
         indexes = [
-            models.Index(fields=["organization", "user"]),
+            models.Index(fields=["user"]),
         ]
 
     def __str__(self):

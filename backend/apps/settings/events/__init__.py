@@ -100,24 +100,6 @@ class LocalizationDeleted(DomainEvent):
     event_type = "localization.deleted"
 
 
-class OrganizationSettingCreated(DomainEvent):
-    """Event triggered when a new organization setting is created."""
-
-    event_type = "organization_setting.created"
-
-
-class OrganizationSettingUpdated(DomainEvent):
-    """Event triggered when an organization setting is updated."""
-
-    event_type = "organization_setting.updated"
-
-
-class OrganizationSettingDeleted(DomainEvent):
-    """Event triggered when an organization setting is deleted."""
-
-    event_type = "organization_setting.deleted"
-
-
 class SystemSettingCreated(DomainEvent):
     """Event triggered when a new system setting is created."""
 

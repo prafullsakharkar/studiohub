@@ -49,13 +49,11 @@ class TestThemeViewSet:
         assert response.data["id"] == str(theme.id)
 
     @pytest.mark.django_db
-    def test_retrieve_other_org_theme_isolated(
-        self, staff_client, theme: Theme
-    ) -> None:
-        """A user cannot retrieve a theme of an org they do not belong to."""
+    def test_retrieve_platform_global(self, staff_client, theme: Theme) -> None:
+        """Themes are platform-global: any granted user can retrieve them."""
         url = f"/api/v1/settings/themes/{theme.uuid}/"
         response = staff_client.get(url)
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.status_code == status.HTTP_200_OK
 
     @pytest.mark.django_db
     def test_retrieve_invalid_uuid_returns_404(
@@ -199,21 +197,3 @@ class TestOtherViewSets:
         """Granted users can list localizations."""
         response = staff_client.get("/api/v1/settings/localizations/")
         assert response.status_code == status.HTTP_200_OK
-
-    @pytest.mark.django_db
-    def test_organization_settings_list(self, staff_client) -> None:
-        """Granted users can list organization settings."""
-        response = staff_client.get(
-            "/api/v1/settings/organization-settings/"
-        )
-        assert response.status_code == status.HTTP_200_OK
-
-    @pytest.mark.django_db
-    def test_organization_settings_list_requires_grant(
-        self, authenticated_client
-    ) -> None:
-        """Users without the org-settings view grant are denied."""
-        response = authenticated_client.get(
-            "/api/v1/settings/organization-settings/"
-        )
-        assert response.status_code == status.HTTP_403_FORBIDDEN

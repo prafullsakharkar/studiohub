@@ -77,17 +77,9 @@ class TestSettingsPermissionGate:
         assert gate.has_permission(_make_request(user=staff_user), _SettingsView("list")) is False
 
     def test_user_with_grant_allowed(self, user) -> None:
-        from apps.organization.tests.factories import (
-            PermissionFactory,
-            RoleFactory,
-            RolePermissionFactory,
-            UserRoleFactory,
-        )
+        from apps.identity.tests.rbac_helpers import grant_permissions
 
-        perm = PermissionFactory.create(code="settings.view")
-        role = RoleFactory.create(organization=None, is_active=True)
-        RolePermissionFactory.create(role=role, permission=perm, granted=True)
-        UserRoleFactory.create(user=user, role=role)
+        grant_permissions(user, "settings.view")
 
         gate = HasPermission()
         assert gate.has_permission(_make_request(user=user), _SettingsView("list")) is True

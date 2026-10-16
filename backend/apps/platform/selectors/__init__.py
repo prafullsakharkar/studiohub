@@ -11,7 +11,7 @@ from apps.platform.models import ProductionReport, StudioNotification
 
 
 class StudioNotificationSelector:
-    """Selector for organization-scoped studio notifications."""
+    """Selector for platform-global studio notifications."""
 
     model = StudioNotification
 
@@ -32,23 +32,16 @@ class StudioNotificationSelector:
         request=None,
         view=None,
     ) -> QuerySet[Any, Any]:
-        from apps.organization.middleware.organization_context import (
-            has_organization_access,
-        )
-
-        organization = getattr(request, "organization", None) if request else None
-        if organization is None:
+        # Platform-global: no tenant partition. Authenticated callers see
+        # every row; anonymous callers see nothing.
+        user = getattr(request, "user", None) if request else None
+        if user is None or not getattr(user, "is_authenticated", False):
             return queryset.none()
-        if not has_organization_access(request):
-            # A resolved header alone grants nothing: without a valid
-            # membership (superusers retain break-glass) rows of another
-            # organization stay invisible (fail closed).
-            return queryset.none()
-        return queryset.filter(organization=organization)
+        return queryset
 
 
 class ProductionReportSelector:
-    """Selector for organization-scoped production reports."""
+    """Selector for platform-global production reports."""
 
     model = ProductionReport
 
@@ -69,16 +62,9 @@ class ProductionReportSelector:
         request=None,
         view=None,
     ) -> QuerySet[Any, Any]:
-        from apps.organization.middleware.organization_context import (
-            has_organization_access,
-        )
-
-        organization = getattr(request, "organization", None) if request else None
-        if organization is None:
+        # Platform-global: no tenant partition. Authenticated callers see
+        # every row; anonymous callers see nothing.
+        user = getattr(request, "user", None) if request else None
+        if user is None or not getattr(user, "is_authenticated", False):
             return queryset.none()
-        if not has_organization_access(request):
-            # A resolved header alone grants nothing: without a valid
-            # membership (superusers retain break-glass) rows of another
-            # organization stay invisible (fail closed).
-            return queryset.none()
-        return queryset.filter(organization=organization)
+        return queryset

@@ -13,7 +13,6 @@ class LoginHistorySerializer(serializers.ModelSerializer[LoginHistory]):
     
     user_email = serializers.CharField(source="user.email", read_only=True)
     user_name = serializers.CharField(source="user.full_name", read_only=True)
-    organization_name = serializers.CharField(source="organization.name", read_only=True)
     
     class Meta:
         model = LoginHistory
@@ -26,8 +25,6 @@ class LoginHistorySerializer(serializers.ModelSerializer[LoginHistory]):
             "user",
             "user_email",
             "user_name",
-            "organization",
-            "organization_name",
             "ip_address",
             "user_agent",
             "location",

@@ -7,7 +7,6 @@ from django.db import models
 from django.utils import timezone
 
 from apps.core.models.bases.entity import EntityModel
-from apps.organization.models.organization import Organization
 
 
 class DeliveryPackage(EntityModel):
@@ -77,13 +76,6 @@ class DeliveryPackage(EntityModel):
         help_text="Unique delivery code",
     )
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="delivery_packages",
-        db_index=True,
-        help_text="Organization context",
-    )
     
     project = models.ForeignKey(
         "production.Project",
@@ -96,7 +88,7 @@ class DeliveryPackage(EntityModel):
     )
     
     client = models.ForeignKey(
-        "organization.Client",
+        "masterdata.Client",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -303,7 +295,7 @@ class DeliveryDestination(EntityModel):
     """
     Delivery destination for client turnover routing.
 
-    Static reference data curated per organization (Aspera endpoints,
+    Static reference data curated platform-wide (Aspera endpoints,
     S3 buckets, SFTP servers, archives). Presented as dropdown options
     in delivery creation flows. Credentials themselves are never stored
     here — only a flag indicating they are configured elsewhere.
@@ -327,13 +319,6 @@ class DeliveryDestination(EntityModel):
         (TYPE_HDD, "Hard Drive Ingest"),
     ]
 
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="delivery_destinations",
-        db_index=True,
-        help_text="Organization context",
-    )
 
     name = models.CharField(
         max_length=255,
@@ -398,8 +383,8 @@ class DeliveryDestination(EntityModel):
         verbose_name_plural = "Delivery Destinations"
         constraints = [
             models.UniqueConstraint(
-                fields=["organization", "name"],
-                name="uniq_delivery_destination_name_per_org",
+                fields=["name"],
+                name="uniq_delivery_destination_name",
             ),
         ]
 

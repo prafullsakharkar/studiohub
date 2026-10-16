@@ -190,10 +190,8 @@ class DeliveryCreateSerializer(serializers.Serializer[Any]):
         """Create a delivery package."""
         from apps.deliveries.models import DeliveryPackage
 
-        organization = validated_data.pop("organization")
         created_by = validated_data.pop("created_by", None)
         return DeliveryPackage.objects.create(
-            organization=organization,
             created_by=created_by,
             **validated_data,
         )

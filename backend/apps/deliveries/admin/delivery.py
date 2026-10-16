@@ -1,19 +1,18 @@
 from django.contrib import admin
 
+from apps.core.admin.base import PlatformScopedModelAdmin
 from apps.deliveries.models import (
     DeliveryDestination,
     DeliveryPackage,
     DeliveryVersionRef,
 )
-from apps.organization.admin.base import OrganizationScopedModelAdmin
 
 
 @admin.register(DeliveryPackage)
-class DeliveryPackageAdmin(OrganizationScopedModelAdmin):
+class DeliveryPackageAdmin(PlatformScopedModelAdmin):
     list_display = (
         "code",
         "name",
-        "organization",
         "project",
         "client",
         "status",
@@ -26,7 +25,6 @@ class DeliveryPackageAdmin(OrganizationScopedModelAdmin):
         "client_status",
         "delivery_method",
         "is_archived",
-        "organization",
     )
 
     search_fields = (
@@ -35,9 +33,9 @@ class DeliveryPackageAdmin(OrganizationScopedModelAdmin):
         "passcode",
     )
 
-    autocomplete_fields = ("organization", "project", "client")
 
-    list_select_related = ("organization", "project", "client")
+
+    list_select_related = ("project", "client")
 
     date_hierarchy = "expires_at"
 
@@ -45,10 +43,9 @@ class DeliveryPackageAdmin(OrganizationScopedModelAdmin):
 
 
 @admin.register(DeliveryDestination)
-class DeliveryDestinationAdmin(OrganizationScopedModelAdmin):
+class DeliveryDestinationAdmin(PlatformScopedModelAdmin):
     list_display = (
         "name",
-        "organization",
         "destination_type",
         "storage_region",
         "is_default",
@@ -59,7 +56,6 @@ class DeliveryDestinationAdmin(OrganizationScopedModelAdmin):
         "destination_type",
         "is_default",
         "is_active",
-        "organization",
     )
 
     search_fields = (
@@ -68,17 +64,11 @@ class DeliveryDestinationAdmin(OrganizationScopedModelAdmin):
         "target_directory",
     )
 
-    autocomplete_fields = ("organization",)
-
-    list_select_related = ("organization",)
-
     ordering = ("name",)
 
 
 @admin.register(DeliveryVersionRef)
-class DeliveryVersionRefAdmin(OrganizationScopedModelAdmin):
-    organization_lookup = "delivery__organization"
-
+class DeliveryVersionRefAdmin(PlatformScopedModelAdmin):
     list_display = (
         "version_number",
         "delivery",

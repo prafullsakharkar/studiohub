@@ -19,6 +19,5 @@ class LoginHistoryFilter(AuditBaseFilter):
             "login_method": ["exact"],
             "status": ["exact"],
             "user": ["exact"],
-            "organization": ["exact"],
             "created_at": ["exact", "gte", "lte"],
         }

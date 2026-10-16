@@ -15,7 +15,6 @@ def create_publish_item(
     *,
     name: str,
     code: str,
-    organization_id: str,
     project_id: str | None = None,
     entity_type: str,
     entity_id: str,
@@ -30,15 +29,11 @@ def create_publish_item(
     created_by_id: str | None = None,
 ) -> PublishItem:
     """Create a new publish item."""
-    from apps.organization.models import Organization
     from apps.publishing.models import PublishItem
-    
-    org = Organization.objects.get(id=organization_id)
-    
+
     publish = PublishItem.objects.create(
         name=name,
         code=code,
-        organization=org,
         project_id=project_id,
         entity_type=entity_type,
         entity_id=entity_id,
@@ -61,22 +56,15 @@ def validate_publish(
     *,
     publish_id: str,
     user_id: str,
-    organization_id: str,
 ) -> dict[Any, Any]:
     """Run validation on a publish item."""
     from apps.audit.models import AuditLog
     from apps.publishing.models import PublishItem, PublishValidationRule
     
-    publish = PublishItem.objects.get(
-        id=publish_id,
-        organization_id=organization_id,
-    )
+    publish = PublishItem.objects.get(id=publish_id)
     
-    # Get active validation rules scoped to the organization
-    rules = PublishValidationRule.objects.filter(
-        organization_id=organization_id,
-        is_active=True,
-    ).order_by("order")
+    # Global validation rules (no organization partition)
+    rules = PublishValidationRule.objects.filter(is_active=True).order_by("order")
     
     validation_results = []
     all_passed = True
@@ -136,7 +124,6 @@ def validate_publish(
         target_name=publish.name,
         description=f"Publish {publish.code} validated: {'Passed' if all_passed else 'Failed'}",
         actor_id=user_id,
-        organization=publish.organization,
         metadata={"validation_results": validation_results, "all_passed": all_passed},
     )
     
@@ -154,16 +141,12 @@ def republish(
     *,
     publish_id: str,
     user_id: str,
-    organization_id: str,
 ) -> PublishItem:
     """Create a new iteration of a publish."""
     from apps.audit.models import AuditLog
     from apps.publishing.models import PublishItem
     
-    original = PublishItem.objects.get(
-        id=publish_id,
-        organization_id=organization_id,
-    )
+    original = PublishItem.objects.get(id=publish_id)
     
     # Increment version
     new_code = f"{original.code}_v{original.retry_count + 2}"
@@ -171,7 +154,6 @@ def republish(
     publish = PublishItem.objects.create(
         name=original.name,
         code=new_code,
-        organization=original.organization,
         project=original.project,
         entity_type=original.entity_type,
         entity_id=original.entity_id,
@@ -196,7 +178,6 @@ def republish(
         target_name=publish.name,
         description=f"New publish iteration created from {original.code}",
         actor_id=user_id,
-        organization=publish.organization,
         metadata={"original_publish_id": str(publish_id), "iteration": publish.retry_count + 1},
     )
     
@@ -208,16 +189,12 @@ def unpublish(
     *,
     publish_id: str,
     user_id: str,
-    organization_id: str,
 ) -> PublishItem:
     """Deprecate and unlink a publish."""
     from apps.audit.models import AuditLog
     from apps.publishing.models import PublishItem
     
-    publish = PublishItem.objects.get(
-        id=publish_id,
-        organization_id=organization_id,
-    )
+    publish = PublishItem.objects.get(id=publish_id)
     
     publish.status = PublishItem.STATUS_CANCELLED
     publish.is_archived = True
@@ -231,7 +208,6 @@ def unpublish(
         target_name=publish.name,
         description=f"Publish {publish.code} deprecated and unlinked",
         actor_id=user_id,
-        organization=publish.organization,
     )
     
     return publish
@@ -242,16 +218,12 @@ def retry_publish(
     *,
     publish_id: str,
     user_id: str,
-    organization_id: str,
 ) -> PublishItem:
     """Re-trigger a failed publish."""
     from apps.audit.models import AuditLog
     from apps.publishing.models import PublishItem
     
-    publish = PublishItem.objects.get(
-        id=publish_id,
-        organization_id=organization_id,
-    )
+    publish = PublishItem.objects.get(id=publish_id)
     
     if publish.status != PublishItem.STATUS_FAILED:
         raise ValueError("Only failed publishes can be retried")
@@ -269,7 +241,6 @@ def retry_publish(
         target_name=publish.name,
         description=f"Publish {publish.code} retried (attempt {publish.retry_count + 1})",
         actor_id=user_id,
-        organization=publish.organization,
     )
     
     return publish

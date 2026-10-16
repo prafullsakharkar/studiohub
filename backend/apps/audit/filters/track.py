@@ -17,6 +17,5 @@ class TrackFilter(AuditBaseFilter):
         fields = {
             "event_type": ["exact"],
             "user": ["exact"],
-            "organization": ["exact"],
             "created_at": ["exact", "gte", "lte"],
         }

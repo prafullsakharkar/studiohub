@@ -20,5 +20,4 @@ class FeatureFlagFilter(SettingsBaseFilter):
             "feature_type": ["exact"],
             "status": ["exact"],
             "is_enabled": ["exact"],
-            "organization": ["exact"],
         }

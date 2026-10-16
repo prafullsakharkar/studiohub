@@ -5,7 +5,6 @@ from __future__ import annotations
 
 from django.db.models import QuerySet
 
-from apps.organization.models.organization import Organization
 from apps.settings.models.localization import Localization
 
 from .base import SettingsBaseSelector
@@ -37,13 +36,7 @@ class LocalizationSelector(SettingsBaseSelector):
         """
         return cls.get_queryset().get(code=code)
     
-    @classmethod
-    def for_organization(cls, organization: Organization):
-        """
-        Get localizations for a specific organization.
-        """
-        return cls.get_queryset().filter(organization=organization)
-    
+
     @classmethod
     def active(cls):
         """
@@ -54,6 +47,6 @@ class LocalizationSelector(SettingsBaseSelector):
     @classmethod
     def get_default(cls):
         """
-        Get the default localization (no organization).
+        Get the default localization.
         """
-        return cls.get_queryset().filter(organization__isnull=True).first()
+        return cls.get_queryset().filter(is_active=True).first()

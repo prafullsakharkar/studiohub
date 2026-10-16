@@ -11,7 +11,6 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.models.bases.entity import EntityModel
 from apps.core.models.bases.timestamp import TimeStampedModel
 from apps.identity.models.user import User
-from apps.organization.models.organization import Organization
 
 
 class ChangeLog(EntityModel, TimeStampedModel):
@@ -70,13 +69,6 @@ class ChangeLog(EntityModel, TimeStampedModel):
         help_text="User who made the change",
     )
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="change_logs",
-        db_index=True,
-        help_text="Organization context",
-    )
     
     # Before and after values stored as JSON
     before_values = models.JSONField(

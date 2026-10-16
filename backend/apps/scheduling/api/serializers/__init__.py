@@ -234,7 +234,7 @@ class ResourceCreateSerializer(serializers.Serializer[Any]):
 
     def create(self, validated_data):
         from apps.identity.models import User
-        from apps.organization.models import Department, Team
+        from apps.masterdata.models import Department, Team
 
         department_id = validated_data.pop("department_id", None)
         team_id = validated_data.pop("team_id", None)
@@ -340,14 +340,11 @@ class ResourceLeaveSerializer(serializers.ModelSerializer[Any]):
 class HolidaySerializer(serializers.ModelSerializer[Any]):
     """Serializer for holiday."""
     
-    organization = serializers.PrimaryKeyRelatedField(read_only=True)
-    
     class Meta:
         model = Holiday
         fields = (
             "id",
             "name",
-            "organization",
             "holiday_date",
             "is_paid",
             "is_optional",

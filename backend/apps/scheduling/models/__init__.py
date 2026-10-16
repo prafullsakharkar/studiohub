@@ -6,7 +6,6 @@ from __future__ import annotations
 from django.db import models
 
 from apps.core.models.bases.entity import EntityModel
-from apps.organization.models.organization import Organization
 
 
 class CalendarEvent(EntityModel):
@@ -74,13 +73,6 @@ class CalendarEvent(EntityModel):
         help_text="Event description",
     )
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="calendar_events",
-        db_index=True,
-        help_text="Organization context",
-    )
     
     project = models.ForeignKey(
         "production.Project",
@@ -211,13 +203,6 @@ class Resource(EntityModel):
         help_text="Unique resource code",
     )
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="resources",
-        db_index=True,
-        help_text="Organization context",
-    )
     
     resource_type = models.CharField(
         max_length=20,
@@ -236,7 +221,7 @@ class Resource(EntityModel):
     )
     
     department = models.ForeignKey(
-        "organization.Department",
+        "masterdata.Department",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -246,7 +231,7 @@ class Resource(EntityModel):
     )
     
     team = models.ForeignKey(
-        "organization.Team",
+        "masterdata.Team",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -503,13 +488,6 @@ class Holiday(EntityModel):
         help_text="Holiday name",
     )
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="holidays",
-        db_index=True,
-        help_text="Organization context",
-    )
     
     holiday_date = models.DateField(
         help_text="Holiday date",
@@ -535,7 +513,7 @@ class Holiday(EntityModel):
         ordering = ("holiday_date",)
         verbose_name = "Holiday"
         verbose_name_plural = "Holidays"
-        unique_together = ("organization", "holiday_date")
+        unique_together = ("holiday_date",)
     
     def __str__(self):
         return f"{self.name} ({self.holiday_date})"

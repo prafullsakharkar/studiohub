@@ -1,32 +1,11 @@
 """
-API tests for deliveries endpoints.
+API tests for deliveries endpoints (platform-global, org-free).
 """
 import pytest
 from django.urls import reverse
 from rest_framework import status
 
 from apps.deliveries.models import DeliveryPackage
-
-
-@pytest.fixture(autouse=True)
-def _org_membership(user, staff_user):
-    """Give `user` and `staff_user` an organization membership.
-
-    Several assertions construct objects with
-    ``organization=user.organization_memberships.first().organization``,
-    which crashes when the user has no membership. Tests authenticate via
-    `staff_client`, so `staff_user` needs a membership for headerless
-    organization resolution too.
-    """
-    from apps.organization.tests.factories import (
-        OrganizationFactory,
-        OrganizationMembershipFactory,
-    )
-
-    org = OrganizationFactory.create()
-    OrganizationMembershipFactory.create(organization=org, user=user)
-    OrganizationMembershipFactory.create(organization=org, user=staff_user)
-    return org
 
 
 @pytest.mark.django_db
@@ -59,31 +38,27 @@ class TestDeliveryEndpoints:
         assert response.data["name"] == "Test Delivery"
         assert response.data["code"] == "DEL-TEST-001"
 
-    def test_get_delivery_detail(self, staff_client, _org_membership):
+    def test_get_delivery_detail(self, staff_client):
         """Test getting delivery details."""
         delivery = DeliveryPackage.objects.create(
             name="Test Delivery",
             code="DEL-TEST-002",
-            organization=_org_membership,
         )
 
         url = reverse("api:v1:deliveries:delivery-detail", kwargs={"uuid": str(delivery.id)})
-        response = staff_client.get(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
+        response = staff_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["name"] == "Test Delivery"
 
-    def test_add_version_to_delivery(self, staff_client, _org_membership):
+    def test_add_version_to_delivery(self, staff_client):
         """Test adding a version to a delivery."""
-        org = _org_membership
         delivery = DeliveryPackage.objects.create(
             name="Test Delivery",
             code="DEL-TEST-003",
-            organization=org,
         )
         from apps.production.models import Version
         version = Version.objects.create(
-            organization=org,
             code="VER-001",
         )
 
@@ -97,27 +72,19 @@ class TestDeliveryEndpoints:
             "file_path": "/path/to/file.exr",
         }
 
-        response = staff_client.post(
-            url,
-            data,
-            format="json",
-            HTTP_X_ORGANIZATION_ID=str(org.id),
-        )
+        response = staff_client.post(url, data, format="json")
 
         assert response.status_code == status.HTTP_201_CREATED
         assert delivery.versions.count() == 1
 
-    def test_remove_version_from_delivery(self, staff_client, _org_membership):
+    def test_remove_version_from_delivery(self, staff_client):
         """Test removing a version reference from a delivery."""
-        org = _org_membership
         delivery = DeliveryPackage.objects.create(
             name="Test Delivery",
             code="DEL-TEST-004",
-            organization=org,
         )
         from apps.production.models import Version
         version = Version.objects.create(
-            organization=org,
             code="VER-002",
         )
 
@@ -133,7 +100,6 @@ class TestDeliveryEndpoints:
                 "file_path": "/path/to/file.exr",
             },
             format="json",
-            HTTP_X_ORGANIZATION_ID=str(org.id),
         )
         assert delivery.versions.count() == 1
         ref_id = str(delivery.versions.first().id)  # type: ignore[union-attr]
@@ -143,169 +109,143 @@ class TestDeliveryEndpoints:
             url,
             {"version_ref_id": ref_id},
             format="json",
-            HTTP_X_ORGANIZATION_ID=str(org.id),
         )
 
         assert response.status_code == status.HTTP_200_OK
         assert delivery.versions.count() == 0
 
-    def test_destroy_delivery_soft_deletes(self, staff_client, _org_membership):
+    def test_destroy_delivery_soft_deletes(self, staff_client):
         """DELETE soft-deletes (regression: destroy 500'd without service_class)."""
         delivery = DeliveryPackage.objects.create(
             name="Test Delivery",
             code="DEL-TEST-DELETE",
-            organization=_org_membership,
         )
 
         url = reverse("api:v1:deliveries:delivery-detail", kwargs={"uuid": str(delivery.id)})
-        response = staff_client.delete(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
+        response = staff_client.delete(url)
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
         delivery.refresh_from_db()
         assert delivery.is_deleted is True
 
-    def test_validate_delivery(self, staff_client, _org_membership):
+    def test_validate_delivery(self, staff_client):
         """Test validating a delivery."""
         delivery = DeliveryPackage.objects.create(
             name="Test Delivery",
             code="DEL-TEST-004",
-            organization=_org_membership,
         )
 
         url = reverse("api:v1:deliveries:delivery-validate", kwargs={"uuid": str(delivery.id)})
-        response = staff_client.post(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
+        response = staff_client.post(url)
 
         assert response.status_code == status.HTTP_200_OK
         assert "success" in response.data
 
-    def test_prepare_delivery(self, staff_client, _org_membership):
+    def test_prepare_delivery(self, staff_client):
         """Test preparing a delivery."""
         delivery = DeliveryPackage.objects.create(
             name="Test Delivery",
             code="DEL-TEST-005",
-            organization=_org_membership,
         )
 
         url = reverse("api:v1:deliveries:delivery-prepare", kwargs={"uuid": str(delivery.id)})
-        response = staff_client.post(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
+        response = staff_client.post(url)
 
         assert response.status_code == status.HTTP_200_OK
         assert "success" in response.data
 
-    def test_submit_delivery(self, staff_client, _org_membership):
+    def test_submit_delivery(self, staff_client):
         """Test submitting a delivery."""
         delivery = DeliveryPackage.objects.create(
             name="Test Delivery",
             code="DEL-TEST-006",
-            organization=_org_membership,
         )
 
         url = reverse("api:v1:deliveries:delivery-submit", kwargs={"uuid": str(delivery.id)})
-        response = staff_client.post(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
+        response = staff_client.post(url)
 
         assert response.status_code == status.HTTP_200_OK
         assert "success" in response.data
 
-    def test_approve_delivery(self, staff_client, _org_membership):
+    def test_approve_delivery(self, staff_client):
         """Test approving a delivery."""
         delivery = DeliveryPackage.objects.create(
             name="Test Delivery",
             code="DEL-TEST-007",
-            organization=_org_membership,
         )
 
         url = reverse("api:v1:deliveries:delivery-approve", kwargs={"uuid": str(delivery.id)})
         data = {"client_notes": "Looks good!"}
-        response = staff_client.post(
-            url,
-            data,
-            format="json",
-            HTTP_X_ORGANIZATION_ID=str(_org_membership.id),
-        )
+        response = staff_client.post(url, data, format="json")
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "Approved"
 
-    def test_reject_delivery(self, staff_client, _org_membership):
+    def test_reject_delivery(self, staff_client):
         """Test rejecting a delivery."""
         delivery = DeliveryPackage.objects.create(
             name="Test Delivery",
             code="DEL-TEST-008",
-            organization=_org_membership,
         )
 
         url = reverse("api:v1:deliveries:delivery-reject", kwargs={"uuid": str(delivery.id)})
         data = {"rejection_reason": "Missing files"}
-        response = staff_client.post(
-            url,
-            data,
-            format="json",
-            HTTP_X_ORGANIZATION_ID=str(_org_membership.id),
-        )
+        response = staff_client.post(url, data, format="json")
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "Rejected"
 
-    def test_complete_delivery(self, staff_client, _org_membership):
+    def test_complete_delivery(self, staff_client):
         """Test completing a delivery."""
         delivery = DeliveryPackage.objects.create(
             name="Test Delivery",
             code="DEL-TEST-009",
-            organization=_org_membership,
         )
 
         url = reverse("api:v1:deliveries:delivery-complete", kwargs={"uuid": str(delivery.id)})
-        response = staff_client.post(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
+        response = staff_client.post(url)
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "Completed"
 
-    def test_cancel_delivery(self, staff_client, _org_membership):
+    def test_cancel_delivery(self, staff_client):
         """Test cancelling a delivery."""
         delivery = DeliveryPackage.objects.create(
             name="Test Delivery",
             code="DEL-TEST-010",
-            organization=_org_membership,
         )
 
         url = reverse("api:v1:deliveries:delivery-cancel", kwargs={"uuid": str(delivery.id)})
         data = {"cancellation_reason": "No longer needed"}
-        response = staff_client.post(
-            url,
-            data,
-            format="json",
-            HTTP_X_ORGANIZATION_ID=str(_org_membership.id),
-        )
+        response = staff_client.post(url, data, format="json")
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "Cancelled"
 
-    def test_retry_delivery(self, staff_client, _org_membership):
+    def test_retry_delivery(self, staff_client):
         """Test retrying a delivery resets it to Prepared (reads as Ready)."""
         delivery = DeliveryPackage.objects.create(
             name="Test Delivery",
             code="DEL-TEST-011",
-            organization=_org_membership,
             status=DeliveryPackage.STATUS_SUBMITTED,
         )
 
         url = reverse("api:v1:deliveries:delivery-retry", kwargs={"uuid": str(delivery.id)})
-        response = staff_client.post(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
+        response = staff_client.post(url)
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "Ready"
         delivery.refresh_from_db()
         assert delivery.status == DeliveryPackage.STATUS_PREPARED
 
-    def test_prepare_reads_as_ready(self, staff_client, _org_membership):
+    def test_prepare_reads_as_ready(self, staff_client):
         """Test the prepare action output uses the frontend status word."""
         delivery = DeliveryPackage.objects.create(
             name="Test Delivery",
             code="DEL-TEST-012",
-            organization=_org_membership,
         )
 
         url = reverse("api:v1:deliveries:delivery-prepare", kwargs={"uuid": str(delivery.id)})
-        response = staff_client.post(url, HTTP_X_ORGANIZATION_ID=str(_org_membership.id))
+        response = staff_client.post(url)
 
         assert response.status_code == status.HTTP_200_OK

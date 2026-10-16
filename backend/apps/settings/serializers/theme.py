@@ -20,7 +20,6 @@ class ThemeSerializer(serializers.ModelSerializer[Theme]):
             "name",
             "description",
             "theme_type",
-            "organization",
             "primary_color",
             "secondary_color",
             "accent_color",

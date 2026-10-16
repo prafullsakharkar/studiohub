@@ -24,7 +24,6 @@ class BackgroundJobService(AuditBaseService):
         cls,
         *,
         job_type: str,
-        organization_id: str,
         description: str,
         executor,
         executor_args=(),
@@ -51,7 +50,6 @@ class BackgroundJobService(AuditBaseService):
             status=BackgroundJob.STATUS_QUEUED,
             progress=0,
             description=description,
-            organization_id=organization_id,
             job_id=_uuid.uuid4().hex,
         )
 

@@ -1,7 +1,6 @@
 from apps.settings.admin.settings import (
     FeatureFlagAdmin,
     LocalizationAdmin,
-    OrganizationSettingAdmin,
     SettingCategoryAdmin,
     SettingDefinitionAdmin,
     SystemSettingAdmin,
@@ -11,7 +10,6 @@ from apps.settings.admin.settings import (
 __all__ = [
     "FeatureFlagAdmin",
     "LocalizationAdmin",
-    "OrganizationSettingAdmin",
     "SettingCategoryAdmin",
     "SettingDefinitionAdmin",
     "SystemSettingAdmin",

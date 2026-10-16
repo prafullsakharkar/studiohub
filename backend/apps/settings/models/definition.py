@@ -79,12 +79,10 @@ class SettingDefinition(EntityModel, TimeStampedModel):
         (RULE_DEPENDS_ON, _("Depends On")),
     ]
     
-    # Scope choices
-    SCOPE_ORGANIZATION = "organization"
+    # Scope choices (platform-global: every setting applies system-wide)
     SCOPE_SYSTEM = "system"
-    
+
     SCOPE_CHOICES = [
-        (SCOPE_ORGANIZATION, _("Organization")),
         (SCOPE_SYSTEM, _("System")),
     ]
     
@@ -124,9 +122,9 @@ class SettingDefinition(EntityModel, TimeStampedModel):
     scope = models.CharField(
         max_length=20,
         choices=SCOPE_CHOICES,
-        default=SCOPE_ORGANIZATION,
+        default=SCOPE_SYSTEM,
         db_index=True,
-        help_text="Scope of the setting (organization or system)",
+        help_text="Scope of the setting (system-wide)",
     )
     
     is_required = models.BooleanField(

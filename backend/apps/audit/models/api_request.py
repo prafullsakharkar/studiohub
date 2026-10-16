@@ -9,7 +9,6 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.models.bases.entity import EntityModel
 from apps.core.models.bases.timestamp import TimeStampedModel
 from apps.identity.models.user import User
-from apps.organization.models.organization import Organization
 
 
 class APIRequest(EntityModel, TimeStampedModel):
@@ -110,13 +109,6 @@ class APIRequest(EntityModel, TimeStampedModel):
         help_text="User who made the request",
     )
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="api_requests",
-        db_index=True,
-        help_text="Organization context",
-    )
     
     ip_address = models.GenericIPAddressField(
         null=True,

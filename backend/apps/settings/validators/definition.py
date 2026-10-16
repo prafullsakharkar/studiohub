@@ -66,7 +66,7 @@ class SettingDefinitionValidator(SettingsBaseValidator):
         """
         Validate scope.
         """
-        valid_scopes = ["organization", "system"]
+        valid_scopes = ["system"]
         if scope not in valid_scopes:
             self.errors["scope"] = [
                 f"Invalid scope. Must be one of: {', '.join(valid_scopes)}"

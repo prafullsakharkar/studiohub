@@ -12,44 +12,32 @@ from rest_framework import status
 
 from apps.audit.tests.factories import AuditLogFactory
 from apps.identity.tests.factories import ProfileFactory, UserFactory
-from apps.organization.tests.factories import (
-    OrganizationFactory,
-    OrganizationMembershipFactory,
-)
-
-
-def _org_header(org):
-    return {"HTTP_X_ORGANIZATION_ID": str(org.id)}
 
 
 @pytest.mark.django_db
 class TestAuditFlatAlias:
-    def _make_log(self, org, **kwargs):
+    def _make_log(self, **kwargs):
         actor = UserFactory.create(email="alex.chen@example.com")
         ProfileFactory.create(user=actor, first_name="Alex", last_name="Chen")
         defaults = {
-            "organization": org,
             "actor": actor,
             "action": "UPDATE",
             "target_type": "Shot",
             "target_id": "shot-001",
             "target_name": "NK_010_010",
-            "description": "Color pipelineorov streamlined",
+            "description": "Color pipeline streamlined",
         }
         defaults.update(kwargs)
         return AuditLogFactory.create(**defaults)
 
-    def test_list_frontend_shape(self, staff_client, staff_user):
-        org = OrganizationFactory.create()
-        OrganizationMembershipFactory.create(user=staff_user, organization=org)
-        log = self._make_log(org)
+    def test_list_frontend_shape(self, staff_client):
+        log = self._make_log()
 
-        resp = staff_client.get("/api/v1/audit/", **_org_header(org))
+        resp = staff_client.get("/api/v1/audit/")
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert resp.data["count"] == 1
         row = resp.data["results"][0]
         assert row["id"] == str(log.id)
-        assert row["organization_id"] == str(org.id)
         assert row["user_id"] == str(log.actor_id)
         assert row["user_name"] == "Alex Chen"
         assert row["user_email"] == "alex.chen@example.com"
@@ -59,12 +47,9 @@ class TestAuditFlatAlias:
         assert row["entity_code"] == "NK_010_010"
         assert "description" in row and "ip_address" in row
 
-    def test_search_and_action_filter(self, staff_client, staff_user):
-        org = OrganizationFactory.create()
-        OrganizationMembershipFactory.create(user=staff_user, organization=org)
-        self._make_log(org, action="UPDATE", target_type="Shot")
+    def test_search_and_action_filter(self, staff_client):
+        self._make_log(action="UPDATE", target_type="Shot")
         self._make_log(
-            org,
             action="APPROVE",
             target_type="Review",
             target_id="rev-001",
@@ -72,12 +57,12 @@ class TestAuditFlatAlias:
             description="Approved final comp",
         )
 
-        resp = staff_client.get("/api/v1/audit/?search=comp", **_org_header(org))
+        resp = staff_client.get("/api/v1/audit/?search=comp")
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert resp.data["count"] == 1
         assert resp.data["results"][0]["action"] == "APPROVE"
 
-        resp = staff_client.get("/api/v1/audit/?action=UPDATE", **_org_header(org))
+        resp = staff_client.get("/api/v1/audit/?action=UPDATE")
         assert resp.data["count"] == 1
         assert resp.data["results"][0]["entity_type"] == "Shot"
 
@@ -87,14 +72,13 @@ class TestAuditFlatAlias:
         # single APIClient, so force_authenticate would leak between names.
         from rest_framework.test import APIClient
 
-        org = OrganizationFactory.create()
-        self._make_log(org)
+        self._make_log()
 
-        resp = APIClient().get("/api/v1/audit/", **_org_header(org))
+        resp = APIClient().get("/api/v1/audit/")
         assert resp.status_code in (
             status.HTTP_401_UNAUTHORIZED,
             status.HTTP_403_FORBIDDEN,
         )
 
-        resp = staff_client.post("/api/v1/audit/", {}, format="json", **_org_header(org))
+        resp = staff_client.post("/api/v1/audit/", {}, format="json")
         assert resp.status_code == status.HTTP_405_METHOD_NOT_ALLOWED

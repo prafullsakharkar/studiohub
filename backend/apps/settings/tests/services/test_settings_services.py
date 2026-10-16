@@ -16,7 +16,6 @@ from apps.settings.models.category import SettingCategory
 from apps.settings.models.definition import SettingDefinition
 from apps.settings.models.feature_flag import FeatureFlag
 from apps.settings.models.localization import Localization
-from apps.settings.models.organization import OrganizationSetting
 from apps.settings.models.system import SystemSetting
 from apps.settings.models.theme import Theme
 from apps.settings.services.base import SettingsBaseService
@@ -24,7 +23,6 @@ from apps.settings.services.category import SettingCategoryService
 from apps.settings.services.definition import SettingDefinitionService
 from apps.settings.services.feature_flag import FeatureFlagService
 from apps.settings.services.localization import LocalizationService
-from apps.settings.services.organization import OrganizationSettingService
 from apps.settings.services.system import SystemSettingService
 from apps.settings.services.theme import ThemeService
 
@@ -265,69 +263,6 @@ class TestLocalizationService:
         """Deactivate a localization."""
         result = LocalizationService.deactivate_localization(localization)
         assert result.is_active is False
-
-
-class TestOrganizationSettingService:
-    """Tests for OrganizationSettingService."""
-
-    @pytest.mark.django_db
-    def test_create_setting(self, organization, definition: SettingDefinition) -> None:
-        """Create an organization setting through the service."""
-        setting = OrganizationSettingService.create_setting(
-            organization=organization,
-            setting_code=definition.code,
-            value={"key": "value"},
-        )
-        assert setting.uuid is not None
-        assert setting.organization_id == organization.id
-        assert setting.setting_id == definition.id
-        assert setting.value == json.dumps({"key": "value"})
-
-    @pytest.mark.django_db
-    def test_update_setting(
-        self, organization_setting: OrganizationSetting
-    ) -> None:
-        """Update an organization setting value."""
-        updated = OrganizationSettingService.update_setting(
-            organization_setting, {"key": "updated"}
-        )
-        assert updated.value == json.dumps({"key": "updated"})
-
-    @pytest.mark.django_db
-    def test_delete_setting(self, organization_setting: OrganizationSetting) -> None:
-        """Delete an organization setting through the service."""
-        OrganizationSettingService.delete_setting(organization_setting)
-        assert (
-            OrganizationSetting.objects.filter(id=organization_setting.id).count()
-            == 0
-        )
-
-    @pytest.mark.django_db
-    def test_delete_locked_setting_raises_permission_denied(
-        self, organization_setting: OrganizationSetting
-    ) -> None:
-        """Deleting a locked setting raises PermissionDenied."""
-        organization_setting.is_locked = True
-        organization_setting.save()
-        with pytest.raises(PermissionDenied):
-            OrganizationSettingService.delete_setting(organization_setting)
-
-    @pytest.mark.django_db
-    def test_lock_and_unlock_setting(
-        self, organization_setting: OrganizationSetting, user
-    ) -> None:
-        """Lock and unlock an organization setting."""
-        locked = OrganizationSettingService.lock_setting(
-            organization_setting, user
-        )
-        assert locked.is_locked is True
-        assert locked.locked_by_id == user.id
-        assert locked.locked_at is not None
-
-        unlocked = OrganizationSettingService.unlock_setting(locked)
-        assert unlocked.is_locked is False
-        assert unlocked.locked_by is None
-        assert unlocked.locked_at is None
 
 
 class TestSystemSettingService:

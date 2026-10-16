@@ -36,13 +36,7 @@ class BackgroundJobSelector(AuditBaseSelector):
         """
         return cls.get_queryset().get(id=background_job_id)
     
-    @classmethod
-    def by_organization(cls, organization_id: str):
-        """
-        Get background jobs for an organization.
-        """
-        return cls.get_queryset().filter(organization_id=organization_id)
-    
+
     @classmethod
     def by_type(cls, job_type: str):
         """

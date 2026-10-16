@@ -29,4 +29,4 @@ class TestAuditLogQuerySet:
         """Test select_related method."""
         AuditLogFactory.create_batch(5)
         with django_assert_num_queries(1):
-            list(AuditLog.objects.select_related("actor", "organization").all())
+            list(AuditLog.objects.select_related("actor").all())

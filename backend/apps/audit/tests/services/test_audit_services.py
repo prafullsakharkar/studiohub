@@ -17,10 +17,9 @@ class TestAuditLogService:
     """Tests for AuditLog service."""
 
     @pytest.mark.django_db
-    def test_service_create_audit_log(self, organization, user) -> None:
+    def test_service_create_audit_log(self, user) -> None:
         """Test service create_log method."""
         audit_log = AuditLogService.create_log(
-            organization=organization,
             actor=user,
             action=AuditLog.ACTION_CREATE,
             target_type="TestModel",
@@ -56,13 +55,12 @@ class TestBackgroundJobService:
     """Tests for BackgroundJob inline job producer."""
 
     @pytest.mark.django_db
-    def test_enqueue_and_run_success(self, organization) -> None:
+    def test_enqueue_and_run_success(self) -> None:
         def _executor(value):
             return {"doubled": value * 2}
 
         job = BackgroundJobService.enqueue_and_run(
             job_type="export",
-            organization_id=str(organization.id),
             description="Test export",
             executor=_executor,
             executor_kwargs={"value": 21},
@@ -77,14 +75,13 @@ class TestBackgroundJobService:
         assert BackgroundJob.objects.filter(job_id=job.job_id).exists()
 
     @pytest.mark.django_db
-    def test_enqueue_and_run_records_failure(self, organization) -> None:
+    def test_enqueue_and_run_records_failure(self) -> None:
         def _executor():
             raise ValueError("boom")
 
         with pytest.raises(ValueError):
             BackgroundJobService.enqueue_and_run(
                 job_type="export",
-                organization_id=str(organization.id),
                 description="Failing export",
                 executor=_executor,
             )
@@ -94,17 +91,16 @@ class TestBackgroundJobService:
         assert job.error_message == "boom"
 
     @pytest.mark.django_db
-    def test_enqueue_and_run_serializes_orm_result(self, organization) -> None:
+    def test_enqueue_and_run_serializes_orm_result(self, user) -> None:
         def _executor():
-            return organization
+            return user
 
         job = BackgroundJobService.enqueue_and_run(
             job_type="export",
-            organization_id=str(organization.id),
             description="ORM result export",
             executor=_executor,
         )
 
         assert job.status == BackgroundJob.STATUS_COMPLETED
-        assert job.result_data["result_id"] == str(organization.pk)
-        assert job.result_data["result_type"] == type(organization).__name__
+        assert job.result_data["result_id"] == str(user.pk)
+        assert job.result_data["result_type"] == type(user).__name__

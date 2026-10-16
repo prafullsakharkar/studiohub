@@ -1,5 +1,5 @@
 """
-Intelligence test factories.
+Intelligence test factories (platform-global, org-free).
 """
 
 from __future__ import annotations
@@ -9,7 +9,6 @@ from factory.django import DjangoModelFactory
 
 from apps.identity.tests.factories import UserFactory
 from apps.intelligence.models import KnowledgeDocument, RecentSearch, SavedSearch
-from apps.organization.tests.factories import OrganizationFactory
 
 
 class KnowledgeDocumentFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
@@ -18,7 +17,6 @@ class KnowledgeDocumentFactory(DjangoModelFactory):  # pyright: ignore[reportMis
     class Meta:
         model = KnowledgeDocument
 
-    organization = factory.SubFactory(OrganizationFactory)
     title = factory.Sequence(lambda n: f"Knowledge Doc {n}")
     slug = factory.Sequence(lambda n: f"knowledge-doc-{n}")
     summary = factory.Faker("sentence")
@@ -36,7 +34,6 @@ class SavedSearchFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTy
     class Meta:
         model = SavedSearch
 
-    organization = factory.SubFactory(OrganizationFactory)
     user = factory.SubFactory(UserFactory)
     name = factory.Sequence(lambda n: f"Saved Search {n}")
     description = ""
@@ -50,7 +47,6 @@ class RecentSearchFactory(DjangoModelFactory):  # pyright: ignore[reportMissingT
     class Meta:
         model = RecentSearch
 
-    organization = factory.SubFactory(OrganizationFactory)
     user = factory.SubFactory(UserFactory)
     query = factory.Sequence(lambda n: f"comp shots {n}")
     filters_snapshot = factory.LazyFunction(dict)

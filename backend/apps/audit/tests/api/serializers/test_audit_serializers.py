@@ -43,7 +43,6 @@ class TestAuditLogSerializer:
         assert data["target_id"] == log.target_id
         assert data["actor"] == log.actor_id
         assert data["actor_email"] == log.actor.email
-        assert data["organization"] == log.organization_id
 
     @pytest.mark.django_db
     def test_read_only_fields(self) -> None:
