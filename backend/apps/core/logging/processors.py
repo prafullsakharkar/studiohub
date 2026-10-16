@@ -12,9 +12,6 @@ from typing import Any
 
 from .constants import REDACTED, SENSITIVE_KEYS, SERVICE_NAME
 from .context import (
-    organization as _ctx_organization,
-)
-from .context import (
     request_id as _ctx_request_id,
 )
 from .context import (
@@ -46,7 +43,7 @@ def add_request_context(
     event_dict: dict[str, Any],
 ) -> dict[str, Any]:
     """
-    Attach request/user/organization context from ContextVars.
+    Attach request/user context from ContextVars.
 
     Model-like objects are reduced to their ids so logs stay small and
     JSON-serializable.
@@ -59,10 +56,6 @@ def add_request_context(
     event_dict.setdefault(
         "user_id",
         _compact_id(_ctx_user.get(None)),
-    )
-    event_dict.setdefault(
-        "organization_id",
-        _compact_id(_ctx_organization.get(None)),
     )
 
     return event_dict

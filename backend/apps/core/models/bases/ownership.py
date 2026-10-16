@@ -13,19 +13,12 @@ warnings.warn(
 
 class OrganizationOwnedModel(models.Model):
     """
-    Abstract model for organization-scoped records.
+    Deprecated compatibility base — organization scope is removed.
 
-    This is a protocol/interface for domain applications to implement.
-    Domain applications should define their own organization field.
-
-    Example:
-        class MyModel(OrganizationOwnedModel):
-            organization = models.ForeignKey(
-                "myapp.Organization",
-                on_delete=models.CASCADE,
-                related_name="%(app_label)s_%(class)ss",
-                db_index=True,
-            )
+    The platform is no longer organization-scoped. This empty abstract
+    marker is retained only because ``apps.organization.models.base``
+    still imports it; it dies atomically with the org app (B7). Do not
+    use it in new code.
     """
 
     class Meta:

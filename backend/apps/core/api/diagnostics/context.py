@@ -214,14 +214,13 @@ def _actor_info(request: Any) -> dict[str, Any]:
     """
     Capture the authenticated actor without triggering extra queries.
 
-    ``user_id``/``organization_id`` are ids only. ``authenticated`` reflects
-    the resolved user; ``auth_scheme`` names the presented credential scheme
+    ``user_id`` is an id only. ``authenticated`` reflects the resolved
+    user; ``auth_scheme`` names the presented credential scheme
     (``Bearer``/``Basic``/...) without ever including the credential itself.
     """
 
     info: dict[str, Any] = {
         "user_id": None,
-        "organization_id": None,
         "authenticated": False,
         "auth_scheme": None,
     }
@@ -237,10 +236,6 @@ def _actor_info(request: Any) -> dict[str, Any]:
         if authenticated:
             info["user_id"] = _compact_id(user)
 
-    organization = _resolve_organization(request)
-    if organization is not None:
-        info["organization_id"] = _compact_id(organization)
-
     info["auth_scheme"] = auth_scheme(request)
 
     return info
@@ -251,22 +246,6 @@ def _resolve_user(request: Any) -> Any:
         getattr(request, "user", None),
         getattr(getattr(request, "_request", None), "user", None),
         log_context.user.get(None),
-    ):
-        if candidate is not None:
-            return candidate
-
-    return None
-
-
-def _resolve_organization(request: Any) -> Any:
-    raw = getattr(request, "_request", request)
-
-    for candidate in (
-        getattr(request, "organization", None),
-        getattr(raw, "organization", None),
-        getattr(request, "membership", None),
-        getattr(raw, "membership", None),
-        log_context.organization.get(None),
     ):
         if candidate is not None:
             return candidate

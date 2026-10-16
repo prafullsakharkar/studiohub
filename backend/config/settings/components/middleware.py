@@ -21,7 +21,6 @@ MIDDLEWARE = [
     "apps.core.middleware.LocaleMiddleware",
     "apps.core.middleware.TimezoneMiddleware",
     "apps.core.middleware.AuthenticationMiddleware",
-    "apps.core.middleware.OrganizationMiddleware",
     "apps.organization.middleware.organization_context.OrganizationContextMiddleware",
     "apps.core.middleware.AuditMiddleware",
     # Thread-local request for signal attribution (audit change tracking).

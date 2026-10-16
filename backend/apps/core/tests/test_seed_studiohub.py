@@ -3,19 +3,20 @@ Seed-system tests for seed_studiohub (§28).
 
 Hermetic: STUDIOHUB_REACT_MOCKS points at a tiny fixture tree (no node
 needed — plain JSON-compatible arrays), --skip-base avoids the foundation.
-Covers idempotency, relationships, org/project isolation, user access,
+Covers idempotency, relationships, project isolation, user access,
 soft-delete restore, mock compatibility, and dry-run safety.
+
+Org-free (org-removal B6): no organizations or org memberships are seeded;
+roles resolve through platform-global ``UserRole`` rows.
 """
 
 import json
-from datetime import date
 from pathlib import Path
 
 import pytest
 from django.core.management import CommandError, call_command
 
 from apps.core.management.commands.seed_studiohub import SeedReporter
-from apps.organization.models import Organization, OrganizationMembership
 from apps.production.models import Project, ProjectMembership, Sequence, Shot
 
 
@@ -39,10 +40,6 @@ def _write_fixture_root(tmp_path):
                  "full_name": "Alpha One",
                  "avatar_url": "https://example.com/alpha.png",
                  "is_active": True, "is_staff": True, "is_superuser": True,
-                 "memberships": [{"organization_id": "org-t1", "role": "Artist",
-                                  "is_default": True, "status": "Active",
-                                  "department": "Editorial",
-                                  "joined_at": "2024-01-01T00:00:00Z"}],
                  "project_memberships": [
                      {"projectId": "proj-t1", "role": "Artist",
                       "roles": ["Artist"], "scope": "PROJECT", "status": "Active"}
@@ -52,10 +49,6 @@ def _write_fixture_root(tmp_path):
                  "full_name": "Beta Two",
                  "avatar_url": "https://example.com/beta.png",
                  "is_active": True, "is_staff": False, "is_superuser": False,
-                 "memberships": [{"organization_id": "org-t2", "role": "Viewer",
-                                  "is_default": False, "status": "Active",
-                                  "department": "Pipeline TD",
-                                  "joined_at": "2024-02-02T00:00:00Z"}],
                  "project_memberships": []},
             ],
         ),
@@ -63,11 +56,9 @@ def _write_fixture_root(tmp_path):
             "mockProjects",
             [
                 {"id": "proj-t1", "code": "PRJ1", "name": "Project One",
-                 "organization_id": "org-t1", "status": "In Progress",
-                 "type": "Feature Film"},
+                 "status": "In Progress", "type": "Feature Film"},
                 {"id": "proj-t2", "code": "PRJ2", "name": "Project Two",
-                 "organization_id": "org-t2", "status": "In Progress",
-                 "type": "Feature Film"},
+                 "status": "In Progress", "type": "Feature Film"},
             ],
         ),
         "production/sequences.ts": (
@@ -131,7 +122,6 @@ def _seed(**kwargs):
 class TestSeedStudiohub:
     def test_overlay_seeds_expected_rows(self, mock_root):
         _seed()
-        assert Organization.objects.filter(code__in=["TST1", "TST2"]).count() == 2
         assert Project.objects.filter(code__in=["PRJ1", "PRJ2"]).count() == 2
         assert Sequence.objects.filter(code__in=["SEQ-T1", "SEQ-T2"]).count() == 1
         # Mock-archived row preserved as soft-deleted (§25 fixture).
@@ -139,15 +129,11 @@ class TestSeedStudiohub:
         assert archived is not None
         assert archived.is_deleted is True
         assert Shot.objects.filter(code="SH-T1").count() == 1
-        # Users + mock-driven memberships only (§9, §22).
+        # Users + mock-driven project memberships only (§9, §22).
         from django.contrib.auth import get_user_model
 
         assert get_user_model().objects.filter(email="alpha@example.com").exists()
         assert get_user_model().objects.filter(email="beta@example.com").exists()
-        alpha_memberships = OrganizationMembership.objects.filter(
-            user__email="alpha@example.com"
-        )
-        assert {m.organization.code for m in alpha_memberships} == {"TST1"}
         assert ProjectMembership.objects.filter(
             user__email="alpha@example.com", project__code="PRJ1"
         ).exists()
@@ -157,7 +143,7 @@ class TestSeedStudiohub:
         ).exists()
 
     def test_user_data_syncs_to_mock(self, mock_root):
-        """§9: user/membership fields must match the mock source of truth."""
+        """§9: user/profile fields must match the mock source of truth."""
         from django.contrib.auth import get_user_model
 
         from apps.identity.models import Profile
@@ -174,31 +160,14 @@ class TestSeedStudiohub:
         assert profile.last_name == "One"
         assert profile.display_name == "Alpha One"
         assert profile.avatar_url == "https://example.com/alpha.png"
-        # Membership role/status/department/is_primary/joined_at from mock.
-        membership = OrganizationMembership.objects.get(
-            user=alpha, organization__code="TST1"
-        )
-        assert membership.status == "active"
-        assert membership.is_primary is True
-        assert membership.department is not None
-        assert membership.department.name == "Editorial"
-        assert membership.joined_at == date(2024, 1, 1)
 
         beta = get_user_model().objects.get(email="beta@example.com")
         assert (beta.is_active, beta.is_staff, beta.is_superuser) == (
             True, False, False,
         )
-        beta_membership = OrganizationMembership.objects.get(
-            user=beta, organization__code="TST2"
-        )
-        assert beta_membership.is_primary is False
-        assert beta_membership.department.name == "Pipeline TD"
-        assert beta_membership.joined_at == date(2024, 2, 2)
 
     def test_user_sync_is_idempotent(self, mock_root):
         """Re-running the overlay leaves synced fields unchanged."""
-        from datetime import date
-
         from django.contrib.auth import get_user_model
 
         from apps.identity.models import Profile
@@ -208,15 +177,9 @@ class TestSeedStudiohub:
         def snapshot():
             alpha = get_user_model().objects.get(email="alpha@example.com")
             profile = Profile.objects.get(user=alpha)
-            membership = OrganizationMembership.objects.get(
-                user=alpha, organization__code="TST1"
-            )
             return (
                 alpha.is_staff, alpha.is_superuser,
                 profile.first_name, profile.avatar_url,
-                membership.is_primary,
-                membership.department.name if membership.department else None,
-                membership.joined_at,
             )
 
         before = snapshot()
@@ -230,12 +193,10 @@ class TestSeedStudiohub:
             from django.contrib.auth import get_user_model
 
             return {
-                "orgs": Organization.objects.count(),
                 "projects": Project.objects.count(),
                 "sequences": Sequence.all_objects.count(),
                 "shots": Shot.objects.count(),
                 "users": get_user_model().objects.count(),
-                "memberships": OrganizationMembership.objects.count(),
                 "pmemberships": ProjectMembership.objects.count(),
             }
 
@@ -256,8 +217,6 @@ class TestSeedStudiohub:
         _seed()
         prj1 = Project.objects.get(code="PRJ1")
         prj2 = Project.objects.get(code="PRJ2")
-        assert prj1.organization.code == "TST1"
-        assert prj2.organization.code == "TST2"
         assert Sequence.objects.filter(project=prj1).count() == 1
         assert Sequence.objects.filter(project=prj2).count() == 0
         assert Shot.objects.filter(project=prj2).count() == 0
@@ -267,13 +226,11 @@ class TestSeedStudiohub:
         from django.contrib.auth import get_user_model
 
         before = {
-            "orgs": Organization.objects.count(),
             "projects": Project.objects.count(),
             "users": get_user_model().objects.count(),
         }
         _seed(dry_run=True)
         after = {
-            "orgs": Organization.objects.count(),
             "projects": Project.objects.count(),
             "users": get_user_model().objects.count(),
         }
@@ -283,12 +240,12 @@ class TestSeedStudiohub:
         _seed()
         call_command("seed_studiohub", validate_only=True, verbosity=0)
 
-    def test_validate_only_fails_on_cross_org_row(self, mock_root):
+    def test_validate_only_fails_on_orphaned_row(self, mock_root):
         _seed()
-        org_a = Organization.objects.get(code="TST1")
-        prj_b = Project.objects.get(code="PRJ2")
-        Shot.objects.create(
-            organization=org_a, project=prj_b, code="SH-X1", name="Cross"
+        from apps.deliveries.models import DeliveryPackage
+
+        DeliveryPackage.objects.create(
+            code="DEL-X1", name="Orphaned", project=None
         )
         with pytest.raises(CommandError):
             call_command("seed_studiohub", validate_only=True, verbosity=0)
@@ -308,7 +265,9 @@ class TestSeedStudiohub:
             "seed_studiohub", force=True, skip_base=True, skip_validate=True,
             organizations=True, verbosity=0,
         )
-        assert Organization.objects.filter(code="TST1").exists()
+        from apps.identity.models import Permission
+
+        assert Permission.objects.filter(code="project.view").exists()
         assert Project.objects.count() == 0
         call_command(
             "seed_studiohub", force=True, skip_base=True, skip_validate=True,
@@ -323,9 +282,9 @@ class TestSeedStudiohub:
             org_file.read_text()
             + 'export const mockStudioNotifications = [{"id":"notif-t1","title":"N",'
             '"message":"M","type":"info","category":"","read":false,"link":"",'
-            '"timestamp":"","org_code":"TST1"}];\n'
+            '"timestamp":""}];\n'
             + 'export const mockProductionReports = [{"id":"rep-t1","title":"R",'
-            '"org_code":"TST1","category":"","status":"Complete","generated_at":"",'
+            '"category":"","status":"Complete","generated_at":"",'
             '"generated_by":"","summary_metrics":{},"download_url":""}];\n'
         )
         master_dir = mock_root / "masterData"
@@ -358,11 +317,10 @@ class TestSeedStudiohub:
         from apps.masterdata.models import MasterStatus, MasterTaskType, Software
         from apps.platform.models import ProductionReport, StudioNotification
 
-        org = Organization.objects.get(code="TST1")
         assert Software.objects.filter(code="SW1").exists()
         assert MasterStatus.objects.filter(code="todo").exists()
         assert MasterTaskType.objects.filter(code="anim").exists()
         # Mock string ids become deterministic UUIDs, not opaque labels.
-        notif = StudioNotification.objects.get(organization=org)
+        notif = StudioNotification.objects.first()
         assert isinstance(str(notif.id), str) and "-" in str(notif.id)
-        assert ProductionReport.objects.filter(organization=org).exists()
+        assert ProductionReport.objects.exists()

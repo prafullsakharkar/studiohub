@@ -1,20 +1,11 @@
 """
 Common ownership/scope abstract models.
 
-These models provide reusable tenant and hierarchy boundaries
-throughout the platform.
+These models provide reusable hierarchy boundaries throughout the
+platform.
 
 This is a protocol/interface for domain applications to implement.
 Domain applications should define their own scoped fields.
-
-Example:
-    class MyModel(OrganizationScopedModel):
-        organization = models.ForeignKey(
-            "myapp.Organization",
-            on_delete=models.CASCADE,
-            related_name="%(app_label)s_%(class)ss",
-            db_index=True,
-        )
 """
 
 import warnings
@@ -40,18 +31,6 @@ warnings.warn(
     FutureWarning,
     stacklevel=2,
 )
-
-
-class OrganizationScopedModel(models.Model):
-    """
-    Base model for organization-scoped records.
-
-    This is a protocol/interface for domain applications to implement.
-    Domain applications should define their own organization field.
-    """
-
-    class Meta:
-        abstract = True
 
 
 class PlatformScopedModel(EntityModel):

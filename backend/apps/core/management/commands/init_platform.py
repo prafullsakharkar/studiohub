@@ -1,0 +1,452 @@
+"""
+Platform initialization command (org-removal B6).
+
+Idempotent bootstrap of the platform-global reference data every fresh
+database needs:
+
+  - identity ``Permission`` catalog and ``Role`` catalog (with the
+    role -> permission matrix, org-free)
+  - masterdata ``MasterStatus`` workflow statuses
+  - masterdata ``Department`` / ``Team`` / ``Office`` / ``Position``
+    directory rows
+
+Everything is keyed on ``code`` via ``get_or_create`` so the command is
+safe to run repeatedly (and after any partial run).
+
+Usage:
+  python manage.py init_platform
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+from django.core.management.base import BaseCommand
+from django.db import transaction
+
+# ---------------------------------------------------------------------------
+# Canonical catalogs (org-free). Shared by the seed commands so dev seeding
+# and platform bootstrap stay in lock-step.
+# ---------------------------------------------------------------------------
+
+# (code, module, action) — module/action mirror the frontend codes; the
+# identity Permission model stores them verbatim (choices are validated on
+# save, not enforced at the DB layer) so catalog codes stay stable.
+PERMISSION_SPECS: list[tuple[str, str, str]] = [
+    ("project.create", "projects", "create"),
+    ("project.view", "projects", "read"),
+    ("project.update", "projects", "update"),
+    ("project.delete", "projects", "delete"),
+    ("shot.create", "shots", "create"),
+    ("shot.view", "shots", "read"),
+    ("shot.update", "shots", "update"),
+    ("shot.delete", "shots", "delete"),
+    ("shot.approve", "shots", "approve"),
+    ("asset.create", "assets", "create"),
+    ("asset.view", "assets", "read"),
+    ("asset.update", "assets", "update"),
+    ("asset.delete", "assets", "delete"),
+    ("task.create", "tasks", "create"),
+    ("task.view", "tasks", "read"),
+    ("task.update", "tasks", "update"),
+    ("task.delete", "tasks", "delete"),
+    ("review.create", "reviews", "create"),
+    ("review.view", "reviews", "read"),
+    ("review.approve", "reviews", "approve"),
+    ("delivery.create", "deliveries", "create"),
+    ("delivery.view", "deliveries", "read"),
+    ("delivery.update", "deliveries", "update"),
+    ("delivery.delete", "deliveries", "delete"),
+    ("publishing.create", "publishing", "create"),
+    ("publishing.view", "publishing", "read"),
+    ("publishing.update", "publishing", "update"),
+    ("publishing.delete", "publishing", "delete"),
+    ("track.create", "tracks", "create"),
+    ("track.view", "tracks", "read"),
+    ("track.update", "tracks", "update"),
+    ("track.delete", "tracks", "delete"),
+    ("show.create", "shows", "create"),
+    ("show.view", "shows", "read"),
+    ("show.update", "shows", "update"),
+    ("show.delete", "shows", "delete"),
+    ("schedule.create", "scheduling", "create"),
+    ("schedule.view", "scheduling", "read"),
+    ("schedule.update", "scheduling", "update"),
+    ("schedule.delete", "scheduling", "delete"),
+    ("audit.view", "audit", "read"),
+    ("audit.update", "audit", "update"),
+    ("settings.update", "settings", "update"),
+    ("settings.manage", "settings", "manage"),
+    ("user.manage", "users", "manage"),
+    # Platform master data (enforced by the masterdata catalog/directory
+    # viewsets; replaces the legacy organization.master_data.* codes).
+    ("platform.master_data.configure", "master_data", "configure"),
+    ("platform.master_data.create", "master_data", "create"),
+    # Platform domain (notifications, reports). Codes must match
+    # apps/platform/constants/permissions.py exactly.
+    ("report.view", "reports", "read"),
+    ("report.create", "reports", "create"),
+    ("notification.view", "notifications", "read"),
+    ("notification.update", "notifications", "update"),
+    # Identity domain (enforced by the identity RBAC viewsets).
+    ("identity.user.view", "user", "view"),
+    ("identity.user.create", "user", "create"),
+    ("identity.user.update", "user", "update"),
+    ("identity.user.delete", "user", "delete"),
+    ("identity.user.manage", "user", "manage"),
+    ("identity.role.view", "role", "view"),
+    ("identity.role.create", "role", "create"),
+    ("identity.role.update", "role", "update"),
+    ("identity.role.delete", "role", "delete"),
+    ("identity.group.view", "group", "view"),
+    ("identity.group.create", "group", "create"),
+    ("identity.group.update", "group", "update"),
+    ("identity.group.delete", "group", "delete"),
+    ("identity.permission.view", "permission", "view"),
+    ("identity.permission.create", "permission", "create"),
+    ("identity.permission.update", "permission", "update"),
+    ("identity.permission.delete", "permission", "delete"),
+]
+
+# Directory reads granted to production-tier roles (org-free directory is
+# readable by everyone who can see the platform).
+DIRECTORY_VIEW_PERMISSIONS = [
+    "identity.user.view",
+]
+
+DIRECTORY_CRUD_PERMISSIONS = [
+    "platform.master_data.configure",
+    "platform.master_data.create",
+    "identity.user.view",
+]
+
+PRODUCTION_FULL_PERMISSIONS = [
+    "project.create", "project.view", "project.update", "project.delete",
+    "shot.create", "shot.view", "shot.update", "shot.delete", "shot.approve",
+    "asset.create", "asset.view", "asset.update", "asset.delete",
+    "task.create", "task.view", "task.update", "task.delete",
+    "review.create", "review.view", "review.approve",
+    "delivery.create", "delivery.view", "delivery.update", "delivery.delete",
+    "publishing.create", "publishing.view", "publishing.update", "publishing.delete",
+    "schedule.create", "schedule.view", "schedule.update", "schedule.delete",
+    "track.create", "track.view", "track.update", "track.delete",
+    "show.create", "show.view", "show.update", "show.delete",
+    "audit.view",
+]
+
+PRODUCTION_LEAD_PERMISSIONS = [
+    "project.view", "shot.view", "shot.update", "shot.approve",
+    "asset.create", "asset.view", "asset.update",
+    "task.create", "task.view", "task.update",
+    "review.create", "review.view",
+    "delivery.view", "publishing.view", "schedule.view",
+    "track.view", "show.view", "audit.view",
+]
+
+PRODUCTION_ARTIST_PERMISSIONS = [
+    "project.view", "shot.view", "task.view", "task.update",
+    "asset.view", "review.view",
+    "delivery.view", "publishing.view", "schedule.view",
+    "track.view", "show.view",
+]
+
+# (code, name, priority, scope, permission codes; None = full catalog)
+ROLE_SPECS: list[dict[str, Any]] = [
+    {
+        "code": "platform-admin",
+        "name": "Platform Admin",
+        "priority": 10,  # identity RolePriority.ADMIN
+        "scope": "organization",  # identity RoleScope.ORGANIZATION
+        "permissions": None,  # full catalog
+    },
+    {
+        "code": "org-admin",
+        "name": "Organization Admin",
+        "priority": 10,
+        "scope": "organization",
+        "permissions": (
+            DIRECTORY_CRUD_PERMISSIONS
+            + PRODUCTION_FULL_PERMISSIONS
+            + ["settings.manage", "settings.update", "user.manage"]
+        ),
+    },
+    {
+        "code": "org-member",
+        "name": "Organization Member",
+        "priority": 40,  # identity RolePriority.MEMBER
+        "scope": "organization",
+        "permissions": DIRECTORY_VIEW_PERMISSIONS,
+    },
+    {
+        "code": "production-admin",
+        "name": "Production Admin",
+        "priority": 20,  # identity RolePriority.MANAGER
+        "scope": "project",
+        "permissions": PRODUCTION_FULL_PERMISSIONS,
+    },
+    {
+        "code": "vfx-supervisor",
+        "name": "VFX Supervisor",
+        "priority": 30,  # identity RolePriority.LEAD
+        "scope": "project",
+        "permissions": PRODUCTION_FULL_PERMISSIONS,
+    },
+    {
+        "code": "lead-artist",
+        "name": "Lead Artist",
+        "priority": 30,
+        "scope": "project",
+        "permissions": PRODUCTION_LEAD_PERMISSIONS,
+    },
+    {
+        "code": "artist",
+        "name": "Artist",
+        "priority": 40,
+        "scope": "project",
+        "permissions": PRODUCTION_ARTIST_PERMISSIONS,
+    },
+]
+
+# (code, name, entity_type, category, is_default, is_final)
+STATUS_SPECS: list[tuple[str, str, str, str, bool, bool]] = [
+    ("todo", "Todo", "Task", "", False, False),
+    ("in-progress", "In Progress", "Task", "", False, False),
+    ("review", "In Review", "Task", "", False, False),
+    ("done", "Done", "Task", "", True, False),
+    ("approved", "Approved", "Task", "", False, True),
+    ("not-started", "Not Started", "Shot", "", False, False),
+    ("wip", "WIP", "Shot", "", False, False),
+    ("ready-for-review", "Ready for Review", "Shot", "", False, False),
+    ("final", "Final", "Shot", "", False, True),
+]
+
+# (code, name, department_type, description)
+DEPARTMENT_SPECS: list[tuple[str, str, str, str]] = [
+    ("DEPT-EDIT", "Editorial", "production", "Editorial department (seeded)"),
+    ("DEPT-PIPELINE", "Pipeline TD", "technical", "Pipeline TD department (seeded)"),
+    ("DEPT-COMP", "Compositing", "creative", "Compositing department (seeded)"),
+    ("DEPT-FX", "FX", "creative", "FX department (seeded)"),
+    ("DEPT-LIGHT", "Lighting", "creative", "Lighting department (seeded)"),
+]
+
+# (code, name, department_code, description)
+TEAM_SPECS: list[tuple[str, str, str, str]] = [
+    ("TEAM-EDIT", "Editorial Team", "DEPT-EDIT", "Seeded team for Editorial"),
+    ("TEAM-PIPELINE", "Pipeline TD Team", "DEPT-PIPELINE", "Seeded team for Pipeline TD"),
+    ("TEAM-COMP", "Compositing Team", "DEPT-COMP", "Seeded team for Compositing"),
+    ("TEAM-FX", "FX Team", "DEPT-FX", "Seeded team for FX"),
+    ("TEAM-LIGHT", "Lighting Team", "DEPT-LIGHT", "Seeded team for Lighting"),
+]
+
+# (code, name, city, country, office_type, is_headquarters)
+OFFICE_SPECS: list[tuple[str, str, str, str, str, bool]] = [
+    ("OFF-MUM", "Mumbai Studio", "Mumbai", "IN", "headquarters", True),
+    ("OFF-BLR", "Bengaluru Lab", "Bengaluru", "IN", "branch", False),
+]
+
+# (code, name, department_code, level, is_managerial)
+POSITION_SPECS: list[tuple[str, str, str, int, bool]] = [
+    ("POS-VFX-SUP", "VFX Supervisor", "DEPT-EDIT", 2, True),
+    ("POS-LEAD", "Lead Artist", "DEPT-COMP", 2, True),
+    ("POS-ARTIST", "Artist", "DEPT-COMP", 1, False),
+    ("POS-PIPELINE", "Pipeline TD", "DEPT-PIPELINE", 2, False),
+]
+
+
+class Command(BaseCommand):
+    help = "Initialize platform-global reference data (idempotent)"
+
+    def handle(self, *args, **options):
+        self.stdout.write("Initializing platform reference data...")
+        with transaction.atomic():
+            perms = self._seed_permissions()
+            self._seed_roles(perms)
+            self._seed_statuses()
+            self._seed_departments()
+            self._seed_teams()
+            self._seed_offices()
+            self._seed_positions()
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Platform initialized: {len(perms)} permissions, "
+                f"{len(ROLE_SPECS)} roles, {len(STATUS_SPECS)} statuses, "
+                f"{len(DEPARTMENT_SPECS)} departments, {len(TEAM_SPECS)} teams, "
+                f"{len(OFFICE_SPECS)} offices, {len(POSITION_SPECS)} positions."
+            )
+        )
+
+    # ------------------------------------------------------------------
+    # Permissions / roles (identity)
+    # ------------------------------------------------------------------
+
+    def _seed_permissions(self):
+        from apps.identity.models import Permission
+
+        perms = []
+        for code, module, action in PERMISSION_SPECS:
+            perm, _ = Permission.objects.get_or_create(
+                code=code,
+                defaults={
+                    "name": code,
+                    "module": module,
+                    "action": action,
+                    "category": "general",
+                    "is_system": True,
+                    "is_active": True,
+                },
+            )
+            perms.append(perm)
+        return perms
+
+    def _role_perm_matrix(self, perm_by_code):
+        """Map role code -> permission codes from the canonical catalog."""
+        matrix = {}
+        for spec in ROLE_SPECS:
+            perms = spec["permissions"]
+            codes = list(perm_by_code.keys()) if perms is None else list(perms)
+            # Production-tier (project-scope) roles keep platform directory
+            # reads (contract parity with the org-era seed: the directory is
+            # visible to everyone who can see the platform).
+            if spec["scope"] == "project":
+                codes = list(dict.fromkeys(codes + DIRECTORY_VIEW_PERMISSIONS))
+            matrix[spec["code"]] = codes
+        return matrix
+
+    def _assign_role_permissions(self, role, perm_by_code, role_perms):
+        """Grant a role its matrix permissions idempotently."""
+        from apps.identity.models import RolePermission
+
+        wanted = role_perms.get(role.code, [])
+        for perm_code in wanted:
+            perm = perm_by_code.get(perm_code)
+            if perm:
+                RolePermission.objects.get_or_create(
+                    role=role,
+                    permission=perm,
+                    defaults={"granted": True},
+                )
+
+    def _seed_roles(self, perms):
+        from apps.identity.models import Role
+
+        perm_by_code = {p.code: p for p in perms}
+        role_perms = self._role_perm_matrix(perm_by_code)
+        roles = {}
+        for spec in ROLE_SPECS:
+            role, _ = Role.objects.get_or_create(
+                code=spec["code"],
+                defaults={
+                    "name": spec["name"],
+                    "description": f"Platform role: {spec['name']}",
+                    "priority": spec["priority"],
+                    "scope": spec["scope"],
+                    "is_system": True,
+                    "is_active": True,
+                },
+            )
+            self._assign_role_permissions(role, perm_by_code, role_perms)
+            roles[spec["code"]] = role
+        return roles
+
+    # ------------------------------------------------------------------
+    # Statuses (masterdata)
+    # ------------------------------------------------------------------
+
+    def _seed_statuses(self):
+        from apps.masterdata.models import MasterStatus
+
+        count = 0
+        for code, name, entity_type, category, is_default, is_final in STATUS_SPECS:
+            _, created = MasterStatus.objects.get_or_create(
+                code=code,
+                defaults={
+                    "name": name,
+                    "entity_type": entity_type,
+                    "category": category,
+                    "is_default": is_default,
+                    "is_final": is_final,
+                    "status": "active",
+                    "scope": "GLOBAL",
+                },
+            )
+            if created:
+                count += 1
+        return count
+
+    # ------------------------------------------------------------------
+    # Directory (masterdata)
+    # ------------------------------------------------------------------
+
+    def _seed_departments(self):
+        from apps.masterdata.models import Department
+
+        count = 0
+        for code, name, dept_type, description in DEPARTMENT_SPECS:
+            _, created = Department.objects.get_or_create(
+                code=code,
+                defaults={
+                    "name": name,
+                    "description": description,
+                    "department_type": dept_type,
+                },
+            )
+            if created:
+                count += 1
+        return count
+
+    def _seed_teams(self):
+        from apps.masterdata.models import Department, Team
+
+        dept_by_code = {d.code: d for d in Department.objects.all()}
+        count = 0
+        for code, name, dept_code, description in TEAM_SPECS:
+            _, created = Team.objects.get_or_create(
+                code=code,
+                defaults={
+                    "name": name,
+                    "description": description,
+                    "department": dept_by_code.get(dept_code),
+                },
+            )
+            if created:
+                count += 1
+        return count
+
+    def _seed_offices(self):
+        from apps.masterdata.models import Office
+
+        count = 0
+        for code, name, city, country, office_type, is_hq in OFFICE_SPECS:
+            _, created = Office.objects.get_or_create(
+                code=code,
+                defaults={
+                    "name": name,
+                    "city": city,
+                    "country": country,
+                    "office_type": office_type,
+                    "timezone": "Asia/Kolkata",
+                    "is_headquarters": is_hq,
+                },
+            )
+            if created:
+                count += 1
+        return count
+
+    def _seed_positions(self):
+        from apps.masterdata.models import Department, Position
+
+        dept_by_code = {d.code: d for d in Department.objects.all()}
+        count = 0
+        for code, name, dept_code, level, is_managerial in POSITION_SPECS:
+            _, created = Position.objects.get_or_create(
+                code=code,
+                defaults={
+                    "name": name,
+                    "department": dept_by_code.get(dept_code),
+                    "level": level,
+                    "is_managerial": is_managerial,
+                },
+            )
+            if created:
+                count += 1
+        return count

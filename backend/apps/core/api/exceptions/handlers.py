@@ -224,12 +224,6 @@ def _sync_identity_context(request: Any) -> None:
             getattr(user, "is_authenticated", False)
         ):
             log_context.user.set(user)
-
-        organization = getattr(request, "organization", None) or getattr(
-            request, "membership", None
-        )
-        if organization is not None:
-            log_context.organization.set(organization)
     except Exception:
         pass
 
@@ -439,14 +433,10 @@ def _record_error_log(
     Persist server-side crashes to the observability ledger (ErrorLog).
 
     Best-effort: failures here must never affect the error response.
-    Skipped when no organization context is resolvable (the FK requires
-    one) — e.g. pre-auth crashes.
+    Error rows are platform-global (no organization partition).
     """
     from apps.audit.models import ErrorLog
 
-    organization = getattr(request, "organization", None)
-    if organization is None:
-        return
     user = getattr(request, "user", None)
     if user is not None and not getattr(user, "is_authenticated", False):
         user = None
@@ -463,7 +453,6 @@ def _record_error_log(
             traceback.format_exception(type(exc), exc, exc.__traceback__)
         )[:20000],
         user=user,
-        organization=organization,
         ip_address=_request_ip(request),
         user_agent=str(meta.get("HTTP_USER_AGENT") or "")[:1000],
         request_path=str(getattr(request, "path", "") or "")[:500],

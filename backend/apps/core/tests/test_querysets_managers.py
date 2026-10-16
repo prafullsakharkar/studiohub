@@ -6,13 +6,11 @@ from apps.core.models.managers import (
     AllPublishedManager,
     BaseManager,
     DeletedObjectsManager,
-    OrganizationManager,
     PublishedManager,
     SoftDeleteManager,
 )
 from apps.core.models.querysets import (
     BaseQuerySet,
-    OrganizationQuerySet,
     PublishableQuerySet,
     SoftDeleteQuerySet,
 )
@@ -55,9 +53,6 @@ class TestQuerySetAndManagerAPI(SimpleTestCase):
         self.assertTrue(hasattr(PublishableQuerySet, "unpublished"))
         self.assertTrue(hasattr(PublishableQuerySet, "scheduled"))
 
-        # OrganizationQuerySet should provide organization() filter helper
-        self.assertTrue(hasattr(OrganizationQuerySet, "organization"))
-
         # Mixins
         self.assertTrue(hasattr(OrderingQuerySetMixin, "ordered"))
         self.assertTrue(hasattr(SearchQuerySetMixin, "search"))
@@ -78,7 +73,6 @@ class TestQuerySetAndManagerAPI(SimpleTestCase):
         self.assertTrue(hasattr(AllObjectsManager, "get_queryset"))
         self.assertTrue(hasattr(DeletedObjectsManager, "get_queryset"))
 
-        # Organization and Active managers
-        self.assertTrue(issubclass(OrganizationManager, BaseManager))
-        self.assertTrue(hasattr(OrganizationManager, "get_queryset"))
+        # Active managers
+        self.assertTrue(issubclass(ActiveManager, BaseManager))
         self.assertTrue(hasattr(ActiveManager, "get_queryset"))

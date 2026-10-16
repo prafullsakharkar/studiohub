@@ -29,14 +29,20 @@ Contract rules honored (same as ``seed_studiohub``):
 
 Documented seed decisions (mock has no equivalent — deterministic, reported):
 
-- Studio holidays reference offices, not orgs: each holiday is seeded into
-  every org (studio-wide semantics; natural key is ``(organization, date)``).
-- Scheduling resources without a resolvable project org are skipped.
+- Org-free (org-removal B6): no organizations are created or referenced.
+  Platform-global masterdata rows are seeded with ``scope=GLOBAL``; the
+  org-scoped custom/config rows (``mockCustomSoftware``,
+  ``mockOrganization*Configs``) have no tenant home anymore and are
+  reported as skipped, never invented.
+- Studio holidays are seeded once per date (platform-global; natural key is
+  ``holiday_date``).
+- Scheduling resources are platform-global; no project/org resolution is
+  required to create them.
 - ``mockOverbookingAlerts`` are NOT stored (alerts are computed live by the
   capacity selectors); ``mockAutomationRuns/Templates`` and
   ``intelligence/automations.ts`` have no API endpoints and are not seeded.
-- Platform roles/groups/departments/positions have no mock source (the mock
-  RBAC dataset seeds org roles instead) and are not seeded.
+- Platform roles/groups/departments/positions have no mock source and are
+  seeded by ``init_platform`` instead (see ``seed_dev``).
 """
 
 from __future__ import annotations
@@ -153,19 +159,7 @@ class Command(BaseCommand):
     def _build_context(self, mock_root, reporter):
         from django.contrib.auth import get_user_model
 
-        from apps.organization.models import Department, Office, Organization
-
-        mock_orgs = _load_ts_mock_array(mock_root / "organization" / "organization.ts", "mockOrganizations")
-        org_by_mock_id = {}
-        org_by_code = {}
-        for item in mock_orgs:
-            code = (item.get("code") or "").strip().upper()
-            org = Organization.objects.filter(code=code).first()
-            if org is None:
-                continue
-            if item.get("id"):
-                org_by_mock_id[item["id"]] = org
-            org_by_code[code] = org
+        from apps.masterdata.models import Department, Office
 
         mock_users = _load_ts_mock_array(mock_root / "identity" / "users.ts", "mockUsers")
         user_model = get_user_model()
@@ -188,8 +182,8 @@ class Command(BaseCommand):
         try:
             from apps.production.models import Project
 
-            for project in Project.objects.select_related("organization").all():
-                projects.setdefault((project.organization.code, project.code), project)
+            for project in Project.objects.all():
+                projects.setdefault(project.code, project)
         except Exception as exc:  # noqa: BLE001
             reporter.note("seed_context", f"projects unavailable: {exc}")
 
@@ -201,8 +195,6 @@ class Command(BaseCommand):
             offices.setdefault(office.name.strip().lower(), office)
 
         return {
-            "org_by_mock_id": org_by_mock_id,
-            "org_by_code": org_by_code,
             "id_to_user": id_to_user,
             "name_to_user": name_to_user,
             "projects": projects,
@@ -210,11 +202,8 @@ class Command(BaseCommand):
             "offices": offices,
         }
 
-    def _project_org(self, context, project_code):
-        for (_org_code, code), project in context["projects"].items():
-            if code == project_code:
-                return project.organization
-        return None
+    def _project_by_code(self, context, project_code):
+        return context["projects"].get((project_code or "").strip().upper())
 
     @staticmethod
     def _parse_date(value):
@@ -249,35 +238,25 @@ class Command(BaseCommand):
             MasterShotType,
             MasterStatus,
             MasterTaskType,
-            OrganizationAssetTypeConfig,
-            OrganizationReviewTypeConfig,
-            OrganizationShotTypeConfig,
-            OrganizationSoftwareConfig,
-            OrganizationStatusConfig,
-            OrganizationTaskTypeConfig,
             Software,
             SoftwareVersion,
         )
 
         path = mock_root / "masterData" / "initialMasterData.ts"
-        org_by_mock_id = context["org_by_mock_id"]
 
         software_by_mock_id = {}
         for item in _load_ts_mock_array(path, "mockGlobalSoftware"):
-            if self._seed_software(item, None, reporter):
+            if self._seed_software(item, reporter):
                 software_by_mock_id[item["id"]] = item["code"]
-        for item in _load_ts_mock_array(path, "mockCustomSoftware"):
-            org = org_by_mock_id.get(item.get("organization_id"))
-            if org is None:
-                reporter.add("masterdata_software", "skipped")
-                reporter.note(
-                    "masterdata_software",
-                    f"custom software {item.get('code')}: unknown organization "
-                    f"{item.get('organization_id')!r}",
-                )
-                continue
-            if self._seed_software(item, org, reporter):
-                software_by_mock_id[item["id"]] = item["code"]
+
+        # Custom software rows were org-scoped; with orgs removed (B6) they
+        # have no tenant home — report, don't invent platform-global rows.
+        custom_software = _load_ts_mock_array(path, "mockCustomSoftware")
+        if custom_software:
+            reporter.note(
+                "masterdata_software",
+                f"{len(custom_software)} custom software row(s) skipped (org-scoped, no tenant)",
+            )
 
         version_by_mock_id = {}
         for var in ("mockSoftwareVersions", "mockCustomSoftwareVersions"):
@@ -303,7 +282,6 @@ class Command(BaseCommand):
                         "end_of_support": end_of_support,
                         "status": item.get("status", "active"),
                         "scope": item.get("scope", "GLOBAL"),
-                        "organization": software.organization,
                         "metadata": item.get("metadata") or {},
                     },
                 )
@@ -339,7 +317,6 @@ class Command(BaseCommand):
                     "description": item.get("description", ""),
                     "status": item.get("status", "active"),
                     "scope": item.get("scope", "GLOBAL"),
-                    "organization": org_by_mock_id.get(item.get("organization_id") or ""),
                 },
             )
             reporter.add("masterdata_statuses", "created" if created else "updated")
@@ -396,7 +373,6 @@ class Command(BaseCommand):
                     "description": item.get("description", ""),
                     "status": item.get("status", "active"),
                     "scope": item.get("scope", "GLOBAL"),
-                    "organization": org_by_mock_id.get(item.get("organization_id") or ""),
                 }
                 defaults.update(extra(item))
                 _, created = _update_or_create(model, code=code, defaults=defaults)
@@ -404,81 +380,23 @@ class Command(BaseCommand):
                 if item.get("id"):
                     type_by_mock_id[item["id"]] = code
 
-        for item in _load_ts_mock_array(path, "mockOrganizationSoftwareConfigs"):
-            org = org_by_mock_id.get(item.get("organization_id"))
-            software = Software.objects.filter(
-                code=software_by_mock_id.get(item.get("software_id"), "")
-            ).first()
-            if org is None or software is None:
-                reporter.add("masterdata_software_configs", "skipped")
-                continue
-            default_version = None
-            version_key = version_by_mock_id.get(item.get("default_version_id") or "")
-            if version_key:
-                default_version = SoftwareVersion.objects.filter(
-                    software=version_key[0], version=version_key[1]
-                ).first()
-            _, created = _update_or_create(
-                OrganizationSoftwareConfig,
-                organization=org,
-                software=software,
-                defaults={
-                    "enabled": bool(item.get("enabled", True)),
-                    "display_name_override": item.get("display_name_override"),
-                    "default_version": default_version,
-                    "notes": item.get("notes", ""),
-                },
-            )
-            reporter.add("masterdata_software_configs", "created" if created else "updated")
-
-        for item in _load_ts_mock_array(path, "mockOrganizationStatusConfigs"):
-            org = org_by_mock_id.get(item.get("organization_id"))
-            status = MasterStatus.objects.filter(
-                code=status_by_mock_id.get(item.get("status_id"), "")
-            ).first()
-            if org is None or status is None:
-                reporter.add("masterdata_status_configs", "skipped")
-                continue
-            _, created = _update_or_create(
-                OrganizationStatusConfig,
-                organization=org,
-                status_item=status,
-                defaults={
-                    "enabled": bool(item.get("enabled", True)),
-                    "name_override": item.get("name_override"),
-                    "color_override": item.get("color_override"),
-                },
-            )
-            reporter.add("masterdata_status_configs", "created" if created else "updated")
-
-        for item in _load_ts_mock_array(path, "mockOrganizationTaskTypeConfigs"):
-            org = org_by_mock_id.get(item.get("organization_id"))
-            task_type = MasterTaskType.objects.filter(
-                code=type_by_mock_id.get(item.get("task_type_id") or "", "")
-            ).first()
-            if org is None or task_type is None:
-                reporter.add("masterdata_tasktype_configs", "skipped")
-                continue
-            _, created = _update_or_create(
-                OrganizationTaskTypeConfig,
-                organization=org,
-                task_type=task_type,
-                defaults={
-                    "enabled": bool(item.get("enabled", True)),
-                    "name_override": item.get("name_override"),
-                },
-            )
-            reporter.add("masterdata_tasktype_configs", "created" if created else "updated")
-
-        # Asset/shot/review org-config arrays are empty in the mock — report, don't invent.
-        for var, entity in (
-            ("mockOrganizationAssetTypeConfigs", OrganizationAssetTypeConfig),
-            ("mockOrganizationShotTypeConfigs", OrganizationShotTypeConfig),
-            ("mockOrganizationReviewTypeConfigs", OrganizationReviewTypeConfig),
-        ):
+        # Org-scoped config rows (Organization*Config) had a per-tenant home;
+        # with orgs removed (B6) they cannot be seeded — report, don't invent.
+        org_config_arrays = [
+            ("mockOrganizationSoftwareConfigs", "software"),
+            ("mockOrganizationStatusConfigs", "status"),
+            ("mockOrganizationTaskTypeConfigs", "task-type"),
+            ("mockOrganizationAssetTypeConfigs", "asset-type"),
+            ("mockOrganizationShotTypeConfigs", "shot-type"),
+            ("mockOrganizationReviewTypeConfigs", "review-type"),
+        ]
+        for var, label in org_config_arrays:
             items = _load_ts_mock_array(path, var)
-            if not items:
-                reporter.note(entity.__name__, "no mock records — nothing seeded")
+            if items:
+                reporter.note(
+                    f"masterdata_{label}_configs",
+                    f"{len(items)} org config row(s) skipped (org-scoped, no tenant)",
+                )
 
     # ------------------------------------------------------------------
     # Phase: automations (db/production/workflow.ts — the served dataset)
@@ -495,31 +413,26 @@ class Command(BaseCommand):
             if item.get("id")
         }
 
-        def resolve_org(workflow_mock_id):
+        def resolve_project(workflow_mock_id):
             workflow = mock_workflows.get(workflow_mock_id or "")
             project_code = (workflow or {}).get("project_code", "")
-            for (_org_code, code), project in context["projects"].items():
-                if code == project_code:
-                    return project.organization
-            return None
+            return self._project_by_code(context, project_code)
 
-        def resolve_workflow(org, workflow_mock_id):
+        def resolve_workflow(project, workflow_mock_id):
             from apps.production.models import Workflow
 
             workflow = mock_workflows.get(workflow_mock_id or "")
             if not workflow or not workflow.get("code"):
                 return None
-            return Workflow.objects.filter(
-                organization=org, code=workflow["code"]
-            ).first()
+            return Workflow.objects.filter(project=project, code=workflow["code"]).first()
 
         for item in _load_ts_mock_array(path, "mockAutomationRules"):
-            org = resolve_org(item.get("workflow_id"))
-            if org is None or not item.get("name"):
+            project = resolve_project(item.get("workflow_id"))
+            if project is None or not item.get("name"):
                 reporter.add("automation_rules", "skipped")
                 reporter.note(
                     "automation_rules",
-                    f"rule {item.get('id')}: unresolvable workflow/project org",
+                    f"rule {item.get('id')}: unresolvable workflow/project",
                 )
                 continue
             trigger = item.get("trigger") or {}
@@ -535,9 +448,9 @@ class Command(BaseCommand):
                 "required_role": item.get("required_role", ""),
                 "workflow_id": item.get("workflow_id"),
             }
-            rule = AutomationRule.objects.filter(organization=org, name=item["name"]).first()
+            rule = AutomationRule.objects.filter(project=project, name=item["name"]).first()
             if rule is None:
-                rule = automation_service.create_rule(organization=org, user=None, data=data)
+                rule = automation_service.create_rule(project=project, user=None, data=data)
                 reporter.add("automation_rules", "created")
             else:
                 automation_service.update_rule(rule=rule, data=data)
@@ -549,23 +462,23 @@ class Command(BaseCommand):
             rule.save(update_fields=["execution_count", "last_triggered_at", "last_status"])
 
         for item in _load_ts_mock_array(path, "mockAutomationAuditLogs"):
-            org = resolve_org(item.get("workflow_id"))
-            if org is None:
+            project = resolve_project(item.get("workflow_id"))
+            if project is None:
                 reporter.add("automation_audit_logs", "skipped")
                 continue
             rule = AutomationRule.objects.filter(
-                organization=org, name=item.get("rule_name", "")
+                project=project, name=item.get("rule_name", "")
             ).first()
             actor = context["id_to_user"].get(item.get("actor_id") or "")
             executed_at = self._parse_datetime(item.get("executed_at")) or timezone.now()
             _, created = _update_or_create(
                 AutomationAuditLog,
-                organization=org,
+                project=project,
                 rule=rule,
                 executed_at=executed_at,
                 defaults={
                     "rule_name": item.get("rule_name", ""),
-                    "workflow": resolve_workflow(org, item.get("workflow_id")),
+                    "workflow": resolve_workflow(project, item.get("workflow_id")),
                     "workflow_name": item.get("workflow_name", ""),
                     "trigger_event": item.get("trigger_event", ""),
                     "entity_type": item.get("entity_type", ""),
@@ -588,7 +501,7 @@ class Command(BaseCommand):
         if _load_ts_mock_array(mock_root / "intelligence" / "automations.ts", "mockAutomationTemplates"):
             reporter.note("automation_templates", "mock-only dataset, no endpoint — not seeded")
 
-    def _seed_software(self, item, org, reporter):
+    def _seed_software(self, item, reporter):
         from apps.masterdata.models import Software
 
         if not item.get("code"):
@@ -604,8 +517,7 @@ class Command(BaseCommand):
                 "description": item.get("description", ""),
                 "website": item.get("website", ""),
                 "status": item.get("status", "active"),
-                "scope": item.get("scope", "GLOBAL" if org is None else "ORGANIZATION"),
-                "organization": org,
+                "scope": item.get("scope", "GLOBAL"),
                 "is_system": bool(item.get("is_system", False)),
                 "metadata": item.get("metadata") or {},
             },
@@ -639,15 +551,6 @@ class Command(BaseCommand):
                     f"(type {item.get('type')!r})",
                 )
                 continue
-            org = self._project_org(context, item.get("current_project_code", ""))
-            if org is None:
-                reporter.add("scheduling_resources", "skipped")
-                reporter.note(
-                    "scheduling_resources",
-                    f"resource {item.get('code')}: unresolvable project "
-                    f"{item.get('current_project_code')!r}",
-                )
-                continue
             user = context["name_to_user"].get((item.get("name") or "").strip().lower())
             department = context["departments"].get(
                 (item.get("department_name") or "").strip().lower()
@@ -663,7 +566,6 @@ class Command(BaseCommand):
                 defaults={
                     "name": item.get("name", item["code"]),
                     "resource_type": resource_type,
-                    "organization": org,
                     "department": department,
                     "user": user,
                     "capacity_hours_per_week": item.get("capacity_weekly_hours", 40) or 40,
@@ -679,7 +581,7 @@ class Command(BaseCommand):
         try:
             from apps.production.models import Task
 
-            for task in Task.objects.select_related("project", "project__organization").all():
+            for task in Task.objects.select_related("project").all():
                 task_by_key[(task.project.code, task.code)] = task
         except Exception as exc:  # noqa: BLE001
             reporter.note("scheduling_schedules", f"tasks unavailable: {exc}")
@@ -750,30 +652,25 @@ class Command(BaseCommand):
             )
             reporter.add("scheduling_leaves", "created" if created else "updated")
 
-        # Studio-wide semantics: seed each holiday into every org.
-        orgs = list(context["org_by_code"].values())
+        # Studio-wide semantics: each holiday is seeded once per date
+        # (platform-global; natural key is ``holiday_date``).
         for item in _load_ts_mock_array(path, "mockStudioHolidays"):
             holiday_date = self._parse_date(item.get("date"))
             if not holiday_date:
                 reporter.add("scheduling_holidays", "skipped")
                 continue
-            for org in orgs:
-                _, created = _update_or_create(
-                    Holiday,
-                    organization=org,
-                    holiday_date=holiday_date,
-                    defaults={
-                        "name": item.get("name", "Holiday"),
-                        "description": f"{item.get('type', '')} ({item.get('office_name', '')})".strip(),
-                    },
-                )
-                reporter.add("scheduling_holidays", "created" if created else "updated")
+            _, created = _update_or_create(
+                Holiday,
+                holiday_date=holiday_date,
+                defaults={
+                    "name": item.get("name", "Holiday"),
+                    "description": f"{item.get('type', '')} ({item.get('office_name', '')})".strip(),
+                },
+            )
+            reporter.add("scheduling_holidays", "created" if created else "updated")
 
         for item in _load_ts_mock_array(path, "mockCalendarEvents"):
-            org = self._project_org(context, item.get("project_code", ""))
-            if org is None:
-                reporter.add("scheduling_events", "skipped")
-                continue
+            project = self._project_by_code(context, item.get("project_code", ""))
             start = self._parse_datetime((item.get("start_date") or "") + "T00:00:00Z")
             end_raw = self._parse_datetime((item.get("end_date") or "") + "T00:00:00Z")
             if start is None:
@@ -782,19 +679,13 @@ class Command(BaseCommand):
             from datetime import timedelta
 
             end = (end_raw or start) + timedelta(days=1) - timedelta(seconds=1)
-            project = None
-            for (_org_code, code), candidate in context["projects"].items():
-                if code == item.get("project_code", ""):
-                    project = candidate
-                    break
             event_type = EVENT_TYPE_MAP.get((item.get("event_type") or "").lower(), "Meeting")
             if CalendarEvent.all_objects.filter(
-                organization=org, title=item.get("title", ""), start_time=start
+                title=item.get("title", ""), start_time=start
             ).exists():
                 reporter.add("scheduling_events", "existing")
                 continue
             CalendarEvent.objects.create(
-                organization=org,
                 project=project,
                 title=item.get("title", "Event"),
                 description=item.get("description", ""),

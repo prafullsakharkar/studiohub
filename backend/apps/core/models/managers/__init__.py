@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from apps.core.models.managers.active import ActiveManager
 from apps.core.models.managers.base import BaseManager
-from apps.core.models.managers.organization import OrganizationManager
 from apps.core.models.managers.publishable import (
     AllPublishedManager,
     PublishedManager,
@@ -23,7 +22,6 @@ __all__ = [
     "AllPublishedManager",
     "BaseManager",
     "DeletedObjectsManager",
-    "OrganizationManager",
     "PublishedManager",
     "SoftDeleteManager",
 ]

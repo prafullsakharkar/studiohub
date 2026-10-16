@@ -4,11 +4,19 @@ Seed development data for StudioHub.
 Idempotent and env-gated: refuses to run in production unless --force is passed.
 Safe to run repeatedly; uses get_or_create / update_or_create throughout.
 
+Org-free (org-removal B6): the platform bootstrap (permission catalog, role
+catalog with the role->permission matrix, workflow statuses, and the
+department/team/office/position directory) comes from ``init_platform``;
+mock-driven production seeding reuses ``seed_studiohub``'s org-free overlay;
+the masterdata directory (clients/vendors/people/contacts/contracts) is
+seeded directly from the frontend mock sources.
+
 Covers:
-  - Organization (Apex Digital Studios)
-  - Departments / Teams / Offices
-  - Roles & Permissions (RBAC)
-  - Users + Profiles + Memberships (admin@, supervisor@, lead@, artist@ with password123)
+  - Platform bootstrap (RBAC catalog, statuses, directory)
+  - Users + Profiles + Role assignments (admin@, supervisor@, lead@, artist@ with password123)
+  - Production entities (projects, shows, shots, assets, tasks, ...)
+  - Master data directory (clients, vendors, people, contacts, contracts)
+  - Activities, deliveries, publishes, destinations, pipeline settings
 
 Usage:
   python manage.py seed_dev
@@ -28,6 +36,14 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 User = get_user_model()
+
+# role_code -> masterdata Position code (seeded by init_platform).
+POSITION_BY_ROLE = {
+    "vfx-supervisor": "POS-VFX-SUP",
+    "platform-admin": "POS-PIPELINE",
+    "lead-artist": "POS-LEAD",
+    "artist": "POS-ARTIST",
+}
 
 
 class Command(BaseCommand):
@@ -65,354 +81,144 @@ class Command(BaseCommand):
             if reset:
                 self._reset()
 
-            org = self._seed_organizations()
-            departments = self._seed_departments(org)
-            teams = self._seed_teams(org, departments)
-            offices = self._seed_offices(org)
             perms = self._seed_permissions()
-            roles = self._seed_roles(org, perms)
-            users = self._seed_users(org, departments, teams, offices, roles)
-            # Production seeding (idempotent)
-            projects = self._seed_projects(org, users)
-            self._seed_shows(org, projects)
-            shots = self._seed_shots(org, projects, users)
-            assets = self._seed_assets(org, projects, users, departments, teams)
-            tasks = self._seed_tasks(org, projects, shots, assets, users, departments, teams)
-            timelogs = self._seed_timelogs(org, tasks, users)
-            versions = self._seed_versions(org, projects, shots, assets, tasks, users)
-            reviews = self._seed_reviews(org, projects, shots, versions, users)
-            playlists = self._seed_playlists(org, projects, versions, reviews)
-            media = self._seed_media(org, projects, shots, assets)
-            workflows = self._seed_workflows(org, projects)
-            clients = self._seed_clients(org)
-            vendors = self._seed_vendors(org)
-            people = self._seed_people(org)
-            contacts = self._seed_contacts(org)
-            contracts = self._seed_contracts(org)
-            billing = self._seed_billing(org)
-            activities = self._seed_activities(org, users)
-            deliveries = self._seed_deliveries(org, projects, users)
-            publishes = self._seed_publishes(org, projects, users)
-            destinations = self._seed_destinations(org)
+            roles = self._seed_roles(perms)
+            departments = self._seed_departments()
+            teams = self._seed_teams(departments)
+            offices = self._seed_offices()
+            positions = self._seed_positions()
+            users = self._seed_users(departments, teams, offices, roles)
+            # Production seeding (idempotent, org-free overlay).
+            projects = self._seed_projects(users)
+            shows = self._seed_shows(projects)
+            clients = self._seed_clients()
+            vendors = self._seed_vendors()
+            people = self._seed_people()
+            contacts = self._seed_contacts()
+            contracts = self._seed_contracts()
+            activities = self._seed_activities(users)
+            deliveries = self._seed_deliveries(projects, users)
+            publishes = self._seed_publishes(projects, users)
+            destinations = self._seed_destinations()
             pipeline_settings = self._seed_pipeline_settings()
 
         self.stdout.write(self.style.SUCCESS("Seed complete."))
-        self.stdout.write(f"  Organization: {org.code} ({org.name})")
-        self.stdout.write(f"  Departments: {len(departments)}  Teams: {len(teams)}  Offices: {len(offices)}")
-        self.stdout.write(f"  Roles: {len(roles)}  Permissions: {len(perms)}  Users: {len(users)}")
-        self.stdout.write(f"  Projects: {len(projects)}  Shots: {len(shots)}  Assets: {len(assets)}")
-        self.stdout.write(f"  Tasks: {len(tasks)}  Timelogs: {len(timelogs)}  Versions: {len(versions)}")
-        self.stdout.write(f"  Reviews: {len(reviews)}  Playlists: {len(playlists)}  Media: {len(media)}  Workflows: {len(workflows)}")
+        self.stdout.write(f"  Permissions: {len(perms)}  Roles: {len(roles)}  Users: {len(users)}")
+        self.stdout.write(f"  Departments: {len(departments)}  Teams: {len(teams)}  Offices: {len(offices)}  Positions: {len(positions)}")
+        self.stdout.write(f"  Projects: {len(projects)}  Shows: {len(shows)}")
         self.stdout.write(f"  Clients: {len(clients)}  Vendors: {len(vendors)}  People: {len(people)}")
         self.stdout.write(f"  Client/Vendor Contacts: {contacts}")
         self.stdout.write(f"  Client/Vendor Contracts: {contracts}")
-        self.stdout.write(f"  Billing: {billing}")
         self.stdout.write(f"  Activities: {activities}")
         self.stdout.write(f"  Deliveries: {deliveries}  Publishes: {publishes}  Destinations: {destinations}  Pipeline Settings: {pipeline_settings}")
         self.stdout.write(self.style.NOTICE("  Default password for seeded users: password123"))
 
     def _reset(self):
-        from apps.organization.models import (
-            Department,
-            Office,
-            Organization,
-            Role,
-            Team,
+        from apps.core.management.commands.init_platform import (
+            DEPARTMENT_SPECS,
+            OFFICE_SPECS,
+            ROLE_SPECS,
+            TEAM_SPECS,
         )
+        from apps.identity.models import Role
+        from apps.masterdata.models import Department, Office, Person, Team
 
         self.stdout.write(self.style.WARNING("  --reset: removing existing seed data..."))
-        # Delete in dependency order
+        # Delete in dependency order.
+        Person.objects.filter(email__in=self._seed_emails()).delete()
         User.objects.filter(email__in=self._seed_emails()).delete()
-        Team.objects.filter(code__startswith="TEAM-").delete()
-        Department.objects.filter(code__startswith="DEPT-").delete()
-        Office.objects.filter(code__startswith="OFF-").delete()
-        Role.objects.filter(code__in=[s[0] for s in self._seed_roles_spec()]).delete()
-        Organization.objects.filter(code="APEX").delete()
+        Team.objects.filter(code__in=[s[0] for s in TEAM_SPECS]).delete()
+        Department.objects.filter(code__in=[s[0] for s in DEPARTMENT_SPECS]).delete()
+        Office.objects.filter(code__in=[s[0] for s in OFFICE_SPECS]).delete()
+        Role.objects.filter(code__in=[s[0] for s in ROLE_SPECS]).delete()
 
     def _seed_emails(self):
         return [spec[0] for spec in self._seed_users_spec()]
 
-    def _seed_organizations(self):
-        from apps.organization.models import Organization
-
-        org, created = Organization.objects.get_or_create(
-            code="APEX",
-            defaults={
-                "name": "Apex Digital Studios",
-                "slug": "apex-digital-studios",
-                "organization_type": "studio",
-                "email": "contact@apex-digital-studios.com",
-                "country": "IN",
-                "language": "en",
-                "currency": "INR",
-                "timezone": "Asia/Kolkata",
-                "description": "Primary development organization seeded for local development.",
-                "status": "active",
-            },
-        )
-        if created:
-            self.stdout.write(f"  Created organization {org.code}")
-
-        # Second tenant so multi-org access, switcher visibility, and org
-        # isolation can be exercised end-to-end (used by e2e org-access +
-        # organization-isolation specs).
-        foreign_org, created = Organization.objects.get_or_create(
-            code="VANGUARD",
-            defaults={
-                "name": "Vanguard VFX Global",
-                "slug": "vanguard-vfx-global",
-                "organization_type": "studio",
-                "email": "contact@vanguard-vfx.global",
-                "country": "US",
-                "language": "en",
-                "currency": "USD",
-                "timezone": "America/Los_Angeles",
-                "description": "Secondary development organization for access-matrix E2E coverage.",
-                "status": "active",
-            },
-        )
-        if created:
-            self.stdout.write(f"  Created organization {foreign_org.code}")
-        return org
-
-    def _seed_departments(self, org):
-        from apps.organization.models import Department
-
-        specs = [
-            ("DEPT-EDIT", "Editorial", "production"),
-            ("DEPT-PIPELINE", "Pipeline TD", "technical"),
-            ("DEPT-COMP", "Compositing", "creative"),
-            ("DEPT-FX", "FX", "creative"),
-            ("DEPT-LIGHT", "Lighting", "creative"),
-        ]
-        departments = []
-        for code, name, dept_type in specs:
-            dept, _ = Department.objects.get_or_create(
-                code=code,
-                organization=org,
-                defaults={
-                    "name": name,
-                    "description": f"{name} department (seeded)",
-                    "department_type": dept_type,
-                },
-            )
-            departments.append(dept)
-        return departments
-
-    def _seed_teams(self, org, departments):
-        from apps.organization.models import Team
-
-        # One team per department
-        teams = []
-        for dept in departments:
-            code = f"TEAM-{dept.code.split('-')[1]}"
-            team, _ = Team.objects.get_or_create(
-                code=code,
-                organization=org,
-                defaults={
-                    "name": f"{dept.name} Team",
-                    "description": f"Seeded team for {dept.name}",
-                    "department": dept,
-                },
-            )
-            teams.append(team)
-        return teams
-
-    def _seed_offices(self, org):
-        from apps.organization.models import Office
-
-        specs = [
-            ("OFF-MUM", "Mumbai Studio", "Mumbai", "headquarters"),
-            ("OFF-BLR", "Bengaluru Lab", "Bengaluru", "branch"),
-        ]
-        offices = []
-        for code, name, city, office_type in specs:
-            office, _ = Office.objects.get_or_create(
-                code=code,
-                organization=org,
-                defaults={
-                    "name": name,
-                    "city": city,
-                    "country": "IN",
-                    "timezone": "Asia/Kolkata",
-                    "office_type": office_type,
-                },
-            )
-            offices.append(office)
-        return offices
+    # ------------------------------------------------------------------
+    # Platform bootstrap (org-free, delegates to init_platform)
+    # ------------------------------------------------------------------
 
     def _seed_permissions(self):
-        from apps.organization.models import Permission
+        from apps.core.management.commands.init_platform import (
+            Command as InitPlatformCommand,
+        )
 
-        # Use get_or_create to avoid duplicate permission creation; org permissions may already be seeded via migrations.
-        # Frontend codes like "project.create" use module names outside backend choices; map to a valid module.
-        perm_specs = [
-            ("project.create", "projects", "create"),
-            ("project.view", "projects", "read"),
-            ("project.update", "projects", "update"),
-            ("project.delete", "projects", "delete"),
-            ("shot.create", "shots", "create"),
-            ("shot.view", "shots", "read"),
-            ("shot.update", "shots", "update"),
-            ("shot.delete", "shots", "delete"),
-            ("shot.approve", "shots", "approve"),
-            ("asset.create", "assets", "create"),
-            ("asset.view", "assets", "read"),
-            ("asset.update", "assets", "update"),
-            ("asset.delete", "assets", "delete"),
-            ("task.create", "tasks", "create"),
-            ("task.view", "tasks", "read"),
-            ("task.update", "tasks", "update"),
-            ("task.delete", "tasks", "delete"),
-            ("review.create", "reviews", "create"),
-            ("review.view", "reviews", "read"),
-            ("review.approve", "reviews", "approve"),
-            ("delivery.create", "deliveries", "create"),
-            ("delivery.view", "deliveries", "read"),
-            ("delivery.update", "deliveries", "update"),
-            ("delivery.delete", "deliveries", "delete"),
-            ("publishing.create", "publishing", "create"),
-            ("publishing.view", "publishing", "read"),
-            ("publishing.update", "publishing", "update"),
-            ("publishing.delete", "publishing", "delete"),
-            ("track.create", "tracks", "create"),
-            ("track.view", "tracks", "read"),
-            ("track.update", "tracks", "update"),
-            ("track.delete", "tracks", "delete"),
-            ("show.create", "shows", "create"),
-            ("show.view", "shows", "read"),
-            ("show.update", "shows", "update"),
-            ("show.delete", "shows", "delete"),
-            ("schedule.create", "scheduling", "create"),
-            ("schedule.view", "scheduling", "read"),
-            ("schedule.update", "scheduling", "update"),
-            ("schedule.delete", "scheduling", "delete"),
-            ("audit.view", "audit", "read"),
-            ("audit.update", "audit", "update"),
-            ("settings.update", "settings", "update"),
-            ("user.manage", "users", "manage"),
-            ("organization.master_data.configure", "master_data", "configure"),
-            ("organization.master_data.create", "master_data", "create"),
-            # Organization domain (enforced by OrganizationEntityViewSet
-            # permission_map; Phase 6 found zero roles held these, locking
-            # every non-superuser out of /api/organizations/* and the flat
-            # org endpoints). Codes must match
-            # apps/organization/constants/permissions.py exactly.
-            ("organization.view", "organization", "view"),
-            ("organization.create", "organization", "create"),
-            ("organization.update", "organization", "update"),
-            ("organization.delete", "organization", "delete"),
-            ("organization.department.view", "department", "view"),
-            ("organization.department.create", "department", "create"),
-            ("organization.department.update", "department", "update"),
-            ("organization.department.delete", "department", "delete"),
-            ("organization.team.view", "team", "view"),
-            ("organization.team.create", "team", "create"),
-            ("organization.team.update", "team", "update"),
-            ("organization.team.delete", "team", "delete"),
-            ("organization.office.view", "office", "view"),
-            ("organization.office.create", "office", "create"),
-            ("organization.office.update", "office", "update"),
-            ("organization.office.delete", "office", "delete"),
-            ("person.view", "user", "view"),
-            ("person.create", "user", "create"),
-            ("person.update", "user", "update"),
-            ("person.delete", "user", "delete"),
-            ("position.view", "position", "view"),
-            ("position.create", "position", "create"),
-            ("position.update", "position", "update"),
-            ("position.delete", "position", "delete"),
-            # Platform domain (notifications, reports). Codes must match
-            # apps/platform/constants/permissions.py exactly.
-            ("report.view", "reports", "read"),
-            ("report.create", "reports", "create"),
-            ("notification.view", "notifications", "read"),
-            ("notification.update", "notifications", "update"),
-        ]
-        perms = []
-        for code, module, action in perm_specs:
-            # Keep original module for uniqueness even if not in PermissionModule choices
-            # (choices are enforced only at validation, not DB). This avoids
-            # duplicate (module, action) violations when many frontend codes map
-            # to the same fallback module.
-            safe_module = module  # keep as-is for uniqueness
-            safe_action = action if action in {c[0] for c in __import__("apps.organization.choices", fromlist=["PermissionAction"]).PermissionAction.choices} else "view"
-            perm, _ = Permission.objects.get_or_create(
-                code=code,
-                defaults={
-                    "name": code,
-                    "module": safe_module,
-                    "action": safe_action,
-                    "category": "general",
-                    "is_system": True,
-                    "is_active": True,
-                },
-            )
-            perms.append(perm)
-        return perms
+        return InitPlatformCommand()._seed_permissions()
 
     def _seed_roles_spec(self):
         """
         Role seed specs come from the canonical catalog (ADR-0033 D1) so dev
-        seeds and organization provisioning stay in lock-step.
+        seeds and platform provisioning stay in lock-step.
         """
-        from apps.organization.constants import DEFAULT_ROLE_SPECS
+        from apps.core.management.commands.init_platform import ROLE_SPECS
 
-        return [(s["code"], s["name"], s["priority"], s["scope"]) for s in DEFAULT_ROLE_SPECS]
+        return [(s["code"], s["name"], s["priority"], s["scope"]) for s in ROLE_SPECS]
 
     def _role_perm_matrix(self, perm_by_code):
         """Role-code -> permission codes from the canonical catalog."""
-        from apps.organization.choices import RoleScope
-        from apps.organization.constants import DEFAULT_ROLE_SPECS, ORG_VIEW_PERMISSIONS
+        from apps.core.management.commands.init_platform import (
+            Command as InitPlatformCommand,
+        )
 
-        matrix = {}
-        for spec in DEFAULT_ROLE_SPECS:
-            perms = spec["permissions"]
-            codes = list(perm_by_code.keys()) if perms is None else list(perms)
-            # Production-tier roles keep org directory reads (contract parity:
-            # org listing is visible to all org members).
-            if spec["scope"] == RoleScope.PROJECT:
-                codes = list(dict.fromkeys(codes + ORG_VIEW_PERMISSIONS))
-            matrix[spec["code"]] = codes
-        return matrix
+        return InitPlatformCommand()._role_perm_matrix(perm_by_code)
 
     def _assign_role_permissions(self, role, perm_by_code, role_perms):
         """Grant a role its matrix permissions idempotently."""
-        from apps.organization.models import RolePermission
+        from apps.core.management.commands.init_platform import (
+            Command as InitPlatformCommand,
+        )
 
-        wanted = role_perms.get(role.code, [])
-        for perm_code in wanted:
-            perm = perm_by_code.get(perm_code)
-            if perm:
-                RolePermission.objects.get_or_create(
-                    role=role,
-                    permission=perm,
-                    defaults={"granted": True},
-                )
+        return InitPlatformCommand()._assign_role_permissions(
+            role, perm_by_code, role_perms
+        )
 
-    def _seed_roles(self, org, perms):
-        from apps.organization.models import Role
+    def _seed_roles(self, perms):
+        from apps.core.management.commands.init_platform import (
+            Command as InitPlatformCommand,
+        )
 
-        perm_by_code = {p.code: p for p in perms}
-        role_perms = self._role_perm_matrix(perm_by_code)
-        roles = {}
-        for code, name, priority, scope in self._seed_roles_spec():
-            role, _ = Role.objects.get_or_create(
-                code=code,
-                organization=org,
-                defaults={
-                    "name": name,
-                    "description": f"Seeded role: {name}",
-                    "priority": priority,
-                    "scope": scope,
-                    "is_system": True,
-                    "is_active": True,
-                },
-            )
-            # Assign permissions idempotently
-            self._assign_role_permissions(role, perm_by_code, role_perms)
-            roles[code] = role
-        return roles
+        return InitPlatformCommand()._seed_roles(perms)
+
+    def _seed_departments(self):
+        from apps.core.management.commands.init_platform import (
+            Command as InitPlatformCommand,
+        )
+        from apps.masterdata.models import Department
+
+        InitPlatformCommand()._seed_departments()
+        return list(Department.objects.all())
+
+    def _seed_teams(self, departments):
+        from apps.core.management.commands.init_platform import (
+            Command as InitPlatformCommand,
+        )
+        from apps.masterdata.models import Team
+
+        InitPlatformCommand()._seed_teams()
+        return list(Team.objects.all())
+
+    def _seed_offices(self):
+        from apps.core.management.commands.init_platform import (
+            Command as InitPlatformCommand,
+        )
+        from apps.masterdata.models import Office
+
+        InitPlatformCommand()._seed_offices()
+        return list(Office.objects.all())
+
+    def _seed_positions(self):
+        from apps.core.management.commands.init_platform import (
+            Command as InitPlatformCommand,
+        )
+        from apps.masterdata.models import Position
+
+        InitPlatformCommand()._seed_positions()
+        return list(Position.objects.all())
+
+    # ------------------------------------------------------------------
+    # Users + profiles + roles + directory people
+    # ------------------------------------------------------------------
 
     def _seed_users_spec(self):
         # (email, role_code, department_code_hint, is_staff, is_superuser)
@@ -421,17 +227,16 @@ class Command(BaseCommand):
             ("admin@studiohub.vfx", "platform-admin", "DEPT-PIPELINE", True, True),
             ("lead@studiohub.vfx", "lead-artist", "DEPT-COMP", False, False),
             ("artist@studiohub.vfx", "artist", "DEPT-COMP", False, False),
-            # Multi-org member for E2E access matrix (apex + vanguard; not
-            # cinematrix or any other org).
             ("vfx.supervisor@studiohub.vfx", "vfx-supervisor", "DEPT-EDIT", False, False),
         ]
 
-    def _seed_users(self, org, departments, teams, offices, roles):
-        from apps.identity.models import Profile
-        from apps.organization.models import OrganizationMembership
+    def _seed_users(self, departments, teams, offices, roles):
+        from apps.identity.models import Profile, UserRole
+        from apps.masterdata.models import Person, Position
 
         dept_by_code = {d.code: d for d in departments}
         team_by_code = {t.code: t for t in teams}
+        pos_by_code = {p.code: p for p in Position.objects.all()}
         # offices not tied per user in this minimal seed; use first
         default_office = offices[0] if offices else None
 
@@ -483,64 +288,54 @@ class Command(BaseCommand):
                 },
             )
 
-            # Membership
-            dept = dept_by_code.get(dept_code) or (departments[0] if departments else None)
-            team = team_by_code.get(f"TEAM-{dept_code.split('-')[1]}") if dept else (teams[0] if teams else None)
+            # Platform-global role assignment.
             role = roles.get(role_code)
             if role:
-                OrganizationMembership.objects.get_or_create(
-                    user=user,
-                    organization=org,
-                    defaults={
-                        "department": dept,
-                        "team": team,
-                        "office": default_office,
-                        "role": role,
-                        "is_primary": True,
-                        "status": "active",
-                    },
-                )
+                UserRole.objects.get_or_create(user=user, role=role)
+
+            # Directory person record (department/team/office/position).
+            dept = dept_by_code.get(dept_code) or (departments[0] if departments else None)
+            team = team_by_code.get(f"TEAM-{dept_code.split('-')[1]}") if dept else (teams[0] if teams else None)
+            position = pos_by_code.get(POSITION_BY_ROLE.get(role_code, ""))
+            Person.objects.get_or_create(
+                user=user,
+                defaults={
+                    "name": f"{first} {last}".strip(),
+                    "email": email,
+                    "department": dept,
+                    "team": team,
+                    "office": default_office,
+                    "role": position,
+                    "timezone": "Asia/Kolkata",
+                },
+            )
             created_users.append(user)
 
-        # Multi-org seeding for E2E coverage: vfx.supervisor@studiohub.vfx is
-        # also a member of the auxiliary organization, so workspace switching
-        # rules (2+ orgs → org switcher visible, foreign-org reads denied)
-        # can be exercised deterministically. Idempotent via get_or_create.
-        from apps.organization.models import Organization
-
-        vanguard = Organization.objects.filter(code="VANGUARD", is_deleted=False).first()
-        if vanguard is not None:
-            multi_org_user = next(
-                (u for u in created_users if u.email == "vfx.supervisor@studiohub.vfx"),
-                None,
-            )
-            if multi_org_user is not None:
-                supporting_role = next(
-                    (r for r in roles.values() if r.is_active),
-                    None,
-                )
-                if supporting_role is not None:
-                    OrganizationMembership.objects.get_or_create(
-                        user=multi_org_user,
-                        organization=vanguard,
-                        defaults={
-                            "role": supporting_role,
-                            "is_primary": False,
-                            "status": "active",
-                        },
-                    )
         return created_users
 
-# ------------------------------------------------------------------
-    # Production seeding (full mock) — delegates to seed_production_mocks logic
+    # ------------------------------------------------------------------
+    # Production seeding (org-free, delegates to seed_studiohub overlay)
     # ------------------------------------------------------------------
 
-    def _seed_shows(self, org, projects):
+    def _seed_projects(self, users):
+        from apps.core.management.commands.seed_studiohub import (
+            Command as SeedStudiohubCommand,
+        )
+        from apps.core.management.commands.seed_studiohub import SeedReporter
+        from apps.production.models import Project
+
+        cmd = SeedStudiohubCommand()
+        mock_root = cmd._resolve_mock_root()
+        reporter = SeedReporter()
+        cmd._seed_overlay_production(mock_root, reporter)
+        cmd._seed_overlay_access_projects(mock_root, reporter)
+        return list(Project.objects.all())
+
+    def _seed_shows(self, projects):
         from apps.production.models import Show
 
         for project in projects:
             Show.objects.update_or_create(
-                organization=org,
                 project=project,
                 code=f"{project.code}-MAIN",
                 defaults={
@@ -551,182 +346,16 @@ class Command(BaseCommand):
                     "is_primary": True,
                 },
             )
-        return list(Show.objects.filter(organization=org))
+        return list(Show.objects.all())
 
-    def _seed_projects(self, org, users):
-        from unittest.mock import MagicMock
+    # ------------------------------------------------------------------
+    # Master data directory (clients / vendors / people / contacts / contracts)
+    # ------------------------------------------------------------------
 
-        from apps.production.management.commands.seed_production_mocks import (
-            Command as ProdMockCommand,
-        )
-        from apps.production.management.commands.seed_production_mocks import (
-            _resolve_mock_root,
-        )
-        from apps.production.models import Project
-
-        cmd = ProdMockCommand()
-        cmd.stdout = MagicMock()
-        frontend_root = _resolve_mock_root()
-        cmd._seed_projects(frontend_root / "production" / "projects.ts", org)
-        return list(Project.objects.filter(organization=org))
-
-    def _seed_shots(self, org, projects, users):
-        from unittest.mock import MagicMock
-
-        from apps.production.management.commands.seed_production_mocks import (
-            Command as ProdMockCommand,
-        )
-        from apps.production.management.commands.seed_production_mocks import (
-            _resolve_mock_root,
-        )
-        from apps.production.models import Shot
-
-        cmd = ProdMockCommand()
-        cmd.stdout = MagicMock()
-        frontend_root = _resolve_mock_root()
-        cmd._seed_shots(frontend_root / "production" / "shots.ts", org)
-        return list(Shot.objects.filter(organization=org))
-
-    def _seed_assets(self, org, projects, users, departments, teams):
-        from unittest.mock import MagicMock
-
-        from apps.production.management.commands.seed_production_mocks import (
-            Command as ProdMockCommand,
-        )
-        from apps.production.management.commands.seed_production_mocks import (
-            _resolve_mock_root,
-        )
-        from apps.production.models import Asset
-
-        cmd = ProdMockCommand()
-        cmd.stdout = MagicMock()
-        frontend_root = _resolve_mock_root()
-        cmd._seed_assets(frontend_root / "assets" / "assets.ts", org)
-        return list(Asset.objects.filter(organization=org))
-
-    def _seed_tasks(self, org, projects, shots, assets, users, departments, teams):
-        from unittest.mock import MagicMock
-
-        from apps.production.management.commands.seed_production_mocks import (
-            Command as ProdMockCommand,
-        )
-        from apps.production.management.commands.seed_production_mocks import (
-            _resolve_mock_root,
-        )
-        from apps.production.models import Task
-
-        cmd = ProdMockCommand()
-        cmd.stdout = MagicMock()
-        frontend_root = _resolve_mock_root()
-        cmd._seed_tasks(frontend_root / "tasks" / "tasks.ts", org)
-        return list(Task.objects.filter(organization=org))
-
-    def _seed_timelogs(self, org, tasks, users):
-        from unittest.mock import MagicMock
-
-        from apps.production.management.commands.seed_production_mocks import (
-            Command as ProdMockCommand,
-        )
-        from apps.production.management.commands.seed_production_mocks import (
-            _resolve_mock_root,
-        )
-        from apps.production.models import Timelog
-
-        cmd = ProdMockCommand()
-        cmd.stdout = MagicMock()
-        frontend_root = _resolve_mock_root()
-        cmd._seed_timelogs(frontend_root / "production" / "timelogs.ts", org)
-        return list(Timelog.objects.filter(organization=org))
-
-    def _seed_versions(self, org, projects, shots, assets, tasks, users):
-        from unittest.mock import MagicMock
-
-        from apps.production.management.commands.seed_production_mocks import (
-            Command as ProdMockCommand,
-        )
-        from apps.production.management.commands.seed_production_mocks import (
-            _resolve_mock_root,
-        )
-        from apps.production.models import Version
-
-        cmd = ProdMockCommand()
-        cmd.stdout = MagicMock()
-        frontend_root = _resolve_mock_root()
-        cmd._seed_versions(frontend_root / "versions" / "versions.ts", org)
-        return list(Version.objects.filter(organization=org))
-
-    def _seed_reviews(self, org, projects, shots, versions, users):
-        from unittest.mock import MagicMock
-
-        from apps.production.management.commands.seed_production_mocks import (
-            Command as ProdMockCommand,
-        )
-        from apps.production.management.commands.seed_production_mocks import (
-            _resolve_mock_root,
-        )
-        from apps.production.models import Review
-
-        cmd = ProdMockCommand()
-        cmd.stdout = MagicMock()
-        frontend_root = _resolve_mock_root()
-        cmd._seed_reviews(frontend_root / "reviews" / "reviews.ts", org)
-        return list(Review.objects.filter(organization=org))
-
-    def _seed_playlists(self, org, projects, versions, reviews):
-        from unittest.mock import MagicMock
-
-        from apps.production.management.commands.seed_production_mocks import (
-            Command as ProdMockCommand,
-        )
-        from apps.production.management.commands.seed_production_mocks import (
-            _resolve_mock_root,
-        )
-        from apps.production.models import Playlist
-
-        cmd = ProdMockCommand()
-        cmd.stdout = MagicMock()
-        frontend_root = _resolve_mock_root()
-        cmd._seed_playlists(frontend_root / "production" / "playlists.ts", org)
-        return list(Playlist.objects.filter(organization=org))
-
-    def _seed_media(self, org, projects, shots, assets):
-        from unittest.mock import MagicMock
-
-        from apps.production.management.commands.seed_production_mocks import (
-            Command as ProdMockCommand,
-        )
-        from apps.production.management.commands.seed_production_mocks import (
-            _resolve_mock_root,
-        )
-        from apps.production.models import Media
-
-        cmd = ProdMockCommand()
-        cmd.stdout = MagicMock()
-        frontend_root = _resolve_mock_root()
-        cmd._seed_media(frontend_root / "production" / "media.ts", org)
-        return list(Media.objects.filter(organization=org))
-
-    def _seed_workflows(self, org, projects):
-        from unittest.mock import MagicMock
-
-        from apps.production.management.commands.seed_production_mocks import (
-            Command as ProdMockCommand,
-        )
-        from apps.production.management.commands.seed_production_mocks import (
-            _resolve_mock_root,
-        )
-        from apps.production.models import Workflow
-
-        cmd = ProdMockCommand()
-        cmd.stdout = MagicMock()
-        frontend_root = _resolve_mock_root()
-        cmd._seed_workflows(frontend_root / "production" / "workflow.ts", org)
-        return list(Workflow.objects.filter(organization=org))
-
-    def _seed_clients(self, org):
+    def _seed_clients(self):
         # Seed from frontend mockClients
 
-        from apps.organization.models import Client
+        from apps.masterdata.models import Client
         from apps.production.management.commands.seed_production_mocks import (
             _load_ts_mock_array,
             _resolve_mock_root,
@@ -741,7 +370,6 @@ class Command(BaseCommand):
                 continue
             Client.objects.update_or_create(
                 code=code,
-                organization=org,
                 defaults={
                     "name": item.get("name", code),
                     "contact_name": item.get("contact_name", ""),
@@ -763,7 +391,6 @@ class Command(BaseCommand):
             for code, name in [("WNS", "Warner Nexus Studios"), ("AMC", "Amazon Prime Original Productions")]:
                 Client.objects.get_or_create(
                     code=code,
-                    organization=org,
                     defaults={
                         "name": name,
                         "contact_name": "Seed Contact",
@@ -772,11 +399,11 @@ class Command(BaseCommand):
                     },
                 )
                 count += 1
-        return list(Client.objects.filter(organization=org))
+        return list(Client.objects.all())
 
-    def _seed_vendors(self, org):
+    def _seed_vendors(self):
 
-        from apps.organization.models import Vendor
+        from apps.masterdata.models import Vendor
         from apps.production.management.commands.seed_production_mocks import (
             _load_ts_mock_array,
             _resolve_mock_root,
@@ -791,7 +418,6 @@ class Command(BaseCommand):
                 continue
             Vendor.objects.update_or_create(
                 code=code,
-                organization=org,
                 defaults={
                     "name": item.get("name", code),
                     "contact_name": item.get("contact_name", ""),
@@ -812,21 +438,40 @@ class Command(BaseCommand):
             for code, name in [("VEN-01", "Silhouette FX Labs"), ("VEN-02", "Nordic Creatures")]:
                 Vendor.objects.get_or_create(
                     code=code,
-                    organization=org,
                     defaults={"name": name, "contact_name": "Seed Vendor", "status": "Approved Partner"},
                 )
                 count += 1
-        return list(Vendor.objects.filter(organization=org))
+        return list(Vendor.objects.all())
 
-    def _seed_contacts(self, org):
+    def _seed_people(self):
+
+        from apps.masterdata.models import Person
+        from apps.production.management.commands.seed_production_mocks import (
+            _load_ts_mock_array,
+            _resolve_mock_root,
+        )
+
+        frontend_root = _resolve_mock_root()
+        data = _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockPeople")
+        count = 0
+        for item in data:
+            full_name = item.get("full_name")
+            if not full_name:
+                continue
+            Person.objects.update_or_create(
+                name=full_name,
+                defaults={
+                    "email": item.get("email", ""),
+                    "phone": item.get("phone", ""),
+                },
+            )
+            count += 1
+        return list(Person.objects.all())
+
+    def _seed_contacts(self):
         """Seed client/vendor contacts from frontend mock data."""
 
-        from apps.organization.models import (
-            Client,
-            ClientContact,
-            Vendor,
-            VendorContact,
-        )
+        from apps.masterdata.models import Client, ClientContact, Vendor, VendorContact
         from apps.production.management.commands.seed_production_mocks import (
             _load_ts_mock_array,
             _resolve_mock_root,
@@ -853,11 +498,10 @@ class Command(BaseCommand):
             code = client_id_to_code.get(item.get("client_id"))
             if not code:
                 continue
-            client = Client.objects.filter(code=code, organization=org).first()
+            client = Client.objects.filter(code=code).first()
             if client is None:
                 continue
             ClientContact.objects.update_or_create(
-                organization=org,
                 client=client,
                 email=item.get("email", ""),
                 defaults={
@@ -878,11 +522,10 @@ class Command(BaseCommand):
             code = vendor_id_to_code.get(item.get("vendor_id"))
             if not code:
                 continue
-            vendor = Vendor.objects.filter(code=code, organization=org).first()
+            vendor = Vendor.objects.filter(code=code).first()
             if vendor is None:
                 continue
             VendorContact.objects.update_or_create(
-                organization=org,
                 vendor=vendor,
                 email=item.get("email", ""),
                 defaults={
@@ -897,15 +540,10 @@ class Command(BaseCommand):
 
         return client_count + vendor_count
 
-    def _seed_contracts(self, org):
+    def _seed_contracts(self):
         """Seed client/vendor contracts from frontend mock data."""
 
-        from apps.organization.models import (
-            Client,
-            ClientContract,
-            Vendor,
-            VendorContract,
-        )
+        from apps.masterdata.models import Client, ClientContract, Vendor, VendorContract
         from apps.production.management.commands.seed_production_mocks import (
             _load_ts_mock_array,
             _resolve_mock_root,
@@ -932,11 +570,10 @@ class Command(BaseCommand):
             code = client_id_to_code.get(item.get("client_id"))
             if not code:
                 continue
-            client = Client.objects.filter(code=code, organization=org).first()
+            client = Client.objects.filter(code=code).first()
             if client is None:
                 continue
             ClientContract.objects.update_or_create(
-                organization=org,
                 client=client,
                 contract_number=item.get("contract_number", ""),
                 defaults={
@@ -959,11 +596,10 @@ class Command(BaseCommand):
             code = vendor_id_to_code.get(item.get("vendor_id"))
             if not code:
                 continue
-            vendor = Vendor.objects.filter(code=code, organization=org).first()
+            vendor = Vendor.objects.filter(code=code).first()
             if vendor is None:
                 continue
             VendorContract.objects.update_or_create(
-                organization=org,
                 vendor=vendor,
                 contract_number=item.get("contract_number", ""),
                 defaults={
@@ -981,53 +617,11 @@ class Command(BaseCommand):
 
         return client_count + vendor_count
 
-    def _seed_billing(self, org):
-        """Seed the organization's billing account with plan defaults."""
-        from apps.organization.models import OrganizationBilling
+    # ------------------------------------------------------------------
+    # Activities (org-free)
+    # ------------------------------------------------------------------
 
-        billing, _ = OrganizationBilling.objects.update_or_create(
-            organization=org,
-            defaults={
-                "tier": "Enterprise Vanguard",
-                "monthly_base_fee_usd": 12500,
-                "farm_credits_total": 500000,
-                "farm_credits_used": 0,
-                "storage_quota_tb": 500,
-                "storage_used_tb": 0,
-                "active_seats_count": 0,
-                "max_seats_count": 300,
-                "invoice_currency": "USD ($)",
-                "payment_method": "",
-            },
-        )
-        return billing.tier
-
-    def _seed_people(self, org):
-
-        from apps.organization.models import Person
-        from apps.production.management.commands.seed_production_mocks import (
-            _load_ts_mock_array,
-            _resolve_mock_root,
-        )
-
-        frontend_root = _resolve_mock_root()
-        data = _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockPeople")
-        count = 0
-        for item in data:
-            full_name = item.get("full_name")
-            if not full_name:
-                continue
-            Person.objects.update_or_create(
-                name=full_name,
-                defaults={
-                    "email": item.get("email", ""),
-                    "phone": item.get("phone", ""),
-                },
-            )
-            count += 1
-        return list(Person.objects.all())
-
-    def _seed_activities(self, org, users):
+    def _seed_activities(self, users):
         """
         Seed Activity records consumed by the frontend activity store.
 
@@ -1198,7 +792,7 @@ class Command(BaseCommand):
                 "Generated weekly delivery status report for all shows.",
                 "export",
                 "EXPORT",
-                {"type": "organization", "id": "APEX", "code": "APEX", "name": "Apex Digital Studios", "context": "Studio Hub"},
+                {"type": "platform", "id": "APEX", "code": "APEX", "name": "Apex Digital Studios", "context": "Studio Hub"},
                 208,
                 None,
             ),
@@ -1238,7 +832,6 @@ class Command(BaseCommand):
             activity, created = Activity.objects.get_or_create(
                 description=description,
                 user=user,
-                organization=org,
                 defaults={
                     "activity_type": activity_type,
                     "status": Activity.STATUS_SUCCESS,
@@ -1261,7 +854,11 @@ class Command(BaseCommand):
                 count += 1
         return count
 
-    def _seed_deliveries(self, org, projects, users):
+    # ------------------------------------------------------------------
+    # Deliveries / publishes / destinations (org-free)
+    # ------------------------------------------------------------------
+
+    def _seed_deliveries(self, projects, users):
         """
         Seed demo client turnover delivery packages (idempotent).
 
@@ -1278,9 +875,9 @@ class Command(BaseCommand):
             reject_delivery,
             submit_delivery,
         )
-        from apps.organization.models import Client
+        from apps.masterdata.models import Client
 
-        clients = list(Client.objects.filter(organization=org))
+        clients = list(Client.objects.all())
         actor_id = str(users[0].id) if users else None
         created = 0
         now = timezone.now()
@@ -1320,7 +917,6 @@ class Command(BaseCommand):
 
         for spec in specs:
             delivery, was_created = DeliveryPackage.objects.get_or_create(
-                organization=org,
                 code=spec["code"],
                 defaults={
                     "name": spec["name"],
@@ -1340,50 +936,42 @@ class Command(BaseCommand):
                 prepare_delivery(
                     delivery_id=str(delivery.id),
                     user_id=actor_id,
-                    organization_id=str(org.id),
                 )
                 submit_delivery(
                     delivery_id=str(delivery.id),
                     user_id=actor_id,
-                    organization_id=str(org.id),
                 )
             elif actor_id is not None and spec["code"] == "DEL-AETH2-2026-W02":
                 prepare_delivery(
                     delivery_id=str(delivery.id),
                     user_id=actor_id,
-                    organization_id=str(org.id),
                 )
                 submit_delivery(
                     delivery_id=str(delivery.id),
                     user_id=actor_id,
-                    organization_id=str(org.id),
                 )
                 approve_delivery(
                     delivery_id=str(delivery.id),
                     user_id=actor_id,
-                    organization_id=str(org.id),
                 )
             elif actor_id is not None and spec["code"] == "DEL-VEL01-2026-W03":
                 prepare_delivery(
                     delivery_id=str(delivery.id),
                     user_id=actor_id,
-                    organization_id=str(org.id),
                 )
                 submit_delivery(
                     delivery_id=str(delivery.id),
                     user_id=actor_id,
-                    organization_id=str(org.id),
                 )
                 reject_delivery(
                     delivery_id=str(delivery.id),
                     user_id=actor_id,
-                    organization_id=str(org.id),
                     rejection_reason="Color space mismatch on delivery spec sheet.",
                 )
 
         return created
 
-    def _seed_publishes(self, org, projects, users):
+    def _seed_publishes(self, projects, users):
         """
         Seed demo publish items (idempotent).
         """
@@ -1445,7 +1033,6 @@ class Command(BaseCommand):
 
         for spec in specs:
             _, was_created = PublishItem.objects.get_or_create(
-                organization=org,
                 code=spec["code"],
                 defaults={
                     "name": spec["name"],
@@ -1469,12 +1056,12 @@ class Command(BaseCommand):
 
         return created
 
-    def _seed_destinations(self, org):
+    def _seed_destinations(self):
         """
         Seed publish + delivery destinations (idempotent).
 
         Static reference data presented as dropdown options in creation
-        flows. Idempotent via get_or_create keyed on (organization, name).
+        flows. Idempotent via get_or_create keyed on name.
         """
         from apps.deliveries.models import DeliveryDestination
         from apps.publishing.models import PublishDestination
@@ -1510,7 +1097,6 @@ class Command(BaseCommand):
 
         for spec in publish_specs:
             _, was_created = PublishDestination.objects.get_or_create(
-                organization=org,
                 name=spec["name"],
                 defaults=spec,
             )
@@ -1541,7 +1127,6 @@ class Command(BaseCommand):
 
         for spec in delivery_specs:
             _, was_created = DeliveryDestination.objects.get_or_create(
-                organization=org,
                 name=spec["name"],
                 defaults=spec,
             )

@@ -19,11 +19,6 @@ request_id: ContextVar[str | None] = ContextVar(
     default=None,
 )
 
-organization: ContextVar[Any | None] = ContextVar(
-    "organization",
-    default=None,
-)
-
 user: ContextVar[UserModel | None] = ContextVar(
     "user",
     default=None,

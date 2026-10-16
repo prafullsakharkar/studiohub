@@ -10,8 +10,9 @@ AND this module together — silent drift fails here first.
 Domain imports are lazy (inside tests) so Core stays runtime-dependency
 free; test-only imports do not create architecture dependencies.
 
-Organization scoping uses the same header the frontend sends
-(X-Organization-ID), attached via ``_scoped``.
+Org-free (org-removal B6): production/masterdata/intelligence endpoints are
+platform-scoped — no X-Organization-ID header, no organization memberships.
+Project-scoped reads are authorized via explicit ``ProjectMembership`` rows.
 """
 
 from __future__ import annotations
@@ -19,10 +20,13 @@ from __future__ import annotations
 import pytest
 
 
-def _scoped(client, org):
-    """Attach the frontend's organization header to a test client."""
-    client.credentials(HTTP_X_ORGANIZATION_ID=str(org.id))
-    return client
+def _membership(user, project, **kwargs):
+    """Attach ``user`` to ``project`` so project-scoped reads succeed."""
+    from apps.production.models.project_membership import ProjectMembership
+
+    defaults = {"role": "Artist", "scope": "PROJECT", "status": "active"}
+    defaults.update(kwargs)
+    return ProjectMembership.objects.create(user=user, project=project, **defaults)
 
 
 class TestContractMethods:
@@ -30,12 +34,7 @@ class TestContractMethods:
 
     @pytest.mark.django_db
     def test_bulk_create_rejects_get(self, staff_client):
-        from apps.production.tests.factories import ProjectFactory
-
-        project = ProjectFactory.create()
-        resp = _scoped(staff_client, project.organization).get(
-            "/api/v1/shots/bulk-create/"
-        )
+        resp = staff_client.get("/api/v1/shots/bulk-create/")
         assert resp.status_code == 405
 
     @pytest.mark.django_db
@@ -48,7 +47,7 @@ class TestContractMethods:
         from apps.production.tests.factories import ShotFactory
 
         shot = ShotFactory.create()
-        resp = _scoped(staff_client, shot.organization).get(
+        resp = staff_client.get(
             f"/api/v1/shots/{shot.id}/approve/"
         )
         assert resp.status_code == 405
@@ -58,7 +57,7 @@ class TestContractMethods:
         from apps.production.tests.factories import ShotFactory
 
         shot = ShotFactory.create()
-        resp = _scoped(staff_client, shot.organization).put(
+        resp = staff_client.put(
             f"/api/v1/shots/{shot.id}/archive/", {}, format="json"
         )
         assert resp.status_code == 405
@@ -72,78 +71,98 @@ class TestContractResponseShapes:
 
     @pytest.mark.django_db
     def test_project_list_and_detail_shape(self, staff_client, staff_user):
-        from apps.organization.tests.rbac_helpers import grant_org_admin
         from apps.production.tests.factories import ProjectFactory
 
         project = ProjectFactory.create()
-        grant_org_admin(staff_user, project.organization)
-        client = _scoped(staff_client, project.organization)
+        _membership(staff_user, project)
 
-        item = client.get("/api/v1/projects/").json()["results"][0]
+        item = staff_client.get("/api/v1/projects/").json()["results"][0]
         assert isinstance(item["id"], str)
         assert isinstance(item["code"], str) and item["code"]
         assert isinstance(item["name"], str) and item["name"]
         assert "status" in item
 
-        detail = client.get(f"/api/v1/projects/{project.id}/").json()
+        detail = staff_client.get(f"/api/v1/projects/{project.id}/").json()
         assert detail["id"] == str(project.id)
         assert detail["code"] == project.code
         assert isinstance(detail["name"], str)
 
     @pytest.mark.django_db
     def test_shot_list_and_detail_shape(self, staff_client, staff_user):
-        from apps.organization.tests.rbac_helpers import grant_org_admin
         from apps.production.tests.factories import ShotFactory
 
         shot = ShotFactory.create()
-        grant_org_admin(staff_user, shot.organization)
-        client = _scoped(staff_client, shot.organization)
+        _membership(staff_user, shot.project)
 
-        item = client.get("/api/v1/shots/").json()["results"][0]
+        item = staff_client.get("/api/v1/shots/").json()["results"][0]
         assert isinstance(item["id"], str)
         assert isinstance(item["code"], str) and item["code"]
         assert isinstance(item["name"], str)
         assert "status" in item
 
-        detail = client.get(f"/api/v1/shots/{shot.id}/").json()
+        detail = staff_client.get(f"/api/v1/shots/{shot.id}/").json()
         assert detail["id"] == str(shot.id)
         assert detail["code"] == shot.code
 
     @pytest.mark.django_db
-    def test_nested_team_list_shape(self, staff_client, staff_user):
-        from apps.organization.tests.factories import TeamFactory
-        from apps.organization.tests.rbac_helpers import grant_all_known_codes
+    def test_team_list_shape(self, staff_user):
+        """Masterdata directory: paginated platform-global teams.
 
-        team = TeamFactory.create()
-        grant_all_known_codes(staff_user, organization=team.organization)
-        resp = _scoped(staff_client, team.organization).get(
-            f"/api/organizations/{team.organization.id}/teams/"
+        Dispatches the masterdata viewset directly: until the org legacy
+        compat router is removed (Task 7) it shadows ``/api/v1/teams/``.
+        """
+        from rest_framework.test import APIRequestFactory, force_authenticate
+
+        from apps.masterdata.api.viewsets.directory import TeamViewSet
+        from apps.masterdata.models import Department, Team
+
+        dept = Department.objects.create(
+            code="DEPT-CT1", name="Contract Dept", department_type="creative"
         )
-        assert resp.status_code == 200
-        rows = resp.json()
-        assert isinstance(rows, list) and len(rows) == 1
-        assert rows[0]["code"] == team.code
-        assert isinstance(rows[0]["name"], str)
-        assert "uuid" in rows[0]
+        team = Team.objects.create(
+            code="TEAM-CT1", name="Contract Team", department=dept
+        )
+
+        view = TeamViewSet.as_view({"get": "list"})
+        request = APIRequestFactory().get("/api/v1/teams/")
+        force_authenticate(request, user=staff_user)
+        response = view(request)
+
+        assert response.status_code == 200
+        rows = response.data
+        assert {"count", "next", "previous", "results"} <= set(rows.keys())
+        match = [r for r in rows["results"] if r["code"] == team.code]
+        assert match, "created team missing from directory"
+        assert isinstance(match[0]["name"], str)
 
     @pytest.mark.django_db
-    def test_organization_list_shape(self, staff_client, staff_user):
-        from apps.organization.tests.factories import (
-            OrganizationFactory,
-            OrganizationMembershipFactory,
+    def test_client_list_shape(self, staff_user):
+        """Masterdata directory: platform-global clients (viewset dispatch)."""
+        from rest_framework.test import APIRequestFactory, force_authenticate
+
+        from apps.masterdata.api.viewsets.directory import ClientViewSet
+        from apps.masterdata.models import Client
+
+        client = Client.objects.create(
+            code="CTCLI", name="Contract Client", status="Active"
         )
 
-        org = OrganizationFactory.create()
-        OrganizationMembershipFactory.create(user=staff_user, organization=org)
-        rows = _scoped(staff_client, org).get("/api/v1/organizations/").json()
-        rows = rows["results"] if isinstance(rows, dict) else rows
-        match = [r for r in rows if r["id"] == str(org.id)]
-        assert match, "created org missing from directory"
-        assert match[0]["code"] == org.code
+        view = ClientViewSet.as_view({"get": "list"})
+        request = APIRequestFactory().get("/api/v1/clients/")
+        force_authenticate(request, user=staff_user)
+        response = view(request)
+
+        assert response.status_code == 200
+        rows = response.data
+        assert {"count", "next", "previous", "results"} <= set(rows.keys())
+        match = [r for r in rows["results"] if r["code"] == client.code]
+        assert match, "created client missing from directory"
+        assert match[0]["code"] == client.code
         assert isinstance(match[0]["name"], str)
 
     @pytest.mark.django_db
     def test_memberships_shape(self, staff_user, staff_client):
+        # Legacy org-membership endpoint; dies with the org app (Task 7).
         from apps.organization.tests.factories import (
             OrganizationFactory,
             OrganizationMembershipFactory,
@@ -160,22 +179,17 @@ class TestContractResponseShapes:
         assert row["status"] == "Active"
 
     @pytest.mark.django_db
-    def test_knowledge_list_and_detail_shape(self, staff_client, staff_user):
+    def test_knowledge_list_and_detail_shape(self, staff_client):
         from apps.intelligence.tests.factories import KnowledgeDocumentFactory
-        from apps.organization.tests.factories import OrganizationMembershipFactory
 
         doc = KnowledgeDocumentFactory.create()
-        OrganizationMembershipFactory.create(
-            user=staff_user, organization=doc.organization
-        )
-        client = _scoped(staff_client, doc.organization)
 
-        rows = client.get("/api/v1/intelligence/knowledge/").json()
+        rows = staff_client.get("/api/v1/intelligence/knowledge/").json()
         assert isinstance(rows, list) and len(rows) == 1
         assert rows[0]["title"] == doc.title
         assert isinstance(rows[0]["slug"], str)
 
-        detail = client.get(f"/api/v1/intelligence/knowledge/{doc.id}/").json()
+        detail = staff_client.get(f"/api/v1/intelligence/knowledge/{doc.id}/").json()
         assert detail["id"] == str(doc.id)
         assert isinstance(detail["content_markdown"], str)
 
@@ -184,11 +198,12 @@ class TestContractEnvelopes:
     """Paginated vs bare-array envelope matrix (docs/api/REAL_API.md)."""
 
     @pytest.mark.django_db
-    def test_paginated_envelope(self, staff_client):
+    def test_paginated_envelope(self, staff_client, staff_user):
         from apps.production.tests.factories import ProjectFactory
 
         project = ProjectFactory.create()
-        data = _scoped(staff_client, project.organization).get("/api/v1/projects/").json()
+        _membership(staff_user, project)
+        data = staff_client.get("/api/v1/projects/").json()
         assert {"count", "next", "previous", "results"} <= set(data.keys())
         assert isinstance(data["results"], list)
 
@@ -197,7 +212,7 @@ class TestContractEnvelopes:
         from apps.organization.tests.factories import TeamFactory
 
         team = TeamFactory.create()
-        client = _scoped(staff_client, team.organization)
+        client = _legacy_scoped(staff_client, team.organization)
 
         teams = client.get(f"/api/organizations/{team.organization.id}/teams/").json()
         assert isinstance(teams, list)
@@ -207,6 +222,12 @@ class TestContractEnvelopes:
 
         attachments = client.get("/api/v1/attachments/").json()
         assert isinstance(attachments, list)
+
+
+def _legacy_scoped(client, org):
+    """Legacy org header helper (kept for the pre-existing org-API test)."""
+    client.credentials(HTTP_X_ORGANIZATION_ID=str(org.id))
+    return client
 
 
 class TestContractErrors:
@@ -223,19 +244,13 @@ class TestContractErrors:
     def test_unknown_id_is_404_with_detail(self, staff_client):
         from uuid import uuid4
 
-        from apps.production.tests.factories import ProjectFactory
-
-        project = ProjectFactory.create()
-        resp = _scoped(staff_client, project.organization).get(f"/api/v1/shots/{uuid4()}/")
+        resp = staff_client.get(f"/api/v1/shots/{uuid4()}/")
         assert resp.status_code == 404
         assert "detail" in resp.json()
 
     @pytest.mark.django_db
     def test_invalid_create_is_400_with_field_errors(self, staff_client):
-        from apps.production.tests.factories import ProjectFactory
-
-        project = ProjectFactory.create()
-        resp = _scoped(staff_client, project.organization).post(
+        resp = staff_client.post(
             "/api/v1/shots/", {}, format="json"
         )
         assert resp.status_code == 400
@@ -259,7 +274,7 @@ class TestContractErrors:
         client = APIClient()
         client.force_authenticate(user=outsider)
 
-        resp = _scoped(client, team.organization).get(
+        resp = _legacy_scoped(client, team.organization).get(
             f"/api/organizations/{team.organization.id}/teams/"
         )
         assert resp.status_code in (401, 403, 404)
@@ -272,39 +287,46 @@ class TestContractPermissionMatrix:
 
     Phase 6 found zero roles held any organization-domain code, locking every
     non-superuser out of the org API. This test fails if enforcement and the
-    seed catalog drift apart again.
+    seed catalog drift apart again. Org-free (B6): enforced codes come from
+    the platform RBAC, masterdata directory, and production viewsets.
     """
 
     def _enforced_codes(self):
-        from apps.organization.api.viewsets import (
-            client,
-            department,
-            office,
-            organization,
-            person,
-            position,
-            team,
-            vendor,
+        from apps.identity.api.viewsets.rbac import (
+            GroupViewSet,
+            PermissionViewSet,
+            RoleViewSet,
+        )
+        from apps.masterdata.api.viewsets.directory import (
+            ClientViewSet,
+            DepartmentViewSet,
+            OfficeViewSet,
+            PersonViewSet,
+            PositionViewSet,
+            TeamViewSet,
+            VendorViewSet,
         )
         from apps.production.api.viewsets import asset, project, shot, task
 
         viewsets = [
-            organization.OrganizationViewSet,
-            client.ClientViewSet,
-            vendor.VendorViewSet,
-            department.DepartmentViewSet,
-            team.TeamViewSet,
-            office.OfficeViewSet,
-            person.PersonViewSet,
-            position.PositionViewSet,
             project.ProjectViewSet,
             shot.ShotViewSet,
             asset.AssetViewSet,
             task.TaskViewSet,
+            DepartmentViewSet,
+            TeamViewSet,
+            OfficeViewSet,
+            PositionViewSet,
+            PersonViewSet,
+            ClientViewSet,
+            VendorViewSet,
+            RoleViewSet,
+            GroupViewSet,
+            PermissionViewSet,
         ]
         codes = set()
         for viewset in viewsets:
-            for action_codes in vars(viewset).get("permission_map", {}).values():
+            for action_codes in getattr(viewset, "permission_map", {}).values():
                 codes.update(action_codes)
         return codes
 
@@ -325,18 +347,15 @@ class TestContractPermissionMatrix:
         perm_by_code = {p.code: p for p in cmd._seed_permissions()}
         matrix = cmd._role_perm_matrix(perm_by_code)
 
-        org_crud = {
-            "organization.view", "organization.create",
-            "organization.update", "organization.delete",
-            "organization.department.view", "organization.team.view",
-            "organization.office.view", "person.view", "position.view",
+        platform_dir = {
+            "platform.master_data.configure",
+            "platform.master_data.create",
+            "identity.user.view",
         }
-        assert org_crud <= set(matrix["org-admin"]), "org-admin lost org CRUD"
-        assert org_crud <= set(matrix["platform-admin"]), "platform-admin lost org CRUD"
+        assert platform_dir <= set(matrix["org-admin"]), "org-admin lost platform directory grants"
+        assert set(perm_by_code) <= set(matrix["platform-admin"]), "platform-admin lost full catalog"
         for role in ("vfx-supervisor", "lead-artist", "artist"):
-            assert {
-                "organization.view", "organization.team.view", "person.view",
-            } <= set(matrix[role]), f"{role} lost org directory views"
+            assert "identity.user.view" in matrix[role], f"{role} lost directory view"
 
 
 class TestContractFiltering:
@@ -344,22 +363,20 @@ class TestContractFiltering:
 
     @pytest.mark.django_db
     def test_shot_search_and_ordering(self, staff_client, staff_user):
-        from apps.organization.tests.rbac_helpers import grant_org_admin
         from apps.production.tests.factories import ProjectFactory, ShotFactory
 
         project = ProjectFactory.create()
-        grant_org_admin(staff_user, project.organization)
-        client = _scoped(staff_client, project.organization)
+        _membership(staff_user, project)
         ShotFactory.create(
-            project=project, code="CTR_A001", organization=project.organization
+            project=project, code="CTR_A001"
         )
         ShotFactory.create(
-            project=project, code="CTR_B002", organization=project.organization
+            project=project, code="CTR_B002"
         )
 
-        found = client.get("/api/v1/shots/", {"search": "CTR_A001"}).json()["results"]
+        found = staff_client.get("/api/v1/shots/", {"search": "CTR_A001"}).json()["results"]
         assert [r["code"] for r in found] == ["CTR_A001"]
 
-        ordered = client.get("/api/v1/shots/", {"ordering": "-code"}).json()["results"]
+        ordered = staff_client.get("/api/v1/shots/", {"ordering": "-code"}).json()["results"]
         codes = [r["code"] for r in ordered]
         assert codes == sorted(codes, reverse=True)

@@ -1,8 +1,8 @@
 """
 Logger factory.
 
-Returns structlog bound loggers. Request/user/organization context is
-injected by processors (see apps.core.logging.processors) from
+Returns structlog bound loggers. Request/user context is injected by
+processors (see apps.core.logging.processors) from
 apps.core.logging.context ContextVars, so call sites stay clean.
 Keeps a stable get_logger(name) API for callers.
 """
@@ -15,9 +15,6 @@ from typing import Any
 
 import structlog
 
-from .context import (
-    organization as _ctx_organization,
-)
 from .context import (
     request_id as _ctx_request_id,
 )
@@ -38,10 +35,6 @@ class ContextLoggerAdapter(logging.LoggerAdapter):  # pyright: ignore[reportMiss
 
         # Pull values from the contextvars; keep None if not set.
         extra.setdefault("request_id", _ctx_request_id.get(None))
-
-        org = _ctx_organization.get(None)
-        # Keep small stable representations (id or string) if model-like objects
-        extra.setdefault("organization", getattr(org, "id", org))
 
         user = _ctx_user.get(None)
         extra.setdefault("user", getattr(user, "id", user))
