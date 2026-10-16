@@ -11,7 +11,7 @@ from apps.production.selectors.asset import AssetSelector
 from apps.production.services.asset import AssetService
 
 
-class AssetViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class AssetViewSet(ProductionEntityViewSet, BulkActionsMixin):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = AssetSelector
     service_class = AssetService
     pagination_class = StandardPagination

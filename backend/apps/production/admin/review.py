@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedModelAdmin
+from apps.core.admin.base import StudioHubModelAdmin
 from apps.production.models import Review
 
 
 @admin.register(Review)
-class ReviewAdmin(OrganizationScopedModelAdmin):
+class ReviewAdmin(StudioHubModelAdmin):
     list_display = (
         "code",
         "title",
@@ -19,7 +19,6 @@ class ReviewAdmin(OrganizationScopedModelAdmin):
     list_filter = (
         "status",
         "entity_type",
-        "organization",
     )
 
     search_fields = (
@@ -28,8 +27,8 @@ class ReviewAdmin(OrganizationScopedModelAdmin):
         "entity_code",
     )
 
-    autocomplete_fields = ("project", "organization", "lead_reviewer")
+    autocomplete_fields = ("project", "lead_reviewer")
 
-    list_select_related = ("project", "organization")
+    list_select_related = ("project",)
 
     ordering = ("-created_at",)

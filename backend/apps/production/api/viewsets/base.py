@@ -12,15 +12,12 @@ from rest_framework.response import Response
 from apps.core.api.viewsets.service import ServiceModelViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
-from apps.organization.middleware.organization_context import (
-    resolve_organization_context,
-)
 from apps.production.selectors.base import ProductionBaseSelector
 
 
 class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """
-    Base ViewSet for all Production organization-owned entities.
+    Base ViewSet for all Production project-scoped entities.
 
     Shared by:
 
@@ -35,11 +32,16 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         • Playlist
         • Workflow
 
-    Resolves the active organization immediately after authentication and
-    strictly scopes every query to it (fail closed). Create operations resolve
-    the owning organization from the active context, then the related project,
-    then the user's membership — and fail closed instead of assigning to an
-    arbitrary organization.
+    There is no organization context: ``Project`` is the sole scope
+    boundary and every query is narrowed to the caller's active
+    ``ProjectMembership`` set (fail closed). Create operations resolve the
+    related project from the request and verify membership before saving.
+
+    Concrete bulk viewsets inherit with this class FIRST
+    (``ProductionEntityViewSet, BulkActionsMixin``) so the project-scoped
+    overrides below (``_organization`` compat, existence check, recover,
+    archive) win over the shared core bulk mixin, which is de-orged
+    separately.
     """
 
     permission_classes = (
@@ -47,26 +49,13 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         HasPermission,
     )
 
-    def perform_authentication(self, request):
-        """
-        Resolve the organization context right after authentication.
-
-        DRF's ``initial()`` performs authentication, then runs permission
-        checks. Resolving the org context (header → Organization instance +
-        membership) here guarantees it is available to ``HasPermission``
-        before any permission check runs.
-        """
-        response = super().perform_authentication(request)
-        resolve_organization_context(request, force=True)
-        return response
-
     def get_queryset(self):
-        resolve_organization_context(self.request)
         if self._include_deleted() and self._may_view_deleted():
             # Frontend contract: ?include_deleted / ?include_archived opts into
-            # soft-deleted rows (still strictly organization scoped). Viewing
-            # deleted rows requires the resource DELETE grant (or superuser);
-            # otherwise the flag is ignored and live rows are returned.
+            # soft-deleted rows (still strictly project-membership scoped).
+            # Viewing deleted rows requires the resource DELETE grant (or
+            # superuser); otherwise the flag is ignored and live rows are
+            # returned.
             qs = self.service_class.model.all_objects.all()
         else:
             qs = self.selector_class.get_queryset(
@@ -78,8 +67,6 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
             request=self.request,
             view=self,
         )
-        # ADR-0033 D1: per-project membership scoping on flat endpoints —
-        # org membership alone never exposes project-scoped production data.
         return ProductionBaseSelector.scope_by_project_membership(
             qs,
             request=self.request,
@@ -97,12 +84,10 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         codes = self.permission_map.get("destroy", ())
         if not codes:
             return False
-        organization = getattr(self.request, "organization", None)
         return all(
             PermissionCacheService.has_permission(
                 user=user,
                 permission=code,
-                organization=organization,
             )
             for code in codes
         )
@@ -140,27 +125,84 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         self.check_object_permissions(self.request, obj)
         return obj
 
+    # ------------------------------------------------------------------
+    # Organization-free compat for the shared core bulk mixin
+    # ------------------------------------------------------------------
+
     def _organization(self):
-        """Active organization context; fail closed when missing."""
-        org = getattr(self.request, "organization", None)
-        if org is None:
-            raise ValidationError({"organization": "An active organization is required."})
-        return org
+        """
+        Legacy hook for ``apps.core.api.mixins.bulk.BulkActionsMixin``.
+
+        The organization partition no longer exists; production bulk
+        services accept the keyword and ignore it, scoping by project
+        membership instead. Returns ``None`` always.
+        """
+        return None
+
+    @action(detail=False, methods=["post"], url_path="check-existence")
+    def check_existence(self, request, *args, **kwargs):
+        """Project-scoped existence check (passes the user for gating)."""
+        items = self._existence_items_from_request()
+        results = self.service_class.bulk_check_existence(
+            items,
+            user=request.user,
+        )
+        return self._existence_response(items, results)
+
+    @action(detail=False, methods=["post"], url_path="existence-check")
+    def existence_check(self, request, *args, **kwargs):
+        """Legacy alias of ``check-existence/`` (kept for compatibility)."""
+        return self.check_existence(request, *args, **kwargs)
+
+    def _recover_item(self, *, project_id, code, existing_id, organization=None):
+        """Project-scoped archived-row recovery for frontend-form creates."""
+        service = self.service_class
+        instance = None
+        if existing_id:
+            instance = self._fetch_instance(existing_id)
+        if instance is None and project_id and code:
+            project = service._get_project(project_id=project_id)
+            if project is not None:
+                instance = service.model.all_objects.filter(
+                    project=project, code=code,
+                ).first()
+        if instance is None or not instance.is_deleted:
+            return {
+                "status": service.INVALID, "code": code,
+                "error": "No archived row found to recover.",
+            }
+        if project_id and hasattr(instance, "project_id"):
+            # The caller named a project: the recovered row must belong to
+            # it (cross-project recovery is rejected as an invalid item
+            # rather than silently applied).
+            project = service._get_project(project_id=project_id)
+            if project is None or instance.project_id != project.id:
+                return {
+                    "status": service.INVALID, "code": code,
+                    "error": "Archived row does not belong to the given project.",
+                }
+        if not ProductionBaseSelector.user_has_project_access(
+            request=self.request, project=instance.project if hasattr(instance, "project") else None,
+        ):
+            return {
+                "status": service.INVALID, "code": code,
+                "error": "No archived row found to recover.",
+            }
+        service.restore(instance)
+        return {"status": "recovered", "id": str(instance.id), "code": code, "entity": instance}
 
     # ------------------------------------------------------------------
-    # Soft-delete archive listing / restore (BulkActionsMixin hooks)
+    # Soft-delete archive listing / restore
     # ------------------------------------------------------------------
 
     @action(detail=False, methods=["get"], url_path="archived")
     def archived(self, request):
-        """List soft-deleted records of the active organization."""
-        if not hasattr(self.service_class, "get_archived"):
-            raise NotFound("Archived listing not supported.")
+        """List soft-deleted records within the caller's project scope."""
+        model = self.service_class.model
+        qs = model.all_objects.filter(is_deleted=True)
         project_id = request.query_params.get("project_id")
-        qs = self.service_class.get_archived(
-            organization=self._organization(),
-            project_id=project_id,
-        )
+        if project_id and hasattr(model, "project"):
+            qs = qs.filter(project_id=project_id)
         qs = ProductionBaseSelector.scope_by_project_membership(qs, request=request)
         page = self.paginate_queryset(qs)
         if page is not None:
@@ -169,16 +211,32 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 
+    @action(detail=True, methods=["post"], url_path="archive")
+    def archive(self, request, *args, **kwargs):
+        """Soft-delete a record within the caller's project scope."""
+        model = self.service_class.model
+        queryset = ProductionBaseSelector.scope_by_project_membership(
+            model.objects.filter(
+                pk=self.kwargs.get(self.lookup_url_kwarg or self.lookup_field),
+            ),
+            request=request,
+        )
+        instance = queryset.first()
+        if instance is None:
+            raise NotFound(f"{model.__name__} not found.")
+        self._set_status(instance, "Archived")
+        self.service_class.delete(instance, user=request.user)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
     @action(detail=True, methods=["post"], url_path="restore")
     def restore(self, request, *args, **kwargs):
-        """Restore a soft-deleted record of the active organization."""
+        """Restore a soft-deleted record within the caller's project scope."""
         model = self.service_class.model
-        queryset = model.all_objects.filter(
-            organization=self._organization(),
-            pk=self.kwargs.get(self.lookup_url_kwarg or self.lookup_field),
-        )
         queryset = ProductionBaseSelector.scope_by_project_membership(
-            queryset,
+            model.all_objects.filter(
+                pk=self.kwargs.get(self.lookup_url_kwarg or self.lookup_field),
+            ),
             request=request,
         )
         instance = queryset.first()
@@ -189,23 +247,6 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         )
         return Response(serializer.data)
 
-    def resolve_organization(self, *, instance=None):
-        """
-        Resolve the owning organization for a create/update operation.
-
-        Priority: the active request context, then the related project
-        instance. Returns ``None`` when neither resolves so the caller fails
-        closed — never fall back to an arbitrary membership organization.
-        """
-        org = getattr(self.request, "organization", None)
-        if org is not None:
-            return org
-        if instance is not None:
-            related = getattr(instance, "organization", None)
-            if related is not None:
-                return related
-        return None
-
     def _resolve_project_from_input(self, serializer):
         """
         Resolve the related project for a create operation.
@@ -213,10 +254,9 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         The frontend contract sends ``project_id`` (UUID string, real id or
         mock id) or ``project_code`` instead of the ``project`` PK field; the
         write serializers land those in ``validated_data["project"]`` as raw
-        strings. Resolve org-scoped via the project selector (UUID/code/
-        mock-id aware); fail closed with a 400 when a reference was supplied
-        but resolves to nothing (including cross-organization ids). Returns
-        None only when the input carried no project reference at all.
+        strings. Resolve globally (UUID/code/mock-id aware); fail closed
+        with a 400 when a reference was supplied but resolves to nothing.
+        Returns None only when the input carried no project reference at all.
         """
         from rest_framework.exceptions import ValidationError
 
@@ -238,9 +278,7 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         ref = ref or raw.get("project_id", None) or raw.get("project_code", None)
         if ref is None:
             return None
-        resolved = ProjectSelector.resolve_by_lookup(
-            getattr(self.request, "organization", None), ref
-        )
+        resolved = ProjectSelector.resolve_by_lookup(ref)
         if resolved is None:
             raise ValidationError({"project_id": "Unknown project."})
         return resolved
@@ -250,47 +288,29 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         data = validated if isinstance(validated, dict) else {}
         model = self.get_queryset().model
         if not hasattr(model, "project"):
-            # Models without a project field (e.g., Project itself) don't need
-            # project resolution; org is resolved from context directly.
-            org = self.resolve_organization()
-            if org is None:
-                from rest_framework.exceptions import ValidationError
-
-                raise ValidationError({"organization": "An active organization is required."})
-            serializer.save(organization=org)
+            # Models without a project field (e.g., Project itself) are
+            # created directly; permission gating happens via HasPermission
+            # and reads stay membership-scoped.
+            serializer.save()
             return
 
         project = data.get("project")
         if project is None or isinstance(project, str):
             project = self._resolve_project_from_input(serializer)
         if project is None:
-            from rest_framework.exceptions import ValidationError
-
-
             raise ValidationError({"project": "This field is required."})
-        # ADR-0033 D1: creating into a project outside the caller's
-        # membership/admin scope fails closed without an existence leak.
+        # Creating into a project outside the caller's membership/admin
+        # scope fails closed without an existence leak.
         if not ProductionBaseSelector.user_has_project_access(
             request=self.request,
             project=project,
         ):
-            from rest_framework.exceptions import ValidationError
-
-
             raise ValidationError({"project_id": "Unknown project."})
-        org = self.resolve_organization(instance=project)
-        if org is None:
-            from rest_framework.exceptions import ValidationError
-
-
-            raise ValidationError(
-                {"organization": "An active organization is required."}
-            )
         self._enforce_natural_key_uniqueness(project, data)
         # Always pass the resolved instance: validated_data may carry the
         # raw reference string from the project_id/project_code aliases,
         # which the ORM cannot assign to the FK directly.
-        serializer.save(organization=org, project=project)
+        serializer.save(project=project)
 
     def _enforce_natural_key_uniqueness(self, project, data):
         """
@@ -320,9 +340,6 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
             if not complete:
                 continue
             if manager.filter(**lookup).first() is not None:
-                from rest_framework.exceptions import ValidationError
-
-
                 raise ValidationError(
                     {unique_set[-1]: "A record with these values already exists."}
                 )

@@ -10,12 +10,6 @@ from apps.core.models.bases import EntityModel
 
 
 class Workflow(EntityModel):
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="workflows",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
@@ -44,7 +38,6 @@ class Workflow(EntityModel):
         db_table = "production_workflow"
         ordering = ("-created_at",)
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["category"]),
             models.Index(fields=["is_active"]),
             models.Index(fields=["department"]),

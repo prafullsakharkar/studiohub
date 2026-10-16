@@ -11,12 +11,6 @@ from apps.core.models.bases import EntityModel
 
 
 class Review(EntityModel):
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="reviews",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
@@ -68,7 +62,6 @@ class Review(EntityModel):
         db_table = "production_review"
         ordering = ("-created_at",)
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["entity_code"]),
             models.Index(fields=["status"]),
         ]

@@ -9,8 +9,7 @@ class TaskSelector(ProductionBaseSelector):
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Task]:
         return (
-            Task.objects.select_related("organization", "project", "team", "assignee", "reviewer", "assignee__profile", "reviewer__profile")
-            .prefetch_related("project__organization")
+            Task.objects.select_related("project", "team", "assignee", "reviewer", "assignee__profile", "reviewer__profile")
             .annotate(
                 assignee_name_annotated=Coalesce(F("assignee__profile__display_name"), F("assignee__email"), Value(""), output_field=CharField()),
                 reviewer_name_annotated=Coalesce(F("reviewer__profile__display_name"), F("reviewer__email"), Value(""), output_field=CharField()),

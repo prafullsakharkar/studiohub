@@ -1,8 +1,8 @@
 """
 Sequence model.
 
-A Sequence groups Shots within a Project. It is an Organization-owned,
-Project-scoped entity that supports soft-delete (archive) and restore via the
+A Sequence groups Shots within a Project. It is a Project-scoped
+entity that supports soft-delete (archive) and restore via the
 canonical ``EntityModel`` soft-delete machinery.
 """
 
@@ -20,12 +20,6 @@ class Sequence(EntityModel):
     Sequence within a Project.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="sequences",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
@@ -68,7 +62,6 @@ class Sequence(EntityModel):
         ordering = ("code",)
         unique_together = [("project", "code")]
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["project", "code"]),
             models.Index(fields=["status"]),
         ]

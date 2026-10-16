@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedModelAdmin
+from apps.core.admin.base import StudioHubModelAdmin
 from apps.production.models import Task
 
 
 @admin.register(Task)
-class TaskAdmin(OrganizationScopedModelAdmin):
+class TaskAdmin(StudioHubModelAdmin):
     list_display = (
         "code",
         "title",
@@ -23,7 +23,6 @@ class TaskAdmin(OrganizationScopedModelAdmin):
         "priority",
         "department",
         "is_archived",
-        "organization",
     )
 
     search_fields = (
@@ -35,13 +34,11 @@ class TaskAdmin(OrganizationScopedModelAdmin):
 
     autocomplete_fields = (
         "project",
-        "organization",
-        "team",
         "assignee",
         "reviewer",
     )
 
-    list_select_related = ("project", "organization")
+    list_select_related = ("project",)
 
     date_hierarchy = "due_date"
 

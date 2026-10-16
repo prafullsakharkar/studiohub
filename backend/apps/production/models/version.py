@@ -12,12 +12,6 @@ from apps.production.constants import ProductionStatus
 
 
 class Version(EntityModel):
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="versions",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
@@ -109,7 +103,6 @@ class Version(EntityModel):
         ordering = ("-created_at",)
         unique_together = [("project", "code")]
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["project", "entity_type"]),
             models.Index(fields=["project", "entity_id"]),
             models.Index(fields=["status"]),

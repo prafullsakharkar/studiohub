@@ -7,24 +7,14 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.organization.middleware.organization_context import (
-    has_organization_access,
-    resolve_organization_context,
-)
-
 
 class DummySerializer(serializers.Serializer[Any]):
     pass
 
 
-def _resolve_org(request):
-    """Organization context or None (fail-closed callers render zeros)."""
-    return getattr(request, "organization", None)
-
-
 class AnalyticsKpisView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     """
-    Real aggregates computed from production models, org-scoped.
+    Real aggregates computed from production models, project scope only.
 
     Response matches the frontend ``ProductionKpis`` contract
     (``src/types/analytics.ts``). Fields with no data source yet
@@ -41,39 +31,24 @@ class AnalyticsKpisView(GenericAPIView):  # pyright: ignore[reportMissingTypeArg
         from apps.production.constants.shot import ShotStatus
         from apps.production.models import Project, Shot, Task
 
-        # Plain APIViews never run the viewset org-context resolution, and
-        # the middleware runs before DRF JWT authentication, so resolve here
-        # (fail-closed) or every caller renders zeros. A resolved header
-        # alone grants nothing: non-staff callers need a membership in the
-        # organization, otherwise cross-organization reads would be possible.
-        resolve_organization_context(request, force=True)
-        org = _resolve_org(request)
-        if org is not None and not has_organization_access(request):
-            from django.http import Http404
-
-            raise Http404
-        shots = Shot.objects.filter(organization=org) if org is not None else Shot.objects.none()
+        shots = Shot.objects.all()
         total = shots.count()
         approved = shots.filter(status=ShotStatus.APPROVED).count()
         in_progress = shots.filter(status=ShotStatus.IN_PROGRESS).count()
         pending_review = shots.filter(status=ShotStatus.PENDING_REVIEW).count()
-        if org is not None:
-            active_projects = (
-                Project.objects.filter(organization=org, is_deleted=False)
-                .exclude(status=ProjectStatus.ARCHIVED)
-                .count()
-            )
-            active_artists = (
-                Task.objects.filter(organization=org, is_deleted=False)
-                .exclude(assignee__isnull=True)
-                .values("assignee")
-                .distinct()
-                .count()
-            )
-        else:
-            active_projects = 0
-            active_artists = 0
-        used_tb, quota_tb = _storage_figures(org)
+        active_projects = (
+            Project.objects.filter(is_deleted=False)
+            .exclude(status=ProjectStatus.ARCHIVED)
+            .count()
+        )
+        active_artists = (
+            Task.objects.filter(is_deleted=False)
+            .exclude(assignee__isnull=True)
+            .values("assignee")
+            .distinct()
+            .count()
+        )
+        used_tb, quota_tb = _storage_figures()
         return Response(
             {
                 "total_active_projects": active_projects,
@@ -92,23 +67,14 @@ class AnalyticsKpisView(GenericAPIView):  # pyright: ignore[reportMissingTypeArg
         )
 
 
-def _storage_figures(org):
-    """(used_tb, quota_tb) from the org billing account; zeros when absent."""
-    if org is None:
-        return 0, 0
-    try:
-        from apps.organization.models import OrganizationBilling
-
-        billing = OrganizationBilling.objects.filter(organization=org).first()
-    except Exception:
-        return 0, 0
-    if billing is None:
-        return 0, 0
-    return billing.storage_used_tb or 0, billing.storage_quota_tb or 0
+def _storage_figures():
+    """Storage telemetry came from the organization billing account, which no
+    longer exists. Returns zeros until a platform telemetry source lands."""
+    return 0, 0
 
 
 class AnalyticsDepartmentsView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    """Per-department task aggregates computed from real tasks, org-scoped."""
+    """Per-department task aggregates computed from real tasks."""
 
     permission_classes = (IsAuthenticated,)
     serializer_class = DummySerializer
@@ -120,13 +86,7 @@ class AnalyticsDepartmentsView(GenericAPIView):  # pyright: ignore[reportMissing
         from apps.production.constants.task import TaskStatus
         from apps.production.models import Task
 
-        resolve_organization_context(request, force=True)
-        org = _resolve_org(request)
-        if org is not None and not has_organization_access(request):
-            from django.http import Http404
-
-            raise Http404
-        base = Task.objects.filter(organization=org) if org is not None else Task.objects.none()
+        base = Task.objects.all()
         rows = (
             base.exclude(department="")
             .values("department")

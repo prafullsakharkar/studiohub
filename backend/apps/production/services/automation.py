@@ -10,8 +10,8 @@ from uuid import UUID
 from django.utils import timezone
 
 
-def _resolve_workflow(organization, workflow_id: Any):
-    """Resolve a client-supplied workflow id to an org workflow, else None."""
+def _resolve_workflow(workflow_id: Any):
+    """Resolve a client-supplied workflow id to a workflow, else None."""
     from apps.production.models import Workflow
 
     if not workflow_id:
@@ -21,21 +21,24 @@ def _resolve_workflow(organization, workflow_id: Any):
     except (ValueError, AttributeError, TypeError):
         # Mock-style ids (e.g. "wf-001") never resolve — never trust them.
         return None
-    return Workflow.objects.filter(id=workflow_uuid, organization=organization).first()
+    return Workflow.objects.filter(id=workflow_uuid).first()
 
 
 def create_rule(
     *,
-    organization,
     user,
     data: dict[str, Any],
+    project=None,
 ):
-    """Create an automation rule owned by the organization."""
+    """Create an automation rule, optionally scoped to a project."""
     from apps.production.models import AutomationRule
 
-    workflow = _resolve_workflow(organization, data.get("workflow_id"))
+    workflow = _resolve_workflow(data.get("workflow_id"))
+    resolved_project = project
+    if resolved_project is None and workflow is not None:
+        resolved_project = workflow.project
     return AutomationRule.objects.create(
-        organization=organization,
+        project=resolved_project,
         workflow=workflow,
         name=data.get("name", ""),
         description=data.get("description", ""),
@@ -70,7 +73,7 @@ def update_rule(
         if field in data:
             setattr(rule, field, data[field])
     if "workflow_id" in data:
-        rule.workflow = _resolve_workflow(rule.organization, data.get("workflow_id"))
+        rule.workflow = _resolve_workflow(data.get("workflow_id"))
     rule.save()
     return rule
 
@@ -86,7 +89,6 @@ def delete_rule(
 
 def log_execution(
     *,
-    organization,
     rule=None,
     trigger_event: str = "",
     entity_type: str = "",
@@ -104,8 +106,11 @@ def log_execution(
     from apps.production.models import AutomationAuditLog
 
     workflow = getattr(rule, "workflow", None)
+    project = getattr(rule, "project", None)
+    if project is None and workflow is not None:
+        project = getattr(workflow, "project", None)
     return AutomationAuditLog.objects.create(
-        organization=organization,
+        project=project,
         rule=rule,
         rule_name=getattr(rule, "name", "") or "",
         workflow=workflow,

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedModelAdmin
+from apps.core.admin.base import StudioHubModelAdmin
 from apps.production.models import (
     EditorialCut,
     EditorialTrack,
@@ -11,11 +11,10 @@ from apps.production.models import (
 
 
 @admin.register(ProjectMembership)
-class ProjectMembershipAdmin(OrganizationScopedModelAdmin):
+class ProjectMembershipAdmin(StudioHubModelAdmin):
     list_display = (
         "user",
         "project",
-        "organization",
         "role",
         "scope",
         "status",
@@ -29,12 +28,11 @@ class ProjectMembershipAdmin(OrganizationScopedModelAdmin):
 
 
 @admin.register(EditorialCut)
-class EditorialCutAdmin(OrganizationScopedModelAdmin):
+class EditorialCutAdmin(StudioHubModelAdmin):
     list_display = (
         "code",
         "name",
         "project",
-        "organization",
         "cut_type",
         "status",
     )
@@ -46,11 +44,10 @@ class EditorialCutAdmin(OrganizationScopedModelAdmin):
 
 
 @admin.register(EditorialTrack)
-class EditorialTrackAdmin(OrganizationScopedModelAdmin):
+class EditorialTrackAdmin(StudioHubModelAdmin):
     list_display = (
         "name",
         "project",
-        "organization",
         "track_type",
         "track_number",
         "status",
@@ -63,12 +60,11 @@ class EditorialTrackAdmin(OrganizationScopedModelAdmin):
 
 
 @admin.register(Show)
-class ShowAdmin(OrganizationScopedModelAdmin):
+class ShowAdmin(StudioHubModelAdmin):
     list_display = (
         "code",
         "name",
         "project",
-        "organization",
         "is_primary",
     )
 
@@ -76,11 +72,10 @@ class ShowAdmin(OrganizationScopedModelAdmin):
 
 
 @admin.register(ProjectNote)
-class ProjectNoteAdmin(OrganizationScopedModelAdmin):
+class ProjectNoteAdmin(StudioHubModelAdmin):
     list_display = (
         "subject",
         "project",
-        "organization",
         "category",
         "priority",
         "status",

@@ -9,32 +9,51 @@ from apps.core.selectors.base import BaseSelector
 
 class ProductionBaseSelector(BaseSelector):
     """
-    Base selector for Production organization-owned entities.
+    Base selector for Production project-scoped entities.
 
-    Provides strict organization scoping for Project, Shot, Asset, Task,
-    Timelog, Version, Review, Media, Playlist, and Workflow.
+    Provides strict project-membership scoping for Project, Shot, Asset,
+    Task, Timelog, Version, Review, Media, Playlist, Workflow, and the
+    project family (Sequence, Episode, Show, Editorial, Notes, Memberships).
 
-    Scoping is inherited from :class:`apps.core.selectors.base.BaseSelector`
-    (``scope_by_request``) and is fail closed, applying to every user,
-    including staff:
+    There is no organization partition: ``Project`` is the sole scope
+    boundary. Scoping is fail closed, applying to every user, including
+    staff:
 
-      - Rows are always filtered to the resolved request organization.
-      - No organization context resolves to an empty queryset.
-      - No staff/superuser bypass: the backend is authoritative and never
-        exposes records belonging to another organization.
+      - Rows are always filtered to the caller's active ``ProjectMembership``
+        set (per-project RBAC is canonical).
+      - No authenticated user resolves to an empty queryset.
+      - Superusers and holders of a global ADMIN-priority identity role
+        keep platform-wide visibility (break-glass / platform admin).
     """
+
+    @classmethod
+    def _has_global_admin_role(cls, user) -> bool:
+        """Platform-wide visibility for global ADMIN-priority role holders."""
+        try:
+            from apps.identity.choices.rbac import RolePriority
+            from apps.identity.models import UserRole
+        except Exception:  # noqa: BLE001
+            return False
+        try:
+            return (
+                UserRole.objects.filter(
+                    user=user,
+                    role__priority=RolePriority.ADMIN,
+                    role__is_deleted=False,
+                    is_deleted=False,
+                ).exists()
+            )
+        except Exception:  # noqa: BLE001
+            return False
 
     @classmethod
     def scope_by_project_membership(cls, qs, *, request):
         """
-        Narrow an organization-scoped queryset to the caller's active
-        ``ProjectMembership`` set (ADR-0033 D1: per-project RBAC is
-        canonical; organization membership alone grants no production data).
+        Narrow a queryset to the caller's active ``ProjectMembership`` set.
 
-        Org-wide production visibility requires a superuser or an active
-        organization membership whose role has ``RolePriority.ADMIN``.
-        Everyone else only sees entities belonging to projects (and shows)
-        they are explicitly a member of:
+        Superusers and global ADMIN-priority role holders see everything.
+        Everyone else only sees entities belonging to projects they are
+        explicitly an active member of:
 
         - models with a ``project`` FK → member projects only;
         - ``Project`` itself → the member project set;
@@ -43,7 +62,6 @@ class ProductionBaseSelector(BaseSelector):
         """
         from django.db.models import Q
 
-        from apps.organization.choices.role_priority import RolePriority
         from apps.production.models.project_membership import ProjectMembership
 
         user = getattr(request, "user", None)
@@ -51,25 +69,11 @@ class ProductionBaseSelector(BaseSelector):
             return qs.none()
         if getattr(user, "is_superuser", False):
             return qs
-
-        organization = getattr(request, "organization", None)
-        if organization is None:
-            return qs.none()
-
-        membership = getattr(request, "membership", None)
-        role = getattr(membership, "role", None)
-        if (
-            membership is not None
-            and getattr(membership, "status", None) == "active"
-            and role is not None
-            and not getattr(role, "is_deleted", False)
-            and getattr(role, "priority", None) == RolePriority.ADMIN
-        ):
+        if cls._has_global_admin_role(user):
             return qs
 
         memberships = ProjectMembership.objects.filter(
             user=user,
-            organization=organization,
             is_deleted=False,
             status__iexact="active",
         )
@@ -97,21 +101,21 @@ class ProductionBaseSelector(BaseSelector):
         """
         Hook consumed by ``apps.core.api.mixins.bulk.BulkActionsMixin`` for
         archive/restore/archived resolution: same project-membership
-        scoping as live rows (ADR-0033 D1).
+        scoping as live rows.
         """
         return cls.scope_by_project_membership(queryset, request=request)
 
     @classmethod
     def user_has_project_access(cls, *, request, project) -> bool:
         """
-        ADR-0033 D1: write/flow-level project access check.
+        Write/flow-level project access check.
 
-        True for superusers, org members holding an ADMIN-priority role, or
-        users with an active ProjectMembership on the project (a show-bound
-        membership grants access to the project container for writes; entity
-        records with their own show linkage are narrowed separately).
+        True for superusers, holders of a global ADMIN-priority identity
+        role, or users with an active ProjectMembership on the project (a
+        show-bound membership grants access to the project container for
+        writes; entity records with their own show linkage are narrowed
+        separately).
         """
-        from apps.organization.choices.role_priority import RolePriority
         from apps.production.models.project_membership import ProjectMembership
 
         user = getattr(request, "user", None)
@@ -119,28 +123,13 @@ class ProductionBaseSelector(BaseSelector):
             return False
         if getattr(user, "is_superuser", False):
             return True
-
-        organization = getattr(project, "organization", None) or getattr(
-            request, "organization", None
-        )
-        if organization is None:
+        if project is None:
             return False
-
-        membership = getattr(request, "membership", None)
-        role = getattr(membership, "role", None)
-        if (
-            membership is not None
-            and getattr(membership, "status", None) == "active"
-            and getattr(membership, "organization_id", None) == organization.pk
-            and role is not None
-            and not getattr(role, "is_deleted", False)
-            and getattr(role, "priority", None) == RolePriority.ADMIN
-        ):
+        if cls._has_global_admin_role(user):
             return True
 
         return ProjectMembership.objects.filter(
             user=user,
-            organization=organization,
             project=project,
             is_deleted=False,
             status__iexact="active",

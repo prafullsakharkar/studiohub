@@ -58,16 +58,9 @@ class ReviewViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTy
     ordering_fields = ("title", "created_at", "status")
 
     def perform_create(self, serializer):
-        from rest_framework.exceptions import ValidationError
-
-        project = serializer.validated_data.get("project")
-        org = self.resolve_organization(instance=project)
-        if org is None:
-            raise ValidationError({"organization": "An active organization is required."})
-        serializer.save(
-            organization=org,
-            lead_reviewer=self.request.user if self.request.user.is_authenticated else None,
-        )
+        if self.request.user.is_authenticated:
+            serializer.validated_data["lead_reviewer"] = self.request.user
+        super().perform_create(serializer)
 
     def _update_status(self, instance, status, notes=None):
         instance.status = status

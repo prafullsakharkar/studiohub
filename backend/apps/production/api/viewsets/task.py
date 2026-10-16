@@ -19,7 +19,7 @@ from apps.production.services.task import TaskService
 # contract shapes ({success, updated_count}) and intentionally shadow nothing
 # from the mixin. The task-specific ``bulk_archive`` was removed in favor of
 # the mixin's union response (a superset containing success/updated_count).
-class TaskViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class TaskViewSet(ProductionEntityViewSet, BulkActionsMixin):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = TaskSelector
     service_class = TaskService
     pagination_class = StandardPagination
@@ -62,33 +62,43 @@ class TaskViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignore
     def bulk_assign(self, request, *args, **kwargs):
         from rest_framework.exceptions import ValidationError
 
-        from apps.organization.models import OrganizationMembership, Team
+        from apps.masterdata.models import Team
 
         task_ids = request.data.get("task_ids", [])
         assignee_id = request.data.get("assignee_id")
         team_id = request.data.get("team_id")
-        org = self._organization()
         assignee = None
         if assignee_id:
             from django.contrib.auth import get_user_model
 
+            from apps.production.models import ProjectMembership
+
             assignee = get_user_model().objects.filter(id=assignee_id).first()
-            if assignee is None or not OrganizationMembership.objects.filter(
-                user=assignee,
-                organization=org,
-                status="active",
-                is_deleted=False,
-            ).exists():
-                raise ValidationError(
-                    {"assignee_id": "Assignee must be an active member of the organization."}
+            if assignee is None:
+                raise ValidationError({"assignee_id": "Unknown assignee."})
+            if not getattr(assignee, "is_superuser", False):
+                from apps.production.selectors.base import ProductionBaseSelector
+
+                scoped_projects = set(
+                    self.get_queryset().values_list("project_id", flat=True)
                 )
+                has_access = ProductionBaseSelector._has_global_admin_role(
+                    assignee
+                ) or ProjectMembership.objects.filter(
+                    user=assignee,
+                    project_id__in=scoped_projects,
+                    is_deleted=False,
+                    status__iexact="active",
+                ).exists()
+                if not has_access:
+                    raise ValidationError(
+                        {"assignee_id": "Assignee must be an active project member."}
+                    )
         team = None
         if team_id:
-            team = Team.objects.filter(id=team_id, organization=org).first()
+            team = Team.objects.filter(id=team_id, is_deleted=False).first()
             if team is None:
-                raise ValidationError(
-                    {"team_id": "Team does not belong to the organization."}
-                )
+                raise ValidationError({"team_id": "Unknown team."})
         updated = 0
         qs = self.get_queryset().filter(id__in=task_ids)
         for task in qs:
@@ -122,13 +132,9 @@ class TaskViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignore
     def bulk_archive(self, request, *args, **kwargs):
         # Task archive flips the is_archived flag + status AND soft-deletes,
         # mirroring the mock (is_archived + is_deleted + status 'Archived').
-        org = self._organization()
         results = []
         for index, item_id in enumerate(self._ids_list()):
-            instance = self.service_class.model.objects.filter(
-                organization=org,
-                id=item_id,
-            ).first()
+            instance = self.get_queryset().filter(id=item_id).first()
             if instance is None:
                 results.append(
                     {"index": index, "id": item_id, "status": self.service_class.NOT_FOUND}
@@ -145,10 +151,7 @@ class TaskViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignore
 
     @action(detail=True, methods=["post"], url_path="archive")
     def archive(self, request, *args, **kwargs):
-        instance = self.service_class.model.objects.filter(
-            organization=self._organization(),
-            id=self._lookup_id(kwargs),
-        ).first()
+        instance = self.get_queryset().filter(id=self._lookup_id(kwargs)).first()
         if instance is None:
             raise NotFound("Task not found.")
         instance.is_archived = True
@@ -159,9 +162,11 @@ class TaskViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignore
 
     @action(detail=True, methods=["post"], url_path="restore")
     def restore(self, request, *args, **kwargs):
-        instance = self.service_class.model.all_objects.filter(
-            organization=self._organization(),
-            id=self._lookup_id(kwargs),
+        from apps.production.selectors.base import ProductionBaseSelector
+
+        instance = ProductionBaseSelector.scope_by_project_membership(
+            self.service_class.model.all_objects.filter(id=self._lookup_id(kwargs)),
+            request=request,
         ).first()
         if instance is None or not instance.is_deleted:
             raise NotFound("Task not found.")

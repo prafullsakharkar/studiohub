@@ -59,7 +59,6 @@ class SequenceSerializer(BaseReadSerializer[Any]):
     def get_shots_count(self, obj):
         return (
             Shot.objects.filter(
-                organization=obj.organization,
                 project=obj.project,
                 sequence_code=obj.code,
             ).count()

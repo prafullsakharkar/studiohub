@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedModelAdmin
+from apps.core.admin.base import StudioHubModelAdmin
 from apps.production.models import Version
 
 
 @admin.register(Version)
-class VersionAdmin(OrganizationScopedModelAdmin):
+class VersionAdmin(StudioHubModelAdmin):
     list_display = (
         "code",
         "version_number",
@@ -24,7 +24,6 @@ class VersionAdmin(OrganizationScopedModelAdmin):
         "is_published",
         "is_hero",
         "is_archived",
-        "organization",
     )
 
     search_fields = (
@@ -35,13 +34,12 @@ class VersionAdmin(OrganizationScopedModelAdmin):
 
     autocomplete_fields = (
         "project",
-        "organization",
         "shot",
         "asset",
         "task",
         "artist",
     )
 
-    list_select_related = ("project", "organization")
+    list_select_related = ("project",)
 
     ordering = ("-created_at",)

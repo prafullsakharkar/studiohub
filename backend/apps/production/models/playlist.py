@@ -10,12 +10,6 @@ from apps.core.models.bases import EntityModel
 
 
 class Playlist(EntityModel):
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="playlists",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
@@ -42,7 +36,6 @@ class Playlist(EntityModel):
         db_table = "production_playlist"
         ordering = ("-created_at",)
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["status"]),
             models.Index(fields=["is_archived"]),
         ]

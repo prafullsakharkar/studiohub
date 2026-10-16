@@ -8,19 +8,19 @@ class ProjectMembershipSelector(ProductionBaseSelector):
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[ProjectMembership]:
         return ProjectMembership.objects.select_related(
-            "organization", "project", "user"
+            "project", "user"
         ).all()
 
 
 class EditorialCutSelector(ProductionBaseSelector):
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[EditorialCut]:
-        return EditorialCut.objects.select_related("organization", "project").all()
+        return EditorialCut.objects.select_related("project").all()
 
 
 class ProjectNoteSelector(ProductionBaseSelector):
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[ProjectNote]:
         return ProjectNote.objects.select_related(
-            "organization", "project", "author"
+            "project", "author"
         ).all()

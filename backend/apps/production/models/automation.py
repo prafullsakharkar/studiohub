@@ -12,7 +12,7 @@ from apps.core.models.bases import EntityModel
 
 class AutomationRule(EntityModel):
     """
-    Event-driven automation rule owned by an organization.
+    Event-driven automation rule, optionally scoped to a project.
 
     Backs ``/api/v1/automations/rules/`` CRUD, replacing the former echo stub
     (hardcoded ``rule-001`` id). The frontend trigger object
@@ -23,9 +23,11 @@ class AutomationRule(EntityModel):
     on the API.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
+    project = models.ForeignKey(
+        "production.Project",
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name="automation_rules",
         db_index=True,
     )
@@ -61,8 +63,8 @@ class AutomationRule(EntityModel):
         db_table = "production_automation_rule"
         ordering = ("-updated_at",)
         indexes = [
-            models.Index(fields=["organization", "workflow"]),
-            models.Index(fields=["organization", "is_active"]),
+            models.Index(fields=["project", "workflow"]),
+            models.Index(fields=["project", "is_active"]),
         ]
 
     def __str__(self):
@@ -80,9 +82,11 @@ class AutomationAuditLog(EntityModel):
     the referenced records.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
+    project = models.ForeignKey(
+        "production.Project",
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name="automation_audit_logs",
         db_index=True,
     )
@@ -131,8 +135,8 @@ class AutomationAuditLog(EntityModel):
         db_table = "production_automation_audit_log"
         ordering = ("-executed_at",)
         indexes = [
-            models.Index(fields=["organization", "rule"]),
-            models.Index(fields=["organization", "status"]),
+            models.Index(fields=["project", "rule"]),
+            models.Index(fields=["project", "status"]),
         ]
 
     def __str__(self):

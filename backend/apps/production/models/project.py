@@ -17,13 +17,14 @@ from apps.production.models.base import ProductionEntityModel
 
 class Project(ProductionEntityModel):
     """
-    Project within an Organization (e.g., Feature Film, Episodic Series).
+    Project — the top-level production container (e.g., Feature Film, Episodic Series).
 
+    Project scope only: no organization FK. ``code`` is globally unique.
     Frontend expects many denormalized fields; we store core fields and expose
     denormalized display names via serializers/selectors.
     """
 
-    code = models.CharField(max_length=20, db_index=True)
+    code = models.CharField(max_length=20, unique=True, db_index=True)
     name = models.CharField(max_length=255, db_index=True)
     description = models.TextField(blank=True, default="")
 
@@ -95,12 +96,6 @@ class Project(ProductionEntityModel):
     class Meta:
         db_table = "production_project"
         ordering = ("-created_at",)
-        unique_together = [("organization", "code")]
-        indexes = [
-            models.Index(fields=["organization", "code"]),
-            models.Index(fields=["organization", "status"]),
-            models.Index(fields=["organization", "type"]),
-        ]
 
     def __str__(self):
         return f"{self.name} ({self.code})"

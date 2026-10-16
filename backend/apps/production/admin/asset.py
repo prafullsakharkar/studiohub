@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedModelAdmin
+from apps.core.admin.base import StudioHubModelAdmin
 from apps.production.models import Asset
 
 
 @admin.register(Asset)
-class AssetAdmin(OrganizationScopedModelAdmin):
+class AssetAdmin(StudioHubModelAdmin):
     list_display = (
         "code",
         "name",
@@ -20,7 +20,6 @@ class AssetAdmin(OrganizationScopedModelAdmin):
         "category",
         "status",
         "is_archived",
-        "organization",
     )
 
     search_fields = (
@@ -30,13 +29,10 @@ class AssetAdmin(OrganizationScopedModelAdmin):
 
     autocomplete_fields = (
         "project",
-        "organization",
-        "department",
-        "team",
         "assigned_artist",
         "parent_asset",
     )
 
-    list_select_related = ("project", "organization")
+    list_select_related = ("project",)
 
     ordering = ("code",)

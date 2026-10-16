@@ -16,12 +16,6 @@ class Shot(EntityModel):
     Shot within a Project.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="shots",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
@@ -83,7 +77,6 @@ class Shot(EntityModel):
         ordering = ("code",)
         unique_together = [("project", "code")]
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["project", "sequence_code"]),
             models.Index(fields=["project", "code"]),
             models.Index(fields=["status"]),

@@ -2,24 +2,18 @@
 Base models for Production bounded context.
 """
 
-from django.db import models
-
 from apps.core.models.bases import EntityModel
 
 
 class ProductionEntityModel(EntityModel):
     """
-    Base for production entities that belong to an Organization and optionally a Project.
+    Base for production entities scoped to a Project.
 
-    Provides organization and project FKs for scoping.
+    There is no organization scope: ``Project`` is the sole tenant
+    boundary and project scoping is declared per model (``project`` FK).
+    This base only pins the shared ``EntityModel`` behavior (UUID pk,
+    soft-delete, audit timestamps).
     """
-
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)ss",
-        db_index=True,
-    )
 
     class Meta:
         abstract = True

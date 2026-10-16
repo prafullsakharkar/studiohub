@@ -8,5 +8,5 @@ class AssetSelector(ProductionBaseSelector):
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Asset]:
         return Asset.objects.select_related(
-            "organization", "project", "department", "team", "assigned_artist"
+            "project", "department", "team", "assigned_artist"
         ).all()

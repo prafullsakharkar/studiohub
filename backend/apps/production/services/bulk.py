@@ -1,11 +1,17 @@
 """
 Generic bulk operations for project-scoped production entities.
 
-``BulkOperationServiceMixin`` generalizes the bulk machinery pioneered by
+``BulkOperationService`` generalizes the bulk machinery pioneered by
 ``SequenceService`` (existence classification, bulk create/update/archive/
 restore with per-item partial-failure reporting) so Shots, Assets, and Tasks
 — which share the ``(project, code)`` uniqueness contract — reuse one
 implementation instead of three copies.
+
+Project scope only: every operation resolves the project globally (no
+organization partition) and enforces project-membership gating per item —
+out-of-scope projects/ids report ``invalid``/``not_found`` without an
+existence leak. ``organization`` is still accepted as an ignored keyword so
+the shared core bulk mixin (de-orged separately) keeps calling through.
 
 Concrete services set ``model`` (via ``BusinessService``) and
 ``bulk_update_serializer`` (DRF serializer used to validate per-item updates).
@@ -46,7 +52,33 @@ class BulkOperationService(BusinessService):
         return (code or "").strip().upper()
 
     @classmethod
-    def _get_project(cls, *, organization, project_id):
+    def _allowed_project_ids(cls, user):
+        """
+        Project ids the user may write via bulk operations.
+
+        ``None`` means global access (superusers and holders of a global
+        ADMIN-priority identity role); otherwise the user's active project
+        membership set. Unauthenticated users get the empty set.
+        """
+        if user is None or not getattr(user, "is_authenticated", False):
+            return set()
+        if getattr(user, "is_superuser", False):
+            return None
+        from apps.production.models import ProjectMembership
+        from apps.production.selectors.base import ProductionBaseSelector
+
+        if ProductionBaseSelector._has_global_admin_role(user):
+            return None
+        return set(
+            ProjectMembership.objects.filter(
+                user=user,
+                is_deleted=False,
+                status__iexact="active",
+            ).values_list("project_id", flat=True)
+        )
+
+    @classmethod
+    def _get_project(cls, *, project_id, organization=None):
         from django.core.exceptions import ValidationError as DjangoValidationError
 
         from apps.production.models import Project
@@ -55,7 +87,6 @@ class BulkOperationService(BusinessService):
             return None
         try:
             instance = Project.objects.filter(
-                organization=organization,
                 id=project_id,
             ).first()
             if instance is not None:
@@ -63,15 +94,13 @@ class BulkOperationService(BusinessService):
         except (ValueError, TypeError, DjangoValidationError):
             pass
         return Project.objects.filter(
-            organization=organization,
             code__iexact=str(project_id),
         ).first()
 
     @classmethod
-    def _existing(cls, *, organization, project, code):
+    def _existing(cls, *, project, code, organization=None):
         return (
             cls.model.all_objects.filter(
-                organization=organization,
                 project=project,
                 code=code,
             ).first()
@@ -82,20 +111,25 @@ class BulkOperationService(BusinessService):
     # ------------------------------------------------------------------
 
     @classmethod
-    def bulk_check_existence(cls, items, *, organization):
+    def bulk_check_existence(cls, items, *, user=None, organization=None):
         """
         Classify each ``{project_id, code}`` item as one of
         ``new`` | ``exists`` | ``soft_deleted`` | ``duplicate`` | ``invalid``.
         """
+        allowed = cls._allowed_project_ids(user)
         results = []
         seen = set()
         for index, item in enumerate(items):
             project = cls._get_project(
-                organization=organization,
                 project_id=item.get("project_id"),
             )
             code = cls._normalize_code(item.get("code"))
             if project is None:
+                results.append(
+                    {"index": index, "status": cls.INVALID, "error": "Invalid or missing project."}
+                )
+                continue
+            if allowed is not None and project.id not in allowed:
                 results.append(
                     {"index": index, "status": cls.INVALID, "error": "Invalid or missing project."}
                 )
@@ -111,7 +145,6 @@ class BulkOperationService(BusinessService):
                 continue
             seen.add(key)
             existing = cls._existing(
-                organization=organization,
                 project=project,
                 code=code,
             )
@@ -137,7 +170,7 @@ class BulkOperationService(BusinessService):
     # ------------------------------------------------------------------
 
     @classmethod
-    def bulk_create(cls, items, *, organization, user=None):
+    def bulk_create(cls, items, *, user=None, organization=None):
         """
         Create multiple entities from validated flat input items.
 
@@ -146,15 +179,20 @@ class BulkOperationService(BusinessService):
         ``duplicate`` | ``invalid``. Each creation runs in its own atomic
         transaction so one bad row does not roll back the others.
         """
+        allowed = cls._allowed_project_ids(user)
         results = []
         seen = set()
         for index, item in enumerate(items):
             project = cls._get_project(
-                organization=organization,
                 project_id=item.get("project_id"),
             )
             code = cls._normalize_code(item.get("code"))
             if project is None:
+                results.append(
+                    {"index": index, "status": cls.INVALID, "error": "Invalid or missing project."}
+                )
+                continue
+            if allowed is not None and project.id not in allowed:
                 results.append(
                     {"index": index, "status": cls.INVALID, "error": "Invalid or missing project."}
                 )
@@ -172,7 +210,6 @@ class BulkOperationService(BusinessService):
                 continue
             seen.add(key)
             existing = cls._existing(
-                organization=organization,
                 project=project,
                 code=code,
             )
@@ -204,7 +241,7 @@ class BulkOperationService(BusinessService):
             data["code"] = code
 
             try:
-                instance = cls.create(organization=organization, user=user, **data)
+                instance = cls.create(user=user, **data)
             except Exception as exc:  # noqa: BLE001
                 results.append(
                     {"index": index, "status": cls.INVALID, "error": str(exc)}
@@ -226,9 +263,9 @@ class BulkOperationService(BusinessService):
     # ------------------------------------------------------------------
 
     @classmethod
-    def bulk_update(cls, items, *, organization, user=None):
+    def bulk_update(cls, items, *, user=None, organization=None):
         """
-        Update multiple entities by id (organization scoped).
+        Update multiple entities by id (project-membership scoped).
 
         Per-item statuses: ``updated`` | ``not_found`` | ``invalid``.
         Items are validated with ``bulk_update_serializer`` when configured.
@@ -236,6 +273,7 @@ class BulkOperationService(BusinessService):
         assert cls.bulk_update_serializer is not None, (
             "bulk_update_serializer must be set on the service class."
         )
+        allowed = cls._allowed_project_ids(user)
         results = []
         for index, item in enumerate(items):
             item_id = item.get("id")
@@ -244,10 +282,12 @@ class BulkOperationService(BusinessService):
                     {"index": index, "status": cls.INVALID, "error": "id is required."}
                 )
                 continue
-            instance = cls.model.all_objects.filter(
-                organization=organization,
+            lookup = cls.model.all_objects.filter(
                 id=item_id,
-            ).first()
+            )
+            if allowed is not None:
+                lookup = lookup.filter(project_id__in=allowed)
+            instance = lookup.first()
             if instance is None or instance.is_deleted:
                 results.append(
                     {"index": index, "status": cls.NOT_FOUND, "error": f"{cls.model.__name__} not found."}
@@ -276,17 +316,20 @@ class BulkOperationService(BusinessService):
     # ------------------------------------------------------------------
 
     @classmethod
-    def bulk_archive(cls, ids, *, organization, user=None):
+    def bulk_archive(cls, ids, *, user=None, organization=None):
         """
         Soft-delete (archive) multiple entities by id.
         Per-item statuses: ``archived`` | ``not_found``.
         """
+        allowed = cls._allowed_project_ids(user)
         results = []
         for index, item_id in enumerate(ids):
-            instance = cls.model.objects.filter(
-                organization=organization,
+            lookup = cls.model.objects.filter(
                 id=item_id,
-            ).first()
+            )
+            if allowed is not None:
+                lookup = lookup.filter(project_id__in=allowed)
+            instance = lookup.first()
             if instance is None:
                 results.append(
                     {"index": index, "id": item_id, "status": cls.NOT_FOUND}
@@ -299,17 +342,20 @@ class BulkOperationService(BusinessService):
         return results
 
     @classmethod
-    def bulk_restore(cls, ids, *, organization, user=None):
+    def bulk_restore(cls, ids, *, user=None, organization=None):
         """
         Restore soft-deleted entities by id.
         Per-item statuses: ``restored`` | ``not_found``.
         """
+        allowed = cls._allowed_project_ids(user)
         results = []
         for index, item_id in enumerate(ids):
-            instance = cls.model.all_objects.filter(
-                organization=organization,
+            lookup = cls.model.all_objects.filter(
                 id=item_id,
-            ).first()
+            )
+            if allowed is not None:
+                lookup = lookup.filter(project_id__in=allowed)
+            instance = lookup.first()
             if instance is None or not instance.is_deleted:
                 results.append(
                     {"index": index, "id": item_id, "status": cls.NOT_FOUND}

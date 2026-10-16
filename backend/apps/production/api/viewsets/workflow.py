@@ -66,7 +66,6 @@ class WorkflowViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissing
     def clone(self, request, *args, **kwargs):
         instance = self.get_object()
         new = Workflow.objects.create(
-            organization=instance.organization,
             project=instance.project,
             name=instance.name + " (Copy)",
             code=instance.code + "-COPY",

@@ -9,7 +9,7 @@ class VersionSelector(ProductionBaseSelector):
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Version]:
         return Version.objects.select_related(
-            "organization", "project", "shot", "asset", "task", "artist", "artist__profile"
+            "project", "shot", "asset", "task", "artist", "artist__profile"
         ).annotate(
             artist_name_annotated=Coalesce(F("artist__profile__display_name"), F("artist__email"), Value(""), output_field=CharField()),
             project_code_annotated=F("project__code"),

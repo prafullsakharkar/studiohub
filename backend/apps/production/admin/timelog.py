@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedModelAdmin
+from apps.core.admin.base import StudioHubModelAdmin
 from apps.production.models import Timelog
 
 
 @admin.register(Timelog)
-class TimelogAdmin(OrganizationScopedModelAdmin):
+class TimelogAdmin(StudioHubModelAdmin):
     list_display = (
         "task",
         "person",
@@ -20,7 +20,6 @@ class TimelogAdmin(OrganizationScopedModelAdmin):
         "status",
         "billable",
         "department",
-        "organization",
     )
 
     search_fields = (
@@ -33,11 +32,10 @@ class TimelogAdmin(OrganizationScopedModelAdmin):
         "task",
         "person",
         "project",
-        "organization",
         "approved_by",
     )
 
-    list_select_related = ("task", "person", "project", "organization")
+    list_select_related = ("task", "person", "project")
 
     date_hierarchy = "date"
 

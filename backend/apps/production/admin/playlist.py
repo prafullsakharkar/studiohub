@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedModelAdmin
+from apps.core.admin.base import StudioHubModelAdmin
 from apps.production.models import Playlist
 
 
 @admin.register(Playlist)
-class PlaylistAdmin(OrganizationScopedModelAdmin):
+class PlaylistAdmin(StudioHubModelAdmin):
     list_display = (
         "code",
         "name",
@@ -19,7 +19,6 @@ class PlaylistAdmin(OrganizationScopedModelAdmin):
         "status",
         "client_only",
         "is_archived",
-        "organization",
     )
 
     search_fields = (
@@ -27,8 +26,8 @@ class PlaylistAdmin(OrganizationScopedModelAdmin):
         "name",
     )
 
-    autocomplete_fields = ("project", "organization")
+    autocomplete_fields = ("project",)
 
-    list_select_related = ("project", "organization")
+    list_select_related = ("project",)
 
     ordering = ("name",)

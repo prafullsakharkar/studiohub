@@ -4,7 +4,7 @@ Sequence service.
 Extends ``BulkOperationService`` (bulk existence check, bulk create/update/
 archive/restore with per-item partial-failure reporting) on top of the
 canonical ``BusinessService`` (create/update/soft-delete/restore).
-Bulk operations are organization scoped and fail closed so the client can
+Bulk operations are project scoped and fail closed so the client can
 reconcile (e.g. prompt to restore a soft-deleted row).
 
 Soft-delete is the recoverable "archive" mechanism (see AGENTS soft-delete

@@ -19,7 +19,7 @@ from apps.production.selectors.shot import ShotSelector
 from apps.production.services.shot import ShotService
 
 
-class ShotViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class ShotViewSet(ProductionEntityViewSet, BulkActionsMixin):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = ShotSelector
     service_class = ShotService
     pagination_class = StandardPagination
@@ -106,9 +106,7 @@ class ShotViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignore
             else:
                 text = str(raw_episode or "").strip()
                 if text:
-                    episode = EpisodeSelector.resolve_by_lookup(
-                        self.resolve_organization(instance=instance), text
-                    )
+                    episode = EpisodeSelector.resolve_by_lookup(text)
                     if episode is None:
                         raise ValidationError({"episode_id": ["Unknown episode."]})
             if episode is not None and episode.project_id != project.id:

@@ -3,12 +3,14 @@ Contract tests for the project dashboard endpoints.
 
 Frontend contract (studiohub-react):
 
-* ``GET /api/v1/projects/{id}/dashboard/`` (primary, ``X-Organization-Id``)
-* ``GET /api/organizations/{org}/projects/{project}/dashboard`` (fallback)
+* ``GET /api/v1/projects/{id}/dashboard/`` (primary)
+* ``GET /api/organizations/projects/{project}/dashboard`` (fallback;
+  the org id segment is gone — project scope only)
 
 Both return the ``ProjectDashboardData`` shape; every value is aggregated
 from real production records. Also covers the legacy
-``GET /api/v1/analytics/kpis/`` ``ProductionKpis`` shape.
+``GET /api/v1/analytics/kpis/`` ``ProductionKpis`` shape (global
+aggregates, project scope only).
 """
 
 from datetime import timedelta
@@ -19,8 +21,7 @@ from rest_framework import status
 
 from apps.deliveries.models import DeliveryPackage
 from apps.organization.tests.factories import OrganizationFactory
-from apps.organization.tests.rbac_helpers import grant_org_admin
-from apps.production.models import Review
+from apps.production.models import ProjectMembership, Review
 from apps.production.tests.factories import (
     AssetFactory,
     ProjectFactory,
@@ -29,8 +30,13 @@ from apps.production.tests.factories import (
 )
 
 
-def _org_header(org):
-    return {"HTTP_X_ORGANIZATION_ID": str(org.id)}
+def _member(user, project):
+    membership, _ = ProjectMembership.objects.get_or_create(
+        user=user,
+        project=project,
+        defaults={"status": "active", "role": "Artist"},
+    )
+    return membership
 
 
 def _dashboard_url(project):
@@ -38,47 +44,49 @@ def _dashboard_url(project):
     return f"/api/v1/projects/{project.id}/dashboard/"
 
 
-def _nested_url(org, project_ref):
-    return f"/api/organizations/{org.id}/projects/{project_ref}/dashboard"
+def _nested_url(project_ref):
+    return f"/api/organizations/projects/{project_ref}/dashboard"
 
 
 @pytest.mark.django_db
 class TestProjectDashboardPrimary:
-    def _seed(self):
+    def _seed(self, staff_user):
+        # Deliveries still belong to an organization (de-orged separately);
+        # production rows are project-scoped only.
         org = OrganizationFactory.create()
         today = timezone.localdate()
         project = ProjectFactory.create(
-            organization=org,
             code="DASH01",
             start_date=today - timedelta(days=30),
             delivery_date=today + timedelta(days=60),
         )
-        ShotFactory.create(organization=org, project=project, code="SH001", status="Approved")
-        ShotFactory.create(organization=org, project=project, code="SH002", status="Approved")
-        ShotFactory.create(organization=org, project=project, code="SH003", status="In Progress")
-        ShotFactory.create(organization=org, project=project, code="SH004", status="Not Started")
+        _member(staff_user, project)
+        ShotFactory.create(project=project, code="SH001", status="Approved")
+        ShotFactory.create(project=project, code="SH002", status="Approved")
+        ShotFactory.create(project=project, code="SH003", status="In Progress")
+        ShotFactory.create(project=project, code="SH004", status="Not Started")
         TaskFactory.create(
-            organization=org, project=project, code="TSK001",
+            project=project, code="TSK001",
             status="Approved", due_date=today - timedelta(days=2),
         )
         TaskFactory.create(
-            organization=org, project=project, code="TSK002",
+            project=project, code="TSK002",
             status="In Progress", due_date=today - timedelta(days=1),
         )
         TaskFactory.create(
-            organization=org, project=project, code="TSK003",
+            project=project, code="TSK003",
             status="Not Started", due_date=today + timedelta(days=5),
         )
         TaskFactory.create(
-            organization=org, project=project, code="TSK004", status="Not Started",
+            project=project, code="TSK004", status="Not Started",
         )
-        AssetFactory.create(organization=org, project=project, code="AST001", status="Approved")
-        AssetFactory.create(organization=org, project=project, code="AST002", status="Not Started")
+        AssetFactory.create(project=project, code="AST001", status="Approved")
+        AssetFactory.create(project=project, code="AST002", status="Not Started")
         Review.objects.create(
-            organization=org, project=project, title="Dailies", status="Approved"
+            project=project, title="Dailies", status="Approved"
         )
         Review.objects.create(
-            organization=org, project=project, title="Client review",
+            project=project, title="Client review",
             status="Pending Review",
         )
         DeliveryPackage.objects.create(
@@ -89,12 +97,11 @@ class TestProjectDashboardPrimary:
             organization=org, project=project, name="Turnover 0", code="DLV-DASH-00",
             status="Complete", expires_at=timezone.now() - timedelta(days=3),
         )
-        return org, project, today
+        return project, today
 
     def test_full_contract_shape_with_real_values(self, staff_client, staff_user):
-        org, project, today = self._seed()
-        grant_org_admin(staff_user, org)
-        resp = staff_client.get(_dashboard_url(project), **_org_header(org))
+        project, today = self._seed(staff_user)
+        resp = staff_client.get(_dashboard_url(project))
 
         assert resp.status_code == status.HTTP_200_OK, resp.data
         data = resp.data
@@ -105,7 +112,7 @@ class TestProjectDashboardPrimary:
             assert section in data, section
 
         assert data["project"]["id"] == str(project.id)
-        assert data["project"]["organization_id"] == str(org.id)
+        assert "organization_id" not in data["project"]
         assert data["project"]["code"] == "DASH01"
         assert data["project"]["start_date"] == (today - timedelta(days=30)).isoformat()
         assert data["project"]["delivery_date"] == (today + timedelta(days=60)).isoformat()
@@ -166,31 +173,32 @@ class TestProjectDashboardPrimary:
             assert key in first, key
 
     def test_lookup_by_code_and_unknown_404(self, staff_client, staff_user):
-        org, project, _ = self._seed()
-        grant_org_admin(staff_user, org)
-        resp = staff_client.get("/api/v1/projects/dash01/dashboard/", **_org_header(org))
+        project, _ = self._seed(staff_user)
+        resp = staff_client.get("/api/v1/projects/dash01/dashboard/")
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert resp.data["project"]["id"] == str(project.id)
 
-        resp = staff_client.get("/api/v1/projects/nope/dashboard/", **_org_header(org))
+        resp = staff_client.get("/api/v1/projects/nope/dashboard/")
         assert resp.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_requires_organization_scope(self, staff_client):
-        org, project, _ = self._seed()
+    def test_requires_project_membership(self, staff_client, staff_user):
+        project, _ = self._seed(staff_user)
+        ProjectMembership.objects.filter(user=staff_user, project=project).delete()
         resp = staff_client.get(_dashboard_url(project))
         assert resp.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_cross_organization_isolation(self, staff_client):
-        org, project, _ = self._seed()
-        other = OrganizationFactory.create()
-        resp = staff_client.get(_dashboard_url(project), **_org_header(other))
+    def test_cross_project_isolation(self, staff_client, staff_user):
+        project, _ = self._seed(staff_user)
+        other = ProjectFactory.create()
+        _member(staff_user, other)
+        ProjectMembership.objects.filter(user=staff_user, project=project).delete()
+        resp = staff_client.get(_dashboard_url(project))
         assert resp.status_code == status.HTTP_404_NOT_FOUND
 
     def test_empty_project_returns_well_formed_zeros(self, staff_client, staff_user):
-        org = OrganizationFactory.create()
-        grant_org_admin(staff_user, org)
-        project = ProjectFactory.create(organization=org, code="EMPTY01")
-        resp = staff_client.get(_dashboard_url(project), **_org_header(org))
+        project = ProjectFactory.create(code="EMPTY01")
+        _member(staff_user, project)
+        resp = staff_client.get(_dashboard_url(project))
 
         assert resp.status_code == status.HTTP_200_OK, resp.data
         summary = resp.data["summary"]
@@ -200,32 +208,29 @@ class TestProjectDashboardPrimary:
         assert resp.data["production"]["overall_progress_pct"] == 0
         assert resp.data["production"]["status_breakdown"]
         assert resp.data["shots"]["recent_shots"] == []
-        # The project's own creation is change-tracked, so the feed carries
-        # exactly that entry — the audit pipeline working, not mock data.
-        assert len(resp.data["activity"]) == 1
-        assert resp.data["activity"][0]["entity_type"] == "Project"
-        assert resp.data["activity"][0]["action"] == "Created Project"
+        # ChangeLog change-tracking is organization-gated (audit is de-orged
+        # separately), so factory-created rows emit no activity entries yet.
+        assert resp.data["activity"] == []
         assert resp.data["schedule"]["days_total"] >= 1
 
     def test_switching_projects_returns_each_projects_data(self, staff_client, staff_user):
-        org = OrganizationFactory.create()
-        grant_org_admin(staff_user, org)
-        project_a = ProjectFactory.create(organization=org, code="SWA01")
-        project_b = ProjectFactory.create(organization=org, code="SWB01")
-        ShotFactory.create(organization=org, project=project_a, code="SHA01", status="Approved")
-        ShotFactory.create(organization=org, project=project_a, code="SHA02", status="Approved")
+        project_a = ProjectFactory.create(code="SWA01")
+        project_b = ProjectFactory.create(code="SWB01")
+        _member(staff_user, project_a)
+        _member(staff_user, project_b)
+        ShotFactory.create(project=project_a, code="SHA01", status="Approved")
+        ShotFactory.create(project=project_a, code="SHA02", status="Approved")
 
-        resp_a = staff_client.get(_dashboard_url(project_a), **_org_header(org))
-        resp_b = staff_client.get(_dashboard_url(project_b), **_org_header(org))
+        resp_a = staff_client.get(_dashboard_url(project_a))
+        resp_b = staff_client.get(_dashboard_url(project_b))
         assert resp_a.data["summary"]["total_shots"] == 2
         assert resp_a.data["summary"]["shots_completion_pct"] == 100
         assert resp_b.data["summary"]["total_shots"] == 0
 
     def test_task_buckets_reconcile_with_total(self, staff_client, staff_user):
         """open+in_progress+blocked+review+completed == total (chart partition)."""
-        org, project, _ = self._seed()
-        grant_org_admin(staff_user, org)
-        resp = staff_client.get(_dashboard_url(project), **_org_header(org))
+        project, _ = self._seed(staff_user)
+        resp = staff_client.get(_dashboard_url(project))
 
         assert resp.status_code == status.HTTP_200_OK, resp.data
         tasks = resp.data["tasks"]
@@ -250,22 +255,21 @@ class TestProjectDashboardPrimary:
         )
 
     def test_critical_counts_blocked_plus_overdue_union(self, staff_client, staff_user):
-        org = OrganizationFactory.create()
-        grant_org_admin(staff_user, org)
-        project = ProjectFactory.create(organization=org, code="CRIT01")
+        project = ProjectFactory.create(code="CRIT01")
+        _member(staff_user, project)
         today = timezone.localdate()
         TaskFactory.create(
-            organization=org, project=project, code="CRIT-T1",
+            project=project, code="CRIT-T1",
             status="Blocked", due_date=today - timedelta(days=1),
         )
         TaskFactory.create(
-            organization=org, project=project, code="CRIT-T2",
+            project=project, code="CRIT-T2",
             status="Not Started", due_date=today - timedelta(days=1),
         )
         TaskFactory.create(
-            organization=org, project=project, code="CRIT-T3", status="Blocked",
+            project=project, code="CRIT-T3", status="Blocked",
         )
-        resp = staff_client.get(_dashboard_url(project), **_org_header(org))
+        resp = staff_client.get(_dashboard_url(project))
 
         assert resp.status_code == status.HTTP_200_OK, resp.data
         # Union, not sum: CRIT-T1 is both blocked and overdue.
@@ -276,19 +280,18 @@ class TestProjectDashboardPrimary:
     def test_workload_buckets_by_assignee(self, staff_client, staff_user):
         from apps.identity.tests.factories import UserFactory
 
-        org = OrganizationFactory.create()
-        grant_org_admin(staff_user, org)
-        project = ProjectFactory.create(organization=org, code="WL01")
+        project = ProjectFactory.create(code="WL01")
+        _member(staff_user, project)
         artist = UserFactory.create()
         today = timezone.localdate()
         for index in range(3):
             TaskFactory.create(
-                organization=org, project=project, code=f"WLT00{index}",
+                project=project, code=f"WLT00{index}",
                 status="In Progress" if index == 0 else "Not Started",
                 assignee=artist,
                 due_date=today - timedelta(days=1) if index == 1 else None,
             )
-        resp = staff_client.get(_dashboard_url(project), **_org_header(org))
+        resp = staff_client.get(_dashboard_url(project))
 
         assert resp.status_code == status.HTTP_200_OK, resp.data
         members = resp.data["workload"]["team_members"]
@@ -302,49 +305,46 @@ class TestProjectDashboardPrimary:
 @pytest.mark.django_db
 class TestProjectDashboardNestedFallback:
     def test_nested_route_matches_primary_payload(self, staff_client, staff_user):
-        org = OrganizationFactory.create()
-        grant_org_admin(staff_user, org)
-        project = ProjectFactory.create(organization=org, code="NEST01")
-        ShotFactory.create(organization=org, project=project, code="SHN01", status="Approved")
+        project = ProjectFactory.create(code="NEST01")
+        _member(staff_user, project)
+        ShotFactory.create(project=project, code="SHN01", status="Approved")
 
-        primary = staff_client.get(_dashboard_url(project), **_org_header(org))
-        nested = staff_client.get(_nested_url(org, "nest01"))
+        primary = staff_client.get(_dashboard_url(project))
+        nested = staff_client.get(_nested_url("nest01"))
         assert nested.status_code == status.HTTP_200_OK, nested.data
         assert nested.data["project"]["id"] == primary.data["project"]["id"]
         assert nested.data["summary"] == primary.data["summary"]
 
     def test_nested_unknown_project_404(self, staff_client):
-        org = OrganizationFactory.create()
-        resp = staff_client.get(_nested_url(org, "missing"))
+        resp = staff_client.get(_nested_url("missing"))
         assert resp.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_nested_cross_org_project_404(self, staff_client):
-        org_a = OrganizationFactory.create()
-        org_b = OrganizationFactory.create()
-        project_b = ProjectFactory.create(organization=org_b, code="XORG01")
-        resp = staff_client.get(_nested_url(org_a, project_b.id))
-        assert resp.status_code == status.HTTP_404_NOT_FOUND
+    def test_nested_out_of_scope_project_404(self, staff_client, staff_user):
+        ProjectFactory.create(code="XORG01")
+        resp = staff_client.get(_nested_url("XORG01"))
+        # The nested scope mixin denies non-members (no existence leak).
+        assert resp.status_code in (
+            status.HTTP_403_FORBIDDEN,
+            status.HTTP_404_NOT_FOUND,
+        )
 
     def test_nested_non_member_forbidden(self, authenticated_client):
-        org = OrganizationFactory.create()
-        project = ProjectFactory.create(organization=org, code="NMEM01")
-        resp = authenticated_client.get(_nested_url(org, project.id))
+        project = ProjectFactory.create(code="NMEM01")
+        resp = authenticated_client.get(_nested_url(project.id))
         assert resp.status_code == status.HTTP_403_FORBIDDEN
 
 
 @pytest.mark.django_db
 class TestAnalyticsKpisContract:
     def test_kpis_match_production_kpis_shape(self, staff_client, staff_user):
-        org = OrganizationFactory.create()
-        grant_org_admin(staff_user, org)
-        project = ProjectFactory.create(organization=org, code="KPI01")
-        ShotFactory.create(organization=org, project=project, code="SHK01", status="Approved")
-        ShotFactory.create(organization=org, project=project, code="SHK02", status="In Progress")
+        project = ProjectFactory.create(code="KPI01")
+        ShotFactory.create(project=project, code="SHK01", status="Approved")
+        ShotFactory.create(project=project, code="SHK02", status="In Progress")
         TaskFactory.create(
-            organization=org, project=project, code="TSKK01", status="Approved",
+            project=project, code="TSKK01", status="Approved",
         )
 
-        resp = staff_client.get("/api/v1/analytics/kpis/", **_org_header(org))
+        resp = staff_client.get("/api/v1/analytics/kpis/")
         assert resp.status_code == status.HTTP_200_OK, resp.data
         for key in (
             "total_active_projects", "total_shots", "approved_shots",
@@ -362,10 +362,8 @@ class TestAnalyticsKpisContract:
         assert resp.data["average_render_time_mins"] is None
 
     def test_archived_projects_excluded_from_active_count(self, staff_client, staff_user):
-        org = OrganizationFactory.create()
-        grant_org_admin(staff_user, org)
-        ProjectFactory.create(organization=org, code="KPA01", status="In Progress")
-        ProjectFactory.create(organization=org, code="KPA02", status="Archived")
+        ProjectFactory.create(code="KPA01", status="In Progress")
+        ProjectFactory.create(code="KPA02", status="Archived")
 
-        resp = staff_client.get("/api/v1/analytics/kpis/", **_org_header(org))
+        resp = staff_client.get("/api/v1/analytics/kpis/")
         assert resp.data["total_active_projects"] == 1

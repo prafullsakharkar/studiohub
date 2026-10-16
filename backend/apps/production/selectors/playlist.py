@@ -8,5 +8,5 @@ class PlaylistSelector(ProductionBaseSelector):
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Playlist]:
         return Playlist.objects.select_related(
-            "organization", "project"
+            "project"
         ).all()

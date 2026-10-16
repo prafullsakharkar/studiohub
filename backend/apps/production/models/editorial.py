@@ -27,12 +27,6 @@ class EditorialCut(EntityModel):
     Editorial cut/turnover for a project.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="editorial_cuts",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
@@ -80,7 +74,6 @@ class EditorialCut(EntityModel):
         ordering = ("code",)
         unique_together = [("project", "code")]
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["project", "code"]),
             models.Index(fields=["status"]),
         ]
@@ -114,12 +107,6 @@ class EditorialTrack(EntityModel):
     turnover itself), which stays project-scoped.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="editorial_tracks",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
@@ -161,7 +148,6 @@ class EditorialTrack(EntityModel):
         db_table = "production_editorial_track"
         ordering = ("project", "track_number")
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["project", "track_number"]),
             models.Index(fields=["status"]),
         ]

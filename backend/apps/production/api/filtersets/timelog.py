@@ -25,15 +25,13 @@ class TimelogFilterSet(BaseFilterSet):
         model = Timelog
         fields = ["status", "task", "project", "project_id", "person", "billable", "date"]
 
-    def _org(self):
-        return getattr(getattr(self, "request", None), "organization", None)
 
     def filter_project(self, queryset, name, value):
         if not value:
             return queryset
         from apps.production.selectors.project import ProjectSelector
 
-        project = ProjectSelector.resolve_by_lookup(self._org(), value)
+        project = ProjectSelector.resolve_by_lookup(value)
         if project is None:
             return queryset.none()
         return queryset.filter(project=project)

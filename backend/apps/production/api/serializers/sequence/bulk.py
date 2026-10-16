@@ -5,7 +5,7 @@ from rest_framework import serializers
 
 class SequenceBulkItemSerializer(serializers.Serializer[Any]):
     """Input item for bulk-create. ``project_id`` targets the owning project
-    (resolved and scoped to the active organization by the service)."""
+    (resolved and scoped to the project by the service)."""
 
     project_id = serializers.UUIDField()
     code = serializers.CharField(max_length=50)

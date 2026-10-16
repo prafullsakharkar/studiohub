@@ -1,9 +1,9 @@
 """
 ProjectMembership model.
 
-Grants a user a role/scope on a specific Project within an Organization.
+Grants a user a role/scope on a specific Project.
 Mirrors the frontend ``ProjectMembership`` contract
-(``user_id/organization_id/project_id/role/roles/scope/status`` with
+(``user_id/project_id/role/roles/scope/status`` with
 denormalized display fields served by the serializer).
 """
 
@@ -27,12 +27,6 @@ class ProjectMembership(EntityModel):
         ("suspended", "Suspended"),
     )
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="project_memberships",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
@@ -61,7 +55,7 @@ class ProjectMembership(EntityModel):
     role = models.CharField(max_length=100, default="Artist", db_index=True)
     roles = models.JSONField(default=list, blank=True)
     role_ref = models.ForeignKey(
-        "organization.Role",
+        "identity.Role",
         on_delete=models.SET_NULL,
         related_name="project_memberships",
         null=True,
@@ -105,7 +99,6 @@ class ProjectMembership(EntityModel):
         ordering = ("project", "user")
         unique_together = [("project", "user")]
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["project", "status"]),
             models.Index(fields=["user", "status"]),
         ]

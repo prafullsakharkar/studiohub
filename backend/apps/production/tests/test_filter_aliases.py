@@ -7,7 +7,9 @@ return unfiltered results):
 
 - TasksPage: ``project_id``, ``team_id``, ``assignee_id``, ``vendor_id``
 - ShotsPage: ``sequence`` (alias of ``sequence_code``)
-- useProjects: ``organization_id`` (+ ``search`` matching ``client_name``)
+- useProjects: ``search`` matching ``client_name`` (the legacy
+  ``organization_id`` param is tolerated but no longer constrains — scoping
+  is by project membership only)
 """
 
 import pytest
@@ -15,12 +17,9 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from apps.identity.tests.factories import UserFactory
-from apps.organization.tests.factories import (
-    OrganizationFactory,
-    OrganizationMembershipFactory,
-    TeamFactory,
-)
-from apps.organization.tests.rbac_helpers import grant_org_admin
+from apps.identity.tests.rbac_helpers import grant_permissions
+from apps.masterdata.models import Department, Team
+from apps.production.models import ProjectMembership
 from apps.production.tests.factories import (
     AssetFactory,
     ProjectFactory,
@@ -30,47 +29,46 @@ from apps.production.tests.factories import (
 )
 
 
-def _org_header(org):
-    return {"HTTP_X_ORGANIZATION_ID": str(org.id)}
-
-
-def _member_client(org):
-    """Member holding `projects:read` (membership alone grants no permissions)."""
-    from apps.organization.tests.factories import (
-        PermissionFactory,
-        RoleFactory,
-        RolePermissionFactory,
+def _member(user, project):
+    return ProjectMembership.objects.create(
+        user=user, project=project, status="active", role="Artist"
     )
 
+
+def _member_client():
+    """Member holding `project.view` via a platform-global grant."""
     user = UserFactory.create()
-    permission = PermissionFactory.create(
-        code="project.view", module="projects", action="read", is_active=True
-    )
-    role = RoleFactory.create(organization=org)
-    RolePermissionFactory.create(role=role, permission=permission)
-    OrganizationMembershipFactory.create(user=user, organization=org, role=role)
+    grant_permissions(user, "project.view")
     client = APIClient()
     client.force_authenticate(user=user)
     return client, user
 
 
+def _team(code="TM-FILT", name="Filter Team"):
+    department, _ = Department.objects.get_or_create(
+        code="DEPT-FILT", defaults={"name": "Filter Dept"}
+    )
+    return Team.objects.create(code=code, name=name, department=department)
+
+
 @pytest.mark.django_db
 class TestTaskFilterAliases:
-    def test_project_id_team_id_assignee_id_vendor_id(self, staff_client, staff_user):
-        org = OrganizationFactory.create()
-        grant_org_admin(staff_user, org)
-        project = ProjectFactory.create(organization=org)
-        other_project = ProjectFactory.create(organization=org)
+    def test_project_id_team_id_assignee_id_vendor_id(
+        self, staff_client, staff_user
+    ):
+        project = ProjectFactory.create()
+        other_project = ProjectFactory.create()
+        _member(staff_user, project)
+        _member(staff_user, other_project)
         assignee = UserFactory.create()
-        team = TeamFactory.create(organization=org)
+        team = _team()
         wanted = TaskFactory.create(
-            organization=org,
             project=project,
             assignee=assignee,
             team=team,
             vendor_id="ven-001",
         )
-        TaskFactory.create(organization=org, project=other_project, vendor_id="ven-002")
+        TaskFactory.create(project=other_project, vendor_id="ven-002")
 
         cases = [
             ("project_id", str(project.id)),
@@ -79,22 +77,19 @@ class TestTaskFilterAliases:
             ("vendor_id", "VEN-001"),  # case-insensitive
         ]
         for param, value in cases:
-            resp = staff_client.get(
-                f"/api/v1/tasks/?{param}={value}", **_org_header(org)
-            )
+            resp = staff_client.get(f"/api/v1/tasks/?{param}={value}")
             assert resp.status_code == status.HTTP_200_OK, (param, resp.data)
             assert [row["code"] for row in resp.data["results"]] == [wanted.code], param
 
     def test_project_mock_id_and_unknown_values(self, staff_client, staff_user):
         """Regression: `?project_id=proj-001` (mock id) 400ed; must resolve."""
-        org = OrganizationFactory.create()
-        grant_org_admin(staff_user, org)
-        project = ProjectFactory.create(organization=org, code="NK99")
-        wanted = TaskFactory.create(organization=org, project=project)
-        other = ProjectFactory.create(organization=org, code="AETH2")
-        TaskFactory.create(organization=org, project=other)
+        project = ProjectFactory.create(code="NK99")
+        _member(staff_user, project)
+        wanted = TaskFactory.create(project=project)
+        other = ProjectFactory.create(code="AETH2")
+        TaskFactory.create(project=other)
 
-        resp = staff_client.get("/api/v1/tasks/?project_id=proj-001", **_org_header(org))
+        resp = staff_client.get("/api/v1/tasks/?project_id=proj-001")
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert [row["code"] for row in resp.data["results"]] == [wanted.code]
 
@@ -104,20 +99,18 @@ class TestTaskFilterAliases:
             "/api/v1/tasks/?team_id=not-a-uuid",
             "/api/v1/tasks/?assignee_id=not-a-uuid",
         ):
-            resp = staff_client.get(url, **_org_header(org))
+            resp = staff_client.get(url)
             assert resp.status_code == status.HTTP_200_OK, (url, resp.data)
             assert resp.data["results"] == [], url
 
     def test_show_id_tolerated_until_show_epic(self, staff_client, staff_user):
-        org = OrganizationFactory.create()
-        grant_org_admin(staff_user, org)
-        project = ProjectFactory.create(organization=org)
-        TaskFactory.create(organization=org, project=project)
+        project = ProjectFactory.create()
+        _member(staff_user, project)
+        TaskFactory.create(project=project)
 
         resp = staff_client.get(
             f"/api/v1/tasks/?project_id={project.id}&is_archived=false"
             "&show_id=show-nk99-main",
-            **_org_header(org),
         )
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert resp.data["count"] == 1
@@ -126,66 +119,46 @@ class TestTaskFilterAliases:
 @pytest.mark.django_db
 class TestShotSequenceAlias:
     def test_sequence_alias_matches_sequence_code(self, staff_client, staff_user):
-        org = OrganizationFactory.create()
-        grant_org_admin(staff_user, org)
-        project = ProjectFactory.create(organization=org)
-        wanted = ShotFactory.create(
-            organization=org, project=project, sequence_code="NK_010"
-        )
-        ShotFactory.create(organization=org, project=project, sequence_code="NK_020")
+        project = ProjectFactory.create()
+        _member(staff_user, project)
+        wanted = ShotFactory.create(project=project, sequence_code="NK_010")
+        ShotFactory.create(project=project, sequence_code="NK_020")
 
-        resp = staff_client.get("/api/v1/shots/?sequence=NK_010", **_org_header(org))
+        resp = staff_client.get("/api/v1/shots/?sequence=NK_010")
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert [row["code"] for row in resp.data["results"]] == [wanted.code]
 
 
 @pytest.mark.django_db
-class TestProjectOrganizationFilterAndSearch:
+class TestProjectSearch:
     def test_search_matches_client_name(self, staff_client, staff_user):
-        org = OrganizationFactory.create()
-        grant_org_admin(staff_user, org)
         wanted = ProjectFactory.create(
-            organization=org, name="Alpha", code="ALP1", client_name="Warner Nexus"
+            name="Alpha", code="ALP1", client_name="Warner Nexus"
         )
         ProjectFactory.create(
-            organization=org, name="Beta", code="BET1", client_name="Someone Else"
+            name="Beta", code="BET1", client_name="Someone Else"
         )
+        _member(staff_user, wanted)
 
-        resp = staff_client.get("/api/v1/projects/?search=Warner", **_org_header(org))
+        resp = staff_client.get("/api/v1/projects/?search=Warner")
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert [row["code"] for row in resp.data["results"]] == [wanted.code]
 
-    def test_organization_id_filter(self):
-        from apps.production.models import ProjectMembership
-
-        org = OrganizationFactory.create()
-        other = OrganizationFactory.create()
-        mine = ProjectFactory.create(organization=org)
-        ProjectFactory.create(organization=other)
-        client, user = _member_client(org)
-        # ADR-0033 D1: org membership alone grants no production data;
+    def test_legacy_organization_id_param_is_ignored(self):
+        # ADR: scoping is by project membership only; a stale
+        # `organization_id` param must not error and must not constrain.
+        mine = ProjectFactory.create()
+        ProjectFactory.create()
+        client, user = _member_client()
+        # ADR-0033 D1: permission grants alone show no production data;
         # per-project visibility requires an explicit ProjectMembership.
         ProjectMembership.objects.create(
-            organization=org, project=mine, user=user, status="Active"
+            project=mine, user=user, status="active"
         )
 
-        resp = client.get(f"/api/v1/projects/?organization_id={org.id}", **_org_header(org))
+        resp = client.get("/api/v1/projects/?organization_id=nope")
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert [row["code"] for row in resp.data["results"]] == [mine.code]
-
-        # Code/slug form of the same org also matches.
-        resp = client.get(
-            f"/api/v1/projects/?organization_id={org.code}", **_org_header(org)
-        )
-        assert [row["code"] for row in resp.data["results"]] == [mine.code]
-
-        # Foreign or unknown values fail closed (org scope is authoritative).
-        resp = client.get(
-            f"/api/v1/projects/?organization_id={other.id}", **_org_header(org)
-        )
-        assert resp.data["results"] == []
-        resp = client.get("/api/v1/projects/?organization_id=nope", **_org_header(org))
-        assert resp.data["results"] == []
 
 
 @pytest.mark.django_db
@@ -209,16 +182,14 @@ class TestProjectIdAliasAcrossResources:
     def test_project_id_filters_to_owning_project(
         self, staff_client, staff_user, resource, factory, path
     ):
-        org = OrganizationFactory.create()
-        grant_org_admin(staff_user, org)
-        project_a = ProjectFactory.create(organization=org, code="PAA")
-        project_b = ProjectFactory.create(organization=org, code="PBB")
-        in_a = factory.create(organization=org, project=project_a)
-        factory.create(organization=org, project=project_b)
+        project_a = ProjectFactory.create(code="PAA")
+        project_b = ProjectFactory.create(code="PBB")
+        _member(staff_user, project_a)
+        _member(staff_user, project_b)
+        in_a = factory.create(project=project_a)
+        factory.create(project=project_b)
 
-        resp = staff_client.get(
-            f"{path}?project_id={project_a.id}", **_org_header(org)
-        )
+        resp = staff_client.get(f"{path}?project_id={project_a.id}")
         assert resp.status_code == status.HTTP_200_OK, (path, resp.data)
         codes = [row["code"] for row in resp.data["results"]]
         assert codes == [in_a.code], path
@@ -232,16 +203,16 @@ class TestProjectIdAliasAcrossResources:
         ],
     )
     def test_project_id_mock_and_unknown_resolve_to_empty(
-        self, staff_client, resource, factory, path
+        self, staff_client, staff_user, resource, factory, path
     ):
-        org = OrganizationFactory.create()
-        project = ProjectFactory.create(organization=org, code="NK99")
-        factory.create(organization=org, project=project)
+        project = ProjectFactory.create(code="NK99")
+        _member(staff_user, project)
+        factory.create(project=project)
 
         for url in (
             f"{path}?project_id=proj-999",
             f"{path}?project=proj-999",
         ):
-            resp = staff_client.get(url, **_org_header(org))
+            resp = staff_client.get(url)
             assert resp.status_code == status.HTTP_200_OK, (url, resp.data)
             assert resp.data["results"] == [], url

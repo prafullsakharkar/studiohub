@@ -10,7 +10,7 @@ class TimelogSelector(ProductionBaseSelector):
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Timelog]:
         return (
             Timelog.objects.select_related(
-                "organization", "project", "task", "person", "person__profile", "approved_by", "task__project"
+                "project", "task", "person", "person__profile", "approved_by", "task__project"
             )
             .annotate(
                 person_name_annotated=Coalesce(F("person__profile__display_name"), F("person__email"), Value(""), output_field=CharField()),

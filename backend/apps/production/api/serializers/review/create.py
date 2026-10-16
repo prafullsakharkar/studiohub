@@ -20,7 +20,7 @@ class ReviewCreateSerializer(BaseWriteSerializer[Any]):
 
     def validate(self, attrs):
         # The frontend review form omits ``code``: auto-generate it from
-        # the title (same pattern as organization roles) so creates do
+        # the title (same pattern as identity roles) so creates do
         # not fail validation. Explicit codes are preserved as-is.
         attrs = super().validate(attrs)
         code = (attrs.get("code") or "").strip()

@@ -1,14 +1,13 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedModelAdmin
+from apps.core.admin.base import StudioHubModelAdmin
 from apps.production.models import AutomationAuditLog, AutomationRule
 
 
 @admin.register(AutomationRule)
-class AutomationRuleAdmin(OrganizationScopedModelAdmin):
+class AutomationRuleAdmin(StudioHubModelAdmin):
     list_display = (
         "name",
-        "organization",
         "trigger_event",
         "trigger_entity_type",
         "is_active",
@@ -21,7 +20,6 @@ class AutomationRuleAdmin(OrganizationScopedModelAdmin):
         "trigger_entity_type",
         "is_active",
         "last_status",
-        "organization",
     )
 
     search_fields = (
@@ -29,18 +27,17 @@ class AutomationRuleAdmin(OrganizationScopedModelAdmin):
         "description",
     )
 
-    autocomplete_fields = ("workflow", "organization")
+    autocomplete_fields = ("workflow",)
 
-    list_select_related = ("workflow", "organization")
+    list_select_related = ("workflow",)
 
     ordering = ("-updated_at",)
 
 
 @admin.register(AutomationAuditLog)
-class AutomationAuditLogAdmin(OrganizationScopedModelAdmin):
+class AutomationAuditLogAdmin(StudioHubModelAdmin):
     list_display = (
         "rule_name",
-        "organization",
         "trigger_event",
         "entity_code",
         "status",
@@ -51,7 +48,6 @@ class AutomationAuditLogAdmin(OrganizationScopedModelAdmin):
     list_filter = (
         "trigger_event",
         "status",
-        "organization",
     )
 
     search_fields = (
@@ -61,8 +57,8 @@ class AutomationAuditLogAdmin(OrganizationScopedModelAdmin):
         "actor_name",
     )
 
-    autocomplete_fields = ("rule", "workflow", "actor", "organization")
+    autocomplete_fields = ("rule", "workflow", "actor")
 
-    list_select_related = ("rule", "workflow", "actor", "organization")
+    list_select_related = ("rule", "workflow", "actor")
 
     ordering = ("-executed_at",)

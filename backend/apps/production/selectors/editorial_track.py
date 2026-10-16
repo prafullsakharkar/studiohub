@@ -8,5 +8,5 @@ class EditorialTrackSelector(ProductionBaseSelector):
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[EditorialTrack]:
         return EditorialTrack.objects.select_related(
-            "organization", "project"
+            "project"
         ).order_by("project", "track_number")

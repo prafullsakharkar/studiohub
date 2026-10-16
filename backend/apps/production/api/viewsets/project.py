@@ -55,7 +55,6 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         if project is None or project.workflow_type != ProjectWorkflowType.EPISODIC:
             return
         Episode.objects.create(
-            organization=project.organization,
             project=project,
             code="EP101",
             name="Episode 1",

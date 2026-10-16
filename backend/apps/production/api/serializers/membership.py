@@ -32,10 +32,8 @@ class ProjectMembershipSerializer(BaseReadSerializer[Any]):
     """Frontend ProjectMembership shape (dual snake/camel keys + denormalized user)."""
 
     userId = serializers.SerializerMethodField()
-    organizationId = serializers.SerializerMethodField()
     projectId = serializers.SerializerMethodField()
     role_id = serializers.UUIDField(source="role_ref_id", read_only=True, allow_null=True)
-    organization_id = serializers.UUIDField(read_only=True)
     project_id = serializers.UUIDField(read_only=True)
     user_id = serializers.UUIDField(read_only=True)
     project_code = serializers.SerializerMethodField()
@@ -50,8 +48,6 @@ class ProjectMembershipSerializer(BaseReadSerializer[Any]):
             "id",
             "user_id",
             "userId",
-            "organization_id",
-            "organizationId",
             "project_id",
             "projectId",
             "project_code",
@@ -80,9 +76,6 @@ class ProjectMembershipSerializer(BaseReadSerializer[Any]):
 
     def get_userId(self, obj):
         return str(obj.user_id)
-
-    def get_organizationId(self, obj):
-        return str(obj.organization_id)
 
     def get_projectId(self, obj):
         return str(obj.project_id)
@@ -132,24 +125,15 @@ class ProjectMembershipCreateSerializer(BaseWriteSerializer[Any]):
         return attrs
 
     def _resolve_role_ref(self, role_ref):
-        """Resolve a role id against global + own-org roles.
+        """Resolve a role id against the global identity roles.
 
-        Global roles (organization null) and the request organization's own
-        roles resolve; unknown ids and sibling-org roles are rejected —
-        fail closed. Mirrors the person ``resolve_person_role`` contract.
+        Unknown ids are rejected — fail closed.
         """
-        from django.db import models as django_models
+        from apps.identity.models import Role
 
-        from apps.organization.models import Role
-
-        request = self.context.get("request")
-        organization = getattr(request, "organization", None)
-        scoped = django_models.Q(organization__isnull=True)
-        if organization is not None:
-            scoped |= django_models.Q(organization=organization)
-        role = Role.objects.filter(id=role_ref).filter(scoped).first()
+        role = Role.objects.filter(id=role_ref, is_deleted=False).first()
         if role is None:
             raise serializers.ValidationError(
-                {"role_id": "Unknown or out-of-scope role for this organization."}
+                {"role_id": "Unknown role."}
             )
         return role

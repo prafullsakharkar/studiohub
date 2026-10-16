@@ -1,10 +1,9 @@
 """
 Episode model.
 
-An Episode groups story content within an episodic Project. It is an
-Organization-owned, Project-scoped entity that supports soft-delete
-(archive) and restore via the canonical ``EntityModel`` soft-delete
-machinery.
+An Episode groups story content within a Project. It is a Project-scoped
+entity that supports soft-delete (archive) and restore via the canonical
+``EntityModel`` soft-delete machinery.
 """
 
 from __future__ import annotations
@@ -20,12 +19,6 @@ class Episode(EntityModel):
     Episode within a Project (episodic productions).
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="episodes",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
@@ -60,7 +53,6 @@ class Episode(EntityModel):
         ordering = ("season_number", "episode_number", "code")
         unique_together = [("project", "code")]
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["project", "code"]),
             models.Index(fields=["project", "season_number", "episode_number"]),
             models.Index(fields=["status"]),

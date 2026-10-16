@@ -35,12 +35,6 @@ class ProjectNote(EntityModel):
     Note on a project, optionally linked to a production entity.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="project_notes",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
@@ -95,7 +89,6 @@ class ProjectNote(EntityModel):
         db_table = "production_project_note"
         ordering = ("-created_at",)
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["project", "status"]),
             models.Index(fields=["entity_type", "entity_id"]),
         ]

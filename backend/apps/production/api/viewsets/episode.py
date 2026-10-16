@@ -14,7 +14,7 @@ from apps.production.selectors.episode import EpisodeSelector
 from apps.production.services.episode import EpisodeService
 
 
-class EpisodeViewSet(BulkActionsMixin, ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class EpisodeViewSet(ProductionEntityViewSet, BulkActionsMixin):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = EpisodeSelector
     service_class = EpisodeService
     pagination_class = StandardPagination

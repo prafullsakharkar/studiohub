@@ -28,9 +28,7 @@ class ShowFilterSet(BaseFilterSet):
     def filter_project(self, queryset, name, value):
         from apps.production.selectors.project import ProjectSelector
 
-        project = ProjectSelector.resolve_by_lookup(
-            getattr(self.request, "organization", None), value
-        )
+        project = ProjectSelector.resolve_by_lookup(value)
         if project is None:
             # Tolerate raw UUIDs the selector does not resolve.
             try:

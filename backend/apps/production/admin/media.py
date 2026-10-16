@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedModelAdmin
+from apps.core.admin.base import StudioHubModelAdmin
 from apps.production.models import Media
 
 
 @admin.register(Media)
-class MediaAdmin(OrganizationScopedModelAdmin):
+class MediaAdmin(StudioHubModelAdmin):
     list_display = (
         "entity_type",
         "entity_id",
@@ -20,7 +20,6 @@ class MediaAdmin(OrganizationScopedModelAdmin):
         "media_type",
         "category",
         "storage_tier",
-        "organization",
     )
 
     search_fields = (
@@ -29,8 +28,8 @@ class MediaAdmin(OrganizationScopedModelAdmin):
         "category",
     )
 
-    autocomplete_fields = ("project", "organization")
+    autocomplete_fields = ("project",)
 
-    list_select_related = ("project", "organization")
+    list_select_related = ("project",)
 
     ordering = ("-created_at",)

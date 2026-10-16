@@ -26,8 +26,13 @@ class DummySerializer(serializers.Serializer[Any]):
 
 def _resolve_organization(request):
     """
-    Resolve the automation organization: explicit request context first,
+    Resolve the scheduling organization for the scheduling-app-backed
+    endpoints (capacity/overbooking): explicit request context first,
     then the first org for staff (admin context).
+
+    Kept only because the scheduling app models are still
+    organization-scoped (de-orged separately); the automation endpoints
+    below are organization-free.
     """
     resolve_organization_context(request, force=True)
     organization = getattr(request, "organization", None)
@@ -40,17 +45,11 @@ def _resolve_organization(request):
 
 
 def _scoped_rules(request):
-    organization = _resolve_organization(request)
-    if organization is None:
-        return AutomationRule.objects.none()
-    return AutomationRule.objects.filter(organization=organization)
+    return AutomationRule.objects.all()
 
 
 def _scoped_audit_logs(request):
-    organization = _resolve_organization(request)
-    if organization is None:
-        return AutomationAuditLog.objects.none()
-    return AutomationAuditLog.objects.filter(organization=organization)
+    return AutomationAuditLog.objects.all()
 
 
 def _get_rule(request, pk):
@@ -194,16 +193,12 @@ class AutomationRulesView(GenericAPIView):  # pyright: ignore[reportMissingTypeA
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def post(self, request):
-        organization = _resolve_organization(request)
-        if organization is None:
-            return Response({"detail": "No organization found."}, status=404)
         serializer = AutomationRuleSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         validated = serializer.validated_data
         data = dict(validated) if isinstance(validated, dict) else {}
         data["workflow_id"] = (request.data or {}).get("workflow_id")
         rule = automation_service.create_rule(
-            organization=organization,
             user=request.user,
             data=data,
         )

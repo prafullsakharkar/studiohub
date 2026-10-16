@@ -40,7 +40,6 @@ class ProjectMembershipService(BusinessService):
     def add_member(
         cls,
         *,
-        organization,
         project,
         user,
         role="Artist",
@@ -59,7 +58,6 @@ class ProjectMembershipService(BusinessService):
         """
         membership = (
             ProjectMembership.all_objects.filter(
-                organization=organization,
                 project=project,
                 user=user,
             ).first()
@@ -93,7 +91,6 @@ class ProjectMembershipService(BusinessService):
             membership.save()
             return membership, False
         membership = ProjectMembership.objects.create(
-            organization=organization,
             project=project,
             user=user,
             role=role or "Artist",
@@ -113,11 +110,10 @@ class ProjectNoteService(BusinessService):
     model = ProjectNote
 
     @classmethod
-    def create_note(cls, *, user=None, organization, project, author=None, **fields):
+    def create_note(cls, *, user=None, project, author=None, **fields):
         """Create a note with server-resolved ownership (author defaults to user)."""
         payload: dict[str, Any] = {
             "user": user,
-            "organization": organization,
             "project": project,
             "author": author if author is not None else user,
             **fields,

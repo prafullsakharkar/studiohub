@@ -45,21 +45,17 @@ class TimelogViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
     ordering_fields = ("date", "created_at", "duration_hours")
 
     def perform_create(self, serializer):
-        from rest_framework.exceptions import ValidationError
-
-        task = serializer.validated_data.get("task")
-        project = serializer.validated_data.get("project") or getattr(task, "project", None)
-        org = self.resolve_organization(instance=project)
-        if org is None:
-            raise ValidationError({"organization": "An active organization is required."})
-        person = serializer.validated_data.get("person") or self.request.user
-        extra = {}
-        if task:
-            extra["task_code"] = getattr(task, "code", "")
-            extra["task_title"] = getattr(task, "title", "")
-            extra["project"] = getattr(task, "project", project)
-            extra["project_code"] = getattr(task.project, "code", "") if getattr(task, "project", None) else ""
-        serializer.save(organization=org, person=person, **extra)
+        data = serializer.validated_data
+        task = data.get("task")
+        if data.get("person") is None and self.request.user.is_authenticated:
+            data["person"] = self.request.user
+        if task is not None:
+            data["task_code"] = getattr(task, "code", "") or ""
+            data["task_title"] = getattr(task, "title", "") or ""
+            if getattr(task, "project", None) is not None:
+                data["project"] = task.project
+                data["project_code"] = getattr(task.project, "code", "") or ""
+        super().perform_create(serializer)
 
     @action(detail=True, methods=["post"], url_path="approve")
     def approve(self, request, *args, **kwargs):

@@ -13,7 +13,6 @@ class ProjectSerializer(BaseReadSerializer[Any]):
     coordinator_name = serializers.SerializerMethodField()
     project_code = serializers.CharField(source="code", read_only=True)
     client_name = serializers.CharField(read_only=True)
-    organization_id = serializers.UUIDField(read_only=True)
 
     class Meta:
         model = Project
@@ -50,11 +49,10 @@ class ProjectSerializer(BaseReadSerializer[Any]):
             "vendor_ids",
             "vendor_names",
             "vendor_team_ids",
-            "organization_id",
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "uuid", "created_at", "updated_at", "organization_id")
+        read_only_fields = ("id", "uuid", "created_at", "updated_at")
 
     def get_supervisor_name(self, obj):
         if obj.supervisor:

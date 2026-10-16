@@ -16,12 +16,6 @@ class Task(EntityModel):
     Task assigned to a resource, linked to a Shot or Asset via entity_type/id.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="tasks",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
@@ -48,7 +42,7 @@ class Task(EntityModel):
     department_id = models.CharField(max_length=50, blank=True, default="")
 
     team = models.ForeignKey(
-        "organization.Team",
+        "masterdata.Team",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -108,7 +102,6 @@ class Task(EntityModel):
         ordering = ("-created_at",)
         unique_together = [("project", "code")]
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["project", "entity_type"]),
             models.Index(fields=["project", "entity_id"]),
             models.Index(fields=["status"]),

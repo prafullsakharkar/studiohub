@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedModelAdmin
+from apps.core.admin.base import StudioHubModelAdmin
 from apps.production.models import Workflow
 
 
 @admin.register(Workflow)
-class WorkflowAdmin(OrganizationScopedModelAdmin):
+class WorkflowAdmin(StudioHubModelAdmin):
     list_display = (
         "code",
         "name",
@@ -19,7 +19,6 @@ class WorkflowAdmin(OrganizationScopedModelAdmin):
         "category",
         "is_active",
         "is_archived",
-        "organization",
     )
 
     search_fields = (
@@ -27,8 +26,8 @@ class WorkflowAdmin(OrganizationScopedModelAdmin):
         "name",
     )
 
-    autocomplete_fields = ("project", "organization")
+    autocomplete_fields = ("project",)
 
-    list_select_related = ("project", "organization")
+    list_select_related = ("project",)
 
     ordering = ("name",)

@@ -18,12 +18,12 @@ class EpisodeSelector(ProductionBaseSelector):
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Episode]:
-        return Episode.objects.select_related("organization", "project").all()
+        return Episode.objects.select_related("project").all()
 
     @classmethod
-    def resolve_by_lookup(cls, organization, lookup: Any) -> Episode | None:
+    def resolve_by_lookup(cls, lookup: Any) -> Episode | None:
         """
-        Resolve an episode within ``organization`` from a reference value.
+        Resolve an episode from a reference value.
 
         Accepts UUID pk, ``code`` (case-insensitive), or frontend
         mock-dataset id (``ep-101`` …). Returns ``None`` when unresolvable;
@@ -40,8 +40,6 @@ class EpisodeSelector(ProductionBaseSelector):
         if not text:
             return None
         base = cls.get_queryset().filter(is_deleted=False)
-        if organization is not None:
-            base = base.filter(organization=organization)
         hit: Any = None
         try:
             hit = base.filter(id=text).first()

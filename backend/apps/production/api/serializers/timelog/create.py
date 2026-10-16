@@ -14,10 +14,11 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
     The frontend posts mock-style refs (``task_id``/``task_code``,
     ``project_id``/``project_code``, ``person_id``) while the model FKs
     are UUID PKs (``task``/``project``/``person``). Both spellings are
-    accepted; refs resolve org-scoped so tenant isolation holds. Unknown
-    mock display ids that cannot resolve leave the optional FKs unset
-    (``perform_create`` defaults person to the request user and project
-    to the task's project) instead of 400ing the whole mutation.
+    accepted; refs resolve globally (project scope is enforced by the
+    viewset membership check). Unknown mock display ids that cannot
+    resolve leave the optional FKs unset (``perform_create`` defaults
+    person to the request user and project to the task's project) instead
+    of 400ing the whole mutation.
     """
 
     id = serializers.UUIDField(read_only=True)
@@ -68,20 +69,8 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
         read_only_fields = ("id", "uuid")
 
     # ------------------------------------------------------------------
-    # Ref resolution (org-scoped)
+    # Ref resolution (global; project scope is enforced by the viewset)
     # ------------------------------------------------------------------
-
-    def _scope_orgs(self):
-        request = self.context.get("request")
-        org = getattr(request, "organization", None)
-        if org is not None:
-            return [org]
-        user = getattr(request, "user", None)
-        if user is not None and getattr(user, "is_authenticated", False):
-            return list(
-                user.organization_memberships.values_list("organization_id", flat=True)
-            )
-        return []
 
     @staticmethod
     def _as_uuid(value):
@@ -93,7 +82,6 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
     def _resolve_task(self, attrs):
         if attrs.get("task"):
             return attrs["task"]
-        orgs = self._scope_orgs()
         project = attrs.get("project")
         task_code = attrs.get("task_code") or ""
         task_ref = attrs.get("task_id") or ""
@@ -102,14 +90,12 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
             pk = self._as_uuid(ref)
             if pk is not None:
                 task = Task.objects.filter(pk=pk).first()
-                if task is not None and (not orgs or task.organization_id in [o.pk if hasattr(o, "pk") else o for o in orgs]):
+                if task is not None:
                     return task
                 continue
             lookup = Task.objects.filter(code=ref)
             if project is not None:
                 lookup = lookup.filter(project=project)
-            elif orgs:
-                lookup = lookup.filter(organization_id__in=orgs)
             task = lookup.first()
             if task is not None:
                 return task
@@ -118,17 +104,13 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
     def _resolve_project(self, attrs):
         if attrs.get("project"):
             return attrs["project"]
-        orgs = self._scope_orgs()
         ref = attrs.get("project_code") or attrs.get("project_id") or ""
         if not ref:
             return None
         pk = self._as_uuid(ref)
         if pk is not None:
             return Project.objects.filter(pk=pk).first()
-        lookup = Project.objects.filter(code=ref)
-        if orgs:
-            lookup = lookup.filter(organization_id__in=orgs)
-        return lookup.first()
+        return Project.objects.filter(code=ref).first()
 
     def _resolve_person(self, attrs):
         if attrs.get("person"):
@@ -170,14 +152,6 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
                 person = user
         if person is not None:
             attrs["person"] = person
-        project = attrs["project"]
-        if project is not None:
-            attrs["organization"] = project.organization
-        else:
-            attrs["organization"] = getattr(task, "organization", None)
-        if attrs["organization"] is None:
-            request = self.context.get("request")
-            attrs["organization"] = getattr(request, "organization", None)
         # Write-only frontend aliases must not reach the model layer:
         # ``objects.create(task_id='task-001')`` fails UUID prep. The
         # resolved ``task``/``project``/``person`` above carry the values.

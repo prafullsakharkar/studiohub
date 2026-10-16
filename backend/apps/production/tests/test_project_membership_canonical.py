@@ -1,17 +1,18 @@
 """
 ProjectMembership canonical status + role link (N2/N7 consolidation).
+
+Memberships are project-scoped only: no organization FK. ``role_ref``
+points at the global identity ``Role``; the ``role`` Char snapshot is
+preserved verbatim.
 """
 
 from __future__ import annotations
 
-import importlib
-
 import pytest
-from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
-from apps.organization.models import Organization
+from apps.identity.models import Role
 from apps.production.models import ProjectMembership
 from apps.production.tests.factories import ProjectFactory
 
@@ -21,11 +22,14 @@ STATUS_MIGRATION_MODULE = "apps.production.migrations.0018_map_project_membershi
 
 
 def make_membership(status="Active", role="Artist"):
-    org = Organization.objects.create(code="PMX", name="PMX", slug="pmx")
-    user = User.objects.create_user(email="m@pmx.io", password="x")
-    project = ProjectFactory.create(organization=org)
+    import uuid as _uuid
+
+    user = User.objects.create_user(
+        email=f"m-{_uuid.uuid4().hex[:8]}@pmx.io", password="x"
+    )
+    project = ProjectFactory.create()
     return ProjectMembership.objects.create(
-        organization=org, project=project, user=user, status=status, role=role
+        project=project, user=user, status=status, role=role
     )
 
 
@@ -38,6 +42,10 @@ def test_save_normalizes_known_status_case():
 
 @pytest.mark.django_db
 def test_backfill_maps_unknown_status_to_active():
+    import importlib
+
+    from django.apps import apps
+
     backfill = importlib.import_module(
         STATUS_MIGRATION_MODULE
     ).backfill_project_membership_statuses
@@ -59,90 +67,48 @@ def test_status_choices_reject_garbage_on_save():
         m.full_clean()
 
 
-ROLE_BACKFILL_MODULE = "apps.production.migrations.0020_backfill_project_membership_role_ref"
-
-
-def _org_with_user(code):
-    org = Organization.objects.create(code=code, name=code, slug=code.lower())
-    user = User.objects.create_user(email=f"{code.lower()}@pmx.io", password="x")
-    return org, user
-
-
 @pytest.mark.django_db
-def test_role_ref_backfills_on_matching_code():
-    from apps.organization.tests.factories import RoleFactory
-
-    backfill = importlib.import_module(ROLE_BACKFILL_MODULE).backfill_project_membership_roles
-    org, user = _org_with_user("PMR1")
-    RoleFactory.create(code="artist", name="Artist", organization=org)
-    project = ProjectFactory.create(organization=org)
+def test_role_ref_links_identity_role():
+    role = Role.objects.create(code="pmx-artist", name="PMX Artist")
+    user = User.objects.create_user(email="rr@pmx.io", password="x")
+    project = ProjectFactory.create()
     membership = ProjectMembership.objects.create(
-        organization=org, project=project, user=user, role="artist"
+        project=project, user=user, role="Artist", role_ref=role
     )
-    assert membership.role_ref_id is None
-
-    backfill(apps, None)
     membership.refresh_from_db()
-
     assert membership.role_ref is not None
-    assert membership.role_ref.code == "artist"
-    assert membership.role == "artist"
+    assert membership.role_ref.code == "pmx-artist"
+    assert membership.role == "Artist"
 
 
 @pytest.mark.django_db
-def test_role_ref_mismatch_leaves_null_with_char_intact():
-    backfill = importlib.import_module(ROLE_BACKFILL_MODULE).backfill_project_membership_roles
-    org, user = _org_with_user("PMR2")
-    project = ProjectFactory.create(organization=org)
+def test_role_char_without_ref_leaves_null():
+    user = User.objects.create_user(email="rr2@pmx.io", password="x")
+    project = ProjectFactory.create()
     membership = ProjectMembership.objects.create(
-        organization=org, project=project, user=user, role="Space Captain"
+        project=project, user=user, role="Space Captain"
     )
-
-    backfill(apps, None)
     membership.refresh_from_db()
-
     assert membership.role_ref_id is None
     assert membership.role == "Space Captain"
 
 
+def _members_url(project):
+    return f"/api/organizations/projects/{project.id}/members/"
+
+
 @pytest.mark.django_db
 def test_add_member_rejects_unknown_role_id(admin_client):
-    from apps.organization.tests.factories import RoleFactory as _RF  # noqa: F401
-
-    org, _ = _org_with_user("PMR3")
-    project = ProjectFactory.create(organization=org)
-    target = User.objects.create_user(email="target@pmr3.io", password="x")
-    url = f"/api/organizations/{org.id}/projects/{project.id}/members/"
-
     import uuid
+
+    project = ProjectFactory.create()
+    target = User.objects.create_user(email="target@pmr3.io", password="x")
+    url = _members_url(project)
 
     response = admin_client.post(
         url,
         {"user_id": str(target.id), "role": "Artist", "role_id": str(uuid.uuid4())},
         format="json",
-        HTTP_X_ORGANIZATION_ID=str(org.id),
-    )
-
-    assert response.status_code == 400
-    assert "role_id" in response.data
-
-
-@pytest.mark.django_db
-def test_add_member_rejects_sibling_org_role_id(admin_client):
-    from apps.organization.tests.factories import RoleFactory
-
-    org, _ = _org_with_user("PMR4")
-    sibling = Organization.objects.create(code="SIB4", name="SIB4", slug="sib4")
-    foreign = RoleFactory.create(code="sib-only", name="Sibling Only", organization=sibling)
-    project = ProjectFactory.create(organization=org)
-    target = User.objects.create_user(email="target@pmr4.io", password="x")
-    url = f"/api/organizations/{org.id}/projects/{project.id}/members/"
-
-    response = admin_client.post(
-        url,
-        {"user_id": str(target.id), "role": "Artist", "role_id": str(foreign.id)},
-        format="json",
-        HTTP_X_ORGANIZATION_ID=str(org.id),
     )
 
     assert response.status_code == 400
@@ -151,19 +117,15 @@ def test_add_member_rejects_sibling_org_role_id(admin_client):
 
 @pytest.mark.django_db
 def test_add_member_links_valid_role_id(admin_client):
-    from apps.organization.tests.factories import RoleFactory
-
-    org, _ = _org_with_user("PMR5")
-    role = RoleFactory.create(code="pmr5-artist", name="PMR5 Artist", organization=org)
-    project = ProjectFactory.create(organization=org)
+    role = Role.objects.create(code="pmr5-artist", name="PMR5 Artist")
+    project = ProjectFactory.create()
     target = User.objects.create_user(email="target@pmr5.io", password="x")
-    url = f"/api/organizations/{org.id}/projects/{project.id}/members/"
+    url = _members_url(project)
 
     response = admin_client.post(
         url,
         {"user_id": str(target.id), "role": "Artist", "role_id": str(role.id)},
         format="json",
-        HTTP_X_ORGANIZATION_ID=str(org.id),
     )
 
     assert response.status_code == 201, response.data
@@ -172,16 +134,14 @@ def test_add_member_links_valid_role_id(admin_client):
 
 @pytest.mark.django_db
 def test_add_member_honors_requested_status(admin_client):
-    org, _ = _org_with_user("PMR6")
-    project = ProjectFactory.create(organization=org)
+    project = ProjectFactory.create()
     target = User.objects.create_user(email="target@pmr6.io", password="x")
-    url = f"/api/organizations/{org.id}/projects/{project.id}/members/"
+    url = _members_url(project)
 
     response = admin_client.post(
         url,
         {"user_id": str(target.id), "role": "Artist", "status": "Suspended"},
         format="json",
-        HTTP_X_ORGANIZATION_ID=str(org.id),
     )
 
     assert response.status_code == 201, response.data

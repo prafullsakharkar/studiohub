@@ -15,12 +15,6 @@ class Timelog(EntityModel):
     Timelog entry linked to a Task.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="timelogs",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
@@ -88,7 +82,6 @@ class Timelog(EntityModel):
         db_table = "production_timelog"
         ordering = ("-date", "-created_at")
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["task"]),
             models.Index(fields=["person"]),
             models.Index(fields=["status"]),

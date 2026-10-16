@@ -16,12 +16,6 @@ class Asset(EntityModel):
     Asset within a Project.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="assets",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
@@ -61,16 +55,16 @@ class Asset(EntityModel):
     thumbnail_url = models.URLField(max_length=500, blank=True, default="")
     turntable_video_url = models.URLField(max_length=500, blank=True, default="")
 
-    # Department/Team as FK to organization entities (optional)
+    # Department/Team as FKs to the global masterdata directory (optional)
     department = models.ForeignKey(
-        "organization.Department",
+        "masterdata.Department",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="assets",
     )
     team = models.ForeignKey(
-        "organization.Team",
+        "masterdata.Team",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -108,7 +102,6 @@ class Asset(EntityModel):
         ordering = ("code",)
         unique_together = [("project", "code")]
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["project", "category"]),
             models.Index(fields=["status"]),
             models.Index(fields=["is_archived"]),

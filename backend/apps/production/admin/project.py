@@ -1,15 +1,14 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedModelAdmin
+from apps.core.admin.base import StudioHubModelAdmin
 from apps.production.models import Project
 
 
 @admin.register(Project)
-class ProjectAdmin(OrganizationScopedModelAdmin):
+class ProjectAdmin(StudioHubModelAdmin):
     list_display = (
         "code",
         "name",
-        "organization",
         "type",
         "status",
         "start_date",
@@ -19,7 +18,6 @@ class ProjectAdmin(OrganizationScopedModelAdmin):
     list_filter = (
         "type",
         "status",
-        "organization",
     )
 
     search_fields = (
@@ -29,11 +27,10 @@ class ProjectAdmin(OrganizationScopedModelAdmin):
     )
 
     autocomplete_fields = (
-        "organization",
         "supervisor",
         "coordinator",
     )
 
-    list_select_related = ("organization",)
+    list_select_related = ()
 
     ordering = ("name",)
