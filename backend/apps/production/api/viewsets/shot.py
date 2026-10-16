@@ -56,6 +56,16 @@ class ShotViewSet(ProductionEntityViewSet, BulkActionsMixin):  # pyright: ignore
     search_fields = ("code", "name", "description", "sequence_code")
     ordering_fields = ("code", "name", "created_at", "status")
 
+    @action(detail=False, methods=["post"], url_path="bulk-archive")
+    def bulk_archive(self, request, *args, **kwargs):
+        """Bulk soft-delete with per-item ``not_found`` reporting."""
+        return self._bulk_lifecycle_results(ids=self._ids_list(), action="archive")
+
+    @action(detail=False, methods=["post"], url_path="bulk-restore")
+    def bulk_restore(self, request, *args, **kwargs):
+        """Bulk restore with per-item ``not_found`` reporting."""
+        return self._bulk_lifecycle_results(ids=self._ids_list(), action="restore")
+
     def perform_create(self, serializer):
         validated = serializer.validated_data
         data = validated if isinstance(validated, dict) else {}

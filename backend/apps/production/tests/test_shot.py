@@ -314,10 +314,11 @@ class TestShotBulkUpdateArchiveRestore:
             data={"ids": [str(shot.id)]},
             format="json",
         )
-        # Out-of-scope ids are dropped before the service runs (no leak):
-        # nothing is reported and nothing is deleted.
-        assert resp.data["results"] == []
+        # Out-of-scope ids report per-item ``not_found`` (no leak):
+        # nothing is deleted.
+        assert resp.data["results"][0]["status"] == "not_found"
         assert resp.data["successful"] == 0
+        assert resp.data["failed"] == 1
         shot.refresh_from_db()
         assert shot.is_deleted is False
 
@@ -353,10 +354,34 @@ class TestShotBulkUpdateArchiveRestore:
             data={"ids": [str(shot.id)]},
             format="json",
         )
-        assert resp.data["results"] == []
+        assert resp.data["results"][0]["status"] == "not_found"
         assert resp.data["successful"] == 0
+        assert resp.data["failed"] == 1
         shot.refresh_from_db()
         assert shot.is_deleted is True
+
+    def test_bulk_archive_reports_per_item_mixed_scope(
+        self, staff_client, staff_user
+    ):
+        in_project = ProjectFactory.create()
+        _member(staff_user, in_project)
+        out_project = ProjectFactory.create()
+        mine = ShotFactory.create(project=in_project, code="BMX01")
+        foreign = ShotFactory.create(project=out_project, code="BMX02")
+        resp = staff_client.post(
+            _action_url("bulk-archive"),
+            data={"ids": [str(mine.id), str(foreign.id)]},
+            format="json",
+        )
+        assert resp.status_code == status.HTTP_200_OK
+        by_id = {r["id"]: r["status"] for r in resp.data["results"]}
+        assert by_id == {str(mine.id): "archived", str(foreign.id): "not_found"}
+        assert resp.data["successful"] == 1
+        assert resp.data["failed"] == 1
+        mine.refresh_from_db()
+        foreign.refresh_from_db()
+        assert mine.is_deleted is True
+        assert foreign.is_deleted is False
 
     def test_bulk_operations_with_unknown_project_fail_closed(self, staff_client):
         resp = staff_client.post(

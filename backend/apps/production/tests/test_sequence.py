@@ -314,10 +314,11 @@ class TestSequenceBulkUpdateArchiveRestore:
             data={"ids": [str(seq.id)]},
             format="json",
         )
-        # Out-of-scope ids are dropped before the service runs (no leak):
-        # nothing is reported and nothing is deleted.
-        assert resp.data["results"] == []
+        # Out-of-scope ids report per-item ``not_found`` (no leak):
+        # nothing is deleted.
+        assert resp.data["results"][0]["status"] == "not_found"
         assert resp.data["successful"] == 0
+        assert resp.data["failed"] == 1
         seq.refresh_from_db()
         assert seq.is_deleted is False
 
@@ -353,8 +354,9 @@ class TestSequenceBulkUpdateArchiveRestore:
             data={"ids": [str(seq.id)]},
             format="json",
         )
-        assert resp.data["results"] == []
+        assert resp.data["results"][0]["status"] == "not_found"
         assert resp.data["successful"] == 0
+        assert resp.data["failed"] == 1
         seq.refresh_from_db()
         assert seq.is_deleted is True
 

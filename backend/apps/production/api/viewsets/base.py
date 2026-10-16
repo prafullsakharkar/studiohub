@@ -195,6 +195,26 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
     # Soft-delete archive listing / restore
     # ------------------------------------------------------------------
 
+    def _bulk_lifecycle_results(self, *, ids, action):
+        """Run bulk archive/restore with per-item reporting.
+
+        The full id list reaches the service (never pre-dropped): ids
+        outside the caller's project set report per-item ``not_found``
+        without leaking existence — consistent with ``bulk_update`` and
+        ``bulk_check_existence``.
+        """
+        if action == "restore":
+            results = self.service_class.bulk_restore(
+                ids,
+                user=self.request.user,
+            )
+            return self._bulk_archive_union(results, count_key="restoredCount")
+        results = self.service_class.bulk_archive(
+            ids,
+            user=self.request.user,
+        )
+        return self._bulk_archive_union(results, count_key="archivedCount")
+
     @action(detail=False, methods=["get"], url_path="archived")
     def archived(self, request):
         """List soft-deleted records within the caller's project scope."""

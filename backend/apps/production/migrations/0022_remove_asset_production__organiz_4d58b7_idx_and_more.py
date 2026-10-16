@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ("identity", "0011_group_groupmember_group_users_loginhistory_and_more"),
         ("masterdata", "0003_client_clientcontact_clientcontract_department_and_more"),
-        ("production", "0021_seed_remediation_for_deorg"),
+        ("production", "0020_backfill_project_membership_role_ref"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

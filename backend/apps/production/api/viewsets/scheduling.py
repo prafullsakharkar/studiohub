@@ -30,9 +30,11 @@ def _resolve_organization(request):
     endpoints (capacity/overbooking): explicit request context first,
     then the first org for staff (admin context).
 
-    Kept only because the scheduling app models are still
-    organization-scoped (de-orged separately); the automation endpoints
-    below are organization-free.
+    Residual org-context kept ONLY on these narrow proxy paths because the
+    scheduling app models are still organization-scoped. Explicit owner for
+    removal: Task 5 [B5] (remaining apps drop org, incl. scheduling), which
+    must re-point or remove these proxies when it de-orgs the scheduling
+    app. The automation endpoints below are organization-free.
     """
     resolve_organization_context(request, force=True)
     organization = getattr(request, "organization", None)

@@ -1,3 +1,4 @@
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 
 from apps.core.api.mixins.bulk import BulkActionsMixin
@@ -49,6 +50,16 @@ class EpisodeViewSet(ProductionEntityViewSet, BulkActionsMixin):  # pyright: ign
 
     search_fields = ("code", "name", "description")
     ordering_fields = ("code", "name", "season_number", "episode_number", "created_at", "status")
+
+    @action(detail=False, methods=["post"], url_path="bulk-archive")
+    def bulk_archive(self, request, *args, **kwargs):
+        """Bulk soft-delete with per-item ``not_found`` reporting."""
+        return self._bulk_lifecycle_results(ids=self._ids_list(), action="archive")
+
+    @action(detail=False, methods=["post"], url_path="bulk-restore")
+    def bulk_restore(self, request, *args, **kwargs):
+        """Bulk restore with per-item ``not_found`` reporting."""
+        return self._bulk_lifecycle_results(ids=self._ids_list(), action="restore")
 
     def perform_create(self, serializer):
         """Gate episode creation on the project's workflow type.

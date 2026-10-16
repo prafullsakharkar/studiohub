@@ -1,3 +1,5 @@
+from rest_framework.decorators import action
+
 from apps.core.api.mixins.bulk import BulkActionsMixin
 from apps.core.api.pagination import StandardPagination
 from apps.production.api.filtersets.sequence import SequenceFilterSet
@@ -46,3 +48,13 @@ class SequenceViewSet(ProductionEntityViewSet, BulkActionsMixin):  # pyright: ig
 
     search_fields = ("code", "name", "description", "department", "lead_artist_name")
     ordering_fields = ("code", "name", "created_at", "status")
+
+    @action(detail=False, methods=["post"], url_path="bulk-archive")
+    def bulk_archive(self, request, *args, **kwargs):
+        """Bulk soft-delete with per-item ``not_found`` reporting."""
+        return self._bulk_lifecycle_results(ids=self._ids_list(), action="archive")
+
+    @action(detail=False, methods=["post"], url_path="bulk-restore")
+    def bulk_restore(self, request, *args, **kwargs):
+        """Bulk restore with per-item ``not_found`` reporting."""
+        return self._bulk_lifecycle_results(ids=self._ids_list(), action="restore")
