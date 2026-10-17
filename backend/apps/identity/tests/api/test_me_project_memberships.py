@@ -10,7 +10,6 @@ import pytest
 from rest_framework.test import APIClient
 
 from apps.identity.tests.factories import UserFactory
-from apps.organization.tests.factories import OrganizationFactory
 from apps.production.models.project_membership import ProjectMembership
 from apps.production.tests.factories import ProjectFactory, ShowFactory
 
@@ -19,16 +18,15 @@ from apps.production.tests.factories import ProjectFactory, ShowFactory
 class TestMeProjectMemberships:
     def test_payload_includes_project_memberships(self):
         user = UserFactory.create()
-        org = OrganizationFactory.create()
-        project = ProjectFactory.create(organization=org)
-        show = ShowFactory.create(organization=org, project=project)
+        project = ProjectFactory.create()
+        show = ShowFactory.create(project=project)
         ProjectMembership.objects.create(
-            user=user, organization=org, project=project, show=show, status="Active"
+            user=user, project=project, show=show, status="Active"
         )
         # deleted memberships must not surface
-        other_project = ProjectFactory.create(organization=org)
+        other_project = ProjectFactory.create()
         ProjectMembership.objects.create(
-            user=user, organization=org, project=other_project, status="Active", is_deleted=True
+            user=user, project=other_project, status="Active", is_deleted=True
         )
 
         client = APIClient()

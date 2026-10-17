@@ -1,3 +1,0 @@
-"""
-Organization tests package.
-"""

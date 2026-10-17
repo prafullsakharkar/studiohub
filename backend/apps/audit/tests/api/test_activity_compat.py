@@ -26,10 +26,10 @@ def _flat_url():
 
 
 def _nested_url(org_lookup):
-    return reverse(
-        "api:organization-nested:nested-activity-list",
-        kwargs={"organization_id": org_lookup},
-    )
+    # Raw path: the organization-nested namespace was deleted with the org
+    # app (B7), so the route can only be addressed by path — and 404s by
+    # absence.
+    return f"/api/organizations/{org_lookup}/activity/"
 
 
 def _client(user):

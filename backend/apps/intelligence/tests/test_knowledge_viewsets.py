@@ -9,13 +9,14 @@ from django.urls import reverse
 
 from apps.intelligence.models import KnowledgeDocument
 from apps.intelligence.tests.factories import KnowledgeDocumentFactory
-from apps.organization.tests.factories import OrganizationFactory
 
 LIST_URL = reverse("api:v1:intelligence:intelligence-knowledge-list")
 
 
-def _org_header(org):
-    return {"HTTP_X_ORGANIZATION_ID": str(org.id)}
+def _org_header():
+    # Legacy org header: no longer consumed anywhere; kept to prove it is
+    # ignored by platform-global endpoints.
+    return {"HTTP_X_ORGANIZATION_ID": "00000000-0000-0000-0000-000000000000"}
 
 
 def _detail_url(doc):
@@ -90,10 +91,9 @@ class TestKnowledgeListCreate:
     @pytest.mark.django_db
     def test_org_header_is_ignored(self, staff_client):
         """An X-Organization header must not narrow platform-global docs."""
-        org = OrganizationFactory.create()
         KnowledgeDocumentFactory.create(title="Doc C")
 
-        response = staff_client.get(LIST_URL, **_org_header(org))
+        response = staff_client.get(LIST_URL, **_org_header())
 
         assert response.status_code == 200
         assert len(response.json()) == 1

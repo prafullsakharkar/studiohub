@@ -11,7 +11,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("intelligence", "0001_knowledge_document"),
-        ("organization", "0016_person_organization_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -71,11 +70,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="recent_searches",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "updated_by",
@@ -166,11 +161,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="saved_searches",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "updated_by",

@@ -8,16 +8,11 @@ import pytest
 from django.urls import reverse
 
 from apps.identity.tests.factories import UserFactory
-from apps.identity.tests.rbac_helpers import grant_all_known_codes
-from apps.organization.tests.factories import OrganizationFactory, OrganizationMembershipFactory
 
 
-def _org_admin_client(staff_client, staff_user, target):
-    """Share an organization between the staff actor and target (directory visibility)."""
-    org = OrganizationFactory.create()
-    grant_all_known_codes(staff_user)
-    OrganizationMembershipFactory.create(user=target, organization=org, status="active")
-    return {"HTTP_X_ORGANIZATION_ID": str(org.pk)}
+def _staff_context(staff_client, staff_user, target):
+    """Platform staff context: staff_client already carries full grants."""
+    return {}
 
 
 class TestUserViewSet:
@@ -133,9 +128,9 @@ class TestUserViewSet:
 
     @pytest.mark.django_db
     def test_update_user_staff(self, staff_client, staff_user):
-        """Org-scoped admins can update users in their organization."""
+        """Staff can update users (platform grants)."""
         user = UserFactory.create()
-        headers = _org_admin_client(staff_client, staff_user, user)
+        headers = _staff_context(staff_client, staff_user, user)
         data = {"email": "updated@example.com"}
         response = staff_client.put(
             reverse("api:v1:identity:user-detail", kwargs={"pk": user.id}),
@@ -176,9 +171,9 @@ class TestUserViewSet:
 
     @pytest.mark.django_db
     def test_partial_update_user_staff(self, staff_client, staff_user):
-        """Org-scoped admins can partially update org users."""
+        """Staff can partially update users (platform grants)."""
         user = UserFactory.create()
-        headers = _org_admin_client(staff_client, staff_user, user)
+        headers = _staff_context(staff_client, staff_user, user)
         data = {"email": "updated@example.com"}
         response = staff_client.patch(
             reverse("api:v1:identity:user-detail", kwargs={"pk": user.id}),
@@ -217,9 +212,9 @@ class TestUserViewSet:
 
     @pytest.mark.django_db
     def test_destroy_user_staff(self, staff_client, staff_user):
-        """Org-scoped admins can delete users in their organization."""
+        """Staff can delete users (platform grants)."""
         user = UserFactory.create()
-        headers = _org_admin_client(staff_client, staff_user, user)
+        headers = _staff_context(staff_client, staff_user, user)
         response = staff_client.delete(
             reverse("api:v1:identity:user-detail", kwargs={"pk": user.id}),
             **headers,

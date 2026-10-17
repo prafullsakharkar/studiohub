@@ -11,7 +11,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("organization", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -198,14 +197,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        blank=True,
-                        help_text="Organization this localization belongs to (null = default)",
-                        null=True,
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="localizations",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "updated_by",
@@ -742,14 +734,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        blank=True,
-                        help_text="Organization this theme belongs to (null = default theme)",
-                        null=True,
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="themes",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "updated_by",
@@ -901,14 +886,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        blank=True,
-                        help_text="Organization to enable this feature for (null = system-wide)",
-                        null=True,
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="feature_flags",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "updated_by",
@@ -1027,12 +1005,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        help_text="The organization",
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="settings",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "updated_by",

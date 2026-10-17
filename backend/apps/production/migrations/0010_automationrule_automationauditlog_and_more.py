@@ -10,7 +10,6 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("organization", "0016_person_organization_and_more"),
         ("production", "0009_alter_review_code"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
@@ -84,11 +83,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="automation_rules",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "updated_by",
@@ -195,11 +190,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="automation_audit_logs",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "updated_by",

@@ -6,7 +6,7 @@ got from `src/mocks/db/production/*` via `mockRouter.ts`. After this seed,
 `VITE_USE_MOCK=false` will return identical data from Django at
 `/api/v1/{projects,shots,assets,tasks,timelogs,versions,reviews,playlists,media,workflows}`.
 
-Idempotent: uses `code` as natural key per organization, `update_or_create` for all.
+Idempotent: uses `code` as natural key, `update_or_create` for all.
 Run:  uv run manage.py seed_production_mocks --force
 """
 
@@ -204,32 +204,19 @@ class Command(BaseCommand):
             if reset:
                 self._reset()
 
-            # Ensure org exists (APEX)
-            from apps.organization.models import Organization
-
-            org, _ = Organization.objects.get_or_create(
-                code="APEX",
-                defaults={
-                    "name": "Apex Digital Studios",
-                    "slug": "apex-digital-studios",
-                    "organization_type": "studio",
-                    "status": "active",
-                },
-            )
-
             # Load and seed each mock file
             counts = {}
-            counts["projects"] = self._seed_projects(frontend_root / "production" / "projects.ts", org)
-            counts["sequences"] = self._seed_sequences(frontend_root / "production" / "sequences.ts", org)
-            counts["shots"] = self._seed_shots(frontend_root / "production" / "shots.ts", org)
-            counts["assets"] = self._seed_assets(frontend_root / "assets" / "assets.ts", org)
-            counts["tasks"] = self._seed_tasks(frontend_root / "tasks" / "tasks.ts", org)
-            counts["timelogs"] = self._seed_timelogs(frontend_root / "production" / "timelogs.ts", org)
-            counts["versions"] = self._seed_versions(frontend_root / "versions" / "versions.ts", org)
-            counts["reviews"] = self._seed_reviews(frontend_root / "reviews" / "reviews.ts", org)
-            counts["playlists"] = self._seed_playlists(frontend_root / "production" / "playlists.ts", org)
-            counts["media"] = self._seed_media(frontend_root / "production" / "media.ts", org)
-            counts["workflows"] = self._seed_workflows(frontend_root / "production" / "workflow.ts", org)
+            counts["projects"] = self._seed_projects(frontend_root / "production" / "projects.ts")
+            counts["sequences"] = self._seed_sequences(frontend_root / "production" / "sequences.ts")
+            counts["shots"] = self._seed_shots(frontend_root / "production" / "shots.ts")
+            counts["assets"] = self._seed_assets(frontend_root / "assets" / "assets.ts")
+            counts["tasks"] = self._seed_tasks(frontend_root / "tasks" / "tasks.ts")
+            counts["timelogs"] = self._seed_timelogs(frontend_root / "production" / "timelogs.ts")
+            counts["versions"] = self._seed_versions(frontend_root / "versions" / "versions.ts")
+            counts["reviews"] = self._seed_reviews(frontend_root / "reviews" / "reviews.ts")
+            counts["playlists"] = self._seed_playlists(frontend_root / "production" / "playlists.ts")
+            counts["media"] = self._seed_media(frontend_root / "production" / "media.ts")
+            counts["workflows"] = self._seed_workflows(frontend_root / "production" / "workflow.ts")
 
         self.stdout.write(self.style.SUCCESS("Production mock seed complete."))
         for k, v in counts.items():
@@ -268,7 +255,7 @@ class Command(BaseCommand):
             except Exception:
                 return None
 
-    def _seed_projects(self, ts_path, org):
+    def _seed_projects(self, ts_path):
         from apps.production.models import Project
 
         data = _load_ts_mock_array(ts_path, "mockProjects")
@@ -314,31 +301,29 @@ class Command(BaseCommand):
                     "total_assets": item.get("total_assets", 0),
                 },
 code=code,
-organization=org,
 )
             count += 1
         return count
 
-    def _seed_sequences(self, ts_path, org):
+    def _seed_sequences(self, ts_path):
         from apps.production.models import Project, Sequence
 
         data = _load_ts_mock_array(ts_path, "mockSequences")
         if not data:
             return 0
-        # Build project code -> id map for org
-        proj_map = {p.code: p for p in Project.objects.filter(organization=org)}
+        # Build project code -> id map
+        proj_map = {p.code: p for p in Project.objects.all()}
         count = 0
         for item in data:
             code = item.get("code")
             proj_code = item.get("project_code")
             proj = proj_map.get(proj_code)
             if not proj:
-                proj = Project.objects.filter(organization=org).first()
+                proj = Project.objects.first()
             if not proj or not code:
                 continue
             lead = self._get_user(item.get("lead_artist_id", ""))
             _update_or_create(Sequence, defaults={
-                    "organization": org,
                     "name": item.get("name", code),
                     "description": item.get("description", ""),
                     "status": item.get("status", "Not Started"),
@@ -357,25 +342,24 @@ project=proj,
             count += 1
         return count
 
-    def _seed_shots(self, ts_path, org):
+    def _seed_shots(self, ts_path):
         from apps.production.models import Project, Shot
 
         data = _load_ts_mock_array(ts_path, "mockShots")
         if not data:
             return 0
-        # Build project code -> id map for org
-        proj_map = {p.code: p for p in Project.objects.filter(organization=org)}
+        # Build project code -> id map
+        proj_map = {p.code: p for p in Project.objects.all()}
         count = 0
         for item in data:
             code = item.get("code")
             proj_code = item.get("project_code")
             proj = proj_map.get(proj_code)
             if not proj:
-                proj = Project.objects.filter(organization=org).first()
+                proj = Project.objects.first()
             if not proj:
                 continue
             _update_or_create(Shot, defaults={
-                    "organization": org,
                     "sequence_code": item.get("sequence_code", ""),
                     "name": item.get("name", code),
                     "description": item.get("description", ""),
@@ -397,31 +381,30 @@ project=proj,
             count += 1
         return count
 
-    def _seed_assets(self, ts_path, org):
+    def _seed_assets(self, ts_path):
         from apps.production.models import Asset, Project
 
         data = _load_ts_mock_array(ts_path, "mockAssets")
         if not data:
             return 0
-        proj_map = {p.code: p for p in Project.objects.filter(organization=org)}
+        proj_map = {p.code: p for p in Project.objects.all()}
         # Need departments/teams for FK
-        from apps.organization.models import Department, Team
+        from apps.masterdata.models import Department, Team
 
         count = 0
         for item in data:
             code = item.get("code")
             proj_code = item.get("project_code")
-            proj = proj_map.get(proj_code) or Project.objects.filter(organization=org).first()
+            proj = proj_map.get(proj_code) or Project.objects.first()
             if not proj:
                 continue
             dept = None
             team = None
             if item.get("department_name"):
-                dept = Department.objects.filter(organization=org, name=item["department_name"]).first() or Department.objects.filter(organization=org).first()
+                dept = Department.objects.filter(name=item["department_name"]).first() or Department.objects.first()
             if item.get("team_name"):
-                team = Team.objects.filter(organization=org, name=item["team_name"]).first() or Team.objects.filter(organization=org).first()
+                team = Team.objects.filter(name=item["team_name"]).first() or Team.objects.first()
             _update_or_create(Asset, defaults={
-                    "organization": org,
                     "name": item.get("name", code),
                     "category": item.get("category", "Prop"),
                     "description": item.get("description", ""),
@@ -444,22 +427,21 @@ project=proj,
             count += 1
         return count
 
-    def _seed_tasks(self, ts_path, org):
+    def _seed_tasks(self, ts_path):
         from apps.production.models import Project, Task
 
         data = _load_ts_mock_array(ts_path, "mockTasks")
         if not data:
             return 0
-        proj_map = {p.code: p for p in Project.objects.filter(organization=org)}
+        proj_map = {p.code: p for p in Project.objects.all()}
         count = 0
         for item in data:
             code = item.get("code")
             proj_code = item.get("project_code")
-            proj = proj_map.get(proj_code) or Project.objects.filter(organization=org).first()
+            proj = proj_map.get(proj_code) or Project.objects.first()
             if not proj:
                 continue
             _update_or_create(Task, defaults={
-                    "organization": org,
                     "title": item.get("title", code),
                     "entity_type": item.get("entity_type", "Shot"),
                     "entity_id": item.get("entity_id", ""),
@@ -487,7 +469,7 @@ project=proj,
             count += 1
         return count
 
-    def _seed_timelogs(self, ts_path, org):
+    def _seed_timelogs(self, ts_path):
         from datetime import date as date_type
         from datetime import datetime
 
@@ -505,13 +487,13 @@ project=proj,
                 try:
                     task = Task.objects.get(pk=item["task_id"])
                 except Exception:
-                    task = Task.objects.filter(organization=org).first()
+                    task = Task.objects.first()
             if not task:
                 # Try to find by entity_code
                 if item.get("entity_code"):
-                    task = Task.objects.filter(organization=org, entity_code=item["entity_code"]).first()
+                    task = Task.objects.filter(entity_code=item["entity_code"]).first()
                 if not task:
-                    task = Task.objects.filter(organization=org).first()
+                    task = Task.objects.first()
             if not task:
                 continue
             # Parse date - handle both "date" and "date_logged"
@@ -553,7 +535,6 @@ project=proj,
                 date=date_val,
                 duration_hours=hours or 0,
                 defaults={
-                    "organization": org,
                     "project": task.project,
                     "department": dept,
                     "billable": item.get("billable", not item.get("is_overtime", False)),
@@ -569,22 +550,21 @@ project=proj,
             count += 1
         return count
 
-    def _seed_versions(self, ts_path, org):
+    def _seed_versions(self, ts_path):
         from apps.production.models import Project, Version
 
         data = _load_ts_mock_array(ts_path, "mockVersions")
         if not data:
             return 0
-        proj_map = {p.code: p for p in Project.objects.filter(organization=org)}
+        proj_map = {p.code: p for p in Project.objects.all()}
         count = 0
         for item in data:
             code = item.get("code")
             proj_code = item.get("project_code")
-            proj = proj_map.get(proj_code) or Project.objects.filter(organization=org).first()
+            proj = proj_map.get(proj_code) or Project.objects.first()
             if not proj:
                 continue
             _update_or_create(Version, defaults={
-                    "organization": org,
                     "version_number": item.get("version_number", "v001"),
                     "version_index": item.get("version_index", 1),
                     "entity_type": item.get("entity_type", "Shot"),
@@ -611,18 +591,18 @@ project=proj,
             count += 1
         return count
 
-    def _seed_reviews(self, ts_path, org):
+    def _seed_reviews(self, ts_path):
         from apps.production.models import Project, Review
 
         data = _load_ts_mock_array(ts_path, "mockReviews")
         if not data:
             return 0
-        proj_map = {p.code: p for p in Project.objects.filter(organization=org)}
+        proj_map = {p.code: p for p in Project.objects.all()}
         count = 0
         for item in data:
             code = item.get("code")
             proj_code = item.get("project_code")
-            proj = proj_map.get(proj_code) or Project.objects.filter(organization=org).first()
+            proj = proj_map.get(proj_code) or Project.objects.first()
             _update_or_create(Review, defaults={
                     "title": item.get("title", code),
                     "description": item.get("description", ""),
@@ -642,23 +622,22 @@ project=proj,
                     "activity": item.get("activity", []),
                 },
 code=code,
-organization=org,
 )
             count += 1
         return count
 
-    def _seed_playlists(self, ts_path, org):
+    def _seed_playlists(self, ts_path):
         from apps.production.models import Playlist, Project
 
         data = _load_ts_mock_array(ts_path, "mockPlaylists")
         if not data:
             return 0
-        proj_map = {p.code: p for p in Project.objects.filter(organization=org)}
+        proj_map = {p.code: p for p in Project.objects.all()}
         count = 0
         for item in data:
             code = item.get("code") or item.get("id")
             proj_code = item.get("project_code")
-            proj = proj_map.get(proj_code) or Project.objects.filter(organization=org).first()
+            proj = proj_map.get(proj_code) or Project.objects.first()
             _update_or_create(Playlist, defaults={
                     "name": item.get("name", code),
                     "description": item.get("description", ""),
@@ -668,22 +647,21 @@ organization=org,
                     "share_settings": item.get("share_settings", {}),
                 },
 code=code,
-organization=org,
 )
             count += 1
         return count
 
-    def _seed_media(self, ts_path, org):
+    def _seed_media(self, ts_path):
         from apps.production.models import Media, Project
 
         data = _load_ts_mock_array(ts_path, "mockMediaAssets")
         if not data:
             return 0
-        proj_map = {p.code: p for p in Project.objects.filter(organization=org)}
+        proj_map = {p.code: p for p in Project.objects.all()}
         count = 0
         for item in data:
             proj_code = item.get("project_code")
-            proj = proj_map.get(proj_code) or Project.objects.filter(organization=org).first()
+            proj = proj_map.get(proj_code) or Project.objects.first()
             _update_or_create(Media, defaults={
                     "code": item.get("code", ""),
                     "name": item.get("name", ""),
@@ -696,7 +674,6 @@ organization=org,
                     "thumbnail_url": item.get("thumbnail_url", ""),
                     "file_size_mb": item.get("file_size_mb", 0) or 0,
                 },
-organization=org,
 project=proj,
 entity_type=item.get("entity_type", ""),
 entity_id=item.get("entity_id", ""),
@@ -705,18 +682,17 @@ media_type=item.get("media_type", "image"),
             count += 1
         return count
 
-    def _seed_workflows(self, ts_path, org):
+    def _seed_workflows(self, ts_path):
         from apps.production.models import Project, Workflow
 
         data = _load_ts_mock_array(ts_path, "mockWorkflows")
         # Fallback to stub if parsing failed (e.g., missing mockAutomationRules)
         if not data:
             # Create minimal workflows directly
-            proj = Project.objects.filter(organization=org).first()
+            proj = Project.objects.first()
             for code, name in [("WF-SHOT-01", "Shot Workflow"), ("WF-ASSET-01", "Asset Workflow")]:
                 Workflow.objects.get_or_create(
                     code=code,
-                    organization=org,
                     defaults={
                         "name": name,
                         "description": f"Seeded {name}",
@@ -729,12 +705,12 @@ media_type=item.get("media_type", "image"),
                     },
                 )
             return 2
-        proj_map = {p.code: p for p in Project.objects.filter(organization=org)}
+        proj_map = {p.code: p for p in Project.objects.all()}
         count = 0
         for item in data:
             code = item.get("code")
             proj_code = item.get("project_code")
-            proj = proj_map.get(proj_code) or Project.objects.filter(organization=org).first()
+            proj = proj_map.get(proj_code) or Project.objects.first()
             _update_or_create(Workflow, defaults={
                     "name": item.get("name", code),
                     "description": item.get("description", ""),
@@ -746,7 +722,6 @@ media_type=item.get("media_type", "image"),
                     "automation_rules": item.get("automation_rules", []),
                 },
 code=code,
-organization=org,
 )
             count += 1
         return count

@@ -25,34 +25,24 @@ class UserSelector(
         view=None,
     ) -> UserQuerySet:
         """
-        ADR-0033 D6: the user directory is organization-scoped, with a
-        self-service carve-out: a caller may always retrieve their own user
-        record (equivalent to ``me``).
+        User directory scoping (org-removal B7): the organization dimension
+        is gone, so the directory is platform-global for staff, with the
+        self-service carve-out preserved: a caller may always retrieve
+        their own user record (equivalent to ``me``).
 
-        Superusers see everyone; other callers only see users sharing an
-        active membership in the request organization (plus themselves).
-        No organization context resolves to self-only (fail closed).
+        Superusers and staff see everyone; other callers see only
+        themselves. Permission gates (``identity.user.view`` etc.) run
+        before this queryset is consulted.
         """
-        from django.db.models import Q
-
         qs = User.objects.get_queryset()
         if request is None:
             return qs
         user = getattr(request, "user", None)
         if user is None or not user.is_authenticated:
             return qs.none()
-        if user.is_superuser:
+        if user.is_superuser or user.is_staff:
             return qs
-        organization = getattr(request, "organization", None)
-        if organization is None:
-            return qs.filter(pk=user.pk)
-        return qs.filter(
-            Q(
-                organization_memberships__organization=organization,
-                organization_memberships__is_deleted=False,
-            )
-            | Q(pk=user.pk)
-        ).distinct()
+        return qs.filter(pk=user.pk)
 
     @classmethod
     def get_by_email(

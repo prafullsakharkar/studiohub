@@ -1,35 +1,19 @@
 """Backfill ProjectMembership.role_ref by role-code match (N7).
 
-Matches ``role`` Char (case-insensitive, stripped) against ``Role.code``
-where the role is global (organization null) or belongs to the membership's
-organization — own-org custom wins over global. No match leaves NULL with
-the Char snapshot intact. Idempotent, reports counts.
+Obsolete since the organization removal plan: the backfill matched the
+legacy ``role`` Char against organization-scoped ``Role`` rows, which no
+longer exist. ``role_ref`` is re-pointed to ``identity.Role`` by migration
+0022, and identity-side seeding populates it. Kept as a documented no-op so
+fresh-DB migrations never touch the deleted organization app.
 """
 
 from django.db import migrations
 
 
-def backfill_project_membership_roles(apps, schema_editor):
-    ProjectMembership = apps.get_model("production", "ProjectMembership")
-    Role = apps.get_model("organization", "Role")
-    linked, unmatched = 0, 0
-    for membership in ProjectMembership.objects.filter(role_ref__isnull=True).exclude(
-        role=""
-    ):
-        code = (membership.role or "").strip()
-        role = (
-            Role.objects.filter(code__iexact=code, organization_id=membership.organization_id).first()
-            or Role.objects.filter(
-                code__iexact=code, organization__isnull=True
-            ).first()
-        )
-        if role is None:
-            unmatched += 1
-            continue
-        membership.role_ref = role
-        membership.save(update_fields=["role_ref"])
-        linked += 1
-    print(f"project_membership role_ref backfill: linked={linked} unmatched={unmatched}")
+def backfill_project_membership_roles(apps, schema_editor):  # noqa: ARG001
+    # Organization removal (B7): the source ``organization.Role`` rows are
+    # gone, so this data backfill has nothing to run against. No-op.
+    return None
 
 
 class Migration(migrations.Migration):

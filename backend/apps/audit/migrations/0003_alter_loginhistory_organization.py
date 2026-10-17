@@ -8,20 +8,17 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("audit", "0002_remove_apirequest_status_remove_auditlog_status_and_more"),
-        ("organization", "0004_remove_loginhistory_organizatio_user_id_f5b768_idx_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
             model_name="loginhistory",
             name="organization",
-            field=models.ForeignKey(
+            field=models.IntegerField(
+                db_column="organization_id",
                 blank=True,
                 help_text="Organization context (may be unknown, e.g. failed pre-auth logins)",
                 null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
-                related_name="audit_login_history",
-                to="organization.organization",
             ),
         ),
     ]

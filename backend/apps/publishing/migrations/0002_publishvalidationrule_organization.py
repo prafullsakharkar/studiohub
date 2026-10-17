@@ -10,26 +10,20 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
-def assign_rules_to_first_organization(apps, schema_editor):
-    """Backfill existing rules with the first organization, or drop them."""
-    Organization = apps.get_model("organization", "Organization")
-    PublishValidationRule = apps.get_model("publishing", "PublishValidationRule")
+def assign_rules_to_first_organization(apps, schema_editor):  # noqa: ARG001
+    """Backfill existing rules with the first organization, or drop them.
 
-    organization = Organization.objects.filter(is_deleted=False).first()
-    if organization is not None:
-        PublishValidationRule.objects.filter(
-            organization__isnull=True,
-        ).update(organization=organization)
-    else:
-        PublishValidationRule.objects.filter(
-            organization__isnull=True,
-        ).delete()
+    Obsolete since the organization removal plan: the organization app is
+    deleted and the ``organization`` field is removed by migration 0005.
+    Kept as a documented no-op so fresh-DB migrations never touch the
+    deleted organization app.
+    """
+    return None
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("organization", "0001_initial"),
         ("publishing", "0001_initial"),
     ]
 
@@ -37,13 +31,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="publishvalidationrule",
             name="organization",
-            field=models.ForeignKey(
+            field=models.IntegerField(
+                db_column="organization_id",
                 db_index=True,
                 help_text="Organization context",
                 null=True,
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name="publish_validation_rules",
-                to="organization.organization",
             ),
         ),
         migrations.RunPython(
@@ -53,12 +45,10 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="publishvalidationrule",
             name="organization",
-            field=models.ForeignKey(
+            field=models.IntegerField(
+                db_column="organization_id",
                 db_index=True,
                 help_text="Organization context",
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name="publish_validation_rules",
-                to="organization.organization",
             ),
         ),
     ]

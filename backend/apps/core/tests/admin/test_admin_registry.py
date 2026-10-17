@@ -17,7 +17,6 @@ STUDIOHUB_APP_LABELS = frozenset(
     {
         "core",
         "identity",
-        "organization",
         "settings",
         "audit",
         "production",
@@ -105,16 +104,12 @@ class TestAdminRegistryDiscovery:
 
     @pytest.mark.django_db
     def test_high_volume_admins_are_searchable(self):
-        from apps.organization.admin.client import ClientAdmin
-        from apps.organization.admin.vendor import VendorAdmin
         from apps.production.admin.project import ProjectAdmin
         from apps.production.admin.shot import ShotAdmin
         from apps.production.admin.task import TaskAdmin
         from apps.production.admin.version import VersionAdmin
 
         for admin_class in (
-            ClientAdmin,
-            VendorAdmin,
             ProjectAdmin,
             ShotAdmin,
             TaskAdmin,

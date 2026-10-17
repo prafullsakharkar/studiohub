@@ -20,7 +20,6 @@ from django.utils import timezone
 from rest_framework import status
 
 from apps.deliveries.models import DeliveryPackage
-from apps.organization.tests.factories import OrganizationFactory
 from apps.production.models import ProjectMembership, Review
 from apps.production.tests.factories import (
     AssetFactory,
@@ -51,9 +50,6 @@ def _nested_url(project_ref):
 @pytest.mark.django_db
 class TestProjectDashboardPrimary:
     def _seed(self, staff_user):
-        # Deliveries still belong to an organization (de-orged separately);
-        # production rows are project-scoped only.
-        org = OrganizationFactory.create()
         today = timezone.localdate()
         project = ProjectFactory.create(
             code="DASH01",
@@ -90,11 +86,11 @@ class TestProjectDashboardPrimary:
             status="Pending Review",
         )
         DeliveryPackage.objects.create(
-            organization=org, project=project, name="Turnover 1", code="DLV-DASH-01",
+            project=project, name="Turnover 1", code="DLV-DASH-01",
             status="Submitted", expires_at=timezone.now() + timedelta(days=10),
         )
         DeliveryPackage.objects.create(
-            organization=org, project=project, name="Turnover 0", code="DLV-DASH-00",
+            project=project, name="Turnover 0", code="DLV-DASH-00",
             status="Complete", expires_at=timezone.now() - timedelta(days=3),
         )
         return project, today
@@ -208,9 +204,11 @@ class TestProjectDashboardPrimary:
         assert resp.data["production"]["overall_progress_pct"] == 0
         assert resp.data["production"]["status_breakdown"]
         assert resp.data["shots"]["recent_shots"] == []
-        # ChangeLog change-tracking is organization-gated (audit is de-orged
-        # separately), so factory-created rows emit no activity entries yet.
-        assert resp.data["activity"] == []
+        # The activity feed is platform-global: the project-creation
+        # ChangeLog entry surfaces (no org gating anymore, B7).
+        activity = resp.data["activity"]
+        assert activity and activity[0]["entity_type"] == "Project"
+        assert activity[0]["action"] == "Created Project"
         assert resp.data["schedule"]["days_total"] >= 1
 
     def test_switching_projects_returns_each_projects_data(self, staff_client, staff_user):

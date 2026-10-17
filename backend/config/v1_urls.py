@@ -10,7 +10,6 @@ from django.urls import include, path
 
 from apps.audit.api.viewsets.activity import ActivityCompatViewSet
 from apps.core.api.views.version import VersionInfoView
-from apps.identity.api.views.auth_compat import AuthMembershipsView
 
 app_name = "v1"
 
@@ -22,15 +21,6 @@ urlpatterns = [
     # Frontend-compatible aliases (must precede legacy paths for routing clarity)
     path("auth/", include("apps.identity.api.urls_auth_compat")),
     path("attachments/", include("apps.core.api.urls_compat")),
-    # Legacy alias for the frontend memberships call (frontend contract path).
-    path(
-        "users/me/memberships/",
-        AuthMembershipsView.as_view(),
-        name="users-me-memberships",
-    ),
-    # Legacy flat organization aliases for frontend `organizationApi.ts`
-    # (bare-array vs paginated, id-or-code lookup)
-    path("", include("apps.organization.api.urls_legacy")),
     # Production — top-level to match frontend /api/v1/{projects,shots,assets}/
     path("", include("apps.production.api.urls")),
     # Intelligence — search, knowledge, AI workspace
@@ -40,8 +30,6 @@ urlpatterns = [
     # Identity RBAC — flat platform-global roles/groups/permissions
     # (top-level to match frontend /api/v1/{roles,groups,permissions}/)
     path("", include(("apps.identity.api.urls_rbac", "identity-rbac"))),
-    # Organization (tenants, departments, teams, offices, RBAC) — namespaced v2
-    path("organization/", include(("apps.organization.api.urls", "organization"))),
     # Settings (categories, definitions, feature flags, themes, localization)
     path("settings/", include(("apps.settings.api.urls", "settings"))),
     # Audit (audit logs, login history, change logs, API requests)

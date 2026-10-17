@@ -11,7 +11,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("deliveries", "0001_initial"),
-        ("organization", "0009_alter_organization_currency_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -133,12 +132,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        help_text="Organization context",
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="delivery_destinations",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "updated_by",

@@ -33,7 +33,6 @@ from apps.identity.api.serializers.authentication import (
     RefreshSerializer,
 )
 from apps.identity.api.serializers.frontend_user import (
-    serialize_frontend_membership,
     serialize_frontend_user,
 )
 
@@ -156,66 +155,4 @@ class AuthMeView(BaseAPIView):
     def get(self, request, *args, **kwargs):
         user = request.user
         data = serialize_frontend_user(user, request)
-        return Response(data, status=status.HTTP_200_OK)
-
-
-class AuthOrganizationsView(BaseAPIView):
-    """Frontend-compatible organization listing: GET /api/v1/auth/me/organizations/.
-
-    ADR-0033 D5: returns exactly the organizations the caller may access —
-    the active-org membership set, or every organization for superusers.
-    Clients must never enumerate the full directory and filter client-side.
-    """
-
-    authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
-
-    @extend_schema(
-        responses={200: OpenApiTypes.OBJECT},
-        description="Return the organizations the current user may access.",
-    )
-    def get(self, request, *args, **kwargs):
-        from apps.organization.api.serializers.organization.list import (
-            OrganizationListSerializer,
-        )
-        from apps.organization.models import Organization
-
-        queryset = Organization.objects.filter(is_deleted=False)
-        if not request.user.is_superuser:
-            queryset = queryset.filter(
-                memberships__user=request.user,
-                memberships__is_deleted=False,
-            ).distinct()
-        queryset = queryset.order_by("name")
-        serializer = OrganizationListSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class AuthMembershipsView(BaseAPIView):
-    """Frontend-compatible memberships: GET /api/v1/auth/memberships/.
-
-    Returns the current user's OrganizationMembership rows in the frontend
-    OrganizationMembership shape (also served at the legacy alias
-    /api/v1/users/me/memberships/).
-    """
-
-    authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
-
-    @extend_schema(
-        responses={200: OpenApiTypes.OBJECT},
-        description="Return current user's organization memberships.",
-    )
-    def get(self, request, *args, **kwargs):
-        from apps.organization.models import OrganizationMembership
-
-        memberships = (
-            OrganizationMembership.objects.filter(
-                user=request.user,
-                is_deleted=False,
-            )
-            .select_related("organization", "role", "department")
-            .order_by("-is_primary", "organization__name")
-        )
-        data = [serialize_frontend_membership(m) for m in memberships]
         return Response(data, status=status.HTTP_200_OK)

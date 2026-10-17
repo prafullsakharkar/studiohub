@@ -11,20 +11,6 @@ warnings.warn(
 )
 
 
-class OrganizationOwnedModel(models.Model):
-    """
-    Deprecated compatibility base — organization scope is removed.
-
-    The platform is no longer organization-scoped. This empty abstract
-    marker is retained only because ``apps.organization.models.base``
-    still imports it; it dies atomically with the org app (B7). Do not
-    use it in new code.
-    """
-
-    class Meta:
-        abstract = True
-
-
 class ProjectOwnedModel(models.Model):
     """
     Abstract model for project-scoped records.

@@ -78,7 +78,6 @@ def all_known_permission_codes() -> list[str]:
         "apps.audit.constants.permissions",
         "apps.deliveries.constants.permissions",
         "apps.identity.constants.permissions",
-        "apps.organization.constants.permissions",
         "apps.platform.constants.permissions",
         "apps.production.constants.permissions",
         "apps.publishing.constants.permissions",

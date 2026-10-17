@@ -31,12 +31,6 @@ from apps.masterdata.api.serializers.catalog import (
     SoftwareSerializer,
     SoftwareVersionSerializer,
 )
-from apps.masterdata.api.serializers.platform import (
-    PlatformDepartmentSerializer,
-    PlatformGroupSerializer,
-    PlatformPositionSerializer,
-    PlatformRoleSerializer,
-)
 from apps.masterdata.models import MasterDataScope
 from apps.masterdata.selectors.catalog import (
     MasterAssetTypeSelector,
@@ -45,10 +39,6 @@ from apps.masterdata.selectors.catalog import (
     MasterShotTypeSelector,
     MasterStatusSelector,
     MasterTaskTypeSelector,
-    PlatformDepartmentSelector,
-    PlatformGroupSelector,
-    PlatformPositionSelector,
-    PlatformRoleSelector,
     SoftwareSelector,
     SoftwareVersionSelector,
 )
@@ -252,58 +242,6 @@ class MasterFileTypeViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.
             request=self.request,
             view=self,
         ).filter(scope=MasterDataScope.GLOBAL)
-
-
-class PlatformRoleViewSet(MasterDataCatalogGuard, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
-    serializer_class = PlatformRoleSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["scope", "is_system"]
-    search_fields = ["name", "code"]
-    ordering_fields = ["name"]
-    ordering = ["name"]
-    pagination_class = None
-
-    def get_queryset(self):
-        return PlatformRoleSelector.get_queryset(request=self.request, view=self)
-
-
-class PlatformGroupViewSet(MasterDataCatalogGuard, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
-    serializer_class = PlatformGroupSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = []
-    search_fields = ["name", "code"]
-    ordering_fields = ["name"]
-    ordering = ["name"]
-    pagination_class = None
-
-    def get_queryset(self):
-        return PlatformGroupSelector.get_queryset(request=self.request, view=self)
-
-
-class PlatformDepartmentViewSet(MasterDataCatalogGuard, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
-    serializer_class = PlatformDepartmentSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = []
-    search_fields = ["name", "code"]
-    ordering_fields = ["name"]
-    ordering = ["name"]
-    pagination_class = None
-
-    def get_queryset(self):
-        return PlatformDepartmentSelector.get_queryset(request=self.request, view=self)
-
-
-class PlatformPositionViewSet(MasterDataCatalogGuard, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
-    serializer_class = PlatformPositionSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["status", "department"]
-    search_fields = ["title", "code"]
-    ordering_fields = ["title"]
-    ordering = ["title"]
-    pagination_class = None
-
-    def get_queryset(self):
-        return PlatformPositionSelector.get_queryset(request=self.request, view=self)
 
 
 class PlatformOverviewViewSet(BaseViewSet):

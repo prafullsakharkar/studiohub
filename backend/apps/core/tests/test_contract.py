@@ -51,8 +51,6 @@ def test_openapi_schema_contains_core_contract_endpoints():
         "/api/v1/auth/refresh": {"post"},
         "/api/v1/auth/logout": {"post"},
         "/api/v1/auth/me": {"get"},
-        "/api/v1/auth/memberships": {"get"},
-        "/api/v1/users/me/memberships": {"get"},
         # Production flat CRUD
         "/api/v1/projects": {"get", "post"},
         "/api/v1/projects/{uuid}": {"get", "put", "patch", "delete"},
@@ -150,10 +148,6 @@ def test_openapi_schema_contains_core_contract_endpoints():
         "/api/v1/platform/master-data/software": {"get", "post"},
         "/api/v1/platform/master-data/statuses": {"get", "post"},
         "/api/v1/platform/master-data/task-types": {"get", "post"},
-        "/api/v1/organizations/{organization_id}/master-data/bundle": {"get"},
-        # Nested org (representative; full set covered by API behavior tests)
-        "/api/organizations/{organization_id}/teams/{uuid}/archive": {"post"},
-        "/api/organizations/{organization_id}/clients/{uuid}/restore": {"post"},
         # Legacy compat aliases still served
         "/api/v1/attachments": {"get"},
         "/api/v1/core/attachments": {"get"},
@@ -195,18 +189,9 @@ def test_pagination_contract_via_api_client():
     assert "count" in data and "results" in data, f"Expected paginated, got {data.keys()}"
     assert "next" in data and "previous" in data
 
-    # Legacy departments should be bare array (no pagination)
-    # Use organization header if needed
-    from apps.organization.models import Organization
-
-    org = Organization.objects.first()
-    headers = {}
-    if org:
-        headers["HTTP_X_ORGANIZATION_ID"] = str(org.id)
-    resp2 = client.get("/api/v1/departments/", **headers)
-    # May be 200 with list or paginated depending on view; legacy departments is bare array
-    assert resp2.status_code in (200, 404)  # 404 if no org, but should be 200 with list
+    # Masterdata directory lists are paginated envelopes (count/results).
+    resp2 = client.get("/api/v1/departments/")
+    assert resp2.status_code in (200, 403)
     if resp2.status_code == 200:
         data2 = resp2.json()
-        # Legacy departments is bare array
-        assert isinstance(data2, list) or "results" in data2
+        assert "count" in data2 and "results" in data2

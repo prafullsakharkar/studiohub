@@ -79,18 +79,6 @@ class User(EntityModel, AbstractBaseUser, PermissionsMixin):
         return self.email
 
     @property
-    def organizations(self):
-        """
-        Organizations the user belongs to (via organization memberships).
-        """
-        from apps.organization.models import Organization
-
-        return Organization.objects.filter(
-            memberships__user=self,
-            memberships__is_deleted=False,
-        )
-
-    @property
     def display_name(self):
 
         if hasattr(self, "profile"):

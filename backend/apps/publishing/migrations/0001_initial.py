@@ -12,7 +12,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('organization', '0008_alter_organization_currency_and_more'),
         ('production', '0004_alter_media_file_format_alter_media_media_type_and_more'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
@@ -66,7 +65,7 @@ class Migration(migrations.Migration):
                 ('is_archived', models.BooleanField(default=False, help_text='Whether this publish is archived')),
                 ('created_by', models.ForeignKey(blank=True, editable=False, help_text='User who created this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_created', to=settings.AUTH_USER_MODEL)),
                 ('deleted_by', models.ForeignKey(blank=True, editable=False, help_text='User who deleted this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('organization', models.ForeignKey(help_text='Organization context', on_delete=django.db.models.deletion.CASCADE, related_name='publish_items', to='organization.organization')),
+                ('organization', models.IntegerField(blank=True, null=True, db_column="organization_id")),
                 ('project', models.ForeignKey(blank=True, help_text='Associated project', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='publish_items', to='production.project')),
                 ('updated_by', models.ForeignKey(blank=True, editable=False, help_text='User who last updated this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_updated', to=settings.AUTH_USER_MODEL)),
             ],

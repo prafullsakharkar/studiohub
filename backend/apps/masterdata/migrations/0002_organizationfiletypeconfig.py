@@ -13,7 +13,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("masterdata", "0001_initial"),
-        ("organization", "0018_alter_role_scope"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -81,9 +80,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to="organization.organization"
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "updated_by",

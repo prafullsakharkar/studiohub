@@ -302,7 +302,7 @@ class TestBulkUpdateArchiveContract:
 class TestReviewAndProjectContract:
     def _make_review(self, project):
         return Review.objects.create(
-            
+
             project=project,
             code="REV001",
             title="Review One",
@@ -367,7 +367,7 @@ class TestReviewAndProjectContract:
         _member(staff_user, project)
         user = UserFactory.create()
         seq = SequenceFactory.create(
-            
+
             project=project,
             code="LEAD01",
             lead_artist=user,
@@ -413,35 +413,26 @@ class TestReviewAndProjectContract:
         assert [m["code"] for m in resp.data] == ["MED-001"]
 
     def test_scheduling_lists_are_bare_arrays(self, staff_client, staff_user):
-        # Scheduling is de-orged separately (still organization-scoped);
-        # this test only locks the bare-array list shape, not production scope.
-        from apps.organization.tests.factories import (
-            OrganizationFactory,
-            OrganizationMembershipFactory,
-        )
+        # Scheduling is platform-global; this test locks the bare-array
+        # list shape.
         from apps.scheduling.models import CalendarEvent, Resource
 
-        org = OrganizationFactory.create()
-        OrganizationMembershipFactory.create(user=staff_user, organization=org)
         CalendarEvent.objects.create(
             title="Kickoff",
             start_time="2026-09-10T10:00:00Z",
             end_time="2026-09-10T11:00:00Z",
-            organization=org,
         )
         Resource.objects.create(
-            name="Room A", code="ROOM-A", resource_type="Room", organization=org
+            name="Room A", code="ROOM-A", resource_type="Room"
         )
         resp = staff_client.get(
             reverse("api:v1:scheduling:calendar-event-list"),
-            HTTP_X_ORGANIZATION_ID=str(org.id),
         )
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert isinstance(resp.data, list)
         assert [e["title"] for e in resp.data] == ["Kickoff"]
         resp = staff_client.get(
             reverse("api:v1:scheduling:resource-list"),
-            HTTP_X_ORGANIZATION_ID=str(org.id),
         )
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert isinstance(resp.data, list)

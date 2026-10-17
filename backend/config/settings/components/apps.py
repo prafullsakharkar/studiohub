@@ -22,7 +22,6 @@ LOCAL_APPS = [
     # Foundation
     "apps.core",
     "apps.identity",
-    "apps.organization",
     "apps.settings",
     "apps.audit",
     "apps.production",

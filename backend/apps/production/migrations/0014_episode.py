@@ -10,7 +10,6 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("organization", "0019_normalize_organization_status"),
         ("production", "0013_projectmembership_show"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
@@ -96,11 +95,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="episodes",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "project",

@@ -11,7 +11,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("organization", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -126,12 +125,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        help_text="Organization context",
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="activities",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "updated_by",
@@ -316,12 +310,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        help_text="Organization context",
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="api_requests",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "updated_by",
@@ -524,12 +513,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        help_text="Organization context",
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="audit_logs",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "updated_by",
@@ -675,12 +659,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        help_text="Organization context",
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="background_jobs",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "updated_by",
@@ -816,12 +795,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        help_text="Organization context",
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="change_logs",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "updated_by",
@@ -999,12 +973,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        help_text="Organization context",
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="error_logs",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "resolved_by",
@@ -1167,12 +1136,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        help_text="Organization context",
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="audit_login_history",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "updated_by",
@@ -1322,12 +1286,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "organization",
-                    models.ForeignKey(
-                        help_text="Organization context",
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="tracks",
-                        to="organization.organization",
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="organization_id"),
                 ),
                 (
                     "updated_by",

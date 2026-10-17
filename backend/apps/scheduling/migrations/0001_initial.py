@@ -12,7 +12,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('organization', '0008_alter_organization_currency_and_more'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('production', '0004_alter_media_file_format_alter_media_media_type_and_more'),
     ]
@@ -40,7 +39,7 @@ class Migration(migrations.Migration):
                 ('metadata', models.JSONField(blank=True, default=dict, help_text='Additional event metadata')),
                 ('created_by', models.ForeignKey(blank=True, editable=False, help_text='User who created this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_created', to=settings.AUTH_USER_MODEL)),
                 ('deleted_by', models.ForeignKey(blank=True, editable=False, help_text='User who deleted this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('organization', models.ForeignKey(help_text='Organization context', on_delete=django.db.models.deletion.CASCADE, related_name='calendar_events', to='organization.organization')),
+                ('organization', models.IntegerField(blank=True, null=True, db_column="organization_id")),
                 ('project', models.ForeignKey(blank=True, help_text='Associated project', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='calendar_events', to='production.project')),
                 ('updated_by', models.ForeignKey(blank=True, editable=False, help_text='User who last updated this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_updated', to=settings.AUTH_USER_MODEL)),
             ],
@@ -70,9 +69,9 @@ class Migration(migrations.Migration):
                 ('metadata', models.JSONField(blank=True, default=dict, help_text='Additional resource metadata')),
                 ('created_by', models.ForeignKey(blank=True, editable=False, help_text='User who created this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_created', to=settings.AUTH_USER_MODEL)),
                 ('deleted_by', models.ForeignKey(blank=True, editable=False, help_text='User who deleted this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('department', models.ForeignKey(blank=True, help_text='Department', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='resources', to='organization.department')),
-                ('organization', models.ForeignKey(help_text='Organization context', on_delete=django.db.models.deletion.CASCADE, related_name='resources', to='organization.organization')),
-                ('team', models.ForeignKey(blank=True, help_text='Team', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='resources', to='organization.team')),
+                ('department', models.IntegerField(blank=True, null=True, db_column="department_id")),
+                ('organization', models.IntegerField(blank=True, null=True, db_column="organization_id")),
+                ('team', models.IntegerField(blank=True, null=True, db_column="team_id")),
                 ('updated_by', models.ForeignKey(blank=True, editable=False, help_text='User who last updated this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_updated', to=settings.AUTH_USER_MODEL)),
                 ('user', models.ForeignKey(blank=True, help_text='Associated user (for person resources)', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='resources', to=settings.AUTH_USER_MODEL)),
             ],
@@ -156,7 +155,7 @@ class Migration(migrations.Migration):
                 ('description', models.TextField(blank=True, help_text='Holiday description')),
                 ('created_by', models.ForeignKey(blank=True, editable=False, help_text='User who created this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_created', to=settings.AUTH_USER_MODEL)),
                 ('deleted_by', models.ForeignKey(blank=True, editable=False, help_text='User who deleted this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('organization', models.ForeignKey(help_text='Organization context', on_delete=django.db.models.deletion.CASCADE, related_name='holidays', to='organization.organization')),
+                ('organization', models.IntegerField(blank=True, null=True, db_column="organization_id")),
                 ('updated_by', models.ForeignKey(blank=True, editable=False, help_text='User who last updated this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_updated', to=settings.AUTH_USER_MODEL)),
             ],
             options={

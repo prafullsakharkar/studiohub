@@ -8,10 +8,6 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.organization.middleware.organization_context import (
-    resolve_organization_context,
-)
-from apps.organization.models import Organization
 from apps.production.api.serializers.automation import (
     AutomationAuditLogSerializer,
     AutomationRuleSerializer,
@@ -22,28 +18,6 @@ from apps.production.services import automation as automation_service
 
 class DummySerializer(serializers.Serializer[Any]):
     pass
-
-
-def _resolve_organization(request):
-    """
-    Resolve the scheduling organization for the scheduling-app-backed
-    endpoints (capacity/overbooking): explicit request context first,
-    then the first org for staff (admin context).
-
-    Residual org-context kept ONLY on these narrow proxy paths because the
-    scheduling app models are still organization-scoped. Explicit owner for
-    removal: Task 5 [B5] (remaining apps drop org, incl. scheduling), which
-    must re-point or remove these proxies when it de-orgs the scheduling
-    app. The automation endpoints below are organization-free.
-    """
-    resolve_organization_context(request, force=True)
-    organization = getattr(request, "organization", None)
-    if organization is not None:
-        return organization
-    user = getattr(request, "user", None)
-    if user is not None and (user.is_superuser):
-        return Organization.objects.first()
-    return None
 
 
 def _scoped_rules(request):
@@ -115,10 +89,7 @@ class SchedulingCapacityView(GenericAPIView):  # pyright: ignore[reportMissingTy
     def get(self, request):
         from apps.scheduling.selectors.capacity import get_capacity_summary
 
-        organization = _resolve_organization(request)
-        if organization is None:
-            return Response([])
-        return Response(get_capacity_summary(organization))
+        return Response(get_capacity_summary())
 
 
 class SchedulingOverbookingView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
@@ -129,10 +100,7 @@ class SchedulingOverbookingView(GenericAPIView):  # pyright: ignore[reportMissin
     def get(self, request):
         from apps.scheduling.selectors.capacity import get_overbooking_alerts
 
-        organization = _resolve_organization(request)
-        if organization is None:
-            return Response([])
-        return Response(get_overbooking_alerts(organization))
+        return Response(get_overbooking_alerts())
 
 
 class SchedulingResolveOverbookingView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
@@ -143,15 +111,12 @@ class SchedulingResolveOverbookingView(GenericAPIView):  # pyright: ignore[repor
     def post(self, request):
         from apps.scheduling.services.capacity import resolve_overbooking
 
-        organization = _resolve_organization(request)
-        if organization is None:
-            return Response({"detail": "No organization found."}, status=404)
         data = request.data or {}
         if not data.get("alert_id"):
             return Response({"alert_id": ["This field is required."]}, status=400)
         try:
             result = resolve_overbooking(
-                organization=organization,
+                organization=None,
                 alert_id=data.get("alert_id"),
                 resource_id=data.get("resource_id"),
             )

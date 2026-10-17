@@ -1,3 +1,0 @@
-"""
-Organization validators tests.
-"""

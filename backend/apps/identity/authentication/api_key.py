@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from django.db.models import Q
+from django.utils import timezone
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
+
+from apps.identity.api_keys.hashing import APIKeyHasher
 
 
 class APIKeyAuthentication(
@@ -37,25 +41,8 @@ class APIKeyAuthentication(
         if keyword != self.keyword:
             return None
 
-        # Imported lazily to avoid a circular import between
-        # apps.identity.services and apps.identity.authentication.
-        from apps.organization.services.api_key import APIKeyService
-        from apps.organization.selectors.organization import OrganizationSelector
-
-        # Bind the secret to the request organization: a key minted in
-        # org A must not authenticate org B traffic, even when its creator
-        # belongs to both. No header → no binding (downstream context
-        # resolution denies org-less requests as before).
-        request_org = None
-        org_ref = request.headers.get("X-Organization-Id") or request.headers.get(
-            "X-Organization"
-        )
-        if org_ref:
-            request_org = OrganizationSelector.resolve_by_lookup(org_ref)
-
-        api_key = APIKeyService.verify(
+        api_key = self._verify(
             token,
-            organization=request_org,
         )
 
         if api_key is None:
@@ -63,7 +50,7 @@ class APIKeyAuthentication(
                 "Invalid API Key.",
             )
 
-        APIKeyService.touch(
+        self._touch(
             api_key,
             ip_address=self._get_ip(request),
         )
@@ -74,6 +61,39 @@ class APIKeyAuthentication(
             api_key.created_by,
             api_key,
         )
+
+    def _verify(
+        self,
+        plain: str,
+    ):
+        """Resolve an active, unexpired platform ApiKey from a presented secret."""
+        from apps.identity.models import ApiKey
+
+        if not plain:
+            return None
+        return (
+            ApiKey.objects.filter(
+                hashed_key=APIKeyHasher.hash(plain),
+                is_active=True,
+            )
+            .filter(
+                Q(expires_at__isnull=True) | Q(expires_at__gt=timezone.now()),
+            )
+            .first()
+        )
+
+    def _touch(
+        self,
+        api_key,
+        *,
+        ip_address=None,
+    ):
+        api_key.last_used_at = timezone.now()
+        update_fields = ["last_used_at"]
+        if ip_address:
+            api_key.last_used_ip = ip_address
+            update_fields.append("last_used_ip")
+        api_key.save(update_fields=update_fields)
 
     def _get_ip(
         self,

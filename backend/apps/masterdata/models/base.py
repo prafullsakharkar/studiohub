@@ -1,8 +1,9 @@
 """
 Base models for the Master Data bounded context.
 
-Platform-global catalogs (software, statuses, types) with optional
-organization-scoped custom rows and per-organization overrides.
+Platform-global catalogs (software, statuses, types). The organization
+dimension was removed (org-removal plan): no organization FK, no
+per-organization override models.
 """
 
 from __future__ import annotations
@@ -19,7 +20,7 @@ class MasterDataScope(models.TextChoices):
 
 
 class CatalogModel(EntityModel):
-    """Abstract platform catalog entry with optional org-scoped custom rows."""
+    """Abstract platform catalog entry (no organization FK)."""
 
     code = models.CharField(
         _("Code"),
@@ -50,14 +51,6 @@ class CatalogModel(EntityModel):
         default=MasterDataScope.GLOBAL,
         db_index=True,
     )
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)ss",
-        null=True,
-        blank=True,
-        db_index=True,
-    )
     metadata = models.JSONField(
         _("Metadata"),
         default=dict,
@@ -73,20 +66,3 @@ class CatalogModel(EntityModel):
 
     def __str__(self):
         return self.name
-
-
-class OrgConfigModel(EntityModel):
-    """Abstract per-organization override of a platform catalog row."""
-
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        db_index=True,
-    )
-    enabled = models.BooleanField(
-        _("Enabled"),
-        default=True,
-    )
-
-    class Meta:
-        abstract = True

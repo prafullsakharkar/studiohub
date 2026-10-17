@@ -1,9 +1,7 @@
 """
 Shared Django admin base classes.
 
-Domain-neutral only: Core must never import business domains, so
-organization-aware behavior lives in
-``apps.organization.admin.base`` instead.
+Domain-neutral only: Core must never import business domains.
 """
 
 from __future__ import annotations

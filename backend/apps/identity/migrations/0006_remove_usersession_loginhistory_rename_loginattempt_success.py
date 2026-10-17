@@ -1,8 +1,9 @@
 # Generated manually as part of the identity refactor.
 #
-# - UserSession / LoginHistory were duplicate, organization-owned models
-#   (apps.organization owns the enterprise versions with managers, querysets
-#   and selectors), so they are dropped here.
+# - UserSession / LoginHistory were duplicate models (the organization app
+#   used to own the enterprise versions with managers, querysets and
+#   selectors; it was deleted by the organization removal plan), so they are
+#   dropped here.
 # - LoginAttempt.successful is renamed to LoginAttempt.success and the table
 #   renamed to ``identity_login_attempts`` to match the API contract.
 # - SecurityEvent gains an ``occurred_at`` timestamp.

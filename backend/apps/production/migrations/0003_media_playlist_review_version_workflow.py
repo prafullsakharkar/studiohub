@@ -10,7 +10,6 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('organization', '0004_remove_loginhistory_organizatio_user_id_f5b768_idx_and_more'),
         ('production', '0002_task_timelog_task_production__organiz_fd11fe_idx_and_more'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
@@ -37,7 +36,7 @@ class Migration(migrations.Migration):
                 ('resolution', models.CharField(blank=True, default='', max_length=50)),
                 ('created_by', models.ForeignKey(blank=True, editable=False, help_text='User who created this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_created', to=settings.AUTH_USER_MODEL)),
                 ('deleted_by', models.ForeignKey(blank=True, editable=False, help_text='User who deleted this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='media_items', to='organization.organization')),
+                ('organization', models.IntegerField(blank=True, null=True, db_column="organization_id")),
                 ('project', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='media', to='production.project')),
                 ('updated_by', models.ForeignKey(blank=True, editable=False, help_text='User who last updated this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_updated', to=settings.AUTH_USER_MODEL)),
             ],
@@ -67,7 +66,7 @@ class Migration(migrations.Migration):
                 ('is_archived', models.BooleanField(db_index=True, default=False)),
                 ('created_by', models.ForeignKey(blank=True, editable=False, help_text='User who created this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_created', to=settings.AUTH_USER_MODEL)),
                 ('deleted_by', models.ForeignKey(blank=True, editable=False, help_text='User who deleted this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='playlists', to='organization.organization')),
+                ('organization', models.IntegerField(blank=True, null=True, db_column="organization_id")),
                 ('project', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='playlists', to='production.project')),
                 ('updated_by', models.ForeignKey(blank=True, editable=False, help_text='User who last updated this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_updated', to=settings.AUTH_USER_MODEL)),
             ],
@@ -108,7 +107,7 @@ class Migration(migrations.Migration):
                 ('created_by', models.ForeignKey(blank=True, editable=False, help_text='User who created this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_created', to=settings.AUTH_USER_MODEL)),
                 ('deleted_by', models.ForeignKey(blank=True, editable=False, help_text='User who deleted this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
                 ('lead_reviewer', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='led_reviews', to=settings.AUTH_USER_MODEL)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reviews', to='organization.organization')),
+                ('organization', models.IntegerField(blank=True, null=True, db_column="organization_id")),
                 ('project', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='reviews', to='production.project')),
                 ('updated_by', models.ForeignKey(blank=True, editable=False, help_text='User who last updated this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_updated', to=settings.AUTH_USER_MODEL)),
             ],
@@ -164,7 +163,7 @@ class Migration(migrations.Migration):
                 ('asset', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='asset_versions', to='production.asset')),
                 ('created_by', models.ForeignKey(blank=True, editable=False, help_text='User who created this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_created', to=settings.AUTH_USER_MODEL)),
                 ('deleted_by', models.ForeignKey(blank=True, editable=False, help_text='User who deleted this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='versions', to='organization.organization')),
+                ('organization', models.IntegerField(blank=True, null=True, db_column="organization_id")),
                 ('project', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='versions', to='production.project')),
                 ('shot', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='versions', to='production.shot')),
                 ('task', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='task_versions', to='production.task')),
@@ -199,7 +198,7 @@ class Migration(migrations.Migration):
                 ('is_archived', models.BooleanField(default=False)),
                 ('created_by', models.ForeignKey(blank=True, editable=False, help_text='User who created this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_created', to=settings.AUTH_USER_MODEL)),
                 ('deleted_by', models.ForeignKey(blank=True, editable=False, help_text='User who deleted this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_deleted', to=settings.AUTH_USER_MODEL)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='workflows', to='organization.organization')),
+                ('organization', models.IntegerField(blank=True, null=True, db_column="organization_id")),
                 ('project', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='workflows', to='production.project')),
                 ('updated_by', models.ForeignKey(blank=True, editable=False, help_text='User who last updated this object.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(app_label)s_%(class)s_updated', to=settings.AUTH_USER_MODEL)),
             ],

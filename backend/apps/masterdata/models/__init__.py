@@ -1,4 +1,4 @@
-from apps.masterdata.models.base import CatalogModel, MasterDataScope, OrgConfigModel
+from apps.masterdata.models.base import CatalogModel, MasterDataScope
 from apps.masterdata.models.catalog import (
     MasterAssetType,
     MasterFileType,
@@ -12,24 +12,9 @@ from apps.masterdata.models.catalog import (
 from apps.masterdata.models.client import Client
 from apps.masterdata.models.client_contact import ClientContact
 from apps.masterdata.models.client_contract import ClientContract
-from apps.masterdata.models.config import (
-    OrganizationAssetTypeConfig,
-    OrganizationFileTypeConfig,
-    OrganizationReviewTypeConfig,
-    OrganizationShotTypeConfig,
-    OrganizationSoftwareConfig,
-    OrganizationStatusConfig,
-    OrganizationTaskTypeConfig,
-)
 from apps.masterdata.models.department import Department, DepartmentType
 from apps.masterdata.models.office import Office
 from apps.masterdata.models.person import Person
-from apps.masterdata.models.platform import (
-    PlatformDepartment,
-    PlatformGroup,
-    PlatformPosition,
-    PlatformRole,
-)
 from apps.masterdata.models.position import Position
 from apps.masterdata.models.team import Team
 from apps.masterdata.models.vendor import Vendor
@@ -51,19 +36,7 @@ __all__ = [
     "MasterStatus",
     "MasterTaskType",
     "Office",
-    "OrgConfigModel",
-    "OrganizationAssetTypeConfig",
-    "OrganizationFileTypeConfig",
-    "OrganizationReviewTypeConfig",
-    "OrganizationShotTypeConfig",
-    "OrganizationSoftwareConfig",
-    "OrganizationStatusConfig",
-    "OrganizationTaskTypeConfig",
     "Person",
-    "PlatformDepartment",
-    "PlatformGroup",
-    "PlatformPosition",
-    "PlatformRole",
     "Position",
     "Software",
     "SoftwareVersion",

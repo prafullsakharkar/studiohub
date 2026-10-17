@@ -1,5 +1,6 @@
 from django.utils import timezone
 
+from apps.identity.api_keys.hashing import APIKeyHasher
 from apps.identity.authentication.base import (
     IdentityAuthentication,
 )
@@ -18,11 +19,7 @@ class PersonalAccessTokenAuthentication(
         token,
         request,
     ):
-        from apps.organization.services.personal_access_token import (
-            PersonalAccessTokenService,
-        )
-
-        pat = PersonalAccessTokenService.verify(token)
+        pat = self._verify(token)
 
         if pat is None:
             return None
@@ -31,6 +28,28 @@ class PersonalAccessTokenAuthentication(
             return None
 
         return pat
+
+    def _verify(
+        self,
+        plain: str,
+    ):
+        """Resolve an active platform PAT from a presented secret (peppered hash)."""
+        from apps.identity.models import PersonalAccessToken
+
+        if not plain or "." not in plain:
+            return None
+        prefix = plain.split(".", 1)[0]
+        candidate = (
+            PersonalAccessToken.objects.filter(
+                prefix=prefix,
+                is_active=True,
+            ).first()
+        )
+        if candidate is None:
+            return None
+        if not APIKeyHasher.verify(plain=plain, hashed=candidate.hashed_token):
+            return None
+        return candidate
 
     def get_user(
         self,

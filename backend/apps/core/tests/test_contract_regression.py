@@ -108,8 +108,8 @@ class TestContractResponseShapes:
     def test_team_list_shape(self, staff_user):
         """Masterdata directory: paginated platform-global teams.
 
-        Dispatches the masterdata viewset directly: until the org legacy
-        compat router is removed (Task 7) it shadows ``/api/v1/teams/``.
+        Dispatches the masterdata viewset directly (the org app that used
+        to shadow ``/api/v1/teams/`` is gone).
         """
         from rest_framework.test import APIRequestFactory, force_authenticate
 
@@ -161,24 +161,6 @@ class TestContractResponseShapes:
         assert isinstance(match[0]["name"], str)
 
     @pytest.mark.django_db
-    def test_memberships_shape(self, staff_user, staff_client):
-        # Legacy org-membership endpoint; dies with the org app (Task 7).
-        from apps.organization.tests.factories import (
-            OrganizationFactory,
-            OrganizationMembershipFactory,
-        )
-
-        org = OrganizationFactory.create()
-        OrganizationMembershipFactory.create(user=staff_user, organization=org)
-        rows = staff_client.get("/api/v1/users/me/memberships/").json()
-        assert isinstance(rows, list) and len(rows) == 1
-        row = rows[0]
-        assert row["organization_id"] == str(org.id)
-        assert isinstance(row["role"], str)
-        assert isinstance(row["permissions"], list)
-        assert row["status"] == "Active"
-
-    @pytest.mark.django_db
     def test_knowledge_list_and_detail_shape(self, staff_client):
         from apps.intelligence.tests.factories import KnowledgeDocumentFactory
 
@@ -209,25 +191,11 @@ class TestContractEnvelopes:
 
     @pytest.mark.django_db
     def test_bare_array_envelopes(self, staff_client):
-        from apps.organization.tests.factories import TeamFactory
-
-        team = TeamFactory.create()
-        client = _legacy_scoped(staff_client, team.organization)
-
-        teams = client.get(f"/api/organizations/{team.organization.id}/teams/").json()
-        assert isinstance(teams, list)
-
-        media = client.get("/api/v1/media/").json()
+        media = staff_client.get("/api/v1/media/").json()
         assert isinstance(media, list)
 
-        attachments = client.get("/api/v1/attachments/").json()
+        attachments = staff_client.get("/api/v1/attachments/").json()
         assert isinstance(attachments, list)
-
-
-def _legacy_scoped(client, org):
-    """Legacy org header helper (kept for the pre-existing org-API test)."""
-    client.credentials(HTTP_X_ORGANIZATION_ID=str(org.id))
-    return client
 
 
 class TestContractErrors:
@@ -260,26 +228,17 @@ class TestContractErrors:
 
     @pytest.mark.django_db
     def test_cross_org_nested_denied_without_leak(self, db):
+        """The org API trees are gone: nested org routes 404 by absence."""
         from rest_framework.test import APIClient
 
         from apps.identity.tests.factories import UserFactory
-        from apps.organization.tests.factories import (
-            OrganizationFactory,
-            TeamFactory,
-        )
 
-        team = TeamFactory.create()
         outsider = UserFactory.create()
-        OrganizationFactory.create()  # unrelated org exists
         client = APIClient()
         client.force_authenticate(user=outsider)
 
-        resp = _legacy_scoped(client, team.organization).get(
-            f"/api/organizations/{team.organization.id}/teams/"
-        )
-        assert resp.status_code in (401, 403, 404)
-        if resp.status_code == 200:  # pragma: no cover - must never happen
-            assert resp.json() == []
+        resp = client.get("/api/organizations/00000000-0000-0000-0000-000000000000/teams/")
+        assert resp.status_code == 404
 
 
 class TestContractPermissionMatrix:
