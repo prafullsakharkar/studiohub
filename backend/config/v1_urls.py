@@ -34,9 +34,10 @@ urlpatterns = [
     path("settings/", include(("apps.settings.api.urls", "settings"))),
     # Audit (audit logs, login history, change logs, API requests)
     path("audit/", include(("apps.audit.api.urls", "audit"))),
-    # Frontend-contract fallback for `organizationApi.getActivity()` when no
-    # active organization is selected: paginated activity feed, same viewset
-    # as the nested `/api/organizations/<org>/activity/` route.
+    # Platform-global activity feed (frontend `organizationApi.getActivity()`
+    # fallback). The organization app is gone (B7), so this is the only
+    # activity route; the old nested `/api/organizations/<org>/activity/`
+    # tree 404s by absence.
     path(
         "activity/",
         ActivityCompatViewSet.as_view({"get": "list"}),

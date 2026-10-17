@@ -165,7 +165,16 @@ def test_openapi_schema_contains_core_contract_endpoints():
     )
     assert not method_gaps, f"Contract endpoints lost HTTP methods: {method_gaps}"
 
-    assert len(paths) > 500, f"Expected >500 paths, got {len(paths)}"
+    # Post-org-removal (B7) baseline: the old absolute threshold (>500) was
+    # tied to the deleted organization route volume (~438 paths remain).
+    # The meaningful invariant now is that the schema never shrinks below
+    # the required contract surface; the required map above is the actual
+    # regression guard, so keep the two in step instead of hard-coding a
+    # count that would rot as routes change.
+    assert len(paths) >= len(required), (
+        f"Expected at least {len(required)} schema paths (the required "
+        f"contract surface), got {len(paths)}"
+    )
 
 
 @pytest.mark.django_db

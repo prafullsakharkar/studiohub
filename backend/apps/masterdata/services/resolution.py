@@ -35,6 +35,10 @@ def get_platform_overview() -> dict[str, object]:
         "global_shot_type_count": MasterShotTypeSelector.get_queryset().filter(scope=scope_global).count(),
         "global_review_type_count": MasterReviewTypeSelector.get_queryset().filter(scope=scope_global).count(),
         "global_file_type_count": MasterFileTypeSelector.get_queryset().filter(scope=scope_global).count(),
+        # Legacy-org key (frontend PlatformOverviewTab renders it): the
+        # organization dimension was removed (B7) and `create_custom` is
+        # gone, so this is permanently 0 on any fresh database. Kept for
+        # the frontend contract.
         "total_custom_records_across_orgs": (
             SoftwareSelector.get_queryset().filter(scope=scope_org).count()
             + MasterStatusSelector.get_queryset().filter(scope=scope_org).count()
