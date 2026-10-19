@@ -45,6 +45,365 @@ POSITION_BY_ROLE = {
     "artist": "POS-ARTIST",
 }
 
+# ---------------------------------------------------------------------------
+# Canonical directory seed data (org-free, self-contained).
+#
+# The legacy sources were the frontend mock files src/mocks/db/organization/
+# organization.ts and clientVendorDetails.ts, deleted by the organization-
+# removal refactor; seeding is now inline instead of parsing deleted mocks.
+# "Apex Digital Studios" (APEX) is the platform's own demo studio and is
+# referenced by the client/vendor e2e suite.
+# ---------------------------------------------------------------------------
+
+CANONICAL_CLIENTS = [
+    {
+        "name": "Apex Digital Studios",
+        "code": "APEX",
+        "contact_name": "Alex Chen",
+        "email": "contact@apex.vfx",
+        "phone": "+1 (514) 555-0100",
+        "studio_type": "Major Studio",
+        "contract_tier": "Enterprise VFX",
+        "headquarters": "Montreal, QC, Canada",
+        "total_billed_usd": 12500000,
+        "status": "Active",
+    },
+    {
+        "name": "Warner Nexus Studios",
+        "code": "WNS",
+        "contact_name": "David Z. Kogen",
+        "email": "kogen.d@warnernexus.com",
+        "phone": "+1 (818) 555-0199",
+        "studio_type": "Major Studio",
+        "active_projects": ["NK99 (Neon Knight 2099)", "DS01 (Deep Space Horizon)"],
+        "contract_tier": "Tier 1 Strategic",
+        "headquarters": "Burbank, CA, USA",
+        "total_billed_usd": 8450000,
+        "status": "Active",
+    },
+    {
+        "name": "Sony Pictures Imageworks Partner",
+        "code": "SPI",
+        "contact_name": "Patricia Vance",
+        "email": "pvance@spe.sony.com",
+        "phone": "+1 (310) 555-0144",
+        "studio_type": "Major Studio",
+        "active_projects": ["MK42 (Mecha Prime Origins)"],
+        "contract_tier": "Tier 1 Strategic",
+        "headquarters": "Culver City, CA, USA",
+        "total_billed_usd": 4200000,
+        "status": "Active",
+    },
+    {
+        "name": "Netflix Originals VFX Hub",
+        "code": "NFLX",
+        "contact_name": "Gregory Scott",
+        "email": "gscott@netflix.com",
+        "phone": "+1 (408) 555-0178",
+        "studio_type": "Streaming Platform",
+        "contract_tier": "Tier 1 Strategic",
+        "headquarters": "Los Gatos, CA, USA",
+        "total_billed_usd": 6100000,
+        "status": "Active",
+    },
+    {
+        "name": "Legendary Pictures VFX Group",
+        "code": "LEG",
+        "contact_name": "Samantha Hill",
+        "email": "shill@legendary.com",
+        "phone": "+1 (818) 555-0812",
+        "studio_type": "Major Studio",
+        "contract_tier": "Standard Producer",
+        "headquarters": "Burbank, CA, USA",
+        "total_billed_usd": 2800000,
+        "status": "Active",
+    },
+    {
+        "name": "Universal Pictures Global VFX",
+        "code": "UNI",
+        "contact_name": "David Zhao",
+        "email": "dzhao@universalpictures.com",
+        "phone": "+1 (818) 777-1000",
+        "studio_type": "Major Studio",
+        "contract_tier": "Tier 1 Strategic",
+        "headquarters": "Universal City, CA, USA",
+        "total_billed_usd": 5400000,
+        "status": "Active",
+    },
+]
+
+CANONICAL_VENDORS = [
+    {
+        "name": "Scanline Roto & Prep Lab",
+        "code": "SRP",
+        "contact_name": "Rohit Sharma",
+        "email": "deliveries@scanlineroto.in",
+        "specialization": "Roto & Paint",
+        "rating": 4.8,
+        "location": "Mumbai, India",
+        "status": "Approved Partner",
+    },
+    {
+        "name": "Virtuos Creature FX House",
+        "code": "VFXH",
+        "contact_name": "Claire Beauchamp",
+        "email": "cbeauchamp@virtuos-creatures.fr",
+        "specialization": "Creature FX & Sim",
+        "rating": 4.6,
+        "location": "Lyon, France",
+        "status": "Approved Partner",
+    },
+    {
+        "name": "TrackPrecision Matchmove Co.",
+        "code": "TPMC",
+        "contact_name": "Hiroshi Tanaka",
+        "email": "h.tanaka@trackprecision.jp",
+        "specialization": "Matchmove & Tracking",
+        "rating": 4.5,
+        "location": "Tokyo, Japan",
+        "status": "Approved Partner",
+    },
+    {
+        "name": "Outpost Pyro & FX Specialists",
+        "code": "OPFX",
+        "contact_name": "Liam Gallagher",
+        "email": "liam@outpostpyro.co.uk",
+        "specialization": "Crowd Sim",
+        "rating": 4.7,
+        "location": "London, UK",
+        "status": "Approved Partner",
+    },
+]
+
+CANONICAL_PEOPLE = [
+    {"name": "Virat Kohli", "email": "virat.kohli@studiohub.vfx"},
+    {"name": "Alex Chen", "email": "supervisor@apex.vfx"},
+    {"name": "Marcus Vance", "email": "producer@apex.vfx"},
+    {"name": "Elena Rostova", "email": "lead.artist@apex.vfx"},
+    {"name": "Sarah Jenkins", "email": "artist@apex.vfx"},
+]
+
+CANONICAL_CLIENT_CONTACTS = [
+    {
+        "code": "APEX",
+        "name": "Alex Chen",
+        "role": "Head of Production",
+        "email": "supervisor@apex.vfx",
+        "phone": "+1 (514) 555-0101",
+        "timezone": "America/Toronto (EST/EDT)",
+        "is_primary": True,
+    },
+    {
+        "code": "APEX",
+        "name": "Elena Rostova",
+        "role": "Client Relations Lead",
+        "email": "lead.artist@apex.vfx",
+        "timezone": "America/Toronto (EST/EDT)",
+        "is_primary": False,
+    },
+    {
+        "code": "WNS",
+        "name": "David Z. Kogen",
+        "role": "Executive Vice President of Physical Production",
+        "email": "kogen.d@warnernexus.com",
+        "phone": "+1 (818) 555-0199",
+        "timezone": "America/Los_Angeles (PST)",
+        "is_primary": True,
+    },
+    {
+        "code": "WNS",
+        "name": "Rachel Steinberg",
+        "role": "Senior VFX Producer (Client Side)",
+        "email": "r.steinberg@warnernexus.com",
+        "phone": "+1 (818) 555-0245",
+        "timezone": "America/Los_Angeles (PST)",
+        "is_primary": False,
+    },
+    {
+        "code": "WNS",
+        "name": "Harrison Vance",
+        "role": "Post Production Supervisor & Color Lead",
+        "email": "hvance@warnernexus.com",
+        "phone": "+1 (818) 555-0312",
+        "timezone": "America/Los_Angeles (PST)",
+        "is_primary": False,
+    },
+    {
+        "code": "SPI",
+        "name": "Patricia Vance",
+        "role": "VP Visual Effects & Technology",
+        "email": "pvance@spe.sony.com",
+        "phone": "+1 (310) 555-0144",
+        "timezone": "America/Los_Angeles (PST)",
+        "is_primary": True,
+    },
+    {
+        "code": "NFLX",
+        "name": "Gregory Scott",
+        "role": "Director of Global VFX Production",
+        "email": "gscott@netflix.com",
+        "phone": "+1 (408) 555-0178",
+        "timezone": "America/Los_Angeles (PST)",
+        "is_primary": True,
+    },
+    {
+        "code": "LEG",
+        "name": "Samantha Hill",
+        "role": "Executive VFX Producer",
+        "email": "shill@legendary.com",
+        "phone": "+1 (818) 555-0812",
+        "timezone": "America/Los_Angeles (PST)",
+        "is_primary": True,
+    },
+]
+
+CANONICAL_VENDOR_CONTACTS = [
+    {
+        "code": "SRP",
+        "name": "Rohit Sharma",
+        "role": "Managing Director & Head of Outsourcing",
+        "email": "deliveries@scanlineroto.in",
+        "phone": "+91 (22) 5550-9182",
+        "timezone": "Asia/Kolkata (IST)",
+        "is_primary": True,
+    },
+    {
+        "code": "SRP",
+        "name": "Pooja Deshmukh",
+        "role": "Lead Prep & Paint Coordinator",
+        "email": "pdeshmukh@scanlineroto.in",
+        "phone": "+91 (22) 5550-9188",
+        "timezone": "Asia/Kolkata (IST)",
+        "is_primary": False,
+    },
+    {
+        "code": "VFXH",
+        "name": "Claire Beauchamp",
+        "role": "VFX Supervisor & Technical Director",
+        "email": "cbeauchamp@virtuos-creatures.fr",
+        "phone": "+33 (4) 72 00 11 22",
+        "timezone": "Europe/Paris (CEST)",
+        "is_primary": True,
+    },
+    {
+        "code": "TPMC",
+        "name": "Hiroshi Tanaka",
+        "role": "Senior Tracking & Photogrammetry Lead",
+        "email": "h.tanaka@trackprecision.jp",
+        "phone": "+81 (3) 5555-0192",
+        "timezone": "Asia/Tokyo (JST)",
+        "is_primary": True,
+    },
+]
+
+CANONICAL_CLIENT_CONTRACTS = [
+    {
+        "code": "APEX",
+        "contract_number": "MSA-APEX-2025-01",
+        "title": "Apex Digital Studios Platform Enterprise Agreement",
+        "type": "MSA",
+        "effective_date": "2025-01-01",
+        "expiry_date": "2027-12-31",
+        "value_usd": 18000000,
+        "status": "Active",
+        "nda_signed": True,
+    },
+    {
+        "code": "WNS",
+        "contract_number": "MSA-WNS-2025-09",
+        "title": "Master Services Agreement & Facility Security Rider",
+        "type": "MSA",
+        "effective_date": "2025-01-01",
+        "expiry_date": "2027-12-31",
+        "value_usd": 15000000,
+        "status": "Active",
+        "nda_signed": True,
+    },
+    {
+        "code": "WNS",
+        "contract_number": "SOW-NK99-PHASE2",
+        "title": "Neon Knight 2099 - Main Feature Principal VFX Turnover SOW",
+        "type": "SOW",
+        "effective_date": "2025-11-15",
+        "expiry_date": "2026-10-30",
+        "value_usd": 4800000,
+        "status": "Active",
+        "nda_signed": True,
+    },
+    {
+        "code": "WNS",
+        "contract_number": "NDA-WNS-CONFIDENTIAL",
+        "title": "Strict Proprietary IP & Red Carpet Security NDA",
+        "type": "NDA",
+        "effective_date": "2024-02-01",
+        "expiry_date": "2029-02-01",
+        "value_usd": 0,
+        "status": "Active",
+        "nda_signed": True,
+    },
+    {
+        "code": "SPI",
+        "contract_number": "MSA-SPI-2024-04",
+        "title": "Sony Pictures Imageworks Global Vendor Co-Production Framework",
+        "type": "MSA",
+        "effective_date": "2024-04-12",
+        "expiry_date": "2027-04-12",
+        "value_usd": 8500000,
+        "status": "Active",
+        "nda_signed": True,
+    },
+    {
+        "code": "NFLX",
+        "contract_number": "NFLX-VFX-VANGUARD-2026",
+        "title": "Episodic Production Blanket Agreement & 4K HDR QC Addendum",
+        "type": "MSA",
+        "effective_date": "2024-05-20",
+        "expiry_date": "2027-05-20",
+        "value_usd": 12000000,
+        "status": "Active",
+        "nda_signed": True,
+    },
+]
+
+CANONICAL_VENDOR_CONTRACTS = [
+    {
+        "code": "SRP",
+        "contract_number": "OUT-SRP-2025-01",
+        "title": "Outsourcing Master Vendor Agreement & Frame Rate Card",
+        "type": "MSA",
+        "effective_date": "2025-01-01",
+        "expiry_date": "2027-12-31",
+        "value_usd": 1200000,
+        "nda_signed": True,
+        "security_tier": "MPAA Certified Tier 4",
+        "status": "Active",
+    },
+    {
+        "code": "SRP",
+        "contract_number": "SOW-SRP-NK99-04",
+        "title": "NK99 Dedicated Roto/Prep Turnover Package 4 (80 Shots)",
+        "type": "SOW",
+        "effective_date": "2026-02-01",
+        "expiry_date": "2026-09-30",
+        "value_usd": 340000,
+        "nda_signed": True,
+        "security_tier": "MPAA Certified Tier 4",
+        "status": "Active",
+    },
+    {
+        "code": "VFXH",
+        "contract_number": "OUT-VFXH-2025-11",
+        "title": "Creature Dynamics Simulation Partnership Agreement",
+        "type": "MSA",
+        "effective_date": "2025-06-01",
+        "expiry_date": "2027-06-01",
+        "value_usd": 850000,
+        "nda_signed": True,
+        "security_tier": "MPAA Certified Tier 4",
+        "status": "Active",
+    },
+]
+
 
 class Command(BaseCommand):
     help = "Seed development data (idempotent, dev-only)"
@@ -318,6 +677,14 @@ class Command(BaseCommand):
     # ------------------------------------------------------------------
 
     def _seed_projects(self, users):
+        """
+        Production-project overlay seed (org-free).
+
+        The directory seed data below (clients / vendors / people / contacts /
+        contracts) is self-contained canonical data, but the production-project
+        overlay still reads the frontend mock dataset; degrade gracefully when
+        no mock root is configured instead of aborting the whole seed.
+        """
         from apps.core.management.commands.seed_studiohub import (
             Command as SeedStudiohubCommand,
         )
@@ -325,7 +692,16 @@ class Command(BaseCommand):
         from apps.production.models import Project
 
         cmd = SeedStudiohubCommand()
-        mock_root = cmd._resolve_mock_root()
+        try:
+            mock_root = cmd._resolve_mock_root()
+        except CommandError:
+            self.stdout.write(
+                self.style.WARNING(
+                    "  Production overlay skipped: no frontend mock dataset found"
+                    " (STUDIOHUB_REACT_MOCKS). Directory seed data is unaffected."
+                )
+            )
+            return []
         reporter = SeedReporter()
         cmd._seed_overlay_production(mock_root, reporter)
         cmd._seed_overlay_access_projects(mock_root, reporter)
@@ -353,21 +729,12 @@ class Command(BaseCommand):
     # ------------------------------------------------------------------
 
     def _seed_clients(self):
-        # Seed from frontend mockClients
+        """Seed canonical client studios (org-free, self-contained)."""
 
         from apps.masterdata.models import Client
-        from apps.production.management.commands.seed_production_mocks import (
-            _load_ts_mock_array,
-            _resolve_mock_root,
-        )
 
-        frontend_root = _resolve_mock_root()
-        data = _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockClients")
-        count = 0
-        for item in data:
-            code = item.get("code")
-            if not code:
-                continue
+        for item in CANONICAL_CLIENTS:
+            code = item["code"]
             Client.objects.update_or_create(
                 code=code,
                 defaults={
@@ -385,37 +752,15 @@ class Command(BaseCommand):
                     "total_billed_usd": item.get("total_billed_usd", 0) or 0,
                 },
             )
-            count += 1
-        # Fallback if no data (e.g., parsing failed)
-        if count == 0:
-            for code, name in [("WNS", "Warner Nexus Studios"), ("AMC", "Amazon Prime Original Productions")]:
-                Client.objects.get_or_create(
-                    code=code,
-                    defaults={
-                        "name": name,
-                        "contact_name": "Seed Contact",
-                        "email": f"contact@{code.lower()}.com",
-                        "status": "Active",
-                    },
-                )
-                count += 1
         return list(Client.objects.all())
 
     def _seed_vendors(self):
+        """Seed canonical vendor studios (org-free, self-contained)."""
 
         from apps.masterdata.models import Vendor
-        from apps.production.management.commands.seed_production_mocks import (
-            _load_ts_mock_array,
-            _resolve_mock_root,
-        )
 
-        frontend_root = _resolve_mock_root()
-        data = _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockVendors")
-        count = 0
-        for item in data:
-            code = item.get("code")
-            if not code:
-                continue
+        for item in CANONICAL_VENDORS:
+            code = item["code"]
             Vendor.objects.update_or_create(
                 code=code,
                 defaults={
@@ -433,29 +778,15 @@ class Command(BaseCommand):
                     "bandwidth_gbps": item.get("bandwidth_gbps", 10) or 10,
                 },
             )
-            count += 1
-        if count == 0:
-            for code, name in [("VEN-01", "Silhouette FX Labs"), ("VEN-02", "Nordic Creatures")]:
-                Vendor.objects.get_or_create(
-                    code=code,
-                    defaults={"name": name, "contact_name": "Seed Vendor", "status": "Approved Partner"},
-                )
-                count += 1
         return list(Vendor.objects.all())
 
     def _seed_people(self):
+        """Seed canonical directory people (org-free, self-contained)."""
 
         from apps.masterdata.models import Person
-        from apps.production.management.commands.seed_production_mocks import (
-            _load_ts_mock_array,
-            _resolve_mock_root,
-        )
 
-        frontend_root = _resolve_mock_root()
-        data = _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockPeople")
-        count = 0
-        for item in data:
-            full_name = item.get("full_name")
+        for item in CANONICAL_PEOPLE:
+            full_name = item.get("full_name") or item.get("name")
             if not full_name:
                 continue
             Person.objects.update_or_create(
@@ -465,40 +796,16 @@ class Command(BaseCommand):
                     "phone": item.get("phone", ""),
                 },
             )
-            count += 1
         return list(Person.objects.all())
 
     def _seed_contacts(self):
-        """Seed client/vendor contacts from frontend mock data."""
+        """Seed canonical client/vendor contacts (org-free, self-contained)."""
 
         from apps.masterdata.models import Client, ClientContact, Vendor, VendorContact
-        from apps.production.management.commands.seed_production_mocks import (
-            _load_ts_mock_array,
-            _resolve_mock_root,
-        )
-
-        frontend_root = _resolve_mock_root()
-
-        # Mock contacts reference mock parent ids; map them to seeded codes.
-        client_id_to_code = {
-            item.get("id"): item.get("code")
-            for item in _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockClients")
-            if item.get("id") and item.get("code")
-        }
-        vendor_id_to_code = {
-            item.get("id"): item.get("code")
-            for item in _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockVendors")
-            if item.get("id") and item.get("code")
-        }
 
         client_count = 0
-        for item in _load_ts_mock_array(
-            frontend_root / "organization" / "clientVendorDetails.ts", "mockClientContacts"
-        ):
-            code = client_id_to_code.get(item.get("client_id"))
-            if not code:
-                continue
-            client = Client.objects.filter(code=code).first()
+        for item in CANONICAL_CLIENT_CONTACTS:
+            client = Client.objects.filter(code=item["code"]).first()
             if client is None:
                 continue
             ClientContact.objects.update_or_create(
@@ -516,13 +823,8 @@ class Command(BaseCommand):
             client_count += 1
 
         vendor_count = 0
-        for item in _load_ts_mock_array(
-            frontend_root / "organization" / "clientVendorDetails.ts", "mockVendorContacts"
-        ):
-            code = vendor_id_to_code.get(item.get("vendor_id"))
-            if not code:
-                continue
-            vendor = Vendor.objects.filter(code=code).first()
+        for item in CANONICAL_VENDOR_CONTACTS:
+            vendor = Vendor.objects.filter(code=item["code"]).first()
             if vendor is None:
                 continue
             VendorContact.objects.update_or_create(
@@ -541,36 +843,13 @@ class Command(BaseCommand):
         return client_count + vendor_count
 
     def _seed_contracts(self):
-        """Seed client/vendor contracts from frontend mock data."""
+        """Seed canonical client/vendor contracts (org-free, self-contained)."""
 
         from apps.masterdata.models import Client, ClientContract, Vendor, VendorContract
-        from apps.production.management.commands.seed_production_mocks import (
-            _load_ts_mock_array,
-            _resolve_mock_root,
-        )
-
-        frontend_root = _resolve_mock_root()
-
-        # Mock contracts reference mock parent ids; map them to seeded codes.
-        client_id_to_code = {
-            item.get("id"): item.get("code")
-            for item in _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockClients")
-            if item.get("id") and item.get("code")
-        }
-        vendor_id_to_code = {
-            item.get("id"): item.get("code")
-            for item in _load_ts_mock_array(frontend_root / "organization" / "organization.ts", "mockVendors")
-            if item.get("id") and item.get("code")
-        }
 
         client_count = 0
-        for item in _load_ts_mock_array(
-            frontend_root / "organization" / "clientVendorDetails.ts", "mockClientContracts"
-        ):
-            code = client_id_to_code.get(item.get("client_id"))
-            if not code:
-                continue
-            client = Client.objects.filter(code=code).first()
+        for item in CANONICAL_CLIENT_CONTRACTS:
+            client = Client.objects.filter(code=item["code"]).first()
             if client is None:
                 continue
             ClientContract.objects.update_or_create(
@@ -590,13 +869,8 @@ class Command(BaseCommand):
             client_count += 1
 
         vendor_count = 0
-        for item in _load_ts_mock_array(
-            frontend_root / "organization" / "clientVendorDetails.ts", "mockVendorContracts"
-        ):
-            code = vendor_id_to_code.get(item.get("vendor_id"))
-            if not code:
-                continue
-            vendor = Vendor.objects.filter(code=code).first()
+        for item in CANONICAL_VENDOR_CONTRACTS:
+            vendor = Vendor.objects.filter(code=item["code"]).first()
             if vendor is None:
                 continue
             VendorContract.objects.update_or_create(
@@ -607,7 +881,7 @@ class Command(BaseCommand):
                     "type": item.get("type", "MSA"),
                     "effective_date": item.get("effective_date"),
                     "expiry_date": item.get("expiry_date"),
-                    "total_value_usd": item.get("total_value_usd", 0),
+                    "total_value_usd": item.get("value_usd", 0),
                     "nda_signed": item.get("nda_signed", False),
                     "security_tier": item.get("security_tier", ""),
                     "status": item.get("status", "Active"),
