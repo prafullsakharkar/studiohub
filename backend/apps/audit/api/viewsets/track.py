@@ -4,6 +4,7 @@ Track ViewSet.
 from rest_framework import mixins
 
 from apps.audit.api.viewsets.base import AuditEntityViewSet
+from apps.audit.constants.permissions import AuditPermissions
 from apps.audit.filters.track import TrackFilter
 from apps.audit.selectors.track import TrackSelector
 from apps.audit.serializers.track import TrackIngestSerializer, TrackSerializer
@@ -23,11 +24,11 @@ class TrackViewSet(
     
     serializer_class = TrackSerializer
 
-    # Reads and telemetry ingest stay open to authenticated users
-    # (org-scoped selectors).
+    # Reads require the audit.view permission (seeded to production-tier
+    # roles); telemetry ingest stays open to any authenticated client.
     permission_map = {
-        "list": (),
-        "retrieve": (),
+        "list": (AuditPermissions.VIEW,),
+        "retrieve": (AuditPermissions.VIEW,),
         "create": (),
     }
     service_class = TrackService

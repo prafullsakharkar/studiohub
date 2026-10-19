@@ -17,8 +17,9 @@ class AuditEntityViewSet(PlatformScopedViewSet):  # pyright: ignore[reportMissin
         • AuditLog
         • AuditTrail
 
-    Reads are open to authenticated users; mutations require explicit
-    codes in each viewset's ``permission_map``.
+    Reads are gated by the ``audit.view`` permission code in each
+    viewset's ``permission_map`` (platform-global rows, seeded to
+    production-tier roles); mutations require explicit codes.
     """
 
     permission_classes = (

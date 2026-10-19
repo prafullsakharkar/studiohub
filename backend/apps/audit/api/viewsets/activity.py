@@ -10,6 +10,7 @@ from django.http import Http404
 from rest_framework import mixins
 
 from apps.audit.api.viewsets.base import AuditEntityViewSet
+from apps.audit.constants.permissions import AuditPermissions
 from apps.audit.filters.activity import ActivityFilter
 from apps.audit.selectors.activity import ActivitySelector
 from apps.audit.serializers.activity import ActivityFrontendSerializer, ActivitySerializer
@@ -28,10 +29,11 @@ class ActivityViewSet(
     
     serializer_class = ActivitySerializer
 
-    # Reads stay open to authenticated users (org-scoped selectors).
+    # Reads require the audit.view permission (seeded to production-tier
+    # roles); audit rows are platform-global, not open to every user.
     permission_map = {
-        "list": (),
-        "retrieve": (),
+        "list": (AuditPermissions.VIEW,),
+        "retrieve": (AuditPermissions.VIEW,),
     }
     service_class = ActivityService
     selector_class = ActivitySelector

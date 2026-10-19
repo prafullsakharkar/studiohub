@@ -49,11 +49,20 @@ class TestAuditPlatformGlobalAlias:
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert resp.data["count"] == 2
 
-    def test_legacy_org_header_is_ignored(self, authenticated_client):
+    def test_legacy_org_header_is_ignored(self):
+        from rest_framework.test import APIClient
+
+        from apps.identity.tests.rbac_helpers import grant_permissions
+
+        user = UserFactory()
+        grant_permissions(user, "audit.view")
+        client = APIClient()
+        client.force_authenticate(user=user)
+
         AuditLogFactory.create(action="UPDATE", target_type="Shot")
         AuditLogFactory.create(action="APPROVE", target_type="Review")
 
-        resp = authenticated_client.get(
+        resp = client.get(
             "/api/v1/audit/",
             HTTP_X_ORGANIZATION_ID="00000000-0000-0000-0000-000000000000",
         )

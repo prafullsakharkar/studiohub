@@ -42,10 +42,10 @@ class AuditBaseSelector(BaseSelector):
         """
         Platform-global audit visibility (org-free).
 
-        Audit rows carry no tenant partition: every authenticated caller
-        sees the platform-wide log; anonymous callers see nothing.
-        Row-level permission codes on each viewset's ``permission_map``
-        remain the gate for restricted actions.
+        Audit rows carry no tenant partition: every caller who passes the
+        viewset's permission gate sees the platform-wide log; anonymous
+        callers see nothing. ``permission_map`` codes on each viewset gate
+        reads (``audit.view``) and restricted actions.
         """
         if request is None:
             return queryset

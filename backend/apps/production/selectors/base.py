@@ -39,6 +39,7 @@ class ProductionBaseSelector(BaseSelector):
                 UserRole.objects.filter(
                     user=user,
                     role__priority=RolePriority.ADMIN,
+                    role__is_active=True,
                     role__is_deleted=False,
                     is_deleted=False,
                 ).exists()

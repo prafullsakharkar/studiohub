@@ -4,6 +4,7 @@ Audit Log ViewSet.
 from rest_framework import mixins
 
 from apps.audit.api.viewsets.base import AuditEntityViewSet
+from apps.audit.constants.permissions import AuditPermissions
 from apps.audit.filters.audit_log import AuditLogFilter
 from apps.audit.selectors.audit_log import AuditLogSelector
 from apps.audit.serializers.audit_log import (
@@ -28,10 +29,11 @@ class AuditLogViewSet(
     
     serializer_class = AuditLogSerializer
 
-    # Reads stay open to authenticated users (org-scoped selectors).
+    # Reads require the audit.view permission (seeded to production-tier
+    # roles); audit rows are platform-global, not open to every user.
     permission_map = {
-        "list": (),
-        "retrieve": (),
+        "list": (AuditPermissions.VIEW,),
+        "retrieve": (AuditPermissions.VIEW,),
     }
     service_class = AuditLogService
     selector_class = AuditLogSelector

@@ -93,9 +93,23 @@ class TestAuditLogViewSetPermissions:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     @pytest.mark.django_db
-    def test_authenticated_user_can_list(self, authenticated_client) -> None:
-        """Authenticated users can list audit logs."""
+    def test_authenticated_user_without_audit_view_cannot_list(
+        self, authenticated_client
+    ) -> None:
+        """audit.view is required: a plain authenticated user is denied."""
         response = authenticated_client.get(self._list_url())
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    @pytest.mark.django_db
+    def test_user_with_audit_view_can_list(self, api_client) -> None:
+        """Holders of the audit.view permission can list audit logs."""
+        from apps.identity.tests.factories import UserFactory
+        from apps.identity.tests.rbac_helpers import grant_permissions
+
+        user = UserFactory()
+        grant_permissions(user, "audit.view")
+        api_client.force_authenticate(user=user)
+        response = api_client.get(self._list_url())
         assert response.status_code == status.HTTP_200_OK
 
 

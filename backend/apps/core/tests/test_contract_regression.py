@@ -316,6 +316,17 @@ class TestContractPermissionMatrix:
         for role in ("vfx-supervisor", "lead-artist", "artist"):
             assert "identity.user.view" in matrix[role], f"{role} lost directory view"
 
+        # org-admin is a legacy org-era role: it must NOT carry ADMIN priority
+        # or it would match the platform-admin visibility check in the
+        # production selectors (_has_global_admin_role).
+        from apps.core.management.commands.init_platform import ROLE_SPECS
+        from apps.identity.choices.rbac import RolePriority
+
+        org_admin = next(s for s in ROLE_SPECS if s["code"] == "org-admin")
+        assert org_admin["priority"] > RolePriority.ADMIN, (
+            "org-admin must stay below ADMIN priority (no platform-wide visibility)"
+        )
+
 
 class TestContractFiltering:
     """search / ordering params keep working on flagship lists."""

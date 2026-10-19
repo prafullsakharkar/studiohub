@@ -19,6 +19,7 @@ from rest_framework.test import APIClient
 
 from apps.audit.tests.factories import ActivityFactory
 from apps.identity.tests.factories import UserFactory
+from apps.identity.tests.rbac_helpers import grant_permissions
 
 
 def _flat_url():
@@ -56,6 +57,7 @@ class TestActivityCompatFeed:
         ActivityFactory.create(description="row-a")
         ActivityFactory.create(description="row-b")
         user = UserFactory.create()
+        grant_permissions(user, "audit.view")
         client = _client(user)
 
         response = client.get(_flat_url())

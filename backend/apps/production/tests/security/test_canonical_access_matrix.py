@@ -154,6 +154,25 @@ class TestPlatformAdminPersona:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["results"] == []
 
+    def test_deactivated_admin_role_confers_no_platform_visibility(
+        self, project_a, project_b
+    ):
+        """A deactivated ADMIN-priority role grants no platform-wide scope."""
+        user = UserFactory.create()
+        admin_role = grant_permissions(user, "project.view")
+        admin_role.priority = RolePriority.ADMIN
+        admin_role.is_active = False
+        admin_role.save(update_fields=["priority", "is_active"])
+        # Second, active role keeps the user's project.view grant live so the
+        # permission gate passes and the assertion isolates the platform-wide
+        # scope check (_has_global_admin_role must not match the deactivated role).
+        grant_permissions(user, "project.view")
+        PermissionCacheService.invalidate(user=user)
+        client = _client_for(user)
+        response = client.get(reverse("api:v1:production:project-list"))
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["results"] == []
+
 
 @pytest.mark.django_db
 class TestProductionAdminPersona:

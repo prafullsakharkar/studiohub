@@ -4,6 +4,7 @@ Login History ViewSet.
 from rest_framework import mixins
 
 from apps.audit.api.viewsets.base import AuditEntityViewSet
+from apps.audit.constants.permissions import AuditPermissions
 from apps.audit.filters.login_history import LoginHistoryFilter
 from apps.audit.selectors.login_history import LoginHistorySelector
 from apps.audit.serializers.login_history import LoginHistorySerializer
@@ -25,10 +26,11 @@ class LoginHistoryViewSet(
     
     serializer_class = LoginHistorySerializer
 
-    # Reads stay open to authenticated users (org-scoped selectors).
+    # Reads require the audit.view permission (seeded to production-tier
+    # roles); audit rows are platform-global, not open to every user.
     permission_map = {
-        "list": (),
-        "retrieve": (),
+        "list": (AuditPermissions.VIEW,),
+        "retrieve": (AuditPermissions.VIEW,),
     }
     service_class = LoginHistoryService
     pagination_class = StandardPagination

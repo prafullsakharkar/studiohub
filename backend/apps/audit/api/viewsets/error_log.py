@@ -25,11 +25,11 @@ class ErrorLogViewSet(
     
     serializer_class = ErrorLogSerializer
 
-    # Reads stay open to authenticated users (org-scoped selectors);
-    # resolving an error is a privileged mutation.
+    # Reads require the audit.view permission (seeded to production-tier
+    # roles); resolving an error is a privileged mutation.
     permission_map = {
-        "list": (),
-        "retrieve": (),
+        "list": (AuditPermissions.VIEW,),
+        "retrieve": (AuditPermissions.VIEW,),
         "resolve": (AuditPermissions.UPDATE,),
     }
     service_class = ErrorLogService

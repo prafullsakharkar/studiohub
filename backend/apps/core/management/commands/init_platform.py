@@ -162,7 +162,11 @@ ROLE_SPECS: list[dict[str, Any]] = [
     {
         "code": "org-admin",
         "name": "Organization Admin",
-        "priority": 10,
+        # Legacy org-era role kept for seed compatibility (seed_studiohub maps
+        # "Organization Admin"/"Organization Owner" onto it). Deliberately
+        # below ADMIN so it no longer matches the platform-admin visibility
+        # check (_has_global_admin_role); it confers no platform-wide scope.
+        "priority": 20,  # identity RolePriority.MANAGER
         "scope": "organization",
         "permissions": (
             DIRECTORY_CRUD_PERMISSIONS

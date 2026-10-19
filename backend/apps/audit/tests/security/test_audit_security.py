@@ -2,8 +2,9 @@
 """
 Security tests for Audit application.
 
-Audit records are append-only: the API is read-only (list/retrieve) and
-requires authentication. These tests verify the security contract.
+Audit records are append-only: the API is read-only (list/retrieve),
+requires authentication, and gates reads on the ``audit.view`` permission.
+These tests verify the security contract.
 """
 
 from __future__ import annotations
@@ -72,11 +73,23 @@ class TestAuditLogAPIPermissions:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     @pytest.mark.django_db
-    def test_authenticated_user_can_view(
+    def test_authenticated_user_without_audit_view_cannot_view(
         self, authenticated_client
     ) -> None:
-        """Authenticated users can view audit logs."""
+        """audit.view is required: a plain authenticated user is denied."""
         response = authenticated_client.get(self._list_url())
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    @pytest.mark.django_db
+    def test_user_with_audit_view_can_view(self, api_client) -> None:
+        """Holders of the audit.view permission can view audit logs."""
+        from apps.identity.tests.factories import UserFactory
+        from apps.identity.tests.rbac_helpers import grant_permissions
+
+        user = UserFactory()
+        grant_permissions(user, "audit.view")
+        api_client.force_authenticate(user=user)
+        response = api_client.get(self._list_url())
         assert response.status_code == status.HTTP_200_OK
 
     @pytest.mark.django_db
