@@ -7,9 +7,9 @@ Safe to run repeatedly; uses get_or_create / update_or_create throughout.
 Org-free (org-removal B6): the platform bootstrap (permission catalog, role
 catalog with the role->permission matrix, workflow statuses, and the
 department/team/office/position directory) comes from ``init_platform``;
-mock-driven production seeding reuses ``seed_studiohub``'s org-free overlay;
-the masterdata directory (clients/vendors/people/contacts/contracts) is
-seeded directly from the frontend mock sources.
+production seeding reuses ``seed_studiohub``'s org-free overlay (optional;
+canonical projects seed regardless); the masterdata directory
+(clients/vendors/people/contacts/contracts) is inline canonical data.
 
 Covers:
   - Platform bootstrap (RBAC catalog, statuses, directory)
@@ -404,6 +404,57 @@ CANONICAL_VENDOR_CONTRACTS = [
     },
 ]
 
+# Canonical production projects (org-free, self-contained). e2e depends on
+# these exact codes: NK99 ("Neon Knight 2099" — artist is a member) and AR02
+# ("Aurora Rising" — artist is NOT a member, used for fail-closed denial
+# assertions). Memberships are email-resolved at seed time.
+CANONICAL_PROJECTS = [
+    {
+        "code": "NK99",
+        "name": "Neon Knight 2099",
+        "type": "Feature Film",
+        "status": "In Progress",
+        "workflow_type": "standard",
+        "supervisor_email": "supervisor@studiohub.vfx",
+        "coordinator_email": "admin@studiohub.vfx",
+        "total_shots": 240,
+        "approved_shots": 142,
+        "in_progress_shots": 78,
+        "total_assets": 85,
+        "budget_usd": 4800000,
+        "client_code": "WNS",
+        "vendor_codes": ["SRP", "VFXH"],
+        "memberships": [
+            {"email": "admin@studiohub.vfx", "role": "Production Admin"},
+            {"email": "supervisor@studiohub.vfx", "role": "VFX Supervisor"},
+            {"email": "lead@studiohub.vfx", "role": "Lead Artist"},
+            {"email": "artist@studiohub.vfx", "role": "Artist"},
+        ],
+    },
+    {
+        "code": "AR02",
+        "name": "Aurora Rising",
+        "type": "Feature Film",
+        "status": "In Progress",
+        "workflow_type": "standard",
+        "supervisor_email": "supervisor@studiohub.vfx",
+        "coordinator_email": "admin@studiohub.vfx",
+        "total_shots": 120,
+        "approved_shots": 35,
+        "in_progress_shots": 60,
+        "total_assets": 40,
+        "budget_usd": 2500000,
+        "client_code": "NFLX",
+        "vendor_codes": ["SRP"],
+        # NOTE: artist@studiohub.vfx deliberately NOT a member (e2e
+        # fail-closed assertions navigate to /projects/<AR02-id> as artist).
+        "memberships": [
+            {"email": "admin@studiohub.vfx", "role": "Production Admin"},
+            {"email": "vfx.supervisor@studiohub.vfx", "role": "VFX Supervisor"},
+        ],
+    },
+]
+
 
 class Command(BaseCommand):
     help = "Seed development data (idempotent, dev-only)"
@@ -678,30 +729,101 @@ class Command(BaseCommand):
 
     def _seed_projects(self, users):
         """
-        Production-project overlay seed (org-free).
+        Production-project seed (org-free).
 
-        The directory seed data below (clients / vendors / people / contacts /
-        contracts) is self-contained canonical data, but the production-project
-        overlay still reads the frontend mock dataset; degrade gracefully when
-        no mock root is configured instead of aborting the whole seed.
+        Canonical projects/memberships are self-contained inline data
+        (CANONICAL_PROJECTS); the e2e suite consumes NK99 and AR02. The legacy
+        frontend-mock production overlay is still applied when available for
+        a richer dev dataset; degrade gracefully when no mock root is
+        configured instead of aborting the whole seed.
         """
         from apps.core.management.commands.seed_studiohub import (
             Command as SeedStudiohubCommand,
         )
         from apps.core.management.commands.seed_studiohub import SeedReporter
-        from apps.production.models import Project
+        from apps.identity.models import Role
+        from apps.masterdata.models import Client, Vendor
+        from apps.production.models import (
+            Project,
+            ProjectMembership,
+        )
+        from apps.production.models.project import (
+            ProjectStatus,
+            ProjectType,
+            ProjectWorkflowType,
+        )
 
+        def _value(cls, default, raw):
+            return raw if getattr(cls, raw, None) else default
+
+        user_by_email = {u.email: u for u in users}
+        client_by_code = {c.code: c for c in Client.objects.all()}
+        vendor_by_code = {v.code: v for v in Vendor.objects.all()}
+        role_by_name_or_code = {
+            label: role
+            for role in Role.objects.all()
+            for label in (role.name, role.code)
+        }
+
+        seeded = []
+        for item in CANONICAL_PROJECTS:
+            code = item["code"]
+            client = client_by_code.get(item.get("client_code", ""))
+            vendors = [vendor_by_code[c] for c in item.get("vendor_codes", []) if vendor_by_code.get(c)]
+            project, _ = Project.objects.update_or_create(
+                code=code,
+                defaults={
+                    "name": item["name"],
+                    "type": _value(ProjectType, ProjectType.FEATURE_FILM, item.get("type", "")),
+                    "status": _value(ProjectStatus, ProjectStatus.IN_PROGRESS, item.get("status", "")),
+                    "workflow_type": _value(
+                        ProjectWorkflowType,
+                        ProjectWorkflowType.STANDARD,
+                        item.get("workflow_type", ""),
+                    ),
+                    "total_shots": item.get("total_shots", 0),
+                    "approved_shots": item.get("approved_shots", 0),
+                    "in_progress_shots": item.get("in_progress_shots", 0),
+                    "total_assets": item.get("total_assets", 0),
+                    "budget_usd": item.get("budget_usd", 0) or 0,
+                    "supervisor": user_by_email.get(item.get("supervisor_email", "")),
+                    "coordinator": user_by_email.get(item.get("coordinator_email", "")),
+                    "client_id": client.code if client else "",
+                    "client_name": client.name if client else "",
+                    "vendor_ids": [v.code for v in vendors],
+                    "vendor_names": [v.name for v in vendors],
+                },
+            )
+            for member in item.get("memberships", []):
+                user = user_by_email.get(member["email"])
+                if user is None:
+                    continue
+                role_ref = role_by_name_or_code.get(member["role"])
+                ProjectMembership.objects.update_or_create(
+                    project=project,
+                    user=user,
+                    defaults={
+                        "role": member["role"],
+                        "roles": [member["role"]],
+                        "role_ref": role_ref,
+                        "scope": "PROJECT",
+                        "status": "active",
+                    },
+                )
+            seeded.append(project)
+
+        # Optional legacy production overlay for a richer dev dataset.
         cmd = SeedStudiohubCommand()
         try:
             mock_root = cmd._resolve_mock_root()
         except CommandError:
             self.stdout.write(
                 self.style.WARNING(
-                    "  Production overlay skipped: no frontend mock dataset found"
-                    " (STUDIOHUB_REACT_MOCKS). Directory seed data is unaffected."
+                    "  Production mock overlay skipped: no frontend mock dataset"
+                    " found (STUDIOHUB_REACT_MOCKS). Canonical projects are seeded."
                 )
             )
-            return []
+            return list(Project.objects.all())
         reporter = SeedReporter()
         cmd._seed_overlay_production(mock_root, reporter)
         cmd._seed_overlay_access_projects(mock_root, reporter)
