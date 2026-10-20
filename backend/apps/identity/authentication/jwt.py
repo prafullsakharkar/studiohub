@@ -277,3 +277,48 @@ class JWTService:
                 refresh.get("jti", "unknown"),
                 exc,
             )
+
+    @classmethod
+    def blacklist_sweep_for_user(
+        cls,
+        *,
+        user,
+    ) -> int:
+        """
+        Blacklist every outstanding refresh token of ``user``.
+
+        Idempotent: sessions already blacklisted are skipped. Returns the
+        number of refresh jtis swept. Access tokens cannot be blacklisted
+        by simplejwt; session-status enforcement covers them (Task 13).
+        """
+        from rest_framework_simplejwt.token_blacklist.models import (
+            BlacklistedToken,
+            OutstandingToken,
+        )
+
+        from apps.identity.models import UserSession
+
+        jtis = list(
+            UserSession.objects.active()
+            .by_user(user)
+            .values_list("refresh_token_jti", flat=True)
+        )
+
+        swept = 0
+        for jti in jtis:
+            if not jti:
+                continue
+            outstanding, _ = OutstandingToken.objects.get_or_create(
+                jti=jti,
+                defaults={
+                    "user": user,
+                    "token": f"jti:{jti}",
+                },
+            )
+            _, created = BlacklistedToken.objects.get_or_create(
+                token=outstanding,
+            )
+            if created:
+                swept += 1
+
+        return swept

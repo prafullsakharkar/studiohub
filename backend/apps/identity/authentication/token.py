@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import contextlib
+
 from django.utils import timezone
 
 from apps.identity.authentication.jwt import JWTService
 from apps.identity.authentication.utils import AuthenticationUtils
-from apps.identity.choices import AuthenticationMethod
+from apps.identity.choices import AuthenticationMethod, LogoutReason
 
 
 class TokenService:
@@ -137,13 +139,16 @@ class TokenService:
         from apps.identity.services.user_session import UserSessionService
 
         if refresh_token:
-            JWTService.blacklist(
-                refresh_token,
-            )
+            # Already blacklisted/rotated — logout stays idempotent.
+            with contextlib.suppress(Exception):
+                JWTService.blacklist(
+                    refresh_token,
+                )
 
-        UserSessionService.logout(
-            session,
-        )
+        if session is not None:
+            UserSessionService.logout(
+                session,
+            )
 
     @classmethod
     def logout_all(
@@ -156,6 +161,28 @@ class TokenService:
         UserSessionService.logout_all(
             user=user,
         )
+
+    @classmethod
+    def revoke_all_for_user(
+        cls,
+        *,
+        user,
+        reason=LogoutReason.USER,
+    ) -> int:
+        from apps.identity.services.user_session import UserSessionService
+
+        # Sweep refresh jtis BEFORE logout_all: the sweep only covers
+        # active sessions, and logout_all flips them to LOGGED_OUT.
+        swept = JWTService.blacklist_sweep_for_user(
+            user=user,
+        )
+
+        UserSessionService.logout_all(
+            user=user,
+            reason=reason,
+        )
+
+        return swept
 
     @classmethod
     def logout_other_devices(
