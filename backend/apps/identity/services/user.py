@@ -11,6 +11,7 @@ from apps.identity.events import (
     UserUpdated,
 )
 from apps.identity.models import (
+    Profile,
     User,
 )
 from apps.identity.validators.user import (
@@ -72,6 +73,44 @@ class UserService(
                 user=instance,
                 password=password,
             )
+
+        return instance
+
+    @classmethod
+    def reset_password(
+        cls,
+        instance,
+        *,
+        user=None,
+    ):
+        """Admin password reset: force a change on next login, revoke all."""
+        profile, _ = Profile.objects.get_or_create(
+            user=instance,
+        )
+
+        profile.must_change_password = True
+
+        profile.save(
+            update_fields=[
+                "must_change_password",
+                "updated_at",
+            ],
+        )
+
+        from apps.identity.authentication.token import TokenService
+        from apps.identity.choices import SecurityEventType
+        from apps.identity.services.security_event import SecurityEventService
+
+        TokenService.revoke_all_for_user(
+            user=instance,
+        )
+
+        SecurityEventService.create(
+            user=instance,
+            event_type=SecurityEventType.PASSWORD_RESET,
+            description="Password reset by an administrator.",
+            metadata={"origin": "admin"},
+        )
 
         return instance
 

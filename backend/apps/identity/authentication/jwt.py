@@ -39,9 +39,22 @@ class JWTService:
         cls,
         user,
     ) -> RefreshToken:
-        return cls.refresh_token_class.for_user(
+        refresh = cls.refresh_token_class.for_user(
             user,
         )
+
+        profile = getattr(
+            user,
+            "profile",
+            None,
+        )
+
+        if profile is not None:
+            refresh["must_change_password"] = bool(
+                profile.must_change_password,
+            )
+
+        return refresh
 
     @classmethod
     def create_access_token(

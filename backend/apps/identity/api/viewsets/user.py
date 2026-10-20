@@ -19,17 +19,10 @@ from apps.identity.constants.permissions import (
     UserPermissions,
 )
 from apps.identity.models import (
-    Profile,
     User,
 )
 from apps.identity.selectors.user import (
     UserSelector,
-)
-from apps.identity.services.password import (
-    PasswordService,
-)
-from apps.identity.services.profile import (
-    ProfileService,
 )
 from apps.identity.services.user import (
     UserService,
@@ -289,13 +282,14 @@ class UserViewSet(
     ):
         user = self.get_object()
 
-        PasswordService.request_password_reset(
-            user.email,
+        UserService.reset_password(
+            instance=user,
+            user=request.user,
         )
 
         return Response(
             {
-                "detail": "If an account exists, a password reset email has been sent.",
+                "detail": "Password reset. The user must change their password on next sign-in.",
             },
         )
 
@@ -313,22 +307,9 @@ class UserViewSet(
     ):
         user = self.get_object()
 
-        profile = Profile.objects.filter(
-            user=user,
-        ).first()
-
-        if profile is None:
-            profile = ProfileService.create(
-                user=user,
-            )
-
-        profile.must_change_password = True
-
-        profile.save(
-            update_fields=[
-                "must_change_password",
-                "updated_at",
-            ],
+        UserService.reset_password(
+            instance=user,
+            user=request.user,
         )
 
         return Response(

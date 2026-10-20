@@ -23,6 +23,10 @@ class UserPasswordService(
         user,
         password,
     ):
+        from django.contrib.auth.password_validation import validate_password
+
+        validate_password(password, user=user)
+
         user.password = make_password(
             password,
         )
@@ -50,7 +54,20 @@ class UserPasswordService(
                 ],
             )
 
-        return user
+        from apps.identity.authentication.token import TokenService
+        from apps.identity.choices import SecurityEventType
+        from apps.identity.services.security_event import SecurityEventService
+
+        TokenService.revoke_all_for_user(
+            user=user,
+        )
+
+        SecurityEventService.create(
+            user=user,
+            event_type=SecurityEventType.PASSWORD_CHANGED,
+            description="Password changed via the admin/user management path.",
+            metadata={"origin": "admin"},
+        )
 
     @classmethod
     def set_password(

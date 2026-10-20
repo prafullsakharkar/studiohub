@@ -201,6 +201,9 @@ def serialize_frontend_user(user, request=None) -> dict[str, Any]:
         "is_active": user.is_active,
         "is_staff": user.is_staff,
         "is_superuser": getattr(user, "is_superuser", False),
+        "must_change_password": bool(
+            getattr(profile, "must_change_password", False),
+        ),
         "created_at": user.created_at.isoformat() if getattr(user, "created_at", None) else "",
         "updated_at": user.updated_at.isoformat() if getattr(user, "updated_at", None) else "",
     }
