@@ -7,9 +7,18 @@ from __future__ import annotations
 
 import pytest
 from django.urls import reverse
+from rest_framework.test import APIRequestFactory
 
 from apps.identity.models import LoginAttempt
 from apps.identity.tests.factories import IPBlacklistFactory, UserFactory
+
+
+class BrokenCache:
+    def get(self, *args, **kwargs):
+        raise ConnectionError("redis down")
+
+    def set(self, *args, **kwargs):
+        raise ConnectionError("redis down")
 
 
 def _make_user(password="secret123"):
@@ -43,26 +52,19 @@ class TestLoginThrottling:
     def test_login_scope_configured(self):
         from django.conf import settings
 
-        from apps.core.api.throttling import ResilientScopedRateThrottle
+        from apps.core.api.throttling import FailClosedScopedRateThrottle
         from apps.identity.api.views.auth_compat import AuthLoginView
 
         assert AuthLoginView.throttle_scope == "login"
-        assert ResilientScopedRateThrottle in AuthLoginView.throttle_classes
+        assert FailClosedScopedRateThrottle in AuthLoginView.throttle_classes
         assert settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["login"] == "30/min"
 
-    def test_login_survives_cache_outage(self, api_client):
+    def test_login_denied_on_cache_outage(self, api_client):
         from unittest import mock
 
         from rest_framework.throttling import SimpleRateThrottle
 
         user, password = _make_user()
-
-        class BrokenCache:
-            def get(self, *args, **kwargs):
-                raise ConnectionError("redis down")
-
-            def set(self, *args, **kwargs):
-                raise ConnectionError("redis down")
 
         with mock.patch.object(SimpleRateThrottle, "cache", BrokenCache()):
             response = api_client.post(
@@ -70,7 +72,25 @@ class TestLoginThrottling:
                 {"email": user.email, "password": password},
             )
 
-        assert response.status_code == 200
+        assert response.status_code == 429
+
+    def test_other_throttle_scopes_still_fail_open(self, api_client):
+        # Non-login scoped throttles keep the fail-open contract: a plain
+        # ResilientScopedRateThrottle must ALLOW on cache outage.
+        from unittest import mock
+
+        from rest_framework.throttling import SimpleRateThrottle
+
+        from apps.core.api.throttling import ResilientScopedRateThrottle
+
+        throttle = ResilientScopedRateThrottle()
+        request = APIRequestFactory().post("/")
+        request.META["REMOTE_ADDR"] = "10.0.0.5"
+
+        with mock.patch.object(SimpleRateThrottle, "cache", BrokenCache()):
+            allowed = throttle.allow_request(request, view=None)
+
+        assert allowed is True
 
     def test_login_throttled_after_rate_exceeded(self, api_client):
         user, password = _make_user()
