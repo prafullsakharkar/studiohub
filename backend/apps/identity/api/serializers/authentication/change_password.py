@@ -28,4 +28,5 @@ class ChangePasswordSerializer(serializers.Serializer[Any]):
             user=self.context["request"].user,
             old_password=self.validated_data["old_password"],
             new_password=self.validated_data["new_password"],
+            request=self.context["request"],
         )
