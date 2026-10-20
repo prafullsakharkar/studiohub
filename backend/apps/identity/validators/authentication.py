@@ -104,12 +104,12 @@ class AuthenticationValidator(
         username: str,
         ip_address: str,
     ):
+        # Username-only keying: an attacker rotating source IPs must not
+        # bypass the counter. ``ip_address`` is still accepted (and still
+        # recorded per-attempt for forensics) but does not gate the count.
         failed_attempts = (
             LoginAttempt.objects.failed()
-            .filter(
-                username=username,
-                ip_address=ip_address,
-            )
+            .for_username(username)
             .recent(cls.MAX_LOGIN_ATTEMPT_WINDOW_MINUTES)
             .count()
         )
