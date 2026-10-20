@@ -25,6 +25,14 @@ class ResilientScopedRateThrottle(ScopedRateThrottle):
     of being silently swallowed.
     """
 
+    def get_ident(self, request):
+        # REMOTE_ADDR only; DRF's default trusts X-Forwarded-For, which is
+        # client-supplied and must not drive rate limiting.
+        return request.META.get(
+            "REMOTE_ADDR",
+            "127.0.0.1",
+        )
+
     def allow_request(self, request, view):
         try:
             return super().allow_request(request, view)

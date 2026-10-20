@@ -16,13 +16,8 @@ class AuthenticationUtils:
     def get_client_ip(
         request: HttpRequest,
     ) -> str:
-        forwarded = request.META.get(
-            "HTTP_X_FORWARDED_FOR",
-        )
-
-        if forwarded:
-            return forwarded.split(",")[0].strip()
-
+        # REMOTE_ADDR only. X-Forwarded-For is client-supplied and must
+        # never be trusted for lockout/throttle/forensics decisions.
         return request.META.get(
             "REMOTE_ADDR",
             "",
