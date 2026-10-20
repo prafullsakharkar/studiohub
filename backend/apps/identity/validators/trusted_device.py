@@ -13,14 +13,14 @@ class TrustedDeviceValidator(IdentityBaseValidator):
     def validate_trust(cls, device: TrustedDevice):
         cls.check_not_none(device, "Device not found.")
 
-        if device.revoked:
+        if device.revoked_at is not None:
             cls.raise_validation_error("Device has been revoked.")
 
     @classmethod
     def validate_use(cls, device: TrustedDevice):
         cls.check_not_none(device, "Device not found.")
 
-        if device.revoked:
+        if device.revoked_at is not None:
             cls.raise_validation_error("Device has been revoked.")
 
         if device.expires_at and device.expires_at <= timezone.now():

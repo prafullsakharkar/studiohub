@@ -33,8 +33,11 @@ from apps.identity.api.serializers.authentication import (
     RefreshSerializer,
 )
 from apps.identity.api.serializers.frontend_user import (
+    MePatchSerializer,
     serialize_frontend_user,
 )
+from apps.identity.models import Profile
+from apps.identity.services.profile import ProfileService
 
 User = get_user_model()
 
@@ -154,5 +157,22 @@ class AuthMeView(BaseAPIView):
     )
     def get(self, request, *args, **kwargs):
         user = request.user
+        data = serialize_frontend_user(user, request)
+        return Response(data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        request=OpenApiTypes.OBJECT,
+        responses={200: OpenApiTypes.OBJECT},
+        description="Update the authenticated user's own profile.",
+    )
+    def patch(self, request, *args, **kwargs):
+        user = request.user
+        profile = Profile.objects.get_or_create(user=user)[0]
+
+        serializer = MePatchSerializer(profile, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        ProfileService.update_profile(profile, **serializer.validated_data)
+
         data = serialize_frontend_user(user, request)
         return Response(data, status=status.HTTP_200_OK)

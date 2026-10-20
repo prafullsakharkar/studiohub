@@ -23,6 +23,8 @@ class Profile(EntityModel):
 
     first_name = models.CharField(
         max_length=100,
+        blank=True,
+        default="",
     )
 
     last_name = models.CharField(
@@ -32,6 +34,8 @@ class Profile(EntityModel):
 
     display_name = models.CharField(
         max_length=255,
+        blank=True,
+        default="",
     )
 
     avatar = models.ImageField(

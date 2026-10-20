@@ -37,13 +37,20 @@ class IdentityAuthentication(BaseAuthentication):
                 "Invalid credentials.",
             )
 
+        user = self.get_user(principal)
+
+        # A credential is not valid past its principal's account state:
+        # deactivated/soft-deleted owners must not retain API access.
+        if user is None or not getattr(user, "is_active", False):
+            return None
+
         self.on_authenticated(
             request,
             principal,
         )
 
         return (
-            self.get_user(principal),
+            user,
             principal,
         )
 

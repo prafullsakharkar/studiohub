@@ -50,6 +50,13 @@ class APIKeyAuthentication(
                 "Invalid API Key.",
             )
 
+        # Same account-state rule as the JWT path: a deactivated owner
+        # loses access immediately.
+        owner = api_key.created_by
+
+        if owner is None or not owner.is_active:
+            return None
+
         self._touch(
             api_key,
             ip_address=self._get_ip(request),
@@ -58,7 +65,7 @@ class APIKeyAuthentication(
         request.api_key = api_key
 
         return (
-            api_key.created_by,
+            owner,
             api_key,
         )
 

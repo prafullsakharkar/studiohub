@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import contextlib
+import logging
 from datetime import UTC
 
 from django.conf import settings
@@ -14,6 +14,8 @@ from apps.identity.authentication.exceptions import (
     RefreshTokenExpired,
     SessionRevoked,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class JWTService:
@@ -181,8 +183,16 @@ class JWTService:
         access = new_refresh.access_token
 
         # Optionally blacklist old refresh when rotation is enabled.
-        with contextlib.suppress(Exception):
+        # Rotation must not fail when the blacklist store is unavailable,
+        # but the failure must be observable — never silently swallowed.
+        try:
             refresh.blacklist()
+        except Exception as exc:
+            logger.warning(
+                "Failed to blacklist rotated refresh token (jti=%s): %s",
+                refresh.get("jti", "unknown"),
+                exc,
+            )
 
         return (
             new_refresh,
@@ -256,5 +266,14 @@ class JWTService:
             refresh_token,
         )
 
-        with contextlib.suppress(AttributeError):
+        try:
             refresh.blacklist()
+        except AttributeError as exc:
+            # A token that has no blacklist support (e.g. not an
+            # OutstandingToken-backed instance) is not a hard failure; the
+            # caller still gets the intended outcome. Log, never crash.
+            logger.debug(
+                "Refresh token does not support blacklisting (jti=%s): %s",
+                refresh.get("jti", "unknown"),
+                exc,
+            )

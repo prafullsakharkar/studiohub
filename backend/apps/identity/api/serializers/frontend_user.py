@@ -12,6 +12,43 @@ from __future__ import annotations
 
 from typing import Any
 
+from rest_framework import serializers
+
+from apps.identity.models import Profile
+
+
+class MePatchSerializer(
+    serializers.ModelSerializer[Profile],
+):
+    """
+    Request serializer for ``PATCH /api/v1/auth/me/``.
+
+    Accepts writable Profile fields only. Account-state fields
+    (``is_active``/``is_staff``/``is_superuser``) live on User and are never
+    accepted here — unknown keys are silently dropped by DRF.
+    """
+
+    avatar_url = serializers.URLField(
+        required=False,
+        allow_blank=True,
+        max_length=500,
+    )
+
+    class Meta:
+        model = Profile
+
+        fields = (
+            "first_name",
+            "last_name",
+            "display_name",
+            "avatar_url",
+            "phone",
+            "bio",
+            "timezone",
+            "language",
+            "preferences",
+        )
+
 
 def serialize_frontend_user(user, request=None) -> dict[str, Any]:
     """

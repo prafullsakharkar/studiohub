@@ -10,8 +10,6 @@ from apps.identity.api.views.authentication import (
     LogoutAPIView,
     RefreshAPIView,
     ResendVerificationAPIView,
-    ResetPasswordAPIView,
-    VerifyEmailAPIView,
 )
 
 from .views.authentication import (
@@ -65,16 +63,6 @@ urlpatterns = router_urls + [
         "password/forgot/",
         ForgotPasswordAPIView.as_view(),
         name="forgot-password",
-    ),
-    path(
-        "password/reset/",
-        ResetPasswordAPIView.as_view(),
-        name="reset-password",
-    ),
-    path(
-        "email/verify/",
-        VerifyEmailAPIView.as_view(),
-        name="verify-email",
     ),
     path(
         "email/resend/",

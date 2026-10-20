@@ -44,7 +44,10 @@ class MFAConfigView(BaseAPIView):
         if mfa:
             if getattr(mfa, "totp_secret", None) and getattr(mfa, "is_verified", False):
                 methods.append("totp")
-                totp = {"verified": True, "secret": getattr(mfa, "totp_secret", "")}
+                # C2: never return the stored TOTP secret over the API. The
+                # provisioning secret is exposed exclusively by the setup
+                # flow that generated it.
+                totp = {"verified": True}
             if getattr(mfa, "sms_enabled", False):
                 methods.append("sms")
                 sms = {"verified": True}

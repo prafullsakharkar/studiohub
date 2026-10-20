@@ -84,13 +84,13 @@ class MFATrustedDeviceService(BaseMFAService):
 
         cls.TrustedDeviceValidator.validate_trust(device)
 
-        device.trusted = False
-        device.revoked = True
+        device.is_trusted = False
+        device.revoked_at = timezone.now()
 
         device.save(
             update_fields=[
-                "trusted",
-                "revoked",
+                "is_trusted",
+                "revoked_at",
             ]
         )
 

@@ -1,5 +1,7 @@
+from django.core.exceptions import ObjectDoesNotExist
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
+from rest_framework.response import Response
 
 from apps.core.api.builders.response import ResponseBuilder
 from apps.core.api.views import BaseAPIView
@@ -28,14 +30,31 @@ class TrustedDeviceRevokeAPIView(BaseAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        device = MFAService.trusted_devices.trusted_device_selector.get(
-            serializer.validated_data["device_id"],
-        )
+        # Resolve by explicit filters: never positional (selector ``get``
+        # treats the first positional arg as the model class), and always
+        # ownership-scoped — no superuser bypass on this surface (admin
+        # reset lives on the dedicated MFA admin endpoint).
+        try:
+            device = MFAService.trusted_devices.trusted_device_selector.get(
+                pk=serializer.validated_data["device_id"],
+                user=request.user,
+            )
+        except ObjectDoesNotExist:
+            return Response(
+                ResponseBuilder.error(
+                    message="Trusted device not found.",
+                    status_code=404,
+                ),
+                status=404,
+            )
 
         MFAService.revoke_device(
             device=device,
         )
 
-        return ResponseBuilder.success(
-            message="Trusted device revoked.",
+        return Response(
+            ResponseBuilder.success(
+                message="Trusted device revoked.",
+            ),
+            status=200,
         )
