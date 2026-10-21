@@ -163,6 +163,18 @@ class AuthenticationService(
                 refresh_token=refresh_token,
             )
 
+            from apps.identity.choices import SecurityEventType
+            from apps.identity.services.security_event import SecurityEventService
+
+            SecurityEventService.create(
+                user=session.user,
+                event_type=SecurityEventType.SESSION_TERMINATED,
+                ip_address=AuthenticationUtils.get_client_ip(request),
+                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+                description="Session terminated by logout.",
+                metadata={"session_id": str(session.pk)},
+            )
+
         django_logout(
             request,
         )
