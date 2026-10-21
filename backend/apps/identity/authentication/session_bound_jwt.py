@@ -6,6 +6,12 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from apps.identity.authentication.session_status import SessionStatusCache
 
 
+class SessionExpired(AuthenticationFailed):
+    """Authentication failure with the stable ``session_expired`` code."""
+
+    default_code = "session_expired"
+
+
 class SessionBoundJWTAuthentication(JWTAuthentication):
     """
     JWTAuthentication that also enforces the owning UserSession's status.
@@ -26,9 +32,8 @@ class SessionBoundJWTAuthentication(JWTAuthentication):
         jti = validated_token.payload.get("jti")
 
         if jti and not SessionStatusCache.is_active(jti):
-            raise AuthenticationFailed(
+            raise SessionExpired(
                 "Session is no longer active.",
-                code="session_expired",
             )
 
         return result
