@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from django.db.models import Q
+from django.utils import timezone
+
 from apps.identity.models import (
     GroupMember,
     GroupRole,
@@ -24,6 +27,8 @@ class PermissionResolver(
     * inactive or soft-deleted users resolve to no permissions;
     * only active, non-deleted roles confer permissions;
     * only granted (``granted=True``), non-deleted role-permission rows count;
+    * only unexpired role-permission rows count (``expires_at`` is null or in
+      the future);
     * only active, non-deleted permissions are returned.
 
     NOTE: domain managers do not exclude soft-deleted rows (only
@@ -95,6 +100,8 @@ class PermissionResolver(
             role_id__in=roles,
             granted=True,
             is_deleted=False,
+        ).filter(
+            Q(expires_at__isnull=True) | Q(expires_at__gt=timezone.now()),
         ).values_list(
             "permission_id",
             flat=True,
