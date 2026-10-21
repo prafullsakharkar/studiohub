@@ -5,12 +5,12 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import (
     ChangePasswordSerializer,
 )
+from apps.identity.authentication.session_bound_jwt import SessionBoundJWTAuthentication
 
 
 class AuthChangePasswordView(BaseAPIView):
@@ -21,7 +21,7 @@ class AuthChangePasswordView(BaseAPIView):
     session on password change, so the SPA must re-login.
     """
 
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
     serializer_class = ChangePasswordSerializer
 

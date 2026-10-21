@@ -23,7 +23,6 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from apps.core.api.throttling import FailClosedScopedRateThrottle
 from apps.core.api.views import BaseAPIView
@@ -36,6 +35,7 @@ from apps.identity.api.serializers.frontend_user import (
     MePatchSerializer,
     serialize_frontend_user,
 )
+from apps.identity.authentication.session_bound_jwt import SessionBoundJWTAuthentication
 from apps.identity.models import Profile
 from apps.identity.services.profile import ProfileService
 
@@ -125,7 +125,7 @@ class AuthRefreshView(BaseAPIView):
 class AuthLogoutView(BaseAPIView):
     """Frontend-compatible logout: clears session and blacklists refresh if provided."""
 
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     serializer_class = LogoutSerializer
@@ -148,7 +148,7 @@ class AuthLogoutView(BaseAPIView):
 class AuthMeView(BaseAPIView):
     """Frontend-compatible current user: returns FrontendUser."""
 
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(

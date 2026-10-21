@@ -30,15 +30,25 @@ from apps.core.middleware.request_logging import RequestLoggingMiddleware
 from apps.identity.tests.factories import UserFactory
 
 
-def _jwt_for(user) -> str:
+def _auth_client(user) -> APIClient:
     from rest_framework_simplejwt.tokens import RefreshToken
 
-    return str(RefreshToken.for_user(user).access_token)
+    from apps.identity.authentication.jwt import JWTService
+    from apps.identity.choices import SessionStatus
+    from apps.identity.models import UserSession
 
-
-def _auth_client(user) -> APIClient:
+    refresh = RefreshToken.for_user(user)
+    access = refresh.access_token
+    UserSession.objects.create(
+        user=user,
+        session_key=refresh["jti"],
+        refresh_token_jti=refresh["jti"],
+        access_token_jti=access["jti"],
+        status=SessionStatus.ACTIVE,
+        expires_at=JWTService.get_expiration(refresh),
+    )
     client = APIClient()
-    client.credentials(HTTP_AUTHORIZATION=f"Bearer {_jwt_for(user)}")
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
     return client
 
 
@@ -74,7 +84,7 @@ class TestAuthenticationDiagnostics:
         assert record["request_id"] == request_id
         assert record["path"] == _audit_logs_url()
         assert record["user_id"] is None
-        assert "JWTAuthentication" in record["authentication_classes"]
+        assert "SessionBoundJWTAuthentication" in record["authentication_classes"]
 
         # The middleware completion record resolves the same view class
         # from the URL resolver (regression: must be the class name,

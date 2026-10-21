@@ -15,10 +15,10 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        # JWTAuthentication stays first: the PAT scheme shares the Bearer
-        # keyword, so JWT must win for JWTs (DRF stops at first success).
-        # Tokens are issued via JWTService using stock SimpleJWT AccessToken/RefreshToken.
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        # SessionBoundJWTAuthentication stays first: the PAT scheme shares the
+        # Bearer keyword, so JWT must win for JWTs (DRF stops at first success).
+        # It extends SimpleJWT to enforce the owning UserSession's status.
+        "apps.identity.authentication.session_bound_jwt.SessionBoundJWTAuthentication",
         "apps.identity.authentication.personal_access_token.PersonalAccessTokenAuthentication",
         "apps.identity.authentication.api_key.APIKeyAuthentication",
     ],

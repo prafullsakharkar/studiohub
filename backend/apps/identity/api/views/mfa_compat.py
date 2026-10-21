@@ -14,15 +14,15 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from apps.core.api.views import BaseAPIView
+from apps.identity.authentication.session_bound_jwt import SessionBoundJWTAuthentication
 from apps.identity.services.mfa.facade import MFAService
 
 
 class MFAConfigView(BaseAPIView):
     serializer_class = serializers.Serializer
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
@@ -68,7 +68,7 @@ class MFAConfigView(BaseAPIView):
 
 class MFATOTPSetupView(BaseAPIView):
     serializer_class = serializers.Serializer
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
@@ -93,7 +93,7 @@ class MFATOTPSetupView(BaseAPIView):
 
 class MFATOTPEnableView(BaseAPIView):
     serializer_class = serializers.Serializer
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
@@ -124,7 +124,7 @@ class MFATOTPEnableView(BaseAPIView):
 
 class MFATOTPVerifyView(BaseAPIView):
     serializer_class = serializers.Serializer
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
@@ -147,7 +147,7 @@ class MFATOTPVerifyView(BaseAPIView):
 
 class MFATOTPDisableView(BaseAPIView):
     serializer_class = serializers.Serializer
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
@@ -163,7 +163,7 @@ class MFATOTPDisableView(BaseAPIView):
 
 class MFASMSEnableView(BaseAPIView):
     serializer_class = serializers.Serializer
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
@@ -178,7 +178,7 @@ class MFASMSEnableView(BaseAPIView):
 
 class MFASMSVerifyView(BaseAPIView):
     serializer_class = serializers.Serializer
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
@@ -187,7 +187,7 @@ class MFASMSVerifyView(BaseAPIView):
 
 class MFASMSDisableView(BaseAPIView):
     serializer_class = serializers.Serializer
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
@@ -196,7 +196,7 @@ class MFASMSDisableView(BaseAPIView):
 
 class MFAEmailEnableView(BaseAPIView):
     serializer_class = serializers.Serializer
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
@@ -206,7 +206,7 @@ class MFAEmailEnableView(BaseAPIView):
 
 class MFAEmailVerifyView(BaseAPIView):
     serializer_class = serializers.Serializer
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
@@ -215,7 +215,7 @@ class MFAEmailVerifyView(BaseAPIView):
 
 class MFAEmailDisableView(BaseAPIView):
     serializer_class = serializers.Serializer
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
@@ -224,7 +224,7 @@ class MFAEmailDisableView(BaseAPIView):
 
 class MFARecoveryCodesView(BaseAPIView):
     serializer_class = serializers.Serializer
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
@@ -242,7 +242,7 @@ class MFARecoveryCodesView(BaseAPIView):
 
 class MFARecoveryCodesRegenerateView(BaseAPIView):
     serializer_class = serializers.Serializer
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
@@ -259,7 +259,7 @@ class MFARecoveryCodesRegenerateView(BaseAPIView):
 
 class MFAAdminResetView(BaseAPIView):
     serializer_class = serializers.Serializer
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
