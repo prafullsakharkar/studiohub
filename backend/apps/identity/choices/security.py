@@ -16,6 +16,8 @@ class SecurityEventType(models.TextChoices):
     SESSION_TERMINATED = "session_terminated", "Session Terminated"
     ACCOUNT_LOCKED = "account_locked", "Account Locked"
     ACCOUNT_UNLOCKED = "account_unlocked", "Account Unlocked"
+    ACCOUNT_DEACTIVATED = "account_deactivated", "Account Deactivated"
+    ACCOUNT_ACTIVATED = "account_activated", "Account Activated"
     IP_BLOCKED = "ip_blocked", "IP Blocked"
     IP_UNBLOCKED = "ip_unblocked", "IP Unblocked"
     TRUSTED_DEVICE_ADDED = "trusted_device_added", "Trusted Device Added"

@@ -139,6 +139,26 @@ class UserService(
             ],
         )
 
+        from apps.identity.choices import SecurityEventType
+        from apps.identity.models import ApiKey, PersonalAccessToken
+        from apps.identity.services.security_event import SecurityEventService
+
+        PersonalAccessToken.objects.filter(
+            user=instance,
+            is_active=False,
+        ).update(is_active=True)
+
+        ApiKey.objects.filter(
+            created_by=instance,
+            is_active=False,
+        ).update(is_active=True)
+
+        SecurityEventService.create(
+            user=instance,
+            event_type=SecurityEventType.ACCOUNT_ACTIVATED,
+            description="Account activated.",
+        )
+
         cls.publish_event(
             cls.ACTIVATE,
             instance=instance,
@@ -167,6 +187,31 @@ class UserService(
                 "is_active",
                 "updated_at",
             ],
+        )
+
+        from apps.identity.authentication.token import TokenService
+        from apps.identity.choices import SecurityEventType
+        from apps.identity.models import ApiKey, PersonalAccessToken
+        from apps.identity.services.security_event import SecurityEventService
+
+        TokenService.revoke_all_for_user(
+            user=instance,
+        )
+
+        PersonalAccessToken.objects.filter(
+            user=instance,
+            is_active=True,
+        ).update(is_active=False)
+
+        ApiKey.objects.filter(
+            created_by=instance,
+            is_active=True,
+        ).update(is_active=False)
+
+        SecurityEventService.create(
+            user=instance,
+            event_type=SecurityEventType.ACCOUNT_DEACTIVATED,
+            description="Account deactivated.",
         )
 
         cls.publish_event(
@@ -201,6 +246,31 @@ class UserService(
                 "is_active",
                 "updated_at",
             ],
+        )
+
+        from apps.identity.authentication.token import TokenService
+        from apps.identity.choices import SecurityEventType
+        from apps.identity.models import ApiKey, PersonalAccessToken
+        from apps.identity.services.security_event import SecurityEventService
+
+        TokenService.revoke_all_for_user(
+            user=instance,
+        )
+
+        PersonalAccessToken.objects.filter(
+            user=instance,
+            is_active=True,
+        ).update(is_active=False)
+
+        ApiKey.objects.filter(
+            created_by=instance,
+            is_active=True,
+        ).update(is_active=False)
+
+        SecurityEventService.create(
+            user=instance,
+            event_type=SecurityEventType.ACCOUNT_DEACTIVATED,
+            description="Account deactivated.",
         )
 
         cls.publish_event(
