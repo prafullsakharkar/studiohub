@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+SESSION_MAX_ABSOLUTE_LIFETIME_DAYS = 90
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=30),

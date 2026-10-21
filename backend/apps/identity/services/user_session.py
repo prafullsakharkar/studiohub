@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 from django.utils import timezone
 
 from apps.core.services.business import BusinessService
@@ -145,6 +147,23 @@ class UserSessionService(
             session,
         )
 
+        from django.conf import settings
+
+        absolute = timedelta(
+            days=getattr(
+                settings,
+                "SESSION_MAX_ABSOLUTE_LIFETIME_DAYS",
+                90,
+            ),
+        )
+
+        now = timezone.now()
+
+        session.expires_at = min(
+            now + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"],
+            session.created_at + absolute,
+        )
+
         session.access_token_jti = access_token_jti
 
         session.refresh_token_jti = refresh_token_jti
@@ -153,6 +172,7 @@ class UserSessionService(
             update_fields=[
                 "access_token_jti",
                 "refresh_token_jti",
+                "expires_at",
             ],
         )
 
