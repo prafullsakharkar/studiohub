@@ -90,21 +90,24 @@ class TokenService:
         session,
         refresh_token: str,
     ):
+        from django.db import transaction
+
         from apps.identity.services.user_session import UserSessionService
 
-        new_refresh, new_access = JWTService.rotate_refresh_token(
-            refresh_token,
-        )
+        with transaction.atomic():
+            new_refresh, new_access = JWTService.rotate_refresh_token(
+                refresh_token,
+            )
 
-        UserSessionService.refresh(
-            session,
-            access_token_jti=JWTService.get_jti(
-                new_access,
-            ),
-            refresh_token_jti=JWTService.get_jti(
-                new_refresh,
-            ),
-        )
+            UserSessionService.refresh(
+                session,
+                access_token_jti=JWTService.get_jti(
+                    new_access,
+                ),
+                refresh_token_jti=JWTService.get_jti(
+                    new_refresh,
+                ),
+            )
 
         return {
             "access": str(new_access),
