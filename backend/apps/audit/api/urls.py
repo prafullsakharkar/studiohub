@@ -10,13 +10,11 @@ from apps.audit.api.viewsets.audit_log import AuditCompatViewSet, AuditLogViewSe
 from apps.audit.api.viewsets.background_job import BackgroundJobViewSet
 from apps.audit.api.viewsets.change_log import ChangeLogViewSet
 from apps.audit.api.viewsets.error_log import ErrorLogViewSet
-from apps.audit.api.viewsets.login_history import LoginHistoryViewSet
 from apps.audit.api.viewsets.track import TrackViewSet
 
 router = DefaultRouter()
 router.register(r"audit-logs", AuditLogViewSet, basename="audit-log")
 router.register(r"activities", ActivityViewSet, basename="activity")
-router.register(r"login-history", LoginHistoryViewSet, basename="login-history")
 router.register(r"change-logs", ChangeLogViewSet, basename="change-log")
 router.register(r"api-requests", APIRequestViewSet, basename="api-request")
 router.register(r"background-jobs", BackgroundJobViewSet, basename="background-job")

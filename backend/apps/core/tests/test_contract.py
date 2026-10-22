@@ -125,7 +125,6 @@ def test_openapi_schema_contains_core_contract_endpoints():
         "/api/v1/audit/change-logs": {"get"},
         "/api/v1/audit/error-logs": {"get"},
         "/api/v1/audit/error-logs/{uuid}/resolve": {"post"},
-        "/api/v1/audit/login-history": {"get"},
         "/api/v1/audit/tracks": {"get", "post"},
         # Intelligence
         "/api/v1/intelligence/knowledge": {"get", "post"},

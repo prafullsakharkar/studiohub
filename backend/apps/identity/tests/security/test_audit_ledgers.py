@@ -211,6 +211,7 @@ class TestHousekeeping:
         assert second == {
             "sessions_expired": 0,
             "login_attempts_purged": 0,
+            "login_history_purged": 0,
             "trusted_devices_purged": 0,
         }
 

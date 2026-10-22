@@ -9,6 +9,7 @@ both do exactly the same thing.
 from celery import shared_task
 
 from apps.identity.services.login_attempt import LoginAttemptService
+from apps.identity.services.login_history import LoginHistoryService
 from apps.identity.services.user_session import UserSessionService
 
 
@@ -20,6 +21,7 @@ def run_cleanup() -> dict[str, int]:
     return {
         "sessions_expired": UserSessionService.cleanup(),
         "login_attempts_purged": LoginAttemptService.purge_expired(),
+        "login_history_purged": LoginHistoryService.purge_expired(),
         "trusted_devices_purged": expired_devices,
     }
 

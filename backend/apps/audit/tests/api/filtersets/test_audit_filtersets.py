@@ -15,7 +15,6 @@ from apps.audit.filters.audit_log import AuditLogFilter
 from apps.audit.filters.background_job import BackgroundJobFilter
 from apps.audit.filters.change_log import ChangeLogFilter
 from apps.audit.filters.error_log import ErrorLogFilter
-from apps.audit.filters.login_history import LoginHistoryFilter
 from apps.audit.filters.track import TrackFilter
 from apps.audit.models.activity import Activity
 from apps.audit.models.api_request import APIRequest
@@ -23,7 +22,6 @@ from apps.audit.models.audit_log import AuditLog
 from apps.audit.models.background_job import BackgroundJob
 from apps.audit.models.change_log import ChangeLog
 from apps.audit.models.error_log import ErrorLog
-from apps.audit.models.login_history import LoginHistory
 from apps.audit.models.track import Track
 from apps.audit.tests.factories import (
     ActivityFactory,
@@ -32,7 +30,6 @@ from apps.audit.tests.factories import (
     BackgroundJobFactory,
     ChangeLogFactory,
     ErrorLogFactory,
-    LoginHistoryFactory,
     TrackFactory,
 )
 
@@ -201,22 +198,6 @@ class TestErrorLogFilter:
         )
         assert log1 in filterset.qs
         assert log2 not in filterset.qs
-
-
-class TestLoginHistoryFilter:
-    """Tests for LoginHistoryFilter."""
-
-    @pytest.mark.django_db
-    def test_filter_by_status(self) -> None:
-        """Filter login history by status."""
-        entry1 = LoginHistoryFactory(status="success")
-        entry2 = LoginHistoryFactory(status="failed")
-        filterset = LoginHistoryFilter(
-            LoginHistory.objects.all(),
-            data={"status": "success"},
-        )
-        assert entry1 in filterset.qs
-        assert entry2 not in filterset.qs
 
 
 class TestTrackFilter:

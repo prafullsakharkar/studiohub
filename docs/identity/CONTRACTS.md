@@ -525,7 +525,7 @@ Status values: **DECIDED** = approved for implementation; **PROPOSED** = recomme
 | A1 | MFA secret encryption | Add `cryptography` (Fernet/AES-GCM) with a dedicated env key; fail closed if absent | DECIDED (dependency approval pending install) | WP 6.3 |
 | A2 | `UserPreference` | Delete the model; `Profile.preferences` is the single store | DECIDED | WP 3.6 |
 | A3 | `KnownDevice` | Delete; `TrustedDevice` is canonical | DECIDED | WP 5.13 |
-| A4 | Identity `LoginHistory` | Delete; `apps.audit.LoginHistory` is canonical | DECIDED | WP 5.7 |
+| A4 | Identity `LoginHistory` | **Reversed 2026-10-22 (ADR-0035):** identity `LoginHistory` is canonical; `apps.audit.LoginHistory`, its URL and its rows are removed | DECIDED (superseded) | WP 5.7 |
 | A5 | Credential consolidation | One service/API over both tables in MVP; no physical merge | DECIDED | WP 7.1 |
 | A6 | Credential hashing | HMAC-SHA256 with a dedicated pepper; lazy rehash | DECIDED | WP 7.4 |
 | A7 | OAuth | Out of MVP; remove models/admin in a later cleanup | DECIDED | WP 7.7/7.8 |

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from django.contrib.auth import get_user_model
 
-from apps.audit.models import LoginHistory
 from apps.identity.models import (
+    LoginHistory,
     UserSession,
 )
 from apps.identity.selectors.base import (

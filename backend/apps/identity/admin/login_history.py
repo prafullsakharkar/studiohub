@@ -1,11 +1,12 @@
 from django.contrib import admin
 
 from apps.core.admin.base import PlatformScopedModelAdmin
+from apps.identity.admin.ledger import ReadOnlyLedgerAdminMixin
 from apps.identity.models import LoginHistory
 
 
 @admin.register(LoginHistory)
-class LoginHistoryAdmin(PlatformScopedModelAdmin):
+class LoginHistoryAdmin(ReadOnlyLedgerAdminMixin, PlatformScopedModelAdmin):
     list_display = (
         "user",
         "login_type",

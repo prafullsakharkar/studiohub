@@ -1,8 +1,7 @@
 from apps.identity.querysets.base import IdentityQuerySet
+from apps.identity.querysets.ledger import ImmutableLedgerError
 
-
-class ImmutableLedgerError(RuntimeError):
-    """An append-only ledger row was asked to change or disappear."""
+__all__ = ["ImmutableLedgerError", "SecurityEventQuerySet"]
 
 
 class SecurityEventQuerySet(IdentityQuerySet):

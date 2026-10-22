@@ -14,7 +14,6 @@ from apps.audit.models.audit_log import AuditLog
 from apps.audit.models.background_job import BackgroundJob
 from apps.audit.models.change_log import ChangeLog
 from apps.audit.models.error_log import ErrorLog
-from apps.audit.models.login_history import LoginHistory
 from apps.audit.models.track import Track
 from apps.identity.tests.factories import UserFactory
 
@@ -175,38 +174,6 @@ class ErrorLogFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeA
     error_code = factory.Faker("word")
 
 
-class LoginHistoryFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
-    """Factory for LoginHistory model."""
-
-    class Meta:
-        model = LoginHistory
-
-    user = factory.SubFactory(UserFactory)
-    login_type = factory.Faker(
-        "random_element",
-        elements=[
-            LoginHistory.TYPE_LOGIN,
-            LoginHistory.TYPE_LOGOUT,
-            LoginHistory.TYPE_DEVICE_LOGIN,
-        ],
-    )
-    login_method = factory.Faker(
-        "random_element", elements=["password", "oauth", "sso", "api_key"]
-    )
-    status = factory.Faker(
-        "random_element",
-        elements=[
-            LoginHistory.STATUS_SUCCESS,
-            LoginHistory.STATUS_FAILED,
-            LoginHistory.STATUS_EXPIRED,
-        ],
-    )
-    ip_address = factory.Faker("ipv4")
-    user_agent = factory.Faker("user_agent")
-    mfa_enabled = factory.Faker("boolean")
-    failure_reason = factory.Faker("text", max_nb_chars=200)
-    session_id = factory.Faker("uuid4")
-    browser = factory.Faker("word")
 
 
 class TrackFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]

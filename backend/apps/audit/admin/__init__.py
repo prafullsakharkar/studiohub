@@ -10,7 +10,6 @@ from apps.audit.models.audit_log import AuditLog
 from apps.audit.models.background_job import BackgroundJob
 from apps.audit.models.change_log import ChangeLog
 from apps.audit.models.error_log import ErrorLog
-from apps.audit.models.login_history import LoginHistory
 from apps.audit.models.track import Track
 from apps.core.admin.base import PlatformScopedModelAdmin
 
@@ -117,56 +116,6 @@ class ActivityAdmin(PlatformScopedModelAdmin):
                 "fields": (
                     "user",
                             )
-            },
-        ),
-        (
-            "Timestamps",
-            {
-                "fields": ("created_at", "updated_at"),
-                "classes": ("collapse",),
-            },
-        ),
-    )
-
-
-@admin.register(LoginHistory)
-class LoginHistoryAdmin(PlatformScopedModelAdmin):
-    """Login History admin."""
-
-    list_display = [
-        "id",
-        "user",
-        "ip_address",
-        "user_agent",
-        "status",
-        "created_at",
-    ]
-    list_filter = [
-        "status",
-        "created_at",
-    ]
-    search_fields = ["id", "user__email", "ip_address"]
-    readonly_fields = ["created_at", "updated_at"]
-    date_hierarchy = "created_at"
-
-    fieldsets = (
-        (
-            None,
-            {
-                "fields": (
-                    "id",
-                    "user",
-                            )
-            },
-        ),
-        (
-            "Login Details",
-            {
-                "fields": (
-                    "ip_address",
-                    "user_agent",
-                    "status",
-                )
             },
         ),
         (
