@@ -427,6 +427,7 @@ Two trees currently exist (`api/urls.py:72-125`). **TARGET — API-MFA-00:** one
 | API-DEP-03 | `SecurityEvent` update/delete | removed (breaking, intentional, documented) |
 | API-DEP-04 | `LoginAttempt` update/delete | removed (implemented Phase 5) |
 | API-DEP-06 | `/api/v1/audit/login-history/` | removed with `apps.audit.LoginHistory` (ADR-0035) |
+| API-ID-LH | `GET /api/v1/identity/login-history/` and `/{id}/` | read-only; requires `identity.login_history.view`; filters `user`, `login_type`, `status`, `ip_address`, `start_date`, `end_date`; no write route (append-only ledger, ADR-0035) |
 | API-DEP-07 | Trusted-device create/update | removed (implemented Phase 5) |
 | API-DEP-05 | `OAuth*` endpoints | none exist; none are added unless A7 changes |
 

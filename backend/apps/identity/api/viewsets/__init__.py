@@ -1,6 +1,7 @@
 from .base import IdentityViewSet
 from .ip_blacklist import IPBlacklistViewSet
 from .login_attempt import LoginAttemptViewSet
+from .login_history import LoginHistoryViewSet
 from .profile import ProfileViewSet
 from .rbac import GroupViewSet, PermissionViewSet, RoleViewSet
 from .security_event import SecurityEventViewSet
@@ -13,6 +14,7 @@ __all__ = (
     "GroupViewSet",
     "IPBlacklistViewSet",
     "LoginAttemptViewSet",
+    "LoginHistoryViewSet",
     "PermissionViewSet",
     "ProfileViewSet",
     "RoleViewSet",

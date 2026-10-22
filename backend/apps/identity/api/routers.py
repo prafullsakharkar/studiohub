@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from apps.identity.api.viewsets import (
     IPBlacklistViewSet,
     LoginAttemptViewSet,
+    LoginHistoryViewSet,
     ProfileViewSet,
     SecurityEventViewSet,
     TrustedDeviceViewSet,
@@ -40,6 +41,12 @@ router.register(
     "login-attempts",
     LoginAttemptViewSet,
     basename="login-attempt",
+)
+
+router.register(
+    "login-history",
+    LoginHistoryViewSet,
+    basename="login-history",
 )
 
 router.register(
