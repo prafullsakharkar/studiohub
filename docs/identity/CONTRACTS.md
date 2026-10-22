@@ -251,7 +251,7 @@ ENABLED  ──locked (N failures)──► LOCKED (until locked_until)
 | SEC-LOGIN-03 | A successful login creates a `UserSession`, records a `SecurityEvent(LOGIN_SUCCESS)` and a `LoginAttempt(success=True)` — WP 5.6 |
 | SEC-LOGIN-04 | An MFA-enabled user's password-only login yields **no** tokens and **no** active session; it yields a short-lived pre-auth challenge — WP 6.2 |
 | SEC-LOGIN-05 | Login honours IP blacklists (exact + CIDR) before password verification — WP 5.8 |
-| SEC-LOGIN-06 | Throttle: `login` 30/min per client; `refresh` 60/min (`drf.py:38-41`). Throttle failure is fail-closed when the cache is unavailable (`ResilientScopedRateThrottle`). |
+| SEC-LOGIN-06 | Throttle: `login` 30/min per client; `refresh` 60/min (`drf.py:38-41`). Throttle failure is fail-closed when the cache is unavailable (`ResilientScopedRateThrottle`). Authenticated endpoints that verify a password or second factor (change password, MFA enroll/verify/disable/recovery, credential issuing) use scope `sensitive`, 20/min per user, fail-closed (Phase 8). |
 
 ### 3.3 Authorization
 

@@ -39,6 +39,10 @@ REST_FRAMEWORK = {
         "login": "30/min",
         "refresh": "60/min",
         "password_reset": "5/min",
+        # Authenticated endpoints that verify a password or a second factor
+        # (change password, MFA, credential issuing): a stolen session must
+        # not be able to guess at them.
+        "sensitive": "20/min",
     },
 }
 

@@ -164,6 +164,8 @@ class UserSessionService(
             session.created_at + absolute,
         )
 
+        previous_access_jti = session.access_token_jti
+
         session.access_token_jti = access_token_jti
 
         session.refresh_token_jti = refresh_token_jti
@@ -175,6 +177,16 @@ class UserSessionService(
                 "expires_at",
             ],
         )
+
+        # The access token being replaced is no longer bound to this session.
+        # Evict its cached "active" snapshot so it stops working now, not when
+        # the 60 s snapshot expires (which could be after a logout or a
+        # deactivation, or even after the account is re-activated).
+        from apps.identity.authentication.session_status import (
+            SessionStatusCache,
+        )
+
+        SessionStatusCache.invalidate(previous_access_jti)
 
         SessionRefreshed.dispatch(
             instance=session,

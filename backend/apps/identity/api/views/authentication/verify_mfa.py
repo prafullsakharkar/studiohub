@@ -1,3 +1,4 @@
+from apps.core.api.throttling import FailClosedScopedRateThrottle
 from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import (
     MFAVerifySerializer,
@@ -19,6 +20,10 @@ class MFAVerifyAPIView(BaseAPIView):
     While enrollment is PENDING a valid code activates MFA and returns the
     one-time recovery codes (API-MFA-02). Once enabled it is a step-up check.
     """
+
+    throttle_classes = (FailClosedScopedRateThrottle,)
+
+    throttle_scope = "sensitive"
 
     serializer_class = MFAVerifySerializer
 

@@ -58,12 +58,12 @@ class TestPasswordResetRequest:
         with pytest.raises(ValidationError):
             PasswordResetService.confirm_reset(
                 token=first,
-                new_password="first-new-pass-1",
+                new_password="First-new-pass-1",
             )
 
         PasswordResetService.confirm_reset(
             token=second,
-            new_password="second-new-pass-1",
+            new_password="Second-new-pass-1",
         )
 
     def test_inactive_or_soft_deleted_user_gets_no_token(self, mailoutbox):
@@ -95,11 +95,11 @@ class TestPasswordResetConfirm:
         raw = PasswordResetService.request_reset(email=user.email)
         PasswordResetService.confirm_reset(
             token=raw,
-            new_password="brand-new-pass-1",
+            new_password="Brand-new-pass-1",
         )
 
         user.refresh_from_db()
-        assert user.check_password("brand-new-pass-1")
+        assert user.check_password("Brand-new-pass-1")
         assert not UserSession.objects.active().by_user(user).exists()
 
         token = PasswordResetToken.objects.get(user=user)
@@ -117,11 +117,11 @@ class TestPasswordResetConfirm:
         with pytest.raises(ValidationError):
             PasswordResetService.confirm_reset(
                 token=raw,
-                new_password="too-late-pass-1",
+                new_password="Too-late-pass-1",
             )
 
         user.refresh_from_db()
-        assert not user.check_password("too-late-pass-1")
+        assert not user.check_password("Too-late-pass-1")
 
     def test_reused_token_is_rejected(self):
         user = UserFactory.create(email="reuse@example.com", is_active=True)
@@ -129,21 +129,21 @@ class TestPasswordResetConfirm:
 
         PasswordResetService.confirm_reset(
             token=raw,
-            new_password="first-use-pass-1",
+            new_password="First-use-pass-1",
         )
 
         with pytest.raises(ValidationError):
             PasswordResetService.confirm_reset(
                 token=raw,
-                new_password="second-use-pass-1",
+                new_password="Second-use-pass-1",
             )
 
         user.refresh_from_db()
-        assert user.check_password("first-use-pass-1")
+        assert user.check_password("First-use-pass-1")
 
     def test_unknown_token_is_rejected(self):
         with pytest.raises(ValidationError):
             PasswordResetService.confirm_reset(
                 token="not-a-real-token",
-                new_password="whatever-pass-1",
+                new_password="Whatever-pass-1",
             )

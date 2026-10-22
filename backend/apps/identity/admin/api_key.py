@@ -1,11 +1,12 @@
 from django.contrib import admin
 
 from apps.core.admin.base import PlatformScopedModelAdmin
+from apps.identity.admin.ledger import ReadOnlyLedgerAdminMixin
 from apps.identity.models import ApiKey
 
 
 @admin.register(ApiKey)
-class ApiKeyAdmin(PlatformScopedModelAdmin):
+class ApiKeyAdmin(ReadOnlyLedgerAdminMixin, PlatformScopedModelAdmin):
     list_display = (
         "name",
         "prefix",
@@ -18,10 +19,5 @@ class ApiKeyAdmin(PlatformScopedModelAdmin):
 
     # The hashed key is never reversible — keep it out of forms and lists.
     readonly_fields = ("hashed_key", "scopes", "revoked_at")
-
-    # Credentials are minted through the lifecycle API (the secret is shown
-    # once there); an admin-created row could never have a usable digest.
-    def has_add_permission(self, request):
-        return False
 
     list_select_related = ("owner",)

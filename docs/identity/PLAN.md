@@ -172,6 +172,19 @@
 | 8.7 | OpenAPI + module documentation update; re-audit every AUDIT.md row with new evidence. | M | Low | MVP | — | None |
 | 8.8 | Tooling gates decision + run: type checker, formatter scope, `pip-audit`/`bandit`, time-freeze utility, identity coverage threshold. **[approval A12, A13]** | S–M | Low | MVP (decision) | A12, A13 | None |
 
+**Phase 8 execution status (2026-10-22):**
+
+| WP | Status | Evidence |
+|----|--------|----------|
+| 8.1 | **DONE** | `tests/security/test_e2e_real_auth.py`: operator creates a user over the API; the user signs in, enrols MFA, logs out, completes an MFA login, a credential is minted, used and revoked. No `force_authenticate`. |
+| 8.2 | **DONE, one defect fixed** | Same file, `TestDeactivationCascade`: JWT, refresh token, PAT and API key all stop at once on deactivation; after re-activation sessions stay dead, suspended credentials return, a revoked one does not. It found that a rotated-out access token kept a cached "active" snapshot (up to 60 s, and back after re-activation); `UserSessionService.refresh` now evicts it. |
+| 8.3 | **DONE** | Review in `REAUDIT.md` §2. Fixed: production CORS, `sensitive` throttle scope on password/MFA/credential endpoints, one password policy, test settings pinned. Not changed: `SECURE_PROXY_SSL_HEADER`, 8-character minimum (decisions). `tests/security/test_settings_hardening.py`. |
+| 8.4 | **DONE** | Admin: MFA rows, backup codes, trusted devices, sessions, API keys and PATs are view-only; the User admin can no longer overwrite the password hash. RBAC rows stay editable (residual risk). `tests/admin/test_security_admin.py`. |
+| 8.5 | **DONE** | Whole identity chain reversed to `0013` and forward to head on a populated schema: counts equal, MFA secret intact and re-encrypted, credential digests intact. Individual data migrations (`0018`–`0021`) also verified with seeded rows and guards. |
+| 8.6 | **DONE, two defects fixed** | `tests/security/test_credential_races.py` (revoke, rotate, use-while-revoking, cap) and `test_rbac_concurrency.py::TestLastAdministratorRace`. Fixed: credential cap overshoot (owner row lock) and last-administrator write skew (advisory lock). Backup-code race: `test_mfa.py::TestRecoveryCodeRace`. |
+| 8.7 | **DONE** | `REAUDIT.md` re-audits all 23 rows; OpenAPI generates, includes the new endpoints, and now documents the three authentication schemes (`authentication/schema.py`). |
+| 8.8 | **DONE except audit tools** | Ruff, type check (no new errors in changed files) and the full suite run; coverage in `REAUDIT.md`. `pip-audit` and `bandit` not run: A12 requires approval to add them. |
+
 ---
 
 ## Dependency graph (critical path)

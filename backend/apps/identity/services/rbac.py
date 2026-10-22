@@ -16,7 +16,7 @@ guards, invalidate the permission cache synchronously, and emit a
 from __future__ import annotations
 
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, connection, transaction
 from django.db.models import Q
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied
@@ -45,6 +45,10 @@ ADMIN_PERMISSION_PREFIXES = (
     "identity.group.",
     "identity.user.",
 )
+
+
+# Arbitrary constant naming the advisory lock that serializes admin changes.
+ADMIN_GUARD_LOCK_KEY = 0x1D3A7E01
 
 
 class RbacGuardMixin:
@@ -182,6 +186,24 @@ class RbacGuardMixin:
     # ------------------------------------------------------------------
 
     @classmethod
+    def _serialize_admin_changes(cls) -> None:
+        """
+        Make administrative mutations take turns (PostgreSQL advisory lock,
+        held to the end of the transaction).
+
+        The guard compares the set of administrators before and after a change.
+        Without serialization two concurrent removals of two different
+        administrators each still see the other one and both commit, leaving
+        none (write skew). Re-entrant within one transaction, so the "before"
+        and "after" reads share a single acquisition.
+        """
+        if connection.vendor != "postgresql" or not connection.in_atomic_block:
+            return
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT pg_advisory_xact_lock(%s)", [ADMIN_GUARD_LOCK_KEY])
+
+    @classmethod
     def _admin_holder_ids(cls) -> set[object]:
         """
         Usable users currently holding at least one administrative permission.
@@ -192,6 +214,8 @@ class RbacGuardMixin:
         transaction state rather than the cache. Runs only on administrative
         mutations.
         """
+        cls._serialize_admin_changes()
+
         now = timezone.now()
 
         code_filter = Q()

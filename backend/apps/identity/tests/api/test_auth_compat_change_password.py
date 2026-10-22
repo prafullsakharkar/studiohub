@@ -10,7 +10,7 @@ from apps.identity.tests.factories import UserFactory
 class TestAuthCompatChangePassword:
     def test_change_password_succeeds_and_returns_detail(self):
         user = UserFactory.create(is_active=True)
-        user.set_password("old-pass-1")
+        user.set_password("Old-pass-1")
         user.save(update_fields=["password"])
 
         client = APIClient()
@@ -19,9 +19,9 @@ class TestAuthCompatChangePassword:
         response = client.post(
             "/api/v1/auth/change-password/",
             {
-                "old_password": "old-pass-1",
-                "new_password": "new-pass-1",
-                "confirm_password": "new-pass-1",
+                "old_password": "Old-pass-1",
+                "new_password": "New-pass-1",
+                "confirm_password": "New-pass-1",
             },
             format="json",
         )
@@ -29,11 +29,11 @@ class TestAuthCompatChangePassword:
         assert response.status_code == 200
         assert "detail" in response.data
         user.refresh_from_db()
-        assert user.check_password("new-pass-1")
+        assert user.check_password("New-pass-1")
 
     def test_wrong_old_password_returns_401(self):
         user = UserFactory.create(is_active=True)
-        user.set_password("old-pass-1")
+        user.set_password("Old-pass-1")
         user.save(update_fields=["password"])
 
         client = APIClient()
@@ -43,8 +43,8 @@ class TestAuthCompatChangePassword:
             "/api/v1/auth/change-password/",
             {
                 "old_password": "wrong",
-                "new_password": "new-pass-1",
-                "confirm_password": "new-pass-1",
+                "new_password": "New-pass-1",
+                "confirm_password": "New-pass-1",
             },
             format="json",
         )
@@ -58,8 +58,8 @@ class TestAuthCompatChangePassword:
             "/api/v1/auth/change-password/",
             {
                 "old_password": "x",
-                "new_password": "new-pass-1",
-                "confirm_password": "new-pass-1",
+                "new_password": "New-pass-1",
+                "confirm_password": "New-pass-1",
             },
             format="json",
         )

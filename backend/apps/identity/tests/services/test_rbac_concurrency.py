@@ -79,3 +79,28 @@ class TestConcurrentAssignment:
 
         assert errors == []
         assert GroupMember.all_objects.filter(group=group, user=target).count() == 1
+
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.skipif(
+    connection.vendor == "sqlite",
+    reason="SQLite serializes writers; the race is only meaningful on PostgreSQL",
+)
+class TestLastAdministratorRace:
+    def test_two_admins_cannot_remove_each_other_at_once(self):
+        root = UserFactory.create(is_superuser=True)
+        first = UserFactory.create()
+        second = UserFactory.create()
+        role = grant_permissions(first, "identity.role.update")
+        UserRole.objects.get_or_create(user=second, role=role)
+
+        errors = _race(
+            [
+                lambda: RoleService.unassign_user(role=role, user=first, actor=root),
+                lambda: RoleService.unassign_user(role=role, user=second, actor=root),
+            ]
+        )
+
+        remaining = UserRole.objects.filter(role=role, is_deleted=False).count()
+        assert remaining == 1, f"administrators left: {remaining}"
+        assert len(errors) == 1 and "last user" in str(errors[0])

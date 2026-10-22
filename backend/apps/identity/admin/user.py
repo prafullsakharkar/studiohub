@@ -24,7 +24,10 @@ class UserAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
 
     ordering = ("email",)
 
+    # ``password`` is read-only: a form field would store whatever is typed as
+    # the hash. Passwords change through the password services/API.
     readonly_fields = (
+        "password",
         "id",
         "created_at",
         "updated_at",

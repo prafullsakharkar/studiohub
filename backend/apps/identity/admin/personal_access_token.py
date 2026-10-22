@@ -1,11 +1,12 @@
 from django.contrib import admin
 
 from apps.core.admin.base import PlatformScopedModelAdmin
+from apps.identity.admin.ledger import ReadOnlyLedgerAdminMixin
 from apps.identity.models import PersonalAccessToken
 
 
 @admin.register(PersonalAccessToken)
-class PersonalAccessTokenAdmin(PlatformScopedModelAdmin):
+class PersonalAccessTokenAdmin(ReadOnlyLedgerAdminMixin, PlatformScopedModelAdmin):
     list_display = (
         "name",
         "user",
@@ -20,8 +21,5 @@ class PersonalAccessTokenAdmin(PlatformScopedModelAdmin):
 
     # The hashed token is never reversible — keep it out of forms and lists.
     readonly_fields = ("hashed_token", "scopes", "revoked_at")
-
-    def has_add_permission(self, request):
-        return False
 
     list_select_related = ("user",)

@@ -161,6 +161,10 @@ class CredentialService:
 
         limit = getattr(settings, "IDENTITY_MAX_ACTIVE_CREDENTIALS", 50)
 
+        # Serialize creation per owner: without the row lock, concurrent
+        # requests all count the same live credentials and overshoot the cap.
+        type(owner).objects.select_for_update().get(pk=owner.pk)
+
         if rotated_from is None and cls._live(kind, owner).count() >= limit:
             raise ValidationError(
                 f"You already have {limit} active {kind.label}s; revoke one first.",

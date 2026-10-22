@@ -32,7 +32,20 @@ class PasswordValidator(IdentityBaseValidator):
             raise ValidationError("Password must not contain spaces.")
 
 
-def validate_password(value: str) -> None:
-    """Validate password strength."""
-    validator = PasswordValidator()
-    validator.validate(value)
+def validate_password(value: str, user=None) -> None:
+    """
+    The single password policy.
+
+    Identity's strength rules first, then Django's ``AUTH_PASSWORD_VALIDATORS``
+    (length, similarity to the user's attributes, common and all-numeric
+    passwords). Every path that sets a password goes through
+    ``PasswordService``, which calls this, so create, change and reset cannot
+    drift apart.
+    """
+    from django.contrib.auth.password_validation import (
+        validate_password as django_validate_password,
+    )
+
+    PasswordValidator().validate(value)
+
+    django_validate_password(value, user=user)

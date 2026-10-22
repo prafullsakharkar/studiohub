@@ -6,6 +6,11 @@ from .base import *
 
 DEBUG = False  # pyright: ignore[reportConstantRedefinition]
 
+# DEBUG is forced off above, but CORS_ALLOW_ALL_ORIGINS was already derived from
+# the env DEBUG flag in base.py; with credentials enabled that would let any
+# origin make credentialed requests. Production uses the explicit allow-list.
+CORS_ALLOW_ALL_ORIGINS = False  # pyright: ignore[reportConstantRedefinition]
+
 SECURE_SSL_REDIRECT = True
 
 SESSION_COOKIE_SECURE = True

@@ -1,6 +1,7 @@
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 
+from apps.core.api.throttling import FailClosedScopedRateThrottle
 from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import (
     MFAReauthSerializer,
@@ -23,6 +24,10 @@ class MFARecoveryCodesAPIView(BaseAPIView):
     """
 
     serializer_class = MFAReauthSerializer
+
+    throttle_classes = (FailClosedScopedRateThrottle,)
+
+    throttle_scope = "sensitive"
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request, *args, **kwargs):
@@ -62,6 +67,10 @@ class MFARecoveryCodesAPIView(BaseAPIView):
 
 
 class MFARecoveryVerifyAPIView(BaseAPIView):
+    throttle_classes = (FailClosedScopedRateThrottle,)
+
+    throttle_scope = "sensitive"
+
     serializer_class = RecoveryCodeVerifySerializer
 
     def post(self, request, *args, **kwargs):

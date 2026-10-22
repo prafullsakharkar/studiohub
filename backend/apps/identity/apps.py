@@ -9,5 +9,6 @@ class IdentityConfig(AppConfig):
     verbose_name = "Identity"
 
     def ready(self):
+        import apps.identity.authentication.schema  # noqa
         import apps.identity.checks  # noqa
         import apps.identity.signals  # noqa

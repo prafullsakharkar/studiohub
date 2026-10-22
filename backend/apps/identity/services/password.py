@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from django.contrib.auth.hashers import check_password
-from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 
 from apps.core.api.exceptions.authentication import InvalidCredentials
+from apps.identity.validators.password import validate_password
 
 
 class PasswordService:
@@ -128,15 +128,9 @@ class PasswordService:
             user=user,
             event_type=SecurityEventType.PASSWORD_CHANGED,
             ip_address=(
-                AuthenticationUtils.get_client_ip(request)
-                if request is not None
-                else None
+                AuthenticationUtils.get_client_ip(request) if request is not None else None
             ),
-            user_agent=(
-                request.META.get("HTTP_USER_AGENT", "")
-                if request is not None
-                else ""
-            ),
+            user_agent=(request.META.get("HTTP_USER_AGENT", "") if request is not None else ""),
             description="Password changed.",
             metadata={"origin": origin},
         )

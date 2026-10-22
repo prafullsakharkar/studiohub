@@ -1,3 +1,4 @@
+from apps.core.api.throttling import FailClosedScopedRateThrottle
 from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import (
     MFADisableSerializer,
@@ -11,6 +12,10 @@ class MFADisableAPIView(BaseAPIView):
     Disable MFA (API-MFA-03): needs the password and a valid second factor,
     and discards trusted devices and recovery codes.
     """
+
+    throttle_classes = (FailClosedScopedRateThrottle,)
+
+    throttle_scope = "sensitive"
 
     serializer_class = MFADisableSerializer
 

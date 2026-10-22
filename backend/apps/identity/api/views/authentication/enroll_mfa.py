@@ -1,3 +1,4 @@
+from apps.core.api.throttling import FailClosedScopedRateThrottle
 from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import (
     MFAEnrollResponseSerializer,
@@ -12,6 +13,10 @@ class MFAEnrollAPIView(BaseAPIView):
     Start TOTP enrollment. The secret is returned here, once, while the
     enrollment is PENDING; MFA is not enabled until a code is verified.
     """
+
+    throttle_classes = (FailClosedScopedRateThrottle,)
+
+    throttle_scope = "sensitive"
 
     serializer_class = MFAEnrollSerializer
 

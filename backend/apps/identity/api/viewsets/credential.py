@@ -16,6 +16,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.core.api.throttling import FailClosedScopedRateThrottle
 from apps.identity.api.serializers.credential import (
     CredentialCreateSerializer,
     CredentialSerializer,
@@ -38,6 +39,8 @@ class CredentialViewSet(
 
     authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
+    throttle_classes = (FailClosedScopedRateThrottle,)
+    throttle_scope = "sensitive"
     serializer_class = CredentialSerializer
     http_method_names = ["get", "post", "delete", "head", "options"]
     ordering = ("-created_at",)
@@ -46,6 +49,10 @@ class CredentialViewSet(
         return {**super().get_serializer_context(), "kind": self.kind}
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            # Schema generation has no request or user.
+            return self.kind.model.objects.none()
+
         qs = CredentialService.queryset(
             self.kind,
             self.request.user,

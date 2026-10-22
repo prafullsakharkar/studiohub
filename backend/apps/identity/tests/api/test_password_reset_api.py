@@ -42,15 +42,15 @@ class TestResetPasswordAPI:
             reverse("api:v1:identity:reset-password"),
             {
                 "token": raw,
-                "new_password": "api-new-pass-1",
-                "confirm_password": "api-new-pass-1",
+                "new_password": "Api-new-pass-1",
+                "confirm_password": "Api-new-pass-1",
             },
         )
 
         assert response.status_code == 200
 
         user.refresh_from_db()
-        assert user.check_password("api-new-pass-1")
+        assert user.check_password("Api-new-pass-1")
 
     def test_password_confirmation_mismatch_is_rejected(self, api_client):
         user = UserFactory.create(email="api-mismatch@example.com", is_active=True)
@@ -60,8 +60,8 @@ class TestResetPasswordAPI:
             reverse("api:v1:identity:reset-password"),
             {
                 "token": raw,
-                "new_password": "api-new-pass-1",
-                "confirm_password": "different-pass-1",
+                "new_password": "Api-new-pass-1",
+                "confirm_password": "Different-pass-1",
             },
         )
 
@@ -73,8 +73,8 @@ class TestResetPasswordAPI:
             reverse("api:v1:identity:reset-password"),
             {
                 "token": "not-a-real-token",
-                "new_password": "api-new-pass-1",
-                "confirm_password": "api-new-pass-1",
+                "new_password": "Api-new-pass-1",
+                "confirm_password": "Api-new-pass-1",
             },
         )
 

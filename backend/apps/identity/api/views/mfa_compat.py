@@ -25,6 +25,7 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.core.api.throttling import FailClosedScopedRateThrottle
 from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import MFAReauthSerializer
 from apps.identity.api.views.mfa_support import mfa_http_errors
@@ -35,6 +36,10 @@ from apps.identity.services.mfa.facade import MFAService
 
 class MFABaseView(BaseAPIView):
     serializer_class = serializers.Serializer
+    # Everything here either proves a password / second factor or changes MFA
+    # state; the read-only config view opts out below.
+    throttle_classes = (FailClosedScopedRateThrottle,)
+    throttle_scope = "sensitive"
     authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
@@ -44,6 +49,8 @@ class CodeSerializer(serializers.Serializer[Any]):
 
 
 class MFAConfigView(MFABaseView):
+    throttle_classes = ()
+
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request, *args, **kwargs):
         mfa = UserMFA.objects.filter(user=request.user).first()
