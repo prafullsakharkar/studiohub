@@ -1,4 +1,3 @@
-
 from apps.identity.choices.mfa import MFAStatus
 from apps.identity.querysets.base import IdentityQuerySet
 
@@ -6,6 +5,9 @@ from apps.identity.querysets.base import IdentityQuerySet
 class UserMFAQuerySet(IdentityQuerySet):
     def enabled(self):
         return self.filter(status=MFAStatus.ENABLED)
+
+    def challenge_required(self):
+        return self.filter(status__in=(MFAStatus.ENABLED, MFAStatus.LOCKED))
 
     def disabled(self):
         return self.filter(status=MFAStatus.DISABLED)

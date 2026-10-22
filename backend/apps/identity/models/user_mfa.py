@@ -14,7 +14,6 @@ from apps.identity.managers.user_mfa import UserMFAManager
 
 
 class UserMFA(EntityModel):
-
     objects: UserMFAManager = UserMFAManager()
 
     user = models.OneToOneField(
@@ -77,6 +76,12 @@ class UserMFA(EntityModel):
         null=True,
     )
 
+    last_used_step = models.BigIntegerField(
+        blank=True,
+        null=True,
+        help_text="Last accepted TOTP time step; a step is consumable once.",
+    )
+
     last_verified_ip = models.GenericIPAddressField(
         blank=True,
         null=True,
@@ -119,6 +124,16 @@ class UserMFA(EntityModel):
     def is_enabled(self) -> bool:
         """Check if MFA is enabled."""
         return self.status == "enabled"
+
+    @property
+    def requires_challenge(self) -> bool:
+        """
+        Whether a password alone is insufficient to sign this user in.
+
+        ``locked`` rows still require the second factor: a lockout must
+        never turn into a bypass.
+        """
+        return self.status in (MFAStatus.ENABLED, MFAStatus.LOCKED)
 
     @property
     def secret(self) -> str | None:

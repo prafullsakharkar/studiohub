@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import secrets
+
+from django.conf import settings
 from django.contrib.auth import (
     get_user_model,
 )
@@ -9,12 +12,15 @@ from django.contrib.auth import (
 from django.contrib.auth import (
     logout as django_logout,
 )
+from django.core import signing
 from django.core.cache import cache
 from django.utils import timezone
 
 from apps.core.services.business import BusinessService
 from apps.identity.authentication.exceptions import (
     IPBlocked,
+    MFAChallengeInvalid,
+    MFACodeInvalid,
     TooManyLoginAttempts,
 )
 from apps.identity.authentication.token import (
@@ -23,6 +29,7 @@ from apps.identity.authentication.token import (
 from apps.identity.authentication.utils import (
     AuthenticationUtils,
 )
+from apps.identity.choices import AuthenticationMethod
 from apps.identity.events.authentication import (
     UserLoggedIn,
     UserLoggedOut,
@@ -44,9 +51,14 @@ from apps.identity.validators.authentication import (
 # A failed-login / lockout security event is written at most once per account
 # per window, so a password-guessing attack cannot flood the audit ledger.
 FAILURE_EVENT_WINDOW_SECONDS = 60
-LOCKOUT_EVENT_WINDOW_SECONDS = (
-    AuthenticationValidator.MAX_LOGIN_ATTEMPT_WINDOW_MINUTES * 60
-)
+LOCKOUT_EVENT_WINDOW_SECONDS = AuthenticationValidator.MAX_LOGIN_ATTEMPT_WINDOW_MINUTES * 60
+
+
+CHALLENGE_SALT = "identity.mfa.challenge"
+
+CHALLENGE_CACHE_PREFIX = "identity.mfa.challenge."
+
+MFA_CHALLENGE_TTL_SECONDS = getattr(settings, "MFA_CHALLENGE_TTL_SECONDS", 300)
 
 
 class AuthenticationService(
@@ -129,6 +141,173 @@ class AuthenticationService(
 
             raise
 
+        mfa_state = cls._mfa_state(
+            user=user,
+            request=request,
+        )
+
+        if mfa_state == "challenge":
+            # SEC-LOGIN-04: a correct password alone yields no session and
+            # no tokens, only a short-lived challenge.
+            return {
+                "mfa_required": True,
+                "challenge": cls._issue_challenge(user),
+                "expires_in": MFA_CHALLENGE_TTL_SECONDS,
+            }
+
+        result = cls._start_session(
+            request=request,
+            user=user,
+            username=username,
+            ip_address=ip_address,
+        )
+
+        if mfa_state == "enrollment_required":
+            result["mfa_enrollment_required"] = True
+
+        return result
+
+    # ---------------------------------------------------------
+    # MFA challenge
+    # ---------------------------------------------------------
+
+    @classmethod
+    def _mfa_state(
+        cls,
+        *,
+        user,
+        request,
+    ) -> str:
+        """
+        ``challenge``: a second factor must be presented.
+        ``enrollment_required``: policy demands MFA but none is enrolled
+        (login proceeds and the client is told to enroll).
+        ``none``: password is enough.
+        """
+
+        from apps.identity.models import UserMFA
+        from apps.identity.services.mfa import MFAService
+
+        mfa = UserMFA.objects.filter(user=user).first()
+
+        if mfa is not None and mfa.requires_challenge:
+            if MFAService.can_trust_device_cookie() and MFAService.validate_device(
+                user=user,
+                request=request,
+            ):
+                return "none"
+
+            return "challenge"
+
+        if MFAService.requires_mfa(user=user):
+            return "enrollment_required"
+
+        return "none"
+
+    @classmethod
+    def _issue_challenge(cls, user) -> str:
+        nonce = secrets.token_urlsafe(16)
+
+        cache.set(
+            f"{CHALLENGE_CACHE_PREFIX}live:{nonce}",
+            1,
+            MFA_CHALLENGE_TTL_SECONDS,
+        )
+
+        return signing.dumps(
+            {"u": str(user.pk), "n": nonce},
+            salt=CHALLENGE_SALT,
+        )
+
+    @classmethod
+    def _load_challenge(cls, challenge: str):
+        try:
+            payload = signing.loads(
+                challenge or "",
+                salt=CHALLENGE_SALT,
+                max_age=MFA_CHALLENGE_TTL_SECONDS,
+            )
+            user_id, nonce = payload["u"], payload["n"]
+        except (signing.BadSignature, KeyError, TypeError):
+            raise MFAChallengeInvalid() from None
+
+        if not cache.get(f"{CHALLENGE_CACHE_PREFIX}live:{nonce}"):
+            raise MFAChallengeInvalid()
+
+        user = cls.selector_class.get_user_by_id(pk=user_id)
+
+        if (
+            user is None
+            or not user.is_active
+            or getattr(user, "is_deleted", False)
+            or getattr(user, "is_locked", False)
+        ):
+            raise MFAChallengeInvalid()
+
+        return user, nonce
+
+    @classmethod
+    def complete_mfa_login(
+        cls,
+        *,
+        request,
+        challenge: str,
+        code: str = "",
+        recovery_code: str = "",
+    ):
+        """
+        Second step of an MFA login: exchange a challenge plus a valid
+        second factor for a session and tokens. Returns ``(user, tokens)``.
+        """
+
+        from apps.identity.services.mfa import MFAService
+
+        ip_address = AuthenticationUtils.get_client_ip(request)
+
+        if IPBlacklistService.record_block(
+            ip_address,
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        ):
+            raise IPBlocked()
+
+        user, nonce = cls._load_challenge(challenge)
+
+        if not MFAService.verify_second_factor(
+            user=user,
+            code=code,
+            recovery_code=recovery_code,
+            request=request,
+        ):
+            raise MFACodeInvalid()
+
+        # One challenge, one login: the first valid submission claims it.
+        if not cache.add(
+            f"{CHALLENGE_CACHE_PREFIX}used:{nonce}",
+            1,
+            MFA_CHALLENGE_TTL_SECONDS,
+        ):
+            raise MFAChallengeInvalid()
+
+        cache.delete(f"{CHALLENGE_CACHE_PREFIX}live:{nonce}")
+
+        return user, cls._start_session(
+            request=request,
+            user=user,
+            username=user.email,
+            ip_address=ip_address,
+            authentication_method=AuthenticationMethod.MFA,
+        )
+
+    @classmethod
+    def _start_session(
+        cls,
+        *,
+        request,
+        user,
+        username: str,
+        ip_address,
+        authentication_method=AuthenticationMethod.PASSWORD,
+    ):
         django_login(
             request,
             user,
@@ -143,6 +322,7 @@ class AuthenticationService(
         tokens = TokenService.create_session(
             request=request,
             user=user,
+            authentication_method=authentication_method,
         )
 
         cls._emit_success_events(
@@ -474,9 +654,12 @@ def reset_password(email):
         PasswordResetService,
     )
 
-    return PasswordResetService.request_reset(
-        email=email,
-    ) is not None
+    return (
+        PasswordResetService.request_reset(
+            email=email,
+        )
+        is not None
+    )
 
 
 def verify_email_token(token):

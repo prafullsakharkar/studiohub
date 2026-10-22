@@ -46,6 +46,20 @@ MFA_LOCKOUT_MINUTES = 15
 
 MFA_RECOVERY_CODE_COUNT = 10
 
+# Recovery codes expire; a regenerated set starts a new clock.
+MFA_RECOVERY_CODE_DAYS = 365
+
+# Lifetime of the pre-auth challenge issued after a correct password for an
+# MFA-enabled account. It carries no session and grants no API access.
+MFA_CHALLENGE_TTL_SECONDS = 300
+
+# Policy: who must use MFA (see MFAPolicyService).
+MFA_REQUIRE_MFA = False
+
+MFA_REQUIRE_STAFF = True
+
+MFA_REQUIRE_SUPERUSER = True
+
 # Reverse proxies allowed to set X-Forwarded-For (IPs / CIDR). Empty means the
 # direct peer (REMOTE_ADDR) is always the client address. Consumed only by
 # apps.core.utils.client_ip.

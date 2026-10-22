@@ -89,3 +89,29 @@ class AccountLocked(AuthenticationException):
 
 class MFARequired(AuthenticationException):
     default_detail = "Multi-factor Authentication Required."
+
+
+class MFAChallengeInvalid(AuthenticationException):
+    """
+    The pre-auth challenge is unknown, expired, tampered with or already used.
+
+    One message for every cause, so a caller cannot probe the challenge.
+    """
+
+    default_detail = "Invalid or expired verification challenge."
+
+    default_code = "mfa_challenge_invalid"
+
+
+class MFACodeInvalid(AuthenticationException):
+    default_detail = "Invalid verification code."
+
+    default_code = "mfa_code_invalid"
+
+
+class MFALockedOut(APIException):
+    """Too many failed second-factor attempts; retry after the lockout."""
+
+    status_code = status.HTTP_429_TOO_MANY_REQUESTS
+    default_detail = "Too many failed verification attempts. Try again later."
+    default_code = "mfa_locked"

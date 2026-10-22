@@ -118,6 +118,20 @@
 | 6.6 | SMS/email MFA: implement real channels (provider + dependency approval) or remove the stub endpoints. **[approval A8]** | L | Medium | Later | A8 | None (or new model). |
 | 6.7 | MFA test expansion: HTTP activation, login-with-MFA, replay, encryption-at-rest, lockout e2e, IDOR; real-auth (not forced) for the core flow. | M | Low | MVP | 6.1–6.5 | None |
 
+**Phase 6 execution status (2026-10-22):**
+
+| WP | Status | Evidence |
+|----|--------|----------|
+| 6.1 | **DONE** | Lifecycle is `enroll` (PENDING, server-generated secret) → `activate(code)` (ENABLED + one-time recovery codes). `enroll` refuses while MFA is live, so a stolen session cannot swap the factor. The compat `totp/enable` ignores any client-supplied secret. Disable and recovery regeneration need the password and a valid second factor; policy-required accounts cannot disable. `tests/security/test_mfa.py`. |
+| 6.2 | **DONE** (see risk) | A correct password for an enabled account returns `{mfa_required, challenge}` with no tokens, session or login-history row. `POST /auth/mfa/challenge/` exchanges challenge + TOTP/recovery code for tokens (session method `MFA`). The challenge is signed, 5 min, single use, bound to one user. A valid trusted-device cookie skips the challenge. Unenrolled staff/superusers are flagged `mfa_enrollment_required` but not blocked (no self-service enrollment path exists for a blocked user). The `MFA_*` settings were never exported by `settings/base.py`, so every `MFA_*` value silently fell back to its code default; they are exported now. |
+| 6.3 | **BLOCKED (approval)** | `cryptography` is not installed and its addition is not approved (SEC-SEC-10). `totp_secret` is still plaintext at rest. |
+| 6.4 | **DONE** | `UserMFA.last_used_step` (migration `0018`); a step is consumable once per user, checked under a row lock. One lockout implementation (`MFALockoutService`): TOTP and recovery failures share the counter, a lockout no longer rewrites `status` (so it can never read as "MFA off"). |
+| 6.5 | **DONE** | Recovery codes get `expires_at` (`MFA_RECOVERY_CODE_DAYS`, default 365; existing rows back-filled in `0018`, reverse is a no-op). Consumption is a conditional `UPDATE ... WHERE used = false` (concurrency test). GET returns counts only; POST regenerates after re-authentication. |
+| 6.6 | **DONE (removal)** | A8: SMS/e-mail stub endpoints and routes removed; TOTP + recovery only. The unused `email_enabled`/`sms_enabled` columns remain (dropping them is a separate migration). |
+| 6.7 | **DONE** (encryption test waits for 6.3) | 60 tests in `tests/security/test_mfa.py`: HTTP activation, login with MFA, replay, lockout, recovery race, IDOR/admin reset, audit trail free of secrets, legacy tree. |
+
+**Defects found and fixed in Phase 6:** the legacy `/auth/mfa/*` views returned bare dicts (DRF refuses them) and called a non-existent `ResponseBuilder.bad_request`, so that tree could not have answered over HTTP; the compat `totp/disable` needed no proof of identity; `enroll` on an enabled account silently disabled it; `Verification.reset_failed_attempts` overwrote `totp_confirmed_at` on every login; recovery-code guesses were never counted toward lockout; the legacy trusted-device list returned an unserialisable queryset.
+
 ## Phase 7 — API keys, personal access tokens, OAuth
 
 | WP | Title | Size | Risk | Class | Depends on | Migration risk |

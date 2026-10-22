@@ -29,6 +29,7 @@ from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import (
     LoginSerializer,
     LogoutSerializer,
+    MFAChallengeSerializer,
     RefreshSerializer,
 )
 from apps.identity.api.serializers.frontend_user import (
@@ -37,6 +38,8 @@ from apps.identity.api.serializers.frontend_user import (
 )
 from apps.identity.authentication.session_bound_jwt import SessionBoundJWTAuthentication
 from apps.identity.models import Profile
+from apps.identity.services.authentication import AuthenticationService
+from apps.identity.services.mfa import MFAService
 from apps.identity.services.profile import ProfileService
 
 User = get_user_model()
@@ -59,10 +62,26 @@ class AuthLoginView(BaseAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = serializer.save()  # {access, refresh, session}
+        data = serializer.save()  # {access, refresh, session} or an MFA challenge
+
+        if data.get("mfa_required"):
+            # SEC-LOGIN-04: password accepted, second factor still owed. No
+            # tokens and no user payload until the challenge is completed.
+            return Response(
+                {
+                    "mfa_required": True,
+                    "challenge": data["challenge"],
+                    "expires_in": data["expires_in"],
+                },
+                status=status.HTTP_200_OK,
+            )
 
         # Resolve user for frontend payload (email is normalized to lower)
-        email = serializer.validated_data.get("email") or serializer.validated_data.get("username") or request.data.get("email")
+        email = (
+            serializer.validated_data.get("email")
+            or serializer.validated_data.get("username")
+            or request.data.get("email")
+        )
         user = None
         if email:
             try:
@@ -78,16 +97,69 @@ class AuthLoginView(BaseAPIView):
 
         frontend_user = serialize_frontend_user(user, request) if user else None
 
-        return Response(
+        body = {
+            "tokens": {
+                "access": data.get("access"),
+                "refresh": data.get("refresh"),
+            },
+            "user": frontend_user,
+        }
+
+        if data.get("mfa_enrollment_required"):
+            body["mfa_enrollment_required"] = True
+
+        return Response(body, status=status.HTTP_200_OK)
+
+
+class AuthMFAChallengeView(BaseAPIView):
+    """
+    Second step of an MFA login (API-MFA-09).
+
+    Exchanges the challenge from ``/auth/login/`` plus a TOTP code or a
+    recovery code for the session tokens.
+    """
+
+    authentication_classes = ()
+    permission_classes = (AllowAny,)
+    throttle_classes = (FailClosedScopedRateThrottle,)
+    throttle_scope = "login"
+    serializer_class = MFAChallengeSerializer
+
+    @extend_schema(
+        request=MFAChallengeSerializer,
+        responses={200: OpenApiTypes.OBJECT},
+        description="Complete an MFA login. Returns {tokens:{access,refresh}, user}",
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        data = serializer.validated_data
+
+        user, tokens = AuthenticationService.complete_mfa_login(
+            request=request,
+            challenge=data["challenge"],
+            code=data["code"],
+            recovery_code=data["recovery_code"],
+        )
+
+        response = Response(
             {
                 "tokens": {
-                    "access": data.get("access"),
-                    "refresh": data.get("refresh"),
+                    "access": tokens["access"],
+                    "refresh": tokens["refresh"],
                 },
-                "user": frontend_user,
+                "user": serialize_frontend_user(user, request),
             },
             status=status.HTTP_200_OK,
         )
+
+        if data["remember_device"] and MFAService.can_trust_device_cookie():
+            MFAService.register_device(user=user, request=request)
+
+            MFAService.create_cookie(response=response, request=request, user=user)
+
+        return response
 
 
 class AuthRefreshView(BaseAPIView):

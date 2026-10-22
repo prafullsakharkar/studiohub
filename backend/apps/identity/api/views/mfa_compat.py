@@ -1,281 +1,213 @@
 """
-Frontend-compatible MFA endpoints (Phase C — MFA UI).
+Frontend-compatible MFA endpoints.
 
 Mount: /api/v1/identity/mfa/*  (matches MFAService.ts)
 
-Delegates to MFAService facade (enrollment/verification/recovery) and
-returns shapes matching frontend/src/modules/core/types MFAConfig etc.
+Delegates to the MFAService facade and returns the shapes the former
+frontend expects. Semantics match the canonical tree (API-MFA-10):
+
+- the TOTP secret is generated and held by the server; a client-supplied
+  secret is never accepted,
+- MFA is enabled only by presenting a valid code for the pending secret,
+- disabling and recovery-code regeneration need the password and a valid
+  second factor,
+- SMS and e-mail MFA are not offered (decision A8).
 """
 
 from __future__ import annotations
 
+from typing import Any
+
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.core.api.views import BaseAPIView
+from apps.identity.api.serializers.authentication import MFAReauthSerializer
+from apps.identity.api.views.mfa_support import mfa_http_errors
 from apps.identity.authentication.session_bound_jwt import SessionBoundJWTAuthentication
+from apps.identity.models import UserMFA
 from apps.identity.services.mfa.facade import MFAService
 
 
-class MFAConfigView(BaseAPIView):
+class MFABaseView(BaseAPIView):
     serializer_class = serializers.Serializer
     authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
+
+class CodeSerializer(serializers.Serializer[Any]):
+    code = serializers.CharField(max_length=10)
+
+
+class MFAConfigView(MFABaseView):
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request, *args, **kwargs):
-        user = request.user
-        try:
-            from apps.identity.models import UserMFA
+        mfa = UserMFA.objects.filter(user=request.user).first()
 
-            mfa = UserMFA.objects.filter(user=user).first()
-        except Exception:
-            mfa = None
+        enabled = bool(mfa and mfa.requires_challenge)
 
-        enabled = bool(mfa and getattr(mfa, "is_verified", False))
-        methods = []
-        totp = {"verified": False}
-        sms = {"verified": False}
-        email_cfg = {"verified": False}
-
-        if mfa:
-            if getattr(mfa, "totp_secret", None) and getattr(mfa, "is_verified", False):
-                methods.append("totp")
-                # C2: never return the stored TOTP secret over the API. The
-                # provisioning secret is exposed exclusively by the setup
-                # flow that generated it.
-                totp = {"verified": True}
-            if getattr(mfa, "sms_enabled", False):
-                methods.append("sms")
-                sms = {"verified": True}
-            if getattr(mfa, "email_enabled", False):
-                methods.append("email")
-                email_cfg = {"verified": True}
-
+        # The stored TOTP secret is never returned (DOM-MFA-02); the secret of
+        # a pending enrollment is shown only by the setup call that made it.
         return Response(
             {
                 "enabled": enabled,
-                "methods": methods,
-                "totp": totp,
-                "sms": sms,
-                "email": email_cfg,
+                "pending": bool(mfa and mfa.status == "pending"),
+                "methods": ["totp"] if enabled else [],
+                "totp": {"verified": enabled},
+                "sms": {"verified": False},
+                "email": {"verified": False},
             }
         )
 
 
-class MFATOTPSetupView(BaseAPIView):
-    serializer_class = serializers.Serializer
-    authentication_classes = (SessionBoundJWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
+class MFATOTPSetupView(MFABaseView):
+    """Begin enrollment: create a pending secret and return it once."""
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request, *args, **kwargs):
-        user = request.user
-        email = getattr(user, "email", "")
-        # Generate secret and provisioning uri via MFAService generators.
-        try:
-            secret = MFAService.generators.generate_secret()
-            uri = MFAService.generators.provisioning_uri(email=email, secret=secret)
-            qr = MFAService.generators.qr_code(email=email, secret=secret)
-        except Exception:
-            # Fallback: generate via pyotp
-            import pyotp
+        return self._setup(request)
 
-            secret = pyotp.random_base32()
-            uri = f"otpauth://totp/StudioHub:{email}?secret={secret}&issuer=StudioHub"
-            qr = None
-
-        return Response({"secret": secret, "uri": uri, "qr_code": qr, "qr": qr})
-
-
-class MFATOTPEnableView(BaseAPIView):
-    serializer_class = serializers.Serializer
-    authentication_classes = (SessionBoundJWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
-
-    @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
+    @extend_schema(responses=OpenApiTypes.OBJECT)
     def post(self, request, *args, **kwargs):
-        user = request.user
-        secret = request.data.get("secret")
-        code = request.data.get("code")
-        if not secret or not code:
-            return Response({"detail": "secret and code are required."}, status=400)
-        try:
-            # Enroll, pin the provided secret, then verify the code.
-            # (Activation itself stays behind the dedicated activate flow;
-            # this shim never enables MFA without a verified code.)
-            MFAService.enroll(user=user)
-            try:
-                from apps.identity.models import UserMFA
+        return self._setup(request)
 
-                mfa = UserMFA.objects.get(user=user)
-                mfa.totp_secret = secret
-                mfa.save(update_fields=["totp_secret"])
-            except Exception:
-                pass
-            verified = MFAService.verify(user=user, code=code)
-            return Response({"enabled": bool(verified), "verified": bool(verified)})
-        except Exception as exc:
-            return Response({"detail": str(exc)}, status=400)
+    def _setup(self, request):
+        with mfa_http_errors():
+            mfa = MFAService.enroll(user=request.user, request=request)
+
+            uri = MFAService.provisioning_uri(user=request.user)
+            qr = MFAService.qr_code(user=request.user)
+
+        return Response({"secret": mfa.secret, "uri": uri, "qr_code": qr, "qr": qr})
 
 
-class MFATOTPVerifyView(BaseAPIView):
-    serializer_class = serializers.Serializer
-    authentication_classes = (SessionBoundJWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
+class MFATOTPEnableView(MFABaseView):
+    """Activate MFA with a code for the pending secret."""
 
-    @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
+    serializer_class = CodeSerializer
+
+    @extend_schema(request=CodeSerializer, responses=OpenApiTypes.OBJECT)
     def post(self, request, *args, **kwargs):
-        user = request.user
-        code = request.data.get("code")
-        if not code:
-            return Response({"detail": "code is required."}, status=400)
-        try:
-            result = MFAService.verify(user=user, code=code)
-            # MFAService.verify returns bool or mfa
-            valid = bool(result) if not isinstance(result, bool) else result
-            # Some implementations return None on failure
-            if result is None:
-                valid = False
-            return Response({"valid": bool(valid)})
-        except Exception as exc:
-            return Response({"valid": False, "detail": str(exc)}, status=400)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Any ``secret`` in the body is ignored: only the server's own
+        # pending secret can be activated.
+        with mfa_http_errors():
+            codes = MFAService.activate(
+                user=request.user,
+                code=serializer.validated_data["code"],
+                request=request,
+            )
+
+        return Response(
+            {"enabled": True, "verified": True, "recovery_codes": codes},
+        )
 
 
-class MFATOTPDisableView(BaseAPIView):
-    serializer_class = serializers.Serializer
-    authentication_classes = (SessionBoundJWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
+class MFATOTPVerifyView(MFABaseView):
+    serializer_class = CodeSerializer
 
-    @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
+    @extend_schema(request=CodeSerializer, responses=OpenApiTypes.OBJECT)
     def post(self, request, *args, **kwargs):
-        user = request.user
-        # code is optional for disable, but frontend sends it
-        try:
-            MFAService.disable(user=user)
-            return Response({"success": True})
-        except Exception as exc:
-            return Response({"detail": str(exc)}, status=400)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        with mfa_http_errors():
+            valid = MFAService.verify(
+                user=request.user,
+                code=serializer.validated_data["code"],
+                request=request,
+            )
+
+        return Response({"valid": bool(valid)})
 
 
-class MFASMSEnableView(BaseAPIView):
-    serializer_class = serializers.Serializer
-    authentication_classes = (SessionBoundJWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
+class MFATOTPDisableView(MFABaseView):
+    serializer_class = MFAReauthSerializer
 
-    @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
+    @extend_schema(request=MFAReauthSerializer, responses=OpenApiTypes.OBJECT)
     def post(self, request, *args, **kwargs):
-        # SMS not fully implemented in backend; stub for frontend compat
-        phone = request.data.get("phone_number") or request.data.get("phone")
-        return Response({"verified": False, "phone_number": phone, "detail": "SMS MFA not configured on server — stub."})
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-    def get(self, request, *args, **kwargs):
-        return Response({"verified": False})
+        with mfa_http_errors():
+            MFAService.disable_with_reauth(
+                user=request.user,
+                password=serializer.validated_data["password"],
+                code=serializer.validated_data["code"],
+                recovery_code=serializer.validated_data["recovery_code"],
+                request=request,
+            )
 
-
-class MFASMSVerifyView(BaseAPIView):
-    serializer_class = serializers.Serializer
-    authentication_classes = (SessionBoundJWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
-
-    def post(self, request, *args, **kwargs):
-        return Response({"verified": False, "detail": "SMS not configured."})
-
-
-class MFASMSDisableView(BaseAPIView):
-    serializer_class = serializers.Serializer
-    authentication_classes = (SessionBoundJWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
-
-    def post(self, request, *args, **kwargs):
         return Response({"success": True})
 
 
-class MFAEmailEnableView(BaseAPIView):
-    serializer_class = serializers.Serializer
-    authentication_classes = (SessionBoundJWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
-
-    def post(self, request, *args, **kwargs):
-        email = request.data.get("email")
-        return Response({"verified": False, "email": email, "detail": "Email MFA not configured — stub."})
-
-
-class MFAEmailVerifyView(BaseAPIView):
-    serializer_class = serializers.Serializer
-    authentication_classes = (SessionBoundJWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
-
-    def post(self, request, *args, **kwargs):
-        return Response({"verified": False})
-
-
-class MFAEmailDisableView(BaseAPIView):
-    serializer_class = serializers.Serializer
-    authentication_classes = (SessionBoundJWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
-
-    def post(self, request, *args, **kwargs):
-        return Response({"success": True})
-
-
-class MFARecoveryCodesView(BaseAPIView):
-    serializer_class = serializers.Serializer
-    authentication_classes = (SessionBoundJWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
+class MFARecoveryCodesView(MFABaseView):
+    """Counts only. Codes are shown once, when issued (API-MFA-04)."""
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request, *args, **kwargs):
-        user = request.user
-        try:
-            codes = MFAService.generate_recovery_codes(user=user)
-            # generate may return None if already exists; fallback to remaining
-            if not codes:
-                codes = MFAService.remaining_recovery_codes(user=user) or []
-        except Exception:
-            codes = []
+        return Response(
+            {
+                "codes": [],
+                "remaining": MFAService.remaining_recovery_codes(user=request.user),
+            }
+        )
+
+
+class MFARecoveryCodesRegenerateView(MFABaseView):
+    serializer_class = MFAReauthSerializer
+
+    @extend_schema(request=MFAReauthSerializer, responses=OpenApiTypes.OBJECT)
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        mfa = UserMFA.objects.filter(user=request.user).first()
+
+        if mfa is None or not mfa.requires_challenge:
+            return Response({"detail": "MFA is not enabled."}, status=400)
+
+        with mfa_http_errors():
+            MFAService.reauthenticate(
+                user=request.user,
+                password=serializer.validated_data["password"],
+                code=serializer.validated_data["code"],
+                recovery_code=serializer.validated_data["recovery_code"],
+                request=request,
+            )
+
+            codes = MFAService.regenerate_recovery_codes(
+                user=request.user,
+                request=request,
+            )
+
         return Response({"codes": codes})
 
 
-class MFARecoveryCodesRegenerateView(BaseAPIView):
-    serializer_class = serializers.Serializer
-    authentication_classes = (SessionBoundJWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
-
-    @extend_schema(responses=OpenApiTypes.OBJECT)
-    def post(self, request, *args, **kwargs):
-        user = request.user
-        try:
-            codes = MFAService.regenerate_recovery_codes(user=user)
-            if not codes:
-                codes = MFAService.generate_recovery_codes(user=user) or []
-        except Exception as exc:
-            return Response({"detail": str(exc)}, status=400)
-        return Response({"codes": codes or []})
-
-
-class MFAAdminResetView(BaseAPIView):
-    serializer_class = serializers.Serializer
-    authentication_classes = (SessionBoundJWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
+class MFAAdminResetView(MFABaseView):
+    """Superuser-only: forget another user's MFA so they can re-enroll."""
 
     def post(self, request, *args, **kwargs):
-        # userId is in URL kwargs
+        from django.contrib.auth import get_user_model
+
         user_id = kwargs.get("user_id") or kwargs.get("pk")
-        if not user_id:
-            return Response({"detail": "userId is required."}, status=400)
-        # Only staff/superuser can reset others' MFA
-        if not (request.user.is_superuser):
-            return Response({"detail": "Permission denied."}, status=403)
-        try:
-            from django.contrib.auth import get_user_model
 
-            User = get_user_model()
-            target = User.objects.get(pk=user_id)
-            MFAService.reset(user=target)
-            return Response({"success": True})
-        except Exception as exc:
-            return Response({"detail": str(exc)}, status=400)
+        if not request.user.is_superuser:
+            raise PermissionDenied("Permission denied.")
+
+        User = get_user_model()
+
+        target = User.objects.filter(pk=user_id).first()
+
+        if target is None:
+            raise NotFound("User not found.")
+
+        MFAService.reset(user=target, request=request)
+
+        return Response({"success": True})

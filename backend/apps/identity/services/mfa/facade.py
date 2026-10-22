@@ -29,10 +29,11 @@ class MFAService:
     # Enrollment
 
     enroll = enrollment.enroll
-    activate = enrollment.activate
+    activate = enrollment.activate  # requires a valid code; returns recovery codes
+    verify_enrollment = enrollment.activate
     disable = enrollment.disable
+    disable_with_reauth = enrollment.disable_with_reauth
     reset = enrollment.reset
-    regenerate_secret = enrollment.regenerate_secret
     provisioning_uri = enrollment.provisioning_uri
     qr_code = enrollment.qr_code
 
@@ -40,6 +41,8 @@ class MFAService:
 
     verify = verification.verify
     verify_recovery_code = verification.verify_recovery_code
+    verify_second_factor = verification.verify_second_factor
+    reauthenticate = verification.reauthenticate
     unlock = verification.unlock
     is_locked = verification.is_locked
 
@@ -73,3 +76,4 @@ class MFAService:
     requires_mfa = policies.is_required
     requires_step_up = policies.requires_step_up
     can_skip_mfa = policies.can_skip
+    can_trust_device_cookie = policies.can_trust_device

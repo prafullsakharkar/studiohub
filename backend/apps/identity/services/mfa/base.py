@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from django.conf import settings
 from django.db import transaction
 
@@ -55,6 +57,12 @@ class BaseMFAService(BaseService):
         settings,
         "MFA_RECOVERY_CODE_COUNT",
         10,
+    )
+
+    RECOVERY_CODE_DAYS = getattr(
+        settings,
+        "MFA_RECOVERY_CODE_DAYS",
+        365,
     )
 
     TRUSTED_DEVICE_DAYS = getattr(
@@ -136,3 +144,42 @@ class BaseMFAService(BaseService):
     # ------------------------------------------------------------------
 
     transaction = transaction
+
+    # ------------------------------------------------------------------
+    # Audit
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def audit(
+        cls,
+        *,
+        user,
+        event_type,
+        description: str,
+        request=None,
+        metadata: dict[str, Any] | None = None,
+    ):
+        """
+        Record a security event for an MFA action (best effort).
+
+        Never receives or stores codes, secrets or backup codes.
+        """
+
+        from apps.identity.authentication.utils import AuthenticationUtils
+        from apps.identity.services.security_event import SecurityEventService
+
+        extra = {}
+
+        if request is not None:
+            extra = {
+                "ip_address": AuthenticationUtils.get_client_ip(request),
+                "user_agent": request.META.get("HTTP_USER_AGENT", ""),
+            }
+
+        SecurityEventService.emit(
+            user=user,
+            event_type=event_type,
+            description=description,
+            metadata=metadata or {},
+            **extra,
+        )

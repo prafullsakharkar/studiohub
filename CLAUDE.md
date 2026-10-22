@@ -56,7 +56,7 @@ View/ViewSet → Serializer → Service → Validator / Selector → Manager / Q
 
 ## Active work: identity hardening
 
-Branch `feature/identity-hardening` executes a phased plan: `docs/identity/AUDIT.md` (findings), `PLAN.md` (work packages, with status per phase), `CONTRACTS.md` (approved `API-*`/`SEC-*`/`DOM-*` contracts). Phases 1–4 are committed (Phase 4: RBAC management in `services/rbac.py`, RBAC viewsets/serializers, left-at scoping); Phase 5 (authentication, sessions, history, devices, IP controls) is next. Changes to an `API-*` contract require updating `CONTRACTS.md`; changes to a `SEC-*`/`DOM-*` invariant that alter the trust model require an ADR. Reference work-package IDs (e.g. `WP 3.3`) in commits and tests.
+Branch `feature/identity-hardening` executes a phased plan: `docs/identity/AUDIT.md` (findings), `PLAN.md` (work packages, with status per phase), `CONTRACTS.md` (approved `API-*`/`SEC-*`/`DOM-*` contracts). Phases 1–5 are committed (Phase 4: RBAC in `services/rbac.py`; Phase 5: sessions, append-only ledgers, identity-owned login history, trusted-proxy client IP, devices); Phase 6 (MFA and recovery) is implemented except WP 6.3 (TOTP secret encryption), which waits for approval to add `cryptography`. Changes to an `API-*` contract require updating `CONTRACTS.md`; changes to a `SEC-*`/`DOM-*` invariant that alter the trust model require an ADR. Reference work-package IDs (e.g. `WP 3.3`) in commits and tests.
 
 ## Docs
 

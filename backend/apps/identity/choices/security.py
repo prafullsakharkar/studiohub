@@ -11,6 +11,13 @@ class SecurityEventType(models.TextChoices):
     MFA_ENABLED = "mfa_enabled", "MFA Enabled"
     MFA_DISABLED = "mfa_disabled", "MFA Disabled"
     MFA_VERIFIED = "mfa_verified", "MFA Verified"
+    MFA_FAILED = "mfa_failed", "MFA Failed"
+    MFA_LOCKED = "mfa_locked", "MFA Locked"
+    MFA_RECOVERY_CODE_USED = "mfa_recovery_code_used", "MFA Recovery Code Used"
+    MFA_RECOVERY_CODES_REGENERATED = (
+        "mfa_recovery_codes_regenerated",
+        "MFA Recovery Codes Regenerated",
+    )
     TOKEN_REFRESHED = "token_refreshed", "Token Refreshed"
     SESSION_CREATED = "session_created", "Session Created"
     SESSION_TERMINATED = "session_terminated", "Session Terminated"

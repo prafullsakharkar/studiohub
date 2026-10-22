@@ -189,7 +189,7 @@ ENABLED  ──locked (N failures)──► LOCKED (until locked_until)
 
 | ID | Invariant | Enforcement |
 |---|---|---|
-| DOM-MFA-01 | `PENDING` is fully unauthenticated; only `ENABLED` satisfies login | `AuthenticationService` (WP 6.2) |
+| DOM-MFA-01 | `PENDING` is fully unauthenticated; `ENABLED` (and a legacy `LOCKED`) require the factor; a lockout never relaxes it | `AuthenticationService._mfa_state` (WP 6.2) |
 | DOM-MFA-02 | A TOTP secret is never returned after enrollment | API (WP 6.1) |
 | DOM-MFA-03 | A TOTP secret is encrypted at rest and decryption fails closed | Model/service (WP 6.3) |
 | DOM-MFA-04 | A time step can be consumed once per user (replay prevention) | Service (WP 6.4) |
@@ -397,16 +397,17 @@ Two trees currently exist (`api/urls.py:72-125`). **TARGET — API-MFA-00:** one
 
 | ID | Method & path | Contract |
 |---|---|---|
-| API-MFA-01 | `POST /auth/mfa/enroll/` | returns `{secret, provisioning_uri, qr?}` once; state `PENDING` |
-| API-MFA-02 | `POST /auth/mfa/verify/` | `{code}`; on success `ENABLED` + recovery codes once |
-| API-MFA-03 | `POST /auth/mfa/disable/` | requires password + valid code; revokes devices/codes |
+| API-MFA-01 | `POST /auth/mfa/enroll/` | returns `{secret, provisioning_uri, qr?}` once; state `PENDING`; `400` if MFA is already enabled. Compat: `GET|POST /identity/mfa/totp/setup/` |
+| API-MFA-02 | `POST /auth/mfa/verify/` | `{code}`; while `PENDING` a valid code sets `ENABLED` and returns recovery codes once; once enabled it is a step-up check. Compat: `POST /identity/mfa/totp/enable/` ignores any client `secret` |
+| API-MFA-03 | `POST /auth/mfa/disable/` | `{password, code \| recovery_code}`; revokes devices/codes, clears the secret; `403` for accounts the policy requires; `400` wrong password/code, `429` locked |
 | API-MFA-04 | `GET /auth/mfa/recovery/` | **must not** rotate or display codes; returns counts only |
 | API-MFA-05 | `POST /auth/mfa/recovery/` | regenerate, requires re-auth, returns codes once |
 | API-MFA-06 | `POST /auth/mfa/recovery/verify/` | consumes one code atomically |
 | API-MFA-07 | `GET /auth/mfa/devices/` | list own devices |
 | API-MFA-08 | `POST /auth/mfa/devices/revoke/` | revoke own device |
-| API-MFA-09 | login with MFA | `200 {"mfa_required":true,"challenge":"<short-lived>"}`; **no tokens/session** |
-| API-MFA-10 | `/identity/mfa/*` | deprecated alias; same semantics during transition |
+| API-MFA-09 | login with MFA | `200 {"mfa_required":true,"challenge":"<signed>","expires_in":300}`; **no tokens/session/history row**. Complete with `POST /auth/mfa/challenge/` `{challenge, code \| recovery_code, remember_device?}` → `{tokens, user}`. Challenge: single use, 5 min (`MFA_CHALLENGE_TTL_SECONDS`), one user. Wrong code `401`, lockout `429` |
+| API-MFA-10 | `/identity/mfa/*` | deprecated alias; same semantics during transition. SMS/e-mail routes removed (A8) |
+| API-MFA-11 | `POST /identity/mfa/admin/reset/{user}/` | superuser only; clears secret, codes, devices |
 
 ### 4.6 Credential contract (new)
 
@@ -528,7 +529,7 @@ Status values: **DECIDED** = approved for implementation; **PROPOSED** = recomme
 
 | ID | Decision | Recommendation | Status | Blocks |
 |---|---|---|---|---|
-| A1 | MFA secret encryption | Add `cryptography` (Fernet/AES-GCM) with a dedicated env key; fail closed if absent | DECIDED (dependency approval pending install) | WP 6.3 |
+| A1 | MFA secret encryption | Add `cryptography` (Fernet/AES-GCM) with a dedicated env key; fail closed if absent | DECIDED (**dependency still not approved/installed; WP 6.3 blocked**) | WP 6.3 |
 | A2 | `UserPreference` | Delete the model; `Profile.preferences` is the single store | DECIDED | WP 3.6 |
 | A3 | `KnownDevice` | Delete; `TrustedDevice` is canonical | DECIDED | WP 5.13 |
 | A4 | Identity `LoginHistory` | **Reversed 2026-10-22 (ADR-0035):** identity `LoginHistory` is canonical; `apps.audit.LoginHistory`, its URL and its rows are removed | DECIDED (superseded) | WP 5.7 |
