@@ -20,9 +20,12 @@ class DeviceFingerprint:
     ip_address: str | None
 
 
-class TrustedDeviceService:
+class DeviceTokenService:
     """
-    Enterprise trusted device helper.
+    Device fingerprint and signed remember-device token helper.
+
+    (Not the trusted-device CRUD service: that is
+    ``apps.identity.services.trusted_device.TrustedDeviceService``.)
 
     Features
     --------

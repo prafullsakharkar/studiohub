@@ -12,7 +12,6 @@ from apps.identity.models.user import User
 from .factories import (
     BackupCodeFactory,
     IPBlacklistFactory,
-    KnownDeviceFactory,
     LoginAttemptFactory,
     OAuthAccountFactory,
     OAuthProviderFactory,
@@ -82,12 +81,6 @@ def backup_code(db):
 def trusted_device(db):
     """Create a trusted device."""
     return TrustedDeviceFactory.create()
-
-
-@pytest.fixture
-def known_device(db):
-    """Create a known device."""
-    return KnownDeviceFactory.create()
 
 
 @pytest.fixture

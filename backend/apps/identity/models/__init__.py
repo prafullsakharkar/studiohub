@@ -4,7 +4,6 @@ from .group import Group
 from .group_member import GroupMember
 from .group_role import GroupRole
 from .ip_blacklist import IPBlacklist
-from .known_device import KnownDevice
 from .login_attempt import LoginAttempt
 from .login_history import LoginHistory
 from .oauth_account import OAuthAccount
@@ -29,7 +28,6 @@ __all__ = (
     "GroupMember",
     "GroupRole",
     "IPBlacklist",
-    "KnownDevice",
     "LoginAttempt",
     "LoginHistory",
     "OAuthAccount",

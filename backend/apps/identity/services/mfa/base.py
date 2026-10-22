@@ -5,7 +5,7 @@ from django.db import transaction
 
 from apps.core.events import publish
 from apps.core.services import BaseService
-from apps.identity.authentication.device import TrustedDeviceService
+from apps.identity.authentication.device import DeviceTokenService
 from apps.identity.authentication.qr import QRCodeService
 from apps.identity.authentication.recovery import RecoveryCodeService
 from apps.identity.authentication.totp import TOTPService
@@ -73,7 +73,7 @@ class BaseMFAService(BaseService):
 
     recovery = RecoveryCodeService
 
-    trusted_device = TrustedDeviceService
+    trusted_device = DeviceTokenService
 
     # ------------------------------------------------------------------
     # Models

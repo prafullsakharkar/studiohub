@@ -4,7 +4,6 @@ from .group import *
 from .group_member import *
 from .group_role import *
 from .ip_blacklist import *
-from .known_device import *
 from .login_attempt import *
 from .login_history import *
 from .oauth import *

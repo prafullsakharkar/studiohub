@@ -16,7 +16,6 @@ from apps.identity.choices import (
 )
 from apps.identity.models.backup_code import BackupCode
 from apps.identity.models.ip_blacklist import IPBlacklist
-from apps.identity.models.known_device import KnownDevice
 from apps.identity.models.login_attempt import LoginAttempt
 from apps.identity.models.oauth_account import OAuthAccount
 from apps.identity.models.oauth_provider import OAuthProvider
@@ -148,23 +147,6 @@ class TrustedDeviceFactory(DjangoModelFactory):  # pyright: ignore[reportMissing
     is_trusted = True
 
 
-class KnownDeviceFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
-    """Factory for KnownDevice model."""
-
-    class Meta:
-        model = KnownDevice
-        django_get_or_create = ("user", "fingerprint")
-
-    user = factory.SubFactory(UserFactory)
-    fingerprint = factory.Faker("uuid4")
-    browser = factory.Faker("word")
-    platform = factory.Faker("word")
-    device_type = "web"
-    ip_address = "127.0.0.1"
-    user_agent = "Mozilla/5.0"
-    first_seen_at = factory.Faker("date_time_this_year")
-    last_seen_at = factory.Faker("date_time_this_month")
-    is_trusted = False
 
 
 class LoginAttemptFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
