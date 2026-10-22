@@ -5,7 +5,24 @@ from apps.core.models.querysets.base import BaseQuerySet
 class IdentityQuerySet(BaseQuerySet):
     """
     Base QuerySet for all Identity models.
+
+    Every Identity model derives from ``EntityModel`` and therefore supports
+    soft deletion. These helpers make the ``is_deleted`` dimension explicit so
+    domain managers can default to live rows while ``all_objects`` remains the
+    recovery/audit escape hatch.
     """
+
+    def alive(self):
+        """Return only non-deleted records."""
+        return self.filter(is_deleted=False)
+
+    def deleted(self):
+        """Return only soft-deleted records."""
+        return self.filter(is_deleted=True)
+
+    def with_deleted(self):
+        """Return the queryset unchanged (readability helper)."""
+        return self
 
     def active(self):
         if not hasattr(self.model, "status"):

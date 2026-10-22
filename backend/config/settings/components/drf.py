@@ -38,6 +38,7 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "login": "30/min",
         "refresh": "60/min",
+        "password_reset": "5/min",
     },
 }
 

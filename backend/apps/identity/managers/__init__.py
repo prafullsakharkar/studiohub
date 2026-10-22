@@ -8,11 +8,11 @@ from .rbac import (
     GroupMemberManager,
     GroupRoleManager,
     LoginHistoryManager,
+    PasswordResetTokenManager,
     PermissionManager,
     PersonalAccessTokenManager,
     RoleManager,
     RolePermissionManager,
-    UserPreferenceManager,
     UserRoleManager,
 )
 from .security_event import SecurityEventManager
@@ -33,13 +33,13 @@ __all__ = [
     "PermissionManager",
     "PersonalAccessTokenManager",
     "ProfileManager",
+    "PasswordResetTokenManager",
     "RoleManager",
     "RolePermissionManager",
     "SecurityEventManager",
     "TrustedDeviceManager",
     "UserManager",
     "UserMFAManager",
-    "UserPreferenceManager",
     "UserRoleManager",
     "UserSessionManager",
 ]

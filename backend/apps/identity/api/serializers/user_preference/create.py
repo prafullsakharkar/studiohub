@@ -16,11 +16,13 @@ from .base import (
 class ProfileCreateSerializer(
     ProfileBaseSerializer,
 ):
+    """
+    Create a profile for the authenticated user.
 
-    user = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(),
-        required=False,
-    )
+    ``user`` is read-only (inherited from ``ProfileBaseSerializer.Meta``):
+    clients can never create a profile for another account. The viewset injects
+    ``request.user``. The model also enforces OneToOne uniqueness.
+    """
 
     class Meta(
         ProfileBaseSerializer.Meta,
@@ -31,9 +33,9 @@ class ProfileCreateSerializer(
         """
         Drop unique-together validators that reference ``user``.
 
-        ``user`` is injected server-side by the viewset (``perform_create``)
-        after validation, so a validator requiring it would reject every
-        create request. Uniqueness is still enforced at the DB layer.
+        ``user`` is injected server-side by the viewset after validation, so a
+        validator requiring it would reject every create request. Uniqueness is
+        still enforced at the DB layer.
         """
         return [
             v
@@ -45,7 +47,13 @@ class ProfileCreateSerializer(
         self,
         validated_data,
     ):
+        # DRF merges ``save(user=...)`` kwargs into validated_data; pop the
+        # owner so it is passed exactly once. Read-only ``user`` is never
+        # accepted from request bodies.
+        owner = validated_data.pop("user", None)
+
         return ProfileService.create(
+            user=owner,
             **validated_data,
         )
 

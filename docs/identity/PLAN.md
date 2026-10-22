@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-22
 **Companion:** `docs/identity/AUDIT.md` (findings + evidence).
-**Status:** Planning only. No code, migration, or settings changed.
+**Status:** Phase 1 plan. Phase 2 decisions A1–A15 were approved on 2026-10-22; Phase 3 execution status is recorded directly below its table.
 
 **Conventions.** Sizes: S = hours, M = 1–2 days, L = 3–5 days, XL = 1–2 weeks. Risk: Low/Medium/High (blast radius on production data, API contract, or security guarantees). Classification: **MVP** = required to close a Critical/High finding or unblock a later phase; **Later** = hardening/hygiene that can follow. Every WP lists its dependencies; WPs that require a decision from `AUDIT.md` §6 are flagged **[approval A#]** and **must not start** until answered. Migration risk is called out per WP.
 
@@ -22,6 +22,19 @@
 | 3.6 | `UserPreference` resolution: wire a full self-scoped vertical (selector/service/serializer/viewset/route + auto-create on user creation) **or** delete model/migration/admin. **[approval A2]** | M | Medium | MVP (decision) | A2 | If delete: destructive `DeleteModel` migration (schema-only; confirm no data). If wire: additive. |
 | 3.7 | `must_change_password` enforcement (design): decide enforcement point (login response flag / JWT claim gate / permission class). Implementation lands in Phase 5 login. **[approval]** | S (design) | Medium | MVP (design) | — | None |
 | 3.8 | Password reset / email verification: either implement a hashed single-use `PasswordResetToken` (+1 h expiry, version invalidation, email delivery) and an email-verification token, **or** unmount the stub endpoints. **[approval A10]** | L | Medium | MVP (decision) | A10 | Additive (new model) or none (unmount). |
+
+**Phase 3 execution status (2026-10-22):**
+
+| WP | Status | Evidence |
+|----|--------|----------|
+| 3.1 | **DONE** | `UserManager`/`ProfileManager` default to `alive()`; `IdentityQuerySet` exposes `alive/deleted/with_deleted`; auth selector cannot resolve soft-deleted users; login validator rejects `is_deleted`. Tests: `tests/models/test_soft_delete_scoping_models.py`. |
+| 3.2 | **DONE** | Emails normalized on manager/service paths; `UniqueConstraint(Lower("email"))`; validator uses `iexact`; data-normalizing migration with duplicate pre-scan (`0014`). Tests: `tests/managers/test_email_uniqueness_managers.py`. |
+| 3.3 | **DONE** | `PasswordService` is the single mutation path (old-password check, Django validators, session revocation, `PASSWORD_CHANGED`, clears `must_change_password`); both change-password endpoints delegate. Tests: `tests/api/viewsets/test_user_change_password.py`, `tests/services/test_password_revocation.py`. |
+| 3.4 | **DONE** | `ProfileCreateSerializer.user` is read-only; viewset forces `request.user`; serializer test and new cross-user API test updated. |
+| 3.5 | **DEFERRED (Later)** | Package reorg is a pure rename with no contract impact; deferred to keep the Phase 3 diff reviewable. |
+| 3.6 | **DONE (A2)** | `UserPreference` model/admin/manager removed; destructive `DeleteModel` in `0014`. `Profile.preferences` is canonical. |
+| 3.7 | **DONE (design + claim)** | `must_change_password` already appears in the refresh JWT claim and `FrontendUser` payload; the unified password service clears it only after a successful change. Login-time enforcement remains WP 6.2. |
+| 3.8 | **DONE (A10)** | `PasswordResetToken` (SHA-256 digest, 1 h expiry, single active token per user, row lock on consume), `PasswordResetService`, `POST /identity/password/reset/` + `/auth/reset-password/`, forgot-password throttled (`5/min`) and generic. Tests: `tests/services/test_password_reset_services.py`, `tests/api/test_password_reset_api.py`. Email verification stays unmounted. |
 
 ## Phase 4 — Roles, permissions, assignments, groups
 

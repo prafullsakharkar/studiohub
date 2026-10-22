@@ -55,8 +55,11 @@ class AuthenticationSelector(
         *,
         uuid,
     ):
+        # ``uuid`` is a Python property aliasing the UUID primary key
+        # (``UUIDModel.uuid``), not a database field, so the lookup must use
+        # the primary key.
         return User.objects.filter(
-            uuid=uuid,
+            pk=uuid,
         ).first()
 
     @classmethod

@@ -15,6 +15,12 @@ from apps.identity.api.views.auth_compat import (
     AuthMeView,
     AuthRefreshView,
 )
+from apps.identity.api.views.authentication.forgot_password import (
+    ForgotPasswordAPIView,
+)
+from apps.identity.api.views.authentication.reset_password import (
+    ResetPasswordAPIView,
+)
 
 app_name = "auth-compat"
 
@@ -27,5 +33,15 @@ urlpatterns = [
         "change-password/",
         AuthChangePasswordView.as_view(),
         name="auth-change-password",
+    ),
+    path(
+        "forgot-password/",
+        ForgotPasswordAPIView.as_view(),
+        name="auth-forgot-password",
+    ),
+    path(
+        "reset-password/",
+        ResetPasswordAPIView.as_view(),
+        name="auth-reset-password",
     ),
 ]

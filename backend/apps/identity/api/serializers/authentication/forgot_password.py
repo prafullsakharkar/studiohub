@@ -14,5 +14,6 @@ class ForgotPasswordSerializer(serializers.Serializer[Any]):
     def save(self, **kwargs):
 
         PasswordService.request_password_reset(
-            self.validated_data["email"],
+            email=self.validated_data["email"],
+            request=self.context.get("request"),
         )

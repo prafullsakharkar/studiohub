@@ -24,11 +24,11 @@ from apps.identity.models import (
 from apps.identity.selectors.user import (
     UserSelector,
 )
+from apps.identity.services.password import (
+    PasswordService,
+)
 from apps.identity.services.user import (
     UserService,
-)
-from apps.identity.services.user_password import (
-    UserPasswordService,
 )
 from apps.identity.services.user_session import (
     UserSessionService,
@@ -46,7 +46,7 @@ class UserViewSet(
     service_class = UserService
 
     filterset_class = UserFilterSet
-    password_service_class = UserPasswordService
+    password_service_class = PasswordService
 
     serializer_map = {
         "list": UserListSerializer,
@@ -213,7 +213,9 @@ class UserViewSet(
 
         self.password_service_class.change_password(
             user=request.user,
-            password=serializer.validated_data["new_password"],
+            old_password=serializer.validated_data["old_password"],
+            new_password=serializer.validated_data["new_password"],
+            request=request,
         )
 
         return Response(

@@ -328,17 +328,18 @@ def logout_user(user):
 
 def change_password(user, old_password, new_password):
     """Change a user's password after verifying the old one."""
-    from apps.identity.services.user_password import (
-        UserPasswordService,
+    from apps.identity.services.password import (
+        PasswordService,
     )
 
-    if not user.check_password(old_password):
+    try:
+        PasswordService.change_password(
+            user=user,
+            old_password=old_password,
+            new_password=new_password,
+        )
+    except Exception:
         return False
-
-    UserPasswordService.change_password(
-        user,
-        new_password,
-    )
 
     return True
 
@@ -352,14 +353,13 @@ def send_password_reset_email(user):
 
 def reset_password(email):
     """Trigger a password reset for the given email."""
-    user = AuthenticationService.get_user(
-        email=email,
+    from apps.identity.services.password_reset import (
+        PasswordResetService,
     )
 
-    if user is None:
-        return False
-
-    return send_password_reset_email(user)
+    return PasswordResetService.request_reset(
+        email=email,
+    ) is not None
 
 
 def verify_email_token(token):

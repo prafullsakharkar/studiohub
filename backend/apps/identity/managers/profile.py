@@ -9,7 +9,22 @@ class ProfileManager(models.Manager):  # pyright: ignore[reportMissingTypeArgume
     """Profile manager."""
 
     def get_queryset(self) -> ProfileQuerySet:
-        return ProfileQuerySet(self.model, using=self._db)
+        """Default manager excludes soft-deleted profiles."""
+
+        return ProfileQuerySet(self.model, using=self._db).alive()
+
+    def deleted(self, *args: Any, **kwargs: Any):
+        """Return only soft-deleted profiles."""
+
+        return ProfileQuerySet(self.model, using=self._db).deleted(*args, **kwargs)
+
+    def with_deleted(self, *args: Any, **kwargs: Any):
+        """Return profiles including soft-deleted rows."""
+
+        return ProfileQuerySet(self.model, using=self._db).with_deleted(
+            *args,
+            **kwargs,
+        )
 
     def complete(self, *args: Any, **kwargs: Any):
         return self.get_queryset().complete(*args, **kwargs)

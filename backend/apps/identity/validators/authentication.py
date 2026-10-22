@@ -58,6 +58,21 @@ class AuthenticationValidator(
             raise UserInactive()
 
     @classmethod
+    def validate_user_not_deleted(
+        cls,
+        user,
+    ):
+        """
+        Soft-deleted principals are not authenticatable.
+
+        The selector already excludes them; this is defense in depth for any
+        caller that resolves a user through ``all_objects``.
+        """
+
+        if getattr(user, "is_deleted", False):
+            raise InvalidCredentials()
+
+    @classmethod
     def validate_email_verified(
         cls,
         user,
@@ -169,6 +184,10 @@ class AuthenticationValidator(
         )
 
         cls.validate_user_active(
+            user,
+        )
+
+        cls.validate_user_not_deleted(
             user,
         )
 

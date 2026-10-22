@@ -1,4 +1,4 @@
-from django.contrib.auth.hashers import make_password
+from __future__ import annotations
 
 from apps.core.services.business import (
     BusinessService,
@@ -6,13 +6,21 @@ from apps.core.services.business import (
 from apps.identity.models import (
     User,
 )
+from apps.identity.services.password import (
+    PasswordService,
+)
 
 
 class UserPasswordService(
     BusinessService,
 ):
     """
-    User password operations.
+    Administrative password operations.
+
+    Kept as a thin compatibility facade over :class:`PasswordService`, which is
+    the single owner of password validation, session revocation, and audit
+    events. Self-service changes must call ``PasswordService.change_password``
+    so the current password is verified.
     """
 
     model = User
@@ -22,51 +30,14 @@ class UserPasswordService(
         cls,
         user,
         password,
+        *,
+        request=None,
     ):
-        from django.contrib.auth.password_validation import validate_password
-
-        validate_password(password, user=user)
-
-        user.password = make_password(
-            password,
-        )
-
-        user.save(
-            update_fields=[
-                "password",
-                "updated_at",
-            ],
-        )
-
-        profile = getattr(
-            user,
-            "profile",
-            None,
-        )
-
-        if profile and profile.must_change_password:
-            profile.must_change_password = False
-
-            profile.save(
-                update_fields=[
-                    "must_change_password",
-                    "updated_at",
-                ],
-            )
-
-        from apps.identity.authentication.token import TokenService
-        from apps.identity.choices import SecurityEventType
-        from apps.identity.services.security_event import SecurityEventService
-
-        TokenService.revoke_all_for_user(
+        return PasswordService.set_password(
             user=user,
-        )
-
-        SecurityEventService.create(
-            user=user,
-            event_type=SecurityEventType.PASSWORD_CHANGED,
-            description="Password changed via the admin/user management path.",
-            metadata={"origin": "admin"},
+            new_password=password,
+            request=request,
+            origin="admin",
         )
 
     @classmethod
@@ -74,8 +45,11 @@ class UserPasswordService(
         cls,
         user,
         password,
+        *,
+        request=None,
     ):
         return cls.change_password(
             user,
             password,
+            request=request,
         )

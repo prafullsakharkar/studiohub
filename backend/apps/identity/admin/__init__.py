@@ -8,6 +8,7 @@ from .known_device import *
 from .login_attempt import *
 from .login_history import *
 from .oauth import *
+from .password_reset_token import *
 from .permission import *
 from .personal_access_token import *
 from .profile import *
@@ -17,6 +18,5 @@ from .security_event import *
 from .trusted_device import *
 from .user import *
 from .user_mfa import *
-from .user_preference import *
 from .user_role import *
 from .user_session import *

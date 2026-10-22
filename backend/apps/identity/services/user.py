@@ -48,6 +48,39 @@ class UserService(
         PermissionCacheService.invalidate(user=instance)
 
     @classmethod
+    def _normalized_email(cls, email):
+        """
+        Canonical email form: lower-cased local part and domain.
+
+        ``BaseUserManager.normalize_email`` only lower-cases the domain, so the
+        explicit ``.lower()`` is required for the case-insensitive uniqueness
+        contract.
+        """
+
+        if not email:
+            return email
+
+        return User.objects.normalize_email(email.strip()).lower()
+
+    @classmethod
+    def before_create(cls, **validated_data):
+        email = validated_data.get("email")
+
+        if email:
+            validated_data["email"] = cls._normalized_email(email)
+
+        return validated_data
+
+    @classmethod
+    def before_update(cls, instance, **validated_data):
+        email = validated_data.get("email")
+
+        if email:
+            validated_data["email"] = cls._normalized_email(email)
+
+        return instance, validated_data
+
+    @classmethod
     def create(
         cls,
         *,

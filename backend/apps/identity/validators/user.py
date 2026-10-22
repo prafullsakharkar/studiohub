@@ -21,8 +21,19 @@ class UserValidator(
         email,
         instance=None,
     ):
-        queryset = User.objects.filter(
-            email=email,
+        """
+        Reject case-variant duplicates.
+
+        The database enforces ``UniqueConstraint(Lower("email"))``; this check
+        gives the API a field-level 400 instead of a 409 from the constraint.
+        """
+
+        from django.contrib.auth.base_user import BaseUserManager
+
+        normalized = BaseUserManager.normalize_email((email or "").strip()).lower()
+
+        queryset = User.all_objects.filter(
+            email__iexact=normalized,
         )
 
         if instance:

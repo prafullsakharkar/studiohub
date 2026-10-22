@@ -12,6 +12,7 @@ from .me import MeAPIView
 from .recovery_codes import MFARecoveryCodesAPIView, MFARecoveryVerifyAPIView
 from .refresh import RefreshAPIView
 from .resend_verification import ResendVerificationAPIView
+from .reset_password import ResetPasswordAPIView
 from .trusted_device import (
     TrustedDeviceListAPIView,
     TrustedDeviceRevokeAPIView,
@@ -23,6 +24,7 @@ __all__ = [
     "LogoutAPIView",
     "RefreshAPIView",
     "ForgotPasswordAPIView",
+    "ResetPasswordAPIView",
     "ChangePasswordAPIView",
     "ResendVerificationAPIView",
     "MeAPIView",

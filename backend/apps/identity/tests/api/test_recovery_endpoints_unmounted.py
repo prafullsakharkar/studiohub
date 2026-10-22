@@ -1,13 +1,12 @@
 """
-H3 — the broken anonymous recovery endpoints must not be mounted.
+Recovery endpoint mounting policy.
 
-``POST /identity/password/reset/`` crashed with 500 (calls a
-nonexistent ``PasswordService.reset_password``) and ``POST
-/identity/email/verify/`` crashed likewise (nonexistent
-``get_by_verification_token``). With no token-issuance subsystem behind
-them, mounting them only produces 500s on a public surface; they are
-unmounted until a real reset-token system exists (Phase 1+). The
-neighbouring self-service routes stay reachable.
+The reset endpoint used to be unmounted because it called a nonexistent
+``PasswordService.reset_password`` and had no token-issuance subsystem behind
+it. A real single-use, expiring token flow now exists (``PasswordResetService``),
+so ``POST /identity/password/reset/`` is mounted and fails closed with a 400 on
+invalid tokens. Email verification remains unmounted until a verifiable token
+subsystem is implemented.
 """
 
 from __future__ import annotations
@@ -17,17 +16,17 @@ from rest_framework.test import APIClient
 
 
 @pytest.mark.django_db
-class TestRecoveryEndpointsUnmounted:
-    def test_password_reset_unmounted(self):
+class TestRecoveryEndpoints:
+    def test_password_reset_is_mounted_and_rejects_invalid_token(self):
         client = APIClient()
 
         response = client.post(
             "/api/v1/identity/password/reset/",
-            {"token": "x", "password": "new-pass-1", "confirm_password": "new-pass-1"},
+            {"token": "x", "new_password": "new-pass-1", "confirm_password": "new-pass-1"},
             format="json",
         )
 
-        assert response.status_code == 404
+        assert response.status_code == 400
 
     def test_email_verify_unmounted(self):
         client = APIClient()
@@ -43,14 +42,14 @@ class TestRecoveryEndpointsUnmounted:
     def test_surrounding_self_service_routes_still_mounted(self):
         client = APIClient()
 
-        # password/forgot is a stub (returns without side effects); it must
-        # still resolve to the view, not 404.
+        # password/forgot always returns the generic response, even for
+        # unknown accounts.
         forgot = client.post(
             "/api/v1/identity/password/forgot/",
             {"email": "nobody@example.com"},
             format="json",
         )
-        assert forgot.status_code != 404
+        assert forgot.status_code == 200
 
         # change requires authentication; it must not be a 404 either.
         change = client.post(

@@ -65,10 +65,9 @@ class ProfileViewSet(
             serializer.validated_data,
         )
 
-        data.setdefault(
-            "user",
-            self.request.user,
-        )
+        # The client can never choose the owner: ``user`` is read-only on the
+        # serializer and is always the authenticated principal here.
+        data["user"] = self.request.user
 
         serializer.instance = self.service_class.create(
             **data,
