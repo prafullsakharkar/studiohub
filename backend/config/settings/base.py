@@ -55,6 +55,7 @@ from .components.security import (
     SECURE_PROXY_SSL_HEADER,
     SECURE_REFERRER_POLICY,
     SESSION_COOKIE_HTTPONLY,
+    TRUSTED_PROXY_IPS,
     X_FRAME_OPTIONS,
 )
 from .components.static import STATIC_ROOT, STATIC_URL

@@ -160,6 +160,14 @@ class Settings(BaseSettings):
     log_format: str = Field(default="", alias="LOG_FORMAT")
 
     ####################################################################
+    # Trusted reverse proxies (client IP resolution)
+    ####################################################################
+
+    # Comma-separated IPs / CIDR ranges of proxies allowed to set
+    # X-Forwarded-For. Empty (default): REMOTE_ADDR is the client address.
+    trusted_proxy_ips: str = Field(default="", alias="TRUSTED_PROXY_IPS")
+
+    ####################################################################
     # Celery
     ####################################################################
 
@@ -187,6 +195,13 @@ class Settings(BaseSettings):
             "HOST": self.db_host,
             "PORT": self.db_port,
         }
+
+    @computed_field
+    @property
+    def trusted_proxies(self) -> tuple[str, ...]:
+        return tuple(
+            entry.strip() for entry in self.trusted_proxy_ips.split(",") if entry.strip()
+        )
 
     @computed_field
     @property

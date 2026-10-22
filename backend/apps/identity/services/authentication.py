@@ -32,7 +32,7 @@ from apps.identity.selectors.authentication import (
     AuthenticationSelector,
 )
 from apps.identity.services.ip_blacklist import (
-    is_ip_blacklisted,
+    IPBlacklistService,
 )
 from apps.identity.services.login_attempt import (
     LoginAttemptService,
@@ -85,8 +85,9 @@ class AuthenticationService(
             request,
         )
 
-        if is_ip_blacklisted(
+        if IPBlacklistService.record_block(
             ip_address,
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
         ):
             raise IPBlocked()
 

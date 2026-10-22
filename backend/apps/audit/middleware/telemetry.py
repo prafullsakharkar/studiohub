@@ -14,6 +14,8 @@ from __future__ import annotations
 import contextlib
 import time
 
+from apps.core.utils.client_ip import get_client_ip
+
 # Paths that are never telemetry (docs, schema, health, non-API traffic).
 _SKIP_PREFIXES = (
     "/api/schema",
@@ -95,7 +97,4 @@ class APITelemetryMiddleware:
 
     @staticmethod
     def _client_ip(request) -> str | None:
-        forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
-        if forwarded:
-            return forwarded.split(",")[0].strip()[:45]
-        return (request.META.get("REMOTE_ADDR") or None)
+        return get_client_ip(request)

@@ -2,6 +2,8 @@
 Security settings.
 """
 
+from config.env import settings
+
 SESSION_COOKIE_HTTPONLY = True
 
 CSRF_COOKIE_HTTPONLY = True
@@ -43,3 +45,8 @@ MFA_MAX_FAILED_ATTEMPTS = 5
 MFA_LOCKOUT_MINUTES = 15
 
 MFA_RECOVERY_CODE_COUNT = 10
+
+# Reverse proxies allowed to set X-Forwarded-For (IPs / CIDR). Empty means the
+# direct peer (REMOTE_ADDR) is always the client address. Consumed only by
+# apps.core.utils.client_ip.
+TRUSTED_PROXY_IPS = settings.trusted_proxies
