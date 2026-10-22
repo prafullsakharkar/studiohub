@@ -155,7 +155,7 @@
 | 7.4 | **DONE** (A6) | `v2$` HMAC-SHA256 with `API_KEY_PEPPER`; legacy digests verified and upgraded on first use; fails closed without a pepper; `identity.E002` check. |
 | 7.5 | **DONE** | Expired, revoked, inactive, wrong-secret, malformed, disabled/deleted owner, prefix-sharing rows all rejected; reactivation no longer revives revoked credentials (migration `0020` adds `revoked_at` + backfill). |
 | 7.6 | **DONE (throttled, not queued)** | `last_used_at`/`last_used_ip` are a conditional UPDATE at most once per `IDENTITY_CREDENTIAL_TOUCH_SECONDS` (60), not a task. |
-| 7.7 / 7.8 | **NOT STARTED (approval)** | A7 says OAuth is out of MVP and its models/admin are removed in a later cleanup. That is a destructive migration; it needs a row check and explicit go-ahead. |
+| 7.7 / 7.8 | **DONE (removal, A7)** | `OAuthAccount` and `OAuthProvider` models, admin, factories/fixtures and `OAuthProviderName` are removed; nothing in the application read or wrote them. Migration `0021` refuses to run if either table has rows (client secrets and tokens would be lost) and recreates empty tables on reverse. `tests/models/test_oauth_removed.py`. 7.8 (secret encryption) is moot. |
 
 **Defects found and fixed in Phase 7:** scopes were never enforced and a scoped superuser key would have had full bypass; `UserService.activate` re-enabled every inactive credential including revoked ones; an API key acted as its creator even when it had a different owner and was suspended by the wrong account; the admin could "create" credentials with no usable digest; a dead PAT middleware was removed.
 

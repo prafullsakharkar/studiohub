@@ -221,7 +221,7 @@ ENABLED  ──locked (N failures)──► LOCKED (until locked_until)
 
 | ID | Invariant | Enforcement |
 |---|---|---|
-| DOM-OAUTH-01 | **DECIDED A7:** OAuth is out of MVP. If retained, it must have a complete, tested flow; if not, the models/admin are removed in a later cleanup migration. Until then, no endpoint may claim OAuth support. | WP 7.7 |
+| DOM-OAUTH-01 | **DECIDED A7, implemented:** OAuth is out of MVP and its models/admin are removed (migration `0021`, refuses to drop non-empty tables). Re-introducing OAuth needs a complete, tested flow (single-use `state`, `nonce`, redirect allow-list, verified-email gate, encrypted secrets) and a new ADR. | WP 7.7 |
 | DOM-OAUTH-02 | Provider `client_secret` and account tokens are never stored in plaintext | WP 7.8 |
 
 ---
@@ -535,7 +535,7 @@ Status values: **DECIDED** = approved for implementation; **PROPOSED** = recomme
 | A4 | Identity `LoginHistory` | **Reversed 2026-10-22 (ADR-0035):** identity `LoginHistory` is canonical; `apps.audit.LoginHistory`, its URL and its rows are removed | DECIDED (superseded) | WP 5.7 |
 | A5 | Credential consolidation | One service/API over both tables in MVP; no physical merge | DECIDED | WP 7.1 |
 | A6 | Credential hashing | HMAC-SHA256 with a dedicated pepper; lazy rehash | DECIDED (implemented WP 7.4) | WP 7.4 |
-| A7 | OAuth | Out of MVP; remove models/admin in a later cleanup | DECIDED | WP 7.7/7.8 |
+| A7 | OAuth | Out of MVP; remove models/admin in a later cleanup | DECIDED (removed in Phase 7) | WP 7.7/7.8 |
 | A8 | SMS/email MFA | Remove stub endpoints; TOTP + recovery only | DECIDED | WP 6.6 |
 | A9 | Django-auth `Group`/`Permission` | Keep tables for now; document unused; do not expose | DECIDED | WP 4.7 |
 | A10 | Password reset / email verification | Implement password reset; unmount email verification until email delivery exists | DECIDED | WP 3.8 |

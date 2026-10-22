@@ -94,12 +94,8 @@ class TestAdminRegistryDiscovery:
         assert failures == []
 
     def test_reversible_secrets_never_exposed(self):
-        from apps.identity.admin.oauth import OAuthAccountAdmin, OAuthProviderAdmin
         from apps.identity.admin.user_mfa import UserMFAdmin
 
-        assert "access_token" in (OAuthAccountAdmin.exclude or ())
-        assert "refresh_token" in (OAuthAccountAdmin.exclude or ())
-        assert "client_secret" in (OAuthProviderAdmin.exclude or ())
         assert "totp_secret" in (UserMFAdmin.exclude or ())
 
     @pytest.mark.django_db

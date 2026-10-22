@@ -6,8 +6,6 @@ from .group_role import GroupRole
 from .ip_blacklist import IPBlacklist
 from .login_attempt import LoginAttempt
 from .login_history import LoginHistory
-from .oauth_account import OAuthAccount
-from .oauth_provider import OAuthProvider
 from .password_reset_token import PasswordResetToken
 from .permission import Permission
 from .personal_access_token import PersonalAccessToken
@@ -30,8 +28,6 @@ __all__ = (
     "IPBlacklist",
     "LoginAttempt",
     "LoginHistory",
-    "OAuthAccount",
-    "OAuthProvider",
     "PasswordResetToken",
     "Permission",
     "PersonalAccessToken",

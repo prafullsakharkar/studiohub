@@ -13,8 +13,6 @@ from .factories import (
     BackupCodeFactory,
     IPBlacklistFactory,
     LoginAttemptFactory,
-    OAuthAccountFactory,
-    OAuthProviderFactory,
     ProfileFactory,
     SecurityEventFactory,
     TrustedDeviceFactory,
@@ -57,18 +55,6 @@ def admin_user(db):
 def profile(db, user):
     """Create a profile linked to the ``user`` fixture."""
     return ProfileFactory.create(user=user)
-
-
-@pytest.fixture
-def oauth_provider(db):
-    """Create an OAuth provider."""
-    return OAuthProviderFactory.create()
-
-
-@pytest.fixture
-def oauth_account(db):
-    """Create an OAuth account."""
-    return OAuthAccountFactory.create()
 
 
 @pytest.fixture

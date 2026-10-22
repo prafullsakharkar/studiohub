@@ -17,8 +17,6 @@ from apps.identity.choices import (
 from apps.identity.models.backup_code import BackupCode
 from apps.identity.models.ip_blacklist import IPBlacklist
 from apps.identity.models.login_attempt import LoginAttempt
-from apps.identity.models.oauth_account import OAuthAccount
-from apps.identity.models.oauth_provider import OAuthProvider
 from apps.identity.models.profile import Profile
 from apps.identity.models.security_event import SecurityEvent
 from apps.identity.models.trusted_device import TrustedDevice
@@ -78,41 +76,6 @@ class ProfileFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeAr
     timezone = "UTC"
     language = "en"
     preferences = {}
-
-
-class OAuthProviderFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
-    """Factory for OAuthProvider model."""
-
-    class Meta:
-        model = OAuthProvider
-        django_get_or_create = ("name",)
-
-    name = factory.Faker("word")
-    client_id = factory.Faker("uuid4")
-    client_secret = factory.Faker("uuid4")
-    authorization_url = factory.Faker("url")
-    token_url = factory.Faker("url")
-    userinfo_url = factory.Faker("url")
-    scope = "openid profile email"
-    is_active = True
-
-
-class OAuthAccountFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
-    """Factory for OAuthAccount model."""
-
-    class Meta:
-        model = OAuthAccount
-        django_get_or_create = ("user", "provider", "provider_account_id")
-
-    user = factory.SubFactory(UserFactory)
-    provider = factory.SubFactory(OAuthProviderFactory)
-    provider_account_id = factory.Faker("uuid4")
-    access_token = factory.Faker("uuid4")
-    refresh_token = factory.Faker("uuid4")
-    expires_at = factory.Faker("date_time_this_year")
-    scope = "openid profile email"
-    is_connected = True
-    last_connected_at = factory.Faker("date_time_this_month")
 
 
 class BackupCodeFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]

@@ -40,20 +40,3 @@ class SecurityEventType(models.TextChoices):
     SUSPICIOUS_ACTIVITY = "suspicious_activity", "Suspicious Activity"
     DATA_EXPORT = "data_export", "Data Export"
     DATA_IMPORT = "data_import", "Data Import"
-
-
-class OAuthProviderName(models.TextChoices):
-    GOOGLE = "google", "Google"
-    GITHUB = "github", "GitHub"
-    GITLAB = "gitlab", "GitLab"
-    BITBUCKET = "bitbucket", "Bitbucket"
-    FACEBOOK = "facebook", "Facebook"
-    LINKEDIN = "linkedin", "LinkedIn"
-    TWITTER = "twitter", "Twitter"
-    MICROSOFT = "microsoft", "Microsoft"
-    APPLE = "apple", "Apple"
-    SLACK = "slack", "Slack"
-    DISCORD = "discord", "Discord"
-    AUTH0 = "auth0", "Auth0"
-    OKTA = "okta", "Okta"
-    CUSTOM = "custom", "Custom"
