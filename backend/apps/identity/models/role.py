@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.db import models
+from django.db.models.functions import Lower
 
 from apps.core.models import ColorModel, PlatformScopedModel
 from apps.identity.choices import RolePriority, RoleScope, RoleType
@@ -93,11 +94,18 @@ class Role(PlatformScopedModel, ColorModel):
         )
 
         indexes = [
-            models.Index(fields=["code"]),
             models.Index(fields=["priority"]),
             models.Index(fields=["is_system"]),
             models.Index(fields=["is_default"]),
             models.Index(fields=["is_active"]),
+        ]
+
+        constraints = [
+            models.UniqueConstraint(
+                Lower("name"),
+                condition=models.Q(is_deleted=False),
+                name="uq_identity_role_name_live",
+            ),
         ]
 
     def __str__(self):

@@ -18,7 +18,7 @@ class PreserveDatabaseTestRunner(DiscoverRunner):
     allowing tests to run against a pre-created database.
 
     Usage:
-    1. Create the test database manually: createdb test_studiohub
+    1. Create the test database manually: createdb <database name from DB_NAME>
     2. Run migrations on the test database: python manage.py migrate --database=default
     3. Run tests with: DJANGO_SETTINGS_MODULE=config.settings.testing pytest or manage.py test
     """

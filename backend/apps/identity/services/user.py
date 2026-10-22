@@ -1,3 +1,5 @@
+from django.db import transaction
+
 from apps.core.services.business import (
     BusinessService,
 )
@@ -108,6 +110,28 @@ class UserService(
             )
 
         return instance
+
+    @classmethod
+    @transaction.atomic
+    def delete(
+        cls,
+        instance,
+        *,
+        user=None,
+    ):
+        """Soft-delete a user, refusing to remove the last administrator."""
+        from apps.identity.services.rbac import RbacGuardMixin
+
+        before = RbacGuardMixin._admin_holder_ids()
+
+        result = super().delete(
+            instance,
+            user=user,
+        )
+
+        RbacGuardMixin._ensure_admins_remain(before)
+
+        return result
 
     @classmethod
     def reset_password(

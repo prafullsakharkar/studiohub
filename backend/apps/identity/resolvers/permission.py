@@ -80,6 +80,7 @@ class PermissionResolver(
         member_group_ids = GroupMember.objects.filter(
             user_id=user_pk,
             is_deleted=False,
+            left_at__isnull=True,
             group__is_deleted=False,
         ).values_list("group_id", flat=True)
         group_role_ids = GroupRole.objects.filter(

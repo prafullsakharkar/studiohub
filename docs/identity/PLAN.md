@@ -48,6 +48,22 @@
 | 4.6 | RBAC audit events: emit `SecurityEventType.ROLE_CHANGED`/`PERMISSION_CHANGED` on every grant/revoke/assign/membership mutation. | S | Low | MVP | 4.1, 5.6 | None |
 | 4.7 | Reconcile latent Django-auth RBAC: remove `PermissionsMixin` M2M shadow tables or document them as unused and drop from admin. **[approval A9]** | M | High | Later | A9 | **High:** dropping `auth.Group` M2M from `User` touches the user model — requires a reviewed migration and a statement that nothing reads those tables. |
 
+**Phase 4 execution status (2026-10-22):**
+
+| WP | Status | Evidence |
+|----|--------|----------|
+| 4.1 | **DONE** | `services/rbac.py` (`RoleService`, `GroupService`, `PermissionService`); `api/viewsets/rbac.py` serves API-RBAC-02/03/05/06. Tests: `tests/services/test_rbac_services.py`, `tests/api/viewsets/test_rbac_viewsets.py`. |
+| 4.2 | **DONE** | Escalation guards (`_require_holds*`), self-modification block, set-based last-administrator guard (`_admin_holder_ids`). Tests: `TestLastAdministratorGuardIsolated` (superuser actor, so the guard — not the self-modification rule — is what blocks). |
+| 4.3 | **DONE** | `is_system` read-only in serializers; system Role/Group/Permission never deletable, superuser-only edit; `code` immutable; API-created permissions are forced non-system. `PermissionViewSet` now routes through `PermissionService` (it previously wrote via the serializer directly). |
+| 4.4 | **DONE** | Resolver filters `left_at IS NULL`; `Role` signal invalidates on any save. Bulk `QuerySet.delete()` is covered by Django's per-row `post_delete` (comment in `signals/rbac.py`); there is no dedicated bulk-delete test yet. |
+| 4.5 | **DONE, migration unverified on populated data** | Migration `0015`: case-insensitive live-name uniqueness for Role/Group (partial, `is_deleted=False`), `RolePermission.expires_at` index, redundant `Role.code` index dropped; read-only duplicate pre-scan fails fast. `granted_by` populated by the service; `GroupRole` added to change tracking. Service-level name guard returns a client error instead of an `IntegrityError`. |
+| 4.6 | **DONE** | Every grant/revoke/assign/membership/permission-catalog mutation emits one `SecurityEvent` (`TestEveryMutationIsAudited`). No-op revokes emit nothing. |
+| 4.7 | **NOT STARTED** | Later. A9 is DECIDED (keep Django-auth tables, document as unused, do not expose); no code change in this phase. |
+
+**Open item blocking the concurrency test.** Concurrent same-role/same-member assignment is handled by `_activate_link` (row lock + retry on the unique constraint), but its real-thread test (`tests/services/test_rbac_concurrency.py`, `transaction=True`) needs a database that may be flushed: Django empties every table after a `transaction=True` test. The database configured in the env file holds live data (users, projects, tokens, audit rows), so the test is not run against it until a disposable database is provided or the owner explicitly accepts the flush.
+
+**Environment facts found in Phase 4.** The configured DB role has no `CREATEDB` (`pytest --create-db` fails). `UserFactory` uses `django_get_or_create=("email",)`, so committed leftover users silently change test inputs.
+
 ## Phase 5 — Authentication, sessions, history, devices, IP controls
 
 | WP | Title | Size | Risk | Class | Depends on | Migration risk |

@@ -49,6 +49,13 @@ class RolePermission(PlatformScopedModel):
             "permission",
         ]
 
+        indexes = [
+            models.Index(
+                fields=["expires_at"],
+                name="idx_identity_rp_expires_at",
+            ),
+        ]
+
         constraints = [
             models.UniqueConstraint(
                 fields=[

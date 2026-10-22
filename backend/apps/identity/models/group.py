@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.db import models
+from django.db.models.functions import Lower
 
 from apps.core.models import ColorModel, PlatformScopedModel
 from apps.identity.managers.rbac import GroupManager
@@ -44,6 +45,14 @@ class Group(PlatformScopedModel, ColorModel):
         db_table = "identity_group"
 
         ordering = ("name",)
+
+        constraints = [
+            models.UniqueConstraint(
+                Lower("name"),
+                condition=models.Q(is_deleted=False),
+                name="uq_identity_group_name_live",
+            ),
+        ]
 
     def __str__(self):
         return self.name
