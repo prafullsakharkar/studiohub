@@ -17,6 +17,11 @@ class ApiKeyAdmin(PlatformScopedModelAdmin):
     search_fields = ("name", "prefix", "owner__email", "owner__username")
 
     # The hashed key is never reversible — keep it out of forms and lists.
-    readonly_fields = ("hashed_key", "scopes")
+    readonly_fields = ("hashed_key", "scopes", "revoked_at")
+
+    # Credentials are minted through the lifecycle API (the secret is shown
+    # once there); an admin-created row could never have a usable digest.
+    def has_add_permission(self, request):
+        return False
 
     list_select_related = ("owner",)

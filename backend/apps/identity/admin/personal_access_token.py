@@ -19,6 +19,9 @@ class PersonalAccessTokenAdmin(PlatformScopedModelAdmin):
     search_fields = ("name", "prefix", "user__email", "user__username")
 
     # The hashed token is never reversible — keep it out of forms and lists.
-    readonly_fields = ("hashed_token", "scopes")
+    readonly_fields = ("hashed_token", "scopes", "revoked_at")
+
+    def has_add_permission(self, request):
+        return False
 
     list_select_related = ("user",)

@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from django.db.models import Q
-from django.utils import timezone
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
-from apps.identity.api_keys.hashing import APIKeyHasher
+from apps.identity.api_keys.resolver import CredentialResolver
 
 
 class APIKeyAuthentication(
@@ -14,7 +12,10 @@ class APIKeyAuthentication(
     """
     Authenticate requests using API Keys.
 
-    Authorization: Api-Key <token>
+    Authorization: Api-Key <prefix.secret>
+
+    The key acts as its principal (owner, else creator). Scope restrictions
+    are applied by ``HasPermission`` from ``request.auth``.
     """
 
     keyword = "Api-Key"
@@ -42,7 +43,7 @@ class APIKeyAuthentication(
             return None
 
         api_key = self._verify(
-            token,
+            token.strip(),
         )
 
         if api_key is None:
@@ -50,14 +51,20 @@ class APIKeyAuthentication(
                 "Invalid API Key.",
             )
 
-        # Same account-state rule as the JWT path: a deactivated owner
-        # loses access immediately.
-        owner = api_key.created_by
+        # Same account-state rule as the JWT path: a deactivated or deleted
+        # principal loses access immediately. One message, so a caller cannot
+        # tell a dead key from a dead account.
+        principal = api_key.principal
 
-        if owner is None or not owner.is_active:
-            return None
+        if principal is None or not principal.is_active or getattr(principal, "is_deleted", False):
+            raise AuthenticationFailed(
+                "Invalid API Key.",
+            )
 
-        self._touch(
+        from apps.identity.models import ApiKey
+
+        CredentialResolver.touch(
+            ApiKey,
             api_key,
             ip_address=self._get_ip(request),
         )
@@ -65,7 +72,7 @@ class APIKeyAuthentication(
         request.api_key = api_key
 
         return (
-            owner,
+            principal,
             api_key,
         )
 
@@ -73,34 +80,14 @@ class APIKeyAuthentication(
         self,
         plain: str,
     ):
-        """Resolve an active, unexpired platform ApiKey from a presented secret."""
+        """Resolve a live platform ApiKey from a presented secret."""
         from apps.identity.models import ApiKey
 
-        if not plain:
-            return None
-        return (
-            ApiKey.objects.filter(
-                hashed_key=APIKeyHasher.hash(plain),
-                is_active=True,
-            )
-            .filter(
-                Q(expires_at__isnull=True) | Q(expires_at__gt=timezone.now()),
-            )
-            .first()
+        return CredentialResolver.resolve(
+            model=ApiKey,
+            hash_field="hashed_key",
+            plain=plain,
         )
-
-    def _touch(
-        self,
-        api_key,
-        *,
-        ip_address=None,
-    ):
-        api_key.last_used_at = timezone.now()
-        update_fields = ["last_used_at"]
-        if ip_address:
-            api_key.last_used_ip = ip_address
-            update_fields.append("last_used_ip")
-        api_key.save(update_fields=update_fields)
 
     def _get_ip(
         self,

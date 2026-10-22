@@ -200,14 +200,17 @@ class UserService(
         from apps.identity.models import ApiKey, PersonalAccessToken
         from apps.identity.services.security_event import SecurityEventService
 
+        # Only credentials suspended with the account come back; one that was
+        # deliberately revoked (revoked_at set) stays revoked.
         PersonalAccessToken.objects.filter(
             user=instance,
             is_active=False,
+            revoked_at__isnull=True,
         ).update(is_active=True)
 
-        ApiKey.objects.filter(
-            created_by=instance,
+        ApiKey.objects.for_principal(instance).filter(
             is_active=False,
+            revoked_at__isnull=True,
         ).update(is_active=True)
 
         SecurityEventService.create(
@@ -262,8 +265,7 @@ class UserService(
             is_active=True,
         ).update(is_active=False)
 
-        ApiKey.objects.filter(
-            created_by=instance,
+        ApiKey.objects.for_principal(instance).filter(
             is_active=True,
         ).update(is_active=False)
 

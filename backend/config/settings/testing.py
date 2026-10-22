@@ -41,3 +41,6 @@ TEST_RUNNER = "config.test_runner.PreserveDatabaseTestRunner"
 # Test-only Fernet key for MFA secret encryption. It protects nothing real;
 # production and local environments supply their own via MFA_ENCRYPTION_KEY.
 MFA_ENCRYPTION_KEYS = ("xKCk8KJf2A36NFV8Q5G6QNKpXUU74tK2oCBJrowYZCo=",)
+
+# Test-only pepper for credential digests; protects nothing real.
+API_KEY_PEPPER = "test-only-api-key-pepper-0123456789abcdef"

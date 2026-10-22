@@ -33,3 +33,22 @@ def mfa_encryption_key_check(app_configs, **kwargs):
         return [Warning(problem, hint=hint, id="identity.W001")]
 
     return [Error(problem, hint=hint, id="identity.E001")]
+
+
+@register()
+def api_key_pepper_check(app_configs, **kwargs):
+    """
+    API key / PAT digests are keyed with API_KEY_PEPPER. Without it no
+    credential can be created or (peppered) verified; say so at check time.
+    """
+
+    if getattr(settings, "API_KEY_PEPPER", ""):
+        return []
+
+    problem = "API_KEY_PEPPER is not set: API keys and PATs cannot be created or verified."
+    hint = 'Generate one with: python -c "import secrets; print(secrets.token_urlsafe(48))"'
+
+    if settings.DEBUG:
+        return [Warning(problem, hint=hint, id="identity.W002")]
+
+    return [Error(problem, hint=hint, id="identity.E002")]

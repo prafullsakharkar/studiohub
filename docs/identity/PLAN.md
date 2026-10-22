@@ -145,6 +145,20 @@
 | 7.7 | OAuth: build a full server-side flow (single-use session-bound `state`, `nonce`, redirect-URI allow-list, verified-email gate, authenticated link/unlink with last-credential guard) **or** deprecate/remove `OAuthAccount`+`OAuthProvider`. **[approval A7]** | XL | High | Later (decision) | A7 | If remove: destructive migrations. If build: additive + `redirect_uri` model. |
 | 7.8 | OAuth provider secret encryption (if OAuth is retained): encrypt `client_secret`; support PKCE/public clients. **[approval A7/A1]** | M | High | Later | 7.7 | Additive/data migration. |
 
+**Phase 7 execution status (2026-10-22):**
+
+| WP | Status | Evidence |
+|----|--------|----------|
+| 7.1 | **DONE** (A5) | One `CredentialService` and one viewset/serializer set over both tables; no physical merge. An `ApiKey` acts as its owner, else its creator (`principal`). ADR-0036. |
+| 7.2 | **DONE** | `/identity/api-keys/` and `/identity/personal-access-tokens/`: create (secret once), list, retrieve, rotate, revoke; owner-scoped; manager (`identity.credential.manage`) may list/revoke, never rotate; session JWT only; per-user cap. `tests/security/test_credential_lifecycle.py`. |
+| 7.3 | **DONE** | `HasPermission` intersects a credential's scopes with its owner's permissions; scoped superuser credentials do not get the bypass; legacy no-scope credentials unchanged (documented). `tests/security/test_credential_auth.py`. |
+| 7.4 | **DONE** (A6) | `v2$` HMAC-SHA256 with `API_KEY_PEPPER`; legacy digests verified and upgraded on first use; fails closed without a pepper; `identity.E002` check. |
+| 7.5 | **DONE** | Expired, revoked, inactive, wrong-secret, malformed, disabled/deleted owner, prefix-sharing rows all rejected; reactivation no longer revives revoked credentials (migration `0020` adds `revoked_at` + backfill). |
+| 7.6 | **DONE (throttled, not queued)** | `last_used_at`/`last_used_ip` are a conditional UPDATE at most once per `IDENTITY_CREDENTIAL_TOUCH_SECONDS` (60), not a task. |
+| 7.7 / 7.8 | **NOT STARTED (approval)** | A7 says OAuth is out of MVP and its models/admin are removed in a later cleanup. That is a destructive migration; it needs a row check and explicit go-ahead. |
+
+**Defects found and fixed in Phase 7:** scopes were never enforced and a scoped superuser key would have had full bypass; `UserService.activate` re-enabled every inactive credential including revoked ones; an API key acted as its creator even when it had a different owner and was suspended by the wrong account; the admin could "create" credentials with no usable digest; a dead PAT middleware was removed.
+
 ## Phase 8 — Integration, hardening, final verification
 
 | WP | Title | Size | Risk | Class | Depends on | Migration risk |

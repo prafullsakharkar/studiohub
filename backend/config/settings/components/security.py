@@ -68,3 +68,17 @@ TRUSTED_PROXY_IPS = settings.trusted_proxies
 # Fernet keys protecting TOTP secrets at rest (first encrypts, all decrypt).
 # Read only by apps.identity.crypto; an empty tuple fails closed.
 MFA_ENCRYPTION_KEYS = settings.mfa_encryption_keys
+
+# HMAC pepper for API key / PAT digests (see apps.identity.api_keys.hashing).
+API_KEY_PEPPER = settings.api_key_pepper.get_secret_value()
+
+# During the rehash window credentials stored with the old unpeppered digest
+# still authenticate (and are upgraded on use). Set False once every row is
+# on the peppered digest.
+API_KEY_ACCEPT_LEGACY_HASH = True
+
+# Active API keys / PATs one user may hold, per kind.
+IDENTITY_MAX_ACTIVE_CREDENTIALS = 50
+
+# last_used_at/ip are written at most this often per credential.
+IDENTITY_CREDENTIAL_TOUCH_SECONDS = 60

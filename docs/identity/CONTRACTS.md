@@ -150,9 +150,9 @@ The contract is **fail-closed**: any uncertainty yields the empty set. The curre
 | ID | Invariant | Enforcement |
 |---|---|---|
 | DOM-CRED-01 | The plaintext secret exists only in the create/rotate response and is never retrievable again | Serializer (WP 7.2) |
-| DOM-CRED-02 | Only a one-way digest is stored; lookup uses a non-secret prefix | Model + hasher (CURRENT: `api_keys/hashing.py:14-26`) |
+| DOM-CRED-02 | Only a one-way digest (`v2$` HMAC-SHA256 with `API_KEY_PEPPER`) is stored; lookup uses a non-secret prefix; constant-time compare; legacy digests upgraded on use | Model + hasher (`api_keys/hashing.py`, `api_keys/resolver.py`) |
 | DOM-CRED-03 | A credential is usable iff `is_active ∧ (expires_at IS NULL ∨ expires_at > now()) ∧ owner usable` | Authenticator (CURRENT owner-active check added; WP 7.5) |
-| DOM-CRED-04 | Effective scopes = `owner_permissions ∩ credential.scopes`; empty scopes = no restriction is **not** allowed — empty means owner's full set only if explicitly documented | `HasPermission` (WP 7.3) |
+| DOM-CRED-04 | Effective scopes = `owner_permissions ∩ credential.scopes`. **Documented exception:** a *legacy* credential with no scopes keeps its owner's full access; new credentials must have ≥1 scope. Non-permission labels grant nothing. A scoped credential never receives the superuser bypass beyond its scopes (ADR-0036) | `HasPermission` (WP 7.3) |
 | DOM-CRED-05 | Revocation is immediate and idempotent | Service (WP 7.2) |
 | DOM-CRED-06 | **DECIDED A5:** one service/serializer/API over both tables; no physical merge in MVP | WP 7.1 |
 
@@ -413,10 +413,10 @@ Two trees currently exist (`api/urls.py:72-125`). **TARGET — API-MFA-00:** one
 
 | ID | Method & path | Contract |
 |---|---|---|
-| API-CRED-01 | `GET /identity/api-keys/` | list own (admin: all with permission); secret never included |
-| API-CRED-02 | `POST /identity/api-keys/` | `{name,scopes?,expires_at?}` → `201 {..., "secret": "<once>"}` |
-| API-CRED-03 | `POST /identity/api-keys/{id}/rotate/` | revoke old, return new secret once |
-| API-CRED-04 | `DELETE /identity/api-keys/{id}/` | revoke immediately |
+| API-CRED-01 | `GET /identity/api-keys/` | list own (`?all=true` with `identity.credential.manage` lists everyone's); revoked hidden unless `?include_revoked=true`; secret and digest never included |
+| API-CRED-02 | `POST /identity/api-keys/` | `{name, scopes (required, permission codes the caller holds), description?, expires_at?}` → `201 {..., "secret": "<prefix.secret>"}` once; minted for the caller only; `400` on invalid input or the per-user cap; `503` without `API_KEY_PEPPER`. Session JWT only |
+| API-CRED-03 | `POST /identity/api-keys/{id}/rotate/` | revoke old, return new secret once (same name/scopes/expiry); owner only (`403`/`404` otherwise) |
+| API-CRED-04 | `DELETE /identity/api-keys/{id}/` | revoke immediately, idempotent, `204`; owner or `identity.credential.manage` |
 | API-CRED-05 | `/identity/personal-access-tokens/` | identical semantics (WP 7.1/7.2) |
 
 ### 4.7 Removals and deprecations
@@ -534,7 +534,7 @@ Status values: **DECIDED** = approved for implementation; **PROPOSED** = recomme
 | A3 | `KnownDevice` | Delete; `TrustedDevice` is canonical | DECIDED | WP 5.13 |
 | A4 | Identity `LoginHistory` | **Reversed 2026-10-22 (ADR-0035):** identity `LoginHistory` is canonical; `apps.audit.LoginHistory`, its URL and its rows are removed | DECIDED (superseded) | WP 5.7 |
 | A5 | Credential consolidation | One service/API over both tables in MVP; no physical merge | DECIDED | WP 7.1 |
-| A6 | Credential hashing | HMAC-SHA256 with a dedicated pepper; lazy rehash | DECIDED | WP 7.4 |
+| A6 | Credential hashing | HMAC-SHA256 with a dedicated pepper; lazy rehash | DECIDED (implemented WP 7.4) | WP 7.4 |
 | A7 | OAuth | Out of MVP; remove models/admin in a later cleanup | DECIDED | WP 7.7/7.8 |
 | A8 | SMS/email MFA | Remove stub endpoints; TOTP + recovery only | DECIDED | WP 6.6 |
 | A9 | Django-auth `Group`/`Permission` | Keep tables for now; document unused; do not expose | DECIDED | WP 4.7 |

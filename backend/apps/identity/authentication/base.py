@@ -41,7 +41,11 @@ class IdentityAuthentication(BaseAuthentication):
 
         # A credential is not valid past its principal's account state:
         # deactivated/soft-deleted owners must not retain API access.
-        if user is None or not getattr(user, "is_active", False):
+        if (
+            user is None
+            or not getattr(user, "is_active", False)
+            or getattr(user, "is_deleted", False)
+        ):
             return None
 
         self.on_authenticated(

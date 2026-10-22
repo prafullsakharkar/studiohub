@@ -49,7 +49,11 @@ from .components.jwt import SIMPLE_JWT
 from .components.logging import LOGGING_CONFIG
 from .components.middleware import MIDDLEWARE
 from .components.security import (
+    API_KEY_ACCEPT_LEGACY_HASH,
+    API_KEY_PEPPER,
     CSRF_COOKIE_HTTPONLY,
+    IDENTITY_CREDENTIAL_TOUCH_SECONDS,
+    IDENTITY_MAX_ACTIVE_CREDENTIALS,
     MFA_CHALLENGE_TTL_SECONDS,
     MFA_ENCRYPTION_KEYS,
     MFA_ISSUER_NAME,

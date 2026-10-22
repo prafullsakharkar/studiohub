@@ -179,6 +179,15 @@ class Settings(BaseSettings):
     )
 
     ####################################################################
+    # API key / personal access token hashing
+    ####################################################################
+
+    # Dedicated pepper for HMAC-SHA256 credential digests (not SECRET_KEY).
+    # Empty: new credentials cannot be created and peppered ones cannot be
+    # verified (fails closed). Changing it invalidates every stored credential.
+    api_key_pepper: SecretStr = Field(default=SecretStr(""), alias="API_KEY_PEPPER")
+
+    ####################################################################
     # Celery
     ####################################################################
 

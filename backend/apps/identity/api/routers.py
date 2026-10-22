@@ -1,9 +1,11 @@
 from rest_framework.routers import DefaultRouter
 
 from apps.identity.api.viewsets import (
+    ApiKeyViewSet,
     IPBlacklistViewSet,
     LoginAttemptViewSet,
     LoginHistoryViewSet,
+    PersonalAccessTokenViewSet,
     ProfileViewSet,
     SecurityEventViewSet,
     TrustedDeviceViewSet,
@@ -47,6 +49,18 @@ router.register(
     "login-history",
     LoginHistoryViewSet,
     basename="login-history",
+)
+
+router.register(
+    "api-keys",
+    ApiKeyViewSet,
+    basename="api-key",
+)
+
+router.register(
+    "personal-access-tokens",
+    PersonalAccessTokenViewSet,
+    basename="personal-access-token",
 )
 
 router.register(
