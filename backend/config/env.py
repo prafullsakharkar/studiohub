@@ -174,6 +174,12 @@ class Settings(BaseSettings):
     # Fernet key(s) (urlsafe base64, 32 bytes) protecting TOTP secrets at
     # rest. Comma-separated for rotation: the first key encrypts, every key
     # decrypts. Empty: MFA secrets cannot be stored or read (fails closed).
+    #
+    # MFA_ENCRYPTION_ENABLED=false stores new secrets in plaintext (an
+    # operator decision; the default is on). Existing encrypted values stay
+    # readable while the key is present.
+    mfa_encryption_enabled: bool = Field(default=True, alias="MFA_ENCRYPTION_ENABLED")
+
     mfa_encryption_key: SecretStr = Field(
         default=SecretStr(""), alias="MFA_ENCRYPTION_KEY"
     )

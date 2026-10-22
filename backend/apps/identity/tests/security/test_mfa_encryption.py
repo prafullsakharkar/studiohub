@@ -280,3 +280,105 @@ class TestSystemCheck:
 
     def test_a_valid_key_is_clean(self):
         assert mfa_encryption_key_check(None) == []
+
+
+@pytest.mark.django_db
+class TestEncryptionSwitchedOff:
+    """MFA_ENCRYPTION_ENABLED=false: an operator choice, default is on."""
+
+    def test_new_secrets_are_stored_as_given(self, settings):
+        settings.MFA_ENCRYPTION_ENABLED = False
+        mfa = _mfa()
+        mfa.totp_secret = SECRET
+        mfa.save()
+
+        assert _raw_secret(mfa) == SECRET
+        assert UserMFA.objects.get(pk=mfa.pk).totp_secret == SECRET
+
+    def test_no_key_is_needed(self, settings):
+        settings.MFA_ENCRYPTION_ENABLED = False
+        settings.MFA_ENCRYPTION_KEYS = ()
+
+        mfa = MFAService.enroll(user=UserFactory.create())
+
+        assert mfa.totp_secret and _raw_secret(mfa) == mfa.totp_secret
+
+    def test_mfa_works_end_to_end_without_a_key(self, settings):
+        settings.MFA_ENCRYPTION_ENABLED = False
+        settings.MFA_ENCRYPTION_KEYS = ()
+        user = UserFactory.create(is_email_verified=True)
+        user.set_password(PASSWORD)
+        user.save(update_fields=["password"])
+        enable_mfa(user)
+
+        challenge = _login(user).json()["challenge"]
+        from apps.identity.tests.mfa_helpers import valid_code
+
+        done = APIClient().post(
+            reverse("api:v1:auth-compat:auth-mfa-challenge"),
+            {"challenge": challenge, "code": valid_code(user)},
+            format="json",
+        )
+
+        assert done.status_code == 200 and done.json()["tokens"]["access"]
+
+    def test_values_encrypted_earlier_stay_readable_while_the_key_is_present(self, settings):
+        mfa = _mfa()
+        mfa.totp_secret = SECRET
+        mfa.save()
+        assert _raw_secret(mfa).startswith(crypto.PREFIX)
+
+        settings.MFA_ENCRYPTION_ENABLED = False
+
+        assert UserMFA.objects.get(pk=mfa.pk).totp_secret == SECRET
+
+    def test_encrypted_values_still_fail_closed_without_the_key(self, settings):
+        mfa = _mfa()
+        mfa.totp_secret = SECRET
+        mfa.save()
+        settings.MFA_ENCRYPTION_ENABLED = False
+        settings.MFA_ENCRYPTION_KEYS = ()
+
+        with pytest.raises(crypto.SecretUnavailable):
+            UserMFA.objects.get(pk=mfa.pk)
+
+    def test_the_system_check_warns(self, settings):
+        settings.MFA_ENCRYPTION_ENABLED = False
+        settings.DEBUG = False
+
+        found = mfa_encryption_key_check(None)
+
+        assert [(type(item), item.id) for item in found] == [(Warning, "identity.W003")]
+
+    def test_switching_back_on_refuses_plaintext_until_it_is_converted(self, settings):
+        from django.core.management import call_command
+
+        settings.MFA_ENCRYPTION_ENABLED = False
+        mfa = _mfa()
+        mfa.totp_secret = SECRET
+        mfa.save()
+
+        settings.MFA_ENCRYPTION_ENABLED = True
+        with pytest.raises(crypto.SecretUnavailable):
+            UserMFA.objects.get(pk=mfa.pk)
+
+        call_command("mfa_encrypt_secrets")
+
+        assert _raw_secret(mfa).startswith(crypto.PREFIX)
+        assert UserMFA.objects.get(pk=mfa.pk).totp_secret == SECRET
+
+    def test_the_conversion_command_is_idempotent_and_refuses_while_off(self, settings):
+        from django.core.management import CommandError, call_command
+
+        mfa = _mfa()
+        mfa.totp_secret = SECRET
+        mfa.save()
+        before = _raw_secret(mfa)
+
+        call_command("mfa_encrypt_secrets")
+
+        assert _raw_secret(mfa) == before
+
+        settings.MFA_ENCRYPTION_ENABLED = False
+        with pytest.raises(CommandError):
+            call_command("mfa_encrypt_secrets")

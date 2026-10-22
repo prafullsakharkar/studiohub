@@ -4,7 +4,10 @@ Encryption of MFA secrets at rest (DOM-MFA-03, SEC-SEC-02).
 Fernet (AES-128-CBC + HMAC-SHA256) with a dedicated key that is not
 ``SECRET_KEY``. ``settings.MFA_ENCRYPTION_KEYS`` is a tuple: the first key
 encrypts, every key decrypts, so a key can be rotated by prepending a new
-one. Everything here fails closed: a missing or malformed key, an
+one. Encryption can be switched off by the operator (``MFA_ENCRYPTION_ENABLED``;
+default on). While off, new secrets are stored as given and plaintext is read
+back; values that are already encrypted still need the key. While on,
+everything here fails closed: a missing or malformed key, an
 unencrypted stored value, a tampered token or a token made under an unknown
 key raises ``SecretUnavailable``; nothing falls back to plaintext. Error
 messages never include the value or the key.
@@ -42,15 +45,28 @@ def _cipher() -> MultiFernet:
         raise SecretUnavailable() from None
 
 
+def enabled() -> bool:
+    """Whether new secrets are encrypted (``MFA_ENCRYPTION_ENABLED``, default on)."""
+
+    return bool(getattr(settings, "MFA_ENCRYPTION_ENABLED", True))
+
+
 def is_encrypted(value: str | None) -> bool:
     return bool(value) and str(value).startswith(PREFIX)
 
 
 def encrypt(plaintext: str | None) -> str:
-    """Encrypt a secret; the empty string stays empty (no secret stored)."""
+    """
+    Encrypt a secret; the empty string stays empty (no secret stored).
+
+    With encryption switched off the value is stored as given.
+    """
 
     if not plaintext:
         return ""
+
+    if not enabled():
+        return plaintext
 
     return PREFIX + _cipher().encrypt(plaintext.encode()).decode()
 
@@ -62,7 +78,12 @@ def decrypt(stored: str | None) -> str:
         return ""
 
     if not is_encrypted(stored):
-        # A plaintext value at rest is never trusted or returned.
+        if not enabled():
+            # Operator has switched encryption off: plaintext is the format.
+            return stored
+
+        # With encryption on, a plaintext value at rest is never trusted or
+        # returned (run ``manage.py mfa_encrypt_secrets`` to convert).
         raise SecretUnavailable()
 
     try:

@@ -276,7 +276,7 @@ ENABLED  ──locked (N failures)──► LOCKED (until locked_until)
 | ID | Secret | Contract |
 |---|---|---|
 | SEC-SEC-01 | Password | Django hasher (Argon2 first if configured by `PASSWORD_HASHERS`); never logged or serialized |
-| SEC-SEC-02 | TOTP secret | Encrypted at rest; decrypted only in memory during verification; never returned after enrollment (WP 6.3) |
+| SEC-SEC-02 | TOTP secret | Encrypted at rest; decrypted only in memory during verification; never returned after enrollment (WP 6.3). **Operator exception:** `MFA_ENCRYPTION_ENABLED=false` stores new secrets in plaintext (default on; `identity.W003` warns). Re-enable with `manage.py mfa_encrypt_secrets` |
 | SEC-SEC-03 | TOTP provisioning URI / QR | Returned only at enrollment; not logged |
 | SEC-SEC-04 | API key / PAT secret | Digest only; plaintext shown once; prefix is non-secret |
 | SEC-SEC-05 | Backup codes | Hashed; shown once; never retrievable |

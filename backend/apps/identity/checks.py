@@ -14,6 +14,15 @@ def mfa_encryption_key_check(app_configs, **kwargs):
     an error outside DEBUG, a warning in local development.
     """
 
+    if not crypto.enabled():
+        return [
+            Warning(
+                "MFA_ENCRYPTION_ENABLED is false: TOTP secrets are stored in plaintext.",
+                hint="Set MFA_ENCRYPTION_ENABLED=true and run `manage.py mfa_encrypt_secrets`.",
+                id="identity.W003",
+            )
+        ]
+
     problem = None
 
     if not getattr(settings, "MFA_ENCRYPTION_KEYS", ()):
