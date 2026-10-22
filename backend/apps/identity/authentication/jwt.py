@@ -304,11 +304,6 @@ class JWTService:
         number of refresh jtis swept. Access tokens cannot be blacklisted
         by simplejwt; session-status enforcement covers them (Task 13).
         """
-        from rest_framework_simplejwt.token_blacklist.models import (
-            BlacklistedToken,
-            OutstandingToken,
-        )
-
         from apps.identity.models import UserSession
 
         jtis = list(
@@ -317,21 +312,31 @@ class JWTService:
             .values_list("refresh_token_jti", flat=True)
         )
 
-        swept = 0
-        for jti in jtis:
-            if not jti:
-                continue
-            outstanding, _ = OutstandingToken.objects.get_or_create(
-                jti=jti,
-                defaults={
-                    "user": user,
-                    "token": f"jti:{jti}",
-                },
-            )
-            _, created = BlacklistedToken.objects.get_or_create(
-                token=outstanding,
-            )
-            if created:
-                swept += 1
+        return sum(
+            cls.blacklist_refresh_jti(user=user, jti=jti) for jti in jtis
+        )
 
-        return swept
+    @classmethod
+    def blacklist_refresh_jti(cls, *, user, jti) -> bool:
+        """
+        Blacklist one refresh jti. Idempotent; returns True when newly listed.
+        """
+        from rest_framework_simplejwt.token_blacklist.models import (
+            BlacklistedToken,
+            OutstandingToken,
+        )
+
+        if not jti:
+            return False
+
+        outstanding, _ = OutstandingToken.objects.get_or_create(
+            jti=jti,
+            defaults={
+                "user": user,
+                "token": f"jti:{jti}",
+            },
+        )
+        _, created = BlacklistedToken.objects.get_or_create(
+            token=outstanding,
+        )
+        return created

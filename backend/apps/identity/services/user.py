@@ -227,14 +227,16 @@ class UserService(
         return instance
 
     @classmethod
-    def deactivate(
+    def _close_account(
         cls,
         instance,
-        *,
-        user=None,
     ):
         """
-        Deactivate a user via the ``is_active`` flag.
+        Disable a user and everything that can authenticate as them (SEC-DEACT-01).
+
+        Runs inside the caller's transaction so a partially completed cascade
+        rolls back: the account flag, sessions and refresh tokens, personal
+        access tokens, API keys and the audit event succeed or fail together.
         """
 
         instance.is_active = False
@@ -271,6 +273,20 @@ class UserService(
             description="Account deactivated.",
         )
 
+    @classmethod
+    @transaction.atomic
+    def deactivate(
+        cls,
+        instance,
+        *,
+        user=None,
+    ):
+        """
+        Deactivate a user via the ``is_active`` flag.
+        """
+
+        cls._close_account(instance)
+
         cls.publish_event(
             cls.DEACTIVATE,
             instance=instance,
@@ -282,6 +298,7 @@ class UserService(
         return instance
 
     @classmethod
+    @transaction.atomic
     def archive(
         cls,
         instance,
@@ -296,39 +313,7 @@ class UserService(
         event for audit purposes.
         """
 
-        instance.is_active = False
-
-        instance.save(
-            update_fields=[
-                "is_active",
-                "updated_at",
-            ],
-        )
-
-        from apps.identity.authentication.token import TokenService
-        from apps.identity.choices import SecurityEventType
-        from apps.identity.models import ApiKey, PersonalAccessToken
-        from apps.identity.services.security_event import SecurityEventService
-
-        TokenService.revoke_all_for_user(
-            user=instance,
-        )
-
-        PersonalAccessToken.objects.filter(
-            user=instance,
-            is_active=True,
-        ).update(is_active=False)
-
-        ApiKey.objects.filter(
-            created_by=instance,
-            is_active=True,
-        ).update(is_active=False)
-
-        SecurityEventService.create(
-            user=instance,
-            event_type=SecurityEventType.ACCOUNT_DEACTIVATED,
-            description="Account deactivated.",
-        )
+        cls._close_account(instance)
 
         cls.publish_event(
             cls.ARCHIVE,

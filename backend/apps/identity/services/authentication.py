@@ -9,11 +9,13 @@ from django.contrib.auth import (
 from django.contrib.auth import (
     logout as django_logout,
 )
+from django.core.cache import cache
 from django.utils import timezone
 
 from apps.core.services.business import BusinessService
 from apps.identity.authentication.exceptions import (
     IPBlocked,
+    TooManyLoginAttempts,
 )
 from apps.identity.authentication.token import (
     TokenService,
@@ -37,6 +39,13 @@ from apps.identity.services.login_attempt import (
 )
 from apps.identity.validators.authentication import (
     AuthenticationValidator,
+)
+
+# A failed-login / lockout security event is written at most once per account
+# per window, so a password-guessing attack cannot flood the audit ledger.
+FAILURE_EVENT_WINDOW_SECONDS = 60
+LOCKOUT_EVENT_WINDOW_SECONDS = (
+    AuthenticationValidator.MAX_LOGIN_ATTEMPT_WINDOW_MINUTES * 60
 )
 
 
@@ -100,13 +109,21 @@ class AuthenticationService(
                     "HTTP_USER_AGENT",
                     "",
                 ),
-                reason=getattr(
+                reason=getattr(exc, "internal_reason", None)
+                or getattr(
                     exc,
                     "default_detail",
                     None,
                 )
                 or type(exc).__name__,
                 user=user,
+            )
+
+            cls._emit_failure_event(
+                exc=exc,
+                user=user,
+                ip_address=ip_address,
+                request=request,
             )
 
             raise
@@ -127,6 +144,13 @@ class AuthenticationService(
             user=user,
         )
 
+        cls._emit_success_events(
+            user=user,
+            session=tokens["session"],
+            ip_address=ip_address,
+            request=request,
+        )
+
         UserLoggedIn.dispatch(
             user=user,
             request=request,
@@ -140,6 +164,88 @@ class AuthenticationService(
                 "session_key": tokens["session"].session_key,
             },
         }
+
+    # ---------------------------------------------------------
+    # Security events (best effort, never fail the login)
+    # ---------------------------------------------------------
+
+    @classmethod
+    def _emit_failure_event(
+        cls,
+        *,
+        exc,
+        user,
+        ip_address,
+        request,
+    ):
+        """
+        Record LOGIN_FAILED / LOGIN_LOCKED for an existing account.
+
+        Unknown usernames are not written (the event needs an account and the
+        attempt itself is already in the login-attempt ledger). Written at
+        most once per window per account to keep the ledger bounded.
+        """
+
+        from apps.identity.choices import SecurityEventType
+        from apps.identity.services.security_event import SecurityEventService
+
+        if user is None:
+            return
+
+        if isinstance(exc, TooManyLoginAttempts):
+            event_type = SecurityEventType.LOGIN_LOCKED
+            window = LOCKOUT_EVENT_WINDOW_SECONDS
+            description = "Login blocked: too many failed attempts."
+        else:
+            event_type = SecurityEventType.LOGIN_FAILED
+            window = FAILURE_EVENT_WINDOW_SECONDS
+            description = "Login failed."
+
+        if not cache.add(
+            f"identity.audit.{event_type.value}:{user.pk}",
+            1,
+            window,
+        ):
+            return
+
+        SecurityEventService.emit(
+            user=user,
+            event_type=event_type,
+            ip_address=ip_address,
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+            description=description,
+            metadata={
+                "reason": getattr(exc, "internal_reason", type(exc).__name__),
+            },
+        )
+
+    @classmethod
+    def _emit_success_events(
+        cls,
+        *,
+        user,
+        session,
+        ip_address,
+        request,
+    ):
+        from apps.identity.choices import SecurityEventType
+        from apps.identity.services.security_event import SecurityEventService
+
+        user_agent = request.META.get("HTTP_USER_AGENT", "")
+        metadata = {"session_id": str(session.pk)}
+
+        for event_type, description in (
+            (SecurityEventType.LOGIN_SUCCESS, "Login succeeded."),
+            (SecurityEventType.SESSION_CREATED, "Session created."),
+        ):
+            SecurityEventService.emit(
+                user=user,
+                event_type=event_type,
+                ip_address=ip_address,
+                user_agent=user_agent,
+                description=description,
+                metadata=metadata,
+            )
 
     # ---------------------------------------------------------
     # Logout
@@ -210,6 +316,16 @@ class AuthenticationService(
         tokens = TokenService.refresh(
             session=session,
             refresh_token=refresh_token,
+        )
+
+        from apps.identity.choices import SecurityEventType
+        from apps.identity.services.security_event import SecurityEventService
+
+        SecurityEventService.emit(
+            user=session.user,
+            event_type=SecurityEventType.TOKEN_REFRESHED,
+            description="Access token refreshed.",
+            metadata={"session_id": str(session.pk)},
         )
 
         UserTokenRefreshed.dispatch(

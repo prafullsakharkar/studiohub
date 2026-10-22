@@ -7,7 +7,24 @@ class AuthenticationException(AuthenticationFailed):
 
 
 class InvalidCredentials(AuthenticationException):
+    """
+    The single client-visible login failure.
+
+    Unknown user, wrong password, inactive, deleted and locked accounts all
+    raise this with the same message and status so a caller cannot tell them
+    apart. ``internal_reason`` records the precise cause for the (access
+    restricted) login-attempt ledger and is never serialized.
+    """
+
     default_detail = "Invalid username or password."
+
+    internal_reason = "invalid_credentials"
+
+    def __init__(self, detail=None, code=None, *, reason=None):
+        super().__init__(detail, code)
+
+        if reason:
+            self.internal_reason = reason
 
 
 class UserInactive(AuthenticationException):
