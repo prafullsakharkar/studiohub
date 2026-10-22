@@ -16,6 +16,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # The column was created as a bare IntegerField placeholder (left over
+        # from the removed organization app). PostgreSQL cannot cast integer
+        # to a uuid key, so an in-place AlterField fails on a fresh database.
+        # The integers never referenced a row; drop and re-add as a real FK.
         migrations.RemoveIndex(
             model_name="asset",
             name="production__organiz_4d58b7_idx",
@@ -134,7 +138,11 @@ class Migration(migrations.Migration):
                 to="production.project",
             ),
         ),
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name="asset",
+            name="department",
+        ),
+        migrations.AddField(
             model_name="asset",
             name="department",
             field=models.ForeignKey(
@@ -145,7 +153,11 @@ class Migration(migrations.Migration):
                 to="masterdata.department",
             ),
         ),
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name="asset",
+            name="team",
+        ),
+        migrations.AddField(
             model_name="asset",
             name="team",
             field=models.ForeignKey(
@@ -161,7 +173,11 @@ class Migration(migrations.Migration):
             name="code",
             field=models.CharField(db_index=True, max_length=20, unique=True),
         ),
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name="projectmembership",
+            name="role_ref",
+        ),
+        migrations.AddField(
             model_name="projectmembership",
             name="role_ref",
             field=models.ForeignKey(
@@ -173,7 +189,11 @@ class Migration(migrations.Migration):
                 to="identity.role",
             ),
         ),
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name="task",
+            name="team",
+        ),
+        migrations.AddField(
             model_name="task",
             name="team",
             field=models.ForeignKey(
