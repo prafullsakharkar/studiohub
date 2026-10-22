@@ -64,3 +64,7 @@ MFA_REQUIRE_SUPERUSER = True
 # direct peer (REMOTE_ADDR) is always the client address. Consumed only by
 # apps.core.utils.client_ip.
 TRUSTED_PROXY_IPS = settings.trusted_proxies
+
+# Fernet keys protecting TOTP secrets at rest (first encrypts, all decrypt).
+# Read only by apps.identity.crypto; an empty tuple fails closed.
+MFA_ENCRYPTION_KEYS = settings.mfa_encryption_keys

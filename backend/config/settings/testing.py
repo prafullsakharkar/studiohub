@@ -37,3 +37,7 @@ CELERY_TASK_EAGER_PROPAGATES = True
 # The test runner will run tests against this database directly
 # without trying to create/drop the test database
 TEST_RUNNER = "config.test_runner.PreserveDatabaseTestRunner"
+
+# Test-only Fernet key for MFA secret encryption. It protects nothing real;
+# production and local environments supply their own via MFA_ENCRYPTION_KEY.
+MFA_ENCRYPTION_KEYS = ("xKCk8KJf2A36NFV8Q5G6QNKpXUU74tK2oCBJrowYZCo=",)

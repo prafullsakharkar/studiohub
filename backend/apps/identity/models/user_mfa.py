@@ -11,6 +11,7 @@ from apps.identity.choices.mfa import (
     MFAStatus,
 )
 from apps.identity.managers.user_mfa import UserMFAManager
+from apps.identity.models.fields import EncryptedSecretField
 
 
 class UserMFA(EntityModel):
@@ -22,7 +23,7 @@ class UserMFA(EntityModel):
         related_name="mfa",
     )
 
-    totp_secret = models.CharField(
+    totp_secret = EncryptedSecretField(
         max_length=255,
         blank=True,
     )

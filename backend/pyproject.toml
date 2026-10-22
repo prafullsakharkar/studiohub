@@ -77,6 +77,7 @@ dependencies = [
     "openpyxl>=3.1.5",
     # ASGI server
     "uvicorn[standard]>=0.34",
+    "cryptography>=50.0.2",
 ]
 
 [dependency-groups]

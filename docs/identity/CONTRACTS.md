@@ -191,7 +191,7 @@ ENABLED  ──locked (N failures)──► LOCKED (until locked_until)
 |---|---|---|
 | DOM-MFA-01 | `PENDING` is fully unauthenticated; `ENABLED` (and a legacy `LOCKED`) require the factor; a lockout never relaxes it | `AuthenticationService._mfa_state` (WP 6.2) |
 | DOM-MFA-02 | A TOTP secret is never returned after enrollment | API (WP 6.1) |
-| DOM-MFA-03 | A TOTP secret is encrypted at rest and decryption fails closed | Model/service (WP 6.3) |
+| DOM-MFA-03 | A TOTP secret is encrypted at rest and decryption fails closed (`EncryptedSecretField`, `apps/identity/crypto.py`; implemented Phase 6) | Model field (WP 6.3) |
 | DOM-MFA-04 | A time step can be consumed once per user (replay prevention) | Service (WP 6.4) |
 | DOM-MFA-05 | `MFA_MAX_FAILED_ATTEMPTS=5`, `MFA_LOCKOUT_MINUTES=15` are enforced with a single lockout implementation | `services/mfa/lockout.py` (WP 6.4) |
 | DOM-MFA-06 | Backup codes are single-use, hashed, expiring, and atomically consumed | Service/queryset (WP 6.5) |
@@ -285,7 +285,7 @@ ENABLED  ──locked (N failures)──► LOCKED (until locked_until)
 | SEC-SEC-08 | Logs | Passwords, tokens, secrets, full authorization headers are redacted; `SecurityEvent.metadata` must not carry secrets |
 | SEC-SEC-09 | Error responses | Never echo a secret or a stack trace (`handlers.py:322-326`) |
 
-**SEC-SEC-10 (dependency gate).** Encryption requires an approved crypto dependency. **DECIDED A1:** use `cryptography` (Fernet/AES-GCM) with a dedicated key supplied via env; **adding this dependency requires written approval** and is scheduled for WP 6.3. Until approved, no plaintext-secret fix may ship.
+**SEC-SEC-10 (dependency gate).** Encryption requires an approved crypto dependency. **DECIDED A1:** use `cryptography` (Fernet/AES-GCM) with a dedicated key supplied via env; **adding this dependency required written approval, given 2026-10-22; `cryptography` 50.0.2 is installed.** Implemented in WP 6.3. Operational: set `MFA_ENCRYPTION_KEY` (Fernet key) before deploying migration `0019`; losing the key makes existing MFA secrets unrecoverable, so back it up with the other secrets. Rotate by prepending a new key to the comma-separated list; drop the old key only after no row needs it.
 
 ### 3.6 Token and session lifecycle
 
@@ -529,7 +529,7 @@ Status values: **DECIDED** = approved for implementation; **PROPOSED** = recomme
 
 | ID | Decision | Recommendation | Status | Blocks |
 |---|---|---|---|---|
-| A1 | MFA secret encryption | Add `cryptography` (Fernet/AES-GCM) with a dedicated env key; fail closed if absent | DECIDED (**dependency still not approved/installed; WP 6.3 blocked**) | WP 6.3 |
+| A1 | MFA secret encryption | Add `cryptography` (Fernet/AES-GCM) with a dedicated env key; fail closed if absent | DECIDED (approved and implemented in WP 6.3) | WP 6.3 |
 | A2 | `UserPreference` | Delete the model; `Profile.preferences` is the single store | DECIDED | WP 3.6 |
 | A3 | `KnownDevice` | Delete; `TrustedDevice` is canonical | DECIDED | WP 5.13 |
 | A4 | Identity `LoginHistory` | **Reversed 2026-10-22 (ADR-0035):** identity `LoginHistory` is canonical; `apps.audit.LoginHistory`, its URL and its rows are removed | DECIDED (superseded) | WP 5.7 |

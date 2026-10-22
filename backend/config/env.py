@@ -12,7 +12,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
-from pydantic import Field, computed_field
+from pydantic import Field, SecretStr, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -168,6 +168,17 @@ class Settings(BaseSettings):
     trusted_proxy_ips: str = Field(default="", alias="TRUSTED_PROXY_IPS")
 
     ####################################################################
+    # MFA secret encryption
+    ####################################################################
+
+    # Fernet key(s) (urlsafe base64, 32 bytes) protecting TOTP secrets at
+    # rest. Comma-separated for rotation: the first key encrypts, every key
+    # decrypts. Empty: MFA secrets cannot be stored or read (fails closed).
+    mfa_encryption_key: SecretStr = Field(
+        default=SecretStr(""), alias="MFA_ENCRYPTION_KEY"
+    )
+
+    ####################################################################
     # Celery
     ####################################################################
 
@@ -201,6 +212,16 @@ class Settings(BaseSettings):
     def trusted_proxies(self) -> tuple[str, ...]:
         return tuple(
             entry.strip() for entry in self.trusted_proxy_ips.split(",") if entry.strip()
+        )
+
+    @property
+    def mfa_encryption_keys(self) -> tuple[str, ...]:
+        # A plain property (not a computed field) so the keys never appear
+        # in a model dump or repr.
+        return tuple(
+            entry.strip()
+            for entry in self.mfa_encryption_key.get_secret_value().split(",")
+            if entry.strip()
         )
 
     @computed_field
