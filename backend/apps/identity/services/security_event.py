@@ -51,28 +51,3 @@ class SecurityEventService:
             user=user,
             **validated_data,
         )
-
-    @classmethod
-    def update(
-        cls,
-        instance,
-        **validated_data,
-    ):
-        for key, value in validated_data.items():
-            setattr(
-                instance,
-                key,
-                value,
-            )
-
-        instance.save()
-
-        return instance
-
-    @classmethod
-    def delete(
-        cls,
-        instance,
-        **kwargs,
-    ):
-        instance.delete()

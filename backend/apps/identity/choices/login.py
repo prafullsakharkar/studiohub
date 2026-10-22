@@ -20,3 +20,14 @@ class LoginAttemptStatus(models.TextChoices):
     SUCCESS = "success", "Success"
     FAILED = "failed", "Failed"
     LOCKED = "locked", "Locked"
+
+
+class LoginAttemptReason(models.TextChoices):
+    """Why a login attempt failed. Recorded in the attempt ledger only."""
+
+    UNKNOWN_USER = "unknown_user", "Unknown user"
+    INVALID_PASSWORD = "invalid_password", "Invalid password"
+    USER_INACTIVE = "user_inactive", "User inactive"
+    USER_DELETED = "user_deleted", "User deleted"
+    USER_LOCKED = "user_locked", "User locked"
+    TOO_MANY_ATTEMPTS = "too_many_attempts", "Too many attempts"

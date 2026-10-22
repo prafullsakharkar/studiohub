@@ -20,7 +20,6 @@ from .list import (
 )
 from .update import (
     ProfileUpdateSerializer,
-    SecurityEventUpdateSerializer,
     TrustedDeviceUpdateSerializer,
 )
 
@@ -34,7 +33,6 @@ __all__ = [
     "SecurityEventCreateSerializer",
     "SecurityEventDetailSerializer",
     "SecurityEventListSerializer",
-    "SecurityEventUpdateSerializer",
     "TrustedDeviceBaseSerializer",
     "TrustedDeviceCreateSerializer",
     "TrustedDeviceDetailSerializer",

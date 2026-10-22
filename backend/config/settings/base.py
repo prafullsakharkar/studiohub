@@ -19,6 +19,7 @@ from .components.auth import AUTH_PASSWORD_VALIDATORS, AUTH_USER_MODEL
 from .components.cache import CACHES
 from .components.celery import (
     CELERY_ACCEPT_CONTENT,
+    CELERY_BEAT_SCHEDULE,
     CELERY_BROKER_URL,
     CELERY_RESULT_BACKEND,
     CELERY_RESULT_EXPIRES,

@@ -306,20 +306,26 @@ class JWTService:
         """
         from apps.identity.models import UserSession
 
-        jtis = list(
+        rows = list(
             UserSession.objects.active()
             .by_user(user)
-            .values_list("refresh_token_jti", flat=True)
+            .values_list("refresh_token_jti", "expires_at")
         )
 
         return sum(
-            cls.blacklist_refresh_jti(user=user, jti=jti) for jti in jtis
+            cls.blacklist_refresh_jti(user=user, jti=jti, expires_at=expires_at)
+            for jti, expires_at in rows
         )
 
     @classmethod
-    def blacklist_refresh_jti(cls, *, user, jti) -> bool:
+    def blacklist_refresh_jti(cls, *, user, jti, expires_at=None) -> bool:
         """
         Blacklist one refresh jti. Idempotent; returns True when newly listed.
+
+        ``expires_at`` is the token's own expiry. SimpleJWT's outstanding-token
+        table requires it, and its periodic flush deletes expired rows, so the
+        row may need to be recreated here. A token that has already expired is
+        unusable and is not listed.
         """
         from rest_framework_simplejwt.token_blacklist.models import (
             BlacklistedToken,
@@ -329,11 +335,20 @@ class JWTService:
         if not jti:
             return False
 
+        now = timezone.now()
+
+        if expires_at is not None and expires_at <= now:
+            return False
+
+        if expires_at is None:
+            expires_at = now + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"]
+
         outstanding, _ = OutstandingToken.objects.get_or_create(
             jti=jti,
             defaults={
                 "user": user,
                 "token": f"jti:{jti}",
+                "expires_at": expires_at,
             },
         )
         _, created = BlacklistedToken.objects.get_or_create(

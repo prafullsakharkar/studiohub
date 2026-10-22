@@ -52,25 +52,6 @@ class TestSecurityEventSerializer:
         assert event.event_type == "login_success"
 
     @pytest.mark.django_db
-    def test_security_event_serializer_update(self):
-        """Test security event serializer update."""
-        from apps.identity.api.serializers.user_preference.update import (
-            SecurityEventUpdateSerializer,
-        )
-
-        event = SecurityEventFactory.create()
-
-        data = {
-            "event_type": "login_failed",
-        }
-
-        serializer = SecurityEventUpdateSerializer(event, data=data, partial=True)
-        assert serializer.is_valid()
-
-        event = serializer.save()
-        assert event.event_type == "login_failed"
-
-    @pytest.mark.django_db
     def test_security_event_serializer_event_type_validation(self):
         """Test security event serializer event_type validation."""
         from apps.identity.api.serializers.user_preference.create import (

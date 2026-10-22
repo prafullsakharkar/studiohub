@@ -33,12 +33,13 @@ class TestSecurityEventModel:
         assert security_event.updated_by is None
 
     @pytest.mark.django_db
-    def test_security_event_soft_delete(self, security_event):
-        """Test soft delete functionality."""
-        assert security_event.deleted_at is None
-        security_event.soft_delete()
-        security_event = type(security_event).all_objects.get(pk=security_event.pk)
-        assert security_event.deleted_at is not None
+    def test_security_event_cannot_be_soft_deleted(self, security_event):
+        """Append-only: soft delete counts as deletion and is refused."""
+        from apps.identity.querysets.security_event import ImmutableLedgerError
+
+        with pytest.raises(ImmutableLedgerError):
+            security_event.soft_delete()
+        assert type(security_event).all_objects.get(pk=security_event.pk).deleted_at is None
 
     @pytest.mark.django_db
     def test_security_event_event_type_choices(self, security_event):

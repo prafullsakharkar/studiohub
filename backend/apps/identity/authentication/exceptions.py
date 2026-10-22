@@ -62,6 +62,8 @@ class SessionRevoked(AuthenticationException):
 class TooManyLoginAttempts(AuthenticationException):
     default_detail = "Too many login attempts."
 
+    internal_reason = "too_many_attempts"
+
 
 class IPBlocked(APIException):
     """

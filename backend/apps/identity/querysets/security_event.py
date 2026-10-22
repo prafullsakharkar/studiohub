@@ -1,7 +1,21 @@
 from apps.identity.querysets.base import IdentityQuerySet
 
 
+class ImmutableLedgerError(RuntimeError):
+    """An append-only ledger row was asked to change or disappear."""
+
+
 class SecurityEventQuerySet(IdentityQuerySet):
+    """Append-only: bulk mutation is refused just like row mutation."""
+
+    def update(self, **kwargs):
+        raise ImmutableLedgerError("Security events are append-only.")
+
+    def bulk_update(self, objs, fields, batch_size=None):
+        raise ImmutableLedgerError("Security events are append-only.")
+
+    def delete(self):
+        raise ImmutableLedgerError("Security events cannot be deleted.")
 
     def for_user(self, user):
         return self.filter(user=user)

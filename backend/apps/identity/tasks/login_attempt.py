@@ -1,17 +1,11 @@
 from celery import shared_task
 
-from apps.identity.models import LoginAttempt
+from apps.identity.services.login_attempt import LoginAttemptService
 
 
 @shared_task
 def cleanup_login_attempts():
     """
-    Remove expired login attempts.
+    Delete login attempts past the retention window.
     """
-    queryset = LoginAttempt.objects.expired()
-
-    count = queryset.count()
-
-    queryset.delete()
-
-    return count
+    return LoginAttemptService.purge_expired()

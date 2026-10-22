@@ -1,10 +1,11 @@
 from django.contrib import admin
 
+from apps.identity.admin.ledger import ReadOnlyLedgerAdminMixin
 from apps.identity.models import LoginAttempt
 
 
 @admin.register(LoginAttempt)
-class LoginAttemptAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
+class LoginAttemptAdmin(ReadOnlyLedgerAdminMixin, admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     list_display = (
         "username",
         "ip_address",

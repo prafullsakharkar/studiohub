@@ -207,6 +207,7 @@ class UserSessionService(
         JWTService.blacklist_refresh_jti(
             user=session.user,
             jti=session.refresh_token_jti,
+            expires_at=session.expires_at,
         )
 
         SessionStatusCache.invalidate(

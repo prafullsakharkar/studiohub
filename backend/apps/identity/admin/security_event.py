@@ -1,11 +1,12 @@
 from django.contrib import admin
 
 from apps.core.admin.base import StudioHubModelAdmin
+from apps.identity.admin.ledger import ReadOnlyLedgerAdminMixin
 from apps.identity.models import SecurityEvent
 
 
 @admin.register(SecurityEvent)
-class SecurityEventAdmin(StudioHubModelAdmin):
+class SecurityEventAdmin(ReadOnlyLedgerAdminMixin, StudioHubModelAdmin):
     """Admin for SecurityEvent."""
 
     list_display = (
