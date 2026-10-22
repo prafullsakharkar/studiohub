@@ -97,6 +97,7 @@ class TokenService:
         with transaction.atomic():
             new_refresh, new_access = JWTService.rotate_refresh_token(
                 refresh_token,
+                sid=session.session_key,
             )
 
             UserSessionService.refresh(

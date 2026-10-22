@@ -171,7 +171,8 @@ login ──► UserSession(ACTIVE) ──► JWT(access 30m, refresh 30d)
 | DOM-SES-01 | Every issued JWT is bound to a `UserSession`; requests are rejected when the session is not `ACTIVE` | `SessionBoundJWTAuthentication` (CURRENT; missing `LOGGED_OUT` rejection → WP 5.2) |
 | DOM-SES-02 | Refresh rotation blacklists the presented token and detects reuse | `authentication/token.py:86-115` (CURRENT) |
 | DOM-SES-03 | Logout and `logout_all` are symmetric: they mark sessions and blacklist every outstanding refresh JTI | WP 5.2 |
-| DOM-SES-04 | Privilege change rotates/terminates existing sessions | WP 5.12 |
+| DOM-SES-04 | Privilege change reaches live sessions on the next request (permissions are resolved server-side, never baked into tokens); sessions are not terminated | WP 5.12 (done by design) |
+| DOM-SES-06 | A rotated refresh token presented again revokes its session and records `SUSPICIOUS_ACTIVITY` (refresh tokens carry a stable `sid`) | Phase 5 |
 | DOM-SES-05 | Absolute session lifetime is bounded (`SESSION_MAX_ABSOLUTE_LIFETIME_DAYS = 90`, `config/settings/components/jwt.py:3`) | Service (CURRENT) |
 | DOM-SES-06 | Expired sessions/attempts are cleaned by a scheduled job | WP 5.10 |
 
@@ -321,6 +322,8 @@ ENABLED  ──locked (N failures)──► LOCKED (until locked_until)
 
 **SEC-IP-02.** `X-Forwarded-For` is parsed only from trusted proxies and only the entry added by the outermost trusted proxy is used.
 
+**SEC-IP-04 (implemented Phase 5).** `TRUSTED_PROXY_IPS` (comma-separated IPs/CIDRs, default empty) is the only way `X-Forwarded-For` is honoured; every call site uses `apps.core.utils.client_ip`.
+
 **SEC-IP-03.** The current login/lockout path already uses `REMOTE_ADDR` (`authentication/utils.py:16-24`); trusted-device fingerprinting still reads raw `X-Forwarded-For` (`authentication/device.py:98-101`) and must be fixed (WP 5.9).
 
 ### 3.10 Deactivation cascade
@@ -370,7 +373,7 @@ These shapes are consumed by the frontend and **must not change** without a cont
 | API-ID-01 | `/identity/users/` | CRUD + `activate/deactivate/archive/restore`; writes require `identity.user.*`; self-service fields restricted |
 | API-ID-02 | `/identity/profiles/` | CRUD; create for another user requires `identity.profile.create` (WP 3.4) |
 | API-ID-03 | `/identity/sessions/` | list/retrieve/revoke; self-scoped; admin requires permission |
-| API-ID-04 | `/identity/trusted-devices/` | list/revoke; owner-scoped |
+| API-ID-04 | `/identity/trusted-devices/` | list, retrieve, revoke (DELETE = soft revoke); owner-scoped. **No create or update** (implemented Phase 5): trust is minted only by the MFA flow |
 | API-ID-05 | `/identity/security-events/` | **read + create only**; no update/delete (WP 5.4) |
 | API-ID-06 | `/identity/login-attempts/` | **read + create only**; scoped (WP 5.4/5.5) |
 | API-ID-07 | `/identity/ip-blacklist/` | CRUD + `activate/deactivate`; CIDR semantics (WP 5.8) |
@@ -422,7 +425,9 @@ Two trees currently exist (`api/urls.py:72-125`). **TARGET — API-MFA-00:** one
 | API-DEP-01 | `/identity/mfa/*` | deprecated; removal after frontend migration |
 | API-DEP-02 | Legacy `/identity/{login,refresh,logout,password/change,...}` | kept for compatibility; canonical is `/auth/*` |
 | API-DEP-03 | `SecurityEvent` update/delete | removed (breaking, intentional, documented) |
-| API-DEP-04 | `LoginAttempt` update/delete | removed |
+| API-DEP-04 | `LoginAttempt` update/delete | removed (implemented Phase 5) |
+| API-DEP-06 | `/api/v1/audit/login-history/` | removed with `apps.audit.LoginHistory` (ADR-0035) |
+| API-DEP-07 | Trusted-device create/update | removed (implemented Phase 5) |
 | API-DEP-05 | `OAuth*` endpoints | none exist; none are added unless A7 changes |
 
 ---

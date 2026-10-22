@@ -83,6 +83,29 @@
 | 5.13 | `KnownDevice` removal (or merge into `TrustedDevice`). **[approval A3]** | S | Low | Later | A3 | Destructive `DeleteModel` migration. |
 | 5.14 | Legacy `/identity/*` tree demotion. **[approval A15]** | S | Low | Later | A15 | None |
 
+**Phase 5 execution status (2026-10-22):**
+
+| WP | Status | Evidence |
+|----|--------|----------|
+| 5.1 | **DONE** | One generic 401 for unknown / wrong password / inactive / deleted / locked; exactly one password hash per attempt (dummy hash of the configured hasher); precise cause only in the attempt ledger. `tests/security/test_login_hardening.py`. |
+| 5.2 | **DONE** | Every session close goes through `UserSessionService._release_tokens` (blacklist refresh jti + evict the 60 s status cache); `validate_session` rejects `LOGGED_OUT`. `tests/security/test_session_revocation.py`. |
+| 5.3 | **DONE** | `UserService._close_account`: one transaction for flag, sessions, refresh tokens, PAT, API keys, audit event; rolls back as a unit. |
+| 5.4 | **DONE** | `SecurityEvent` is append-only (row, queryset, service, API, admin); `LoginAttempt` read + create only. A11 stays application-level; no DB trigger. |
+| 5.5 | **DONE** | Retention keyed on `attempted_at`; `LoginAttemptReason` choices (migration 0016). Reads remain permission-gated (`identity.login_attempt.view`), as SEC-AUD-01 specifies; no additional row scoping was added. |
+| 5.6 | **DONE** | `LOGIN_SUCCESS`, `SESSION_CREATED`, `LOGIN_FAILED` (rate-limited), `LOGIN_LOCKED`, `TOKEN_REFRESHED`, `IP_BLOCKED`, `TRUSTED_DEVICE_*`, `SUSPICIOUS_ACTIVITY` (refresh reuse). Best effort via `SecurityEventService.emit`. |
+| 5.7 | **DONE, decision reversed** | Identity `LoginHistory` is canonical and the audit copy, URL and rows are removed (ADR-0035). Migration `audit.0006` drops the table; rows are not copied. |
+| 5.8 | **DONE** | CIDR/IPv6/mapped matching, hit tracking, rate-limited `IP_BLOCKED`, CIDR validation; `__str__` and expired-filter defects fixed. |
+| 5.9 | **DONE** (MFA wiring deferred to Phase 6) | Service aligned to real columns, owner-scoped fail-closed `validate`, duplicate class renamed (`DeviceTokenService`), API is list/revoke only. Device validation is **not** yet wired into login: that is the MFA enforcement of Phase 6. |
+| 5.10 | **DONE** | `identity.cleanup` task, `identity_cleanup` command, daily beat entry; also purges login history. |
+| 5.11 | **DONE** | `apps.core.utils.client_ip` + `TRUSTED_PROXY_IPS`; all call sites delegate. |
+| 5.12 | **DONE by design** | Permissions are resolved per request from a cache that RBAC writes invalidate synchronously, so a role change reaches live sessions on the next request without terminating them (`TestPrivilegeChangesReachLiveSessions`). Sessions are not rotated on privilege change. |
+| 5.13 | **DONE** | `KnownDevice` removed (migration 0017 refuses to drop a non-empty table). |
+| 5.14 | **NOT STARTED** | A15: legacy `/identity/*` tree is kept during the transition; canonical is `/auth/*`. No change. |
+
+**Also in Phase 5 (not a numbered WP):** refresh-token reuse detection. Refresh tokens carry a stable `sid`; presenting an already-rotated token (signature and expiry still valid) revokes that session and records `SUSPICIOUS_ACTIVITY`. A token issued before the claim existed cannot name a session, so its replay is only rejected until the session's first rotation adds the claim.
+
+**Defects found and fixed in Phase 5:** closing an old session raised `IntegrityError` (outstanding-token row recreated without `expires_at`); `CELERY_BEAT_SCHEDULE` never reached the running app; trusted-device create/update let any user plant or un-revoke trust; five call sites trusted a spoofable `X-Forwarded-For`.
+
 ## Phase 6 — MFA and recovery
 
 | WP | Title | Size | Risk | Class | Depends on | Migration risk |
