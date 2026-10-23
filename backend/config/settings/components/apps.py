@@ -28,7 +28,6 @@ LOCAL_APPS = [
     "apps.settings",
     "apps.audit",
     "apps.production",
-    "apps.intelligence",
     # New apps
     "apps.deliveries",
     "apps.publishing",

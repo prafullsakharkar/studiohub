@@ -56,10 +56,8 @@ Corrections from code verification are marked **[CORR]**.
 |---|---|---|
 | Scheduling resources/events/schedules/leaves/holidays | `scheduling.*` | bare arrays, real, org-scoped; capacity/overbooking computed by selectors over these models (no new models); resolve flags excess bookings `Overbooked` |
 | Settings UI (schema/layout, no hooks) | `settings.*` | no contract; `settings/pipeline/` intentionally absent |
-| Knowledge docs | `intelligence.KnowledgeDocument` | `unique (org,slug)`; like/link real |
 | AutomationRule / AutomationAuditLog | `production.AutomationRule` / `production.AutomationAuditLog` | org-scoped rules CRUD (nested-trigger serializer; mock workflow ids ignored); append-only logs via `services.automation.log_execution` (no write endpoint) |
-| Global search, AI chat/risks/summaries, analytics dashboard | — (stub views, no models except knowledge) | DOCUMENTED-STUB — triage verdicts in REAL_API_GAPS P1-4 |
-| SavedSearch / RecentSearch | `intelligence.SavedSearch` / `intelligence.RecentSearch` | org+user-scoped; server-set owner; blank recent query → 400 |
+| Global search, AI chat/risks/summaries, analytics dashboard | — (stub views, no models) | DOCUMENTED-STUB — triage verdicts in REAL_API_GAPS P1-4 |
 | Attachments | `core.Attachment` | **[CORR]** compat `/api/v1/attachments/` confirmed bare array (`pagination_class=None`, `backend/apps/core/api/viewsets/attachment.py:60`); canonical `/api/v1/core/attachments/` paginated is EXTRA. Entity link via metadata/`storage_key`; frontend `entity_type/entity_id` still need mapping layer (P2-3) |
 | Tags | `core.Tag` | `name` global-unique; no frontend caller (EXTRA) |
 | Master-data family (software/versions/statuses/task-types/asset-types/shot-types/review-types/file-types, platform + org-scoped) | **[FLIP]** `masterdata.*` — `Software`, `SoftwareVersion`, `MasterStatus`, `MasterTaskType`, `MasterAssetType`, `MasterShotType`, `MasterReviewType`, `MasterFileType` (`models/catalog.py:13-117`); `Organization{Software,Status,TaskType,AssetType,ShotType,ReviewType}Config` (`models/config.py:13-128`); `Platform{Role,Group,Department,Position}` (`models/platform.py`); `CatalogModel(scope GLOBAL/ORGANIZATION)` + `OrgConfigModel` bases (`models/base.py:16-78`) | Largest gap closed; 11 API tests green |

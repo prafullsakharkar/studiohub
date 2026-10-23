@@ -10,7 +10,7 @@ AND this module together — silent drift fails here first.
 Domain imports are lazy (inside tests) so Core stays runtime-dependency
 free; test-only imports do not create architecture dependencies.
 
-Org-free (org-removal B6): production/masterdata/intelligence endpoints are
+Org-free (org-removal B6): production/masterdata endpoints are
 platform-scoped — no X-Organization-ID header, no organization memberships.
 Project-scoped reads are authorized via explicit ``ProjectMembership`` rows.
 """
@@ -159,21 +159,6 @@ class TestContractResponseShapes:
         assert match, "created client missing from directory"
         assert match[0]["code"] == client.code
         assert isinstance(match[0]["name"], str)
-
-    @pytest.mark.django_db
-    def test_knowledge_list_and_detail_shape(self, staff_client):
-        from apps.intelligence.tests.factories import KnowledgeDocumentFactory
-
-        doc = KnowledgeDocumentFactory.create()
-
-        rows = staff_client.get("/api/v1/intelligence/knowledge/").json()
-        assert isinstance(rows, list) and len(rows) == 1
-        assert rows[0]["title"] == doc.title
-        assert isinstance(rows[0]["slug"], str)
-
-        detail = staff_client.get(f"/api/v1/intelligence/knowledge/{doc.id}/").json()
-        assert detail["id"] == str(doc.id)
-        assert isinstance(detail["content_markdown"], str)
 
 
 class TestContractEnvelopes:

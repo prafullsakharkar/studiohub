@@ -20,7 +20,6 @@ STUDIOHUB_APP_LABELS = frozenset(
         "settings",
         "audit",
         "production",
-        "intelligence",
         "deliveries",
         "publishing",
         "scheduling",

@@ -74,13 +74,7 @@ Status: **MATCH** (contract-compatible as-is) · **PARTIAL** (path exists, shape
 
 ## 6. Intelligence / knowledge / AI
 
-| Frontend Endpoint | Backend Endpoint | Status | Required Change |
-|---|---|---|---|
-| knowledge CRUD + like + link/unlink-entity | `KnowledgeDocument` views (real, persisted, per-org) | MATCH | None |
-| search POST | `search.py` view (`backend/apps/intelligence/api/urls.py:30`) | PARTIAL | DOCUMENTED-STUB (no index backend; frontend in-memory fallback covers it). REAL via pg_trgm is P2 |
-| saved/recent CRUD | persisted views (`urls.py:31-34`) | MATCH | Was PARTIAL (echo `save-001`/`rec-001`); now `SavedSearch`/`RecentSearch` models (`backend/apps/intelligence/models/search.py`), user+org-scoped views, real ids/timestamps. `SearchService.ts` round-trip satisfied |
-| ai/chat, ai/risks(+resolve), task-recommendations(+apply), project/shot-summary, permission-context | `ai.py` views (`urls.py:39-46`) | MATCH | Rewritten (`apps/intelligence/api/viewsets/ai.py`): all responses recomputed per request from real production data (projects/shots/tasks/versions/reviews) via local heuristics — no LLM API, no hardcoded literals. Risks (schedule/quality/resource/delivery), project & shot summaries, workload-rebalancing task recommendations, rule-based chat, permission context. Resolve/apply are advisory no-ops (derived data isn't persisted). `AIService.ts` contract satisfied; org-scoped via `resolve_organization_context`. Fields without a data source (e.g. budget burn) return `null`. P1-4 LLM+index epic remains roadmap |
-| analytics/`<domain>/` dashboard | hardcoded 1-KPI stub (`analytics.py:20-29`) | PARTIAL | P2-2: real per-domain KPIs/widgets or DOCUMENTED-STUB |
+Removed: the `intelligence` app (knowledge, search, AI workspace, analytics) and its `/api/v1/intelligence/*` routes no longer exist.
 
 ## 7. Master data — largest surface, now implemented
 

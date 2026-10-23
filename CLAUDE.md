@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Identity is **platform-global by decision** (`docs/adr/ADR-0034-identity-platform-global-boundary.md`): do not add organization FKs or org-scoped queries to `apps/identity`. Tenancy/isolation is enforced only where a real tenant dimension exists (e.g. `ProjectMembership` in `apps.production`).
 - The `.cover` files and `__pycache__` dirs scattered under `apps/` are artifacts; ignore them.
 
-Installed local apps (`config/settings/components/apps.py`): `core`, `identity`, `settings`, `audit`, `production`, `intelligence`, `deliveries`, `publishing`, `scheduling`, `masterdata`. The former `platform` app (notifications/reports endpoints and models) was removed; its `SettingsPermissions` and `PlatformMasterDataPermissions` constants now live in `apps/settings/constants/permissions.py` and `apps/masterdata/constants/permissions.py`.
+Installed local apps (`config/settings/components/apps.py`): `core`, `identity`, `settings`, `audit`, `production`, `deliveries`, `publishing`, `scheduling`, `masterdata`. The former `intelligence` app (knowledge, search, AI and analytics endpoints, `/api/v1/intelligence/*`) and the former `platform` app (notifications/reports endpoints and models) were removed; its `SettingsPermissions` and `PlatformMasterDataPermissions` constants now live in `apps/settings/constants/permissions.py` and `apps/masterdata/constants/permissions.py`.
 
 ## Commands
 

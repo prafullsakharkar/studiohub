@@ -38,7 +38,6 @@ All 10 StudioHub apps are covered (83 concrete models, 0 missing):
 - **settings**: FeatureFlag, Localization, OrganizationSetting, SettingCategory, SettingDefinition, SystemSetting, Theme
 - **audit**: Activity, APIRequest, AuditLog, BackgroundJob, ChangeLog, ErrorLog, LoginHistory, Track
 - **production**: Asset, Media, Playlist, Project, Review, Sequence, Shot, Task, Timelog, Version, Workflow
-- **intelligence**: KnowledgeDocument
 - **deliveries**: DeliveryDestination, DeliveryPackage, DeliveryVersionRef
 - **publishing**: PublishDestination, PublishItem, PublishValidationRule
 - **scheduling**: CalendarEvent, Holiday, Resource, ResourceLeave, ResourceSchedule
