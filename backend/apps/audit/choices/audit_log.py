@@ -68,3 +68,4 @@ class AuditTarget(models.TextChoices):
     FEATURE_FLAG = "feature_flag", _("Feature Flag")
     THEME = "theme", _("Theme")
     LOCALIZATION = "localization", _("Localization")
+    MASTERDATA = "masterdata", _("Master data")
