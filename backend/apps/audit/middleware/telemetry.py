@@ -14,6 +14,7 @@ from __future__ import annotations
 import contextlib
 import time
 
+from apps.core.logging.redaction import redact_full_path, sensitive_names_for_path
 from apps.core.utils.client_ip import get_client_ip
 
 # Paths that are never telemetry (docs, schema, health, non-API traffic).
@@ -83,7 +84,7 @@ class APITelemetryMiddleware:
         APIRequest.objects.create(
             method=(request.method or "GET").upper(),
             path=request.path or "/",
-            full_path=request.get_full_path()[:2000],
+            full_path=self._full_path(request)[:2000],
             status_code=status_code,
             status_category=_status_category(status_code),
             response_time_ms=max(elapsed_ms, 0),
@@ -94,6 +95,17 @@ class APITelemetryMiddleware:
             user_agent=(request.META.get("HTTP_USER_AGENT") or "")[:1000],
             api_version=_api_version(request.path),
         )
+
+    @staticmethod
+    def _full_path(request) -> str:
+        """Path plus query string, with registered personal-data values redacted.
+
+        Unregistered paths keep Django's own ``get_full_path()`` unchanged.
+        """
+        path = request.path or "/"
+        if sensitive_names_for_path(path):
+            return redact_full_path(path, request.META.get("QUERY_STRING", ""))
+        return request.get_full_path()
 
     @staticmethod
     def _client_ip(request) -> str | None:

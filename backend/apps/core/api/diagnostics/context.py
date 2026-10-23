@@ -13,6 +13,7 @@ from typing import Any
 
 from apps.core.logging import context as log_context
 from apps.core.logging.constants import SENSITIVE_KEYS
+from apps.core.logging.redaction import redact_query_params
 from apps.core.utils.client_ip import client_ip_from_meta
 
 MAX_REQUEST_ID_LENGTH = 128
@@ -359,7 +360,9 @@ def _sanitized_query_params(request: Any) -> dict[str, Any]:
                 ]
             else:
                 params[name] = str(value)[:MAX_VALUE_LENGTH]
+
+        # Apps register parameters whose values carry personal data for their
+        # paths (core.logging.redaction); names stay, values are replaced.
+        return redact_query_params(str(getattr(request, "path", "") or ""), params)
     except Exception:
         return {}
-
-    return params

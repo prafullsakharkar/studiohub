@@ -6,3 +6,8 @@ class MasterDataConfig(AppConfig):
     name = "apps.masterdata"
     label = "masterdata"
     verbose_name = "Master Data"
+
+    def ready(self) -> None:
+        from apps.masterdata.logging_policy import register_query_redaction
+
+        register_query_redaction()
