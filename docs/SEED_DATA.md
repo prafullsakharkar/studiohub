@@ -153,13 +153,6 @@ membership-less users (warning), project-less orgs (warning).
 
 ## Known limitations
 
-- Knowledge-base and saved/recent-search records are **not seeded**: the
-  frontend mock tree has no `intelligence/` dataset (`knowledge.ts` /
-  `search.ts` never existed in `studiohub-react/src/mocks/db`), and the
-  seed commands that referenced those files crashed with
-  `FileNotFoundError`. The models (`intelligence.KnowledgeDocument`,
-  `SavedSearch`, `RecentSearch`) and their APIs remain intact — they just
-  have no mock-driven seed source, so they start empty.
 - `VEL1`→`VEL01` typo normalization (documented above).
 - Timelog natural matching is heuristic (task+person+date+duration).
 - Activity→project linkage is heuristic (code/name/context match); 2
