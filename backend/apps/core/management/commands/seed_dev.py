@@ -871,7 +871,8 @@ class Command(BaseCommand):
                     "status": item.get("status", "Active"),
                     "logo_url": item.get("logo_url", ""),
                     "headquarters": item.get("headquarters", ""),
-                    "total_billed_usd": item.get("total_billed_usd", 0) or 0,
+                    # Nullable and entered by hand (masterdata D11): no figure, no invented zero.
+                    "total_billed_usd": item.get("total_billed_usd"),
                 },
             )
         return list(Client.objects.all())
@@ -974,7 +975,7 @@ class Command(BaseCommand):
             client = Client.objects.filter(code=item["code"]).first()
             if client is None:
                 continue
-            ClientContract.objects.update_or_create(
+            contract, _ = ClientContract.objects.update_or_create(
                 client=client,
                 contract_number=item.get("contract_number", ""),
                 defaults={
@@ -988,6 +989,7 @@ class Command(BaseCommand):
                     "document_url": item.get("document_url", ""),
                 },
             )
+            self._stamp_activation(contract)
             client_count += 1
 
         vendor_count = 0
@@ -995,7 +997,7 @@ class Command(BaseCommand):
             vendor = Vendor.objects.filter(code=item["code"]).first()
             if vendor is None:
                 continue
-            VendorContract.objects.update_or_create(
+            contract, _ = VendorContract.objects.update_or_create(
                 vendor=vendor,
                 contract_number=item.get("contract_number", ""),
                 defaults={
@@ -1009,9 +1011,20 @@ class Command(BaseCommand):
                     "status": item.get("status", "Active"),
                 },
             )
+            self._stamp_activation(contract)
             vendor_count += 1
 
         return client_count + vendor_count
+
+    @staticmethod
+    def _stamp_activation(contract):
+        """Active contracts record when they were activated (masterdata D8)."""
+
+        from django.utils import timezone
+
+        if contract.status == "Active" and contract.activated_at is None:
+            contract.activated_at = timezone.now()
+            contract.save(update_fields=["activated_at", "updated_at"])
 
     # ------------------------------------------------------------------
     # Activities (org-free)

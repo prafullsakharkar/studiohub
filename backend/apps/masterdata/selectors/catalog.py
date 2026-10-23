@@ -7,10 +7,14 @@ returning QuerySets. Platform-global: no organization scoping.
 
 from __future__ import annotations
 
-from django.db.models import Count, QuerySet
+from typing import Any
+
+from django.db.models import Count, Q, QuerySet
 
 from apps.core.selectors.base import BaseSelector
 from apps.masterdata.models import (
+    CatalogStatus,
+    LookupCatalogModel,
     MasterAssetType,
     MasterFileType,
     MasterReviewType,
@@ -22,20 +26,32 @@ from apps.masterdata.models import (
 )
 
 
-class SoftwareSelector(BaseSelector):
+class LookupSelector(BaseSelector):
+    """Selector base for the managed lookup catalogs."""
+
+    model: type[LookupCatalogModel]  # pyright: ignore[reportIncompatibleVariableOverride]
+
+    @classmethod
+    def with_deleted(cls) -> QuerySet[Any]:
+        """Every row, soft-deleted included (restore and hard delete only)."""
+        return cls.model.all_objects.all()
+
+
+class SoftwareSelector(LookupSelector):
     model = Software
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Software]:
-        return Software.objects.prefetch_related("versions")
+        return Software.objects.all()
 
     @classmethod
-    def annotate_version_count(cls, queryset: QuerySet[Software] | None = None) -> QuerySet[Software]:
-        qs = queryset or cls.get_queryset()
-        return qs.annotate(version_count=Count("versions", distinct=True))
+    def annotate_version_count(cls, queryset: QuerySet[Any]) -> QuerySet[Any]:
+        """``version_count`` = live, non-archived versions, in one query."""
+        counted = Q(versions__is_deleted=False) & ~Q(versions__status=CatalogStatus.ARCHIVED)
+        return queryset.annotate(version_count=Count("versions", filter=counted, distinct=True))
 
 
-class SoftwareVersionSelector(BaseSelector):
+class SoftwareVersionSelector(LookupSelector):
     model = SoftwareVersion
 
     @classmethod
@@ -47,7 +63,7 @@ class SoftwareVersionSelector(BaseSelector):
         return cls.get_queryset().filter(software_id=software_id)
 
 
-class MasterStatusSelector(BaseSelector):
+class MasterStatusSelector(LookupSelector):
     model = MasterStatus
 
     @classmethod
@@ -59,7 +75,7 @@ class MasterStatusSelector(BaseSelector):
         return cls.get_queryset().filter(entity_type=entity_type)
 
 
-class MasterTaskTypeSelector(BaseSelector):
+class MasterTaskTypeSelector(LookupSelector):
     model = MasterTaskType
 
     @classmethod
@@ -67,7 +83,7 @@ class MasterTaskTypeSelector(BaseSelector):
         return MasterTaskType.objects.all()
 
 
-class MasterAssetTypeSelector(BaseSelector):
+class MasterAssetTypeSelector(LookupSelector):
     model = MasterAssetType
 
     @classmethod
@@ -75,7 +91,7 @@ class MasterAssetTypeSelector(BaseSelector):
         return MasterAssetType.objects.all()
 
 
-class MasterShotTypeSelector(BaseSelector):
+class MasterShotTypeSelector(LookupSelector):
     model = MasterShotType
 
     @classmethod
@@ -83,7 +99,7 @@ class MasterShotTypeSelector(BaseSelector):
         return MasterShotType.objects.all()
 
 
-class MasterReviewTypeSelector(BaseSelector):
+class MasterReviewTypeSelector(LookupSelector):
     model = MasterReviewType
 
     @classmethod
@@ -91,7 +107,7 @@ class MasterReviewTypeSelector(BaseSelector):
         return MasterReviewType.objects.all()
 
 
-class MasterFileTypeSelector(BaseSelector):
+class MasterFileTypeSelector(LookupSelector):
     model = MasterFileType
 
     @classmethod

@@ -282,7 +282,6 @@ class TestSeedStudiohub:
         (master_dir / "initialMasterData.ts").write_text(
             'export const mockGlobalSoftware = [{"id":"sw-t1","code":"SW1","name":"Soft",'
             '"vendor":"V","category":"","scope":"GLOBAL"}];\n'
-            'export const mockCustomSoftware = [];\n'
             'export const mockSoftwareVersions = [];\n'
             'export const mockCustomSoftwareVersions = [];\n'
             'export const mockMasterStatuses = [{"id":"st-t1","code":"todo","name":"Todo",'
@@ -295,8 +294,6 @@ class TestSeedStudiohub:
             'export const mockMasterShotTypes = [];\n'
             'export const mockMasterReviewTypes = [];\n'
             'export const mockMasterFileTypes = [];\n'
-            'export const mockOrganizationSoftwareConfigs = [];\n'
-            'export const mockOrganizationStatusConfigs = [];\n'
         )
 
         call_command(
@@ -309,3 +306,134 @@ class TestSeedStudiohub:
         assert Software.objects.filter(code="SW1").exists()
         assert MasterStatus.objects.filter(code="todo").exists()
         assert MasterTaskType.objects.filter(code="anim").exists()
+
+
+_EMPTY_MASTER_ARRAYS = (
+    "mockGlobalSoftware",
+    "mockSoftwareVersions",
+    "mockCustomSoftwareVersions",
+    "mockMasterTaskTypes",
+    "mockMasterAssetTypes",
+    "mockMasterShotTypes",
+    "mockMasterReviewTypes",
+    "mockMasterFileTypes",
+)
+
+
+@pytest.mark.django_db
+class TestSeedMasterdataCatalogRules:
+    """seed_demo_data must follow the lookup-catalog rules (Phase 3)."""
+
+    def _write(self, mock_root, statuses, asset_types=(), software=(), versions=()):
+        master_dir = mock_root / "masterData"
+        master_dir.mkdir(parents=True, exist_ok=True)
+        given = {
+            "mockMasterAssetTypes": asset_types,
+            "mockGlobalSoftware": software,
+            "mockSoftwareVersions": versions,
+            "mockMasterStatuses": statuses,
+        }
+        names = [n for n in _EMPTY_MASTER_ARRAYS if n not in given] + ["mockMasterStatuses"]
+        lines = [f"export const {name} = [];\n" for name in names if name not in given]
+        lines += [
+            f"export const {name} = {json.dumps(list(rows))};\n" for name, rows in given.items()
+        ]
+        (master_dir / "initialMasterData.ts").write_text("".join(lines))
+
+    def _run(self):
+        call_command(
+            "seed_studiohub",
+            force=True,
+            skip_base=True,
+            skip_validate=True,
+            platform=True,
+            verbosity=0,
+        )
+
+    def test_status_codes_are_kept_per_entity_type_not_renamed(self, mock_root):
+        from apps.masterdata.models import MasterStatus
+
+        self._write(
+            mock_root,
+            [
+                {"id": "s1", "code": "in_progress", "name": "In progress", "entity_type": "Task"},
+                {"id": "s2", "code": "in_progress", "name": "In progress", "entity_type": "Shot"},
+            ],
+        )
+        self._run()
+        self._run()  # idempotent
+
+        rows = MasterStatus.objects.filter(code="in_progress")
+        assert sorted(rows.values_list("entity_type", flat=True)) == ["Shot", "Task"]
+        assert MasterStatus.objects.count() == 2
+
+    def test_a_second_default_replaces_the_first_instead_of_crashing(self, mock_root):
+        from apps.masterdata.models import MasterStatus
+
+        self._write(
+            mock_root,
+            [
+                {"id": "s1", "code": "a", "name": "A", "entity_type": "Task", "is_default": True},
+                {"id": "s2", "code": "b", "name": "B", "entity_type": "Task", "is_default": True},
+            ],
+        )
+        self._run()
+        assert list(
+            MasterStatus.objects.filter(is_default=True).values_list("code", flat=True)
+        ) == ["b"]
+
+    def test_legacy_status_words_and_clashing_rows_do_not_crash(self, mock_root):
+        from apps.masterdata.models import MasterAssetType
+
+        self._write(
+            mock_root,
+            [],
+            asset_types=[
+                {"id": "a1", "code": "prop", "name": "Prop", "status": "inactive"},
+                {"id": "a2", "code": "prop2", "name": "PROP"},  # same name, different code: clashes
+            ],
+        )
+        self._run()
+
+        assert MasterAssetType.objects.get(code="prop").status == "archived"
+        assert not MasterAssetType.objects.filter(code="prop2").exists()
+
+    def test_software_versions_are_keyed_by_software_and_version_with_derived_names(
+        self, mock_root
+    ):
+        from apps.masterdata.models import Software, SoftwareVersion
+
+        self._write(
+            mock_root,
+            [],
+            software=[{"id": "sw1", "code": "MAYA", "name": "Maya", "status": "Inactive"}],
+            versions=[
+                {
+                    "id": "v1",
+                    "software_id": "sw1",
+                    "version": "2025",
+                    "version_code": "maya-2025",
+                    "release_date": "2024-03-01",
+                    "end_of_support": "2027-03-01",
+                },
+                {"id": "v2", "software_id": "sw1", "version": "2026"},
+                # end of support before release: reported and skipped, never a crash
+                {
+                    "id": "v3",
+                    "software_id": "sw1",
+                    "version": "2024",
+                    "release_date": "2024-01-01",
+                    "end_of_support": "2023-01-01",
+                },
+            ],
+        )
+        self._run()
+        self._run()  # idempotent
+
+        maya = Software.objects.get(code="MAYA")
+        assert maya.status == "archived"
+        versions = {v.version: v for v in SoftwareVersion.objects.filter(software=maya)}
+        assert sorted(versions) == ["2025", "2026"]
+        assert versions["2025"].code == "maya-2025" and versions["2025"].name == "Maya 2025"
+        assert versions["2026"].code == "MAYA-2026" and versions["2026"].name == "Maya 2026"
+        assert SoftwareVersion.objects.count() == 2

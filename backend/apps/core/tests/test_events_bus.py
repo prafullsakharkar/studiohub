@@ -10,9 +10,21 @@ class DummyEvent(DomainEvent):
 
 
 class TestEventBus(TestCase):
+    def setUp(self) -> None:
+        # The registry is process-wide and holds the real subscriptions of every
+        # app (audit handlers, ...). Keep them for the tests that run after this one.
+        self._saved_handlers = {
+            event: list(handlers)
+            for event, handlers in default_event_bus.registry._handlers.items()
+        }
+        return super().setUp()
+
     def tearDown(self) -> None:
-        # Clear registry between tests
+        # Drop what the test registered, then put the real subscriptions back.
         default_event_bus.registry.clear()
+        for event, handlers in self._saved_handlers.items():
+            for handler in handlers:
+                default_event_bus.registry.register(event, handler)
         return super().tearDown()
 
     def test_subscribe_and_publish_outside_transaction(self):

@@ -1,5 +1,5 @@
 """
-Global department reference model (org-removal B3).
+Global department reference model.
 
 Platform-global organizational unit. No organization FK: departments are
 shared platform reference data consumed by production (teams, positions,
@@ -9,6 +9,7 @@ people link here).
 from __future__ import annotations
 
 from django.db import models
+from django.db.models.functions import Lower
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models.bases import PlatformScopedModel
@@ -25,7 +26,8 @@ class DepartmentType(models.TextChoices):
 class Department(PlatformScopedModel):
     """Department within the platform directory."""
 
-    code = models.CharField(_("Code"), max_length=30, unique=True, db_index=True)
+    # Uniqueness is the partial, case-insensitive constraint below (live rows only).
+    code = models.CharField(_("Code"), max_length=30, db_index=True)
     name = models.CharField(_("Name"), max_length=255, db_index=True)
     description = models.TextField(_("Description"), blank=True, default="")
 
@@ -66,6 +68,22 @@ class Department(PlatformScopedModel):
             models.Index(fields=["code"]),
             models.Index(fields=["parent"]),
             models.Index(fields=["name"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                Lower("code"),
+                condition=models.Q(is_deleted=False),
+                name="masterdata_department_uq_code_ci",
+            ),
+            models.UniqueConstraint(
+                Lower("name"),
+                condition=models.Q(is_deleted=False),
+                name="masterdata_department_uq_name_ci",
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(parent=models.F("id")),
+                name="masterdata_department_parent_not_self",
+            ),
         ]
 
     def __str__(self):

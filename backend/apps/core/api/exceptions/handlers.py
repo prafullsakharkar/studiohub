@@ -52,6 +52,7 @@ from apps.core.api.diagnostics.reasons import (
 )
 from apps.core.exceptions.base import BaseDomainException
 from apps.core.logging.logger import get_logger
+from apps.core.logging.redaction import redact_database_detail
 from apps.core.utils.client_ip import get_client_ip
 
 _logger = get_logger("api")
@@ -284,7 +285,7 @@ def _safe_detail(exc: BaseException) -> str | None:
 
 def _safe_message(exc: BaseException) -> str | None:
     try:
-        return str(exc)[:500] or None
+        return redact_database_detail(str(exc))[:500] or None
     except Exception:
         return None
 

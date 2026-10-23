@@ -29,11 +29,9 @@ Contract rules honored (same as ``seed_studiohub``):
 
 Documented seed decisions (mock has no equivalent — deterministic, reported):
 
-- Org-free (org-removal B6): no organizations are created or referenced.
-  Platform-global masterdata rows are seeded with ``scope=GLOBAL``; the
-  org-scoped custom/config rows (``mockCustomSoftware``,
-  ``mockOrganization*Configs``) have no tenant home anymore and are
-  reported as skipped, never invented.
+- Platform-global: no organizations are created or referenced. Mock arrays that only
+  made sense per organization (``mockCustomSoftware``, ``mockOrganization*Configs``)
+  are not read.
 - Studio holidays are seeded once per date (platform-global; natural key is
   ``holiday_date``).
 - Scheduling resources are platform-global; no project/org resolution is
@@ -54,7 +52,7 @@ from typing import Any
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from apps.core.management.commands.seed_studiohub import SeedReporter
@@ -63,6 +61,15 @@ from apps.production.management.commands.seed_production_mocks import (
     _resolve_mock_root,
     _update_or_create,
 )
+
+# Legacy free-text lifecycle words that meant "not in use any more".
+_ARCHIVED_WORDS = {"archived", "inactive", "deprecated", "disabled", "retired"}
+
+
+def _catalog_status(value) -> str:
+    """Map a mock lifecycle word onto the catalog active/archived enum."""
+    return "archived" if str(value or "").strip().lower() in _ARCHIVED_WORDS else "active"
+
 
 RESOURCE_TYPE_MAP = {
     "person": "Person",
@@ -230,6 +237,21 @@ class Command(BaseCommand):
     # Phase: masterdata
     # ------------------------------------------------------------------
 
+    def _upsert_catalog(self, reporter, entity, model, lookup, defaults):
+        """Restore-aware upsert that reports, instead of crashing on, a row
+        that violates the catalog constraints (case-insensitive code/name,
+        version per software, end of support before release).
+        Returns True/False for created/updated, or None when skipped."""
+        try:
+            with transaction.atomic():
+                _, created = _update_or_create(model, defaults=defaults, **lookup)
+        except IntegrityError:
+            reporter.note(entity, f"skipped {lookup}: violates a catalog constraint (duplicate code/name/version or bad dates)")
+            reporter.add(entity, "skipped")
+            return None
+        reporter.add(entity, "created" if created else "updated")
+        return created
+
     def _seed_masterdata(self, mock_root, reporter, context):
         from apps.masterdata.models import (
             MasterAssetType,
@@ -249,117 +271,127 @@ class Command(BaseCommand):
             if self._seed_software(item, reporter):
                 software_by_mock_id[item["id"]] = item["code"]
 
-        # Custom software rows were org-scoped; with orgs removed (B6) they
-        # have no tenant home — report, don't invent platform-global rows.
-        custom_software = _load_ts_mock_array(path, "mockCustomSoftware")
-        if custom_software:
-            reporter.note(
-                "masterdata_software",
-                f"{len(custom_software)} custom software row(s) skipped (org-scoped, no tenant)",
-            )
-
         version_by_mock_id = {}
         for var in ("mockSoftwareVersions", "mockCustomSoftwareVersions"):
             for item in _load_ts_mock_array(path, var):
                 software = Software.objects.filter(
                     code=software_by_mock_id.get(item.get("software_id"), "")
                 ).first()
-                # CatalogModel.code is globally unique; mock versions carry no
-                # code, so the unique version_code doubles as the row code.
-                if software is None or not item.get("version") or not item.get("version_code"):
+                if software is None or not item.get("version"):
                     reporter.add("masterdata_versions", "skipped")
                     continue
-                release = self._parse_date(item.get("release_date"))
-                end_of_support = self._parse_date(item.get("end_of_support"))
-                _, created = _update_or_create(
+                version = item["version"]
+                created = self._upsert_catalog(
+                    reporter,
+                    "masterdata_versions",
                     SoftwareVersion,
-                    code=item["version_code"],
-                    defaults={
-                        "software": software,
-                        "version": item["version"],
+                    {"software": software, "version": version},
+                    {
+                        # Code and name are unique per software; the mock
+                        # carries neither, so derive them from software + version.
+                        "code": item.get("version_code") or f"{software.code}-{version}",
+                        "name": item.get("name") or f"{software.name} {version}",
                         "version_code": item.get("version_code", ""),
-                        "release_date": release,
-                        "end_of_support": end_of_support,
-                        "status": item.get("status", "active"),
-                        "scope": item.get("scope", "GLOBAL"),
-                        "metadata": item.get("metadata") or {},
+                        "release_date": self._parse_date(item.get("release_date")),
+                        "end_of_support": self._parse_date(item.get("end_of_support")),
+                        "status": _catalog_status(item.get("status")),
+                                        "metadata": item.get("metadata") or {},
                     },
                 )
-                reporter.add("masterdata_versions", "created" if created else "updated")
-                if item.get("id"):
-                    version_by_mock_id[item["id"]] = (software, item["version"])
+                if created is not None and item.get("id"):
+                    version_by_mock_id[item["id"]] = (software, version)
 
         status_by_mock_id = {}
-        used_status_codes: set[str] = set()
         for item in _load_ts_mock_array(path, "mockMasterStatuses"):
-            if not item.get("code"):
+            if not item.get("code") or not item.get("entity_type"):
                 reporter.add("masterdata_statuses", "skipped")
                 continue
-            # CatalogModel.code is unique per table but mock reuses codes
-            # across entity types ('in_progress' for task+shot). First-seen
-            # keeps the bare code; later collisions are namespaced.
+            # Codes are unique per entity type, so the same code (e.g.
+            # 'in_progress') can exist for a task and a shot.
             code = item["code"]
-            if code in used_status_codes:
-                code = f"{item.get('entity_type', 'x')}_{code}"
-                reporter.note("masterdata_statuses", f"code collision disambiguated: {code}")
-            used_status_codes.add(code)
-            _, created = _update_or_create(
+            entity_type = item["entity_type"]
+            is_default = bool(item.get("is_default", False))
+            if is_default:
+                # One default per entity type: the last mock row wins.
+                MasterStatus.objects.filter(entity_type=entity_type, is_default=True).exclude(
+                    code__iexact=code
+                ).update(is_default=False)
+            created = self._upsert_catalog(
+                reporter,
+                "masterdata_statuses",
                 MasterStatus,
-                code=code,
-                defaults={
+                {"entity_type": entity_type, "code": code},
+                {
                     "name": item.get("name", item["code"]),
-                    "entity_type": item.get("entity_type", ""),
                     "category": item.get("category", ""),
                     "color": item.get("color", ""),
                     "order": item.get("order", 0) or 0,
-                    "is_default": bool(item.get("is_default", False)),
+                    "is_default": is_default,
                     "is_final": bool(item.get("is_final", False)),
                     "description": item.get("description", ""),
-                    "status": item.get("status", "active"),
-                    "scope": item.get("scope", "GLOBAL"),
-                },
+                    "status": _catalog_status(item.get("status")),
+                            },
             )
-            reporter.add("masterdata_statuses", "created" if created else "updated")
-            if item.get("id"):
+            if created is not None and item.get("id"):
                 status_by_mock_id[item["id"]] = code
 
         # File types carry no `code` in the mock — derive it deterministically
         # from the (unique) extension.
         type_jobs = [
-            ("mockMasterTaskTypes", MasterTaskType, "masterdata_tasktypes",
-             lambda item: item.get("code", ""),
-             lambda item: {
-                 "category": item.get("category", ""),
-                 "department_code": item.get("department_code", ""),
-                 "department_name": item.get("department_name", ""),
-                 "color": item.get("color", ""),
-                 "icon": item.get("icon", ""),
-             }),
-            ("mockMasterAssetTypes", MasterAssetType, "masterdata_assettypes",
-             lambda item: item.get("code", ""),
-             lambda item: {
-                 "color": item.get("color", ""),
-                 "icon": item.get("icon", ""),
-             }),
-            ("mockMasterShotTypes", MasterShotType, "masterdata_shottypes",
-             lambda item: item.get("code", ""),
-             lambda item: {
-                 "default_handle_frames": item.get("default_handle_frames"),
-             }),
-            ("mockMasterReviewTypes", MasterReviewType, "masterdata_reviewtypes",
-             lambda item: item.get("code", ""),
-             lambda item: {
-                 "allow_verdicts": item.get("allow_verdicts", True),
-                 "require_notes": bool(item.get("require_notes", False)),
-             }),
-            ("mockMasterFileTypes", MasterFileType, "masterdata_filetypes",
-             lambda item: (item.get("extension") or "").lstrip(".").lower(),
-             lambda item: {
-                 "extension": item.get("extension", ""),
-                 "mime_type": item.get("mime_type", ""),
-                 "category": item.get("category", ""),
-                 "dcc_affinity": item.get("dcc_affinity", ""),
-             }),
+            (
+                "mockMasterTaskTypes",
+                MasterTaskType,
+                "masterdata_tasktypes",
+                lambda item: item.get("code", ""),
+                lambda item: {
+                    "category": item.get("category", ""),
+                    "department_code": item.get("department_code", ""),
+                    "department_name": item.get("department_name", ""),
+                    "color": item.get("color", ""),
+                    "icon": item.get("icon", ""),
+                },
+            ),
+            (
+                "mockMasterAssetTypes",
+                MasterAssetType,
+                "masterdata_assettypes",
+                lambda item: item.get("code", ""),
+                lambda item: {
+                    "color": item.get("color", ""),
+                    "icon": item.get("icon", ""),
+                },
+            ),
+            (
+                "mockMasterShotTypes",
+                MasterShotType,
+                "masterdata_shottypes",
+                lambda item: item.get("code", ""),
+                lambda item: {
+                    "default_handle_frames": item.get("default_handle_frames"),
+                },
+            ),
+            (
+                "mockMasterReviewTypes",
+                MasterReviewType,
+                "masterdata_reviewtypes",
+                lambda item: item.get("code", ""),
+                lambda item: {
+                    "allow_verdicts": item.get("allow_verdicts", True),
+                    "require_notes": bool(item.get("require_notes", False)),
+                },
+            ),
+            (
+                "mockMasterFileTypes",
+                MasterFileType,
+                "masterdata_filetypes",
+                lambda item: (item.get("extension") or "").lstrip(".").lower(),
+                lambda item: {
+                    "extension": item.get("extension", ""),
+                    "mime_type": item.get("mime_type", ""),
+                    "category": item.get("category", ""),
+                    "dcc_affinity": item.get("dcc_affinity", ""),
+                },
+            ),
         ]
         type_by_mock_id: dict[str, str] = {}
         for var, model, entity, code_fn, extra in type_jobs:
@@ -371,32 +403,12 @@ class Command(BaseCommand):
                 defaults = {
                     "name": item.get("name", code),
                     "description": item.get("description", ""),
-                    "status": item.get("status", "active"),
-                    "scope": item.get("scope", "GLOBAL"),
-                }
+                    "status": _catalog_status(item.get("status")),
+                            }
                 defaults.update(extra(item))
-                _, created = _update_or_create(model, code=code, defaults=defaults)
-                reporter.add(entity, "created" if created else "updated")
-                if item.get("id"):
+                created = self._upsert_catalog(reporter, entity, model, {"code": code}, defaults)
+                if created is not None and item.get("id"):
                     type_by_mock_id[item["id"]] = code
-
-        # Org-scoped config rows (Organization*Config) had a per-tenant home;
-        # with orgs removed (B6) they cannot be seeded — report, don't invent.
-        org_config_arrays = [
-            ("mockOrganizationSoftwareConfigs", "software"),
-            ("mockOrganizationStatusConfigs", "status"),
-            ("mockOrganizationTaskTypeConfigs", "task-type"),
-            ("mockOrganizationAssetTypeConfigs", "asset-type"),
-            ("mockOrganizationShotTypeConfigs", "shot-type"),
-            ("mockOrganizationReviewTypeConfigs", "review-type"),
-        ]
-        for var, label in org_config_arrays:
-            items = _load_ts_mock_array(path, var)
-            if items:
-                reporter.note(
-                    f"masterdata_{label}_configs",
-                    f"{len(items)} org config row(s) skipped (org-scoped, no tenant)",
-                )
 
     # ------------------------------------------------------------------
     # Phase: automations (db/production/workflow.ts — the served dataset)
@@ -498,7 +510,9 @@ class Command(BaseCommand):
         # No API serves runs/templates — report, don't invent storage.
         if _load_ts_mock_array(mock_root / "intelligence" / "automations.ts", "mockAutomationRuns"):
             reporter.note("automation_runs", "mock-only dataset, no endpoint — not seeded")
-        if _load_ts_mock_array(mock_root / "intelligence" / "automations.ts", "mockAutomationTemplates"):
+        if _load_ts_mock_array(
+            mock_root / "intelligence" / "automations.ts", "mockAutomationTemplates"
+        ):
             reporter.note("automation_templates", "mock-only dataset, no endpoint — not seeded")
 
     def _seed_software(self, item, reporter):
@@ -507,23 +521,23 @@ class Command(BaseCommand):
         if not item.get("code"):
             reporter.add("masterdata_software", "skipped")
             return False
-        _, created = _update_or_create(
+        created = self._upsert_catalog(
+            reporter,
+            "masterdata_software",
             Software,
-            code=item["code"],
-            defaults={
+            {"code": item["code"]},
+            {
                 "name": item.get("name", item["code"]),
                 "publisher": item.get("publisher", ""),
                 "category": item.get("category", ""),
                 "description": item.get("description", ""),
                 "website": item.get("website", ""),
-                "status": item.get("status", "active"),
-                "scope": item.get("scope", "GLOBAL"),
-                "is_system": bool(item.get("is_system", False)),
+                "status": _catalog_status(item.get("status")),
+                        "is_system": bool(item.get("is_system", False)),
                 "metadata": item.get("metadata") or {},
             },
         )
-        reporter.add("masterdata_software", "created" if created else "updated")
-        return True
+        return created is not None
 
     # ------------------------------------------------------------------
     # Phase: scheduling (db/production/scheduling.ts)
@@ -628,8 +642,7 @@ class Command(BaseCommand):
                 reporter.add("scheduling_leaves", "skipped")
                 reporter.note(
                     "scheduling_leaves",
-                    f"leave {item.get('id')}: no resource for "
-                    f"{item.get('resource_name')!r}",
+                    f"leave {item.get('id')}: no resource for {item.get('resource_name')!r}",
                 )
                 continue
             leave_type = LEAVE_TYPE_MAP.get(item.get("leave_type", ""), "Other")

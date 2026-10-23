@@ -91,6 +91,7 @@ class AuditLog(EntityModel, TimeStampedModel):
     TARGET_FEATURE_FLAG = "feature_flag"
     TARGET_THEME = "theme"
     TARGET_LOCALIZATION = "localization"
+    TARGET_MASTERDATA = "masterdata"
 
     TARGET_CHOICES = [
         (TARGET_USER, _("User")),
@@ -117,6 +118,7 @@ class AuditLog(EntityModel, TimeStampedModel):
         (TARGET_FEATURE_FLAG, _("Feature Flag")),
         (TARGET_THEME, _("Theme")),
         (TARGET_LOCALIZATION, _("Localization")),
+        (TARGET_MASTERDATA, _("Master data")),
     ]
     
     action = models.CharField(

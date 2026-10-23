@@ -1,36 +1,44 @@
 """
-Global vendor contact model (org-removal B3).
+Global vendor contact model.
 
-Contact person for a platform-global vendor. No organization FK.
+Contact person for a platform-global vendor. No organization FK. Personal data:
+see ``ContactBase``.
 """
 
 from __future__ import annotations
 
 from django.db import models
+from django.db.models.functions import Lower
 
-from apps.core.models.bases import PlatformScopedModel
+from apps.masterdata.models.contact import ContactBase
 
 
-class VendorContact(PlatformScopedModel):
+class VendorContact(ContactBase):
     vendor = models.ForeignKey(
         "masterdata.Vendor",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="contacts",
         db_index=True,
     )
-    name = models.CharField(max_length=255, db_index=True)
-    role = models.CharField(max_length=255, blank=True, default="")
-    email = models.EmailField(blank=True, default="", db_index=True)
-    phone = models.CharField(max_length=50, blank=True, default="")
-    timezone = models.CharField(max_length=100, blank=True, default="")
-    is_primary = models.BooleanField(default=False)
 
-    class Meta:
+    class Meta(ContactBase.Meta):
         db_table = "masterdata_vendor_contact"
-        ordering = ("name",)
         indexes = [
             models.Index(fields=["vendor"]),
         ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["vendor"],
+                condition=models.Q(is_primary=True, is_deleted=False),
+                name="masterdata_vendorcontact_one_primary",
+            ),
+            models.UniqueConstraint(
+                models.F("vendor"),
+                Lower("email"),
+                condition=models.Q(is_deleted=False) & ~models.Q(email=""),
+                name="masterdata_vendorcontact_uq_email_ci",
+            ),
+        ]
 
     def __str__(self):
-        return f"{self.name} ({self.vendor})"
+        return f"Contact {self.pk} ({self.vendor_id})"  # pyright: ignore[reportAttributeAccessIssue]

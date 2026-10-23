@@ -78,10 +78,14 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     ("settings.update", "settings", "update"),
     ("settings.manage", "settings", "manage"),
     ("user.manage", "users", "manage"),
-    # Platform master data (enforced by the masterdata catalog/directory
-    # viewsets; replaces the legacy organization.master_data.* codes).
-    ("platform.master_data.configure", "master_data", "configure"),
-    ("platform.master_data.create", "master_data", "create"),
+    # Platform master data (docs/masterdata/DECISIONS.md D9). The former
+    # platform.master_data.configure / create codes are retired (see
+    # RETIRED_PERMISSION_CODES).
+    ("masterdata.catalog.manage", "masterdata_catalog", "manage"),
+    ("masterdata.hard_delete", "masterdata", "hard_delete"),
+    ("masterdata.directory.manage", "masterdata_directory", "manage"),
+    ("masterdata.person.view_sensitive", "masterdata_person", "view_sensitive"),
+    ("masterdata.client.view_financial", "masterdata_client", "view_financial"),
     # Identity domain (enforced by the identity RBAC viewsets).
     ("identity.user.view", "user", "view"),
     ("identity.user.create", "user", "create"),
@@ -108,9 +112,22 @@ DIRECTORY_VIEW_PERMISSIONS = [
     "identity.user.view",
 ]
 
-DIRECTORY_CRUD_PERMISSIONS = [
+# Codes that nothing enforces any more. ``init_platform`` deletes them and every role grant of
+# them, so a holder of only one of these has no masterdata access at all (D9, Phase 8).
+RETIRED_PERMISSION_CODES = (
     "platform.master_data.configure",
     "platform.master_data.create",
+)
+
+# What org-admin holds for masterdata: the new codes EXPLICITLY (DECISIONS D9, Option B, transitional: the catalogs are global, so
+# catalog.manage belongs to a platform-level role; follow-up FU-1). Deliberately not
+# hard_delete. view_sensitive / view_financial keep the access it has today to
+# contact data and contract values now that those are gated.
+DIRECTORY_CRUD_PERMISSIONS = [
+    "masterdata.directory.manage",
+    "masterdata.catalog.manage",
+    "masterdata.person.view_sensitive",
+    "masterdata.client.view_financial",
     "identity.user.view",
 ]
 
@@ -127,6 +144,10 @@ PRODUCTION_FULL_PERMISSIONS = [
     "show.create", "show.view", "show.update", "show.delete",
     "audit.view",
 ]
+
+# Production admins track contract and budget figures; supervisors, leads and
+# artists share PRODUCTION_FULL_PERMISSIONS or less and do not see them.
+PRODUCTION_ADMIN_PERMISSIONS = PRODUCTION_FULL_PERMISSIONS + ["masterdata.client.view_financial"]
 
 PRODUCTION_LEAD_PERMISSIONS = [
     "project.view", "shot.view", "shot.update", "shot.approve",
@@ -180,7 +201,7 @@ ROLE_SPECS: list[dict[str, Any]] = [
         "name": "Production Admin",
         "priority": 20,  # identity RolePriority.MANAGER
         "scope": "project",
-        "permissions": PRODUCTION_FULL_PERMISSIONS,
+        "permissions": PRODUCTION_ADMIN_PERMISSIONS,
     },
     {
         "code": "vfx-supervisor",
@@ -258,6 +279,7 @@ class Command(BaseCommand):
         self.stdout.write("Initializing platform reference data...")
         with transaction.atomic():
             perms = self._seed_permissions()
+            retired = self._retire_permissions()
             self._seed_roles(perms)
             self._seed_statuses()
             self._seed_departments()
@@ -266,7 +288,8 @@ class Command(BaseCommand):
             self._seed_positions()
         self.stdout.write(
             self.style.SUCCESS(
-                f"Platform initialized: {len(perms)} permissions, "
+                f"Platform initialized: {len(perms)} permissions"
+                f"{f' ({retired} retired grants/codes removed)' if retired else ''}, "
                 f"{len(ROLE_SPECS)} roles, {len(STATUS_SPECS)} statuses, "
                 f"{len(DEPARTMENT_SPECS)} departments, {len(TEAM_SPECS)} teams, "
                 f"{len(OFFICE_SPECS)} offices, {len(POSITION_SPECS)} positions."
@@ -295,6 +318,24 @@ class Command(BaseCommand):
             )
             perms.append(perm)
         return perms
+
+    def _retire_permissions(self) -> int:
+        """Remove retired permission codes and every role grant of them (idempotent).
+
+        Real deletes, not soft ones: the RBAC delete signals then drop the holders' cached
+        permissions. Returns how many rows were removed.
+        """
+        from apps.identity.models import Permission, RolePermission
+
+        removed = 0
+        grants = RolePermission.all_objects.filter(permission__code__in=RETIRED_PERMISSION_CODES)
+        for grant in grants:
+            grant.hard_delete()
+            removed += 1
+        for permission in Permission.all_objects.filter(code__in=RETIRED_PERMISSION_CODES):
+            permission.hard_delete()
+            removed += 1
+        return removed
 
     def _role_perm_matrix(self, perm_by_code):
         """Map role code -> permission codes from the canonical catalog."""
@@ -351,24 +392,38 @@ class Command(BaseCommand):
     # ------------------------------------------------------------------
 
     def _seed_statuses(self):
+        """Seed the system statuses through the service (idempotent).
+
+        Natural key is ``(entity_type, code)``. Existing rows (live or
+        soft-deleted) are never overwritten; a pre-existing match is only
+        flagged ``is_system``.
+        """
         from apps.masterdata.models import MasterStatus
+        from apps.masterdata.services.catalog import MasterStatusService
 
         count = 0
         for code, name, entity_type, category, is_default, is_final in STATUS_SPECS:
-            _, created = MasterStatus.objects.get_or_create(
-                code=code,
-                defaults={
+            existing = MasterStatus.all_objects.filter(
+                entity_type=entity_type, code__iexact=code
+            ).first()
+            if existing is not None:
+                if not existing.is_system:
+                    existing.is_system = True
+                    existing.save(update_fields=["is_system"])
+                continue
+            MasterStatusService.create(
+                actor=None,
+                system=True,
+                data={
+                    "code": code,
                     "name": name,
                     "entity_type": entity_type,
                     "category": category,
                     "is_default": is_default,
                     "is_final": is_final,
-                    "status": "active",
-                    "scope": "GLOBAL",
                 },
             )
-            if created:
-                count += 1
+            count += 1
         return count
 
     # ------------------------------------------------------------------

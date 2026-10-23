@@ -33,6 +33,7 @@ class AuditTargetCodes:
     FEATURE_FLAG = "feature_flag"
     THEME = "theme"
     LOCALIZATION = "localization"
+    MASTERDATA = "masterdata"
 
     ALL = [
         USER,
@@ -59,6 +60,7 @@ class AuditTargetCodes:
         FEATURE_FLAG,
         THEME,
         LOCALIZATION,
+        MASTERDATA,
     ]
 
     DESCRIPTIONS = {
@@ -86,4 +88,5 @@ class AuditTargetCodes:
         FEATURE_FLAG: "Feature Flag entity",
         THEME: "Theme entity",
         LOCALIZATION: "Localization entity",
+        MASTERDATA: "Master data entity",
     }

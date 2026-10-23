@@ -1,5 +1,5 @@
 """
-Global office reference model (org-removal B3).
+Global office reference model.
 
 Platform-global physical office location. No organization FK.
 """
@@ -7,6 +7,7 @@ Platform-global physical office location. No organization FK.
 from __future__ import annotations
 
 from django.db import models
+from django.db.models.functions import Lower
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models.bases import PlatformScopedModel
@@ -15,7 +16,7 @@ from apps.core.models.bases import PlatformScopedModel
 class Office(PlatformScopedModel):
     """Physical office location in the platform directory."""
 
-    code = models.CharField(_("Code"), max_length=30, unique=True, db_index=True)
+    code = models.CharField(_("Code"), max_length=30, db_index=True)
     name = models.CharField(_("Name"), max_length=255, db_index=True)
     description = models.TextField(_("Description"), blank=True, default="")
 
@@ -64,6 +65,23 @@ class Office(PlatformScopedModel):
             models.Index(fields=["city"]),
             models.Index(fields=["country"]),
             models.Index(fields=["code"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                Lower("code"),
+                condition=models.Q(is_deleted=False),
+                name="masterdata_office_uq_code_ci",
+            ),
+            models.UniqueConstraint(
+                Lower("name"),
+                condition=models.Q(is_deleted=False),
+                name="masterdata_office_uq_name_ci",
+            ),
+            models.UniqueConstraint(
+                fields=["is_headquarters"],
+                condition=models.Q(is_headquarters=True, is_deleted=False),
+                name="masterdata_office_one_headquarters",
+            ),
         ]
 
     def __str__(self):

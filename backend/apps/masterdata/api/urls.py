@@ -1,34 +1,35 @@
 """
 Masterdata API URL configuration.
 
-Exposes the platform catalog and platform overview endpoints that match
-the frontend API contract. Organization-scoped master-data routes were
-deleted with the org removal plan (they 404 by absence).
+Exposes the platform catalog, directory and overview endpoints that match
+the frontend API contract.
 """
 
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from apps.masterdata.api.viewsets.catalog import (
+from apps.masterdata.api.viewsets.catalog import PlatformOverviewViewSet
+from apps.masterdata.api.viewsets.directory import (
+    DepartmentViewSet,
+    OfficeViewSet,
+    PersonViewSet,
+    PositionViewSet,
+    TeamViewSet,
+)
+from apps.masterdata.api.viewsets.lookup import (
     MasterAssetTypeViewSet,
     MasterFileTypeViewSet,
     MasterReviewTypeViewSet,
     MasterShotTypeViewSet,
     MasterStatusViewSet,
     MasterTaskTypeViewSet,
-    PlatformOverviewViewSet,
     SoftwareVersionViewSet,
     SoftwareViewSet,
 )
-from apps.masterdata.api.viewsets.directory import (
+from apps.masterdata.api.viewsets.partners import (
     ClientContactViewSet,
     ClientContractViewSet,
     ClientViewSet,
-    DepartmentViewSet,
-    OfficeViewSet,
-    PersonViewSet,
-    PositionViewSet,
-    TeamViewSet,
     VendorContactViewSet,
     VendorContractViewSet,
     VendorViewSet,
@@ -69,6 +70,11 @@ urlpatterns = [
         "platform/master-data/software",
         SoftwareViewSet.as_view({"get": "list", "post": "create"}),
         name="platform-software-list",
+    ),
+    path(
+        "platform/master-data/software/reorder",
+        SoftwareViewSet.as_view({"post": "reorder"}),
+        name="platform-software-reorder",
     ),
     path(
         "platform/master-data/software/<uuid:pk>",
@@ -126,6 +132,11 @@ urlpatterns += directory_router.urls
 
 for _data_type, _viewset in CATALOG_TYPES.items():
     urlpatterns += [
+        path(
+            f"platform/master-data/{_data_type}/reorder",
+            _viewset.as_view({"post": "reorder"}),
+            name=f"platform-{_data_type}-reorder",
+        ),
         path(
             f"platform/master-data/{_data_type}",
             _viewset.as_view({"get": "list", "post": "create"}),

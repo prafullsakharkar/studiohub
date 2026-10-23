@@ -140,7 +140,7 @@ class TestContractResponseShapes:
         """Masterdata directory: platform-global clients (viewset dispatch)."""
         from rest_framework.test import APIRequestFactory, force_authenticate
 
-        from apps.masterdata.api.viewsets.directory import ClientViewSet
+        from apps.masterdata.api.viewsets.partners import ClientViewSet
         from apps.masterdata.models import Client
 
         client = Client.objects.create(
@@ -241,18 +241,24 @@ class TestContractPermissionMatrix:
             PermissionViewSet,
             RoleViewSet,
         )
+        from apps.masterdata.api.viewsets import lookup
         from apps.masterdata.api.viewsets.directory import (
-            ClientViewSet,
             DepartmentViewSet,
             OfficeViewSet,
             PersonViewSet,
             PositionViewSet,
             TeamViewSet,
-            VendorViewSet,
         )
+        from apps.masterdata.api.viewsets.partners import ClientViewSet, VendorViewSet
         from apps.production.api.viewsets import asset, project, shot, task
 
         viewsets = [
+            lookup.MasterStatusViewSet,
+            lookup.MasterTaskTypeViewSet,
+            lookup.MasterAssetTypeViewSet,
+            lookup.MasterShotTypeViewSet,
+            lookup.MasterReviewTypeViewSet,
+            lookup.MasterFileTypeViewSet,
             project.ProjectViewSet,
             shot.ShotViewSet,
             asset.AssetViewSet,
@@ -291,12 +297,20 @@ class TestContractPermissionMatrix:
         perm_by_code = {p.code: p for p in cmd._seed_permissions()}
         matrix = cmd._role_perm_matrix(perm_by_code)
 
+        # Phase 8: the legacy platform.master_data.* grants are replaced by the explicit
+        # masterdata codes (DECISIONS D9, Option B). Nothing may grant the old ones any more.
         platform_dir = {
-            "platform.master_data.configure",
-            "platform.master_data.create",
+            "masterdata.directory.manage",
+            "masterdata.catalog.manage",
+            "masterdata.person.view_sensitive",
+            "masterdata.client.view_financial",
             "identity.user.view",
         }
         assert platform_dir <= set(matrix["org-admin"]), "org-admin lost platform directory grants"
+        retired = {"platform.master_data.configure", "platform.master_data.create"}
+        assert not retired & set(perm_by_code), "a retired code is still in the permission catalog"
+        for role, codes in matrix.items():
+            assert not retired & set(codes), f"{role} still grants a retired masterdata code"
         assert set(perm_by_code) <= set(matrix["platform-admin"]), "platform-admin lost full catalog"
         for role in ("vfx-supervisor", "lead-artist", "artist"):
             assert "identity.user.view" in matrix[role], f"{role} lost directory view"

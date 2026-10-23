@@ -1,13 +1,17 @@
 """
 Masterdata domain event subscriptions.
 
-Provision-on-create was removed with the organization lifecycle
-(org-removal B3): there is no tenant to provision. ``register_events`` is
-kept as a no-op so event autodiscovery keeps working.
+``register_events`` is called by core event autodiscovery. It subscribes the
+audit handler to every record event (docs/masterdata/CONTRACTS.md §7).
 """
 
 from __future__ import annotations
 
 
 def register_events() -> None:
-    return None
+    from apps.core.events.bus import default_event_bus
+    from apps.masterdata.events.handlers import MasterdataAuditHandler
+    from apps.masterdata.events.records import RECORD_EVENTS
+
+    for event in RECORD_EVENTS:
+        default_event_bus.subscribe(event, MasterdataAuditHandler)

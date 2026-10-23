@@ -1,16 +1,16 @@
 """
-Global person directory model (org-removal B3).
+Global person directory model.
 
 Platform-global person record with an optional link to the auth identity
-(``identity.User``) plus department/team/office membership. No organization
-FK. ``user`` keeps a distinct reverse accessor (``directory_person_profiles``)
-so it never clashes with the legacy organization-scoped person model.
+(``identity.User``) plus department/team/office membership. No organization FK.
+``user`` keeps the reverse accessor ``directory_person_profiles``.
 """
 
 from __future__ import annotations
 
 from django.conf import settings
 from django.db import models
+from django.db.models.functions import Lower
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models.bases import LifecycleModel, NamedEntityModel, PlatformScopedModel
@@ -103,6 +103,16 @@ class Person(PlatformScopedModel, LifecycleModel, NamedEntityModel):
         default="",
     )
 
+    #: Fields kept out of audit snapshots (``apps/audit/signals/change_tracking.py``).
+    audit_exclude_fields = (
+        "name",
+        "email",
+        "phone",
+        "date_of_birth",
+        "nationality",
+        "security_clearance",
+    )
+
     class Meta:
         verbose_name = _("Person")
         verbose_name_plural = _("People")
@@ -112,11 +122,20 @@ class Person(PlatformScopedModel, LifecycleModel, NamedEntityModel):
             models.Index(fields=["name"]),
         ]
         constraints = [
+            # One live person per user. Soft-deleted people do not hold the link
+            # (restoring one re-checks it).
             models.UniqueConstraint(
                 fields=["user"],
+                condition=models.Q(is_deleted=False, user__isnull=False),
                 name="uq_masterdata_person_user",
-            )
+            ),
+            models.UniqueConstraint(
+                Lower("email"),
+                condition=models.Q(is_deleted=False) & ~models.Q(email=""),
+                name="masterdata_person_uq_email_ci",
+            ),
         ]
 
     def __str__(self):
-        return self.name
+        # The name is personal data: it must not reach admin pages, logs or exception text.
+        return f"Person {self.pk}"
