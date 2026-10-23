@@ -4,11 +4,9 @@ from .group import Group
 from .group_member import GroupMember
 from .group_role import GroupRole
 from .ip_blacklist import IPBlacklist
-from .known_device import KnownDevice
 from .login_attempt import LoginAttempt
 from .login_history import LoginHistory
-from .oauth_account import OAuthAccount
-from .oauth_provider import OAuthProvider
+from .password_reset_token import PasswordResetToken
 from .permission import Permission
 from .personal_access_token import PersonalAccessToken
 from .profile import Profile
@@ -18,7 +16,6 @@ from .security_event import SecurityEvent
 from .trusted_device import TrustedDevice
 from .user import User
 from .user_mfa import UserMFA
-from .user_preference import UserPreference
 from .user_role import UserRole
 from .user_session import UserSession
 
@@ -29,11 +26,9 @@ __all__ = (
     "GroupMember",
     "GroupRole",
     "IPBlacklist",
-    "KnownDevice",
     "LoginAttempt",
     "LoginHistory",
-    "OAuthAccount",
-    "OAuthProvider",
+    "PasswordResetToken",
     "Permission",
     "PersonalAccessToken",
     "Profile",
@@ -43,7 +38,6 @@ __all__ = (
     "TrustedDevice",
     "User",
     "UserMFA",
-    "UserPreference",
     "UserRole",
     "UserSession",
 )

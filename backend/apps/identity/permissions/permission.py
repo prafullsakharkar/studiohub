@@ -2,6 +2,7 @@ from apps.core.logging.logger import get_logger
 from apps.identity.permissions.base import (
     IdentityPermission,
 )
+from apps.identity.permissions.scopes import credential_scopes
 
 logger = get_logger("authorization")
 
@@ -9,7 +10,6 @@ logger = get_logger("authorization")
 class HasPermission(
     IdentityPermission,
 ):
-
     def has_permission(  # pyright: ignore[reportIncompatibleMethodOverride]
         self,
         request,
@@ -34,6 +34,23 @@ class HasPermission(
 
         user = request.user
 
+        # A scoped API key / PAT can do only what its scopes list, however
+        # much its owner may do (WP 7.3, DOM-CRED-04). No scopes recorded
+        # means a legacy credential with the owner's full access.
+        scopes = credential_scopes(request)
+
+        if scopes is not None and not all(code in scopes for code in permissions):
+            logger.warning(
+                "authorization_deny_credential_scope",
+                user_id=getattr(user, "pk", None),
+                view=getattr(view, "__class__", type(view)).__name__,
+                action=getattr(view, "action", None),
+            )
+            return False
+
+        # The superuser break-glass applies to the owner's own permissions;
+        # for a scoped credential the scope check above has already narrowed
+        # it to exactly the listed codes, so it never exceeds its scopes.
         if getattr(user, "is_superuser", False):
             # Documented break-glass: superusers bypass code checks. Staff
             # (is_staff) is NOT a bypass — staff resolve permissions through

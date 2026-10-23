@@ -94,6 +94,28 @@ class TestProfileViewSet:
         assert response.status_code == 201
 
     @pytest.mark.django_db
+    def test_create_profile_ignores_client_supplied_user(self, authenticated_client, user):
+        """A client cannot create a profile for another account."""
+        from apps.identity.models import Profile
+        from apps.identity.tests.factories import UserFactory
+
+        other = UserFactory.create()
+
+        response = authenticated_client.post(
+            reverse("api:v1:identity:profile-list"),
+            {
+                "user": other.id,
+                "first_name": "Self",
+                "last_name": "Owned",
+            },
+        )
+
+        assert response.status_code == 201
+
+        profile = Profile.objects.get(pk=response.data["id"])
+        assert profile.user_id == user.id
+
+    @pytest.mark.django_db
     def test_update_profile_unauthenticated(self, api_client):
         """Test updating profile without authentication."""
         profile = ProfileFactory.create()

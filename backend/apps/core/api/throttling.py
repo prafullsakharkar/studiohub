@@ -10,6 +10,7 @@ from rest_framework.throttling import ScopedRateThrottle
 from apps.core.api.diagnostics import events
 from apps.core.api.diagnostics.reasons import classify_cache_error
 from apps.core.logging.logger import get_logger
+from apps.core.utils.client_ip import get_client_ip
 
 
 class ResilientScopedRateThrottle(ScopedRateThrottle):
@@ -34,12 +35,9 @@ class ResilientScopedRateThrottle(ScopedRateThrottle):
     cache_outage_fallback = True
 
     def get_ident(self, request):
-        # REMOTE_ADDR only; DRF's default trusts X-Forwarded-For, which is
-        # client-supplied and must not drive rate limiting.
-        return request.META.get(
-            "REMOTE_ADDR",
-            "127.0.0.1",
-        )
+        # Trusted-proxy aware; DRF's default trusts any X-Forwarded-For, which
+        # is client-supplied and must not drive rate limiting.
+        return get_client_ip(request) or "127.0.0.1"
 
     def allow_request(self, request, view):
         try:

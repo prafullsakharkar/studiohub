@@ -13,6 +13,7 @@ from typing import Any
 
 from apps.core.logging import context as log_context
 from apps.core.logging.constants import SENSITIVE_KEYS
+from apps.core.utils.client_ip import client_ip_from_meta
 
 MAX_REQUEST_ID_LENGTH = 128
 MAX_QUERY_PARAMS = 20
@@ -300,18 +301,10 @@ def _client_info(request: Any) -> dict[str, Any]:
             getattr(request, "_request", None), "META", None
         )
         if isinstance(meta, dict):
-            forwarded = meta.get("HTTP_X_FORWARDED_FOR", "")
-            if forwarded:
-                info["client_ip"] = forwarded.split(",")[0].strip()[
-                    :MAX_VALUE_LENGTH
-                ]
-            else:
-                remote = meta.get("REMOTE_ADDR")
-                info["client_ip"] = (
-                    str(remote)[:MAX_VALUE_LENGTH]
-                    if remote is not None
-                    else None
-                )
+            client_ip = client_ip_from_meta(meta)
+            info["client_ip"] = (
+                client_ip[:MAX_VALUE_LENGTH] if client_ip is not None else None
+            )
 
             user_agent = meta.get("HTTP_USER_AGENT")
             if user_agent:

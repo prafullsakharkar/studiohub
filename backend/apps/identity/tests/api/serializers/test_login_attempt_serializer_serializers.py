@@ -40,7 +40,6 @@ class TestLoginAttemptSerializer:
             "ip_address": "192.168.1.1",
             "user_agent": "Mozilla/5.0",
             "success": True,
-            "reason": "success",
         }
 
         serializer = LoginAttemptCreateSerializer(data=data)
@@ -48,25 +47,6 @@ class TestLoginAttemptSerializer:
 
         attempt = serializer.save()
         assert attempt.success is True
-
-    @pytest.mark.django_db
-    def test_login_attempt_serializer_update(self):
-        """Test login attempt serializer update."""
-        from apps.identity.api.serializers.login_attempt.update import (
-            LoginAttemptUpdateSerializer,
-        )
-
-        attempt = LoginAttemptFactory.create()
-
-        data = {
-            "success": False,
-        }
-
-        serializer = LoginAttemptUpdateSerializer(attempt, data=data, partial=True)
-        assert serializer.is_valid()
-
-        attempt = serializer.save()
-        assert attempt.success is False
 
     @pytest.mark.django_db
     def test_login_attempt_serializer_ip_address_validation(self):

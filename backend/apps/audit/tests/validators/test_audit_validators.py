@@ -6,10 +6,8 @@ from __future__ import annotations
 
 from apps.audit.choices.audit_log import AuditAction, AuditSeverity, AuditTarget
 from apps.audit.choices.error_log import ErrorSeverity
-from apps.audit.choices.login_history import LoginStatus
 from apps.audit.validators.audit_log import AuditLogValidator
 from apps.audit.validators.error_log import ErrorLogValidator
-from apps.audit.validators.login_history import LoginHistoryValidator
 
 
 class TestAuditLogValidator:
@@ -82,18 +80,3 @@ class TestErrorLogValidator:
         validator = ErrorLogValidator()
         assert validator.validate_severity("nonsense") is False
         assert "severity" in validator.errors
-
-
-class TestLoginHistoryValidator:
-    """Tests for LoginHistoryValidator."""
-
-    def test_valid_status(self) -> None:
-        """Valid status passes validation."""
-        validator = LoginHistoryValidator()
-        assert validator.validate_status(LoginStatus.SUCCESS) is True
-
-    def test_invalid_status(self) -> None:
-        """Invalid status fails validation."""
-        validator = LoginHistoryValidator()
-        assert validator.validate_status("nonsense") is False
-        assert "status" in validator.errors

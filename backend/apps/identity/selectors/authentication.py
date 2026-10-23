@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from django.contrib.auth import get_user_model
 
-from apps.audit.models import LoginHistory
 from apps.identity.models import (
+    LoginHistory,
     UserSession,
 )
 from apps.identity.selectors.base import (
@@ -55,8 +55,11 @@ class AuthenticationSelector(
         *,
         uuid,
     ):
+        # ``uuid`` is a Python property aliasing the UUID primary key
+        # (``UUIDModel.uuid``), not a database field, so the lookup must use
+        # the primary key.
         return User.objects.filter(
-            uuid=uuid,
+            pk=uuid,
         ).first()
 
     @classmethod

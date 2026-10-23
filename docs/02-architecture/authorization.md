@@ -281,7 +281,7 @@ Auth-only (no `HasPermission`, any authenticated user allowed) — each verified
 
 | Surface | File | Note |
 |---|---|---|
-| Audit log/activity/track/login-history/error/change/api-request | `apps/audit/api/viewsets/*.py` | No `permission_classes`/`permission_map`; background-job `retry`/`cancel` privileged with zero check |
+| Audit log/activity/track/error/change/api-request | `apps/audit/api/viewsets/*.py` | No `permission_classes`/`permission_map`; background-job `retry`/`cancel` privileged with zero check |
 | Intelligence search/knowledge/AI/analytics | `apps/intelligence/api/viewsets/*.py` (17× `IsAuthenticated`) | Hand-rolled org scoping; any member can write; staff fallback to `Organization.objects.first()` |
 | Masterdata global catalog | `apps/masterdata/api/viewsets/catalog.py` | Any authenticated user can POST/PATCH/archive/restore/DELETE global rows |
 | Settings theme/localization/feature-flag/org-setting | `apps/settings/api/viewsets/theme.py`, `localization.py`, `feature_flag.py`, `organization.py` | `activate/enable/disable/schedule/lock/unlock` open (definition/category/system correctly `IsStaff`) |

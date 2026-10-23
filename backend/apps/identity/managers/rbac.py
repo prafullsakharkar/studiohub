@@ -32,14 +32,22 @@ class GroupRoleManager(BaseManager):
 class ApiKeyManager(BaseManager):
     """Manager for platform ApiKey records."""
 
+    def for_principal(self, user):
+        """Keys that act as ``user``: owned by them, or created by them with no owner."""
+        from django.db.models import Q
+
+        return self.filter(
+            Q(owner=user) | Q(owner__isnull=True, created_by=user),
+        )
+
 
 class PersonalAccessTokenManager(BaseManager):
     """Manager for PersonalAccessToken records."""
 
 
-class UserPreferenceManager(BaseManager):
-    """Manager for UserPreference records."""
-
-
 class LoginHistoryManager(BaseManager):
     """Manager for identity LoginHistory records."""
+
+
+class PasswordResetTokenManager(BaseManager):
+    """Manager for single-use password reset tokens."""

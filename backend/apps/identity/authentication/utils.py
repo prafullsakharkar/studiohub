@@ -6,6 +6,8 @@ from typing import Any
 from django.http import HttpRequest
 from user_agents import parse
 
+from apps.core.utils.client_ip import get_client_ip
+
 
 class AuthenticationUtils:
     """
@@ -16,12 +18,10 @@ class AuthenticationUtils:
     def get_client_ip(
         request: HttpRequest,
     ) -> str:
-        # REMOTE_ADDR only. X-Forwarded-For is client-supplied and must
-        # never be trusted for lockout/throttle/forensics decisions.
-        return request.META.get(
-            "REMOTE_ADDR",
-            "",
-        )
+        # Trusted-proxy aware (apps.core.utils.client_ip): REMOTE_ADDR unless
+        # the direct peer is a configured proxy. A raw X-Forwarded-For is
+        # client-supplied and never trusted on its own.
+        return get_client_ip(request) or ""
 
     @staticmethod
     def get_user_agent(

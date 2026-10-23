@@ -1,11 +1,12 @@
 from django.contrib import admin
 
 from apps.core.admin.base import PlatformScopedModelAdmin
+from apps.identity.admin.ledger import ReadOnlyLedgerAdminMixin
 from apps.identity.models import UserSession
 
 
 @admin.register(UserSession)
-class UserSessionAdmin(PlatformScopedModelAdmin):
+class UserSessionAdmin(ReadOnlyLedgerAdminMixin, PlatformScopedModelAdmin):
     list_display = (
         "user",
         "status",

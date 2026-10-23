@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import pytest
 
-from apps.identity.tests.factories import TrustedDeviceFactory, UserFactory
+from apps.identity.tests.factories import TrustedDeviceFactory
 
 
 class TestTrustedDeviceSerializer:
@@ -31,64 +31,3 @@ class TestTrustedDeviceSerializer:
         assert "user_agent" in serializer.data
         assert "last_login_at" in serializer.data
         assert "is_trusted" in serializer.data
-
-    @pytest.mark.django_db
-    def test_trusted_device_serializer_create(self):
-        """Test trusted device serializer create."""
-        from apps.identity.api.serializers.user_preference.create import (
-            TrustedDeviceCreateSerializer,
-        )
-
-        data = {
-            "user": UserFactory.create().id,
-            "fingerprint": "test-device-fingerprint",
-            "browser": "Chrome",
-            "platform": "web",
-            "ip_address": "192.168.1.1",
-            "user_agent": "Mozilla/5.0",
-        }
-
-        serializer = TrustedDeviceCreateSerializer(data=data)
-        assert serializer.is_valid()
-
-        device = serializer.save()
-        assert device.fingerprint == "test-device-fingerprint"
-
-    @pytest.mark.django_db
-    def test_trusted_device_serializer_update(self):
-        """Test trusted device serializer update."""
-        from apps.identity.api.serializers.user_preference.update import (
-            TrustedDeviceUpdateSerializer,
-        )
-
-        device = TrustedDeviceFactory.create()
-
-        data = {
-            "browser": "Updated Browser",
-        }
-
-        serializer = TrustedDeviceUpdateSerializer(device, data=data, partial=True)
-        assert serializer.is_valid()
-
-        device = serializer.save()
-        assert device.browser == "Updated Browser"
-
-    @pytest.mark.django_db
-    def test_trusted_device_serializer_platform_validation(self):
-        """Test trusted device serializer fingerprint validation."""
-        from apps.identity.api.serializers.user_preference.create import (
-            TrustedDeviceCreateSerializer,
-        )
-
-        data = {
-            "user": UserFactory.create().id,
-            "fingerprint": "test-device-fingerprint",
-            "browser": "Chrome",
-            "platform": "web",
-            "ip_address": "invalid-ip",
-            "user_agent": "Mozilla/5.0",
-        }
-
-        serializer = TrustedDeviceCreateSerializer(data=data)
-        assert not serializer.is_valid()
-        assert "ip_address" in serializer.errors

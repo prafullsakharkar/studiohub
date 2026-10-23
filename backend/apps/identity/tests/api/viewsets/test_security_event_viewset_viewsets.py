@@ -85,13 +85,15 @@ class TestSecurityEventViewSet:
 
     @pytest.mark.django_db
     def test_update_security_event_staff(self, staff_client):
-        """Test updating security event with staff privileges."""
-        event = SecurityEventFactory.create()
-        data = {"event_type": "login_failed"}
+        """Security events are append-only: PATCH is refused and nothing changes."""
+        event = SecurityEventFactory.create(event_type="login_success")
         response = staff_client.patch(
-            reverse("api:v1:identity:security-event-detail", kwargs={"pk": event.id}), data
+            reverse("api:v1:identity:security-event-detail", kwargs={"pk": event.id}),
+            {"event_type": "login_failed"},
         )
-        assert response.status_code == 200
+        assert response.status_code in (403, 405)
+        event.refresh_from_db()
+        assert event.event_type == "login_success"
 
     @pytest.mark.django_db
     def test_partial_update_security_event_unauthenticated(self, api_client):
@@ -105,13 +107,15 @@ class TestSecurityEventViewSet:
 
     @pytest.mark.django_db
     def test_partial_update_security_event_staff(self, staff_client):
-        """Test partially updating security event with staff privileges."""
-        event = SecurityEventFactory.create()
-        data = {"event_type": "login_failed"}
-        response = staff_client.patch(
-            reverse("api:v1:identity:security-event-detail", kwargs={"pk": event.id}), data
+        """PUT is refused as well."""
+        event = SecurityEventFactory.create(event_type="login_success")
+        response = staff_client.put(
+            reverse("api:v1:identity:security-event-detail", kwargs={"pk": event.id}),
+            {"event_type": "login_failed"},
         )
-        assert response.status_code == 200
+        assert response.status_code in (403, 405)
+        event.refresh_from_db()
+        assert event.event_type == "login_success"
 
     @pytest.mark.django_db
     def test_destroy_security_event_unauthenticated(self, api_client):
@@ -124,9 +128,10 @@ class TestSecurityEventViewSet:
 
     @pytest.mark.django_db
     def test_destroy_security_event_staff(self, staff_client):
-        """Test deleting security event with staff privileges."""
+        """DELETE is refused: security events are never removed."""
         event = SecurityEventFactory.create()
         response = staff_client.delete(
             reverse("api:v1:identity:security-event-detail", kwargs={"pk": event.id})
         )
-        assert response.status_code == 204
+        assert response.status_code in (403, 405)
+        assert type(event).all_objects.filter(pk=event.pk).exists()

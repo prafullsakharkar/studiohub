@@ -5,14 +5,12 @@ from apps.audit.validators.background_job import BackgroundJobValidator
 from apps.audit.validators.base import AuditBaseValidator
 from apps.audit.validators.change_log import ChangeLogValidator
 from apps.audit.validators.error_log import ErrorLogValidator
-from apps.audit.validators.login_history import LoginHistoryValidator
 from apps.audit.validators.track import TrackValidator
 
 __all__ = [
     "AuditBaseValidator",
     "AuditLogValidator",
     "ActivityValidator",
-    "LoginHistoryValidator",
     "ChangeLogValidator",
     "APIRequestValidator",
     "BackgroundJobValidator",

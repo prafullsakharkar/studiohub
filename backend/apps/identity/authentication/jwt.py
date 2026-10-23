@@ -38,10 +38,18 @@ class JWTService:
     def create_refresh_token(
         cls,
         user,
+        *,
+        sid=None,
     ) -> RefreshToken:
         refresh = cls.refresh_token_class.for_user(
             user,
         )
+
+        # ``sid`` is the stable identity of the session this token family
+        # belongs to (the session_key). A new session's first token is its own
+        # root; rotated tokens inherit it, so a replayed token can be traced
+        # back to its session even though its jti is no longer on any row.
+        refresh["sid"] = str(sid) if sid else str(refresh["jti"])
 
         profile = getattr(
             user,
@@ -109,7 +117,65 @@ class JWTService:
             )
 
         except TokenError as exc:
+            if "blacklist" in str(exc).lower():
+                cls._revoke_session_on_reuse(token)
+
             raise cls._translate_token_error(exc, refresh=True) from exc
+
+    @classmethod
+    def _revoke_session_on_reuse(cls, token: str) -> None:
+        """
+        A refresh token that was already rotated has been presented again.
+
+        Either a client raced itself or the token was stolen and replayed;
+        the server cannot tell which, so the whole session is revoked. Only a
+        token whose signature and expiry still verify is trusted to name a
+        session, and only an ACTIVE session is touched (a token blacklisted by
+        logout or revocation is just stale). Never raises: the caller still
+        answers 401.
+
+        This runs outside any request transaction (ATOMIC_REQUESTS is off);
+        enabling it would roll the revocation back together with the 401.
+        """
+        try:
+            from rest_framework_simplejwt.state import token_backend
+
+            payload = token_backend.decode(
+                token,  # pyright: ignore[reportArgumentType]
+                verify=True,
+            )
+            sid = payload.get("sid")
+
+            if not sid:
+                return
+
+            from apps.identity.choices import SecurityEventType
+            from apps.identity.models import UserSession
+            from apps.identity.services.security_event import (
+                SecurityEventService,
+            )
+            from apps.identity.services.user_session import UserSessionService
+
+            session = (
+                UserSession.objects.active()
+                .filter(session_key=str(sid))
+                .select_related("user")
+                .first()
+            )
+
+            if session is None:
+                return
+
+            UserSessionService.revoke(session)
+
+            SecurityEventService.emit(
+                user=session.user,
+                event_type=SecurityEventType.SUSPICIOUS_ACTIVITY,
+                description="Refresh token reuse detected; session revoked.",
+                metadata={"session_id": str(session.pk)},
+            )
+        except Exception:  # noqa: BLE001 - detection must never mask the 401
+            logger.exception("refresh_reuse_revocation_failed")
 
     @classmethod
     def _translate_token_error(
@@ -173,6 +239,8 @@ class JWTService:
     def rotate_refresh_token(
         cls,
         refresh_token: str,
+        *,
+        sid=None,
     ) -> tuple[RefreshToken, AccessToken]:
         refresh = cls.validate_refresh_token(
             refresh_token,
@@ -192,6 +260,11 @@ class JWTService:
             raise InvalidToken("User not found for refresh token.") from exc
 
         new_refresh = cls.refresh_token_class.for_user(user)
+
+        # Tokens issued before ``sid`` existed get it from the session row.
+        carried_sid = sid or refresh.get("sid")
+        if carried_sid:
+            new_refresh["sid"] = str(carried_sid)
 
         access = new_refresh.access_token
 
@@ -304,34 +377,54 @@ class JWTService:
         number of refresh jtis swept. Access tokens cannot be blacklisted
         by simplejwt; session-status enforcement covers them (Task 13).
         """
+        from apps.identity.models import UserSession
+
+        rows = list(
+            UserSession.objects.active()
+            .by_user(user)
+            .values_list("refresh_token_jti", "expires_at")
+        )
+
+        return sum(
+            cls.blacklist_refresh_jti(user=user, jti=jti, expires_at=expires_at)
+            for jti, expires_at in rows
+        )
+
+    @classmethod
+    def blacklist_refresh_jti(cls, *, user, jti, expires_at=None) -> bool:
+        """
+        Blacklist one refresh jti. Idempotent; returns True when newly listed.
+
+        ``expires_at`` is the token's own expiry. SimpleJWT's outstanding-token
+        table requires it, and its periodic flush deletes expired rows, so the
+        row may need to be recreated here. A token that has already expired is
+        unusable and is not listed.
+        """
         from rest_framework_simplejwt.token_blacklist.models import (
             BlacklistedToken,
             OutstandingToken,
         )
 
-        from apps.identity.models import UserSession
+        if not jti:
+            return False
 
-        jtis = list(
-            UserSession.objects.active()
-            .by_user(user)
-            .values_list("refresh_token_jti", flat=True)
+        now = timezone.now()
+
+        if expires_at is not None and expires_at <= now:
+            return False
+
+        if expires_at is None:
+            expires_at = now + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"]
+
+        outstanding, _ = OutstandingToken.objects.get_or_create(
+            jti=jti,
+            defaults={
+                "user": user,
+                "token": f"jti:{jti}",
+                "expires_at": expires_at,
+            },
         )
-
-        swept = 0
-        for jti in jtis:
-            if not jti:
-                continue
-            outstanding, _ = OutstandingToken.objects.get_or_create(
-                jti=jti,
-                defaults={
-                    "user": user,
-                    "token": f"jti:{jti}",
-                },
-            )
-            _, created = BlacklistedToken.objects.get_or_create(
-                token=outstanding,
-            )
-            if created:
-                swept += 1
-
-        return swept
+        _, created = BlacklistedToken.objects.get_or_create(
+            token=outstanding,
+        )
+        return created

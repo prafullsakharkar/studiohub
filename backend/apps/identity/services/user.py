@@ -1,3 +1,5 @@
+from django.db import transaction
+
 from apps.core.services.business import (
     BusinessService,
 )
@@ -48,6 +50,39 @@ class UserService(
         PermissionCacheService.invalidate(user=instance)
 
     @classmethod
+    def _normalized_email(cls, email):
+        """
+        Canonical email form: lower-cased local part and domain.
+
+        ``BaseUserManager.normalize_email`` only lower-cases the domain, so the
+        explicit ``.lower()`` is required for the case-insensitive uniqueness
+        contract.
+        """
+
+        if not email:
+            return email
+
+        return User.objects.normalize_email(email.strip()).lower()
+
+    @classmethod
+    def before_create(cls, **validated_data):
+        email = validated_data.get("email")
+
+        if email:
+            validated_data["email"] = cls._normalized_email(email)
+
+        return validated_data
+
+    @classmethod
+    def before_update(cls, instance, **validated_data):
+        email = validated_data.get("email")
+
+        if email:
+            validated_data["email"] = cls._normalized_email(email)
+
+        return instance, validated_data
+
+    @classmethod
     def create(
         cls,
         *,
@@ -75,6 +110,28 @@ class UserService(
             )
 
         return instance
+
+    @classmethod
+    @transaction.atomic
+    def delete(
+        cls,
+        instance,
+        *,
+        user=None,
+    ):
+        """Soft-delete a user, refusing to remove the last administrator."""
+        from apps.identity.services.rbac import RbacGuardMixin
+
+        before = RbacGuardMixin._admin_holder_ids()
+
+        result = super().delete(
+            instance,
+            user=user,
+        )
+
+        RbacGuardMixin._ensure_admins_remain(before)
+
+        return result
 
     @classmethod
     def reset_password(
@@ -143,14 +200,17 @@ class UserService(
         from apps.identity.models import ApiKey, PersonalAccessToken
         from apps.identity.services.security_event import SecurityEventService
 
+        # Only credentials suspended with the account come back; one that was
+        # deliberately revoked (revoked_at set) stays revoked.
         PersonalAccessToken.objects.filter(
             user=instance,
             is_active=False,
+            revoked_at__isnull=True,
         ).update(is_active=True)
 
-        ApiKey.objects.filter(
-            created_by=instance,
+        ApiKey.objects.for_principal(instance).filter(
             is_active=False,
+            revoked_at__isnull=True,
         ).update(is_active=True)
 
         SecurityEventService.create(
@@ -170,14 +230,16 @@ class UserService(
         return instance
 
     @classmethod
-    def deactivate(
+    def _close_account(
         cls,
         instance,
-        *,
-        user=None,
     ):
         """
-        Deactivate a user via the ``is_active`` flag.
+        Disable a user and everything that can authenticate as them (SEC-DEACT-01).
+
+        Runs inside the caller's transaction so a partially completed cascade
+        rolls back: the account flag, sessions and refresh tokens, personal
+        access tokens, API keys and the audit event succeed or fail together.
         """
 
         instance.is_active = False
@@ -203,8 +265,7 @@ class UserService(
             is_active=True,
         ).update(is_active=False)
 
-        ApiKey.objects.filter(
-            created_by=instance,
+        ApiKey.objects.for_principal(instance).filter(
             is_active=True,
         ).update(is_active=False)
 
@@ -213,6 +274,20 @@ class UserService(
             event_type=SecurityEventType.ACCOUNT_DEACTIVATED,
             description="Account deactivated.",
         )
+
+    @classmethod
+    @transaction.atomic
+    def deactivate(
+        cls,
+        instance,
+        *,
+        user=None,
+    ):
+        """
+        Deactivate a user via the ``is_active`` flag.
+        """
+
+        cls._close_account(instance)
 
         cls.publish_event(
             cls.DEACTIVATE,
@@ -225,6 +300,7 @@ class UserService(
         return instance
 
     @classmethod
+    @transaction.atomic
     def archive(
         cls,
         instance,
@@ -239,39 +315,7 @@ class UserService(
         event for audit purposes.
         """
 
-        instance.is_active = False
-
-        instance.save(
-            update_fields=[
-                "is_active",
-                "updated_at",
-            ],
-        )
-
-        from apps.identity.authentication.token import TokenService
-        from apps.identity.choices import SecurityEventType
-        from apps.identity.models import ApiKey, PersonalAccessToken
-        from apps.identity.services.security_event import SecurityEventService
-
-        TokenService.revoke_all_for_user(
-            user=instance,
-        )
-
-        PersonalAccessToken.objects.filter(
-            user=instance,
-            is_active=True,
-        ).update(is_active=False)
-
-        ApiKey.objects.filter(
-            created_by=instance,
-            is_active=True,
-        ).update(is_active=False)
-
-        SecurityEventService.create(
-            user=instance,
-            event_type=SecurityEventType.ACCOUNT_DEACTIVATED,
-            description="Account deactivated.",
-        )
+        cls._close_account(instance)
 
         cls.publish_event(
             cls.ARCHIVE,

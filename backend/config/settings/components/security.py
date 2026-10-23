@@ -2,6 +2,8 @@
 Security settings.
 """
 
+from config.env import settings
+
 SESSION_COOKIE_HTTPONLY = True
 
 CSRF_COOKIE_HTTPONLY = True
@@ -43,3 +45,43 @@ MFA_MAX_FAILED_ATTEMPTS = 5
 MFA_LOCKOUT_MINUTES = 15
 
 MFA_RECOVERY_CODE_COUNT = 10
+
+# Recovery codes expire; a regenerated set starts a new clock.
+MFA_RECOVERY_CODE_DAYS = 365
+
+# Lifetime of the pre-auth challenge issued after a correct password for an
+# MFA-enabled account. It carries no session and grants no API access.
+MFA_CHALLENGE_TTL_SECONDS = 300
+
+# Policy: who must use MFA (see MFAPolicyService).
+MFA_REQUIRE_MFA = False
+
+MFA_REQUIRE_STAFF = True
+
+MFA_REQUIRE_SUPERUSER = True
+
+# Reverse proxies allowed to set X-Forwarded-For (IPs / CIDR). Empty means the
+# direct peer (REMOTE_ADDR) is always the client address. Consumed only by
+# apps.core.utils.client_ip.
+TRUSTED_PROXY_IPS = settings.trusted_proxies
+
+# Fernet keys protecting TOTP secrets at rest (first encrypts, all decrypt).
+# Read only by apps.identity.crypto; an empty tuple fails closed.
+MFA_ENCRYPTION_KEYS = settings.mfa_encryption_keys
+
+# False stores new TOTP secrets in plaintext (default True). See apps.identity.crypto.
+MFA_ENCRYPTION_ENABLED = settings.mfa_encryption_enabled
+
+# HMAC pepper for API key / PAT digests (see apps.identity.api_keys.hashing).
+API_KEY_PEPPER = settings.api_key_pepper.get_secret_value()
+
+# During the rehash window credentials stored with the old unpeppered digest
+# still authenticate (and are upgraded on use). Set False once every row is
+# on the peppered digest.
+API_KEY_ACCEPT_LEGACY_HASH = True
+
+# Active API keys / PATs one user may hold, per kind.
+IDENTITY_MAX_ACTIVE_CREDENTIALS = 50
+
+# last_used_at/ip are written at most this often per credential.
+IDENTITY_CREDENTIAL_TOUCH_SECONDS = 60

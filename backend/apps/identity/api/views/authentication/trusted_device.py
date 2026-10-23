@@ -8,6 +8,9 @@ from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import (
     TrustedDeviceRevokeSerializer,
 )
+from apps.identity.api.serializers.user_preference import (
+    TrustedDeviceListSerializer,
+)
 from apps.identity.services.mfa import MFAService
 
 
@@ -18,8 +21,10 @@ class TrustedDeviceListAPIView(BaseAPIView):
             user=request.user,
         )
 
-        return ResponseBuilder.success(
-            data=devices,
+        return Response(
+            ResponseBuilder.success(
+                data=TrustedDeviceListSerializer(devices, many=True).data,
+            ),
         )
 
 

@@ -5,7 +5,6 @@ from apps.identity.api.serializers.login_attempt import (
     LoginAttemptCreateSerializer,
     LoginAttemptDetailSerializer,
     LoginAttemptListSerializer,
-    LoginAttemptUpdateSerializer,
 )
 from apps.identity.api.viewsets.base import (
     IdentityViewSet,
@@ -31,6 +30,10 @@ class LoginAttemptViewSet(
     API endpoint for LoginAttempt.
     """
 
+    # Append-only ledger (SEC-AUD-01): read and create only. No update or
+    # destroy route is allowed, so a recorded row can never be rewritten.
+    http_method_names = ["get", "post", "head", "options"]
+
     queryset = LoginAttempt.objects.all()
 
     selector_class = LoginAttemptSelector
@@ -43,15 +46,10 @@ class LoginAttemptViewSet(
         "list": LoginAttemptListSerializer,
         "retrieve": LoginAttemptDetailSerializer,
         "create": LoginAttemptCreateSerializer,
-        "update": LoginAttemptUpdateSerializer,
-        "partial_update": LoginAttemptUpdateSerializer,
     }
 
     permission_map = {
         "list": (LoginAttemptPermissions.VIEW,),
         "retrieve": (LoginAttemptPermissions.VIEW,),
         "create": (LoginAttemptPermissions.CREATE,),
-        "update": (LoginAttemptPermissions.UPDATE,),
-        "partial_update": (LoginAttemptPermissions.UPDATE,),
-        "destroy": (LoginAttemptPermissions.DELETE,),
     }

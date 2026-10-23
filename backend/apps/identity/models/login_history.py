@@ -14,11 +14,16 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import PlatformScopedModel
 from apps.identity.managers.rbac import LoginHistoryManager
+from apps.identity.querysets.ledger import ImmutableLedgerError
 
 
 class LoginHistory(PlatformScopedModel):
     """
     Login history for tracking user login events.
+
+    Append-only: a row is written once when a session is created and never
+    changed. Rows leave only through ``LoginHistoryService.purge_expired``
+    (queryset delete) and when their user is hard-deleted.
 
     Captures all login attempts including:
     - Successful logins
@@ -164,6 +169,17 @@ class LoginHistory(PlatformScopedModel):
         ordering = ("-created_at",)
         verbose_name = "Login History"
         verbose_name_plural = "Login History"
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise ImmutableLedgerError("Login history is append-only.")
+
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ImmutableLedgerError(
+            "Login history rows leave only through the retention job.",
+        )
 
     def __str__(self):
         return f"{self.user_id}: {self.login_type} ({self.status})"

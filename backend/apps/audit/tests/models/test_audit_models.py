@@ -13,7 +13,6 @@ from apps.audit.models.audit_log import AuditLog
 from apps.audit.models.background_job import BackgroundJob
 from apps.audit.models.change_log import ChangeLog
 from apps.audit.models.error_log import ErrorLog
-from apps.audit.models.login_history import LoginHistory
 from apps.audit.models.track import Track
 
 
@@ -236,41 +235,6 @@ class TestErrorLogModel:
         assert error_log.severity in valid_severities
 
 
-class TestLoginHistoryModel:
-    """Tests for LoginHistory model."""
-
-    @pytest.mark.django_db
-    def test_create_login_history(self, login_history: LoginHistory) -> None:
-        """Test creating a login history instance."""
-        assert login_history.uuid is not None
-        assert login_history.login_type is not None
-
-    @pytest.mark.django_db
-    def test_login_history_str_method(
-        self, login_history: LoginHistory
-    ) -> None:
-        """Test __str__ method."""
-        assert str(login_history) == (
-            f"{login_history.user.email}: {login_history.login_type} "
-            f"({login_history.status})"
-        )
-
-    @pytest.mark.django_db
-    def test_login_history_audit_fields(
-        self, login_history: LoginHistory
-    ) -> None:
-        """Test audit fields are present and nullable."""
-        assert login_history.created_at is not None
-        assert login_history.updated_at is not None
-        assert login_history.created_by is None
-        assert login_history.updated_by is None
-
-    @pytest.mark.django_db
-    def test_login_history_soft_delete(
-        self, login_history: LoginHistory
-    ) -> None:
-        """Test soft delete functionality."""
-        _assert_soft_delete(login_history)
 
 
 class TestTrackModel:

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from typing import Any
+
 from django.conf import settings
 from django.db import transaction
 
 from apps.core.events import publish
 from apps.core.services import BaseService
-from apps.identity.authentication.device import TrustedDeviceService
+from apps.identity.authentication.device import DeviceTokenService
 from apps.identity.authentication.qr import QRCodeService
 from apps.identity.authentication.recovery import RecoveryCodeService
 from apps.identity.authentication.totp import TOTPService
@@ -57,6 +59,12 @@ class BaseMFAService(BaseService):
         10,
     )
 
+    RECOVERY_CODE_DAYS = getattr(
+        settings,
+        "MFA_RECOVERY_CODE_DAYS",
+        365,
+    )
+
     TRUSTED_DEVICE_DAYS = getattr(
         settings,
         "MFA_TRUSTED_DEVICE_DAYS",
@@ -73,7 +81,7 @@ class BaseMFAService(BaseService):
 
     recovery = RecoveryCodeService
 
-    trusted_device = TrustedDeviceService
+    trusted_device = DeviceTokenService
 
     # ------------------------------------------------------------------
     # Models
@@ -136,3 +144,42 @@ class BaseMFAService(BaseService):
     # ------------------------------------------------------------------
 
     transaction = transaction
+
+    # ------------------------------------------------------------------
+    # Audit
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def audit(
+        cls,
+        *,
+        user,
+        event_type,
+        description: str,
+        request=None,
+        metadata: dict[str, Any] | None = None,
+    ):
+        """
+        Record a security event for an MFA action (best effort).
+
+        Never receives or stores codes, secrets or backup codes.
+        """
+
+        from apps.identity.authentication.utils import AuthenticationUtils
+        from apps.identity.services.security_event import SecurityEventService
+
+        extra = {}
+
+        if request is not None:
+            extra = {
+                "ip_address": AuthenticationUtils.get_client_ip(request),
+                "user_agent": request.META.get("HTTP_USER_AGENT", ""),
+            }
+
+        SecurityEventService.emit(
+            user=user,
+            event_type=event_type,
+            description=description,
+            metadata=metadata or {},
+            **extra,
+        )

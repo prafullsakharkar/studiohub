@@ -7,7 +7,7 @@ Frontend contract (studiohub-react ``modules/audit`` + ``organizationApi``):
 * ``GET /api/v1/audit/<uuid>/`` detail in the same frontend shape
 * ``GET /api/v1/activity/`` flat fallback for ``getActivity()``
 * Namespaced resources (``change-logs``, ``tracks``, ``background-jobs``,
-  ``error-logs``, ``login-history``, ``api-requests``) with exact-match
+  ``error-logs``, ``api-requests``) with exact-match
   filters, search, ordering, and pagination.
 
 Audit rows are platform-global: no tenant partition. The legacy

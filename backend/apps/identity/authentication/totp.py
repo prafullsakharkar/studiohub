@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import hmac
+import time
+
 import pyotp
 
 
@@ -78,6 +81,43 @@ class TOTPService:
             otp=code,
             valid_window=valid_window,
         )
+
+    @classmethod
+    def matching_step(
+        cls,
+        *,
+        secret: str,
+        code: str,
+        valid_window: int = DEFAULT_WINDOW,
+        now: float | None = None,
+    ) -> int | None:
+        """
+        Return the time step ``code`` is valid for, or ``None``.
+
+        Callers record the returned step and refuse any step they have
+        already consumed (replay prevention, DOM-MFA-04).
+        """
+
+        if not secret or not code:
+            return None
+
+        code = str(code).strip()
+
+        totp = cls.build_totp(secret)
+
+        current = int((time.time() if now is None else now) // totp.interval)
+
+        # Check every step in the window; do not stop early so the work done
+        # does not reveal which step (if any) matched.
+        matched: int | None = None
+
+        for step in range(current - valid_window, current + valid_window + 1):
+            expected = totp.at(step * totp.interval)
+
+            if hmac.compare_digest(expected, code) and matched is None:
+                matched = step
+
+        return matched
 
     @classmethod
     def provisioning_uri(

@@ -12,6 +12,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # The column was created as a bare IntegerField placeholder (left over
+        # from the removed organization app). PostgreSQL cannot cast integer
+        # to a uuid key, so an in-place AlterField fails on a fresh database.
+        # The integers never referenced a row; drop and re-add as a real FK.
         migrations.RemoveField(
             model_name="calendarevent",
             name="organization",
@@ -24,7 +28,11 @@ class Migration(migrations.Migration):
             model_name="resource",
             name="organization",
         ),
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name="resource",
+            name="department",
+        ),
+        migrations.AddField(
             model_name="resource",
             name="department",
             field=models.ForeignKey(
@@ -36,7 +44,11 @@ class Migration(migrations.Migration):
                 to="masterdata.department",
             ),
         ),
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name="resource",
+            name="team",
+        ),
+        migrations.AddField(
             model_name="resource",
             name="team",
             field=models.ForeignKey(

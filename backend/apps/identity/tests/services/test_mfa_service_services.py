@@ -6,8 +6,11 @@ from __future__ import annotations
 
 import pytest
 
+from apps.identity.authentication.totp import TOTPService
+from apps.identity.models import UserMFA
 from apps.identity.services.mfa.facade import MFAService
 from apps.identity.tests.factories import UserFactory
+from apps.identity.tests.mfa_helpers import enable_mfa, pending_secret, valid_code
 
 
 class TestMFAService:
@@ -29,74 +32,52 @@ class TestMFAService:
 
     @pytest.mark.django_db
     def test_activate_mfa_success(self):
-        """Test successful MFA activation after enrollment."""
+        """Activation needs a valid code for the pending secret."""
         user = UserFactory.create()
         MFAService.enroll(
             user=user,
             method="totp",
         )
 
-        mfa = MFAService.activate(
+        codes = MFAService.activate(
             user=user,
+            code=TOTPService.current_code(pending_secret(user)),
         )
 
-        assert mfa is not None
+        mfa = UserMFA.objects.get(user=user)
+        assert len(codes) == 10
+        assert mfa.status == "enabled"
         assert mfa.is_verified is True
         assert mfa.totp_confirmed_at is not None
 
     @pytest.mark.django_db
     def test_verify_mfa_success(self):
-        """Test successful MFA verification."""
+        """A valid code verifies once the account is enabled."""
         user = UserFactory.create()
-        MFAService.enroll(
-            user=user,
-            method="totp",
-        )
-        MFAService.activate(
-            user=user,
-        )
+        enable_mfa(user)
 
-        result = MFAService.verify(
-            user=user,
-            code="000000",
-        )
-        assert result is False
+        assert MFAService.verify(user=user, code=valid_code(user)) is True
 
     @pytest.mark.django_db
     def test_verify_mfa_failure(self):
-        """Test failed MFA verification."""
+        """A wrong code does not verify."""
         user = UserFactory.create()
-        MFAService.enroll(
-            user=user,
-            method="totp",
-        )
-        MFAService.activate(
-            user=user,
-        )
+        enable_mfa(user)
 
-        result = MFAService.verify(
-            user=user,
-            code="000000",
-        )
-        assert result is False
+        assert MFAService.verify(user=user, code="000000") is False
 
     @pytest.mark.django_db
     def test_disable_mfa_success(self):
-        """Test successful MFA disable."""
+        """Disabling clears the factor."""
         user = UserFactory.create()
-        MFAService.enroll(
-            user=user,
-            method="totp",
-        )
-        MFAService.activate(
-            user=user,
-        )
+        enable_mfa(user)
 
         result = MFAService.disable(
             user=user,
         )
         assert result is not None
         assert result.status == "disabled"
+        assert result.totp_secret == ""
 
     @pytest.mark.django_db
     def test_generate_backup_codes_success(self):

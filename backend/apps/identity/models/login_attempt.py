@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db import models
 
 from apps.core.models import EntityModel
+from apps.identity.choices import LoginAttemptReason
 from apps.identity.managers.login_attempt import (
     LoginAttemptManager,
 )
@@ -37,6 +38,7 @@ class LoginAttempt(EntityModel):
     reason = models.CharField(
         max_length=255,
         blank=True,
+        choices=LoginAttemptReason.choices,
     )
 
     attempted_at = models.DateTimeField(

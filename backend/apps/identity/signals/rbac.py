@@ -33,9 +33,10 @@ def _role_permission_changed(sender, instance, **kwargs):
 @receiver(post_save, sender=GroupMember)
 @receiver(post_delete, sender=GroupMember)
 def _group_member_changed(sender, instance, **kwargs):
-    # Django does not fire per-row ``post_delete`` for bulk
-    # ``QuerySet.delete()`` — the API's serializer-driven single-row writes
-    # do fire it, which is the supported path.
+    # Django's Collector fires ``post_delete`` per row even for bulk
+    # ``QuerySet.delete()``, so this covers both single-row and bulk removal
+    # (DOM-RBAC-08). ``QuerySet.update()`` does NOT fire signals — the
+    # GroupService.leave path sets ``left_at`` and invalidates explicitly.
     PermissionCacheService.invalidate_group_members(
         getattr(instance, "group_id", None),
     )
@@ -52,8 +53,10 @@ def _group_role_changed(sender, instance, **kwargs):
 @receiver(post_save, sender=Role)
 @receiver(post_delete, sender=Role)
 def _role_changed(sender, instance, **kwargs):
-    if kwargs.get("update_fields") and "is_deleted" not in kwargs["update_fields"]:
-        return
+    # Invalidate on EVERY save: ``update_fields`` saves of any field can
+    # change resolution-relevant state (``is_active``, ``is_deleted``), and
+    # distinguishing is fragile. Holder caches are cheap to evict and the
+    # next lookup re-resolves.
     PermissionCacheService.invalidate_role_holders(instance)
 
 

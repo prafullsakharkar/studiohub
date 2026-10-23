@@ -75,3 +75,14 @@ class PermissionPermissions:
     CREATE = "identity.permission.create"
     UPDATE = "identity.permission.update"
     DELETE = "identity.permission.delete"
+
+
+class LoginHistoryPermissions:
+    # Read-only: the history is written by the authentication flows only.
+    VIEW = "identity.login_history.view"
+
+
+class CredentialPermissions:
+    # Administrative: see and revoke other users' API keys / PATs. Owners
+    # manage their own credentials without any permission code.
+    MANAGE = "identity.credential.manage"

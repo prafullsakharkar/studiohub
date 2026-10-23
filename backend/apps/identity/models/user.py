@@ -4,6 +4,7 @@ from django.contrib.auth.models import (
 )
 from django.core.validators import validate_email
 from django.db import models
+from django.db.models.functions import Lower
 
 from apps.core.models import EntityModel
 from apps.identity.managers import UserManager
@@ -59,6 +60,13 @@ class User(EntityModel, AbstractBaseUser, PermissionsMixin):
             ),
             models.Index(
                 fields=["is_email_verified"],
+            ),
+        ]
+
+        constraints = [
+            models.UniqueConstraint(
+                Lower("email"),
+                name="uniq_identity_user_email_lower",
             ),
         ]
 

@@ -54,6 +54,14 @@ class PersonalAccessToken(PlatformScopedModel):
         blank=True,
     )
 
+    revoked_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Set when the credential was deliberately revoked. A credential "
+        "that is merely inactive (owner suspended) has no revoked_at and is "
+        "restored with the account; a revoked one never is.",
+    )
+
     is_active = models.BooleanField(
         default=True,
     )
@@ -68,6 +76,19 @@ class PersonalAccessToken(PlatformScopedModel):
             models.Index(fields=("is_active",)),
             models.Index(fields=("expires_at",)),
         ]
+
+    @property
+    def principal(self):
+        return self.user
+
+    @property
+    def expired(self):
+        if not self.expires_at:
+            return False
+
+        from django.utils import timezone
+
+        return self.expires_at <= timezone.now()
 
     def __str__(self):
         return f"{self.user} - {self.name}"

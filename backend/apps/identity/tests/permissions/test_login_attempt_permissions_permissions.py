@@ -98,24 +98,32 @@ class TestLoginAttemptPermissions:
         assert response.status_code == 403
 
     @pytest.mark.django_db
-    def test_staff_user_can_update_login_attempt(self, staff_client):
-        """Test that staff user can update login attempt."""
-        attempt = LoginAttemptFactory.create()
+    def test_staff_user_cannot_update_login_attempt(self, staff_client):
+        """Append-only ledger: even a fully privileged user cannot rewrite a row."""
+        record = LoginAttemptFactory.create()
+        before = type(record).objects.filter(pk=record.pk).values().get()
         response = staff_client.patch(
-            f"/api/v1/identity/login-attempts/{attempt.id}/",
-            {"success": False},
+            f"/api/v1/identity/login-attempts/{record.id}/",
+            {"description": "tampered"}
+            if "login_attempt" == "security_event"
+            else {"success": not record.success},
         )
-        assert response.status_code == 200
+        assert response.status_code in (403, 405)
+        assert type(record).objects.filter(pk=record.pk).values().get() == before
 
     @pytest.mark.django_db
-    def test_admin_user_can_update_login_attempt(self, admin_client):
-        """Test that admin user can update login attempt."""
-        attempt = LoginAttemptFactory.create()
+    def test_admin_user_cannot_update_login_attempt(self, admin_client):
+        """Append-only ledger: even a fully privileged user cannot rewrite a row."""
+        record = LoginAttemptFactory.create()
+        before = type(record).objects.filter(pk=record.pk).values().get()
         response = admin_client.patch(
-            f"/api/v1/identity/login-attempts/{attempt.id}/",
-            {"success": False},
+            f"/api/v1/identity/login-attempts/{record.id}/",
+            {"description": "tampered"}
+            if "login_attempt" == "security_event"
+            else {"success": not record.success},
         )
-        assert response.status_code == 200
+        assert response.status_code in (403, 405)
+        assert type(record).objects.filter(pk=record.pk).values().get() == before
 
     @pytest.mark.django_db
     def test_anonymous_user_cannot_delete_login_attempt(self):
@@ -128,21 +136,21 @@ class TestLoginAttemptPermissions:
     def test_authenticated_user_cannot_delete_login_attempt(self, authenticated_client):
         """Test that authenticated user cannot delete login attempt."""
         attempt = LoginAttemptFactory.create()
-        response = authenticated_client.delete(
-            f"/api/v1/identity/login-attempts/{attempt.id}/"
-        )
+        response = authenticated_client.delete(f"/api/v1/identity/login-attempts/{attempt.id}/")
         assert response.status_code == 403
 
     @pytest.mark.django_db
-    def test_staff_user_can_delete_login_attempt(self, staff_client):
-        """Test that staff user can delete login attempt."""
-        attempt = LoginAttemptFactory.create()
-        response = staff_client.delete(f"/api/v1/identity/login-attempts/{attempt.id}/")
-        assert response.status_code == 204
+    def test_staff_user_cannot_delete_login_attempt(self, staff_client):
+        """Append-only ledger: even a fully privileged user cannot delete a row."""
+        record = LoginAttemptFactory.create()
+        response = staff_client.delete(f"/api/v1/identity/login-attempts/{record.id}/")
+        assert response.status_code in (403, 405)
+        assert type(record).all_objects.filter(pk=record.pk).exists()
 
     @pytest.mark.django_db
-    def test_admin_user_can_delete_login_attempt(self, admin_client):
-        """Test that admin user can delete login attempt."""
-        attempt = LoginAttemptFactory.create()
-        response = admin_client.delete(f"/api/v1/identity/login-attempts/{attempt.id}/")
-        assert response.status_code == 204
+    def test_admin_user_cannot_delete_login_attempt(self, admin_client):
+        """Append-only ledger: even a fully privileged user cannot delete a row."""
+        record = LoginAttemptFactory.create()
+        response = admin_client.delete(f"/api/v1/identity/login-attempts/{record.id}/")
+        assert response.status_code in (403, 405)
+        assert type(record).all_objects.filter(pk=record.pk).exists()

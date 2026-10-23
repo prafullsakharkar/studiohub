@@ -12,7 +12,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
-from pydantic import Field, computed_field
+from pydantic import Field, SecretStr, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -160,6 +160,40 @@ class Settings(BaseSettings):
     log_format: str = Field(default="", alias="LOG_FORMAT")
 
     ####################################################################
+    # Trusted reverse proxies (client IP resolution)
+    ####################################################################
+
+    # Comma-separated IPs / CIDR ranges of proxies allowed to set
+    # X-Forwarded-For. Empty (default): REMOTE_ADDR is the client address.
+    trusted_proxy_ips: str = Field(default="", alias="TRUSTED_PROXY_IPS")
+
+    ####################################################################
+    # MFA secret encryption
+    ####################################################################
+
+    # Fernet key(s) (urlsafe base64, 32 bytes) protecting TOTP secrets at
+    # rest. Comma-separated for rotation: the first key encrypts, every key
+    # decrypts. Empty: MFA secrets cannot be stored or read (fails closed).
+    #
+    # MFA_ENCRYPTION_ENABLED=false stores new secrets in plaintext (an
+    # operator decision; the default is on). Existing encrypted values stay
+    # readable while the key is present.
+    mfa_encryption_enabled: bool = Field(default=True, alias="MFA_ENCRYPTION_ENABLED")
+
+    mfa_encryption_key: SecretStr = Field(
+        default=SecretStr(""), alias="MFA_ENCRYPTION_KEY"
+    )
+
+    ####################################################################
+    # API key / personal access token hashing
+    ####################################################################
+
+    # Dedicated pepper for HMAC-SHA256 credential digests (not SECRET_KEY).
+    # Empty: new credentials cannot be created and peppered ones cannot be
+    # verified (fails closed). Changing it invalidates every stored credential.
+    api_key_pepper: SecretStr = Field(default=SecretStr(""), alias="API_KEY_PEPPER")
+
+    ####################################################################
     # Celery
     ####################################################################
 
@@ -187,6 +221,23 @@ class Settings(BaseSettings):
             "HOST": self.db_host,
             "PORT": self.db_port,
         }
+
+    @computed_field
+    @property
+    def trusted_proxies(self) -> tuple[str, ...]:
+        return tuple(
+            entry.strip() for entry in self.trusted_proxy_ips.split(",") if entry.strip()
+        )
+
+    @property
+    def mfa_encryption_keys(self) -> tuple[str, ...]:
+        # A plain property (not a computed field) so the keys never appear
+        # in a model dump or repr.
+        return tuple(
+            entry.strip()
+            for entry in self.mfa_encryption_key.get_secret_value().split(",")
+            if entry.strip()
+        )
 
     @computed_field
     @property

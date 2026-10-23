@@ -80,7 +80,7 @@ class IPBlacklist(EntityModel):
         ]
 
     def __str__(self) -> str:
-        return self.ip_address
+        return str(self.ip_address or self.network or "")
 
     @property
     def expired(self) -> bool:

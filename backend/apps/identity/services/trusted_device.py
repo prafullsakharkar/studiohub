@@ -3,44 +3,25 @@ from apps.identity.models import TrustedDevice
 
 class TrustedDeviceService:
     """
-    Write operations for TrustedDevice.
+    Write operations for TrustedDevice exposed to the API.
+
+    The only client-driven write is revocation. Granting trust belongs to the
+    MFA flow (``MFATrustedDeviceService.register``), after a verified
+    challenge.
     """
 
     model = TrustedDevice
 
     @classmethod
-    def create(
+    def revoke(
         cls,
+        instance,
         *,
-        user=None,
-        **validated_data,
+        actor=None,
     ):
-        return TrustedDevice.objects.create(
-            user=user,
-            **validated_data,
-        )
+        from apps.identity.services.mfa import MFATrustedDeviceService
 
-    @classmethod
-    def update(
-        cls,
-        instance,
-        **validated_data,
-    ):
-        for key, value in validated_data.items():
-            setattr(
-                instance,
-                key,
-                value,
-            )
+        if instance.revoked_at is not None:
+            return instance
 
-        instance.save()
-
-        return instance
-
-    @classmethod
-    def delete(
-        cls,
-        instance,
-        **kwargs,
-    ):
-        instance.delete()
+        return MFATrustedDeviceService.revoke(device=instance)

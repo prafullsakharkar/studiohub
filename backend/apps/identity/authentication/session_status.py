@@ -34,6 +34,12 @@ class SessionStatusCache:
         return status == "active"
 
     @classmethod
+    def invalidate(cls, jti: str | None) -> None:
+        """Evict a snapshot so the next request re-reads the session row."""
+        if jti:
+            cache.delete(f"{CACHE_PREFIX}:{jti}")
+
+    @classmethod
     def _load(cls, jti: str) -> str:
         from apps.identity.models import UserSession
 

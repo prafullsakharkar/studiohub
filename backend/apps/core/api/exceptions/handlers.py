@@ -52,6 +52,7 @@ from apps.core.api.diagnostics.reasons import (
 )
 from apps.core.exceptions.base import BaseDomainException
 from apps.core.logging.logger import get_logger
+from apps.core.utils.client_ip import get_client_ip
 
 _logger = get_logger("api")
 _fallback_logger = logging.getLogger(__name__)
@@ -466,10 +467,6 @@ def _record_error_log(
 
 def _request_ip(request: Any) -> str | None:
     try:
-        meta = getattr(request, "META", {}) or {}
-        forwarded = meta.get("HTTP_X_FORWARDED_FOR")
-        if forwarded:
-            return str(forwarded).split(",")[0].strip()[:45]
-        return meta.get("REMOTE_ADDR")
+        return get_client_ip(request)
     except Exception:
         return None

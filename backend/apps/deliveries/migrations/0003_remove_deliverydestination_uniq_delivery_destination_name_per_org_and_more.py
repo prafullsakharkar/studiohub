@@ -22,7 +22,16 @@ class Migration(migrations.Migration):
             model_name="deliverypackage",
             name="organization",
         ),
-        migrations.AlterField(
+        # 0001 created ``client`` as a bare IntegerField placeholder (left over
+        # from the removed organization app). PostgreSQL cannot cast integer
+        # to the uuid key of ``masterdata.client``, so an in-place AlterField
+        # fails on a fresh database. The integers never referenced a client,
+        # so drop the column and add the real foreign key.
+        migrations.RemoveField(
+            model_name="deliverypackage",
+            name="client",
+        ),
+        migrations.AddField(
             model_name="deliverypackage",
             name="client",
             field=models.ForeignKey(

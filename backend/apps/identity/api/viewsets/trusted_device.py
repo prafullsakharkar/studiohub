@@ -2,10 +2,8 @@ from apps.identity.api.filtersets.user_preference import (
     TrustedDeviceFilterSet,
 )
 from apps.identity.api.serializers.user_preference import (
-    TrustedDeviceCreateSerializer,
     TrustedDeviceDetailSerializer,
     TrustedDeviceListSerializer,
-    TrustedDeviceUpdateSerializer,
 )
 from apps.identity.api.viewsets.base import (
     IdentityViewSet,
@@ -39,37 +37,29 @@ class TrustedDeviceViewSet(
     serializer_map = {
         "list": TrustedDeviceListSerializer,
         "retrieve": TrustedDeviceDetailSerializer,
-        "create": TrustedDeviceCreateSerializer,
-        "update": TrustedDeviceUpdateSerializer,
-        "partial_update": TrustedDeviceUpdateSerializer,
     }
 
-    # NOTE: reads/writes stay open to any authenticated user, but the
-    # selector scopes them to the request user's own devices (staff see
-    # all). Object-level scoping — not permission codes — is the control.
+    # API-ID-04: list, retrieve and revoke only, owner-scoped. Trust is minted
+    # server-side after an MFA challenge and can never be created, edited or
+    # un-revoked by a client (DOM-DEV-01/02).
+    http_method_names = ["get", "delete", "head", "options"]
+
+    # NOTE: reads stay open to any authenticated user, but the selector
+    # scopes them to the request user's own devices (superusers see all).
+    # Object-level scoping, not permission codes, is the control for reads.
     # Explicit empty tuples: HasPermission denies actions with no entry.
     permission_map = {
         "list": (),
         "retrieve": (),
-        "create": (),
-        "update": (),
-        "partial_update": (),
         "destroy": (TrustedDevicePermissions.DELETE,),
     }
 
-    def perform_create(
+    def perform_destroy(
         self,
-        serializer,
+        instance,
     ):
-        data = dict(
-            serializer.validated_data,
-        )
-
-        data.setdefault(
-            "user",
-            self.request.user,
-        )
-
-        serializer.instance = self.service_class.create(
-            **data,
+        # Revoke, never hard-delete: the row is the audit trail of the grant.
+        self.service_class.revoke(
+            instance,
+            actor=self.request.user,
         )

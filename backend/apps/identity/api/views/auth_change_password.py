@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.core.api.throttling import FailClosedScopedRateThrottle
 from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import (
     ChangePasswordSerializer,
@@ -20,6 +21,10 @@ class AuthChangePasswordView(BaseAPIView):
     Deliberately returns NO replacement tokens: the backend revokes every
     session on password change, so the SPA must re-login.
     """
+
+    throttle_classes = (FailClosedScopedRateThrottle,)
+
+    throttle_scope = "sensitive"
 
     authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)

@@ -66,6 +66,14 @@ class ApiKey(PlatformScopedModel):
         blank=True,
     )
 
+    revoked_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Set when the credential was deliberately revoked. A credential "
+        "that is merely inactive (owner suspended) has no revoked_at and is "
+        "restored with the account; a revoked one never is.",
+    )
+
     is_active = models.BooleanField(
         default=True,
     )
@@ -83,6 +91,11 @@ class ApiKey(PlatformScopedModel):
 
     def __str__(self):
         return self.name
+
+    @property
+    def principal(self):
+        """The user this key acts as: its owner, else the user who created it."""
+        return self.owner or self.created_by
 
     @property
     def expired(self):

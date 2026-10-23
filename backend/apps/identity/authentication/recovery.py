@@ -39,7 +39,7 @@ class RecoveryCodeService:
     CODE_LENGTH = 10
 
     # Removed ambiguous characters
-    ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ" "23456789"
+    ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
     @classmethod
     def generate_code(cls) -> str:
@@ -57,6 +57,14 @@ class RecoveryCodeService:
                 token[7:],
             )
         )
+
+    @classmethod
+    def normalize(cls, code: str | None) -> str:
+        """
+        Canonical spelling of a typed code: trimmed and upper-case.
+        """
+
+        return (code or "").strip().upper()
 
     @classmethod
     def hash(cls, code: str) -> str:

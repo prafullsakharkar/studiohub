@@ -200,6 +200,7 @@ _TRACKED_MODEL_PATHS = (
     "apps.masterdata.models.Office",
     "apps.identity.models.UserRole",
     "apps.identity.models.GroupMember",
+    "apps.identity.models.GroupRole",
     "apps.identity.models.RolePermission",
 )
 

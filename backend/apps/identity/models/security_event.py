@@ -6,11 +6,17 @@ from django.db import models
 from apps.core.models import EntityModel
 from apps.identity.choices import SecurityEventType
 from apps.identity.managers import SecurityEventManager
+from apps.identity.querysets.security_event import ImmutableLedgerError
 
 
 class SecurityEvent(EntityModel):
     """
     Records security-related events for audit and monitoring.
+
+    Append-only (SEC-AUD-01): a row can be created and read, never changed
+    or deleted through the ORM, API, admin or services. Cascades from user
+    deletion (``SET_NULL``) are performed by Django's collector and are not
+    affected.
     """
 
     event_type = models.CharField(
@@ -67,6 +73,15 @@ class SecurityEvent(EntityModel):
             models.Index(fields=["is_critical"]),
             models.Index(fields=["created_at"]),
         ]
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise ImmutableLedgerError("Security events are append-only.")
+
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ImmutableLedgerError("Security events cannot be deleted.")
 
     def __str__(self) -> str:
         if self.user:

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 from django.db import transaction
 from django.utils import timezone
 
 from apps.identity.authentication.recovery import RecoveryCodeService
+from apps.identity.choices import SecurityEventType
 from apps.identity.events.mfa import (
     BackupCodesGenerated,
     BackupCodeUsed,
@@ -14,7 +17,11 @@ from .base import BaseMFAService
 
 class MFARecoveryService(BaseMFAService):
     """
-    Recovery code management.
+    Recovery code management (DOM-MFA-06).
+
+    Codes are stored hashed, expire, and are consumed atomically: the
+    conditional ``UPDATE ... WHERE used = false`` decides the winner, so two
+    concurrent requests with the same code cannot both succeed.
     """
 
     @classmethod
@@ -24,14 +31,15 @@ class MFARecoveryService(BaseMFAService):
         *,
         user,
         count: int | None = None,
+        request=None,
     ) -> list[str]:
         """
-        Generate recovery codes.
+        Replace the user's recovery codes with a fresh set.
 
-        Returns plaintext codes exactly once.
+        Returns the plaintext codes; this is the only time they exist.
         """
 
-        count = count or cls.RECOVERY_CODE_COUNT
+        count = count or int(cls.RECOVERY_CODE_COUNT)
 
         cls.BackupCode.objects.filter(
             user=user,
@@ -41,14 +49,25 @@ class MFARecoveryService(BaseMFAService):
             count=count,
         )
 
+        expires_at = timezone.now() + timedelta(days=cls.RECOVERY_CODE_DAYS)
+
         cls.BackupCode.objects.bulk_create(
             [
                 cls.BackupCode(
                     user=user,
                     code_hash=code.hashed,
+                    expires_at=expires_at,
                 )
                 for code in recovery_codes
             ]
+        )
+
+        cls.audit(
+            user=user,
+            event_type=SecurityEventType.MFA_RECOVERY_CODES_REGENERATED,
+            description="Recovery codes generated.",
+            request=request,
+            metadata={"count": count},
         )
 
         cls.publish(
@@ -60,19 +79,17 @@ class MFARecoveryService(BaseMFAService):
         return [code.raw for code in recovery_codes]
 
     @classmethod
-    @transaction.atomic
     def regenerate(
         cls,
         *,
         user,
+        request=None,
     ) -> list[str]:
         """
-        Delete existing recovery codes and generate new ones.
+        Invalidate every existing code and issue a new set.
         """
 
-        cls.revoke_all(user=user)
-
-        return cls.generate(user=user)
+        return cls.generate(user=user, request=request)
 
     @classmethod
     @transaction.atomic
@@ -96,39 +113,55 @@ class MFARecoveryService(BaseMFAService):
         *,
         user,
         code: str,
+        request=None,
     ) -> bool:
         """
-        Consume a recovery code.
+        Consume one recovery code. Returns whether a code was spent.
         """
 
-        recovery_codes = cls.BackupCodeSelector.get_available(
+        code = RecoveryCodeService.normalize(code)
+
+        if not code:
+            return False
+
+        for recovery in cls.BackupCodeSelector.get_available(
             user=user,
-        )
-
-        for recovery in recovery_codes:
-
-            if RecoveryCodeService.verify(
+        ):
+            if not RecoveryCodeService.verify(
                 code=code,
                 hashed_code=recovery.code_hash,
             ):
-                recovery.used = True
-                recovery.used_at = timezone.now()
+                continue
 
-                recovery.save(
-                    update_fields=[
-                        "used",
-                        "used_at",
-                    ]
+            # The row is spent only if nobody spent it first.
+            spent = (
+                cls.BackupCode.objects.available()
+                .filter(pk=recovery.pk)
+                .update(
+                    used=True,
+                    used_at=timezone.now(),
                 )
+            )
 
-                cls.publish(
-                    BackupCodeUsed(
-                        user=user,
-                        backup_code=recovery,
-                    )
+            if not spent:
+                return False
+
+            cls.audit(
+                user=user,
+                event_type=SecurityEventType.MFA_RECOVERY_CODE_USED,
+                description="Recovery code used.",
+                request=request,
+                metadata={"remaining": cls.remaining(user=user)},
+            )
+
+            cls.publish(
+                BackupCodeUsed(
+                    user=user,
+                    backup_code=recovery,
                 )
+            )
 
-                return True
+            return True
 
         return False
 
@@ -139,7 +172,7 @@ class MFARecoveryService(BaseMFAService):
         user,
     ) -> int:
         """
-        Remaining recovery codes.
+        Remaining usable recovery codes.
         """
 
         return cls.BackupCodeSelector.get_available(
@@ -152,16 +185,7 @@ class MFARecoveryService(BaseMFAService):
         *,
         user,
     ) -> bool:
-        """
-        Check whether user still has recovery codes.
-        """
-
-        return (
-            cls.remaining(
-                user=user,
-            )
-            > 0
-        )
+        return cls.remaining(user=user) > 0
 
     @classmethod
     def list(
@@ -169,10 +193,6 @@ class MFARecoveryService(BaseMFAService):
         *,
         user,
     ):
-        """
-        List recovery code objects.
-        """
-
         return cls.BackupCodeSelector.get_available(
             user=user,
         )
@@ -185,16 +205,17 @@ class MFARecoveryService(BaseMFAService):
         code: str,
     ) -> bool:
         """
-        Check whether a recovery code exists.
+        Check whether an unspent code exists, without spending it.
         """
 
-        for recovery in cls.BackupCodeSelector.get_available(
-            user=user,
-        ):
-            if RecoveryCodeService.verify(
+        code = RecoveryCodeService.normalize(code)
+
+        return bool(code) and any(
+            RecoveryCodeService.verify(
                 code=code,
                 hashed_code=recovery.code_hash,
-            ):
-                return True
-
-        return False
+            )
+            for recovery in cls.BackupCodeSelector.get_available(
+                user=user,
+            )
+        )
