@@ -9,7 +9,6 @@ from apps.identity.tests.factories import UserFactory
 from apps.identity.tests.rbac_helpers import grant_permissions
 from apps.masterdata.constants.permissions import (
     MasterdataPermissions,
-    PlatformMasterDataPermissions,
 )
 from apps.masterdata.tests.factories import (
     MasterAssetTypeFactory,
@@ -109,11 +108,6 @@ class TestAuthorizationMatrix:
         created = manager.post(f"{BASE}/{slug}", payload, format="json")
         assert created.status_code == 201, created.content
         assert created.json()["is_system"] is False and created.json()["status"] == "active"
-
-    def test_the_legacy_configure_grant_still_works(self, slug):
-        legacy = client_for(PlatformMasterDataPermissions.CONFIGURE)
-        response = legacy.post(f"{BASE}/{slug}", TYPES[slug][1], format="json")
-        assert response.status_code == 201, response.content
 
     def test_hard_delete_needs_its_own_grant(self, manager, slug):
         factory = TYPES[slug][0]

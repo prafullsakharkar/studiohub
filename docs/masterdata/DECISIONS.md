@@ -470,3 +470,25 @@ Values of `search`, `email`, `phone`, `contact_name`, `date_of_birth`, `national
 ### Frontend-facing contract changes in Phase 7
 - **`total_custom_records_across_orgs` is removed from `GET /api/v1/platform/overview`.** The frontend `PlatformOverviewTab` renders it, so that tab must stop reading it (or it will show `undefined`).
 - Catalog responses keep `"scope": "GLOBAL"`. `?scope=<anything but GLOBAL>` now returns an empty list instead of filtering a column; sending `scope` other than `GLOBAL` is still a 400.
+
+## Phase 8 decisions (2026-10-23, answers to the four Phase 8 questions)
+
+1. **Legacy permission codes: REMOVED now** ("the frontend already switched", your answer). One commit: `platform.master_data.configure` / `create` leave the permission catalog and every role grant, `AliasAwareHasPermission` and `LEGACY_ALIASES` are deleted, the `org-admin` contract test (`test_matrix_grants_match_contract`) is **updated** to the new grant model (it also asserts no role grants a retired code), and `tests/permissions/test_legacy_codes_retired.py` proves a holder of only an old code is refused on every write, restore and hard delete of every masterdata resource, and that the old codes never combine with a new one. **`init_platform` deletes the old codes and every grant of them in an existing database** (real deletes, so the permission cache is invalidated). Effect on existing databases: any role or user that held only an old code loses masterdata write access the next time `init_platform` runs, and from the moment the new code is deployed they could not write anyway (nothing enforces the old codes).
+2. **Catalog caching (8.4): skipped**, recorded as a follow-up (D7: measure first).
+3. **Final verification (8.6): the full suite is run once**, after all Phase 8 changes. `pip-audit` / `bandit` are not run (new tools, not approved).
+4. **`production-admin` keeps `view_financial` only** (no `view_sensitive`).
+- FU-1 (move `masterdata.catalog.manage` from `org-admin` to a platform-level role, decide who holds `masterdata.hard_delete`) stays **open**: it needs a role-design decision, not code.
+
+## Phase 8 implementation notes (2026-10-23)
+
+- **8.1 Cross-module tests** (`tests/integration/test_cross_module.py`): every non-safe operation of every masterdata route is walked from the OpenAPI endpoint list (a new route is covered automatically); anonymous gets 401, an authenticated caller with no permissions gets 403, before any object lookup. Production (`Asset.department`, `Task.team`), scheduling (`Resource.department/team`) and deliveries (`DeliveryPackage.client`) rows block the delete of the masterdata row they use, and the apps keep reading them through the foreign keys.
+- **8.2 Admin** (`admin.py`): read-only for every masterdata model: no add, change, delete or bulk action. Fields behind `person.view_sensitive` / `client.view_financial` are left out of the admin too, and `Person.__str__` no longer contains the person's name (it appeared in admin titles; found by the test).
+- **8.3 OpenAPI** (`api/schema.py`): `MasterdataAutoSchema` adds the 401/403/404/400/409 responses to every operation; DELETE, `?hard`, archive/restore envelopes, request bodies of the actions and the overview are documented; `tests/api/test_schema_snapshot.py` pins `{path: {method: [statuses]}}` for the 83 masterdata paths (regenerate with `UPDATE_SCHEMA_SNAPSHOT=1`).
+- **8.4b Legacy codes removed** (see "Phase 8 decisions"). Consequence for existing databases: `init_platform` deletes the old Permission rows and every grant of them.
+- **8.5 Docs:** `docs/apps/masterdata.md`, `docs/api/domains/masterdata.md`, `docs/adr/ADR-0037-masterdata-access-model.md`; ADR-0033 D4 carries an amendment note.
+- **8.6 Final verification:** `VERIFICATION.md`.
+
+### Frontend-facing contract changes in Phase 8
+- **The legacy permission codes `platform.master_data.configure` / `create` no longer exist** in the permission catalog or in any role. A UI that gates buttons on them will hide them for everyone (you said the frontend already switched to the new codes).
+- Error responses are now documented in the OpenAPI schema; regenerate the generated client.
+- `Person.__str__` no longer carries the name (affects only server-side text such as admin and exception messages; no API field changed).

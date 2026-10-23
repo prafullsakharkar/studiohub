@@ -89,7 +89,7 @@ Commit: `masterdata(phase-6): organizational structure and people`.
 
 Commit: `masterdata(phase-7): remove organization leftovers`.
 
-## Phase 8 — Integration, hardening, final verification
+## Phase 8 — Integration, hardening, final verification (**IMPLEMENTED, awaiting approval**; 8.4 caching skipped by decision; results in `VERIFICATION.md`)
 
 | WP | Work | Closes | Depends on | MVP |
 |---|---|---|---|---|

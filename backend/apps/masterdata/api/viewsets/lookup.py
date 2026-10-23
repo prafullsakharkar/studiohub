@@ -2,9 +2,8 @@
 Managed lookup-catalog viewsets (docs/masterdata/CONTRACTS.md §3).
 
 One generic viewset serves the six type catalogs. Reads are open to every
-authenticated user; every write needs ``masterdata.catalog.manage`` (the
-legacy ``platform.master_data.configure`` still counts for one release), and
-a hard delete also needs ``masterdata.hard_delete``. All state changes go
+authenticated user; every write needs ``masterdata.catalog.manage`` and a
+hard delete also needs ``masterdata.hard_delete``. All state changes go
 through ``apps.masterdata.services.catalog``; this module only adapts HTTP.
 
 Responses keep the frontend contract: bare arrays (no pagination),
@@ -18,12 +17,20 @@ from typing import Any
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.core.api.viewsets.base import BaseViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
+from apps.identity.permissions import HasPermission
+from apps.masterdata.api.schema import (
+    HARD_PARAMETER,
+    ActionResultSerializer,
+    MasterdataAutoSchema,
+    SuccessMessageSerializer,
+)
 from apps.masterdata.api.serializers.catalog import (
     MasterAssetTypeSerializer,
     MasterFileTypeSerializer,
@@ -37,7 +44,6 @@ from apps.masterdata.api.serializers.catalog import (
 )
 from apps.masterdata.constants.permissions import MasterdataPermissions
 from apps.masterdata.models import MasterDataScope, Software
-from apps.masterdata.permissions import AliasAwareHasPermission
 from apps.masterdata.selectors.catalog import (
     LookupSelector,
     MasterAssetTypeSelector,
@@ -73,7 +79,8 @@ class LookupCatalogViewSet(
     mixins.DestroyModelMixin,
     BaseViewSet,
 ):
-    permission_classes = (IsAuthenticatedPermission, AliasAwareHasPermission)
+    schema = MasterdataAutoSchema()
+    permission_classes = (IsAuthenticatedPermission, HasPermission)
     permission_map = {
         "list": (),
         "retrieve": (),
@@ -144,11 +151,13 @@ class LookupCatalogViewSet(
         )
         serializer.instance = self.present(updated)
 
+    @extend_schema(request=None, responses={200: ActionResultSerializer})
     @action(detail=True, methods=["post"], url_path="archive")
     def archive(self, request, *args, **kwargs):
         obj = self.service_class.archive(actor=request.user, instance=self.get_object())
         return Response({"success": True, "data": self.get_serializer(self.present(obj)).data})
 
+    @extend_schema(request=None, responses={200: ActionResultSerializer})
     @action(detail=True, methods=["post"], url_path="restore")
     def restore(self, request, *args, **kwargs):
         obj = self.service_class.restore(actor=request.user, instance=self.get_object())
@@ -166,6 +175,13 @@ class LookupCatalogViewSet(
             )
         return super().update(request, *args, **kwargs)
 
+    @extend_schema(
+        parameters=[HARD_PARAMETER],
+        responses={
+            200: OpenApiResponse(SuccessMessageSerializer, description="Soft-deleted."),
+            204: OpenApiResponse(description="Permanently deleted (`?hard=true`)."),
+        },
+    )
     def destroy(self, request, *args, **kwargs):
         hard = request.query_params.get("hard", "").strip().lower()
         if hard not in _TRUE | _FALSE:
@@ -183,6 +199,7 @@ class LookupCatalogViewSet(
             status=status.HTTP_200_OK,
         )
 
+    @extend_schema(request=ReorderSerializer)
     @action(detail=False, methods=["post"], url_path="reorder")
     def reorder(self, request, *args, **kwargs):
         body = ReorderSerializer(data=request.data)
@@ -276,6 +293,11 @@ class SoftwareViewSet(LookupCatalogViewSet):
     def present(self, obj):
         return self.get_queryset().get(pk=obj.pk)
 
+    @extend_schema(
+        request=None,
+        parameters=[OpenApiParameter("cascade", bool, required=False)],
+        responses={200: ActionResultSerializer},
+    )
     @action(detail=True, methods=["post"], url_path="archive")
     def archive(self, request, *args, **kwargs):
         """Archive the software and, unless ``?cascade=false``, its active versions."""

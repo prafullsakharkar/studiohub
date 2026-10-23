@@ -137,4 +137,5 @@ class Person(PlatformScopedModel, LifecycleModel, NamedEntityModel):
         ]
 
     def __str__(self):
-        return self.name
+        # The name is personal data: it must not reach admin pages, logs or exception text.
+        return f"Person {self.pk}"

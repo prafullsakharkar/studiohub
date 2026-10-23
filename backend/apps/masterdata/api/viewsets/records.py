@@ -12,6 +12,7 @@ from __future__ import annotations
 from typing import Any, ClassVar
 
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -19,10 +20,11 @@ from rest_framework.response import Response
 from apps.core.api.pagination import StandardPagination
 from apps.core.api.viewsets.platform import PlatformScopedViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
+from apps.identity.permissions import HasPermission
+from apps.masterdata.api.schema import HARD_PARAMETER, MasterdataAutoSchema
 from apps.masterdata.api.viewsets.gating import GatedQueryMixin, GatedSearchFilter
 from apps.masterdata.constants.permissions import MasterdataPermissions
 from apps.masterdata.constants.permissions import MasterdataPermissions as P
-from apps.masterdata.permissions import AliasAwareHasPermission
 from apps.masterdata.services.directory import DirectoryService
 
 _TRUE = {"1", "true", "yes"}
@@ -31,11 +33,11 @@ _READS = ("list", "retrieve")
 
 
 class GlobalDirectoryGuard:
-    """Open reads, ``masterdata.directory.manage`` for writes (the legacy code still counts)."""
+    """Open reads, ``masterdata.directory.manage`` for writes."""
 
     permission_classes = (
         IsAuthenticatedPermission,
-        AliasAwareHasPermission,
+        HasPermission,
     )
 
     permission_map = {
@@ -58,6 +60,7 @@ class DirectoryModelViewSet(
     mixins.DestroyModelMixin,
     PlatformScopedViewSet,
 ):
+    schema = MasterdataAutoSchema()
     filter_backends = [DjangoFilterBackend, GatedSearchFilter, filters.OrderingFilter]
     ordering = ["name"]
     pagination_class = StandardPagination
@@ -148,6 +151,14 @@ class ServiceRecordViewSet(DirectoryModelViewSet):
             )
         return super().update(request, *args, **kwargs)
 
+    @extend_schema(
+        parameters=[HARD_PARAMETER],
+        responses={
+            204: OpenApiResponse(
+                description="Soft-deleted, or permanently deleted with `?hard=true`."
+            )
+        },
+    )
     def destroy(self, request, *args, **kwargs):
         hard = request.query_params.get("hard", "").strip().lower()
         if hard not in _TRUE | _FALSE:
@@ -159,6 +170,7 @@ class ServiceRecordViewSet(DirectoryModelViewSet):
             self.service_class.soft_delete(actor=request.user, instance=instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @extend_schema(request=None)
     @action(detail=True, methods=["post"], url_path="restore")
     def restore(self, request, *args, **kwargs):
         restored = self.service_class.restore(actor=request.user, instance=self.get_object())

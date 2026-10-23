@@ -37,8 +37,6 @@ def masterdata_part(role_code: str) -> set[str]:
 
 def test_org_admin_holds_exactly_this_set_of_masterdata_permissions():
     assert masterdata_part("org-admin") == {
-        "platform.master_data.configure",
-        "platform.master_data.create",
         "masterdata.directory.manage",
         "masterdata.catalog.manage",
         "masterdata.person.view_sensitive",
@@ -49,8 +47,6 @@ def test_org_admin_holds_exactly_this_set_of_masterdata_permissions():
 def test_org_admin_holds_exactly_this_set_overall():
     non_production = {c for c in granted("org-admin") if c.split(".")[0] not in PRODUCTION_AREAS}
     assert non_production == {
-        "platform.master_data.configure",
-        "platform.master_data.create",
         "masterdata.directory.manage",
         "masterdata.catalog.manage",
         "masterdata.person.view_sensitive",

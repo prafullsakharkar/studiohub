@@ -8,12 +8,6 @@ needs ``HARD_DELETE``.
 """
 
 
-class PlatformMasterDataPermissions:
-    """Legacy single write grant, kept as an alias for one release (D9)."""
-
-    CONFIGURE = "platform.master_data.configure"
-
-
 class MasterdataPermissions:
     CATALOG_MANAGE = "masterdata.catalog.manage"
     DIRECTORY_MANAGE = "masterdata.directory.manage"
@@ -24,10 +18,3 @@ class MasterdataPermissions:
     # separate from PERSON_VIEW_SENSITIVE: finance and people data are different
     # audiences.
     CLIENT_VIEW_FINANCIAL = "masterdata.client.view_financial"
-
-
-# New code -> legacy code that still satisfies it during the alias period.
-LEGACY_ALIASES = {
-    MasterdataPermissions.CATALOG_MANAGE: PlatformMasterDataPermissions.CONFIGURE,
-    MasterdataPermissions.DIRECTORY_MANAGE: PlatformMasterDataPermissions.CONFIGURE,
-}

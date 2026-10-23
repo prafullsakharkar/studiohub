@@ -10,6 +10,7 @@ import pytest
 
 from apps.identity.tests.factories import UserFactory
 from apps.identity.tests.rbac_helpers import grant_permissions
+from apps.masterdata.constants.permissions import MasterdataPermissions
 from apps.masterdata.models import Software
 
 pytestmark = pytest.mark.django_db
@@ -77,7 +78,7 @@ def test_platform_software_list_includes_archived(auth_client):
 
 
 def test_platform_software_archive_and_restore(staff_user, staff_client):
-    grant_permissions(staff_user, "platform.master_data.configure")
+    grant_permissions(staff_user, MasterdataPermissions.CATALOG_MANAGE)
     software = Software.objects.create(
         name="Maya",
         code="MAYA",
@@ -100,7 +101,7 @@ def test_platform_software_delete_is_a_soft_delete_with_the_success_message(
     staff_user, staff_client
 ):
     """DELETE soft-deletes (approved 2026-10-23); it no longer archives the row."""
-    grant_permissions(staff_user, "platform.master_data.configure")
+    grant_permissions(staff_user, MasterdataPermissions.CATALOG_MANAGE)
     software = Software.objects.create(
         name="Maya",
         code="MAYA",

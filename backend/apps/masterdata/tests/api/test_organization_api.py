@@ -9,7 +9,6 @@ from apps.identity.models import Profile
 from apps.identity.tests.factories import UserFactory
 from apps.identity.tests.rbac_helpers import grant_permissions
 from apps.masterdata.constants.permissions import MasterdataPermissions as P
-from apps.masterdata.constants.permissions import PlatformMasterDataPermissions
 from apps.masterdata.models import Department, Office, Person
 from apps.masterdata.tests.factories import (
     DepartmentFactory,
@@ -100,11 +99,6 @@ class TestMatrix:
         assert manager.delete(f"{API}/{slug}/{row.pk}/?hard=true").status_code == 403
         hard = client_for(P.DIRECTORY_MANAGE, P.HARD_DELETE)
         assert hard.delete(f"{API}/{slug}/{row.pk}/?hard=true").status_code == 204
-
-    def test_the_legacy_code_writes_but_never_hard_deletes(self, slug):
-        legacy = client_for(PlatformMasterDataPermissions.CONFIGURE)
-        row = FACTORIES[slug](is_deleted=True)
-        assert legacy.delete(f"{API}/{slug}/{row.pk}/?hard=true").status_code == 403
 
 
 @pytest.mark.parametrize("slug", list(PAYLOADS))

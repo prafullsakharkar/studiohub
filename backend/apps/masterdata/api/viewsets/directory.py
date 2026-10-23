@@ -1,9 +1,8 @@
 """
 Department, team, office, position and person viewsets (flat, platform-global).
 
-Reads are open to every authenticated user; writes need ``masterdata.directory.manage`` (the
-legacy ``platform.master_data.configure`` still counts until Phase 8) and always go through
-a service. Personal data is gated field by field (H1). Responses are paginated to match the
+Reads are open to every authenticated user; writes need ``masterdata.directory.manage`` and always go
+through a service. Personal data is gated field by field (H1). Responses are paginated to match the
 frontend contract. The shared base lives in ``records.py``.
 """
 
@@ -11,6 +10,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -124,6 +124,7 @@ class PersonViewSet(ServiceRecordViewSet):
             body["warnings"] = warnings
         return Response(body)
 
+    @extend_schema(request=LinkUserSerializer)
     @action(detail=True, methods=["post"], url_path="link-user")
     def link_user(self, request, *args, **kwargs):
         body = LinkUserSerializer(data=request.data)
@@ -133,11 +134,13 @@ class PersonViewSet(ServiceRecordViewSet):
         )
         return self._person_response(person)
 
+    @extend_schema(request=None)
     @action(detail=True, methods=["post"], url_path="unlink-user")
     def unlink_user(self, request, *args, **kwargs):
         person = PersonService.unlink_user(actor=request.user, person=self.get_object())
         return self._person_response(person)
 
+    @extend_schema(request=DeactivateSerializer)
     @action(detail=True, methods=["post"], url_path="deactivate")
     def deactivate(self, request, *args, **kwargs):
         body = DeactivateSerializer(data=request.data)
@@ -147,6 +150,7 @@ class PersonViewSet(ServiceRecordViewSet):
         )
         return self._person_response(person, warnings=PersonService.warnings(person))
 
+    @extend_schema(request=None)
     @action(detail=True, methods=["post"], url_path="reactivate")
     def reactivate(self, request, *args, **kwargs):
         person = PersonService.reactivate(actor=request.user, person=self.get_object())

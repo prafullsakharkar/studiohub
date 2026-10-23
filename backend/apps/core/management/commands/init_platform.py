@@ -78,12 +78,9 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     ("settings.update", "settings", "update"),
     ("settings.manage", "settings", "manage"),
     ("user.manage", "users", "manage"),
-    # Platform master data (enforced by the masterdata catalog/directory
-    # viewsets; replaces the legacy organization.master_data.* codes).
-    ("platform.master_data.configure", "master_data", "configure"),
-    ("platform.master_data.create", "master_data", "create"),
-    # Masterdata hardening (docs/masterdata/DECISIONS.md D9). The legacy
-    # configure/create codes above stay until the alias is removed (Phase 8).
+    # Platform master data (docs/masterdata/DECISIONS.md D9). The former
+    # platform.master_data.configure / create codes are retired (see
+    # RETIRED_PERMISSION_CODES).
     ("masterdata.catalog.manage", "masterdata_catalog", "manage"),
     ("masterdata.hard_delete", "masterdata", "hard_delete"),
     ("masterdata.directory.manage", "masterdata_directory", "manage"),
@@ -115,14 +112,18 @@ DIRECTORY_VIEW_PERMISSIONS = [
     "identity.user.view",
 ]
 
-# What org-admin holds for masterdata: the legacy codes (until Phase 8), and the new
-# ones EXPLICITLY (DECISIONS D9, Option B, transitional: the catalogs are global, so
+# Codes that nothing enforces any more. ``init_platform`` deletes them and every role grant of
+# them, so a holder of only one of these has no masterdata access at all (D9, Phase 8).
+RETIRED_PERMISSION_CODES = (
+    "platform.master_data.configure",
+    "platform.master_data.create",
+)
+
+# What org-admin holds for masterdata: the new codes EXPLICITLY (DECISIONS D9, Option B, transitional: the catalogs are global, so
 # catalog.manage belongs to a platform-level role; follow-up FU-1). Deliberately not
 # hard_delete. view_sensitive / view_financial keep the access it has today to
 # contact data and contract values now that those are gated.
 DIRECTORY_CRUD_PERMISSIONS = [
-    "platform.master_data.configure",
-    "platform.master_data.create",
     "masterdata.directory.manage",
     "masterdata.catalog.manage",
     "masterdata.person.view_sensitive",
@@ -278,6 +279,7 @@ class Command(BaseCommand):
         self.stdout.write("Initializing platform reference data...")
         with transaction.atomic():
             perms = self._seed_permissions()
+            retired = self._retire_permissions()
             self._seed_roles(perms)
             self._seed_statuses()
             self._seed_departments()
@@ -286,7 +288,8 @@ class Command(BaseCommand):
             self._seed_positions()
         self.stdout.write(
             self.style.SUCCESS(
-                f"Platform initialized: {len(perms)} permissions, "
+                f"Platform initialized: {len(perms)} permissions"
+                f"{f' ({retired} retired grants/codes removed)' if retired else ''}, "
                 f"{len(ROLE_SPECS)} roles, {len(STATUS_SPECS)} statuses, "
                 f"{len(DEPARTMENT_SPECS)} departments, {len(TEAM_SPECS)} teams, "
                 f"{len(OFFICE_SPECS)} offices, {len(POSITION_SPECS)} positions."
@@ -315,6 +318,24 @@ class Command(BaseCommand):
             )
             perms.append(perm)
         return perms
+
+    def _retire_permissions(self) -> int:
+        """Remove retired permission codes and every role grant of them (idempotent).
+
+        Real deletes, not soft ones: the RBAC delete signals then drop the holders' cached
+        permissions. Returns how many rows were removed.
+        """
+        from apps.identity.models import Permission, RolePermission
+
+        removed = 0
+        grants = RolePermission.all_objects.filter(permission__code__in=RETIRED_PERMISSION_CODES)
+        for grant in grants:
+            grant.hard_delete()
+            removed += 1
+        for permission in Permission.all_objects.filter(code__in=RETIRED_PERMISSION_CODES):
+            permission.hard_delete()
+            removed += 1
+        return removed
 
     def _role_perm_matrix(self, perm_by_code):
         """Map role code -> permission codes from the canonical catalog."""

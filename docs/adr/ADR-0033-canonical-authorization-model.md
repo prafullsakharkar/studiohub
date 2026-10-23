@@ -71,6 +71,12 @@ Platform-level surfaces are gated by explicit permission codes
 (`settings.view`/`settings.manage`, `platform.master_data.configure`) resolvable through
 global `Role` grants, with superuser break-glass until platform roles are provisioned.
 
+> **Amendment (masterdata Phase 8, 2026-10-23):** `platform.master_data.configure` (and
+> `platform.master_data.create`) no longer exist. Masterdata writes are guarded by
+> `masterdata.catalog.manage`, `masterdata.directory.manage` and `masterdata.hard_delete`; personal
+> and financial fields by `masterdata.person.view_sensitive` and `masterdata.client.view_financial`
+> (see `docs/masterdata/DECISIONS.md` D9). `init_platform` removes the old codes and their grants.
+
 ## D5 — Authorized organization listing
 
 `GET /api/v1/auth/me/organizations/` (alias `GET /api/v1/users/me/organizations/`)

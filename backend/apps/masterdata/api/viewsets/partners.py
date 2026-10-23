@@ -19,6 +19,7 @@ the other directory viewsets:
 
 from __future__ import annotations
 
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -106,16 +107,19 @@ class _ContractViewSet(ServiceRecordViewSet):
     ordering_fields = ["contract_number", "created_at"]
     ordering = ["contract_number"]
 
+    @extend_schema(request=None)
     @action(detail=True, methods=["post"], url_path="activate")
     def activate(self, request, *args, **kwargs):
         contract = self.service_class.activate(actor=request.user, contract=self.get_object())  # pyright: ignore[reportAttributeAccessIssue]
         return Response(self.get_serializer(self.present(contract)).data)
 
+    @extend_schema(request=None)
     @action(detail=True, methods=["post"], url_path="terminate")
     def terminate(self, request, *args, **kwargs):
         contract = self.service_class.terminate(actor=request.user, contract=self.get_object())  # pyright: ignore[reportAttributeAccessIssue]
         return Response(self.get_serializer(self.present(contract)).data)
 
+    @extend_schema(request=AdjustEndDateSerializer)
     @action(detail=True, methods=["post"], url_path="adjust-end-date")
     def adjust_end_date(self, request, *args, **kwargs):
         body = AdjustEndDateSerializer(data=request.data)

@@ -13,7 +13,6 @@ from apps.identity.tests.factories import UserFactory
 from apps.identity.tests.rbac_helpers import grant_permissions
 from apps.masterdata.constants.permissions import (
     MasterdataPermissions,
-    PlatformMasterDataPermissions,
 )
 from apps.masterdata.models import Software, SoftwareVersion
 from apps.masterdata.tests.factories import SoftwareFactory, SoftwareVersionFactory
@@ -80,10 +79,8 @@ class TestSoftwareAuthorization:
             reader.post(f"{SW}/reorder", {"ids": [str(row.pk)]}, format="json").status_code == 403
         )
 
-    def test_manager_and_legacy_grant_can_write(self, manager):
+    def test_manager_can_write(self, manager):
         assert manager.post(SW, {"code": "maya", "name": "Maya"}, format="json").status_code == 201
-        legacy = client_for(PlatformMasterDataPermissions.CONFIGURE)
-        assert legacy.post(SW, {"code": "nuke", "name": "Nuke"}, format="json").status_code == 201
 
     def test_hard_delete_needs_its_own_grant(self, manager):
         row = SoftwareFactory()

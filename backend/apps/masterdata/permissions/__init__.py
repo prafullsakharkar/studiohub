@@ -1,3 +1,1 @@
-from apps.masterdata.permissions.alias import AliasAwareHasPermission
-
-__all__ = ["AliasAwareHasPermission"]
+"""Masterdata permission helpers (field-level checks live in ``access.py``)."""

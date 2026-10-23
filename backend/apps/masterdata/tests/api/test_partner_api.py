@@ -11,7 +11,6 @@ from rest_framework.test import APIClient
 from apps.identity.tests.factories import UserFactory
 from apps.identity.tests.rbac_helpers import grant_permissions
 from apps.masterdata.constants.permissions import MasterdataPermissions as P
-from apps.masterdata.constants.permissions import PlatformMasterDataPermissions
 from apps.masterdata.models import Client, ClientContact
 from apps.masterdata.tests.factories import (
     ClientContactFactory,
@@ -76,21 +75,12 @@ class TestAuthorizationMatrix:
         assert reader.patch(f"{API}/{slug}/{row.pk}/", {"name": "Y"}).status_code == 403
         assert reader.delete(f"{API}/{slug}/{row.pk}/").status_code == 403
 
-    def test_the_legacy_configure_code_still_writes_until_phase_8(self):
-        legacy = client_for(PlatformMasterDataPermissions.CONFIGURE)
-        assert legacy.post(f"{API}/clients/", {"code": "L", "name": "L"}).status_code == 201
-
     def test_hard_delete_needs_its_own_permission(self, manager):
         row = ClientFactory(is_deleted=True)
         assert manager.delete(f"{API}/clients/{row.pk}/?hard=true").status_code == 403
         hard = client_for(P.DIRECTORY_MANAGE, P.HARD_DELETE)
         assert hard.delete(f"{API}/clients/{row.pk}/?hard=true").status_code == 204
         assert not Client.all_objects.filter(pk=row.pk).exists()
-
-    def test_the_legacy_code_never_grants_hard_delete(self):
-        legacy = client_for(PlatformMasterDataPermissions.CONFIGURE)
-        row = ClientFactory(is_deleted=True)
-        assert legacy.delete(f"{API}/clients/{row.pk}/?hard=true").status_code == 403
 
 
 class TestClientCrud:
