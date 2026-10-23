@@ -5,9 +5,10 @@ Platform catalog models (software, statuses, types).
 from __future__ import annotations
 
 from django.db import models
+from django.db.models.functions import Lower
 from django.utils.translation import gettext_lazy as _
 
-from apps.masterdata.models.base import CatalogModel
+from apps.masterdata.models.base import CatalogModel, CatalogStatus, LookupCatalogModel
 
 
 class Software(CatalogModel):
@@ -53,11 +54,48 @@ class SoftwareVersion(CatalogModel):
         ]
 
 
-class MasterStatus(CatalogModel):
+class StatusEntityType(models.TextChoices):
+    """Entities a workflow status can be assigned to (DOM-MD-STS-02)."""
+
+    PROJECT = "Project", _("Project")
+    SEQUENCE = "Sequence", _("Sequence")
+    SHOT = "Shot", _("Shot")
+    ASSET = "Asset", _("Asset")
+    TASK = "Task", _("Task")
+    VERSION = "Version", _("Version")
+    REVIEW = "Review", _("Review")
+    DELIVERY = "Delivery", _("Delivery")
+
+
+class StatusCategory(models.TextChoices):
+    """Coarse workflow stage a status belongs to (DOM-MD-STS-03)."""
+
+    NOT_STARTED = "not_started", _("Not started")
+    IN_PROGRESS = "in_progress", _("In progress")
+    REVIEW = "review", _("Review")
+    DONE = "done", _("Done")
+    CANCELLED = "cancelled", _("Cancelled")
+
+
+class MasterStatus(LookupCatalogModel):
     """Workflow-aware status definition for an entity type."""
 
-    entity_type = models.CharField(_("Entity type"), max_length=50, db_index=True)
-    category = models.CharField(_("Category"), max_length=50, blank=True, default="")
+    # Statuses are ordered by ``order`` (frontend contract), not ``sort_order``.
+    sort_order = None
+
+    entity_type = models.CharField(
+        _("Entity type"),
+        max_length=50,
+        choices=StatusEntityType.choices,
+        db_index=True,
+    )
+    category = models.CharField(
+        _("Category"),
+        max_length=50,
+        choices=StatusCategory.choices,
+        blank=True,
+        default="",
+    )
     color = models.CharField(_("Color"), max_length=20, blank=True, default="")
     order = models.PositiveIntegerField(_("Order"), default=0)
     is_default = models.BooleanField(_("Is default"), default=False)
@@ -65,12 +103,38 @@ class MasterStatus(CatalogModel):
 
     class Meta:
         db_table = "masterdata_status"
+        ordering = ("order", "name")
         indexes = [
             models.Index(fields=["entity_type", "order"]),
         ]
+        constraints = [
+            # Same code may exist for different entity types (DOM-MD-STS-01).
+            models.UniqueConstraint(
+                models.F("entity_type"),
+                Lower("code"),
+                condition=models.Q(is_deleted=False),
+                name="masterdata_status_uq_code_ci",
+            ),
+            models.UniqueConstraint(
+                models.F("entity_type"),
+                Lower("name"),
+                condition=models.Q(is_deleted=False),
+                name="masterdata_status_uq_name_ci",
+            ),
+            # At most one live, active default per entity type (DOM-MD-STS-04).
+            models.UniqueConstraint(
+                fields=["entity_type"],
+                condition=models.Q(is_default=True, is_deleted=False, status=CatalogStatus.ACTIVE),
+                name="masterdata_status_one_default",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(status__in=CatalogStatus.values),
+                name="masterdata_status_status_valid",
+            ),
+        ]
 
 
-class MasterTaskType(CatalogModel):
+class MasterTaskType(LookupCatalogModel):
     """Task type catalog entry."""
 
     category = models.CharField(_("Category"), max_length=50, blank=True, default="")
@@ -79,42 +143,42 @@ class MasterTaskType(CatalogModel):
     color = models.CharField(_("Color"), max_length=20, blank=True, default="")
     icon = models.CharField(_("Icon"), max_length=100, blank=True, default="")
 
-    class Meta:
+    class Meta(LookupCatalogModel.Meta):
         db_table = "masterdata_task_type"
 
 
-class MasterAssetType(CatalogModel):
+class MasterAssetType(LookupCatalogModel):
     """Asset type catalog entry."""
 
     color = models.CharField(_("Color"), max_length=20, blank=True, default="")
     icon = models.CharField(_("Icon"), max_length=100, blank=True, default="")
 
-    class Meta:
+    class Meta(LookupCatalogModel.Meta):
         db_table = "masterdata_asset_type"
 
 
-class MasterShotType(CatalogModel):
+class MasterShotType(LookupCatalogModel):
     """Shot type catalog entry."""
 
     default_handle_frames = models.PositiveIntegerField(
         _("Default handle frames"), null=True, blank=True
     )
 
-    class Meta:
+    class Meta(LookupCatalogModel.Meta):
         db_table = "masterdata_shot_type"
 
 
-class MasterReviewType(CatalogModel):
+class MasterReviewType(LookupCatalogModel):
     """Review type catalog entry."""
 
     allow_verdicts = models.BooleanField(_("Allow verdicts"), default=True)
     require_notes = models.BooleanField(_("Require notes"), default=False)
 
-    class Meta:
+    class Meta(LookupCatalogModel.Meta):
         db_table = "masterdata_review_type"
 
 
-class MasterFileType(CatalogModel):
+class MasterFileType(LookupCatalogModel):
     """File type / format catalog entry."""
 
     extension = models.CharField(_("Extension"), max_length=20, blank=True, default="")
@@ -122,5 +186,5 @@ class MasterFileType(CatalogModel):
     category = models.CharField(_("Category"), max_length=50, blank=True, default="")
     dcc_affinity = models.CharField(_("DCC affinity"), max_length=100, blank=True, default="")
 
-    class Meta:
+    class Meta(LookupCatalogModel.Meta):
         db_table = "masterdata_file_type"

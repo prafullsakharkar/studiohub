@@ -10,12 +10,6 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from apps.masterdata.api.viewsets.catalog import (
-    MasterAssetTypeViewSet,
-    MasterFileTypeViewSet,
-    MasterReviewTypeViewSet,
-    MasterShotTypeViewSet,
-    MasterStatusViewSet,
-    MasterTaskTypeViewSet,
     PlatformOverviewViewSet,
     SoftwareVersionViewSet,
     SoftwareViewSet,
@@ -32,6 +26,14 @@ from apps.masterdata.api.viewsets.directory import (
     VendorContactViewSet,
     VendorContractViewSet,
     VendorViewSet,
+)
+from apps.masterdata.api.viewsets.lookup import (
+    MasterAssetTypeViewSet,
+    MasterFileTypeViewSet,
+    MasterReviewTypeViewSet,
+    MasterShotTypeViewSet,
+    MasterStatusViewSet,
+    MasterTaskTypeViewSet,
 )
 
 app_name = "masterdata"
@@ -126,6 +128,11 @@ urlpatterns += directory_router.urls
 
 for _data_type, _viewset in CATALOG_TYPES.items():
     urlpatterns += [
+        path(
+            f"platform/master-data/{_data_type}/reorder",
+            _viewset.as_view({"post": "reorder"}),
+            name=f"platform-{_data_type}-reorder",
+        ),
         path(
             f"platform/master-data/{_data_type}",
             _viewset.as_view({"get": "list", "post": "create"}),

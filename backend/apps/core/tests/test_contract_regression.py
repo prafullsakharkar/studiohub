@@ -256,6 +256,7 @@ class TestContractPermissionMatrix:
             PermissionViewSet,
             RoleViewSet,
         )
+        from apps.masterdata.api.viewsets import lookup
         from apps.masterdata.api.viewsets.directory import (
             ClientViewSet,
             DepartmentViewSet,
@@ -268,6 +269,12 @@ class TestContractPermissionMatrix:
         from apps.production.api.viewsets import asset, project, shot, task
 
         viewsets = [
+            lookup.MasterStatusViewSet,
+            lookup.MasterTaskTypeViewSet,
+            lookup.MasterAssetTypeViewSet,
+            lookup.MasterShotTypeViewSet,
+            lookup.MasterReviewTypeViewSet,
+            lookup.MasterFileTypeViewSet,
             project.ProjectViewSet,
             shot.ShotViewSet,
             asset.AssetViewSet,

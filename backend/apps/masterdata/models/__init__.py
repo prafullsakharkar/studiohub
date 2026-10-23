@@ -1,4 +1,9 @@
-from apps.masterdata.models.base import CatalogModel, MasterDataScope
+from apps.masterdata.models.base import (
+    CatalogModel,
+    CatalogStatus,
+    LookupCatalogModel,
+    MasterDataScope,
+)
 from apps.masterdata.models.catalog import (
     MasterAssetType,
     MasterFileType,
@@ -8,6 +13,8 @@ from apps.masterdata.models.catalog import (
     MasterTaskType,
     Software,
     SoftwareVersion,
+    StatusCategory,
+    StatusEntityType,
 )
 from apps.masterdata.models.client import Client
 from apps.masterdata.models.client_contact import ClientContact
@@ -23,12 +30,14 @@ from apps.masterdata.models.vendor_contract import VendorContract
 
 __all__ = [
     "CatalogModel",
+    "CatalogStatus",
     "Client",
     "ClientContact",
     "ClientContract",
     "Department",
     "DepartmentType",
     "MasterAssetType",
+    "LookupCatalogModel",
     "MasterDataScope",
     "MasterFileType",
     "MasterReviewType",
@@ -40,6 +49,8 @@ __all__ = [
     "Position",
     "Software",
     "SoftwareVersion",
+    "StatusCategory",
+    "StatusEntityType",
     "Team",
     "Vendor",
     "VendorContact",

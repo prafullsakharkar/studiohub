@@ -82,6 +82,10 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     # viewsets; replaces the legacy organization.master_data.* codes).
     ("platform.master_data.configure", "master_data", "configure"),
     ("platform.master_data.create", "master_data", "create"),
+    # Masterdata hardening (docs/masterdata/DECISIONS.md D9). The legacy
+    # configure/create codes above stay until the alias is removed (Phase 8).
+    ("masterdata.catalog.manage", "masterdata_catalog", "manage"),
+    ("masterdata.hard_delete", "masterdata", "hard_delete"),
     # Identity domain (enforced by the identity RBAC viewsets).
     ("identity.user.view", "user", "view"),
     ("identity.user.create", "user", "create"),
@@ -351,24 +355,38 @@ class Command(BaseCommand):
     # ------------------------------------------------------------------
 
     def _seed_statuses(self):
+        """Seed the system statuses through the service (idempotent).
+
+        Natural key is ``(entity_type, code)``. Existing rows (live or
+        soft-deleted) are never overwritten; a pre-existing match is only
+        flagged ``is_system``.
+        """
         from apps.masterdata.models import MasterStatus
+        from apps.masterdata.services.catalog import MasterStatusService
 
         count = 0
         for code, name, entity_type, category, is_default, is_final in STATUS_SPECS:
-            _, created = MasterStatus.objects.get_or_create(
-                code=code,
-                defaults={
+            existing = MasterStatus.all_objects.filter(
+                entity_type=entity_type, code__iexact=code
+            ).first()
+            if existing is not None:
+                if not existing.is_system:
+                    existing.is_system = True
+                    existing.save(update_fields=["is_system"])
+                continue
+            MasterStatusService.create(
+                actor=None,
+                system=True,
+                data={
+                    "code": code,
                     "name": name,
                     "entity_type": entity_type,
                     "category": category,
                     "is_default": is_default,
                     "is_final": is_final,
-                    "status": "active",
-                    "scope": "GLOBAL",
                 },
             )
-            if created:
-                count += 1
+            count += 1
         return count
 
     # ------------------------------------------------------------------

@@ -1,0 +1,223 @@
+"""
+Managed lookup-catalog viewsets (docs/masterdata/CONTRACTS.md §3).
+
+One generic viewset serves the six type catalogs. Reads are open to every
+authenticated user; every write needs ``masterdata.catalog.manage`` (the
+legacy ``platform.master_data.configure`` still counts for one release), and
+a hard delete also needs ``masterdata.hard_delete``. All state changes go
+through ``apps.masterdata.services.catalog``; this module only adapts HTTP.
+
+Responses keep the frontend contract: bare arrays (no pagination),
+``{success, data}`` for archive/restore, ``{success, message}`` for DELETE.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, mixins, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from apps.core.api.viewsets.base import BaseViewSet
+from apps.core.permissions.base import IsAuthenticatedPermission
+from apps.masterdata.api.serializers.catalog import (
+    MasterAssetTypeSerializer,
+    MasterFileTypeSerializer,
+    MasterReviewTypeSerializer,
+    MasterShotTypeSerializer,
+    MasterStatusSerializer,
+    MasterTaskTypeSerializer,
+    ReorderSerializer,
+)
+from apps.masterdata.constants.permissions import MasterdataPermissions
+from apps.masterdata.models import MasterDataScope
+from apps.masterdata.permissions import AliasAwareHasPermission
+from apps.masterdata.selectors.catalog import (
+    LookupSelector,
+    MasterAssetTypeSelector,
+    MasterFileTypeSelector,
+    MasterReviewTypeSelector,
+    MasterShotTypeSelector,
+    MasterStatusSelector,
+    MasterTaskTypeSelector,
+)
+from apps.masterdata.services.catalog import (
+    CatalogService,
+    MasterAssetTypeService,
+    MasterFileTypeService,
+    MasterReviewTypeService,
+    MasterShotTypeService,
+    MasterStatusService,
+    MasterTaskTypeService,
+)
+
+_TRUE = {"1", "true", "yes"}
+_FALSE = {"", "0", "false", "no"}
+_MANAGE = (MasterdataPermissions.CATALOG_MANAGE,)
+
+
+class LookupCatalogViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    BaseViewSet,
+):
+    permission_classes = (IsAuthenticatedPermission, AliasAwareHasPermission)
+    permission_map = {
+        "list": (),
+        "retrieve": (),
+        "create": _MANAGE,
+        "update": _MANAGE,
+        "partial_update": _MANAGE,
+        "destroy": _MANAGE,
+        "archive": _MANAGE,
+        "restore": _MANAGE,
+        "reorder": _MANAGE,
+    }
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    pagination_class = None
+    service_class: type[CatalogService[Any]]
+    selector_class: type[LookupSelector]
+    label = "Record"
+
+    # ---- hard delete flag --------------------------------------------------
+
+    def _hard_requested(self) -> bool:
+        return self.request.query_params.get("hard", "").strip().lower() in _TRUE
+
+    def get_permission_required(self):
+        if getattr(self, "action", None) == "destroy" and self._hard_requested():
+            return (*_MANAGE, MasterdataPermissions.HARD_DELETE)
+        return super().get_permission_required()
+
+    # ---- queryset ----------------------------------------------------------
+
+    def get_queryset(self):
+        selector = self.selector_class
+        # Restore and hard delete must reach soft-deleted rows; nothing else may.
+        needs_deleted = self.action == "restore" or (
+            self.action == "destroy" and self._hard_requested()
+        )
+        qs = (
+            selector.with_deleted()
+            if needs_deleted
+            else selector.get_queryset(request=self.request, view=self)
+        )
+        return qs.filter(scope=MasterDataScope.GLOBAL)
+
+    # ---- writes go through the service -----------------------------------
+
+    def perform_create(self, serializer):
+        serializer.instance = self.service_class.create(
+            actor=self.request.user, data=serializer.validated_data
+        )
+
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        assert instance is not None  # an update always carries the row being updated
+        serializer.instance = self.service_class.update(
+            actor=self.request.user, instance=instance, data=serializer.validated_data
+        )
+
+    @action(detail=True, methods=["post"], url_path="archive")
+    def archive(self, request, *args, **kwargs):
+        obj = self.service_class.archive(actor=request.user, instance=self.get_object())
+        return Response({"success": True, "data": self.get_serializer(obj).data})
+
+    @action(detail=True, methods=["post"], url_path="restore")
+    def restore(self, request, *args, **kwargs):
+        obj = self.service_class.restore(actor=request.user, instance=self.get_object())
+        return Response({"success": True, "data": self.get_serializer(obj).data})
+
+    def destroy(self, request, *args, **kwargs):
+        hard = request.query_params.get("hard", "").strip().lower()
+        if hard not in _TRUE | _FALSE:
+            raise DjangoValidationError({"hard": ["Use hard=true or omit it."]})
+        obj = self.get_object()
+        if hard in _TRUE:
+            self.service_class.hard_delete(actor=request.user, instance=obj)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        self.service_class.soft_delete(actor=request.user, instance=obj)
+        return Response(
+            {"success": True, "message": f"{self.label} deleted."}, status=status.HTTP_200_OK
+        )
+
+    @action(detail=False, methods=["post"], url_path="reorder")
+    def reorder(self, request, *args, **kwargs):
+        body = ReorderSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        rows = self.service_class.reorder(
+            actor=request.user, ordered_ids=body.validated_data["ids"]
+        )
+        return Response(self.get_serializer(rows, many=True).data)
+
+
+class MasterStatusViewSet(LookupCatalogViewSet):
+    serializer_class = MasterStatusSerializer
+    selector_class = MasterStatusSelector
+    service_class = MasterStatusService
+    label = "Status"
+    filterset_fields = ["entity_type", "status", "scope", "is_default", "is_final"]
+    search_fields = ["name", "code"]
+    ordering_fields = ["order", "name"]
+    ordering = ["order", "name"]
+
+
+class MasterTaskTypeViewSet(LookupCatalogViewSet):
+    serializer_class = MasterTaskTypeSerializer
+    selector_class = MasterTaskTypeSelector
+    service_class = MasterTaskTypeService
+    label = "Task type"
+    filterset_fields = ["status", "scope", "category", "department_code"]
+    search_fields = ["name", "code"]
+    ordering_fields = ["name", "code", "sort_order"]
+    ordering = ["sort_order", "name"]
+
+
+class MasterAssetTypeViewSet(LookupCatalogViewSet):
+    serializer_class = MasterAssetTypeSerializer
+    selector_class = MasterAssetTypeSelector
+    service_class = MasterAssetTypeService
+    label = "Asset type"
+    filterset_fields = ["status", "scope"]
+    search_fields = ["name", "code"]
+    ordering_fields = ["name", "sort_order"]
+    ordering = ["sort_order", "name"]
+
+
+class MasterShotTypeViewSet(LookupCatalogViewSet):
+    serializer_class = MasterShotTypeSerializer
+    selector_class = MasterShotTypeSelector
+    service_class = MasterShotTypeService
+    label = "Shot type"
+    filterset_fields = ["status", "scope"]
+    search_fields = ["name", "code"]
+    ordering_fields = ["name", "sort_order"]
+    ordering = ["sort_order", "name"]
+
+
+class MasterReviewTypeViewSet(LookupCatalogViewSet):
+    serializer_class = MasterReviewTypeSerializer
+    selector_class = MasterReviewTypeSelector
+    service_class = MasterReviewTypeService
+    label = "Review type"
+    filterset_fields = ["status", "scope"]
+    search_fields = ["name", "code"]
+    ordering_fields = ["name", "sort_order"]
+    ordering = ["sort_order", "name"]
+
+
+class MasterFileTypeViewSet(LookupCatalogViewSet):
+    serializer_class = MasterFileTypeSerializer
+    selector_class = MasterFileTypeSelector
+    service_class = MasterFileTypeService
+    label = "File type"
+    filterset_fields = ["status", "scope", "category"]
+    search_fields = ["name", "extension"]
+    ordering_fields = ["name", "sort_order"]
+    ordering = ["sort_order", "name"]

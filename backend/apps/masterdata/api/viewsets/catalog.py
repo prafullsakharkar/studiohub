@@ -1,11 +1,9 @@
 """
-Masterdata catalog viewsets.
+Masterdata catalog viewsets: software, nested software versions, overview.
 
-Implements the global (platform) master-data catalog contract:
-
-- Platform catalog CRUD, soft-archive and restore per type.
-- Nested software versions.
-- Platform overview statistics.
+The six type catalogs (statuses, task/asset/shot/review/file types) moved to
+``lookup.py`` in Phase 3; software follows in Phase 4, after which the
+legacy guard and mixin below go away.
 
 These endpoints are ``scope=GLOBAL`` only and return bare arrays
 (no pagination) to match the frontend mock contract.
@@ -22,24 +20,12 @@ from apps.core.api.viewsets.base import BaseViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
 from apps.masterdata.api.serializers.catalog import (
-    MasterAssetTypeSerializer,
-    MasterFileTypeSerializer,
-    MasterReviewTypeSerializer,
-    MasterShotTypeSerializer,
-    MasterStatusSerializer,
-    MasterTaskTypeSerializer,
     SoftwareSerializer,
     SoftwareVersionSerializer,
 )
 from apps.masterdata.constants.permissions import PlatformMasterDataPermissions
 from apps.masterdata.models import MasterDataScope
 from apps.masterdata.selectors.catalog import (
-    MasterAssetTypeSelector,
-    MasterFileTypeSelector,
-    MasterReviewTypeSelector,
-    MasterShotTypeSelector,
-    MasterStatusSelector,
-    MasterTaskTypeSelector,
     SoftwareSelector,
     SoftwareVersionSelector,
 )
@@ -111,7 +97,16 @@ class ArchiveRestoreMixin:
         )
 
 
-class SoftwareViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
+class SoftwareViewSet(
+    MasterDataCatalogGuard,
+    ArchiveRestoreMixin,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    BaseViewSet,
+):
     serializer_class = SoftwareSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["status", "scope", "category"]
@@ -128,7 +123,16 @@ class SoftwareViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.ListMo
         ).filter(scope=MasterDataScope.GLOBAL)
 
 
-class SoftwareVersionViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
+class SoftwareVersionViewSet(
+    MasterDataCatalogGuard,
+    ArchiveRestoreMixin,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    BaseViewSet,
+):
     serializer_class = SoftwareVersionSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["status", "scope"]
@@ -146,102 +150,6 @@ class SoftwareVersionViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins
         if software_pk:
             queryset = queryset.filter(software_id=software_pk)
         return queryset
-
-
-class MasterStatusViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
-    serializer_class = MasterStatusSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["entity_type", "status", "scope", "is_default", "is_final"]
-    search_fields = ["name", "code"]
-    ordering_fields = ["order", "name"]
-    ordering = ["order", "name"]
-    pagination_class = None
-
-    def get_queryset(self):
-        return MasterStatusSelector.get_queryset(
-            request=self.request,
-            view=self,
-        ).filter(scope=MasterDataScope.GLOBAL)
-
-
-class MasterTaskTypeViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
-    serializer_class = MasterTaskTypeSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["status", "scope", "category", "department_code"]
-    search_fields = ["name", "code"]
-    ordering_fields = ["name", "code"]
-    ordering = ["name"]
-    pagination_class = None
-
-    def get_queryset(self):
-        return MasterTaskTypeSelector.get_queryset(
-            request=self.request,
-            view=self,
-        ).filter(scope=MasterDataScope.GLOBAL)
-
-
-class MasterAssetTypeViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
-    serializer_class = MasterAssetTypeSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["status", "scope"]
-    search_fields = ["name", "code"]
-    ordering_fields = ["name"]
-    ordering = ["name"]
-    pagination_class = None
-
-    def get_queryset(self):
-        return MasterAssetTypeSelector.get_queryset(
-            request=self.request,
-            view=self,
-        ).filter(scope=MasterDataScope.GLOBAL)
-
-
-class MasterShotTypeViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
-    serializer_class = MasterShotTypeSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["status", "scope"]
-    search_fields = ["name", "code"]
-    ordering_fields = ["name"]
-    ordering = ["name"]
-    pagination_class = None
-
-    def get_queryset(self):
-        return MasterShotTypeSelector.get_queryset(
-            request=self.request,
-            view=self,
-        ).filter(scope=MasterDataScope.GLOBAL)
-
-
-class MasterReviewTypeViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
-    serializer_class = MasterReviewTypeSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["status", "scope"]
-    search_fields = ["name", "code"]
-    ordering_fields = ["name"]
-    ordering = ["name"]
-    pagination_class = None
-
-    def get_queryset(self):
-        return MasterReviewTypeSelector.get_queryset(
-            request=self.request,
-            view=self,
-        ).filter(scope=MasterDataScope.GLOBAL)
-
-
-class MasterFileTypeViewSet(MasterDataCatalogGuard, ArchiveRestoreMixin, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, BaseViewSet):
-    serializer_class = MasterFileTypeSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["status", "scope", "category"]
-    search_fields = ["name", "extension"]
-    ordering_fields = ["name"]
-    ordering = ["name"]
-    pagination_class = None
-
-    def get_queryset(self):
-        return MasterFileTypeSelector.get_queryset(
-            request=self.request,
-            view=self,
-        ).filter(scope=MasterDataScope.GLOBAL)
 
 
 class PlatformOverviewViewSet(BaseViewSet):

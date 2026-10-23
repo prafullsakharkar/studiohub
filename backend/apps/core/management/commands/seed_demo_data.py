@@ -54,7 +54,7 @@ from typing import Any
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from apps.core.management.commands.seed_studiohub import SeedReporter
@@ -63,6 +63,15 @@ from apps.production.management.commands.seed_production_mocks import (
     _resolve_mock_root,
     _update_or_create,
 )
+
+# Legacy free-text lifecycle words that meant "not in use any more".
+_ARCHIVED_WORDS = {"archived", "inactive", "deprecated", "disabled", "retired"}
+
+
+def _catalog_status(value) -> str:
+    """Map a mock lifecycle word onto the catalog active/archived enum."""
+    return "archived" if str(value or "").strip().lower() in _ARCHIVED_WORDS else "active"
+
 
 RESOURCE_TYPE_MAP = {
     "person": "Person",
@@ -230,6 +239,20 @@ class Command(BaseCommand):
     # Phase: masterdata
     # ------------------------------------------------------------------
 
+    def _upsert_catalog(self, reporter, entity, model, lookup, defaults):
+        """Restore-aware upsert that reports, instead of crashing on, a row
+        that clashes with the case-insensitive code/name constraints.
+        Returns True/False for created/updated, or None when skipped."""
+        try:
+            with transaction.atomic():
+                _, created = _update_or_create(model, defaults=defaults, **lookup)
+        except IntegrityError:
+            reporter.note(entity, f"skipped {lookup}: code/name clashes with an existing row")
+            reporter.add(entity, "skipped")
+            return None
+        reporter.add(entity, "created" if created else "updated")
+        return created
+
     def _seed_masterdata(self, mock_root, reporter, context):
         from apps.masterdata.models import (
             MasterAssetType,
@@ -290,37 +313,38 @@ class Command(BaseCommand):
                     version_by_mock_id[item["id"]] = (software, item["version"])
 
         status_by_mock_id = {}
-        used_status_codes: set[str] = set()
         for item in _load_ts_mock_array(path, "mockMasterStatuses"):
-            if not item.get("code"):
+            if not item.get("code") or not item.get("entity_type"):
                 reporter.add("masterdata_statuses", "skipped")
                 continue
-            # CatalogModel.code is unique per table but mock reuses codes
-            # across entity types ('in_progress' for task+shot). First-seen
-            # keeps the bare code; later collisions are namespaced.
+            # Codes are unique per entity type, so the same code (e.g.
+            # 'in_progress') can exist for a task and a shot.
             code = item["code"]
-            if code in used_status_codes:
-                code = f"{item.get('entity_type', 'x')}_{code}"
-                reporter.note("masterdata_statuses", f"code collision disambiguated: {code}")
-            used_status_codes.add(code)
-            _, created = _update_or_create(
+            entity_type = item["entity_type"]
+            is_default = bool(item.get("is_default", False))
+            if is_default:
+                # One default per entity type: the last mock row wins.
+                MasterStatus.objects.filter(entity_type=entity_type, is_default=True).exclude(
+                    code__iexact=code
+                ).update(is_default=False)
+            created = self._upsert_catalog(
+                reporter,
+                "masterdata_statuses",
                 MasterStatus,
-                code=code,
-                defaults={
+                {"entity_type": entity_type, "code": code},
+                {
                     "name": item.get("name", item["code"]),
-                    "entity_type": item.get("entity_type", ""),
                     "category": item.get("category", ""),
                     "color": item.get("color", ""),
                     "order": item.get("order", 0) or 0,
-                    "is_default": bool(item.get("is_default", False)),
+                    "is_default": is_default,
                     "is_final": bool(item.get("is_final", False)),
                     "description": item.get("description", ""),
-                    "status": item.get("status", "active"),
+                    "status": _catalog_status(item.get("status")),
                     "scope": item.get("scope", "GLOBAL"),
                 },
             )
-            reporter.add("masterdata_statuses", "created" if created else "updated")
-            if item.get("id"):
+            if created is not None and item.get("id"):
                 status_by_mock_id[item["id"]] = code
 
         # File types carry no `code` in the mock — derive it deterministically
@@ -371,13 +395,12 @@ class Command(BaseCommand):
                 defaults = {
                     "name": item.get("name", code),
                     "description": item.get("description", ""),
-                    "status": item.get("status", "active"),
+                    "status": _catalog_status(item.get("status")),
                     "scope": item.get("scope", "GLOBAL"),
                 }
                 defaults.update(extra(item))
-                _, created = _update_or_create(model, code=code, defaults=defaults)
-                reporter.add(entity, "created" if created else "updated")
-                if item.get("id"):
+                created = self._upsert_catalog(reporter, entity, model, {"code": code}, defaults)
+                if created is not None and item.get("id"):
                     type_by_mock_id[item["id"]] = code
 
         # Org-scoped config rows (Organization*Config) had a per-tenant home;

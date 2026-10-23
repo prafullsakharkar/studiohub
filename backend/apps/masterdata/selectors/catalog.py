@@ -7,10 +7,13 @@ returning QuerySets. Platform-global: no organization scoping.
 
 from __future__ import annotations
 
+from typing import Any
+
 from django.db.models import Count, QuerySet
 
 from apps.core.selectors.base import BaseSelector
 from apps.masterdata.models import (
+    LookupCatalogModel,
     MasterAssetType,
     MasterFileType,
     MasterReviewType,
@@ -22,6 +25,17 @@ from apps.masterdata.models import (
 )
 
 
+class LookupSelector(BaseSelector):
+    """Selector base for the managed lookup catalogs."""
+
+    model: type[LookupCatalogModel]  # pyright: ignore[reportIncompatibleVariableOverride]
+
+    @classmethod
+    def with_deleted(cls) -> QuerySet[Any]:
+        """Every row, soft-deleted included (restore and hard delete only)."""
+        return cls.model.all_objects.all()
+
+
 class SoftwareSelector(BaseSelector):
     model = Software
 
@@ -30,7 +44,9 @@ class SoftwareSelector(BaseSelector):
         return Software.objects.prefetch_related("versions")
 
     @classmethod
-    def annotate_version_count(cls, queryset: QuerySet[Software] | None = None) -> QuerySet[Software]:
+    def annotate_version_count(
+        cls, queryset: QuerySet[Software] | None = None
+    ) -> QuerySet[Software]:
         qs = queryset or cls.get_queryset()
         return qs.annotate(version_count=Count("versions", distinct=True))
 
@@ -47,7 +63,7 @@ class SoftwareVersionSelector(BaseSelector):
         return cls.get_queryset().filter(software_id=software_id)
 
 
-class MasterStatusSelector(BaseSelector):
+class MasterStatusSelector(LookupSelector):
     model = MasterStatus
 
     @classmethod
@@ -59,7 +75,7 @@ class MasterStatusSelector(BaseSelector):
         return cls.get_queryset().filter(entity_type=entity_type)
 
 
-class MasterTaskTypeSelector(BaseSelector):
+class MasterTaskTypeSelector(LookupSelector):
     model = MasterTaskType
 
     @classmethod
@@ -67,7 +83,7 @@ class MasterTaskTypeSelector(BaseSelector):
         return MasterTaskType.objects.all()
 
 
-class MasterAssetTypeSelector(BaseSelector):
+class MasterAssetTypeSelector(LookupSelector):
     model = MasterAssetType
 
     @classmethod
@@ -75,7 +91,7 @@ class MasterAssetTypeSelector(BaseSelector):
         return MasterAssetType.objects.all()
 
 
-class MasterShotTypeSelector(BaseSelector):
+class MasterShotTypeSelector(LookupSelector):
     model = MasterShotType
 
     @classmethod
@@ -83,7 +99,7 @@ class MasterShotTypeSelector(BaseSelector):
         return MasterShotType.objects.all()
 
 
-class MasterReviewTypeSelector(BaseSelector):
+class MasterReviewTypeSelector(LookupSelector):
     model = MasterReviewType
 
     @classmethod
@@ -91,7 +107,7 @@ class MasterReviewTypeSelector(BaseSelector):
         return MasterReviewType.objects.all()
 
 
-class MasterFileTypeSelector(BaseSelector):
+class MasterFileTypeSelector(LookupSelector):
     model = MasterFileType
 
     @classmethod

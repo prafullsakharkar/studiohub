@@ -309,3 +309,93 @@ class TestSeedStudiohub:
         assert Software.objects.filter(code="SW1").exists()
         assert MasterStatus.objects.filter(code="todo").exists()
         assert MasterTaskType.objects.filter(code="anim").exists()
+
+
+_EMPTY_MASTER_ARRAYS = (
+    "mockGlobalSoftware",
+    "mockCustomSoftware",
+    "mockSoftwareVersions",
+    "mockCustomSoftwareVersions",
+    "mockMasterTaskTypes",
+    "mockMasterAssetTypes",
+    "mockMasterShotTypes",
+    "mockMasterReviewTypes",
+    "mockMasterFileTypes",
+    "mockOrganizationSoftwareConfigs",
+    "mockOrganizationStatusConfigs",
+)
+
+
+@pytest.mark.django_db
+class TestSeedMasterdataCatalogRules:
+    """seed_demo_data must follow the lookup-catalog rules (Phase 3)."""
+
+    def _write(self, mock_root, statuses, asset_types=()):
+        master_dir = mock_root / "masterData"
+        master_dir.mkdir(parents=True, exist_ok=True)
+        lines = [
+            f"export const {name} = [];\n"
+            for name in _EMPTY_MASTER_ARRAYS
+            if name != "mockMasterAssetTypes"
+        ]
+        lines.append(f"export const mockMasterAssetTypes = {json.dumps(list(asset_types))};\n")
+        lines.append(f"export const mockMasterStatuses = {json.dumps(list(statuses))};\n")
+        (master_dir / "initialMasterData.ts").write_text("".join(lines))
+
+    def _run(self):
+        call_command(
+            "seed_studiohub",
+            force=True,
+            skip_base=True,
+            skip_validate=True,
+            platform=True,
+            verbosity=0,
+        )
+
+    def test_status_codes_are_kept_per_entity_type_not_renamed(self, mock_root):
+        from apps.masterdata.models import MasterStatus
+
+        self._write(
+            mock_root,
+            [
+                {"id": "s1", "code": "in_progress", "name": "In progress", "entity_type": "Task"},
+                {"id": "s2", "code": "in_progress", "name": "In progress", "entity_type": "Shot"},
+            ],
+        )
+        self._run()
+        self._run()  # idempotent
+
+        rows = MasterStatus.objects.filter(code="in_progress")
+        assert sorted(rows.values_list("entity_type", flat=True)) == ["Shot", "Task"]
+        assert MasterStatus.objects.count() == 2
+
+    def test_a_second_default_replaces_the_first_instead_of_crashing(self, mock_root):
+        from apps.masterdata.models import MasterStatus
+
+        self._write(
+            mock_root,
+            [
+                {"id": "s1", "code": "a", "name": "A", "entity_type": "Task", "is_default": True},
+                {"id": "s2", "code": "b", "name": "B", "entity_type": "Task", "is_default": True},
+            ],
+        )
+        self._run()
+        assert list(
+            MasterStatus.objects.filter(is_default=True).values_list("code", flat=True)
+        ) == ["b"]
+
+    def test_legacy_status_words_and_clashing_rows_do_not_crash(self, mock_root):
+        from apps.masterdata.models import MasterAssetType
+
+        self._write(
+            mock_root,
+            [],
+            asset_types=[
+                {"id": "a1", "code": "prop", "name": "Prop", "status": "inactive"},
+                {"id": "a2", "code": "prop2", "name": "PROP"},  # same name, different code: clashes
+            ],
+        )
+        self._run()
+
+        assert MasterAssetType.objects.get(code="prop").status == "archived"
+        assert not MasterAssetType.objects.filter(code="prop2").exists()
