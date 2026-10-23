@@ -1,5 +1,5 @@
 """
-Global client reference model (org-removal B3).
+Global client reference model.
 
 Platform-global client. No organization FK: ``code`` is unique platform-wide,
 ignoring case, among live rows.

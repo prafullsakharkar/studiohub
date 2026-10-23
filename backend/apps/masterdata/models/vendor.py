@@ -1,5 +1,5 @@
 """
-Global vendor reference model (org-removal B3).
+Global vendor reference model.
 
 Platform-global vendor. No organization FK: ``code`` is unique platform-wide,
 ignoring case, among live rows.

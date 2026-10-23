@@ -1,7 +1,7 @@
 """
-Global directory selectors (org-removal B3).
+Global directory selectors.
 
-Org-free read accessors for the platform directory. The global directory
+Read accessors for the platform directory. The global directory
 has no tenant partition: ``scope_by_request`` is the inherited platform
 no-op (project narrowing only).
 """

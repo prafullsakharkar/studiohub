@@ -162,7 +162,7 @@ class CatalogService[CatalogT: LookupCatalogModel]:
         if "metadata" in data:
             out["metadata"] = v.clean_metadata(data["metadata"])
         if "scope" in data:
-            out["scope"] = v.clean_scope(data["scope"])
+            v.clean_scope(data["scope"])  # GLOBAL is accepted and ignored; anything else is a 400
         for field in cls.extra_fields:
             if field in data:
                 out[field] = cls.clean_extra(field, data[field])

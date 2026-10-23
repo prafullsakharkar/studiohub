@@ -1,5 +1,5 @@
 """
-Global department reference model (org-removal B3).
+Global department reference model.
 
 Platform-global organizational unit. No organization FK: departments are
 shared platform reference data consumed by production (teams, positions,

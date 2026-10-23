@@ -97,3 +97,38 @@ class TestScopeOfTheChange:
     def test_models_carry_no_organization_field(self):
         for model in (MasterStatus, MasterTaskType, MasterAssetType):
             assert "organization" not in {f.name for f in model._meta.get_fields()}
+
+
+class TestNoOrganizationLeftovers:
+    """DB-level proof that the organization dimension is gone from masterdata (Phase 7)."""
+
+    def test_no_masterdata_table_or_column_mentions_organizations_or_scope(self):
+        from django.db import connection
+
+        with connection.cursor() as cursor:
+            tables = [
+                t for t in connection.introspection.table_names() if t.startswith("masterdata_")
+            ]
+            found = {}
+            for table in tables:
+                names = {
+                    c.name for c in connection.introspection.get_table_description(cursor, table)
+                }
+                bad = {n for n in names if "organization" in n or n in ("org_id", "scope")}
+                if bad:
+                    found[table] = bad
+        assert not [t for t in tables if "org" in t.removeprefix("masterdata_")], tables
+        assert not found, found
+
+    def test_the_scope_enum_has_only_global(self):
+        from apps.masterdata.models import MasterDataScope
+
+        assert list(MasterDataScope.values) == ["GLOBAL"]
+
+    def test_the_models_still_report_a_constant_global_scope(self):
+        from apps.masterdata.tests.factories import SoftwareFactory
+
+        row = SoftwareFactory()
+        assert row.scope == "GLOBAL"
+        with pytest.raises(AttributeError):
+            row.scope = "ORGANIZATION"  # pyright: ignore[reportAttributeAccessIssue]

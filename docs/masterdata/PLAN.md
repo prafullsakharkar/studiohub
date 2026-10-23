@@ -79,7 +79,7 @@ Commit: `masterdata(phase-5): clients and vendors`.
 
 Commit: `masterdata(phase-6): organizational structure and people`.
 
-## Phase 7 — Organization leftovers cleanup (re-scoped: no table drops)
+## Phase 7 — Organization leftovers cleanup (re-scoped: no table drops; **IMPLEMENTED, awaiting approval**)
 
 | WP | Work | Closes | Depends on | MVP |
 |---|---|---|---|---|

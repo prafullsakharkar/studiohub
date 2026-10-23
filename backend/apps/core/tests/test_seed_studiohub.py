@@ -282,7 +282,6 @@ class TestSeedStudiohub:
         (master_dir / "initialMasterData.ts").write_text(
             'export const mockGlobalSoftware = [{"id":"sw-t1","code":"SW1","name":"Soft",'
             '"vendor":"V","category":"","scope":"GLOBAL"}];\n'
-            'export const mockCustomSoftware = [];\n'
             'export const mockSoftwareVersions = [];\n'
             'export const mockCustomSoftwareVersions = [];\n'
             'export const mockMasterStatuses = [{"id":"st-t1","code":"todo","name":"Todo",'
@@ -295,8 +294,6 @@ class TestSeedStudiohub:
             'export const mockMasterShotTypes = [];\n'
             'export const mockMasterReviewTypes = [];\n'
             'export const mockMasterFileTypes = [];\n'
-            'export const mockOrganizationSoftwareConfigs = [];\n'
-            'export const mockOrganizationStatusConfigs = [];\n'
         )
 
         call_command(
@@ -313,7 +310,6 @@ class TestSeedStudiohub:
 
 _EMPTY_MASTER_ARRAYS = (
     "mockGlobalSoftware",
-    "mockCustomSoftware",
     "mockSoftwareVersions",
     "mockCustomSoftwareVersions",
     "mockMasterTaskTypes",
@@ -321,8 +317,6 @@ _EMPTY_MASTER_ARRAYS = (
     "mockMasterShotTypes",
     "mockMasterReviewTypes",
     "mockMasterFileTypes",
-    "mockOrganizationSoftwareConfigs",
-    "mockOrganizationStatusConfigs",
 )
 
 

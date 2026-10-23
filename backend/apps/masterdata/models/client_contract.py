@@ -1,5 +1,5 @@
 """
-Global client contract model (org-removal B3).
+Global client contract model.
 
 Contract for a platform-global client. No organization FK. See ``ContractBase``
 for the status model (``Expired`` is derived) and docs/masterdata/DECISIONS.md D8

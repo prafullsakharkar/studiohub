@@ -29,11 +29,9 @@ Contract rules honored (same as ``seed_studiohub``):
 
 Documented seed decisions (mock has no equivalent — deterministic, reported):
 
-- Org-free (org-removal B6): no organizations are created or referenced.
-  Platform-global masterdata rows are seeded with ``scope=GLOBAL``; the
-  org-scoped custom/config rows (``mockCustomSoftware``,
-  ``mockOrganization*Configs``) have no tenant home anymore and are
-  reported as skipped, never invented.
+- Platform-global: no organizations are created or referenced. Mock arrays that only
+  made sense per organization (``mockCustomSoftware``, ``mockOrganization*Configs``)
+  are not read.
 - Studio holidays are seeded once per date (platform-global; natural key is
   ``holiday_date``).
 - Scheduling resources are platform-global; no project/org resolution is
@@ -273,15 +271,6 @@ class Command(BaseCommand):
             if self._seed_software(item, reporter):
                 software_by_mock_id[item["id"]] = item["code"]
 
-        # Custom software rows were org-scoped; with orgs removed (B6) they
-        # have no tenant home — report, don't invent platform-global rows.
-        custom_software = _load_ts_mock_array(path, "mockCustomSoftware")
-        if custom_software:
-            reporter.note(
-                "masterdata_software",
-                f"{len(custom_software)} custom software row(s) skipped (org-scoped, no tenant)",
-            )
-
         version_by_mock_id = {}
         for var in ("mockSoftwareVersions", "mockCustomSoftwareVersions"):
             for item in _load_ts_mock_array(path, var):
@@ -306,8 +295,7 @@ class Command(BaseCommand):
                         "release_date": self._parse_date(item.get("release_date")),
                         "end_of_support": self._parse_date(item.get("end_of_support")),
                         "status": _catalog_status(item.get("status")),
-                        "scope": item.get("scope", "GLOBAL"),
-                        "metadata": item.get("metadata") or {},
+                                        "metadata": item.get("metadata") or {},
                     },
                 )
                 if created is not None and item.get("id"):
@@ -342,8 +330,7 @@ class Command(BaseCommand):
                     "is_final": bool(item.get("is_final", False)),
                     "description": item.get("description", ""),
                     "status": _catalog_status(item.get("status")),
-                    "scope": item.get("scope", "GLOBAL"),
-                },
+                            },
             )
             if created is not None and item.get("id"):
                 status_by_mock_id[item["id"]] = code
@@ -417,30 +404,11 @@ class Command(BaseCommand):
                     "name": item.get("name", code),
                     "description": item.get("description", ""),
                     "status": _catalog_status(item.get("status")),
-                    "scope": item.get("scope", "GLOBAL"),
-                }
+                            }
                 defaults.update(extra(item))
                 created = self._upsert_catalog(reporter, entity, model, {"code": code}, defaults)
                 if created is not None and item.get("id"):
                     type_by_mock_id[item["id"]] = code
-
-        # Org-scoped config rows (Organization*Config) had a per-tenant home;
-        # with orgs removed (B6) they cannot be seeded — report, don't invent.
-        org_config_arrays = [
-            ("mockOrganizationSoftwareConfigs", "software"),
-            ("mockOrganizationStatusConfigs", "status"),
-            ("mockOrganizationTaskTypeConfigs", "task-type"),
-            ("mockOrganizationAssetTypeConfigs", "asset-type"),
-            ("mockOrganizationShotTypeConfigs", "shot-type"),
-            ("mockOrganizationReviewTypeConfigs", "review-type"),
-        ]
-        for var, label in org_config_arrays:
-            items = _load_ts_mock_array(path, var)
-            if items:
-                reporter.note(
-                    f"masterdata_{label}_configs",
-                    f"{len(items)} org config row(s) skipped (org-scoped, no tenant)",
-                )
 
     # ------------------------------------------------------------------
     # Phase: automations (db/production/workflow.ts — the served dataset)
@@ -565,8 +533,7 @@ class Command(BaseCommand):
                 "description": item.get("description", ""),
                 "website": item.get("website", ""),
                 "status": _catalog_status(item.get("status")),
-                "scope": item.get("scope", "GLOBAL"),
-                "is_system": bool(item.get("is_system", False)),
+                        "is_system": bool(item.get("is_system", False)),
                 "metadata": item.get("metadata") or {},
             },
         )

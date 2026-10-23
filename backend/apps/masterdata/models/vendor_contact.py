@@ -1,5 +1,5 @@
 """
-Global vendor contact model (org-removal B3).
+Global vendor contact model.
 
 Contact person for a platform-global vendor. No organization FK. Personal data:
 see ``ContactBase``.

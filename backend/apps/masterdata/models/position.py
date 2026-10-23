@@ -1,10 +1,8 @@
 """
-Global position reference model (org-removal B3).
+Global position reference model.
 
-Platform-global job position. Canonical merge of the organization-scoped
-``Position`` and the deleted ``PlatformPosition`` admin taxonomy: a single
-global record with an optional department link. No organization FK, no
-scope flag.
+Platform-global job position with an optional department link and an optional parent
+position. No organization FK.
 """
 
 from __future__ import annotations

@@ -44,7 +44,7 @@ Paths are relative to `backend/` unless they start with `docs/`. Each contract h
 
 | ID | Contract | Status | Enforced by (WP) |
 |---|---|---|---|
-| DOM-MD-COM-01 | No masterdata model has an organization FK or an org-specific column | CURRENT for FKs; `scope` column per D12 (OPEN) | model test (WP 7.3) |
+| DOM-MD-COM-01 | No masterdata model has an organization FK or an org-specific column | **IMPLEMENTED (Phase 7)**: no organization FK and no `scope` column (migration 0009); proven by `TestNoOrganizationLeftovers` | model test (WP 7.3) |
 | DOM-MD-COM-02 | Every write goes through a service in `apps/masterdata/services/`. Views and serializers never mutate state. | TARGET (CURRENT: none, `AUDIT.md` H2) | WP 3.3, 4.2, 5.3, 6.1 |
 | DOM-MD-COM-03 | Every multi-row write runs in one `transaction.atomic()` at the service boundary. Events dispatch after commit. | TARGET | services (`apps/core/events/bus.py:23-37` already defers inside atomic blocks) |
 | DOM-MD-COM-04 | `code` is required, trimmed and unique **case-insensitively among non-deleted rows** of its table. Statuses are unique per `entity_type` (DOM-MD-STS-01). | TARGET, PROPOSED D2 (CURRENT: case-sensitive, includes deleted rows; P02, P07) | `UniqueConstraint(Lower("code"), condition=Q(is_deleted=False))` + service normalization (WP 3.1) |
@@ -102,7 +102,7 @@ Paths are relative to `backend/` unless they start with `docs/`. Each contract h
 | `is_system` | bool | False | read-only through the API; set by the canonical seed (D10) |
 | `metadata` | JSON object | `{}` | must be an object, not an array or scalar |
 | `color` (where the type has one) | char(20) | `""` | CSS hex with **3, 4, 6 or 8** digits (`#fff`, `#ffff`, `#ff00aa`, `#ff00aa80`) or a plain keyword (`red`, `dark-blue`). Rejected: 5- or 7-digit hex, functional notation (`rgb()`, `rgba()`, `hsl()`, `var()`), spaces and markup. Only values *sent* are checked; stored values are never re-validated, but a PUT that sends an old non-conforming value back is refused. |
-| `scope` | `"GLOBAL"` | `"GLOBAL"` | D12 (OPEN). Until then, `ORGANIZATION` on input → 400. |
+| `scope` | `"GLOBAL"` | `"GLOBAL"` | **D12 option B, IMPLEMENTED (Phase 7)**: no DB column; the response reports the constant `"GLOBAL"`; input `GLOBAL` is accepted and ignored, anything else → 400; `?scope=GLOBAL` lists every row, any other value lists nothing. |
 | timestamps, actor FKs, soft-delete fields | inherited | — | read-only |
 
 **Constraints and indexes (TARGET):** `UniqueConstraint(Lower("code"), condition=Q(is_deleted=False))`; `UniqueConstraint(Lower("name"), condition=Q(is_deleted=False))`; `CheckConstraint(status IN ('active','archived'))`; `CheckConstraint(sort_order >= 0)`; index `(status, sort_order)`. Before the constraints are added, a data pre-check reports existing duplicates, which are resolved by you, never silently.
@@ -179,7 +179,7 @@ Each operation: validate (`apps/masterdata/validators/catalog.py`) → `transact
 | DOM-MD-STS-05 | `order` is the status sort order (no `sort_order` column for statuses) | PROPOSED D2 |
 | DOM-MD-STS-06 | Transitions between statuses: **not modelled** (Later, D5) | — |
 
-Own fields: `entity_type`, `category`, `color` (`#RRGGBB` or blank, validated), `order`, `is_default`, `is_final`. Filters (CURRENT): `entity_type, status, scope, is_default, is_final`.
+Own fields: `entity_type`, `category`, `color` (`#RRGGBB` or blank, validated), `order`, `is_default`, `is_final`. Filters (CURRENT): `entity_type, status, is_default, is_final` (and the constant `scope`, see above).
 Extra tests: the same code for two entity types (201 + 201); a second default unsets the first; a third concurrent default (exactly one wins).
 
 ### 3.3 Type catalogs
@@ -338,7 +338,7 @@ Extra tests: link integrity (one person per user; a second link gets 409); email
 
 | ID | Contract | Status |
 |---|---|---|
-| API-MD-OV-01 | Keys unchanged. The counts cover live (non-deleted) rows. `total_custom_records_across_orgs` is always `0` once D12 lands, and is kept only for the frontend contract. | TARGET |
+| API-MD-OV-01 | The counts cover live (non-deleted) rows. Keys: `global_software_count`, `global_version_count`, `global_status_count`, `global_task_type_count`, `global_asset_type_count`, `global_shot_type_count`, `global_review_type_count`, `global_file_type_count`, `system_health`, `last_definition_update`. **`total_custom_records_across_orgs` was removed in Phase 7** (APPROVED 2026-10-23). | **IMPLEMENTED (Phase 7)** |
 | API-MD-OV-02 | Documented response schema in OpenAPI | TARGET (CURRENT: missing, spectacular error at `apps/masterdata/api/viewsets/catalog.py:247`) |
 
 ---

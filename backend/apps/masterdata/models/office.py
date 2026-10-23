@@ -1,5 +1,5 @@
 """
-Global office reference model (org-removal B3).
+Global office reference model.
 
 Platform-global physical office location. No organization FK.
 """

@@ -261,11 +261,9 @@ Fields kept as plain inputs (unchanged, no source exists): `Office.workstations_
 
 ## D12 — `scope` column
 
-**OPEN.** Your Phase 1 answer to question 5 was "Yes", and the question offered two options:
-- **(A)** Drop the DB column **and** the `scope` field from API responses and filters: a contract break, because the frontend reads and sends `scope`.
-- **(B) (Recommended)** Drop the DB column, and keep `"scope": "GLOBAL"` as a constant read-only value in responses. Input `scope=GLOBAL` is accepted and ignored; any other value returns 400. The frontend keeps working and the org dimension disappears from the data.
+**APPROVED 2026-10-23 (Phase 7 answer): option B.** Drop the DB column (and its index) by a reversible migration and remove `MasterDataScope.ORGANIZATION`. Responses keep `"scope": "GLOBAL"` as a constant read-only value. Input `scope=GLOBAL` is accepted and ignored; any other value returns 400. `?scope=GLOBAL` still lists every row; any other `scope` filter value lists nothing. The frontend keeps working and the org dimension disappears from the data. (Option A, dropping the field from the API too, was rejected as a contract break.)
 
-Until you choose, Phase 3 only rejects `scope=ORGANIZATION` on input (both options agree on that).
+**Overview key, APPROVED 2026-10-23 (Phase 7 answer, against my recommendation to keep it at 0):** `total_custom_records_across_orgs` is **removed** from `GET platform/overview`. The frontend `PlatformOverviewTab` renders it (comment in `services/resolution.py` before the change), so that tab must stop reading it. Listed under "Frontend-facing contract changes in Phase 7".
 
 ## D13 — Changes outside masterdata
 
@@ -460,3 +458,15 @@ Values of `search`, `email`, `phone`, `contact_name`, `date_of_birth`, `national
 - **Hierarchy:** a department or position parent that is itself, a descendant, deleted, or deeper than 6 levels returns 400 on `parent`.
 - **DELETE** of a department/team/office/position/person that is still referenced returns 409 `has_dependants` (it used to succeed and leave dangling rows); a person who manages something can be deleted: the links are cleared.
 - **Stricter field validation:** office `timezone` must be an IANA name; `color` a CSS colour; person `timezone` an IANA name, `phone` digits/spaces/`+().-` and at most 20 characters, `date_of_birth` between 1900 and today, `status` one of draft/active/inactive/archived, `skills` and `software_stack` lists of strings; a person's team must belong to the person's department.
+
+## Phase 7 implementation notes (2026-10-23)
+
+- **Migration 0009** (`drop_catalog_scope`) drops the `scope` column from the eight catalog tables. It first reads every row, soft-deleted ones included, and **stops with a list** if any is not `GLOBAL` (nothing is rewritten or deleted). It reverses: the column comes back with the default `GLOBAL`, which is what every row held. No other column or table is dropped.
+- **Code:** `MasterDataScope` has only `GLOBAL`; catalog models expose `scope` as a read-only property returning `"GLOBAL"`, and the serializers declare it as a `ChoiceField` limited to `GLOBAL`. The `scope` entry is gone from every viewset `filterset_fields`; the lookup viewset handles `?scope=` itself.
+- **Seeds:** `seed_demo_data` no longer writes `scope` and no longer reads or reports the per-organization mock arrays (`mockCustomSoftware`, `mockOrganization*Configs`); `seed_studiohub --organizations` stays as a deprecated no-op flag so existing scripts do not break. The `seed_studiohub` test fixture no longer carries the unread arrays.
+- **Docs:** `docs/architecture/ORGANIZATION_MASTER_DATA.md` (it described deleted clone/bulk-enable endpoints) was replaced by `docs/architecture/MASTER_DATA.md`.
+- **Left alone on purpose:** the Identity roles `org-admin` / `org-member` and their `organization` role scope, the legacy permission codes `platform.master_data.configure` / `create` (Phase 8, with frontend coordination), and the stored `active_projects` / `active_tasks_count` / `headcount` / utilization columns (a Phase 8 decision, with your approval).
+
+### Frontend-facing contract changes in Phase 7
+- **`total_custom_records_across_orgs` is removed from `GET /api/v1/platform/overview`.** The frontend `PlatformOverviewTab` renders it, so that tab must stop reading it (or it will show `undefined`).
+- Catalog responses keep `"scope": "GLOBAL"`. `?scope=<anything but GLOBAL>` now returns an empty list instead of filtering a column; sending `scope` other than `GLOBAL` is still a 400.

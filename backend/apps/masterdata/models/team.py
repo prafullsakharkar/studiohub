@@ -1,5 +1,5 @@
 """
-Global team reference model (org-removal B3).
+Global team reference model.
 
 Platform-global team under a department. No organization FK.
 """

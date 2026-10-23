@@ -1,4 +1,4 @@
-"""Global directory tests (org-removal B3).
+"""Global directory tests.
 
 Masterdata absorbs the global directory + reference data: Person,
 Client/Vendor (+ contacts/contracts), Department, Team, Office, Position
@@ -27,12 +27,8 @@ from apps.masterdata.models import (
 
 pytestmark = pytest.mark.django_db
 
-# Isolated URLconf: the project URLconf still mounts the legacy
-# organization flat routes ahead of the new global ones, so plain HTTP GETs
-# on /api/v1/departments|people|roles|groups|permissions/ resolve to the
-# legacy viewsets until the organization app is removed (Task 7). These
-# tests drive the new viewsets directly to prove the global endpoints serve
-# global rows.
+# Isolated URLconf: mounts only the masterdata and RBAC routes, so these tests
+# prove the flat global endpoints serve global rows without the rest of the project.
 urlpatterns = [
     url_path("", include("apps.masterdata.api.urls")),
     url_path("", include(("apps.identity.api.urls_rbac", "identity-rbac"))),

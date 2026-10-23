@@ -1,5 +1,5 @@
 """
-Global directory serializers (org-removal B3).
+Global directory serializers.
 
 Flat frontend shapes for the platform directory: departments, teams,
 offices, positions, people, clients, vendors (+ contacts/contracts).

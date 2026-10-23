@@ -20,11 +20,17 @@ from apps.masterdata.models import (
 )
 
 _LOOKUP_READ_ONLY = ("id", "status", "is_system", "created_at", "updated_at")
-# Only the global scope is supported (docs/masterdata/DECISIONS.md D12).
-_GLOBAL_ONLY = {"scope": {"choices": [("GLOBAL", "Global")], "required": False}}
+
+
+def _scope_field() -> serializers.ChoiceField:
+    """``scope`` is a constant (docs/masterdata/DECISIONS.md D12): reported as GLOBAL,
+    accepted on input only as GLOBAL and ignored; anything else is a 400."""
+    return serializers.ChoiceField(choices=[("GLOBAL", "Global")], required=False)
 
 
 class SoftwareSerializer(serializers.ModelSerializer[Software]):
+    scope = _scope_field()
+
     # Annotated by the selector (one query); see SoftwareViewSet.present().
     version_count = serializers.IntegerField(read_only=True)
 
@@ -49,10 +55,11 @@ class SoftwareSerializer(serializers.ModelSerializer[Software]):
         )
         read_only_fields = (*_LOOKUP_READ_ONLY, "version_count")
         validators = []
-        extra_kwargs = _GLOBAL_ONLY
 
 
 class SoftwareVersionSerializer(serializers.ModelSerializer[SoftwareVersion]):
+    scope = _scope_field()
+
     is_deprecated = serializers.BooleanField(read_only=True)
 
     class Meta:
@@ -78,10 +85,12 @@ class SoftwareVersionSerializer(serializers.ModelSerializer[SoftwareVersion]):
         )
         read_only_fields = (*_LOOKUP_READ_ONLY, "software_id", "is_deprecated")
         validators = []
-        extra_kwargs = {**_GLOBAL_ONLY, "code": {"required": False}, "name": {"required": False}}
+        extra_kwargs = {"code": {"required": False}, "name": {"required": False}}
 
 
 class MasterStatusSerializer(serializers.ModelSerializer[MasterStatus]):
+    scope = _scope_field()
+
     class Meta:
         model = MasterStatus
         fields = (
@@ -107,10 +116,12 @@ class MasterStatusSerializer(serializers.ModelSerializer[MasterStatus]):
         validators = []
         # DRF turns the single-field ``one default per entity type`` partial
         # constraint into a UniqueValidator on entity_type; the service owns it.
-        extra_kwargs = {**_GLOBAL_ONLY, "entity_type": {"validators": []}}
+        extra_kwargs = {"entity_type": {"validators": []}}
 
 
 class MasterTaskTypeSerializer(serializers.ModelSerializer[MasterTaskType]):
+    scope = _scope_field()
+
     class Meta:
         model = MasterTaskType
         fields = (
@@ -134,10 +145,11 @@ class MasterTaskTypeSerializer(serializers.ModelSerializer[MasterTaskType]):
         # Uniqueness is the service's job: DRF would turn the partial
         # constraints into unconditional validators (it ignores ``condition``).
         validators = []
-        extra_kwargs = _GLOBAL_ONLY
 
 
 class MasterAssetTypeSerializer(serializers.ModelSerializer[MasterAssetType]):
+    scope = _scope_field()
+
     class Meta:
         model = MasterAssetType
         fields = (
@@ -158,10 +170,11 @@ class MasterAssetTypeSerializer(serializers.ModelSerializer[MasterAssetType]):
         # Uniqueness is the service's job: DRF would turn the partial
         # constraints into unconditional validators (it ignores ``condition``).
         validators = []
-        extra_kwargs = _GLOBAL_ONLY
 
 
 class MasterShotTypeSerializer(serializers.ModelSerializer[MasterShotType]):
+    scope = _scope_field()
+
     class Meta:
         model = MasterShotType
         fields = (
@@ -181,10 +194,11 @@ class MasterShotTypeSerializer(serializers.ModelSerializer[MasterShotType]):
         # Uniqueness is the service's job: DRF would turn the partial
         # constraints into unconditional validators (it ignores ``condition``).
         validators = []
-        extra_kwargs = _GLOBAL_ONLY
 
 
 class MasterReviewTypeSerializer(serializers.ModelSerializer[MasterReviewType]):
+    scope = _scope_field()
+
     class Meta:
         model = MasterReviewType
         fields = (
@@ -205,10 +219,11 @@ class MasterReviewTypeSerializer(serializers.ModelSerializer[MasterReviewType]):
         # Uniqueness is the service's job: DRF would turn the partial
         # constraints into unconditional validators (it ignores ``condition``).
         validators = []
-        extra_kwargs = _GLOBAL_ONLY
 
 
 class MasterFileTypeSerializer(serializers.ModelSerializer[MasterFileType]):
+    scope = _scope_field()
+
     class Meta:
         model = MasterFileType
         fields = (
@@ -232,7 +247,7 @@ class MasterFileTypeSerializer(serializers.ModelSerializer[MasterFileType]):
         # Uniqueness is the service's job: DRF would turn the partial
         # constraints into unconditional validators (it ignores ``condition``).
         validators = []
-        extra_kwargs = {**_GLOBAL_ONLY, "code": {"required": False}}
+        extra_kwargs = {"code": {"required": False}}
 
 
 class ReorderSerializer(serializers.Serializer[dict[str, Any]]):

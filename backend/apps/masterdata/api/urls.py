@@ -1,9 +1,8 @@
 """
 Masterdata API URL configuration.
 
-Exposes the platform catalog and platform overview endpoints that match
-the frontend API contract. Organization-scoped master-data routes were
-deleted with the org removal plan (they 404 by absence).
+Exposes the platform catalog, directory and overview endpoints that match
+the frontend API contract.
 """
 
 from django.urls import path

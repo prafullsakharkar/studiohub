@@ -114,7 +114,11 @@ class LookupCatalogViewSet(
             if needs_deleted
             else selector.get_queryset(request=self.request, view=self)
         )
-        return qs.filter(scope=MasterDataScope.GLOBAL)
+        # ``scope`` is a constant (DECISIONS D12): GLOBAL matches every row, anything else none.
+        requested = self.request.query_params.get("scope", "").strip()
+        if requested and requested != MasterDataScope.GLOBAL:
+            return qs.none()
+        return qs
 
     # ---- writes go through the service -----------------------------------
 
@@ -194,7 +198,7 @@ class MasterStatusViewSet(LookupCatalogViewSet):
     selector_class = MasterStatusSelector
     service_class = MasterStatusService
     label = "Status"
-    filterset_fields = ["entity_type", "status", "scope", "is_default", "is_final"]
+    filterset_fields = ["entity_type", "status", "is_default", "is_final"]
     search_fields = ["name", "code"]
     ordering_fields = ["order", "name"]
     ordering = ["order", "name"]
@@ -205,7 +209,7 @@ class MasterTaskTypeViewSet(LookupCatalogViewSet):
     selector_class = MasterTaskTypeSelector
     service_class = MasterTaskTypeService
     label = "Task type"
-    filterset_fields = ["status", "scope", "category", "department_code"]
+    filterset_fields = ["status", "category", "department_code"]
     search_fields = ["name", "code"]
     ordering_fields = ["name", "code", "sort_order"]
     ordering = ["sort_order", "name"]
@@ -216,7 +220,7 @@ class MasterAssetTypeViewSet(LookupCatalogViewSet):
     selector_class = MasterAssetTypeSelector
     service_class = MasterAssetTypeService
     label = "Asset type"
-    filterset_fields = ["status", "scope"]
+    filterset_fields = ["status"]
     search_fields = ["name", "code"]
     ordering_fields = ["name", "sort_order"]
     ordering = ["sort_order", "name"]
@@ -227,7 +231,7 @@ class MasterShotTypeViewSet(LookupCatalogViewSet):
     selector_class = MasterShotTypeSelector
     service_class = MasterShotTypeService
     label = "Shot type"
-    filterset_fields = ["status", "scope"]
+    filterset_fields = ["status"]
     search_fields = ["name", "code"]
     ordering_fields = ["name", "sort_order"]
     ordering = ["sort_order", "name"]
@@ -238,7 +242,7 @@ class MasterReviewTypeViewSet(LookupCatalogViewSet):
     selector_class = MasterReviewTypeSelector
     service_class = MasterReviewTypeService
     label = "Review type"
-    filterset_fields = ["status", "scope"]
+    filterset_fields = ["status"]
     search_fields = ["name", "code"]
     ordering_fields = ["name", "sort_order"]
     ordering = ["sort_order", "name"]
@@ -249,7 +253,7 @@ class MasterFileTypeViewSet(LookupCatalogViewSet):
     selector_class = MasterFileTypeSelector
     service_class = MasterFileTypeService
     label = "File type"
-    filterset_fields = ["status", "scope", "category"]
+    filterset_fields = ["status", "category"]
     search_fields = ["name", "extension"]
     ordering_fields = ["name", "sort_order"]
     ordering = ["sort_order", "name"]
@@ -260,7 +264,7 @@ class SoftwareViewSet(LookupCatalogViewSet):
     selector_class = SoftwareSelector
     service_class: type[SoftwareService] = SoftwareService  # narrower: archive() takes ``cascade``
     label = "Software"
-    filterset_fields = ["status", "scope", "category"]
+    filterset_fields = ["status", "category"]
     search_fields = ["name", "code", "publisher"]
     ordering_fields = ["name", "sort_order", "created_at", "updated_at"]
     ordering = ["sort_order", "name"]
@@ -291,7 +295,7 @@ class SoftwareVersionViewSet(LookupCatalogViewSet):
     selector_class = SoftwareVersionSelector
     service_class = SoftwareVersionService
     label = "Software version"
-    filterset_fields = ["status", "scope"]
+    filterset_fields = ["status"]
     search_fields = ["version", "version_code", "name"]
     ordering_fields = ["version", "release_date", "sort_order"]
     # Default order comes from the model: newest release first, undated last,

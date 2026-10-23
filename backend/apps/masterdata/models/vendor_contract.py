@@ -1,5 +1,5 @@
 """
-Global vendor contract model (org-removal B3).
+Global vendor contract model.
 
 Contract for a platform-global vendor. No organization FK. See ``ContractBase``
 for the status model (``Expired`` is derived) and docs/masterdata/DECISIONS.md D8

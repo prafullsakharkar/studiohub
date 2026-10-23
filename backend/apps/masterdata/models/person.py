@@ -1,10 +1,9 @@
 """
-Global person directory model (org-removal B3).
+Global person directory model.
 
 Platform-global person record with an optional link to the auth identity
-(``identity.User``) plus department/team/office membership. No organization
-FK. ``user`` keeps a distinct reverse accessor (``directory_person_profiles``)
-so it never clashes with the legacy organization-scoped person model.
+(``identity.User``) plus department/team/office membership. No organization FK.
+``user`` keeps the reverse accessor ``directory_person_profiles``.
 """
 
 from __future__ import annotations

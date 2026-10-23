@@ -1,5 +1,5 @@
 """
-Global client contact model (org-removal B3).
+Global client contact model.
 
 Contact person for a platform-global client. No organization FK. Personal data:
 see ``ContactBase``.

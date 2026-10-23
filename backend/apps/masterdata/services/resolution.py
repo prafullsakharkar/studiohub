@@ -2,13 +2,10 @@
 Masterdata services.
 
 Business-logic layer: platform-level statistics for the catalog overview.
-The organization-scoped bundle resolvers were deleted with the org removal
-plan (org master-data endpoints 404 by absence).
 """
 
 from __future__ import annotations
 
-from apps.masterdata.models import MasterDataScope
 from apps.masterdata.selectors.catalog import (
     MasterAssetTypeSelector,
     MasterFileTypeSelector,
@@ -22,40 +19,16 @@ from apps.masterdata.selectors.catalog import (
 
 
 def get_platform_overview() -> dict[str, object]:
-    scope_global = MasterDataScope.GLOBAL
-    scope_org = MasterDataScope.ORGANIZATION
+    """Counts of live catalog rows. The ``global_`` prefix is kept for the frontend contract."""
     return {
-        "global_software_count": SoftwareSelector.get_queryset().filter(scope=scope_global).count(),
-        "global_version_count": SoftwareVersionSelector.get_queryset()
-        .filter(software__scope=scope_global)
-        .count(),
-        "global_status_count": MasterStatusSelector.get_queryset()
-        .filter(scope=scope_global)
-        .count(),
-        "global_task_type_count": MasterTaskTypeSelector.get_queryset()
-        .filter(scope=scope_global)
-        .count(),
-        "global_asset_type_count": MasterAssetTypeSelector.get_queryset()
-        .filter(scope=scope_global)
-        .count(),
-        "global_shot_type_count": MasterShotTypeSelector.get_queryset()
-        .filter(scope=scope_global)
-        .count(),
-        "global_review_type_count": MasterReviewTypeSelector.get_queryset()
-        .filter(scope=scope_global)
-        .count(),
-        "global_file_type_count": MasterFileTypeSelector.get_queryset()
-        .filter(scope=scope_global)
-        .count(),
-        # Legacy-org key (frontend PlatformOverviewTab renders it): the
-        # organization dimension was removed (B7) and `create_custom` is
-        # gone, so this is permanently 0 on any fresh database. Kept for
-        # the frontend contract.
-        "total_custom_records_across_orgs": (
-            SoftwareSelector.get_queryset().filter(scope=scope_org).count()
-            + MasterStatusSelector.get_queryset().filter(scope=scope_org).count()
-            + MasterTaskTypeSelector.get_queryset().filter(scope=scope_org).count()
-        ),
+        "global_software_count": SoftwareSelector.get_queryset().count(),
+        "global_version_count": SoftwareVersionSelector.get_queryset().count(),
+        "global_status_count": MasterStatusSelector.get_queryset().count(),
+        "global_task_type_count": MasterTaskTypeSelector.get_queryset().count(),
+        "global_asset_type_count": MasterAssetTypeSelector.get_queryset().count(),
+        "global_shot_type_count": MasterShotTypeSelector.get_queryset().count(),
+        "global_review_type_count": MasterReviewTypeSelector.get_queryset().count(),
+        "global_file_type_count": MasterFileTypeSelector.get_queryset().count(),
         "system_health": "healthy",
         "last_definition_update": None,
     }
