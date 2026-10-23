@@ -10,8 +10,6 @@ Global contract (all endpoints):
 - **Organization scope**: `X-Organization-Id` (or `X-Organization`) header.
   Resolved server-side to org + membership; client-supplied org ids in bodies
   are ignored for scoping. No context → fail closed (400/403/empty).
-  Intelligence knowledge/search additionally require a live membership in the
-  resolved org for non-staff (header alone never grants access — Phase 6).
 - **Pagination**: `?page=&page_size=` (`limit` alias); envelope
   `{count,next,previous,results}`. Endpoints marked `RAW[]` return bare arrays.
 - **Filtering**: `?search=` (icontains OR over endpoint fields); other params exact
@@ -112,10 +110,7 @@ aggregate stubs return `[]` / `{success,message}` shapes.
 `/api/v1/publishing/` (+`validate|republish|unpublish|retry/`),
 `/api/v1/scheduling/events|resources|schedules|leaves|holidays/`,
 `/api/v1/audit/` (flat list-only alias, frontend shape) + `/api/v1/audit/*` (paginated reads; writes: job retry/cancel, error resolve, track ingest; simulators are mock-only), `/api/v1/settings/*` (no `pipeline/` — mock-only, no caller),
-`/api/v1/intelligence/*` (knowledge + AI; `ai/risks` GET lists real
-org-scoped risks and POST is an advisory echo, `ai/chat` rule-based assistant,
-`ai/task-recommendations`, `ai/{project|shot}-summary/<code>/`,
-`ai/permission-context`), `/api/v1/core/tags/`,
+`/api/v1/core/tags/`,
 `/api/v1/attachments/` (RAW[] compat) + `/api/v1/core/attachments/` (paginated).
 
 ## Permissions

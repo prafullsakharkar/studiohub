@@ -23,8 +23,6 @@ urlpatterns = [
     path("attachments/", include("apps.core.api.urls_compat")),
     # Production — top-level to match frontend /api/v1/{projects,shots,assets}/
     path("", include("apps.production.api.urls")),
-    # Intelligence — search, knowledge, AI workspace
-    path("intelligence/", include("apps.intelligence.api.urls")),
     # Identity (authentication, users, security)
     path("identity/", include(("apps.identity.api.urls", "identity"))),
     # Identity RBAC — flat platform-global roles/groups/permissions
