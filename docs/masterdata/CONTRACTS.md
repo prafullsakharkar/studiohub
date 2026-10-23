@@ -97,11 +97,11 @@ Paths are relative to `backend/` unless they start with `docs/`. Each contract h
 | `code` | char(100) | required | DOM-MD-COM-04; immutable when `is_system` |
 | `name` | char(255) | required | DOM-MD-COM-05 |
 | `description` | text | `""` | — |
-| `status` | enum `active`/`archived` | `active` | changed only by archive/restore |
+| `status` | enum `active`/`archived` | `active` | changed only by archive/restore. **Sending `status` on PUT or PATCH is a 400** (`{"status": ["Read-only. Use POST …/archive or …/restore to change it."]}`), even when the value is unchanged, so a client that still sends it fails loudly. A create ignores it (open question). |
 | `sort_order` | int ≥ 0 | 0 | new; statuses use `order` |
 | `is_system` | bool | False | read-only through the API; set by the canonical seed (D10) |
 | `metadata` | JSON object | `{}` | must be an object, not an array or scalar |
-| `color` (where the type has one) | char(20) | `""` | a hex color (`#RGB` … `#RRGGBBAA`) or a plain color keyword (`red`, `dark-blue`); markup and spaces are rejected |
+| `color` (where the type has one) | char(20) | `""` | CSS hex with **3, 4, 6 or 8** digits (`#fff`, `#ffff`, `#ff00aa`, `#ff00aa80`) or a plain keyword (`red`, `dark-blue`). Rejected: 5- or 7-digit hex, functional notation (`rgb()`, `rgba()`, `hsl()`, `var()`), spaces and markup. Only values *sent* are checked; stored values are never re-validated, but a PUT that sends an old non-conforming value back is refused. |
 | `scope` | `"GLOBAL"` | `"GLOBAL"` | D12 (OPEN). Until then, `ORGANIZATION` on input → 400. |
 | timestamps, actor FKs, soft-delete fields | inherited | — | read-only |
 
@@ -153,11 +153,11 @@ Each operation: validate (`apps/masterdata/validators/catalog.py`) → `transact
 | `PUT` / `PATCH …/<t>/<uuid>` | writable fields | 200 `row` | 400, 401, 403, 404, 409 `system_row_protected` (code change on a system row) | `manage` |
 | `POST …/<t>/<uuid>/archive` | — | 200 `{"success": true, "data": row}` | 401, 403, 404, 409 `system_row_protected` | `manage` |
 | `POST …/<t>/<uuid>/restore` | — | 200 `{"success": true, "data": row}` | 401, 403, 404, 409 `conflict` | `manage` |
-| `DELETE …/<t>/<uuid>` | — | 200 `{"success": true, "message": "<Type> deleted."}` | 401, 403, 404, 409 `system_row_protected` / `has_dependants` | `manage` |
+| `DELETE …/<t>/<uuid>` | — | 200 `{"success": true, "message": "<Type> soft-deleted. It can be restored."}` (a **soft delete**: the row is flagged `is_deleted`, kept, and hidden; `status` is not changed; `POST …/restore` undoes it) | 401, 403, 404, 409 `system_row_protected` / `has_dependants` | `manage` |
 | `DELETE …/<t>/<uuid>?hard=true` | — | 204 | 401, 403, 404, 409 `not_soft_deleted` / `has_dependants` / `system_row_protected` | `manage` + `masterdata.hard_delete` |
 | `POST platform/master-data/<t>/reorder` **(new)** | `{"ids": [uuid…]}` | 200 `[row…]` | 400, 401, 403 | `manage` |
 
-> The DELETE message wording changes from "… archived." to "… deleted." because the semantics change (D6). The `success`/`message` keys stay. **U:** whether the frontend displays this text verbatim.
+> **What DELETE does (exact).** `DELETE` without `?hard=true` is a **soft delete**: `is_deleted=true`, `deleted_at` and `deleted_by` are set, the row stays in the table, disappears from lists and detail (404) and stops counting for uniqueness, and `POST …/restore` brings it back. It does **not** archive (`status` is unchanged) and does **not** remove the row. A **permanent** delete is only `DELETE …?hard=true`, which needs `masterdata.hard_delete` and a row that is already soft-deleted, and returns 204 with no body. Before Phase 3 `DELETE` archived the row and said "… archived."; the message changed with the behaviour. The `success` / `message` keys are unchanged. **U:** whether the frontend shows the message text verbatim (the user is checking).
 
 **Failure behaviour:**
 - Validation errors are raised before any write, so there are no partial writes.
@@ -206,7 +206,7 @@ Extra tests: the same code for two entity types (201 + 201); a second default un
 | DOM-MD-SW-08 | `POST …/software/<id>/archive` archives the software and its **active** versions; the response lists them in `data.versions_archived`. `?cascade=false` refuses with 409 `has_dependants` while any version is active. `?cascade=` other than true/false → 400. Restoring (un-archiving) a software does **not** un-archive its versions. | **IMPLEMENTED** |
 
 Nested API (paths unchanged, `apps/masterdata/api/urls.py`): `GET/POST …/software/<uuid>/versions`; `GET/PUT/PATCH/DELETE …/versions/<uuid>`; `POST …/versions/<uuid>/archive|restore`. A version under a different software in the URL → 404. New: `POST …/software/reorder` (software only; versions are not reorderable).
-Response changes (additive): both resources gain `is_system` and `sort_order`; versions gain `code`, `name` (both optional on create) and `is_deprecated`. `DELETE` is a soft delete (message `"Software deleted."` / `"Software version deleted."`).
+Response changes (additive): both resources gain `is_system` and `sort_order`; versions gain `code`, `name` (both optional on create) and `is_deprecated`. `DELETE` is a soft delete (message `"Software soft-deleted. It can be restored."` / `"Software version soft-deleted. It can be restored."`).
 Services: `SoftwareService`, `SoftwareVersionService` (`apps/masterdata/services/software.py`), both `CatalogService[T]`. A version is created with `create(*, actor, parent=<Software>, data)`.
 Tests: `tests/models/test_software_models.py`, `tests/services/test_software_services.py`, `tests/api/test_software_api.py`, the concurrency and migration (`0006`) tests, and the software seed test in `apps/core/tests/test_seed_studiohub.py`.
 

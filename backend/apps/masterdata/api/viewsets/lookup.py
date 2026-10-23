@@ -18,7 +18,7 @@ from typing import Any
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, status
+from rest_framework import filters, mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -150,6 +150,18 @@ class LookupCatalogViewSet(
         obj = self.service_class.restore(actor=request.user, instance=self.get_object())
         return Response({"success": True, "data": self.get_serializer(self.present(obj)).data})
 
+    def update(self, request, *args, **kwargs):
+        """PUT / PATCH. ``status`` is not writable here: it is changed only by the
+        archive and restore actions, and soft delete is DELETE. Refusing it (instead
+        of ignoring it) makes a client that still sends it fail loudly, even when the
+        value is unchanged.
+        """
+        if hasattr(request.data, "keys") and "status" in request.data:
+            raise serializers.ValidationError(
+                {"status": ["Read-only. Use POST …/archive or …/restore to change it."]}
+            )
+        return super().update(request, *args, **kwargs)
+
     def destroy(self, request, *args, **kwargs):
         hard = request.query_params.get("hard", "").strip().lower()
         if hard not in _TRUE | _FALSE:
@@ -159,8 +171,12 @@ class LookupCatalogViewSet(
             self.service_class.hard_delete(actor=request.user, instance=obj)
             return Response(status=status.HTTP_204_NO_CONTENT)
         self.service_class.soft_delete(actor=request.user, instance=obj)
+        # Soft delete only: the row is kept, hidden from lists and lookups, and
+        # POST …/restore brings it back. The message says so (no "deleted" alone,
+        # which reads as permanent). A permanent delete is DELETE ?hard=true.
         return Response(
-            {"success": True, "message": f"{self.label} deleted."}, status=status.HTTP_200_OK
+            {"success": True, "message": f"{self.label} soft-deleted. It can be restored."},
+            status=status.HTTP_200_OK,
         )
 
     @action(detail=False, methods=["post"], url_path="reorder")

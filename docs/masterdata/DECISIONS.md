@@ -164,6 +164,11 @@ PROPOSED codes:
 - `platform.master_data.configure` stays accepted as an alias for both `manage` codes for one release, so existing grants keep working. It is removed in Phase 8 after the seed grants move.
 - `platform.master_data.create` (seeded at `apps/core/management/commands/init_platform.py:84`, never enforced) is removed.
 
+**Rules for the Phase 8 removal (user instruction, 2026-10-23).** The removal of `platform.master_data.configure`, `platform.master_data.create` and the alias is deferred to Phase 8 and must satisfy all of these:
+1. **One commit.** The removal and the update of the existing `org-admin` contract test (`apps/core/tests/test_contract_regression.py::TestContractPermissionMatrix::test_matrix_grants_match_contract`) land together. The test is **updated** to the new grant model, never deleted or skipped.
+2. **No double grants.** After the removal the old and the new permission must not both grant writes: the alias class goes, the old codes disappear from the seed catalog and from role grants, and a test proves a holder of only an old code is refused.
+3. Until then the alias stays: **today a holder of either code can write** (that is the D9 alias, introduced in Phase 3 and kept deliberately). If you want that interim state ended sooner, say so; it would remove write access from any role that only holds the old code.
+
 **Role grants: OPEN.** Recommendation:
 - `platform-admin` (full catalog) gets all four codes automatically.
 - `org-admin` gets `masterdata.directory.manage` only. It loses catalog writes and hard delete, because it is an organization-era role (`init_platform.py:157-166`).
@@ -266,3 +271,29 @@ Phase 4 was approved in writing ("approve Phase 4"). It implements `CONTRACTS.md
 5. **Natural version order.** The key is stored in `version_key` and set in `SoftwareVersion.save()`, so ORM writes, seeds and the API all keep it consistent. Letters sort after digits, so `2025` sorts before `2025sp1`.
 6. **Seeds.** `seed_demo_data` now keys versions by `(software, version)`, derives their names and codes, accepts versions without a `version_code`, and reports (does not crash on) a mock row whose end of support precedes its release.
 7. **Not done (still open).** D8, D11 and D12 are unchanged. Versions have no reorder endpoint. Hard-deleting a software means hard-deleting its soft-deleted versions first (PROTECT); a cascading hard delete was not requested. The full test suite has not been run (D14: targeted runs only, by instruction).
+
+---
+
+## Review follow-ups after Phase 4 (2026-10-23)
+
+Your five answers to the Phase 3 questions, and what was done.
+
+1. **Audit target type — done, own commit `1b25b4e`.** `masterdata` was added to `AuditLog.TARGET_CHOICES` and to the two parallel lists (`AuditTarget`, `AuditTargetCodes`). Migration `audit/0007` is **choices-only**: the only field kwarg that differs is `choices` (one entry added, none removed) and Django emits **no SQL in either direction**; `apps/audit/tests/test_masterdata_target.py` pins this and keeps the three lists in sync. This is the one approved exception to D13's scope. The masterdata audit handler now uses `AuditLog.TARGET_MASTERDATA`.
+2. **Permission removal — deferred to Phase 8** with the rules added under D9 above.
+3. **`status` on PUT/PATCH — now a 400** for all eight catalogs (statuses, task/asset/shot/review/file types, software, versions), pending your frontend check. It is refused even when the value equals the stored one, so a client that does GET→PUT of the whole object must drop `status` first. A create (POST) still ignores `status`; say if that should be refused too. If your check shows the frontend echoes `status`, the alternative is to refuse only a *changed* value.
+4. **DELETE — a soft delete,** message `"<Type> soft-deleted. It can be restored."` (see CONTRACTS §3.1 for the exact behaviour). Before Phase 3 it archived the row.
+5. **Color rule — tightened to CSS-valid hex** (3, 4, 6 or 8 digits) plus plain keywords; `rgb()`, `rgba()`, `hsl()`, `var()` and 5/7-digit hex are rejected. If the picker emits functional notation the rule must widen; that is a one-line change, so tell me what it emits. Existing rows: nothing in this repo's seeds sets a color (`init_platform` leaves it blank) and the mock dataset is no longer in the frontend checkout, so the only possible offenders are rows written through the API before Phase 3 or loaded from mock data in an earlier run. They can only be listed from a database. This read-only query (PostgreSQL) lists every row, soft-deleted ones flagged, whose color the new rule would refuse; it was checked against the validator on 22 sample values and agrees on all of them:
+
+```sql
+SELECT t.table_name, t.id, t.code, t.color, t.is_deleted
+FROM (
+    SELECT 'masterdata_status'     AS table_name, id, code, color, is_deleted FROM masterdata_status
+    UNION ALL
+    SELECT 'masterdata_task_type'  AS table_name, id, code, color, is_deleted FROM masterdata_task_type
+    UNION ALL
+    SELECT 'masterdata_asset_type' AS table_name, id, code, color, is_deleted FROM masterdata_asset_type
+) AS t
+WHERE btrim(t.color) <> ''
+  AND btrim(t.color) !~ '^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|[A-Za-z][A-Za-z0-9-]{0,30})$'
+ORDER BY t.table_name, t.code;
+```

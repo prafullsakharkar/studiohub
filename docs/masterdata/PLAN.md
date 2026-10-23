@@ -94,6 +94,7 @@ Commit: `masterdata(phase-7): remove organization leftovers`.
 | 8.2 | Admin: read-mostly registrations; system rows read-only; delete disabled or routed through services. | L1 | Phases 3–6 | MVP |
 | 8.3 | OpenAPI: `extend_schema` for archive, restore, DELETE and overview; 4xx error components; schema snapshot test for masterdata paths. | M7 | Phases 3–6 | MVP |
 | 8.4 | Catalog caching with version-key invalidation on every write [D7], plus invalidation tests. | — | Phase 3 | Later |
+| 8.4b | **Permission cleanup (one commit).** Remove `platform.master_data.configure` / `create`, the alias class and the legacy role grants; update (not delete or skip) the `org-admin` contract test in the same commit; add a test that a holder of only an old code is refused. See DECISIONS D9 rules. | L2 | D9 | MVP |
 | 8.5 | Docs: `docs/apps/masterdata.md` (from `docs/APP_ARCHITECTURE_TEMPLATE.md`), `docs/api` updates, an ADR if [D9] or [D4] changes the trust model. | L2 | All | MVP |
 | 8.6 | Final verification: migrations forward from an empty DB and forward/backward on a populated test DB; full suite; lint; format and types on changed files; `pip-audit`/`bandit` only if approved (new tools); re-run the AUDIT checklist with evidence. | — | All | MVP |
 

@@ -163,17 +163,49 @@ class TestWriteContract:
         assert response.status_code == 400
         assert "scope" in response.json()
 
-    def test_status_and_system_flag_are_read_only(self, manager, slug):
+    def test_sending_status_on_patch_or_put_is_a_400_and_changes_nothing(self, manager, slug):
+        """``status`` is changed only by archive/restore; a client that sends it must fail loudly."""
         factory = TYPES[slug][0]
         row = factory()
+        url = f"{BASE}/{slug}/{row.pk}"
+
+        for send in (manager.patch, manager.put):
+            body = {"name": "Renamed", "status": "archived"}
+            if send is manager.put:
+                body = {**manager.get(url).json(), **body}
+            response = send(url, body, format="json")
+            assert response.status_code == 400, response.content
+            assert "status" in response.json()
+            assert error_code(response) == "validation_error"
+
+        row.refresh_from_db()
+        assert (row.name == "Renamed", row.status) == (False, "active")  # nothing was applied
+
+    def test_an_unchanged_status_is_refused_too(self, manager, slug):
+        """A PUT that echoes back the status it read is refused as well (deliberate, see CONTRACTS)."""
+        row = TYPES[slug][0]()
+        full = manager.get(f"{BASE}/{slug}/{row.pk}").json()
+        assert full["status"] == "active"
+        assert manager.put(f"{BASE}/{slug}/{row.pk}", full, format="json").status_code == 400
+        without = {k: v for k, v in full.items() if k != "status"}
+        assert manager.put(f"{BASE}/{slug}/{row.pk}", without, format="json").status_code == 200
+
+    def test_the_system_flag_is_still_silently_read_only(self, manager, slug):
+        row = TYPES[slug][0]()
         response = manager.patch(
-            f"{BASE}/{slug}/{row.pk}",
-            {"status": "archived", "is_system": True, "name": "Renamed"},
-            format="json",
+            f"{BASE}/{slug}/{row.pk}", {"is_system": True, "name": "Renamed"}, format="json"
         )
         assert response.status_code == 200
         row.refresh_from_db()
-        assert (row.name, row.status, row.is_system) == ("Renamed", "active", False)
+        assert (row.name, row.is_system) == ("Renamed", False)
+
+    def test_status_on_create_is_ignored_not_refused(self, manager, slug):
+        """Only PUT/PATCH refuse ``status``; a create still ignores it (open question to the user)."""
+        response = manager.post(
+            f"{BASE}/{slug}", {**TYPES[slug][1], "status": "archived"}, format="json"
+        )
+        assert response.status_code == 201
+        assert response.json()["status"] == "active"
 
     def test_put_and_patch_update(self, manager, slug):
         row = TYPES[slug][0]()
@@ -185,6 +217,9 @@ class TestWriteContract:
         )
         full = manager.get(f"{BASE}/{slug}/{row.pk}").json()
         full["description"] = "e"
+        # A full-object PUT must leave ``status`` out: it is refused with a 400 (see
+        # test_an_unchanged_status_is_refused_too). Everything else round-trips.
+        full.pop("status")
         assert manager.put(f"{BASE}/{slug}/{row.pk}", full, format="json").status_code == 200
 
     def test_archive_and_restore_keep_the_success_envelope(self, manager, slug):
@@ -202,9 +237,14 @@ class TestWriteContract:
         row = factory()
         response = manager.delete(f"{BASE}/{slug}/{row.pk}")
         assert response.status_code == 200
-        assert response.json() == {"success": True, "message": f"{label} deleted."}
+        assert response.json() == {
+            "success": True,
+            "message": f"{label} soft-deleted. It can be restored.",
+        }
         assert manager.get(f"{BASE}/{slug}/{row.pk}").status_code == 404
-        assert factory._meta.model.all_objects.get(pk=row.pk).is_deleted is True
+        kept = factory._meta.model.all_objects.get(pk=row.pk)
+        # Exactly what DELETE did: flagged deleted and kept; NOT archived, NOT removed.
+        assert (kept.is_deleted, kept.status, kept.deleted_at is not None) == (True, "active", True)
 
     def test_a_soft_deleted_row_can_be_restored_through_the_api(self, manager, slug):
         factory = TYPES[slug][0]

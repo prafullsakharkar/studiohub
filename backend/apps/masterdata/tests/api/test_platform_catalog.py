@@ -109,7 +109,10 @@ def test_platform_software_delete_is_a_soft_delete_with_the_success_message(
     resp = staff_client.delete(f"/api/v1/platform/master-data/software/{software.id}")
 
     assert resp.status_code == 200
-    assert resp.json() == {"success": True, "message": "Software deleted."}
+    assert resp.json() == {
+        "success": True,
+        "message": "Software soft-deleted. It can be restored.",
+    }
     row = Software.all_objects.get(pk=software.pk)
     assert row.is_deleted is True and row.status == "active"
 

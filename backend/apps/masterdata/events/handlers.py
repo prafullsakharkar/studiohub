@@ -44,7 +44,7 @@ class MasterdataAuditHandler(DomainEventHandler):
                 severity=AuditLog.SEVERITY_WARNING
                 if kind is records.MasterdataRecordHardDeleted
                 else AuditLog.SEVERITY_INFO,
-                target_type="masterdata",
+                target_type=AuditLog.TARGET_MASTERDATA,
                 target_id=str(payload.get("id", "")),
                 target_name=str(payload.get("name") or payload.get("code") or "")[:255],
                 description=f"{payload.get('model')} {_VERBS[kind]}",

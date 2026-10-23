@@ -185,9 +185,11 @@ class TestSoftwareWrites:
         ).json()
         assert body["publisher"] == "Foundry" and body["version_count"] == 1
 
-    def test_status_is_read_only(self, manager):
+    def test_status_on_patch_is_refused_and_the_system_flag_is_ignored(self, manager):
         row = SoftwareFactory()
-        manager.patch(f"{SW}/{row.pk}", {"status": "archived", "is_system": True}, format="json")
+        refused = manager.patch(f"{SW}/{row.pk}", {"status": "archived"}, format="json")
+        assert refused.status_code == 400 and "status" in refused.json()
+        manager.patch(f"{SW}/{row.pk}", {"is_system": True}, format="json")
         row.refresh_from_db()
         assert (row.status, row.is_system) == ("active", False)
 
@@ -302,7 +304,7 @@ class TestVersionWrites:
         assert manager.post(url + "/restore").json()["data"]["status"] == "active"
         assert manager.delete(url).json() == {
             "success": True,
-            "message": "Software version deleted.",
+            "message": "Software version soft-deleted. It can be restored.",
         }
         assert manager.get(url).status_code == 404
         assert manager.post(url + "/restore").status_code == 200
@@ -350,7 +352,7 @@ class TestCascadesOverHttp:
         version = SoftwareVersionFactory(software=software)
         assert manager.delete(f"{SW}/{software.pk}").json() == {
             "success": True,
-            "message": "Software deleted.",
+            "message": "Software soft-deleted. It can be restored.",
         }
         assert manager.get(versions_url(software)).status_code == 404
         restored = manager.post(f"{SW}/{software.pk}/restore")

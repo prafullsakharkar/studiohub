@@ -45,12 +45,29 @@ def test_metadata_must_be_an_object():
             v.clean_metadata(bad)
 
 
-@pytest.mark.parametrize("value", ["#fff", "#FF00AA", "#ff00aa80", "red", "dark-blue", ""])
+@pytest.mark.parametrize("value", ["#fff", "#FFFA", "#FF00AA", "#ff00aa80", "red", "dark-blue", ""])
 def test_valid_colors(value):
     assert v.clean_color(value) == value
 
 
-@pytest.mark.parametrize("value", ["<script>", "#xyz", "red blue", "1red", "url(x)"])
+@pytest.mark.parametrize(
+    "value",
+    [
+        "<script>",
+        "#xyz",
+        "red blue",
+        "1red",
+        "url(x)",
+        "#12345",
+        "#1234567",
+        "#ff",
+        "#ff00aa8",  # hex digit counts CSS does not allow
+        "rgb(1,2,3)",
+        "rgba(1,2,3,.5)",
+        "hsl(0,0%,0%)",
+        "var(--x)",  # functional notation
+    ],
+)
 def test_invalid_colors(value):
     with pytest.raises(ValidationError):
         v.clean_color(value)

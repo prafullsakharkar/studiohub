@@ -17,8 +17,11 @@ from apps.masterdata.models import MasterDataScope, StatusCategory, StatusEntity
 
 CODE_MAX_LENGTH = 100
 NAME_MAX_LENGTH = 255
-# Hex (#RGB .. #RRGGBBAA) or a plain color keyword; rejects markup and spaces.
-_COLOR_RE = re.compile(r"^(#[0-9a-fA-F]{3,8}|[A-Za-z][A-Za-z0-9-]{0,30})$")
+# CSS hex (#RGB, #RGBA, #RRGGBB, #RRGGBBAA) or a plain color keyword. Functional
+# notations (rgb(), hsl(), var()), spaces and markup are rejected.
+_COLOR_RE = re.compile(
+    r"^(#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|[A-Za-z][A-Za-z0-9-]{0,30})\Z"
+)
 
 
 def _fail(field: str, message: str) -> ValidationError:
