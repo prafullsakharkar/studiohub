@@ -10,6 +10,7 @@ scope flag.
 from __future__ import annotations
 
 from django.db import models
+from django.db.models.functions import Lower
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models.bases import PlatformScopedModel
@@ -18,7 +19,7 @@ from apps.core.models.bases import PlatformScopedModel
 class Position(PlatformScopedModel):
     """Platform job position."""
 
-    code = models.CharField(_("Code"), max_length=30, unique=True, db_index=True)
+    code = models.CharField(_("Code"), max_length=30, db_index=True)
     name = models.CharField(_("Name"), max_length=255, db_index=True)
     description = models.TextField(_("Description"), blank=True, default="")
 
@@ -54,6 +55,26 @@ class Position(PlatformScopedModel):
     class Meta:
         db_table = "masterdata_position"
         ordering = ("level", "name")
+        constraints = [
+            models.UniqueConstraint(
+                Lower("code"),
+                condition=models.Q(is_deleted=False),
+                name="masterdata_position_uq_code_ci",
+            ),
+            models.UniqueConstraint(
+                Lower("name"),
+                condition=models.Q(is_deleted=False),
+                name="masterdata_position_uq_name_ci",
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(parent=models.F("id")),
+                name="masterdata_position_parent_not_self",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(level__gte=1),
+                name="masterdata_position_level_min_1",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.code})"

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.db import models
+from django.db.models.functions import Lower
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models.bases import LifecycleModel, NamedEntityModel, PlatformScopedModel
@@ -122,10 +123,18 @@ class Person(PlatformScopedModel, LifecycleModel, NamedEntityModel):
             models.Index(fields=["name"]),
         ]
         constraints = [
+            # One live person per user. Soft-deleted people do not hold the link
+            # (restoring one re-checks it).
             models.UniqueConstraint(
                 fields=["user"],
+                condition=models.Q(is_deleted=False, user__isnull=False),
                 name="uq_masterdata_person_user",
-            )
+            ),
+            models.UniqueConstraint(
+                Lower("email"),
+                condition=models.Q(is_deleted=False) & ~models.Q(email=""),
+                name="masterdata_person_uq_email_ci",
+            ),
         ]
 
     def __str__(self):

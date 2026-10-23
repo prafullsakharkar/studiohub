@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import datetime
 import re
+from collections.abc import Iterable
 from decimal import Decimal, InvalidOperation
 from typing import Any
+from zoneinfo import available_timezones
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
@@ -64,12 +66,43 @@ def clean_email(value: Any, field: str = "email") -> str:
     return value
 
 
-def clean_phone(value: Any, field: str = "phone") -> str:
+def clean_phone(value: Any, field: str = "phone", max_length: int = 50) -> str:
     """Digits, ``+``, spaces, ``(``, ``)``, ``-`` and ``.`` only; runs of spaces collapse."""
-    value = " ".join(clean_text(value, field, required=False, max_length=50).split())
+    value = " ".join(clean_text(value, field, required=False, max_length=max_length).split())
     if value and not _PHONE_RE.match(value):
-        raise _fail(field, "Use digits, spaces and + ( ) - . only (3 to 50 characters).")
+        raise _fail(field, f"Use digits, spaces and + ( ) - . only (3 to {max_length} characters).")
     return value
+
+
+def clean_timezone(value: Any, field: str = "timezone", *, required: bool = False) -> str:
+    """An IANA zone name (``Asia/Kolkata``); blank only when not required."""
+    value = clean_text(value, field, required=required, max_length=50)
+    if value and value not in available_timezones():
+        raise _fail(field, "Enter an IANA time zone name such as Europe/London.")
+    return value
+
+
+def clean_choice(value: Any, field: str, choices: Iterable[str]) -> str:
+    allowed = tuple(choices)
+    if value not in allowed:
+        raise _fail(field, f"Choose one of: {', '.join(allowed)}.")
+    return value
+
+
+def clean_str_list(
+    value: Any, field: str, *, max_items: int = 100, max_length: int = 100
+) -> list[str]:
+    """A list of short non-blank strings, trimmed; duplicates removed, order kept."""
+    if not isinstance(value, list):
+        raise _fail(field, "Expected a list of strings.")
+    if len(value) > max_items:
+        raise _fail(field, f"No more than {max_items} items.")
+    out: list[str] = []
+    for item in value:
+        text = clean_text(item, field, required=True, max_length=max_length)
+        if text not in out:
+            out.append(text)
+    return out
 
 
 def clean_url(value: Any, field: str, max_length: int = 500) -> str:

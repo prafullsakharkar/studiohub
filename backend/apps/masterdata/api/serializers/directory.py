@@ -42,12 +42,11 @@ class DepartmentSerializer(serializers.ModelSerializer[Department]):
             "manager",
             "color",
             "software_stack",
-            "capacity_hours_weekly",
-            "utilization_percentage",
             "created_at",
             "updated_at",
         )
         read_only_fields = ("id", "created_at", "updated_at")
+        validators = []
 
 
 class TeamSerializer(serializers.ModelSerializer[Team]):
@@ -62,16 +61,19 @@ class TeamSerializer(serializers.ModelSerializer[Team]):
             "lead",
             "focus_discipline",
             "current_project_code",
-            "utilization_percentage",
             "color",
             "capacity",
             "created_at",
             "updated_at",
         )
         read_only_fields = ("id", "created_at", "updated_at")
+        validators = []
 
 
 class OfficeSerializer(serializers.ModelSerializer[Office]):
+    # Computed from live, active people (DECISIONS D11); the stored column is not used.
+    headcount = serializers.IntegerField(source="live_headcount", read_only=True)
+
     class Meta:
         model = Office
         fields = (
@@ -99,6 +101,8 @@ class OfficeSerializer(serializers.ModelSerializer[Office]):
             "updated_at",
         )
         read_only_fields = ("id", "created_at", "updated_at")
+        validators = []
+        extra_kwargs = {"is_headquarters": {"validators": []}}
 
 
 class PositionSerializer(GatedFieldsMixin, serializers.ModelSerializer[Position]):
@@ -122,6 +126,7 @@ class PositionSerializer(GatedFieldsMixin, serializers.ModelSerializer[Position]
             "updated_at",
         )
         read_only_fields = ("id", "created_at", "updated_at")
+        validators = []
 
 
 class PersonSerializer(GatedFieldsMixin, serializers.ModelSerializer[Person]):
@@ -167,7 +172,10 @@ class PersonSerializer(GatedFieldsMixin, serializers.ModelSerializer[Person]):
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "created_at", "updated_at")
+        # ``user`` changes only through link-user / unlink-user (DECISIONS D4).
+        read_only_fields = ("id", "user", "created_at", "updated_at")
+        validators = []
+        extra_kwargs = {"email": {"validators": []}}
 
 
 SENSITIVE = MasterdataPermissions.PERSON_VIEW_SENSITIVE
@@ -371,6 +379,14 @@ class VendorContractSerializer(_ContractSerializer):
         read_only_fields = (*_READ_ONLY, "activated_at")
         validators = []
         extra_kwargs = {"vendor": {"validators": []}}
+
+
+class LinkUserSerializer(serializers.Serializer[dict[str, Any]]):
+    user = serializers.UUIDField()
+
+
+class DeactivateSerializer(serializers.Serializer[dict[str, Any]]):
+    status = serializers.ChoiceField(choices=["inactive", "archived"], default="inactive")
 
 
 class AdjustEndDateSerializer(serializers.Serializer[dict[str, Any]]):

@@ -74,3 +74,19 @@ def test_contract_actions_are_documented(schema, slug):
     paths = schema["paths"]
     for action in ("activate", "terminate", "adjust-end-date"):
         assert "post" in paths[f"/api/v1/{slug}/{{id}}/{action}/"], action
+
+
+DIRECTORY_ROUTES = ["departments", "teams", "offices", "positions", "people"]
+
+
+@pytest.mark.parametrize("slug", DIRECTORY_ROUTES)
+def test_directory_routes_are_documented(schema, slug):
+    paths = schema["paths"]
+    assert {"get", "post"} <= set(paths[f"/api/v1/{slug}/"])
+    assert {"get", "put", "patch", "delete"} <= set(paths[f"/api/v1/{slug}/{{id}}/"])
+    assert "post" in paths[f"/api/v1/{slug}/{{id}}/restore/"]
+
+
+@pytest.mark.parametrize("action", ["link-user", "unlink-user", "deactivate", "reactivate"])
+def test_person_actions_are_documented(schema, action):
+    assert "post" in schema["paths"][f"/api/v1/people/{{id}}/{action}/"]

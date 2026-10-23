@@ -7,6 +7,7 @@ Platform-global team under a department. No organization FK.
 from __future__ import annotations
 
 from django.db import models
+from django.db.models.functions import Lower
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models.bases import PlatformScopedModel
@@ -15,7 +16,7 @@ from apps.core.models.bases import PlatformScopedModel
 class Team(PlatformScopedModel):
     """Team under a department."""
 
-    code = models.CharField(_("Code"), max_length=30, unique=True, db_index=True)
+    code = models.CharField(_("Code"), max_length=30, db_index=True)
     name = models.CharField(_("Name"), max_length=255, db_index=True)
     description = models.TextField(_("Description"), blank=True, default="")
 
@@ -53,6 +54,18 @@ class Team(PlatformScopedModel):
         indexes = [
             models.Index(fields=["department"]),
             models.Index(fields=["code"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                Lower("code"),
+                condition=models.Q(is_deleted=False),
+                name="masterdata_team_uq_code_ci",
+            ),
+            models.UniqueConstraint(
+                Lower("name"),
+                condition=models.Q(is_deleted=False),
+                name="masterdata_team_uq_name_ci",
+            ),
         ]
 
     def __str__(self):

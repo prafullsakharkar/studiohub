@@ -43,6 +43,18 @@ class ContractEndDateAdjusted(DomainEvent):
     """A contract's end date was corrected. Extra payload: ``dates`` = ``{"from", "to"}`` (ISO dates)."""
 
 
+class PersonDeactivated(DomainEvent):
+    """A person was set inactive or archived. Extra payload: ``cascade`` (ids of rows whose manager/lead link was cleared)."""
+
+
+class PersonLinked(DomainEvent):
+    """A person was linked to an Identity user. Extra payload: ``fields`` (names copied from Identity)."""
+
+
+class PersonUnlinked(DomainEvent):
+    """A person was unlinked from its Identity user."""
+
+
 RECORD_EVENTS = (
     MasterdataRecordCreated,
     MasterdataRecordUpdated,
@@ -52,4 +64,7 @@ RECORD_EVENTS = (
     MasterdataRecordHardDeleted,
     ContractTransitioned,
     ContractEndDateAdjusted,
+    PersonDeactivated,
+    PersonLinked,
+    PersonUnlinked,
 )

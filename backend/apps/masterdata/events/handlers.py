@@ -18,6 +18,9 @@ _ACTIONS: dict[type[DomainEvent], str] = {
     records.MasterdataRecordHardDeleted: "delete",
     records.ContractTransitioned: "update",
     records.ContractEndDateAdjusted: "update",
+    records.PersonDeactivated: "update",
+    records.PersonLinked: "update",
+    records.PersonUnlinked: "update",
 }
 _VERBS: dict[type[DomainEvent], str] = {
     records.MasterdataRecordCreated: "created",
@@ -28,6 +31,9 @@ _VERBS: dict[type[DomainEvent], str] = {
     records.MasterdataRecordHardDeleted: "permanently deleted",
     records.ContractTransitioned: "changed state",
     records.ContractEndDateAdjusted: "had its end date adjusted",
+    records.PersonDeactivated: "deactivated",
+    records.PersonLinked: "linked to a user",
+    records.PersonUnlinked: "unlinked from its user",
 }
 
 

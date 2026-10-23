@@ -66,7 +66,7 @@ Decisions recorded 2026-10-23 in `DECISIONS.md` (D8 hybrid overlap, D9 alias, D1
 
 Commit: `masterdata(phase-5): clients and vendors`.
 
-## Phase 6 — Organizational structure and people (scope per [D-Q1])
+## Phase 6 — Organizational structure and people (**IMPLEMENTED, awaiting approval**; scope global per D1; see DECISIONS "Phase 6 decisions" and "Phase 6 implementation notes")
 
 | WP | Work | Closes | Depends on | MVP |
 |---|---|---|---|---|

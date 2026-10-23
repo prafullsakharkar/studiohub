@@ -274,35 +274,37 @@ Extra tests: date check (400, plus a DB constraint test); each legal and illegal
 
 | ID | Contract | Status |
 |---|---|---|
-| DOM-MD-DEP-01 | `parent` is not self (check constraint `parent_id <> id`) | TARGET (CURRENT: accepted, P04) |
-| DOM-MD-DEP-02 | No cycles; depth ≤ 6 levels. Checked in the service under `select_for_update` of the moved row's ancestors. | TARGET (the depth limit is a PROPOSED value) |
-| DOM-MD-DEP-03 | `parent` and `manager` must be live rows | TARGET |
-| DOM-MD-DEP-04 | Soft delete refused while child departments, teams, positions, persons or external references (`production.Asset.department`, `scheduling.Resource.department`) are live | PROPOSED D6 (CURRENT: allowed, leaves dangling rows, P07) |
-| DOM-MD-DEP-05 | Computed, read-only: `utilization_percentage` and `capacity_hours_weekly` (D11; the week definition needs sign-off) | DECIDED D11 / mapping PROPOSED |
+| DOM-MD-DEP-01 | `parent` is not self (check constraint `parent_id <> id`) | **IMPLEMENTED (Phase 6)** (constraint `masterdata_department_parent_not_self`) |
+| DOM-MD-DEP-02 | No cycles; depth ≤ 6 levels. Checked in the service (a walk up the ancestors, and the subtree height for a move). | **IMPLEMENTED (Phase 6)**, limit 6 APPROVED. The walk runs under a PostgreSQL advisory lock taken before any row lock; a subtree move counts the subtree's height. |
+| DOM-MD-DEP-03 | `parent` and `manager` must be live rows | **IMPLEMENTED (Phase 6)** (a row also cannot be restored under a deleted parent or manager) |
+| DOM-MD-DEP-04 | Soft delete refused while child departments, teams, positions, persons or external references (`production.Asset.department`, `scheduling.Resource.department`) are live | **IMPLEMENTED (Phase 6)**: any live row pointing at it blocks the delete (409 `has_dependants`), including other apps' rows |
+| DOM-MD-DEP-05 | Computed, read-only: `utilization_percentage` and `capacity_hours_weekly` (D11; the week definition needs sign-off) | **DECIDED (Phase 6, 2026-10-23): omitted from the API, columns kept**; they return only through a selector that Scheduling exposes (DECISIONS "Phase 6 decisions" 1) |
 
 API: CURRENT `departments/` (+ `restore`, `?hard=true`). Filters `department_type, parent`. Service: `DepartmentService.create/update/move(*, actor, department, new_parent)/soft_delete/restore/hard_delete`.
 
 ### 5.2 Team (DOM-MD-TEAM)
 
-- **DOM-MD-TEAM-01:** `department` is required and must be live.
+- **DOM-MD-TEAM-01:** `department` is required and must be live. **IMPLEMENTED (Phase 6)**, as are TEAM-02 and TEAM-03.
 - **DOM-MD-TEAM-02:** `lead` must be a live Person.
 - **DOM-MD-TEAM-03:** soft delete is refused while persons, `production.Asset/Task.team` or `scheduling.Resource.team` reference the team (409 `has_dependants`).
-- **DOM-MD-TEAM-04:** `utilization_percentage` is computed (D11). `capacity` and `current_project_code` stay inputs unless D11-OPEN decides otherwise.
+- **DOM-MD-TEAM-04:** `utilization_percentage` is **omitted from the API** (same decision as DEP-05). `capacity` and `current_project_code` stay inputs unless D11-OPEN decides otherwise.
 
 API: CURRENT `teams/`.
 
 ### 5.3 Office (DOM-MD-OFF)
 
+- **IMPLEMENTED (Phase 6)**: OFF-01 to OFF-05.
 - **DOM-MD-OFF-01:** `is_active` means "office operating" and is **not** deletion; deletion is soft delete (D6).
 - **DOM-MD-OFF-02:** at most one live `is_headquarters=True` (partial unique; setting a new HQ clears the old one).
 - **DOM-MD-OFF-03:** `timezone` must be an IANA name (`zoneinfo.available_timezones()`).
-- **DOM-MD-OFF-04:** `headcount` is computed (D11). `workstations_count` and `render_nodes_count` stay inputs unless D11-OPEN decides otherwise.
+- **DOM-MD-OFF-04:** `headcount` is computed from live, active people (read-only; the stored column is unused). `workstations_count` and `render_nodes_count` stay inputs unless D11-OPEN decides otherwise.
 - **DOM-MD-OFF-05:** soft delete is refused while live persons reference the office.
 
 API: CURRENT `offices/`.
 
 ### 5.4 Position (DOM-MD-POS)
 
+- **IMPLEMENTED (Phase 6)**: POS-01 to POS-03 and POS-05; POS-04 was done in Phase 5.
 - **DOM-MD-POS-01:** no self-parent, no cycles, depth ≤ 6.
 - **DOM-MD-POS-02:** `level` ≥ 1.
 - **DOM-MD-POS-03:** `department` is optional and must be live when set.
@@ -316,16 +318,16 @@ API: CURRENT `positions/`.
 | ID | Contract | Status |
 |---|---|---|
 | DOM-MD-PER-01 | At most one Person per User (CURRENT `UniqueConstraint(user)`, `apps/masterdata/models/person.py:114-119`) | CURRENT |
-| DOM-MD-PER-02 | `user` is read-only in the API. It is changed only by `POST people/<uuid>/link-user {"user": uuid}` and `POST people/<uuid>/unlink-user`, which require `masterdata.directory.manage`. Linking a user already linked elsewhere → 409 `conflict`; an inactive or deleted user → 400. | PROPOSED D4 (CURRENT: freely writable) |
-| DOM-MD-PER-03 | When linked, `email` and `name` are owned by Identity (`User.email`; `Profile.display_name`, else first + last name). They are copied on link and refreshed after commit on every `User`/`Profile` save; they are read-only through the person API (400 if sent with a different value). | PROPOSED D4 |
+| DOM-MD-PER-02 | `user` is read-only in the API. It is changed only by `POST people/<uuid>/link-user {"user": uuid}` and `POST people/<uuid>/unlink-user`, which require `masterdata.directory.manage`. Linking a user already linked elsewhere → 409 `conflict`; an inactive or deleted user → 400. | **IMPLEMENTED (Phase 6), D4 APPROVED.** Linking an inactive/unknown user → 400; a person already linked, or a user already linked to a live person → 409 `conflict`; an e-mail already used by another person → 409 `conflict`. |
+| DOM-MD-PER-03 | When linked, `email` and `name` are owned by Identity (`User.email`; `Profile.display_name`, else first + last name). They are copied on link and refreshed after commit on every `User`/`Profile` save; they are read-only through the person API (400 if sent with a different value). | **IMPLEMENTED (Phase 6).** A queryset update, so no ChangeLog row and no signal loop; a refresh that would duplicate another person's e-mail is skipped and logged. |
 | DOM-MD-PER-04 | No authentication data on Person (passwords, MFA, sessions, tokens) | CURRENT (none present) |
-| DOM-MD-PER-05 | `status` uses core `LifecycleStatus` (`draft, active, inactive, archived`; `apps/core/choices/lifecycle.py:9-20`). Deactivation is `status=inactive`; deletion is soft delete. | CURRENT field; transitions TARGET |
-| DOM-MD-PER-06 | `department`, `team`, `office`, `role` (a Position) must be live rows. If both are set, `team.department` must equal `department`. | TARGET |
-| DOM-MD-PER-07 | `email` lower-cased; unique case-insensitively among live persons when non-blank | PROPOSED |
-| DOM-MD-PER-08 | Sensitive fields (SEC-MD-02) are deferred. **Never logged or snapshotted** (SEC-MD-03) | SEC-MD-03 TARGET |
-| DOM-MD-PER-09 | A Person is deactivated or soft-deleted even when departments, teams or offices name them as manager or lead; those links are `SET_NULL` on hard delete only, and the deactivation response lists the affected rows in a `warnings` key | PROPOSED |
+| DOM-MD-PER-05 | `status` uses core `LifecycleStatus` (`draft, active, inactive, archived`; `apps/core/choices/lifecycle.py:9-20`). Deactivation is `status=inactive`; deletion is soft delete. | **IMPLEMENTED (Phase 6)**: `deactivate` / `reactivate` actions, or `status` through PATCH |
+| DOM-MD-PER-06 | `department`, `team`, `office`, `role` (a Position) must be live rows. If both are set, `team.department` must equal `department`. | **IMPLEMENTED (Phase 6)** |
+| DOM-MD-PER-07 | `email` lower-cased; unique case-insensitively among live persons when non-blank | **IMPLEMENTED (Phase 6)** (partial unique `masterdata_person_uq_email_ci`) |
+| DOM-MD-PER-08 | Sensitive fields (SEC-MD-02) are deferred. **Never logged or snapshotted** (SEC-MD-03) | **IMPLEMENTED (Phases 5 and 6)** |
+| DOM-MD-PER-09 | A Person is deactivated or soft-deleted even when departments, teams or offices name them as manager or lead; the manager/lead links naming them are cleared in the same transaction and listed in a `warnings` key of the `deactivate` / PATCH-status response (`{model, id, field}`); a DELETE answers 204 with no body, so for it the cleared ids are only in the audit event | **IMPLEMENTED (Phase 6), APPROVED 2026-10-23** |
 
-API: CURRENT `people/` (+ `link-user`, `unlink-user`, `restore`, `?hard=true`). Filters `status, department, team, office`. Service: `PersonService.create/update/link_user/unlink_user/deactivate/reactivate/soft_delete/restore/hard_delete`.
+API: `people/` (+ `link-user`, `unlink-user`, `deactivate`, `reactivate`, `restore`, `?hard=true`). Filters `status, department, team, office`. Service: `PersonService.create/update/link_user/unlink_user/deactivate/reactivate/soft_delete/restore/hard_delete`.
 Extra tests: link integrity (one person per user; a second link gets 409); email follows the User; a client cannot set `user` through PATCH; deactivating a person who is a department manager; IDOR (a write without the grant gets 403; reads open per the D4 deferral).
 
 ---

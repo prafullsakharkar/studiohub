@@ -56,6 +56,13 @@ class DirectoryService[T: PlatformScopedModel]:
         return {}
 
     @classmethod
+    def serialize_writes(cls) -> None:
+        """Take any model-wide lock first, before a row lock (lock order: model, then rows).
+
+        Taking it after a row lock can deadlock two writers that each hold a row the other needs.
+        """
+
+    @classmethod
     def lock_parent(cls, parent: Any) -> Any:
         """Lock the parent row for the length of a create; return the fresh row."""
         return parent
@@ -154,6 +161,7 @@ class DirectoryService[T: PlatformScopedModel]:
     @classmethod
     def create(cls, *, actor: Any, data: Mapping[str, Any], parent: Any = None) -> T:
         with transaction.atomic():
+            cls.serialize_writes()
             parent = cls.lock_parent(parent)
             data, extra = cls.prepare_create(data, parent)
             values = cls._clean(data, creating=True)
@@ -168,6 +176,7 @@ class DirectoryService[T: PlatformScopedModel]:
     @classmethod
     def update(cls, *, actor: Any, instance: T, data: Mapping[str, Any]) -> T:
         with transaction.atomic():
+            cls.serialize_writes()
             instance = cls._lock(instance)
             values = cls._clean(data, creating=False)
             changed = sorted(k for k, val in values.items() if getattr(instance, k) != val)

@@ -28,44 +28,67 @@ from apps.masterdata.models import (
 )
 
 
-class DepartmentSelector(BaseSelector):
+class _DirectorySelector(BaseSelector):
+    """Live rows for reads; ``with_deleted`` for restore and hard delete only."""
+
+    @classmethod
+    def _build(cls, manager) -> QuerySet[Any]:
+        return manager.all()
+
+    @classmethod
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any]:
+        return cls._build(cls.model.objects)  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
+
+    @classmethod
+    def with_deleted(cls) -> QuerySet[Any]:
+        return cls._build(cls.model.all_objects)  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
+
+
+class DepartmentSelector(_DirectorySelector):
     model = Department
 
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Department]:
-        return Department.objects.select_related("parent", "manager").all()
+    def _build(cls, manager) -> QuerySet[Any]:
+        return manager.select_related("parent", "manager")
 
 
-class TeamSelector(BaseSelector):
+class TeamSelector(_DirectorySelector):
     model = Team
 
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Team]:
-        return Team.objects.select_related("department", "lead").all()
+    def _build(cls, manager) -> QuerySet[Any]:
+        return manager.select_related("department", "lead")
 
 
-class OfficeSelector(BaseSelector):
+class OfficeSelector(_DirectorySelector):
     model = Office
 
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Office]:
-        return Office.objects.select_related("manager").all()
+    def _build(cls, manager) -> QuerySet[Any]:
+        # ``headcount`` is computed, not read from the stored column (DECISIONS D11).
+        return manager.select_related("manager").annotate(
+            live_headcount=Count(
+                "persons",
+                filter=Q(persons__is_deleted=False, persons__status="active"),
+                distinct=True,
+            )
+        )
 
 
-class PositionSelector(BaseSelector):
+class PositionSelector(_DirectorySelector):
     model = Position
 
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Position]:
-        return Position.objects.select_related("department", "parent").all()
+    def _build(cls, manager) -> QuerySet[Any]:
+        return manager.select_related("department", "parent")
 
 
-class PersonSelector(BaseSelector):
+class PersonSelector(_DirectorySelector):
     model = Person
 
     @classmethod
-    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Person]:
-        return Person.objects.select_related("user", "role", "department", "team", "office").all()
+    def _build(cls, manager) -> QuerySet[Any]:
+        return manager.select_related("user", "role", "department", "team", "office")
 
 
 class _PartnerSelector(BaseSelector):

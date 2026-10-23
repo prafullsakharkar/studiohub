@@ -9,14 +9,19 @@ from apps.masterdata.models import (
     Client,
     ClientContact,
     ClientContract,
+    Department,
     MasterAssetType,
     MasterFileType,
     MasterReviewType,
     MasterShotType,
     MasterStatus,
     MasterTaskType,
+    Office,
+    Person,
+    Position,
     Software,
     SoftwareVersion,
+    Team,
     Vendor,
     VendorContact,
     VendorContract,
@@ -139,3 +144,48 @@ class VendorContractFactory(DjangoModelFactory):  # pyright: ignore[reportMissin
     title = factory.Sequence(lambda n: f"Vendor contract {n}")
     type = "SOW"
     status = "Draft"
+
+
+class DepartmentFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = Department
+
+    code = factory.Sequence(lambda n: f"DEP{n}")
+    name = factory.Sequence(lambda n: f"Department {n}")
+    department_type = "creative"
+
+
+class TeamFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = Team
+
+    code = factory.Sequence(lambda n: f"TM{n}")
+    name = factory.Sequence(lambda n: f"Team {n}")
+    department = factory.SubFactory(DepartmentFactory)
+
+
+class OfficeFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = Office
+
+    code = factory.Sequence(lambda n: f"OF{n}")
+    name = factory.Sequence(lambda n: f"Office {n}")
+    office_type = "studio"
+    timezone = "Europe/London"
+    country = "UK"
+    city = "London"
+
+
+class PositionFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = Position
+
+    code = factory.Sequence(lambda n: f"POS{n}")
+    name = factory.Sequence(lambda n: f"Position {n}")
+
+
+class PersonFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = Person
+
+    name = factory.Sequence(lambda n: f"Person {n}")
