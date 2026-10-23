@@ -241,13 +241,14 @@ class Command(BaseCommand):
 
     def _upsert_catalog(self, reporter, entity, model, lookup, defaults):
         """Restore-aware upsert that reports, instead of crashing on, a row
-        that clashes with the case-insensitive code/name constraints.
+        that violates the catalog constraints (case-insensitive code/name,
+        version per software, end of support before release).
         Returns True/False for created/updated, or None when skipped."""
         try:
             with transaction.atomic():
                 _, created = _update_or_create(model, defaults=defaults, **lookup)
         except IntegrityError:
-            reporter.note(entity, f"skipped {lookup}: code/name clashes with an existing row")
+            reporter.note(entity, f"skipped {lookup}: violates a catalog constraint (duplicate code/name/version or bad dates)")
             reporter.add(entity, "skipped")
             return None
         reporter.add(entity, "created" if created else "updated")
@@ -287,30 +288,30 @@ class Command(BaseCommand):
                 software = Software.objects.filter(
                     code=software_by_mock_id.get(item.get("software_id"), "")
                 ).first()
-                # CatalogModel.code is globally unique; mock versions carry no
-                # code, so the unique version_code doubles as the row code.
-                if software is None or not item.get("version") or not item.get("version_code"):
+                if software is None or not item.get("version"):
                     reporter.add("masterdata_versions", "skipped")
                     continue
-                release = self._parse_date(item.get("release_date"))
-                end_of_support = self._parse_date(item.get("end_of_support"))
-                _, created = _update_or_create(
+                version = item["version"]
+                created = self._upsert_catalog(
+                    reporter,
+                    "masterdata_versions",
                     SoftwareVersion,
-                    code=item["version_code"],
-                    defaults={
-                        "software": software,
-                        "version": item["version"],
+                    {"software": software, "version": version},
+                    {
+                        # Code and name are unique per software; the mock
+                        # carries neither, so derive them from software + version.
+                        "code": item.get("version_code") or f"{software.code}-{version}",
+                        "name": item.get("name") or f"{software.name} {version}",
                         "version_code": item.get("version_code", ""),
-                        "release_date": release,
-                        "end_of_support": end_of_support,
-                        "status": item.get("status", "active"),
+                        "release_date": self._parse_date(item.get("release_date")),
+                        "end_of_support": self._parse_date(item.get("end_of_support")),
+                        "status": _catalog_status(item.get("status")),
                         "scope": item.get("scope", "GLOBAL"),
                         "metadata": item.get("metadata") or {},
                     },
                 )
-                reporter.add("masterdata_versions", "created" if created else "updated")
-                if item.get("id"):
-                    version_by_mock_id[item["id"]] = (software, item["version"])
+                if created is not None and item.get("id"):
+                    version_by_mock_id[item["id"]] = (software, version)
 
         status_by_mock_id = {}
         for item in _load_ts_mock_array(path, "mockMasterStatuses"):
@@ -350,40 +351,60 @@ class Command(BaseCommand):
         # File types carry no `code` in the mock — derive it deterministically
         # from the (unique) extension.
         type_jobs = [
-            ("mockMasterTaskTypes", MasterTaskType, "masterdata_tasktypes",
-             lambda item: item.get("code", ""),
-             lambda item: {
-                 "category": item.get("category", ""),
-                 "department_code": item.get("department_code", ""),
-                 "department_name": item.get("department_name", ""),
-                 "color": item.get("color", ""),
-                 "icon": item.get("icon", ""),
-             }),
-            ("mockMasterAssetTypes", MasterAssetType, "masterdata_assettypes",
-             lambda item: item.get("code", ""),
-             lambda item: {
-                 "color": item.get("color", ""),
-                 "icon": item.get("icon", ""),
-             }),
-            ("mockMasterShotTypes", MasterShotType, "masterdata_shottypes",
-             lambda item: item.get("code", ""),
-             lambda item: {
-                 "default_handle_frames": item.get("default_handle_frames"),
-             }),
-            ("mockMasterReviewTypes", MasterReviewType, "masterdata_reviewtypes",
-             lambda item: item.get("code", ""),
-             lambda item: {
-                 "allow_verdicts": item.get("allow_verdicts", True),
-                 "require_notes": bool(item.get("require_notes", False)),
-             }),
-            ("mockMasterFileTypes", MasterFileType, "masterdata_filetypes",
-             lambda item: (item.get("extension") or "").lstrip(".").lower(),
-             lambda item: {
-                 "extension": item.get("extension", ""),
-                 "mime_type": item.get("mime_type", ""),
-                 "category": item.get("category", ""),
-                 "dcc_affinity": item.get("dcc_affinity", ""),
-             }),
+            (
+                "mockMasterTaskTypes",
+                MasterTaskType,
+                "masterdata_tasktypes",
+                lambda item: item.get("code", ""),
+                lambda item: {
+                    "category": item.get("category", ""),
+                    "department_code": item.get("department_code", ""),
+                    "department_name": item.get("department_name", ""),
+                    "color": item.get("color", ""),
+                    "icon": item.get("icon", ""),
+                },
+            ),
+            (
+                "mockMasterAssetTypes",
+                MasterAssetType,
+                "masterdata_assettypes",
+                lambda item: item.get("code", ""),
+                lambda item: {
+                    "color": item.get("color", ""),
+                    "icon": item.get("icon", ""),
+                },
+            ),
+            (
+                "mockMasterShotTypes",
+                MasterShotType,
+                "masterdata_shottypes",
+                lambda item: item.get("code", ""),
+                lambda item: {
+                    "default_handle_frames": item.get("default_handle_frames"),
+                },
+            ),
+            (
+                "mockMasterReviewTypes",
+                MasterReviewType,
+                "masterdata_reviewtypes",
+                lambda item: item.get("code", ""),
+                lambda item: {
+                    "allow_verdicts": item.get("allow_verdicts", True),
+                    "require_notes": bool(item.get("require_notes", False)),
+                },
+            ),
+            (
+                "mockMasterFileTypes",
+                MasterFileType,
+                "masterdata_filetypes",
+                lambda item: (item.get("extension") or "").lstrip(".").lower(),
+                lambda item: {
+                    "extension": item.get("extension", ""),
+                    "mime_type": item.get("mime_type", ""),
+                    "category": item.get("category", ""),
+                    "dcc_affinity": item.get("dcc_affinity", ""),
+                },
+            ),
         ]
         type_by_mock_id: dict[str, str] = {}
         for var, model, entity, code_fn, extra in type_jobs:
@@ -521,7 +542,9 @@ class Command(BaseCommand):
         # No API serves runs/templates — report, don't invent storage.
         if _load_ts_mock_array(mock_root / "intelligence" / "automations.ts", "mockAutomationRuns"):
             reporter.note("automation_runs", "mock-only dataset, no endpoint — not seeded")
-        if _load_ts_mock_array(mock_root / "intelligence" / "automations.ts", "mockAutomationTemplates"):
+        if _load_ts_mock_array(
+            mock_root / "intelligence" / "automations.ts", "mockAutomationTemplates"
+        ):
             reporter.note("automation_templates", "mock-only dataset, no endpoint — not seeded")
 
     def _seed_software(self, item, reporter):
@@ -530,23 +553,24 @@ class Command(BaseCommand):
         if not item.get("code"):
             reporter.add("masterdata_software", "skipped")
             return False
-        _, created = _update_or_create(
+        created = self._upsert_catalog(
+            reporter,
+            "masterdata_software",
             Software,
-            code=item["code"],
-            defaults={
+            {"code": item["code"]},
+            {
                 "name": item.get("name", item["code"]),
                 "publisher": item.get("publisher", ""),
                 "category": item.get("category", ""),
                 "description": item.get("description", ""),
                 "website": item.get("website", ""),
-                "status": item.get("status", "active"),
+                "status": _catalog_status(item.get("status")),
                 "scope": item.get("scope", "GLOBAL"),
                 "is_system": bool(item.get("is_system", False)),
                 "metadata": item.get("metadata") or {},
             },
         )
-        reporter.add("masterdata_software", "created" if created else "updated")
-        return True
+        return created is not None
 
     # ------------------------------------------------------------------
     # Phase: scheduling (db/production/scheduling.ts)
@@ -651,8 +675,7 @@ class Command(BaseCommand):
                 reporter.add("scheduling_leaves", "skipped")
                 reporter.note(
                     "scheduling_leaves",
-                    f"leave {item.get('id')}: no resource for "
-                    f"{item.get('resource_name')!r}",
+                    f"leave {item.get('id')}: no resource for {item.get('resource_name')!r}",
                 )
                 continue
             leave_type = LEAVE_TYPE_MAP.get(item.get("leave_type", ""), "Other")

@@ -38,7 +38,7 @@ from apps.masterdata.services.lifecycle import refuse_dependants, refuse_system_
 from apps.masterdata.validators import catalog as v
 
 
-def _actor_or_none(actor):
+def actor_or_none(actor):
     return (
         actor if getattr(actor, "pk", None) and getattr(actor, "is_authenticated", True) else None
     )
@@ -52,6 +52,8 @@ class CatalogService[CatalogT: LookupCatalogModel]:
     #: Fields a caller may set. ``code`` and ``name`` are always handled here.
     extra_fields: ClassVar[tuple[str, ...]] = ()
     order_field: ClassVar[str] = "sort_order"
+    #: Fields that must be unique (case-insensitively) among live rows.
+    unique_fields: ClassVar[tuple[str, ...]] = ("code", "name")
 
     # ---- hooks ---------------------------------------------------------
 
@@ -73,6 +75,33 @@ class CatalogService[CatalogT: LookupCatalogModel]:
     @classmethod
     def before_save(cls, instance, *, creating: bool) -> None:
         """Last-moment, in-transaction adjustments (statuses: single default)."""
+
+    @classmethod
+    def lock_parent(cls, parent: Any) -> Any:
+        """Lock the parent row for the length of a create (versions: their software).
+
+        Serializes the create with a concurrent delete or archive of the
+        parent, so no live child can appear under a deleted parent.
+        """
+        return parent
+
+    @classmethod
+    def prepare_create(
+        cls, data: Mapping[str, Any], parent: Any
+    ) -> tuple[Mapping[str, Any], dict[str, Any]]:
+        """Adapt input for a create that belongs to a ``parent`` (versions).
+
+        Returns the data to validate and extra model kwargs (the parent FK).
+        """
+        return data, {}
+
+    @classmethod
+    def after_undelete(cls, instance, deleted_at) -> list[str]:
+        """Restore rows that were deleted together with ``instance``.
+
+        Returns their ids for the audit event.
+        """
+        return []
 
     # ---- helpers -------------------------------------------------------
 
@@ -100,7 +129,7 @@ class CatalogService[CatalogT: LookupCatalogModel]:
             id=str(instance.pk),
             code=instance.code,
             name=instance.name,
-            actor_id=str(actor.pk) if _actor_or_none(actor) else None,
+            actor_id=str(actor.pk) if actor_or_none(actor) else None,
             **extra,
         )
 
@@ -148,8 +177,9 @@ class CatalogService[CatalogT: LookupCatalogModel]:
         if scope:
             qs = qs.filter(**scope)
         errors: dict[str, list[str]] = {}
-        for field in ("code", "name"):
-            if field in values and qs.filter(**{f"{field}__iexact": values[field]}).exists():
+        for field in cls.unique_fields:
+            value = values.get(field)
+            if value and qs.filter(**{f"{field}__iexact": value}).exists():
                 errors[field] = [f"A {cls.label.lower()} with this {field} already exists."]
         if errors:
             raise ValidationError(errors)
@@ -157,12 +187,16 @@ class CatalogService[CatalogT: LookupCatalogModel]:
     # ---- operations ----------------------------------------------------
 
     @classmethod
-    def create(cls, *, actor, data: Mapping[str, Any], system: bool = False) -> CatalogT:
-        values = cls._clean(data)
+    def create(
+        cls, *, actor, data: Mapping[str, Any], system: bool = False, parent: Any = None
+    ) -> CatalogT:
         with transaction.atomic():
-            cls._refuse_duplicates(values, scope=cls.duplicate_scope(values))
-            instance = cls.model(**values, is_system=system)
-            who = _actor_or_none(actor)
+            parent = cls.lock_parent(parent)
+            data, extra = cls.prepare_create(data, parent)
+            values = cls._clean(data)
+            cls._refuse_duplicates(values, scope=cls.duplicate_scope({**values, **extra}))
+            instance = cls.model(**values, **extra, is_system=system)
+            who = actor_or_none(actor)
             instance.created_by = instance.updated_by = who
             cls.before_save(instance, creating=True)
             instance.save()
@@ -184,13 +218,13 @@ class CatalogService[CatalogT: LookupCatalogModel]:
             merged = {**cls._current(instance), **values}
             recheck = {
                 field: merged[field]
-                for field in ("code", "name")
+                for field in cls.unique_fields
                 if field in changed or field in cls.scope_keys(changed)
             }
             cls._refuse_duplicates(recheck, instance=instance, scope=cls.duplicate_scope(merged))
             for key in changed:
                 setattr(instance, key, values[key])
-            instance.updated_by = _actor_or_none(actor)
+            instance.updated_by = actor_or_none(actor)
             cls.before_save(instance, creating=False)
             instance.save()
             cls._event(records.MasterdataRecordUpdated, instance, actor, changed=changed)
@@ -198,7 +232,10 @@ class CatalogService[CatalogT: LookupCatalogModel]:
 
     @classmethod
     def _current(cls, instance) -> dict[str, Any]:
-        return {f: getattr(instance, f) for f in ("code", "name", *cls.extra_fields)}
+        return {
+            f: getattr(instance, f)
+            for f in dict.fromkeys(("code", "name", *cls.unique_fields, *cls.extra_fields))
+        }
 
     @classmethod
     def scope_keys(cls, changed: Sequence[str]) -> tuple[str, ...]:
@@ -213,7 +250,7 @@ class CatalogService[CatalogT: LookupCatalogModel]:
             if instance.status == CatalogStatus.ARCHIVED:
                 return instance
             instance.status = CatalogStatus.ARCHIVED
-            instance.updated_by = _actor_or_none(actor)
+            instance.updated_by = actor_or_none(actor)
             instance.save()
             cls._event(records.MasterdataRecordArchived, instance, actor)
         return instance
@@ -225,19 +262,23 @@ class CatalogService[CatalogT: LookupCatalogModel]:
             instance = cls._lock(instance, include_deleted=True)
             if not instance.is_deleted and instance.status == CatalogStatus.ACTIVE:
                 return instance
+            cascade: list[str] = []
             if instance.is_deleted:
+                current = cls._current(instance)
                 cls._refuse_duplicates(
-                    {"code": instance.code, "name": instance.name},
+                    {f: current[f] for f in cls.unique_fields},
                     instance=instance,
-                    scope=cls.duplicate_scope(cls._current(instance)),
+                    scope=cls.duplicate_scope(current),
                 )
+                deleted_at = instance.deleted_at
                 SoftDeleteService.restore(instance)
+                cascade = cls.after_undelete(instance, deleted_at)
             else:
                 instance.status = CatalogStatus.ACTIVE
             cls.before_restore(instance)
-            instance.updated_by = _actor_or_none(actor)
+            instance.updated_by = actor_or_none(actor)
             instance.save()
-            cls._event(records.MasterdataRecordRestored, instance, actor)
+            cls._event(records.MasterdataRecordRestored, instance, actor, cascade=cascade)
         return instance
 
     @classmethod
@@ -250,7 +291,7 @@ class CatalogService[CatalogT: LookupCatalogModel]:
             instance = cls._lock(instance)
             refuse_system_row(instance)
             refuse_dependants(instance)
-            SoftDeleteService.delete(instance, user=_actor_or_none(actor))
+            SoftDeleteService.delete(instance, user=actor_or_none(actor))
             cls._event(records.MasterdataRecordDeleted, instance, actor, cascade=[])
 
     @classmethod
@@ -276,7 +317,7 @@ class CatalogService[CatalogT: LookupCatalogModel]:
                 id=snapshot["id"],
                 code=snapshot["code"],
                 name=snapshot["name"],
-                actor_id=str(actor.pk) if _actor_or_none(actor) else None,
+                actor_id=str(actor.pk) if actor_or_none(actor) else None,
             )
 
     @classmethod
@@ -295,7 +336,7 @@ class CatalogService[CatalogT: LookupCatalogModel]:
             for position, pk in enumerate(ids, start=1):
                 row = rows[pk]
                 setattr(row, cls.order_field, position * 10)
-                row.updated_by = _actor_or_none(actor)
+                row.updated_by = actor_or_none(actor)
                 ordered.append(row)
             cls.model.objects.bulk_update(ordered, [cls.order_field, "updated_by"])
             for row in ordered:
@@ -368,6 +409,7 @@ class MasterFileTypeService(CatalogService[MasterFileType]):
     model = MasterFileType
     label = "File type"
     extra_fields = ("extension", "mime_type", "category", "dcc_affinity", "sort_order")
+    unique_fields = ("code", "name", "extension")
 
     @classmethod
     def derive_code(cls, values):
@@ -380,19 +422,6 @@ class MasterFileTypeService(CatalogService[MasterFileType]):
         if name == "sort_order":
             return v.clean_non_negative_int(value, name)
         return v.clean_text(value, name, required=False, max_length=100)
-
-    @classmethod
-    def _refuse_duplicates(cls, values, *, instance=None, scope=None):
-        super()._refuse_duplicates(values, instance=instance, scope=scope)
-        extension = values.get("extension")
-        if extension:
-            qs = cls._live().filter(extension__iexact=extension)
-            if instance is not None:
-                qs = qs.exclude(pk=instance.pk)
-            if qs.exists():
-                raise ValidationError(
-                    {"extension": ["A file type with this extension already exists."]}
-                )
 
 
 class MasterStatusService(CatalogService[MasterStatus]):

@@ -16,6 +16,7 @@ from __future__ import annotations
 from typing import Any
 
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status
 from rest_framework.decorators import action
@@ -31,9 +32,11 @@ from apps.masterdata.api.serializers.catalog import (
     MasterStatusSerializer,
     MasterTaskTypeSerializer,
     ReorderSerializer,
+    SoftwareSerializer,
+    SoftwareVersionSerializer,
 )
 from apps.masterdata.constants.permissions import MasterdataPermissions
-from apps.masterdata.models import MasterDataScope
+from apps.masterdata.models import MasterDataScope, Software
 from apps.masterdata.permissions import AliasAwareHasPermission
 from apps.masterdata.selectors.catalog import (
     LookupSelector,
@@ -43,6 +46,8 @@ from apps.masterdata.selectors.catalog import (
     MasterShotTypeSelector,
     MasterStatusSelector,
     MasterTaskTypeSelector,
+    SoftwareSelector,
+    SoftwareVersionSelector,
 )
 from apps.masterdata.services.catalog import (
     CatalogService,
@@ -53,6 +58,7 @@ from apps.masterdata.services.catalog import (
     MasterStatusService,
     MasterTaskTypeService,
 )
+from apps.masterdata.services.software import SoftwareService, SoftwareVersionService
 
 _TRUE = {"1", "true", "yes"}
 _FALSE = {"", "0", "false", "no"}
@@ -112,27 +118,37 @@ class LookupCatalogViewSet(
 
     # ---- writes go through the service -----------------------------------
 
+    def present(self, obj):
+        """Return ``obj`` ready for the serializer (software re-reads it annotated)."""
+        return obj
+
+    def create_context(self) -> dict[str, Any]:
+        """Extra service arguments for a create (versions: their software)."""
+        return {}
+
     def perform_create(self, serializer):
-        serializer.instance = self.service_class.create(
-            actor=self.request.user, data=serializer.validated_data
+        created = self.service_class.create(
+            actor=self.request.user, data=serializer.validated_data, **self.create_context()
         )
+        serializer.instance = self.present(created)
 
     def perform_update(self, serializer):
         instance = serializer.instance
         assert instance is not None  # an update always carries the row being updated
-        serializer.instance = self.service_class.update(
+        updated = self.service_class.update(
             actor=self.request.user, instance=instance, data=serializer.validated_data
         )
+        serializer.instance = self.present(updated)
 
     @action(detail=True, methods=["post"], url_path="archive")
     def archive(self, request, *args, **kwargs):
         obj = self.service_class.archive(actor=request.user, instance=self.get_object())
-        return Response({"success": True, "data": self.get_serializer(obj).data})
+        return Response({"success": True, "data": self.get_serializer(self.present(obj)).data})
 
     @action(detail=True, methods=["post"], url_path="restore")
     def restore(self, request, *args, **kwargs):
         obj = self.service_class.restore(actor=request.user, instance=self.get_object())
-        return Response({"success": True, "data": self.get_serializer(obj).data})
+        return Response({"success": True, "data": self.get_serializer(self.present(obj)).data})
 
     def destroy(self, request, *args, **kwargs):
         hard = request.query_params.get("hard", "").strip().lower()
@@ -221,3 +237,59 @@ class MasterFileTypeViewSet(LookupCatalogViewSet):
     search_fields = ["name", "extension"]
     ordering_fields = ["name", "sort_order"]
     ordering = ["sort_order", "name"]
+
+
+class SoftwareViewSet(LookupCatalogViewSet):
+    serializer_class = SoftwareSerializer
+    selector_class = SoftwareSelector
+    service_class: type[SoftwareService] = SoftwareService  # narrower: archive() takes ``cascade``
+    label = "Software"
+    filterset_fields = ["status", "scope", "category"]
+    search_fields = ["name", "code", "publisher"]
+    ordering_fields = ["name", "sort_order", "created_at", "updated_at"]
+    ordering = ["sort_order", "name"]
+
+    def get_queryset(self):
+        # One query for every row's version_count (no per-row count).
+        return SoftwareSelector.annotate_version_count(super().get_queryset())
+
+    def present(self, obj):
+        return self.get_queryset().get(pk=obj.pk)
+
+    @action(detail=True, methods=["post"], url_path="archive")
+    def archive(self, request, *args, **kwargs):
+        """Archive the software and, unless ``?cascade=false``, its active versions."""
+        raw = request.query_params.get("cascade", "true").strip().lower()
+        if raw not in _TRUE | _FALSE:
+            raise DjangoValidationError({"cascade": ["Use cascade=true or cascade=false."]})
+        obj = self.service_class.archive(
+            actor=request.user, instance=self.get_object(), cascade=raw not in _FALSE
+        )
+        data = dict(self.get_serializer(self.present(obj)).data)
+        data["versions_archived"] = getattr(obj, "versions_archived", [])
+        return Response({"success": True, "data": data})
+
+
+class SoftwareVersionViewSet(LookupCatalogViewSet):
+    serializer_class = SoftwareVersionSerializer
+    selector_class = SoftwareVersionSelector
+    service_class = SoftwareVersionService
+    label = "Software version"
+    filterset_fields = ["status", "scope"]
+    search_fields = ["version", "version_code", "name"]
+    ordering_fields = ["version", "release_date", "sort_order"]
+    # Default order comes from the model: newest release first, undated last,
+    # then the natural version order (DOM-MD-SW-06).
+    ordering = None
+
+    def _software(self) -> Software:
+        return get_object_or_404(Software.objects.all(), pk=self.kwargs["software_pk"])
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if getattr(self, "swagger_fake_view", False):
+            return queryset.none()
+        return queryset.filter(software=self._software())
+
+    def create_context(self) -> dict[str, Any]:
+        return {"parent": self._software()}

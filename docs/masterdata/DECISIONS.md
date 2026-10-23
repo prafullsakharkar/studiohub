@@ -248,3 +248,21 @@ What was built, and where it differs from or defers part of the text above.
 9. **Audit target type (needs your call).** Audit rows are written with `target_type="masterdata"`. `AuditLog.TARGET_CHOICES` has no such entry; choices are not enforced at the database, so it works, but the audit admin and filters will not list it. Adding the choice means a migration in `apps/audit`, which D13 does not cover. Say the word and I will do it in a later phase.
 10. **Serializers.** DRF turns the partial single-field unique constraint into a field validator on `entity_type` and ignores its `condition`; the status serializer clears that validator and the service owns uniqueness.
 11. **Not done in Phase 3 (still open):** D8 contract overlap, D11 stored statistics and their open fields, D12, the full-suite run (see D14), and the `ChangeLog` / error-log PII redaction in D13, which belongs to the directory phases.
+
+---
+
+## Phase 4 implementation notes (2026-10-23)
+
+Phase 4 was approved in writing ("approve Phase 4"). It implements `CONTRACTS.md` §3.4 and closes the staging deviation from Phase 3.
+
+1. **D2 completed.** `Software` and `SoftwareVersion` now extend `LookupCatalogModel`. Migration `0006` is reversible. It maps legacy status words, fills **blank** version names and codes (name `<software name> <version>`; code the existing `version_code`, else `<software code>-<version>`), computes the sort key, and then **stops with a listing** if live rows would still violate the new rules: software code or name equal ignoring case; versions with the same code, name or version under one software; an end of support before its release. Nothing is merged or renamed for you.
+2. **Legacy code removed.** `MasterDataCatalogGuard`, `ArchiveRestoreMixin` and the hand-written software viewsets are gone; software and versions run on `LookupCatalogViewSet`. `PlatformMasterDataPermissions` stays for the directory viewsets (Phase 6) and as the alias source; its removal is still Phase 8.
+3. **Behaviour you will notice.**
+   - `DELETE` on software or a version is now a soft delete (previously an archive). Archive is its own action. This is the D6 decision you approved; the existing test was updated to say so.
+   - Archiving a software also archives its active versions unless the caller sends `?cascade=false`.
+   - Creating a version through the API works; before this phase every call returned 409 (AUDIT H5, P01).
+   - A software list no longer issues a query per row (AUDIT M6, P09); a test pins the query count to be the same for 3 and 30 rows.
+4. **Concurrency fix found by the new tests.** A version created while its software was being deleted could land after the delete's cascade and stay live under a deleted software. Creating a version now locks the software row, so the two serialize. A regression test covers it; it failed once before the fix, and 15 manual repeats after the fix all passed (a race cannot be proven absent by a test, only made unlikely to hide).
+5. **Natural version order.** The key is stored in `version_key` and set in `SoftwareVersion.save()`, so ORM writes, seeds and the API all keep it consistent. Letters sort after digits, so `2025` sorts before `2025sp1`.
+6. **Seeds.** `seed_demo_data` now keys versions by `(software, version)`, derives their names and codes, accepts versions without a `version_code`, and reports (does not crash on) a mock row whose end of support precedes its release.
+7. **Not done (still open).** D8, D11 and D12 are unchanged. Versions have no reorder endpoint. Hard-deleting a software means hard-deleting its soft-deleted versions first (PROTECT); a cascading hard delete was not requested. The full test suite has not been run (D14: targeted runs only, by instruction).

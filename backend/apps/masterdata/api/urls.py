@@ -9,11 +9,7 @@ deleted with the org removal plan (they 404 by absence).
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from apps.masterdata.api.viewsets.catalog import (
-    PlatformOverviewViewSet,
-    SoftwareVersionViewSet,
-    SoftwareViewSet,
-)
+from apps.masterdata.api.viewsets.catalog import PlatformOverviewViewSet
 from apps.masterdata.api.viewsets.directory import (
     ClientContactViewSet,
     ClientContractViewSet,
@@ -34,6 +30,8 @@ from apps.masterdata.api.viewsets.lookup import (
     MasterShotTypeViewSet,
     MasterStatusViewSet,
     MasterTaskTypeViewSet,
+    SoftwareVersionViewSet,
+    SoftwareViewSet,
 )
 
 app_name = "masterdata"
@@ -71,6 +69,11 @@ urlpatterns = [
         "platform/master-data/software",
         SoftwareViewSet.as_view({"get": "list", "post": "create"}),
         name="platform-software-list",
+    ),
+    path(
+        "platform/master-data/software/reorder",
+        SoftwareViewSet.as_view({"post": "reorder"}),
+        name="platform-software-reorder",
     ),
     path(
         "platform/master-data/software/<uuid:pk>",

@@ -9,10 +9,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from django.db.models import Count, QuerySet
+from django.db.models import Count, Q, QuerySet
 
 from apps.core.selectors.base import BaseSelector
 from apps.masterdata.models import (
+    CatalogStatus,
     LookupCatalogModel,
     MasterAssetType,
     MasterFileType,
@@ -36,22 +37,21 @@ class LookupSelector(BaseSelector):
         return cls.model.all_objects.all()
 
 
-class SoftwareSelector(BaseSelector):
+class SoftwareSelector(LookupSelector):
     model = Software
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Software]:
-        return Software.objects.prefetch_related("versions")
+        return Software.objects.all()
 
     @classmethod
-    def annotate_version_count(
-        cls, queryset: QuerySet[Software] | None = None
-    ) -> QuerySet[Software]:
-        qs = queryset or cls.get_queryset()
-        return qs.annotate(version_count=Count("versions", distinct=True))
+    def annotate_version_count(cls, queryset: QuerySet[Any]) -> QuerySet[Any]:
+        """``version_count`` = live, non-archived versions, in one query."""
+        counted = Q(versions__is_deleted=False) & ~Q(versions__status=CatalogStatus.ARCHIVED)
+        return queryset.annotate(version_count=Count("versions", filter=counted, distinct=True))
 
 
-class SoftwareVersionSelector(BaseSelector):
+class SoftwareVersionSelector(LookupSelector):
     model = SoftwareVersion
 
     @classmethod

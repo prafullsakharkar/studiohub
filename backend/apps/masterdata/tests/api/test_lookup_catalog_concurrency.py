@@ -119,3 +119,69 @@ class TestConcurrentCreate:
 
         assert all(s in (200, 404) for s in statuses), statuses
         assert MasterTaskType.all_objects.get(pk=row.pk).is_deleted is True
+
+
+@pytest.mark.django_db(transaction=True)
+class TestConcurrentSoftware:
+    def test_the_same_version_created_twice_at_once_has_one_winner(self, manager_user):
+        from apps.masterdata.models import SoftwareVersion
+        from apps.masterdata.tests.factories import SoftwareFactory
+
+        software = SoftwareFactory()
+
+        def create(version):
+            return lambda: (
+                _manager_client(manager_user)
+                .post(
+                    f"{BASE}/software/{software.pk}/versions", {"version": version}, format="json"
+                )
+                .status_code
+            )
+
+        statuses = _race(create("2025A"), create("2025a"))  # differ only by case
+
+        assert all(s in (201, 400, 409) for s in statuses), statuses  # never a 500
+        assert statuses.count(201) == 1, statuses
+        assert SoftwareVersion.objects.filter(software=software).count() == 1
+
+    def test_the_same_software_code_created_twice_at_once_has_one_winner(self, manager_user):
+        from apps.masterdata.models import Software
+
+        def create(name):
+            return lambda: (
+                _manager_client(manager_user)
+                .post(f"{BASE}/software", {"code": "maya", "name": name}, format="json")
+                .status_code
+            )
+
+        statuses = _race(create("Maya"), create("Maya 2"))
+
+        assert all(s in (201, 400, 409) for s in statuses), statuses
+        assert statuses.count(201) == 1, statuses
+        assert Software.objects.filter(code="maya").count() == 1
+
+    def test_deleting_a_software_while_a_version_is_created_leaves_no_orphan(self, manager_user):
+        """A version created at the same instant is either deleted with its software or refused."""
+        from apps.masterdata.models import SoftwareVersion
+        from apps.masterdata.tests.factories import SoftwareFactory
+
+        software = SoftwareFactory()
+
+        def delete():
+            return (
+                _manager_client(manager_user).delete(f"{BASE}/software/{software.pk}").status_code
+            )
+
+        def create():
+            return (
+                _manager_client(manager_user)
+                .post(f"{BASE}/software/{software.pk}/versions", {"version": "1"}, format="json")
+                .status_code
+            )
+
+        statuses = _race(delete, create)
+
+        assert all(s < 500 for s in statuses), statuses
+        live_versions = SoftwareVersion.objects.filter(software=software).count()
+        # Whatever the order, a live version never survives under a deleted software.
+        assert live_versions == 0

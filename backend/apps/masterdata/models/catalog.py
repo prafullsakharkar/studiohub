@@ -4,35 +4,35 @@ Platform catalog models (software, statuses, types).
 
 from __future__ import annotations
 
+from datetime import date
+
 from django.db import models
 from django.db.models.functions import Lower
 from django.utils.translation import gettext_lazy as _
 
-from apps.masterdata.models.base import CatalogModel, CatalogStatus, LookupCatalogModel
+from apps.masterdata.models.base import CatalogStatus, LookupCatalogModel
+from apps.masterdata.versioning import KEY_MAX_LENGTH, natural_version_key
 
 
-class Software(CatalogModel):
+class Software(LookupCatalogModel):
     """DCC software / tool catalog entry."""
 
     publisher = models.CharField(_("Publisher"), max_length=255, blank=True, default="")
     category = models.CharField(_("Category"), max_length=100, blank=True, default="")
     website = models.URLField(_("Website"), blank=True, default="")
-    is_system = models.BooleanField(_("Is system"), default=False)
 
-    class Meta:
+    class Meta(LookupCatalogModel.Meta):
         db_table = "masterdata_software"
 
-    @property
-    def version_count(self):
-        return self.versions.exclude(status__iexact="archived").count()
 
+class SoftwareVersion(LookupCatalogModel):
+    """Version of a catalog software entry (DOM-MD-SW)."""
 
-class SoftwareVersion(CatalogModel):
-    """Version of a catalog software entry."""
-
+    # PROTECT: a hard delete of a software with versions is refused; a soft
+    # delete cascades to its versions in the service.
     software = models.ForeignKey(
         Software,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="versions",
         db_index=True,
     )
@@ -40,18 +40,74 @@ class SoftwareVersion(CatalogModel):
     version_code = models.CharField(_("Version code"), max_length=100, blank=True, default="")
     release_date = models.DateField(_("Release date"), null=True, blank=True)
     end_of_support = models.DateField(_("End of support"), null=True, blank=True)
+    # Derived from ``version`` on save; lets the database sort 10 after 9.
+    version_key = models.CharField(
+        _("Version sort key"),
+        max_length=KEY_MAX_LENGTH,
+        blank=True,
+        default="",
+        editable=False,
+        db_index=True,
+    )
 
-    class Meta:
+    class Meta(LookupCatalogModel.Meta):
         db_table = "masterdata_software_version"
-        constraints = [
-            models.UniqueConstraint(
-                fields=["software", "version"],
-                name="uq_software_version_per_software",
-            ),
-        ]
+        # Newest release first, undated last, then the natural version order.
+        ordering = (
+            models.F("release_date").desc(nulls_last=True),
+            "-version_key",
+            "version",
+        )
         indexes = [
             models.Index(fields=["software", "status"]),
         ]
+        # Code, name and version are unique *per software*, not globally.
+        constraints = [
+            models.UniqueConstraint(
+                models.F("software"),
+                Lower("code"),
+                condition=models.Q(is_deleted=False),
+                name="masterdata_softwareversion_uq_code_ci",
+            ),
+            models.UniqueConstraint(
+                models.F("software"),
+                Lower("name"),
+                condition=models.Q(is_deleted=False),
+                name="masterdata_softwareversion_uq_name_ci",
+            ),
+            models.UniqueConstraint(
+                models.F("software"),
+                Lower("version"),
+                condition=models.Q(is_deleted=False),
+                name="masterdata_softwareversion_uq_version_ci",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(status__in=CatalogStatus.values),
+                name="masterdata_softwareversion_status_valid",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(end_of_support__isnull=True)
+                    | models.Q(release_date__isnull=True)
+                    | models.Q(end_of_support__gte=models.F("release_date"))
+                ),
+                name="masterdata_softwareversion_support_after_release",
+            ),
+        ]
+
+    def save(self, *args, **kwargs):
+        self.version_key = natural_version_key(self.version)
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None and "version" in update_fields:
+            kwargs["update_fields"] = {*update_fields, "version_key"}
+        super().save(*args, **kwargs)
+
+    @property
+    def is_deprecated(self) -> bool:
+        """Archived, or past its end of support (DOM-MD-SW-05)."""
+        if self.status == CatalogStatus.ARCHIVED:
+            return True
+        return self.end_of_support is not None and self.end_of_support < date.today()
 
 
 class StatusEntityType(models.TextChoices):

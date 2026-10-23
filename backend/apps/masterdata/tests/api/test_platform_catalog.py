@@ -95,7 +95,10 @@ def test_platform_software_archive_and_restore(staff_user, staff_client):
     assert restore.json()["data"]["status"] == "active"
 
 
-def test_platform_software_delete_returns_success_message(staff_user, staff_client):
+def test_platform_software_delete_is_a_soft_delete_with_the_success_message(
+    staff_user, staff_client
+):
+    """DELETE soft-deletes (approved 2026-10-23); it no longer archives the row."""
     grant_permissions(staff_user, "platform.master_data.configure")
     software = Software.objects.create(
         name="Maya",
@@ -106,9 +109,9 @@ def test_platform_software_delete_returns_success_message(staff_user, staff_clie
     resp = staff_client.delete(f"/api/v1/platform/master-data/software/{software.id}")
 
     assert resp.status_code == 200
-    assert resp.json() == {"success": True, "message": "Software archived."}
-    software.refresh_from_db()
-    assert software.status == "archived"
+    assert resp.json() == {"success": True, "message": "Software deleted."}
+    row = Software.all_objects.get(pk=software.pk)
+    assert row.is_deleted is True and row.status == "active"
 
 
 def test_platform_overview(auth_client):

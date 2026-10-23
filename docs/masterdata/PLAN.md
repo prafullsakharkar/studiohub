@@ -40,6 +40,8 @@ Commit: `masterdata(phase-3): foundation and lookup catalogs`.
 
 ## Phase 4 — Software (platform-structure scope dropped, see AUDIT §1)
 
+**Status: implemented 2026-10-23** (commit pending approval of the Phase 4 report). See `DECISIONS.md` → "Phase 4 implementation notes".
+
 | WP | Work | Closes | Depends on | MVP |
 |---|---|---|---|---|
 | 4.0 | **Move onto the lookup base.** Switch `Software` / `SoftwareVersion` from `CatalogModel` to `LookupCatalogModel` (migration with the same duplicate pre-check as `0005`), retire the legacy `MasterDataCatalogGuard` and `ArchiveRestoreMixin`, and run the two viewsets on `LookupCatalogViewSet` + services. | — | Phase 3 | MVP |

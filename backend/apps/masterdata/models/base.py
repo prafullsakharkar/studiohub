@@ -83,8 +83,7 @@ class LookupCatalogModel(CatalogModel):
     Adds what the base lacks: case-insensitive uniqueness of ``code`` and
     ``name`` among live rows (so a soft-deleted code can be re-created or
     restored without a clash), an enum ``status``, ``is_system`` and
-    ``sort_order``. Software and its versions still extend ``CatalogModel``
-    and move here in Phase 4.
+    ``sort_order``. Every masterdata catalog extends it.
     """
 
     # Not unique at column level: uniqueness is the partial, case-insensitive

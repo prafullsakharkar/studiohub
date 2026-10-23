@@ -87,7 +87,7 @@ Paths are relative to `backend/` unless they start with `docs/`. Each contract h
 
 **Responsibilities:** a controlled vocabulary that the UI and later the production domain use for types, statuses and tools. No business workflow.
 
-> **Phase 3 status:** this generic contract is implemented for the six type catalogs (statuses, task / asset / shot / review / file types) through `LookupCatalogModel`. `Software` and `SoftwareVersion` (§3.4) still run on the legacy base and API until Phase 4.
+> **Status:** this generic contract is implemented for the six type catalogs (Phase 3) and for software and its versions (Phase 4, §3.4), all through `LookupCatalogModel`.
 
 **Fields** (PROPOSED D2; own fields per type in §3.2–3.4):
 
@@ -192,22 +192,23 @@ Extra tests: the same code for two entity types (201 + 201); a second default un
 | `MasterReviewType` | `allow_verdicts`, `require_notes` | CURRENT |
 | `MasterFileType` | `extension` (lower-cased, no leading dot, unique case-insensitively among live rows), `mime_type` (`type/subtype` or blank), `category`, `dcc_affinity`. **`code` is derived from `extension` by the service when absent** (`EXR` → `exr`), matching the seeder (`apps/core/management/commands/seed_demo_data.py:326-327`). | TARGET; fixes P13 (CURRENT: the second create fails with 409) |
 
-### 3.4 Software and versions (DOM-MD-SW)
+### 3.4 Software and versions (DOM-MD-SW) — **IMPLEMENTED (Phase 4)**
 
 | ID | Contract | Status |
 |---|---|---|
-| DOM-MD-SW-01 | `Software → SoftwareVersion` is `on_delete=PROTECT`. Soft-deleting a software soft-deletes its versions in the same transaction; restoring it restores the versions deleted with it (same `deleted_at`). | TARGET (CURRENT: CASCADE, `apps/masterdata/models/catalog.py:34`) |
-| DOM-MD-SW-02 | A version is created only under its software: `software` comes from the URL (`software_pk`), never the body | TARGET; fixes H5 (CURRENT: always 409, P01) |
-| DOM-MD-SW-03 | Unique `(software, Lower(version))` among non-deleted rows. A version's `code` is optional; when blank the service derives `<software.code>-<version>`. The global code uniqueness is relaxed to per-software. | PROPOSED D2 (CURRENT: unique `(software, version)`, plus a global `code`) |
-| DOM-MD-SW-04 | `end_of_support ≥ release_date` when both are set (check constraint) | TARGET |
-| DOM-MD-SW-05 | `is_deprecated` (read-only, computed) = `end_of_support` is in the past, or `status=archived` | PROPOSED |
-| DOM-MD-SW-06 | Version ordering: `-release_date`, then a natural version key (numeric components compared numerically; `10` after `9`), then `version` | PROPOSED (CURRENT: lexical) |
-| DOM-MD-SW-07 | `version_count` = number of live, non-archived versions, computed by annotation in one query (no N+1) | TARGET; fixes P09 (`apps/masterdata/selectors/catalog.py:33-35` exists but is unused) |
-| DOM-MD-SW-08 | Archiving a software with live, active versions archives them too (the response lists them in `data.versions_archived`), or the client sends `?cascade=false` to refuse with 409 `has_dependants` | PROPOSED D6 |
+| DOM-MD-SW-01 | `Software → SoftwareVersion` is `on_delete=PROTECT`, so a hard delete of a software is refused (409 `has_dependants`) while any version row, soft-deleted ones included, still exists. A soft delete soft-deletes the software's live versions in the same transaction **with the same `deleted_at`**; a restore brings back exactly the versions carrying that timestamp, so a version deleted earlier on its own stays deleted. | **IMPLEMENTED** |
+| DOM-MD-SW-02 | A version is created only under its software: `software` comes from the URL (`software_pk`), never from the body (a `software` / `software_id` in the body is ignored). The software row is locked for the length of the create, so a version cannot appear under a software that a concurrent request is deleting. An unknown or soft-deleted software → 404. | **IMPLEMENTED**; fixes H5 (P01) |
+| DOM-MD-SW-03 | Unique `(software, Lower(version))`, `(software, Lower(code))` and `(software, Lower(name))` among non-deleted rows; the global code uniqueness is gone. On create, a blank `code` becomes `<software.code>-<version>` and a blank `name` becomes `<software.name> <version>`. | **IMPLEMENTED** |
+| DOM-MD-SW-04 | `end_of_support ≥ release_date` when both are set (DB check constraint, plus a 400 on `end_of_support`) | **IMPLEMENTED** |
+| DOM-MD-SW-05 | `is_deprecated` (read-only, computed) = `status` is `archived`, or `end_of_support` is in the past | **IMPLEMENTED** |
+| DOM-MD-SW-06 | Default version order: newest `release_date` first, **undated last** (a bare DESC sort would put them first), then the natural version key descending, then `version`. The key (`version_key`, derived on save) zero-pads numbers, so `10` sorts after `9`. An explicit `?ordering=` replaces the default. | **IMPLEMENTED** |
+| DOM-MD-SW-07 | `version_count` = live, non-archived versions, computed in the same query as the list (no per-row query) | **IMPLEMENTED**; fixes P09 |
+| DOM-MD-SW-08 | `POST …/software/<id>/archive` archives the software and its **active** versions; the response lists them in `data.versions_archived`. `?cascade=false` refuses with 409 `has_dependants` while any version is active. `?cascade=` other than true/false → 400. Restoring (un-archiving) a software does **not** un-archive its versions. | **IMPLEMENTED** |
 
-Nested API (CURRENT paths, `apps/masterdata/api/urls.py:95-121`): `GET/POST …/software/<uuid>/versions`; `GET/PUT/PATCH/DELETE …/versions/<uuid>`; `POST …/archive`, `…/restore`. A version under a different software in the URL → 404.
-Service: `SoftwareVersionService(CatalogService[SoftwareVersion])` with `create(*, actor, software: Software, data)`.
-Extra tests: a duplicate version is rejected case-insensitively; create through the nested URL works (201); a software id mismatch returns 404; deprecation; query count is constant in the number of rows; cascade soft delete and restore.
+Nested API (paths unchanged, `apps/masterdata/api/urls.py`): `GET/POST …/software/<uuid>/versions`; `GET/PUT/PATCH/DELETE …/versions/<uuid>`; `POST …/versions/<uuid>/archive|restore`. A version under a different software in the URL → 404. New: `POST …/software/reorder` (software only; versions are not reorderable).
+Response changes (additive): both resources gain `is_system` and `sort_order`; versions gain `code`, `name` (both optional on create) and `is_deprecated`. `DELETE` is a soft delete (message `"Software deleted."` / `"Software version deleted."`).
+Services: `SoftwareService`, `SoftwareVersionService` (`apps/masterdata/services/software.py`), both `CatalogService[T]`. A version is created with `create(*, actor, parent=<Software>, data)`.
+Tests: `tests/models/test_software_models.py`, `tests/services/test_software_services.py`, `tests/api/test_software_api.py`, the concurrency and migration (`0006`) tests, and the software seed test in `apps/core/tests/test_seed_studiohub.py`.
 
 ---
 

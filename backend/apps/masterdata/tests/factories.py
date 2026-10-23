@@ -12,6 +12,8 @@ from apps.masterdata.models import (
     MasterShotType,
     MasterStatus,
     MasterTaskType,
+    Software,
+    SoftwareVersion,
 )
 
 
@@ -55,3 +57,21 @@ class MasterFileTypeFactory(_LookupFactory):
         model = MasterFileType
 
     extension = factory.Sequence(lambda n: f"ext{n}")
+
+
+class SoftwareFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = Software
+
+    code = factory.Sequence(lambda n: f"sw{n}")
+    name = factory.Sequence(lambda n: f"Software {n}")
+
+
+class SoftwareVersionFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = SoftwareVersion
+
+    software = factory.SubFactory(SoftwareFactory)
+    version = factory.Sequence(lambda n: f"{2000 + n}")
+    code = factory.Sequence(lambda n: f"ver-{n}")
+    name = factory.Sequence(lambda n: f"Version {n}")

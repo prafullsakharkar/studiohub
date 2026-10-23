@@ -7,21 +7,13 @@ and always returns the schema to the latest state afterwards.
 from __future__ import annotations
 
 import pytest
-from django.db import connection
-from django.db.migrations.executor import MigrationExecutor
+
+from apps.masterdata.tests.migration_helpers import columns, constraints, migrate, migrate_to_latest
 
 BEFORE = [
     ("masterdata", "0004_remove_organizationassettypeconfig_uq_org_assettype_config_and_more")
 ]
 AFTER = [("masterdata", "0005_lookup_catalog_hardening")]
-
-
-def _migrate(targets):
-    executor = MigrationExecutor(connection)
-    executor.loader.build_graph()
-    executor.migrate(targets)
-    executor = MigrationExecutor(connection)
-    return executor.loader.project_state(targets).apps
 
 
 CATALOG_MODELS = (
@@ -34,11 +26,6 @@ CATALOG_MODELS = (
 )
 
 
-def _columns(table):
-    with connection.cursor() as cursor:
-        return {c.name for c in connection.introspection.get_table_description(cursor, table)}
-
-
 @pytest.fixture
 def at_before():
     """Schema at 0004; always restored to the latest migration afterwards.
@@ -46,31 +33,26 @@ def at_before():
     Tests that leave deliberately conflicting rows behind must not stop the
     restore, so rows are cleared first whenever the schema is still at 0004.
     """
-    apps = _migrate(BEFORE)
+    apps = migrate(BEFORE)
     try:
         yield apps
     finally:
-        if "is_system" not in _columns("masterdata_task_type"):
+        if "is_system" not in columns("masterdata_task_type"):
             for name in CATALOG_MODELS:
                 apps.get_model("masterdata", name).objects.all().delete()
-        _migrate(MigrationExecutor(connection).loader.graph.leaf_nodes())
-
-
-def _constraints(table):
-    with connection.cursor() as cursor:
-        return set(connection.introspection.get_constraints(cursor, table))
+        migrate_to_latest()
 
 
 @pytest.mark.django_db(transaction=True)
 class TestMigration0005:
     def test_reverses_and_reapplies_on_empty_tables(self, at_before):
-        assert "is_system" not in _columns("masterdata_task_type")
-        assert "masterdata_mastertasktype_uq_code_ci" not in _constraints("masterdata_task_type")
-        _migrate(AFTER)
-        assert {"is_system", "sort_order"} <= _columns("masterdata_task_type")
-        assert "masterdata_mastertasktype_uq_code_ci" in _constraints("masterdata_task_type")
-        assert "sort_order" not in _columns("masterdata_status")
-        assert "masterdata_status_one_default" in _constraints("masterdata_status")
+        assert "is_system" not in columns("masterdata_task_type")
+        assert "masterdata_mastertasktype_uq_code_ci" not in constraints("masterdata_task_type")
+        migrate(AFTER)
+        assert {"is_system", "sort_order"} <= columns("masterdata_task_type")
+        assert "masterdata_mastertasktype_uq_code_ci" in constraints("masterdata_task_type")
+        assert "sort_order" not in columns("masterdata_status")
+        assert "masterdata_status_one_default" in constraints("masterdata_status")
 
     def test_legacy_status_words_are_mapped_and_data_survives(self, at_before):
         TaskType = at_before.get_model("masterdata", "MasterTaskType")
@@ -83,7 +65,7 @@ class TestMigration0005:
             code="done", name="Done", entity_type="Task", status="deprecated"
         )
 
-        after = _migrate(AFTER)
+        after = migrate(AFTER)
 
         TaskType, Status = (
             after.get_model("masterdata", "MasterTaskType"),
@@ -106,12 +88,12 @@ class TestMigration0005:
         TaskType.objects.create(code="ANIM", name="Two", status="inactive")
 
         with pytest.raises(RuntimeError) as caught:
-            _migrate(AFTER)
+            migrate(AFTER)
 
         assert "masterdata 0005 cannot add its uniqueness constraints" in str(caught.value)
         assert "MasterTaskType: code 'anim'" in str(caught.value)
         # Rolled back: still at 0004, rows untouched (the legacy status word is kept).
-        assert "is_system" not in _columns("masterdata_task_type")
+        assert "is_system" not in columns("masterdata_task_type")
         assert sorted(TaskType.objects.values_list("status", flat=True)) == ["active", "inactive"]
 
     def test_duplicates_among_deleted_rows_do_not_block(self, at_before):
@@ -119,7 +101,7 @@ class TestMigration0005:
         TaskType.objects.create(code="Anim", name="One", status="active")
         # A soft-deleted twin under a different code spelling is fine for the constraint.
         TaskType.objects.create(code="anim2", name="Two", status="active", is_deleted=True)
-        _migrate(AFTER)
+        migrate(AFTER)
 
     def test_two_default_statuses_for_one_entity_type_stop_the_migration(self, at_before):
         Status = at_before.get_model("masterdata", "MasterStatus")
@@ -127,7 +109,7 @@ class TestMigration0005:
         Status.objects.create(code="b", name="B", entity_type="Task", is_default=True)
 
         with pytest.raises(RuntimeError) as caught:
-            _migrate(AFTER)
+            migrate(AFTER)
 
         assert "2 default statuses for 'Task'" in str(caught.value)
 
@@ -135,4 +117,4 @@ class TestMigration0005:
         Status = at_before.get_model("masterdata", "MasterStatus")
         Status.objects.create(code="wip", name="WIP", entity_type="Task")
         Status.objects.create(code="wip2", name="WIP shot", entity_type="Shot")
-        _migrate(AFTER)
+        migrate(AFTER)

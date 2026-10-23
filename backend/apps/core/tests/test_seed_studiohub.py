@@ -330,16 +330,20 @@ _EMPTY_MASTER_ARRAYS = (
 class TestSeedMasterdataCatalogRules:
     """seed_demo_data must follow the lookup-catalog rules (Phase 3)."""
 
-    def _write(self, mock_root, statuses, asset_types=()):
+    def _write(self, mock_root, statuses, asset_types=(), software=(), versions=()):
         master_dir = mock_root / "masterData"
         master_dir.mkdir(parents=True, exist_ok=True)
-        lines = [
-            f"export const {name} = [];\n"
-            for name in _EMPTY_MASTER_ARRAYS
-            if name != "mockMasterAssetTypes"
+        given = {
+            "mockMasterAssetTypes": asset_types,
+            "mockGlobalSoftware": software,
+            "mockSoftwareVersions": versions,
+            "mockMasterStatuses": statuses,
+        }
+        names = [n for n in _EMPTY_MASTER_ARRAYS if n not in given] + ["mockMasterStatuses"]
+        lines = [f"export const {name} = [];\n" for name in names if name not in given]
+        lines += [
+            f"export const {name} = {json.dumps(list(rows))};\n" for name, rows in given.items()
         ]
-        lines.append(f"export const mockMasterAssetTypes = {json.dumps(list(asset_types))};\n")
-        lines.append(f"export const mockMasterStatuses = {json.dumps(list(statuses))};\n")
         (master_dir / "initialMasterData.ts").write_text("".join(lines))
 
     def _run(self):
@@ -399,3 +403,43 @@ class TestSeedMasterdataCatalogRules:
 
         assert MasterAssetType.objects.get(code="prop").status == "archived"
         assert not MasterAssetType.objects.filter(code="prop2").exists()
+
+    def test_software_versions_are_keyed_by_software_and_version_with_derived_names(
+        self, mock_root
+    ):
+        from apps.masterdata.models import Software, SoftwareVersion
+
+        self._write(
+            mock_root,
+            [],
+            software=[{"id": "sw1", "code": "MAYA", "name": "Maya", "status": "Inactive"}],
+            versions=[
+                {
+                    "id": "v1",
+                    "software_id": "sw1",
+                    "version": "2025",
+                    "version_code": "maya-2025",
+                    "release_date": "2024-03-01",
+                    "end_of_support": "2027-03-01",
+                },
+                {"id": "v2", "software_id": "sw1", "version": "2026"},
+                # end of support before release: reported and skipped, never a crash
+                {
+                    "id": "v3",
+                    "software_id": "sw1",
+                    "version": "2024",
+                    "release_date": "2024-01-01",
+                    "end_of_support": "2023-01-01",
+                },
+            ],
+        )
+        self._run()
+        self._run()  # idempotent
+
+        maya = Software.objects.get(code="MAYA")
+        assert maya.status == "archived"
+        versions = {v.version: v for v in SoftwareVersion.objects.filter(software=maya)}
+        assert sorted(versions) == ["2025", "2026"]
+        assert versions["2025"].code == "maya-2025" and versions["2025"].name == "Maya 2025"
+        assert versions["2026"].code == "MAYA-2026" and versions["2026"].name == "Maya 2026"
+        assert SoftwareVersion.objects.count() == 2

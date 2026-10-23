@@ -19,8 +19,13 @@ from apps.masterdata.models import (
     SoftwareVersion,
 )
 
+_LOOKUP_READ_ONLY = ("id", "status", "is_system", "created_at", "updated_at")
+# Only the global scope is supported (docs/masterdata/DECISIONS.md D12).
+_GLOBAL_ONLY = {"scope": {"choices": [("GLOBAL", "Global")], "required": False}}
+
 
 class SoftwareSerializer(serializers.ModelSerializer[Software]):
+    # Annotated by the selector (one query); see SoftwareViewSet.present().
     version_count = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -36,36 +41,44 @@ class SoftwareSerializer(serializers.ModelSerializer[Software]):
             "status",
             "scope",
             "is_system",
+            "sort_order",
             "metadata",
             "version_count",
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "version_count", "created_at", "updated_at")
+        read_only_fields = (*_LOOKUP_READ_ONLY, "version_count")
+        validators = []
+        extra_kwargs = _GLOBAL_ONLY
 
 
 class SoftwareVersionSerializer(serializers.ModelSerializer[SoftwareVersion]):
+    is_deprecated = serializers.BooleanField(read_only=True)
+
     class Meta:
         model = SoftwareVersion
         fields = (
             "id",
             "software_id",
+            # Optional on create: derived from the software and ``version``.
+            "code",
+            "name",
             "version",
             "version_code",
             "release_date",
             "end_of_support",
             "status",
             "scope",
+            "is_system",
+            "sort_order",
+            "is_deprecated",
             "metadata",
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "created_at", "updated_at")
-
-
-_LOOKUP_READ_ONLY = ("id", "status", "is_system", "created_at", "updated_at")
-# Only the global scope is supported (docs/masterdata/DECISIONS.md D12).
-_GLOBAL_ONLY = {"scope": {"choices": [("GLOBAL", "Global")], "required": False}}
+        read_only_fields = (*_LOOKUP_READ_ONLY, "software_id", "is_deprecated")
+        validators = []
+        extra_kwargs = {**_GLOBAL_ONLY, "code": {"required": False}, "name": {"required": False}}
 
 
 class MasterStatusSerializer(serializers.ModelSerializer[MasterStatus]):

@@ -8,7 +8,15 @@ from drf_spectacular.generators import SchemaGenerator
 pytestmark = pytest.mark.django_db
 
 BASE = "/api/v1/platform/master-data"
-SLUGS = ["statuses", "task-types", "asset-types", "shot-types", "review-types", "file-types"]
+SLUGS = [
+    "statuses",
+    "task-types",
+    "asset-types",
+    "shot-types",
+    "review-types",
+    "file-types",
+    "software",
+]
 
 
 @pytest.fixture(scope="module")
@@ -30,3 +38,20 @@ def test_every_catalog_route_is_documented(schema, slug):
 def test_scope_is_documented_as_global_only(schema):
     scope = schema["components"]["schemas"]["MasterTaskType"]["properties"]["scope"]
     assert "GLOBAL" in str(scope) and "ORGANIZATION" not in str(scope)
+
+
+def test_nested_software_versions_are_documented(schema):
+    paths = schema["paths"]
+    assert {"get", "post"} <= set(paths[f"{BASE}/software/{{software_pk}}/versions"])
+    detail = paths[f"{BASE}/software/{{software_pk}}/versions/{{id}}"]
+    assert {"get", "put", "patch", "delete"} <= set(detail)
+    assert "post" in paths[f"{BASE}/software/{{software_pk}}/versions/{{id}}/archive"]
+    assert "post" in paths[f"{BASE}/software/{{software_pk}}/versions/{{id}}/restore"]
+
+
+def test_version_is_documented_with_its_read_only_and_optional_fields(schema):
+    version = schema["components"]["schemas"]["SoftwareVersion"]
+    assert "is_deprecated" in version["properties"] and version["properties"]["is_deprecated"].get(
+        "readOnly"
+    )
+    assert "code" not in version.get("required", []) and "name" not in version.get("required", [])
