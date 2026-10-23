@@ -86,6 +86,9 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     # configure/create codes above stay until the alias is removed (Phase 8).
     ("masterdata.catalog.manage", "masterdata_catalog", "manage"),
     ("masterdata.hard_delete", "masterdata", "hard_delete"),
+    ("masterdata.directory.manage", "masterdata_directory", "manage"),
+    ("masterdata.person.view_sensitive", "masterdata_person", "view_sensitive"),
+    ("masterdata.client.view_financial", "masterdata_client", "view_financial"),
     # Identity domain (enforced by the identity RBAC viewsets).
     ("identity.user.view", "user", "view"),
     ("identity.user.create", "user", "create"),
@@ -112,9 +115,18 @@ DIRECTORY_VIEW_PERMISSIONS = [
     "identity.user.view",
 ]
 
+# What org-admin holds for masterdata: the legacy codes (until Phase 8), and the new
+# ones EXPLICITLY (DECISIONS D9, Option B, transitional: the catalogs are global, so
+# catalog.manage belongs to a platform-level role; follow-up FU-1). Deliberately not
+# hard_delete. view_sensitive / view_financial keep the access it has today to
+# contact data and contract values now that those are gated.
 DIRECTORY_CRUD_PERMISSIONS = [
     "platform.master_data.configure",
     "platform.master_data.create",
+    "masterdata.directory.manage",
+    "masterdata.catalog.manage",
+    "masterdata.person.view_sensitive",
+    "masterdata.client.view_financial",
     "identity.user.view",
 ]
 
@@ -131,6 +143,10 @@ PRODUCTION_FULL_PERMISSIONS = [
     "show.create", "show.view", "show.update", "show.delete",
     "audit.view",
 ]
+
+# Production admins track contract and budget figures; supervisors, leads and
+# artists share PRODUCTION_FULL_PERMISSIONS or less and do not see them.
+PRODUCTION_ADMIN_PERMISSIONS = PRODUCTION_FULL_PERMISSIONS + ["masterdata.client.view_financial"]
 
 PRODUCTION_LEAD_PERMISSIONS = [
     "project.view", "shot.view", "shot.update", "shot.approve",
@@ -184,7 +200,7 @@ ROLE_SPECS: list[dict[str, Any]] = [
         "name": "Production Admin",
         "priority": 20,  # identity RolePriority.MANAGER
         "scope": "project",
-        "permissions": PRODUCTION_FULL_PERMISSIONS,
+        "permissions": PRODUCTION_ADMIN_PERMISSIONS,
     },
     {
         "code": "vfx-supervisor",

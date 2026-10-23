@@ -17,6 +17,7 @@ import structlog
 from .processors import (
     add_request_context,
     add_service_context,
+    redact_database_detail_processor,
     redact_secrets,
 )
 
@@ -40,6 +41,7 @@ def _shared_processors(*, with_level_filter=True):
         structlog.processors.format_exc_info,
         add_service_context,
         add_request_context,
+        redact_database_detail_processor,
         redact_secrets,
     ]
 

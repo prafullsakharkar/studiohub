@@ -51,15 +51,18 @@ Commit: `masterdata(phase-3): foundation and lookup catalogs`.
 
 Commit: `masterdata(phase-4): software` (renamed from the brief's "platform structure and software"; no platform tables remain).
 
-## Phase 5 — Clients and vendors
+## Phase 5 — Clients and vendors (**IMPLEMENTED, awaiting approval**; see DECISIONS "Phase 5 implementation notes")
+
+Decisions recorded 2026-10-23 in `DECISIONS.md` (D8 hybrid overlap, D9 alias, D11 counts and billed total, contract lifecycle, H1). The user does not accept H1 staying open through Phase 5.
 
 | WP | Work | Closes | Depends on | MVP |
 |---|---|---|---|---|
-| 5.1 | **Shared contact and contract patterns** [D-5.x]. Abstract `ContactBase` / `ContractBase` in masterdata (no table changes needed beyond constraints). Contacts: email lower-cased; phone normalized (E.164 only if [D] approves the format; no new dependency without asking); partial unique for one primary contact per parent. Contracts: check constraint `expiry_date >= effective_date`; `status`/`type` enums; money per [D8]. Parent FK becomes immutable after create. `PROTECT` from client/vendor to contacts and contracts. | M4, M12 | Phase 3 base, D8 | MVP |
-| 5.2 | **Contract lifecycle service.** `draft → active → expired / terminated`, no backward moves. Overlap prevention per [D8] (portable service check under `select_for_update`, or a PostgreSQL exclusion constraint if approved). | M4 | 5.1 | MVP |
-| 5.3 | **Services, selectors, API.** Remove unused prefetches (`apps/masterdata/selectors/directory.py:74,82`); thin views wired to services. | H2 (business) | 5.1 | MVP |
-| 5.4 | **PII handling.** Contact data restricted per [D-Q2]; no contact data in logs; redacted from audit payloads. | H1 (contacts), H4 | 5.3, Q4 | MVP |
-| 5.5 | **Tests.** One-primary constraint; dates and overlap; transitions; PII not logged (log-capture test); API matrix; cross-parent access (contact of client A cannot be edited or moved via client B); concurrent primary-contact change; migration. | M14 | 5.1–5.4 | MVP |
+| 5.0 | **First, verify the two risks:** (a) Django's `ExclusionConstraint` migration on SQLite (fallback `SeparateDatabaseAndState`); (b) `CREATE EXTENSION btree_gist` with the dev role. | — | user go-ahead | MVP |
+| 5.1 | **Shared contact and contract patterns.** Abstract `ContactBase` / `ContractBase`. Contacts: email lower-cased; phone normalized (no new dependency without asking); partial unique for one primary contact per parent; parent immutable. Contracts: `expiry_date ≥ effective_date` check; stored status enum `Draft/Active/Terminated`; `type`; `currency` and money per D8; parent immutable; `PROTECT` from client/vendor. `Client.total_billed_usd` → nullable, manual (DOM-MD-BIZ-07). Counts omitted from the API. The migration stops with a listing on stored statuses outside the three values. | M4, M12 | Phase 3 base | MVP |
+| 5.2 | **Contract lifecycle + overlap.** `activate` / `terminate`; **derived `Expired`** with read-only-after-expiry; **hybrid overlap**: service check under a parent lock (`409 contract_overlap`) **and** the PostgreSQL exclusion constraint (`btree_gist`, skipped on SQLite), MSA-only scope pending confirmation. | M4 | 5.0, 5.1 | MVP |
+| 5.3 | **Services, selectors, API.** Remove the unused prefetches (`apps/masterdata/selectors/directory.py:74,82`); thin views; the directory viewsets move to `masterdata.directory.manage`. **The legacy alias is NOT dropped** (the conditions failed: other consumers of the old code exist, DECISIONS D9); it keeps mapping to both manage codes until Phase 8, so `org-admin` is unchanged. Tests: the alias grants only the manage codes, never `hard_delete` or the sensitive codes; no double grant. | H2 (business) | 5.1 | MVP |
+| 5.4 | **H1: PII** (rules in DECISIONS "H1"). Mixed endpoints omit sensitive fields; contact endpoints 403; writes 403/400, never ignored; search/filter/ordering on sensitive fields blocked; hidden fields never nulled by PATCH/PUT; **`masterdata.client.view_financial`** for `total_billed_usd` (omit / 403 / name-only audit); `ChangeLog` redaction and no `DETAIL` in DB-error logs (D13); applies to Person and Position too (pulled forward from Phase 6). **Request-log redaction is already done** (`0df7264`). | **H1**, H4 | 5.3 | MVP |
+| 5.5 | **Tests.** One-primary constraint; dates; transitions and derived expiry; overlap incl. boundary day and open-ended; **PostgreSQL race: exactly one of two overlapping creates succeeds**; direct-insert refused by the constraint; PII not logged; API matrix; cross-parent access; concurrency on primary contact change; migration forward/backward with data. | M14 | 5.1–5.4 | MVP |
 
 Commit: `masterdata(phase-5): clients and vendors`.
 

@@ -16,6 +16,8 @@ _ACTIONS: dict[type[DomainEvent], str] = {
     records.MasterdataRecordRestored: "update",
     records.MasterdataRecordDeleted: "delete",
     records.MasterdataRecordHardDeleted: "delete",
+    records.ContractTransitioned: "update",
+    records.ContractEndDateAdjusted: "update",
 }
 _VERBS: dict[type[DomainEvent], str] = {
     records.MasterdataRecordCreated: "created",
@@ -24,6 +26,8 @@ _VERBS: dict[type[DomainEvent], str] = {
     records.MasterdataRecordRestored: "restored",
     records.MasterdataRecordDeleted: "deleted",
     records.MasterdataRecordHardDeleted: "permanently deleted",
+    records.ContractTransitioned: "changed state",
+    records.ContractEndDateAdjusted: "had its end date adjusted",
 }
 
 
@@ -36,7 +40,7 @@ class MasterdataAuditHandler(DomainEventHandler):
             payload = event.payload
             kind = type(event)
             metadata = {"event": kind.__name__, "code": payload.get("code")}
-            for key in ("fields", "changed", "cascade"):
+            for key in ("fields", "changed", "cascade", "transition", "dates"):
                 if payload.get(key):
                     metadata[key] = payload[key]
             AuditLog.objects.create(

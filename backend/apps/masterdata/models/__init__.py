@@ -19,6 +19,8 @@ from apps.masterdata.models.catalog import (
 from apps.masterdata.models.client import Client
 from apps.masterdata.models.client_contact import ClientContact
 from apps.masterdata.models.client_contract import ClientContract
+from apps.masterdata.models.contact import ContactBase
+from apps.masterdata.models.contract import EXCLUSIVE_TYPE, EXPIRED, ContractBase, ContractStatus
 from apps.masterdata.models.department import Department, DepartmentType
 from apps.masterdata.models.office import Office
 from apps.masterdata.models.person import Person
@@ -34,8 +36,13 @@ __all__ = [
     "Client",
     "ClientContact",
     "ClientContract",
+    "ContactBase",
+    "ContractBase",
+    "ContractStatus",
     "Department",
     "DepartmentType",
+    "EXCLUSIVE_TYPE",
+    "EXPIRED",
     "MasterAssetType",
     "LookupCatalogModel",
     "MasterDataScope",

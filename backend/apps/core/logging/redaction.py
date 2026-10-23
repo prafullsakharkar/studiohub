@@ -14,6 +14,7 @@ register their own at startup (``AppConfig.ready``).
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable, Mapping
 from typing import Any
 from urllib.parse import parse_qsl, urlencode
@@ -94,3 +95,23 @@ def redact_full_path(path: str, query_string: str) -> str:
 
     cleaned = [(k, REDACTED if _is_sensitive(k, sensitive) else v) for k, v in pairs]
     return f"{path}?{urlencode(cleaned)}"
+
+
+# --- database error detail -------------------------------------------------
+#
+# PostgreSQL appends the offending *values* to constraint errors:
+#   DETAIL:  Key (lower(email::text))=(jane@example.com) already exists.
+#   DETAIL:  Failing row contains (…, jane@example.com, …).
+# Exception text reaches logs through the exception handler and through
+# formatted tracebacks, so the values are removed from both.
+
+_DB_DETAIL = re.compile(r"(DETAIL:\s*)[^\n]*")
+_DB_KEY_VALUE = re.compile(r"\bKey \([^)]*\)=\(.*?\)(?= |\.|$)", re.MULTILINE)
+_DB_FAILING_ROW = re.compile(r"Failing row contains \(.*\)", re.DOTALL)
+
+
+def redact_database_detail(text: str) -> str:
+    """Remove row values from a database error message; the rest is kept."""
+    text = _DB_DETAIL.sub(rf"\1{REDACTED}", text)
+    text = _DB_FAILING_ROW.sub(f"Failing row contains ({REDACTED})", text)
+    return _DB_KEY_VALUE.sub(f"Key ({REDACTED})", text)

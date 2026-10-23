@@ -11,17 +11,11 @@ from rest_framework.routers import DefaultRouter
 
 from apps.masterdata.api.viewsets.catalog import PlatformOverviewViewSet
 from apps.masterdata.api.viewsets.directory import (
-    ClientContactViewSet,
-    ClientContractViewSet,
-    ClientViewSet,
     DepartmentViewSet,
     OfficeViewSet,
     PersonViewSet,
     PositionViewSet,
     TeamViewSet,
-    VendorContactViewSet,
-    VendorContractViewSet,
-    VendorViewSet,
 )
 from apps.masterdata.api.viewsets.lookup import (
     MasterAssetTypeViewSet,
@@ -32,6 +26,14 @@ from apps.masterdata.api.viewsets.lookup import (
     MasterTaskTypeViewSet,
     SoftwareVersionViewSet,
     SoftwareViewSet,
+)
+from apps.masterdata.api.viewsets.partners import (
+    ClientContactViewSet,
+    ClientContractViewSet,
+    ClientViewSet,
+    VendorContactViewSet,
+    VendorContractViewSet,
+    VendorViewSet,
 )
 
 app_name = "masterdata"

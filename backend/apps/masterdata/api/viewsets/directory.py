@@ -1,11 +1,12 @@
 """
 Global directory viewsets (org-removal B3).
 
-Flat platform-global CRUD for departments, teams, offices, positions,
-people, clients, vendors (+ contacts/contracts). Reads are open to every
-authenticated user (shared reference data); writes require the
-platform-level ``platform.master_data.configure`` grant. Responses are
-paginated to match the frontend contract.
+Flat platform-global CRUD for departments, teams, offices, positions and people
+(clients, vendors, contacts and contracts live in ``partners.py``). Reads are open
+to every authenticated user; writes need ``masterdata.directory.manage`` (the
+legacy ``platform.master_data.configure`` still counts until Phase 8). Personal
+data is gated field by field (H1). Responses are paginated to match the
+frontend contract.
 """
 
 from __future__ import annotations
@@ -16,55 +17,45 @@ from rest_framework import filters, mixins
 from apps.core.api.pagination import StandardPagination
 from apps.core.api.viewsets.platform import PlatformScopedViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
-from apps.identity.permissions import HasPermission
 from apps.masterdata.api.serializers.directory import (
-    ClientContactSerializer,
-    ClientContractSerializer,
-    ClientSerializer,
     DepartmentSerializer,
     OfficeSerializer,
     PersonSerializer,
     PositionSerializer,
     TeamSerializer,
-    VendorContactSerializer,
-    VendorContractSerializer,
-    VendorSerializer,
 )
-from apps.masterdata.constants.permissions import PlatformMasterDataPermissions
+from apps.masterdata.api.viewsets.gating import GatedQueryMixin, GatedSearchFilter
+from apps.masterdata.constants.permissions import MasterdataPermissions
+from apps.masterdata.permissions import AliasAwareHasPermission
 from apps.masterdata.selectors.directory import (
-    ClientContactSelector,
-    ClientContractSelector,
-    ClientSelector,
     DepartmentSelector,
     OfficeSelector,
     PersonSelector,
     PositionSelector,
     TeamSelector,
-    VendorContactSelector,
-    VendorContractSelector,
-    VendorSelector,
 )
 
 
 class GlobalDirectoryGuard:
-    """Open reads, platform-gated writes for global directory records."""
+    """Open reads, ``masterdata.directory.manage`` for writes (the legacy code still counts)."""
 
     permission_classes = (
         IsAuthenticatedPermission,
-        HasPermission,
+        AliasAwareHasPermission,
     )
 
     permission_map = {
         "list": (),
         "retrieve": (),
-        "create": (PlatformMasterDataPermissions.CONFIGURE,),
-        "update": (PlatformMasterDataPermissions.CONFIGURE,),
-        "partial_update": (PlatformMasterDataPermissions.CONFIGURE,),
-        "destroy": (PlatformMasterDataPermissions.CONFIGURE,),
+        "create": (MasterdataPermissions.DIRECTORY_MANAGE,),
+        "update": (MasterdataPermissions.DIRECTORY_MANAGE,),
+        "partial_update": (MasterdataPermissions.DIRECTORY_MANAGE,),
+        "destroy": (MasterdataPermissions.DIRECTORY_MANAGE,),
     }
 
 
 class DirectoryModelViewSet(
+    GatedQueryMixin,
     GlobalDirectoryGuard,
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
@@ -73,7 +64,7 @@ class DirectoryModelViewSet(
     mixins.DestroyModelMixin,
     PlatformScopedViewSet,
 ):
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, GatedSearchFilter, filters.OrderingFilter]
     ordering = ["name"]
     pagination_class = StandardPagination
 
@@ -108,59 +99,22 @@ class PositionViewSet(DirectoryModelViewSet):
     filterset_fields = ["department", "is_managerial"]
     search_fields = ["name", "code"]
     ordering_fields = ["level", "name", "created_at"]
+    gated_query_fields = {MasterdataPermissions.PERSON_VIEW_SENSITIVE: ("salary_range",)}
 
 
 class PersonViewSet(DirectoryModelViewSet):
     serializer_class = PersonSerializer
     selector_class = PersonSelector
     filterset_fields = ["status", "department", "team", "office"]
+    # Without masterdata.person.view_sensitive the search runs over ``name`` only.
     search_fields = ["name", "email"]
     ordering_fields = ["name", "created_at"]
-
-
-class ClientViewSet(DirectoryModelViewSet):
-    serializer_class = ClientSerializer
-    selector_class = ClientSelector
-    filterset_fields = ["status", "studio_type"]
-    search_fields = ["name", "code", "contact_name"]
-    ordering_fields = ["name", "code", "created_at"]
-
-
-class VendorViewSet(DirectoryModelViewSet):
-    serializer_class = VendorSerializer
-    selector_class = VendorSelector
-    filterset_fields = ["status", "specialization"]
-    search_fields = ["name", "code", "contact_name"]
-    ordering_fields = ["name", "code", "created_at"]
-
-
-class ClientContactViewSet(DirectoryModelViewSet):
-    serializer_class = ClientContactSerializer
-    selector_class = ClientContactSelector
-    filterset_fields = ["client", "is_primary"]
-    search_fields = ["name", "email"]
-    ordering_fields = ["name", "created_at"]
-
-
-class ClientContractViewSet(DirectoryModelViewSet):
-    serializer_class = ClientContractSerializer
-    selector_class = ClientContractSelector
-    filterset_fields = ["client", "status", "type"]
-    search_fields = ["contract_number", "title"]
-    ordering_fields = ["contract_number", "created_at"]
-
-
-class VendorContactViewSet(DirectoryModelViewSet):
-    serializer_class = VendorContactSerializer
-    selector_class = VendorContactSelector
-    filterset_fields = ["vendor", "is_primary"]
-    search_fields = ["name", "email"]
-    ordering_fields = ["name", "created_at"]
-
-
-class VendorContractViewSet(DirectoryModelViewSet):
-    serializer_class = VendorContractSerializer
-    selector_class = VendorContractSelector
-    filterset_fields = ["vendor", "status", "type"]
-    search_fields = ["contract_number", "title"]
-    ordering_fields = ["contract_number", "created_at"]
+    gated_query_fields = {
+        MasterdataPermissions.PERSON_VIEW_SENSITIVE: (
+            "email",
+            "phone",
+            "date_of_birth",
+            "nationality",
+            "security_clearance",
+        )
+    }

@@ -45,8 +45,11 @@ def _snapshot(instance) -> dict:
 
     values: dict = {}
     try:
+        # A model lists fields that hold personal or financial data in
+        # ``audit_exclude_fields``; they never reach the change log.
+        excluded = _SKIP_FIELDS | set(getattr(instance, "audit_exclude_fields", ()))
         for field in instance._meta.concrete_fields:
-            if field.name in _SKIP_FIELDS or field.is_relation:
+            if field.name in excluded or field.is_relation:
                 continue
             try:
                 raw = field.value_from_object(instance)
@@ -99,7 +102,12 @@ def _values_equal(left, right) -> bool:
 
 
 def _target_name(instance) -> str:
+    # A field the model keeps out of the change log (a person's name) must not
+    # come back through the label.
+    excluded = set(getattr(instance, "audit_exclude_fields", ()))
     for attr in ("name", "code", "title"):
+        if attr in excluded:
+            continue
         value = getattr(instance, attr, None)
         if value:
             return str(value)[:255]
@@ -136,15 +144,14 @@ def _pre_save_snapshot(sender, instance, raw, **kwargs) -> None:
         # suffix: legacy scalar fields like `client_id` must stay tracked).
         # The post-save snapshot omits relations, so FK attnames would
         # always false-positive as changed; FK swaps are untracked.
-        rel_attnames = {
-            f.attname
-            for f in sender._meta.concrete_fields
-            if f.is_relation
-        }
+        rel_attnames = {f.attname for f in sender._meta.concrete_fields if f.is_relation}
+        # Same exclusion as ``_snapshot``: the "before" side must not carry the
+        # personal or financial values the "after" side leaves out.
+        skipped = _SKIP_FIELDS | set(getattr(instance, "audit_exclude_fields", ()))
         instance._changelog_before = {
             k: ("" if v is None else str(v)[:_MAX_VALUE_LEN])
             for k, v in current.items()
-            if k not in _SKIP_FIELDS and k not in rel_attnames
+            if k not in skipped and k not in rel_attnames
         }
     except Exception:
         instance._changelog_before = {}
@@ -163,7 +170,9 @@ def _post_save_record(sender, instance, created, raw, **kwargs) -> None:
             after = _snapshot(instance)
             # Column names and field names align (FK attnames excluded on
             # both sides), so compare directly.
-            if any(not _values_equal(before.get(k), after.get(k)) for k in set(before) | set(after)):
+            if any(
+                not _values_equal(before.get(k), after.get(k)) for k in set(before) | set(after)
+            ):
                 _record(ChangeLog.CHANGE_UPDATE, instance, before, after)
     except Exception:
         pass

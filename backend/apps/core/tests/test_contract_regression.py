@@ -140,7 +140,7 @@ class TestContractResponseShapes:
         """Masterdata directory: platform-global clients (viewset dispatch)."""
         from rest_framework.test import APIRequestFactory, force_authenticate
 
-        from apps.masterdata.api.viewsets.directory import ClientViewSet
+        from apps.masterdata.api.viewsets.partners import ClientViewSet
         from apps.masterdata.models import Client
 
         client = Client.objects.create(
@@ -258,14 +258,13 @@ class TestContractPermissionMatrix:
         )
         from apps.masterdata.api.viewsets import lookup
         from apps.masterdata.api.viewsets.directory import (
-            ClientViewSet,
             DepartmentViewSet,
             OfficeViewSet,
             PersonViewSet,
             PositionViewSet,
             TeamViewSet,
-            VendorViewSet,
         )
+        from apps.masterdata.api.viewsets.partners import ClientViewSet, VendorViewSet
         from apps.production.api.viewsets import asset, project, shot, task
 
         viewsets = [

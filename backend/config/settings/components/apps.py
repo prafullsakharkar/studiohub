@@ -8,6 +8,9 @@ DJANGO_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Required by Django for ExclusionConstraint (masterdata contract overlap rule);
+    # without it `manage.py migrate` fails with postgres.E005 on any database.
+    "django.contrib.postgres",
 ]
 
 THIRD_PARTY_APPS = [

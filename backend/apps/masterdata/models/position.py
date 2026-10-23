@@ -48,6 +48,9 @@ class Position(PlatformScopedModel):
 
     employment_type = models.CharField(_("Employment type"), max_length=30, blank=True, default="")
 
+    #: Fields kept out of audit snapshots (``apps/audit/signals/change_tracking.py``).
+    audit_exclude_fields = ("salary_range",)
+
     class Meta:
         db_table = "masterdata_position"
         ordering = ("level", "name")

@@ -18,8 +18,12 @@ class MasterdataPermissions:
     CATALOG_MANAGE = "masterdata.catalog.manage"
     DIRECTORY_MANAGE = "masterdata.directory.manage"
     HARD_DELETE = "masterdata.hard_delete"
-    # Defined now, enforced when the PII read restriction is wired up (D4).
+    # Personal data in people, positions, clients, vendors and contacts (H1).
     PERSON_VIEW_SENSITIVE = "masterdata.person.view_sensitive"
+    # Contract values and the client billed total (DECISIONS D11). Deliberately
+    # separate from PERSON_VIEW_SENSITIVE: finance and people data are different
+    # audiences.
+    CLIENT_VIEW_FINANCIAL = "masterdata.client.view_financial"
 
 
 # New code -> legacy code that still satisfies it during the alias period.

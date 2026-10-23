@@ -17,6 +17,7 @@ from .context import (
 from .context import (
     user as _ctx_user,
 )
+from .redaction import redact_database_detail
 
 
 def add_service_context(
@@ -91,6 +92,27 @@ def redact_secrets(
 
 def _redact_mapping(mapping: dict[str, Any]) -> dict[str, Any]:
     return {
-        key: REDACTED if key.lower() in SENSITIVE_KEYS else value
-        for key, value in mapping.items()
+        key: REDACTED if key.lower() in SENSITIVE_KEYS else value for key, value in mapping.items()
     }
+
+
+def redact_database_detail_processor(
+    logger: Any,
+    method_name: str,
+    event_dict: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    Strip row values from database error text in the event, a rendered
+    traceback (``exception``) and ``exc_info`` strings.
+
+    Runs after ``format_exc_info`` so tracebacks are already strings.
+    """
+
+    for key in ("event", "exception", "exception_message", "stack"):
+        value = event_dict.get(key)
+        if isinstance(value, str) and (
+            "DETAIL:" in value or "Key (" in value or "Failing row" in value
+        ):
+            event_dict[key] = redact_database_detail(value)
+
+    return event_dict

@@ -55,3 +55,22 @@ def test_version_is_documented_with_its_read_only_and_optional_fields(schema):
         "readOnly"
     )
     assert "code" not in version.get("required", []) and "name" not in version.get("required", [])
+
+
+PARTNER_ROUTES = ["clients", "vendors", "client-contacts", "vendor-contacts"]
+CONTRACT_ROUTES = ["client-contracts", "vendor-contracts"]
+
+
+@pytest.mark.parametrize("slug", PARTNER_ROUTES + CONTRACT_ROUTES)
+def test_partner_routes_are_documented(schema, slug):
+    paths = schema["paths"]
+    assert {"get", "post"} <= set(paths[f"/api/v1/{slug}/"])
+    assert {"get", "put", "patch", "delete"} <= set(paths[f"/api/v1/{slug}/{{id}}/"])
+    assert "post" in paths[f"/api/v1/{slug}/{{id}}/restore/"]
+
+
+@pytest.mark.parametrize("slug", CONTRACT_ROUTES)
+def test_contract_actions_are_documented(schema, slug):
+    paths = schema["paths"]
+    for action in ("activate", "terminate", "adjust-end-date"):
+        assert "post" in paths[f"/api/v1/{slug}/{{id}}/{action}/"], action

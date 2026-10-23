@@ -12,8 +12,10 @@ from apps.audit.models import APIRequest
 from apps.core.logging import redaction
 from apps.core.logging.constants import REDACTED
 from apps.identity.tests.factories import UserFactory
+from apps.identity.tests.rbac_helpers import grant_permissions
 from apps.masterdata import logging_policy
 from apps.masterdata.api.urls import directory_router
+from apps.masterdata.constants.permissions import MasterdataPermissions
 from apps.masterdata.selectors.directory import PersonSelector
 
 pytestmark = pytest.mark.django_db
@@ -26,6 +28,16 @@ SECRETS = (EMAIL, PHONE, NAME, "jane.doe.7391", "555-0147-7391")
 
 @pytest.fixture
 def client():
+    """A caller allowed to search personal data, so the request reaches the view."""
+    user = UserFactory.create()
+    grant_permissions(user, MasterdataPermissions.PERSON_VIEW_SENSITIVE)
+    api = APIClient(raise_request_exception=False)
+    api.force_authenticate(user=user)
+    return api
+
+
+@pytest.fixture
+def unprivileged():
     api = APIClient(raise_request_exception=False)
     api.force_authenticate(user=UserFactory.create())
     return api
@@ -88,6 +100,15 @@ class TestLogCapture:
             or "status=active" in _recorded_rows()
         )
         assert f"search={REDACTED}".replace("*", "%2A") in _recorded_rows()
+
+    def test_a_refused_request(self, unprivileged, caplog):
+        """Searching personal data without the permission is 403 and still leaves no trace."""
+        caplog.set_level(logging.DEBUG)
+        response = unprivileged.get(f"/api/v1/people/?{self._query()}")
+        assert response.status_code == 403
+        assert "request_completed" in _logged_text(caplog)
+        assert_no_secret(_logged_text(caplog), "the logs")
+        assert_no_secret(_recorded_rows(), "the APIRequest table")
 
     def test_a_not_found_request(self, client, caplog):
         caplog.set_level(logging.DEBUG)

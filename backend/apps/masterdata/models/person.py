@@ -103,6 +103,16 @@ class Person(PlatformScopedModel, LifecycleModel, NamedEntityModel):
         default="",
     )
 
+    #: Fields kept out of audit snapshots (``apps/audit/signals/change_tracking.py``).
+    audit_exclude_fields = (
+        "name",
+        "email",
+        "phone",
+        "date_of_birth",
+        "nationality",
+        "security_clearance",
+    )
+
     class Meta:
         verbose_name = _("Person")
         verbose_name_plural = _("People")

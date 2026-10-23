@@ -16,17 +16,18 @@ Status of each decision:
 | D1 | Ownership; per-organization overrides | **APPROVED** (global) + PROPOSED (reference rule) | All masterdata is platform-global. No per-org overrides until an Organization module exists, which would then reference masterdata. |
 | D2 | Shared catalog base | IMPLEMENTED (Phase 3) | Extend the abstract `CatalogModel` (option a). Built as `LookupCatalogModel(CatalogModel)` for the 6 type catalogs; Software and versions move onto it in Phase 4 (see Phase 3 notes). |
 | D3 | Overlapping pairs | PROPOSED | Keep the current single models; nothing to merge |
-| D4 | Person ↔ Identity User; PII | PROPOSED (link) + **APPROVED: defer** (PII restriction) | Link only through a service; Identity owns email and name for linked people. PII read restriction deferred. |
+| D4 | Person ↔ Identity User; PII | PROPOSED (link) + PII restriction **APPROVED to be fixed in Phase 5** (2026-10-23; replaces the earlier "defer") | Link only through a service; Identity owns email and name for linked people. H1 must be closed by the end of Phase 5, or accepted in writing with scope, owner and deadline. |
 | D5 | Status model | IMPLEMENTED (Phase 3) | Unique `(entity_type, code)`; enums; one default per entity type; transitions later |
 | D6 | Deletion and system rows | **APPROVED** (soft + hard delete) + IMPLEMENTED for catalogs (Phase 3) | DELETE = soft delete everywhere; separate, guarded hard delete. Directory models follow in Phase 6, software in Phase 4. |
 | D7 | Caching | PROPOSED | Later (Phase 8); version-key invalidation on commit |
-| D8 | Contract overlap; money | PROPOSED + OPEN (overlap) | Portable service check recommended; keep whole-unit integers and add `currency` |
-| D9 | Permission codes | IMPLEMENTED for catalogs (Phase 3) + OPEN (role grants) | New `masterdata.*` codes, keeping the old code as an alias. `org-admin` keeps catalog writes through the alias until Phase 8. |
+| D8 | Contract overlap; money | **APPROVED (user, 2026-10-23): hybrid** + PROPOSED (money) | Service-level check (friendly errors) **and** a PostgreSQL exclusion constraint, skipped on SQLite. Active contracts only; different types may overlap. Scope, end-date semantics: see D8. |
+| D9 | Permission codes | IMPLEMENTED for catalogs (Phase 3) + role grants **APPROVED (user, 2026-10-23): Option B** | New `masterdata.*` codes. `org-admin` holds `directory.manage` and `catalog.manage` explicitly and nothing more (transitional, FU-1). The old code stays a deprecated alias until Phase 8. |
 | D10 | Seed, import, export | IMPLEMENTED for statuses (Phase 3) | One canonical seed through services; import/export later |
-| D11 | Stored statistics | **APPROVED** (compute) + PROPOSED (per-field mapping) + OPEN (fields with no source) | Compute what has a reliable source; see table |
+| D11 | Stored statistics | **APPROVED** (compute) + client/vendor counts and `total_billed_usd` **APPROVED (user, 2026-10-23)** | Compute what has a reliable FK source. Project/task counts are omitted until the Projects module exposes a UUID selector. `total_billed_usd` becomes a nullable, manually entered field. |
 | D12 | `scope` column | OPEN (your "Yes" fits both options). Phase 3 only rejects `ORGANIZATION` on input. | Recommendation: drop the DB column, keep `"scope": "GLOBAL"` as a read-only constant in responses |
 | D13 | Changes outside masterdata | **APPROVED** (limited) | May change `apps/audit` and `apps/core` only to redact PII |
 | D14 | Test runtime per phase | OPEN | Choose A, B, C or D (Phase 0 report) |
+| D15 / FU-1 | Who holds `catalog.manage` and `hard_delete` long term | **OPEN (follow-up opened 2026-10-23)** | Today `org-admin` holds `catalog.manage` explicitly (Option B, transitional). Decide a platform-level role for global catalog administration. |
 
 ---
 
@@ -83,7 +84,7 @@ PROPOSED, per `AUDIT.md` §6.1:
 
 **APPROVED 2026-10-23 (Phase 1 answer 2: "We can wire up later"):** the PII read restriction is **deferred**. The contracts define the target (`SEC-MD-02`) so the later wiring is mechanical, but no Phase 3–6 work package enforces it.
 
-> **Consequence:** finding **H1 (High)** stays open. The brief's definition of done requires your written acceptance of any open High finding. Please confirm: "H1 accepted as open until <phase or date>."
+> **Update 2026-10-23 (supersedes the deferral above).** The user will not leave finding **H1 (High)** open through Phase 5. It is fixed in Phase 5 (restricted access to contact data, no PII in logs, a log-capture test), **or** the user accepts it in writing with scope, owner and deadline. The Phase 5 plan is under "Phase 5 prerequisites" at the end of this file.
 
 ## D5 — Status model
 
@@ -138,10 +139,27 @@ Trade-off: the catalogs are tiny and the main cost is the N+1 (fixed in WP 4.1),
 
 ## D8 — Contract overlap and money
 
-**Overlap: OPEN.** Options:
-- **(a) Portable service check (Recommended).** In `ContractService.activate`, lock the parent (`select_for_update`) and refuse an `active` contract whose `[effective_date, expiry_date]` overlaps another `active` contract of the same parent and `type`. It works on SQLite and PostgreSQL. The race is closed by the parent row lock.
-- **(b) PostgreSQL exclusion constraint** (`btree_gist`, `DateRangeField`). Enforced by the DB even against raw writes, but database-specific, which `AGENTS.md` §14 discourages, and SQLite dev/test cannot enforce it.
-- Also open: should two active contracts of **different** `type` (for example `MSA` + `SOW`) be allowed to overlap? Recommendation: yes. A SOW normally runs under an MSA.
+**Overlap: APPROVED 2026-10-23 — hybrid.** Two layers, both required:
+1. **Service check** in `ContractService` (friendly error naming the conflicting contract number). It locks the parent row (`select_for_update`) before checking, so two simultaneous requests are serialized and the loser gets a clean `409 contract_overlap`, never a 500.
+2. **PostgreSQL exclusion constraint** as the backstop, so a raw write or a bug cannot create an overlap. It needs the `btree_gist` extension (installed by the migration). On SQLite the constraint is skipped and only the service check applies; the PostgreSQL-only tests are skipped there.
+
+**The rule (exact):**
+- **Applies to** MSAs that are not soft-deleted and whose stored status is `Active`, **or** `Terminated` after having been Active (they keep the range they covered, see the note below). `Draft` contracts, and contracts terminated straight from `Draft`, are ignored.
+- **Scope: APPROVED 2026-10-23 — `MSA` only, per client; mirrored for vendors (per vendor).** The rule looks only at stored-`Active` MSAs of the same parent. `Draft` and soft-deleted contracts are ignored; a `Terminated` MSA keeps occupying the range it actually covered (see the note below). **Concurrent SOWs (and every other type) are never restricted**, and an MSA may overlap a SOW. *Expired is not simply "ignored"; see the note below, which needs your decision.*
+- **Range:** `[effective_date, expiry_date]`, **both ends inclusive**. A contract valid through 31 Jan and another starting 31 Jan overlap; the next one may start 1 Feb.
+- **Null `expiry_date` = open-ended** (valid until terminated). An open-ended Active MSA therefore blocks every later Active MSA for that parent until it is terminated.
+- **`effective_date` is required** to be Active, so the range always has a start.
+- Derived expiry does not change this: a stored-Active contract whose end date has passed still occupies its historic range, which is correct (see contract statuses below).
+
+> **Expired and the overlap rule — DECIDED 2026-10-23.** `Expired` stays **derived** (never stored). The exclusion constraint applies to MSAs whose **stored** status is `Active` and uses their date range (a null `expiry_date` is open-ended, i.e. infinity). Consequences, all intended:
+>
+> - **A backdated MSA that overlaps an elapsed Active MSA is blocked, on purpose.** That range was legitimately occupied; an expired MSA never blocks a *new* MSA that starts after its end date, so ordinary renewals are unaffected.
+> - **Legitimate corrections go through an audited end-date adjustment**, never through a stored `Expired` status. Phase 5 adds `POST …/adjust-end-date` (needs `masterdata.directory.manage`): it changes only `expiry_date`, is allowed on Active, derived-Expired and Terminated contracts, must stay on or after `effective_date`, may not move an elapsed or terminated contract's end into the future (an elapsed contract is never revived), is re-checked against the overlap rule, and emits an audit event carrying the old and new dates (dates are not personal data). This is the one exception to "Expired and Terminated are read-only".
+> - **Terminated MSAs:** terminating an Active contract **sets its end date to the termination date** (when its end is open or later), so the range it actually covered is recorded exactly. A terminated contract that **had been Active keeps occupying that range** in the overlap rule; a contract terminated straight from `Draft` never covered anything and occupies nothing. To tell the two apart a nullable `activated_at` timestamp is added (set on activation or when created Active; backfilled for existing Active and Terminated rows that have an `effective_date`). The exclusion condition is therefore: type is MSA, not soft-deleted, and (stored `Active`, or stored `Terminated` with `activated_at` set). This refines your earlier "terminated ignored" in line with your latest recommendation.
+
+**Hybrid concurrency proof (required test, PostgreSQL):** two simultaneous requests that would create overlapping Active contracts for the same client → **exactly one succeeds**, the other returns 409, and the table holds exactly one. A second test goes around the service (direct ORM insert) and shows the database constraint refuses it.
+
+**Feasibility checked 2026-10-23 on the test database:** PostgreSQL 18.6; `btree_gist` 1.8 is available and marked *trusted*, not yet installed; the application role is not a superuser and not the database owner but has `CREATE` on the database, which is enough to install a trusted extension. CI's PostgreSQL 17 role is a superuser. **UNVERIFIED:** the dev database's role (not queried). **Open risk, to verify first thing in Phase 5:** Django's handling of an `ExclusionConstraint` migration on SQLite. If it cannot skip cleanly, the constraint is added with `SeparateDatabaseAndState` (model state has it; the database operation runs only on PostgreSQL).
 
 **Money: PROPOSED.**
 - Keep `value_usd` / `total_value_usd` as whole-unit integers: the frontend declares them as numbers (`apps/masterdata/models/client_contract.py:27-29`).
@@ -169,12 +187,47 @@ PROPOSED codes:
 2. **No double grants.** After the removal the old and the new permission must not both grant writes: the alias class goes, the old codes disappear from the seed catalog and from role grants, and a test proves a holder of only an old code is refused.
 3. Until then the alias stays: **today a holder of either code can write** (that is the D9 alias, introduced in Phase 3 and kept deliberately). If you want that interim state ended sooner, say so; it would remove write access from any role that only holds the old code.
 
-**Role grants: OPEN.** Recommendation:
-- `platform-admin` (full catalog) gets all four codes automatically.
-- `org-admin` gets `masterdata.directory.manage` only. It loses catalog writes and hard delete, because it is an organization-era role (`init_platform.py:157-166`).
+**Role grants: APPROVED 2026-10-23.**
+- `platform-admin` (full catalog) holds all four codes (the seed grants every code in the catalog).
+- `org-admin` gets **no more access than today**. Its legacy grant `platform.master_data.configure` stays as a **time-boxed, deprecated alias that maps to `masterdata.directory.manage` only**, and is removed in Phase 8 (rules above).
 - Nobody else gets masterdata writes.
 
-Approve or adjust.
+**Dropping the catalog mapping — conditions checked 2026-10-23: NOT met, so the alias stays unchanged until Phase 8** (your rule: if any other consumer of the old code exists, keep the alias until Phase 8).
+- (a) Catalog endpoints already use the new code (`masterdata.catalog.manage`): **met.** Org-admin "equivalent access via explicit new grants": **not yet done** (and ambiguous, see the question below).
+- (b) Repo-wide search for the old code (`platform.master_data.*`, `PlatformMasterDataPermissions`, `LEGACY_ALIASES`): **other consumers exist.**
+  - **Enforced directly by the 11 directory viewsets** (`GlobalDirectoryGuard`, `apps/masterdata/api/viewsets/directory.py:60-63`), not through the alias.
+  - Seeded and granted: `init_platform.py:83-84,116-117` (`org-admin` holds `configure` and `create`).
+  - The existing contract test (`apps/core/tests/test_contract_regression.py:317-318`).
+  - Tests I wrote that grant the legacy code (alias tests, catalog and software API tests).
+  - Docs: ADR-0033 D4, `docs/02-architecture/authorization.md:536,797`, this folder.
+  - **Outside this repo, the sibling frontend** (`studiohub-react`): its UI shows the "create" buttons of the platform admin pages only if the user holds **`platform.master_data.create`** (`PlatformAdminPage.tsx:174`, `PlatformOverviewTab.tsx:47-49`, `masterDataEntities.tsx:25-139`). That code is seeded by the backend and granted to `org-admin` but **never enforced by the backend**, so removing it in Phase 8 would hide those buttons for org-admins while the API would still accept their writes. The frontend must switch its gating before the backend stops granting it. Its generated OpenAPI files only mention `platform.master_data.configure` in docstrings (regenerate). Its own permission catalog defines `platform.master_data.view/create/update/archive/restore/delete`, a naming scheme the backend does not use.
+- (c) The existing contract test is updated, not deleted or skipped, **when the alias is removed (Phase 8)**.
+
+Consequence: in Phase 5 the directory viewsets move to `masterdata.directory.manage`, and the alias keeps mapping the legacy code to **both** manage codes exactly as today, so `org-admin` gets **no more and no less** than it has now. The "drop the catalog mapping now" idea is separable (the catalog path has no consumer besides my own tests); it stays available if you decide the directory consumers should not block it.
+
+**`org-admin` after the catalog mapping is dropped — DECIDED 2026-10-23: Option B (transitional).** `org-admin` holds `masterdata.directory.manage` **and** `masterdata.catalog.manage` explicitly, **nothing more** (no `hard_delete`), so dropping the alias later changes no effective access. A test asserts `org-admin`'s **exact** permission set (Phase 5), so any drift fails.
+
+*Are the catalogs global or per-organization?* **Global.** There is no organization column on any masterdata table (verified in `AUDIT.md` §6.8; D1; ADR-0034), and the runtime has no Organization module. A catalog write therefore affects the whole platform, not one organization. That is why handing `catalog.manage` to an organization-era role is a stop-gap, not a design.
+
+**Follow-up decision FU-1 (OPEN, recorded now):** move `masterdata.catalog.manage` from `org-admin` to a platform-level role (for example a dedicated catalog-administrator role), and decide who holds `masterdata.hard_delete`. Until that is decided and applied, B stands.
+
+**Roles and what they see — contract values, billed total and personal data (D11, H1).** Read endpoints have been open to every authenticated user, so *today every role, and every user with no role, sees all of it*. After this phase only holders of the new permissions do:
+
+| Role | Sees financial values today | Holds `masterdata.client.view_financial` after | Holds `masterdata.person.view_sensitive` after |
+|---|---|---|---|
+| `platform-admin` | yes | **yes** (full catalog) | **yes** (full catalog) |
+| `org-admin` | yes | **yes, granted** | **yes, granted** (it manages contacts, and writing them needs it) |
+| `production-admin` | yes | **yes, granted** (producers track contract and budget figures) | no |
+| `vfx-supervisor`, `lead-artist`, `artist`, `org-member` | yes | **no (intentional loss)** | no (intentional loss) |
+| user with no role | yes | no (intentional loss) | no (intentional loss) |
+
+The grants are my judgement of who legitimately needs the access; they are in `init_platform` and therefore visible in review. Tell me if `production-admin` should also hold `view_sensitive` (vendor and client contact details), or if any role should not hold `view_financial`.
+
+**Required tests (Phase 5):**
+1. The alias grants exactly `masterdata.directory.manage` and nothing else (parametrized over every masterdata code, including `catalog.manage`, `hard_delete`, `person.view_sensitive`).
+2. **No double grant:** holding the legacy code and the new code together behaves exactly like holding the new code alone; the alias is a mapping evaluated once, never a second, additive path (also: it cannot widen a *scoped* credential).
+3. A holder of only the legacy code is refused on every catalog write and on hard delete.
+4. When the alias is removed (Phase 8), the existing `org-admin` contract test is **updated**, never deleted or skipped.
 
 ## D10 — Seed, import and export
 
@@ -196,19 +249,15 @@ PROPOSED source per field:
 | `Department.utilization_percentage` | scheduled hours this ISO week ÷ capacity hours, over `scheduling.Resource` with `department=`, from `ResourceSchedule.start_time`/`end_time` | Reliable (FK). The definition of "week" and which schedule statuses count need sign-off. |
 | `Team.utilization_percentage` | the same, over `Resource.team` | Reliable (FK) |
 | `Department.capacity_hours_weekly` | sum of `Resource.capacity_hours_per_week` for the department | Reliable (FK). **Today it is an input with default 160**: computing it changes meaning. |
-| `Client.active_projects` | projects whose `client_id` equals the client's `code` or UUID string | **Unreliable**: `production.Project.client_id` is free text (`apps/production/models/project.py:87`) holding a code in `seed_dev.py:791` and mock ids in `seed_studiohub.py:500` |
-| `Vendor.active_projects` | projects whose `vendor_ids` contains the vendor's code or UUID | **Unreliable** (same reason, `apps/production/models/project.py:92`) |
-| `Vendor.active_tasks_count` | open tasks whose `vendor_id` matches | **Unreliable** (`apps/production/models/task.py:67`) |
+| `Client.active_projects` | **omitted** (see the decision below) | `production.Project.client_id` is free text (`apps/production/models/project.py:87`) holding a code in `seed_dev.py:791` and mock ids in `seed_studiohub.py:500`, so no reliable match exists |
+| `Vendor.active_projects` | **omitted** | same reason, `apps/production/models/project.py:92` |
+| `Vendor.active_tasks_count` | **omitted** | same reason, `apps/production/models/task.py:67` |
 
-**OPEN: fields with no source.** Choose per field:
+**Client / vendor counts and `total_billed_usd` — APPROVED 2026-10-23.**
+- **No matching by code, ever.** `Client.active_projects`, `Vendor.active_projects` and `Vendor.active_tasks_count` are **omitted from the API** now. They return only if the Projects module exposes a selector keyed by the masterdata **UUID**; masterdata then calls that selector. **Masterdata does not import Projects** (dependency direction, CONTRACTS §1; the same applies to scheduling for the utilization figures above, which already rely on real foreign keys). The stored columns are kept (hand-entered values; dropping them loses data) and are dropped in Phase 8 only with your approval.
+- **`Client.total_billed_usd`** becomes a **nullable `DecimalField`** (`max_digits=12`, `decimal_places=2`, `null=True`, default `NULL`): **manually entered, not computed, not reconciled with any billing system**, and documented that way in the API docs. Existing values are not rewritten (a stored `0` may mean "unknown"; the Phase 5 report states how many rows hold `0`). **Access (APPROVED 2026-10-23):** reading **and** writing need the separate financial permission **`masterdata.client.view_financial`**, in addition to `masterdata.directory.manage` for writes. It is deliberately not `masterdata.person.view_sensitive`: finance staff and people-data staff are different audiences, and combining them would force an HR-data grant on whoever needs billing figures (and the reverse). Without it the field is **omitted** from responses; a write that includes it is refused with **403** (never ignored). A write is audited as the field **name only** (`total_billed_usd changed`), never with the old or new amount, and the field is excluded from `ChangeLog` snapshots. *Open:* contract values (`value_usd`, `total_value_usd`) are financial too and are readable by every authenticated user today; say whether they join this permission.
 
-| Field | Options | Recommendation |
-|---|---|---|
-| `Client.total_billed_usd` | (a) keep as an input; (b) compute as the sum of contract values (semantics change from "billed" to "contracted"); (c) drop | (a): no billing model exists |
-| `Office.workstations_count`, `render_nodes_count` | keep as input (asset inventory) or drop | keep as input |
-| `Team.capacity` | keep as input, or compute as a member count | keep as input (planned capacity, not headcount) |
-| `Team.current_project_code` | keep as input, or compute from the team's open tasks (most frequent project) | keep as input |
-| Client/vendor project and task counts | compute by matching `code` and UUID now, accepting that mock-seeded rows show 0; or keep stored until production references masterdata by a stable key | compute by `code` + UUID (approved direction), documented as best-effort |
+Fields kept as plain inputs (unchanged, no source exists): `Office.workstations_count`, `Office.render_nodes_count`, `Team.capacity`, `Team.current_project_code`. (Still unconfirmed by you; tell me if any should be dropped.)
 
 ## D12 — `scope` column
 
@@ -297,3 +346,90 @@ WHERE btrim(t.color) <> ''
   AND btrim(t.color) !~ '^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|[A-Za-z][A-Za-z0-9-]{0,30})$'
 ORDER BY t.table_name, t.code;
 ```
+
+---
+
+## Phase 5 prerequisites (decisions of 2026-10-23, before Phase 5 starts)
+
+**Phase 5 does not start until you confirm the frontend checks.**
+
+### Contract lifecycle (APPROVED statuses; Expired is **derived**)
+
+Wire values: `Draft`, `Active`, `Expired`, `Terminated`.
+
+| From | To | How | Notes |
+|---|---|---|---|
+| `Draft` | `Active` | `POST …/activate` | needs `effective_date`; runs the overlap check |
+| `Draft` | `Terminated` | `POST …/terminate` | |
+| `Active` | `Terminated` | `POST …/terminate` | |
+| `Active` | `Expired` | **automatic** when `expiry_date` is in the past | **no write, no job** (derived) |
+| `Expired`, `Terminated` | anything | — | final: `409 invalid_transition` |
+
+**Stored or derived? Derived** (your recommendation, adopted). The database stores only `Draft`, `Active` and `Terminated`. The API's `status` is computed: a stored-`Active` contract with a non-null `expiry_date` before today is reported as `Expired`. "Today" is the server's local date (`timezone.localdate()`); an `expiry_date` equal to today is still `Active` (the end date is inclusive). Consequences, all part of the contract:
+- `?status=Expired` and `?status=Active` filter on the stored status **and** the date, so they are exact complements; there is no expiry job and no stale state.
+- **"Expired is final" has to be enforced, because a date edit could otherwise revive it.** Once the effective status is `Expired` or `Terminated`, the contract is read-only (409 `invalid_transition`, except soft delete and restore). While `Active`, `expiry_date` may be changed (extended or shortened) but not to a date before today; use `terminate` to end a contract early.
+- The overlap constraint is unaffected: it uses stored status and dates only (no "today"), and an expired contract keeps occupying its historic range.
+- Reports that read the table directly must apply the same rule; the API exposes it as a selector annotation, and a database view can be added if reports need it.
+- **Existing rows:** a stored status outside `Draft/Active/Terminated` (for example a stored `Expired`, or any free text) is a data decision, so the migration **stops with a listing** instead of guessing.
+- **Create:** a contract may be created `Draft` or `Active`; the default stays `Active` (current behaviour). Creating `Active` runs the activation rules, which is what makes "two simultaneous overlapping creates" a real race. `Terminated` cannot be created.
+
+### H1 (PII) — rules approved 2026-10-23, to be built in Phase 5
+
+1. **Mixed endpoints (return sensitive and ordinary fields): omit the sensitive fields** for callers without `masterdata.person.view_sensitive`. Proposed classification: `people`, `positions`, `clients`, `vendors` are mixed.
+2. **Purely sensitive endpoints: 403** without the permission — **confirmed 2026-10-23** for `client-contacts` and `vendor-contacts`. The check runs **before any object lookup** (it is a permission-class check, not a queryset filter), so a missing id and a forbidden id answer identically with 403 and nothing about existence leaks. Contacts are **never embedded** in a parent (client / vendor) response, and if a future change embeds them the same permission applies. A **contact count** on the parent (`contact_count`, live contacts) is allowed and is added. **Writes need `masterdata.directory.manage` plus `masterdata.person.view_sensitive`.**
+3. **Sensitive fields:** SEC-MD-02 list; `Client.total_billed_usd` is separate and needs `masterdata.client.view_financial` instead (D11).
+4. **Writes to sensitive fields need the same permission and return 403 (or 400 for a malformed value); they are never silently ignored.**
+5. **Search, filter and ordering on sensitive fields are blocked without the permission:** a filter or `ordering` parameter naming a sensitive field returns 403; `search` without the permission runs only over the non-sensitive search fields (people: `name`, not `email`), so a search cannot be used to probe for an email address. With the permission, behaviour is unchanged.
+6. **No leaks through side channels:** validation and error messages never echo a hidden value or confirm that one exists; no export endpoint exists (and any future one must apply the same rules); audit entries carry field names only; `ChangeLog` snapshots redact the fields (D13); no response cache exists for these endpoints (`APIResponseCache` has no users) and the one cache that exists holds permission codes only, never rows. A future catalog cache (D7) must never cover directory endpoints.
+7. **A PATCH or PUT by a caller who cannot see a field must not change it:** hidden fields are not part of that caller's serializer, an update touches only the keys sent, and a test proves a partial and a full update leave hidden values unchanged (never nulled or blanked).
+8. **Logs:** done in commit `0df7264` (see "Logging" below).
+
+### Logging — DONE (commit `0df7264`, approved 2026-10-23)
+
+Values of `search`, `email`, `phone`, `contact_name`, `date_of_birth`, `nationality`, `security_clearance` and `salary_range` are replaced with `***REDACTED***` for every masterdata directory route, in the structured request/exception logs and in the `audit.APIRequest.full_path` column. Other paths log as before. The inventory of every place that records URLs or query strings is in `docs/observability.md` §11.2. **Outside the Django code, for you to handle:** the uvicorn access log and the nginx access log (both configured by files in this repo but not changed), any proxy, load balancer or CDN in front of nginx, the PostgreSQL server log, any error tracker or APM you add later, and browser or frontend-side recording. **H1 stays open only for those**, to be accepted in writing with owner and deadline.
+
+### Frontend checks you are doing (one list)
+
+1. `status` sent on PATCH/PUT (now 400, including an unchanged value).
+2. DELETE message text `"<Type> soft-deleted. It can be restored."`.
+3. Color picker output (hex 3/4/6/8 digits or keyword only).
+4. Contract status strings (`Draft/Active/Expired/Terminated`) **and** contract `type` strings (I assume `MSA`, `SOW`, others free).
+5. `active_projects` (client, vendor) and `active_tasks_count` (vendor) disappear from responses.
+6. `total_billed_usd` can be `null` and is omitted without `masterdata.client.view_financial`.
+7. Sensitive fields are omitted (not blank) without `masterdata.person.view_sensitive`; **contact endpoints return 403** without it.
+8. Contract `status` is derived, so `Expired` appears without any write.
+9. **New:** the UI gates the platform-admin "create" buttons on `platform.master_data.create` (see D9).
+
+### Decisions of 2026-10-23 (round 4), answering the previous open questions
+
+1. **Expired / overlap:** keep `Expired` derived; backdating over an elapsed Active MSA is blocked on purpose; corrections via the audited `adjust-end-date`; Terminated-after-Active MSAs keep the range they covered (see D8).
+2. **`org-admin`:** Option B, explicit and transitional; catalogs are global; FU-1 opened (see D9).
+3. **Contract values are financial.** `value_usd` (client contracts) and `total_value_usd` (vendor contracts) follow the **same rules as `total_billed_usd`**: they need `masterdata.client.view_financial` to be read or written; **omitted** from responses without it; **search, filter and ordering on them are blocked** (403) without it; a write that includes them is **refused with 403**, never ignored; they are **excluded from exports, caches and aggregates** (none of the three exists in the code today: no export endpoint, `APIResponseCache` has no users, and nothing sums these columns; any future one must respect this rule); audit entries record the field name only; `ChangeLog` does not snapshot them. Roles: see the table under D9. A contract the caller may see but whose values are hidden still appears, with those two keys absent.
+4. **Contacts:** purely sensitive, confirmed (see H1 rule 2).
+
+**Frontend-facing contract changes in Phase 5 (all of them, for your checks):**
+- `status` on a contract is **derived**: `Expired` appears with no write; `status` is refused on PUT/PATCH and accepted on create only as `Draft` or `Active`.
+- New actions: `POST …/activate`, `…/terminate`, `…/adjust-end-date` on client and vendor contracts; new 409 codes `invalid_transition`, `contract_overlap`.
+- **Contract `value_usd` / `total_value_usd` keys disappear** without `view_financial`; **`total_billed_usd` disappears** without it and may be `null`.
+- **Sensitive fields disappear** (client/vendor `contact_name`, `email`, `phone`; person `date_of_birth`, `nationality`, `security_clearance`, `phone`, `email`; position `salary_range`) without `view_sensitive`; **contact endpoints answer 403**.
+- `active_projects` (client, vendor) and `active_tasks_count` (vendor) are gone.
+- New additive fields: contract `currency`, `activated_at`; client and vendor `contact_count`.
+- Writes of a sensitive or financial field without the permission return **403** (before they were accepted); search/filter/ordering on them return 403; `search` on people/clients/vendors without `view_sensitive` no longer matches e-mail.
+- Dates: `expiry_date` on an Active contract cannot be set in the past (use terminate); an `Expired` or `Terminated` contract is read-only except `adjust-end-date`.
+- The earlier items still stand: `status` refused on PUT/PATCH of catalogs, the soft-delete message, the colour rule, and the UI's use of `platform.master_data.create`.
+
+## Phase 5 implementation notes (2026-10-23)
+
+- **Overlap, two layers.** `ContractService` checks under a `SELECT … FOR UPDATE` lock on the parent row (friendly `409 contract_overlap`), and the PostgreSQL `ExclusionConstraint` (`btree_gist`, `daterange(effective_date, expiry_date, '[]')`) is the backstop. On SQLite the constraint emits no SQL (`PostgresOnlyExclusionConstraint`), so the service check is the only guard there; PostgreSQL is the production database.
+- **Settings change outside masterdata:** `django.contrib.postgres` was added to `DJANGO_APPS`. Without it `manage.py migrate` fails with `postgres.E005` on any database as soon as an `ExclusionConstraint` exists (`manage.py check` and pytest skip that check, which is why it had to be found by running migrate).
+- **Extension.** Migration 0007 starts with `EnsureBtreeGistExtension` (a no-op in reverse: dropping an extension other objects may use is not ours to do). The role needs `CREATE` on the database; on the test database it is installed. **UNVERIFIED for the dev/production role**, which was not queried.
+- **Migration 0007 is loud, not clever.** It normalizes only unambiguous data (lower-case e-mails, status words, `Expired` with a past end date → `Active`, `activated_at` backfill) and then refuses to continue, listing the rows, for: duplicate client/vendor code (case-insensitive), vendor rating outside 0 to 5, negative billed total, more than one primary contact or one e-mail used twice per owner, duplicate contract number per owner, an unknown stored status, `Active` without a start date, inverted dates, overlapping MSAs. Nothing is merged or renamed.
+- **Default status.** A contract created without `status` is `Active` (as before) and therefore needs a start date; it is not silently downgraded to `Draft`.
+- **Contacts are never embedded** in client/vendor responses; `contact_count` (live contacts) is returned instead. `active_projects` / `active_tasks_count` columns stay in the table but are not part of the API.
+- **Phone.** Validated charset (`+`, digits, spaces, `()`, `.`, `-`), spaces collapsed; no E.164 parsing (would need a dependency).
+- **Soft delete of a client/vendor** is refused (409 `has_dependants`) while a contract is in force (stored `Active` and not elapsed); otherwise contacts and contracts are soft-deleted with the same timestamp and restored with it. Hard delete needs the row to be soft-deleted already and `masterdata.hard_delete`; foreign keys are `PROTECT`.
+- **D13 changes outside masterdata (the permitted PII redaction only):**
+  1. `apps/audit/signals/change_tracking.py`: models list `audit_exclude_fields`; those fields are left out of the `ChangeLog` before/after snapshots **and out of the target label** (a person's name was otherwise coming back through `target_name` and the description).
+  2. `apps/core/logging`: `redact_database_detail` removes the `DETAIL:` line, `Key (…)=(…)` and `Failing row contains (…)` from database error text; applied to the exception handler's diagnostics (`_safe_message`) and, through a structlog processor, to rendered tracebacks and the event text. The constraint name stays.
+  3. Seeds: `seed_dev` stamps `activated_at` on Active contracts and no longer invents a billed total of 0.
+- **Role grants** (`init_platform`): see D9; pinned by `tests/permissions/test_role_grants.py`.

@@ -35,6 +35,14 @@ class MasterdataRecordHardDeleted(DomainEvent):
     """A record was permanently removed."""
 
 
+class ContractTransitioned(DomainEvent):
+    """A contract changed lifecycle state. Extra payload: ``transition`` = ``{"from", "to"}``."""
+
+
+class ContractEndDateAdjusted(DomainEvent):
+    """A contract's end date was corrected. Extra payload: ``dates`` = ``{"from", "to"}`` (ISO dates)."""
+
+
 RECORD_EVENTS = (
     MasterdataRecordCreated,
     MasterdataRecordUpdated,
@@ -42,4 +50,6 @@ RECORD_EVENTS = (
     MasterdataRecordRestored,
     MasterdataRecordDeleted,
     MasterdataRecordHardDeleted,
+    ContractTransitioned,
+    ContractEndDateAdjusted,
 )
