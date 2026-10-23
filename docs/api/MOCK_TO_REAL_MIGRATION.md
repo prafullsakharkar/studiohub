@@ -80,7 +80,7 @@ sequence `VEL1` → `VEL01` (mock typo; file untouched). Seeded: 4 orgs,
 3 workflows, 3 editorial, 3 notes, 23 project memberships, 14 activity links.
 
 The `platform` phase additionally seeds the Platform Admin masterdata catalog
-and platform notifications/reports by reusing `seed_demo_data`'s deterministic
+by reusing `seed_demo_data`'s deterministic
 phase (`_seed_overlay_masterdata` → `_build_context` + `_seed_masterdata`), so a
 canonical `seed_studiohub --force` run populates the catalog with the same
 records `seed_demo_data` would. Catalog rows get stable UUID ids (mock string

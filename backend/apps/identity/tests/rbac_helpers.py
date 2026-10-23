@@ -78,10 +78,11 @@ def all_known_permission_codes() -> list[str]:
         "apps.audit.constants.permissions",
         "apps.deliveries.constants.permissions",
         "apps.identity.constants.permissions",
-        "apps.platform.constants.permissions",
+        "apps.masterdata.constants.permissions",
         "apps.production.constants.permissions",
         "apps.publishing.constants.permissions",
         "apps.scheduling.constants.permissions",
+        "apps.settings.constants.permissions",
     )
     codes: list[str] = []
     for module_name in modules:

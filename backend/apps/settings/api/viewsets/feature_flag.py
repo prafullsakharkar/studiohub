@@ -8,8 +8,8 @@ from rest_framework.response import Response
 
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
-from apps.platform.constants.permissions import SettingsPermissions
 from apps.settings.api.viewsets.base import SettingsBaseViewSet
+from apps.settings.constants.permissions import SettingsPermissions
 from apps.settings.filters.feature_flag import FeatureFlagFilter
 from apps.settings.selectors.feature_flag import FeatureFlagSelector
 from apps.settings.serializers.feature_flag import FeatureFlagSerializer

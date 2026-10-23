@@ -8,8 +8,8 @@ from rest_framework.response import Response
 
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
-from apps.platform.constants.permissions import SettingsPermissions
 from apps.settings.api.viewsets.base import SettingsBaseViewSet
+from apps.settings.constants.permissions import SettingsPermissions
 from apps.settings.filters.system import SystemSettingFilter
 from apps.settings.selectors.system import SystemSettingSelector
 from apps.settings.serializers.system import SystemSettingSerializer

@@ -82,12 +82,6 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     # viewsets; replaces the legacy organization.master_data.* codes).
     ("platform.master_data.configure", "master_data", "configure"),
     ("platform.master_data.create", "master_data", "create"),
-    # Platform domain (notifications, reports). Codes must match
-    # apps/platform/constants/permissions.py exactly.
-    ("report.view", "reports", "read"),
-    ("report.create", "reports", "create"),
-    ("notification.view", "notifications", "read"),
-    ("notification.update", "notifications", "update"),
     # Identity domain (enforced by the identity RBAC viewsets).
     ("identity.user.view", "user", "view"),
     ("identity.user.create", "user", "create"),

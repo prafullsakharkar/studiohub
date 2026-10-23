@@ -31,6 +31,7 @@ from apps.masterdata.api.serializers.catalog import (
     SoftwareSerializer,
     SoftwareVersionSerializer,
 )
+from apps.masterdata.constants.permissions import PlatformMasterDataPermissions
 from apps.masterdata.models import MasterDataScope
 from apps.masterdata.selectors.catalog import (
     MasterAssetTypeSelector,
@@ -45,7 +46,6 @@ from apps.masterdata.selectors.catalog import (
 from apps.masterdata.services.resolution import (
     get_platform_overview,
 )
-from apps.platform.constants.permissions import PlatformMasterDataPermissions
 
 
 class MasterDataCatalogGuard:

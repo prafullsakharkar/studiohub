@@ -20,8 +20,7 @@ What it does:
    mock-driven users/profiles, project memberships, supplemental persona
    users, editorial cuts, project notes, and activity project linkage.
 3. Seeds the masterdata catalog (software/versions, statuses, entity types)
-   plus platform notifications/reports so the Platform Admin surfaces real
-   data against the API.
+   so the Platform Admin surfaces real data against the API.
 4. Validates relationships and integrity afterwards (fails on critical
    violations unless ``--skip-validate``).
 
@@ -76,8 +75,6 @@ REACT_MOCK_FILES = {
     "workflows": ("production/workflow.ts", "mockWorkflows"),
     "editorial": ("production/editorial.ts", "mockEditorialCuts"),
     "notes": ("production/notes.ts", "mockProjectNotes"),
-    "notifications": ("organization/organization.ts", "mockStudioNotifications"),
-    "reports": ("organization/organization.ts", "mockProductionReports"),
 }
 
 # Mock user-id fields rewritten to emails before seeding (the production
@@ -290,7 +287,6 @@ class Command(BaseCommand):
         if "content" in phases:
             self._seed_overlay_content(mock_root, reporter)
         if "platform" in phases:
-            self._seed_overlay_platform(mock_root, reporter)
             self._seed_overlay_masterdata(mock_root, reporter)
         self.stdout.write(reporter.summary())
         if not options["skip_validate"]:
@@ -1230,64 +1226,6 @@ class Command(BaseCommand):
             reporter.add("notes", "created" if was_created else "existing")
 
         reporter.add("activity_links", "processed", self._link_activities())
-
-    # ------------------------------------------------------------------
-    # Platform overlay (notifications, reports)
-    # ------------------------------------------------------------------
-
-    def _seed_overlay_platform(self, mock_root, reporter):
-        from apps.platform.models import ProductionReport, StudioNotification
-
-        for item in self._load(mock_root, "notifications"):
-            if not item.get("id"):
-                reporter.add("notifications", "skipped")
-                continue
-            self._restore_matching(
-                StudioNotification,
-                {"id": _stable_uuid(item["id"])},
-                reporter,
-                "notifications",
-            )
-            _, was_created = StudioNotification.objects.update_or_create(
-                id=_stable_uuid(item["id"]),
-                defaults={
-                    "title": item.get("title", ""),
-                    "message": item.get("message", ""),
-                    "type": item.get("type", "info"),
-                    "category": item.get("category", ""),
-                    "read": item.get("read", False),
-                    "link": item.get("link", ""),
-                    "timestamp": item.get("timestamp", ""),
-                    **self._timestamp_defaults(item),
-                },
-            )
-            reporter.add("notifications", "created" if was_created else "updated")
-
-        for item in self._load(mock_root, "reports"):
-            if not item.get("id"):
-                reporter.add("reports", "skipped")
-                continue
-            self._restore_matching(
-                ProductionReport,
-                {"id": _stable_uuid(item["id"])},
-                reporter,
-                "reports",
-            )
-            _, was_created = ProductionReport.objects.update_or_create(
-                id=_stable_uuid(item["id"]),
-                defaults={
-                    "title": item.get("title", ""),
-                    "project_code": item.get("project_code", ""),
-                    "category": item.get("category", ""),
-                    "generated_at": item.get("generated_at", ""),
-                    "generated_by": item.get("generated_by", ""),
-                    "status": item.get("status", "Complete"),
-                    "summary_metrics": item.get("summary_metrics", {}),
-                    "download_url": item.get("download_url", ""),
-                    **self._timestamp_defaults(item),
-                },
-            )
-            reporter.add("reports", "created" if was_created else "updated")
 
     def _seed_overlay_masterdata(self, mock_root, reporter):
         """Seed the masterdata catalog (software/versions, statuses, entity

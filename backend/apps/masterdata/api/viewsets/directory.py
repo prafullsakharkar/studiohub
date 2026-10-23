@@ -30,6 +30,7 @@ from apps.masterdata.api.serializers.directory import (
     VendorContractSerializer,
     VendorSerializer,
 )
+from apps.masterdata.constants.permissions import PlatformMasterDataPermissions
 from apps.masterdata.selectors.directory import (
     ClientContactSelector,
     ClientContractSelector,
@@ -43,7 +44,6 @@ from apps.masterdata.selectors.directory import (
     VendorContractSelector,
     VendorSelector,
 )
-from apps.platform.constants.permissions import PlatformMasterDataPermissions
 
 
 class GlobalDirectoryGuard:

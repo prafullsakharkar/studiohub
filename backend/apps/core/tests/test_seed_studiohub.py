@@ -275,18 +275,8 @@ class TestSeedStudiohub:
         )
         assert Project.objects.filter(code="PRJ1").exists()
 
-    def test_platform_phase_seeds_masterdata_and_notifications(self, mock_root):
-        # Extend the fixture with platform + masterdata mock sources.
-        org_file = mock_root / "organization" / "organization.ts"
-        org_file.write_text(
-            org_file.read_text()
-            + 'export const mockStudioNotifications = [{"id":"notif-t1","title":"N",'
-            '"message":"M","type":"info","category":"","read":false,"link":"",'
-            '"timestamp":""}];\n'
-            + 'export const mockProductionReports = [{"id":"rep-t1","title":"R",'
-            '"category":"","status":"Complete","generated_at":"",'
-            '"generated_by":"","summary_metrics":{},"download_url":""}];\n'
-        )
+    def test_platform_phase_seeds_masterdata(self, mock_root):
+        # Extend the fixture with the masterdata mock source.
         master_dir = mock_root / "masterData"
         master_dir.mkdir(parents=True, exist_ok=True)
         (master_dir / "initialMasterData.ts").write_text(
@@ -315,12 +305,7 @@ class TestSeedStudiohub:
         )
 
         from apps.masterdata.models import MasterStatus, MasterTaskType, Software
-        from apps.platform.models import ProductionReport, StudioNotification
 
         assert Software.objects.filter(code="SW1").exists()
         assert MasterStatus.objects.filter(code="todo").exists()
         assert MasterTaskType.objects.filter(code="anim").exists()
-        # Mock string ids become deterministic UUIDs, not opaque labels.
-        notif = StudioNotification.objects.first()
-        assert isinstance(str(notif.id), str) and "-" in str(notif.id)
-        assert ProductionReport.objects.exists()

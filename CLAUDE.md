@@ -11,11 +11,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 `AGENTS.md` describes an organization-aware platform with a `frontend/` and an `apps/organization` reference implementation. **Neither exists in the runtime today:**
 
 - The `frontend/` directory was removed (commit `d1bbd7a`). This repo is backend-only; the API contract it must preserve was defined by the former frontend's mock API (see `config/v1_urls.py` "frontend-compatible aliases").
-- `apps/organization` is not in `INSTALLED_APPS` and has no tracked source (only untracked `__pycache__`/`.cover` leftovers). Treat the "use `apps/organization` as the reference" instruction as unavailable; use `apps/identity`, `apps/settings`, `apps/audit` for layout instead.
+- `apps/organization` is gone (no source, not in `INSTALLED_APPS`; the leftover directory was deleted). Treat the "use `apps/organization` as the reference" instruction as unavailable; use `apps/identity`, `apps/settings`, `apps/audit` for layout instead.
 - Identity is **platform-global by decision** (`docs/adr/ADR-0034-identity-platform-global-boundary.md`): do not add organization FKs or org-scoped queries to `apps/identity`. Tenancy/isolation is enforced only where a real tenant dimension exists (e.g. `ProjectMembership` in `apps.production`).
 - The `.cover` files and `__pycache__` dirs scattered under `apps/` are artifacts; ignore them.
 
-Installed local apps (`config/settings/components/apps.py`): `core`, `identity`, `settings`, `audit`, `production`, `intelligence`, `deliveries`, `publishing`, `scheduling`, `masterdata`, `platform`.
+Installed local apps (`config/settings/components/apps.py`): `core`, `identity`, `settings`, `audit`, `production`, `intelligence`, `deliveries`, `publishing`, `scheduling`, `masterdata`. The former `platform` app (notifications/reports endpoints and models) was removed; its `SettingsPermissions` and `PlatformMasterDataPermissions` constants now live in `apps/settings/constants/permissions.py` and `apps/masterdata/constants/permissions.py`.
 
 ## Commands
 
