@@ -16,7 +16,7 @@ that was run or a test that exists; anything not run is said so.
 | Docs links | `python3 scripts/check_docs_links.py` | all relative links resolve |
 | Migrations, forward from empty | `migrate` on a guarded scratch SQLite database (settings asserted to point at the scratch file, then deleted) | all apps migrate; `masterdata` 0001 to 0009 applied |
 | Migrations, backward and forward again | same database: `migrate masterdata 0004`, then `migrate` | reverses 0009 to 0005 and re-applies cleanly |
-| Migrations, populated database | `tests/test_migration_0005.py` ... `test_migration_0009.py` on the PostgreSQL test database | each: forward, backward, data survives, conflicting data stops the migration with a list |
+| Migrations, populated database | verified once at Phase 8 with `tests/test_migration_0005.py` ... `test_migration_0009.py` on the PostgreSQL test database (forward, backward, data survives, conflicting data stops the migration with a list); those tests were later removed from the suite because each took 12-25 s to set up and the migrations are applied (see git history) | each: forward, backward, data survives, conflicting data stops the migration with a list |
 | Concurrency | `tests/api/test_*concurrency.py` on PostgreSQL | exactly one winner, never a 500: duplicate catalog code, overlapping contracts, primary contact, hierarchy cycle, headquarters, user link. Repeated runs were green after the lock-order fix. |
 | `pip-audit` / `bandit` | not run | new tools, not approved |
 
@@ -32,7 +32,7 @@ Status: **CLOSED** = fixed and tested; **PARTIAL** = reduced, with the remainder
 | H4 PII in `ChangeLog` | CLOSED for masterdata (Phase 5); retention and append-only enforcement of `ChangeLog` stay in `apps/audit` | `tests/test_change_log_redaction.py` (found and fixed a leak through the "before" snapshot and the target label) |
 | H5 broken creates | CLOSED (Phase 4) | `tests/api/test_software_api.py`, `tests/test_versioning.py`, file-type tests in `tests/api/test_lookup_catalog_api.py` |
 | M1 code uniqueness | CLOSED (Phases 3 to 6) | partial `Lower()` unique constraints; `tests/models/*constraints*.py` |
-| M2 org dimension survives as a column | CLOSED (Phase 7) | migration 0009; `TestNoOrganizationLeftovers`; `tests/test_migration_0009.py` |
+| M2 org dimension survives as a column | CLOSED (Phase 7) | migration 0009; `TestNoOrganizationLeftovers`; `tests/test_migration_0009.py` (removed later, see git history) |
 | M3 hierarchy cycles | CLOSED (Phase 6) | `TestHierarchy`, `tests/models/test_directory_constraints.py`, cycle race test |
 | M4 contracts and contacts | CLOSED (Phase 5) | `tests/services/test_contract_services.py`, `tests/models/test_partner_constraints.py`, `tests/api/test_partner_concurrency.py` |
 | M5 lifecycle | CLOSED (Phase 3 to 6) | status enums, `is_system` enforced, DELETE soft-deletes everywhere |
