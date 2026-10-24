@@ -102,6 +102,45 @@ def all_known_permission_codes() -> list[str]:
     return sorted(set(codes))
 
 
+def _ensure_permissions(codes: tuple[str, ...]) -> list[Permission]:
+    """Get-or-create the Permission rows for ``codes`` in a few queries.
+
+    ``grant_all_known_codes`` asks for ~130 codes per call and every test
+    rolls its rows back, so one ``get_or_create`` per code (plus its signal
+    queries) dominated test setup. Same (module, action) collision rule as
+    ``ensure_permission``.
+    """
+    unique = list(dict.fromkeys(codes))
+    found = {p.code: p for p in Permission.objects.filter(code__in=unique)}
+    missing = [code for code in unique if code not in found]
+    if missing:
+        derived = {code: _split_code(code) for code in missing}
+        taken = set(
+            Permission.objects.filter(
+                module__in={module for module, _ in derived.values()},
+            ).values_list("module", "action"),
+        )
+        new_rows = []
+        for code, (module, action) in derived.items():
+            if (module, action) in taken:
+                module = f"{module}_{uuid.uuid4().hex[:6]}"
+            taken.add((module, action))
+            new_rows.append(
+                Permission(
+                    code=code,
+                    name=code,
+                    module=module,
+                    action=action,
+                    category="general",
+                    is_system=False,
+                    is_active=True,
+                ),
+            )
+        Permission.objects.bulk_create(new_rows)
+        found.update({p.code: p for p in new_rows})
+    return [found[code] for code in unique]
+
+
 def grant_permissions(user, *codes: str) -> Role:
     """Grant global permission ``codes`` to ``user`` via UserRole."""
     role = Role.objects.create(
@@ -110,12 +149,14 @@ def grant_permissions(user, *codes: str) -> Role:
         is_system=False,
         is_active=True,
     )
-    for code in codes:
-        RolePermission.objects.get_or_create(
-            role=role,
-            permission=ensure_permission(code),
-            defaults={"granted": True},
-        )
+    # The role is new and has no holders yet, so the per-row RolePermission
+    # signals would only evict nothing; the invalidate below covers ``user``.
+    RolePermission.objects.bulk_create(
+        [
+            RolePermission(role=role, permission=permission, granted=True)
+            for permission in _ensure_permissions(codes)
+        ],
+    )
     UserRole.objects.get_or_create(user=user, role=role)
     PermissionCacheService.invalidate(user=user)
     return role
