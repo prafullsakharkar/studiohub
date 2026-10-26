@@ -420,8 +420,8 @@ class TestActionBodies:
         assert client.post(base + "comments/", {"text": "hi"}, format="json").status_code == 201
 
     def test_publish_accepts_nested_and_flat_info_and_keeps_extra_keys(self, project_a):
-        first = VersionFactory.create(project=project_a, code="V1")
-        second = VersionFactory.create(project=project_a, code="V2")
+        first = VersionFactory.create(project=project_a, code="V1", status="Approved")
+        second = VersionFactory.create(project=project_a, code="V2", status="Approved")
         user = _user(("version.view", "version.publish"), project_a)
         client = _client(user)
 
@@ -447,7 +447,7 @@ class TestActionBodies:
         assert typed.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_publish_ignores_a_forged_id_key(self, project_a):
-        version = VersionFactory.create(project=project_a, code="V1")
+        version = VersionFactory.create(project=project_a, code="V1", status="Approved")
         user = _user(("version.view", "version.publish"), project_a)
 
         resp = _client(user).post(

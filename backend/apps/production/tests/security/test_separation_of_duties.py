@@ -13,6 +13,8 @@ its scopes.
 
 from __future__ import annotations
 
+import uuid
+
 import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -26,6 +28,7 @@ from apps.production.services.status import StatusService
 from apps.production.tests.factories import (
     ProjectFactory,
     ReviewFactory,
+    ShotFactory,
     TaskFactory,
     TimelogFactory,
     VersionFactory,
@@ -325,11 +328,16 @@ class TestReview:
         )
 
 
+def _shot(project):
+    """A shot of its own: a hero version belongs to a shot or an asset."""
+    return ShotFactory.create(project=project, code=f"S{uuid.uuid4().hex[:8]}")
+
+
 class TestVersion:
     def test_the_artist_cannot_approve_their_version(self, project):
         artist = _user(project, *VERSION_CODES)
         version = VersionFactory.create(
-            project=project, code="V1", artist=artist, status="Pending Review"
+            shot=_shot(project), project=project, code="V1", artist=artist, status="Pending Review"
         )
         base = f"/api/v1/versions/{version.id}/"
 
@@ -341,7 +349,11 @@ class TestVersion:
     def test_whoever_created_the_version_cannot_approve_it(self, project):
         creator = _user(project, *VERSION_CODES)
         version = VersionFactory.create(
-            project=project, code="V1", created_by=creator, status="Pending Review"
+            shot=_shot(project),
+            project=project,
+            code="V1",
+            created_by=creator,
+            status="Pending Review",
         )
 
         assert _post(creator, f"/api/v1/versions/{version.id}/promote/").status_code == 403
@@ -349,7 +361,7 @@ class TestVersion:
     def test_promoting_an_already_approved_version_is_checked(self, project):
         artist = _user(project, *VERSION_CODES)
         version = VersionFactory.create(
-            project=project, code="V1", artist=artist, status="Approved"
+            shot=_shot(project), project=project, code="V1", artist=artist, status="Approved"
         )
 
         assert _post(artist, f"/api/v1/versions/{version.id}/promote/").status_code == 403
@@ -363,7 +375,7 @@ class TestVersion:
         task.assignee = worker
         task.save()
         version = VersionFactory.create(
-            project=project, code="V1", task=task, status="Pending Review"
+            shot=_shot(project), project=project, code="V1", task=task, status="Pending Review"
         )
         _patch(worker, f"/api/v1/tasks/{task.id}/", {"assignee": str(successor.id)})
 
@@ -372,7 +384,7 @@ class TestVersion:
     def test_someone_else_can_approve_and_promote(self, project):
         artist = _user(project)
         version = VersionFactory.create(
-            project=project, code="V1", artist=artist, status="Pending Review"
+            shot=_shot(project), project=project, code="V1", artist=artist, status="Pending Review"
         )
 
         resp = _post(_user(project, *VERSION_CODES), f"/api/v1/versions/{version.id}/promote/")
@@ -382,7 +394,7 @@ class TestVersion:
     def test_override_on_an_already_approved_version_leaves_a_row(self, project):
         artist = _user(project, *VERSION_CODES, SOD)
         version = VersionFactory.create(
-            project=project, code="V1", artist=artist, status="Approved"
+            shot=_shot(project), project=project, code="V1", artist=artist, status="Approved"
         )
 
         resp = _post(artist, f"/api/v1/versions/{version.id}/promote/", {"override_reason": "solo"})

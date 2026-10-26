@@ -274,3 +274,18 @@ Frontend change list: a task-type picker on the task form (from the masterdata t
 | C-40d | Existing tasks | Free text only. | Linked by migration 0036 where the text provably names a record of the task's project; the rest unchanged and listed by `report_production_data`. |
 
 Frontend change list: the task form's entity picker must send a real shot, asset or sequence of the task's project (id or code), or nothing for a project-level task; do not send `entity_code` / `entity_name` (or send the record's own); handle the new 400s; read `shot_id` / `asset_id` / `sequence_id` to link to the record; tasks from before may show no link until fixed by hand.
+
+## Versions (D-29)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-41 | `POST /api/v1/versions/` | `version_number` and `code` typed by the client; `version_index` stayed 1. | `version_number` / `version_index` assigned by the server inside the task's (or shot's, or asset's) series, any `version_number` sent is ignored; `code` optional (derived `<entity>_<step>_V###`). A shot and an asset together, or a shot or asset that disagrees with the task's, is a **400**; `entity_*` text that disagrees with the shot or asset is a **400**. A task alone gives the version its shot or asset. |
+| C-41a | `version_number` on update | Writable. | Read-only: **400** if changed. |
+| C-41b | `POST /versions/{id}/publish/` | Any status; the body's `published_at` was kept. | **400** unless the version is Approved or if already published; sets `published_at` (server time) and `published_by`; both in responses (`published_at`, `published_by_id`). |
+| C-41c | `POST /versions/{id}/unpublish/` | Always 200. | **400** if not published; clears `published_at` / `published_by`. |
+| C-41d | `PATCH`/`PUT /versions/{id}/` of a published version | Any field. | Only `notes` and `tags` may change (**400** with the field names); echoing current values is accepted. |
+| C-41e | `POST /versions/{id}/archive/`, `DELETE /versions/{id}/` of a published version | Allowed. | **400** "Unpublish it first." |
+| C-41f | `POST /versions/{id}/promote/` | Set `is_hero`, left the previous hero set. | Demotes the shot's or asset's previous hero in the same transaction; **400** for a version of neither. |
+| C-41g | Existing versions | Free numbers. | Migration 0038/0039: numbered per series, project required; refused with a list if it finds a version with both shot and asset, several live heroes on one shot or asset, or no derivable project. |
+
+Frontend change list: stop sending `version_number` (show the server's) and let `code` be blank; handle the new 400s on publish (only approved versions), edit (published versions: notes and tags only) and archive; show `published_at` / `published_by_id`; demote the old hero in the UI after a promote (the server already has).

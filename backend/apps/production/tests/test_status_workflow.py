@@ -224,7 +224,12 @@ class TestActions:
         assert shot.supervisor_approved is False
 
     def test_version_promote(self, project):
-        version = VersionFactory.create(project=project, code="V1", status="Pending Review")
+        version = VersionFactory.create(
+            project=project,
+            code="V1",
+            status="Pending Review",
+            shot=ShotFactory.create(project=project, code="S1"),
+        )
         user = _user(project, "version.view", "version.publish")
 
         resp = _client(user).post(f"/api/v1/versions/{version.id}/promote/", {}, format="json")

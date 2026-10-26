@@ -1,5 +1,4 @@
 from django.db import transaction
-from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -58,8 +57,16 @@ class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: i
     search_fields = ("code", "version_number", "entity_code")
     ordering_fields = ("code", "created_at", "version_number")
 
+    #: what a published version may still change (the rest needs it unpublished first)
+    EDITABLE_WHEN_PUBLISHED = frozenset({"notes", "tags"})
+
     def validate_references(self, project, data, instance=None):
-        """Shot, asset, task and artist must belong to the version's own project."""
+        """
+        Shot, asset, task and artist must belong to the version's own project; the shot or asset must
+        agree with the task's; the entity text, if sent, must agree with the shot or asset (D-29).
+        """
+        from rest_framework.exceptions import ValidationError
+
         if project is None:
             return
         for field, model in (("shot", Shot), ("asset", Asset), ("task", Task)):
@@ -67,25 +74,59 @@ class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: i
                 resolve_in_project(model, project, data[field], field=field)
         require_project_member(project, data.get("artist"), field="artist", label="artist")
 
+        shot = data.get("shot", getattr(instance, "shot", None))
+        asset = data.get("asset", getattr(instance, "asset", None))
+        task = data.get("task", getattr(instance, "task", None))
+        shot, asset = VersionService.entity_of(shot=shot, asset=asset, task=task)
+        entity = shot or asset
+        if entity is not None:
+            derived = {
+                "entity_type": type(entity).__name__,
+                "entity_id": str(entity.pk),
+                "entity_code": entity.code,
+                "entity_name": getattr(entity, "name", "") or "",
+            }
+            for key, expected in derived.items():
+                given = str(data.get(key) or "").strip()
+                if given and given.lower() != expected.lower():
+                    raise ValidationError({key: ["Derived from the version's shot or asset."]})
+
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        if instance.is_published:
+            from rest_framework.exceptions import ValidationError
+
+            changed = sorted(
+                key
+                for key, value in serializer.validated_data.items()
+                if key not in self.EDITABLE_WHEN_PUBLISHED and value != getattr(instance, key, None)
+            )
+            if changed:
+                raise ValidationError(
+                    {
+                        "detail": [
+                            "A published version cannot be changed except its notes and tags. "
+                            "Unpublish it first."
+                        ],
+                        "fields": changed,
+                    }
+                )
+        super().perform_update(serializer)
+
     @extend_schema(request=PublishVersionSerializer)
     @action(detail=True, methods=["post"], url_path="publish")
     def publish(self, request, *args, **kwargs):
+        """Publish an approved version; records who and when."""
         instance = self.get_object()
         info = validated(PublishVersionSerializer, request.data)["publishing_info"]
-        publishing_info = {**(instance.publishing_info or {}), **info}
-        publishing_info["published_at"] = publishing_info.get("published_at") or timezone.now().isoformat()
-        instance.is_published = True
-        instance.publishing_info = publishing_info
-        instance.save(update_fields=["is_published", "publishing_info"])
+        instance = VersionService.publish_version(actor=request.user, version=instance, info=info)
         return Response(VersionDetailSerializer(instance).data)
 
     @action(detail=True, methods=["post"], url_path="unpublish")
     def unpublish(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.is_published = False
-        instance.save(update_fields=["is_published"])
-        serializer = VersionDetailSerializer(instance)
-        return Response(serializer.data)
+        instance = VersionService.unpublish_version(actor=request.user, version=instance)
+        return Response(VersionDetailSerializer(instance).data)
 
     @extend_schema(request=PromoteVersionSerializer)
     @action(detail=True, methods=["post"], url_path="promote")

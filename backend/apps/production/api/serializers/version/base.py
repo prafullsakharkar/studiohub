@@ -8,6 +8,7 @@ from apps.production.models import Version
 
 class VersionSerializer(BaseReadSerializer[Any]):
     is_archived = serializers.BooleanField(source="is_deleted", read_only=True)
+    published_by_id = serializers.UUIDField(read_only=True, allow_null=True)
     project_id = serializers.UUIDField(read_only=True, allow_null=True)
     project_code = serializers.SerializerMethodField()
     artist_id = serializers.UUIDField(read_only=True, allow_null=True)
@@ -24,7 +25,7 @@ class VersionSerializer(BaseReadSerializer[Any]):
             "entity_type", "entity_id", "entity_code", "entity_name",
             "shot_id", "asset_id", "task_id",
             "department", "artist_id", "artist_name",
-            "status", "is_published", "is_hero", "is_archived",
+            "status", "is_published", "published_at", "published_by_id", "is_hero", "is_archived",
             "thumbnail_url", "video_url", "source_file_url",
             "frame_range", "start_frame", "end_frame", "resolution", "fps", "file_size_mb", "color_space", "file_path",
             "notes", "changelog", "tags", "publishing_info", "media_items", "attachments", "reviews", "playlists", "notes_list", "activity",

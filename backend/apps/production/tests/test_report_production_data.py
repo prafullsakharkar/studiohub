@@ -66,6 +66,7 @@ def test_a_clean_database_reports_nothing_and_passes_the_gate():
     assert "Tasks whose stored hours differ from their approved timelogs: 0" in text
     assert "Assets with a bad parent: 0" in text
     assert "Tasks naming a record they are not linked to: 0" in text
+    assert "Versions that block migration 0038: 0" in text
 
 
 def test_shots_naming_no_sequence_are_listed_and_fail_the_gate():
@@ -178,6 +179,30 @@ def test_tasks_naming_a_record_they_are_not_linked_to_are_listed_with_a_reason()
     assert "the record belongs to another project" in text
     assert 'unknown entity type "Banana"' in text
     assert "task LINKED" not in text and "task GENERAL" not in text
+
+
+def test_versions_that_would_block_the_migration_are_findings(without_constraints):
+    project = ProjectFactory.create(code="RPT13")
+    shot = ShotFactory.create(project=project, code="S1")
+    asset = AssetFactory.create(project=project, code="A1")
+    # The constraints migration 0039 adds would refuse these rows: take them away for this test only
+    # (the fixture's block is rolled back, so they come back).
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "ALTER TABLE production_version DROP CONSTRAINT production_version_one_entity_ck"
+        )
+        cursor.execute("DROP INDEX production_version_shot_hero_uniq")
+    VersionFactory.create(project=project, code="OK", shot=shot, version_index=1)
+    VersionFactory.create(project=project, code="BOTH", shot=shot, asset=asset, version_index=2)
+    VersionFactory.create(project=project, code="H1", shot=shot, is_hero=True, version_index=3)
+    VersionFactory.create(project=project, code="H2", shot=shot, is_hero=True, version_index=4)
+
+    text = _report()
+
+    assert "Versions that block migration 0038: 2" in text
+    assert "BOTH" in text and "has both a shot and an asset" in text
+    assert "2 live hero versions" in text
+    assert "Versions sharing a number within their series (information): 0" in text
 
 
 def test_it_changes_nothing():

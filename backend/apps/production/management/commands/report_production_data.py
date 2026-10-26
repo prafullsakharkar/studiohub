@@ -20,6 +20,9 @@ is left:
   how many tasks have a task type
 * tasks that name a shot, asset or sequence but are not linked to one, and why (the link was added
   by migration 0036, which links what it can prove; DECISIONS D-28)
+* versions that migration 0038 would refuse (both a shot and an asset; several live hero versions on
+  one shot or asset; no project that can be derived) and, as information, how many versions share a
+  number within their series (DECISIONS D-29)
 * tasks whose old stored ``logged_hours`` differs from the sum of their approved timelogs:
   responses now show the sum, so a hand-typed number stops appearing (DECISIONS D-15)
 
@@ -223,6 +226,59 @@ def unlinked_task_entities():
     return found
 
 
+def version_blockers():
+    """``[(version id, code, problem)]`` for versions migration 0038 refuses until fixed."""
+    from collections import Counter
+
+    found = []
+    for pk, code in Version.all_objects.filter(shot__isnull=False, asset__isnull=False).values_list(
+        "pk", "code"
+    ):
+        found.append((str(pk), code, "has both a shot and an asset"))
+    heroes = Counter()
+    for shot_id, asset_id in Version.objects.filter(is_hero=True).values_list(
+        "shot_id", "asset_id"
+    ):
+        if shot_id:
+            heroes[("shot", shot_id)] += 1
+        if asset_id:
+            heroes[("asset", asset_id)] += 1
+    for (kind, pk), count in heroes.items():
+        if count > 1:
+            found.append((str(pk), kind, f"{count} live hero versions"))
+    for version in Version.all_objects.filter(project__isnull=True).select_related(
+        "shot", "asset", "task"
+    ):
+        sources = {
+            link.project_id
+            for link in (version.shot, version.asset, version.task)
+            if link is not None and link.project_id
+        }
+        if len(sources) != 1:
+            found.append((str(version.pk), version.code, "no project, and none can be derived"))
+    return found
+
+
+def versions_sharing_a_number():
+    """How many versions have the same ``version_index`` as another in their series."""
+    from django.db.models import Count
+
+    total = 0
+    for field, extra in (
+        ("task", {}),
+        ("shot", {"task__isnull": True}),
+        ("asset", {"task__isnull": True}),
+    ):
+        groups = (
+            Version.all_objects.filter(**{f"{field}__isnull": False}, **extra)
+            .values(field, "version_index")
+            .annotate(n=Count("pk"))
+            .filter(n__gt=1)
+        )
+        total += sum(group["n"] for group in groups)
+    return total
+
+
 def tasks_with_unbacked_hours():
     """``[(task id, code, stored hours, approved timelog hours)]`` where the old stored number differs."""
     rows = TaskHoursSelector.annotate(Task.all_objects.exclude(logged_hours=0))
@@ -294,6 +350,15 @@ class Command(BaseCommand):
         for pk, code, kind, text, reason in unlinked[:50]:
             findings += 1
             self.stdout.write(f"  task {code} {pk}: {kind} {text!r}: {reason}")
+
+        blockers = version_blockers()
+        self.stdout.write(f"Versions that block migration 0038: {len(blockers)}")
+        for pk, code, problem in blockers[:50]:
+            findings += 1
+            self.stdout.write(f"  {code} {pk}: {problem}")
+        self.stdout.write(
+            f"  Versions sharing a number within their series (information): {versions_sharing_a_number()}"
+        )
 
         typed_assets, all_assets, typed_tasks, all_tasks = typing_counts()
         self.stdout.write("Catalog types (information, not findings):")

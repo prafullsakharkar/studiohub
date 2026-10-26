@@ -25,6 +25,7 @@ WITH_EPISODE_COLUMN = [("production", "0028_sequence_episode")]
 BEFORE_ARCHIVE_RECONCILE = [("production", "0030_protect_history_rows")]
 BEFORE_ASSET_TYPES = [("production", "0033_task_types_and_templates")]
 BEFORE_TASK_LINKS = [("production", "0035_task_entity_links")]
+BEFORE_VERSION_PREP = [("production", "0037_version_published_by")]
 
 
 def _latest():
@@ -402,3 +403,130 @@ class TestTaskEntitiesLinked:
         assert Task._base_manager.get(pk=made["foreign"].pk).entity_id == str(
             foreign.id
         )  # the text is untouched
+
+
+class TestVersionsPrepared:
+    """0038 refuses what 0039's constraints would reject and prepares the rest."""
+
+    def _models(self, apps):
+        return {n: apps.get_model("production", n) for n in ("Version", "Shot", "Asset", "Task")}
+
+    def _version(self, apps, project, code, **fields):
+        return apps.get_model("production", "Version").objects.create(
+            project=project, code=code, **fields
+        )
+
+    def test_numbers_are_made_unique_within_each_series_without_rewriting_the_text(self, restore):
+        apps = _migrate(BEFORE_VERSION_PREP)
+        project = _project(apps, "VPA")
+        m = self._models(apps)
+        shot = m["Shot"].objects.create(project=project, code="S1", name="s")
+        other = m["Shot"].objects.create(project=project, code="S2", name="s")
+        task = m["Task"].objects.create(project=project, code="T1", title="t")
+        made = {}
+        for key, number in (
+            ("a", "v001"),
+            ("b", "v002"),
+            ("dup", "v002"),
+            ("final", "final"),
+            ("gap", "v010"),
+        ):
+            made[key] = self._version(apps, project, f"T-{key}", task=task, version_number=number)
+        shot_a = self._version(apps, project, "S-a", shot=shot, version_number="V003")
+        shot_b = self._version(apps, project, "S-b", shot=shot, version_number="v003")
+        elsewhere = self._version(apps, project, "S2-a", shot=other, version_number="v001")
+        loose = self._version(apps, project, "LOOSE", version_number="v007", version_index=5)
+
+        apps = _migrate(_latest())
+
+        Version = apps.get_model("production", "Version")
+        index = {key: Version.objects.get(pk=row.pk).version_index for key, row in made.items()}
+        assert index == {
+            "a": 1,
+            "b": 2,
+            "gap": 10,
+            "dup": 11,
+            "final": 12,
+        }  # leftovers follow, in creation order
+        assert sorted(
+            Version.objects.filter(shot_id=shot.pk).values_list("version_index", flat=True)
+        ) == [3, 4]
+        assert Version.objects.get(pk=elsewhere.pk).version_index == 1
+        assert Version.objects.get(pk=loose.pk).version_index == 5  # linked to nothing: untouched
+        assert (
+            Version.objects.get(pk=made["dup"].pk).version_number == "v002"
+        )  # the text is never rewritten
+        assert shot_a.pk and shot_b.pk
+
+    def test_a_missing_project_is_filled_from_the_records_and_published_at_is_backfilled(
+        self, restore
+    ):
+        apps = _migrate(BEFORE_VERSION_PREP)
+        project = _project(apps, "VPB")
+        m = self._models(apps)
+        shot = m["Shot"].objects.create(project=project, code="S1", name="s")
+        task = m["Task"].objects.create(project=project, code="T1", title="t")
+        by_shot = self._version(apps, None, "BY-SHOT", shot=shot)
+        by_task = self._version(apps, None, "BY-TASK", task=task, version_number="v002")
+        good = self._version(
+            apps, project, "PUB1", shot=shot, version_number="v003", is_published=True,
+            publishing_info={"published_at": "2026-03-04T05:06:07Z"},
+        )  # fmt: skip
+        bad = self._version(
+            apps, project, "PUB2", shot=shot, version_number="v004", is_published=True,
+            publishing_info={"published_at": "yesterday"},
+        )  # fmt: skip
+
+        apps = _migrate(_latest())
+
+        Version = apps.get_model("production", "Version")
+        assert Version.objects.get(pk=by_shot.pk).project_id == project.pk
+        assert Version.objects.get(pk=by_task.pk).project_id == project.pk
+        assert (
+            Version.objects.get(pk=good.pk)
+            .published_at.isoformat()
+            .startswith("2026-03-04T05:06:07")
+        )
+        assert Version.objects.get(pk=bad.pk).published_at is None
+
+    @pytest.mark.parametrize(
+        ("case", "message"),
+        [
+            ("both", "both a shot and an asset"),
+            ("heroes", "2 live hero versions"),
+            ("orphan", "no project"),
+        ],
+    )
+    def test_what_cannot_be_fixed_stops_the_migration_and_changes_nothing(
+        self, restore, case, message
+    ):
+        apps = _migrate(BEFORE_VERSION_PREP)
+        project = _project(apps, "VPC")
+        m = self._models(apps)
+        shot = m["Shot"].objects.create(project=project, code="S1", name="s")
+        asset = m["Asset"].objects.create(project=project, code="A1", name="a")
+        probe = self._version(apps, project, "PROBE", shot=shot, version_number="v002")
+        if case == "both":
+            self._version(apps, project, "BAD", shot=shot, asset=asset)
+        elif case == "heroes":
+            self._version(apps, project, "H1", shot=shot, is_hero=True)
+            self._version(apps, project, "H2", shot=shot, is_hero=True)
+        else:
+            self._version(apps, None, "LOST")
+
+        with pytest.raises(RuntimeError, match=message):
+            _migrate(_latest())
+
+        Version = apps.get_model("production", "Version")
+        assert Version.objects.get(pk=probe.pk).version_index == 1  # nothing was prepared
+
+    def test_archived_heroes_do_not_count(self, restore):
+        apps = _migrate(BEFORE_VERSION_PREP)
+        project = _project(apps, "VPD")
+        shot = self._models(apps)["Shot"].objects.create(project=project, code="S1", name="s")
+        self._version(apps, project, "H1", shot=shot, is_hero=True)
+        self._version(apps, project, "H2", shot=shot, is_hero=True, is_deleted=True)
+
+        apps = _migrate(_latest())
+
+        assert apps.get_model("production", "Version")._base_manager.count() == 2

@@ -206,7 +206,7 @@ class TestVersion:
         assert _patch(publisher, self.path(version), {"status": "Approved"}).status_code == 200
 
     def test_publish_action_still_works(self, project):
-        version = VersionFactory.create(project=project, code="V1")
+        version = VersionFactory.create(project=project, code="V1", status="Approved")
         user = _user(project, "version.view", "version.publish")
 
         resp = _post(user, self.path(version) + "publish/", {"comment": "ship it"})

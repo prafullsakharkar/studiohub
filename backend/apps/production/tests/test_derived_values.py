@@ -168,7 +168,7 @@ class TestShotCurrentVersion:
     def _version(self, shot, number, *, published=False, **extra):
         return VersionFactory.create(
             project=shot.project, shot=shot, code=f"{shot.code}-{number}", version_number=number,
-            is_published=published, **extra,
+            version_index=int(number[1:]), is_published=published, **extra,
         )  # fmt: skip
 
     def test_none_means_empty(self, project):

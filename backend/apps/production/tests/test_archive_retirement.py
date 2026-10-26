@@ -155,8 +155,12 @@ def test_an_archived_version_leaves_the_shots_current_version(project):
     from apps.production.tests.factories import ShotFactory
 
     shot = ShotFactory.create(project=project, code="S1")
-    older = VersionFactory.create(project=project, shot=shot, code="V1", version_number="v001")
-    newer = VersionFactory.create(project=project, shot=shot, code="V2", version_number="v002")
+    older = VersionFactory.create(
+        project=project, shot=shot, code="V1", version_number="v001", version_index=1
+    )
+    newer = VersionFactory.create(
+        project=project, shot=shot, code="V2", version_number="v002", version_index=2
+    )
     api = _client(project, "version")
     assert ShotCurrentVersionSelector.of(shot)[1] == newer.id
 

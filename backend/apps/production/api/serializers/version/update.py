@@ -12,10 +12,11 @@ class VersionUpdateSerializer(NormalizedCodeMixin, LockedFieldsMixin, BaseWriteS
         "is_published": "Use the publish and unpublish actions.",
         "is_hero": "Use the promote action.",
         "is_archived": "Use the archive and restore actions.",
+        "version_number": "Assigned by the server.",
     }
     is_archived = serializers.BooleanField(source="is_deleted", read_only=True)
 
     class Meta:
         model = Version
         fields = ("code","version_number","entity_type","entity_id","entity_code","entity_name","department","status","is_published","is_hero","is_archived","thumbnail_url","video_url","notes","tags","publishing_info")
-        read_only_fields = ("is_published","is_hero")
+        read_only_fields = ("is_published","is_hero","version_number")

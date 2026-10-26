@@ -49,6 +49,7 @@ class BulkOperationService(BusinessService):
     RESTORED = "restored"
     NOT_FOUND = "not_found"
     HAS_CHILDREN = "has_children"
+    BLOCKED = "blocked"
 
     # ------------------------------------------------------------------
     # Helpers
@@ -416,12 +417,15 @@ class BulkOperationService(BusinessService):
             try:
                 cls.delete(instance, user=user)
             except ValidationError as exc:
-                # Live children (D-13): this item stays as it is, the others carry on.
+                # Refused (live children, D-13; a published version, D-29): this item stays as it is,
+                # the others carry on.
+                from apps.production.validators.hierarchy import HasLiveChildren
+
                 results.append(
                     {
                         "index": index,
                         "id": item_id,
-                        "status": cls.HAS_CHILDREN,
+                        "status": cls.HAS_CHILDREN if isinstance(exc, HasLiveChildren) else cls.BLOCKED,
                         "error": exc.detail,
                     }
                 )

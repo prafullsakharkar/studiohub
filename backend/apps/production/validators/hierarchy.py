@@ -11,6 +11,10 @@ from __future__ import annotations
 from rest_framework.exceptions import ValidationError
 
 
+class HasLiveChildren(ValidationError):
+    """Archiving was refused because live children remain (bulk archive reports it as such)."""
+
+
 def _plural(count: int, noun: str) -> str:
     return f"{count} {noun}" if count == 1 else f"{count} {noun}s"
 
@@ -28,6 +32,6 @@ def ensure_no_live_children(instance) -> None:
     found = [(count, noun) for count, noun in found if count]
     if found:
         listed = " and ".join(_plural(count, noun) for count, noun in found)
-        raise ValidationError(
+        raise HasLiveChildren(
             {"detail": [f"{instance.code} still has {listed}. Archive or move them first."]}
         )
