@@ -205,7 +205,7 @@ Selectors to add: `ShotSelector.list_for_sequence`, `SequenceSelector.with_count
 | **P9** Versions — **DONE** (E1 to E3, D-29) | E1, E2, E3 | **data + constraint** | concurrency tests (numbering, hero) |
 | **P10** Reviews and notes — **DONE** (E4, D-30; `ApprovalRecord` as a table and the unified `Note` not built) | E4 | **data** (JSON → rows) | contract-shape snapshot tests |
 | **P11** Later items you choose — **DONE for C5 (archive guard) and E5 (playlists as rows), D-31**; B6, B8, C3 to C4, C6, D7, F3, F4 not chosen | B6, B8 drop, C2-C6, D7, E5, F3, F4 | various | per item |
-| **P12** Contract phase and verification | drop legacy columns kept during expand (`sequence_code` column, `entity_*` columns, `is_archived`, `Project.total_*`, JSON blobs) once the frontend no longer writes them; full suite; docs | destructive | full suite, ruff, check, makemigrations |
+| **P12** Contract phase and verification — **DONE** (D-32; the entity text columns, `Project.total_*` and the Version/Asset caches were not dropped, see D-32) | drop legacy columns kept during expand (`sequence_code` column, `entity_*` columns, `is_archived`, `Project.total_*`, JSON blobs) once the frontend no longer writes them; full suite; docs | destructive | full suite, ruff, check, makemigrations |
 
 Per-phase gate (from CLAUDE.md and project memory): `uv run ruff check .`, `uv run python manage.py check`, `uv run python manage.py makemigrations --check`, targeted tests (full suite only if you ask), no new `ruff format` / `basedpyright` violations in changed files. Never run `ruff format` on applied migrations.
 

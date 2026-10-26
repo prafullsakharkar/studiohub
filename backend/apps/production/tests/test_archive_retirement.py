@@ -116,16 +116,6 @@ class TestArchiveIsTheSoftDelete:
         assert echoed.status_code == 200, echoed.json()
         assert model.all_objects.get(pk=row.pk).is_deleted is False
 
-    def test_the_old_column_is_not_consulted(self, project, path, model, make, resource):
-        row = make(project, "ARC-L")
-        model.all_objects.filter(pk=row.pk).update(is_archived=True)  # a stale legacy value
-        api = _client(project, resource)
-
-        detail = api.get(f"/api/v1/{path}/{row.id}/").json()
-
-        assert detail["is_archived"] is False
-        assert "ARC-L" in _listed(api, path)
-
 
 def test_an_archived_playlist_is_labelled_and_a_restored_one_is_active_again(project):
     row = PlaylistFactory.create(project=project, code="ARC-P")

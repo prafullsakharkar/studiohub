@@ -125,7 +125,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
 
         recent_shots = list(
             ShotCurrentVersionSelector.annotate(
-                Shot.objects.filter(**scope).select_related("assigned_artist")
+                Shot.objects.filter(**scope).select_related("assigned_artist", "sequence")
             ).order_by("-updated_at")[:8]
         )
         recent_tasks = list(

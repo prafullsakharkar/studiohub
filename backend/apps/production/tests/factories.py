@@ -45,8 +45,20 @@ class ShotFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgum
         model = Shot
         django_get_or_create = ("code", "project")
 
+    class Params:
+        #: ``ShotFactory(sequence_code="SQ1")`` links the shot to that sequence (made if missing)
+        sequence_code = ""
+
     project = factory.SubFactory(ProjectFactory)
-    sequence_code = "SEQ01"
+    sequence = factory.LazyAttribute(
+        lambda o: (
+            Sequence.objects.get_or_create(
+                project=o.project, code=o.sequence_code, defaults={"name": o.sequence_code}
+            )[0]
+            if o.sequence_code
+            else None
+        )
+    )
     code = factory.Sequence(lambda n: f"SHOT{n:03d}")
     name = factory.Sequence(lambda n: f"Shot {n}")
     status = "Not Started"
@@ -120,7 +132,6 @@ class TaskFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgum
     workflow = {}
     schedule = {}
     dependencies = {}
-    is_archived = False
 
 
 class ShowFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]

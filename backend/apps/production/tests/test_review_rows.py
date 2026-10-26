@@ -16,7 +16,6 @@ from apps.identity.tests.factories import UserFactory
 from apps.identity.tests.rbac_helpers import grant_permissions
 from apps.production.models import (
     ProjectMembership,
-    Review,
     ReviewActivity,
     ReviewComment,
     ReviewItem,
@@ -104,17 +103,6 @@ class TestShapes:
         assert body["notes"][0]["is_pinned"] is True
         assert body["annotations"][0]["frame_number"] == 3
         assert body["reviewers"] == [] and isinstance(body["activity"], list)
-
-    def test_the_json_columns_are_neither_read_nor_written(self, project, review):
-        Review.objects.filter(pk=review.pk).update(comments=[{"id": "x", "text": "old"}])
-        author = _user(project, *CODES)
-        _api(author).post(_url(review, "comments/"), {"text": "new"}, format="json")
-
-        body = _api(author).get(_url(review)).json()
-
-        assert [c["text"] for c in body["comments"]] == ["new"]
-        review.refresh_from_db()
-        assert review.comments == [{"id": "x", "text": "old"}]  # left for the contract phase
 
     def test_the_list_endpoint_carries_the_same_lists(self, project, review):
         user = _user(project, *CODES)
@@ -455,15 +443,14 @@ class TestSeedsAndLegacyImport:
         version = VersionFactory.create(
             project=project, shot=ShotFactory.create(project=project, code="S1"), code="A_V1"
         )
-        review = ReviewFactory.create(
-            project=project,
-            code="SEED",
-            versions=[str(version.id)],
-            comments=[{"author": "Ann", "text": "one"}],
-        )
+        review = ReviewFactory.create(project=project, code="SEED")
+        lists = {
+            "versions": [str(version.id)],
+            "comments": [{"author": "Ann", "text": "one"}],
+        }
 
-        assert ReviewService.import_legacy_json(review) == []
-        assert ReviewService.import_legacy_json(review) == []  # a second run adds nothing
+        assert ReviewService.import_legacy_json(review, lists) == []
+        assert ReviewService.import_legacy_json(review, lists) == []  # a second run adds nothing
 
         assert ReviewItem.objects.filter(review=review).count() == 1
         assert ReviewComment.objects.filter(review=review).count() == 1
@@ -480,8 +467,6 @@ class TestActivity:
         entry = resp.json()["activity"][-1]
         assert entry["action"] == "SUBMITTED" and entry["notes"] == "ready"
         assert entry["user"] == user.email
-        review.refresh_from_db()
-        assert review.activity == []
 
     def test_a_verdict_with_notes_is_logged_with_the_verdict(self, project, review):
         boss = _user(project, *APPROVER)

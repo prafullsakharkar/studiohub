@@ -363,7 +363,6 @@ project=proj,
                     "sequence": Sequence.objects.filter(
                         project=proj, code__iexact=item.get("sequence_code", "")
                     ).first(),
-                    "sequence_code": item.get("sequence_code", ""),
                     "name": item.get("name", code),
                     "description": item.get("description", ""),
                     "status": item.get("status", "Not Started"),
@@ -372,7 +371,6 @@ project=proj,
                     "handle_frames": item.get("handle_frames", 8),
                     "thumbnail_url": item.get("thumbnail_url", ""),
                     "video_url": item.get("video_url", ""),
-                    "current_version": item.get("current_version", "v001"),
                     "assigned_artist": self._get_user(item.get("assigned_artist_id", "")),
                     "supervisor_approved": item.get("supervisor_approved", False),
                     "client_approved": item.get("client_approved", False),
@@ -464,7 +462,6 @@ project=proj,
                     "description": item.get("description", ""),
                     "software": item.get("software", ""),
                     "tags": item.get("tags", []),
-                    "is_archived": item.get("is_archived", False),
                 },
 code=code,
 project=proj,
@@ -578,7 +575,6 @@ project=proj,
                     "status": item.get("status", "Pending Review"),
                     "is_published": item.get("is_published", False),
                     "is_hero": item.get("is_hero", False),
-                    "is_archived": item.get("is_archived", False),
                     "thumbnail_url": item.get("thumbnail_url", ""),
                     "video_url": item.get("video_url", ""),
                     "resolution": item.get("resolution", "4096x2160"),
@@ -618,16 +614,23 @@ project=proj,
                     "lead_reviewer_name": item.get("lead_reviewer_name", ""),
                     "thumbnail_url": item.get("thumbnail_url", ""),
                     "video_url": item.get("video_url", ""),
-                    "versions": item.get("versions", []),
-                    "reviewers": item.get("reviewers", []),
-                    "comments": item.get("comments", []),
-                    "notes": item.get("notes", []),
-                    "annotations": item.get("annotations", []),
-                    "activity": item.get("activity", []),
                 },
 code=code,
 )
-            ReviewService.import_legacy_json(review)
+            ReviewService.import_legacy_json(
+                review,
+                {
+                    name: item.get(name, [])
+                    for name in (
+                        "versions",
+                        "reviewers",
+                        "comments",
+                        "notes",
+                        "annotations",
+                        "activity",
+                    )
+                },
+            )
             count += 1
         return count
 
@@ -649,12 +652,11 @@ code=code,
                     "description": item.get("description", ""),
                     "project": proj,
                     "status": item.get("status", "Active"),
-                    "entries": item.get("entries", []),
                     "share_settings": item.get("share_settings", {}),
                 },
 code=code,
 )
-            PlaylistService.import_legacy_json(playlist)
+            PlaylistService.import_legacy_json(playlist, item.get("entries", []))
             count += 1
         return count
 

@@ -42,13 +42,12 @@ class SequenceService(BulkOperationService):
     @classmethod
     def after_update(cls, instance, **kwargs):
         """
-        A renamed sequence keeps its shots: their text copy of the code follows. A
-        sequence moved to another episode takes its shots along (D-12).
+        A sequence moved to another episode takes its shots along (D-12). (Its shots show the new
+        code by themselves: ``sequence_code`` is read from the sequence, D-32.)
         """
         from apps.production.models import Shot
 
         shots = Shot.all_objects.filter(sequence=instance)
-        shots.exclude(sequence_code=instance.code).update(sequence_code=instance.code)
         if instance.episode_id is not None:
             shots.exclude(episode_id=instance.episode_id).update(episode_id=instance.episode_id)
         return instance

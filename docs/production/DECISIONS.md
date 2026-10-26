@@ -288,3 +288,18 @@ Two of the "later items" were chosen: C5 and E5. B6 (manual ordering), B8, C3 to
 * **Migrations 0042 (table) and 0043 (data).** 0043 never refuses: it converts entries in `item_order` order (an entry's other keys go to `extra`, its old id to `legacy_id`, so old ids keep working), and prints and skips an entry that names a version outside the playlist's project or is not an object. The shape of the old entries was never written down (**UNVERIFIED** against real data). `report_production_data` dry-runs it (information); the seeds convert too.
 * **Not done:** the `Version.playlists` JSON cache (D-18) is still appended to by `add-to-playlist`; the playlist `activity` JSON; ordering of episodes, sequences and shots (B6).
 
+## D-32 Contract phase: legacy columns dropped (plan phase P12)
+
+Migrations **0044** (check) and **0045** (drop). No API response changes: every field below is still in responses, now read from where it really lives.
+
+* **Dropped:** `Shot.sequence_code`, `Shot.current_version`, `Task.logged_hours`, `is_archived` on Task, Asset, Version, Playlist and Workflow, the six JSON lists on `Review` (`versions`, `reviewers`, `comments`, `notes`, `annotations`, `activity`) and `Playlist.entries`, plus the indexes on them. `sequence_code` in shot responses, filters (`sequence_code=`, `sequence=`, `sequence_id=` by code), search and the admin is read from the shot's sequence (`sequence__code`, a property on the model); `current_version` and `logged_hours` stay derived (D-15, D-16); `is_archived` stays derived from the soft delete (D-25). A `PATCH` that sends one of them is still a 400 unless it equals the derived value.
+* **0044 refuses, changing nothing,** if 0045 would lose data: a review or playlist entry that never became a row (it first re-runs the conversion for reviews and playlists that have none, then dry-runs it; what is left is listed), a shot whose `sequence_code` text names no sequence of its project (it has no `sequence`), or a row with `is_archived` set that is still live (the flag has not been read since D-25; the seed commands used to set it). It lists the rows and says how to clear each. `Task.logged_hours` and `Shot.current_version` are dropped without a check: they were not read since D-15 and D-16 and a hand-typed `logged_hours` was announced as discarded there.
+* **0045 is destructive.** Its reverse puts the columns back **empty** (defaults); the data in them is gone. Take a database backup first (DEPLOY.md). Reverse of 0044 does nothing.
+* **`report_production_data` still works on a database that has not been migrated:** the sections about these columns read them with plain SQL while they exist and print nothing once they are gone.
+* **The seed commands** no longer write the dropped columns; the review and playlist lists in the frontend mocks are turned into rows by the same conversion code as the migrations. A seeded "archived" mock row is simply live.
+* **Not dropped, on purpose (each needs its own decision):**
+  * `entity_type` / `entity_id` / `entity_code` / `entity_name` on Task, Version, Asset and others: for a row with no link (a General task, a version of neither a shot nor an asset, the tasks 0036 could not match) they are the only copy of the information.
+  * `Project.total_*` (B8): nothing decided about deriving them.
+  * The JSON caches on Version (`reviews`, `playlists`, `notes_list`, `activity`, `media_items`, `attachments`; D-18), `Asset.version` / `versions` / `hierarchy` (D-31), `Review.client` / `vendor`, the playlist `activity`.
+  * `EditorialCut.sequence_code`, `ProjectNote`'s entity text, and `is_archived` on `deliveries` and the core lifecycle mixin (other apps).
+

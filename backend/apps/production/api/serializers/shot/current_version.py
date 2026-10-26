@@ -20,6 +20,12 @@ class ShotCurrentVersionMixin(serializers.Serializer[Any]):
         version_id = ShotCurrentVersionSelector.of(obj)[1]
         return str(version_id) if version_id else None
 
+    def parse_derived(self, name, raw):
+        return str(raw or "").strip()
+
+    def derived_default(self, name):
+        return "" if name == "current_version" else super().derived_default(name)  # pyright: ignore[reportAttributeAccessIssue]
+
     def current_value(self, name):
         if name == "current_version":
             instance = getattr(self, "instance", None)

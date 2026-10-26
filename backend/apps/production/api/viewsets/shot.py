@@ -82,7 +82,7 @@ class ShotViewSet(
         "client_approved": {True: ShotPermissions.APPROVE},
     }
 
-    search_fields = ("code", "name", "description", "sequence_code")
+    search_fields = ("code", "name", "description", "sequence__code")
     ordering_fields = ("code", "name", "created_at", "status")
 
     @action(detail=False, methods=["post"], url_path="bulk-archive")
@@ -117,7 +117,7 @@ class ShotViewSet(
           * the episode is resolved inside the target project (codes repeat
             across projects); a foreign or unknown episode is "Unknown episode.";
           * a supplied ``sequence_id`` (id or code) must resolve to a sequence of the
-            target project; the shot then points at it and ``sequence_code`` follows;
+            target project; the shot then points at it;
           * a shot follows the episode of its sequence when the sequence has one: an
             episode that differs is a 400, an omitted one is taken from the sequence.
             An older mismatch is left alone until the shot is moved (see the report).
@@ -143,11 +143,10 @@ class ShotViewSet(
                     raise ValidationError(
                         {"sequence_id": ["Unknown sequence for the selected project."]}
                     )
-                data["sequence"] = sequence  # Shot.save() copies its code to sequence_code
+                data["sequence"] = sequence
             else:
                 sequence = None
                 data["sequence"] = None
-                data["sequence_code"] = ""
 
         episode = None
         if episode_supplied:

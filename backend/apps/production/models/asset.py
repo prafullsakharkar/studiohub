@@ -101,10 +101,6 @@ class Asset(EntityModel):
     usd_prim_path = models.CharField(max_length=255, blank=True, default="")
     usd_stage_url = models.URLField(max_length=500, blank=True, default="")
 
-    # Legacy (D-25): neither read nor written; archived means soft-deleted (``is_deleted``).
-    # The API's ``is_archived`` is derived from that. The column goes in the final cleanup.
-    is_archived = models.BooleanField(default=False, db_index=True)
-
     # Additional metadata for frontend compat
     versions = models.JSONField(default=list, blank=True)
     hierarchy = models.JSONField(default=list, blank=True)
@@ -121,7 +117,6 @@ class Asset(EntityModel):
         indexes = [
             models.Index(fields=["project", "category"]),
             models.Index(fields=["status"]),
-            models.Index(fields=["is_archived"]),
         ]
 
     def __str__(self):

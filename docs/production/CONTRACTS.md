@@ -321,3 +321,11 @@ Frontend change list: stop sending author names and roles; offer participants an
 
 Frontend change list: handle the new 400 when archiving an asset that shots use (offer to unlink); stop sending `entries` on playlist `PATCH`; do not rely on reorder to remove entries (use `remove-entry`); entry ids are now row ids (the old string still works).
 
+## Contract phase (D-32)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-44 | All responses and filters naming `sequence_code`, `current_version`, `logged_hours`, `is_archived`, review `versions` / `reviewers` / `comments` / `notes` / `annotations` / `activity`, playlist `entries` | Read from legacy columns or JSON (already derived since D-15, D-16, D-25, D-30, D-31). | **Unchanged** for clients: the same fields, read from the sequence, the timelogs, the versions, the soft delete and the row tables. Shots with no sequence show `sequence_code: ""`; a shot whose old `sequence_code` text matched no sequence is refused by migration 0044 until fixed. |
+
+Frontend change list: none required by this phase. (Earlier phases' lists still apply.)
+

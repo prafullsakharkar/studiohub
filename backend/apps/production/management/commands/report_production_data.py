@@ -30,17 +30,21 @@ is left:
 * tasks whose old stored ``logged_hours`` differs from the sum of their approved timelogs:
   responses now show the sum, so a hand-typed number stops appearing (DECISIONS D-15)
 
-Nothing is changed. It reads the database selected by ``DJANGO_ENV``.
+Nothing is changed. It reads the database selected by ``DJANGO_ENV``. Sections about columns the contract phase (P12,
+DECISIONS D-32) drops read them with plain SQL while they exist and print nothing once they are gone, so the report
+works on a database that has not been migrated yet and on one that has.
 """
 
 from __future__ import annotations
 
+import json
+
 from django.core.management.base import BaseCommand
-from django.db import models
-from django.db.models import Count, Q
+from django.db import connection, models
+from django.db.models import Count
 
 from apps.production.constants import ProjectWorkflowType
-from apps.production.models import Asset, Episode, Playlist, Sequence, Shot, Task, Version, Workflow
+from apps.production.models import Asset, Episode, Sequence, Shot, Task, Version
 from apps.production.selectors.rollups import TaskHoursSelector
 
 CODED = (Episode, Sequence, Shot, Asset, Task, Version)
@@ -78,16 +82,54 @@ def backwards_frame_ranges():
     return found
 
 
+def has_columns(table, *columns):
+    """Whether ``table`` still has all of ``columns`` (the contract phase, P12, drops legacy ones)."""
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT column_name FROM information_schema.columns"
+            " WHERE table_schema = current_schema() AND table_name = %s",
+            [table],
+        )
+        present = {row[0] for row in cursor.fetchall()}
+    return all(column in present for column in columns)
+
+
+def legacy_rows(table, columns, where=""):
+    """
+    Rows of ``columns`` read straight from ``table`` (names are constants of this module), or ``None`` when a
+    column is already gone. The models no longer carry the legacy columns, so this is how the report still sees
+    them on a database that has not been migrated yet.
+    """
+    if not has_columns(table, *columns):
+        return None
+    with connection.cursor() as cursor:
+        cursor.execute(f"SELECT {', '.join(columns)} FROM {table} {where}")  # noqa: S608
+        return cursor.fetchall()
+
+
+def _json(value):
+    """A jsonb value read with plain SQL: Django's driver hands it back as text."""
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except ValueError:
+            return None
+    return value
+
+
 def unmatched_shot_sequences():
     """``{(project id, sequence_code): [shot ids]}`` for shots naming no sequence of their project."""
+    rows = legacy_rows(
+        "production_shot", ("id", "project_id", "sequence_code"), "WHERE sequence_code <> ''"
+    )
+    if rows is None:
+        return {}
     known = {
         (project_id, (code or "").upper())
         for project_id, code in Sequence.all_objects.values_list("project_id", "code")
     }
     unmatched: dict[tuple[object, str], list[str]] = {}
-    for pk, project_id, code in Shot.all_objects.exclude(sequence_code="").values_list(
-        "pk", "project_id", "sequence_code"
-    ):
+    for pk, project_id, code in rows:
         if (project_id, code.upper()) not in known:
             unmatched.setdefault((project_id, code), []).append(str(pk))
     return unmatched
@@ -121,27 +163,27 @@ def shots_out_of_step_with_sequence():
     return [(str(pk), code, sequence_code) for pk, code, sequence_code in rows]
 
 
-ARCHIVE_FLAG_MODELS = (Task, Asset, Version, Playlist, Workflow)
+ARCHIVE_FLAG_TABLES = (
+    ("Task", "production_task"),
+    ("Asset", "production_asset"),
+    ("Version", "production_version"),
+    ("Playlist", "production_playlist"),
+    ("Workflow", "production_workflow"),
+)
 
 
 def archive_flag_overlap():
-    """``[(model name, flag only, deleted only, both, neither)]`` for the models with both markers."""
+    """``[(model name, flag only, deleted only, both, neither)]`` for the tables that still have both markers."""
     rows = []
-    for model in ARCHIVE_FLAG_MODELS:
-        counts = model.all_objects.aggregate(
-            flag_only=Count("pk", filter=Q(is_archived=True, is_deleted=False)),
-            deleted_only=Count("pk", filter=Q(is_archived=False, is_deleted=True)),
-            both=Count("pk", filter=Q(is_archived=True, is_deleted=True)),
-            neither=Count("pk", filter=Q(is_archived=False, is_deleted=False)),
-        )
+    for name, table in ARCHIVE_FLAG_TABLES:
+        counts = legacy_rows(table, ("is_archived", "is_deleted"))
+        if counts is None:
+            continue
+        flag_only = sum(1 for a, d in counts if a and not d)
+        deleted_only = sum(1 for a, d in counts if d and not a)
+        both = sum(1 for a, d in counts if a and d)
         rows.append(
-            (
-                model.__name__,
-                counts["flag_only"],
-                counts["deleted_only"],
-                counts["both"],
-                counts["neither"],
-            )
+            (name, flag_only, deleted_only, both, len(counts) - flag_only - deleted_only - both)
         )
     return rows
 
@@ -230,15 +272,20 @@ def unlinked_task_entities():
     return found
 
 
+REVIEW_LISTS = ("versions", "reviewers", "comments", "notes", "annotations", "activity")
+
+
 def review_json_not_convertible():
     """Lines like ``review R1: versions[2] matches no version of the project`` (a dry run of 0041)."""
     from types import SimpleNamespace
 
     from django.contrib.auth import get_user_model
 
-    from apps.production.models import Review
     from apps.production.services.review_legacy import import_review
 
+    rows = legacy_rows("production_review", ("id", "code", "project_id", *REVIEW_LISTS))
+    if rows is None:
+        return []
     # the row classes stay None: a dry run neither reads nor writes the row tables
     models_ = SimpleNamespace(
         Version=Version,
@@ -251,8 +298,14 @@ def review_json_not_convertible():
         Activity=None,
     )
     found: list[str] = []
-    for review in Review.all_objects.all().iterator():
-        found += import_review(review, models=models_, dry_run=True)  # pyright: ignore[reportArgumentType]
+    for pk, code, project_id, *lists in rows:
+        review = SimpleNamespace(pk=pk, code=code, project_id=project_id)
+        found += import_review(  # pyright: ignore[reportArgumentType]
+            review,
+            models=models_,
+            dry_run=True,
+            lists={name: _json(value) for name, value in zip(REVIEW_LISTS, lists, strict=True)},
+        )
     return found
 
 
@@ -262,12 +315,16 @@ def playlist_json_not_convertible():
 
     from apps.production.services.playlist_legacy import import_playlist
 
+    rows = legacy_rows("production_playlist", ("id", "code", "project_id", "entries"))
+    if rows is None:
+        return []
     models_ = SimpleNamespace(
         Version=Version, Entry=None
     )  # a dry run never touches the entry table
     found: list[str] = []
-    for playlist in Playlist.all_objects.all().iterator():
-        found += import_playlist(playlist, models=models_, dry_run=True)  # pyright: ignore[reportArgumentType]
+    for pk, code, project_id, entries in rows:
+        playlist = SimpleNamespace(pk=pk, code=code, project_id=project_id)
+        found += import_playlist(playlist, models=models_, dry_run=True, entries=_json(entries))  # pyright: ignore[reportArgumentType]
     return found
 
 
@@ -306,7 +363,6 @@ def version_blockers():
 
 def versions_sharing_a_number():
     """How many versions have the same ``version_index`` as another in their series."""
-    from django.db.models import Count
 
     total = 0
     for field, extra in (
@@ -326,11 +382,15 @@ def versions_sharing_a_number():
 
 def tasks_with_unbacked_hours():
     """``[(task id, code, stored hours, approved timelog hours)]`` where the old stored number differs."""
-    rows = TaskHoursSelector.annotate(Task.all_objects.exclude(logged_hours=0))
+    stored = legacy_rows("production_task", ("id", "logged_hours"), "WHERE logged_hours <> 0")
+    if not stored:
+        return []
+    numbers = dict(stored)
+    rows = TaskHoursSelector.annotate(Task.all_objects.filter(pk__in=list(numbers)))
     return [
-        (str(task.pk), task.code, task.logged_hours, task.logged_hours_annotated)
+        (str(task.pk), task.code, numbers[task.pk], task.logged_hours_annotated)
         for task in rows.iterator()
-        if task.logged_hours != task.logged_hours_annotated
+        if numbers[task.pk] != task.logged_hours_annotated
     ]
 
 

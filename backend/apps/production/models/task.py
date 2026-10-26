@@ -116,14 +116,9 @@ class Task(EntityModel):
         db_index=True,
     )
 
-    # Legacy (D-25): neither read nor written; archived means soft-deleted (``is_deleted``).
-    # The API's ``is_archived`` is derived from that. The column goes in the final cleanup.
-    is_archived = models.BooleanField(default=False, db_index=True)
-
     # Denormalized for quick filtering (also in schedule)
     due_date = models.DateField(null=True, blank=True)
     estimated_hours = models.DecimalField(max_digits=6, decimal_places=2, default=0)
-    logged_hours = models.DecimalField(max_digits=6, decimal_places=2, default=0)
 
     class Meta:
         db_table = "production_task"
@@ -148,7 +143,6 @@ class Task(EntityModel):
             models.Index(fields=["project", "entity_id"]),
             models.Index(fields=["status"]),
             models.Index(fields=["priority"]),
-            models.Index(fields=["is_archived"]),
             models.Index(fields=["department"]),
         ]
 

@@ -8,6 +8,7 @@ import re
 from typing import Any, ClassVar
 from uuid import UUID
 
+from django.core.exceptions import FieldDoesNotExist
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
@@ -135,18 +136,39 @@ class LockedFieldsMixin:
             return self.instance.is_deleted
         return getattr(self.instance, name)
 
+    def parse_derived(self, name, raw):
+        """Parse a sent value of a derived field that has no column (override per field)."""
+        return raw
+
+    def derived_default(self, name):
+        """What a new record's derived field holds, for fields that have no column."""
+        return {"is_archived": False, "sequence_code": ""}.get(name)
+
     def _changes(self, name, raw) -> bool:
         field = self.fields[name]
         instance = self.instance
         try:
+            model_field = None
             if isinstance(field, serializers.SerializerMethodField):
-                # A derived field has no input parser of its own: use the model field's.
-                value = self.Meta.model._meta.get_field(name).to_python(raw)
+                # A derived field has no input parser of its own: use the model field's, or, when
+                # the column is gone (P12), the serializer's own ``parse_derived``.
+                try:
+                    model_field = self.Meta.model._meta.get_field(name)
+                except FieldDoesNotExist:
+                    value = self.parse_derived(name, raw)
+                else:
+                    value = model_field.to_python(raw)
             else:
                 value = field.to_internal_value(raw)
+                try:
+                    model_field = self.Meta.model._meta.get_field(name)
+                except FieldDoesNotExist:  # ``is_archived``: derived from the soft delete
+                    model_field = None
             if instance is not None:
                 return value != self.current_value(name)
-            return value != self.Meta.model._meta.get_field(name).get_default()
+            if model_field is None:
+                return value != self.derived_default(name)
+            return value != model_field.get_default()
         except (serializers.ValidationError, DjangoValidationError, TypeError, ValueError):
             return True
 

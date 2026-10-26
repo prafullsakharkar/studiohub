@@ -34,9 +34,7 @@ class Shot(EntityModel):
         related_name="shots",
         db_index=True,
     )
-    # The sequence the shot belongs to. ``sequence_code`` is a service-maintained copy of
-    # ``sequence.code`` (kept for filters, search and the API contract); a shot whose
-    # old text matched no sequence keeps its text here and has no ``sequence``.
+    # The sequence the shot belongs to; ``sequence_code`` is read from it (DECISIONS D-32).
     sequence = models.ForeignKey(
         "production.Sequence",
         on_delete=models.PROTECT,
@@ -44,7 +42,6 @@ class Shot(EntityModel):
         blank=True,
         related_name="shots",
     )
-    sequence_code = models.CharField(max_length=50, blank=True, default="", db_index=True)
     code = models.CharField(max_length=30, db_index=True)
     name = models.CharField(max_length=255, blank=True, default="")
     description = models.TextField(blank=True, default="")
@@ -62,8 +59,6 @@ class Shot(EntityModel):
 
     thumbnail_url = models.URLField(max_length=500, blank=True, default="")
     video_url = models.URLField(max_length=500, blank=True, default="")
-
-    current_version = models.CharField(max_length=20, blank=True, default="v001")
 
     assigned_artist = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -97,7 +92,6 @@ class Shot(EntityModel):
             ),
         ]
         indexes = [
-            models.Index(fields=["project", "sequence_code"]),
             models.Index(fields=["project", "sequence"]),
             models.Index(fields=["project", "code"]),
             models.Index(fields=["status"]),
@@ -107,18 +101,15 @@ class Shot(EntityModel):
         return f"{self.code} - {self.name}"
 
     @property
+    def sequence_code(self) -> str:
+        """The code of the shot's sequence ("" when it has none); filters use ``sequence__code``."""
+        return self.sequence.code if self.sequence_id else ""  # pyright: ignore[reportAttributeAccessIssue, reportOptionalMemberAccess]
+
+    @property
     def frame_count(self):
         return self.frame_out - self.frame_in + 1 if self.frame_out and self.frame_in else 0
 
     def save(self, *args, **kwargs):
-        # Keep the text copy in step with the sequence it copies.
-        update_fields = kwargs.get("update_fields")
-        if self.sequence_id and (  # pyright: ignore[reportAttributeAccessIssue]
-            update_fields is None or {"sequence", "sequence_id"} & set(update_fields)
-        ):
-            self.sequence_code = self.sequence.code
-            if update_fields is not None:
-                kwargs["update_fields"] = {*update_fields, "sequence_code"}
         # Default pipeline if not set
         if not self.pipeline:
             self.pipeline = {

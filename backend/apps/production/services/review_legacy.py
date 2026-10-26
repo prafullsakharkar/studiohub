@@ -85,18 +85,27 @@ def _user(users: Any, raw: Any) -> Any:
 
 
 def import_review(
-    review: Any, *, models: SimpleNamespace, only_empty: bool = True, dry_run: bool = False
+    review: Any,
+    *,
+    models: SimpleNamespace,
+    only_empty: bool = True,
+    dry_run: bool = False,
+    lists: dict[str, Any] | None = None,
 ) -> list[str]:
     """
     Create rows for the old JSON lists of ``review``. ``models`` carries ``Version``, ``User`` and the six
     row classes (``Item``, ``Participant``, ``Comment``, ``Note``, ``Annotation``, ``Activity``).
 
     Returns the entries that could not be converted, one line each. A kind that already has rows is skipped
-    when ``only_empty`` (the seeds run more than once). With ``dry_run`` nothing is read from or written to the
+    when ``only_empty`` (the seeds run more than once). The old lists are read from ``lists`` (a dict by name)
+    when given, else from the attributes of ``review`` (the migrations, whose historical model still has them). With ``dry_run`` nothing is read from or written to the
     row tables (they may not exist yet): only the problems are returned, for ``report_production_data``.
     """
     problems: list[str] = []
     label = review.code or str(review.pk)
+
+    def old(name: str) -> list[Any]:
+        return _entries(lists.get(name) if lists is not None else getattr(review, name, None))
 
     def skip(rows_model: Any) -> bool:
         return only_empty and not dry_run and rows_model.objects.filter(review=review).exists()
@@ -113,7 +122,7 @@ def import_review(
     if not skip(models.Item):
         seen: set[Any] = set()
         position = 0
-        for index, entry in enumerate(_entries(review.versions)):
+        for index, entry in enumerate(old("versions")):
             if isinstance(entry, str):
                 ref = entry
             elif isinstance(entry, dict):
@@ -145,7 +154,7 @@ def import_review(
 
     if not skip(models.Participant):
         people: set[Any] = set()
-        for index, entry in enumerate(_entries(review.reviewers)):
+        for index, entry in enumerate(old("reviewers")):
             if not isinstance(entry, dict):
                 problems.append(f"review {label}: reviewers[{index}] is not an object")
                 continue
@@ -170,7 +179,7 @@ def import_review(
             stamp(models.Participant, row, _when(entry, "created_at"))
 
     if not skip(models.Comment):
-        for index, entry in enumerate(_entries(review.comments)):
+        for index, entry in enumerate(old("comments")):
             if not isinstance(entry, dict):
                 problems.append(f"review {label}: comments[{index}] is not an object")
                 continue
@@ -184,7 +193,7 @@ def import_review(
                     )
 
     if not skip(models.Note):
-        for index, entry in enumerate(_entries(review.notes)):
+        for index, entry in enumerate(old("notes")):
             if not isinstance(entry, dict):
                 problems.append(f"review {label}: notes[{index}] is not an object")
                 continue
@@ -199,7 +208,7 @@ def import_review(
             stamp(models.Note, row, _when(entry, "created_at"))
 
     if not skip(models.Annotation):
-        for index, entry in enumerate(_entries(review.annotations)):
+        for index, entry in enumerate(old("annotations")):
             if not isinstance(entry, dict):
                 problems.append(f"review {label}: annotations[{index}] is not an object")
                 continue
@@ -214,7 +223,7 @@ def import_review(
             stamp(models.Annotation, row, _when(entry, "created_at"))
 
     if not skip(models.Activity):
-        for index, entry in enumerate(_entries(review.activity)):
+        for index, entry in enumerate(old("activity")):
             if not isinstance(entry, dict):
                 problems.append(f"review {label}: activity[{index}] is not an object")
                 continue

@@ -129,15 +129,18 @@ class PlaylistService(BusinessService):
                 row.save(update_fields=["position", "updated_by", "updated_at"])
 
     @classmethod
-    def import_legacy_json(cls, playlist) -> list[str]:
+    def import_legacy_json(cls, playlist, entries: Any) -> list[str]:
         """
-        Turn the old JSON ``entries`` of ``playlist`` into rows (for the seed commands, which still read the
-        frontend mocks); a playlist that already has rows is left alone. Returns what could not be read.
+        Turn the ``entries`` list a frontend mock carries into rows (for the seed commands); a playlist
+        that already has rows is left alone. Returns what could not be read.
         """
         from types import SimpleNamespace
 
         from apps.production.services.playlist_legacy import import_playlist
 
         return import_playlist(
-            playlist, models=SimpleNamespace(Version=Version, Entry=PlaylistEntry), only_empty=True
+            playlist,
+            models=SimpleNamespace(Version=Version, Entry=PlaylistEntry),
+            only_empty=True,
+            entries=entries,
         )

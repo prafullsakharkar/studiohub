@@ -28,6 +28,9 @@ class ShotCreateSerializer(  # pyright: ignore[reportUnsafeMultipleInheritance]
         "current_version": "Derived from the shot's versions.",
     }
 
+    #: read from the shot's sequence (D-32); sending a different value is a 400
+    sequence_code = serializers.CharField(read_only=True)
+
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
     # Frontend contract: ``episode_id``/``sequence_id`` arrive as raw

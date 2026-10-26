@@ -26,6 +26,9 @@ class ShotUpdateSerializer(  # pyright: ignore[reportUnsafeMultipleInheritance]
         "current_version": "Derived from the shot's versions.",
     }
 
+    #: read from the shot's sequence (D-32); sending a different value is a 400
+    sequence_code = serializers.CharField(read_only=True)
+
     # Same reference aliases as create; the viewset resolves + validates the
     # episodic chain against the shot's (unchangeable) project before saving.
     episode_id = serializers.CharField(

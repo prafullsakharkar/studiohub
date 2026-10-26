@@ -15,7 +15,6 @@ class ShotAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
         "status",
         "supervisor_approved",
         "client_approved",
-        "current_version",
     )
 
     list_filter = (
@@ -27,11 +26,11 @@ class ShotAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     search_fields = (
         "code",
         "name",
-        "sequence_code",
+        "sequence__code",
     )
 
     autocomplete_fields = ("project", "assigned_artist")
 
-    list_select_related = ("project",)
+    list_select_related = ("project", "sequence")
 
     ordering = ("code",)

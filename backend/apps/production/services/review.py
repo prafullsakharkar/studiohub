@@ -1,4 +1,5 @@
 import contextlib
+from typing import Any
 from uuid import UUID
 
 from django.db import IntegrityError, transaction
@@ -129,10 +130,11 @@ class ReviewService(BusinessService):
     # -- the parts of a review (WP E4, D-30) -----------------------------------------------------
 
     @classmethod
-    def import_legacy_json(cls, review) -> list[str]:
+    def import_legacy_json(cls, review, lists: dict[str, Any]) -> list[str]:
         """
-        Turn the old JSON lists of ``review`` into rows (for the seed commands, which still read the
-        frontend mocks); a list that already has rows is left alone. Returns what could not be read.
+        Turn the lists a frontend mock carries (``versions``, ``reviewers``, ``comments``, ``notes``,
+        ``annotations``, ``activity``) into rows, for the seed commands; a kind that already has rows is
+        left alone. Returns what could not be read.
         """
         from types import SimpleNamespace
 
@@ -153,6 +155,7 @@ class ReviewService(BusinessService):
                 Activity=ReviewActivity,
             ),
             only_empty=True,
+            lists=lists,
         )
 
     @classmethod

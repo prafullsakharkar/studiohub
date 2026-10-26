@@ -2,7 +2,7 @@
 
 Branch `feature/production-hardening`, commits `0bd495b` (phase 1) onwards. What changed and why: `DECISIONS.md` (D-01 to D-29); every API change with its before and after: `CONTRACTS.md` (C-01 to C-41); what is still planned: `PLAN.md`.
 
-**What was and was not run.** Everything below was developed and tested against the pytest test database only (last full suite run (before P9): 4263 passed, 1 skipped; from P9 on only targeted tests have run, the full suite is held until P12). Nothing was ever run against a staging or production database, and none of the preflight steps in section 1 has been run by the author. Treat section 1 as a gate you pass, not a formality.
+**What was and was not run.** Everything below was developed and tested against the pytest test database only (full suite run at the end of P12, with all phases in place: 4340 passed, 1 skipped, coverage 84.69%; P9 to P11 had only targeted runs, and the first P12 full run found 11 failures and 36 errors that were fixed: a workflow serializer field, missing admin registrations for the new tables, a delivery test, and migration tests that had to stop before the drop). Nothing was ever run against a staging or production database, and none of the preflight steps in section 1 has been run by the author. Treat section 1 as a gate you pass, not a formality.
 
 ## 1. Before you migrate (read-only)
 
@@ -28,7 +28,7 @@ Run these against a copy or the real database, in this order, and keep the outpu
 
 ## 2. Migrate
 
-`uv run python manage.py migrate` (production 0023 to 0043, scheduling 0003). In order:
+`uv run python manage.py migrate` (production 0023 to 0045, scheduling 0003). In order:
 
 | Migration | What it does | Can it fail on existing data? |
 |---|---|---|
@@ -53,6 +53,8 @@ Run these against a copy or the real database, in this order, and keep the outpu
 | 0041 `convert_review_json` | Turns the JSON lists of each review into rows (best effort; the JSON columns are **not** touched). Prints the entries it cannot read (not a version of the project, a repeated user, not an object) and skips them. Reverse does nothing. | No: it never refuses. Read the report line first; once the API reads rows, a skipped entry no longer shows. |
 | 0042 `playlist_entries` | New table for playlist entries. | No. |
 | 0043 `convert_playlist_entries` | Turns each playlist's JSON `entries` into rows in `item_order` order (best effort; the JSON column is **not** touched). Prints and skips entries that name a version outside the playlist's project or are not objects. Reverse does nothing. | No: it never refuses. Read the report line first. |
+| 0044 `check_before_dropping` | **Refuses, changing nothing,** if dropping the legacy columns would lose data: a review or playlist entry that never became a row, a shot whose `sequence_code` text names no sequence, a row with `is_archived` set that is still live. Runs the review and playlist conversions once more first for any that have no rows. Reverse does nothing. | **Yes, on purpose.** It lists the rows; the report shows most of them beforehand. |
+| 0045 `drop_legacy_columns` | **Drops** `Shot.sequence_code` and `current_version`, `Task.logged_hours`, `is_archived` (Task, Asset, Version, Playlist, Workflow), the six JSON lists of `Review` and `Playlist.entries`. **Not reversible with data**: the reverse adds empty columns. | No (0044 guards it). **Take a backup first.** |
 | scheduling 0003 `leave_rejected_by` | Two additive columns on leave requests. | No. |
 
 Tests exist for forward, back and forward again of 0023 and 0024 (`test_migration_roundtrip.py`) and for 0025 to 0029 and 0031 (`test_migrations_hierarchy.py`, including the refusal of 0025, the fill rules of 0027 and 0029 and the rows 0031 touches); 0030 has none (no SQL) and 0032 only creates a table. The two "fill" migrations log a count of filled and unmatched rows.
@@ -111,7 +113,7 @@ From `CONTRACTS.md`; the contract IDs have the exact before and after.
 
 Phases P10 to P12 of `PLAN.md` (relational reviews and notes, the contract phase that drops legacy columns) and these items inside finished phases:
 
-- dropping the `is_archived`, `sequence_code`, `Task.logged_hours` and `Shot.current_version` columns (final cleanup; `is_archived` itself is retired in behaviour, D-25);
+- (done in P12, D-32: the `is_archived`, `sequence_code`, `Task.logged_hours`, `Shot.current_version` columns and the review and playlist JSON lists are dropped by 0045; what stays and why is in D-32);
 - the head and tail handles split (B7) and manual ordering (B6);
 - assets: `Asset.version` and its JSON `versions` list are untouched (D-16);
 - asset variants, libraries and dependencies (Q5: decided not to build, D-27); open question Q10.

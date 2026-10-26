@@ -261,7 +261,7 @@ class TestTask:
         assert archived.status_code == hours.status_code == status.HTTP_400_BAD_REQUEST
         assert "is_archived" in archived.data and "logged_hours" in hours.data
         task.refresh_from_db()
-        assert task.is_archived is False
+        assert task.is_deleted is False
 
     def test_echoing_stored_values_is_accepted(self, project):
         task = TaskFactory.create(project=project, code="T1")

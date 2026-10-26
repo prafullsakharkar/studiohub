@@ -32,10 +32,6 @@ class Workflow(EntityModel):
     automation_rules = models.JSONField(default=list, blank=True)
     execution_stats = models.JSONField(default=dict, blank=True)
 
-    # Legacy (D-25): neither read nor written; archived means soft-deleted (``is_deleted``).
-    # The API's ``is_archived`` is derived from that. The column goes in the final cleanup.
-    is_archived = models.BooleanField(default=False)
-
     class Meta:
         db_table = "production_workflow"
         ordering = ("-created_at",)

@@ -569,7 +569,6 @@ class Command(BaseCommand):
                     "sequence": Sequence.objects.filter(
                         project=project, code__iexact=item.get("sequence_code", "")
                     ).first(),
-                    "sequence_code": item.get("sequence_code", ""),
                     "name": item.get("name", code),
                     "description": item.get("description", ""),
                     "status": item.get("status", "Not Started"),
@@ -578,7 +577,6 @@ class Command(BaseCommand):
                     "handle_frames": item.get("handle_frames", 8),
                     "thumbnail_url": item.get("thumbnail_url", ""),
                     "video_url": item.get("video_url", ""),
-                    "current_version": item.get("current_version", "v001"),
                     "supervisor_approved": item.get("supervisor_approved", False),
                     "client_approved": item.get("client_approved", False),
                     "pipeline": item.get("pipeline", {}),
@@ -656,7 +654,6 @@ class Command(BaseCommand):
                     "description": item.get("description", ""),
                     "software": item.get("software", ""),
                     "tags": item.get("tags", []),
-                    "is_archived": item.get("is_archived", False),
                     **self._timestamp_defaults(item),
                 },
                 code=code,
@@ -687,7 +684,6 @@ class Command(BaseCommand):
                     "status": item.get("status", "Pending Review"),
                     "is_published": item.get("is_published", False),
                     "is_hero": item.get("is_hero", False),
-                    "is_archived": item.get("is_archived", False),
                     "thumbnail_url": item.get("thumbnail_url", ""),
                     "video_url": item.get("video_url", ""),
                     "resolution": item.get("resolution", "4096x2160"),
@@ -726,18 +722,25 @@ class Command(BaseCommand):
                     "lead_reviewer_name": item.get("lead_reviewer_name", ""),
                     "thumbnail_url": item.get("thumbnail_url", ""),
                     "video_url": item.get("video_url", ""),
-                    "versions": item.get("versions", []),
-                    "reviewers": item.get("reviewers", []),
-                    "comments": item.get("comments", []),
-                    "notes": item.get("notes", []),
-                    "annotations": item.get("annotations", []),
-                    "activity": item.get("activity", []),
                     **self._timestamp_defaults(item),
                 },
                 code=code,
                 project=project,
             )
-            ReviewService.import_legacy_json(review)
+            ReviewService.import_legacy_json(
+                review,
+                {
+                    name: item.get(name, [])
+                    for name in (
+                        "versions",
+                        "reviewers",
+                        "comments",
+                        "notes",
+                        "annotations",
+                        "activity",
+                    )
+                },
+            )
             reporter.add("reviews", "created", 1)
 
         # Playlists.
@@ -756,14 +759,13 @@ class Command(BaseCommand):
                     "name": item.get("name", code),
                     "description": item.get("description", ""),
                     "status": item.get("status", "Active"),
-                    "entries": item.get("entries", []),
                     "share_settings": item.get("share_settings", {}),
                     **self._timestamp_defaults(item),
                 },
                 code=code,
                 project=project,
             )
-            PlaylistService.import_legacy_json(playlist)
+            PlaylistService.import_legacy_json(playlist, item.get("entries", []))
             reporter.add("playlists", "created", 1)
 
         # Media.

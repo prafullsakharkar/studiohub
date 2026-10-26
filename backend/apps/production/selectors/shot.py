@@ -9,5 +9,5 @@ class ShotSelector(ProductionBaseSelector):
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Shot]:
         return ShotCurrentVersionSelector.annotate(
-            Shot.objects.select_related("project", "assigned_artist")
+            Shot.objects.select_related("project", "assigned_artist", "sequence")
         )

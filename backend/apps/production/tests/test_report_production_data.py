@@ -7,6 +7,7 @@ them inside a transaction that is rolled back.
 
 from __future__ import annotations
 
+import json
 from io import StringIO
 
 import pytest
@@ -51,6 +52,39 @@ class _Rollback(Exception):
     pass
 
 
+LEGACY_COLUMNS = (
+    "ALTER TABLE production_shot ADD COLUMN sequence_code varchar(50) NOT NULL DEFAULT ''",
+    "ALTER TABLE production_task ADD COLUMN logged_hours numeric(6,2) NOT NULL DEFAULT 0,"
+    " ADD COLUMN is_archived boolean NOT NULL DEFAULT false",
+    "ALTER TABLE production_version ADD COLUMN is_archived boolean NOT NULL DEFAULT false",
+    "ALTER TABLE production_asset ADD COLUMN is_archived boolean NOT NULL DEFAULT false",
+    "ALTER TABLE production_playlist ADD COLUMN is_archived boolean NOT NULL DEFAULT false,"
+    " ADD COLUMN entries jsonb NOT NULL DEFAULT '[]'",
+    "ALTER TABLE production_workflow ADD COLUMN is_archived boolean NOT NULL DEFAULT false",
+    "ALTER TABLE production_review"
+    + ", ".join(
+        f" ADD COLUMN {name} jsonb NOT NULL DEFAULT '[]'"
+        for name in ("versions", "reviewers", "comments", "notes", "annotations", "activity")
+    ),
+)
+
+
+@pytest.fixture
+def legacy_columns():
+    """Give the tables back the columns migration 0045 dropped, for this test only (rolled back)."""
+    with pytest.raises(_Rollback), transaction.atomic():
+        with connection.cursor() as cursor:
+            for statement in LEGACY_COLUMNS:
+                cursor.execute(statement)
+        yield
+        raise _Rollback
+
+
+def _sql(statement, *params):
+    with connection.cursor() as cursor:
+        cursor.execute(statement, params)
+
+
 def test_a_clean_database_reports_nothing_and_passes_the_gate():
     project = ProjectFactory.create(code="RPT1")
     sequence = SequenceFactory.create(project=project, code="SQ1")
@@ -69,13 +103,15 @@ def test_a_clean_database_reports_nothing_and_passes_the_gate():
     assert "Versions that block migration 0038: 0" in text
 
 
-def test_shots_naming_no_sequence_are_listed_and_fail_the_gate():
+def test_shots_naming_no_sequence_are_listed_and_fail_the_gate(legacy_columns):
     project = ProjectFactory.create(code="RPT2")
-    SequenceFactory.create(project=project, code="SQ1")
-    ShotFactory.create(project=project, code="S1", sequence_code="SQX")
-    ShotFactory.create(
-        project=project, code="S2", sequence_code="sq1"
-    )  # case-insensitive match: found
+    sequence = SequenceFactory.create(project=project, code="SQ1")
+    lost = ShotFactory.create(project=project, code="S1")
+    found = ShotFactory.create(project=project, code="S2", sequence=sequence)
+    _sql("UPDATE production_shot SET sequence_code = 'SQX' WHERE id = %s", lost.pk)
+    _sql(
+        "UPDATE production_shot SET sequence_code = 'sq1' WHERE id = %s", found.pk
+    )  # any case: found
 
     text = _report()
     assert "Shots naming no sequence of their project: 1 shot(s) in 1 group(s)" in text
@@ -109,12 +145,14 @@ def test_episode_gaps_and_mismatches_are_listed():
     assert "shot ASTRAY" in text and "shot NOEP" in text and "shot OK" not in text
 
 
-def test_stored_hours_that_no_approved_timelog_backs_are_listed():
+def test_stored_hours_that_no_approved_timelog_backs_are_listed(legacy_columns):
     project = ProjectFactory.create(code="RPT7")
-    typed = TaskFactory.create(project=project, entity_id="", code="TYPED", logged_hours=40)
-    backed = TaskFactory.create(project=project, entity_id="", code="BACKED", logged_hours=6)
+    typed = TaskFactory.create(project=project, entity_id="", code="TYPED")
+    backed = TaskFactory.create(project=project, entity_id="", code="BACKED")
     TimelogFactory.create(task=backed, duration_hours=6, status="Approved")
     TaskFactory.create(project=project, entity_id="", code="ZERO")
+    _sql("UPDATE production_task SET logged_hours = 40 WHERE id = %s", typed.pk)
+    _sql("UPDATE production_task SET logged_hours = 6 WHERE id = %s", backed.pk)
 
     text = _report()
 
@@ -123,15 +161,15 @@ def test_stored_hours_that_no_approved_timelog_backs_are_listed():
     assert "task BACKED" not in text
 
 
-def test_the_archive_flag_overlap_is_counted_and_is_not_a_finding():
+def test_the_archive_flag_overlap_is_counted_and_is_not_a_finding(legacy_columns):
     project = ProjectFactory.create(code="RPT8")
     TaskFactory.create(project=project, entity_id="", code="NEITHER")
-    TaskFactory.create(project=project, entity_id="", code="FLAG", is_archived=True)
-    TaskFactory.create(
-        project=project, entity_id="", code="BOTH", is_archived=True, is_deleted=True
-    )
+    flag = TaskFactory.create(project=project, entity_id="", code="FLAG")
+    both = TaskFactory.create(project=project, entity_id="", code="BOTH", is_deleted=True)
     TaskFactory.create(project=project, entity_id="", code="GONE", is_deleted=True)
-    VersionFactory.create(project=project, code="V-FLAG", is_archived=True)  # how versions archive
+    version = VersionFactory.create(project=project, code="V-FLAG")
+    _sql("UPDATE production_task SET is_archived = true WHERE id IN (%s, %s)", flag.pk, both.pk)
+    _sql("UPDATE production_version SET is_archived = true WHERE id = %s", version.pk)
 
     text = _report("--fail-on-findings")  # would exit 1 if the overlap counted as a finding
 
@@ -139,6 +177,17 @@ def test_the_archive_flag_overlap_is_counted_and_is_not_a_finding():
     assert "  Task: flag only 1, deleted only 1, both 1, neither 1" in text
     assert "  Version: flag only 1, deleted only 0, both 0, neither 0" in text
     assert "  Asset: flag only 0, deleted only 0, both 0, neither 0" in text
+
+
+def test_the_legacy_sections_print_nothing_once_the_columns_are_dropped():
+    project = ProjectFactory.create(code="RPT8B")
+    TaskFactory.create(project=project, entity_id="", code="T1")
+
+    text = _report("--fail-on-findings")
+
+    assert "Tasks whose stored hours differ from their approved timelogs: 0" in text
+    assert "Shots naming no sequence of their project: 0" in text
+    assert "Task: flag only" not in text
 
 
 def test_bad_asset_parents_are_findings_and_catalog_counts_are_information():
@@ -205,17 +254,18 @@ def test_versions_that_would_block_the_migration_are_findings(without_constraint
     assert "Versions sharing a number within their series (information): 0" in text
 
 
-def test_review_list_entries_that_cannot_become_rows_are_listed_as_information():
+def test_review_list_entries_that_cannot_become_rows_are_listed_as_information(legacy_columns):
     from apps.production.models import Review, ReviewItem, ReviewParticipant
 
     project = ProjectFactory.create(code="RPT14")
-    Review.objects.create(
-        project=project,
-        code="RV1",
-        title="t",
-        versions=[{"id": "junk"}],
-        reviewers=["x", {"id": "p1", "name": "ok"}],
-        comments=[5],
+    review = Review.objects.create(project=project, code="RV1", title="t")
+    _sql(
+        "UPDATE production_review SET versions = %s::jsonb, reviewers = %s::jsonb,"
+        " comments = %s::jsonb WHERE id = %s",
+        json.dumps([{"id": "junk"}]),
+        json.dumps(["x", {"id": "p1", "name": "ok"}]),
+        json.dumps([5]),
+        review.pk,
     )
 
     text = _report()
@@ -226,15 +276,15 @@ def test_review_list_entries_that_cannot_become_rows_are_listed_as_information()
     assert not ReviewItem.objects.exists() and not ReviewParticipant.objects.exists()  # a dry run
 
 
-def test_playlist_entries_that_cannot_become_rows_are_listed_as_information():
+def test_playlist_entries_that_cannot_become_rows_are_listed_as_information(legacy_columns):
     from apps.production.models import Playlist, PlaylistEntry
 
     project = ProjectFactory.create(code="RPT15")
-    Playlist.objects.create(
-        project=project,
-        code="PLX",
-        name="n",
-        entries=[{"version_id": "00000000-0000-0000-0000-000000000001"}, "x", {"label": "ok"}],
+    playlist = Playlist.objects.create(project=project, code="PLX", name="n")
+    _sql(
+        "UPDATE production_playlist SET entries = %s::jsonb WHERE id = %s",
+        json.dumps([{"version_id": "00000000-0000-0000-0000-000000000001"}, "x", {"label": "ok"}]),
+        playlist.pk,
     )
 
     text = _report()
@@ -247,11 +297,11 @@ def test_playlist_entries_that_cannot_become_rows_are_listed_as_information():
 def test_it_changes_nothing():
     project = ProjectFactory.create(code="RPT3")
     ShotFactory.create(project=project, code="S1", sequence_code="SQX")
-    before = list(Shot.all_objects.values_list("pk", "sequence_id", "sequence_code"))
+    before = list(Shot.all_objects.values_list("pk", "sequence_id"))
 
     _report()
 
-    assert list(Shot.all_objects.values_list("pk", "sequence_id", "sequence_code")) == before
+    assert list(Shot.all_objects.values_list("pk", "sequence_id")) == before
 
 
 def test_case_variant_codes_and_backwards_ranges_are_found(without_constraints):

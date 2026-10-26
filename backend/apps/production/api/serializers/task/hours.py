@@ -20,6 +20,15 @@ class TaskHoursMixin(serializers.Serializer[Any]):
     def get_pending_hours(self, obj) -> str:
         return hours_text(TaskHoursSelector.of(obj)[1])
 
+    def parse_derived(self, name, raw):
+        try:
+            return Decimal(str(raw))
+        except ArithmeticError:
+            raise ValueError("not a number") from None
+
+    def derived_default(self, name):
+        return Decimal(ZERO) if name == "logged_hours" else super().derived_default(name)  # pyright: ignore[reportAttributeAccessIssue]
+
     def current_value(self, name):
         """What ``LockedFieldsMixin`` compares a sent ``logged_hours`` with: the derived value."""
         if name == "logged_hours":

@@ -19,9 +19,9 @@ class ShotFilterSet(BaseFilterSet):
     # Same tolerant-resolution contract as ``project_id``: UUID, episode code,
     # or mock id; unresolvable → no rows, never a 400.
     episode_id = django_filters.CharFilter(method="filter_episode")
-    sequence_code = django_filters.CharFilter(field_name="sequence_code", lookup_expr="iexact")
+    sequence_code = django_filters.CharFilter(field_name="sequence__code", lookup_expr="iexact")
     # Frontend-contract alias (defensive; no current caller sends bare `sequence`).
-    sequence = django_filters.CharFilter(field_name="sequence_code", lookup_expr="iexact")
+    sequence = django_filters.CharFilter(field_name="sequence__code", lookup_expr="iexact")
     # Id of the sequence, or its code (any case); unknown values return nothing.
     sequence_id = django_filters.CharFilter(method="filter_sequence_id")
     code = django_filters.CharFilter(field_name="code", lookup_expr="iexact")
@@ -54,7 +54,7 @@ class ShotFilterSet(BaseFilterSet):
         try:
             return queryset.filter(sequence_id=UUID(str(value)))
         except ValueError:
-            return queryset.filter(sequence_code__iexact=str(value).strip())
+            return queryset.filter(sequence__code__iexact=str(value).strip())
 
     def filter_search(self, queryset, name, value):
         if not value:
@@ -63,5 +63,5 @@ class ShotFilterSet(BaseFilterSet):
             Q(code__icontains=value) |
             Q(name__icontains=value) |
             Q(description__icontains=value) |
-            Q(sequence_code__icontains=value)
+            Q(sequence__code__icontains=value)
         )

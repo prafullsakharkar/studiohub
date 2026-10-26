@@ -34,16 +34,23 @@ def _order(entry: Any, index: int) -> tuple[int, int]:
 
 
 def import_playlist(
-    playlist: Any, *, models: SimpleNamespace, only_empty: bool = True, dry_run: bool = False
+    playlist: Any,
+    *,
+    models: SimpleNamespace,
+    only_empty: bool = True,
+    dry_run: bool = False,
+    entries: Any = None,
 ) -> list[str]:
     """
     Create entry rows for the old ``entries`` list of ``playlist``. ``models`` carries ``Version`` and
     ``Entry``. Returns the entries that could not be converted, one line each. With ``dry_run`` nothing is
-    read from or written to the entry table (it may not exist yet).
+    read from or written to the entry table (it may not exist yet). The old list comes from ``entries`` when
+    given, else from the playlist's own ``entries`` attribute (the migrations' historical model).
     """
     problems: list[str] = []
     label = playlist.code or str(playlist.pk)
-    raw = playlist.entries if isinstance(playlist.entries, list) else []
+    source = entries if entries is not None else getattr(playlist, "entries", None)
+    raw = source if isinstance(source, list) else []
     if only_empty and not dry_run and models.Entry.objects.filter(playlist=playlist).exists():
         return problems
     ordered = sorted(range(len(raw)), key=lambda i: _order(raw[i], i))

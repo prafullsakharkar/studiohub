@@ -12,7 +12,7 @@ from rest_framework.test import APIClient
 
 from apps.identity.tests.factories import UserFactory
 from apps.identity.tests.rbac_helpers import grant_permissions
-from apps.production.models import ProjectMembership, Task, Timelog, Version
+from apps.production.models import ProjectMembership, Timelog, Version
 from apps.production.selectors.rollups import ShotCurrentVersionSelector, TaskHoursSelector
 from apps.production.tests.factories import (
     ProjectFactory,
@@ -82,11 +82,8 @@ class TestTaskHours:
             == (Decimal("0.00"),) * 2
         )
 
-    def test_responses_show_both_values_and_ignore_the_stored_column(self, client, project):
+    def test_responses_show_both_values(self, client, project):
         task = TaskFactory.create(project=project, code="T1")
-        Task.objects.filter(pk=task.pk).update(
-            logged_hours=Decimal("40")
-        )  # an old hand-typed value
         _log(task, 6)
         _log(task, 2, status="Submitted")
 
@@ -205,8 +202,8 @@ class TestShotCurrentVersion:
 
         assert ShotCurrentVersionSelector.of(shot) == ("v001", kept.id)
 
-    def test_responses_and_the_list_carry_it_and_ignore_the_stored_column(self, client, project):
-        shot = ShotFactory.create(project=project, code="S1", current_version="v777")
+    def test_responses_and_the_list_carry_it(self, client, project):
+        shot = ShotFactory.create(project=project, code="S1")
         version = self._version(shot, "v002", published=True)
         ShotFactory.create(project=project, code="S2")
 
@@ -255,7 +252,7 @@ class TestShotCurrentVersion:
         assert new_other.status_code == 400
 
     def test_the_project_dashboard_shows_it(self, client, project):
-        shot = ShotFactory.create(project=project, code="S1", current_version="v777")
+        shot = ShotFactory.create(project=project, code="S1")
         self._version(shot, "v004", published=True)
 
         data = client.get(f"/api/v1/projects/{project.id}/dashboard/").json()

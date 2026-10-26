@@ -25,6 +25,8 @@ WITH_EPISODE_COLUMN = [("production", "0028_sequence_episode")]
 BEFORE_ARCHIVE_RECONCILE = [("production", "0030_protect_history_rows")]
 BEFORE_ASSET_TYPES = [("production", "0033_task_types_and_templates")]
 BEFORE_TASK_LINKS = [("production", "0035_task_entity_links")]
+#: the last state that still has the legacy columns 0045 drops (P12)
+BEFORE_CONTRACT = [("production", "0043_convert_playlist_entries")]
 BEFORE_VERSION_PREP = [("production", "0037_version_published_by")]
 BEFORE_REVIEW_ROWS = [("production", "0039_version_constraints")]
 BEFORE_PLAYLIST_ROWS = [("production", "0041_convert_review_json")]
@@ -133,7 +135,7 @@ class TestShotsAreLinkedToTheirSequence:
         ):
             Shot.objects.create(project=owner, code=code, name=code, sequence_code=text)
 
-        apps = _migrate(_latest())
+        apps = _migrate(BEFORE_CONTRACT)
 
         Shot = apps.get_model("production", "Shot")
         rows = {
@@ -161,10 +163,10 @@ class TestShotsAreLinkedToTheirSequence:
             project=project, code="S1", name="a", sequence_code="sq1"
         )
 
-        _migrate(_latest())
+        _migrate(BEFORE_CONTRACT)
         apps = _migrate(WITH_COLUMN)  # back to before the fill: the text is still there
         assert apps.get_model("production", "Shot").objects.get(code="S1").sequence_code == "SQ1"
-        apps = _migrate(_latest())  # forward again
+        apps = _migrate(BEFORE_CONTRACT)  # forward again
         assert apps.get_model("production", "Shot").objects.get(code="S1").sequence_id is not None
 
 
@@ -257,7 +259,7 @@ class TestArchiveFlagReconciled:
                 "neither": self._make(apps, project, name, f"{name[:3]}-N"),
             }
 
-        apps = _migrate(_latest())
+        apps = _migrate(BEFORE_CONTRACT)
 
         for name, rows in made.items():
             model = apps.get_model("production", name)
@@ -375,7 +377,7 @@ class TestTaskEntitiesLinked:
             "no_project": task("NOPROJ", entity_type="Shot", entity_id=str(shot.id), project=None),
         }
 
-        apps = _migrate(_latest())
+        apps = _migrate(BEFORE_CONTRACT)
 
         Task = apps.get_model("production", "Task")
         state = {
@@ -599,7 +601,7 @@ class TestReviewJsonConverted:
         )
         empty = Review.objects.create(project=project, code="REV2", title="Empty")
 
-        apps = _migrate(_latest())
+        apps = _migrate(BEFORE_CONTRACT)
 
         Review = apps.get_model("production", "Review")
         row = lambda name: apps.get_model("production", name).objects  # noqa: E731
@@ -658,7 +660,7 @@ class TestPlaylistJsonConverted:
         )
         empty = Playlist.objects.create(project=project, code="PL2", name="Empty")
 
-        apps = _migrate(_latest())
+        apps = _migrate(BEFORE_CONTRACT)
 
         rows = list(
             apps.get_model("production", "PlaylistEntry")
@@ -678,3 +680,88 @@ class TestPlaylistJsonConverted:
         )
         out = capsys.readouterr().out
         assert "not converted" in out and "entries[2]" in out and "entries[3]" in out
+
+
+def _columns(table):
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT column_name FROM information_schema.columns"
+            " WHERE table_schema = current_schema() AND table_name = %s",
+            [table],
+        )
+        return {row[0] for row in cursor.fetchall()}
+
+
+class TestLegacyColumnsDropped:
+    """0044 refuses what 0045 would lose data on; 0045 drops the legacy columns (plan P12, D-32)."""
+
+    def test_a_shot_with_sequence_text_but_no_sequence_stops_the_migration(self, restore):
+        apps = _migrate(BEFORE_CONTRACT)
+        project = _project(apps, "CTA")
+        Shot = apps.get_model("production", "Shot")
+        Shot.objects.create(project=project, code="S1", name="s", sequence_code="SQX")
+
+        with pytest.raises(RuntimeError, match="0044.*\n.*sequence_code 'SQX'"):
+            _migrate(_latest())
+
+        assert "sequence_code" in _columns("production_shot")  # nothing was dropped
+        assert Shot.objects.filter(project=project).count() == 1
+
+    def test_a_flagged_but_live_row_stops_the_migration(self, restore):
+        apps = _migrate(BEFORE_CONTRACT)
+        project = _project(apps, "CTB")
+        apps.get_model("production", "Task").objects.create(
+            project=project, code="T1", title="t", is_archived=True
+        )
+
+        with pytest.raises(RuntimeError, match="is_archived is set but the row is live"):
+            _migrate(_latest())
+
+        assert "is_archived" in _columns("production_task")
+
+    def test_a_review_entry_that_never_became_a_row_stops_the_migration(self, restore):
+        apps = _migrate(BEFORE_CONTRACT)
+        project = _project(apps, "CTC")
+        apps.get_model("production", "Review").objects.create(
+            project=project, code="R1", title="t", comments=[42]
+        )
+
+        with pytest.raises(RuntimeError, match="comments\\[0\\] is not an object"):
+            _migrate(_latest())
+
+        assert "comments" in _columns("production_review")
+
+    def test_a_clean_database_loses_the_columns_and_keeps_late_json_as_rows(self, restore):
+        apps = _migrate(BEFORE_CONTRACT)
+        project = _project(apps, "CTD")
+        review = apps.get_model("production", "Review").objects.create(
+            project=project,
+            code="R2",
+            title="t",
+            notes=[{"category": "Look", "content": "written by an old server after 0041"}],
+        )
+        playlist = apps.get_model("production", "Playlist").objects.create(
+            project=project, code="PL", name="n", entries=[{"id": "e1", "label": "slate"}]
+        )
+
+        apps = _migrate(_latest())
+
+        assert (
+            apps.get_model("production", "ReviewNote").objects.filter(review_id=review.pk).count()
+            == 1
+        )
+        entry = apps.get_model("production", "PlaylistEntry").objects.get(playlist_id=playlist.pk)
+        assert entry.legacy_id == "e1" and entry.extra == {"label": "slate"}
+        assert not {"sequence_code", "current_version"} & _columns("production_shot")
+        assert not {"is_archived", "logged_hours"} & _columns("production_task")
+        assert not {"is_archived"} & _columns("production_version")
+        assert not {
+            "versions",
+            "reviewers",
+            "comments",
+            "notes",
+            "annotations",
+            "activity",
+        } & _columns("production_review")
+        assert "entries" not in _columns("production_playlist")
+        assert "client" in _columns("production_review")  # not part of the contract phase

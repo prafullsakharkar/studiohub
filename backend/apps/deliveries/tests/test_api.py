@@ -58,8 +58,10 @@ class TestDeliveryEndpoints:
             code="DEL-TEST-003",
         )
         from apps.production.models import Version
+        from apps.production.tests.factories import ProjectFactory
         version = Version.objects.create(
             code="VER-001",
+            project=ProjectFactory.create(code="DLV1"),  # a version always has a project (D-29)
         )
 
         url = reverse("api:v1:deliveries:delivery-add-version", kwargs={"uuid": str(delivery.id)})
@@ -84,8 +86,10 @@ class TestDeliveryEndpoints:
             code="DEL-TEST-004",
         )
         from apps.production.models import Version
+        from apps.production.tests.factories import ProjectFactory
         version = Version.objects.create(
             code="VER-002",
+            project=ProjectFactory.create(code="DLV2"),  # a version always has a project (D-29)
         )
 
         add_url = reverse("api:v1:deliveries:delivery-add-version", kwargs={"uuid": str(delivery.id)})

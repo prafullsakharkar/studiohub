@@ -296,18 +296,15 @@ class TestLegacyImport:
     ):
         mine = _versions(project, 1)[0]
         foreign = _versions(other_project, 1)[0]
-        playlist = PlaylistFactory.create(
-            project=project,
-            code="L1",
-            entries=[
-                {"id": "b", "version_id": str(mine.id), "item_order": 2, "notes_count": 4},
-                {"id": "a", "item_order": 1, "label": "slate"},
-                {"id": "x", "version_id": str(foreign.id), "item_order": 3},
-                "junk",
-            ],
-        )
+        playlist = PlaylistFactory.create(project=project, code="L1")
+        entries = [
+            {"id": "b", "version_id": str(mine.id), "item_order": 2, "notes_count": 4},
+            {"id": "a", "item_order": 1, "label": "slate"},
+            {"id": "x", "version_id": str(foreign.id), "item_order": 3},
+            "junk",
+        ]
 
-        problems = PlaylistService.import_legacy_json(playlist)
+        problems = PlaylistService.import_legacy_json(playlist, entries)
 
         rows = list(PlaylistEntry.objects.filter(playlist=playlist))
         assert [(r.legacy_id, r.position, r.version_id) for r in rows] == [
@@ -316,5 +313,7 @@ class TestLegacyImport:
         ]
         assert rows[1].extra == {"notes_count": 4} and rows[0].extra == {"label": "slate"}
         assert len(problems) == 2 and "names no version of the project" in problems[0]
-        assert PlaylistService.import_legacy_json(playlist) == []  # a second run adds nothing
+        assert (
+            PlaylistService.import_legacy_json(playlist, entries) == []
+        )  # a second run adds nothing
         assert PlaylistEntry.objects.filter(playlist=playlist).count() == 2

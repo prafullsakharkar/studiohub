@@ -79,10 +79,6 @@ class Version(EntityModel):
         related_name="published_versions",
     )
     is_hero = models.BooleanField(default=False)
-    # Legacy (D-25): neither read nor written; archived means soft-deleted (``is_deleted``).
-    # The API's ``is_archived`` is derived from that. The column goes in the final cleanup.
-    is_archived = models.BooleanField(default=False, db_index=True)
-
     thumbnail_url = models.URLField(max_length=500, blank=True, default="")
     video_url = models.URLField(max_length=500, blank=True, default="")
     source_file_url = models.CharField(max_length=500, blank=True, default="")
@@ -163,7 +159,6 @@ class Version(EntityModel):
             models.Index(fields=["project", "entity_id"]),
             models.Index(fields=["status"]),
             models.Index(fields=["is_published"]),
-            models.Index(fields=["is_archived"]),
             models.Index(fields=["department"]),
         ]
 
