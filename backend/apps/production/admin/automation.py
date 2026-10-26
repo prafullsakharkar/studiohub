@@ -1,11 +1,12 @@
 from django.contrib import admin
 
 from apps.core.admin.base import StudioHubModelAdmin
+from apps.production.admin.mixins import NoHardDeleteMixin
 from apps.production.models import AutomationAuditLog, AutomationRule
 
 
 @admin.register(AutomationRule)
-class AutomationRuleAdmin(StudioHubModelAdmin):
+class AutomationRuleAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     list_display = (
         "name",
         "trigger_event",
@@ -35,7 +36,7 @@ class AutomationRuleAdmin(StudioHubModelAdmin):
 
 
 @admin.register(AutomationAuditLog)
-class AutomationAuditLogAdmin(StudioHubModelAdmin):
+class AutomationAuditLogAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     list_display = (
         "rule_name",
         "trigger_event",

@@ -10,6 +10,7 @@ from apps.production.api.serializers.common import (
     ProjectReferenceMixin,
 )
 from apps.production.models import Episode
+from apps.production.services.numbering import episode_code
 
 
 class EpisodeCreateSerializer(NormalizedCodeMixin, FrameRangeMixin, ProjectReferenceMixin, BaseWriteSerializer[Any]):
@@ -68,10 +69,12 @@ class EpisodeCreateSerializer(NormalizedCodeMixin, FrameRangeMixin, ProjectRefer
                     season_number = int(season_raw or 1)
                 except (TypeError, ValueError):
                     season_number = 1
-                data["code"] = f"EP{season_number}{episode_number:02d}"
-                # Keep the stored season consistent with the derived code.
-                if season_missing:
-                    data["season_number"] = season_number
+                derived = episode_code(season_number, episode_number)
+                if derived is not None:
+                    data["code"] = derived
+                    # Keep the stored season consistent with the derived code.
+                    if season_missing:
+                        data["season_number"] = season_number
         else:
             data["code"] = code.strip()
         # Keep the key present so ``validate`` owns the 400 instead of an

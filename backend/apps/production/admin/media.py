@@ -1,11 +1,12 @@
 from django.contrib import admin
 
 from apps.core.admin.base import StudioHubModelAdmin
+from apps.production.admin.mixins import NoHardDeleteMixin
 from apps.production.models import Media
 
 
 @admin.register(Media)
-class MediaAdmin(StudioHubModelAdmin):
+class MediaAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     list_display = (
         "entity_type",
         "entity_id",

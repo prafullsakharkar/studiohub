@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from apps.core.admin.base import StudioHubModelAdmin
+from apps.production.admin.mixins import NoHardDeleteMixin
 from apps.production.models import (
     EditorialCut,
     EditorialTrack,
@@ -11,7 +12,7 @@ from apps.production.models import (
 
 
 @admin.register(ProjectMembership)
-class ProjectMembershipAdmin(StudioHubModelAdmin):
+class ProjectMembershipAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     list_display = (
         "user",
         "project",
@@ -28,7 +29,7 @@ class ProjectMembershipAdmin(StudioHubModelAdmin):
 
 
 @admin.register(EditorialCut)
-class EditorialCutAdmin(StudioHubModelAdmin):
+class EditorialCutAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     list_display = (
         "code",
         "name",
@@ -44,7 +45,7 @@ class EditorialCutAdmin(StudioHubModelAdmin):
 
 
 @admin.register(EditorialTrack)
-class EditorialTrackAdmin(StudioHubModelAdmin):
+class EditorialTrackAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     list_display = (
         "name",
         "project",
@@ -60,7 +61,7 @@ class EditorialTrackAdmin(StudioHubModelAdmin):
 
 
 @admin.register(Show)
-class ShowAdmin(StudioHubModelAdmin):
+class ShowAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     list_display = (
         "code",
         "name",
@@ -72,7 +73,7 @@ class ShowAdmin(StudioHubModelAdmin):
 
 
 @admin.register(ProjectNote)
-class ProjectNoteAdmin(StudioHubModelAdmin):
+class ProjectNoteAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     list_display = (
         "subject",
         "project",

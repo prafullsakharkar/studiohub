@@ -1,11 +1,12 @@
 from django.contrib import admin
 
 from apps.core.admin.base import StudioHubModelAdmin
+from apps.production.admin.mixins import NoHardDeleteMixin
 from apps.production.models import Timelog
 
 
 @admin.register(Timelog)
-class TimelogAdmin(StudioHubModelAdmin):
+class TimelogAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     list_display = (
         "task",
         "person",

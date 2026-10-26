@@ -1,11 +1,12 @@
 from django.contrib import admin
 
 from apps.core.admin.base import StudioHubModelAdmin
+from apps.production.admin.mixins import NoHardDeleteMixin
 from apps.production.models import Task
 
 
 @admin.register(Task)
-class TaskAdmin(StudioHubModelAdmin):
+class TaskAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     list_display = (
         "code",
         "title",

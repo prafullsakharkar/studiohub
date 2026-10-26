@@ -215,3 +215,13 @@ Frontend change list: expect fewer events in the calendar for non-members; show 
 | C-32e | `POST /scheduling/resources/` | A duplicate code was a **500**; unknown `user_id` / `department_id` / `team_id` were dropped. | Duplicate code **400** (any case); unknown links **400**. |
 
 Frontend change list: edit forms for events and resources can be used; offer only the project the user belongs to; disable status changes out of Completed or Cancelled; show field errors for the new 400s.
+
+## Numbered codes, episode codes, protected history (D-23, D-24)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-33 | `POST /api/v1/<entity>/bulk-create/` items | A missing `code` was "Code is required." | An item with `code_prefix` instead of `code` gets the next number (`SH0010`, `SH0020`, ...) of that series in its project; a bad prefix reports `invalid` for that item only. |
+| C-33a | `code` derived on `POST /episodes/` without a code | `EP{season}{episode:02d}`, ambiguous above season 9 or episode 99. | Same for season 0 to 9 and episode 0 to 99; otherwise `EP{season:02d}{episode:03d}`; out of range is a **400** "code is required". |
+| C-34 | Deleting a project (hard) with tasks, versions, time logs, reviews or notes; deleting a person with time logged | Everything went with it. | Refused (not reachable through the API, which only archives); the Django admin offers no delete for production rows. |
+
+Frontend change list: bulk import can send `code_prefix` instead of `code`; the episode form may show the 7-character code for seasons above 9; nothing else changes.

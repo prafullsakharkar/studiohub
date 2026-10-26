@@ -1,11 +1,12 @@
 from django.contrib import admin
 
 from apps.core.admin.base import StudioHubModelAdmin
+from apps.production.admin.mixins import NoHardDeleteMixin
 from apps.production.models import StatusHistory
 
 
 @admin.register(StatusHistory)
-class StatusHistoryAdmin(StudioHubModelAdmin):
+class StatusHistoryAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     """Read-only: history is written by ``StatusService`` only."""
 
     list_display = ("entity_type", "entity_code", "from_status", "to_status", "actor", "changed_at")

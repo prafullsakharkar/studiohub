@@ -15,7 +15,7 @@ from apps.production.constants import ProductionStatus
 class Version(EntityModel):
     project = models.ForeignKey(
         "production.Project",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="versions",
         null=True,
         blank=True,

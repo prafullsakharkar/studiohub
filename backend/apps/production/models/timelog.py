@@ -17,7 +17,7 @@ class Timelog(EntityModel):
 
     project = models.ForeignKey(
         "production.Project",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="timelogs",
         null=True,
         blank=True,
@@ -31,7 +31,7 @@ class Timelog(EntityModel):
 
     person = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="timelogs",
         db_index=True,
     )

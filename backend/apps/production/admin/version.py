@@ -1,11 +1,12 @@
 from django.contrib import admin
 
 from apps.core.admin.base import StudioHubModelAdmin
+from apps.production.admin.mixins import NoHardDeleteMixin
 from apps.production.models import Version
 
 
 @admin.register(Version)
-class VersionAdmin(StudioHubModelAdmin):
+class VersionAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     list_display = (
         "code",
         "version_number",

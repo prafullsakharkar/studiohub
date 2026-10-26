@@ -19,7 +19,7 @@ class Task(EntityModel):
 
     project = models.ForeignKey(
         "production.Project",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="tasks",
         null=True,
         blank=True,

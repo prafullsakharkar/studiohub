@@ -142,9 +142,12 @@ class BulkOperationService(BusinessService):
                 )
                 continue
             if not code:
-                results.append(
-                    {"index": index, "status": cls.INVALID, "error": "Code is required."}
+                reason = (
+                    "The codes could not be numbered; check code_prefix."
+                    if item.get("code_prefix")
+                    else "Code is required."
                 )
+                results.append({"index": index, "status": cls.INVALID, "error": reason})
                 continue
             key = f"{project.id}:{code}"
             if key in seen:
@@ -180,6 +183,60 @@ class BulkOperationService(BusinessService):
     def bulk_create(cls, items, *, validate, user=None, organization=None):
         """
         Create multiple entities from flat input items.
+
+        An item may leave out ``code`` and give ``code_prefix`` instead (``"SH"``): the code is
+        then the next number of that series for the item's project (``SH0010``, ``SH0020``,
+        ...; DECISIONS D-23). Such a batch runs in one transaction that holds the project's lock,
+        so concurrent batches cannot be handed the same numbers; each item is still its own
+        savepoint, so one bad row does not undo the others.
+
+        See ``_create_items`` for the rest.
+        """
+        items = [dict(item) if isinstance(item, dict) else item for item in items]
+        if any(cls._asks_for_a_number(item) for item in items):
+            with transaction.atomic():
+                cls._assign_numbered_codes(items, user=user)
+                return cls._create_items(items, validate=validate, user=user)
+        return cls._create_items(items, validate=validate, user=user)
+
+    @classmethod
+    def _asks_for_a_number(cls, item) -> bool:
+        return (
+            isinstance(item, dict)
+            and not cls._normalize_code(item.get("code"))
+            and bool(str(item.get("code_prefix") or "").strip())
+        )
+
+    @classmethod
+    def _assign_numbered_codes(cls, items, *, user) -> None:
+        """Put the next numbers into the items that asked for one (projects the user may write)."""
+        from apps.production.services.numbering import allocate_codes
+
+        allowed = cls._allowed_project_ids(user)
+        groups: dict[tuple[Any, str], list[dict[str, Any]]] = {}
+        projects: dict[Any, Any] = {}
+        for item in items:
+            if not cls._asks_for_a_number(item):
+                continue
+            project = cls._get_project(project_id=item.get("project_id"))
+            if project is None or (allowed is not None and project.id not in allowed):
+                continue  # reported as invalid by the create loop
+            projects[project.id] = project
+            groups.setdefault((project.id, str(item["code_prefix"]).strip().upper()), []).append(item)
+        # Projects in a fixed order, so two batches over several projects cannot deadlock.
+        for (project_id, prefix), group in sorted(groups.items(), key=lambda entry: (str(entry[0][0]), entry[0][1])):
+            try:
+                codes = allocate_codes(projects[project_id], cls.model, prefix, len(group))
+            except ValidationError:
+                continue  # the items keep their prefix and are reported as invalid below
+            for item, code in zip(group, codes, strict=True):
+                item["code"] = code
+                item.pop("code_prefix", None)
+
+    @classmethod
+    def _create_items(cls, items, *, validate, user=None):
+        """
+        Create the items one by one.
 
         Each item carries ``project_id`` + ``code`` + entity fields.
         Per-item statuses: ``created`` | ``exists`` | ``soft_deleted`` |

@@ -13,7 +13,7 @@ from apps.core.models.bases import EntityModel
 class Review(EntityModel):
     project = models.ForeignKey(
         "production.Project",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="reviews",
         null=True,
         blank=True,

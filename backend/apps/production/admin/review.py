@@ -1,11 +1,12 @@
 from django.contrib import admin
 
 from apps.core.admin.base import StudioHubModelAdmin
+from apps.production.admin.mixins import NoHardDeleteMixin
 from apps.production.models import Review
 
 
 @admin.register(Review)
-class ReviewAdmin(StudioHubModelAdmin):
+class ReviewAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     list_display = (
         "code",
         "title",

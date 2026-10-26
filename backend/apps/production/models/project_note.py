@@ -37,7 +37,7 @@ class ProjectNote(EntityModel):
 
     project = models.ForeignKey(
         "production.Project",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="notes",
         db_index=True,
     )
