@@ -3,10 +3,11 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseReadSerializer
+from apps.production.api.serializers.shot.current_version import ShotCurrentVersionMixin
 from apps.production.models import Shot
 
 
-class ShotSerializer(BaseReadSerializer[Any]):
+class ShotSerializer(ShotCurrentVersionMixin, BaseReadSerializer[Any]):  # pyright: ignore[reportUnsafeMultipleInheritance]
     project_id = serializers.UUIDField(read_only=True)
     project_code = serializers.SerializerMethodField()
     episode_id = serializers.UUIDField(read_only=True, allow_null=True)
@@ -38,6 +39,7 @@ class ShotSerializer(BaseReadSerializer[Any]):
             "thumbnail_url",
             "video_url",
             "current_version",
+            "current_version_id",
             "assigned_artist_id",
             "assigned_artist_name",
             "supervisor_approved",

@@ -3,10 +3,11 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseReadSerializer
+from apps.production.api.serializers.task.hours import TaskHoursMixin
 from apps.production.models import Task
 
 
-class TaskSerializer(BaseReadSerializer[Any]):
+class TaskSerializer(TaskHoursMixin, BaseReadSerializer[Any]):  # pyright: ignore[reportUnsafeMultipleInheritance]
     project_id = serializers.UUIDField(read_only=True)
     project_code = serializers.SerializerMethodField()
     project_name = serializers.SerializerMethodField()
@@ -65,6 +66,7 @@ class TaskSerializer(BaseReadSerializer[Any]):
             "due_date",
             "estimated_hours",
             "logged_hours",
+            "pending_hours",
             "created_at",
             "updated_at",
         )

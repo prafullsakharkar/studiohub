@@ -12,6 +12,8 @@ is left:
 * sequences of episodic projects that have no episode, and why (their shots span several
   episodes, or they have none), and shots whose episode differs from their sequence's
   (DECISIONS D-12)
+* tasks whose old stored ``logged_hours`` differs from the sum of their approved timelogs:
+  responses now show the sum, so a hand-typed number stops appearing (DECISIONS D-15)
 
 Nothing is changed. It reads the database selected by ``DJANGO_ENV``.
 """
@@ -23,6 +25,7 @@ from django.db import models
 
 from apps.production.constants import ProjectWorkflowType
 from apps.production.models import Asset, Episode, Sequence, Shot, Task, Version
+from apps.production.selectors.rollups import TaskHoursSelector
 
 CODED = (Episode, Sequence, Shot, Asset, Task, Version)
 FRAME_RANGES = (
@@ -102,6 +105,16 @@ def shots_out_of_step_with_sequence():
     return [(str(pk), code, sequence_code) for pk, code, sequence_code in rows]
 
 
+def tasks_with_unbacked_hours():
+    """``[(task id, code, stored hours, approved timelog hours)]`` where the old stored number differs."""
+    rows = TaskHoursSelector.annotate(Task.all_objects.exclude(logged_hours=0))
+    return [
+        (str(task.pk), task.code, task.logged_hours, task.logged_hours_annotated)
+        for task in rows.iterator()
+        if task.logged_hours != task.logged_hours_annotated
+    ]
+
+
 class Command(BaseCommand):
     help = "Read-only report of production data the hierarchy constraints would reject or leave unresolved."
 
@@ -151,6 +164,14 @@ class Command(BaseCommand):
         for pk, code, sequence_code in stray[:50]:
             findings += 1
             self.stdout.write(f"  shot {code} {pk} (sequence {sequence_code})")
+
+        unbacked = tasks_with_unbacked_hours()
+        self.stdout.write(
+            f"Tasks whose stored hours differ from their approved timelogs: {len(unbacked)}"
+        )
+        for pk, code, stored, approved in unbacked[:50]:
+            findings += 1
+            self.stdout.write(f"  task {code} {pk}: stored {stored}, approved timelogs {approved}")
 
         self.stdout.write(self.style.SUCCESS("Done. Nothing was changed."))
         if options["fail_on_findings"] and findings:

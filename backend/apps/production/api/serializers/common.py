@@ -8,6 +8,7 @@ import re
 from typing import Any, ClassVar
 from uuid import UUID
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -128,15 +129,23 @@ class LockedFieldsMixin:
             raise serializers.ValidationError(errors)
         return super().to_internal_value(data)  # type: ignore[misc]  # pyright: ignore[reportAttributeAccessIssue]
 
+    def current_value(self, name):
+        """The value a sent one is compared with; derived fields override this."""
+        return getattr(self.instance, name)
+
     def _changes(self, name, raw) -> bool:
         field = self.fields[name]
         instance = self.instance
         try:
-            value = field.to_internal_value(raw)
+            if isinstance(field, serializers.SerializerMethodField):
+                # A derived field has no input parser of its own: use the model field's.
+                value = self.Meta.model._meta.get_field(name).to_python(raw)
+            else:
+                value = field.to_internal_value(raw)
             if instance is not None:
-                return value != getattr(instance, name)
+                return value != self.current_value(name)
             return value != self.Meta.model._meta.get_field(name).get_default()
-        except (serializers.ValidationError, TypeError, ValueError):
+        except (serializers.ValidationError, DjangoValidationError, TypeError, ValueError):
             return True
 
 

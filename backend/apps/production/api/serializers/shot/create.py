@@ -10,13 +10,22 @@ from apps.production.api.serializers.common import (
     NormalizedCodeMixin,
     ProjectReferenceMixin,
 )
+from apps.production.api.serializers.shot.current_version import ShotCurrentVersionMixin
 from apps.production.models import Shot
 
 
-class ShotCreateSerializer(NormalizedCodeMixin, FrameRangeMixin, LockedFieldsMixin, ProjectReferenceMixin, BaseWriteSerializer[Any]):
+class ShotCreateSerializer(  # pyright: ignore[reportUnsafeMultipleInheritance]
+    ShotCurrentVersionMixin,
+    NormalizedCodeMixin,
+    FrameRangeMixin,
+    LockedFieldsMixin,
+    ProjectReferenceMixin,
+    BaseWriteSerializer[Any],
+):
     locked_fields = {
         "supervisor_approved": "Use the approve action.",
         "sequence_code": "Use sequence_id.",
+        "current_version": "Derived from the shot's versions.",
     }
 
     id = serializers.UUIDField(read_only=True)
@@ -54,6 +63,7 @@ class ShotCreateSerializer(NormalizedCodeMixin, FrameRangeMixin, LockedFieldsMix
             "thumbnail_url",
             "video_url",
             "current_version",
+            "current_version_id",
             "assigned_artist",
             "supervisor_approved",
             "client_approved",

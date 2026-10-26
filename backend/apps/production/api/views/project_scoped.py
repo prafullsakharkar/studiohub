@@ -96,6 +96,7 @@ from apps.production.selectors.project_scoped import (
     ProjectNoteSelector,
 )
 from apps.production.selectors.review import ReviewSelector
+from apps.production.selectors.rollups import TaskHoursSelector
 from apps.production.selectors.sequence import SequenceSelector
 from apps.production.selectors.shot import ShotSelector
 from apps.production.selectors.task import TaskSelector
@@ -620,10 +621,8 @@ class ProjectResourcesView(ProjectScopedAPIView):
     permission_map = {"get": (TaskPermissions.VIEW,)}
 
     def get(self, request, *args, **kwargs):
-        tasks = (
-            Task.objects.filter(project=self.project)
-            .select_related("assignee")
-            .all()
+        tasks = TaskHoursSelector.annotate(
+            Task.objects.filter(project=self.project).select_related("assignee")
         )
         artists: dict[str, dict[str, Any]] = {}
         departments: set[str] = set()
@@ -655,7 +654,7 @@ class ProjectResourcesView(ProjectScopedAPIView):
             existing["task_count"] = int(existing.get("task_count") or 0) + 1
             logged = float(existing.get("hours_logged") or 0.0)
             with contextlib.suppress(TypeError, ValueError):
-                logged += float(task.logged_hours or 0)
+                logged += float(TaskHoursSelector.of(task)[0])
             existing["hours_logged"] = logged
         return Response(
             {

@@ -19,6 +19,8 @@ from apps.production.tests.factories import (
     ProjectFactory,
     SequenceFactory,
     ShotFactory,
+    TaskFactory,
+    TimelogFactory,
 )
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -59,6 +61,7 @@ def test_a_clean_database_reports_nothing_and_passes_the_gate():
     assert "Shots naming no sequence of their project: 0" in text
     assert "Sequences of episodic projects without an episode: 0" in text
     assert "Shots whose episode differs from their sequence's: 0" in text
+    assert "Tasks whose stored hours differ from their approved timelogs: 0" in text
 
 
 def test_shots_naming_no_sequence_are_listed_and_fail_the_gate():
@@ -99,6 +102,20 @@ def test_episode_gaps_and_mismatches_are_listed():
     assert "its shots do not share one episode" in text
     assert "Shots whose episode differs from their sequence's: 2" in text
     assert "shot ASTRAY" in text and "shot NOEP" in text and "shot OK" not in text
+
+
+def test_stored_hours_that_no_approved_timelog_backs_are_listed():
+    project = ProjectFactory.create(code="RPT7")
+    typed = TaskFactory.create(project=project, code="TYPED", logged_hours=40)
+    backed = TaskFactory.create(project=project, code="BACKED", logged_hours=6)
+    TimelogFactory.create(task=backed, duration_hours=6, status="Approved")
+    TaskFactory.create(project=project, code="ZERO")
+
+    text = _report()
+
+    assert "Tasks whose stored hours differ from their approved timelogs: 1" in text
+    assert f"task TYPED {typed.pk}: stored 40.00, approved timelogs 0.00" in text
+    assert "task BACKED" not in text
 
 
 def test_it_changes_nothing():

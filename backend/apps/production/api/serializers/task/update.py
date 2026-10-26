@@ -2,10 +2,13 @@ from typing import Any
 
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.api.serializers.common import LockedFieldsMixin, NormalizedCodeMixin
+from apps.production.api.serializers.task.hours import TaskHoursMixin
 from apps.production.models import Task
 
 
-class TaskUpdateSerializer(NormalizedCodeMixin, LockedFieldsMixin, BaseWriteSerializer[Any]):
+class TaskUpdateSerializer(  # pyright: ignore[reportUnsafeMultipleInheritance]
+    TaskHoursMixin, NormalizedCodeMixin, LockedFieldsMixin, BaseWriteSerializer[Any]
+):
     locked_fields = {
         "is_archived": "Use the archive and restore actions.",
         "logged_hours": "Derived from the task's timelogs.",
@@ -40,5 +43,6 @@ class TaskUpdateSerializer(NormalizedCodeMixin, LockedFieldsMixin, BaseWriteSeri
             "due_date",
             "estimated_hours",
             "logged_hours",
+            "pending_hours",
         )
         read_only_fields = ("is_archived", "logged_hours")

@@ -162,3 +162,20 @@ Deploy: run `manage.py report_production_data` on each shared database before mi
 Frontend change list: send `episode_id` when creating a sequence on an episodic project and pick it in the sequence form; read `episode_id` from sequence responses; archive shots before their sequence and sequences before their episode (or handle the 400 / `has_children`); do not send an episode for a sequence of a standard project.
 
 Deploy: run `manage.py report_production_data` after migrating: it now also lists sequences of episodic projects with no episode and shots whose episode differs from their sequence's. Migrations 0028 (column) and 0029 (fill) change no existing shot.
+
+## Derived hours and current version (D-15, D-16)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-28 | `logged_hours` on every task response | A stored number nothing maintained (0 unless seeded or typed before P2). | The sum of the task's **approved** timelogs, two decimals as text as before. |
+| C-28a | `pending_hours` on every task response | Did not exist. | The sum of the task's **submitted** timelogs. Read-only. |
+| C-28b | `logged_hours` sent on task create/update | **400** when different from the stored value. | **400** when different from the derived value; echoing it is accepted. |
+| C-28c | `GET /organizations/projects/{id}/resources` `hours_logged` | Sum of the stored numbers. | Sum of approved timelogs. |
+| C-29 | `current_version` on every shot response | A stored text, default "v001", writable. | The latest published version's number, else the latest version's, else "". Read-only. |
+| C-29a | `current_version_id` on every shot response | Did not exist. | The id of that version, or null. |
+| C-29b | `current_version` sent on shot create/update | Stored as typed. | **400** when different from the derived value; on create "" and "v001" are accepted and ignored. |
+| C-29c | `recent_shots[].current_version` of the project dashboard | The stored text. | The derived value; omitted when empty (as before). |
+
+Frontend change list: show `pending_hours` next to `logged_hours` (hours awaiting approval); stop sending `logged_hours` and `current_version`; treat an empty `current_version` as "no versions yet" instead of "v001"; read `current_version_id` to link to the version.
+
+Deploy: run `manage.py report_production_data` and look at "Tasks whose stored hours differ": those numbers will no longer be shown. Nothing is changed in the database by this phase (no migration).

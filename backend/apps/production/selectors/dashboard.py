@@ -23,6 +23,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from apps.production.selectors.base import ProductionBaseSelector
+from apps.production.selectors.rollups import ShotCurrentVersionSelector
 
 
 class ProjectDashboardSelector(ProductionBaseSelector):
@@ -124,9 +125,9 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         critical_count = overdue_count + blocked_count - overlap_count
 
         recent_shots = list(
-            Shot.objects.filter(**scope)
-            .select_related("assigned_artist")
-            .order_by("-updated_at")[:8]
+            ShotCurrentVersionSelector.annotate(
+                Shot.objects.filter(**scope).select_related("assigned_artist")
+            ).order_by("-updated_at")[:8]
         )
         recent_tasks = list(
             Task.objects.filter(**scope)
@@ -326,8 +327,9 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             item["assigned_artist_avatar"] = avatar
         with contextlib.suppress(Exception):
             item["frame_count"] = shot.frame_count
-        if shot.current_version:
-            item["current_version"] = shot.current_version
+        current_version = ShotCurrentVersionSelector.of(shot)[0]
+        if current_version:
+            item["current_version"] = current_version
         return item
 
     # -- tasks ------------------------------------------------------------

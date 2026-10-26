@@ -8,14 +8,22 @@ from apps.production.api.serializers.common import (
     LockedFieldsMixin,
     NormalizedCodeMixin,
 )
+from apps.production.api.serializers.shot.current_version import ShotCurrentVersionMixin
 from apps.production.models import Shot
 
 
-class ShotUpdateSerializer(NormalizedCodeMixin, FrameRangeMixin, LockedFieldsMixin, BaseWriteSerializer[Any]):
+class ShotUpdateSerializer(  # pyright: ignore[reportUnsafeMultipleInheritance]
+    ShotCurrentVersionMixin,
+    NormalizedCodeMixin,
+    FrameRangeMixin,
+    LockedFieldsMixin,
+    BaseWriteSerializer[Any],
+):
     code_frozen_by = "shot"
     locked_fields = {
         "supervisor_approved": "Use the approve action.",
         "sequence_code": "Use sequence_id.",
+        "current_version": "Derived from the shot's versions.",
     }
 
     # Same reference aliases as create; the viewset resolves + validates the
@@ -43,6 +51,7 @@ class ShotUpdateSerializer(NormalizedCodeMixin, FrameRangeMixin, LockedFieldsMix
             "thumbnail_url",
             "video_url",
             "current_version",
+            "current_version_id",
             "assigned_artist",
             "supervisor_approved",
             "client_approved",

@@ -70,7 +70,7 @@ Least privilege. `timelog.view` shows the caller's own timelogs; `timelog.view_a
 
 ## Open
 
-* Q1, Q5, Q6, Q8, Q10 to Q12, Q18, Q19 of `ANALYSIS.md` / `PLAN.md`, each with a recommended default in the reply to the question (not yet recorded as decisions). Decided: Q2 (D-12), Q3 and Q15 (D-11), Q4 (D-10), Q9 and Q14 (D-14), Q16 (D-13), Q20 and Q21 (process).
+* Q1, Q5, Q6, Q8, Q10 to Q12 of `ANALYSIS.md` / `PLAN.md`, each with a recommended default in the reply to the question (not yet recorded as decisions). Decided: Q2 (D-12), Q3 and Q15 (D-11), Q4 (D-10), Q9 and Q14 (D-14), Q16 (D-13), Q18 (D-15), Q19 (D-16), Q20 and Q21 (process).
 * **Fixed:** the production scheduling endpoints (`capacity`, `overbooking`, `resolve-overbooking`) used to need only a login. See D-09.
 * Not looked at: the scheduling app's own viewsets (`/scheduling/events|resources|schedules|leaves|holidays/`) were out of scope; check whether they scope by project.
 
@@ -124,3 +124,19 @@ Least privilege. `timelog.view` shows the caller's own timelogs; `timelog.view_a
 * **Creator (Q14):** keeps the "Production Admin" membership (display only). The creator, identified by the project's `created_by`, may add members to that project through `POST /organizations/projects/{id}/members/`, in addition to platform admins. The endpoint still needs `project.update`, so a creator whose role lacks it gets a 403. This is the only right the creator record adds; it does not apply to any other project, and it is not inferred from the membership role.
 * The label is not varied by the creator's own role: nothing reads it.
 * **Not decided:** removing or changing members, and whether a project owner should be a stored role.
+
+## D-15 Task hours (Q18)
+
+* **`logged_hours` is the sum of the task's approved timelogs.** Approved corrections count (they are approved entries, possibly negative). Draft, rejected and soft-deleted entries do not.
+* **`pending_hours` (new)** is the sum of the task's submitted timelogs. Approving moves hours from pending to logged at once; there is nothing to refresh.
+* Both are **derived on every read** (one subquery per list, no per-row queries); they are not stored. The dashboards that show hours per artist (`/organizations/projects/{id}/resources`) use the same figure.
+* Sending `logged_hours` stays a 400 ("Cannot be set directly") unless it equals the derived value, as in D-01. `pending_hours` is read-only.
+* **The old `Task.logged_hours` column is no longer read or written.** Before P2 clients could type into it and nothing ever filled it from timelogs, so any non-zero value in an existing database is either a hand-typed number or a seed. Those stop appearing. `report_production_data` lists tasks whose stored number differs from their approved sum, so you can see what will change. The column is dropped in the final cleanup, with `sequence_code`.
+
+## D-16 Shot current version (Q19)
+
+* **`current_version` is the number of the shot's latest published version; with none published, its latest version; with no versions, an empty string.** Archived (`is_archived`) and soft-deleted versions never count. A new `current_version_id` carries the version's id (null if none).
+* **"Latest" is the most recently created**, not the highest number: `version_number` and `version_index` are typed by clients and `version_index` is not maintained. Unpublishing the current published version falls back to the next published one, else the latest.
+* Derived on every read like D-15. Sending `current_version` is a 400 unless it equals the derived value; on create, an empty value and the old default `v001` are accepted and ignored.
+* The project dashboard's recent shots use the same value.
+* **Not done:** assets. `Asset.version` and the JSON `versions` list stay as they were; they need their own decision. The stored `Shot.current_version` column is no longer read and goes in the final cleanup.

@@ -9,10 +9,17 @@ from apps.production.api.serializers.common import (
     NormalizedCodeMixin,
     ProjectReferenceMixin,
 )
+from apps.production.api.serializers.task.hours import TaskHoursMixin
 from apps.production.models import Task
 
 
-class TaskCreateSerializer(NormalizedCodeMixin, LockedFieldsMixin, ProjectReferenceMixin, BaseWriteSerializer[Any]):
+class TaskCreateSerializer(  # pyright: ignore[reportUnsafeMultipleInheritance]
+    TaskHoursMixin,
+    NormalizedCodeMixin,
+    LockedFieldsMixin,
+    ProjectReferenceMixin,
+    BaseWriteSerializer[Any],
+):
     locked_fields = {
         "is_archived": "Use the archive and restore actions.",
         "logged_hours": "Derived from the task's timelogs.",
@@ -55,6 +62,7 @@ class TaskCreateSerializer(NormalizedCodeMixin, LockedFieldsMixin, ProjectRefere
             "due_date",
             "estimated_hours",
             "logged_hours",
+            "pending_hours",
         )
         read_only_fields = ("id", "uuid", "is_archived", "logged_hours")
         extra_kwargs = {"project": {"required": False}, "code": {"required": False}}
