@@ -91,6 +91,8 @@ class Task(EntityModel):
         db_index=True,
     )
 
+    # Legacy (D-25): neither read nor written; archived means soft-deleted (``is_deleted``).
+    # The API's ``is_archived`` is derived from that. The column goes in the final cleanup.
     is_archived = models.BooleanField(default=False, db_index=True)
 
     # Denormalized for quick filtering (also in schedule)

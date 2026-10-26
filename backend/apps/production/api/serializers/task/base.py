@@ -21,6 +21,7 @@ class TaskSerializer(TaskHoursMixin, BaseReadSerializer[Any]):  # pyright: ignor
     reviewer_name = serializers.SerializerMethodField()
     reviewer_avatar = serializers.SerializerMethodField()
     department = serializers.CharField(read_only=True)
+    is_archived = serializers.BooleanField(source="is_deleted", read_only=True)
     entity_type = serializers.CharField(read_only=True)
     entity_id = serializers.CharField(read_only=True)
     entity_code = serializers.CharField(read_only=True)

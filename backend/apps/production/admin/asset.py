@@ -14,13 +14,13 @@ class AssetAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
         "category",
         "status",
         "version",
-        "is_archived",
+        "is_deleted",
     )
 
     list_filter = (
         "category",
         "status",
-        "is_archived",
+        "is_deleted",
     )
 
     search_fields = (

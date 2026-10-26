@@ -87,14 +87,6 @@ class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: i
         serializer = VersionDetailSerializer(instance)
         return Response(serializer.data)
 
-    @action(detail=True, methods=["post"], url_path="archive")
-    def archive(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.is_archived = True
-        instance.save(update_fields=["is_archived"])
-        serializer = VersionDetailSerializer(instance)
-        return Response(serializer.data)
-
     @extend_schema(request=PromoteVersionSerializer)
     @action(detail=True, methods=["post"], url_path="promote")
     def promote(self, request, *args, **kwargs):

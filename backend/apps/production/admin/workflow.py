@@ -13,13 +13,13 @@ class WorkflowAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
         "project",
         "category",
         "is_active",
-        "is_archived",
+        "is_deleted",
     )
 
     list_filter = (
         "category",
         "is_active",
-        "is_archived",
+        "is_deleted",
     )
 
     search_fields = (

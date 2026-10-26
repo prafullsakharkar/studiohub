@@ -73,6 +73,11 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
                 request=self.request,
                 view=self,
             )
+        # ``?is_archived=`` selects by the soft delete (D-25); asking for archived rows without the
+        # grant to see them yields none, never the live ones.
+        archived = self._archived_param()
+        if archived is not None:
+            qs = qs.filter(is_deleted=archived)
         qs = ProductionBaseSelector.scope_by_request(
             qs,
             request=self.request,
@@ -88,6 +93,12 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
     def perform_destroy(self, instance):
         self.guard_mutable(instance)
         super().perform_destroy(instance)
+
+    def after_archive(self, instance):
+        """Hook: entity-specific bookkeeping once ``instance`` is archived (same transaction)."""
+
+    def after_restore(self, instance):
+        """Hook: entity-specific bookkeeping once ``instance`` is restored."""
 
     def narrow_queryset(self, queryset):
         """Hook: narrow what the caller may see beyond project membership (e.g. own records)."""
@@ -116,9 +127,23 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
             for code in codes
         )
 
+    def _archived_param(self):
+        """True or False when ``?is_archived=`` says so, else None."""
+        params = getattr(self.request, "query_params", {}) or {}
+        value = params.get("is_archived")
+        if not isinstance(value, str):
+            return None
+        value = value.strip().lower()
+        if value in ("true", "1", "yes"):
+            return True
+        if value in ("false", "0", "no"):
+            return False
+        return None
+
     def _include_deleted(self):
         params = getattr(self.request, "query_params", {}) or {}
-        for key in ("include_deleted", "include_archived"):
+        # ``is_archived=true`` asks for archived (= soft-deleted) rows too, like include_archived.
+        for key in ("include_deleted", "include_archived", "is_archived"):
             value = params.get(key)
             if isinstance(value, str) and value.lower() in ("true", "1", "yes"):
                 return True
@@ -275,6 +300,7 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         with transaction.atomic():
             self._set_status(instance, "Archived")
             self.service_class.delete(instance, user=request.user)
+            self.after_archive(instance)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
@@ -297,6 +323,7 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         if self.workflow_key:
             # Back to the status it had before it was archived, not stuck in Archived.
             StatusService.restore_status(actor=request.user, entity=restored)
+        self.after_restore(restored)
         serializer = self.get_serializer(restored)
         return Response(serializer.data)
 

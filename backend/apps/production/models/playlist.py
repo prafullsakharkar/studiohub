@@ -30,6 +30,8 @@ class Playlist(EntityModel):
     share_settings = models.JSONField(default=dict, blank=True)
     activity = models.JSONField(default=list, blank=True)
 
+    # Legacy (D-25): neither read nor written; archived means soft-deleted (``is_deleted``).
+    # The API's ``is_archived`` is derived from that. The column goes in the final cleanup.
     is_archived = models.BooleanField(default=False, db_index=True)
 
     class Meta:

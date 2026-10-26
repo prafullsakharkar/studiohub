@@ -114,18 +114,10 @@ class PlaylistViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissing
         instance.save(update_fields=["share_settings"])
         return Response(PlaylistDetailSerializer(instance).data)
 
-    @action(detail=True, methods=["post"], url_path="archive")
-    def archive(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.is_archived = True
+    def after_archive(self, instance):
         instance.status = "Archived"
-        instance.save(update_fields=["is_archived", "status"])
-        return Response(PlaylistDetailSerializer(instance).data)
+        instance.save(update_fields=["status"])
 
-    @action(detail=True, methods=["post"], url_path="restore")
-    def restore(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.is_archived = False
+    def after_restore(self, instance):
         instance.status = "Active"
-        instance.save(update_fields=["is_archived", "status"])
-        return Response(PlaylistDetailSerializer(instance).data)
+        instance.save(update_fields=["status"])

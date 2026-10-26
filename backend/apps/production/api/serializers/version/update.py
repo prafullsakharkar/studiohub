@@ -1,5 +1,7 @@
 from typing import Any
 
+from rest_framework import serializers
+
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.api.serializers.common import LockedFieldsMixin, NormalizedCodeMixin
 from apps.production.models import Version
@@ -9,7 +11,9 @@ class VersionUpdateSerializer(NormalizedCodeMixin, LockedFieldsMixin, BaseWriteS
     locked_fields = {
         "is_published": "Use the publish and unpublish actions.",
         "is_hero": "Use the promote action.",
+        "is_archived": "Use the archive and restore actions.",
     }
+    is_archived = serializers.BooleanField(source="is_deleted", read_only=True)
 
     class Meta:
         model = Version

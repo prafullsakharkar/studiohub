@@ -25,6 +25,8 @@ class TaskCreateSerializer(  # pyright: ignore[reportUnsafeMultipleInheritance]
         "logged_hours": "Derived from the task's timelogs.",
     }
 
+    is_archived = serializers.BooleanField(source="is_deleted", read_only=True)
+
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
 

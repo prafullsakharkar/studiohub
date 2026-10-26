@@ -7,6 +7,7 @@ from apps.production.models import Asset
 
 
 class AssetSerializer(BaseReadSerializer[Any]):
+    is_archived = serializers.BooleanField(source="is_deleted", read_only=True)
     project_id = serializers.UUIDField(read_only=True)
     project_code = serializers.SerializerMethodField()
     project_name = serializers.SerializerMethodField()

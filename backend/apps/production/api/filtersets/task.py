@@ -102,4 +102,4 @@ class TaskFilterSet(BaseFilterSet):
             return queryset
         # Handle string boolean
         val = value.lower() in ("true", "1", "yes") if isinstance(value, str) else bool(value)
-        return queryset.filter(is_archived=val)
+        return queryset.filter(is_deleted=val)

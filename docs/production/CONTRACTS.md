@@ -225,3 +225,15 @@ Frontend change list: edit forms for events and resources can be used; offer onl
 | C-34 | Deleting a project (hard) with tasks, versions, time logs, reviews or notes; deleting a person with time logged | Everything went with it. | Refused (not reachable through the API, which only archives); the Django admin offers no delete for production rows. |
 
 Frontend change list: bulk import can send `code_prefix` instead of `code`; the episode form may show the 7-character code for seasons above 9; nothing else changes.
+
+## One archive marker (D-25)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-35 | `is_archived` in task, asset, version, playlist and workflow responses | A stored flag. | Derived: true exactly when the row is archived (soft-deleted). Read-only. |
+| C-35a | `is_archived` sent on create/update (asset, version, playlist, task) | Accepted as typed (task: 400 when changed). | **400** "Cannot be set directly. Use the archive and restore actions." when different from the current value; echoing it is fine. |
+| C-35b | `POST /versions/{id}/archive/`, `POST /workflows/{id}/archive/`, `POST /playlists/{id}/archive/` | Set the flag only; the row stayed in lists. | Soft-delete the row (it leaves default lists). `POST .../restore/` brings it back (a workflow stays inactive; a playlist is "Active"). |
+| C-35c | `GET .../?is_archived=true` / `false` (all five lists) | Tasks and versions: filter on the flag. Others: ignored. | Archived / live rows by the soft delete. `true` needs the delete grant for that resource, otherwise empty. |
+| C-35d | Existing rows with the flag set and not soft-deleted | Visible in lists. | Soft-deleted by migration 0031: gone from default lists, shown with `is_archived=true`. |
+
+Frontend change list: stop sending `is_archived`; use the archive and restore actions for versions, playlists and workflows; show archived items from `?is_archived=true`; expect archived versions, playlists and workflows to leave the default lists.

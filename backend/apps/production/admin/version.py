@@ -16,7 +16,7 @@ class VersionAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
         "status",
         "is_published",
         "is_hero",
-        "is_archived",
+        "is_deleted",
     )
 
     list_filter = (
@@ -24,7 +24,7 @@ class VersionAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
         "entity_type",
         "is_published",
         "is_hero",
-        "is_archived",
+        "is_deleted",
     )
 
     search_fields = (

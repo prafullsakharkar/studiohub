@@ -1,5 +1,7 @@
 from typing import Any
 
+from rest_framework import serializers
+
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.api.serializers.common import LockedFieldsMixin, NormalizedCodeMixin
 from apps.production.api.serializers.task.hours import TaskHoursMixin
@@ -13,6 +15,8 @@ class TaskUpdateSerializer(  # pyright: ignore[reportUnsafeMultipleInheritance]
         "is_archived": "Use the archive and restore actions.",
         "logged_hours": "Derived from the task's timelogs.",
     }
+
+    is_archived = serializers.BooleanField(source="is_deleted", read_only=True)
 
     class Meta:
         model = Task

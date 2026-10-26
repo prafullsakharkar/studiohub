@@ -131,6 +131,8 @@ class LockedFieldsMixin:
 
     def current_value(self, name):
         """The value a sent one is compared with; derived fields override this."""
+        if name == "is_archived":  # archived means soft-deleted (D-25); the column is legacy
+            return self.instance.is_deleted
         return getattr(self.instance, name)
 
     def _changes(self, name, raw) -> bool:

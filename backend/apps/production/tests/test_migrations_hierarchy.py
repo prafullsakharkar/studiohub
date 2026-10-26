@@ -20,6 +20,7 @@ BEFORE_CONSTRAINTS = [("production", "0024_status_override_and_timelog_adjustmen
 WITH_CONSTRAINTS = [("production", "0025_code_and_frame_constraints")]
 WITH_COLUMN = [("production", "0026_shot_sequence")]
 WITH_EPISODE_COLUMN = [("production", "0028_sequence_episode")]
+BEFORE_ARCHIVE_RECONCILE = [("production", "0030_protect_history_rows")]
 
 
 def _latest():
@@ -221,3 +222,63 @@ class TestSequencesAreFiledUnderTheirShotsEpisode:
         assert empty.pk
         shots = apps.get_model("production", "Shot").objects
         assert shots.get(code="G2").episode_id is None  # shots are never touched
+
+
+class TestArchiveFlagReconciled:
+    """0031: rows that only carry the old flag are soft-deleted; everything else is left alone."""
+
+    def _make(self, apps, project, name, code, **extra):
+        model = apps.get_model("production", name)
+        fields = {"project": project, "code": code, **extra}
+        if name in ("Asset", "Playlist", "Workflow"):
+            fields.setdefault("name", code)
+        if name == "Task":
+            fields.setdefault("title", code)
+        return model.objects.create(**fields)
+
+    def test_only_flag_only_rows_are_soft_deleted(self, restore):
+        apps = _migrate(BEFORE_ARCHIVE_RECONCILE)
+        project = _project(apps, "ARCM")
+        made = {}
+        for name in ("Task", "Asset", "Version", "Playlist", "Workflow"):
+            made[name] = {
+                "flag_only": self._make(apps, project, name, f"{name[:3]}-F", is_archived=True),
+                "both": self._make(
+                    apps, project, name, f"{name[:3]}-B", is_archived=True, is_deleted=True
+                ),
+                "deleted_only": self._make(apps, project, name, f"{name[:3]}-D", is_deleted=True),
+                "neither": self._make(apps, project, name, f"{name[:3]}-N"),
+            }
+
+        apps = _migrate(_latest())
+
+        for name, rows in made.items():
+            model = apps.get_model("production", name)
+            state = {key: model._base_manager.get(pk=row.pk) for key, row in rows.items()}
+            assert (
+                state["flag_only"].is_deleted is True and state["flag_only"].deleted_at is not None
+            ), name
+            assert state["flag_only"].is_archived is True  # the column itself is not touched
+            assert (
+                state["both"].is_deleted,
+                state["deleted_only"].is_deleted,
+                state["neither"].is_deleted,
+            ) == (
+                True,
+                True,
+                False,
+            ), name
+
+    def test_running_it_again_changes_nothing(self, restore):
+        apps = _migrate(BEFORE_ARCHIVE_RECONCILE)
+        project = _project(apps, "ARCN")
+        self._make(apps, project, "Task", "T-F", is_archived=True)
+        apps = _migrate(_latest())
+        first = apps.get_model("production", "Task")._base_manager.get(code="T-F").deleted_at
+
+        _migrate(BEFORE_ARCHIVE_RECONCILE)  # reverse does nothing
+        apps = _migrate(_latest())
+
+        assert (
+            apps.get_model("production", "Task")._base_manager.get(code="T-F").deleted_at == first
+        )

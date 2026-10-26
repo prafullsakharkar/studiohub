@@ -5,7 +5,7 @@ Values derived from other records, read the same way everywhere (DECISIONS D-15,
   approved entries too, possibly negative), ``pending`` the sum of its submitted ones.
   Drafts, rejected and soft-deleted entries count for neither.
 * A shot's current version: its latest published version, else its latest version
-  (archived and soft-deleted versions never count). "Latest" is the most recently
+  (archived versions, which are soft-deleted, never count). "Latest" is the most recently
   created, not the highest number: numbers are typed by clients.
 
 ``annotate`` adds both values to a queryset in the same query (lists); ``of`` reads them
@@ -78,7 +78,7 @@ class ShotCurrentVersionSelector:
     @classmethod
     def _latest(cls):
         # Published first, then newest: one ordering gives "latest published, else latest".
-        return Version.objects.filter(shot=OuterRef("pk"), is_archived=False).order_by(
+        return Version.objects.filter(shot=OuterRef("pk")).order_by(
             "-is_published", "-created_at", "-pk"
         )
 
@@ -99,7 +99,7 @@ class ShotCurrentVersionSelector:
         if getattr(shot, "pk", None) is None:
             return "", None
         row = (
-            Version.objects.filter(shot=shot, is_archived=False)
+            Version.objects.filter(shot=shot)
             .order_by("-is_published", "-created_at", "-pk")
             .values_list("version_number", "id")
             .first()

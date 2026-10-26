@@ -12,9 +12,9 @@ is left:
 * sequences of episodic projects that have no episode, and why (their shots span several
   episodes, or they have none), and shots whose episode differs from their sequence's
   (DECISIONS D-12)
-* how the ``is_archived`` flag and the soft delete overlap on the five models that have both
-  (information only, not a finding: Version, Workflow and Playlist archive by the flag alone,
-  so rows with the flag and no delete are normal there; DECISIONS D-24)
+* how the legacy ``is_archived`` flag and the soft delete overlap on the five models that have
+  both (information only, not a finding). "Flag only" is what migration 0031 soft-deletes, so
+  run this before migrating; after it, 0 is expected (DECISIONS D-25)
 * tasks whose old stored ``logged_hours`` differs from the sum of their approved timelogs:
   responses now show the sum, so a hand-typed number stops appearing (DECISIONS D-15)
 
@@ -203,6 +203,9 @@ class Command(BaseCommand):
             self.stdout.write(f"  task {code} {pk}: stored {stored}, approved timelogs {approved}")
 
         self.stdout.write("Archive flag versus soft delete (information, not findings):")
+        self.stdout.write(
+            "  (flag only = rows migration 0031 soft-deletes; 0 is expected after it)"
+        )
         for name, flag_only, deleted_only, both, neither in archive_flag_overlap():
             self.stdout.write(
                 f"  {name}: flag only {flag_only}, deleted only {deleted_only}, both {both}, neither {neither}"

@@ -13,13 +13,13 @@ class PlaylistAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
         "project",
         "status",
         "client_only",
-        "is_archived",
+        "is_deleted",
     )
 
     list_filter = (
         "status",
         "client_only",
-        "is_archived",
+        "is_deleted",
     )
 
     search_fields = (

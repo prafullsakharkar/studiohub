@@ -172,8 +172,7 @@ class TaskViewSet(StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMix
 
     @action(detail=False, methods=["post"], url_path="bulk-archive")
     def bulk_archive(self, request, *args, **kwargs):
-        # Task archive flips the is_archived flag + status AND soft-deletes,
-        # mirroring the mock (is_archived + is_deleted + status 'Archived').
+        # Task archive sets the status and soft-deletes (``is_archived`` is derived from that).
         results = []
         for index, item_id in enumerate(self._ids_list()):
             instance = self.get_queryset().filter(id=item_id).first()
@@ -182,8 +181,6 @@ class TaskViewSet(StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMix
                     {"index": index, "id": item_id, "status": self.service_class.NOT_FOUND}
                 )
                 continue
-            instance.is_archived = True
-            instance.save(update_fields=["is_archived"])
             self._set_status(instance, "Archived")
             self.service_class.delete(instance, user=request.user)
             results.append(
@@ -196,8 +193,6 @@ class TaskViewSet(StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMix
         instance = self.get_queryset().filter(id=self._lookup_id(kwargs)).first()
         if instance is None:
             raise NotFound("Task not found.")
-        instance.is_archived = True
-        instance.save(update_fields=["is_archived"])
         self._set_status(instance, "Archived")
         self.service_class.delete(instance, user=request.user)
         return Response(self._detail_data(instance))
@@ -213,8 +208,6 @@ class TaskViewSet(StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMix
         if instance is None or not instance.is_deleted:
             raise NotFound("Task not found.")
         self.service_class.restore(instance)
-        instance.is_archived = False
-        instance.save(update_fields=["is_archived"])
         self._set_status(instance, "In Progress")
         return Response(self._detail_data(instance))
 

@@ -19,10 +19,12 @@ class VersionCreateSerializer(NormalizedCodeMixin, FrameRangeMixin, LockedFields
     locked_fields = {
         "is_published": "Use the publish action.",
         "is_hero": "Use the promote action.",
+        "is_archived": "Use the archive and restore actions.",
     }
 
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
+    is_archived = serializers.BooleanField(source="is_deleted", read_only=True)
     # Limited to the caller's projects; the viewset checks they belong to the
     # version's own project.
     shot = ScopedReferenceField(queryset=Shot.objects.all(), required=False, allow_null=True)

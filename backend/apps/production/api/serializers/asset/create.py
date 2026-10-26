@@ -5,13 +5,21 @@ from rest_framework import serializers
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.api.serializers.common import (
     LenientUniqueTogetherValidator,
+    LockedFieldsMixin,
     NormalizedCodeMixin,
     ProjectReferenceMixin,
 )
 from apps.production.models import Asset
 
 
-class AssetCreateSerializer(NormalizedCodeMixin, ProjectReferenceMixin, BaseWriteSerializer[Any]):
+class AssetCreateSerializer(
+    NormalizedCodeMixin, LockedFieldsMixin, ProjectReferenceMixin, BaseWriteSerializer[Any]
+):
+    locked_fields = {
+        "is_archived": "Use the archive and restore actions.",
+    }
+
+    is_archived = serializers.BooleanField(source="is_deleted", read_only=True)
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
 

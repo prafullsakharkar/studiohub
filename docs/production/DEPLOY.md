@@ -1,6 +1,6 @@
 # Deploying the production hardening work
 
-Branch `feature/production-hardening`, commits `0bd495b` (phase 1) to the one that adds this file. What changed and why: `DECISIONS.md` (D-01 to D-24); every API change with its before and after: `CONTRACTS.md` (C-01 to C-34); what is still planned: `PLAN.md`.
+Branch `feature/production-hardening`, commits `0bd495b` (phase 1) onwards. What changed and why: `DECISIONS.md` (D-01 to D-25); every API change with its before and after: `CONTRACTS.md` (C-01 to C-35); what is still planned: `PLAN.md`.
 
 **What was and was not run.** Everything below was developed and tested against the pytest test database only (last full suite: 4147 passed, 1 skipped). Nothing was ever run against a staging or production database, and none of the preflight steps in section 1 has been run by the author. Treat section 1 as a gate you pass, not a formality.
 
@@ -19,11 +19,11 @@ Run these against a copy or the real database, in this order, and keep the outpu
    | Sequences of episodic projects without an episode | Left empty by 0029 because their shots do not share one episode, or there are no shots. | Set the episode through the API when convenient; older rows can be edited without it. |
    | Shots whose episode differs from their sequence's | An older mismatch, left alone until the shot is moved. | Review. |
    | Tasks whose stored hours differ from approved timelogs | The old `logged_hours` column (typed by clients or seeded) is no longer shown; responses show the approved sum. | Know that these numbers disappear from the UI. |
-   | Archive flag versus soft delete | Counts only, not findings. Input for the later decision on retiring `is_archived` (D-24). | Keep the output. |
+   | Archive flag versus soft delete | Counts only, not findings. **"Flag only" is the number of rows migration 0031 will soft-delete** (they leave default lists). | Look at the numbers per model before migrating; keep the output. |
 
 ## 2. Migrate
 
-`uv run python manage.py migrate` (production 0023 to 0030, scheduling 0003). In order:
+`uv run python manage.py migrate` (production 0023 to 0031, scheduling 0003). In order:
 
 | Migration | What it does | Can it fail on existing data? |
 |---|---|---|
@@ -35,9 +35,10 @@ Run these against a copy or the real database, in this order, and keep the outpu
 | 0028 `sequence_episode` | Adds `Sequence.episode`. | No. |
 | 0029 `fill_sequence_episode` | Fills the episode of a sequence only when all its shots agree on one. | No; the rest stay `NULL`. Reverse does nothing. |
 | 0030 `protect_history_rows` | Delete rules only (`PROTECT`); emits no SQL. | No. |
+| 0031 `reconcile_archive_flag` | **Soft-deletes** the Task, Asset, Version, Playlist and Workflow rows that have the old `is_archived` flag set and are not soft-deleted, so they leave default lists. The column is untouched. | No, but it changes what users see: check the "flag only" counts first (section 1). Reverse does nothing; ids are logged (`archive_flag_reconciled`). |
 | scheduling 0003 `leave_rejected_by` | Two additive columns on leave requests. | No. |
 
-Tests exist for forward, back and forward again of 0023 and 0024 (`test_migration_roundtrip.py`) and for 0025 to 0029 (`test_migrations_hierarchy.py`, including the refusal of 0025 and the fill rules of 0027 and 0029); 0030 has none (no SQL). The two "fill" migrations log a count of filled and unmatched rows.
+Tests exist for forward, back and forward again of 0023 and 0024 (`test_migration_roundtrip.py`) and for 0025 to 0029 and 0031 (`test_migrations_hierarchy.py`, including the refusal of 0025, the fill rules of 0027 and 0029 and the rows 0031 touches); 0030 has none (no SQL). The two "fill" migrations log a count of filled and unmatched rows.
 
 ## 3. After migrating
 
@@ -64,6 +65,7 @@ Tests exist for forward, back and forward again of 0023 and 0024 (`test_migratio
 | Timelogs | `timelog.view` shows your own; the project's need `timelog.view_all`. Approved logs are final; corrections are new entries (`adjustment_of`). |
 | Codes | Upper-cased everywhere, unique ignoring case; no spaces or slashes; shot and asset codes freeze once a version exists (`rename-code`, production-admin only). |
 | Scheduling | Events follow their visibility and project; leave is decided once, by someone else, with the reason hidden from bystanders; pay rates need `schedule.view_rates`. |
+| Versions, playlists, workflows | Archiving now removes them from the default lists (like tasks and shots); `?is_archived=true` shows them; `is_archived` is read-only. |
 | Dashboards | Hours are the approved sum with pending hours beside them; a shot's current version is its latest published version. |
 
 ## 6. Frontend change list (all phases, in one place)
@@ -79,13 +81,14 @@ From `CONTRACTS.md`; the contract IDs have the exact before and after.
 7. Codes: expect upper case; send `sequence_id` and, on episodic projects, `episode_id` for sequences; show frame-range errors; use `rename-code` after the first version; bulk import may send `code_prefix`; the episode form may show a 7-character code.
 8. Archiving: archive shots before their sequence and sequences before their episode, or handle the 400 and `has_children`.
 9. Scheduling: users without `schedule.view` get 403 on the board; read-only status, decision fields and `total_days` on the leave form, and handle 403 (own leave) and 400 (already decided); fewer events for non-members; placeholders for `null` rates; do not show "Booked on another project" as a real title; event and resource edit forms now work; offer only the user's own projects; disable status changes out of Completed or Cancelled.
-10. Treat an empty `current_version` as "no versions yet"; link with `current_version_id`.
+10. Archived items: stop sending `is_archived`; archive and restore versions, playlists and workflows with the actions; list archived ones with `?is_archived=true`.
+11. Treat an empty `current_version` as "no versions yet"; link with `current_version_id`.
 
 ## 7. Not done, on purpose
 
 Phases P7 to P12 of `PLAN.md` (shot to asset links, task templates and entity links, version numbering, relational reviews and notes, the contract phase that drops legacy columns) and these items inside finished phases:
 
-- retiring `is_archived` (needs your decision after reading the report above, D-24);
+- dropping the `is_archived`, `sequence_code`, `Task.logged_hours` and `Shot.current_version` columns (final cleanup; `is_archived` itself is retired in behaviour, D-25);
 - the head and tail handles split (B7) and manual ordering (B6);
 - assets: `Asset.version` and its JSON `versions` list are untouched (D-16);
-- open questions Q5, Q6 and Q10 (assets and templates), the unused `sequence_code`, `Task.logged_hours` and `Shot.current_version` columns (dropped only in the final cleanup).
+- open questions Q5, Q6 and Q10 (assets and templates).

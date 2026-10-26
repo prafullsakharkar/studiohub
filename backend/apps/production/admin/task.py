@@ -16,14 +16,14 @@ class TaskAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
         "status",
         "priority",
         "due_date",
-        "is_archived",
+        "is_deleted",
     )
 
     list_filter = (
         "status",
         "priority",
         "department",
-        "is_archived",
+        "is_deleted",
     )
 
     search_fields = (

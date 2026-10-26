@@ -199,7 +199,7 @@ class TestShotCurrentVersion:
         shot = ShotFactory.create(project=project, code="S1")
         other = ShotFactory.create(project=project, code="S2")
         kept = self._version(shot, "v001")
-        self._version(shot, "v002", is_archived=True)
+        self._version(shot, "v002", is_deleted=True)  # archived = soft-deleted (D-25)
         self._version(shot, "v003", is_deleted=True)
         self._version(other, "v009")
 

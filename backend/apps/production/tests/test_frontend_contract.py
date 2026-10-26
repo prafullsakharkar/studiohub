@@ -256,7 +256,7 @@ class TestBulkUpdateArchiveContract:
         # status it had before (the status workflow keeps Archived a dead end).
         assert shot.status == "Not Started"
 
-    def test_task_archive_sets_flag_and_status(self, staff_client, staff_user):
+    def test_task_archive_sets_status_and_soft_deletes(self, staff_client, staff_user):
         task = TaskFactory.create(code="TSKARC01")
         _member(staff_user, task.project)
         resp = staff_client.post(
@@ -265,7 +265,7 @@ class TestBulkUpdateArchiveContract:
         )
         assert resp.status_code == status.HTTP_200_OK, resp.data
         task.refresh_from_db()
-        assert task.is_archived is True
+        assert resp.data["is_archived"] is True  # derived from the soft delete (D-25)
         assert task.status == "Archived"
         assert task.is_deleted is True
 
