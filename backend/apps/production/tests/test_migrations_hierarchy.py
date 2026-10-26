@@ -27,6 +27,7 @@ BEFORE_ASSET_TYPES = [("production", "0033_task_types_and_templates")]
 BEFORE_TASK_LINKS = [("production", "0035_task_entity_links")]
 BEFORE_VERSION_PREP = [("production", "0037_version_published_by")]
 BEFORE_REVIEW_ROWS = [("production", "0039_version_constraints")]
+BEFORE_PLAYLIST_ROWS = [("production", "0041_convert_review_json")]
 
 
 def _latest():
@@ -629,3 +630,51 @@ class TestReviewJsonConverted:
         assert len(kept.comments) == 2 and len(kept.reviewers) == 4  # the JSON is untouched
         out = capsys.readouterr().out
         assert "not converted" in out and "versions[1]" in out and "reviewers[3]" in out
+
+
+class TestPlaylistJsonConverted:
+    """0043 turns the old JSON ``entries`` of a playlist into rows and keeps the JSON."""
+
+    def test_entries_become_rows_in_order_and_what_cannot_be_read_is_reported(
+        self, restore, capsys
+    ):
+        apps = _migrate(BEFORE_PLAYLIST_ROWS)
+        project = _project(apps, "PLA")
+        other = _project(apps, "PLB")
+        Version = apps.get_model("production", "Version")
+        Playlist = apps.get_model("production", "Playlist")
+        mine = Version.objects.create(project=project, code="PLA_V1", version_index=1)
+        foreign = Version.objects.create(project=other, code="PLB_V1", version_index=1)
+        playlist = Playlist.objects.create(
+            project=project,
+            code="PL1",
+            name="Dailies",
+            entries=[
+                {"id": "e2", "version_id": str(mine.pk), "item_order": 2, "notes_count": 3},
+                {"id": "e1", "item_order": 1, "label": "slate"},
+                {"id": "e3", "version_id": str(foreign.pk), "item_order": 3},
+                7,
+            ],
+        )
+        empty = Playlist.objects.create(project=project, code="PL2", name="Empty")
+
+        apps = _migrate(_latest())
+
+        rows = list(
+            apps.get_model("production", "PlaylistEntry")
+            .objects.filter(playlist_id=playlist.pk)
+            .order_by("position")
+        )
+        assert [(r.legacy_id, r.position, r.version_id) for r in rows] == [
+            ("e1", 1, None),
+            ("e2", 2, mine.pk),
+        ]  # the foreign project's version and the number are skipped
+        assert rows[1].extra == {"notes_count": 3}
+        assert not apps.get_model("production", "PlaylistEntry").objects.filter(
+            playlist_id=empty.pk
+        )
+        assert (
+            len(apps.get_model("production", "Playlist").objects.get(pk=playlist.pk).entries) == 4
+        )
+        out = capsys.readouterr().out
+        assert "not converted" in out and "entries[2]" in out and "entries[3]" in out

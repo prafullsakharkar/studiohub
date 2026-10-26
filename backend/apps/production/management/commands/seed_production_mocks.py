@@ -633,6 +633,7 @@ code=code,
 
     def _seed_playlists(self, ts_path):
         from apps.production.models import Playlist, Project
+        from apps.production.services.playlist import PlaylistService
 
         data = _load_ts_mock_array(ts_path, "mockPlaylists")
         if not data:
@@ -643,7 +644,7 @@ code=code,
             code = item.get("code") or item.get("id")
             proj_code = item.get("project_code")
             proj = proj_map.get(proj_code) or Project.objects.first()
-            _update_or_create(Playlist, defaults={
+            playlist, _ = _update_or_create(Playlist, defaults={
                     "name": item.get("name", code),
                     "description": item.get("description", ""),
                     "project": proj,
@@ -653,6 +654,7 @@ code=code,
                 },
 code=code,
 )
+            PlaylistService.import_legacy_json(playlist)
             count += 1
         return count
 

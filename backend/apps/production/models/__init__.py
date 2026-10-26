@@ -4,6 +4,7 @@ from .editorial import EditorialCut, EditorialTrack
 from .episode import Episode
 from .media import Media
 from .playlist import Playlist
+from .playlist_entry import PlaylistEntry
 from .project import Project
 from .project_membership import ProjectMembership
 from .project_note import ProjectNote
@@ -49,6 +50,7 @@ __all__ = [
     "ReviewParticipant",
     "Media",
     "Playlist",
+    "PlaylistEntry",
     "Workflow",
     "ProjectMembership",
     "EditorialCut",

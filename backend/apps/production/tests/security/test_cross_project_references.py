@@ -16,7 +16,7 @@ from rest_framework.test import APIClient
 
 from apps.identity.tests.factories import UserFactory
 from apps.identity.tests.rbac_helpers import grant_permissions
-from apps.production.models import ProjectMembership, Task, Timelog, Version
+from apps.production.models import PlaylistEntry, ProjectMembership, Task, Timelog, Version
 from apps.production.tests.factories import (
     AssetFactory,
     PlaylistFactory,
@@ -209,7 +209,7 @@ class TestAddToPlaylist:
         assert _body(a) == _body(b)
         foreign.refresh_from_db()
         version.refresh_from_db()
-        assert foreign.entries == []
+        assert not PlaylistEntry.objects.filter(playlist=foreign).exists()
         assert version.playlists == []
 
     def test_playlist_of_a_project_the_caller_is_not_in_is_refused_too(self, project_a, project_b):
@@ -219,7 +219,7 @@ class TestAddToPlaylist:
 
         assert self.add(user, version, playlist_id=str(foreign.id)).status_code == 400
         foreign.refresh_from_db()
-        assert foreign.entries == []
+        assert not PlaylistEntry.objects.filter(playlist=foreign).exists()
 
     def test_adds_to_a_playlist_of_the_same_project(self, project_a):
         version = VersionFactory.create(project=project_a, code="V1")
@@ -229,8 +229,9 @@ class TestAddToPlaylist:
         resp = self.add(user, version, playlist_id=str(playlist.id), playlist_name="Dailies")
 
         assert resp.status_code == status.HTTP_200_OK, resp.json()
-        playlist.refresh_from_db()
-        assert [entry["version_id"] for entry in playlist.entries] == [str(version.id)]
+        assert [str(e.version_id) for e in PlaylistEntry.objects.filter(playlist=playlist)] == [
+            str(version.id)
+        ]
 
     def test_needs_the_playlist_update_code(self, project_a):
         version = VersionFactory.create(project=project_a, code="V1")
@@ -265,7 +266,7 @@ class TestPlaylistEntries:
 
         assert resp.status_code == status.HTTP_400_BAD_REQUEST
         playlist.refresh_from_db()
-        assert playlist.entries == []
+        assert not PlaylistEntry.objects.filter(playlist=playlist).exists()
 
     def test_server_owns_entry_id_and_order(self, project_a):
         playlist = PlaylistFactory.create(project=project_a)
@@ -279,16 +280,14 @@ class TestPlaylistEntries:
         )
 
         assert resp.status_code == status.HTTP_200_OK, resp.json()
-        playlist.refresh_from_db()
-        entry = playlist.entries[0]
+        entry = resp.json()["entries"][0]
         assert entry["id"] != "forged" and entry["item_order"] == 1
         assert entry["notes_count"] == 2
 
     def test_reorder_cannot_introduce_entries(self, project_a):
-        playlist = PlaylistFactory.create(
-            project=project_a,
-            entries=[{"id": "e1", "item_order": 1}, {"id": "e2", "item_order": 2}],
-        )
+        playlist = PlaylistFactory.create(project=project_a)
+        PlaylistEntry.objects.create(playlist=playlist, position=1, legacy_id="e1")
+        PlaylistEntry.objects.create(playlist=playlist, position=2, legacy_id="e2")
         user = _user(self.CODES, project_a)
         client = _client(user)
         url = f"/api/v1/playlists/{playlist.id}/reorder/"
@@ -298,8 +297,9 @@ class TestPlaylistEntries:
 
         assert injected.status_code == status.HTTP_400_BAD_REQUEST
         assert reordered.status_code == status.HTTP_200_OK
-        playlist.refresh_from_db()
-        assert [(e["id"], e["item_order"]) for e in playlist.entries] == [("e2", 1), ("e1", 2)]
+        assert [
+            (e.legacy_id, e.position) for e in PlaylistEntry.objects.filter(playlist=playlist)
+        ] == [("e2", 1), ("e1", 2)]
 
 
 class TestTaskAssignment:

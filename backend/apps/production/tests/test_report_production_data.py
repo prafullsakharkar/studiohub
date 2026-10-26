@@ -226,6 +226,24 @@ def test_review_list_entries_that_cannot_become_rows_are_listed_as_information()
     assert not ReviewItem.objects.exists() and not ReviewParticipant.objects.exists()  # a dry run
 
 
+def test_playlist_entries_that_cannot_become_rows_are_listed_as_information():
+    from apps.production.models import Playlist, PlaylistEntry
+
+    project = ProjectFactory.create(code="RPT15")
+    Playlist.objects.create(
+        project=project,
+        code="PLX",
+        name="n",
+        entries=[{"version_id": "00000000-0000-0000-0000-000000000001"}, "x", {"label": "ok"}],
+    )
+
+    text = _report()
+
+    assert "Playlist entries migration 0043 cannot convert (information): 2" in text
+    assert "playlist PLX: entries[0] names no version of the project" in text
+    assert not PlaylistEntry.objects.exists()  # a dry run
+
+
 def test_it_changes_nothing():
     project = ProjectFactory.create(code="RPT3")
     ShotFactory.create(project=project, code="S1", sequence_code="SQX")

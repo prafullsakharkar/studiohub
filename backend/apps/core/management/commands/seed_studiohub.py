@@ -467,6 +467,7 @@ class Command(BaseCommand):
             Version,
             Workflow,
         )
+        from apps.production.services.playlist import PlaylistService
         from apps.production.services.review import ReviewService
 
         mock_users = self._load(mock_root, "users")
@@ -749,7 +750,7 @@ class Command(BaseCommand):
             self._restore_matching(
                 Playlist, {"project": project, "code": code}, reporter, "playlists"
             )
-            self._update_or_create(
+            playlist, _ = self._update_or_create(
                 Playlist,
                 defaults={
                     "name": item.get("name", code),
@@ -762,6 +763,7 @@ class Command(BaseCommand):
                 code=code,
                 project=project,
             )
+            PlaylistService.import_legacy_json(playlist)
             reporter.add("playlists", "created", 1)
 
         # Media.

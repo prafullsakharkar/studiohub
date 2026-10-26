@@ -25,6 +25,8 @@ is left:
   number within their series (DECISIONS D-29)
 * as information, the entries in the old JSON lists of reviews that migration 0041 cannot turn into rows
   (they are skipped and printed by the migration; the JSON stays until the contract phase; DECISIONS D-30)
+* as information, the playlist entries migration 0043 cannot turn into rows (a version outside the
+  playlist's project, an entry that is not an object; DECISIONS D-31)
 * tasks whose old stored ``logged_hours`` differs from the sum of their approved timelogs:
   responses now show the sum, so a hand-typed number stops appearing (DECISIONS D-15)
 
@@ -254,6 +256,21 @@ def review_json_not_convertible():
     return found
 
 
+def playlist_json_not_convertible():
+    """Lines like ``playlist P1: entries[2] names no version of the project`` (a dry run of 0043)."""
+    from types import SimpleNamespace
+
+    from apps.production.services.playlist_legacy import import_playlist
+
+    models_ = SimpleNamespace(
+        Version=Version, Entry=None
+    )  # a dry run never touches the entry table
+    found: list[str] = []
+    for playlist in Playlist.all_objects.all().iterator():
+        found += import_playlist(playlist, models=models_, dry_run=True)  # pyright: ignore[reportArgumentType]
+    return found
+
+
 def version_blockers():
     """``[(version id, code, problem)]`` for versions migration 0038 refuses until fixed."""
     from collections import Counter
@@ -391,6 +408,13 @@ class Command(BaseCommand):
         unreadable = review_json_not_convertible()
         self.stdout.write(
             f"Review list entries migration 0041 cannot convert (information): {len(unreadable)}"
+        )
+        for line in unreadable[:50]:
+            self.stdout.write(f"  {line}")
+
+        unreadable = playlist_json_not_convertible()
+        self.stdout.write(
+            f"Playlist entries migration 0043 cannot convert (information): {len(unreadable)}"
         )
         for line in unreadable[:50]:
             self.stdout.write(f"  {line}")

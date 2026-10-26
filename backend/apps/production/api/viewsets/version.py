@@ -20,6 +20,7 @@ from apps.production.api.viewsets.status_history import StatusHistoryMixin
 from apps.production.constants.permissions import PlaylistPermissions, VersionPermissions
 from apps.production.models import Asset, Playlist, Shot, Task
 from apps.production.selectors.version import VersionSelector
+from apps.production.services.playlist import PlaylistService
 from apps.production.services.version import VersionService
 from apps.production.validators.references import require_project_member, resolve_in_project
 
@@ -160,9 +161,7 @@ class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: i
             ]
             instance.save(update_fields=["playlists"])
             if playlist is not None:
-                playlist.entries = [
-                    *(playlist.entries or []),
-                    {"version_id": str(instance.id), "version_number": instance.version_number},
-                ]
-                playlist.save(update_fields=["entries"])
+                PlaylistService.add_entry(
+                    user=request.user, playlist=playlist, version_ref=instance.id
+                )
         return Response(VersionDetailSerializer(instance).data)

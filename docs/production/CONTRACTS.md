@@ -306,3 +306,18 @@ Frontend change list: stop sending `version_number` (show the server's) and let 
 
 Frontend change list: stop sending author names and roles; offer participants and versions from the new endpoints; a participant's verdict button belongs to that participant only; show who resolved a comment; read `reviewers[].id` as the row id (the old string id is in `legacy_id` and still accepted).
 
+## Asset archive and playlists (D-31)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-43 | `DELETE /assets/{id}/`, `POST /assets/{id}/archive/`, `POST /assets/bulk-archive/` | Archived an asset whatever used it. | **400** while live shots use it ("... is still used by N shots. Unlink it from them first."); bulk reports `has_children` for that item. |
+| C-43a | `entries` in playlist responses | Stored JSON. | Built from rows: `id`, `version_id`, `version_number`, `item_order`, the client's extra keys, and `legacy_id`. |
+| C-43b | `POST /playlists/` with `entries` | Stored as sent. | Each entry's `version_id` must be a version of the playlist's project (**400** and nothing created otherwise). |
+| C-43c | `PATCH`/`PUT /playlists/{id}/` with `entries` | Replaced the list. | **400** unless it equals the stored list; use `add-entry`, `remove-entry`, `reorder`. |
+| C-43d | `POST /playlists/{id}/reorder/` | Replaced the list with the listed entries (unlisted ones were deleted). | Listed first, unlisted follow; **400** for an unknown, foreign or repeated id. |
+| C-43e | `entry_id` / entry `id` in `remove-entry` and `reorder` | The JSON entry's id. | The row id, or the old id (`legacy_id`). |
+| C-43f | `share_settings` on playlist create/update | Any JSON. | Known keys typed (**400** on a wrong type); other keys pass through. |
+| C-43g | Existing playlists | JSON entries. | Converted by migration 0043 (entries it cannot read are skipped and printed; the JSON stays). |
+
+Frontend change list: handle the new 400 when archiving an asset that shots use (offer to unlink); stop sending `entries` on playlist `PATCH`; do not rely on reorder to remove entries (use `remove-entry`); entry ids are now row ids (the old string still works).
+

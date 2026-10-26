@@ -327,3 +327,43 @@ class TestQueriesAndConstraints:
             ShotAsset.objects.filter = original  # type: ignore[method-assign]
         assert calls["n"] == 1  # the competing row was created and the pre-check blinded
         assert "already linked" in str(refused.value.detail)  # the constraint refused it
+
+
+class TestArchivingAnAssetThatShotsUse:
+    """Plan C5, DECISIONS D-31: an asset that live shots use cannot be archived."""
+
+    DELETER = (*LEAD, "asset.delete", "shot.delete")
+
+    def _used(self, project, shot, tree):
+        ShotAsset.objects.create(project=project, shot=shot, asset=tree)
+        return _client(project, codes=self.DELETER)[1]
+
+    def test_it_is_refused_every_way_and_nothing_is_left_half_archived(self, project, shot, tree):
+        api = self._used(project, shot, tree)
+
+        destroy = api.delete(f"/api/v1/assets/{tree.id}/")
+        archive = api.post(f"/api/v1/assets/{tree.id}/archive/")
+        bulk = api.post("/api/v1/assets/bulk-archive/", {"ids": [str(tree.id)]}, format="json")
+
+        assert destroy.status_code == archive.status_code == 400
+        assert "used by 1 shot" in str(destroy.json()) and "Unlink it" in str(archive.json())
+        assert bulk.json()["failed"] == 1
+        assert bulk.json()["results"][0]["status"] == "has_children"
+        tree.refresh_from_db()
+        assert tree.is_deleted is False and tree.status != "Archived"
+
+    def test_it_works_once_the_shot_is_archived_or_the_link_removed(self, project, shot, tree):
+        api = self._used(project, shot, tree)
+        other = ShotFactory.create(project=project, code="S2")
+        ShotAsset.objects.create(project=project, shot=other, asset=tree)
+
+        assert api.post(f"/api/v1/shots/{shot.id}/archive/").status_code == 200
+        assert api.post(f"/api/v1/assets/{tree.id}/archive/").status_code == 400  # S2 still uses it
+        assert api.delete(_assets_url(other, "TREE/")).status_code == 204
+
+        assert api.post(f"/api/v1/assets/{tree.id}/archive/").status_code == 200
+
+    def test_an_unused_asset_archives_as_before(self, project, tree):
+        _, api = _client(project, codes=self.DELETER)
+
+        assert api.post(f"/api/v1/assets/{tree.id}/archive/").status_code == 200
