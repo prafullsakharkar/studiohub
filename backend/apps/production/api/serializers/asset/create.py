@@ -8,6 +8,7 @@ from apps.production.api.serializers.common import (
     LockedFieldsMixin,
     NormalizedCodeMixin,
     ProjectReferenceMixin,
+    ScopedReferenceField,
 )
 from apps.production.models import Asset
 
@@ -20,6 +21,14 @@ class AssetCreateSerializer(
     }
 
     is_archived = serializers.BooleanField(source="is_deleted", read_only=True)
+    # An id or code of an active asset type in the catalog (resolved by the viewset).
+    asset_type_id = serializers.CharField(
+        source="asset_type", write_only=True, required=False, allow_blank=True, allow_null=True
+    )
+    # Limited to the caller's projects; the viewset checks it belongs to the asset's own project.
+    parent_asset = ScopedReferenceField(
+        queryset=Asset.objects.all(), required=False, allow_null=True
+    )
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
 
@@ -46,6 +55,7 @@ class AssetCreateSerializer(
             "team",
             "assigned_artist",
             "parent_asset",
+            "asset_type_id",
             "tags",
             "usd_prim_path",
             "is_archived",

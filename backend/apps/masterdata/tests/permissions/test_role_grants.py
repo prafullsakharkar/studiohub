@@ -67,6 +67,7 @@ PRODUCTION_AREAS = {
     "delivery",
     "publishing",
     "schedule",
+    "tasktemplate",
     "track",
     "show",
     "automation",

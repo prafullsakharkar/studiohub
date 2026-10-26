@@ -10,7 +10,7 @@ class TaskSelector(ProductionBaseSelector):
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Task]:
         return TaskHoursSelector.annotate(
-            Task.objects.select_related("project", "team", "assignee", "reviewer", "assignee__profile", "reviewer__profile")
+            Task.objects.select_related("project", "team", "assignee", "reviewer", "assignee__profile", "reviewer__profile", "task_type")
             .annotate(
                 assignee_name_annotated=Coalesce(F("assignee__profile__display_name"), F("assignee__email"), Value(""), output_field=CharField()),
                 reviewer_name_annotated=Coalesce(F("reviewer__profile__display_name"), F("reviewer__email"), Value(""), output_field=CharField()),

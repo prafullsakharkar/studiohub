@@ -21,6 +21,7 @@ from .shot import ShotAdmin
 from .shot_asset import ShotAssetAdmin
 from .status_history import StatusHistoryAdmin
 from .task import TaskAdmin
+from .task_template import TaskTemplateAdmin
 from .timelog import TimelogAdmin
 from .version import VersionAdmin
 from .workflow import WorkflowAdmin
@@ -36,6 +37,7 @@ __all__ = [
     "StatusHistoryAdmin",
     "AssetAdmin",
     "TaskAdmin",
+    "TaskTemplateAdmin",
     "TimelogAdmin",
     "VersionAdmin",
     "ReviewAdmin",

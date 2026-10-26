@@ -99,6 +99,15 @@ class WorkflowPermissions:
     DELETE = "workflow.delete"
 
 
+class TaskTemplatePermissions:
+    VIEW = "tasktemplate.view"
+    CREATE = "tasktemplate.create"
+    UPDATE = "tasktemplate.update"
+    DELETE = "tasktemplate.delete"
+    # Studio-wide templates (no project) are managed with this on top of the action's own code.
+    MANAGE_STUDIO = "tasktemplate.manage_studio"
+
+
 class SchedulingPermissions:
     VIEW = "schedule.view"
     CREATE = "schedule.create"

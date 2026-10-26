@@ -17,6 +17,10 @@ class TaskUpdateSerializer(  # pyright: ignore[reportUnsafeMultipleInheritance]
     }
 
     is_archived = serializers.BooleanField(source="is_deleted", read_only=True)
+    # The pipeline step: an id or code of an active task type in the catalog (resolved by the viewset).
+    task_type_id = serializers.CharField(
+        source="task_type", write_only=True, required=False, allow_blank=True, allow_null=True
+    )
 
     class Meta:
         model = Task
@@ -46,6 +50,7 @@ class TaskUpdateSerializer(  # pyright: ignore[reportUnsafeMultipleInheritance]
             "is_archived",
             "due_date",
             "estimated_hours",
+            "task_type_id",
             "logged_hours",
             "pending_hours",
         )

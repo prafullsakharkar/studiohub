@@ -15,6 +15,9 @@ is left:
 * how the legacy ``is_archived`` flag and the soft delete overlap on the five models that have
   both (information only, not a finding). "Flag only" is what migration 0031 soft-deletes, so
   run this before migrating; after it, 0 is expected (DECISIONS D-25)
+* assets whose parent is in another project, or whose parent chain loops back to them (the API
+  now refuses both; DECISIONS D-27), and, as information, how many assets have a catalog type and
+  how many tasks have a task type
 * tasks whose old stored ``logged_hours`` differs from the sum of their approved timelogs:
   responses now show the sum, so a hand-typed number stops appearing (DECISIONS D-15)
 
@@ -134,6 +137,39 @@ def archive_flag_overlap():
     return rows
 
 
+def bad_asset_parents():
+    """``[(asset id, code, problem)]`` for a parent in another project or a chain that loops."""
+    found = []
+    parents = dict(
+        Asset.all_objects.filter(parent_asset__isnull=False).values_list("pk", "parent_asset_id")
+    )
+    projects = dict(Asset.all_objects.values_list("pk", "project_id"))
+    codes = dict(Asset.all_objects.values_list("pk", "code"))
+    for pk, parent_id in parents.items():
+        if projects.get(parent_id) != projects.get(pk):
+            found.append((str(pk), codes[pk], "parent is in another project"))
+            continue
+        node, steps = parent_id, 0
+        while node is not None and steps < 100:
+            if node == pk:
+                found.append((str(pk), codes[pk], "parent chain loops back to it"))
+                break
+            node = parents.get(node)
+            steps += 1
+    return found
+
+
+def typing_counts():
+    """``(typed assets, all assets, typed tasks, all tasks)``, soft-deleted rows excluded."""
+    assets, tasks = Asset.objects.all(), Task.objects.all()
+    return (
+        assets.filter(asset_type__isnull=False).count(),
+        assets.count(),
+        tasks.filter(task_type__isnull=False).count(),
+        tasks.count(),
+    )
+
+
 def tasks_with_unbacked_hours():
     """``[(task id, code, stored hours, approved timelog hours)]`` where the old stored number differs."""
     rows = TaskHoursSelector.annotate(Task.all_objects.exclude(logged_hours=0))
@@ -193,6 +229,17 @@ class Command(BaseCommand):
         for pk, code, sequence_code in stray[:50]:
             findings += 1
             self.stdout.write(f"  shot {code} {pk} (sequence {sequence_code})")
+
+        parents = bad_asset_parents()
+        self.stdout.write(f"Assets with a bad parent: {len(parents)}")
+        for pk, code, problem in parents[:50]:
+            findings += 1
+            self.stdout.write(f"  asset {code} {pk}: {problem}")
+
+        typed_assets, all_assets, typed_tasks, all_tasks = typing_counts()
+        self.stdout.write("Catalog types (information, not findings):")
+        self.stdout.write(f"  Assets with an asset type: {typed_assets} of {all_assets}")
+        self.stdout.write(f"  Tasks with a task type: {typed_tasks} of {all_tasks}")
 
         unbacked = tasks_with_unbacked_hours()
         self.stdout.write(

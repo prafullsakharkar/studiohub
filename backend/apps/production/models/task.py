@@ -39,6 +39,16 @@ class Task(EntityModel):
     entity_code = models.CharField(max_length=50, blank=True, default="")
     entity_name = models.CharField(max_length=255, blank=True, default="")
 
+    # The pipeline step, from the studio's task type catalog. Empty on older tasks: their
+    # ``department`` text is a department, not a step, so nothing was guessed (D-27).
+    task_type = models.ForeignKey(
+        "masterdata.MasterTaskType",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="tasks",
+    )
+
     department = models.CharField(max_length=100, blank=True, default="", db_index=True)
     department_id = models.CharField(max_length=50, blank=True, default="")
 

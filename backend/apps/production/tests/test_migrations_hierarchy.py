@@ -21,6 +21,7 @@ WITH_CONSTRAINTS = [("production", "0025_code_and_frame_constraints")]
 WITH_COLUMN = [("production", "0026_shot_sequence")]
 WITH_EPISODE_COLUMN = [("production", "0028_sequence_episode")]
 BEFORE_ARCHIVE_RECONCILE = [("production", "0030_protect_history_rows")]
+BEFORE_ASSET_TYPES = [("production", "0033_task_types_and_templates")]
 
 
 def _latest():
@@ -282,3 +283,47 @@ class TestArchiveFlagReconciled:
         assert (
             apps.get_model("production", "Task")._base_manager.get(code="T-F").deleted_at == first
         )
+
+
+class TestAssetTypesLinked:
+    """0034: an asset takes the catalog type its category names, only when exactly one entry matches."""
+
+    def test_unique_matches_by_code_or_name_are_linked_and_the_rest_left_alone(self, restore):
+        apps = _migrate(BEFORE_ASSET_TYPES)
+        project = _project(apps, "ATY")
+        Catalog = apps.get_model("masterdata", "MasterAssetType")
+        by_code = Catalog.objects.create(code="PROP", name="Practical prop")
+        by_name = Catalog.objects.create(code="CHR", name="Character")
+        Catalog.objects.create(code="VEHICLE", name="Car")
+        Catalog.objects.create(
+            code="V2", name="Vehicle"
+        )  # "Vehicle" now names two entries: ambiguous
+        Catalog.objects.create(
+            code="ENV", name="Set", is_deleted=True
+        )  # archived entries do not count
+        Asset = apps.get_model("production", "Asset")
+        made = {
+            category: Asset.objects.create(
+                project=project, code=f"A-{n}", name="a", category=category
+            )
+            for n, category in enumerate(
+                ("Prop", "Character", "Vehicle", "Environment", "Matte Painting")
+            )
+        }
+
+        apps = _migrate(_latest())
+
+        Asset = apps.get_model("production", "Asset")
+        linked = {
+            category: Asset.objects.get(pk=row.pk).asset_type_id for category, row in made.items()
+        }
+        assert linked == {
+            "Prop": by_code.pk,
+            "Character": by_name.pk,
+            "Vehicle": None,  # ambiguous
+            "Environment": None,  # only an archived entry
+            "Matte Painting": None,  # no entry
+        }
+        assert (
+            Asset.objects.get(pk=made["Prop"].pk).category == "Prop"
+        )  # the category itself is untouched

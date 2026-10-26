@@ -15,6 +15,7 @@ from django.db import connection, transaction
 
 from apps.production.models import Shot
 from apps.production.tests.factories import (
+    AssetFactory,
     EpisodeFactory,
     ProjectFactory,
     SequenceFactory,
@@ -63,6 +64,7 @@ def test_a_clean_database_reports_nothing_and_passes_the_gate():
     assert "Sequences of episodic projects without an episode: 0" in text
     assert "Shots whose episode differs from their sequence's: 0" in text
     assert "Tasks whose stored hours differ from their approved timelogs: 0" in text
+    assert "Assets with a bad parent: 0" in text
 
 
 def test_shots_naming_no_sequence_are_listed_and_fail_the_gate():
@@ -133,6 +135,26 @@ def test_the_archive_flag_overlap_is_counted_and_is_not_a_finding():
     assert "  Task: flag only 1, deleted only 1, both 1, neither 1" in text
     assert "  Version: flag only 1, deleted only 0, both 0, neither 0" in text
     assert "  Asset: flag only 0, deleted only 0, both 0, neither 0" in text
+
+
+def test_bad_asset_parents_are_findings_and_catalog_counts_are_information():
+    mine, other = ProjectFactory.create(code="RPT9"), ProjectFactory.create(code="RPT10")
+    foreign = AssetFactory.create(project=other, code="FOREIGN")
+    crossed = AssetFactory.create(project=mine, code="CROSSED", parent_asset=foreign)
+    a = AssetFactory.create(project=mine, code="LOOPA")
+    b = AssetFactory.create(project=mine, code="LOOPB", parent_asset=a)
+    type(a).objects.filter(pk=a.pk).update(parent_asset=b)  # a loop the API would now refuse
+    TaskFactory.create(project=mine, code="UNTYPED")
+
+    text = _report()
+
+    assert "Assets with a bad parent: 3" in text
+    assert f"asset CROSSED {crossed.pk}: parent is in another project" in text
+    assert text.count("parent chain loops back to it") == 2
+    assert "  Assets with an asset type: 0 of 4" in text
+    assert "  Tasks with a task type: 0 of 1" in text
+    with pytest.raises(SystemExit):
+        _report("--fail-on-findings")
 
 
 def test_it_changes_nothing():

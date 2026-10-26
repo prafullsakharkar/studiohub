@@ -19,6 +19,9 @@ class AssetSerializer(BaseReadSerializer[Any]):
     assigned_artist_name = serializers.SerializerMethodField()
     assigned_artist_avatar = serializers.SerializerMethodField()
     parent_asset_id = serializers.UUIDField(read_only=True, allow_null=True)
+    asset_type_id = serializers.UUIDField(read_only=True, allow_null=True)
+    asset_type_code = serializers.SerializerMethodField()
+    asset_type_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Asset
@@ -48,6 +51,9 @@ class AssetSerializer(BaseReadSerializer[Any]):
             "assigned_artist_name",
             "assigned_artist_avatar",
             "parent_asset_id",
+            "asset_type_id",
+            "asset_type_code",
+            "asset_type_name",
             "tags",
             "usd_prim_path",
             "is_archived",
@@ -55,6 +61,12 @@ class AssetSerializer(BaseReadSerializer[Any]):
             "updated_at",
         )
         read_only_fields = ("id", "uuid", "created_at", "updated_at")
+
+    def get_asset_type_code(self, obj):
+        return obj.asset_type.code if obj.asset_type_id else ""
+
+    def get_asset_type_name(self, obj):
+        return obj.asset_type.name if obj.asset_type_id else ""
 
     def get_project_code(self, obj):
         return obj.project.code if obj.project else ""

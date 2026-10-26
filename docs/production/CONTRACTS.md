@@ -248,3 +248,17 @@ Frontend change list: stop sending `is_archived`; use the archive and restore ac
 | C-36c | `GET /api/v1/assets/{id}/shots/` | Did not exist. | The shots using the asset: `id`, `asset_id`, `shot_id`, `shot_code`, `shot_name`, `shot_status`, `quantity`, `notes`, `created_at`. Needs `asset.view` and `shot.view`. |
 
 Frontend change list: a "Assets" tab on the shot and a "Used in" list on the asset can now be built on these; offer only assets of the shot's project; show 400 messages for duplicates and unknown assets; hide the link controls for roles without `shot.update`.
+
+## Task types, templates, asset types, parent assets (D-27)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-37 | `task_type_id` on task create/update; `task_type_id`, `task_type_code`, `task_type_name` in task responses | Did not exist. | Optional catalog task type by id or code (**400** "Unknown task type." for missing or archived; `""` clears). A blank `department` is filled from the type. `null` / `""` on tasks that have none. |
+| C-37a | `asset_type_id` on asset create/update; `asset_type_id`, `asset_type_code`, `asset_type_name` in asset responses | Did not exist. | Same pattern ("Unknown asset type."). `category` is unchanged. |
+| C-37b | `parent_asset` on asset create/update | Any asset id, even of another project or a loop. | Same project only (**400** "Unknown parent asset."); an asset as its own ancestor is a **400**. |
+| C-38 | `GET/POST /api/v1/task-templates/`, `GET/PATCH/PUT/DELETE /api/v1/task-templates/{id}/` | Did not exist. | Template with `scope` ("studio" or "project"), `items[]`; filters `entity_type`, `is_active`, `project_id`, `studio`; paginated like other lists. Studio-wide writes need `tasktemplate.manage_studio` (**403**); a project the caller is not in is a **400** "Unknown project."; a clashing name, unknown or archived task type, a repeated item, a negative bid or an unknown key is a **400**. `DELETE` archives. |
+| C-38a | `POST /api/v1/task-templates/{id}/apply/` body `{"project_id"?, "entity_id"}` | Did not exist. | `{"created": [...], "existing": [...]}`; **201** when tasks were created else **200**. **400** for an entity that is missing, archived, of another project or the other kind; a switched-off template; a project other than the template's. Needs `tasktemplate.view` and `task.create`. |
+| C-38b | `POST /api/v1/task-templates/{id}/copy-to-project/` body `{"project_id", "name"?}` | Did not exist. | **201** with the copy; **400** on a name clash in the target. Needs `tasktemplate.create`. |
+| C-39 | Permission codes `tasktemplate.view|create|update|delete|manage_studio` | Did not exist. | In the catalog; full roles hold all, lead-artist and artist `view`. Run `init_platform`. |
+
+Frontend change list: a task-type picker on the task form (from the masterdata task type catalog) and an asset-type picker on the asset form; a templates screen with studio and project scopes and an "Apply template" button on shots and assets; a "Copy to project" action on studio templates; show the new 400 messages; do not offer a parent from another project.

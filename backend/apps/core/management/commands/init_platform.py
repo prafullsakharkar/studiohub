@@ -166,6 +166,8 @@ _PRODUCTION_RESOURCES: dict[str, tuple[str, tuple[str, ...]]] = {
     "workflow": ("workflows", ("view", "create", "update", "delete")),
     # view_rates = resources' pay rates and e-mail addresses (full roles only)
     "schedule": ("scheduling", ("view", "view_rates", "create", "update", "delete")),
+    # manage_studio = templates that belong to the whole studio rather than one project
+    "tasktemplate": ("task_templates", ("view", "create", "update", "delete", "manage_studio")),
     "track": ("tracks", ("view", "create", "update", "delete")),
     "show": ("shows", ("view", "create", "update", "delete")),
     "automation": ("automation", ("view", "create", "update", "delete")),
@@ -235,6 +237,7 @@ PRODUCTION_LEAD_PERMISSIONS = _production_codes(
     media="view create update",
     workflow="view",
     schedule="view",
+    tasktemplate="view",
     track="view",
     show="view",
     delivery="view",
@@ -256,6 +259,7 @@ PRODUCTION_ARTIST_PERMISSIONS = _production_codes(
     media="view create",
     workflow="view",
     schedule="view",
+    tasktemplate="view",
     track="view",
     show="view",
     delivery="view",

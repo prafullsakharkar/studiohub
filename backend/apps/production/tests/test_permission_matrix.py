@@ -36,6 +36,7 @@ PRODUCTION_PREFIXES = {
     "media",
     "workflow",
     "schedule",
+    "tasktemplate",
     "track",
     "show",
     "automation",
@@ -62,6 +63,7 @@ FULL = {
     "media": ALL_ACTIONS,
     "workflow": ALL_ACTIONS,
     "schedule": f"{ALL_ACTIONS} view_rates",
+    "tasktemplate": f"{ALL_ACTIONS} manage_studio",
     "track": ALL_ACTIONS,
     "show": ALL_ACTIONS,
     "automation": ALL_ACTIONS,
@@ -84,6 +86,7 @@ LEAD = {
     "media": "view create update",
     "workflow": "view",
     "schedule": "view",
+    "tasktemplate": "view",
     "track": "view",
     "show": "view",
     "delivery": "view",
@@ -105,6 +108,7 @@ ARTIST = {
     "media": "view create",
     "workflow": "view",
     "schedule": "view",
+    "tasktemplate": "view",
     "track": "view",
     "show": "view",
     "delivery": "view",
@@ -221,7 +225,9 @@ def test_every_code_the_production_constants_define_is_enforced_or_deliberately_
         if name.isupper() and isinstance(value, str)
     }
     # Checked in code rather than through a permission_map.
-    checked_inline = {"timelog.manage", "timelog.view_all"} | set(OPT_IN_PERMISSION_CODES)
+    checked_inline = {"timelog.manage", "timelog.view_all", "tasktemplate.manage_studio"} | set(
+        OPT_IN_PERMISSION_CODES
+    )
     # Declared, but the analytics views are scoped by membership only (CONTRACTS C-04).
     # schedule.create/delete are checked by the scheduling app's own viewsets, not by production.
     not_enforced = {"analytics.view", "schedule.create", "schedule.delete"}

@@ -14,6 +14,7 @@ from .shot_asset import ShotAsset
 from .show import Show
 from .status_history import StatusHistory
 from .task import Task
+from .task_template import TaskTemplate, TaskTemplateItem
 from .timelog import Timelog
 from .version import Version
 from .workflow import Workflow
@@ -27,6 +28,8 @@ __all__ = [
     "ShotAsset",
     "Asset",
     "Task",
+    "TaskTemplate",
+    "TaskTemplateItem",
     "Timelog",
     "Version",
     "Review",

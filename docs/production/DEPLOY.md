@@ -1,6 +1,6 @@
 # Deploying the production hardening work
 
-Branch `feature/production-hardening`, commits `0bd495b` (phase 1) onwards. What changed and why: `DECISIONS.md` (D-01 to D-26); every API change with its before and after: `CONTRACTS.md` (C-01 to C-36); what is still planned: `PLAN.md`.
+Branch `feature/production-hardening`, commits `0bd495b` (phase 1) onwards. What changed and why: `DECISIONS.md` (D-01 to D-27); every API change with its before and after: `CONTRACTS.md` (C-01 to C-39); what is still planned: `PLAN.md`.
 
 **What was and was not run.** Everything below was developed and tested against the pytest test database only (last full suite: 4147 passed, 1 skipped). Nothing was ever run against a staging or production database, and none of the preflight steps in section 1 has been run by the author. Treat section 1 as a gate you pass, not a formality.
 
@@ -19,11 +19,12 @@ Run these against a copy or the real database, in this order, and keep the outpu
    | Sequences of episodic projects without an episode | Left empty by 0029 because their shots do not share one episode, or there are no shots. | Set the episode through the API when convenient; older rows can be edited without it. |
    | Shots whose episode differs from their sequence's | An older mismatch, left alone until the shot is moved. | Review. |
    | Tasks whose stored hours differ from approved timelogs | The old `logged_hours` column (typed by clients or seeded) is no longer shown; responses show the approved sum. | Know that these numbers disappear from the UI. |
+   | Assets with a bad parent | A parent in another project, or a parent chain that loops back. The API now refuses both. | Fix the rows; nothing blocks the migration. |
    | Archive flag versus soft delete | Counts only, not findings. **"Flag only" is the number of rows migration 0031 will soft-delete** (they leave default lists). | Look at the numbers per model before migrating; keep the output. |
 
 ## 2. Migrate
 
-`uv run python manage.py migrate` (production 0023 to 0032, scheduling 0003). In order:
+`uv run python manage.py migrate` (production 0023 to 0034, scheduling 0003). In order:
 
 | Migration | What it does | Can it fail on existing data? |
 |---|---|---|
@@ -37,19 +38,22 @@ Run these against a copy or the real database, in this order, and keep the outpu
 | 0030 `protect_history_rows` | Delete rules only (`PROTECT`); emits no SQL. | No. |
 | 0031 `reconcile_archive_flag` | **Soft-deletes** the Task, Asset, Version, Playlist and Workflow rows that have the old `is_archived` flag set and are not soft-deleted, so they leave default lists. The column is untouched. | No, but it changes what users see: check the "flag only" counts first (section 1). Reverse does nothing; ids are logged (`archive_flag_reconciled`). |
 | 0032 `shot_asset` | New `ShotAsset` table (shot to asset links). Nothing existing is touched. | No. |
+| 0033 `task_types_and_templates` | Adds `Task.task_type`, `Asset.asset_type` (both optional) and the template tables. Nothing existing is touched. | No. |
+| 0034 `link_asset_types` | Links assets to the catalog asset type whose code or name equals their `category` (exactly one match; otherwise left empty). Logs the counts. Reverse does nothing. | No. |
 | scheduling 0003 `leave_rejected_by` | Two additive columns on leave requests. | No. |
 
 Tests exist for forward, back and forward again of 0023 and 0024 (`test_migration_roundtrip.py`) and for 0025 to 0029 and 0031 (`test_migrations_hierarchy.py`, including the refusal of 0025, the fill rules of 0027 and 0029 and the rows 0031 touches); 0030 has none (no SQL) and 0032 only creates a table. The two "fill" migrations log a count of filled and unmatched rows.
 
 ## 3. After migrating
 
-1. **`uv run python manage.py init_platform` on every database.** It only adds: existing role grants are kept. New permission codes: `automation.view|create|update|delete`, `timelog.view_all`, `production.code.rename` (production-admin), `schedule.view_rates` (full roles: pay rates and e-mail addresses in the resource planner). `production.status.override` and `production.sod.override` are in the catalog and granted to nobody. The role-to-code matrix is `DECISIONS.md` D-07 and is pinned by `tests/test_permission_matrix.py`. Without this step the full roles see `null` pay rates, lead-artists and artists cannot open the scheduling board, and the new checks have nobody to hold them.
+1. **`uv run python manage.py init_platform` on every database.** It only adds: existing role grants are kept. New permission codes: `automation.view|create|update|delete`, `timelog.view_all`, `production.code.rename` (production-admin), `schedule.view_rates` (full roles: pay rates and e-mail addresses in the resource planner), `tasktemplate.view|create|update|delete|manage_studio` (full roles all; lead-artist and artist `view`). `production.status.override` and `production.sod.override` are in the catalog and granted to nobody. The role-to-code matrix is `DECISIONS.md` D-07 and is pinned by `tests/test_permission_matrix.py`. Without this step the full roles see `null` pay rates, lead-artists and artists cannot open the scheduling board, and the new checks have nobody to hold them.
 2. **Run `report_production_data` again** and compare with section 1. The case and frame sections must now be empty.
 3. **Smoke checks (as a non-admin member of one project):**
    - `GET /api/v1/shots/` returns shots with `sequence_id` and `current_version`; `GET /api/v1/tasks/` returns `logged_hours` and `pending_hours`.
    - An approval PATCH without the approve code answers 403; an illegal status move answers 400.
    - `GET /api/v1/scheduling/events/` shows only events of your projects (plus studio-wide ones); `GET /api/v1/scheduling/resources/` shows `hourly_rate_usd: null`.
    - `GET /api/v1/shots/{id}/assets/` answers `[]` for a shot with no links; `POST` with `{"asset_id": "<asset code>"}` as a lead links it.
+   - `GET /api/v1/task-templates/` answers `{"results": []}` before any template exists; the masterdata task type catalog must hold entries before one can be made.
    - `POST /api/v1/shots/bulk-create/` with `{"items": [{"project_id": "...", "code_prefix": "SH"}]}` creates `SH0010` (then `SH0020`, ...).
 4. Seeded data: the seed commands still create sequences without an episode and shots with the old free-text fields; the report will list them. Not a problem for the API.
 
@@ -85,13 +89,14 @@ From `CONTRACTS.md`; the contract IDs have the exact before and after.
 9. Scheduling: users without `schedule.view` get 403 on the board; read-only status, decision fields and `total_days` on the leave form, and handle 403 (own leave) and 400 (already decided); fewer events for non-members; placeholders for `null` rates; do not show "Booked on another project" as a real title; event and resource edit forms now work; offer only the user's own projects; disable status changes out of Completed or Cancelled.
 10. Archived items: stop sending `is_archived`; archive and restore versions, playlists and workflows with the actions; list archived ones with `?is_archived=true`.
 11. Shot assets: use `GET/POST /shots/{id}/assets/`, `PATCH/DELETE /shots/{id}/assets/{asset}/` and `GET /assets/{id}/shots/` (C-36).
-12. Treat an empty `current_version` as "no versions yet"; link with `current_version_id`.
+12. Task and asset types: pickers from the masterdata catalogs (`task_type_id`, `asset_type_id`); templates screen and "apply template" (C-38); no parent assets from other projects.
+13. Treat an empty `current_version` as "no versions yet"; link with `current_version_id`.
 
 ## 7. Not done, on purpose
 
-Phases P8 to P12 of `PLAN.md` (task templates and entity links, version numbering, relational reviews and notes, the contract phase that drops legacy columns) and these items inside finished phases:
+Phases P8b to P12 of `PLAN.md` (shots and assets as real links on tasks instead of `entity_type` / `entity_id` text, version numbering, relational reviews and notes, the contract phase that drops legacy columns) and these items inside finished phases:
 
 - dropping the `is_archived`, `sequence_code`, `Task.logged_hours` and `Shot.current_version` columns (final cleanup; `is_archived` itself is retired in behaviour, D-25);
 - the head and tail handles split (B7) and manual ordering (B6);
 - assets: `Asset.version` and its JSON `versions` list are untouched (D-16);
-- open questions Q5, Q6 and Q10 (assets and templates).
+- asset variants, libraries and dependencies (Q5: decided not to build, D-27); open question Q10.

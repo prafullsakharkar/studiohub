@@ -21,6 +21,9 @@ class TaskSerializer(TaskHoursMixin, BaseReadSerializer[Any]):  # pyright: ignor
     reviewer_name = serializers.SerializerMethodField()
     reviewer_avatar = serializers.SerializerMethodField()
     department = serializers.CharField(read_only=True)
+    task_type_id = serializers.UUIDField(read_only=True, allow_null=True)
+    task_type_code = serializers.SerializerMethodField()
+    task_type_name = serializers.SerializerMethodField()
     is_archived = serializers.BooleanField(source="is_deleted", read_only=True)
     entity_type = serializers.CharField(read_only=True)
     entity_id = serializers.CharField(read_only=True)
@@ -66,12 +69,21 @@ class TaskSerializer(TaskHoursMixin, BaseReadSerializer[Any]):  # pyright: ignor
             "is_archived",
             "due_date",
             "estimated_hours",
+            "task_type_id",
+            "task_type_code",
+            "task_type_name",
             "logged_hours",
             "pending_hours",
             "created_at",
             "updated_at",
         )
         read_only_fields = ("id", "uuid", "created_at", "updated_at")
+
+    def get_task_type_code(self, obj):
+        return obj.task_type.code if obj.task_type_id else ""
+
+    def get_task_type_name(self, obj):
+        return obj.task_type.name if obj.task_type_id else ""
 
     def get_project_code(self, obj):
         return obj.project.code if obj.project else ""

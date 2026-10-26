@@ -71,10 +71,31 @@ class TaskViewSet(StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMix
 
     def validate_references(self, project, data, instance=None):
         """Assignee and reviewer must be active members of the task's project."""
+        self._resolve_task_type(data)
         if project is None:
             return
         for field in ("assignee", "reviewer"):
             require_project_member(project, data.get(field), field=field, label="user")
+
+    @staticmethod
+    def _resolve_task_type(data):
+        """``task_type_id`` arrives as an id or code: make it the catalog entry, or 'Unknown task type.'."""
+        from rest_framework.exceptions import ValidationError
+
+        from apps.production.services.task_template import TaskTemplateService
+
+        if "task_type" not in data:
+            return
+        raw = data["task_type"]
+        if raw in (None, "") or not str(raw).strip():
+            data["task_type"] = None
+            return
+        entry = TaskTemplateService.resolve_task_type(raw)
+        if entry is None:
+            raise ValidationError({"task_type_id": ["Unknown task type."]})
+        data["task_type"] = entry
+        if not str(data.get("department") or "").strip() and entry.department_name:
+            data["department"] = entry.department_name
 
     @extend_schema(request=BulkAssignSerializer)
     @action(detail=False, methods=["post"], url_path="bulk-assign")

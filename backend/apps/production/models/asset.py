@@ -32,6 +32,15 @@ class Asset(EntityModel):
         default=AssetCategory.PROP,
         db_index=True,
     )
+    # The studio's asset type, from the masterdata catalog. ``category`` stays (the API contract);
+    # rows whose category matched no catalog entry have no type (D-27).
+    asset_type = models.ForeignKey(
+        "masterdata.MasterAssetType",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="assets",
+    )
     description = models.TextField(blank=True, default="")
 
     status = models.CharField(
