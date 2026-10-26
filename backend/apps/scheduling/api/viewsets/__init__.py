@@ -10,6 +10,8 @@ from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.deliveries.api.viewsets.base import PlatformCrudViewSet
 from apps.identity.permissions import HasPermission
 from apps.scheduling.api.serializers import (
+    BlockResourceSerializer,
+    BookResourceSerializer,
     CalendarEventCreateSerializer,
     CalendarEventDetailSerializer,
     CalendarEventListSerializer,
@@ -122,49 +124,45 @@ class ResourceViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingType
     def book(self, request, *args, **kwargs):
         """Book the resource for a time slot."""
         resource = self.get_object()
-
-        start_time = request.data.get("start_time")
-        end_time = request.data.get("end_time")
-        event_id = request.data.get("event_id")
-        task_id = request.data.get("task_id")
-        slot_status = request.data.get("status", "Booked")
-        notes = request.data.get("notes", "")
-
-        if not start_time or not end_time:
-            return Response({"detail": "start_time and end_time are required."}, status=400)
+        body = BookResourceSerializer(data=request.data, context=self.get_serializer_context())
+        body.is_valid(raise_exception=True)
+        data = body.validated_data
+        event, task = data.get("event"), data.get("task")
 
         schedule = book_resource(
             resource_id=str(resource.id),
-            start_time=start_time,
-            end_time=end_time,
-            event_id=event_id,
-            task_id=task_id,
-            status=slot_status,
-            notes=notes,
+            start_time=data["start_time"],
+            end_time=data["end_time"],
+            event_id=str(event.id) if event else None,
+            task_id=str(task.id) if task else None,
+            status=data["status"],
+            notes=data["notes"],
         )
 
-        return Response(ResourceScheduleSerializer(schedule).data, status=status.HTTP_201_CREATED)
+        return Response(
+            ResourceScheduleSerializer(schedule, context=self.get_serializer_context()).data,
+            status=status.HTTP_201_CREATED,
+        )
 
     @action(detail=True, methods=["post"], url_path="block")
     def block(self, request, *args, **kwargs):
         """Block the resource (mark as unavailable)."""
         resource = self.get_object()
-
-        start_time = request.data.get("start_time")
-        end_time = request.data.get("end_time")
-        reason = request.data.get("reason", "")
-
-        if not start_time or not end_time:
-            return Response({"detail": "start_time and end_time are required."}, status=400)
+        body = BlockResourceSerializer(data=request.data, context=self.get_serializer_context())
+        body.is_valid(raise_exception=True)
+        data = body.validated_data
 
         schedule = block_resource(
             resource_id=str(resource.id),
-            start_time=start_time,
-            end_time=end_time,
-            reason=reason,
+            start_time=data["start_time"],
+            end_time=data["end_time"],
+            reason=data["reason"],
         )
 
-        return Response(ResourceScheduleSerializer(schedule).data, status=status.HTTP_201_CREATED)
+        return Response(
+            ResourceScheduleSerializer(schedule, context=self.get_serializer_context()).data,
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class ResourceScheduleViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeArgument]

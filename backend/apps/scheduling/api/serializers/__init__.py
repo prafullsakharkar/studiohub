@@ -1,6 +1,7 @@
 """
 Scheduling serializers.
 """
+import uuid
 from typing import Any
 
 from rest_framework import serializers
@@ -9,6 +10,79 @@ from apps.scheduling.models import CalendarEvent, Holiday, Resource, ResourceLea
 from apps.scheduling.selectors import ResourceLeaveSelector, ResourceSelector
 from apps.scheduling.selectors.scope import RESTRICTED_TITLE, ViewerScope
 from apps.scheduling.services.leave import count_leave_days
+
+
+class ScopedLinkField(serializers.PrimaryKeyRelatedField):  # pyright: ignore[reportMissingTypeArgument]
+    """
+    A reference to an event or task the caller may see (D-22).
+
+    An unknown id, a malformed one and one outside the caller's scope all fail with the
+    same message, so the answer reveals nothing about records the caller cannot see.
+    """
+
+    default_error_messages = {
+        "does_not_exist": "Unknown {noun}.",
+        "incorrect_type": "Unknown {noun}.",
+    }
+
+    def __init__(self, *, noun: str, scope_kind: str, **kwargs):
+        self._noun = noun
+        self._scope_kind = scope_kind
+        super().__init__(**kwargs)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        assert queryset is not None  # declared with a queryset
+        scope = ViewerScope.of(self.context.get("request"))
+        if self._scope_kind == "event":
+            return scope.filter_events(queryset)
+        return scope.filter_tasks(queryset)
+
+    def to_internal_value(self, data):
+        # A malformed id gets the same answer as an unknown one, not Django's own message.
+        try:
+            uuid.UUID(str(data))
+        except ValueError:
+            self.fail("incorrect_type")
+        return super().to_internal_value(data)
+
+    def fail(self, key, **kwargs):
+        kwargs.setdefault("noun", self._noun)
+        super().fail(key, **kwargs)
+
+
+def _event_link(**extra):
+    return ScopedLinkField(
+        noun="event",
+        scope_kind="event",
+        queryset=CalendarEvent.objects.all(),
+        required=False,
+        allow_null=True,
+        **extra,
+    )
+
+
+def _task_link(**extra):
+    task_model = ResourceSchedule._meta.get_field("task").related_model
+    return ScopedLinkField(
+        noun="task",
+        scope_kind="task",
+        queryset=task_model._default_manager.all(),  # pyright: ignore[reportOptionalMemberAccess]
+        required=False,
+        allow_null=True,
+        **extra,
+    )
+
+
+def _ensure_end_after_start(start, end, *, field="end_time"):
+    if start is not None and end is not None and end < start:
+        raise serializers.ValidationError({field: ["The end cannot be before the start."]})
+
+
+def _ensure_known(model, value, noun):
+    if value is not None and not model.objects.filter(pk=value).exists():
+        raise serializers.ValidationError(f"Unknown {noun}.")
+    return value
 
 
 class CalendarEventListSerializer(serializers.ModelSerializer[Any]):
@@ -107,6 +181,21 @@ class CalendarEventCreateSerializer(serializers.Serializer[Any]):
     is_all_day = serializers.BooleanField(required=False, default=False)
     notes = serializers.CharField(required=False, allow_blank=True)
 
+    def validate_project_id(self, value):
+        """A project the caller belongs to (any project for platform admins); else 'Unknown'."""
+        if value is None:
+            return value
+        from apps.production.models import Project
+
+        scope = ViewerScope.of(self.context.get("request"))
+        if not (scope.is_admin or value in scope.project_ids) or not Project.objects.filter(pk=value).exists():
+            raise serializers.ValidationError("Unknown project.")
+        return value
+
+    def validate(self, attrs):
+        _ensure_end_after_start(attrs.get("start_time"), attrs.get("end_time"))
+        return attrs
+
     def create(self, validated_data):
         project_id = validated_data.pop("project_id", None)
 
@@ -136,6 +225,22 @@ class CalendarEventUpdateSerializer(serializers.Serializer[Any]):
     meeting_url = serializers.URLField(required=False, allow_blank=True)
     is_all_day = serializers.BooleanField(required=False)
     notes = serializers.CharField(required=False, allow_blank=True)
+
+    def validate(self, attrs):
+        event = self.instance
+        _ensure_end_after_start(
+            attrs.get("start_time", getattr(event, "start_time", None)),
+            attrs.get("end_time", getattr(event, "end_time", None)),
+        )
+        return attrs
+
+    def update(self, instance, validated_data):
+        from apps.scheduling.services import update_calendar_event
+
+        return update_calendar_event(event=instance, data=validated_data)
+
+    def to_representation(self, instance):
+        return CalendarEventDetailSerializer(instance, context=self.context).data
 
 
 class ResourceRatesMixin(serializers.Serializer[Any]):
@@ -254,6 +359,26 @@ class ResourceCreateSerializer(serializers.Serializer[Any]):
     )
     location = serializers.CharField(required=False, allow_blank=True, max_length=255)
 
+    def validate_code(self, value):
+        if Resource.all_objects.filter(code__iexact=value).exists():
+            raise serializers.ValidationError("A resource with this code already exists.")
+        return value
+
+    def validate_user_id(self, value):
+        from apps.identity.models import User
+
+        return _ensure_known(User, value, "user")
+
+    def validate_department_id(self, value):
+        from apps.masterdata.models import Department
+
+        return _ensure_known(Department, value, "department")
+
+    def validate_team_id(self, value):
+        from apps.masterdata.models import Team
+
+        return _ensure_known(Team, value, "team")
+
     def create(self, validated_data):
         from apps.identity.models import User
         from apps.masterdata.models import Department, Team
@@ -290,6 +415,33 @@ class ResourceUpdateSerializer(serializers.Serializer[Any]):
     )
     location = serializers.CharField(required=False, allow_blank=True, max_length=255)
 
+    def validate_department_id(self, value):
+        from apps.masterdata.models import Department
+
+        return _ensure_known(Department, value, "department")
+
+    def validate_team_id(self, value):
+        from apps.masterdata.models import Team
+
+        return _ensure_known(Team, value, "team")
+
+    def update(self, instance, validated_data):
+        from apps.masterdata.models import Department, Team
+
+        if "department_id" in validated_data:
+            department_id = validated_data.pop("department_id")
+            instance.department = Department.objects.get(pk=department_id) if department_id else None
+        if "team_id" in validated_data:
+            team_id = validated_data.pop("team_id")
+            instance.team = Team.objects.get(pk=team_id) if team_id else None
+        for name, value in validated_data.items():
+            setattr(instance, name, value)
+        instance.save()
+        return instance
+
+    def to_representation(self, instance):
+        return ResourceDetailSerializer(instance, context=self.context).data
+
 
 class ResourceScheduleSerializer(serializers.ModelSerializer[Any]):
     """Serializer for resource schedule."""
@@ -298,7 +450,9 @@ class ResourceScheduleSerializer(serializers.ModelSerializer[Any]):
     resource_code = serializers.CharField(source="resource.code", read_only=True)
     event_title = serializers.CharField(source="event.title", read_only=True)
     task_title = serializers.CharField(source="task.title", read_only=True)
-    
+    event = _event_link()
+    task = _task_link()
+
     class Meta:
         model = ResourceSchedule
         fields = (
@@ -320,6 +474,14 @@ class ResourceScheduleSerializer(serializers.ModelSerializer[Any]):
         read_only_fields = ("id", "created_at", "updated_at")
 
     _scope: ViewerScope | None = None
+
+    def validate(self, attrs):
+        instance = self.instance
+        _ensure_end_after_start(
+            attrs.get("start_time", getattr(instance, "start_time", None)),
+            attrs.get("end_time", getattr(instance, "end_time", None)),
+        )
+        return attrs
 
     def to_representation(self, instance):
         """A booking tied to an event or task the caller may not see keeps its time slot but
@@ -479,3 +641,32 @@ class HolidaySerializer(serializers.ModelSerializer[Any]):
             "updated_at",
         )
         read_only_fields = ("id", "created_at", "updated_at")
+
+
+class BookResourceSerializer(serializers.Serializer[Any]):
+    """Body of ``POST /resources/{id}/book/``."""
+
+    start_time = serializers.DateTimeField()
+    end_time = serializers.DateTimeField()
+    status = serializers.ChoiceField(
+        choices=[value for value, _ in ResourceSchedule.STATUS_CHOICES], default="Booked"
+    )
+    event_id = _event_link(source="event")
+    task_id = _task_link(source="task")
+    notes = serializers.CharField(required=False, allow_blank=True, default="")
+
+    def validate(self, attrs):
+        _ensure_end_after_start(attrs.get("start_time"), attrs.get("end_time"))
+        return attrs
+
+
+class BlockResourceSerializer(serializers.Serializer[Any]):
+    """Body of ``POST /resources/{id}/block/``."""
+
+    start_time = serializers.DateTimeField()
+    end_time = serializers.DateTimeField()
+    reason = serializers.CharField(required=False, allow_blank=True, default="")
+
+    def validate(self, attrs):
+        _ensure_end_after_start(attrs.get("start_time"), attrs.get("end_time"))
+        return attrs

@@ -168,7 +168,7 @@ Found in the review of the scheduling app's own viewsets (see the review notes b
 * **Reasons are private.** `reason` and `rejection_reason` are shown to the person the leave is for and to approvers (holders of `schedule.update`, and superusers); everyone else with `schedule.view` gets empty strings. The request itself (who, which dates, type, status) stays visible, because planning needs it.
 * **Interim choices, yours to confirm:** "approver" is whoever holds `schedule.update` (the full roles); a dedicated HR or producer code was not added. Artists still cannot request leave: they hold `schedule.view` only, although the create action falls back to the caller's own resource. Whether they should hold `schedule.create` for that, limited to their own resource, is open.
 
-### Review of the scheduling app's own viewsets (items 2 is fixed in D-21; the rest is not)
+### Review of the scheduling app's own viewsets (item 1 above, item 2 in D-21, items 3 and 4 in D-22: all fixed)
 
 Verified by running the endpoints in the test database, 2026-10-26:
 
@@ -183,3 +183,12 @@ Verified by running the endpoints in the test database, 2026-10-26:
 * **Pay rates and e-mail need `schedule.view_rates`.** Without it `hourly_rate_usd` is `null` and `user_email` is "" in resource lists and detail. A person always sees their own resource's values. A superuser sees all. The code is seeded to the full roles (production-admin, vfx-supervisor, org-admin; platform-admin holds the whole catalog) and not to lead-artist or artist. Re-run `init_platform` on each database.
 * **Interim choices, yours to confirm:** the project-less `Team` events (visible to all) and platform admins reading private events; "Team" has no meaning beyond project membership; whether lead-artists need the rates code to plan their team.
 * **Not part of this fix** (items 3 and 4 of the review): creating an event on a project the caller is not in, linking a booking to a foreign task or event on write, unvalidated statuses and times, and the `PATCH` 500s.
+
+## D-22 Checked writes in the scheduling app (review items 3 and 4)
+
+* **References stay in scope.** Booking an event or task (`/schedules/` create and edit, and the `event_id` / `task_id` of `/resources/{id}/book/`) needs an event the caller may see (D-21) and a task of one of their projects (platform admins: any). An unknown id, a malformed one and one out of reach all answer the same 400 ("Unknown event." / "Unknown task."). An event created with a `project_id` needs a project the caller belongs to (platform admins: any); otherwise "Unknown project.", where an unknown project used to be dropped silently.
+* **Values are validated.** `book` takes a status from the booking statuses (default Booked), real date-times and a non-negative duration (an end before the start is a 400, here, in `block`, on schedules and on events); a bad payload stores nothing.
+* **Event statuses.** Only the five known ones are accepted. **Completed and Cancelled are final**: changing them is a 400, echoing the same status is accepted. The other states move freely. This holds for `update-status` and for a status inside a `PATCH`. The status change takes a row lock. *Interim:* no further transition map (for example Postponed to Completed) was asked for; add one if wanted.
+* **Resources.** A duplicate `code` is a 400 in any case, soft-deleted resources included (it used to be a 500 from the database). `user_id`, `department_id` and `team_id` must exist ("Unknown user." and so on) instead of being dropped silently; the same for department and team on edit.
+* **The `PATCH`/`PUT` 500s are fixed** for events and resources: their update serializers had no `update()`. Both answer with the detail shape, like reads. An event edit goes through the same status rule; a resource edit cannot change its code or type (as before).
+* **Not changed:** overlapping bookings are still allowed (overbooking is reported, not prevented); no transition rules for resources' own status; leave and holiday viewsets other than as in D-20.

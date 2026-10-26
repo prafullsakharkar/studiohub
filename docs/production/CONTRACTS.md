@@ -202,3 +202,16 @@ Frontend change list: treat `status`, the decision fields and `total_days` as re
 | C-31c | New permission code `schedule.view_rates` | n/a | In the catalog; granted to production-admin, vfx-supervisor, org-admin. Run `init_platform`. |
 
 Frontend change list: expect fewer events in the calendar for non-members; show a placeholder when a rate is `null`; hide the cost columns of the resource planner for roles without the code; do not treat "Booked on another project" as a real title.
+
+## Scheduling write checks (D-22)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-32 | `PATCH`/`PUT /scheduling/events/{id}/`, `/scheduling/resources/{id}/` | **500**. | Work; answer with the detail shape. |
+| C-32a | `POST /scheduling/events/` | Any `project_id`; an unknown one ignored. | Project must be the caller's (**400** "Unknown project."); end before start is a **400**. |
+| C-32b | `POST .../events/{id}/update-status/`, `status` in a `PATCH` | Any text; any move. | Known statuses only; Completed and Cancelled cannot change (**400**). |
+| C-32c | `event` / `task` on `/scheduling/schedules/` and `event_id` / `task_id` on `.../resources/{id}/book/` | Any id; titles of foreign tasks came back. | **400** "Unknown event." / "Unknown task." for missing, malformed and out-of-scope alike. |
+| C-32d | `POST .../resources/{id}/book/`, `.../block/` | Free-text status; end before start; bad times sometimes a 500. | Status from the booking statuses; end before start and unparseable times are a **400**; nothing stored. |
+| C-32e | `POST /scheduling/resources/` | A duplicate code was a **500**; unknown `user_id` / `department_id` / `team_id` were dropped. | Duplicate code **400** (any case); unknown links **400**. |
+
+Frontend change list: edit forms for events and resources can be used; offer only the project the user belongs to; disable status changes out of Completed or Cancelled; show field errors for the new 400s.

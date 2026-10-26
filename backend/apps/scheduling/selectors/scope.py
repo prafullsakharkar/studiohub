@@ -83,5 +83,10 @@ class ViewerScope:
 
     # -- tasks ---------------------------------------------------------------
 
+    def filter_tasks(self, queryset: QuerySet[Any]) -> QuerySet[Any]:
+        if self.user is None:
+            return queryset.none()
+        return queryset if self.is_admin else queryset.filter(project_id__in=self.project_ids)
+
     def sees_task(self, task: Any) -> bool:
         return self.user is not None and (self.is_admin or task.project_id in self.project_ids)

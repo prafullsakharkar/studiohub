@@ -3,7 +3,7 @@ Scheduling services for business logic.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from apps.scheduling.services.leave import approve_leave, count_leave_days, reject_leave
 
@@ -14,8 +14,10 @@ __all__ = [
     "count_leave_days",
     "create_calendar_event",
     "create_holiday",
+    "ensure_event_status_change",
     "reject_leave",
     "submit_leave_request",
+    "update_calendar_event",
     "update_calendar_event_status",
 ]
 
@@ -64,19 +66,49 @@ def create_calendar_event(
     return event
 
 
+#: a finished or cancelled event stays so; the other states move freely (D-22)
+EVENT_FINAL_STATUSES = ("Completed", "Cancelled")
+
+
+def ensure_event_status_change(current: str, new: str) -> None:
+    """Raise a 400 unless ``new`` is a known status the event may move to from ``current``."""
+    from rest_framework.exceptions import ValidationError
+
+    from apps.scheduling.models import CalendarEvent
+
+    if new not in {value for value, _ in CalendarEvent.STATUS_CHOICES}:
+        raise ValidationError({"status": [f"Unknown status \"{new}\"."]})
+    if current in EVENT_FINAL_STATUSES and new != current:
+        raise ValidationError({"status": [f"A {current} event cannot change status."]})
+
+
 def update_calendar_event_status(
     *,
     event_id: str,
     status: str,
     user_id: str | None = None,
 ) -> CalendarEvent:
-    """Update calendar event status."""
+    """Update calendar event status (known statuses only; Completed and Cancelled are final)."""
+    from django.db import transaction
+
     from apps.scheduling.models import CalendarEvent
-    
-    event = CalendarEvent.objects.get(id=event_id)
-    event.status = status
-    event.save(update_fields=["status"])
-    
+
+    with transaction.atomic():
+        event = CalendarEvent.objects.select_for_update().get(id=event_id)
+        ensure_event_status_change(event.status, status)
+        event.status = status
+        event.save(update_fields=["status", "updated_at"])
+
+    return event
+
+
+def update_calendar_event(*, event: CalendarEvent, data: dict[str, Any]) -> CalendarEvent:
+    """Apply an edit; a status in it follows the same rules as ``update_calendar_event_status``."""
+    if "status" in data:
+        ensure_event_status_change(event.status, data["status"])
+    for name, value in data.items():
+        setattr(event, name, value)
+    event.save()
     return event
 
 
