@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from apps.production.models import Sequence
 from apps.production.services.bulk import BulkOperationService
+from apps.production.validators.hierarchy import ensure_no_live_children
 
 
 class SequenceService(BulkOperationService):
@@ -34,11 +35,20 @@ class SequenceService(BulkOperationService):
     NOT_FOUND = BulkOperationService.NOT_FOUND
 
     @classmethod
+    def before_delete(cls, instance, **kwargs):
+        ensure_no_live_children(instance)
+        return instance
+
+    @classmethod
     def after_update(cls, instance, **kwargs):
-        """A renamed sequence keeps its shots: their text copy of the code follows."""
+        """
+        A renamed sequence keeps its shots: their text copy of the code follows. A
+        sequence moved to another episode takes its shots along (D-12).
+        """
         from apps.production.models import Shot
 
-        Shot.all_objects.filter(sequence=instance).exclude(sequence_code=instance.code).update(
-            sequence_code=instance.code
-        )
+        shots = Shot.all_objects.filter(sequence=instance)
+        shots.exclude(sequence_code=instance.code).update(sequence_code=instance.code)
+        if instance.episode_id is not None:
+            shots.exclude(episode_id=instance.episode_id).update(episode_id=instance.episode_id)
         return instance

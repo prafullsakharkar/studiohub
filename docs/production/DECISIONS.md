@@ -11,7 +11,7 @@ Status: **A** answered by the owner, **I** interim (a default used so work could
 | D-03 | Q7: status workflow | A (maps) | One table per entity in `apps/production/constants/workflow.py`, tested table-driven (`tests/test_workflow_table.py`). Working states move freely; only the meaningful states are fenced (below). Per-project configurable status lists stay out of scope. |
 | D-04 | Separation of duties | A | Implemented in `StatusService` (below). |
 | D-05 | Timelog flow | A | Below. |
-| D-06 | **Q14: creator's role in a new project** | **O** | Interim: the creator gets a membership labelled "Production Admin" (platform admins none). The label is display only and grants nothing. **Still open:** which role (if any) a creator should hold, and whether a creator should be able to update their own project and manage its members. |
+| D-06 | Q14: creator's role in a new project | A | Decided, see D-14. The creator gets a membership labelled "Production Admin" (platform admins none); the label grants nothing. The creator may add members to the project they created, if their role holds `project.update`. |
 | D-07 | Role-to-code matrix | proposed | Below; seeded by `init_platform`, pinned by `tests/test_permission_matrix.py`. Needs your approval. |
 | D-08 | `bulk-status` contract | A | Below. |
 | D-09 | Scheduling endpoints | I | Below. |
@@ -70,7 +70,7 @@ Least privilege. `timelog.view` shows the caller's own timelogs; `timelog.view_a
 
 ## Open
 
-* Q14 (above) and Q1, Q2, Q5, Q6, Q8 to Q12, Q16, Q18 to Q21 of `ANALYSIS.md` / `PLAN.md`. Q3, Q4 and Q15 are decided in D-10 and D-11.
+* Q1, Q5, Q6, Q8, Q10 to Q12, Q18, Q19 of `ANALYSIS.md` / `PLAN.md`, each with a recommended default in the reply to the question (not yet recorded as decisions). Decided: Q2 (D-12), Q3 and Q15 (D-11), Q4 (D-10), Q9 and Q14 (D-14), Q16 (D-13), Q20 and Q21 (process).
 * **Fixed:** the production scheduling endpoints (`capacity`, `overbooking`, `resolve-overbooking`) used to need only a login. See D-09.
 * Not looked at: the scheduling app's own viewsets (`/scheduling/events|resources|schedules|leaves|holidays/`) were out of scope; check whether they scope by project.
 
@@ -99,3 +99,28 @@ Least privilege. `timelog.view` shows the caller's own timelogs; `timelog.view_a
 * **Renaming a sequence** re-syncs `sequence_code` on its shots in the same transaction.
 * **Migration 0027** links each shot to the sequence of its project whose code equals the old text, ignoring case and including soft-deleted sequences. A shot whose text matches nothing keeps `sequence = NULL` and its text (Q15: reported, not failed). The step is idempotent and reversible (reverse does nothing; the text was never removed).
 * **Not decided:** the Sequence to Episode link (B2) still waits on Q2.
+
+## D-12 Sequence to episode (Q2; WP B2)
+
+* **`Sequence.episode`** is a nullable foreign key (`PROTECT`). The per-project `workflow_type` switch stays.
+* **Episodic project:** a new sequence needs an episode of that project (400 on `episode_id` otherwise; an unknown or other-project episode reads "Unknown episode."). An existing sequence that has none keeps working but cannot be cleared once set, and an update that does not mention the episode leaves it as it is.
+* **Standard project:** no episode. Sending one is a 400; an empty value is accepted.
+* **A shot follows its sequence's episode.** When the shot's sequence has an episode, an episode that differs is a 400, and an omitted one is taken from the sequence. Moving a shot to another sequence moves its episode. A shot without a sequence keeps its own episode, still required on episodic projects. A sequence with no episode (older rows) leaves the shot's episode alone.
+* **Moving a sequence to another episode** moves all its shots (soft-deleted ones included) in the same transaction.
+* **Migration 0029** files a sequence of an episodic project under an episode only when all its shots (soft-deleted included) agree on one. Sequences with no shots, with shots in several episodes, or in standard projects stay `NULL`; shots are never touched. `report_production_data` lists the sequences left without an episode, and the shots whose episode differs from their sequence's.
+* **Seeds** still create sequences without an episode (the older shape).
+* Deliberate departure from "never written directly": a shot's `episode_id` stays writable, because shots with no sequence need it. It is checked against the sequence instead.
+
+## D-13 Archiving a parent (Q16)
+
+* **A sequence with live shots, and an episode with live sequences or shots, cannot be archived.** Single delete and the `archive` action return a 400 naming what is left ("SQ010 still has 3 shots. Archive or move them first."); `bulk-archive` reports that item as `has_children`, counts it as failed and carries on with the rest.
+* Archived children do not count. A restore brings back only what was archived: restoring a parent does not restore its children.
+* The `archive` action now runs the status change and the delete as one unit, so a refusal no longer leaves the row with status "Archived".
+* **Not covered:** archiving a project, shot, asset or task with live children; restoring a child whose parent is archived. Both stay as they were.
+
+## D-14 Creator and project roles (Q9, Q14)
+
+* **Authorization stays global role plus membership (Q9).** `ProjectMembership.role_ref` is still not consulted; no ADR is needed. Membership is visibility.
+* **Creator (Q14):** keeps the "Production Admin" membership (display only). The creator, identified by the project's `created_by`, may add members to that project through `POST /organizations/projects/{id}/members/`, in addition to platform admins. The endpoint still needs `project.update`, so a creator whose role lacks it gets a 403. This is the only right the creator record adds; it does not apply to any other project, and it is not inferred from the membership role.
+* The label is not varied by the creator's own role: nothing reads it.
+* **Not decided:** removing or changing members, and whether a project owner should be a stored role.

@@ -28,6 +28,16 @@ class Sequence(EntityModel):
         db_index=True,
     )
 
+    # Episodic projects file a sequence under an episode; its shots follow it (D-12).
+    # Standard projects have none. Legacy rows may have none until someone sets one.
+    episode = models.ForeignKey(
+        "production.Episode",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="sequences",
+    )
+
     code = models.CharField(max_length=50, db_index=True)
     name = models.CharField(max_length=255, blank=True, default="")
 
@@ -73,6 +83,7 @@ class Sequence(EntityModel):
         ]
         indexes = [
             models.Index(fields=["project", "code"]),
+            models.Index(fields=["project", "episode"]),
             models.Index(fields=["status"]),
         ]
 

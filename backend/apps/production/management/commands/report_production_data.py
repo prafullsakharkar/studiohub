@@ -9,6 +9,9 @@ is left:
 * frame ranges that run backwards
 * shots whose ``sequence_code`` names no sequence of their project (they keep
   ``sequence = NULL`` after migration; see DECISIONS D-11)
+* sequences of episodic projects that have no episode, and why (their shots span several
+  episodes, or they have none), and shots whose episode differs from their sequence's
+  (DECISIONS D-12)
 
 Nothing is changed. It reads the database selected by ``DJANGO_ENV``.
 """
@@ -16,7 +19,9 @@ Nothing is changed. It reads the database selected by ``DJANGO_ENV``.
 from __future__ import annotations
 
 from django.core.management.base import BaseCommand
+from django.db import models
 
+from apps.production.constants import ProjectWorkflowType
 from apps.production.models import Asset, Episode, Sequence, Shot, Task, Version
 
 CODED = (Episode, Sequence, Shot, Asset, Task, Version)
@@ -69,6 +74,34 @@ def unmatched_shot_sequences():
     return unmatched
 
 
+def sequences_without_episode():
+    """``[(sequence id, project id, code, reason)]`` for sequences of episodic projects with no episode."""
+    found = []
+    candidates = Sequence.all_objects.filter(
+        episode__isnull=True, project__workflow_type=ProjectWorkflowType.EPISODIC
+    )
+    for pk, project_id, code in candidates.values_list("pk", "project_id", "code"):
+        episodes = set(Shot.all_objects.filter(sequence_id=pk).values_list("episode_id", flat=True))
+        if not episodes:
+            reason = "no shots to take an episode from"
+        elif len(episodes) > 1 or None in episodes:
+            reason = "its shots do not share one episode"
+        else:
+            reason = "its shots agree on one episode but it was not filled in"
+        found.append((str(pk), project_id, code, reason))
+    return found
+
+
+def shots_out_of_step_with_sequence():
+    """``[(shot id, shot code, sequence code)]`` for shots whose episode differs from their sequence's."""
+    rows = (
+        Shot.all_objects.filter(sequence__isnull=False, sequence__episode__isnull=False)
+        .exclude(episode_id=models.F("sequence__episode_id"))
+        .values_list("pk", "code", "sequence__code")
+    )
+    return [(str(pk), code, sequence_code) for pk, code, sequence_code in rows]
+
+
 class Command(BaseCommand):
     help = "Read-only report of production data the hierarchy constraints would reject or leave unresolved."
 
@@ -106,6 +139,18 @@ class Command(BaseCommand):
             self.stdout.write(
                 f"  project={project_id} sequence_code={code!r}: {len(ids)} shot(s), e.g. {ids[:3]}"
             )
+
+        bare = sequences_without_episode()
+        self.stdout.write(f"Sequences of episodic projects without an episode: {len(bare)}")
+        for pk, project_id, code, reason in bare[:50]:
+            findings += 1
+            self.stdout.write(f"  {code} {pk} project={project_id}: {reason}")
+
+        stray = shots_out_of_step_with_sequence()
+        self.stdout.write(f"Shots whose episode differs from their sequence's: {len(stray)}")
+        for pk, code, sequence_code in stray[:50]:
+            findings += 1
+            self.stdout.write(f"  shot {code} {pk} (sequence {sequence_code})")
 
         self.stdout.write(self.style.SUCCESS("Done. Nothing was changed."))
         if options["fail_on_findings"] and findings:

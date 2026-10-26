@@ -23,7 +23,7 @@ from __future__ import annotations
 from typing import Any, ClassVar
 
 from django.db import transaction
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ValidationError
 
 from apps.core.logging.logger import get_logger
 from apps.core.services.business import BusinessService
@@ -48,6 +48,7 @@ class BulkOperationService(BusinessService):
     ARCHIVED = "archived"
     RESTORED = "restored"
     NOT_FOUND = "not_found"
+    HAS_CHILDREN = "has_children"
 
     # ------------------------------------------------------------------
     # Helpers
@@ -355,7 +356,19 @@ class BulkOperationService(BusinessService):
                     {"index": index, "id": item_id, "status": cls.NOT_FOUND}
                 )
                 continue
-            cls.delete(instance, user=user)
+            try:
+                cls.delete(instance, user=user)
+            except ValidationError as exc:
+                # Live children (D-13): this item stays as it is, the others carry on.
+                results.append(
+                    {
+                        "index": index,
+                        "id": item_id,
+                        "status": cls.HAS_CHILDREN,
+                        "error": exc.detail,
+                    }
+                )
+                continue
             results.append(
                 {"index": index, "id": item_id, "status": cls.ARCHIVED}
             )

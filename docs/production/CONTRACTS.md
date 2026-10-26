@@ -145,3 +145,20 @@ Frontend: users without `schedule.view` now get 403 on the scheduling board; the
 Frontend change list: send `sequence_id`, never `sequence_code`; expect codes in upper case in every response and form; a rename of a shot/asset code after its first version goes through the rename action; show the field error for out-of-order frame ranges.
 
 Deploy: run `manage.py report_production_data` on each shared database before migrating (0025 refuses on conflicts and says which rows), then `init_platform` to seed `production.code.rename`.
+
+## Sequence episode, archive guard, creator (D-12, D-13, D-14)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-25 | `episode_id` on sequence create/update | Did not exist. | Optional write alias (id or code of an episode of the project). Episodic project: required on create, cannot be cleared; unknown or other-project episode is a **400** "Unknown episode.". Standard project: a non-empty value is a **400**; empty is accepted. |
+| C-25a | Sequence responses | No episode. | Also `episode_id` (null on older rows and standard projects). |
+| C-25b | `GET /api/v1/sequences/?episode_id=` | Did not exist. | Filters by id or by episode code. |
+| C-25c | Shot create/update `episode_id` with a `sequence_id` whose sequence has an episode | Any episode of the project. | A different episode is a **400** ("The episode must be the episode of the sequence."); omitted takes the sequence's. Moving the shot to another sequence moves its episode. |
+| C-25d | `PATCH` a sequence's `episode_id` | n/a | Its shots (archived ones too) move to the new episode. |
+| C-26 | `DELETE /sequences/{id}/`, `POST /sequences/{id}/archive/`, `/episodes/{id}/` the same | Archived whatever was inside. | **400** while it has live shots (episodes: live sequences or shots), naming them. The row is left unchanged. |
+| C-26a | `POST /sequences/bulk-archive/`, `/episodes/bulk-archive/` | Every found id archived. | An item with live children reports status `has_children` and counts as failed (`partial_success` true); the other items are archived. |
+| C-27 | `POST /organizations/projects/{id}/members/` | Platform admins only. | Also the person who created that project, when their role holds `project.update`. Message for others: "Only platform admins or the project's creator may manage project members." (**403**). |
+
+Frontend change list: send `episode_id` when creating a sequence on an episodic project and pick it in the sequence form; read `episode_id` from sequence responses; archive shots before their sequence and sequences before their episode (or handle the 400 / `has_children`); do not send an episode for a sequence of a standard project.
+
+Deploy: run `manage.py report_production_data` after migrating: it now also lists sequences of episodic projects with no episode and shots whose episode differs from their sequence's. Migrations 0028 (column) and 0029 (fill) change no existing shot.

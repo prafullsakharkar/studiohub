@@ -22,7 +22,9 @@ from apps.production.selectors.shot import ShotSelector
 from apps.production.services.shot import ShotService
 
 
-class ShotViewSet(RenameCodeMixin, StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ignore[reportMissingTypeArgument]
+class ShotViewSet(
+    RenameCodeMixin, StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMixin
+):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = ShotSelector
     service_class = ShotService
     pagination_class = StandardPagination
@@ -101,7 +103,10 @@ class ShotViewSet(RenameCodeMixin, StatusHistoryMixin, ProductionEntityViewSet, 
           * the episode is resolved inside the target project (codes repeat
             across projects); a foreign or unknown episode is "Unknown episode.";
           * a supplied ``sequence_id`` (id or code) must resolve to a sequence of the
-            target project; the shot then points at it and ``sequence_code`` follows.
+            target project; the shot then points at it and ``sequence_code`` follows;
+          * a shot follows the episode of its sequence when the sequence has one: an
+            episode that differs is a 400, an omitted one is taken from the sequence.
+            An older mismatch is left alone until the shot is moved (see the report).
 
         Errors use the standard DRF field-mapping shape, never a new
         contract. ``sequence_ref`` never reaches ``save()``.
@@ -115,21 +120,7 @@ class ShotViewSet(RenameCodeMixin, StatusHistoryMixin, ProductionEntityViewSet, 
         if project is None:
             return
 
-        episode = None
-        if episode_supplied:
-            if isinstance(raw_episode, Episode) or str(raw_episode or "").strip():
-                episode = EpisodeSelector.resolve_in_project(project, raw_episode)
-                if episode is None:
-                    raise ValidationError({"episode_id": ["Unknown episode."]})
-            data["episode"] = episode
-        elif instance is not None:
-            episode = instance.episode
-
-        if project.workflow_type == ProjectWorkflowType.EPISODIC and episode is None:
-            raise ValidationError(
-                {"episode_id": ["An episode is required for shots on episodic projects."]}
-            )
-
+        sequence = instance.sequence if instance is not None else None
         if sequence_supplied:
             text = str(raw_sequence or "").strip()
             if text:
@@ -140,8 +131,34 @@ class ShotViewSet(RenameCodeMixin, StatusHistoryMixin, ProductionEntityViewSet, 
                     )
                 data["sequence"] = sequence  # Shot.save() copies its code to sequence_code
             else:
+                sequence = None
                 data["sequence"] = None
                 data["sequence_code"] = ""
+
+        episode = None
+        if episode_supplied:
+            if isinstance(raw_episode, Episode) or str(raw_episode or "").strip():
+                episode = EpisodeSelector.resolve_in_project(project, raw_episode)
+                if episode is None:
+                    raise ValidationError({"episode_id": ["Unknown episode."]})
+            data["episode"] = episode
+        elif instance is not None:
+            episode = instance.episode
+
+        # A shot follows the episode of its sequence (D-12). A sequence with no episode
+        # (older rows, standard projects) leaves the shot's own episode as it is.
+        if sequence is not None and sequence.episode_id is not None:  # pyright: ignore[reportAttributeAccessIssue]
+            if episode_supplied and episode is not None and episode.pk != sequence.episode_id:  # pyright: ignore[reportAttributeAccessIssue]
+                raise ValidationError(
+                    {"episode_id": ["The episode must be the episode of the sequence."]}
+                )
+            if episode is None or sequence_supplied:
+                data["episode"] = episode = sequence.episode
+
+        if project.workflow_type == ProjectWorkflowType.EPISODIC and episode is None:
+            raise ValidationError(
+                {"episode_id": ["An episode is required for shots on episodic projects."]}
+            )
 
     @action(detail=True, methods=["post"], url_path="approve")
     def approve(self, request, *args, **kwargs):

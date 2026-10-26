@@ -10,6 +10,7 @@ class SequenceSerializer(BaseReadSerializer[Any]):
     project_id = serializers.UUIDField(read_only=True)
     project_code = serializers.SerializerMethodField()
     project_name = serializers.SerializerMethodField()
+    episode_id = serializers.UUIDField(read_only=True, allow_null=True)
     shots_count = serializers.SerializerMethodField()
     lead_artist_id = serializers.UUIDField(read_only=True, allow_null=True)
     is_deleted = serializers.BooleanField(read_only=True)
@@ -23,6 +24,7 @@ class SequenceSerializer(BaseReadSerializer[Any]):
             "project_id",
             "project_code",
             "project_name",
+            "episode_id",
             "code",
             "name",
             "status",

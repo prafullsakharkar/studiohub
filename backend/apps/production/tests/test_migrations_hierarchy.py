@@ -19,6 +19,7 @@ pytestmark = pytest.mark.django_db(transaction=True)
 BEFORE_CONSTRAINTS = [("production", "0024_status_override_and_timelog_adjustment")]
 WITH_CONSTRAINTS = [("production", "0025_code_and_frame_constraints")]
 WITH_COLUMN = [("production", "0026_shot_sequence")]
+WITH_EPISODE_COLUMN = [("production", "0028_sequence_episode")]
 
 
 def _latest():
@@ -157,3 +158,66 @@ class TestShotsAreLinkedToTheirSequence:
         assert apps.get_model("production", "Shot").objects.get(code="S1").sequence_code == "SQ1"
         apps = _migrate(_latest())  # forward again
         assert apps.get_model("production", "Shot").objects.get(code="S1").sequence_id is not None
+
+
+class TestSequencesAreFiledUnderTheirShotsEpisode:
+    def test_only_an_unambiguous_episodic_sequence_is_filled(self, restore):
+        apps = _migrate(WITH_EPISODE_COLUMN)
+        Project = apps.get_model("production", "Project")
+        Episode = apps.get_model("production", "Episode")
+        Sequence = apps.get_model("production", "Sequence")
+        Shot = apps.get_model("production", "Shot")
+        show = Project.objects.create(code="EPA", name="a", workflow_type="episodic")
+        flat = Project.objects.create(code="EPB", name="b", workflow_type="standard")
+        ep1 = Episode.objects.create(
+            project=show, code="EP1", name="1", season_number=1, episode_number=1
+        )
+        ep2 = Episode.objects.create(
+            project=show, code="EP2", name="2", season_number=1, episode_number=2
+        )
+        flat_ep = Episode.objects.create(
+            project=flat, code="EPF", name="f", season_number=1, episode_number=1
+        )
+        agree = Sequence.objects.create(project=show, code="AGREE", name="a")
+        split = Sequence.objects.create(project=show, code="SPLIT", name="s")
+        gap = Sequence.objects.create(project=show, code="GAP", name="g")
+        empty = Sequence.objects.create(project=show, code="EMPTY", name="e")
+        plain = Sequence.objects.create(project=flat, code="PLAIN", name="p")
+        hidden = Sequence.objects.create(project=show, code="HIDDEN", name="h")
+        for code, sequence, episode, project, deleted in (
+            ("A1", agree, ep1, show, False),
+            ("A2", agree, ep1, show, False),
+            ("S1", split, ep1, show, False),
+            ("S2", split, ep2, show, False),
+            ("G1", gap, ep1, show, False),
+            ("G2", gap, None, show, False),
+            ("P1", plain, flat_ep, flat, False),
+            ("H1", hidden, ep1, show, False),
+            ("H2", hidden, ep2, show, True),  # a soft-deleted shot still counts
+        ):
+            Shot.objects.create(
+                project=project,
+                code=code,
+                name=code,
+                sequence=sequence,
+                episode=episode,
+                is_deleted=deleted,
+            )
+
+        apps = _migrate(_latest())
+
+        filled = {
+            s.code: s.episode.code if s.episode_id else None
+            for s in apps.get_model("production", "Sequence").objects.select_related("episode")
+        }
+        assert filled == {
+            "AGREE": "EP1",
+            "SPLIT": None,
+            "GAP": None,
+            "EMPTY": None,
+            "PLAIN": None,  # standard project
+            "HIDDEN": None,
+        }
+        assert empty.pk
+        shots = apps.get_model("production", "Shot").objects
+        assert shots.get(code="G2").episode_id is None  # shots are never touched

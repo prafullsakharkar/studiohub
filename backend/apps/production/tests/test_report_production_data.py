@@ -14,7 +14,12 @@ from django.core.management import call_command
 from django.db import connection, transaction
 
 from apps.production.models import Shot
-from apps.production.tests.factories import ProjectFactory, SequenceFactory, ShotFactory
+from apps.production.tests.factories import (
+    EpisodeFactory,
+    ProjectFactory,
+    SequenceFactory,
+    ShotFactory,
+)
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -52,6 +57,8 @@ def test_a_clean_database_reports_nothing_and_passes_the_gate():
     assert "Codes that differ only by case: 0" in text
     assert "Frame ranges running backwards: 0" in text
     assert "Shots naming no sequence of their project: 0" in text
+    assert "Sequences of episodic projects without an episode: 0" in text
+    assert "Shots whose episode differs from their sequence's: 0" in text
 
 
 def test_shots_naming_no_sequence_are_listed_and_fail_the_gate():
@@ -68,6 +75,30 @@ def test_shots_naming_no_sequence_are_listed_and_fail_the_gate():
     with pytest.raises(SystemExit) as stop:
         _report("--fail-on-findings")
     assert stop.value.code == 1
+
+
+def test_episode_gaps_and_mismatches_are_listed():
+    show = ProjectFactory.create(code="RPT5", workflow_type="episodic")
+    flat = ProjectFactory.create(code="RPT6", workflow_type="standard")
+    ep1 = EpisodeFactory.create(project=show, code="EP1")
+    ep2 = EpisodeFactory.create(project=show, code="EP2")
+    SequenceFactory.create(project=show, code="NOSHOTS")
+    SequenceFactory.create(project=flat, code="STANDARD")  # standard projects have no episodes
+    split = SequenceFactory.create(project=show, code="SPLIT")
+    ShotFactory.create(project=show, code="S1", sequence=split, episode=ep1)
+    ShotFactory.create(project=show, code="S2", sequence=split, episode=ep2)
+    filed = SequenceFactory.create(project=show, code="FILED", episode=ep1)
+    ShotFactory.create(project=show, code="OK", sequence=filed, episode=ep1)
+    ShotFactory.create(project=show, code="ASTRAY", sequence=filed, episode=ep2)
+    ShotFactory.create(project=show, code="NOEP", sequence=filed, episode=None)
+
+    text = _report()
+
+    assert "Sequences of episodic projects without an episode: 2" in text
+    assert "no shots to take an episode from" in text
+    assert "its shots do not share one episode" in text
+    assert "Shots whose episode differs from their sequence's: 2" in text
+    assert "shot ASTRAY" in text and "shot NOEP" in text and "shot OK" not in text
 
 
 def test_it_changes_nothing():

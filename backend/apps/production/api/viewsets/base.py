@@ -271,8 +271,10 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         if instance is None:
             raise NotFound(f"{model.__name__} not found.")
         self.guard_mutable(instance)
-        self._set_status(instance, "Archived")
-        self.service_class.delete(instance, user=request.user)
+        # One unit: a refusal by the service (live children, D-13) leaves the status alone.
+        with transaction.atomic():
+            self._set_status(instance, "Archived")
+            self.service_class.delete(instance, user=request.user)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 

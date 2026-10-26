@@ -1,10 +1,11 @@
 """
-What creating a project gives its creator (Q14 is open, see DECISIONS.md D-06).
+What creating a project gives its creator (DECISIONS.md D-06, D-14).
 
 The creator becomes a member labelled "Production Admin". The label is display
 only: nothing branches on it, the membership grants visibility of the project
 and no permission, so the creator's rights are exactly the global codes they
-already held.
+already held. The one thing the creator record adds: a creator who holds
+``project.update`` may add members to the project they created, and to no other.
 """
 
 from __future__ import annotations
@@ -19,6 +20,7 @@ from apps.identity.services.permission_cache import PermissionCacheService
 from apps.identity.tests.factories import UserFactory
 from apps.identity.tests.rbac_helpers import grant_permissions
 from apps.production.models import Project, ProjectMembership
+from apps.production.tests.factories import ProjectFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -77,6 +79,41 @@ def test_the_membership_is_visibility_only():
     assert (
         client.post(
             f"/api/organizations/projects/{project.id}/members/", member, format="json"
+        ).status_code
+        == 403
+    )
+
+
+def test_a_creator_who_may_update_projects_can_add_members_to_their_own_project_only():
+    user = UserFactory.create()
+    grant_permissions(user, "project.view", "project.create", "project.update")
+    client = APIClient()
+    client.force_authenticate(user=user)
+    own = _create(client)
+    elsewhere = ProjectFactory.create(code="NOTMINE")
+    ProjectMembership.objects.create(user=user, project=elsewhere, status="active", role="Artist")
+    newcomer = UserFactory.create()
+    body = {"user_id": str(newcomer.id), "role": "Artist"}
+
+    added = client.post(f"/api/organizations/projects/{own.id}/members/", body, format="json")
+    refused = client.post(
+        f"/api/organizations/projects/{elsewhere.id}/members/", body, format="json"
+    )
+
+    assert added.status_code == 201, added.json()
+    assert ProjectMembership.objects.filter(user=newcomer, project=own).exists()
+    assert refused.status_code == 403
+    assert not ProjectMembership.objects.filter(user=newcomer, project=elsewhere).exists()
+
+
+def test_creating_the_project_adds_no_member_rights_without_the_update_code():
+    user, client = _creator()
+    own = _create(client)
+    body = {"user_id": str(UserFactory.create().id), "role": "Artist"}
+
+    assert (
+        client.post(
+            f"/api/organizations/projects/{own.id}/members/", body, format="json"
         ).status_code
         == 403
     )

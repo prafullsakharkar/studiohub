@@ -63,7 +63,9 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
 
         Platform admins see every project anyway and get no membership. The
         role label is a display value: authorization comes from the permission
-        codes (``ProjectMembership.role_ref`` is not consulted yet, Q9).
+        codes (``ProjectMembership.role_ref`` is not consulted yet, Q9). What the
+        creator can do beyond what their global role allows is managing the
+        project's members, decided by ``created_by`` and not by this role (D-14).
         """
         user = self.request.user
         if ProductionBaseSelector.is_platform_admin(user):

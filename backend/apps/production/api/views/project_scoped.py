@@ -176,9 +176,9 @@ class ProjectScopeMixin:
 
     def _require_member_management(self, request):
         """
-        Adding project members is privileged: superusers or holders of a
-        global ADMIN-priority identity role. Plain project members cannot
-        grow project access.
+        Adding project members is privileged: superusers, holders of a
+        global ADMIN-priority identity role, or the person who created the
+        project (D-14). Plain project members cannot grow project access.
         """
         from rest_framework.exceptions import PermissionDenied
 
@@ -189,7 +189,15 @@ class ProjectScopeMixin:
             return
         if user is not None and ProductionBaseSelector._has_global_admin_role(user):
             return
-        raise PermissionDenied("Only platform admins may manage project members.")
+        project = getattr(self, "project", None)
+        if (
+            user is not None
+            and project is not None
+            and getattr(project, "created_by_id", None) is not None
+            and project.created_by_id == getattr(user, "pk", None)
+        ):
+            return
+        raise PermissionDenied("Only platform admins or the project's creator may manage project members.")
 
 
 class ProjectScopedAPIView(ProjectScopeMixin, APIView):
