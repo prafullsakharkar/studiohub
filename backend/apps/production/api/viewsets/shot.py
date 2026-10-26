@@ -1,25 +1,34 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.response import Response
 
 from apps.core.api.pagination import StandardPagination
 from apps.production.api.filtersets.shot import ShotFilterSet
+from apps.production.api.serializers.actions import (
+    AssetLinkUpdateSerializer,
+    LinkAssetSerializer,
+    validated,
+)
 from apps.production.api.serializers.shot.create import ShotCreateSerializer
 from apps.production.api.serializers.shot.detail import ShotDetailSerializer
 from apps.production.api.serializers.shot.list import ShotListSerializer
 from apps.production.api.serializers.shot.update import ShotUpdateSerializer
+from apps.production.api.serializers.shot_asset import ShotAssetSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.api.viewsets.bulk import ProductionBulkMixin
 from apps.production.api.viewsets.rename_code import RenameCodeMixin
 from apps.production.api.viewsets.status_history import StatusHistoryMixin
 from apps.production.constants import ProjectWorkflowType
-from apps.production.constants.permissions import CodePermissions, ShotPermissions
+from apps.production.constants.permissions import AssetPermissions, CodePermissions, ShotPermissions
 from apps.production.constants.shot import ShotStatus
 from apps.production.models import Episode
 from apps.production.selectors.episode import EpisodeSelector
 from apps.production.selectors.sequence import SequenceSelector
 from apps.production.selectors.shot import ShotSelector
+from apps.production.selectors.shot_asset import ShotAssetSelector
 from apps.production.services.shot import ShotService
+from apps.production.services.shot_asset import ShotAssetService
 
 
 class ShotViewSet(
@@ -58,6 +67,11 @@ class ShotViewSet(
         "archive": (ShotPermissions.DELETE,),
         "restore": (ShotPermissions.UPDATE,),
         "archived": (ShotPermissions.VIEW,),
+        # Asset links: reading them needs to see assets too; changing them changes the shot.
+        "assets": (ShotPermissions.VIEW, AssetPermissions.VIEW),
+        "link_asset": (ShotPermissions.UPDATE, AssetPermissions.VIEW),
+        "update_asset_link": (ShotPermissions.UPDATE,),
+        "unlink_asset": (ShotPermissions.UPDATE,),
     }
 
     # Approving a shot's pipeline step, or client approval (which has no action
@@ -159,6 +173,55 @@ class ShotViewSet(
             raise ValidationError(
                 {"episode_id": ["An episode is required for shots on episodic projects."]}
             )
+
+    @extend_schema(responses=ShotAssetSerializer(many=True))
+    @action(detail=True, methods=["get"], url_path="assets")
+    def assets(self, request, *args, **kwargs):
+        """The assets this shot uses (live links to live assets)."""
+        shot = self.get_object()
+        return Response(ShotAssetSerializer(ShotAssetSelector.for_shot(shot), many=True).data)
+
+    @extend_schema(request=LinkAssetSerializer, responses=ShotAssetSerializer)
+    @assets.mapping.post
+    def link_asset(self, request, *args, **kwargs):
+        """Link an asset of the shot's project (id or code) to the shot."""
+        shot = self.get_object()
+        body = validated(LinkAssetSerializer, request.data)
+        link = ShotAssetService.link(
+            user=request.user,
+            shot=shot,
+            asset_ref=body["asset_id"],
+            quantity=body["quantity"],
+            notes=body["notes"],
+        )
+        return Response(ShotAssetSerializer(link).data, status=201)
+
+    @extend_schema(request=AssetLinkUpdateSerializer, responses=ShotAssetSerializer)
+    @action(detail=True, methods=["patch"], url_path=r"assets/(?P<asset_ref>[^/.]+)")
+    def update_asset_link(self, request, *args, asset_ref=None, **kwargs):
+        """Change the quantity or note of one link."""
+        shot = self.get_object()
+        link = self._link_or_404(shot, asset_ref)
+        body = validated(AssetLinkUpdateSerializer, request.data)
+        link = ShotAssetService.update(
+            user=request.user, link=link, quantity=body.get("quantity"), notes=body.get("notes")
+        )
+        return Response(ShotAssetSerializer(link).data)
+
+    @extend_schema(request=None, responses={204: None})
+    @update_asset_link.mapping.delete
+    def unlink_asset(self, request, *args, asset_ref=None, **kwargs):
+        """Remove one link (the asset and the shot are untouched)."""
+        shot = self.get_object()
+        ShotAssetService.unlink(user=request.user, link=self._link_or_404(shot, asset_ref))
+        return Response(status=204)
+
+    @staticmethod
+    def _link_or_404(shot, asset_ref):
+        link = ShotAssetService.find(shot, asset_ref)
+        if link is None:
+            raise NotFound("This asset is not linked to the shot.")
+        return link
 
     @action(detail=True, methods=["post"], url_path="approve")
     def approve(self, request, *args, **kwargs):

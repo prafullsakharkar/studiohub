@@ -207,6 +207,21 @@ class ResolveOverbookingSerializer(StrictSerializer):
     resource_id = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
 
+class LinkAssetSerializer(StrictSerializer):
+    """Body of ``POST /shots/{id}/assets/``: the asset (id or code) with how many and a note."""
+
+    asset_id = serializers.CharField(max_length=100)
+    quantity = serializers.IntegerField(min_value=1, max_value=100000, default=1)
+    notes = serializers.CharField(allow_blank=True, default="", max_length=5000)
+
+
+class AssetLinkUpdateSerializer(StrictSerializer):
+    """Body of ``PATCH /shots/{id}/assets/{asset}/``."""
+
+    quantity = serializers.IntegerField(min_value=1, max_value=100000, required=False)
+    notes = serializers.CharField(allow_blank=True, required=False, max_length=5000)
+
+
 def validated(serializer_class: type[serializers.Serializer], data: Any) -> dict[str, Any]:  # type: ignore[type-arg]  # pyright: ignore[reportMissingTypeArgument]
     """Validate ``data`` with ``serializer_class``; a bad body is a 400."""
     serializer = serializer_class(data=data)

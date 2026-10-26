@@ -10,6 +10,7 @@ from .project_note import ProjectNote
 from .review import Review
 from .sequence import Sequence
 from .shot import Shot
+from .shot_asset import ShotAsset
 from .show import Show
 from .status_history import StatusHistory
 from .task import Task
@@ -23,6 +24,7 @@ __all__ = [
     "Project",
     "Sequence",
     "Shot",
+    "ShotAsset",
     "Asset",
     "Task",
     "Timelog",

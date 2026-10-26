@@ -223,6 +223,7 @@ _TRACKED_MODEL_PATHS = (
     "apps.production.models.Sequence",
     "apps.production.models.Shot",
     "apps.production.models.Asset",
+    "apps.production.models.ShotAsset",
     "apps.production.models.Task",
     "apps.production.models.Version",
     "apps.production.models.Episode",

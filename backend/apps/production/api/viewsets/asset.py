@@ -1,4 +1,6 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from apps.core.api.pagination import StandardPagination
 from apps.production.api.filtersets.asset import AssetFilterSet
@@ -6,11 +8,13 @@ from apps.production.api.serializers.asset.create import AssetCreateSerializer
 from apps.production.api.serializers.asset.detail import AssetDetailSerializer
 from apps.production.api.serializers.asset.list import AssetListSerializer
 from apps.production.api.serializers.asset.update import AssetUpdateSerializer
+from apps.production.api.serializers.shot_asset import AssetShotSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.api.viewsets.bulk import ProductionBulkMixin
 from apps.production.api.viewsets.rename_code import RenameCodeMixin
-from apps.production.constants.permissions import AssetPermissions, CodePermissions
+from apps.production.constants.permissions import AssetPermissions, CodePermissions, ShotPermissions
 from apps.production.selectors.asset import AssetSelector
+from apps.production.selectors.shot_asset import ShotAssetSelector
 from apps.production.services.asset import AssetService
 
 
@@ -33,6 +37,7 @@ class AssetViewSet(RenameCodeMixin, ProductionEntityViewSet, ProductionBulkMixin
         "list": (AssetPermissions.VIEW,),
         "retrieve": (AssetPermissions.VIEW,),
         "rename_code": (CodePermissions.RENAME,),
+        "shots": (AssetPermissions.VIEW, ShotPermissions.VIEW),
         "create": (AssetPermissions.CREATE,),
         "update": (AssetPermissions.UPDATE,),
         "partial_update": (AssetPermissions.UPDATE,),
@@ -60,3 +65,10 @@ class AssetViewSet(RenameCodeMixin, ProductionEntityViewSet, ProductionBulkMixin
     def bulk_restore(self, request, *args, **kwargs):
         """Bulk restore with per-item ``not_found`` reporting."""
         return self._bulk_lifecycle_results(ids=self._ids_list(), action="restore")
+
+    @extend_schema(responses=AssetShotSerializer(many=True))
+    @action(detail=True, methods=["get"], url_path="shots")
+    def shots(self, request, *args, **kwargs):
+        """The shots that use this asset (live links to live shots)."""
+        asset = self.get_object()
+        return Response(AssetShotSerializer(ShotAssetSelector.for_asset(asset), many=True).data)

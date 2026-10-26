@@ -215,3 +215,17 @@ Verified by running the endpoints in the test database, 2026-10-26:
 * **`?is_archived=true`** lists the archived rows (needs the resource's delete grant, as `include_archived`; without it the answer is empty, never the live rows); `?is_archived=false` the live ones. Archived versions no longer count for a shot's current version; they could not be listed or picked before anyway once soft-deleted.
 * **Migration 0031 (data).** Rows with the flag set and no soft delete are soft-deleted (`deleted_at` = now, `deleted_by` empty), so the data says what the code now says. Rows already soft-deleted and the column itself are untouched. Reverse does nothing (it cannot tell these rows from properly archived ones); the ids are logged (first 500 per model, event `archive_flag_reconciled`) so they can be restored by hand. **Run `report_production_data` first: "flag only" is the number of rows that will disappear from default lists.** This was built without having seen real numbers (nothing was run outside the test database); the report is the check.
 * **The column stays** until the final cleanup (P12), unread and unwritten; the admin lists and filters use `is_deleted` instead. The seed commands still write the old column from mock data, so a seeded "archived" mock row stays live.
+
+## D-26 Which assets a shot uses (WP C1, plan phase P7)
+
+* **A link table with its own data.** `ShotAsset(shot, asset, quantity, notes)`, with the project copied on for scoping and the usual audit columns. At most one **live** link per shot and asset (the database enforces it; the service checks first for a clear message); `quantity` at least 1 (database check). Shot and asset are `PROTECT`: a linked shot or asset cannot be hard-deleted.
+* **Same project only.** The asset is named by id or code (any case) inside the shot's own project. One of another project, a missing one, an archived one and a malformed id all answer the same 400 "Unknown asset." Cross-project libraries and variants are not part of this (Q5, plan C3 and C6 are not done).
+* **Endpoints.**
+  * `GET /shots/{id}/assets/` lists the shot's assets with code, name, category, status, thumbnail, quantity and note; needs `shot.view` and `asset.view`.
+  * `POST /shots/{id}/assets/` links one (`asset_id`, optional `quantity` default 1, `notes`); 201; needs `shot.update` and `asset.view`. A second live link of the same pair is a 400.
+  * `PATCH /shots/{id}/assets/{asset id or code}/` changes quantity or note; `DELETE` on the same path unlinks (204). Both need `shot.update`. A link that does not exist is a 404.
+  * `GET /assets/{id}/shots/` lists the shots that use an asset; needs `asset.view` and `shot.view`.
+  * Bodies reject unknown keys. A non-member gets 404 on all of them, like the shot itself.
+* **Seeded roles:** artists can read links (they hold both view codes); leads and the full roles can change them (they hold `shot.update`). No new permission code.
+* **Unlinking** soft-deletes the row, so linking the same pair again later works and the old row stays as the trail (who unlinked it and when). Archived shots and assets drop out of both lists; their links are not removed. The change log records creating and changing a link; it does not record soft deletes for any model.
+* **Not done:** archiving an asset that live shots use is still allowed (plan C5 would warn or block; D-13 covers sequences and episodes only); a count of shots per asset in the asset's own responses; ordering of an asset's shots other than by code.

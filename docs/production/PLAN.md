@@ -200,7 +200,7 @@ Selectors to add: `ShotSelector.list_for_sequence`, `SequenceSelector.with_count
 | **P4** Constraints — **DONE (committed)**; the handles split of B7 was not done | B3, B7 | constraint + data (handles split); preflight SQL must be clean first | migration tests on a seeded test DB |
 | **P5** Hierarchy — **DONE (committed)**; F1 rollups partly (D-15, D-16) | B1, B2, F1 (counts), G1 indexes | **data** (`sequence_code` → FK, sequence → episode) | mapping report reviewed by you before running on shared DBs |
 | **P6** Codes and lifecycle — **DONE** (D-23, D-24, D-25; the `is_archived` column itself drops in P12) | B4, B5, B9 | on_delete changes, archive reconciliation | concurrency tests (numbering) |
-| **P7** Asset links | C1 | additive | link tests |
+| **P7** Asset links — **DONE** (C1 only, D-26; C2 to C6 not) | C1 | additive | link tests |
 | **P8** Tasks and templates | D1, D2, D3, D6, D8 | **data** (entity strings → FKs, department → step) | template idempotency, constraint tests |
 | **P9** Versions | E1, E2, E3 | **data + constraint** | concurrency tests (numbering, hero) |
 | **P10** Reviews and notes | E4 | **data** (JSON → rows) | contract-shape snapshot tests |

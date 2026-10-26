@@ -237,3 +237,14 @@ Frontend change list: bulk import can send `code_prefix` instead of `code`; the 
 | C-35d | Existing rows with the flag set and not soft-deleted | Visible in lists. | Soft-deleted by migration 0031: gone from default lists, shown with `is_archived=true`. |
 
 Frontend change list: stop sending `is_archived`; use the archive and restore actions for versions, playlists and workflows; show archived items from `?is_archived=true`; expect archived versions, playlists and workflows to leave the default lists.
+
+## Shot to asset links (D-26)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-36 | `GET /api/v1/shots/{id}/assets/` | Did not exist. | The shot's live asset links: `id`, `shot_id`, `asset_id`, `asset_code`, `asset_name`, `asset_category`, `asset_status`, `thumbnail_url`, `quantity`, `notes`, `created_at`; by asset code, bare array. Needs `shot.view` and `asset.view`. |
+| C-36a | `POST /api/v1/shots/{id}/assets/` | Did not exist. | Body `{"asset_id": <id or code>, "quantity": 1, "notes": ""}`; **201** with the link; **400** for an unknown, foreign or archived asset ("Unknown asset."), a repeat link ("already linked"), `quantity` below 1 or an unknown key. Needs `shot.update` and `asset.view`. |
+| C-36b | `PATCH`, `DELETE /api/v1/shots/{id}/assets/{asset id or code}/` | Did not exist. | Change quantity or note (200) / unlink (204); **404** if not linked. Needs `shot.update`. |
+| C-36c | `GET /api/v1/assets/{id}/shots/` | Did not exist. | The shots using the asset: `id`, `asset_id`, `shot_id`, `shot_code`, `shot_name`, `shot_status`, `quantity`, `notes`, `created_at`. Needs `asset.view` and `shot.view`. |
+
+Frontend change list: a "Assets" tab on the shot and a "Used in" list on the asset can now be built on these; offer only assets of the shot's project; show 400 messages for duplicates and unknown assets; hide the link controls for roles without `shot.update`.

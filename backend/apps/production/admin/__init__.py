@@ -18,6 +18,7 @@ from .project_scoped import (
 from .review import ReviewAdmin
 from .sequence import SequenceAdmin
 from .shot import ShotAdmin
+from .shot_asset import ShotAssetAdmin
 from .status_history import StatusHistoryAdmin
 from .task import TaskAdmin
 from .timelog import TimelogAdmin
@@ -31,6 +32,7 @@ __all__ = [
     "ProjectAdmin",
     "SequenceAdmin",
     "ShotAdmin",
+    "ShotAssetAdmin",
     "StatusHistoryAdmin",
     "AssetAdmin",
     "TaskAdmin",
