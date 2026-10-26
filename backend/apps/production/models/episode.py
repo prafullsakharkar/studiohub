@@ -9,6 +9,7 @@ entity that supports soft-delete (archive) and restore via the canonical
 from __future__ import annotations
 
 from django.db import models
+from django.db.models.functions import Upper
 
 from apps.core.models.bases import EntityModel
 from apps.production.constants import ProductionStatus
@@ -52,6 +53,15 @@ class Episode(EntityModel):
         db_table = "production_episode"
         ordering = ("season_number", "episode_number", "code")
         unique_together = [("project", "code")]
+        constraints = [
+            models.UniqueConstraint(
+                Upper("code"), "project", name="production_episode_project_ucode_uniq"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(frame_out__gte=models.F("frame_in")),
+                name="production_episode_frame_range_ck",
+            ),
+        ]
         indexes = [
             models.Index(fields=["project", "code"]),
             models.Index(fields=["project", "season_number", "episode_number"]),

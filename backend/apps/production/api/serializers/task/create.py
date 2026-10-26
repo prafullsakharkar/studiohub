@@ -5,12 +5,32 @@ from rest_framework import serializers
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.api.serializers.common import (
     LenientUniqueTogetherValidator,
+    LockedFieldsMixin,
+    NormalizedCodeMixin,
     ProjectReferenceMixin,
 )
+from apps.production.api.serializers.task.hours import TaskHoursMixin
 from apps.production.models import Task
 
 
-class TaskCreateSerializer(ProjectReferenceMixin, BaseWriteSerializer[Any]):
+class TaskCreateSerializer(  # pyright: ignore[reportUnsafeMultipleInheritance]
+    TaskHoursMixin,
+    NormalizedCodeMixin,
+    LockedFieldsMixin,
+    ProjectReferenceMixin,
+    BaseWriteSerializer[Any],
+):
+    locked_fields = {
+        "is_archived": "Use the archive and restore actions.",
+        "logged_hours": "Derived from the task's timelogs.",
+    }
+
+    is_archived = serializers.BooleanField(source="is_deleted", read_only=True)
+    # The pipeline step: an id or code of an active task type in the catalog (resolved by the viewset).
+    task_type_id = serializers.CharField(
+        source="task_type", write_only=True, required=False, allow_blank=True, allow_null=True
+    )
+
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
 
@@ -47,9 +67,11 @@ class TaskCreateSerializer(ProjectReferenceMixin, BaseWriteSerializer[Any]):
             "is_archived",
             "due_date",
             "estimated_hours",
+            "task_type_id",
             "logged_hours",
+            "pending_hours",
         )
-        read_only_fields = ("id", "uuid")
+        read_only_fields = ("id", "uuid", "is_archived", "logged_hours")
         extra_kwargs = {"project": {"required": False}, "code": {"required": False}}
         validators = [
             LenientUniqueTogetherValidator(

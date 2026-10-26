@@ -29,6 +29,7 @@ from apps.production.api.viewsets.sequence import SequenceViewSet
 from apps.production.api.viewsets.shot import ShotViewSet
 from apps.production.api.viewsets.show import ShowViewSet
 from apps.production.api.viewsets.task import TaskViewSet
+from apps.production.api.viewsets.task_template import TaskTemplateViewSet
 from apps.production.api.viewsets.timelog import TimelogViewSet
 from apps.production.api.viewsets.version import VersionViewSet
 from apps.production.api.viewsets.workflow import WorkflowViewSet
@@ -47,6 +48,7 @@ router.register(r"episodes", EpisodeViewSet, basename="episode")
 router.register(r"media", MediaViewSet, basename="media")
 router.register(r"playlists", PlaylistViewSet, basename="playlist")
 router.register(r"workflows", WorkflowViewSet, basename="workflow")
+router.register(r"task-templates", TaskTemplateViewSet, basename="task-template")
 router.register(r"editorial/tracks", EditorialTrackViewSet, basename="editorial-track")
 router.register(r"shows", ShowViewSet, basename="show")
 

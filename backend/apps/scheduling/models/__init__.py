@@ -461,6 +461,22 @@ class ResourceLeave(EntityModel):
         help_text="When leave was approved",
     )
     
+    # Who turned the request down and when (``approved_by``/``approved_at`` stay for approvals).
+    rejected_by = models.ForeignKey(
+        "identity.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="rejected_leaves",
+        help_text="Rejecting user",
+    )
+
+    rejected_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When leave was rejected",
+    )
+
     rejection_reason = models.TextField(
         blank=True,
         help_text="Reason for rejection",

@@ -13,14 +13,13 @@ rule): ``bulk_archive`` soft-deletes, ``bulk_restore`` un-deletes.
 
 from __future__ import annotations
 
-from apps.production.api.serializers.episode.update import EpisodeUpdateSerializer
 from apps.production.models import Episode
 from apps.production.services.bulk import BulkOperationService
+from apps.production.validators.hierarchy import ensure_no_live_children
 
 
 class EpisodeService(BulkOperationService):
     model = Episode
-    bulk_update_serializer = EpisodeUpdateSerializer
 
     # Result statuses (inherited from BulkOperationService; repeated here so
     # existing imports like ``EpisodeService.CREATED`` keep working).
@@ -34,3 +33,8 @@ class EpisodeService(BulkOperationService):
     ARCHIVED = BulkOperationService.ARCHIVED
     RESTORED = BulkOperationService.RESTORED
     NOT_FOUND = BulkOperationService.NOT_FOUND
+
+    @classmethod
+    def before_delete(cls, instance, **kwargs):
+        ensure_no_live_children(instance)
+        return instance

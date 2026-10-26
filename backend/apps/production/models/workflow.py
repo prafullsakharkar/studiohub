@@ -32,8 +32,6 @@ class Workflow(EntityModel):
     automation_rules = models.JSONField(default=list, blank=True)
     execution_stats = models.JSONField(default=dict, blank=True)
 
-    is_archived = models.BooleanField(default=False)
-
     class Meta:
         db_table = "production_workflow"
         ordering = ("-created_at",)

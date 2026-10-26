@@ -11,7 +11,7 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
-from apps.production.models import ProjectMembership, Review
+from apps.production.models import ProjectMembership, Review, ReviewParticipant
 from apps.production.tests.factories import (
     AssetFactory,
     ProjectFactory,
@@ -252,11 +252,11 @@ class TestBulkUpdateArchiveContract:
         assert resp.status_code == status.HTTP_200_OK, resp.data
         shot.refresh_from_db()
         assert shot.is_deleted is False
-        # Restore undeletes; the archive-time status is left untouched
-        # (Task is the exception: its restore resets to "In Progress").
-        assert shot.status == "Archived"
+        # Restore undeletes and takes the record out of Archived, back to the
+        # status it had before (the status workflow keeps Archived a dead end).
+        assert shot.status == "Not Started"
 
-    def test_task_archive_sets_flag_and_status(self, staff_client, staff_user):
+    def test_task_archive_sets_status_and_soft_deletes(self, staff_client, staff_user):
         task = TaskFactory.create(code="TSKARC01")
         _member(staff_user, task.project)
         resp = staff_client.post(
@@ -265,7 +265,7 @@ class TestBulkUpdateArchiveContract:
         )
         assert resp.status_code == status.HTTP_200_OK, resp.data
         task.refresh_from_db()
-        assert task.is_archived is True
+        assert resp.data["is_archived"] is True  # derived from the soft delete (D-25)
         assert task.status == "Archived"
         assert task.is_deleted is True
 
@@ -301,15 +301,9 @@ class TestBulkUpdateArchiveContract:
 @pytest.mark.django_db
 class TestReviewAndProjectContract:
     def _make_review(self, project):
-        return Review.objects.create(
-
-            project=project,
-            code="REV001",
-            title="Review One",
-            reviewers=[
-                {"id": "p1", "user_id": "u1", "name": "Rev A", "verdict": "Pending Review"}
-            ],
-        )
+        review = Review.objects.create(project=project, code="REV001", title="Review One")
+        ReviewParticipant.objects.create(review=review, name="Rev A", legacy_id="p1")
+        return review
 
     def test_participant_verdict(self, staff_client, staff_user):
         project = ProjectFactory.create()

@@ -17,7 +17,8 @@ class VersionFilterSet(BaseFilterSet):
     entity_type = django_filters.CharFilter(field_name="entity_type", lookup_expr="iexact")
     entity_id = django_filters.CharFilter(field_name="entity_id")
     is_published = django_filters.BooleanFilter(field_name="is_published")
-    is_archived = django_filters.BooleanFilter(field_name="is_archived")
+    # Archived means soft-deleted (D-25); asking for it also brings the archived rows into the list.
+    is_archived = django_filters.BooleanFilter(field_name="is_deleted")
     department = django_filters.CharFilter(field_name="department", lookup_expr="iexact")
 
     class Meta:

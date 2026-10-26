@@ -93,10 +93,7 @@ class WorkflowViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissing
         instance.save(update_fields=["is_active"])
         return Response(WorkflowDetailSerializer(instance).data)
 
-    @action(detail=True, methods=["post"], url_path="archive")
-    def archive(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.is_archived = True
+    def after_archive(self, instance):
+        # An archived workflow no longer runs; restoring it does not switch it back on.
         instance.is_active = False
-        instance.save(update_fields=["is_archived", "is_active"])
-        return Response(WorkflowDetailSerializer(instance).data)
+        instance.save(update_fields=["is_active"])

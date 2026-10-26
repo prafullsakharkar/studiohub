@@ -51,11 +51,15 @@ class TaskPermissions:
 
 
 class TimelogPermissions:
+    # Own timelogs; ``VIEW_ALL`` sees the whole project's.
     VIEW = "timelog.view"
+    VIEW_ALL = "timelog.view_all"
     CREATE = "timelog.create"
     UPDATE = "timelog.update"
     DELETE = "timelog.delete"
     APPROVE = "timelog.approve"
+    # Log time for another person.
+    MANAGE = "timelog.manage"
 
 
 class VersionPermissions:
@@ -95,6 +99,15 @@ class WorkflowPermissions:
     DELETE = "workflow.delete"
 
 
+class TaskTemplatePermissions:
+    VIEW = "tasktemplate.view"
+    CREATE = "tasktemplate.create"
+    UPDATE = "tasktemplate.update"
+    DELETE = "tasktemplate.delete"
+    # Studio-wide templates (no project) are managed with this on top of the action's own code.
+    MANAGE_STUDIO = "tasktemplate.manage_studio"
+
+
 class SchedulingPermissions:
     VIEW = "schedule.view"
     CREATE = "schedule.create"
@@ -118,3 +131,35 @@ class ShowPermissions:
     CREATE = "show.create"
     UPDATE = "show.update"
     DELETE = "show.delete"
+
+
+class AutomationPermissions:
+    VIEW = "automation.view"
+    CREATE = "automation.create"
+    UPDATE = "automation.update"
+    DELETE = "automation.delete"
+
+
+class NotePermissions:
+    CREATE = "note.create"
+
+
+class OverridePermissions:
+    """
+    Opt-in corrections. Granted to no seeded role (``init_platform`` keeps them out of
+    the full-catalog role too), never implied by superuser, and every use is recorded
+    in ``StatusHistory`` with its reason.
+    """
+
+    #: move a shot, task, version or review along a path the workflow forbids
+    STATUS = "production.status.override"
+    #: approve work one produced oneself (separation of duties)
+    SELF_APPROVAL = "production.sod.override"
+
+    ALL = (STATUS, SELF_APPROVAL)
+
+
+class CodePermissions:
+    """Renaming the code of a shot or asset that already has versions (codes freeze then)."""
+
+    RENAME = "production.code.rename"

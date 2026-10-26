@@ -26,18 +26,14 @@ class Playlist(EntityModel):
     status = models.CharField(max_length=30, blank=True, default="Active", db_index=True)
     client_only = models.BooleanField(default=False)
 
-    entries = models.JSONField(default=list, blank=True)
     share_settings = models.JSONField(default=dict, blank=True)
     activity = models.JSONField(default=list, blank=True)
-
-    is_archived = models.BooleanField(default=False, db_index=True)
 
     class Meta:
         db_table = "production_playlist"
         ordering = ("-created_at",)
         indexes = [
             models.Index(fields=["status"]),
-            models.Index(fields=["is_archived"]),
         ]
 
     def __str__(self):

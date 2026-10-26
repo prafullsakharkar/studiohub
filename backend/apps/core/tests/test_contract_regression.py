@@ -311,7 +311,13 @@ class TestContractPermissionMatrix:
         assert not retired & set(perm_by_code), "a retired code is still in the permission catalog"
         for role, codes in matrix.items():
             assert not retired & set(codes), f"{role} still grants a retired masterdata code"
-        assert set(perm_by_code) <= set(matrix["platform-admin"]), "platform-admin lost full catalog"
+        # The full catalog, except the opt-in override codes: those are granted to no role.
+        from apps.core.management.commands.init_platform import OPT_IN_PERMISSION_CODES
+
+        assert set(perm_by_code) - OPT_IN_PERMISSION_CODES <= set(matrix["platform-admin"]), (
+            "platform-admin lost full catalog"
+        )
+        assert all(not OPT_IN_PERMISSION_CODES & set(codes) for codes in matrix.values())
         for role in ("vfx-supervisor", "lead-artist", "artist"):
             assert "identity.user.view" in matrix[role], f"{role} lost directory view"
 

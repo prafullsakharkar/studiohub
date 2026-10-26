@@ -13,14 +13,13 @@ rule): ``bulk_archive`` soft-deletes, ``bulk_restore`` un-deletes.
 
 from __future__ import annotations
 
-from apps.production.api.serializers.sequence.update import SequenceUpdateSerializer
 from apps.production.models import Sequence
 from apps.production.services.bulk import BulkOperationService
+from apps.production.validators.hierarchy import ensure_no_live_children
 
 
 class SequenceService(BulkOperationService):
     model = Sequence
-    bulk_update_serializer = SequenceUpdateSerializer
 
     # Result statuses (inherited from BulkOperationService; repeated here so
     # existing imports like ``SequenceService.CREATED`` keep working).
@@ -34,3 +33,21 @@ class SequenceService(BulkOperationService):
     ARCHIVED = BulkOperationService.ARCHIVED
     RESTORED = BulkOperationService.RESTORED
     NOT_FOUND = BulkOperationService.NOT_FOUND
+
+    @classmethod
+    def before_delete(cls, instance, **kwargs):
+        ensure_no_live_children(instance)
+        return instance
+
+    @classmethod
+    def after_update(cls, instance, **kwargs):
+        """
+        A sequence moved to another episode takes its shots along (D-12). (Its shots show the new
+        code by themselves: ``sequence_code`` is read from the sequence, D-32.)
+        """
+        from apps.production.models import Shot
+
+        shots = Shot.all_objects.filter(sequence=instance)
+        if instance.episode_id is not None:
+            shots.exclude(episode_id=instance.episode_id).update(episode_id=instance.episode_id)
+        return instance

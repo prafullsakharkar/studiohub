@@ -198,9 +198,12 @@ class TestProjectWorkflowTypeGating:
         )
         assert r.status_code == status.HTTP_201_CREATED, r.data
         assert r.data["workflow_type"] == workflow_type
-        from apps.production.models import Project as _Project
+        from apps.production.models import ProjectMembership
 
-        _member(staff_user, _Project.objects.get(id=r.data["id"]))
+        # The creator is made a member by the create itself.
+        assert ProjectMembership.objects.filter(
+            project_id=r.data["id"], user=staff_user, status="active"
+        ).exists()
 
         episodes = Episode.objects.filter(project_id=r.data["id"])
         if bootstrap_episode:

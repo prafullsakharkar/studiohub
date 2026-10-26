@@ -10,14 +10,16 @@ Matches ``projectScopedApi.ts`` (no /v1/, slashless sub-paths):
     editorial | notes (GET list + POST create) | deliveries
     schedule | resources | pipeline | files | activity
 
-``<project>`` accepts id/code (resolved globally; unknown values 404 with
+``<project>`` accepts id/code (unknown or non-member values 404 with
 ``{detail}``).
 
 Entity lists reuse the flat viewsets' selector + filterset + search +
 ordering + pagination machinery so shapes and query params are identical to
 the top-level endpoints, additionally constrained to the URL project.
-Authorization: authenticated users with a project membership (or platform
-admin); otherwise 403. The project boundary is always enforced server-side.
+Authorization: the permission code of the matching flat endpoint AND a
+project membership (or platform admin). An unknown project and a project the
+caller is not a member of both answer 404. The project boundary is always
+enforced server-side.
 """
 
 from __future__ import annotations
@@ -33,12 +35,15 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.audit.constants.permissions import AuditPermissions
 from apps.audit.filters.activity import ActivityFilter
 from apps.audit.serializers.activity import ActivitySerializer
 from apps.core.api.pagination import StandardPagination
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.deliveries.api.serializers.delivery import DeliveryListSerializer
+from apps.deliveries.constants.permissions import DeliveryPermissions
 from apps.deliveries.selectors.delivery import DeliverySelector
+from apps.identity.permissions import HasPermission
 from apps.production.api.serializers.asset.list import AssetListSerializer
 from apps.production.api.serializers.editorial import EditorialCutSerializer
 from apps.production.api.serializers.media.list import MediaListSerializer
@@ -63,6 +68,19 @@ from apps.production.api.viewsets.sequence import SequenceViewSet
 from apps.production.api.viewsets.shot import ShotViewSet
 from apps.production.api.viewsets.task import TaskViewSet
 from apps.production.api.viewsets.version import VersionViewSet
+from apps.production.constants.permissions import (
+    AssetPermissions,
+    EditorialTrackPermissions,
+    MediaPermissions,
+    NotePermissions,
+    ProjectPermissions,
+    ReviewPermissions,
+    SchedulingPermissions,
+    SequencePermissions,
+    ShotPermissions,
+    TaskPermissions,
+    VersionPermissions,
+)
 from apps.production.models import (
     Project,
     Task,
@@ -78,6 +96,7 @@ from apps.production.selectors.project_scoped import (
     ProjectNoteSelector,
 )
 from apps.production.selectors.review import ReviewSelector
+from apps.production.selectors.rollups import TaskHoursSelector
 from apps.production.selectors.sequence import SequenceSelector
 from apps.production.selectors.shot import ShotSelector
 from apps.production.selectors.task import TaskSelector
@@ -122,11 +141,12 @@ class ProjectScopeMixin:
     def initial(self, request, *args, **kwargs):
         # reportAttributeAccessIssue: super() is the combined APIView.
         super().initial(request, *args, **kwargs)  # pyright: ignore[reportAttributeAccessIssue]
-        self.project = self._resolve_project(kwargs.get(self.project_url_kwarg))
+        lookup = kwargs.get(self.project_url_kwarg)
+        self.project = self._resolve_project(lookup)
         if not self._has_access(request):
-            from rest_framework.exceptions import PermissionDenied
-
-            raise PermissionDenied("You are not a member of this project.")
+            # Same answer as an unknown project: a non-member learns nothing
+            # about which projects exist (ADR-0032 / ADR-0033 posture).
+            raise Http404(f"Project {lookup} not found.")
 
     @staticmethod
     def _resolve_project(lookup):
@@ -157,9 +177,9 @@ class ProjectScopeMixin:
 
     def _require_member_management(self, request):
         """
-        Adding project members is privileged: superusers or holders of a
-        global ADMIN-priority identity role. Plain project members cannot
-        grow project access.
+        Adding project members is privileged: superusers, holders of a
+        global ADMIN-priority identity role, or the person who created the
+        project (D-14). Plain project members cannot grow project access.
         """
         from rest_framework.exceptions import PermissionDenied
 
@@ -170,11 +190,33 @@ class ProjectScopeMixin:
             return
         if user is not None and ProductionBaseSelector._has_global_admin_role(user):
             return
-        raise PermissionDenied("Only platform admins may manage project members.")
+        project = getattr(self, "project", None)
+        if (
+            user is not None
+            and project is not None
+            and getattr(project, "created_by_id", None) is not None
+            and project.created_by_id == getattr(user, "pk", None)
+        ):
+            return
+        raise PermissionDenied("Only platform admins or the project's creator may manage project members.")
 
 
 class ProjectScopedAPIView(ProjectScopeMixin, APIView):
-    permission_classes = (IsAuthenticatedPermission,)
+    """
+    Authorization is two layers: the ``permission_map`` code for the HTTP
+    method (checked first, independent of the project, so it reveals nothing
+    about which projects exist) and then project membership (404 otherwise).
+    A method without a ``permission_map`` entry is denied.
+    """
+
+    permission_classes = (IsAuthenticatedPermission, HasPermission)
+    permission_map: ClassVar[dict[str, tuple[str, ...]]] = {}
+
+    def get_permission_required(self):
+        method = (self.request.method or "").lower()
+        if method == "head":
+            method = "get"
+        return self.permission_map.get(method)
 
     # -- shared list machinery -------------------------------------------
     # Reuses the flat viewsets' filterset + search + ordering + pagination
@@ -228,6 +270,8 @@ class ProjectScopedAPIView(ProjectScopeMixin, APIView):
 
 class ProjectMembersView(ProjectScopedAPIView):
     """GET {count, results[]} + POST create (201, 200 when already a member)."""
+
+    permission_map = {"get": (ProjectPermissions.VIEW,), "post": (ProjectPermissions.UPDATE,)}
 
     def get(self, request, *args, **kwargs):
         qs = (
@@ -285,6 +329,8 @@ class ProjectMembersView(ProjectScopedAPIView):
 
 
 class ProjectSummaryView(ProjectScopedAPIView):
+    permission_map = {"get": (ProjectPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         project_data = ProjectDetailSerializer(
             self.project, context={"request": request}
@@ -303,8 +349,10 @@ class ProjectDashboardView(ProjectScopedAPIView):
 
     Same payload as ``GET /api/v1/projects/{id}/dashboard/`` (the frontend
     calls the primary first and falls back here). ``<project>`` accepts UUID
-    or code; unknown values 404 and non-members 403 via the scope mixin.
+    or code; unknown values and non-members both 404 via the scope mixin.
     """
+
+    permission_map = {"get": (ProjectPermissions.VIEW,)}
 
     def get(self, request, *args, **kwargs):
         return Response(ProjectDashboardSelector.build(self.project))
@@ -316,6 +364,8 @@ class ProjectDashboardView(ProjectScopedAPIView):
 
 
 class _SequenceListView(ProjectScopedAPIView):
+    permission_map = {"get": (SequencePermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=SequenceSelector,
@@ -327,6 +377,8 @@ class _SequenceListView(ProjectScopedAPIView):
 
 
 class _ShotListView(ProjectScopedAPIView):
+    permission_map = {"get": (ShotPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=ShotSelector,
@@ -338,6 +390,8 @@ class _ShotListView(ProjectScopedAPIView):
 
 
 class _TaskListView(ProjectScopedAPIView):
+    permission_map = {"get": (TaskPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=TaskSelector,
@@ -349,6 +403,8 @@ class _TaskListView(ProjectScopedAPIView):
 
 
 class _AssetListView(ProjectScopedAPIView):
+    permission_map = {"get": (AssetPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=AssetSelector,
@@ -360,6 +416,8 @@ class _AssetListView(ProjectScopedAPIView):
 
 
 class _VersionListView(ProjectScopedAPIView):
+    permission_map = {"get": (VersionPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=VersionSelector,
@@ -371,6 +429,8 @@ class _VersionListView(ProjectScopedAPIView):
 
 
 class _ReviewListView(ProjectScopedAPIView):
+    permission_map = {"get": (ReviewPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=ReviewSelector,
@@ -390,6 +450,8 @@ ProjectReviewsView = _ReviewListView
 
 
 class ProjectEditorialView(ProjectScopedAPIView):
+    permission_map = {"get": (EditorialTrackPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=EditorialCutSelector,
@@ -400,6 +462,8 @@ class ProjectEditorialView(ProjectScopedAPIView):
 
 
 class ProjectNotesView(ProjectScopedAPIView):
+    permission_map = {"get": (ProjectPermissions.VIEW,), "post": (NotePermissions.CREATE,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=ProjectNoteSelector,
@@ -434,6 +498,8 @@ class ProjectNotesView(ProjectScopedAPIView):
 
 
 class ProjectDeliveriesView(ProjectScopedAPIView):
+    permission_map = {"get": (DeliveryPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=DeliverySelector,
@@ -444,6 +510,8 @@ class ProjectDeliveriesView(ProjectScopedAPIView):
 
 
 class ProjectFilesView(ProjectScopedAPIView):
+    permission_map = {"get": (MediaPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=MediaSelector,
@@ -462,6 +530,8 @@ class ProjectFilesView(ProjectScopedAPIView):
 
 
 class ProjectActivityView(ProjectScopedAPIView):
+    permission_map = {"get": (AuditPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         project_key = str(self.project.id)
 
@@ -507,6 +577,8 @@ class ProjectActivityView(ProjectScopedAPIView):
 
 
 class ProjectScheduleView(ProjectScopedAPIView):
+    permission_map = {"get": (SchedulingPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         project = self.project
         start = project.start_date or date.today()
@@ -546,11 +618,11 @@ class ProjectScheduleView(ProjectScopedAPIView):
 
 
 class ProjectResourcesView(ProjectScopedAPIView):
+    permission_map = {"get": (TaskPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
-        tasks = (
-            Task.objects.filter(project=self.project)
-            .select_related("assignee")
-            .all()
+        tasks = TaskHoursSelector.annotate(
+            Task.objects.filter(project=self.project).select_related("assignee")
         )
         artists: dict[str, dict[str, Any]] = {}
         departments: set[str] = set()
@@ -582,7 +654,7 @@ class ProjectResourcesView(ProjectScopedAPIView):
             existing["task_count"] = int(existing.get("task_count") or 0) + 1
             logged = float(existing.get("hours_logged") or 0.0)
             with contextlib.suppress(TypeError, ValueError):
-                logged += float(task.logged_hours or 0)
+                logged += float(TaskHoursSelector.of(task)[0])
             existing["hours_logged"] = logged
         return Response(
             {
@@ -595,6 +667,8 @@ class ProjectResourcesView(ProjectScopedAPIView):
 
 
 class ProjectPipelineView(ProjectScopedAPIView):
+    permission_map = {"get": (ProjectPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         project = self.project
         workflow = (

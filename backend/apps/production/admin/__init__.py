@@ -6,7 +6,7 @@ from .asset import AssetAdmin
 from .automation import AutomationAuditLogAdmin, AutomationRuleAdmin
 from .episode import EpisodeAdmin
 from .media import MediaAdmin
-from .playlist import PlaylistAdmin
+from .playlist import PlaylistAdmin, PlaylistEntryAdmin
 from .project import ProjectAdmin
 from .project_scoped import (
     EditorialCutAdmin,
@@ -15,10 +15,21 @@ from .project_scoped import (
     ProjectNoteAdmin,
     ShowAdmin,
 )
-from .review import ReviewAdmin
+from .review import (
+    ReviewActivityAdmin,
+    ReviewAdmin,
+    ReviewAnnotationAdmin,
+    ReviewCommentAdmin,
+    ReviewItemAdmin,
+    ReviewNoteAdmin,
+    ReviewParticipantAdmin,
+)
 from .sequence import SequenceAdmin
 from .shot import ShotAdmin
+from .shot_asset import ShotAssetAdmin
+from .status_history import StatusHistoryAdmin
 from .task import TaskAdmin
+from .task_template import TaskTemplateAdmin
 from .timelog import TimelogAdmin
 from .version import VersionAdmin
 from .workflow import WorkflowAdmin
@@ -30,13 +41,23 @@ __all__ = [
     "ProjectAdmin",
     "SequenceAdmin",
     "ShotAdmin",
+    "ShotAssetAdmin",
+    "StatusHistoryAdmin",
     "AssetAdmin",
     "TaskAdmin",
+    "TaskTemplateAdmin",
     "TimelogAdmin",
     "VersionAdmin",
     "ReviewAdmin",
     "MediaAdmin",
     "PlaylistAdmin",
+    "PlaylistEntryAdmin",
+    "ReviewActivityAdmin",
+    "ReviewAnnotationAdmin",
+    "ReviewCommentAdmin",
+    "ReviewItemAdmin",
+    "ReviewNoteAdmin",
+    "ReviewParticipantAdmin",
     "WorkflowAdmin",
     "ProjectMembershipAdmin",
     "EditorialCutAdmin",

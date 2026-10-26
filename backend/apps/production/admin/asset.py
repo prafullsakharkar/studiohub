@@ -1,11 +1,12 @@
 from django.contrib import admin
 
 from apps.core.admin.base import StudioHubModelAdmin
+from apps.production.admin.mixins import NoHardDeleteMixin
 from apps.production.models import Asset
 
 
 @admin.register(Asset)
-class AssetAdmin(StudioHubModelAdmin):
+class AssetAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     list_display = (
         "code",
         "name",
@@ -13,13 +14,13 @@ class AssetAdmin(StudioHubModelAdmin):
         "category",
         "status",
         "version",
-        "is_archived",
+        "is_deleted",
     )
 
     list_filter = (
         "category",
         "status",
-        "is_archived",
+        "is_deleted",
     )
 
     search_fields = (

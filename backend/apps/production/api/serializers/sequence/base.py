@@ -10,6 +10,7 @@ class SequenceSerializer(BaseReadSerializer[Any]):
     project_id = serializers.UUIDField(read_only=True)
     project_code = serializers.SerializerMethodField()
     project_name = serializers.SerializerMethodField()
+    episode_id = serializers.UUIDField(read_only=True, allow_null=True)
     shots_count = serializers.SerializerMethodField()
     lead_artist_id = serializers.UUIDField(read_only=True, allow_null=True)
     is_deleted = serializers.BooleanField(read_only=True)
@@ -23,6 +24,7 @@ class SequenceSerializer(BaseReadSerializer[Any]):
             "project_id",
             "project_code",
             "project_name",
+            "episode_id",
             "code",
             "name",
             "status",
@@ -57,9 +59,7 @@ class SequenceSerializer(BaseReadSerializer[Any]):
         return obj.project.name if obj.project else ""
 
     def get_shots_count(self, obj):
-        return (
-            Shot.objects.filter(
-                project=obj.project,
-                sequence_code=obj.code,
-            ).count()
-        )
+        annotated = getattr(obj, "shots_count_annotated", None)
+        if annotated is not None:
+            return annotated
+        return Shot.objects.filter(sequence=obj).count()

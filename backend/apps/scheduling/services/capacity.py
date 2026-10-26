@@ -14,6 +14,7 @@ from apps.scheduling.selectors.capacity import (
     _allocated_hours_by_resource,
     _week_slots,
     current_week_bounds,
+    visible_slots,
     week_bounds_from_date,
 )
 
@@ -50,6 +51,7 @@ def resolve_overbooking(
     organization,
     alert_id: Any,
     resource_id: Any = None,
+    visible_project_ids: Any = None,
 ) -> dict[str, Any] | None:
     """
     Triage an overbooking alert for real.
@@ -57,9 +59,13 @@ def resolve_overbooking(
     Flags the resource's still-`Booked` slots in the alert week as
     `Overbooked` (the model's explicit triage state) so the board surfaces
     them for replanning, and reports the remaining excess. Returns None when
-    the resource does not belong to the organization.
+    the resource does not exist.
+
+    Only bookings the caller may see are flagged (``visible_project_ids``: ``None`` for
+    all, else the caller's project ids); bookings of other projects are left alone but
+    still count toward the excess.
     """
-    from apps.scheduling.models import Resource
+    from apps.scheduling.models import Resource, ResourceSchedule
 
     parsed_id, week_day = _parse_alert(alert_id)
     target_id = resource_id or parsed_id
@@ -92,9 +98,11 @@ def resolve_overbooking(
             "message": f"{resource.name} is already within capacity for the week of {week_label}.",
         }
 
-    flagged = _week_slots(organization, week_start, week_end).filter(
-        resource=resource, status="Booked"
-    ).update(status="Overbooked")
+    flagged = visible_slots(
+        _week_slots(organization, week_start, week_end).filter(resource=resource, status="Booked"),
+        visible_project_ids,
+    )
+    flagged = ResourceSchedule.objects.filter(pk__in=flagged.values("pk")).update(status="Overbooked")
 
     if flagged:
         message = (

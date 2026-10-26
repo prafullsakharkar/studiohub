@@ -111,11 +111,26 @@ class ProjectNoteService(BusinessService):
 
     @classmethod
     def create_note(cls, *, user=None, project, author=None, **fields):
-        """Create a note with server-resolved ownership (author defaults to user)."""
+        """
+        Create a note with server-resolved ownership (author defaults to user).
+
+        The author's name and role are the signed-in user's own (D-30); what a client sends for them is
+        ignored. A note with no user (a seed) keeps the values it was given.
+        """
+        who = author if author is not None else user
+        if who is not None and getattr(who, "pk", None):
+            membership = ProjectMembership.objects.filter(
+                user=who, project=project, status__iexact="active"
+            ).first()
+            fields["author_name"] = (
+                getattr(who, "display_name", "") or getattr(who, "email", "") or ""
+            ).strip()
+            fields["author_role"] = membership.role if membership else ""
+            fields["author_avatar"] = ""
         payload: dict[str, Any] = {
             "user": user,
             "project": project,
-            "author": author if author is not None else user,
+            "author": who,
             **fields,
         }
         return cls.create(**payload)

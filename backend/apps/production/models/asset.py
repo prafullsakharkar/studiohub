@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.db import models
+from django.db.models.functions import Upper
 
 from apps.core.models.bases import EntityModel
 from apps.production.constants import AssetCategory, AssetSoftware, ProductionStatus
@@ -30,6 +31,15 @@ class Asset(EntityModel):
         choices=AssetCategory.choices,
         default=AssetCategory.PROP,
         db_index=True,
+    )
+    # The studio's asset type, from the masterdata catalog. ``category`` stays (the API contract);
+    # rows whose category matched no catalog entry have no type (D-27).
+    asset_type = models.ForeignKey(
+        "masterdata.MasterAssetType",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="assets",
     )
     description = models.TextField(blank=True, default="")
 
@@ -91,8 +101,6 @@ class Asset(EntityModel):
     usd_prim_path = models.CharField(max_length=255, blank=True, default="")
     usd_stage_url = models.URLField(max_length=500, blank=True, default="")
 
-    is_archived = models.BooleanField(default=False, db_index=True)
-
     # Additional metadata for frontend compat
     versions = models.JSONField(default=list, blank=True)
     hierarchy = models.JSONField(default=list, blank=True)
@@ -101,10 +109,14 @@ class Asset(EntityModel):
         db_table = "production_asset"
         ordering = ("code",)
         unique_together = [("project", "code")]
+        constraints = [
+            models.UniqueConstraint(
+                Upper("code"), "project", name="production_asset_project_ucode_uniq"
+            ),
+        ]
         indexes = [
             models.Index(fields=["project", "category"]),
             models.Index(fields=["status"]),
-            models.Index(fields=["is_archived"]),
         ]
 
     def __str__(self):

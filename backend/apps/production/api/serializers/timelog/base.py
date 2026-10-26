@@ -18,6 +18,7 @@ class TimelogSerializer(BaseReadSerializer[Any]):
     person_avatar = serializers.SerializerMethodField()
     person_role = serializers.SerializerMethodField()
     department = serializers.CharField(read_only=True)
+    adjustment_of = serializers.PrimaryKeyRelatedField(read_only=True)
     duration_hours = serializers.DecimalField(
         max_digits=5,
         decimal_places=2,
@@ -53,6 +54,7 @@ class TimelogSerializer(BaseReadSerializer[Any]):
             "notes",
             "status",
             "approved_by_id",
+            "adjustment_of",
             "approved_at",
             "rejection_reason",
             "activity_category",

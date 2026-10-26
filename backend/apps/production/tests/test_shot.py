@@ -437,6 +437,7 @@ class TestShotApprove:
     ):
         shot = ShotFactory.create(
             code="AP01",
+            status="Pending Review",
             pipeline={"layout": "In Progress", "lighting": "Not Started"},
         )
         _member(staff_user, shot.project)

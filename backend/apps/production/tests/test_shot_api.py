@@ -221,7 +221,6 @@ class TestShotEpisodeChainCreate:
             _list_url(),
             {
                 "project_id": str(project.id),
-                "sequence_code": "SQ_FREE",
                 "code": "SH010",
                 "name": "Legacy Free Form",
             },
@@ -230,7 +229,7 @@ class TestShotEpisodeChainCreate:
         assert response.status_code == status.HTTP_201_CREATED, response.data
         shot = Shot.objects.get(code="SH010", project=project)
         assert shot.episode_id is None
-        assert shot.sequence_code == "SQ_FREE"
+        assert shot.sequence_id is None and shot.sequence_code == ""
 
 
 class TestShotEpisodeChainUpdate:

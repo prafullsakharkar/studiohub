@@ -1,0 +1,331 @@
+# Production API contract changes
+
+Every change to a URL, field, status code or permission that a client can observe is recorded here, per phase of `PLAN.md` §4. Same pattern as `docs/identity/CONTRACTS.md`. Branch: `feature/production-hardening`.
+
+## Phase 1 — authorization hot fixes (WP A1, A5, A7)
+
+| ID | Endpoint | Before | After | Client impact |
+|---|---|---|---|---|
+| C-01 | `GET/POST /api/v1/automations/rules/`, `GET/PATCH/PUT/DELETE /api/v1/automations/rules/{id}/`, `GET /api/v1/automations/audit-logs/` | Any authenticated user could read, create, change and delete every project's rules and read every execution log (F-C1). | Needs `automation.view` (GET), `automation.create` (POST), `automation.update` (PATCH/PUT), `automation.delete` (DELETE) **and** an active membership of the rule's project. A rule outside the caller's projects answers **404**, exactly like an unknown id. Rules without a project (platform-global) are visible and writable by platform admins only. | A user without the codes gets 403 (was 200). Lists shrink to member projects. |
+| C-01a | `POST /api/v1/automations/rules/` | `project` came only from `workflow_id`. | New optional body field `project_id` (UUID, code or mock id). A project is **required** unless the caller is a platform admin or `workflow_id` resolves to a workflow that has one. A project the caller cannot use and an unknown project give the same **400** `{"project_id": ["Unknown project."]}`; a missing project gives `{"project_id": ["A project is required."]}`. | Clients that created rules without a project must send `project_id`. |
+| C-01b | `workflow_id` on rules | Resolved globally; any workflow could be linked. | Resolved inside the caller's projects and, when the rule has a project, inside that project. Unknown, foreign and wrong-project workflows give **400** `{"workflow_id": ["Unknown workflow."]}`. Non-UUID values (`wf-001`) are still ignored, as before. | none for valid input |
+| C-02 | `/api/organizations/projects/{project}/{members,summary,dashboard,sequences,shots,tasks,assets,versions,reviews,editorial,notes,deliveries,schedule,resources,pipeline,files,activity}` | Membership only. A non-member got **403**, an unknown project 404, which confirmed that a project exists (F-M12). | Needs the permission code of the matching flat endpoint (below) **and** membership. The code is checked first and does not depend on the project. A non-member and an unknown project both answer **404**. | Non-member 403 → 404. Callers without a code get 403 (was 200). |
+| C-02a | `POST .../notes` | Any member. | Needs `note.create`. | |
+| C-02b | `POST .../members` | Platform admin only. | Unchanged, plus the `project.update` code. | none for admins |
+| C-03 | Role catalog (`manage.py init_platform`) | `sequence.view`, `version.view`, `media.view` were enforced by the flat endpoints but granted to no seeded role. | Added to the catalog and granted to every seeded production role. New: `automation.{view,create,update,delete}` (production-admin, vfx-supervisor, org-admin) and `note.create` (all production roles). | **Run `uv run python manage.py init_platform` on every database after deploying.** It only adds missing rows; role edits made since are kept. Until then non-admin users get 403 on automation and notes. |
+| C-04 | `GET /api/v1/analytics/kpis/`, `GET /api/v1/analytics/departments/` | Counted every project for any authenticated user (F-M13). | Counts only the caller's member projects. Platform admins and superusers still count everything. | Dashboards of non-admins show smaller numbers. No permission code is added (`analytics.view` is not seeded). |
+| C-05 | `episode_id` on shot create/update | Resolved by code across **all** projects, so `EP101` could match another project's episode (F-H6). | Resolved inside the shot's project. A foreign or unknown episode gives the same **400** `{"episode_id": ["Unknown episode."]}` (the message "Episode does not belong to the selected project." is gone). | none for valid input |
+| C-05a | `GET /api/v1/shots/?episode_id=` | Resolved to one global episode, then filtered. | Matches by id or code (case-insensitive, mock id `ep-101` supported) among the shots the caller can see. `EP101` returns one shot set per visible project; combine with `project_id` to narrow. Unknown values return an empty list. | Lists without `project_id` now include every visible project's `EP101`. |
+
+### Permission code per nested route (GET)
+
+| Route | Code | Route | Code |
+|---|---|---|---|
+| members, summary, dashboard, pipeline, notes | `project.view` | sequences | `sequence.view` |
+| shots | `shot.view` | tasks, resources | `task.view` |
+| assets | `asset.view` | versions | `version.view` |
+| reviews | `review.view` | editorial | `track.view` |
+| deliveries | `delivery.view` | files | `media.view` |
+| activity | `audit.view` | schedule | `schedule.view` |
+
+### Frontend change list
+
+1. Send `project_id` when creating an automation rule.
+2. Treat 404 on `/api/organizations/projects/{project}/...` as "no access or unknown" (it used to be 403 for non-members).
+3. Expect smaller analytics numbers for non-admin users.
+
+## Phase 2 — write-path integrity (WP A2, A3, A8, G2)
+
+Decisions behind this phase: Q13 = **400** for fields that now have a dedicated action. For `status` and `pipeline` the plan locked the field, but no action exists yet to move a shot or version through its non-approval statuses (that is P3/D4). The owner chose to **guard the privileged value instead of locking the field**, so no frontend flow breaks before P3. `client_approved` is guarded the same way because it has no action either.
+
+| ID | Endpoint | Before | After | Client impact |
+|---|---|---|---|---|
+| C-06 | Create/update of Shot, Version, Review, Task (and bulk-update) | `supervisor_approved`, `is_published`, `is_hero`, `supervisor_verdict`, `is_archived`, `logged_hours` could be written by anyone holding `*.update`/`*.create` (F-H1). | Sending one with a value different from the stored one (on create: different from the default) is **400** `{"<field>": ["Cannot be set directly. <hint>"]}`. Echoing the stored value, as a full PUT does, is accepted and ignored. Fields stay in responses. Dedicated paths: shot `approve`; version `publish`/`unpublish`/`promote`; review `verdict`; task `archive`/`restore`; `logged_hours` has none until the timelog rollup (P3/F2). | Clients that PATCH these fields get 400; use the action. |
+| C-07 | Create/update of Shot, Version, Review, Timelog (and bulk-update) | `status` and Shot `pipeline`/`client_approved` writable by anyone holding `*.update`. | Setting, or moving away from, a privileged value needs its code on top of `*.update`/`*.create`; otherwise **403** `Changing <field> to or from '<value>' requires <code>.` Shot `status`/`pipeline` step `Approved` and `client_approved=true`: `shot.approve`. Version `status=Approved`: `version.publish`. Review `status` in Approved, Rejected, Changes Requested, Retake: `review.approve`. Timelog `status` in Approved, Rejected: `timelog.approve`. In bulk-update the item reports `invalid` with `{"detail": ...}`. | Ordinary status changes still work. Approvals need the approve code. |
+| C-08 | `POST /versions/` | `shot`, `asset`, `task`, `artist` accepted any record (F-H2). | The record must belong to the version's project (artist: active member). Unknown, foreign and cross-project ids give the same **400** `{"<field>": ["Unknown <label>."]}`. | none for valid input |
+| C-08a | `POST /timelogs/` | Task resolved among all projects, including by `task_code`; `person` could be anyone (F-H4). | Tasks resolve only among the caller's member projects and the project comes from the task. `person` must be the caller unless the caller holds the new `timelog.manage` (**403**), and then must be a project member (**400**). | Logging for others needs `timelog.manage`. |
+| C-08b | `POST /timelogs/{id}/approve/`, `/reject/` | Anyone with `timelog.approve`, including on their own log. | **403** when the caller is the timelog's person (superusers excepted). | A second approver is needed. |
+| C-08c | `POST /versions/{id}/add-to-playlist/` | `Playlist.objects.get` unscoped, errors swallowed (F-H8). | Needs `version.update` **and** `playlist.update`. The playlist must belong to the version's project, else **400** `{"playlist_id": ["Unknown playlist."]}`. Both JSON writes happen in one transaction and nothing is swallowed. | none for valid input |
+| C-08d | `POST /playlists/{id}/add-entry/`, `/reorder/` | Entries stored as sent, including `id`/`item_order` and any `version_id`. | `version_id` must be a version of the playlist's project (**400**). `id` and `item_order` are assigned by the server. `reorder` only arranges entries the playlist already has (**400** `{"entries": ["Unknown entry."]}` otherwise) and renumbers `item_order`; other keys sent in `entries` are ignored. | Clients must not use reorder to edit entries. |
+| C-08e | Task create/update, `POST /tasks/bulk-assign/` | `assignee`/`reviewer` any user; bulk-assign checked the wrong project set (F-M3). | Assignee and reviewer must be active members of the task's project (platform admins pass). Bulk-assign checks the assignee against the project of every selected task and changes nothing otherwise (**400**). | none for valid input |
+| C-09 | Bodies of custom actions (G2): task `bulk-assign`, `bulk-status`, `bulk-delete`; version `publish`, `add-to-playlist`; timelog `reject`; playlist `add-entry`, `remove-entry`, `reorder`, `share`; review `submit`, `start-review`, `approve`, `reject`, `request-changes`, `close`, `verdict`, `annotations`, `comments`, `notes`, `participant-verdict`; `POST /scheduling/resolve-overbooking/` | Read with `request.data.get(...)`; unknown keys merged into stored JSON or ignored. | Validated by `api/serializers/actions.py` and shown in OpenAPI. Closed bodies reject undeclared keys with **400** `{"<key>": ["Unknown field."]}`. Free-form blobs (publishing info, playlist entries, share settings) type their known keys and keep the rest. `task_ids`/`assignee_id`/`team_id`/`playlist_id` must be UUIDs. A missing `status` on `bulk-status` is now `{"status": ["This field is required."]}` (was `{"detail": "status is required."}`). | Clients sending extra keys to these actions get 400. |
+| C-10 | `POST .../bulk-update/` on shots, assets, tasks, sequences, episodes | Items validated by the update serializer only. | Items also pass the reference checks and privileged-value guard of C-06 to C-08; a rejected item reports `invalid`. | none for valid input |
+
+Other changes with no client-visible effect: the unrouted scheduling stub views (events, resources, holidays, leaves) are deleted; `DummySerializer` is gone; `BulkOperationService.bulk_update` takes a `validate` callable instead of importing API serializers; the unused `ProductionEntityModel` base class is deleted (`Project` extends `EntityModel`; no migration).
+
+### Seed (extends C-03)
+
+`timelog.manage` is added to the catalog and to production-admin, vfx-supervisor and org-admin. Re-run `uv run python manage.py init_platform`. The other `timelog.*` codes are still not seeded to any role (see the open note in the P2 report).
+
+### Frontend change list (adds to Phase 1)
+
+4. Stop sending `supervisor_approved`, `is_published`, `is_hero`, `supervisor_verdict`, `is_archived`, `logged_hours` on create/update; call the action. A full PUT that echoes stored values is fine.
+5. Approvals (`status: "Approved"`, `client_approved`) through PATCH now need the approve code; show the 403 message.
+6. Do not rely on `playlists/{id}/reorder/` to edit entries.
+7. Remove unknown keys from the action bodies listed in C-09.
+
+## Phase 3 — services first (WP A4, A6, D4, D5, F2)
+
+Decisions behind this phase: Q17 = **yes** (the generic bulk whitelist in `apps/core` and change tracking in `apps/audit` may change). Q7 (fixed maps or per-project status lists) and Q14 (creator's role) are unanswered; this phase uses the plan's MVP defaults and says so below.
+
+| ID | Endpoint | Before | After | Client impact |
+|---|---|---|---|---|
+| C-11 | Any change of `status` on Shot, Task, Version, Review, Timelog: `PATCH`/`PUT`, bulk-update, the actions (`approve`, `promote`, review actions, timelog `approve`/`reject`), `archive`/`restore` | Written directly, many places, no record (F-M5). | One service, `StatusService.transition_status`: the move must be allowed by `constants/workflow.py` (**400** `{"status": ["A shot cannot move from 'X' to 'Y'."]}`, or `Unknown status`), the caller needs the code for entering/leaving Approved etc. (**403**), a row is appended to `StatusHistory` and `StatusChanged` is published. Moving to the current status is a no-op. In bulk-update an item that fails reports `invalid`. | Illegal moves now fail (see below). |
+| C-11a | `GET /{shots,tasks,versions,reviews,timelogs}/{id}/status-history/` (new) | none | The record's status changes, newest first: `from_status`, `to_status`, `reason`, `actor_id`, `actor_name`, `changed_at`. Needs the entity's `*.view` code and membership. | New endpoint. |
+| C-11b | `POST /timelogs/{id}/approve/`, `/reject/` | Any current status. | Approve and reject only from `Submitted` (from `Draft`, `Rejected` or `Approved` they are 400); `Approved` is final. | A second decision on an approved timelog is 400. |
+| C-11c | Review actions | Any status to any status. | `Closed` is final; the rest may move among the open statuses and to `Closed`. | Reopening a closed review is 400. |
+| C-12 | Every create and update through the API | `created_by`/`updated_by` stayed empty (F-M6). | The services receive the user, so both are set. | none |
+| C-12a | `POST /projects/` | Not atomic; the creator was not a member and could not see the project (F-M9). | One transaction: project, the creator's membership (role `Production Admin`, linked to the `production-admin` role when it exists; platform admins get none) and, for episodic projects, `EP101`. A failure leaves nothing. | The creator sees the new project. |
+| C-13 | `POST .../bulk-create/` on shots, assets, tasks, sequences, episodes | Items went to `create()` unchecked; the form path accepted every model field (`is_deleted`, `created_by_id` ...); errors returned `str(exc)` (F-H5). | Every item is validated by the entity's create serializer and by the same checks as a single create (episode/sequence chain, same-project references, locked fields, privileged status). The form path only accepts the serializer's writable fields. A rejected item reports `invalid` with the serializer errors. Unexpected failures report `The item could not be created.`; the reason is only logged. | Items that were silently accepted may now be `invalid`. |
+| C-14 | `POST /tasks/bulk-status/` | `queryset.update`, no history, always `success: true`. | One transition per task. Response keeps `success` and `updated_count`, adds `failed_count` and `results[]` (`id`, `status` = `updated` / `not_found` / `invalid`, `error`). `success` is `false` when any item failed. | Read `results`. |
+| C-14a | `POST /tasks/bulk-assign/` | Looped inline. | Same checks as before (P2), written through `TaskService.assign_task`; response adds `results[]`. | none |
+| C-15 | Change log (`apps/audit`) | Shot, Sequence, Asset, Task, Version, Project; foreign-key swaps untracked; JSON columns (e.g. a shot's `pipeline`) showed as changed on every save. | Also Episode, Review, Timelog, ProjectMembership. For production models a changed foreign key (`episode_id`, `assignee_id`, `reviewer_id` ...) appears in `changed_fields`; `created_by`/`updated_by` never do. JSON columns compare in one text form, so unchanged ones no longer log. Other apps are unchanged. | Fewer, more accurate change-log rows. |
+
+### Transition maps (`apps/production/constants/workflow.py`)
+
+* **Shot:** live statuses move freely except the listed restrictions: `Approved` may be entered from any live status and left only to `In Progress`, `Retake`, `On Hold`, `Archived`; `Archived` leaves only to `Not Started` or `In Progress`.
+* **Task, Version:** any live status to any other and to `Archived`; `Archived` to `Not Started` or `In Progress`.
+* **Review:** open statuses to each other and to `Closed`/`Archived`; `Closed` is final.
+* **Timelog:** `Draft` to `Submitted`; `Submitted` to `Approved`, `Rejected` or `Draft`; `Rejected` to `Submitted` or `Draft`; `Approved` is final.
+* **Permissions on top of `*.update`:** entering or leaving Approved needs `shot.approve` (shot) or `version.publish` (version); entering Approved, Rejected, Changes Requested, Retake needs `review.approve`; entering Approved or Rejected needs `timelog.approve`.
+* The maps are deliberately loose for tasks, versions and live shots until Q7 is answered; tightening them is a change to this one file. Separation of duties (an approver who is also the artist) is **not** enforced yet.
+
+### Frontend change list (adds to Phase 2)
+
+8. Handle `400 {"status": [...]}` for an illegal move and `403` for a missing approve/publish code on status changes.
+9. `bulk-status`: read `results` and `failed_count`; `success` can now be `false`.
+10. `GET .../status-history/` is available for the five entities.
+11. `POST /projects/` makes the caller a member; do not add them again.
+
+
+## Phase 3 follow-up — workflow fences, separation of duties, timelog rules, role matrix
+
+Decisions: `DECISIONS.md` D-03 to D-08. Migration `0024` (additive): `StatusHistory.override_kind`, `Timelog.adjustment_of`.
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-16 | Status moves (all paths) | Loose maps (P3). | Fenced maps: Approved from Pending Review only and left only to Archived; Archived, Closed (review), Approved (timelog) final; published version frozen; **400** `{"status": [...]}`. `production.status.override` + `override_reason` crosses a fence (400 `override_reason` when the reason is missing); recorded. Bulk never overrides. |
+| C-16a | `POST .../{id}/restore/` | Left status "Archived". | Returns the record to the status it had before archiving. |
+| C-17 | Approvals of timelogs, reviews, versions | Anyone with the approve code (timelogs: not on own log, superuser excepted). | **403** `separation_of_duties` when the actor produced the work; every path; `production.sod.override` + `override_reason` is the only way through (superuser does not imply it). Actions accept an optional `override_reason` body field. |
+| C-17a | `approve` / `reject` actions | A repeated decision was a no-op or an invalid move. | The same status again is **409** (someone else decided first); exactly one history row. |
+| C-18 | `POST /timelogs/{id}/reject/` | Reason optional. | `rejection_reason` required (400). |
+| C-18a | `PATCH`, `DELETE`, `archive` of an Approved timelog | Allowed. | **409**; correct with a new entry. |
+| C-18b | `POST /timelogs/` | none | Optional `adjustment_of` (an approved timelog of the same project and person; non-zero, possibly negative hours). `adjustment_of` appears in timelog responses. |
+| C-18c | `GET /timelogs/` and every timelog action | Whole project for `timelog.view`. | Own timelogs for `timelog.view`; the project's with the new `timelog.view_all`. Others' logs are 404. |
+| C-19 | `POST /tasks/bulk-status/` | 200, `success`, `updated_count`, `failed_count`, `results[]` with `status`. | 1 to 100 ids; **200** all ok / **207** partial; `results[]` is `id`, `ok`, `error` (`null` / `not_found` / `invalid_transition`); a task the caller cannot reach is `not_found`, like a missing one. |
+| C-20 | Role catalog (`init_platform`) | Many enforced codes granted to no role. | See DECISIONS D-07. New codes: `timelog.view_all`, `production.status.override`, `production.sod.override` (the last two granted to nobody). **Re-run `init_platform`.** Existing extra grants are kept. |
+
+Frontend: read `failed_count` / `results` from `bulk-status` and handle 207; the shot and version status selectors must offer only legal moves (see DECISIONS D-03 for the call sites); show 403 `separation_of_duties`; stop editing approved timelogs; use `adjustment_of`.
+
+
+## Scheduling endpoints (D-09)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-21 | `GET /api/v1/scheduling/capacity/`, `GET /api/v1/scheduling/overbooking/` | Any authenticated user. | Needs `schedule.view` (**403** without). |
+| C-21a | `POST /api/v1/scheduling/resolve-overbooking/` | Any authenticated user flagged any resource's bookings. | Needs `schedule.update` (**403**). Flags only bookings of the caller's projects and studio-wide ones. |
+| C-21b | `conflicting_events` of an overbooking alert | Titles and project codes of every project's bookings. | Other projects' bookings are listed anonymously (`title` "Booked on another project", `project_code` null); hours and the excess are unchanged. |
+
+Frontend: users without `schedule.view` now get 403 on the scheduling board; the seeded lead-artist and artist roles hold it (re-run `init_platform` on older databases that predate it).
+
+## Codes, frame ranges and shot sequences (D-10, D-11)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-22 | `code` on episode, sequence, shot, asset, task, version (create, update, bulk import) | Any string, unique per project by exact case. | Trimmed and **upper-cased**; unique per project **ignoring case**; whitespace or `/` is a **400**. A duplicate is the same 400 as before. |
+| C-22a | `PATCH` shot or asset `code` after the entity has a version | Accepted. | **400** "frozen once a version exists. Use the rename-code action." |
+| C-22b | `POST /api/v1/shots/{id}/rename-code/`, `POST /api/v1/assets/{id}/rename-code/` | Did not exist. | Body `{"code": "..."}`; needs `production.code.rename` (**403** without; seeded to production-admin only). Returns the entity. Copies of the code on tasks, versions and reviews follow. |
+| C-23 | `frame_in` / `frame_out` (episode, sequence, shot), `start_frame` / `end_frame` (version) | Any numbers. | `out < in` is a **400** on the field. A database check also holds. |
+| C-24 | `sequence_code` on shot create/update | Free text. | Read-only: sending it is a **400** ("Use sequence_id."). Still returned. |
+| C-24a | `sequence_id` on shot create/update | Did not exist. | Optional; an id or a code of the shot's project (any case); null or "" clears it; an unknown one is a **400**. |
+| C-24b | Shot responses | `sequence_code` only. | Also `sequence_id` (null when the shot has no sequence). |
+| C-24c | `GET /api/v1/shots/?sequence_id=` | Did not exist. | Filters by id or by code. The existing `sequence_code` filter keeps working. |
+| C-24d | `shots_count` on a sequence | Counted by text. | Counts the sequence's live shots by foreign key. |
+
+Frontend change list: send `sequence_id`, never `sequence_code`; expect codes in upper case in every response and form; a rename of a shot/asset code after its first version goes through the rename action; show the field error for out-of-order frame ranges.
+
+Deploy: run `manage.py report_production_data` on each shared database before migrating (0025 refuses on conflicts and says which rows), then `init_platform` to seed `production.code.rename`.
+
+## Sequence episode, archive guard, creator (D-12, D-13, D-14)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-25 | `episode_id` on sequence create/update | Did not exist. | Optional write alias (id or code of an episode of the project). Episodic project: required on create, cannot be cleared; unknown or other-project episode is a **400** "Unknown episode.". Standard project: a non-empty value is a **400**; empty is accepted. |
+| C-25a | Sequence responses | No episode. | Also `episode_id` (null on older rows and standard projects). |
+| C-25b | `GET /api/v1/sequences/?episode_id=` | Did not exist. | Filters by id or by episode code. |
+| C-25c | Shot create/update `episode_id` with a `sequence_id` whose sequence has an episode | Any episode of the project. | A different episode is a **400** ("The episode must be the episode of the sequence."); omitted takes the sequence's. Moving the shot to another sequence moves its episode. |
+| C-25d | `PATCH` a sequence's `episode_id` | n/a | Its shots (archived ones too) move to the new episode. |
+| C-26 | `DELETE /sequences/{id}/`, `POST /sequences/{id}/archive/`, `/episodes/{id}/` the same | Archived whatever was inside. | **400** while it has live shots (episodes: live sequences or shots), naming them. The row is left unchanged. |
+| C-26a | `POST /sequences/bulk-archive/`, `/episodes/bulk-archive/` | Every found id archived. | An item with live children reports status `has_children` and counts as failed (`partial_success` true); the other items are archived. |
+| C-27 | `POST /organizations/projects/{id}/members/` | Platform admins only. | Also the person who created that project, when their role holds `project.update`. Message for others: "Only platform admins or the project's creator may manage project members." (**403**). |
+
+Frontend change list: send `episode_id` when creating a sequence on an episodic project and pick it in the sequence form; read `episode_id` from sequence responses; archive shots before their sequence and sequences before their episode (or handle the 400 / `has_children`); do not send an episode for a sequence of a standard project.
+
+Deploy: run `manage.py report_production_data` after migrating: it now also lists sequences of episodic projects with no episode and shots whose episode differs from their sequence's. Migrations 0028 (column) and 0029 (fill) change no existing shot.
+
+## Derived hours and current version (D-15, D-16)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-28 | `logged_hours` on every task response | A stored number nothing maintained (0 unless seeded or typed before P2). | The sum of the task's **approved** timelogs, two decimals as text as before. |
+| C-28a | `pending_hours` on every task response | Did not exist. | The sum of the task's **submitted** timelogs. Read-only. |
+| C-28b | `logged_hours` sent on task create/update | **400** when different from the stored value. | **400** when different from the derived value; echoing it is accepted. |
+| C-28c | `GET /organizations/projects/{id}/resources` `hours_logged` | Sum of the stored numbers. | Sum of approved timelogs. |
+| C-29 | `current_version` on every shot response | A stored text, default "v001", writable. | The latest published version's number, else the latest version's, else "". Read-only. |
+| C-29a | `current_version_id` on every shot response | Did not exist. | The id of that version, or null. |
+| C-29b | `current_version` sent on shot create/update | Stored as typed. | **400** when different from the derived value; on create "" and "v001" are accepted and ignored. |
+| C-29c | `recent_shots[].current_version` of the project dashboard | The stored text. | The derived value; omitted when empty (as before). |
+
+Frontend change list: show `pending_hours` next to `logged_hours` (hours awaiting approval); stop sending `logged_hours` and `current_version`; treat an empty `current_version` as "no versions yet" instead of "v001"; read `current_version_id` to link to the version.
+
+Deploy: run `manage.py report_production_data` and look at "Tasks whose stored hours differ": those numbers will no longer be shown. Nothing is changed in the database by this phase (no migration).
+
+## Scheduling leave requests (D-20)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-30 | `POST /api/v1/scheduling/leaves/` | `status`, `approved_by`, `approved_at`, `total_days` were accepted as sent. | Always Pending; `total_days` computed (inclusive); any decision field or a different `total_days` is a **400**; `end_date` before `start_date` is a **400**. |
+| C-30a | `PATCH`/`PUT /leaves/{id}/` | Any field, any state. | **400** unless the leave is Pending; decision fields as above. |
+| C-30b | `POST /leaves/{id}/approve/` | Any state, any approver; `approved_at` was the row's last update time. | Pending only (**400** otherwise); the leave's own person gets **403**; `approved_by` / `approved_at` are the actor and now. |
+| C-30c | `POST /leaves/{id}/reject/` | Any state; nobody recorded. | Pending only (**400**); own leave **403**; reason required (**400**); records `rejected_by` and `rejected_at`. |
+| C-30d | Leave responses | Everyone with `schedule.view` saw `reason`. | Also `rejected_by`, `rejected_at`. `reason` and `rejection_reason` are "" unless the caller is the person it is for, holds `schedule.update`, or is a superuser. |
+
+Frontend change list: treat `status`, the decision fields and `total_days` as read-only on the leave form; do not send them; show the reason only when it comes back non-empty; handle the 403 when a manager decides their own leave and the 400 when a leave was already decided.
+
+## Scheduling visibility (D-21)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-31 | `GET/PATCH/DELETE /api/v1/scheduling/events/...`, `POST .../update-status/` | Every event for any `schedule.view` holder. | Only events the caller may see by `visibility` and project membership; others are a **404**. Lists are narrower. |
+| C-31a | `event_title`, `task_title`, `notes` on `/scheduling/schedules/` | Always the real values. | "Booked on another project" and "" when the linked event or task is out of the caller's scope. |
+| C-31b | `hourly_rate_usd`, `user_email` on `/scheduling/resources/` (list and detail) | Real values for every `schedule.view` holder. | `null` and "" unless the caller holds `schedule.view_rates`, is a superuser, or is that person. |
+| C-31c | New permission code `schedule.view_rates` | n/a | In the catalog; granted to production-admin, vfx-supervisor, org-admin. Run `init_platform`. |
+
+Frontend change list: expect fewer events in the calendar for non-members; show a placeholder when a rate is `null`; hide the cost columns of the resource planner for roles without the code; do not treat "Booked on another project" as a real title.
+
+## Scheduling write checks (D-22)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-32 | `PATCH`/`PUT /scheduling/events/{id}/`, `/scheduling/resources/{id}/` | **500**. | Work; answer with the detail shape. |
+| C-32a | `POST /scheduling/events/` | Any `project_id`; an unknown one ignored. | Project must be the caller's (**400** "Unknown project."); end before start is a **400**. |
+| C-32b | `POST .../events/{id}/update-status/`, `status` in a `PATCH` | Any text; any move. | Known statuses only; Completed and Cancelled cannot change (**400**). |
+| C-32c | `event` / `task` on `/scheduling/schedules/` and `event_id` / `task_id` on `.../resources/{id}/book/` | Any id; titles of foreign tasks came back. | **400** "Unknown event." / "Unknown task." for missing, malformed and out-of-scope alike. |
+| C-32d | `POST .../resources/{id}/book/`, `.../block/` | Free-text status; end before start; bad times sometimes a 500. | Status from the booking statuses; end before start and unparseable times are a **400**; nothing stored. |
+| C-32e | `POST /scheduling/resources/` | A duplicate code was a **500**; unknown `user_id` / `department_id` / `team_id` were dropped. | Duplicate code **400** (any case); unknown links **400**. |
+
+Frontend change list: edit forms for events and resources can be used; offer only the project the user belongs to; disable status changes out of Completed or Cancelled; show field errors for the new 400s.
+
+## Numbered codes, episode codes, protected history (D-23, D-24)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-33 | `POST /api/v1/<entity>/bulk-create/` items | A missing `code` was "Code is required." | An item with `code_prefix` instead of `code` gets the next number (`SH0010`, `SH0020`, ...) of that series in its project; a bad prefix reports `invalid` for that item only. |
+| C-33a | `code` derived on `POST /episodes/` without a code | `EP{season}{episode:02d}`, ambiguous above season 9 or episode 99. | Same for season 0 to 9 and episode 0 to 99; otherwise `EP{season:02d}{episode:03d}`; out of range is a **400** "code is required". |
+| C-34 | Deleting a project (hard) with tasks, versions, time logs, reviews or notes; deleting a person with time logged | Everything went with it. | Refused (not reachable through the API, which only archives); the Django admin offers no delete for production rows. |
+
+Frontend change list: bulk import can send `code_prefix` instead of `code`; the episode form may show the 7-character code for seasons above 9; nothing else changes.
+
+## One archive marker (D-25)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-35 | `is_archived` in task, asset, version, playlist and workflow responses | A stored flag. | Derived: true exactly when the row is archived (soft-deleted). Read-only. |
+| C-35a | `is_archived` sent on create/update (asset, version, playlist, task) | Accepted as typed (task: 400 when changed). | **400** "Cannot be set directly. Use the archive and restore actions." when different from the current value; echoing it is fine. |
+| C-35b | `POST /versions/{id}/archive/`, `POST /workflows/{id}/archive/`, `POST /playlists/{id}/archive/` | Set the flag only; the row stayed in lists. | Soft-delete the row (it leaves default lists). `POST .../restore/` brings it back (a workflow stays inactive; a playlist is "Active"). |
+| C-35c | `GET .../?is_archived=true` / `false` (all five lists) | Tasks and versions: filter on the flag. Others: ignored. | Archived / live rows by the soft delete. `true` needs the delete grant for that resource, otherwise empty. |
+| C-35d | Existing rows with the flag set and not soft-deleted | Visible in lists. | Soft-deleted by migration 0031: gone from default lists, shown with `is_archived=true`. |
+
+Frontend change list: stop sending `is_archived`; use the archive and restore actions for versions, playlists and workflows; show archived items from `?is_archived=true`; expect archived versions, playlists and workflows to leave the default lists.
+
+## Shot to asset links (D-26)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-36 | `GET /api/v1/shots/{id}/assets/` | Did not exist. | The shot's live asset links: `id`, `shot_id`, `asset_id`, `asset_code`, `asset_name`, `asset_category`, `asset_status`, `thumbnail_url`, `quantity`, `notes`, `created_at`; by asset code, bare array. Needs `shot.view` and `asset.view`. |
+| C-36a | `POST /api/v1/shots/{id}/assets/` | Did not exist. | Body `{"asset_id": <id or code>, "quantity": 1, "notes": ""}`; **201** with the link; **400** for an unknown, foreign or archived asset ("Unknown asset."), a repeat link ("already linked"), `quantity` below 1 or an unknown key. Needs `shot.update` and `asset.view`. |
+| C-36b | `PATCH`, `DELETE /api/v1/shots/{id}/assets/{asset id or code}/` | Did not exist. | Change quantity or note (200) / unlink (204); **404** if not linked. Needs `shot.update`. |
+| C-36c | `GET /api/v1/assets/{id}/shots/` | Did not exist. | The shots using the asset: `id`, `asset_id`, `shot_id`, `shot_code`, `shot_name`, `shot_status`, `quantity`, `notes`, `created_at`. Needs `asset.view` and `shot.view`. |
+
+Frontend change list: a "Assets" tab on the shot and a "Used in" list on the asset can now be built on these; offer only assets of the shot's project; show 400 messages for duplicates and unknown assets; hide the link controls for roles without `shot.update`.
+
+## Task types, templates, asset types, parent assets (D-27)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-37 | `task_type_id` on task create/update; `task_type_id`, `task_type_code`, `task_type_name` in task responses | Did not exist. | Optional catalog task type by id or code (**400** "Unknown task type." for missing or archived; `""` clears). A blank `department` is filled from the type. `null` / `""` on tasks that have none. |
+| C-37a | `asset_type_id` on asset create/update; `asset_type_id`, `asset_type_code`, `asset_type_name` in asset responses | Did not exist. | Same pattern ("Unknown asset type."). `category` is unchanged. |
+| C-37b | `parent_asset` on asset create/update | Any asset id, even of another project or a loop. | Same project only (**400** "Unknown parent asset."); an asset as its own ancestor is a **400**. |
+| C-38 | `GET/POST /api/v1/task-templates/`, `GET/PATCH/PUT/DELETE /api/v1/task-templates/{id}/` | Did not exist. | Template with `scope` ("studio" or "project"), `items[]`; filters `entity_type`, `is_active`, `project_id`, `studio`; paginated like other lists. Studio-wide writes need `tasktemplate.manage_studio` (**403**); a project the caller is not in is a **400** "Unknown project."; a clashing name, unknown or archived task type, a repeated item, a negative bid or an unknown key is a **400**. `DELETE` archives. |
+| C-38a | `POST /api/v1/task-templates/{id}/apply/` body `{"project_id"?, "entity_id"}` | Did not exist. | `{"created": [...], "existing": [...]}`; **201** when tasks were created else **200**. **400** for an entity that is missing, archived, of another project or the other kind; a switched-off template; a project other than the template's. Needs `tasktemplate.view` and `task.create`. |
+| C-38b | `POST /api/v1/task-templates/{id}/copy-to-project/` body `{"project_id", "name"?}` | Did not exist. | **201** with the copy; **400** on a name clash in the target. Needs `tasktemplate.create`. |
+| C-39 | Permission codes `tasktemplate.view|create|update|delete|manage_studio` | Did not exist. | In the catalog; full roles hold all, lead-artist and artist `view`. Run `init_platform`. |
+
+Frontend change list: a task-type picker on the task form (from the masterdata task type catalog) and an asset-type picker on the asset form; a templates screen with studio and project scopes and an "Apply template" button on shots and assets; a "Copy to project" action on studio templates; show the new 400 messages; do not offer a parent from another project.
+
+## What a task is about (D-28)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-40 | `entity_type`, `entity_id` on task create/update (single and bulk) | Free text; anything accepted. | `entity_id` is an id or code of a live shot, asset or sequence of the task's project (**400** "Unknown shot." / "asset" / "sequence" otherwise); unknown `entity_type` is a **400**; an empty `entity_id` makes it a General task. An id with no type means a shot. |
+| C-40a | `entity_code`, `entity_name` on task create/update | Free text. | Derived from the linked record; **400** if they disagree with it; ignored when equal. |
+| C-40b | `shot_id`, `asset_id`, `sequence_id` in task responses | Did not exist. | The link (null when none, and on older tasks that could not be matched). |
+| C-40c | `GET /api/v1/tasks/?shot_id=`, `asset_id=`, `sequence_id=` | Did not exist. | By id or code of the record. |
+| C-40d | Existing tasks | Free text only. | Linked by migration 0036 where the text provably names a record of the task's project; the rest unchanged and listed by `report_production_data`. |
+
+Frontend change list: the task form's entity picker must send a real shot, asset or sequence of the task's project (id or code), or nothing for a project-level task; do not send `entity_code` / `entity_name` (or send the record's own); handle the new 400s; read `shot_id` / `asset_id` / `sequence_id` to link to the record; tasks from before may show no link until fixed by hand.
+
+## Versions (D-29)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-41 | `POST /api/v1/versions/` | `version_number` and `code` typed by the client; `version_index` stayed 1. | `version_number` / `version_index` assigned by the server inside the task's (or shot's, or asset's) series, any `version_number` sent is ignored; `code` optional (derived `<entity>_<step>_V###`). A shot and an asset together, or a shot or asset that disagrees with the task's, is a **400**; `entity_*` text that disagrees with the shot or asset is a **400**. A task alone gives the version its shot or asset. |
+| C-41a | `version_number` on update | Writable. | Read-only: **400** if changed. |
+| C-41b | `POST /versions/{id}/publish/` | Any status; the body's `published_at` was kept. | **400** unless the version is Approved or if already published; sets `published_at` (server time) and `published_by`; both in responses (`published_at`, `published_by_id`). |
+| C-41c | `POST /versions/{id}/unpublish/` | Always 200. | **400** if not published; clears `published_at` / `published_by`. |
+| C-41d | `PATCH`/`PUT /versions/{id}/` of a published version | Any field. | Only `notes` and `tags` may change (**400** with the field names); echoing current values is accepted. |
+| C-41e | `POST /versions/{id}/archive/`, `DELETE /versions/{id}/` of a published version | Allowed. | **400** "Unpublish it first." |
+| C-41f | `POST /versions/{id}/promote/` | Set `is_hero`, left the previous hero set. | Demotes the shot's or asset's previous hero in the same transaction; **400** for a version of neither. |
+| C-41g | Existing versions | Free numbers. | Migration 0038/0039: numbered per series, project required; refused with a list if it finds a version with both shot and asset, several live heroes on one shot or asset, or no derivable project. |
+
+Frontend change list: stop sending `version_number` (show the server's) and let `code` be blank; handle the new 400s on publish (only approved versions), edit (published versions: notes and tags only) and archive; show `published_at` / `published_by_id`; demote the old hero in the UI after a promote (the server already has).
+
+## Reviews (D-30)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-42 | `GET /api/v1/reviews/`, `/reviews/{id}/` : `versions`, `reviewers`, `comments`, `notes`, `annotations`, `activity` | Stored JSON lists. | Built from rows with the same keys; each entry also has `id`, and comments `author_id`, `parent_id`, `is_resolved`, `resolved_at`, `resolved_by_id`, nested `replies`; participants `legacy_id`; versions `item_id`, `order`, `status`, `code`, `version_number`. |
+| C-42a | `POST /reviews/{id}/comments/`, `/notes/`, `/annotations/` | The body named the author. | `author`, `author_name`, `author_role` are **ignored**; the author is the caller, a note's role comes from the membership. Responses carry `author_id`. |
+| C-42b | `POST /reviews/{id}/comments/` | No replies. | Optional `parent_id` makes a reply (**400** to a reply, **404** for a comment of another review). |
+| C-42c | `POST /reviews/{id}/comments/{cid}/resolve/`, `/reopen/` | Flag on the JSON entry. | Records `resolved_by` and `resolved_at`; **404** for a comment of another review. |
+| C-42d | `POST /reviews/{id}/participant-verdict/` | Anyone with `review.update` could record anyone's verdict. | **403** unless the caller is the participant; a participant with no account is answered by a holder of `review.approve`. `participant_id` is the row's id or the old list's id. |
+| C-42e | `POST /reviews/{id}/participants/`, `DELETE /reviews/{id}/participants/{pid}/` | Did not exist (the list was filled by seeds only). | Add (`user_id`, `role`) / remove; **400** for a non-member or unknown user (same message) or a repeat. |
+| C-42f | `POST /reviews/{id}/versions/`, `DELETE /reviews/{id}/versions/{version_id}/` | Did not exist. | Add (`version_id`: id or code in the review's project) / remove; **400** for an unknown or repeated version. |
+| C-42g | `POST /projects/{id}/notes/` | `author_name`, `author_role`, `author_avatar` taken from the body. | The caller's own name and membership role; avatar cleared. |
+| C-42h | Existing reviews | JSON lists. | Converted by migration 0041 (entries it cannot read are skipped and printed; the JSON stays). |
+
+Frontend change list: stop sending author names and roles; offer participants and versions from the new endpoints; a participant's verdict button belongs to that participant only; show who resolved a comment; read `reviewers[].id` as the row id (the old string id is in `legacy_id` and still accepted).
+
+## Asset archive and playlists (D-31)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-43 | `DELETE /assets/{id}/`, `POST /assets/{id}/archive/`, `POST /assets/bulk-archive/` | Archived an asset whatever used it. | **400** while live shots use it ("... is still used by N shots. Unlink it from them first."); bulk reports `has_children` for that item. |
+| C-43a | `entries` in playlist responses | Stored JSON. | Built from rows: `id`, `version_id`, `version_number`, `item_order`, the client's extra keys, and `legacy_id`. |
+| C-43b | `POST /playlists/` with `entries` | Stored as sent. | Each entry's `version_id` must be a version of the playlist's project (**400** and nothing created otherwise). |
+| C-43c | `PATCH`/`PUT /playlists/{id}/` with `entries` | Replaced the list. | **400** unless it equals the stored list; use `add-entry`, `remove-entry`, `reorder`. |
+| C-43d | `POST /playlists/{id}/reorder/` | Replaced the list with the listed entries (unlisted ones were deleted). | Listed first, unlisted follow; **400** for an unknown, foreign or repeated id. |
+| C-43e | `entry_id` / entry `id` in `remove-entry` and `reorder` | The JSON entry's id. | The row id, or the old id (`legacy_id`). |
+| C-43f | `share_settings` on playlist create/update | Any JSON. | Known keys typed (**400** on a wrong type); other keys pass through. |
+| C-43g | Existing playlists | JSON entries. | Converted by migration 0043 (entries it cannot read are skipped and printed; the JSON stays). |
+
+Frontend change list: handle the new 400 when archiving an asset that shots use (offer to unlink); stop sending `entries` on playlist `PATCH`; do not rely on reorder to remove entries (use `remove-entry`); entry ids are now row ids (the old string still works).
+
+## Contract phase (D-32)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-44 | All responses and filters naming `sequence_code`, `current_version`, `logged_hours`, `is_archived`, review `versions` / `reviewers` / `comments` / `notes` / `annotations` / `activity`, playlist `entries` | Read from legacy columns or JSON (already derived since D-15, D-16, D-25, D-30, D-31). | **Unchanged** for clients: the same fields, read from the sequence, the timelogs, the versions, the soft delete and the row tables. Shots with no sequence show `sequence_code: ""`; a shot whose old `sequence_code` text matched no sequence is refused by migration 0044 until fixed. |
+
+Frontend change list: none required by this phase. (Earlier phases' lists still apply.)
+

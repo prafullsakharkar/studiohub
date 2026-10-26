@@ -42,6 +42,9 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     ("shot.update", "shots", "update"),
     ("shot.delete", "shots", "delete"),
     ("shot.approve", "shots", "approve"),
+    ("sequence.view", "sequences", "read"),
+    ("version.view", "versions", "read"),
+    ("media.view", "media", "read"),
     ("asset.create", "assets", "create"),
     ("asset.view", "assets", "read"),
     ("asset.update", "assets", "update"),
@@ -73,6 +76,12 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     ("schedule.view", "scheduling", "read"),
     ("schedule.update", "scheduling", "update"),
     ("schedule.delete", "scheduling", "delete"),
+    ("automation.create", "automation", "create"),
+    ("automation.view", "automation", "read"),
+    ("automation.update", "automation", "update"),
+    ("automation.delete", "automation", "delete"),
+    ("note.create", "notes", "create"),
+    ("timelog.manage", "timelogs", "manage"),
     ("audit.view", "audit", "read"),
     ("audit.update", "audit", "update"),
     ("settings.update", "settings", "update"),
@@ -131,39 +140,131 @@ DIRECTORY_CRUD_PERMISSIONS = [
     "identity.user.view",
 ]
 
-PRODUCTION_FULL_PERMISSIONS = [
-    "project.create", "project.view", "project.update", "project.delete",
-    "shot.create", "shot.view", "shot.update", "shot.delete", "shot.approve",
-    "asset.create", "asset.view", "asset.update", "asset.delete",
-    "task.create", "task.view", "task.update", "task.delete",
-    "review.create", "review.view", "review.approve",
-    "delivery.create", "delivery.view", "delivery.update", "delivery.delete",
-    "publishing.create", "publishing.view", "publishing.update", "publishing.delete",
-    "schedule.create", "schedule.view", "schedule.update", "schedule.delete",
-    "track.create", "track.view", "track.update", "track.delete",
-    "show.create", "show.view", "show.update", "show.delete",
-    "audit.view",
+# ---------------------------------------------------------------------------
+# Production role matrix (docs/production/DECISIONS.md D-07). Least privilege: a role
+# gets an action only when its work needs it. Every code the production API enforces
+# is granted to at least one role (apps/production/tests/test_permission_matrix.py).
+# ---------------------------------------------------------------------------
+
+# resource -> (module, actions); action "view" is stored as "read".
+_PRODUCTION_RESOURCES: dict[str, tuple[str, tuple[str, ...]]] = {
+    "project": ("projects", ("view", "create", "update", "delete")),
+    "sequence": ("sequences", ("view", "create", "update", "delete")),
+    "episode": ("episodes", ("view", "create", "update", "delete")),
+    "shot": ("shots", ("view", "create", "update", "delete", "approve")),
+    "asset": ("assets", ("view", "create", "update", "delete")),
+    "task": ("tasks", ("view", "create", "update", "delete")),
+    # view = own timelogs, view_all = the project's; manage = log time for others
+    "timelog": (
+        "timelogs",
+        ("view", "view_all", "create", "update", "delete", "approve", "manage"),
+    ),
+    "version": ("versions", ("view", "create", "update", "delete", "publish")),
+    "review": ("reviews", ("view", "create", "update", "delete", "approve")),
+    "playlist": ("playlists", ("view", "create", "update", "delete")),
+    "media": ("media", ("view", "create", "update", "delete")),
+    "workflow": ("workflows", ("view", "create", "update", "delete")),
+    # view_rates = resources' pay rates and e-mail addresses (full roles only)
+    "schedule": ("scheduling", ("view", "view_rates", "create", "update", "delete")),
+    # manage_studio = templates that belong to the whole studio rather than one project
+    "tasktemplate": ("task_templates", ("view", "create", "update", "delete", "manage_studio")),
+    "track": ("tracks", ("view", "create", "update", "delete")),
+    "show": ("shows", ("view", "create", "update", "delete")),
+    "automation": ("automation", ("view", "create", "update", "delete")),
+    "delivery": ("deliveries", ("view", "create", "update", "delete")),
+    "publishing": ("publishing", ("view", "create", "update", "delete")),
+}
+
+# Opt-in corrections: in the catalog so an admin can grant them, in no seeded role.
+OPT_IN_PERMISSIONS = [
+    ("production.status.override", "production_status", "override"),
+    ("production.sod.override", "production_sod", "override"),
 ]
+OPT_IN_PERMISSION_CODES = frozenset(code for code, _, _ in OPT_IN_PERMISSIONS)
+
+
+def _production_codes(**actions: str) -> list[str]:
+    """``_production_codes(shot="view update")`` -> ``["shot.view", "shot.update"]``."""
+    return [f"{resource}.{action}" for resource, spec in actions.items() for action in spec.split()]
+
+
+def _extend_permission_specs() -> None:
+    known = {code for code, _, _ in PERMISSION_SPECS}
+    for resource, (module, actions) in _PRODUCTION_RESOURCES.items():
+        for action in actions:
+            code = f"{resource}.{action}"
+            if code not in known:
+                PERMISSION_SPECS.append((code, module, "read" if action == "view" else action))
+                known.add(code)
+    if "production.code.rename" not in known:
+        PERMISSION_SPECS.append(("production.code.rename", "production_code", "rename"))
+        known.add("production.code.rename")
+    for spec in OPT_IN_PERMISSIONS:
+        if spec[0] not in known:
+            PERMISSION_SPECS.append(spec)
+            known.add(spec[0])
+    for extra in ("note.create", "audit.view"):
+        assert extra in known, extra
+
+
+_extend_permission_specs()
+
+PRODUCTION_FULL_PERMISSIONS = [
+    code for resource, (_, actions) in _PRODUCTION_RESOURCES.items() for code in
+    (f"{resource}.{action}" for action in actions)
+] + ["note.create", "audit.view"]
 
 # Production admins track contract and budget figures; supervisors, leads and
 # artists share PRODUCTION_FULL_PERMISSIONS or less and do not see them.
-PRODUCTION_ADMIN_PERMISSIONS = PRODUCTION_FULL_PERMISSIONS + ["masterdata.client.view_financial"]
-
-PRODUCTION_LEAD_PERMISSIONS = [
-    "project.view", "shot.view", "shot.update", "shot.approve",
-    "asset.create", "asset.view", "asset.update",
-    "task.create", "task.view", "task.update",
-    "review.create", "review.view",
-    "delivery.view", "publishing.view", "schedule.view",
-    "track.view", "show.view", "audit.view",
+PRODUCTION_ADMIN_PERMISSIONS = PRODUCTION_FULL_PERMISSIONS + [
+    "masterdata.client.view_financial",
+    "production.code.rename",
 ]
 
-PRODUCTION_ARTIST_PERMISSIONS = [
-    "project.view", "shot.view", "task.view", "task.update",
-    "asset.view", "review.view",
-    "delivery.view", "publishing.view", "schedule.view",
-    "track.view", "show.view",
-]
+# A lead builds and publishes the team's work and approves its time and shots; no deletes,
+# no reviews' final say, no workflow design.
+PRODUCTION_LEAD_PERMISSIONS = _production_codes(
+    project="view",
+    sequence="view",
+    episode="view",
+    shot="view update approve",
+    asset="view create update",
+    task="view create update",
+    timelog="view view_all create update approve",
+    version="view create update publish",
+    review="view create update",
+    playlist="view create update",
+    media="view create update",
+    workflow="view",
+    schedule="view",
+    tasktemplate="view",
+    track="view",
+    show="view",
+    delivery="view",
+    publishing="view",
+) + ["audit.view", "note.create"]
+
+# An artist reads what the work needs, logs their own time and publishes their own versions.
+PRODUCTION_ARTIST_PERMISSIONS = _production_codes(
+    project="view",
+    sequence="view",
+    episode="view",
+    shot="view",
+    asset="view",
+    task="view update",
+    timelog="view create update",
+    version="view create",
+    review="view",
+    playlist="view",
+    media="view create",
+    workflow="view",
+    schedule="view",
+    tasktemplate="view",
+    track="view",
+    show="view",
+    delivery="view",
+    publishing="view",
+) + ["note.create"]
 
 # (code, name, priority, scope, permission codes; None = full catalog)
 ROLE_SPECS: list[dict[str, Any]] = [
@@ -342,7 +443,11 @@ class Command(BaseCommand):
         matrix = {}
         for spec in ROLE_SPECS:
             perms = spec["permissions"]
-            codes = list(perm_by_code.keys()) if perms is None else list(perms)
+            codes = (
+                [code for code in perm_by_code if code not in OPT_IN_PERMISSION_CODES]
+                if perms is None
+                else list(perms)
+            )
             # Production-tier (project-scope) roles keep platform directory
             # reads (contract parity with the org-era seed: the directory is
             # visible to everyone who can see the platform).

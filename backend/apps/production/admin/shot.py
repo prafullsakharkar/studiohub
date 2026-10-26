@@ -1,11 +1,12 @@
 from django.contrib import admin
 
 from apps.core.admin.base import StudioHubModelAdmin
+from apps.production.admin.mixins import NoHardDeleteMixin
 from apps.production.models import Shot
 
 
 @admin.register(Shot)
-class ShotAdmin(StudioHubModelAdmin):
+class ShotAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     list_display = (
         "code",
         "name",
@@ -14,7 +15,6 @@ class ShotAdmin(StudioHubModelAdmin):
         "status",
         "supervisor_approved",
         "client_approved",
-        "current_version",
     )
 
     list_filter = (
@@ -26,11 +26,11 @@ class ShotAdmin(StudioHubModelAdmin):
     search_fields = (
         "code",
         "name",
-        "sequence_code",
+        "sequence__code",
     )
 
     autocomplete_fields = ("project", "assigned_artist")
 
-    list_select_related = ("project",)
+    list_select_related = ("project", "sequence")
 
     ordering = ("code",)

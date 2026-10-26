@@ -4,13 +4,16 @@ from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.api.serializers.common import (
+    FrameRangeMixin,
     LenientUniqueTogetherValidator,
+    NormalizedCodeMixin,
     ProjectReferenceMixin,
 )
 from apps.production.models import Episode
+from apps.production.services.numbering import episode_code
 
 
-class EpisodeCreateSerializer(ProjectReferenceMixin, BaseWriteSerializer[Any]):
+class EpisodeCreateSerializer(NormalizedCodeMixin, FrameRangeMixin, ProjectReferenceMixin, BaseWriteSerializer[Any]):
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
     code = serializers.CharField(max_length=50, required=False, allow_blank=True)
@@ -66,10 +69,12 @@ class EpisodeCreateSerializer(ProjectReferenceMixin, BaseWriteSerializer[Any]):
                     season_number = int(season_raw or 1)
                 except (TypeError, ValueError):
                     season_number = 1
-                data["code"] = f"EP{season_number}{episode_number:02d}"
-                # Keep the stored season consistent with the derived code.
-                if season_missing:
-                    data["season_number"] = season_number
+                derived = episode_code(season_number, episode_number)
+                if derived is not None:
+                    data["code"] = derived
+                    # Keep the stored season consistent with the derived code.
+                    if season_missing:
+                        data["season_number"] = season_number
         else:
             data["code"] = code.strip()
         # Keep the key present so ``validate`` owns the 400 instead of an

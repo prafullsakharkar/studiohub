@@ -7,6 +7,7 @@ from apps.production.models import Workflow
 
 
 class WorkflowSerializer(BaseReadSerializer[Any]):
+    is_archived = serializers.BooleanField(source="is_deleted", read_only=True)
     project_id = serializers.UUIDField(read_only=True, allow_null=True)
     class Meta:
         model = Workflow

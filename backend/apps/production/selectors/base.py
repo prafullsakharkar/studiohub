@@ -4,6 +4,8 @@ Base selector for the Production bounded context.
 
 from __future__ import annotations
 
+from typing import Any
+
 from apps.core.selectors.base import BaseSelector
 
 
@@ -46,6 +48,32 @@ class ProductionBaseSelector(BaseSelector):
             )
         except Exception:  # noqa: BLE001
             return False
+
+    @classmethod
+    def is_platform_admin(cls, user) -> bool:
+        """Superuser or global ADMIN-priority role holder (platform-wide scope)."""
+        if user is None or not getattr(user, "is_authenticated", False):
+            return False
+        return bool(getattr(user, "is_superuser", False)) or cls._has_global_admin_role(user)
+
+    @classmethod
+    def visible_project_ids(cls, request) -> list[Any] | None:
+        """
+        Ids of the projects the caller belongs to, or ``None`` when nothing narrows them
+        (platform admins). Unauthenticated callers belong to none.
+        """
+        from apps.production.models.project_membership import ProjectMembership
+
+        user = getattr(request, "user", None)
+        if user is None or not getattr(user, "is_authenticated", False):
+            return []
+        if cls.is_platform_admin(user):
+            return None
+        return list(
+            ProjectMembership.objects.filter(user=user, is_deleted=False, status__iexact="active")
+            .values_list("project_id", flat=True)
+            .distinct()
+        )
 
     @classmethod
     def scope_by_project_membership(cls, qs, *, request):

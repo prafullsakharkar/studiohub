@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseWriteSerializer
+from apps.production.api.serializers.common import ScopedReferenceField
 from apps.production.models import Project, Task, Timelog
 
 
@@ -14,8 +15,8 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
     The frontend posts mock-style refs (``task_id``/``task_code``,
     ``project_id``/``project_code``, ``person_id``) while the model FKs
     are UUID PKs (``task``/``project``/``person``). Both spellings are
-    accepted; refs resolve globally (project scope is enforced by the
-    viewset membership check). Unknown mock display ids that cannot
+    accepted; tasks resolve among the caller's member projects and the
+    viewset derives the project from the task. Unknown mock display ids that cannot
     resolve leave the optional FKs unset (``perform_create`` defaults
     person to the request user and project to the task's project) instead
     of 400ing the whole mutation.
@@ -23,7 +24,8 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
 
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
-    task = serializers.PrimaryKeyRelatedField(
+    # Limited to tasks of the caller's projects; unknown and foreign tasks fail alike.
+    task = ScopedReferenceField(
         queryset=Task.objects.all(),
         required=False,
         allow_null=True,
@@ -37,6 +39,10 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
         queryset=Project.objects.all(),
         required=False,
         allow_null=True,
+    )
+    # Only an approved timelog can be adjusted; the viewset checks that and the project.
+    adjustment_of = ScopedReferenceField(
+        queryset=Timelog.objects.all(), required=False, allow_null=True
     )
     task_id = serializers.CharField(write_only=True, required=False, allow_blank=True)
     task_code = serializers.CharField(write_only=True, required=False, allow_blank=True)
@@ -52,6 +58,7 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
             "task",
             "task_id",
             "task_code",
+            "adjustment_of",
             "project",
             "project_id",
             "project_code",
@@ -69,7 +76,7 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
         read_only_fields = ("id", "uuid")
 
     # ------------------------------------------------------------------
-    # Ref resolution (global; project scope is enforced by the viewset)
+    # Ref resolution (tasks limited to the caller's member projects)
     # ------------------------------------------------------------------
 
     @staticmethod
@@ -78,6 +85,14 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
             return UUID(str(value))
         except (ValueError, AttributeError, TypeError):
             return None
+
+    def _tasks(self):
+        from apps.production.selectors.base import ProductionBaseSelector
+
+        request = self.context.get("request")
+        if request is None:
+            return Task.objects.none()
+        return ProductionBaseSelector.scope_by_project_membership(Task.objects.all(), request=request)
 
     def _resolve_task(self, attrs):
         if attrs.get("task"):
@@ -89,11 +104,11 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
         for ref in candidates:
             pk = self._as_uuid(ref)
             if pk is not None:
-                task = Task.objects.filter(pk=pk).first()
+                task = self._tasks().filter(pk=pk).first()
                 if task is not None:
                     return task
                 continue
-            lookup = Task.objects.filter(code=ref)
+            lookup = self._tasks().filter(code=ref)
             if project is not None:
                 lookup = lookup.filter(project=project)
             task = lookup.first()
@@ -145,6 +160,9 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
         if attrs["project"] is None:
             attrs["project"] = getattr(task, "project", None)
         person = self._resolve_person(attrs)
+        original = attrs.get("adjustment_of")
+        if person is None and original is not None:
+            person = original.person  # an adjustment belongs to the person it corrects
         if person is None:
             request = self.context.get("request")
             user = getattr(request, "user", None)

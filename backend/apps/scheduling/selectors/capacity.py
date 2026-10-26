@@ -145,7 +145,51 @@ def get_capacity_summary(organization=None) -> list[dict[str, Any]]:
     return sorted(summaries, key=lambda row: row["department"])
 
 
-def _conflicting_event(slot) -> dict[str, Any]:
+REDACTED_TITLE = "Booked on another project"
+
+
+def _slot_project_id(slot) -> Any:
+    """The project a booking belongs to (through its event, else its task), or None."""
+    if slot.event is not None and slot.event.project_id is not None:
+        return slot.event.project_id
+    if slot.task is not None:
+        return getattr(slot.task, "project_id", None)
+    return None
+
+
+def visible_slots(queryset, visible_project_ids):
+    """
+    Narrow bookings to those the caller may see.
+
+    ``visible_project_ids`` is ``None`` for no restriction (platform admins), else the
+    project ids the caller belongs to. A booking is visible when it belongs to no
+    project (studio-wide) or to one of those projects.
+    """
+    if visible_project_ids is None:
+        return queryset
+    from django.db.models import Q
+
+    other_project = (
+        Q(event__project__isnull=False) & ~Q(event__project_id__in=visible_project_ids)
+    ) | (Q(task__project__isnull=False) & ~Q(task__project_id__in=visible_project_ids))
+    return queryset.exclude(other_project)
+
+
+def _conflicting_event(slot, visible_project_ids=None) -> dict[str, Any]:
+    project_id = _slot_project_id(slot)
+    if (
+        visible_project_ids is not None
+        and project_id is not None
+        and project_id not in visible_project_ids
+    ):
+        # Counts toward the excess, but nothing says what it is or whose it is.
+        return {
+            "id": str(slot.id),
+            "title": REDACTED_TITLE,
+            "project_code": None,
+            "event_type": "meeting",
+            "hours": 0.0,
+        }
     event = slot.event
     task = slot.task
     if event is not None:
@@ -170,8 +214,14 @@ def _conflicting_event(slot) -> dict[str, Any]:
     }
 
 
-def get_overbooking_alerts(organization=None) -> list[dict[str, Any]]:
-    """Overbooking alerts for resources exceeding weekly capacity (global)."""
+def get_overbooking_alerts(organization=None, visible_project_ids=None) -> list[dict[str, Any]]:
+    """
+    Overbooking alerts for resources exceeding weekly capacity (global).
+
+    Hours always count every booking, so the excess is true. The bookings listed under
+    an alert are limited to ``visible_project_ids`` (``None``: all); the others appear
+    as anonymous entries.
+    """
     from apps.scheduling.models import Resource
 
     week_start, week_end = current_week_bounds()
@@ -191,7 +241,7 @@ def get_overbooking_alerts(organization=None) -> list[dict[str, Any]]:
         excess = round(allocated - capacity, 2)
         conflicting = []
         for slot in slots_by_resource.get(resource.id, []):
-            entry = _conflicting_event(slot)
+            entry = _conflicting_event(slot, visible_project_ids)
             entry["hours"] = round(
                 _overlap_hours(slot.start_time, slot.end_time, week_start, week_end), 2
             )
