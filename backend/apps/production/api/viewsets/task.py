@@ -72,10 +72,42 @@ class TaskViewSet(StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMix
     def validate_references(self, project, data, instance=None):
         """Assignee and reviewer must be active members of the task's project."""
         self._resolve_task_type(data)
+        self._resolve_entity(project, data, instance)
         if project is None:
             return
         for field in ("assignee", "reviewer"):
             require_project_member(project, data.get(field), field=field, label="user")
+
+    @staticmethod
+    def _resolve_entity(project, data, instance):
+        """
+        What the task is about: ``entity_type`` and ``entity_id`` (an id or code) become the link and
+        the derived text, or a 400 (D-28). Left alone when a write does not touch them, or sends back
+        what the task already has (so a full PUT of an older, unlinked task still goes through).
+        """
+        from rest_framework.exceptions import ValidationError
+
+        from apps.production.services.task_entity import resolve_entity_fields
+
+        touched = "entity_type" in data or "entity_id" in data
+        sent = {key: data[key] for key in ("entity_code", "entity_name") if key in data}
+        if instance is not None:
+            raw_type = data.get("entity_type", instance.entity_type)
+            raw_id = data.get("entity_id", instance.entity_id)
+            same = str(raw_type or "").strip().lower() == str(instance.entity_type or "").strip().lower() and str(
+                raw_id or ""
+            ).strip() == str(instance.entity_id or "").strip()
+            if not touched or same:
+                for key, value in sent.items():
+                    stored = str(getattr(instance, key) or "")
+                    if str(value or "").strip() and str(value).strip().lower() != stored.lower():
+                        raise ValidationError({key: ["Derived from the linked record."]})
+                for key in ("entity_type", "entity_id"):
+                    data.pop(key, None)  # unchanged: nothing to store
+                return
+        else:
+            raw_type, raw_id = data.get("entity_type", ""), data.get("entity_id", "")
+        data.update(resolve_entity_fields(project, raw_type, raw_id, sent))
 
     @staticmethod
     def _resolve_task_type(data):

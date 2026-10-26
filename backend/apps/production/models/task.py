@@ -14,7 +14,11 @@ from apps.production.constants import TaskPriority, TaskStatus
 
 class Task(EntityModel):
     """
-    Task assigned to a resource, linked to a Shot or Asset via entity_type/id.
+    Task assigned to a resource, about one Shot, Asset or Sequence of its project (or none).
+
+    ``shot`` / ``asset`` / ``sequence`` are the link (at most one; DECISIONS D-28). The
+    ``entity_*`` text columns are copies of it kept in step on save; on a task whose old text
+    could not be matched to a real record they remain the only trace.
     """
 
     project = models.ForeignKey(
@@ -28,6 +32,17 @@ class Task(EntityModel):
 
     title = models.CharField(max_length=255, db_index=True)
     code = models.CharField(max_length=50, db_index=True)
+
+    # What the task is about. At most one is set; none means a project-level (General) task.
+    shot = models.ForeignKey(
+        "production.Shot", on_delete=models.PROTECT, null=True, blank=True, related_name="tasks"
+    )
+    asset = models.ForeignKey(
+        "production.Asset", on_delete=models.PROTECT, null=True, blank=True, related_name="tasks"
+    )
+    sequence = models.ForeignKey(
+        "production.Sequence", on_delete=models.PROTECT, null=True, blank=True, related_name="tasks"
+    )
 
     entity_type = models.CharField(
         max_length=20,
@@ -118,6 +133,15 @@ class Task(EntityModel):
             models.UniqueConstraint(
                 Upper("code"), "project", name="production_task_project_ucode_uniq"
             ),
+            # At most one of shot / asset / sequence: at least two of the three are empty.
+            models.CheckConstraint(
+                condition=(
+                    models.Q(shot__isnull=True, asset__isnull=True)
+                    | models.Q(shot__isnull=True, sequence__isnull=True)
+                    | models.Q(asset__isnull=True, sequence__isnull=True)
+                ),
+                name="production_task_one_entity_ck",
+            ),
         ]
         indexes = [
             models.Index(fields=["project", "entity_type"]),
@@ -130,3 +154,24 @@ class Task(EntityModel):
 
     def __str__(self):
         return f"{self.code} - {self.title}"
+
+    def save(self, *args, **kwargs):
+        # Keep the text copies in step with the link they copy (not when a save leaves the link alone).
+        update_fields = kwargs.get("update_fields")
+        touches_link = update_fields is None or {"shot", "asset", "sequence"} & set(update_fields)
+        linked = self.shot_id or self.asset_id or self.sequence_id  # pyright: ignore[reportAttributeAccessIssue]
+        if linked and touches_link:
+            entity = self.shot if self.shot_id else self.asset if self.asset_id else self.sequence  # pyright: ignore[reportAttributeAccessIssue]
+            self.entity_type = type(entity).__name__
+            self.entity_id = str(entity.pk)
+            self.entity_code = entity.code
+            self.entity_name = getattr(entity, "name", "") or ""
+            if update_fields is not None:
+                kwargs["update_fields"] = {
+                    *update_fields,
+                    "entity_type",
+                    "entity_id",
+                    "entity_code",
+                    "entity_name",
+                }
+        super().save(*args, **kwargs)

@@ -262,3 +262,15 @@ Frontend change list: a "Assets" tab on the shot and a "Used in" list on the ass
 | C-39 | Permission codes `tasktemplate.view|create|update|delete|manage_studio` | Did not exist. | In the catalog; full roles hold all, lead-artist and artist `view`. Run `init_platform`. |
 
 Frontend change list: a task-type picker on the task form (from the masterdata task type catalog) and an asset-type picker on the asset form; a templates screen with studio and project scopes and an "Apply template" button on shots and assets; a "Copy to project" action on studio templates; show the new 400 messages; do not offer a parent from another project.
+
+## What a task is about (D-28)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-40 | `entity_type`, `entity_id` on task create/update (single and bulk) | Free text; anything accepted. | `entity_id` is an id or code of a live shot, asset or sequence of the task's project (**400** "Unknown shot." / "asset" / "sequence" otherwise); unknown `entity_type` is a **400**; an empty `entity_id` makes it a General task. An id with no type means a shot. |
+| C-40a | `entity_code`, `entity_name` on task create/update | Free text. | Derived from the linked record; **400** if they disagree with it; ignored when equal. |
+| C-40b | `shot_id`, `asset_id`, `sequence_id` in task responses | Did not exist. | The link (null when none, and on older tasks that could not be matched). |
+| C-40c | `GET /api/v1/tasks/?shot_id=`, `asset_id=`, `sequence_id=` | Did not exist. | By id or code of the record. |
+| C-40d | Existing tasks | Free text only. | Linked by migration 0036 where the text provably names a record of the task's project; the rest unchanged and listed by `report_production_data`. |
+
+Frontend change list: the task form's entity picker must send a real shot, asset or sequence of the task's project (id or code), or nothing for a project-level task; do not send `entity_code` / `entity_name` (or send the record's own); handle the new 400s; read `shot_id` / `asset_id` / `sequence_id` to link to the record; tasks from before may show no link until fixed by hand.

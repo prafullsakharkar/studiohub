@@ -18,6 +18,8 @@ is left:
 * assets whose parent is in another project, or whose parent chain loops back to them (the API
   now refuses both; DECISIONS D-27), and, as information, how many assets have a catalog type and
   how many tasks have a task type
+* tasks that name a shot, asset or sequence but are not linked to one, and why (the link was added
+  by migration 0036, which links what it can prove; DECISIONS D-28)
 * tasks whose old stored ``logged_hours`` differs from the sum of their approved timelogs:
   responses now show the sum, so a hand-typed number stops appearing (DECISIONS D-15)
 
@@ -170,6 +172,57 @@ def typing_counts():
     )
 
 
+_ENTITY_MODELS = {"shot": Shot, "asset": Asset, "sequence": Sequence}
+
+
+def unlinked_task_entities():
+    """``[(task id, code, entity type, entity text, reason)]`` for tasks naming a record they are not linked to."""
+    from uuid import UUID
+
+    found = []
+    tasks = Task.all_objects.filter(
+        shot__isnull=True, asset__isnull=True, sequence__isnull=True
+    ).exclude(entity_id="")
+    for task in tasks.iterator():
+        kind = (task.entity_type or "").strip().lower()
+        text = (task.entity_id or "").strip()
+        model = _ENTITY_MODELS.get(kind)
+        if model is None:
+            reason = f'unknown entity type "{task.entity_type}"'
+        elif task.project_id is None:
+            reason = "the task has no project"
+        else:
+            try:
+                uid = UUID(text)
+            except ValueError:
+                codes = {c for c in (text, (task.entity_code or "").strip()) if c}
+                hits = {
+                    pk
+                    for code in codes
+                    for pk in model.all_objects.filter(
+                        project_id=task.project_id, code__iexact=code
+                    ).values_list("pk", flat=True)
+                }
+                reason = (
+                    "no record of that code in the project"
+                    if not hits
+                    else "several records match the id and code"
+                    if len(hits) > 1
+                    else "a single match exists (run migration 0036)"
+                )
+            else:
+                row = model.all_objects.filter(pk=uid).values_list("project_id", flat=True).first()
+                reason = (
+                    "no record with that id"
+                    if row is None
+                    else "the record belongs to another project"
+                    if row != task.project_id
+                    else "a match exists (run migration 0036)"
+                )
+        found.append((str(task.pk), task.code, task.entity_type, text, reason))
+    return found
+
+
 def tasks_with_unbacked_hours():
     """``[(task id, code, stored hours, approved timelog hours)]`` where the old stored number differs."""
     rows = TaskHoursSelector.annotate(Task.all_objects.exclude(logged_hours=0))
@@ -235,6 +288,12 @@ class Command(BaseCommand):
         for pk, code, problem in parents[:50]:
             findings += 1
             self.stdout.write(f"  asset {code} {pk}: {problem}")
+
+        unlinked = unlinked_task_entities()
+        self.stdout.write(f"Tasks naming a record they are not linked to: {len(unlinked)}")
+        for pk, code, kind, text, reason in unlinked[:50]:
+            findings += 1
+            self.stdout.write(f"  task {code} {pk}: {kind} {text!r}: {reason}")
 
         typed_assets, all_assets, typed_tasks, all_tasks = typing_counts()
         self.stdout.write("Catalog types (information, not findings):")

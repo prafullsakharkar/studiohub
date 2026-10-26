@@ -1,6 +1,6 @@
 # Deploying the production hardening work
 
-Branch `feature/production-hardening`, commits `0bd495b` (phase 1) onwards. What changed and why: `DECISIONS.md` (D-01 to D-27); every API change with its before and after: `CONTRACTS.md` (C-01 to C-39); what is still planned: `PLAN.md`.
+Branch `feature/production-hardening`, commits `0bd495b` (phase 1) onwards. What changed and why: `DECISIONS.md` (D-01 to D-28); every API change with its before and after: `CONTRACTS.md` (C-01 to C-40); what is still planned: `PLAN.md`.
 
 **What was and was not run.** Everything below was developed and tested against the pytest test database only (last full suite: 4147 passed, 1 skipped). Nothing was ever run against a staging or production database, and none of the preflight steps in section 1 has been run by the author. Treat section 1 as a gate you pass, not a formality.
 
@@ -19,12 +19,13 @@ Run these against a copy or the real database, in this order, and keep the outpu
    | Sequences of episodic projects without an episode | Left empty by 0029 because their shots do not share one episode, or there are no shots. | Set the episode through the API when convenient; older rows can be edited without it. |
    | Shots whose episode differs from their sequence's | An older mismatch, left alone until the shot is moved. | Review. |
    | Tasks whose stored hours differ from approved timelogs | The old `logged_hours` column (typed by clients or seeded) is no longer shown; responses show the approved sum. | Know that these numbers disappear from the UI. |
+   | Tasks naming a record they are not linked to | A task whose `entity_type` / `entity_id` text names a shot, asset or sequence that could not be linked, with the reason (no record with that code, another project, several matches, unknown type, no project). "A match exists (run migration 0036)" before migrating is expected. | After migrating, fix the ones that remain by editing the task's entity. |
    | Assets with a bad parent | A parent in another project, or a parent chain that loops back. The API now refuses both. | Fix the rows; nothing blocks the migration. |
    | Archive flag versus soft delete | Counts only, not findings. **"Flag only" is the number of rows migration 0031 will soft-delete** (they leave default lists). | Look at the numbers per model before migrating; keep the output. |
 
 ## 2. Migrate
 
-`uv run python manage.py migrate` (production 0023 to 0034, scheduling 0003). In order:
+`uv run python manage.py migrate` (production 0023 to 0036, scheduling 0003). In order:
 
 | Migration | What it does | Can it fail on existing data? |
 |---|---|---|
@@ -40,6 +41,8 @@ Run these against a copy or the real database, in this order, and keep the outpu
 | 0032 `shot_asset` | New `ShotAsset` table (shot to asset links). Nothing existing is touched. | No. |
 | 0033 `task_types_and_templates` | Adds `Task.task_type`, `Asset.asset_type` (both optional) and the template tables. Nothing existing is touched. | No. |
 | 0034 `link_asset_types` | Links assets to the catalog asset type whose code or name equals their `category` (exactly one match; otherwise left empty). Logs the counts. Reverse does nothing. | No. |
+| 0035 `task_entity_links` | Adds `Task.shot`, `Task.asset`, `Task.sequence` and a check that at most one is set. | No (all empty at first). |
+| 0036 `link_task_entities` | Links each task to the shot, asset or sequence its `entity_type` / `entity_id` provably names in its own project; the rest stay as they were. Logs the counts. Reverse does nothing. | No: unresolved tasks stay unlinked. Read the report section first. |
 | scheduling 0003 `leave_rejected_by` | Two additive columns on leave requests. | No. |
 
 Tests exist for forward, back and forward again of 0023 and 0024 (`test_migration_roundtrip.py`) and for 0025 to 0029 and 0031 (`test_migrations_hierarchy.py`, including the refusal of 0025, the fill rules of 0027 and 0029 and the rows 0031 touches); 0030 has none (no SQL) and 0032 only creates a table. The two "fill" migrations log a count of filled and unmatched rows.
@@ -90,11 +93,12 @@ From `CONTRACTS.md`; the contract IDs have the exact before and after.
 10. Archived items: stop sending `is_archived`; archive and restore versions, playlists and workflows with the actions; list archived ones with `?is_archived=true`.
 11. Shot assets: use `GET/POST /shots/{id}/assets/`, `PATCH/DELETE /shots/{id}/assets/{asset}/` and `GET /assets/{id}/shots/` (C-36).
 12. Task and asset types: pickers from the masterdata catalogs (`task_type_id`, `asset_type_id`); templates screen and "apply template" (C-38); no parent assets from other projects.
-13. Treat an empty `current_version` as "no versions yet"; link with `current_version_id`.
+13. Task entity: send a real shot, asset or sequence (id or code) of the task's project, or nothing for a project-level task; do not send `entity_code` / `entity_name`; use `shot_id` / `asset_id` / `sequence_id` from responses (C-40).
+14. Treat an empty `current_version` as "no versions yet"; link with `current_version_id`.
 
 ## 7. Not done, on purpose
 
-Phases P8b to P12 of `PLAN.md` (shots and assets as real links on tasks instead of `entity_type` / `entity_id` text, version numbering, relational reviews and notes, the contract phase that drops legacy columns) and these items inside finished phases:
+Phases P9 to P12 of `PLAN.md` (version numbering and publish rules, relational reviews and notes, the contract phase that drops legacy columns) and these items inside finished phases:
 
 - dropping the `is_archived`, `sequence_code`, `Task.logged_hours` and `Shot.current_version` columns (final cleanup; `is_archived` itself is retired in behaviour, D-25);
 - the head and tail handles split (B7) and manual ordering (B6);

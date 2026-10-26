@@ -194,13 +194,13 @@ class TaskTemplateService:
                 {"entity_id": [f"This template is for a {template.entity_type.lower()}."]}
             )
         model.objects.select_for_update().get(pk=entity.pk)  # serialise concurrent applies
+        link = template.entity_type.lower()  # "shot" or "asset": the Task field that links it
         created: list[Task] = []
         existing: list[Task] = []
         for item in template.items.select_related("task_type").all():  # pyright: ignore[reportAttributeAccessIssue]
             found = Task.objects.filter(
                 project=entity.project,
-                entity_type=template.entity_type,
-                entity_id=str(entity.pk),
+                **{link: entity},
                 task_type=item.task_type,
                 title__iexact=item.name,
             ).first()
@@ -213,10 +213,7 @@ class TaskTemplateService:
                     project=entity.project,
                     title=item.name,
                     code=cls._task_code(entity, item),
-                    entity_type=template.entity_type,
-                    entity_id=str(entity.pk),
-                    entity_code=entity.code,
-                    entity_name=getattr(entity, "name", "") or "",
+                    **{link: entity},  # the text copies follow on save
                     task_type=item.task_type,
                     department=item.task_type.department_name or "",
                     estimated_hours=item.default_bid_hours,

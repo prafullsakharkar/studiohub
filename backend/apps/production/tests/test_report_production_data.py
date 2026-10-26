@@ -65,6 +65,7 @@ def test_a_clean_database_reports_nothing_and_passes_the_gate():
     assert "Shots whose episode differs from their sequence's: 0" in text
     assert "Tasks whose stored hours differ from their approved timelogs: 0" in text
     assert "Assets with a bad parent: 0" in text
+    assert "Tasks naming a record they are not linked to: 0" in text
 
 
 def test_shots_naming_no_sequence_are_listed_and_fail_the_gate():
@@ -109,10 +110,10 @@ def test_episode_gaps_and_mismatches_are_listed():
 
 def test_stored_hours_that_no_approved_timelog_backs_are_listed():
     project = ProjectFactory.create(code="RPT7")
-    typed = TaskFactory.create(project=project, code="TYPED", logged_hours=40)
-    backed = TaskFactory.create(project=project, code="BACKED", logged_hours=6)
+    typed = TaskFactory.create(project=project, entity_id="", code="TYPED", logged_hours=40)
+    backed = TaskFactory.create(project=project, entity_id="", code="BACKED", logged_hours=6)
     TimelogFactory.create(task=backed, duration_hours=6, status="Approved")
-    TaskFactory.create(project=project, code="ZERO")
+    TaskFactory.create(project=project, entity_id="", code="ZERO")
 
     text = _report()
 
@@ -123,10 +124,12 @@ def test_stored_hours_that_no_approved_timelog_backs_are_listed():
 
 def test_the_archive_flag_overlap_is_counted_and_is_not_a_finding():
     project = ProjectFactory.create(code="RPT8")
-    TaskFactory.create(project=project, code="NEITHER")
-    TaskFactory.create(project=project, code="FLAG", is_archived=True)
-    TaskFactory.create(project=project, code="BOTH", is_archived=True, is_deleted=True)
-    TaskFactory.create(project=project, code="GONE", is_deleted=True)
+    TaskFactory.create(project=project, entity_id="", code="NEITHER")
+    TaskFactory.create(project=project, entity_id="", code="FLAG", is_archived=True)
+    TaskFactory.create(
+        project=project, entity_id="", code="BOTH", is_archived=True, is_deleted=True
+    )
+    TaskFactory.create(project=project, entity_id="", code="GONE", is_deleted=True)
     VersionFactory.create(project=project, code="V-FLAG", is_archived=True)  # how versions archive
 
     text = _report("--fail-on-findings")  # would exit 1 if the overlap counted as a finding
@@ -144,7 +147,7 @@ def test_bad_asset_parents_are_findings_and_catalog_counts_are_information():
     a = AssetFactory.create(project=mine, code="LOOPA")
     b = AssetFactory.create(project=mine, code="LOOPB", parent_asset=a)
     type(a).objects.filter(pk=a.pk).update(parent_asset=b)  # a loop the API would now refuse
-    TaskFactory.create(project=mine, code="UNTYPED")
+    TaskFactory.create(project=mine, entity_id="", code="UNTYPED")
 
     text = _report()
 
@@ -155,6 +158,26 @@ def test_bad_asset_parents_are_findings_and_catalog_counts_are_information():
     assert "  Tasks with a task type: 0 of 1" in text
     with pytest.raises(SystemExit):
         _report("--fail-on-findings")
+
+
+def test_tasks_naming_a_record_they_are_not_linked_to_are_listed_with_a_reason():
+    mine, other = ProjectFactory.create(code="RPT11"), ProjectFactory.create(code="RPT12")
+    foreign = ShotFactory.create(project=other, code="F1")
+    TaskFactory.create(
+        project=mine, code="LINKED", shot=ShotFactory.create(project=mine, code="S1")
+    )
+    TaskFactory.create(project=mine, code="GENERAL", entity_type="Shot", entity_id="")
+    TaskFactory.create(project=mine, code="MOCK", entity_type="Shot", entity_id="mock-3")
+    TaskFactory.create(project=mine, code="CROSS", entity_type="Shot", entity_id=str(foreign.id))
+    TaskFactory.create(project=mine, code="BANANA", entity_type="Banana", entity_id="x")
+
+    text = _report()
+
+    assert "Tasks naming a record they are not linked to: 3" in text
+    assert "no record of that code in the project" in text
+    assert "the record belongs to another project" in text
+    assert 'unknown entity type "Banana"' in text
+    assert "task LINKED" not in text and "task GENERAL" not in text
 
 
 def test_it_changes_nothing():

@@ -9,6 +9,8 @@ Each test restores the database to the latest migration, even when it fails.
 
 from __future__ import annotations
 
+import uuid
+
 import pytest
 from django.core.management import call_command
 from django.db import connection
@@ -22,6 +24,7 @@ WITH_COLUMN = [("production", "0026_shot_sequence")]
 WITH_EPISODE_COLUMN = [("production", "0028_sequence_episode")]
 BEFORE_ARCHIVE_RECONCILE = [("production", "0030_protect_history_rows")]
 BEFORE_ASSET_TYPES = [("production", "0033_task_types_and_templates")]
+BEFORE_TASK_LINKS = [("production", "0035_task_entity_links")]
 
 
 def _latest():
@@ -327,3 +330,75 @@ class TestAssetTypesLinked:
         assert (
             Asset.objects.get(pk=made["Prop"].pk).category == "Prop"
         )  # the category itself is untouched
+
+
+class TestTaskEntitiesLinked:
+    """0036: a task is linked only to a record it provably names, in its own project."""
+
+    def test_what_is_provable_is_linked_and_the_rest_left_alone(self, restore):
+        apps = _migrate(BEFORE_TASK_LINKS)
+        project, other = _project(apps, "TLA"), _project(apps, "TLB")
+        Shot, Asset, Sequence = (
+            apps.get_model("production", name) for name in ("Shot", "Asset", "Sequence")
+        )
+        Task = apps.get_model("production", "Task")
+        shot = Shot.objects.create(project=project, code="SH010", name="a")
+        archived = Shot.objects.create(project=project, code="OLD", name="o", is_deleted=True)
+        foreign = Shot.objects.create(project=other, code="SH010", name="f")
+        asset = Asset.objects.create(project=project, code="ROCK", name="r")
+        sequence = Sequence.objects.create(project=project, code="SQ1", name="s")
+        Shot.objects.create(project=project, code="SH020", name="b")
+
+        def task(code, **fields):
+            fields.setdefault("project", project)
+            return Task.objects.create(code=code, title=code, **fields)
+
+        made = {
+            "uuid": task("UUID", entity_type="Shot", entity_id=str(shot.id)),
+            "archived": task("ARCH", entity_type="Shot", entity_id=str(archived.id)),
+            "asset_uuid": task("ASSET", entity_type="Asset", entity_id=str(asset.id)),
+            "sequence": task("SEQ", entity_type="sequence", entity_id=str(sequence.id)),
+            "code": task("CODE", entity_type="Shot", entity_id="sh010"),
+            "code_in_text": task(
+                "CODETXT", entity_type="Shot", entity_id="mock-1", entity_code="SH020"
+            ),
+            "foreign": task("FOREIGN", entity_type="Shot", entity_id=str(foreign.id)),
+            "missing": task("MISSING", entity_type="Shot", entity_id=str(uuid.uuid4())),
+            "no_code": task("NOCODE", entity_type="Shot", entity_id="NOPE"),
+            "two": task("TWO", entity_type="Shot", entity_id="SH010", entity_code="SH020"),
+            "wrong_kind": task("KIND", entity_type="Asset", entity_id=str(shot.id)),
+            "unknown_type": task("TYPE", entity_type="Banana", entity_id="SH010"),
+            "general": task("GEN", entity_type="General", entity_id=""),
+            "no_project": task("NOPROJ", entity_type="Shot", entity_id=str(shot.id), project=None),
+        }
+
+        apps = _migrate(_latest())
+
+        Task = apps.get_model("production", "Task")
+        state = {
+            key: tuple(
+                str(value) if value is not None else None
+                for value in (row.shot_id, row.asset_id, row.sequence_id)
+            )
+            for key, row in ((k, Task._base_manager.get(pk=v.pk)) for k, v in made.items())
+        }
+        none = (None, None, None)
+        assert state == {
+            "uuid": (str(shot.id), None, None),
+            "archived": (str(archived.id), None, None),
+            "asset_uuid": (None, str(asset.id), None),
+            "sequence": (None, None, str(sequence.id)),
+            "code": (str(shot.id), None, None),
+            "code_in_text": (str(Shot.objects.get(code="SH020").id), None, None),
+            "foreign": none,
+            "missing": none,
+            "no_code": none,
+            "two": none,  # the id and the code name different records: not guessed
+            "wrong_kind": none,
+            "unknown_type": none,
+            "general": none,
+            "no_project": none,
+        }
+        assert Task._base_manager.get(pk=made["foreign"].pk).entity_id == str(
+            foreign.id
+        )  # the text is untouched

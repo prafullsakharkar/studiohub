@@ -21,6 +21,9 @@ class TaskSerializer(TaskHoursMixin, BaseReadSerializer[Any]):  # pyright: ignor
     reviewer_name = serializers.SerializerMethodField()
     reviewer_avatar = serializers.SerializerMethodField()
     department = serializers.CharField(read_only=True)
+    shot_id = serializers.UUIDField(read_only=True, allow_null=True)
+    asset_id = serializers.UUIDField(read_only=True, allow_null=True)
+    sequence_id = serializers.UUIDField(read_only=True, allow_null=True)
     task_type_id = serializers.UUIDField(read_only=True, allow_null=True)
     task_type_code = serializers.SerializerMethodField()
     task_type_name = serializers.SerializerMethodField()
@@ -40,6 +43,9 @@ class TaskSerializer(TaskHoursMixin, BaseReadSerializer[Any]):  # pyright: ignor
             "project_id",
             "project_code",
             "project_name",
+            "shot_id",
+            "asset_id",
+            "sequence_id",
             "entity_type",
             "entity_id",
             "entity_code",
