@@ -4,14 +4,17 @@ Base ViewSet for Production entities.
 
 from __future__ import annotations
 
+from typing import Any, ClassVar
+
 from django.http import Http404
 from rest_framework.decorators import action
-from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.response import Response
 
 from apps.core.api.viewsets.service import ServiceModelViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
+from apps.production.permissions.checks import has_permission_code
 from apps.production.selectors.base import ProductionBaseSelector
 
 
@@ -48,6 +51,11 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         IsAuthenticatedPermission,
         HasPermission,
     )
+
+    #: field -> {value: permission code} (values may be booleans). Setting a field to such a value, or
+    #: moving it away from it, through plain create/update needs the code on top
+    #: of the action's own (e.g. ``shot.approve`` to approve a shot with PATCH).
+    privileged_values: ClassVar[dict[str, dict[Any, str]]] = {}
 
     def get_queryset(self):
         if self._include_deleted() and self._may_view_deleted():
@@ -327,10 +335,48 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         ):
             raise ValidationError({"project_id": "Unknown project."})
         self._enforce_natural_key_uniqueness(project, data)
+        self.validate_references(project, data)
+        self._guard_privileged_values(data)
         # Always pass the resolved instance: validated_data may carry the
         # raw reference string from the project_id/project_code aliases,
         # which the ORM cannot assign to the FK directly.
         serializer.save(project=project)
+
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        data = serializer.validated_data if isinstance(serializer.validated_data, dict) else {}
+        self.validate_references(getattr(instance, "project", None), data, instance=instance)
+        self._guard_privileged_values(data, instance=instance)
+        super().perform_update(serializer)
+
+    def validate_references(self, project, data, instance=None):
+        """
+        Hook: check that the records ``data`` points at belong to ``project``.
+
+        Called on create (after the project is resolved and authorized) and on
+        update (with the stored project). Raise a ``ValidationError`` that looks
+        like an unknown id (``apps.production.validators.references``).
+        """
+
+    def _guard_privileged_values(self, data, instance=None):
+        """403 when ``data`` sets or clears a privileged value without its code."""
+        for field, rules in self.privileged_values.items():
+            if field not in data:
+                continue
+            new = data[field]
+            old = getattr(instance, field, None) if instance is not None else None
+            for value, code in rules.items():
+                if self._holds(new, value) != self._holds(old, value) and not has_permission_code(
+                    self.request, code
+                ):
+                    raise PermissionDenied(f"Changing {field} to or from {value!r} requires {code}.")
+
+    @staticmethod
+    def _holds(stored: Any, value: Any) -> frozenset[Any]:
+        """What ``stored`` carries of the privileged ``value``: the keys holding it for a dict, else ``{value}`` or nothing."""
+        if isinstance(stored, dict):
+            return frozenset(key for key, item in stored.items() if item == value)
+        return frozenset({value}) if stored == value else frozenset()
 
     def _enforce_natural_key_uniqueness(self, project, data):
         """

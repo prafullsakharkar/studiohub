@@ -81,6 +81,7 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     ("automation.update", "automation", "update"),
     ("automation.delete", "automation", "delete"),
     ("note.create", "notes", "create"),
+    ("timelog.manage", "timelogs", "manage"),
     ("audit.view", "audit", "read"),
     ("audit.update", "audit", "update"),
     ("settings.update", "settings", "update"),
@@ -155,7 +156,7 @@ PRODUCTION_FULL_PERMISSIONS = [
     "track.create", "track.view", "track.update", "track.delete",
     "show.create", "show.view", "show.update", "show.delete",
     "automation.create", "automation.view", "automation.update", "automation.delete",
-    "note.create",
+    "note.create", "timelog.manage",
     "audit.view",
 ]
 

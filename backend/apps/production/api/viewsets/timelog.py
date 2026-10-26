@@ -1,17 +1,22 @@
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from apps.core.api.pagination import StandardPagination
 from apps.production.api.filtersets.timelog import TimelogFilterSet
+from apps.production.api.serializers.actions import RejectTimelogSerializer, validated
 from apps.production.api.serializers.timelog.create import TimelogCreateSerializer
 from apps.production.api.serializers.timelog.detail import TimelogDetailSerializer
 from apps.production.api.serializers.timelog.list import TimelogListSerializer
 from apps.production.api.serializers.timelog.update import TimelogUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.constants.permissions import TimelogPermissions
+from apps.production.permissions.checks import has_permission_code
 from apps.production.selectors.timelog import TimelogSelector
 from apps.production.services.timelog import TimelogService
+from apps.production.validators.references import require_project_member, unknown
 
 
 class TimelogViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
@@ -41,6 +46,11 @@ class TimelogViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         "restore": (TimelogPermissions.UPDATE,),
     }
 
+    # Approving or rejecting a timelog with a plain update needs the approve code.
+    privileged_values = {
+        "status": dict.fromkeys(("Approved", "Rejected"), TimelogPermissions.APPROVE),
+    }
+
     search_fields = ("notes",)
     ordering_fields = ("date", "created_at", "duration_hours")
 
@@ -57,9 +67,32 @@ class TimelogViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
                 data["project_code"] = getattr(task.project, "code", "") or ""
         super().perform_create(serializer)
 
+    def validate_references(self, project, data, instance=None):
+        """
+        The task must belong to the timelog's project, and the time is logged
+        for the caller unless they hold ``timelog.manage`` and name a member.
+        """
+        if instance is not None or project is None:
+            return
+        task = data.get("task")
+        if task is not None and task.project_id != project.id:
+            raise unknown("task", "task")
+        person = data.get("person")
+        if person is not None and person.pk != self.request.user.pk:
+            if not has_permission_code(self.request, TimelogPermissions.MANAGE):
+                raise PermissionDenied(
+                    f"Logging time for someone else requires {TimelogPermissions.MANAGE}."
+                )
+            require_project_member(project, person, field="person_id", label="person")
+
+    def _refuse_own_timelog(self, instance):
+        if instance.person_id == self.request.user.pk and not self.request.user.is_superuser:
+            raise PermissionDenied("You cannot approve or reject your own timelog.")
+
     @action(detail=True, methods=["post"], url_path="approve")
     def approve(self, request, *args, **kwargs):
         instance = self.get_object()
+        self._refuse_own_timelog(instance)
         instance.status = "Approved"
         instance.approved_by = request.user if request.user.is_authenticated else None
         instance.approved_at = timezone.now()
@@ -67,11 +100,14 @@ class TimelogViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         serializer = TimelogDetailSerializer(instance)
         return Response(serializer.data)
 
+    @extend_schema(request=RejectTimelogSerializer)
     @action(detail=True, methods=["post"], url_path="reject")
     def reject(self, request, *args, **kwargs):
         instance = self.get_object()
+        self._refuse_own_timelog(instance)
+        body = validated(RejectTimelogSerializer, request.data)
         instance.status = "Rejected"
-        instance.rejection_reason = request.data.get("rejection_reason", "")
+        instance.rejection_reason = body.get("rejection_reason", "")
         instance.save(update_fields=["status", "rejection_reason"])
         serializer = TimelogDetailSerializer(instance)
         return Response(serializer.data)

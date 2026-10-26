@@ -1,20 +1,13 @@
-from typing import Any
-
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
-from rest_framework import serializers
-from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.production.selectors.base import ProductionBaseSelector
 
 
-class DummySerializer(serializers.Serializer[Any]):
-    pass
-
-
-class AnalyticsKpisView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
+class AnalyticsKpisView(APIView):
     """
     Real aggregates computed from production models, narrowed to the caller's
     project memberships (platform admins see every project).
@@ -26,7 +19,6 @@ class AnalyticsKpisView(GenericAPIView):  # pyright: ignore[reportMissingTypeArg
     """
 
     permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
@@ -79,11 +71,10 @@ def _storage_figures():
     return 0, 0
 
 
-class AnalyticsDepartmentsView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
+class AnalyticsDepartmentsView(APIView):
     """Per-department task aggregates computed from the caller's member projects."""
 
     permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):

@@ -1,7 +1,6 @@
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 
-from apps.core.api.mixins.bulk import BulkActionsMixin
 from apps.core.api.pagination import StandardPagination
 from apps.production.api.filtersets.episode import EpisodeFilterSet
 from apps.production.api.serializers.episode.create import EpisodeCreateSerializer
@@ -9,13 +8,14 @@ from apps.production.api.serializers.episode.detail import EpisodeDetailSerializ
 from apps.production.api.serializers.episode.list import EpisodeListSerializer
 from apps.production.api.serializers.episode.update import EpisodeUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
+from apps.production.api.viewsets.bulk import ProductionBulkMixin
 from apps.production.constants import ProjectWorkflowType
 from apps.production.constants.permissions import EpisodePermissions
 from apps.production.selectors.episode import EpisodeSelector
 from apps.production.services.episode import EpisodeService
 
 
-class EpisodeViewSet(ProductionEntityViewSet, BulkActionsMixin):  # pyright: ignore[reportMissingTypeArgument]
+class EpisodeViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = EpisodeSelector
     service_class = EpisodeService
     pagination_class = StandardPagination

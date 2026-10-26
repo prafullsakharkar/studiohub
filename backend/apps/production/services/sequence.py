@@ -13,14 +13,12 @@ rule): ``bulk_archive`` soft-deletes, ``bulk_restore`` un-deletes.
 
 from __future__ import annotations
 
-from apps.production.api.serializers.sequence.update import SequenceUpdateSerializer
 from apps.production.models import Sequence
 from apps.production.services.bulk import BulkOperationService
 
 
 class SequenceService(BulkOperationService):
     model = Sequence
-    bulk_update_serializer = SequenceUpdateSerializer
 
     # Result statuses (inherited from BulkOperationService; repeated here so
     # existing imports like ``SequenceService.CREATED`` keep working).

@@ -3,10 +3,13 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseWriteSerializer
+from apps.production.api.serializers.common import LockedFieldsMixin
 from apps.production.models import Shot
 
 
-class ShotUpdateSerializer(BaseWriteSerializer[Any]):
+class ShotUpdateSerializer(LockedFieldsMixin, BaseWriteSerializer[Any]):
+    locked_fields = {"supervisor_approved": "Use the approve action."}
+
     # Same reference aliases as create; the viewset resolves + validates the
     # episodic chain against the shot's (unchangeable) project before saving.
     episode_id = serializers.CharField(
@@ -37,3 +40,4 @@ class ShotUpdateSerializer(BaseWriteSerializer[Any]):
             "client_approved",
             "pipeline",
         )
+        read_only_fields = ("supervisor_approved",)

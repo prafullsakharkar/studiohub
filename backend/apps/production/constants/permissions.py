@@ -56,6 +56,8 @@ class TimelogPermissions:
     UPDATE = "timelog.update"
     DELETE = "timelog.delete"
     APPROVE = "timelog.approve"
+    # Log time for another person.
+    MANAGE = "timelog.manage"
 
 
 class VersionPermissions:

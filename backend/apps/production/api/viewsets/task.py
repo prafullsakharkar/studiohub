@@ -1,25 +1,33 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
-from apps.core.api.mixins.bulk import BulkActionsMixin
 from apps.core.api.pagination import StandardPagination
 from apps.production.api.filtersets.task import TaskFilterSet
+from apps.production.api.serializers.actions import (
+    BulkAssignSerializer,
+    BulkStatusSerializer,
+    TaskIdsSerializer,
+    validated,
+)
 from apps.production.api.serializers.task.create import TaskCreateSerializer
 from apps.production.api.serializers.task.detail import TaskDetailSerializer
 from apps.production.api.serializers.task.list import TaskListSerializer
 from apps.production.api.serializers.task.update import TaskUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
+from apps.production.api.viewsets.bulk import ProductionBulkMixin
 from apps.production.constants.permissions import TaskPermissions
 from apps.production.selectors.task import TaskSelector
 from apps.production.services.task import TaskService
+from apps.production.validators.references import require_project_member
 
 
 # NOTE: ``bulk_assign``/``bulk_status``/``bulk_delete`` below are task-specific
 # contract shapes ({success, updated_count}) and intentionally shadow nothing
 # from the mixin. The task-specific ``bulk_archive`` was removed in favor of
 # the mixin's union response (a superset containing success/updated_count).
-class TaskViewSet(ProductionEntityViewSet, BulkActionsMixin):  # pyright: ignore[reportMissingTypeArgument]
+class TaskViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = TaskSelector
     service_class = TaskService
     pagination_class = StandardPagination
@@ -58,74 +66,64 @@ class TaskViewSet(ProductionEntityViewSet, BulkActionsMixin):  # pyright: ignore
     search_fields = ("title", "code", "description")
     ordering_fields = ("title", "code", "created_at", "status", "priority", "due_date")
 
+    def validate_references(self, project, data, instance=None):
+        """Assignee and reviewer must be active members of the task's project."""
+        if project is None:
+            return
+        for field in ("assignee", "reviewer"):
+            require_project_member(project, data.get(field), field=field, label="user")
+
+    @extend_schema(request=BulkAssignSerializer)
     @action(detail=False, methods=["post"], url_path="bulk-assign")
     def bulk_assign(self, request, *args, **kwargs):
+        from django.contrib.auth import get_user_model
         from rest_framework.exceptions import ValidationError
 
         from apps.masterdata.models import Team
+        from apps.production.models import Project
 
-        task_ids = request.data.get("task_ids", [])
-        assignee_id = request.data.get("assignee_id")
-        team_id = request.data.get("team_id")
+        body = validated(BulkAssignSerializer, request.data)
+        task_ids = body["task_ids"]
+        assignee_id = body.get("assignee_id")
+        team_id = body.get("team_id")
+        tasks = list(self.get_queryset().filter(id__in=task_ids))
         assignee = None
         if assignee_id:
-            from django.contrib.auth import get_user_model
-
-            from apps.production.models import ProjectMembership
-
             assignee = get_user_model().objects.filter(id=assignee_id).first()
             if assignee is None:
                 raise ValidationError({"assignee_id": "Unknown assignee."})
-            if not getattr(assignee, "is_superuser", False):
-                from apps.production.selectors.base import ProductionBaseSelector
-
-                scoped_projects = set(
-                    self.get_queryset().values_list("project_id", flat=True)
-                )
-                has_access = ProductionBaseSelector._has_global_admin_role(
-                    assignee
-                ) or ProjectMembership.objects.filter(
-                    user=assignee,
-                    project_id__in=scoped_projects,
-                    is_deleted=False,
-                    status__iexact="active",
-                ).exists()
-                if not has_access:
-                    raise ValidationError(
-                        {"assignee_id": "Assignee must be an active project member."}
-                    )
+            # Membership is checked against each task's own project, so the
+            # assignee cannot be pushed into a project they do not belong to.
+            for project in Project.objects.filter(id__in={task.project_id for task in tasks}):
+                require_project_member(project, assignee, field="assignee_id", label="assignee")
         team = None
         if team_id:
             team = Team.objects.filter(id=team_id, is_deleted=False).first()
             if team is None:
                 raise ValidationError({"team_id": "Unknown team."})
-        updated = 0
-        qs = self.get_queryset().filter(id__in=task_ids)
-        for task in qs:
+        for task in tasks:
             if assignee is not None:
                 task.assignee = assignee
             if team is not None:
                 task.team = team
             task.save(update_fields=["assignee", "team"] if team is not None else ["assignee"])
-            updated += 1
-        return Response({"success": True, "updated_count": updated})
+        return Response({"success": True, "updated_count": len(tasks)})
 
+    @extend_schema(request=BulkStatusSerializer)
     @action(detail=False, methods=["post"], url_path="bulk-status")
     def bulk_status(self, request, *args, **kwargs):
         from rest_framework.exceptions import ValidationError
 
         from apps.production.constants.task import TaskStatus
 
-        task_ids = request.data.get("task_ids", [])
-        status_val = request.data.get("status")
-        if not status_val:
-            return Response({"detail": "status is required."}, status=400)
+        body = validated(BulkStatusSerializer, request.data)
+        status_val = body["status"]
         valid_statuses = [choice[0] for choice in TaskStatus.choices]
         if status_val not in valid_statuses:
             raise ValidationError(
                 {"status": f"Invalid status. Valid values: {valid_statuses}."}
             )
-        updated = self.get_queryset().filter(id__in=task_ids).update(status=status_val)
+        updated = self.get_queryset().filter(id__in=body["task_ids"]).update(status=status_val)
         return Response({"success": True, "updated_count": updated})
 
     @action(detail=False, methods=["post"], url_path="bulk-archive")
@@ -176,11 +174,12 @@ class TaskViewSet(ProductionEntityViewSet, BulkActionsMixin):  # pyright: ignore
         self._set_status(instance, "In Progress")
         return Response(self._detail_data(instance))
 
+    @extend_schema(request=TaskIdsSerializer)
     @action(detail=False, methods=["post"], url_path="bulk-delete")
     def bulk_delete(self, request, *args, **kwargs):
         # Soft-delete per instance through the service layer (queryset
         # .delete() would hard-delete rows and skip services/events).
-        task_ids = request.data.get("task_ids", [])
+        task_ids = validated(TaskIdsSerializer, request.data)["task_ids"]
         deleted = 0
         for task in self.get_queryset().filter(id__in=task_ids):
             self.service_class.delete(task, user=request.user)

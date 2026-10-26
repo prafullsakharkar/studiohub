@@ -13,8 +13,9 @@ out-of-scope projects/ids report ``invalid``/``not_found`` without an
 existence leak. ``organization`` is still accepted as an ignored keyword so
 the shared core bulk mixin (de-orged separately) keeps calling through.
 
-Concrete services set ``model`` (via ``BusinessService``) and
-``bulk_update_serializer`` (DRF serializer used to validate per-item updates).
+Concrete services set ``model`` (via ``BusinessService``). Per-item update
+validation belongs to the API layer: ``bulk_update`` is handed a ``validate``
+callable and imports nothing from ``api``.
 """
 
 from __future__ import annotations
@@ -28,7 +29,6 @@ class BulkOperationService(BusinessService):
     """Bulk create/update/archive/restore + existence check for one model."""
 
     model: ClassVar[Any] = None
-    bulk_update_serializer: ClassVar[Any] = None
 
     # Result statuses (stable wire values; the API layer maps them to the
     # frontend contract shapes).
@@ -263,16 +263,14 @@ class BulkOperationService(BusinessService):
     # ------------------------------------------------------------------
 
     @classmethod
-    def bulk_update(cls, items, *, user=None, organization=None):
+    def bulk_update(cls, items, *, validate, user=None, organization=None):
         """
         Update multiple entities by id (project-membership scoped).
 
         Per-item statuses: ``updated`` | ``not_found`` | ``invalid``.
-        Items are validated with ``bulk_update_serializer`` when configured.
+        ``validate(instance, data)`` returns ``(validated_data, None)`` or
+        ``(None, errors)``; items it rejects report ``invalid`` with the errors.
         """
-        assert cls.bulk_update_serializer is not None, (
-            "bulk_update_serializer must be set on the service class."
-        )
         allowed = cls._allowed_project_ids(user)
         results = []
         for index, item in enumerate(items):
@@ -294,13 +292,11 @@ class BulkOperationService(BusinessService):
                 )
                 continue
             data = {k: v for k, v in item.items() if k != "id"}
-            serializer = cls.bulk_update_serializer(instance=instance, data=data, partial=True)
-            if not serializer.is_valid():
-                results.append(
-                    {"index": index, "status": cls.INVALID, "error": serializer.errors}
-                )
+            validated, errors = validate(instance, data)
+            if errors is not None:
+                results.append({"index": index, "status": cls.INVALID, "error": errors})
                 continue
-            updated = cls.update(instance, user=user, **serializer.validated_data)
+            updated = cls.update(instance, user=user, **(validated or {}))
             results.append(
                 {
                     "index": index,

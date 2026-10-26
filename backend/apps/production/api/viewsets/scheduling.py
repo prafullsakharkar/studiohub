@@ -1,16 +1,17 @@
-from typing import Any, ClassVar
+from typing import ClassVar
 from uuid import UUID
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
-from rest_framework import serializers
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.identity.permissions import HasPermission
+from apps.production.api.serializers.actions import ResolveOverbookingSerializer, validated
 from apps.production.api.serializers.automation import (
     AutomationAuditLogSerializer,
     AutomationRuleSerializer,
@@ -24,59 +25,8 @@ from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.services import automation as automation_service
 
 
-class DummySerializer(serializers.Serializer[Any]):
-    pass
-
-
-class SchedulingEventsView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
+class SchedulingCapacityView(APIView):
     permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
-
-    @extend_schema(responses=OpenApiTypes.OBJECT)
-    def get(self, request):
-        return Response([])
-
-    @extend_schema(request=DummySerializer, responses=DummySerializer)
-    def post(self, request):
-        return Response({"id": "evt-001", **request.data}, status=201)
-
-
-class SchedulingEventDetailView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
-
-    @extend_schema(responses=OpenApiTypes.OBJECT)
-    def get(self, request, pk=None):
-        return Response({"id": pk})
-
-    @extend_schema(request=DummySerializer, responses=DummySerializer)
-    def patch(self, request, pk=None):
-        return Response({"id": pk, **request.data})
-
-    @extend_schema(request=DummySerializer, responses=DummySerializer)
-    def put(self, request, pk=None):
-        return Response({"id": pk, **request.data})
-
-    def delete(self, request, pk=None):
-        return Response(status=204)
-
-
-class SchedulingResourcesView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
-
-    @extend_schema(responses=OpenApiTypes.OBJECT)
-    def get(self, request):
-        return Response([])
-
-    @extend_schema(request=DummySerializer, responses=DummySerializer)
-    def patch(self, request, pk=None):
-        return Response({"id": pk, **request.data})
-
-
-class SchedulingCapacityView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
@@ -85,9 +35,8 @@ class SchedulingCapacityView(GenericAPIView):  # pyright: ignore[reportMissingTy
         return Response(get_capacity_summary())
 
 
-class SchedulingOverbookingView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
+class SchedulingOverbookingView(APIView):
     permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
@@ -96,21 +45,18 @@ class SchedulingOverbookingView(GenericAPIView):  # pyright: ignore[reportMissin
         return Response(get_overbooking_alerts())
 
 
-class SchedulingResolveOverbookingView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
+class SchedulingResolveOverbookingView(APIView):
     permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
 
-    @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
+    @extend_schema(request=ResolveOverbookingSerializer, responses=OpenApiTypes.OBJECT)
     def post(self, request):
         from apps.scheduling.services.capacity import resolve_overbooking
 
-        data = request.data or {}
-        if not data.get("alert_id"):
-            return Response({"alert_id": ["This field is required."]}, status=400)
+        data = validated(ResolveOverbookingSerializer, request.data)
         try:
             result = resolve_overbooking(
                 organization=None,
-                alert_id=data.get("alert_id"),
+                alert_id=data["alert_id"],
                 resource_id=data.get("resource_id"),
             )
         except DjangoValidationError as exc:
@@ -118,28 +64,6 @@ class SchedulingResolveOverbookingView(GenericAPIView):  # pyright: ignore[repor
         if result is None:
             return Response({"detail": "Not found."}, status=404)
         return Response(result)
-
-
-class SchedulingHolidaysView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
-
-    @extend_schema(responses=OpenApiTypes.OBJECT)
-    def get(self, request):
-        return Response([])
-
-
-class SchedulingLeavesView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
-
-    @extend_schema(responses=OpenApiTypes.OBJECT)
-    def get(self, request):
-        return Response([])
-
-    @extend_schema(request=DummySerializer, responses=DummySerializer)
-    def post(self, request):
-        return Response({"id": "leave-001", **request.data}, status=201)
 
 
 class _AutomationView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
@@ -153,7 +77,6 @@ class _AutomationView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgum
     """
 
     permission_classes = (IsAuthenticated, HasPermission)
-    serializer_class = DummySerializer
     permission_map: ClassVar[dict[str, tuple[str, ...]]] = {}
 
     def get_permission_required(self):
@@ -188,6 +111,7 @@ class _AutomationView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgum
 
 
 class AutomationRulesView(_AutomationView):
+    serializer_class = AutomationRuleSerializer
     permission_map = {
         "get": (AutomationPermissions.VIEW,),
         "post": (AutomationPermissions.CREATE,),
@@ -228,6 +152,7 @@ class AutomationRulesView(_AutomationView):
 
 
 class AutomationRuleDetailView(_AutomationView):
+    serializer_class = AutomationRuleSerializer
     permission_map = {
         "get": (AutomationPermissions.VIEW,),
         "patch": (AutomationPermissions.UPDATE,),
@@ -281,6 +206,7 @@ class AutomationRuleDetailView(_AutomationView):
 
 
 class AutomationAuditLogsView(_AutomationView):
+    serializer_class = AutomationAuditLogSerializer
     permission_map = {"get": (AutomationPermissions.VIEW,)}
 
     @extend_schema(responses=OpenApiTypes.OBJECT)

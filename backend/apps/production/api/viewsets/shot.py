@@ -2,7 +2,6 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from apps.core.api.mixins.bulk import BulkActionsMixin
 from apps.core.api.pagination import StandardPagination
 from apps.production.api.filtersets.shot import ShotFilterSet
 from apps.production.api.serializers.shot.create import ShotCreateSerializer
@@ -10,8 +9,10 @@ from apps.production.api.serializers.shot.detail import ShotDetailSerializer
 from apps.production.api.serializers.shot.list import ShotListSerializer
 from apps.production.api.serializers.shot.update import ShotUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
+from apps.production.api.viewsets.bulk import ProductionBulkMixin
 from apps.production.constants import ProjectWorkflowType
 from apps.production.constants.permissions import ShotPermissions
+from apps.production.constants.shot import ShotStatus
 from apps.production.models import Episode
 from apps.production.selectors.episode import EpisodeSelector
 from apps.production.selectors.sequence import SequenceSelector
@@ -19,7 +20,7 @@ from apps.production.selectors.shot import ShotSelector
 from apps.production.services.shot import ShotService
 
 
-class ShotViewSet(ProductionEntityViewSet, BulkActionsMixin):  # pyright: ignore[reportMissingTypeArgument]
+class ShotViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = ShotSelector
     service_class = ShotService
     pagination_class = StandardPagination
@@ -51,6 +52,15 @@ class ShotViewSet(ProductionEntityViewSet, BulkActionsMixin):  # pyright: ignore
         "archive": (ShotPermissions.DELETE,),
         "restore": (ShotPermissions.UPDATE,),
         "archived": (ShotPermissions.VIEW,),
+    }
+
+    # Approving a shot, or reopening an approved one, with a plain update needs
+    # the approve code, like the approve action. Client approval has no action
+    # yet, so it is guarded the same way instead of locked.
+    privileged_values = {
+        "status": {ShotStatus.APPROVED.value: ShotPermissions.APPROVE},
+        "pipeline": {ShotStatus.APPROVED.value: ShotPermissions.APPROVE},
+        "client_approved": {True: ShotPermissions.APPROVE},
     }
 
     search_fields = ("code", "name", "description", "sequence_code")

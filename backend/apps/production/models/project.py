@@ -7,15 +7,15 @@ from __future__ import annotations
 from django.conf import settings
 from django.db import models
 
+from apps.core.models.bases import EntityModel
 from apps.production.constants import (
     ProjectStatus,
     ProjectType,
     ProjectWorkflowType,
 )
-from apps.production.models.base import ProductionEntityModel
 
 
-class Project(ProductionEntityModel):
+class Project(EntityModel):
     """
     Project — the top-level production container (e.g., Feature Film, Episodic Series).
 

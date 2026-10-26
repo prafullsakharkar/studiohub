@@ -5,12 +5,15 @@ from rest_framework import serializers
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.api.serializers.common import (
     LenientUniqueTogetherValidator,
+    LockedFieldsMixin,
     ProjectReferenceMixin,
 )
 from apps.production.models import Shot
 
 
-class ShotCreateSerializer(ProjectReferenceMixin, BaseWriteSerializer[Any]):
+class ShotCreateSerializer(LockedFieldsMixin, ProjectReferenceMixin, BaseWriteSerializer[Any]):
+    locked_fields = {"supervisor_approved": "Use the approve action."}
+
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
     # Frontend contract: ``episode_id``/``sequence_id`` arrive as raw
@@ -51,7 +54,7 @@ class ShotCreateSerializer(ProjectReferenceMixin, BaseWriteSerializer[Any]):
             "client_approved",
             "pipeline",
         )
-        read_only_fields = ("id", "uuid")
+        read_only_fields = ("id", "uuid", "supervisor_approved")
         extra_kwargs = {"project": {"required": False}}
         validators = [
             LenientUniqueTogetherValidator(

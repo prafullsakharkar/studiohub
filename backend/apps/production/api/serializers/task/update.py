@@ -1,10 +1,16 @@
 from typing import Any
 
 from apps.core.api.serializers.base import BaseWriteSerializer
+from apps.production.api.serializers.common import LockedFieldsMixin
 from apps.production.models import Task
 
 
-class TaskUpdateSerializer(BaseWriteSerializer[Any]):
+class TaskUpdateSerializer(LockedFieldsMixin, BaseWriteSerializer[Any]):
+    locked_fields = {
+        "is_archived": "Use the archive and restore actions.",
+        "logged_hours": "Derived from the task's timelogs.",
+    }
+
     class Meta:
         model = Task
         fields = (
@@ -35,3 +41,4 @@ class TaskUpdateSerializer(BaseWriteSerializer[Any]):
             "estimated_hours",
             "logged_hours",
         )
+        read_only_fields = ("is_archived", "logged_hours")
