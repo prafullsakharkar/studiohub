@@ -289,3 +289,20 @@ Frontend change list: the task form's entity picker must send a real shot, asset
 | C-41g | Existing versions | Free numbers. | Migration 0038/0039: numbered per series, project required; refused with a list if it finds a version with both shot and asset, several live heroes on one shot or asset, or no derivable project. |
 
 Frontend change list: stop sending `version_number` (show the server's) and let `code` be blank; handle the new 400s on publish (only approved versions), edit (published versions: notes and tags only) and archive; show `published_at` / `published_by_id`; demote the old hero in the UI after a promote (the server already has).
+
+## Reviews (D-30)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-42 | `GET /api/v1/reviews/`, `/reviews/{id}/` : `versions`, `reviewers`, `comments`, `notes`, `annotations`, `activity` | Stored JSON lists. | Built from rows with the same keys; each entry also has `id`, and comments `author_id`, `parent_id`, `is_resolved`, `resolved_at`, `resolved_by_id`, nested `replies`; participants `legacy_id`; versions `item_id`, `order`, `status`, `code`, `version_number`. |
+| C-42a | `POST /reviews/{id}/comments/`, `/notes/`, `/annotations/` | The body named the author. | `author`, `author_name`, `author_role` are **ignored**; the author is the caller, a note's role comes from the membership. Responses carry `author_id`. |
+| C-42b | `POST /reviews/{id}/comments/` | No replies. | Optional `parent_id` makes a reply (**400** to a reply, **404** for a comment of another review). |
+| C-42c | `POST /reviews/{id}/comments/{cid}/resolve/`, `/reopen/` | Flag on the JSON entry. | Records `resolved_by` and `resolved_at`; **404** for a comment of another review. |
+| C-42d | `POST /reviews/{id}/participant-verdict/` | Anyone with `review.update` could record anyone's verdict. | **403** unless the caller is the participant; a participant with no account is answered by a holder of `review.approve`. `participant_id` is the row's id or the old list's id. |
+| C-42e | `POST /reviews/{id}/participants/`, `DELETE /reviews/{id}/participants/{pid}/` | Did not exist (the list was filled by seeds only). | Add (`user_id`, `role`) / remove; **400** for a non-member or unknown user (same message) or a repeat. |
+| C-42f | `POST /reviews/{id}/versions/`, `DELETE /reviews/{id}/versions/{version_id}/` | Did not exist. | Add (`version_id`: id or code in the review's project) / remove; **400** for an unknown or repeated version. |
+| C-42g | `POST /projects/{id}/notes/` | `author_name`, `author_role`, `author_avatar` taken from the body. | The caller's own name and membership role; avatar cleared. |
+| C-42h | Existing reviews | JSON lists. | Converted by migration 0041 (entries it cannot read are skipped and printed; the JSON stays). |
+
+Frontend change list: stop sending author names and roles; offer participants and versions from the new endpoints; a participant's verdict button belongs to that participant only; show who resolved a comment; read `reviewers[].id` as the row id (the old string id is in `legacy_id` and still accepted).
+

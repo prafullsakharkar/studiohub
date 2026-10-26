@@ -205,6 +205,27 @@ def test_versions_that_would_block_the_migration_are_findings(without_constraint
     assert "Versions sharing a number within their series (information): 0" in text
 
 
+def test_review_list_entries_that_cannot_become_rows_are_listed_as_information():
+    from apps.production.models import Review, ReviewItem, ReviewParticipant
+
+    project = ProjectFactory.create(code="RPT14")
+    Review.objects.create(
+        project=project,
+        code="RV1",
+        title="t",
+        versions=[{"id": "junk"}],
+        reviewers=["x", {"id": "p1", "name": "ok"}],
+        comments=[5],
+    )
+
+    text = _report()
+
+    assert "Review list entries migration 0041 cannot convert (information): 3" in text
+    assert "review RV1: versions[0] matches no version of the project" in text
+    assert "review RV1: reviewers[0] is not an object" in text
+    assert not ReviewItem.objects.exists() and not ReviewParticipant.objects.exists()  # a dry run
+
+
 def test_it_changes_nothing():
     project = ProjectFactory.create(code="RPT3")
     ShotFactory.create(project=project, code="S1", sequence_code="SQX")

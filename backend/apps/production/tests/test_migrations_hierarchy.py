@@ -26,6 +26,7 @@ BEFORE_ARCHIVE_RECONCILE = [("production", "0030_protect_history_rows")]
 BEFORE_ASSET_TYPES = [("production", "0033_task_types_and_templates")]
 BEFORE_TASK_LINKS = [("production", "0035_task_entity_links")]
 BEFORE_VERSION_PREP = [("production", "0037_version_published_by")]
+BEFORE_REVIEW_ROWS = [("production", "0039_version_constraints")]
 
 
 def _latest():
@@ -530,3 +531,101 @@ class TestVersionsPrepared:
         apps = _migrate(_latest())
 
         assert apps.get_model("production", "Version")._base_manager.count() == 2
+
+
+class TestReviewJsonConverted:
+    """0041 turns the old JSON lists of a review into rows, reports what it cannot read, keeps the JSON."""
+
+    def test_every_list_becomes_rows_and_the_json_stays(self, restore, capsys):
+        apps = _migrate(BEFORE_REVIEW_ROWS)
+        project = _project(apps, "RVA")
+        other = _project(apps, "RVB")
+        Version = apps.get_model("production", "Version")
+        User = apps.get_model("identity", "User")
+        Review = apps.get_model("production", "Review")
+        mine = Version.objects.create(project=project, code="RVA_V1", version_index=1)
+        foreign = Version.objects.create(project=other, code="RVB_V1", version_index=1)
+        user = User.objects.create(email="rev@example.com")
+        review = Review.objects.create(
+            project=project,
+            code="REV1",
+            title="Dailies",
+            versions=[str(mine.pk), {"id": str(foreign.pk)}, {"code": "rva_v1"}, 7, {"id": "junk"}],
+            reviewers=[
+                {
+                    "id": "p1",
+                    "user_id": str(user.pk),
+                    "name": "Rev A",
+                    "verdict": "Approved",
+                    "verdict_notes": "ok",
+                    "verdict_date": "2026-01-02T10:00:00",
+                },
+                {"id": "p2", "user_id": "u-unknown", "name": "Rev B"},
+                {"id": "p3", "user_id": str(user.pk), "name": "Rev A again"},
+                "not an object",
+            ],
+            comments=[
+                {
+                    "id": "c1",
+                    "author": "Ann",
+                    "text": "dark",
+                    "frame_number": "12",
+                    "is_resolved": True,
+                    "tags": ["a", 3],
+                    "created_at": "2026-01-01T09:00:00Z",
+                    "replies": [{"author": "Bob", "text": "agreed"}, "bad"],
+                },
+                42,
+            ],
+            notes=[
+                {
+                    "category": "Look",
+                    "author_name": "Cy",
+                    "author_role": "Sup",
+                    "content": "n",
+                    "is_pinned": True,
+                }
+            ],
+            annotations=[{"frame_number": 3, "comment": "here", "drawing_coordinates": {"x": 1}}],
+            activity=[
+                {
+                    "action": "SUBMITTED",
+                    "notes": "go",
+                    "user": "a@b.c",
+                    "timestamp": "2026-01-01T08:00:00Z",
+                }
+            ],
+        )
+        empty = Review.objects.create(project=project, code="REV2", title="Empty")
+
+        apps = _migrate(_latest())
+
+        Review = apps.get_model("production", "Review")
+        row = lambda name: apps.get_model("production", name).objects  # noqa: E731
+        assert [
+            i.version_id for i in row("ReviewItem").filter(review_id=review.pk).order_by("position")
+        ] == [
+            mine.pk
+        ]  # the foreign project's version, the repeat, the number and the junk are skipped
+        people = list(row("ReviewParticipant").filter(review_id=review.pk).order_by("created_at"))
+        assert [(p.legacy_id, p.verdict, p.user_id is not None) for p in people] == [
+            ("p1", "Approved", True),
+            ("p2", "Pending Review", False),
+        ]  # the repeated user and the non-object are skipped
+        assert people[0].verdict_notes == "ok" and people[0].verdict_at is not None
+        comments = list(row("ReviewComment").filter(review_id=review.pk).order_by("created_at"))
+        root = next(c for c in comments if c.parent_id is None)
+        assert (
+            root.author_name == "Ann" and root.frame_number == 12 and root.resolved_at is not None
+        )
+        assert root.tags == ["a"] and root.created_at.year == 2026
+        assert [c.text for c in comments if c.parent_id == root.pk] == ["agreed"]
+        assert row("ReviewNote").get(review_id=review.pk).is_pinned is True
+        assert row("ReviewAnnotation").get(review_id=review.pk).drawing_coordinates == {"x": 1}
+        entry = row("ReviewActivity").get(review_id=review.pk)
+        assert (entry.action, entry.actor_email, entry.created_at.hour) == ("SUBMITTED", "a@b.c", 8)
+        assert row("ReviewItem").filter(review_id=empty.pk).count() == 0
+        kept = Review.objects.get(pk=review.pk)
+        assert len(kept.comments) == 2 and len(kept.reviewers) == 4  # the JSON is untouched
+        out = capsys.readouterr().out
+        assert "not converted" in out and "versions[1]" in out and "reviewers[3]" in out

@@ -23,6 +23,8 @@ is left:
 * versions that migration 0038 would refuse (both a shot and an asset; several live hero versions on
   one shot or asset; no project that can be derived) and, as information, how many versions share a
   number within their series (DECISIONS D-29)
+* as information, the entries in the old JSON lists of reviews that migration 0041 cannot turn into rows
+  (they are skipped and printed by the migration; the JSON stays until the contract phase; DECISIONS D-30)
 * tasks whose old stored ``logged_hours`` differs from the sum of their approved timelogs:
   responses now show the sum, so a hand-typed number stops appearing (DECISIONS D-15)
 
@@ -226,6 +228,32 @@ def unlinked_task_entities():
     return found
 
 
+def review_json_not_convertible():
+    """Lines like ``review R1: versions[2] matches no version of the project`` (a dry run of 0041)."""
+    from types import SimpleNamespace
+
+    from django.contrib.auth import get_user_model
+
+    from apps.production.models import Review
+    from apps.production.services.review_legacy import import_review
+
+    # the row classes stay None: a dry run neither reads nor writes the row tables
+    models_ = SimpleNamespace(
+        Version=Version,
+        User=get_user_model(),
+        Item=None,
+        Participant=None,
+        Comment=None,
+        Note=None,
+        Annotation=None,
+        Activity=None,
+    )
+    found: list[str] = []
+    for review in Review.all_objects.all().iterator():
+        found += import_review(review, models=models_, dry_run=True)  # pyright: ignore[reportArgumentType]
+    return found
+
+
 def version_blockers():
     """``[(version id, code, problem)]`` for versions migration 0038 refuses until fixed."""
     from collections import Counter
@@ -359,6 +387,13 @@ class Command(BaseCommand):
         self.stdout.write(
             f"  Versions sharing a number within their series (information): {versions_sharing_a_number()}"
         )
+
+        unreadable = review_json_not_convertible()
+        self.stdout.write(
+            f"Review list entries migration 0041 cannot convert (information): {len(unreadable)}"
+        )
+        for line in unreadable[:50]:
+            self.stdout.write(f"  {line}")
 
         typed_assets, all_assets, typed_tasks, all_tasks = typing_counts()
         self.stdout.write("Catalog types (information, not findings):")

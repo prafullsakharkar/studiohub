@@ -20,13 +20,14 @@ Run these against a copy or the real database, in this order, and keep the outpu
    | Shots whose episode differs from their sequence's | An older mismatch, left alone until the shot is moved. | Review. |
    | Tasks whose stored hours differ from approved timelogs | The old `logged_hours` column (typed by clients or seeded) is no longer shown; responses show the approved sum. | Know that these numbers disappear from the UI. |
    | Versions that block migration 0038 | Versions with both a shot and an asset, shots or assets with several live heroes, versions with no derivable project. **0038 refuses to run while any exist.** The "sharing a number" line is information: 0038 renumbers those. | Fix the rows, then migrate. |
+   | Review list entries migration 0041 cannot convert (information) | Entries in the old JSON lists of reviews that become no row (a version of another project or none, a user listed twice, an entry that is not an object). Nothing blocks; they stay in the JSON column and are listed by the migration. | Look at them; fix the review by hand before migrating if one matters. |
    | Tasks naming a record they are not linked to | A task whose `entity_type` / `entity_id` text names a shot, asset or sequence that could not be linked, with the reason (no record with that code, another project, several matches, unknown type, no project). "A match exists (run migration 0036)" before migrating is expected. | After migrating, fix the ones that remain by editing the task's entity. |
    | Assets with a bad parent | A parent in another project, or a parent chain that loops back. The API now refuses both. | Fix the rows; nothing blocks the migration. |
    | Archive flag versus soft delete | Counts only, not findings. **"Flag only" is the number of rows migration 0031 will soft-delete** (they leave default lists). | Look at the numbers per model before migrating; keep the output. |
 
 ## 2. Migrate
 
-`uv run python manage.py migrate` (production 0023 to 0039, scheduling 0003). In order:
+`uv run python manage.py migrate` (production 0023 to 0041, scheduling 0003). In order:
 
 | Migration | What it does | Can it fail on existing data? |
 |---|---|---|
@@ -47,6 +48,8 @@ Run these against a copy or the real database, in this order, and keep the outpu
 | 0037 `version_published_by` | Adds `Version.published_at` and `published_by`. | No. |
 | 0038 `prepare_versions` | **Refuses, changing nothing,** on versions with both a shot and an asset, several live hero versions on one shot or asset, or no derivable project. Otherwise fills the project, backfills `published_at` and gives each series unique `version_index` numbers (the `version_number` text is never rewritten). Reverse does nothing. | **Yes, on purpose**: the report's "Versions that block migration 0038" lists the same rows; fix them first. |
 | 0039 `version_constraints` | Project required; shot/asset/task become `PROTECT`; unique number per series, one hero per shot and per asset, never both a shot and an asset. | Only if 0038 was skipped. |
+| 0040 `review_parts` | Six new tables for the parts of a review (items, participants, comments, notes, annotations, activity). | No. |
+| 0041 `convert_review_json` | Turns the JSON lists of each review into rows (best effort; the JSON columns are **not** touched). Prints the entries it cannot read (not a version of the project, a repeated user, not an object) and skips them. Reverse does nothing. | No: it never refuses. Read the report line first; once the API reads rows, a skipped entry no longer shows. |
 | scheduling 0003 `leave_rejected_by` | Two additive columns on leave requests. | No. |
 
 Tests exist for forward, back and forward again of 0023 and 0024 (`test_migration_roundtrip.py`) and for 0025 to 0029 and 0031 (`test_migrations_hierarchy.py`, including the refusal of 0025, the fill rules of 0027 and 0029 and the rows 0031 touches); 0030 has none (no SQL) and 0032 only creates a table. The two "fill" migrations log a count of filled and unmatched rows.

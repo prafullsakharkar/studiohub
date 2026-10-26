@@ -8,6 +8,14 @@ from .project import Project
 from .project_membership import ProjectMembership
 from .project_note import ProjectNote
 from .review import Review
+from .review_parts import (
+    ReviewActivity,
+    ReviewAnnotation,
+    ReviewComment,
+    ReviewItem,
+    ReviewNote,
+    ReviewParticipant,
+)
 from .sequence import Sequence
 from .shot import Shot
 from .shot_asset import ShotAsset
@@ -33,6 +41,12 @@ __all__ = [
     "Timelog",
     "Version",
     "Review",
+    "ReviewActivity",
+    "ReviewAnnotation",
+    "ReviewComment",
+    "ReviewItem",
+    "ReviewNote",
+    "ReviewParticipant",
     "Media",
     "Playlist",
     "Workflow",

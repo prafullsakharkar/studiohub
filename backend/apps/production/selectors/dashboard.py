@@ -19,7 +19,7 @@ import contextlib
 from datetime import date, timedelta
 from typing import Any
 
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.utils import timezone
 
 from apps.production.selectors.base import ProductionBaseSelector
@@ -81,7 +81,6 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         the payload never counts a paginated or truncated page. Only the
         small `recent_*` example lists are sliced.
         """
-        from django.db.models import Count
 
         from apps.deliveries.models import DeliveryPackage
         from apps.production.models import Asset, Review, Shot, Task
@@ -137,6 +136,11 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         recent_reviews = list(
             Review.objects.filter(**scope)
             .select_related("lead_reviewer")
+            .annotate(
+                participant_count=Count(
+                    "participants", filter=Q(participants__is_deleted=False), distinct=True
+                )
+            )
             .order_by("-updated_at")[:6]
         )
         recent_deliveries = list(
@@ -436,7 +440,6 @@ class ProjectDashboardSelector(ProductionBaseSelector):
 
     @classmethod
     def _review_item(cls, review) -> dict[str, Any]:
-        reviewers = getattr(review, "reviewers", None) or []
         return {
             "id": str(review.id),
             "title": review.title or "Screening Session",
@@ -444,7 +447,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             # entity under review is the honest, useful label.
             "type": f"{review.entity_type or 'Shot'} Review",
             "status": review.status or "Pending Review",
-            "reviewers_count": len(reviewers) if isinstance(reviewers, list) else 0,
+            "reviewers_count": review.participant_count,
             "updated_at": review.updated_at.isoformat() if review.updated_at else "",
         }
 

@@ -189,6 +189,7 @@ class ReviewCommentSerializer(StrictSerializer):
     comment = serializers.CharField(required=False, allow_blank=True)
     is_client_visible = serializers.BooleanField(required=False, default=True)
     tags = serializers.ListField(child=serializers.CharField(), required=False, default=list)
+    parent_id = serializers.UUIDField(required=False, allow_null=True)
 
 
 class ReviewNoteSerializer(StrictSerializer):
@@ -197,6 +198,15 @@ class ReviewNoteSerializer(StrictSerializer):
     author_role = serializers.CharField(required=False, allow_blank=True, default="")
     content = serializers.CharField(required=False, allow_blank=True, default="")
     is_pinned = serializers.BooleanField(required=False, default=False)
+
+
+class ReviewParticipantAddSerializer(StrictSerializer):
+    user_id = serializers.UUIDField()
+    role = serializers.CharField(required=False, allow_blank=True, default="", max_length=100)
+
+
+class ReviewVersionAddSerializer(StrictSerializer):
+    version_id = serializers.CharField()
 
 
 # -- scheduling ------------------------------------------------------------

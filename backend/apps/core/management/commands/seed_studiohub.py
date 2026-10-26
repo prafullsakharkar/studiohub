@@ -467,6 +467,7 @@ class Command(BaseCommand):
             Version,
             Workflow,
         )
+        from apps.production.services.review import ReviewService
 
         mock_users = self._load(mock_root, "users")
         id_to_email = {
@@ -712,7 +713,7 @@ class Command(BaseCommand):
             self._restore_matching(
                 Review, {"project": project, "code": code}, reporter, "reviews"
             )
-            self._update_or_create(
+            review, _ = self._update_or_create(
                 Review,
                 defaults={
                     "title": item.get("title", code),
@@ -735,6 +736,7 @@ class Command(BaseCommand):
                 code=code,
                 project=project,
             )
+            ReviewService.import_legacy_json(review)
             reporter.add("reviews", "created", 1)
 
         # Playlists.

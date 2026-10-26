@@ -596,6 +596,7 @@ project=proj,
 
     def _seed_reviews(self, ts_path):
         from apps.production.models import Project, Review
+        from apps.production.services.review import ReviewService
 
         data = _load_ts_mock_array(ts_path, "mockReviews")
         if not data:
@@ -606,7 +607,7 @@ project=proj,
             code = item.get("code")
             proj_code = item.get("project_code")
             proj = proj_map.get(proj_code) or Project.objects.first()
-            _update_or_create(Review, defaults={
+            review, _ = _update_or_create(Review, defaults={
                     "title": item.get("title", code),
                     "description": item.get("description", ""),
                     "project": proj,
@@ -626,6 +627,7 @@ project=proj,
                 },
 code=code,
 )
+            ReviewService.import_legacy_json(review)
             count += 1
         return count
 

@@ -11,7 +11,7 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
-from apps.production.models import ProjectMembership, Review
+from apps.production.models import ProjectMembership, Review, ReviewParticipant
 from apps.production.tests.factories import (
     AssetFactory,
     ProjectFactory,
@@ -301,15 +301,9 @@ class TestBulkUpdateArchiveContract:
 @pytest.mark.django_db
 class TestReviewAndProjectContract:
     def _make_review(self, project):
-        return Review.objects.create(
-
-            project=project,
-            code="REV001",
-            title="Review One",
-            reviewers=[
-                {"id": "p1", "user_id": "u1", "name": "Rev A", "verdict": "Pending Review"}
-            ],
-        )
+        review = Review.objects.create(project=project, code="REV001", title="Review One")
+        ReviewParticipant.objects.create(review=review, name="Rev A", legacy_id="p1")
+        return review
 
     def test_participant_verdict(self, staff_client, staff_user):
         project = ProjectFactory.create()

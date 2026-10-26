@@ -23,7 +23,12 @@ from apps.identity.services.credential import API_KEY, PERSONAL_ACCESS_TOKEN, Cr
 from apps.identity.tests.factories import UserFactory
 from apps.identity.tests.rbac_helpers import grant_permissions
 from apps.production.exceptions import SeparationOfDuties
-from apps.production.models import ProjectMembership, StatusHistory, Timelog
+from apps.production.models import (
+    ProjectMembership,
+    ReviewParticipant,
+    StatusHistory,
+    Timelog,
+)
 from apps.production.services.status import StatusService
 from apps.production.tests.factories import (
     ProjectFactory,
@@ -270,7 +275,8 @@ class TestReview:
 
     def test_a_participant_verdict_is_checked(self, project):
         owner = _user(project, *REVIEW_CODES)
-        review = self._submitted_by(project, owner, reviewers=[{"id": "p1", "name": "Me"}])
+        review = self._submitted_by(project, owner)
+        ReviewParticipant.objects.create(review=review, user=owner, name="Me", legacy_id="p1")
 
         resp = _post(
             owner,

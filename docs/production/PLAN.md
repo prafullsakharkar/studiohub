@@ -203,7 +203,7 @@ Selectors to add: `ShotSelector.list_for_sequence`, `SequenceSelector.with_count
 | **P7** Asset links — **DONE** (C1 only, D-26; C2 to C6 not) | C1 | additive | link tests |
 | **P8** Tasks and templates — **P8a DONE** (D1 via the masterdata catalog, D3, C2, parent-asset checks; D-27); **P8b DONE** (D2 entity links, D-28) | D1, D2, D3, D6, D8 | **data** (entity strings → FKs, department → step) | template idempotency, constraint tests |
 | **P9** Versions — **DONE** (E1 to E3, D-29) | E1, E2, E3 | **data + constraint** | concurrency tests (numbering, hero) |
-| **P10** Reviews and notes | E4 | **data** (JSON → rows) | contract-shape snapshot tests |
+| **P10** Reviews and notes — **DONE** (E4, D-30; `ApprovalRecord` as a table and the unified `Note` not built) | E4 | **data** (JSON → rows) | contract-shape snapshot tests |
 | **P11** Later items you choose | B6, B8 drop, C2-C6, D7, E5, F3, F4 | various | per item |
 | **P12** Contract phase and verification | drop legacy columns kept during expand (`sequence_code` column, `entity_*` columns, `is_archived`, `Project.total_*`, JSON blobs) once the frontend no longer writes them; full suite; docs | destructive | full suite, ruff, check, makemigrations |
 
