@@ -1,6 +1,6 @@
 from typing import Any
 
-from django.db.models import QuerySet
+from django.db.models import Count, Q, QuerySet
 
 from apps.production.models import Sequence
 from apps.production.selectors.base import ProductionBaseSelector
@@ -9,7 +9,9 @@ from apps.production.selectors.base import ProductionBaseSelector
 class SequenceSelector(ProductionBaseSelector):
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Sequence]:
-        return Sequence.objects.select_related("project").all()
+        return Sequence.objects.select_related("project").annotate(
+            shots_count_annotated=Count("shots", filter=Q(shots__is_deleted=False))
+        )
 
     @classmethod
     def resolve_in_project(cls, project, lookup: Any) -> Sequence | None:

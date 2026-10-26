@@ -148,3 +148,9 @@ class OverridePermissions:
     SELF_APPROVAL = "production.sod.override"
 
     ALL = (STATUS, SELF_APPROVAL)
+
+
+class CodePermissions:
+    """Renaming the code of a shot or asset that already has versions (codes freeze then)."""
+
+    RENAME = "production.code.rename"

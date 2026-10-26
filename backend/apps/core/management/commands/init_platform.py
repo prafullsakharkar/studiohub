@@ -193,6 +193,9 @@ def _extend_permission_specs() -> None:
             if code not in known:
                 PERMISSION_SPECS.append((code, module, "read" if action == "view" else action))
                 known.add(code)
+    if "production.code.rename" not in known:
+        PERMISSION_SPECS.append(("production.code.rename", "production_code", "rename"))
+        known.add("production.code.rename")
     for spec in OPT_IN_PERMISSIONS:
         if spec[0] not in known:
             PERMISSION_SPECS.append(spec)
@@ -210,7 +213,10 @@ PRODUCTION_FULL_PERMISSIONS = [
 
 # Production admins track contract and budget figures; supervisors, leads and
 # artists share PRODUCTION_FULL_PERMISSIONS or less and do not see them.
-PRODUCTION_ADMIN_PERMISSIONS = PRODUCTION_FULL_PERMISSIONS + ["masterdata.client.view_financial"]
+PRODUCTION_ADMIN_PERMISSIONS = PRODUCTION_FULL_PERMISSIONS + [
+    "masterdata.client.view_financial",
+    "production.code.rename",
+]
 
 # A lead builds and publishes the team's work and approves its time and shots; no deletes,
 # no reviews' final say, no workflow design.

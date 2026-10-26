@@ -127,3 +127,21 @@ Frontend: read `failed_count` / `results` from `bulk-status` and handle 207; the
 | C-21b | `conflicting_events` of an overbooking alert | Titles and project codes of every project's bookings. | Other projects' bookings are listed anonymously (`title` "Booked on another project", `project_code` null); hours and the excess are unchanged. |
 
 Frontend: users without `schedule.view` now get 403 on the scheduling board; the seeded lead-artist and artist roles hold it (re-run `init_platform` on older databases that predate it).
+
+## Codes, frame ranges and shot sequences (D-10, D-11)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-22 | `code` on episode, sequence, shot, asset, task, version (create, update, bulk import) | Any string, unique per project by exact case. | Trimmed and **upper-cased**; unique per project **ignoring case**; whitespace or `/` is a **400**. A duplicate is the same 400 as before. |
+| C-22a | `PATCH` shot or asset `code` after the entity has a version | Accepted. | **400** "frozen once a version exists. Use the rename-code action." |
+| C-22b | `POST /api/v1/shots/{id}/rename-code/`, `POST /api/v1/assets/{id}/rename-code/` | Did not exist. | Body `{"code": "..."}`; needs `production.code.rename` (**403** without; seeded to production-admin only). Returns the entity. Copies of the code on tasks, versions and reviews follow. |
+| C-23 | `frame_in` / `frame_out` (episode, sequence, shot), `start_frame` / `end_frame` (version) | Any numbers. | `out < in` is a **400** on the field. A database check also holds. |
+| C-24 | `sequence_code` on shot create/update | Free text. | Read-only: sending it is a **400** ("Use sequence_id."). Still returned. |
+| C-24a | `sequence_id` on shot create/update | Did not exist. | Optional; an id or a code of the shot's project (any case); null or "" clears it; an unknown one is a **400**. |
+| C-24b | Shot responses | `sequence_code` only. | Also `sequence_id` (null when the shot has no sequence). |
+| C-24c | `GET /api/v1/shots/?sequence_id=` | Did not exist. | Filters by id or by code. The existing `sequence_code` filter keeps working. |
+| C-24d | `shots_count` on a sequence | Counted by text. | Counts the sequence's live shots by foreign key. |
+
+Frontend change list: send `sequence_id`, never `sequence_code`; expect codes in upper case in every response and form; a rename of a shot/asset code after its first version goes through the rename action; show the field error for out-of-order frame ranges.
+
+Deploy: run `manage.py report_production_data` on each shared database before migrating (0025 refuses on conflicts and says which rows), then `init_platform` to seed `production.code.rename`.

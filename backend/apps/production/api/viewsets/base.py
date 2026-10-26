@@ -510,7 +510,9 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
                 if field_name not in data:
                     complete = False
                     break
-                lookup[field_name] = data[field_name]
+                # A code is unique whatever its case.
+                key = f"{field_name}__iexact" if field_name == "code" else field_name
+                lookup[key] = data[field_name]
             if not complete:
                 continue
             if manager.filter(**lookup).first() is not None:

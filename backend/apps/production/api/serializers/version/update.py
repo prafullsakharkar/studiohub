@@ -1,11 +1,11 @@
 from typing import Any
 
 from apps.core.api.serializers.base import BaseWriteSerializer
-from apps.production.api.serializers.common import LockedFieldsMixin
+from apps.production.api.serializers.common import LockedFieldsMixin, NormalizedCodeMixin
 from apps.production.models import Version
 
 
-class VersionUpdateSerializer(LockedFieldsMixin, BaseWriteSerializer[Any]):
+class VersionUpdateSerializer(NormalizedCodeMixin, LockedFieldsMixin, BaseWriteSerializer[Any]):
     locked_fields = {
         "is_published": "Use the publish and unpublish actions.",
         "is_hero": "Use the promote action.",

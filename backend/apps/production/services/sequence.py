@@ -32,3 +32,13 @@ class SequenceService(BulkOperationService):
     ARCHIVED = BulkOperationService.ARCHIVED
     RESTORED = BulkOperationService.RESTORED
     NOT_FOUND = BulkOperationService.NOT_FOUND
+
+    @classmethod
+    def after_update(cls, instance, **kwargs):
+        """A renamed sequence keeps its shots: their text copy of the code follows."""
+        from apps.production.models import Shot
+
+        Shot.all_objects.filter(sequence=instance).exclude(sequence_code=instance.code).update(
+            sequence_code=instance.code
+        )
+        return instance

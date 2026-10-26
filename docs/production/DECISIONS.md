@@ -70,7 +70,7 @@ Least privilege. `timelog.view` shows the caller's own timelogs; `timelog.view_a
 
 ## Open
 
-* Q14 (above) and Q1 to Q6, Q8 to Q12, Q15, Q16, Q18 to Q21 of `ANALYSIS.md` / `PLAN.md`.
+* Q14 (above) and Q1, Q2, Q5, Q6, Q8 to Q12, Q16, Q18 to Q21 of `ANALYSIS.md` / `PLAN.md`. Q3, Q4 and Q15 are decided in D-10 and D-11.
 * **Fixed:** the production scheduling endpoints (`capacity`, `overbooking`, `resolve-overbooking`) used to need only a login. See D-09.
 * Not looked at: the scheduling app's own viewsets (`/scheduling/events|resources|schedules|leaves|holidays/`) were out of scope; check whether they scope by project.
 
@@ -81,3 +81,21 @@ Least privilege. `timelog.view` shows the caller's own timelogs; `timelog.view_a
 * **Overbooking:** the excess always counts every booking, so it is true. The bookings listed under an alert are limited to the caller's projects and studio-wide ones (no project); other projects' bookings appear as "Booked on another project" with no project code. Platform admins see all.
 * **Resolve** flags only the bookings the caller may see; others stay as they are but still count toward the excess.
 * Interim choice: the cut is by project membership. Whether resource planners should see all projects' bookings (a separate code, like `timelog.view_all`) is open. Seeded roles: `schedule.view` for lead-artist and artist, `schedule.update` for the full roles only.
+
+## D-10 Codes and frame ranges (Q4; WP B3, B7)
+
+* **Unique per project, any case.** `sh010` and `SH010` are the same code. A database constraint on `upper(code)` per project backs the checks in the serializers, bulk import and the shot/asset viewset chain, on episode, sequence, shot, asset, task and version. Soft-deleted rows still hold their code.
+* **Stored upper-case.** Writes are trimmed and upper-cased. A code containing whitespace or `/` is a 400. Length limits are unchanged. Nothing stricter is imposed (no pattern like `SH\d+`): studios differ, and that needs a decision of its own.
+* **Updating a code to the same code in another case** is accepted and keeps the stored value.
+* **Shot and asset codes freeze once the entity has a version.** Changing one through the normal update is a 400 ("frozen once a version exists. Use the rename-code action."). Sequences and episodes can be renamed freely; their shots keep pointing at them (see D-11).
+* **`POST /shots/{id}/rename-code/` and `/assets/{id}/rename-code/`** need the opt-in code `production.code.rename` (seeded to production-admin only, not held by platform-admin by default). The service locks the row, checks uniqueness, updates the `entity_code` copy on that entity's tasks, versions and reviews, and records the change in the audit log. Renaming is the only way past the freeze.
+* **Frame ranges:** `frame_out >= frame_in` for episode, sequence and shot, and `start_frame <= end_frame` (when both are set) for versions, as a database check and as a 400 from the serializers.
+* **Existing data.** Migration 0025 refuses, changing nothing, when case-variant duplicates (soft-deleted included) or backwards ranges exist; its message lists them. Run `manage.py report_production_data` first; it reads only.
+
+## D-11 Shot to sequence (Q3, Q15; WP B1)
+
+* **`Shot.sequence` is a foreign key** to `Sequence` (`PROTECT`, nullable). A shot may have no sequence (Q3). A sequence with shots cannot be hard-deleted.
+* **`sequence_code` stays** as a service-maintained text copy of `sequence.code` (column kept until the final cleanup; filters, search and the response shape need it). It is no longer writable: sending it is a 400 ("Use sequence_id."). `sequence_id` (an id, or a code of the shot's own project, any case) places a shot; `null` or empty clears it.
+* **Renaming a sequence** re-syncs `sequence_code` on its shots in the same transaction.
+* **Migration 0027** links each shot to the sequence of its project whose code equals the old text, ignoring case and including soft-deleted sequences. A shot whose text matches nothing keeps `sequence = NULL` and its text (Q15: reported, not failed). The step is idempotent and reversible (reverse does nothing; the text was never removed).
+* **Not decided:** the Sequence to Episode link (B2) still waits on Q2.

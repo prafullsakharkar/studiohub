@@ -108,7 +108,7 @@ class BulkOperationService(BusinessService):
         return (
             cls.model.all_objects.filter(
                 project=project,
-                code=code,
+                code__iexact=code,
             ).first()
         )
 

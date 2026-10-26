@@ -343,7 +343,7 @@ project=proj,
         return count
 
     def _seed_shots(self, ts_path):
-        from apps.production.models import Project, Shot
+        from apps.production.models import Project, Sequence, Shot
 
         data = _load_ts_mock_array(ts_path, "mockShots")
         if not data:
@@ -360,6 +360,9 @@ project=proj,
             if not proj:
                 continue
             _update_or_create(Shot, defaults={
+                    "sequence": Sequence.objects.filter(
+                        project=proj, code__iexact=item.get("sequence_code", "")
+                    ).first(),
                     "sequence_code": item.get("sequence_code", ""),
                     "name": item.get("name", code),
                     "description": item.get("description", ""),

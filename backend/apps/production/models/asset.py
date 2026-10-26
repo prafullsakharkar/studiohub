@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.db import models
+from django.db.models.functions import Upper
 
 from apps.core.models.bases import EntityModel
 from apps.production.constants import AssetCategory, AssetSoftware, ProductionStatus
@@ -101,6 +102,11 @@ class Asset(EntityModel):
         db_table = "production_asset"
         ordering = ("code",)
         unique_together = [("project", "code")]
+        constraints = [
+            models.UniqueConstraint(
+                Upper("code"), "project", name="production_asset_project_ucode_uniq"
+            ),
+        ]
         indexes = [
             models.Index(fields=["project", "category"]),
             models.Index(fields=["status"]),

@@ -106,6 +106,10 @@ class AddToPlaylistSerializer(StrictSerializer):
     playlist_name = serializers.CharField(required=False, allow_blank=True, max_length=255)
 
 
+class RenameCodeSerializer(StrictSerializer):
+    code = serializers.CharField(max_length=50)
+
+
 # -- timelogs --------------------------------------------------------------
 
 

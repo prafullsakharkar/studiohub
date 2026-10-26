@@ -8,12 +8,13 @@ from apps.production.api.serializers.asset.list import AssetListSerializer
 from apps.production.api.serializers.asset.update import AssetUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.api.viewsets.bulk import ProductionBulkMixin
-from apps.production.constants.permissions import AssetPermissions
+from apps.production.api.viewsets.rename_code import RenameCodeMixin
+from apps.production.constants.permissions import AssetPermissions, CodePermissions
 from apps.production.selectors.asset import AssetSelector
 from apps.production.services.asset import AssetService
 
 
-class AssetViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ignore[reportMissingTypeArgument]
+class AssetViewSet(RenameCodeMixin, ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = AssetSelector
     service_class = AssetService
     pagination_class = StandardPagination
@@ -31,6 +32,7 @@ class AssetViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ig
     permission_map = {
         "list": (AssetPermissions.VIEW,),
         "retrieve": (AssetPermissions.VIEW,),
+        "rename_code": (CodePermissions.RENAME,),
         "create": (AssetPermissions.CREATE,),
         "update": (AssetPermissions.UPDATE,),
         "partial_update": (AssetPermissions.UPDATE,),

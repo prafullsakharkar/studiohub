@@ -6,12 +6,13 @@ from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.api.serializers.common import (
     LenientUniqueTogetherValidator,
     LockedFieldsMixin,
+    NormalizedCodeMixin,
     ProjectReferenceMixin,
 )
 from apps.production.models import Task
 
 
-class TaskCreateSerializer(LockedFieldsMixin, ProjectReferenceMixin, BaseWriteSerializer[Any]):
+class TaskCreateSerializer(NormalizedCodeMixin, LockedFieldsMixin, ProjectReferenceMixin, BaseWriteSerializer[Any]):
     locked_fields = {
         "is_archived": "Use the archive and restore actions.",
         "logged_hours": "Derived from the task's timelogs.",

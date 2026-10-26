@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.db import models
+from django.db.models.functions import Upper
 
 from apps.core.models.bases import EntityModel
 from apps.production.constants import TaskPriority, TaskStatus
@@ -101,6 +102,11 @@ class Task(EntityModel):
         db_table = "production_task"
         ordering = ("-created_at",)
         unique_together = [("project", "code")]
+        constraints = [
+            models.UniqueConstraint(
+                Upper("code"), "project", name="production_task_project_ucode_uniq"
+            ),
+        ]
         indexes = [
             models.Index(fields=["project", "entity_type"]),
             models.Index(fields=["project", "entity_id"]),

@@ -4,6 +4,7 @@ Shared serializer pieces for production write serializers.
 
 from __future__ import annotations
 
+import re
 from typing import Any, ClassVar
 from uuid import UUID
 
@@ -21,6 +22,22 @@ class LenientUniqueTogetherValidator(UniqueTogetherValidator):
     for them — the viewset resolves the reference org-scoped (or 400s) and
     enforces natural-key uniqueness itself before saving.
     """
+
+    def filter_queryset(self, attrs, queryset, serializer):
+        """Like the parent, but a ``code`` matches whatever its case."""
+        sources = [serializer.fields[name].source for name in self.fields]  # pyright: ignore[reportAttributeAccessIssue]
+        if serializer.instance is not None:
+            for source in sources:
+                if source not in attrs:
+                    attrs[source] = getattr(serializer.instance, source)
+        lookup = {
+            (f"{source}__iexact" if source == "code" else source): attrs[source]
+            for source in sources
+        }
+        try:
+            return queryset.filter(**lookup)
+        except (TypeError, ValueError):
+            return queryset.none()
 
     def __call__(self, attrs, serializer):
         project = attrs.get("project")
@@ -121,3 +138,69 @@ class LockedFieldsMixin:
             return value != self.Meta.model._meta.get_field(name).get_default()
         except (serializers.ValidationError, TypeError, ValueError):
             return True
+
+
+#: spaces and path separators never belong in a code (codes end up in file paths)
+_CODE_FORBIDDEN = re.compile(r"[\s/\\]")
+
+
+class NormalizedCodeMixin:
+    """
+    Codes are stored upper case, unique per project whatever the case, and free of
+    spaces and slashes (DECISIONS D-10).
+
+    On update a changed code must be free (any case). ``code_frozen_by`` names the
+    ``Version`` foreign key that freezes the code once a version exists (shots, assets:
+    the code is in file and publish names); such a rename goes through the
+    ``rename-code`` action instead. Writing the stored code back in another case is
+    not a change.
+    """
+
+    code_frozen_by: ClassVar[str | None] = None
+    instance: Any  # pyright: ignore[reportUninitializedInstanceVariable]
+
+    def validate_code(self, value):
+        raw = (value or "").strip()
+        if not raw:
+            return value
+        if _CODE_FORBIDDEN.search(raw):
+            raise serializers.ValidationError("A code cannot contain spaces or slashes.")
+        code = raw.upper()
+        instance = getattr(self, "instance", None)
+        if instance is None:
+            return code
+        if code == instance.code.upper():
+            return instance.code
+        if self.code_frozen_by:
+            from apps.production.models import Version
+
+            if Version.all_objects.filter(**{self.code_frozen_by: instance}).exists():
+                raise serializers.ValidationError(
+                    "The code is frozen once a version exists. Use the rename-code action."
+                )
+        taken = (
+            type(instance)
+            .all_objects.filter(project_id=instance.project_id, code__iexact=code)
+            .exclude(pk=instance.pk)
+            .exists()
+        )
+        if taken:
+            raise serializers.ValidationError("A record with this code already exists.")
+        return code
+
+
+class FrameRangeMixin:
+    """A frame range must not run backwards (the database constraint says the same, as a 409)."""
+
+    frame_range_fields: ClassVar[tuple[str, str]] = ("frame_in", "frame_out")
+    instance: Any  # pyright: ignore[reportUninitializedInstanceVariable]
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)  # type: ignore[misc]  # pyright: ignore[reportAttributeAccessIssue]
+        first, last = self.frame_range_fields
+        stored = getattr(self, "instance", None)
+        low = attrs.get(first, getattr(stored, first, None))
+        high = attrs.get(last, getattr(stored, last, None))
+        if low is not None and high is not None and high < low:
+            raise serializers.ValidationError({last: [f"Must not be before {first}."]})
+        return attrs

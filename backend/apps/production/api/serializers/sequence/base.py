@@ -57,9 +57,7 @@ class SequenceSerializer(BaseReadSerializer[Any]):
         return obj.project.name if obj.project else ""
 
     def get_shots_count(self, obj):
-        return (
-            Shot.objects.filter(
-                project=obj.project,
-                sequence_code=obj.code,
-            ).count()
-        )
+        annotated = getattr(obj, "shots_count_annotated", None)
+        if annotated is not None:
+            return annotated
+        return Shot.objects.filter(sequence=obj).count()

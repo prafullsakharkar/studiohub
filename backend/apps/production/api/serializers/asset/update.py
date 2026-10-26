@@ -1,10 +1,12 @@
 from typing import Any
 
 from apps.core.api.serializers.base import BaseWriteSerializer
+from apps.production.api.serializers.common import NormalizedCodeMixin
 from apps.production.models import Asset
 
 
-class AssetUpdateSerializer(BaseWriteSerializer[Any]):
+class AssetUpdateSerializer(NormalizedCodeMixin, BaseWriteSerializer[Any]):
+    code_frozen_by = "asset"
     class Meta:
         model = Asset
         fields = (

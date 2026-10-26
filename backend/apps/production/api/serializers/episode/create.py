@@ -4,13 +4,15 @@ from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.api.serializers.common import (
+    FrameRangeMixin,
     LenientUniqueTogetherValidator,
+    NormalizedCodeMixin,
     ProjectReferenceMixin,
 )
 from apps.production.models import Episode
 
 
-class EpisodeCreateSerializer(ProjectReferenceMixin, BaseWriteSerializer[Any]):
+class EpisodeCreateSerializer(NormalizedCodeMixin, FrameRangeMixin, ProjectReferenceMixin, BaseWriteSerializer[Any]):
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
     code = serializers.CharField(max_length=50, required=False, allow_blank=True)

@@ -564,6 +564,9 @@ class Command(BaseCommand):
             self._update_or_create(
                 Shot,
                 defaults={
+                    "sequence": Sequence.objects.filter(
+                        project=project, code__iexact=item.get("sequence_code", "")
+                    ).first(),
                     "sequence_code": item.get("sequence_code", ""),
                     "name": item.get("name", code),
                     "description": item.get("description", ""),

@@ -10,9 +10,10 @@ from apps.production.api.serializers.shot.list import ShotListSerializer
 from apps.production.api.serializers.shot.update import ShotUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.api.viewsets.bulk import ProductionBulkMixin
+from apps.production.api.viewsets.rename_code import RenameCodeMixin
 from apps.production.api.viewsets.status_history import StatusHistoryMixin
 from apps.production.constants import ProjectWorkflowType
-from apps.production.constants.permissions import ShotPermissions
+from apps.production.constants.permissions import CodePermissions, ShotPermissions
 from apps.production.constants.shot import ShotStatus
 from apps.production.models import Episode
 from apps.production.selectors.episode import EpisodeSelector
@@ -21,7 +22,7 @@ from apps.production.selectors.shot import ShotSelector
 from apps.production.services.shot import ShotService
 
 
-class ShotViewSet(StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ignore[reportMissingTypeArgument]
+class ShotViewSet(RenameCodeMixin, StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = ShotSelector
     service_class = ShotService
     pagination_class = StandardPagination
@@ -39,6 +40,7 @@ class ShotViewSet(StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMix
     permission_map = {
         "list": (ShotPermissions.VIEW,),
         "retrieve": (ShotPermissions.VIEW,),
+        "rename_code": (CodePermissions.RENAME,),
         "status_history": (ShotPermissions.VIEW,),
         "create": (ShotPermissions.CREATE,),
         "update": (ShotPermissions.UPDATE,),
@@ -98,8 +100,8 @@ class ShotViewSet(StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMix
             episode on an episodic shot is a 400 ``episode_id`` error;
           * the episode is resolved inside the target project (codes repeat
             across projects); a foreign or unknown episode is "Unknown episode.";
-          * a supplied ``sequence_id`` must resolve to a sequence of the
-            target project and normalizes the stored ``sequence_code``.
+          * a supplied ``sequence_id`` (id or code) must resolve to a sequence of the
+            target project; the shot then points at it and ``sequence_code`` follows.
 
         Errors use the standard DRF field-mapping shape, never a new
         contract. ``sequence_ref`` never reaches ``save()``.
@@ -136,8 +138,9 @@ class ShotViewSet(StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMix
                     raise ValidationError(
                         {"sequence_id": ["Unknown sequence for the selected project."]}
                     )
-                data["sequence_code"] = sequence.code
+                data["sequence"] = sequence  # Shot.save() copies its code to sequence_code
             else:
+                data["sequence"] = None
                 data["sequence_code"] = ""
 
     @action(detail=True, methods=["post"], url_path="approve")

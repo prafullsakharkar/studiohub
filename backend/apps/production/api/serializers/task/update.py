@@ -1,11 +1,11 @@
 from typing import Any
 
 from apps.core.api.serializers.base import BaseWriteSerializer
-from apps.production.api.serializers.common import LockedFieldsMixin
+from apps.production.api.serializers.common import LockedFieldsMixin, NormalizedCodeMixin
 from apps.production.models import Task
 
 
-class TaskUpdateSerializer(LockedFieldsMixin, BaseWriteSerializer[Any]):
+class TaskUpdateSerializer(NormalizedCodeMixin, LockedFieldsMixin, BaseWriteSerializer[Any]):
     locked_fields = {
         "is_archived": "Use the archive and restore actions.",
         "logged_hours": "Derived from the task's timelogs.",

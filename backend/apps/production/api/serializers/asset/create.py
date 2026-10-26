@@ -5,12 +5,13 @@ from rest_framework import serializers
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.api.serializers.common import (
     LenientUniqueTogetherValidator,
+    NormalizedCodeMixin,
     ProjectReferenceMixin,
 )
 from apps.production.models import Asset
 
 
-class AssetCreateSerializer(ProjectReferenceMixin, BaseWriteSerializer[Any]):
+class AssetCreateSerializer(NormalizedCodeMixin, ProjectReferenceMixin, BaseWriteSerializer[Any]):
     id = serializers.UUIDField(read_only=True)
     uuid = serializers.UUIDField(read_only=True)
 

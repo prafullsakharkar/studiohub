@@ -120,7 +120,8 @@ def _codes(table: dict[str, str]) -> set[str]:
 
 
 EXPECTED = {
-    "production-admin": _codes(FULL),
+    # The code freeze on shots and assets is lifted by production-admin only.
+    "production-admin": _codes(FULL) | {"production.code.rename"},
     "vfx-supervisor": _codes(FULL),
     "org-admin": _codes(FULL),
     "lead-artist": _codes(LEAD),

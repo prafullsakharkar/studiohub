@@ -4,15 +4,18 @@ from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.api.serializers.common import (
+    FrameRangeMixin,
     LenientUniqueTogetherValidator,
     LockedFieldsMixin,
+    NormalizedCodeMixin,
     ProjectReferenceMixin,
     ScopedReferenceField,
 )
 from apps.production.models import Asset, Shot, Task, Version
 
 
-class VersionCreateSerializer(LockedFieldsMixin, ProjectReferenceMixin, BaseWriteSerializer[Any]):
+class VersionCreateSerializer(NormalizedCodeMixin, FrameRangeMixin, LockedFieldsMixin, ProjectReferenceMixin, BaseWriteSerializer[Any]):
+    frame_range_fields = ("start_frame", "end_frame")
     locked_fields = {
         "is_published": "Use the publish action.",
         "is_hero": "Use the promote action.",

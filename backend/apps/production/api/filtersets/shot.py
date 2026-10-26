@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import django_filters
 from django.db.models import Q
 
@@ -20,11 +22,13 @@ class ShotFilterSet(BaseFilterSet):
     sequence_code = django_filters.CharFilter(field_name="sequence_code", lookup_expr="iexact")
     # Frontend-contract alias (defensive; no current caller sends bare `sequence`).
     sequence = django_filters.CharFilter(field_name="sequence_code", lookup_expr="iexact")
+    # Id of the sequence, or its code (any case); unknown values return nothing.
+    sequence_id = django_filters.CharFilter(method="filter_sequence_id")
     code = django_filters.CharFilter(field_name="code", lookup_expr="iexact")
 
     class Meta:
         model = Shot
-        fields = ["status", "project", "project_id", "episode_id", "sequence_code", "sequence", "code"]
+        fields = ["status", "project", "project_id", "episode_id", "sequence_id", "sequence_code", "sequence", "code"]
 
 
     def filter_project(self, queryset, name, value):
@@ -43,6 +47,14 @@ class ShotFilterSet(BaseFilterSet):
         from apps.production.selectors.episode import EpisodeSelector
 
         return queryset.filter(EpisodeSelector.lookup_q(value, prefix="episode__"))
+
+    def filter_sequence_id(self, queryset, name, value):
+        if not value:
+            return queryset
+        try:
+            return queryset.filter(sequence_id=UUID(str(value)))
+        except ValueError:
+            return queryset.filter(sequence_code__iexact=str(value).strip())
 
     def filter_search(self, queryset, name, value):
         if not value:
