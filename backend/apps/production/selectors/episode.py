@@ -1,6 +1,7 @@
 from typing import Any
+from uuid import UUID
 
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 
 from apps.production.models import Episode
 from apps.production.selectors.base import ProductionBaseSelector
@@ -21,25 +22,30 @@ class EpisodeSelector(ProductionBaseSelector):
         return Episode.objects.select_related("project").all()
 
     @classmethod
-    def resolve_by_lookup(cls, lookup: Any) -> Episode | None:
+    def _code_for(cls, text: str) -> str:
+        """Map a frontend mock id (``ep-101``) to its episode code; else the text."""
+        return cls.FRONTEND_MOCK_ID_TO_CODE.get(text.lower(), text)
+
+    @classmethod
+    def resolve_in_project(cls, project, lookup: Any) -> Episode | None:
         """
-        Resolve an episode from a reference value.
+        Resolve an episode inside ``project`` from a reference value.
 
         Accepts UUID pk, ``code`` (case-insensitive), or frontend
-        mock-dataset id (``ep-101`` …). Returns ``None`` when unresolvable;
-        callers turn that into an empty result (filters) or a 400 (writes),
-        never an existence leak across tenants. Soft-deleted episodes never
-        resolve. Project membership of the episode is NOT checked here —
-        chain validators compare ``episode.project_id`` themselves.
+        mock-dataset id (``ep-101`` …). Codes repeat across projects (every
+        episodic project is bootstrapped with ``EP101``), so the lookup is
+        always constrained to ``project``: an episode of another project
+        resolves to ``None`` exactly like an unknown one, without an
+        existence leak. Soft-deleted episodes never resolve.
         """
-        if lookup is None:
+        if project is None or lookup is None:
             return None
+        base = cls.get_queryset().filter(project=project, is_deleted=False)
         if isinstance(lookup, Episode):
-            return lookup if not lookup.is_deleted else None
+            return base.filter(pk=lookup.pk).first()
         text = str(lookup).strip()
         if not text:
             return None
-        base = cls.get_queryset().filter(is_deleted=False)
         hit: Any = None
         try:
             hit = base.filter(id=text).first()
@@ -47,12 +53,24 @@ class EpisodeSelector(ProductionBaseSelector):
             hit = None
         if hit is not None:
             return hit
-        hit = base.filter(code__iexact=text).first()
-        if hit is not None:
-            return hit
-        code = cls.FRONTEND_MOCK_ID_TO_CODE.get(text.lower())
-        if code:
-            hit = base.filter(code__iexact=code).first()
-            if hit is not None:
-                return hit
-        return None
+        return base.filter(code__iexact=cls._code_for(text)).first()
+
+    @classmethod
+    def lookup_q(cls, lookup: Any, *, prefix: str = "") -> Q:
+        """
+        Filter condition matching episodes by a reference value, for lists.
+
+        Never resolves globally: the condition is applied to a queryset that
+        is already narrowed (membership scope, optional ``project`` filter),
+        so ``EP101`` matches the episode of each visible project. Soft-deleted
+        episodes never match. An unusable value matches nothing.
+        """
+        text = str(lookup or "").strip()
+        if not text:
+            return Q(pk__in=[])
+        by_code = Q(**{f"{prefix}code__iexact": cls._code_for(text)})
+        try:
+            by_id = Q(**{f"{prefix}id": UUID(text)})
+        except ValueError:
+            by_id = Q(pk__in=[])
+        return (by_id | by_code) & Q(**{f"{prefix}is_deleted": False})

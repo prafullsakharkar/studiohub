@@ -9,8 +9,8 @@ Frontend contract (studiohub-react):
 
 Both return the ``ProjectDashboardData`` shape; every value is aggregated
 from real production records. Also covers the legacy
-``GET /api/v1/analytics/kpis/`` ``ProductionKpis`` shape (global
-aggregates, project scope only).
+``GET /api/v1/analytics/kpis/`` ``ProductionKpis`` shape (aggregates over the
+caller's member projects).
 """
 
 from datetime import timedelta
@@ -320,13 +320,11 @@ class TestProjectDashboardNestedFallback:
     def test_nested_out_of_scope_project_404(self, staff_client, staff_user):
         ProjectFactory.create(code="XORG01")
         resp = staff_client.get(_nested_url("XORG01"))
-        # The nested scope mixin denies non-members (no existence leak).
-        assert resp.status_code in (
-            status.HTTP_403_FORBIDDEN,
-            status.HTTP_404_NOT_FOUND,
-        )
+        # A non-member gets the same answer as for an unknown project.
+        assert resp.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_nested_non_member_forbidden(self, authenticated_client):
+    def test_nested_without_permission_forbidden(self, authenticated_client):
+        # No ``project.view`` grant: denied before the project is looked at.
         project = ProjectFactory.create(code="NMEM01")
         resp = authenticated_client.get(_nested_url(project.id))
         assert resp.status_code == status.HTTP_403_FORBIDDEN
@@ -336,6 +334,7 @@ class TestProjectDashboardNestedFallback:
 class TestAnalyticsKpisContract:
     def test_kpis_match_production_kpis_shape(self, staff_client, staff_user):
         project = ProjectFactory.create(code="KPI01")
+        _member(staff_user, project)
         ShotFactory.create(project=project, code="SHK01", status="Approved")
         ShotFactory.create(project=project, code="SHK02", status="In Progress")
         TaskFactory.create(
@@ -360,8 +359,8 @@ class TestAnalyticsKpisContract:
         assert resp.data["average_render_time_mins"] is None
 
     def test_archived_projects_excluded_from_active_count(self, staff_client, staff_user):
-        ProjectFactory.create(code="KPA01", status="In Progress")
-        ProjectFactory.create(code="KPA02", status="Archived")
+        _member(staff_user, ProjectFactory.create(code="KPA01", status="In Progress"))
+        _member(staff_user, ProjectFactory.create(code="KPA02", status="Archived"))
 
         resp = staff_client.get("/api/v1/analytics/kpis/")
         assert resp.data["total_active_projects"] == 1

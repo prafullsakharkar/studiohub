@@ -118,3 +118,14 @@ class ShowPermissions:
     CREATE = "show.create"
     UPDATE = "show.update"
     DELETE = "show.delete"
+
+
+class AutomationPermissions:
+    VIEW = "automation.view"
+    CREATE = "automation.create"
+    UPDATE = "automation.update"
+    DELETE = "automation.delete"
+
+
+class NotePermissions:
+    CREATE = "note.create"

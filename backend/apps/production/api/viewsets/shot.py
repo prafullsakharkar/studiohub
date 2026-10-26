@@ -93,7 +93,8 @@ class ShotViewSet(ProductionEntityViewSet, BulkActionsMixin):  # pyright: ignore
             (UUID, code, or mock id) via the write-serializer aliases;
           * episodic projects REQUIRE an episode — missing or cleared
             episode on an episodic shot is a 400 ``episode_id`` error;
-          * the episode must belong to the target project;
+          * the episode is resolved inside the target project (codes repeat
+            across projects); a foreign or unknown episode is "Unknown episode.";
           * a supplied ``sequence_id`` must resolve to a sequence of the
             target project and normalizes the stored ``sequence_code``.
 
@@ -111,18 +112,10 @@ class ShotViewSet(ProductionEntityViewSet, BulkActionsMixin):  # pyright: ignore
 
         episode = None
         if episode_supplied:
-            if isinstance(raw_episode, Episode):
-                episode = raw_episode
-            else:
-                text = str(raw_episode or "").strip()
-                if text:
-                    episode = EpisodeSelector.resolve_by_lookup(text)
-                    if episode is None:
-                        raise ValidationError({"episode_id": ["Unknown episode."]})
-            if episode is not None and episode.project_id != project.id:
-                raise ValidationError(
-                    {"episode_id": ["Episode does not belong to the selected project."]}
-                )
+            if isinstance(raw_episode, Episode) or str(raw_episode or "").strip():
+                episode = EpisodeSelector.resolve_in_project(project, raw_episode)
+                if episode is None:
+                    raise ValidationError({"episode_id": ["Unknown episode."]})
             data["episode"] = episode
         elif instance is not None:
             episode = instance.episode

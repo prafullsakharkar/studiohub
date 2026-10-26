@@ -48,6 +48,13 @@ class ProductionBaseSelector(BaseSelector):
             return False
 
     @classmethod
+    def is_platform_admin(cls, user) -> bool:
+        """Superuser or global ADMIN-priority role holder (platform-wide scope)."""
+        if user is None or not getattr(user, "is_authenticated", False):
+            return False
+        return bool(getattr(user, "is_superuser", False)) or cls._has_global_admin_role(user)
+
+    @classmethod
     def scope_by_project_membership(cls, qs, *, request):
         """
         Narrow a queryset to the caller's active ``ProjectMembership`` set.

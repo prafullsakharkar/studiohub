@@ -69,6 +69,11 @@ PRODUCTION_AREAS = {
     "schedule",
     "track",
     "show",
+    "automation",
+    "note",
+    "sequence",
+    "version",
+    "media",
     "audit",
 }
 

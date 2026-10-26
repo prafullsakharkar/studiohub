@@ -42,10 +42,7 @@ class ShotFilterSet(BaseFilterSet):
             return queryset
         from apps.production.selectors.episode import EpisodeSelector
 
-        episode = EpisodeSelector.resolve_by_lookup(value)
-        if episode is None:
-            return queryset.none()
-        return queryset.filter(episode=episode)
+        return queryset.filter(EpisodeSelector.lookup_q(value, prefix="episode__"))
 
     def filter_search(self, queryset, name, value):
         if not value:

@@ -3,7 +3,9 @@ Tests for the persisted automation rules / audit-log endpoints.
 
 Contract: studiohub-react `WorkflowService.ts` — bare-array lists, full rule
 shape with nested `trigger`, 201 on create, 204 on delete; audit-logs
-read-only list. Rules are platform-global, optionally scoped to a project.
+read-only list. Rules belong to a project the caller is a member of; only
+platform admins may own project-less (global) rules. The authorization matrix
+lives in ``security/test_automation_authz.py``.
 """
 
 from __future__ import annotations
@@ -11,8 +13,9 @@ from __future__ import annotations
 import pytest
 from django.urls import reverse
 
-from apps.production.models import AutomationRule, Workflow
+from apps.production.models import AutomationRule, ProjectMembership, Workflow
 from apps.production.services.automation import log_execution
+from apps.production.tests.factories import ProjectFactory
 
 RULES_URL = reverse("api:v1:production:automation-rules-list")
 LOGS_URL = reverse("api:v1:production:automation-audit-logs")
@@ -40,14 +43,24 @@ def _rule_payload(**overrides):
     return data
 
 
+@pytest.fixture
+def project(staff_user):
+    """A project ``staff_user`` is an active member of."""
+    project = ProjectFactory.create(code="AUTO01")
+    ProjectMembership.objects.create(user=staff_user, project=project, status="active", role="Artist")
+    return project
+
+
 @pytest.mark.django_db
 class TestAutomationRules:
     def test_unauthenticated_401(self, api_client):
         assert api_client.get(RULES_URL).status_code == 401
         assert api_client.post(RULES_URL, {}).status_code == 401
 
-    def test_crud_round_trip(self, staff_client):
-        created = staff_client.post(RULES_URL, _rule_payload(), format="json")
+    def test_crud_round_trip(self, staff_client, project):
+        created = staff_client.post(
+            RULES_URL, _rule_payload(project_id=str(project.id)), format="json"
+        )
 
         assert created.status_code == 201, created.data
         rule_id = created.data["id"]
@@ -94,8 +107,8 @@ class TestAutomationRules:
         )
         assert resp.status_code == 400
 
-    def test_workflow_linking(self, staff_client):
-        workflow = Workflow.objects.create(name="Dailies", code="DAILIES")
+    def test_workflow_linking(self, staff_client, project):
+        workflow = Workflow.objects.create(name="Dailies", code="DAILIES", project=project)
         created = staff_client.post(
             RULES_URL,
             _rule_payload(workflow_id=str(workflow.id)),
@@ -104,17 +117,20 @@ class TestAutomationRules:
         assert created.status_code == 201, created.data
         assert created.data["workflow_id"] == str(workflow.id)
 
-    def test_mock_workflow_id_ignored(self, staff_client):
+    def test_mock_workflow_id_ignored(self, staff_client, project):
         created = staff_client.post(
-            RULES_URL, _rule_payload(workflow_id="wf-001"), format="json"
+            RULES_URL,
+            _rule_payload(workflow_id="wf-001", project_id=str(project.id)),
+            format="json",
         )
         assert created.status_code == 201, created.data
         assert created.data["workflow_id"] is None
 
-    def test_create_needs_no_organization(self, staff_client):
-        # No org scope exists: rules create directly.
-        resp = staff_client.post(RULES_URL, _rule_payload(), format="json")
+    def test_platform_admin_creates_global_rule(self, admin_client):
+        # Only platform admins own project-less rules.
+        resp = admin_client.post(RULES_URL, _rule_payload(), format="json")
         assert resp.status_code == 201, resp.data
+        assert AutomationRule.objects.get(id=resp.data["id"]).project_id is None
 
     def test_detail_invalid_pk_404(self, staff_client):
         resp = staff_client.get(_rule_detail_url("not-a-uuid"))
@@ -126,12 +142,12 @@ class TestAutomationAuditLogs:
     def test_unauthenticated_401(self, api_client):
         assert api_client.get(LOGS_URL).status_code == 401
 
-    def test_list_empty_then_logged(self, staff_client, staff_user):
+    def test_list_empty_then_logged(self, staff_client, staff_user, project):
         assert staff_client.get(LOGS_URL).data == []
 
-        workflow = Workflow.objects.create(name="Dailies", code="DAILIES")
+        workflow = Workflow.objects.create(name="Dailies", code="DAILIES", project=project)
         rule = AutomationRule.objects.create(
-            workflow=workflow, name="Auto publish"
+            project=project, workflow=workflow, name="Auto publish"
         )
         log_execution(
             rule=rule,

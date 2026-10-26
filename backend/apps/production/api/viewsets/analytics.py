@@ -7,6 +7,8 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.production.selectors.base import ProductionBaseSelector
+
 
 class DummySerializer(serializers.Serializer[Any]):
     pass
@@ -14,7 +16,8 @@ class DummySerializer(serializers.Serializer[Any]):
 
 class AnalyticsKpisView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     """
-    Real aggregates computed from production models, project scope only.
+    Real aggregates computed from production models, narrowed to the caller's
+    project memberships (platform admins see every project).
 
     Response matches the frontend ``ProductionKpis`` contract
     (``src/types/analytics.ts``). Fields with no data source yet
@@ -31,18 +34,21 @@ class AnalyticsKpisView(GenericAPIView):  # pyright: ignore[reportMissingTypeArg
         from apps.production.constants.shot import ShotStatus
         from apps.production.models import Project, Shot, Task
 
-        shots = Shot.objects.all()
+        def scoped(qs):
+            return ProductionBaseSelector.scope_by_project_membership(qs, request=request)
+
+        shots = scoped(Shot.objects.all())
         total = shots.count()
         approved = shots.filter(status=ShotStatus.APPROVED).count()
         in_progress = shots.filter(status=ShotStatus.IN_PROGRESS).count()
         pending_review = shots.filter(status=ShotStatus.PENDING_REVIEW).count()
         active_projects = (
-            Project.objects.filter(is_deleted=False)
+            scoped(Project.objects.filter(is_deleted=False))
             .exclude(status=ProjectStatus.ARCHIVED)
             .count()
         )
         active_artists = (
-            Task.objects.filter(is_deleted=False)
+            scoped(Task.objects.filter(is_deleted=False))
             .exclude(assignee__isnull=True)
             .values("assignee")
             .distinct()
@@ -74,7 +80,7 @@ def _storage_figures():
 
 
 class AnalyticsDepartmentsView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    """Per-department task aggregates computed from real tasks."""
+    """Per-department task aggregates computed from the caller's member projects."""
 
     permission_classes = (IsAuthenticated,)
     serializer_class = DummySerializer
@@ -86,7 +92,7 @@ class AnalyticsDepartmentsView(GenericAPIView):  # pyright: ignore[reportMissing
         from apps.production.constants.task import TaskStatus
         from apps.production.models import Task
 
-        base = Task.objects.all()
+        base = ProductionBaseSelector.scope_by_project_membership(Task.objects.all(), request=request)
         rows = (
             base.exclude(department="")
             .values("department")

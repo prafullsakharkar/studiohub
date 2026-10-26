@@ -42,6 +42,9 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     ("shot.update", "shots", "update"),
     ("shot.delete", "shots", "delete"),
     ("shot.approve", "shots", "approve"),
+    ("sequence.view", "sequences", "read"),
+    ("version.view", "versions", "read"),
+    ("media.view", "media", "read"),
     ("asset.create", "assets", "create"),
     ("asset.view", "assets", "read"),
     ("asset.update", "assets", "update"),
@@ -73,6 +76,11 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     ("schedule.view", "scheduling", "read"),
     ("schedule.update", "scheduling", "update"),
     ("schedule.delete", "scheduling", "delete"),
+    ("automation.create", "automation", "create"),
+    ("automation.view", "automation", "read"),
+    ("automation.update", "automation", "update"),
+    ("automation.delete", "automation", "delete"),
+    ("note.create", "notes", "create"),
     ("audit.view", "audit", "read"),
     ("audit.update", "audit", "update"),
     ("settings.update", "settings", "update"),
@@ -131,8 +139,12 @@ DIRECTORY_CRUD_PERMISSIONS = [
     "identity.user.view",
 ]
 
+# The *.view codes for sequences, versions and media are enforced by the flat
+# endpoints and the project-scoped routes (docs/production/CONTRACTS.md C-03), so every
+# production role that reads shots reads them too.
 PRODUCTION_FULL_PERMISSIONS = [
     "project.create", "project.view", "project.update", "project.delete",
+    "sequence.view", "version.view", "media.view",
     "shot.create", "shot.view", "shot.update", "shot.delete", "shot.approve",
     "asset.create", "asset.view", "asset.update", "asset.delete",
     "task.create", "task.view", "task.update", "task.delete",
@@ -142,6 +154,8 @@ PRODUCTION_FULL_PERMISSIONS = [
     "schedule.create", "schedule.view", "schedule.update", "schedule.delete",
     "track.create", "track.view", "track.update", "track.delete",
     "show.create", "show.view", "show.update", "show.delete",
+    "automation.create", "automation.view", "automation.update", "automation.delete",
+    "note.create",
     "audit.view",
 ]
 
@@ -150,19 +164,19 @@ PRODUCTION_FULL_PERMISSIONS = [
 PRODUCTION_ADMIN_PERMISSIONS = PRODUCTION_FULL_PERMISSIONS + ["masterdata.client.view_financial"]
 
 PRODUCTION_LEAD_PERMISSIONS = [
-    "project.view", "shot.view", "shot.update", "shot.approve",
+    "project.view", "sequence.view", "version.view", "media.view", "shot.view", "shot.update", "shot.approve",
     "asset.create", "asset.view", "asset.update",
     "task.create", "task.view", "task.update",
     "review.create", "review.view",
     "delivery.view", "publishing.view", "schedule.view",
-    "track.view", "show.view", "audit.view",
+    "track.view", "show.view", "audit.view", "note.create",
 ]
 
 PRODUCTION_ARTIST_PERMISSIONS = [
-    "project.view", "shot.view", "task.view", "task.update",
+    "project.view", "sequence.view", "version.view", "media.view", "shot.view", "task.view", "task.update",
     "asset.view", "review.view",
     "delivery.view", "publishing.view", "schedule.view",
-    "track.view", "show.view",
+    "track.view", "show.view", "note.create",
 ]
 
 # (code, name, priority, scope, permission codes; None = full catalog)
