@@ -21,6 +21,7 @@ from apps.production.tests.factories import (
     ShotFactory,
     TaskFactory,
     TimelogFactory,
+    VersionFactory,
 )
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -116,6 +117,22 @@ def test_stored_hours_that_no_approved_timelog_backs_are_listed():
     assert "Tasks whose stored hours differ from their approved timelogs: 1" in text
     assert f"task TYPED {typed.pk}: stored 40.00, approved timelogs 0.00" in text
     assert "task BACKED" not in text
+
+
+def test_the_archive_flag_overlap_is_counted_and_is_not_a_finding():
+    project = ProjectFactory.create(code="RPT8")
+    TaskFactory.create(project=project, code="NEITHER")
+    TaskFactory.create(project=project, code="FLAG", is_archived=True)
+    TaskFactory.create(project=project, code="BOTH", is_archived=True, is_deleted=True)
+    TaskFactory.create(project=project, code="GONE", is_deleted=True)
+    VersionFactory.create(project=project, code="V-FLAG", is_archived=True)  # how versions archive
+
+    text = _report("--fail-on-findings")  # would exit 1 if the overlap counted as a finding
+
+    assert "Archive flag versus soft delete (information, not findings):" in text
+    assert "  Task: flag only 1, deleted only 1, both 1, neither 1" in text
+    assert "  Version: flag only 1, deleted only 0, both 0, neither 0" in text
+    assert "  Asset: flag only 0, deleted only 0, both 0, neither 0" in text
 
 
 def test_it_changes_nothing():

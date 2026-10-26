@@ -12,6 +12,9 @@ is left:
 * sequences of episodic projects that have no episode, and why (their shots span several
   episodes, or they have none), and shots whose episode differs from their sequence's
   (DECISIONS D-12)
+* how the ``is_archived`` flag and the soft delete overlap on the five models that have both
+  (information only, not a finding: Version, Workflow and Playlist archive by the flag alone,
+  so rows with the flag and no delete are normal there; DECISIONS D-24)
 * tasks whose old stored ``logged_hours`` differs from the sum of their approved timelogs:
   responses now show the sum, so a hand-typed number stops appearing (DECISIONS D-15)
 
@@ -22,9 +25,10 @@ from __future__ import annotations
 
 from django.core.management.base import BaseCommand
 from django.db import models
+from django.db.models import Count, Q
 
 from apps.production.constants import ProjectWorkflowType
-from apps.production.models import Asset, Episode, Sequence, Shot, Task, Version
+from apps.production.models import Asset, Episode, Playlist, Sequence, Shot, Task, Version, Workflow
 from apps.production.selectors.rollups import TaskHoursSelector
 
 CODED = (Episode, Sequence, Shot, Asset, Task, Version)
@@ -105,6 +109,31 @@ def shots_out_of_step_with_sequence():
     return [(str(pk), code, sequence_code) for pk, code, sequence_code in rows]
 
 
+ARCHIVE_FLAG_MODELS = (Task, Asset, Version, Playlist, Workflow)
+
+
+def archive_flag_overlap():
+    """``[(model name, flag only, deleted only, both, neither)]`` for the models with both markers."""
+    rows = []
+    for model in ARCHIVE_FLAG_MODELS:
+        counts = model.all_objects.aggregate(
+            flag_only=Count("pk", filter=Q(is_archived=True, is_deleted=False)),
+            deleted_only=Count("pk", filter=Q(is_archived=False, is_deleted=True)),
+            both=Count("pk", filter=Q(is_archived=True, is_deleted=True)),
+            neither=Count("pk", filter=Q(is_archived=False, is_deleted=False)),
+        )
+        rows.append(
+            (
+                model.__name__,
+                counts["flag_only"],
+                counts["deleted_only"],
+                counts["both"],
+                counts["neither"],
+            )
+        )
+    return rows
+
+
 def tasks_with_unbacked_hours():
     """``[(task id, code, stored hours, approved timelog hours)]`` where the old stored number differs."""
     rows = TaskHoursSelector.annotate(Task.all_objects.exclude(logged_hours=0))
@@ -172,6 +201,12 @@ class Command(BaseCommand):
         for pk, code, stored, approved in unbacked[:50]:
             findings += 1
             self.stdout.write(f"  task {code} {pk}: stored {stored}, approved timelogs {approved}")
+
+        self.stdout.write("Archive flag versus soft delete (information, not findings):")
+        for name, flag_only, deleted_only, both, neither in archive_flag_overlap():
+            self.stdout.write(
+                f"  {name}: flag only {flag_only}, deleted only {deleted_only}, both {both}, neither {neither}"
+            )
 
         self.stdout.write(self.style.SUCCESS("Done. Nothing was changed."))
         if options["fail_on_findings"] and findings:
