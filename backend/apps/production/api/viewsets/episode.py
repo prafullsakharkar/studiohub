@@ -61,18 +61,13 @@ class EpisodeViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: 
         """Bulk restore with per-item ``not_found`` reporting."""
         return self._bulk_lifecycle_results(ids=self._ids_list(), action="restore")
 
-    def perform_create(self, serializer):
+    def prepare_create(self, serializer, project):
         """Gate episode creation on the project's workflow type.
 
         Episodes belong to ``episodic`` projects only; ``standard`` projects
         reject episode creation with 400 (fail closed without leaking).
         """
-        validated = serializer.validated_data
-        project = validated.get("project") if isinstance(validated, dict) else None
-        if project is None or isinstance(project, str):
-            project = self._resolve_project_from_input(serializer)
         if project is not None and project.workflow_type != ProjectWorkflowType.EPISODIC:
             raise ValidationError(
                 {"project": "Episodes can only be created on episodic projects."}
             )
-        super().perform_create(serializer)

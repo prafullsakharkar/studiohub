@@ -22,12 +22,13 @@ from apps.production.api.serializers.review.detail import ReviewDetailSerializer
 from apps.production.api.serializers.review.list import ReviewListSerializer
 from apps.production.api.serializers.review.update import ReviewUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
+from apps.production.api.viewsets.status_history import StatusHistoryMixin
 from apps.production.constants.permissions import ReviewPermissions
 from apps.production.selectors.review import ReviewSelector
 from apps.production.services.review import ReviewService
 
 
-class ReviewViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class ReviewViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = ReviewSelector
     service_class = ReviewService
     pagination_class = StandardPagination
@@ -43,6 +44,7 @@ class ReviewViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTy
     permission_map = {
         "list": (ReviewPermissions.VIEW,),
         "retrieve": (ReviewPermissions.VIEW,),
+        "status_history": (ReviewPermissions.VIEW,),
         "create": (ReviewPermissions.CREATE,),
         "update": (ReviewPermissions.UPDATE,),
         "partial_update": (ReviewPermissions.UPDATE,),
@@ -64,14 +66,6 @@ class ReviewViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTy
         "restore": (ReviewPermissions.UPDATE,),
     }
 
-    # The decision statuses are the approve/reject/request-changes/verdict actions;
-    # setting them with a plain update needs the same code.
-    privileged_values = {
-        "status": dict.fromkeys(
-            ("Approved", "Rejected", "Changes Requested", "Retake"), ReviewPermissions.APPROVE
-        ),
-    }
-
     search_fields = ("title", "code", "entity_code")
     ordering_fields = ("title", "created_at", "status")
 
@@ -81,16 +75,13 @@ class ReviewViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTy
         super().perform_create(serializer)
 
     def _update_status(self, instance, status, notes=None):
-        instance.status = status
-        if status in ("Approved", "Retake", "Changes Requested"):
-            instance.supervisor_verdict = status
-        if notes:
-            # Append to activity
-            activity = instance.activity or []
-            activity.append({"action": status.upper(), "notes": notes, "user": getattr(self.request.user, "email", ""), "timestamp": datetime.datetime.now().isoformat()})
-            instance.activity = activity
-        instance.save(update_fields=["status", "supervisor_verdict", "activity"])
-        return instance
+        return ReviewService.change_status(
+            actor=self.request.user,
+            review=instance,
+            to_status=status,
+            notes=notes,
+            has_permission=self.can,
+        )
 
     @extend_schema(request=ReviewNotesSerializer)
     @action(detail=True, methods=["post"], url_path="submit")
@@ -139,19 +130,13 @@ class ReviewViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTy
     def verdict(self, request, *args, **kwargs):
         instance = self.get_object()
         body = validated(ReviewVerdictSerializer, request.data)
-        verdict = body["verdict"]
-        notes = body.get("notes")
-        instance.supervisor_verdict = verdict
-        if verdict == "Approved":
-            instance.status = "Approved"
-        elif verdict == "Retake":
-            instance.status = "Retake"
-        instance.save(update_fields=["supervisor_verdict", "status"])
-        if notes:
-            activity = instance.activity or []
-            activity.append({"action": "VERDICT", "verdict": verdict, "notes": notes})
-            instance.activity = activity
-            instance.save(update_fields=["activity"])
+        ReviewService.record_verdict(
+            actor=request.user,
+            review=instance,
+            verdict=body["verdict"],
+            notes=body.get("notes"),
+            has_permission=self.can,
+        )
         return Response(ReviewDetailSerializer(instance).data)
 
     @extend_schema(request=AnnotationSerializer)

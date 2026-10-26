@@ -1,7 +1,7 @@
 # Production Domain Improvement Plan
 
 - **Input:** `docs/production/ANALYSIS.md` (finding IDs `F-*` refer to it)
-- **Status:** P1 committed, P2 implemented on `feature/production-hardening` (contract changes in `CONTRACTS.md`). Q13 answered: 400 (see CONTRACTS Phase 2 for the status/pipeline refinement). P3 onwards not started; the other open questions are unanswered.
+- **Status:** P1 and P2 committed, P3 implemented on `feature/production-hardening` (contract changes in `CONTRACTS.md`). Answered: Q13 = 400 (see CONTRACTS Phase 2 for the status/pipeline refinement), Q17 = yes. P4 onwards not started; the other open questions are unanswered (P3 used the MVP defaults for Q7 and Q14).
 - **Branch:** `analysis/production-shotgrid` (docs only)
 - **Approach:** fix integrity and authorization first, then reshape the hierarchy, then add pipeline features. Each phase is one commit. Every schema change follows **expand → migrate → contract** so each phase can be rolled back and the frontend contract keeps working while the new structure lands.
 
@@ -196,7 +196,7 @@ Selectors to add: `ShotSelector.list_for_sequence`, `SequenceSelector.with_count
 |---|---|---|---|
 | **P1** Authorization hot fixes — **DONE (uncommitted)** | A1, A5, A7 | permission seed only | security matrix + targeted tests |
 | **P2** Write-path integrity — **DONE (uncommitted)** | A2, A3, A8, G2 (action input serializers) | none | injection tests; contract notes in CONTRACTS.md |
-| **P3** Services first | A4, A6, D4 (code transition maps, no new tables), F2, D5 history table | 1 additive (`StatusHistory`) | per-item bulk tests, transition tests |
+| **P3** Services first — **DONE (uncommitted)** | A4, A6, D4 (code transition maps, no new tables), F2, D5 history table | 1 additive (`StatusHistory`) | per-item bulk tests, transition tests |
 | **P4** Constraints | B3, B7 | constraint + data (handles split); preflight SQL must be clean first | migration tests on a seeded test DB |
 | **P5** Hierarchy | B1, B2, F1 (counts), G1 indexes | **data** (`sequence_code` → FK, sequence → episode) | mapping report reviewed by you before running on shared DBs |
 | **P6** Codes and lifecycle | B4, B5, B9 | on_delete changes, archive reconciliation | concurrency tests (numbering) |

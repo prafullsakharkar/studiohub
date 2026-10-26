@@ -63,3 +63,36 @@ Other changes with no client-visible effect: the unrouted scheduling stub views 
 5. Approvals (`status: "Approved"`, `client_approved`) through PATCH now need the approve code; show the 403 message.
 6. Do not rely on `playlists/{id}/reorder/` to edit entries.
 7. Remove unknown keys from the action bodies listed in C-09.
+
+## Phase 3 — services first (WP A4, A6, D4, D5, F2)
+
+Decisions behind this phase: Q17 = **yes** (the generic bulk whitelist in `apps/core` and change tracking in `apps/audit` may change). Q7 (fixed maps or per-project status lists) and Q14 (creator's role) are unanswered; this phase uses the plan's MVP defaults and says so below.
+
+| ID | Endpoint | Before | After | Client impact |
+|---|---|---|---|---|
+| C-11 | Any change of `status` on Shot, Task, Version, Review, Timelog: `PATCH`/`PUT`, bulk-update, the actions (`approve`, `promote`, review actions, timelog `approve`/`reject`), `archive`/`restore` | Written directly, many places, no record (F-M5). | One service, `StatusService.transition_status`: the move must be allowed by `constants/workflow.py` (**400** `{"status": ["A shot cannot move from 'X' to 'Y'."]}`, or `Unknown status`), the caller needs the code for entering/leaving Approved etc. (**403**), a row is appended to `StatusHistory` and `StatusChanged` is published. Moving to the current status is a no-op. In bulk-update an item that fails reports `invalid`. | Illegal moves now fail (see below). |
+| C-11a | `GET /{shots,tasks,versions,reviews,timelogs}/{id}/status-history/` (new) | none | The record's status changes, newest first: `from_status`, `to_status`, `reason`, `actor_id`, `actor_name`, `changed_at`. Needs the entity's `*.view` code and membership. | New endpoint. |
+| C-11b | `POST /timelogs/{id}/approve/`, `/reject/` | Any current status. | Approve and reject only from `Submitted` (from `Draft`, `Rejected` or `Approved` they are 400); `Approved` is final. | A second decision on an approved timelog is 400. |
+| C-11c | Review actions | Any status to any status. | `Closed` is final; the rest may move among the open statuses and to `Closed`. | Reopening a closed review is 400. |
+| C-12 | Every create and update through the API | `created_by`/`updated_by` stayed empty (F-M6). | The services receive the user, so both are set. | none |
+| C-12a | `POST /projects/` | Not atomic; the creator was not a member and could not see the project (F-M9). | One transaction: project, the creator's membership (role `Production Admin`, linked to the `production-admin` role when it exists; platform admins get none) and, for episodic projects, `EP101`. A failure leaves nothing. | The creator sees the new project. |
+| C-13 | `POST .../bulk-create/` on shots, assets, tasks, sequences, episodes | Items went to `create()` unchecked; the form path accepted every model field (`is_deleted`, `created_by_id` ...); errors returned `str(exc)` (F-H5). | Every item is validated by the entity's create serializer and by the same checks as a single create (episode/sequence chain, same-project references, locked fields, privileged status). The form path only accepts the serializer's writable fields. A rejected item reports `invalid` with the serializer errors. Unexpected failures report `The item could not be created.`; the reason is only logged. | Items that were silently accepted may now be `invalid`. |
+| C-14 | `POST /tasks/bulk-status/` | `queryset.update`, no history, always `success: true`. | One transition per task. Response keeps `success` and `updated_count`, adds `failed_count` and `results[]` (`id`, `status` = `updated` / `not_found` / `invalid`, `error`). `success` is `false` when any item failed. | Read `results`. |
+| C-14a | `POST /tasks/bulk-assign/` | Looped inline. | Same checks as before (P2), written through `TaskService.assign_task`; response adds `results[]`. | none |
+| C-15 | Change log (`apps/audit`) | Shot, Sequence, Asset, Task, Version, Project; foreign-key swaps untracked; JSON columns (e.g. a shot's `pipeline`) showed as changed on every save. | Also Episode, Review, Timelog, ProjectMembership. For production models a changed foreign key (`episode_id`, `assignee_id`, `reviewer_id` ...) appears in `changed_fields`; `created_by`/`updated_by` never do. JSON columns compare in one text form, so unchanged ones no longer log. Other apps are unchanged. | Fewer, more accurate change-log rows. |
+
+### Transition maps (`apps/production/constants/workflow.py`)
+
+* **Shot:** live statuses move freely except the listed restrictions: `Approved` may be entered from any live status and left only to `In Progress`, `Retake`, `On Hold`, `Archived`; `Archived` leaves only to `Not Started` or `In Progress`.
+* **Task, Version:** any live status to any other and to `Archived`; `Archived` to `Not Started` or `In Progress`.
+* **Review:** open statuses to each other and to `Closed`/`Archived`; `Closed` is final.
+* **Timelog:** `Draft` to `Submitted`; `Submitted` to `Approved`, `Rejected` or `Draft`; `Rejected` to `Submitted` or `Draft`; `Approved` is final.
+* **Permissions on top of `*.update`:** entering or leaving Approved needs `shot.approve` (shot) or `version.publish` (version); entering Approved, Rejected, Changes Requested, Retake needs `review.approve`; entering Approved or Rejected needs `timelog.approve`.
+* The maps are deliberately loose for tasks, versions and live shots until Q7 is answered; tightening them is a change to this one file. Separation of duties (an approver who is also the artist) is **not** enforced yet.
+
+### Frontend change list (adds to Phase 2)
+
+8. Handle `400 {"status": [...]}` for an illegal move and `403` for a missing approve/publish code on status changes.
+9. `bulk-status`: read `results` and `failed_count`; `success` can now be `false`.
+10. `GET .../status-history/` is available for the five entities.
+11. `POST /projects/` makes the caller a member; do not add them again.

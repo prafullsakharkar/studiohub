@@ -10,6 +10,7 @@ from apps.production.api.serializers.shot.list import ShotListSerializer
 from apps.production.api.serializers.shot.update import ShotUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.api.viewsets.bulk import ProductionBulkMixin
+from apps.production.api.viewsets.status_history import StatusHistoryMixin
 from apps.production.constants import ProjectWorkflowType
 from apps.production.constants.permissions import ShotPermissions
 from apps.production.constants.shot import ShotStatus
@@ -20,7 +21,7 @@ from apps.production.selectors.shot import ShotSelector
 from apps.production.services.shot import ShotService
 
 
-class ShotViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ignore[reportMissingTypeArgument]
+class ShotViewSet(StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = ShotSelector
     service_class = ShotService
     pagination_class = StandardPagination
@@ -38,6 +39,7 @@ class ShotViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ign
     permission_map = {
         "list": (ShotPermissions.VIEW,),
         "retrieve": (ShotPermissions.VIEW,),
+        "status_history": (ShotPermissions.VIEW,),
         "create": (ShotPermissions.CREATE,),
         "update": (ShotPermissions.UPDATE,),
         "partial_update": (ShotPermissions.UPDATE,),
@@ -54,11 +56,10 @@ class ShotViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ign
         "archived": (ShotPermissions.VIEW,),
     }
 
-    # Approving a shot, or reopening an approved one, with a plain update needs
-    # the approve code, like the approve action. Client approval has no action
-    # yet, so it is guarded the same way instead of locked.
+    # Approving a shot's pipeline step, or client approval (which has no action
+    # yet), needs the approve code, like the approve action. A change of the
+    # shot's own status is checked by the status workflow (``StatusService``).
     privileged_values = {
-        "status": {ShotStatus.APPROVED.value: ShotPermissions.APPROVE},
         "pipeline": {ShotStatus.APPROVED.value: ShotPermissions.APPROVE},
         "client_approved": {True: ShotPermissions.APPROVE},
     }
@@ -76,16 +77,8 @@ class ShotViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ign
         """Bulk restore with per-item ``not_found`` reporting."""
         return self._bulk_lifecycle_results(ids=self._ids_list(), action="restore")
 
-    def perform_create(self, serializer):
-        validated = serializer.validated_data
-        data = validated if isinstance(validated, dict) else {}
-        project = data.get("project")
-        if project is None or isinstance(project, str):
-            project = self._resolve_project_from_input(serializer)
-        self._enforce_episode_sequence_chain(
-            serializer, project=project, instance=None
-        )
-        super().perform_create(serializer)
+    def prepare_create(self, serializer, project):
+        self._enforce_episode_sequence_chain(serializer, project=project, instance=None)
 
     def perform_update(self, serializer):
         instance = self.get_object()
@@ -150,11 +143,5 @@ class ShotViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ign
     @action(detail=True, methods=["post"], url_path="approve")
     def approve(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.status = "Approved"
-        instance.supervisor_approved = True
-        if instance.pipeline:
-            for k in instance.pipeline:
-                instance.pipeline[k] = "Approved"
-        instance.save(update_fields=["status", "supervisor_approved", "pipeline"])
-        serializer = ShotDetailSerializer(instance)
-        return Response(serializer.data)
+        ShotService.approve_shot(actor=request.user, shot=instance, has_permission=self.can)
+        return Response(ShotDetailSerializer(instance).data)

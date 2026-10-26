@@ -1,6 +1,6 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import APIException, NotFound
 from rest_framework.response import Response
 
 from apps.core.api.pagination import StandardPagination
@@ -17,8 +17,10 @@ from apps.production.api.serializers.task.list import TaskListSerializer
 from apps.production.api.serializers.task.update import TaskUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.api.viewsets.bulk import ProductionBulkMixin
+from apps.production.api.viewsets.status_history import StatusHistoryMixin
 from apps.production.constants.permissions import TaskPermissions
 from apps.production.selectors.task import TaskSelector
+from apps.production.services.status import StatusService
 from apps.production.services.task import TaskService
 from apps.production.validators.references import require_project_member
 
@@ -27,7 +29,7 @@ from apps.production.validators.references import require_project_member
 # contract shapes ({success, updated_count}) and intentionally shadow nothing
 # from the mixin. The task-specific ``bulk_archive`` was removed in favor of
 # the mixin's union response (a superset containing success/updated_count).
-class TaskViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ignore[reportMissingTypeArgument]
+class TaskViewSet(StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = TaskSelector
     service_class = TaskService
     pagination_class = StandardPagination
@@ -45,6 +47,7 @@ class TaskViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ign
     permission_map = {
         "list": (TaskPermissions.VIEW,),
         "retrieve": (TaskPermissions.VIEW,),
+        "status_history": (TaskPermissions.VIEW,),
         "create": (TaskPermissions.CREATE,),
         "update": (TaskPermissions.UPDATE,),
         "partial_update": (TaskPermissions.UPDATE,),
@@ -101,13 +104,11 @@ class TaskViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ign
             team = Team.objects.filter(id=team_id, is_deleted=False).first()
             if team is None:
                 raise ValidationError({"team_id": "Unknown team."})
+        results = []
         for task in tasks:
-            if assignee is not None:
-                task.assignee = assignee
-            if team is not None:
-                task.team = team
-            task.save(update_fields=["assignee", "team"] if team is not None else ["assignee"])
-        return Response({"success": True, "updated_count": len(tasks)})
+            TaskService.assign_task(actor=request.user, task=task, assignee=assignee, team=team)
+            results.append({"id": str(task.id), "status": "updated"})
+        return Response({"success": True, "updated_count": len(tasks), "results": results})
 
     @extend_schema(request=BulkStatusSerializer)
     @action(detail=False, methods=["post"], url_path="bulk-status")
@@ -123,8 +124,26 @@ class TaskViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ign
             raise ValidationError(
                 {"status": f"Invalid status. Valid values: {valid_statuses}."}
             )
-        updated = self.get_queryset().filter(id__in=body["task_ids"]).update(status=status_val)
-        return Response({"success": True, "updated_count": updated})
+        found = {str(task.id): task for task in self.get_queryset().filter(id__in=body["task_ids"])}
+        results = []
+        for task_id in dict.fromkeys(str(task_id) for task_id in body["task_ids"]):
+            task = found.get(task_id)
+            if task is None:
+                results.append({"id": task_id, "status": "not_found"})
+                continue
+            try:
+                StatusService.transition_status(
+                    actor=request.user, entity=task, to_status=status_val, has_permission=self.can
+                )
+            except APIException as exc:
+                results.append({"id": task_id, "status": "invalid", "error": exc.detail})
+                continue
+            results.append({"id": task_id, "status": "updated"})
+        updated = sum(1 for row in results if row["status"] == "updated")
+        failed = len(results) - updated
+        return Response(
+            {"success": failed == 0, "updated_count": updated, "failed_count": failed, "results": results}
+        )
 
     @action(detail=False, methods=["post"], url_path="bulk-archive")
     def bulk_archive(self, request, *args, **kwargs):

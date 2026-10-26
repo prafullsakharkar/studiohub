@@ -16,6 +16,7 @@ from apps.production.api.serializers.version.detail import VersionDetailSerializ
 from apps.production.api.serializers.version.list import VersionListSerializer
 from apps.production.api.serializers.version.update import VersionUpdateSerializer
 from apps.production.api.viewsets.base import ProductionEntityViewSet
+from apps.production.api.viewsets.status_history import StatusHistoryMixin
 from apps.production.constants.permissions import PlaylistPermissions, VersionPermissions
 from apps.production.models import Asset, Playlist, Shot, Task
 from apps.production.selectors.version import VersionSelector
@@ -23,7 +24,7 @@ from apps.production.services.version import VersionService
 from apps.production.validators.references import require_project_member, resolve_in_project
 
 
-class VersionViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
     selector_class = VersionSelector
     service_class = VersionService
     pagination_class = StandardPagination
@@ -39,6 +40,7 @@ class VersionViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
     permission_map = {
         "list": (VersionPermissions.VIEW,),
         "retrieve": (VersionPermissions.VIEW,),
+        "status_history": (VersionPermissions.VIEW,),
         "create": (VersionPermissions.CREATE,),
         "update": (VersionPermissions.UPDATE,),
         "partial_update": (VersionPermissions.UPDATE,),
@@ -51,9 +53,6 @@ class VersionViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         "archived": (VersionPermissions.VIEW,),
         "restore": (VersionPermissions.UPDATE,),
     }
-
-    # Setting a version to Approved with a plain update is publishing it.
-    privileged_values = {"status": {"Approved": VersionPermissions.PUBLISH}}
 
     search_fields = ("code", "version_number", "entity_code")
     ordering_fields = ("code", "created_at", "version_number")
@@ -98,11 +97,8 @@ class VersionViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
     @action(detail=True, methods=["post"], url_path="promote")
     def promote(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.is_hero = True
-        instance.status = "Approved"
-        instance.save(update_fields=["is_hero", "status"])
-        serializer = VersionDetailSerializer(instance)
-        return Response(serializer.data)
+        VersionService.promote_version(actor=request.user, version=instance, has_permission=self.can)
+        return Response(VersionDetailSerializer(instance).data)
 
     @extend_schema(request=AddToPlaylistSerializer)
     @action(detail=True, methods=["post"], url_path="add-to-playlist")

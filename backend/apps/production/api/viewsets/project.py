@@ -1,7 +1,9 @@
+from django.db import transaction
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.core.api.pagination import StandardPagination
+from apps.identity.models import Role
 from apps.production.api.filtersets.project import ProjectFilterSet
 from apps.production.api.serializers.project.create import ProjectCreateSerializer
 from apps.production.api.serializers.project.detail import ProjectDetailSerializer
@@ -11,9 +13,11 @@ from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.constants import ProjectWorkflowType
 from apps.production.constants.permissions import ProjectPermissions
 from apps.production.models import Episode
+from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.dashboard import ProjectDashboardSelector
 from apps.production.selectors.project import ProjectSelector
 from apps.production.services.project import ProjectService
+from apps.production.services.project_scoped import ProjectMembershipService
 
 
 class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTypeArgument]
@@ -47,8 +51,27 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
     ordering_fields = ("name", "code", "created_at", "status")
 
     def perform_create(self, serializer):
-        super().perform_create(serializer)
-        self._bootstrap_initial_episode(serializer.instance)
+        """Create the project, the creator's membership and the first episode, or nothing."""
+        with transaction.atomic():
+            super().perform_create(serializer)
+            self._add_creator_membership(serializer.instance)
+            self._bootstrap_initial_episode(serializer.instance)
+
+    def _add_creator_membership(self, project):
+        """
+        The creator becomes a member, so they can see what they just created.
+
+        Platform admins see every project anyway and get no membership. The
+        role label is a display value: authorization comes from the permission
+        codes (``ProjectMembership.role_ref`` is not consulted yet, Q9).
+        """
+        user = self.request.user
+        if ProductionBaseSelector.is_platform_admin(user):
+            return
+        role_ref = Role.objects.filter(code="production-admin", is_deleted=False).first()
+        ProjectMembershipService.add_member(
+            project=project, user=user, role="Production Admin", role_ref=role_ref
+        )
 
     def _bootstrap_initial_episode(self, project):
         """Episodic projects start with an initial EP101 episode."""

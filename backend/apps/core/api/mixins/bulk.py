@@ -111,16 +111,34 @@ class BulkActionsMixin:
             "timestamp": timezone.now().isoformat(),
         }
 
-    def _clean_create_data(self, data):
-        """Whitelist create payload keys to concrete model fields."""
-        model = self.service_class.model
+    def _bulk_create_field_names(self):
+        """
+        Keys a bulk-create item may carry.
+
+        The writable fields of the viewset's ``create`` serializer, so a bulk
+        item can set exactly what a single create can and nothing else (not
+        ``is_deleted``, ``created_by_id`` ...). Without a create serializer the
+        concrete model fields are accepted, as before.
+        """
+        serializer_class = (getattr(self, "serializer_map", None) or {}).get("create")
+        if serializer_class is not None:
+            return {name for name, field in serializer_class().fields.items() if not field.read_only}
         allowed = set()
-        for field in model._meta.get_fields():
+        for field in self.service_class.model._meta.get_fields():
             if getattr(field, "concrete", False):
                 allowed.add(field.name)
                 attname = getattr(field, "attname", None)
                 if attname:
                     allowed.add(attname)
+        return allowed
+
+    def _bulk_service_kwargs(self, operation):
+        """Extra keyword arguments for ``service_class.bulk_<operation>`` (hook; none by default)."""
+        return {}
+
+    def _clean_create_data(self, data):
+        """Whitelist create payload keys to the fields a single create accepts."""
+        allowed = self._bulk_create_field_names()
         cleaned = {k: v for k, v in dict(data or {}).items() if k in allowed}
         cleaned.pop("id", None)
         cleaned.pop("organization", None)
@@ -333,6 +351,7 @@ class BulkActionsMixin:
                 raw_items,
                 organization=org,
                 user=request.user,
+                **self._bulk_service_kwargs("create"),
             )
             return self._bulk_create_union(results)
 
@@ -368,6 +387,7 @@ class BulkActionsMixin:
                 flat_creates,
                 organization=org,
                 user=request.user,
+                **self._bulk_service_kwargs("create"),
             )
             for flat_result, position in zip(created, create_positions, strict=True):
                 flat_result = dict(flat_result)
@@ -424,6 +444,7 @@ class BulkActionsMixin:
             items,
             organization=self._organization(),
             user=request.user,
+            **self._bulk_service_kwargs("update"),
         )
         return self._bulk_create_union(results)
 

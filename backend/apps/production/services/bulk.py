@@ -22,7 +22,13 @@ from __future__ import annotations
 
 from typing import Any, ClassVar
 
+from django.db import transaction
+from rest_framework.exceptions import APIException
+
+from apps.core.logging.logger import get_logger
 from apps.core.services.business import BusinessService
+
+logger = get_logger("production")
 
 
 class BulkOperationService(BusinessService):
@@ -170,14 +176,18 @@ class BulkOperationService(BusinessService):
     # ------------------------------------------------------------------
 
     @classmethod
-    def bulk_create(cls, items, *, user=None, organization=None):
+    def bulk_create(cls, items, *, validate, user=None, organization=None):
         """
-        Create multiple entities from validated flat input items.
+        Create multiple entities from flat input items.
 
         Each item carries ``project_id`` + ``code`` + entity fields.
         Per-item statuses: ``created`` | ``exists`` | ``soft_deleted`` |
         ``duplicate`` | ``invalid``. Each creation runs in its own atomic
         transaction so one bad row does not roll back the others.
+
+        ``validate(project, item)`` is the API layer's check, the same one a
+        single create runs; it returns ``(data to create with, None)`` or
+        ``(None, errors)``. Only what it returns is stored.
         """
         allowed = cls._allowed_project_ids(user)
         results = []
@@ -235,16 +245,20 @@ class BulkOperationService(BusinessService):
                     )
                 continue
 
-            data = dict(item)
-            data.pop("project_id", None)
-            data["project"] = project
-            data["code"] = code
+            data, errors = validate(project, item)
+            if errors is not None:
+                results.append({"index": index, "status": cls.INVALID, "error": errors})
+                continue
+            data = {**(data or {}), "project": project, "code": code}
 
             try:
-                instance = cls.create(user=user, **data)
-            except Exception as exc:  # noqa: BLE001
+                with transaction.atomic():
+                    instance = cls.create(user=user, **data)
+            except Exception:  # noqa: BLE001
+                # The reason stays in the log; the client gets no database text.
+                logger.exception("bulk_create_item_failed", model=cls.model.__name__, index=index)
                 results.append(
-                    {"index": index, "status": cls.INVALID, "error": str(exc)}
+                    {"index": index, "status": cls.INVALID, "error": "The item could not be created."}
                 )
                 continue
 
@@ -263,13 +277,15 @@ class BulkOperationService(BusinessService):
     # ------------------------------------------------------------------
 
     @classmethod
-    def bulk_update(cls, items, *, validate, user=None, organization=None):
+    def bulk_update(cls, items, *, validate, update=None, user=None, organization=None):
         """
         Update multiple entities by id (project-membership scoped).
 
         Per-item statuses: ``updated`` | ``not_found`` | ``invalid``.
         ``validate(instance, data)`` returns ``(validated_data, None)`` or
         ``(None, errors)``; items it rejects report ``invalid`` with the errors.
+        ``update(instance, data)`` saves an accepted item (the API layer routes a
+        status change through the workflow); by default ``cls.update``.
         """
         allowed = cls._allowed_project_ids(user)
         results = []
@@ -296,7 +312,15 @@ class BulkOperationService(BusinessService):
             if errors is not None:
                 results.append({"index": index, "status": cls.INVALID, "error": errors})
                 continue
-            updated = cls.update(instance, user=user, **(validated or {}))
+            try:
+                with transaction.atomic():
+                    if update is not None:
+                        updated = update(instance, validated or {})
+                    else:
+                        updated = cls.update(instance, user=user, **(validated or {}))
+            except APIException as exc:
+                results.append({"index": index, "status": cls.INVALID, "error": exc.detail})
+                continue
             results.append(
                 {
                     "index": index,

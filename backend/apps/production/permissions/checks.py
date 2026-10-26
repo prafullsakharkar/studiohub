@@ -13,13 +13,21 @@ from __future__ import annotations
 
 def has_permission_code(request, code: str) -> bool:
     from apps.identity.permissions.scopes import credential_scopes
-    from apps.identity.services.permission_cache import PermissionCacheService
 
     user = getattr(request, "user", None)
     if user is None or not getattr(user, "is_authenticated", False):
         return False
     scopes = credential_scopes(request)
     if scopes is not None and code not in scopes:
+        return False
+    return user_has_permission_code(user, code)
+
+
+def user_has_permission_code(user, code: str) -> bool:
+    """Whether ``user`` holds ``code`` through role grants (superusers hold everything)."""
+    from apps.identity.services.permission_cache import PermissionCacheService
+
+    if user is None or not getattr(user, "is_authenticated", False):
         return False
     if getattr(user, "is_superuser", False):
         return True

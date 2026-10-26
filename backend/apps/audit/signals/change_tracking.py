@@ -35,53 +35,77 @@ _SKIP_FIELDS = frozenset(
 
 _MAX_VALUE_LEN = 500
 
+# Foreign keys are part of the diff only for models of these apps: a swapped
+# episode, assignee or reviewer on a production record is a change worth
+# keeping. Elsewhere relations stay out, as before. The audit columns change on
+# every write, so they never count.
+_RELATION_TRACKING_APPS = frozenset({"production"})
+_AUDIT_RELATIONS = frozenset({"created_by", "updated_by", "deleted_by"})
 
-def _snapshot(instance) -> dict:
-    """Serialize tracked scalar fields for before/after comparison."""
+
+def _tracks_relations(model) -> bool:
+    return model._meta.app_label in _RELATION_TRACKING_APPS
+
+
+def _format_value(raw) -> str:
+    """
+    One text form for a column value, used on both sides of a diff.
+
+    str() first for scalars so both sides format identically (Decimal/dates
+    must NOT go through json.dumps, which would add quotes on one side only);
+    containers (JSON columns) are dumped as JSON, since the database side hands
+    back Python objects whose ``str()`` differs from the dump.
+    """
     import datetime
     import decimal
     import json
     import uuid
 
+    if raw is None:
+        return ""
+    if isinstance(
+        raw,
+        (
+            str,
+            int,
+            float,
+            bool,
+            datetime.date,
+            datetime.datetime,
+            datetime.time,
+            datetime.timedelta,
+            decimal.Decimal,
+            uuid.UUID,
+        ),
+    ):
+        return str(raw)
+    try:
+        return json.dumps(raw, default=str)
+    except Exception:
+        return str(raw)
+
+
+def _snapshot(instance) -> dict:
+    """Serialize tracked scalar fields for before/after comparison."""
     values: dict = {}
     try:
         # A model lists fields that hold personal or financial data in
         # ``audit_exclude_fields``; they never reach the change log.
         excluded = _SKIP_FIELDS | set(getattr(instance, "audit_exclude_fields", ()))
+        track_relations = _tracks_relations(type(instance))
         for field in instance._meta.concrete_fields:
-            if field.name in excluded or field.is_relation:
+            if field.name in excluded:
+                continue
+            if field.is_relation and (not track_relations or field.name in _AUDIT_RELATIONS):
                 continue
             try:
                 raw = field.value_from_object(instance)
             except Exception:
                 continue
-            # str() first for scalars so both snapshot sides format
-            # identically (Decimal/dates must NOT go through json.dumps,
-            # which would add quotes on one side only).
-            if raw is None:
-                text = ""
-            elif isinstance(
-                raw,
-                (
-                    str,
-                    int,
-                    float,
-                    bool,
-                    datetime.date,
-                    datetime.datetime,
-                    datetime.time,
-                    datetime.timedelta,
-                    decimal.Decimal,
-                    uuid.UUID,
-                ),
-            ):
-                text = str(raw)
-            else:
-                try:
-                    text = json.dumps(raw, default=str)
-                except Exception:
-                    text = str(raw)
-            values[field.name] = text[:_MAX_VALUE_LEN]
+            text = _format_value(raw)
+            # A relation is recorded under its column name (``episode_id``), the
+            # key ``_pre_save_snapshot`` reads back from the database.
+            values[field.attname if field.is_relation else field.name] = text[:_MAX_VALUE_LEN]
     except Exception:
         return {}
     return values
@@ -142,14 +166,19 @@ def _pre_save_snapshot(sender, instance, raw, **kwargs) -> None:
         current = sender.objects.filter(pk=instance.pk).values().first() or {}
         # Skip true FK columns (resolved from model meta, NOT by `_id`
         # suffix: legacy scalar fields like `client_id` must stay tracked).
-        # The post-save snapshot omits relations, so FK attnames would
-        # always false-positive as changed; FK swaps are untracked.
-        rel_attnames = {f.attname for f in sender._meta.concrete_fields if f.is_relation}
+        # The post-save snapshot omits the relations it does not track, so their
+        # FK attnames would always false-positive as changed; production models
+        # track their FKs (``_tracks_relations``) except the audit columns.
+        rel_attnames = {
+            f.attname
+            for f in sender._meta.concrete_fields
+            if f.is_relation and not (_tracks_relations(sender) and f.name not in _AUDIT_RELATIONS)
+        }
         # Same exclusion as ``_snapshot``: the "before" side must not carry the
         # personal or financial values the "after" side leaves out.
         skipped = _SKIP_FIELDS | set(getattr(instance, "audit_exclude_fields", ()))
         instance._changelog_before = {
-            k: ("" if v is None else str(v)[:_MAX_VALUE_LEN])
+            k: _format_value(v)[:_MAX_VALUE_LEN]
             for k, v in current.items()
             if k not in skipped and k not in rel_attnames
         }
@@ -196,6 +225,10 @@ _TRACKED_MODEL_PATHS = (
     "apps.production.models.Asset",
     "apps.production.models.Task",
     "apps.production.models.Version",
+    "apps.production.models.Episode",
+    "apps.production.models.Review",
+    "apps.production.models.Timelog",
+    "apps.production.models.ProjectMembership",
     "apps.deliveries.models.DeliveryPackage",
     "apps.publishing.models.PublishItem",
     # Global directory / RBAC entities (post B2/B3 canonicals) — edit-page

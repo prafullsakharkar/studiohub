@@ -11,6 +11,7 @@ from .review import Review
 from .sequence import Sequence
 from .shot import Shot
 from .show import Show
+from .status_history import StatusHistory
 from .task import Task
 from .timelog import Timelog
 from .version import Version
@@ -36,4 +37,5 @@ __all__ = [
     "Episode",
     "ProjectNote",
     "Show",
+    "StatusHistory",
 ]

@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from typing import Any, ClassVar
 
+from django.db import transaction
 from django.http import Http404
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
@@ -14,8 +15,10 @@ from rest_framework.response import Response
 from apps.core.api.viewsets.service import ServiceModelViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
+from apps.production.constants import workflow
 from apps.production.permissions.checks import has_permission_code
 from apps.production.selectors.base import ProductionBaseSelector
+from apps.production.services.status import StatusService
 
 
 class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissingTypeArgument]
@@ -319,7 +322,9 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
             # Models without a project field (e.g., Project itself) are
             # created directly; permission gating happens via HasPermission
             # and reads stay membership-scoped.
-            serializer.save()
+            serializer.instance = self.service_class.create(  # pyright: ignore[reportAttributeAccessIssue]
+                user=self.request.user, **dict(data)
+            )
             return
 
         project = data.get("project")
@@ -335,19 +340,84 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         ):
             raise ValidationError({"project_id": "Unknown project."})
         self._enforce_natural_key_uniqueness(project, data)
+        self.prepare_create(serializer, project)
         self.validate_references(project, data)
         self._guard_privileged_values(data)
+        self._guard_initial_status(data)
         # Always pass the resolved instance: validated_data may carry the
         # raw reference string from the project_id/project_code aliases,
-        # which the ORM cannot assign to the FK directly.
-        serializer.save(project=project)
+        # which the ORM cannot assign to the FK directly. The service sets
+        # created_by/updated_by.
+        serializer.instance = self.service_class.create(  # pyright: ignore[reportAttributeAccessIssue]
+            user=self.request.user, **{**data, "project": project}
+        )
 
-    def perform_update(self, serializer):
+    def perform_update(self, serializer):  # pyright: ignore[reportIncompatibleMethodOverride]
         instance = serializer.instance
         data = serializer.validated_data if isinstance(serializer.validated_data, dict) else {}
         self.validate_references(getattr(instance, "project", None), data, instance=instance)
         self._guard_privileged_values(data, instance=instance)
-        super().perform_update(serializer)
+        serializer.instance = self._apply_update(instance, dict(data))
+
+    # -- status workflow ------------------------------------------------
+
+    @property
+    def workflow_key(self) -> str | None:
+        """Workflow entity key of this viewset's model (None: no status workflow)."""
+        return workflow.ENTITY_FOR_MODEL.get(self.service_class.model.__name__)
+
+    def can(self, code: str) -> bool:
+        """Whether the request holds ``code`` (credential scopes included)."""
+        return has_permission_code(self.request, code)
+
+    def _apply_update(self, instance, data):
+        """
+        Save ``data`` on ``instance`` through the service, as the caller.
+
+        A changed ``status`` goes through ``StatusService`` (map, permission,
+        history) in the same transaction; the other fields are saved after it.
+        """
+        data = dict(data)
+        new_status = data.pop("status", None) if self.workflow_key else None
+        with transaction.atomic():
+            if new_status is not None and new_status != instance.status:
+                StatusService.transition_status(
+                    actor=self.request.user,
+                    entity=instance,
+                    to_status=new_status,
+                    has_permission=self.can,
+                )
+            return self.service_class.update(  # pyright: ignore[reportAttributeAccessIssue]
+                instance, user=self.request.user, **data
+            )
+
+    def _guard_initial_status(self, data):
+        """Creating a record straight in a privileged status needs its code."""
+        key = self.workflow_key
+        if key and data.get("status"):
+            StatusService.check_initial(entity_key=key, to_status=data["status"], has_permission=self.can)
+
+    def _set_status(self, instance, value):
+        """Archive/restore bookkeeping: a status change with history, no map check."""
+        if self.workflow_key:
+            choices = {choice[0] for choice in (instance._meta.get_field("status").choices or [])}
+            if value in choices:
+                StatusService.transition_status(
+                    actor=self.request.user, entity=instance, to_status=value, enforce=False
+                )
+                return
+        parent = getattr(super(), "_set_status", None)
+        if parent is not None:
+            parent(instance, value)
+
+    def prepare_create(self, serializer, project):
+        """
+        Hook: resolve and validate what depends on the project before saving.
+
+        Runs after the project is resolved and authorized, for single create and
+        for every item of a bulk create. May rewrite ``serializer.validated_data``
+        (e.g. resolve references); raise a ``ValidationError`` to refuse.
+        """
 
     def validate_references(self, project, data, instance=None):
         """
