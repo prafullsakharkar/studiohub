@@ -164,7 +164,8 @@ _PRODUCTION_RESOURCES: dict[str, tuple[str, tuple[str, ...]]] = {
     "playlist": ("playlists", ("view", "create", "update", "delete")),
     "media": ("media", ("view", "create", "update", "delete")),
     "workflow": ("workflows", ("view", "create", "update", "delete")),
-    "schedule": ("scheduling", ("view", "create", "update", "delete")),
+    # view_rates = resources' pay rates and e-mail addresses (full roles only)
+    "schedule": ("scheduling", ("view", "view_rates", "create", "update", "delete")),
     "track": ("tracks", ("view", "create", "update", "delete")),
     "show": ("shows", ("view", "create", "update", "delete")),
     "automation": ("automation", ("view", "create", "update", "delete")),

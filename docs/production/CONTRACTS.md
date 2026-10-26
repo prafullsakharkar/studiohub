@@ -191,3 +191,14 @@ Deploy: run `manage.py report_production_data` and look at "Tasks whose stored h
 | C-30d | Leave responses | Everyone with `schedule.view` saw `reason`. | Also `rejected_by`, `rejected_at`. `reason` and `rejection_reason` are "" unless the caller is the person it is for, holds `schedule.update`, or is a superuser. |
 
 Frontend change list: treat `status`, the decision fields and `total_days` as read-only on the leave form; do not send them; show the reason only when it comes back non-empty; handle the 403 when a manager decides their own leave and the 400 when a leave was already decided.
+
+## Scheduling visibility (D-21)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-31 | `GET/PATCH/DELETE /api/v1/scheduling/events/...`, `POST .../update-status/` | Every event for any `schedule.view` holder. | Only events the caller may see by `visibility` and project membership; others are a **404**. Lists are narrower. |
+| C-31a | `event_title`, `task_title`, `notes` on `/scheduling/schedules/` | Always the real values. | "Booked on another project" and "" when the linked event or task is out of the caller's scope. |
+| C-31b | `hourly_rate_usd`, `user_email` on `/scheduling/resources/` (list and detail) | Real values for every `schedule.view` holder. | `null` and "" unless the caller holds `schedule.view_rates`, is a superuser, or is that person. |
+| C-31c | New permission code `schedule.view_rates` | n/a | In the catalog; granted to production-admin, vfx-supervisor, org-admin. Run `init_platform`. |
+
+Frontend change list: expect fewer events in the calendar for non-members; show a placeholder when a rate is `null`; hide the cost columns of the resource planner for roles without the code; do not treat "Booked on another project" as a real title.

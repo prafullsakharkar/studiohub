@@ -61,7 +61,7 @@ FULL = {
     "playlist": ALL_ACTIONS,
     "media": ALL_ACTIONS,
     "workflow": ALL_ACTIONS,
-    "schedule": ALL_ACTIONS,
+    "schedule": f"{ALL_ACTIONS} view_rates",
     "track": ALL_ACTIONS,
     "show": ALL_ACTIONS,
     "automation": ALL_ACTIONS,

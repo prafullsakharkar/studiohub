@@ -6,7 +6,8 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.scheduling.models import CalendarEvent, Holiday, Resource, ResourceLeave, ResourceSchedule
-from apps.scheduling.selectors import ResourceLeaveSelector
+from apps.scheduling.selectors import ResourceLeaveSelector, ResourceSelector
+from apps.scheduling.selectors.scope import RESTRICTED_TITLE, ViewerScope
 from apps.scheduling.services.leave import count_leave_days
 
 
@@ -137,7 +138,26 @@ class CalendarEventUpdateSerializer(serializers.Serializer[Any]):
     notes = serializers.CharField(required=False, allow_blank=True)
 
 
-class ResourceListSerializer(serializers.ModelSerializer[Any]):
+class ResourceRatesMixin(serializers.Serializer[Any]):
+    """
+    Pay rate and e-mail of a resource are shown to holders of ``schedule.view_rates`` and to
+    the person the resource is; everyone else gets null and "" (D-21).
+    """
+
+    _rates_holder: bool | None = None
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        user = getattr(self.context.get("request"), "user", None)
+        if self._rates_holder is None:  # once per request: the child serializer serves every row
+            self._rates_holder = ResourceSelector.holds_rates_code(user)
+        if not ResourceSelector.can_see_rates(user, instance, holder=self._rates_holder):
+            data["hourly_rate_usd"] = None
+            data["user_email"] = ""
+        return data
+
+
+class ResourceListSerializer(ResourceRatesMixin, serializers.ModelSerializer[Any]):  # pyright: ignore[reportUnsafeMultipleInheritance]
     """Serializer for resource list view."""
     
     department_name = serializers.CharField(source="department.name", read_only=True)
@@ -171,7 +191,7 @@ class ResourceListSerializer(serializers.ModelSerializer[Any]):
         read_only_fields = ("id", "created_at", "updated_at")
 
 
-class ResourceDetailSerializer(serializers.ModelSerializer[Any]):
+class ResourceDetailSerializer(ResourceRatesMixin, serializers.ModelSerializer[Any]):  # pyright: ignore[reportUnsafeMultipleInheritance]
     """Serializer for resource detail view."""
     
     department = serializers.UUIDField(source="department.id", read_only=True)
@@ -298,6 +318,25 @@ class ResourceScheduleSerializer(serializers.ModelSerializer[Any]):
             "updated_at",
         )
         read_only_fields = ("id", "created_at", "updated_at")
+
+    _scope: ViewerScope | None = None
+
+    def to_representation(self, instance):
+        """A booking tied to an event or task the caller may not see keeps its time slot but
+        not the title, nor the notes (D-21)."""
+        data = super().to_representation(instance)
+        if self._scope is None:  # once per request
+            self._scope = ViewerScope.of(self.context.get("request"))
+        hidden = (instance.event_id is not None and not self._scope.sees_event(instance.event)) or (
+            instance.task_id is not None and not self._scope.sees_task(instance.task)
+        )
+        if hidden:
+            if instance.event_id is not None and not self._scope.sees_event(instance.event):
+                data["event_title"] = RESTRICTED_TITLE
+            if instance.task_id is not None and not self._scope.sees_task(instance.task):
+                data["task_title"] = RESTRICTED_TITLE
+            data["notes"] = ""
+        return data
 
 
 class ResourceLeaveSerializer(serializers.ModelSerializer[Any]):

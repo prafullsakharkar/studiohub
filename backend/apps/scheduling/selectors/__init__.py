@@ -15,6 +15,7 @@ from apps.scheduling.models import (
     ResourceLeave,
     ResourceSchedule,
 )
+from apps.scheduling.selectors.scope import ViewerScope
 
 
 class CalendarEventSelector(BaseSelector):
@@ -24,9 +25,11 @@ class CalendarEventSelector(BaseSelector):
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
-        return cls.model.objects.select_related(
-            "project",
-        )
+        """Events the caller may see (D-21). Without a request (internal callers): all."""
+        queryset = cls.model.objects.select_related("project")
+        if request is None:
+            return queryset
+        return ViewerScope.of(request).filter_events(queryset)
 
 
 class ResourceSelector(BaseSelector):
@@ -40,6 +43,33 @@ class ResourceSelector(BaseSelector):
             "department",
             "team",
             "user",
+        )
+
+    @classmethod
+    def can_see_rates(cls, user: Any, resource: Any, *, holder: bool | None = None) -> bool:
+        """
+        Whether ``user`` may read the pay rate and e-mail of ``resource`` (D-21): a holder of
+        ``schedule.view_rates`` (or a superuser), or the person the resource is.
+        """
+        if user is None or not getattr(user, "is_authenticated", False):
+            return False
+        if resource.user_id is not None and resource.user_id == user.pk:
+            return True
+        return cls.holds_rates_code(user) if holder is None else holder
+
+    @classmethod
+    def holds_rates_code(cls, user: Any) -> bool:
+        from apps.identity.services.permission_cache import PermissionCacheService
+        from apps.scheduling.constants.permissions import SchedulingPermissions
+
+        if user is None or not getattr(user, "is_authenticated", False):
+            return False
+        if getattr(user, "is_superuser", False):
+            return True
+        return bool(
+            PermissionCacheService.has_permission(
+                user=user, permission=SchedulingPermissions.VIEW_RATES
+            )
         )
 
 

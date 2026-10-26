@@ -168,10 +168,18 @@ Found in the review of the scheduling app's own viewsets (see the review notes b
 * **Reasons are private.** `reason` and `rejection_reason` are shown to the person the leave is for and to approvers (holders of `schedule.update`, and superusers); everyone else with `schedule.view` gets empty strings. The request itself (who, which dates, type, status) stays visible, because planning needs it.
 * **Interim choices, yours to confirm:** "approver" is whoever holds `schedule.update` (the full roles); a dedicated HR or producer code was not added. Artists still cannot request leave: they hold `schedule.view` only, although the create action falls back to the caller's own resource. Whether they should hold `schedule.create` for that, limited to their own resource, is open.
 
-### Review of the scheduling app's own viewsets (not yet fixed unless listed above)
+### Review of the scheduling app's own viewsets (items 2 is fixed in D-21; the rest is not)
 
 Verified by running the endpoints in the test database, 2026-10-26:
 
 * Events, resources, schedules and leaves are platform-global (no project scoping): any `schedule.view` holder saw a Private event of a project they are not in, every resource's `hourly_rate_usd` and `user_email`, and a booking could link a task of a project the caller is not in (the task title came back).
 * `book` stores any `status` text and an end before the start; `update-status` stores any status text and moves Completed back to Scheduled; event create takes any `project_id` without a membership check.
 * `PATCH` on an event answers 500 (its update serializer has no `update()`); resources likely the same, not tried.
+
+## D-21 Calendar visibility and pay rates (scheduling app; review item 2)
+
+* **Events follow `visibility`.** `Private`: its creator only. `Team` (the default): the members of its project; an event with no project is visible to everyone who may view the schedule, because an event has no team of its own to narrow it. `Organization` and `Public`: everyone who may view the schedule, whatever the project. The creator always sees their own event; platform admins and superusers see everything, private events included. An event the caller may not see is a 404 on read, edit, delete and `update-status`.
+* **Bookings keep the slot, lose the titles.** A `/schedules/` row tied to an event or task the caller may not see shows "Booked on another project" for the title and an empty `notes`; times and resource stay (planning needs them). Same wording as D-09.
+* **Pay rates and e-mail need `schedule.view_rates`.** Without it `hourly_rate_usd` is `null` and `user_email` is "" in resource lists and detail. A person always sees their own resource's values. A superuser sees all. The code is seeded to the full roles (production-admin, vfx-supervisor, org-admin; platform-admin holds the whole catalog) and not to lead-artist or artist. Re-run `init_platform` on each database.
+* **Interim choices, yours to confirm:** the project-less `Team` events (visible to all) and platform admins reading private events; "Team" has no meaning beyond project membership; whether lead-artists need the rates code to plan their team.
+* **Not part of this fix** (items 3 and 4 of the review): creating an event on a project the caller is not in, linking a booking to a foreign task or event on write, unvalidated statuses and times, and the `PATCH` 500s.
