@@ -14,6 +14,7 @@ Status: **A** answered by the owner, **I** interim (a default used so work could
 | D-06 | **Q14: creator's role in a new project** | **O** | Interim: the creator gets a membership labelled "Production Admin" (platform admins none). The label is display only and grants nothing. **Still open:** which role (if any) a creator should hold, and whether a creator should be able to update their own project and manage its members. |
 | D-07 | Role-to-code matrix | proposed | Below; seeded by `init_platform`, pinned by `tests/test_permission_matrix.py`. Needs your approval. |
 | D-08 | `bulk-status` contract | A | Below. |
+| D-09 | Scheduling endpoints | I | Below. |
 
 ## D-03 Transition maps
 
@@ -70,4 +71,13 @@ Least privilege. `timelog.view` shows the caller's own timelogs; `timelog.view_a
 ## Open
 
 * Q14 (above) and Q1 to Q6, Q8 to Q12, Q15, Q16, Q18 to Q21 of `ANALYSIS.md` / `PLAN.md`.
-* **Finding (UNVERIFIED at runtime):** `/scheduling/capacity/`, `/scheduling/overbooking/` and `/scheduling/resolve-overbooking/` are `IsAuthenticated` only and not scoped by project membership; `schedule.create/update/delete` are declared and seeded but nothing checks them. Same class as F-C1, not fixed here.
+* **Fixed:** the production scheduling endpoints (`capacity`, `overbooking`, `resolve-overbooking`) used to need only a login. See D-09.
+* Not looked at: the scheduling app's own viewsets (`/scheduling/events|resources|schedules|leaves|holidays/`) were out of scope; check whether they scope by project.
+
+## D-09 Scheduling endpoints
+
+* `GET /scheduling/capacity/` and `GET /scheduling/overbooking/` need `schedule.view`; `POST /scheduling/resolve-overbooking/` needs `schedule.update`. Any other method is denied.
+* **Capacity** is a studio-wide aggregate per department (no names, projects or titles), so it is not narrowed by project.
+* **Overbooking:** the excess always counts every booking, so it is true. The bookings listed under an alert are limited to the caller's projects and studio-wide ones (no project); other projects' bookings appear as "Booked on another project" with no project code. Platform admins see all.
+* **Resolve** flags only the bookings the caller may see; others stay as they are but still count toward the excess.
+* Interim choice: the cut is by project membership. Whether resource planners should see all projects' bookings (a separate code, like `timelog.view_all`) is open. Seeded roles: `schedule.view` for lead-artist and artist, `schedule.update` for the full roles only.

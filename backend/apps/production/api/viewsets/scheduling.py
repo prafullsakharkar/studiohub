@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import Any, ClassVar
 from uuid import UUID
 
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -16,7 +16,7 @@ from apps.production.api.serializers.automation import (
     AutomationAuditLogSerializer,
     AutomationRuleSerializer,
 )
-from apps.production.constants.permissions import AutomationPermissions
+from apps.production.constants.permissions import AutomationPermissions, SchedulingPermissions
 from apps.production.selectors.automation import (
     AutomationAuditLogSelector,
     AutomationRuleSelector,
@@ -25,8 +25,32 @@ from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.services import automation as automation_service
 
 
-class SchedulingCapacityView(APIView):
-    permission_classes = (IsAuthenticated,)
+class MethodPermissionMixin:
+    """
+    Permission codes by HTTP method, checked by ``HasPermission`` (fail closed: a method
+    without an entry is denied).
+    """
+
+    permission_classes = (IsAuthenticated, HasPermission)
+    permission_map: ClassVar[dict[str, tuple[str, ...]]] = {}
+    request: Any  # pyright: ignore[reportUninitializedInstanceVariable]
+
+    def get_permission_required(self):
+        method = (self.request.method or "").lower()
+        if method == "head":
+            method = "get"
+        return self.permission_map.get(method)
+
+
+class SchedulingCapacityView(MethodPermissionMixin, APIView):
+    """
+    Capacity per department for the current week.
+
+    Needs ``schedule.view``. The figures are studio-wide aggregates (names, projects and
+    titles of bookings are not part of them), so they are not narrowed by project.
+    """
+
+    permission_map = {"get": (SchedulingPermissions.VIEW,)}
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
@@ -35,18 +59,37 @@ class SchedulingCapacityView(APIView):
         return Response(get_capacity_summary())
 
 
-class SchedulingOverbookingView(APIView):
-    permission_classes = (IsAuthenticated,)
+class SchedulingOverbookingView(MethodPermissionMixin, APIView):
+    """
+    Resources booked beyond their weekly capacity.
+
+    Needs ``schedule.view``. The excess counts every booking; the bookings listed under an
+    alert are limited to the caller's projects and studio-wide ones, the rest appear
+    anonymously (no title, no project).
+    """
+
+    permission_map = {"get": (SchedulingPermissions.VIEW,)}
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
         from apps.scheduling.selectors.capacity import get_overbooking_alerts
 
-        return Response(get_overbooking_alerts())
+        return Response(
+            get_overbooking_alerts(
+                visible_project_ids=ProductionBaseSelector.visible_project_ids(request)
+            )
+        )
 
 
-class SchedulingResolveOverbookingView(APIView):
-    permission_classes = (IsAuthenticated,)
+class SchedulingResolveOverbookingView(MethodPermissionMixin, APIView):
+    """
+    Flag a resource's bookings of the week as overbooked.
+
+    Needs ``schedule.update``. Only bookings of the caller's projects and studio-wide ones
+    are changed; other projects' bookings are left as they are.
+    """
+
+    permission_map = {"post": (SchedulingPermissions.UPDATE,)}
 
     @extend_schema(request=ResolveOverbookingSerializer, responses=OpenApiTypes.OBJECT)
     def post(self, request):
@@ -58,6 +101,7 @@ class SchedulingResolveOverbookingView(APIView):
                 organization=None,
                 alert_id=data["alert_id"],
                 resource_id=data.get("resource_id"),
+                visible_project_ids=ProductionBaseSelector.visible_project_ids(request),
             )
         except DjangoValidationError as exc:
             return Response({"detail": str(exc)}, status=400)
@@ -66,7 +110,7 @@ class SchedulingResolveOverbookingView(APIView):
         return Response(result)
 
 
-class _AutomationView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
+class _AutomationView(MethodPermissionMixin, GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
     """
     Shared access rules for the automation endpoints.
 
@@ -75,15 +119,6 @@ class _AutomationView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgum
     that scope answers 404, like an unknown id. Rules without a project are
     platform-global: only platform admins see or write them.
     """
-
-    permission_classes = (IsAuthenticated, HasPermission)
-    permission_map: ClassVar[dict[str, tuple[str, ...]]] = {}
-
-    def get_permission_required(self):
-        method = (self.request.method or "").lower()
-        if method == "head":
-            method = "get"
-        return self.permission_map.get(method)
 
     @staticmethod
     def _uuid_or_none(value):

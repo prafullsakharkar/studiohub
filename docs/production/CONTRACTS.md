@@ -116,3 +116,14 @@ Decisions: `DECISIONS.md` D-03 to D-08. Migration `0024` (additive): `StatusHist
 | C-20 | Role catalog (`init_platform`) | Many enforced codes granted to no role. | See DECISIONS D-07. New codes: `timelog.view_all`, `production.status.override`, `production.sod.override` (the last two granted to nobody). **Re-run `init_platform`.** Existing extra grants are kept. |
 
 Frontend: read `failed_count` / `results` from `bulk-status` and handle 207; the shot and version status selectors must offer only legal moves (see DECISIONS D-03 for the call sites); show 403 `separation_of_duties`; stop editing approved timelogs; use `adjustment_of`.
+
+
+## Scheduling endpoints (D-09)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-21 | `GET /api/v1/scheduling/capacity/`, `GET /api/v1/scheduling/overbooking/` | Any authenticated user. | Needs `schedule.view` (**403** without). |
+| C-21a | `POST /api/v1/scheduling/resolve-overbooking/` | Any authenticated user flagged any resource's bookings. | Needs `schedule.update` (**403**). Flags only bookings of the caller's projects and studio-wide ones. |
+| C-21b | `conflicting_events` of an overbooking alert | Titles and project codes of every project's bookings. | Other projects' bookings are listed anonymously (`title` "Booked on another project", `project_code` null); hours and the excess are unchanged. |
+
+Frontend: users without `schedule.view` now get 403 on the scheduling board; the seeded lead-artist and artist roles hold it (re-run `init_platform` on older databases that predate it).

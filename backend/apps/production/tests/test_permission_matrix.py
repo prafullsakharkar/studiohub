@@ -222,10 +222,8 @@ def test_every_code_the_production_constants_define_is_enforced_or_deliberately_
     # Checked in code rather than through a permission_map.
     checked_inline = {"timelog.manage", "timelog.view_all"} | set(OPT_IN_PERMISSION_CODES)
     # Declared, but the analytics views are scoped by membership only (CONTRACTS C-04).
-    # The /scheduling/capacity|overbooking|resolve-overbooking views are IsAuthenticated only and
-    # not scoped by membership: schedule.* is declared and granted but nothing checks it yet
-    # (open finding, see docs/production/DECISIONS.md).
-    not_enforced = {"analytics.view", "schedule.create", "schedule.update", "schedule.delete"}
+    # schedule.create/delete are checked by the scheduling app's own viewsets, not by production.
+    not_enforced = {"analytics.view", "schedule.create", "schedule.delete"}
 
     assert defined - _enforced_codes() - checked_inline - not_enforced == set()
     assert checked_inline <= defined | set(OPT_IN_PERMISSION_CODES)

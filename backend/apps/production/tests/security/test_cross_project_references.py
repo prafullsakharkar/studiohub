@@ -459,7 +459,7 @@ class TestActionBodies:
         assert "id" not in version.publishing_info
 
     def test_resolve_overbooking_requires_alert_id(self, project_a):
-        user = _user((), project_a)
+        user = _user(("schedule.update",), project_a)
 
         resp = _client(user).post("/api/v1/scheduling/resolve-overbooking/", {}, format="json")
 
