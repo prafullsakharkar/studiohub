@@ -75,6 +75,9 @@ PRODUCTION_AREAS = {
     "version",
     "media",
     "timelog",
+    "episode",
+    "playlist",
+    "workflow",
     "audit",
 }
 
