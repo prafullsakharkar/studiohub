@@ -70,7 +70,7 @@ Least privilege. `timelog.view` shows the caller's own timelogs; `timelog.view_a
 
 ## Open
 
-* Q1, Q5, Q6, Q8, Q10 to Q12 of `ANALYSIS.md` / `PLAN.md`, each with a recommended default in the reply to the question (not yet recorded as decisions). Decided: Q2 (D-12), Q3 and Q15 (D-11), Q4 (D-10), Q9 and Q14 (D-14), Q16 (D-13), Q18 (D-15), Q19 (D-16), Q20 and Q21 (process).
+* Q5, Q6 and Q10 of `ANALYSIS.md` / `PLAN.md`: nothing is built that needs them; decide when a real request comes (Q5 asset variants and libraries, Q6 task templates, Q10 ShotGrid features not wanted). Q1 (hierarchy shape) is answered by what was built: explicit foreign keys per level plus a denormalized `project`. Decided: Q2 (D-12), Q3 and Q15 (D-11), Q4 (D-10), Q9 and Q14 (D-14), Q16 (D-13), Q18 (D-15), Q19 (D-16), Q8 and Q11 and Q12 (D-17 to D-19), Q20 and Q21 (process).
 * **Fixed:** the production scheduling endpoints (`capacity`, `overbooking`, `resolve-overbooking`) used to need only a login. See D-09.
 * Not looked at: the scheduling app's own viewsets (`/scheduling/events|resources|schedules|leaves|holidays/`) were out of scope; check whether they scope by project.
 
@@ -140,3 +140,19 @@ Least privilege. `timelog.view` shows the caller's own timelogs; `timelog.view_a
 * Derived on every read like D-15. Sending `current_version` is a 400 unless it equals the derived value; on create, an empty value and the old default `v001` are accepted and ignored.
 * The project dashboard's recent shots use the same value.
 * **Not done:** assets. `Asset.version` and the JSON `versions` list stay as they were; they need their own decision. The stored `Shot.current_version` column is no longer read and goes in the final cleanup.
+
+## D-17 Shot status is set by people (Q8)
+
+* A shot's status is changed by a person through the status workflow (D-03), never computed from its tasks. Nothing in the code sets a shot's status from task changes, and this phase adds nothing that does (checked by search; no test pins the absence).
+* A rollup (a shot is "Approved" when its tasks are) needs its own rules: which tasks count, what an extra or cancelled task does, who may override. Decide that when the studio asks for it.
+
+## D-18 JSON blobs on Version and Review are caches (Q11)
+
+* `reviews`, `playlists`, `notes_list`, `activity`, `media_items` and `attachments` on a version, and the like on a review, stay as the frontend-contract shape. They appear in the read serializer only: version create and update accept none of them (verified in the field lists), so a client cannot write them through those endpoints.
+* They are not a source of truth: the review, playlist, note and media records are. Do not build features on the blobs; replacing them with relations would change the response shape for no gain in security. Not checked in this phase: what fills them, or whether review serializers behave the same way.
+
+## D-19 Automation rules (Q12)
+
+* **Project rules** need an `automation.*` code and membership of the rule's project; an out-of-scope rule answers 404 like an unknown id.
+* **Global (project-less) rules** are created and seen by platform admins only. A member creating one is a 400. All of this is how the code already works (WP A1) and `tests/security/test_automation_authz.py` pins it.
+* **Not added:** a separate permission code for global rules. It would only matter if a role other than platform admin should own them; add it then.
