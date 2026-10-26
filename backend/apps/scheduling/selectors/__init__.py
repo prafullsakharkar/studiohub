@@ -67,7 +67,37 @@ class ResourceLeaveSelector(BaseSelector):
         return cls.model.objects.select_related(
             "resource",
             "approved_by",
+            "rejected_by",
         )
+
+    @classmethod
+    def is_approver(cls, user: Any) -> bool:
+        """Whether ``user`` may decide leave requests: the update code, or a superuser."""
+        from apps.identity.services.permission_cache import PermissionCacheService
+        from apps.scheduling.constants.permissions import SchedulingPermissions
+
+        if user is None or not getattr(user, "is_authenticated", False):
+            return False
+        if getattr(user, "is_superuser", False):
+            return True
+        return bool(
+            PermissionCacheService.has_permission(
+                user=user, permission=SchedulingPermissions.UPDATE
+            )
+        )
+
+    @classmethod
+    def can_see_details(cls, user: Any, leave: Any, *, approver: bool | None = None) -> bool:
+        """
+        Whether ``user`` may read the reason of ``leave`` (D-20): the person it is for, or an
+        approver. The leave itself (who, when, what type) stays visible for planning.
+        """
+        if user is None or not getattr(user, "is_authenticated", False):
+            return False
+        owner_id = getattr(leave.resource, "user_id", None)
+        if owner_id is not None and owner_id == user.pk:
+            return True
+        return cls.is_approver(user) if approver is None else approver
 
 
 class HolidaySelector(BaseSelector):

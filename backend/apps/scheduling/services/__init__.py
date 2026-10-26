@@ -5,6 +5,20 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from apps.scheduling.services.leave import approve_leave, count_leave_days, reject_leave
+
+__all__ = [
+    "approve_leave",
+    "block_resource",
+    "book_resource",
+    "count_leave_days",
+    "create_calendar_event",
+    "create_holiday",
+    "reject_leave",
+    "submit_leave_request",
+    "update_calendar_event_status",
+]
+
 if TYPE_CHECKING:
     from apps.scheduling.models import (
         CalendarEvent,
@@ -130,11 +144,9 @@ def submit_leave_request(
     
     resource = Resource.objects.get(id=resource_id)
     
-    # Calculate total days
     from datetime import date
-    start = date.fromisoformat(start_date)
-    end = date.fromisoformat(end_date)
-    total_days = (end - start).days + 1
+
+    total_days = count_leave_days(date.fromisoformat(start_date), date.fromisoformat(end_date))
     
     leave = ResourceLeave.objects.create(
         resource=resource,
@@ -144,39 +156,6 @@ def submit_leave_request(
         total_days=total_days,
         reason=reason,
     )
-    
-    return leave
-
-
-def approve_leave(
-    *,
-    leave_id: str,
-    user_id: str,
-) -> ResourceLeave:
-    """Approve a leave request."""
-    from apps.scheduling.models import ResourceLeave
-    
-    leave = ResourceLeave.objects.get(id=leave_id)
-    leave.status = "Approved"
-    leave.approved_by_id = user_id
-    leave.approved_at = leave.updated_at
-    leave.save(update_fields=["status", "approved_by", "approved_at"])
-    
-    return leave
-
-
-def reject_leave(
-    *,
-    leave_id: str,
-    rejection_reason: str,
-) -> ResourceLeave:
-    """Reject a leave request."""
-    from apps.scheduling.models import ResourceLeave
-    
-    leave = ResourceLeave.objects.get(id=leave_id)
-    leave.status = "Rejected"
-    leave.rejection_reason = rejection_reason
-    leave.save(update_fields=["status", "rejection_reason"])
     
     return leave
 

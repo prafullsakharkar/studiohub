@@ -6,6 +6,8 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.scheduling.models import CalendarEvent, Holiday, Resource, ResourceLeave, ResourceSchedule
+from apps.scheduling.selectors import ResourceLeaveSelector
+from apps.scheduling.services.leave import count_leave_days
 
 
 class CalendarEventListSerializer(serializers.ModelSerializer[Any]):
@@ -299,19 +301,37 @@ class ResourceScheduleSerializer(serializers.ModelSerializer[Any]):
 
 
 class ResourceLeaveSerializer(serializers.ModelSerializer[Any]):
-    """Serializer for resource leave."""
-    
+    """
+    Serializer for resource leave.
+
+    A request starts Pending and is decided only through the approve and reject actions
+    (D-20): status, the decision fields and ``total_days`` cannot be set directly (a 400
+    unless the value sent is the one the server holds or computes), and a request can only
+    be edited while Pending. The reasons are shown to the person it is for and to approvers.
+    """
+
+    LOCKED = {
+        "status": "Use the approve and reject actions.",
+        "approved_by": "Use the approve action.",
+        "approved_at": "Use the approve action.",
+        "rejected_by": "Use the reject action.",
+        "rejected_at": "Use the reject action.",
+        "rejection_reason": "Use the reject action.",
+    }
+
+    _approver: bool | None = None
+
     resource_name = serializers.CharField(source="resource.name", read_only=True)
     resource_code = serializers.CharField(source="resource.code", read_only=True)
     leave_type_display = serializers.CharField(source="get_leave_type_display", read_only=True)
     status_display = serializers.CharField(source="get_status_display", read_only=True)
     approved_by_name = serializers.CharField(source="approved_by.name", read_only=True)
-    
+
     resource = serializers.PrimaryKeyRelatedField(
         queryset=Resource.objects.all(),
         required=False,
     )
-    
+
     class Meta:
         model = ResourceLeave
         fields = (
@@ -330,11 +350,78 @@ class ResourceLeaveSerializer(serializers.ModelSerializer[Any]):
             "approved_by",
             "approved_by_name",
             "approved_at",
+            "rejected_by",
+            "rejected_at",
             "rejection_reason",
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "created_at", "updated_at")
+        read_only_fields = (
+            "id",
+            "status",
+            "total_days",
+            "approved_by",
+            "approved_at",
+            "rejected_by",
+            "rejected_at",
+            "rejection_reason",
+            "created_at",
+            "updated_at",
+        )
+
+    def to_internal_value(self, data):
+        errors = {}
+        for name, hint in self.LOCKED.items():
+            if name in data and self._differs(name, data[name]):
+                errors[name] = [f"Cannot be set directly. {hint}"]
+        if errors:
+            raise serializers.ValidationError(errors)
+        return super().to_internal_value(data)
+
+    def _differs(self, name, raw) -> bool:
+        """Whether ``raw`` is something other than the value held now (or the default on create)."""
+        field = self.fields[name]
+        if self.instance is not None:
+            value = getattr(self.instance, name)
+            held = None if value is None else field.to_representation(value)
+        else:
+            held = ResourceLeave.STATUS_PENDING if name == "status" else None
+        if raw in (None, "") and held in (None, ""):
+            return False
+        return str(raw) != str(held)
+
+    def validate(self, attrs):
+        instance = self.instance
+        if instance is not None and instance.status != ResourceLeave.STATUS_PENDING:
+            raise serializers.ValidationError(
+                {"status": ["Only a pending leave can be changed."]}
+            )
+        start = attrs.get("start_date", getattr(instance, "start_date", None))
+        end = attrs.get("end_date", getattr(instance, "end_date", None))
+        if start is not None and end is not None:
+            if end < start:
+                raise serializers.ValidationError(
+                    {"end_date": ["The end date cannot be before the start date."]}
+                )
+            days = count_leave_days(start, end)
+            sent = self.initial_data.get("total_days") if hasattr(self, "initial_data") else None
+            if sent not in (None, "", 0, "0") and str(sent) != str(days):
+                raise serializers.ValidationError(
+                    {"total_days": [f"Cannot be set directly. It is {days} for these dates."]}
+                )
+            attrs["total_days"] = days
+        return attrs
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if self._approver is None:  # once per request: the child serializer serves every row
+            self._approver = ResourceLeaveSelector.is_approver(user)
+        if not ResourceLeaveSelector.can_see_details(user, instance, approver=self._approver):
+            data["reason"] = ""
+            data["rejection_reason"] = ""
+        return data
 
 
 class HolidaySerializer(serializers.ModelSerializer[Any]):

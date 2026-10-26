@@ -179,3 +179,15 @@ Deploy: run `manage.py report_production_data` after migrating: it now also list
 Frontend change list: show `pending_hours` next to `logged_hours` (hours awaiting approval); stop sending `logged_hours` and `current_version`; treat an empty `current_version` as "no versions yet" instead of "v001"; read `current_version_id` to link to the version.
 
 Deploy: run `manage.py report_production_data` and look at "Tasks whose stored hours differ": those numbers will no longer be shown. Nothing is changed in the database by this phase (no migration).
+
+## Scheduling leave requests (D-20)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-30 | `POST /api/v1/scheduling/leaves/` | `status`, `approved_by`, `approved_at`, `total_days` were accepted as sent. | Always Pending; `total_days` computed (inclusive); any decision field or a different `total_days` is a **400**; `end_date` before `start_date` is a **400**. |
+| C-30a | `PATCH`/`PUT /leaves/{id}/` | Any field, any state. | **400** unless the leave is Pending; decision fields as above. |
+| C-30b | `POST /leaves/{id}/approve/` | Any state, any approver; `approved_at` was the row's last update time. | Pending only (**400** otherwise); the leave's own person gets **403**; `approved_by` / `approved_at` are the actor and now. |
+| C-30c | `POST /leaves/{id}/reject/` | Any state; nobody recorded. | Pending only (**400**); own leave **403**; reason required (**400**); records `rejected_by` and `rejected_at`. |
+| C-30d | Leave responses | Everyone with `schedule.view` saw `reason`. | Also `rejected_by`, `rejected_at`. `reason` and `rejection_reason` are "" unless the caller is the person it is for, holds `schedule.update`, or is a superuser. |
+
+Frontend change list: treat `status`, the decision fields and `total_days` as read-only on the leave form; do not send them; show the reason only when it comes back non-empty; handle the 403 when a manager decides their own leave and the 400 when a leave was already decided.

@@ -156,3 +156,22 @@ Least privilege. `timelog.view` shows the caller's own timelogs; `timelog.view_a
 * **Project rules** need an `automation.*` code and membership of the rule's project; an out-of-scope rule answers 404 like an unknown id.
 * **Global (project-less) rules** are created and seen by platform admins only. A member creating one is a 400. All of this is how the code already works (WP A1) and `tests/security/test_automation_authz.py` pins it.
 * **Not added:** a separate permission code for global rules. It would only matter if a role other than platform admin should own them; add it then.
+
+## D-20 Leave requests (scheduling app, `/scheduling/leaves/`)
+
+Found in the review of the scheduling app's own viewsets (see the review notes below); this is the first of the fixes.
+
+* **A request starts Pending and is decided once.** Status, `approved_by`, `approved_at`, `rejected_by`, `rejected_at`, `rejection_reason` and `total_days` cannot be sent: a different value is a 400 ("Cannot be set directly"); echoing the stored value is accepted (as D-01). `total_days` is computed from the dates (both days counted); an end date before the start date is a 400.
+* **Edits only while Pending.** Changing a decided request is a 400.
+* **Approve and reject** (`schedule.update`) work from Pending only (a 400 otherwise, so an approved leave can no longer be rejected afterwards, nor the reverse), take a row lock and re-read the status inside it (two racing decisions: one wins, the other gets the 400). They record who and when with the real time; rejecting records `rejected_by` / `rejected_at` (new columns, migration 0003) and requires a reason.
+* **Nobody decides their own leave** (403), whether they hold the code or not and whatever their role. A resource with no user (a room, a studio) can be decided by anyone with the code. Consequence: a studio with a single manager cannot approve that manager's own leave; a second person with `schedule.update` is needed. There is no override as for timelogs (D-04); add one if that turns out to hurt.
+* **Reasons are private.** `reason` and `rejection_reason` are shown to the person the leave is for and to approvers (holders of `schedule.update`, and superusers); everyone else with `schedule.view` gets empty strings. The request itself (who, which dates, type, status) stays visible, because planning needs it.
+* **Interim choices, yours to confirm:** "approver" is whoever holds `schedule.update` (the full roles); a dedicated HR or producer code was not added. Artists still cannot request leave: they hold `schedule.view` only, although the create action falls back to the caller's own resource. Whether they should hold `schedule.create` for that, limited to their own resource, is open.
+
+### Review of the scheduling app's own viewsets (not yet fixed unless listed above)
+
+Verified by running the endpoints in the test database, 2026-10-26:
+
+* Events, resources, schedules and leaves are platform-global (no project scoping): any `schedule.view` holder saw a Private event of a project they are not in, every resource's `hourly_rate_usd` and `user_email`, and a booking could link a task of a project the caller is not in (the task title came back).
+* `book` stores any `status` text and an end before the start; `update-status` stores any status text and moves Completed back to Scheduled; event create takes any `project_id` without a membership check.
+* `PATCH` on an event answers 500 (its update serializer has no `update()`); resources likely the same, not tried.

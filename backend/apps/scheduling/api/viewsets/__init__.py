@@ -247,31 +247,25 @@ class ResourceLeaveViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissin
 
     @action(detail=True, methods=["post"], url_path="approve")
     def approve(self, request, *args, **kwargs):
-        """Approve leave request."""
+        """Approve a pending leave request (not your own; D-20)."""
         leave = self.get_object()
 
-        leave = approve_leave(
-            leave_id=str(leave.id),
-            user_id=str(request.user.id) if request.user.is_authenticated else None,
-        )
+        leave = approve_leave(leave_id=str(leave.id), actor=request.user)
 
-        return Response(ResourceLeaveSerializer(leave).data)
+        return Response(ResourceLeaveSerializer(leave, context=self.get_serializer_context()).data)
 
     @action(detail=True, methods=["post"], url_path="reject")
     def reject(self, request, *args, **kwargs):
-        """Reject leave request."""
+        """Reject a pending leave request with a reason (not your own; D-20)."""
         leave = self.get_object()
-
-        rejection_reason = request.data.get("rejection_reason", "")
-        if not rejection_reason:
-            return Response({"detail": "rejection_reason is required."}, status=400)
 
         leave = reject_leave(
             leave_id=str(leave.id),
-            rejection_reason=rejection_reason,
+            actor=request.user,
+            rejection_reason=request.data.get("rejection_reason", ""),
         )
 
-        return Response(ResourceLeaveSerializer(leave).data)
+        return Response(ResourceLeaveSerializer(leave, context=self.get_serializer_context()).data)
 
 
 class HolidayViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeArgument]

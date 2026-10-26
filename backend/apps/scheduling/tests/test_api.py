@@ -5,6 +5,7 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
+from apps.identity.tests.factories import UserFactory
 from apps.scheduling.models import CalendarEvent, Resource, ResourceLeave
 
 
@@ -149,8 +150,8 @@ class TestSchedulingEndpoints:
         assert response.data["status"] == "Pending"
 
     def test_approve_leave(self, staff_client, staff_user):
-        """Test approving a leave request."""
-        resource = _make_resource(staff_user)
+        """Test approving someone else's leave request (your own is refused, see test_leave_workflow)."""
+        resource = _make_resource(UserFactory.create())
         leave = ResourceLeave.objects.create(
             resource=resource,
             leave_type="Vacation",
@@ -165,8 +166,8 @@ class TestSchedulingEndpoints:
         assert response.data["status"] == "Approved"
 
     def test_reject_leave(self, staff_client, staff_user):
-        """Test rejecting a leave request."""
-        resource = _make_resource(staff_user)
+        """Test rejecting someone else's leave request."""
+        resource = _make_resource(UserFactory.create())
         leave = ResourceLeave.objects.create(
             resource=resource,
             leave_type="Vacation",
