@@ -46,6 +46,9 @@ class StatusHistory(models.Model):
         related_name="+",
     )
     reason = models.TextField(blank=True, default="")
+    # Set when a permission-gated override made the change possible
+    # ("status": a fenced move; "self_approval": the actor produced the work).
+    override_kind = models.CharField(max_length=40, blank=True, default="", db_index=True)
     changed_at = models.DateTimeField(default=timezone.now, editable=False)
 
     objects = AppendOnlyQuerySet.as_manager()

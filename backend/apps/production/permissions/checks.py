@@ -32,3 +32,26 @@ def user_has_permission_code(user, code: str) -> bool:
     if getattr(user, "is_superuser", False):
         return True
     return PermissionCacheService.has_permission(user=user, permission=code)
+
+
+def user_has_explicit_permission_code(user, code: str) -> bool:
+    """
+    Whether ``user`` holds ``code`` through a role grant, superusers included only
+    if a role grants it. For opt-in override codes, which break-glass must not imply.
+    """
+    from apps.identity.services.permission_cache import PermissionCacheService
+
+    if user is None or not getattr(user, "is_authenticated", False):
+        return False
+    return PermissionCacheService.has_permission(user=user, permission=code)
+
+
+def has_explicit_permission_code(request, code: str) -> bool:
+    """``user_has_explicit_permission_code`` that also honors a scoped credential."""
+    from apps.identity.permissions.scopes import credential_scopes
+
+    user = getattr(request, "user", None)
+    scopes = credential_scopes(request)
+    if scopes is not None and code not in scopes:
+        return False
+    return user_has_explicit_permission_code(user, code)

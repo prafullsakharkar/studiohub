@@ -32,7 +32,13 @@ class ProductionBulkMixin(BulkActionsMixin):
         if operation == "create":
             return {"validate": self._validate_bulk_create_item}
         if operation == "update":
-            return {"validate": self._validate_bulk_item, "update": self._apply_update}
+            # Items follow the normal map: no override in bulk.
+            return {
+                "validate": self._validate_bulk_item,
+                "update": lambda instance, data: self._apply_update(
+                    instance, data, allow_override=False
+                ),
+            }
         return {}
 
     @staticmethod
@@ -70,9 +76,11 @@ class ProductionBulkMixin(BulkActionsMixin):
             self._guard_privileged_values(validated, instance=instance)
             if self.workflow_key and validated.get("status") not in (None, instance.status):  # pyright: ignore[reportAttributeAccessIssue]
                 StatusService.check(
+                    actor=self.request.user,  # pyright: ignore[reportAttributeAccessIssue]
                     entity=instance,
                     to_status=validated["status"],
                     has_permission=self.can,  # pyright: ignore[reportAttributeAccessIssue]
+                    has_explicit=lambda code: False,
                 )
         except (ValidationError, PermissionDenied, APIException) as exc:
             return None, self._errors_of(exc)

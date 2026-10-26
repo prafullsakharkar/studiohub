@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-from apps.core.api.exceptions.api import PermissionDeniedException, ValidationException
+from apps.core.api.exceptions.api import (
+    ConflictException,
+    PermissionDeniedException,
+    ValidationException,
+)
 
 
 class InvalidTransition(ValidationException):
@@ -17,3 +21,17 @@ class TransitionNotPermitted(PermissionDeniedException):
 
     default_detail = "You may not make this status change."
     default_code = "transition_not_permitted"
+
+
+class SeparationOfDuties(PermissionDeniedException):
+    """The caller produced the work they are asked to approve (403)."""
+
+    default_detail = "You cannot approve work you produced."
+    default_code = "separation_of_duties"
+
+
+class StatusConflict(ConflictException):
+    """The record already has the requested status; someone else got there first (409)."""
+
+    default_detail = "The record already has this status."
+    default_code = "status_conflict"

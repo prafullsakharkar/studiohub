@@ -143,5 +143,10 @@ class ShotViewSet(StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMix
     @action(detail=True, methods=["post"], url_path="approve")
     def approve(self, request, *args, **kwargs):
         instance = self.get_object()
-        ShotService.approve_shot(actor=request.user, shot=instance, has_permission=self.can)
+        ShotService.approve_shot(
+            actor=request.user,
+            shot=instance,
+            has_permission=self.can,
+            has_explicit=self.can_explicit,
+        )
         return Response(ShotDetailSerializer(instance).data)

@@ -59,7 +59,14 @@ class BulkAssignSerializer(TaskIdsSerializer):
     team_id = serializers.UUIDField(required=False, allow_null=True)
 
 
-class BulkStatusSerializer(TaskIdsSerializer):
+#: most tasks one bulk-status request may carry
+BULK_STATUS_MAX_ITEMS = 100
+
+
+class BulkStatusSerializer(StrictSerializer):
+    task_ids = serializers.ListField(
+        child=serializers.UUIDField(), min_length=1, max_length=BULK_STATUS_MAX_ITEMS
+    )
     status = serializers.CharField(max_length=30)
 
 
@@ -102,8 +109,22 @@ class AddToPlaylistSerializer(StrictSerializer):
 # -- timelogs --------------------------------------------------------------
 
 
-class RejectTimelogSerializer(StrictSerializer):
-    rejection_reason = serializers.CharField(required=False, allow_blank=True)
+class OverrideReasonSerializer(StrictSerializer):
+    """Body of an action that an override permission may carry (reason mandatory when used)."""
+
+    override_reason = serializers.CharField(required=False, allow_blank=True, max_length=500)
+
+
+class ApproveTimelogSerializer(OverrideReasonSerializer):
+    pass
+
+
+class RejectTimelogSerializer(OverrideReasonSerializer):
+    rejection_reason = serializers.CharField(max_length=2000)
+
+
+class PromoteVersionSerializer(OverrideReasonSerializer):
+    pass
 
 
 # -- playlists -------------------------------------------------------------
@@ -135,7 +156,7 @@ class ShareSettingsSerializer(OpenSerializer):
 # -- reviews ---------------------------------------------------------------
 
 
-class ReviewNotesSerializer(StrictSerializer):
+class ReviewNotesSerializer(OverrideReasonSerializer):
     notes = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
 

@@ -96,3 +96,23 @@ Decisions behind this phase: Q17 = **yes** (the generic bulk whitelist in `apps/
 9. `bulk-status`: read `results` and `failed_count`; `success` can now be `false`.
 10. `GET .../status-history/` is available for the five entities.
 11. `POST /projects/` makes the caller a member; do not add them again.
+
+
+## Phase 3 follow-up — workflow fences, separation of duties, timelog rules, role matrix
+
+Decisions: `DECISIONS.md` D-03 to D-08. Migration `0024` (additive): `StatusHistory.override_kind`, `Timelog.adjustment_of`.
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-16 | Status moves (all paths) | Loose maps (P3). | Fenced maps: Approved from Pending Review only and left only to Archived; Archived, Closed (review), Approved (timelog) final; published version frozen; **400** `{"status": [...]}`. `production.status.override` + `override_reason` crosses a fence (400 `override_reason` when the reason is missing); recorded. Bulk never overrides. |
+| C-16a | `POST .../{id}/restore/` | Left status "Archived". | Returns the record to the status it had before archiving. |
+| C-17 | Approvals of timelogs, reviews, versions | Anyone with the approve code (timelogs: not on own log, superuser excepted). | **403** `separation_of_duties` when the actor produced the work; every path; `production.sod.override` + `override_reason` is the only way through (superuser does not imply it). Actions accept an optional `override_reason` body field. |
+| C-17a | `approve` / `reject` actions | A repeated decision was a no-op or an invalid move. | The same status again is **409** (someone else decided first); exactly one history row. |
+| C-18 | `POST /timelogs/{id}/reject/` | Reason optional. | `rejection_reason` required (400). |
+| C-18a | `PATCH`, `DELETE`, `archive` of an Approved timelog | Allowed. | **409**; correct with a new entry. |
+| C-18b | `POST /timelogs/` | none | Optional `adjustment_of` (an approved timelog of the same project and person; non-zero, possibly negative hours). `adjustment_of` appears in timelog responses. |
+| C-18c | `GET /timelogs/` and every timelog action | Whole project for `timelog.view`. | Own timelogs for `timelog.view`; the project's with the new `timelog.view_all`. Others' logs are 404. |
+| C-19 | `POST /tasks/bulk-status/` | 200, `success`, `updated_count`, `failed_count`, `results[]` with `status`. | 1 to 100 ids; **200** all ok / **207** partial; `results[]` is `id`, `ok`, `error` (`null` / `not_found` / `invalid_transition`); a task the caller cannot reach is `not_found`, like a missing one. |
+| C-20 | Role catalog (`init_platform`) | Many enforced codes granted to no role. | See DECISIONS D-07. New codes: `timelog.view_all`, `production.status.override`, `production.sod.override` (the last two granted to nobody). **Re-run `init_platform`.** Existing extra grants are kept. |
+
+Frontend: read `failed_count` / `results` from `bulk-status` and handle 207; the shot and version status selectors must offer only legal moves (see DECISIONS D-03 for the call sites); show 403 `separation_of_duties`; stop editing approved timelogs; use `adjustment_of`.

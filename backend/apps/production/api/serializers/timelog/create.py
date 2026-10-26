@@ -40,6 +40,10 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
         required=False,
         allow_null=True,
     )
+    # Only an approved timelog can be adjusted; the viewset checks that and the project.
+    adjustment_of = ScopedReferenceField(
+        queryset=Timelog.objects.all(), required=False, allow_null=True
+    )
     task_id = serializers.CharField(write_only=True, required=False, allow_blank=True)
     task_code = serializers.CharField(write_only=True, required=False, allow_blank=True)
     project_id = serializers.CharField(write_only=True, required=False, allow_blank=True)
@@ -54,6 +58,7 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
             "task",
             "task_id",
             "task_code",
+            "adjustment_of",
             "project",
             "project_id",
             "project_code",
@@ -155,6 +160,9 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
         if attrs["project"] is None:
             attrs["project"] = getattr(task, "project", None)
         person = self._resolve_person(attrs)
+        original = attrs.get("adjustment_of")
+        if person is None and original is not None:
+            person = original.person  # an adjustment belongs to the person it corrects
         if person is None:
             request = self.context.get("request")
             user = getattr(request, "user", None)

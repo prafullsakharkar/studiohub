@@ -51,7 +51,9 @@ class TaskPermissions:
 
 
 class TimelogPermissions:
+    # Own timelogs; ``VIEW_ALL`` sees the whole project's.
     VIEW = "timelog.view"
+    VIEW_ALL = "timelog.view_all"
     CREATE = "timelog.create"
     UPDATE = "timelog.update"
     DELETE = "timelog.delete"
@@ -131,3 +133,18 @@ class AutomationPermissions:
 
 class NotePermissions:
     CREATE = "note.create"
+
+
+class OverridePermissions:
+    """
+    Opt-in corrections. Granted to no seeded role (``init_platform`` keeps them out of
+    the full-catalog role too), never implied by superuser, and every use is recorded
+    in ``StatusHistory`` with its reason.
+    """
+
+    #: move a shot, task, version or review along a path the workflow forbids
+    STATUS = "production.status.override"
+    #: approve work one produced oneself (separation of duties)
+    SELF_APPROVAL = "production.sod.override"
+
+    ALL = (STATUS, SELF_APPROVAL)

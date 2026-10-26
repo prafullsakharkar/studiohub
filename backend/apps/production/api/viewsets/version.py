@@ -8,6 +8,7 @@ from apps.core.api.pagination import StandardPagination
 from apps.production.api.filtersets.version import VersionFilterSet
 from apps.production.api.serializers.actions import (
     AddToPlaylistSerializer,
+    PromoteVersionSerializer,
     PublishVersionSerializer,
     validated,
 )
@@ -94,10 +95,16 @@ class VersionViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: i
         serializer = VersionDetailSerializer(instance)
         return Response(serializer.data)
 
+    @extend_schema(request=PromoteVersionSerializer)
     @action(detail=True, methods=["post"], url_path="promote")
     def promote(self, request, *args, **kwargs):
         instance = self.get_object()
-        VersionService.promote_version(actor=request.user, version=instance, has_permission=self.can)
+        body = validated(PromoteVersionSerializer, request.data)
+        VersionService.promote_version(
+            actor=request.user,
+            version=instance,
+            **self.status_kwargs(body.get("override_reason")),
+        )
         return Response(VersionDetailSerializer(instance).data)
 
     @extend_schema(request=AddToPlaylistSerializer)

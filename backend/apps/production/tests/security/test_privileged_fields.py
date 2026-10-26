@@ -84,7 +84,7 @@ class TestShot:
         assert shot.name == "Renamed"
 
     def test_update_code_alone_cannot_approve_by_status(self, project):
-        shot = ShotFactory.create(project=project, code="S1")
+        shot = ShotFactory.create(project=project, code="S1", status="Pending Review")
         user = _user(project, "shot.view", "shot.update")
 
         resp = _patch(user, self.path(shot), {"status": "Approved"})
@@ -94,7 +94,7 @@ class TestShot:
         assert shot.status != "Approved"
 
     def test_approve_code_may_set_approved_status(self, project):
-        shot = ShotFactory.create(project=project, code="S1")
+        shot = ShotFactory.create(project=project, code="S1", status="Pending Review")
         user = _user(project, "shot.view", "shot.update", "shot.approve")
 
         resp = _patch(user, self.path(shot), {"status": "Approved"})
@@ -105,7 +105,7 @@ class TestShot:
         shot = ShotFactory.create(project=project, code="S1", status="Approved")
         user = _user(project, "shot.view", "shot.update")
 
-        assert _patch(user, self.path(shot), {"status": "Retake"}).status_code == 403
+        assert _patch(user, self.path(shot), {"status": "Archived"}).status_code == 403
 
     def test_ordinary_status_changes_stay_open(self, project):
         shot = ShotFactory.create(project=project, code="S1")
@@ -198,7 +198,7 @@ class TestVersion:
         assert "is_published" in resp.data
 
     def test_approved_status_needs_the_publish_code(self, project):
-        version = VersionFactory.create(project=project, code="V1")
+        version = VersionFactory.create(project=project, code="V1", status="Pending Review")
         plain = _user(project, "version.view", "version.update")
         publisher = _user(project, "version.view", "version.update", "version.publish")
 
@@ -233,7 +233,7 @@ class TestReview:
 
     @pytest.mark.parametrize("value", ["Approved", "Rejected", "Changes Requested", "Retake"])
     def test_decision_statuses_need_the_approve_code(self, project, value):
-        review = ReviewFactory.create(project=project)
+        review = ReviewFactory.create(project=project, status="In Review")
         plain = _user(project, "review.view", "review.update")
         approver = _user(project, "review.view", "review.update", "review.approve")
 
@@ -298,11 +298,12 @@ class TestTimelog:
         )
 
         assert _post(approver, f"/api/v1/timelogs/{log.id}/approve/", {}).status_code == 403
-        assert _post(approver, f"/api/v1/timelogs/{log.id}/reject/", {}).status_code == 403
+        reject = _post(approver, f"/api/v1/timelogs/{log.id}/reject/", {"rejection_reason": "no"})
+        assert reject.status_code == 403
 
     def test_someone_else_can_approve(self, project):
         owner = UserFactory.create()
-        approver = _user(project, "timelog.view", "timelog.approve")
+        approver = _user(project, "timelog.view", "timelog.view_all", "timelog.approve")
         log = TimelogFactory.create(
             task=TaskFactory.create(project=project, code="T1"), person=owner
         )

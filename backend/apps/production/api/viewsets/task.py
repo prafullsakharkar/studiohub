@@ -113,36 +113,61 @@ class TaskViewSet(StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMix
     @extend_schema(request=BulkStatusSerializer)
     @action(detail=False, methods=["post"], url_path="bulk-status")
     def bulk_status(self, request, *args, **kwargs):
+        """
+        Move many tasks to one status, each under the normal workflow map.
+
+        Contract: 1 to 100 distinct ids (anything else is a 400 for the whole
+        request). Items are independent: each is its own transaction, so some may
+        succeed while others fail (partial, not all-or-nothing). 200 when every item
+        succeeded, 207 when at least one did not. ``results[]`` has ``id``, ``ok``
+        and ``error`` (``null`` or ``not_found`` / ``invalid_transition``). A task
+        the caller may not see, may not touch or that does not exist all report
+        ``not_found``. No override: a move the map forbids is ``invalid_transition``.
+        ``success``, ``updated_count`` and ``failed_count`` stay for older clients.
+        """
         from rest_framework.exceptions import ValidationError
 
-        from apps.production.constants.task import TaskStatus
+        from apps.production.constants import workflow
+        from apps.production.exceptions import InvalidTransition
 
         body = validated(BulkStatusSerializer, request.data)
         status_val = body["status"]
-        valid_statuses = [choice[0] for choice in TaskStatus.choices]
+        valid_statuses = sorted(workflow.valid_statuses(workflow.TASK))
         if status_val not in valid_statuses:
-            raise ValidationError(
-                {"status": f"Invalid status. Valid values: {valid_statuses}."}
-            )
-        found = {str(task.id): task for task in self.get_queryset().filter(id__in=body["task_ids"])}
+            raise ValidationError({"status": f"Invalid status. Valid values: {valid_statuses}."})
+        wanted = list(dict.fromkeys(str(task_id) for task_id in body["task_ids"]))
+        found = {str(task.id): task for task in self.get_queryset().filter(id__in=wanted)}
         results = []
-        for task_id in dict.fromkeys(str(task_id) for task_id in body["task_ids"]):
+        for task_id in wanted:
             task = found.get(task_id)
             if task is None:
-                results.append({"id": task_id, "status": "not_found"})
+                results.append({"id": task_id, "ok": False, "error": "not_found"})
                 continue
             try:
                 StatusService.transition_status(
-                    actor=request.user, entity=task, to_status=status_val, has_permission=self.can
+                    actor=request.user,
+                    entity=task,
+                    to_status=status_val,
+                    has_permission=self.can,
+                    has_explicit=lambda code: False,
                 )
-            except APIException as exc:
-                results.append({"id": task_id, "status": "invalid", "error": exc.detail})
-                continue
-            results.append({"id": task_id, "status": "updated"})
-        updated = sum(1 for row in results if row["status"] == "updated")
+            except InvalidTransition:
+                results.append({"id": task_id, "ok": False, "error": "invalid_transition"})
+            except APIException:
+                # Forbidden reads like missing: nothing says the task exists.
+                results.append({"id": task_id, "ok": False, "error": "not_found"})
+            else:
+                results.append({"id": task_id, "ok": True, "error": None})
+        updated = sum(1 for row in results if row["ok"])
         failed = len(results) - updated
         return Response(
-            {"success": failed == 0, "updated_count": updated, "failed_count": failed, "results": results}
+            {
+                "success": failed == 0,
+                "updated_count": updated,
+                "failed_count": failed,
+                "results": results,
+            },
+            status=200 if failed == 0 else 207,
         )
 
     @action(detail=False, methods=["post"], url_path="bulk-archive")

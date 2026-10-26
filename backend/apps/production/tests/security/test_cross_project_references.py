@@ -387,7 +387,7 @@ class TestActionBodies:
         assert "x" in extra.json() and "task_ids" in bad_id.json() and "status" in missing.json()
 
     def test_review_actions_reject_unknown_keys(self, project_a):
-        review = ReviewFactory.create(project=project_a)
+        review = ReviewFactory.create(project=project_a, status="In Review")
         user = _user(("review.view", "review.update", "review.approve"), project_a)
         client = _client(user)
         base = f"/api/v1/reviews/{review.id}/"

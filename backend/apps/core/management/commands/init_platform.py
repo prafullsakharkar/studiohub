@@ -143,6 +143,14 @@ DIRECTORY_CRUD_PERMISSIONS = [
 # The *.view codes for sequences, versions and media are enforced by the flat
 # endpoints and the project-scoped routes (docs/production/CONTRACTS.md C-03), so every
 # production role that reads shots reads them too.
+# Opt-in corrections: in the catalog so an admin can grant them, in no seeded role.
+OPT_IN_PERMISSIONS = [
+    ("production.status.override", "production_status", "override"),
+    ("production.sod.override", "production_sod", "override"),
+]
+OPT_IN_PERMISSION_CODES = frozenset(code for code, _, _ in OPT_IN_PERMISSIONS)
+PERMISSION_SPECS.extend(OPT_IN_PERMISSIONS)
+
 PRODUCTION_FULL_PERMISSIONS = [
     "project.create", "project.view", "project.update", "project.delete",
     "sequence.view", "version.view", "media.view",
@@ -357,7 +365,11 @@ class Command(BaseCommand):
         matrix = {}
         for spec in ROLE_SPECS:
             perms = spec["permissions"]
-            codes = list(perm_by_code.keys()) if perms is None else list(perms)
+            codes = (
+                [code for code in perm_by_code if code not in OPT_IN_PERMISSION_CODES]
+                if perms is None
+                else list(perms)
+            )
             # Production-tier (project-scope) roles keep platform directory
             # reads (contract parity with the org-era seed: the directory is
             # visible to everyone who can see the platform).

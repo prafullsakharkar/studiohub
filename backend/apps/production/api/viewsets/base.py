@@ -16,7 +16,7 @@ from apps.core.api.viewsets.service import ServiceModelViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
 from apps.production.constants import workflow
-from apps.production.permissions.checks import has_permission_code
+from apps.production.permissions.checks import has_explicit_permission_code, has_permission_code
 from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.services.status import StatusService
 
@@ -78,10 +78,23 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
             request=self.request,
             view=self,
         )
-        return ProductionBaseSelector.scope_by_project_membership(
-            qs,
-            request=self.request,
+        return self.narrow_queryset(
+            ProductionBaseSelector.scope_by_project_membership(
+                qs,
+                request=self.request,
+            )
         )
+
+    def perform_destroy(self, instance):
+        self.guard_mutable(instance)
+        super().perform_destroy(instance)
+
+    def narrow_queryset(self, queryset):
+        """Hook: narrow what the caller may see beyond project membership (e.g. own records)."""
+        return queryset
+
+    def guard_mutable(self, instance):
+        """Hook: raise when ``instance`` may no longer be edited, deleted or archived."""
 
     def _may_view_deleted(self):
         """Whether the caller may list soft-deleted rows (DELETE grant)."""
@@ -234,7 +247,7 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         project_id = request.query_params.get("project_id")
         if project_id and hasattr(model, "project"):
             qs = qs.filter(project_id=project_id)
-        qs = ProductionBaseSelector.scope_by_project_membership(qs, request=request)
+        qs = self.narrow_queryset(ProductionBaseSelector.scope_by_project_membership(qs, request=request))
         page = self.paginate_queryset(qs)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -246,15 +259,18 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
     def archive(self, request, *args, **kwargs):
         """Soft-delete a record within the caller's project scope."""
         model = self.service_class.model
-        queryset = ProductionBaseSelector.scope_by_project_membership(
-            model.objects.filter(
-                pk=self.kwargs.get(self.lookup_url_kwarg or self.lookup_field),
-            ),
-            request=request,
+        queryset = self.narrow_queryset(
+            ProductionBaseSelector.scope_by_project_membership(
+                model.objects.filter(
+                    pk=self.kwargs.get(self.lookup_url_kwarg or self.lookup_field),
+                ),
+                request=request,
+            )
         )
         instance = queryset.first()
         if instance is None:
             raise NotFound(f"{model.__name__} not found.")
+        self.guard_mutable(instance)
         self._set_status(instance, "Archived")
         self.service_class.delete(instance, user=request.user)
         serializer = self.get_serializer(instance)
@@ -264,18 +280,22 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
     def restore(self, request, *args, **kwargs):
         """Restore a soft-deleted record within the caller's project scope."""
         model = self.service_class.model
-        queryset = ProductionBaseSelector.scope_by_project_membership(
-            model.all_objects.filter(
-                pk=self.kwargs.get(self.lookup_url_kwarg or self.lookup_field),
-            ),
-            request=request,
+        queryset = self.narrow_queryset(
+            ProductionBaseSelector.scope_by_project_membership(
+                model.all_objects.filter(
+                    pk=self.kwargs.get(self.lookup_url_kwarg or self.lookup_field),
+                ),
+                request=request,
+            )
         )
         instance = queryset.first()
         if instance is None or not instance.is_deleted:
             raise NotFound(f"{model.__name__} not found.")
-        serializer = self.get_serializer(
-            self.service_class.restore(instance, user=request.user),
-        )
+        restored = self.service_class.restore(instance, user=request.user)
+        if self.workflow_key:
+            # Back to the status it had before it was archived, not stuck in Archived.
+            StatusService.restore_status(actor=request.user, entity=restored)
+        serializer = self.get_serializer(restored)
         return Response(serializer.data)
 
     def _resolve_project_from_input(self, serializer):
@@ -354,6 +374,7 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
 
     def perform_update(self, serializer):  # pyright: ignore[reportIncompatibleMethodOverride]
         instance = serializer.instance
+        self.guard_mutable(instance)
         data = serializer.validated_data if isinstance(serializer.validated_data, dict) else {}
         self.validate_references(getattr(instance, "project", None), data, instance=instance)
         self._guard_privileged_values(data, instance=instance)
@@ -370,7 +391,24 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         """Whether the request holds ``code`` (credential scopes included)."""
         return has_permission_code(self.request, code)
 
-    def _apply_update(self, instance, data):
+    def can_explicit(self, code: str) -> bool:
+        """Whether a role grants ``code`` to the caller; superuser does not imply it (override codes)."""
+        return has_explicit_permission_code(self.request, code)
+
+    def status_kwargs(self, override_reason: str | None = None) -> dict[str, Any]:
+        """Permission arguments for ``StatusService`` calls made on behalf of this request."""
+        return {
+            "has_permission": self.can,
+            "has_explicit": self.can_explicit,
+            "override_reason": override_reason,
+        }
+
+    def _override_reason(self) -> str | None:
+        """``override_reason`` of a single-record write (never read from a bulk body)."""
+        body = self.request.data
+        return str(body.get("override_reason") or "") if hasattr(body, "get") else None
+
+    def _apply_update(self, instance, data, *, allow_override=True):
         """
         Save ``data`` on ``instance`` through the service, as the caller.
 
@@ -381,11 +419,11 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         new_status = data.pop("status", None) if self.workflow_key else None
         with transaction.atomic():
             if new_status is not None and new_status != instance.status:
+                kwargs = self.status_kwargs(self._override_reason() if allow_override else None)
+                if not allow_override:
+                    kwargs["has_explicit"] = lambda code: False
                 StatusService.transition_status(
-                    actor=self.request.user,
-                    entity=instance,
-                    to_status=new_status,
-                    has_permission=self.can,
+                    actor=self.request.user, entity=instance, to_status=new_status, **kwargs
                 )
             return self.service_class.update(  # pyright: ignore[reportAttributeAccessIssue]
                 instance, user=self.request.user, **data

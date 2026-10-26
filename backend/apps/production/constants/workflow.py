@@ -1,15 +1,21 @@
 """
 Status workflow: which status may follow which, and what it takes.
 
-One place for the rules ``StatusService.transition_status`` enforces. The maps
-are the MVP of the plan (fixed, in code); a status that is not a key of an
-entity's map is not a valid status of that entity. A current status that is
-missing from the map (legacy data) may move to any valid status, so a bad row
-is never trapped.
+One table per entity, in this file only. The rule of thumb: working states move
+freely among themselves; the states that mean something are fenced.
 
-Permissions: moving a shot to or from Approved needs ``shot.approve`` and so
-on, on top of the ``*.update`` code of the request. Separation of duties
-(an approver who is also the artist) is not enforced yet.
+* **Approved** is entered from the review state only and left only to Archived.
+* **Archived** is left only by the restore bookkeeping (``enforce=False``).
+* **Closed** (review) and **Approved** (timelog) are final; a published
+  version's status is frozen.
+* A timelog follows Draft -> Submitted -> Approved or Rejected.
+
+Corrections of those fences need ``production.status.override`` and a reason
+(shot, task, version, review; never a timelog: an approved timelog is corrected
+with an adjustment entry). Separation of duties is in ``SEPARATION``.
+
+A current status missing from a table (legacy data) may move to any valid
+status, so a bad row is never trapped.
 """
 
 from __future__ import annotations
@@ -37,48 +43,43 @@ ENTITY_FOR_MODEL = {
 }
 
 ARCHIVED = "Archived"
+APPROVED = "Approved"
 
-_SHOT_LIVE = ("Not Started", "In Progress", "Pending Review", "Approved", "Retake", "On Hold")
-_PRODUCTION_LIVE = ("Not Started", "In Progress", "Pending Review", "Approved", "Retake")
-_REVIEW_OPEN = (
-    "Pending Review",
-    "Submitted",
-    "In Review",
-    "Changes Requested",
-    "Retake",
-    "Rejected",
-    "Approved",
-)
+#: entities whose fences ``production.status.override`` may cross
+OVERRIDABLE = frozenset({SHOT, TASK, VERSION, REVIEW})
 
 
-def _any_of(live: tuple[str, ...], *, restore_to: tuple[str, ...]) -> dict[str, frozenset[str]]:
-    """Every live status may move to every other live status and to Archived."""
-    graph = {status: frozenset((set(live) - {status}) | {ARCHIVED}) for status in live}
-    graph[ARCHIVED] = frozenset(restore_to)
+def _working(
+    states: tuple[str, ...], *, review_only: str, approved: str
+) -> dict[str, frozenset[str]]:
+    """Working states move freely; ``approved`` comes from ``review_only`` and leads to Archived."""
+    graph = {
+        state: frozenset(
+            (set(states) - {state}) | {ARCHIVED} | ({approved} if state == review_only else set())
+        )
+        for state in states
+    }
+    graph[approved] = frozenset({ARCHIVED})
+    graph[ARCHIVED] = frozenset()
     return graph
 
 
+_SHOT_WORKING = ("Not Started", "In Progress", "Pending Review", "Retake", "On Hold")
+_PRODUCTION_WORKING = ("Not Started", "In Progress", "Pending Review", "Retake")
+
 TRANSITIONS: dict[str, dict[str, frozenset[str]]] = {
-    SHOT: {
-        "Not Started": frozenset({"In Progress", "On Hold", "Approved", ARCHIVED}),
-        "In Progress": frozenset(
-            {"Not Started", "Pending Review", "On Hold", "Approved", "Retake", ARCHIVED}
-        ),
-        "Pending Review": frozenset({"In Progress", "Approved", "Retake", "On Hold", ARCHIVED}),
-        "Approved": frozenset({"In Progress", "Retake", "On Hold", ARCHIVED}),
-        "Retake": frozenset({"In Progress", "Pending Review", "On Hold", "Approved", ARCHIVED}),
-        "On Hold": frozenset({"Not Started", "In Progress", "Pending Review", ARCHIVED}),
-        ARCHIVED: frozenset({"Not Started", "In Progress"}),
-    },
-    TASK: _any_of(_PRODUCTION_LIVE, restore_to=("Not Started", "In Progress")),
-    VERSION: _any_of(_PRODUCTION_LIVE, restore_to=("Not Started", "In Progress")),
+    SHOT: _working(_SHOT_WORKING, review_only="Pending Review", approved=APPROVED),
+    TASK: _working(_PRODUCTION_WORKING, review_only="Pending Review", approved=APPROVED),
+    VERSION: _working(_PRODUCTION_WORKING, review_only="Pending Review", approved=APPROVED),
     REVIEW: {
-        **{
-            status: frozenset((set(_REVIEW_OPEN) - {status}) | {"Closed", ARCHIVED})
-            for status in _REVIEW_OPEN
-        },
+        "Pending Review": frozenset({"Submitted", "In Review", "Closed"}),
+        "Submitted": frozenset({"In Review", "Closed"}),
+        "In Review": frozenset({"Approved", "Rejected", "Changes Requested", "Retake", "Closed"}),
+        "Changes Requested": frozenset({"Submitted", "In Review", "Closed"}),
+        "Retake": frozenset({"Submitted", "In Review", "Closed"}),
+        "Rejected": frozenset({"Submitted", "Closed"}),
+        "Approved": frozenset({"Closed"}),
         "Closed": frozenset(),
-        ARCHIVED: frozenset({"Pending Review"}),
     },
     TIMELOG: {
         "Draft": frozenset({"Submitted"}),
@@ -88,19 +89,30 @@ TRANSITIONS: dict[str, dict[str, frozenset[str]]] = {
     },
 }
 
-#: entity -> status -> code needed to move to it (or, for ``LEAVING``, away from it)
+#: entity -> status -> code needed to move to it
 ENTERING: dict[str, dict[str, str]] = {
-    SHOT: {"Approved": ShotPermissions.APPROVE},
-    VERSION: {"Approved": VersionPermissions.PUBLISH},
+    SHOT: {APPROVED: ShotPermissions.APPROVE},
+    VERSION: {APPROVED: VersionPermissions.PUBLISH},
     REVIEW: dict.fromkeys(
         ("Approved", "Rejected", "Changes Requested", "Retake"), ReviewPermissions.APPROVE
     ),
     TIMELOG: dict.fromkeys(("Approved", "Rejected"), TimelogPermissions.APPROVE),
 }
+#: entity -> status -> code needed to move away from it
 LEAVING: dict[str, dict[str, str]] = {
-    SHOT: {"Approved": ShotPermissions.APPROVE},
-    VERSION: {"Approved": VersionPermissions.PUBLISH},
+    SHOT: {APPROVED: ShotPermissions.APPROVE},
+    VERSION: {APPROVED: VersionPermissions.PUBLISH},
 }
+
+#: entity -> target statuses that approve work; the actor must not have produced it
+SEPARATION: dict[str, frozenset[str]] = {
+    TIMELOG: frozenset({"Approved", "Rejected"}),
+    REVIEW: frozenset({"Approved"}),
+    VERSION: frozenset({APPROVED}),
+}
+
+#: entities whose status is frozen once published (``is_published``)
+FROZEN_WHEN_PUBLISHED = frozenset({VERSION})
 
 
 def valid_statuses(entity: str) -> frozenset[str]:
@@ -127,3 +139,7 @@ def required_permissions(entity: str, from_status: str | None, to_status: str) -
     if leaving and leaving not in codes:
         codes.append(leaving)
     return tuple(codes)
+
+
+def needs_separation(entity: str, to_status: str) -> bool:
+    return to_status in SEPARATION.get(entity, frozenset())

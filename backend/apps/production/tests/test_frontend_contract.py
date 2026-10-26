@@ -252,9 +252,9 @@ class TestBulkUpdateArchiveContract:
         assert resp.status_code == status.HTTP_200_OK, resp.data
         shot.refresh_from_db()
         assert shot.is_deleted is False
-        # Restore undeletes; the archive-time status is left untouched
-        # (Task is the exception: its restore resets to "In Progress").
-        assert shot.status == "Archived"
+        # Restore undeletes and takes the record out of Archived, back to the
+        # status it had before (the status workflow keeps Archived a dead end).
+        assert shot.status == "Not Started"
 
     def test_task_archive_sets_flag_and_status(self, staff_client, staff_user):
         task = TaskFactory.create(code="TSKARC01")

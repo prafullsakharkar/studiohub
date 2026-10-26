@@ -74,55 +74,55 @@ class ReviewViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: ig
             serializer.validated_data["lead_reviewer"] = self.request.user
         super().perform_create(serializer)
 
-    def _update_status(self, instance, status, notes=None):
+    def _update_status(self, instance, status, body):
         return ReviewService.change_status(
             actor=self.request.user,
             review=instance,
             to_status=status,
-            notes=notes,
-            has_permission=self.can,
+            notes=body.get("notes"),
+            **self.status_kwargs(body.get("override_reason")),
         )
 
     @extend_schema(request=ReviewNotesSerializer)
     @action(detail=True, methods=["post"], url_path="submit")
     def submit(self, request, *args, **kwargs):
         instance = self.get_object()
-        self._update_status(instance, "Submitted", validated(ReviewNotesSerializer, request.data).get("notes"))
+        self._update_status(instance, "Submitted", validated(ReviewNotesSerializer, request.data))
         return Response(ReviewDetailSerializer(instance).data)
 
     @extend_schema(request=ReviewNotesSerializer)
     @action(detail=True, methods=["post"], url_path="start-review")
     def start_review(self, request, *args, **kwargs):
         instance = self.get_object()
-        self._update_status(instance, "In Review", validated(ReviewNotesSerializer, request.data).get("notes"))
+        self._update_status(instance, "In Review", validated(ReviewNotesSerializer, request.data))
         return Response(ReviewDetailSerializer(instance).data)
 
     @extend_schema(request=ReviewNotesSerializer)
     @action(detail=True, methods=["post"], url_path="approve")
     def approve(self, request, *args, **kwargs):
         instance = self.get_object()
-        self._update_status(instance, "Approved", validated(ReviewNotesSerializer, request.data).get("notes"))
+        self._update_status(instance, "Approved", validated(ReviewNotesSerializer, request.data))
         return Response(ReviewDetailSerializer(instance).data)
 
     @extend_schema(request=ReviewNotesSerializer)
     @action(detail=True, methods=["post"], url_path="reject")
     def reject(self, request, *args, **kwargs):
         instance = self.get_object()
-        self._update_status(instance, "Rejected", validated(ReviewNotesSerializer, request.data).get("notes"))
+        self._update_status(instance, "Rejected", validated(ReviewNotesSerializer, request.data))
         return Response(ReviewDetailSerializer(instance).data)
 
     @extend_schema(request=ReviewNotesSerializer)
     @action(detail=True, methods=["post"], url_path="request-changes")
     def request_changes(self, request, *args, **kwargs):
         instance = self.get_object()
-        self._update_status(instance, "Changes Requested", validated(ReviewNotesSerializer, request.data).get("notes"))
+        self._update_status(instance, "Changes Requested", validated(ReviewNotesSerializer, request.data))
         return Response(ReviewDetailSerializer(instance).data)
 
     @extend_schema(request=ReviewNotesSerializer)
     @action(detail=True, methods=["post"], url_path="close")
     def close(self, request, *args, **kwargs):
         instance = self.get_object()
-        self._update_status(instance, "Closed", validated(ReviewNotesSerializer, request.data).get("notes"))
+        self._update_status(instance, "Closed", validated(ReviewNotesSerializer, request.data))
         return Response(ReviewDetailSerializer(instance).data)
 
     @extend_schema(request=ReviewVerdictSerializer)
@@ -135,7 +135,7 @@ class ReviewViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: ig
             review=instance,
             verdict=body["verdict"],
             notes=body.get("notes"),
-            has_permission=self.can,
+            **self.status_kwargs(body.get("override_reason")),
         )
         return Response(ReviewDetailSerializer(instance).data)
 
@@ -227,6 +227,15 @@ class ReviewViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: ig
         participant_id = body["participant_id"]
         verdict = body["verdict"]
         notes = body["notes"]
+        # Recording an approval is an approval, whoever the participant is.
+        ReviewService.guard_approval(
+            actor=request.user,
+            review=instance,
+            verdict=verdict,
+            has_explicit=self.can_explicit,
+            override_reason=body.get("override_reason"),
+            note="participant verdict",
+        )
         reviewers = list(instance.reviewers or [])
         for entry in reviewers:
             if not isinstance(entry, dict):

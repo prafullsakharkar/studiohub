@@ -10,10 +10,15 @@ class ShotService(BulkOperationService):
 
     @classmethod
     @transaction.atomic
-    def approve_shot(cls, *, actor, shot, has_permission=None):
+    def approve_shot(cls, *, actor, shot, has_permission=None, has_explicit=None):
         """Supervisor approval: status Approved, flag set, every pipeline step Approved."""
         StatusService.transition_status(
-            actor=actor, entity=shot, to_status="Approved", has_permission=has_permission
+            actor=actor,
+            entity=shot,
+            to_status="Approved",
+            has_permission=has_permission,
+            has_explicit=has_explicit,
+            strict=True,
         )
         shot.supervisor_approved = True
         if shot.pipeline:
