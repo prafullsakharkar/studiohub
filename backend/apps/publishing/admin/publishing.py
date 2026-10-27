@@ -42,6 +42,20 @@ class PublishItemAdmin(PlatformScopedModelAdmin):
 
     ordering = ("-created_at",)
 
+    # The status moves only through the workflow service (constants/workflow.py); results and
+    # lineage are records of what happened.
+    readonly_fields = (
+        "code",
+        "status",
+        "retry_count",
+        "is_archived",
+        "validation_results",
+        "error_message",
+        "cancel_reason",
+        "version",
+        "republished_from",
+    )
+
 
 @admin.register(PublishDestination)
 class PublishDestinationAdmin(PlatformScopedModelAdmin):

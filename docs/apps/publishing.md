@@ -2,8 +2,8 @@
 
 Written against `docs/APP_ARCHITECTURE_TEMPLATE.md`. The authoritative detail is in
 `docs/publishing/` (`ANALYSIS.md`, `CONTRACTS.md`, `DECISIONS.md`, `PLAN.md`) and
-`docs/delivery-pipeline/`. Status: **phase 3 of 5 done** (integrity and storage); phases 4
-(workflow) and 5 (authorization and hardening) follow.
+`docs/delivery-pipeline/`. Status: **phase 4 of 5 done** (integrity and storage; export job workflow); phase 5
+(authorization and hardening) follows.
 
 ## 2. Application information
 
@@ -74,6 +74,22 @@ does not allow is 409 `invalid_transition`. Details and error vocabulary: `CONTR
 `publishing.revoke`, `publishing.storage.manage`, and `publishing.status.override` (needed with a
 reason to leave Revoked; granted to no role, not implied by superuser, a scoped credential must
 list it). Project membership narrows files; jobs are not yet narrowed (phase 5).
+
+## 8b. Export job workflow
+
+One map (`constants/workflow.py`): Pending to Validating; Validating to Validated, Failed or Cancelled;
+Validated to Exporting, Pending (re-validate) or Cancelled; Exporting to Exported or Failed; Failed to
+Pending (retry) or Cancelled. Exported and Cancelled are final. `JobService` (`services/workflow.py`)
+is the only writer of a job's status; every other path (`PATCH`, the admin) is read-only for it.
+A move the map forbids, or the loser of a race, is 409 `invalid_transition`. A job's details can be
+edited only while it is Pending or Failed. `republish` starts a new job from any status.
+
+Validation (`services/validation.py`) reports each active rule as `passed`, `failed`, `warning` or
+`not_checked`. It only says `passed` for what the server checked (the job's details, its registered
+files and their checksum state, the version's frame range). Configure rules in the admin:
+`metadata` (`{"required": [...]}`), `file_format` (`{"allowed_formats": [...]}`), `file_size`
+(`{"max_bytes": N}`), `frame_range` and `file_exists` need no config; `dependencies` and `permissions`
+are always `not_checked`.
 
 ## 9. Operations
 

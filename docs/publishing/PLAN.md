@@ -1,6 +1,6 @@
 # Publishing plan (Phases 3-5)
 
-**Status:** Phase 3 implemented 2026-10-27 (see "Phase 3 as built" at the end); Phases 4 and 5 not started.
+**Status:** Phases 3 and 4 implemented 2026-10-27 (see "Phase 3 as built" and "Phase 4 as built" at the end); Phase 5 not started.
 
 Phase 2 design, 2026-10-27. Branch `feature/publishing-improvement`, created at the start of Phase 3 from `develop`. One commit per phase after its gate. Contracts: `CONTRACTS.md`. Decisions: `DECISIONS.md`, `docs/delivery-pipeline/DECISIONS.md`.
 
@@ -164,3 +164,30 @@ Differences from the plan, each recorded in `docs/delivery-pipeline/DECISIONS.md
 | Job create: project required | unknown project is a 400; required and membership-checked in Phase 5 | existing tests and the frontend send jobs without membership; scoping is P-12 |
 | Seeding in Phase 5 (P-13) | `deprecate`, `revoke`, `storage.manage`, `status.override` seeded now | the new endpoints would otherwise be unusable; the role *changes* (vfx-supervisor loses `delete`, lead-artist gains `create`) stay in Phase 5 |
 | Permission matrix test in Phase 5 | the existing production matrix pin updated now | the new grants broke it |
+
+## 8. Phase 4 as built
+
+Done as planned: P-9 (one map in `constants/workflow.py`; `JobService` is the only writer of a job's
+status; `PATCH`/`PUT` through the service; status, code, archive flag and retry count read-only),
+P-10 (honest validation, `services/validation.py`), P-11 (latest file derived), audit rows for every
+job move (ids, statuses and counts only), the admin shows status and history fields read-only.
+
+Differences from the plan:
+
+| Plan said | Built | Why |
+|---|---|---|
+| "Dependencies with cycle prevention" (the brief's Phase 4) | not built | Q5 put dependencies in Later |
+| "Concurrent promotion (PostgreSQL, one success and one 409)" | concurrent revoke (Phase 3) and, now, concurrent retry and cancel of a job; validation racing a cancel | there is no promotion in publishing; Production owns the hero |
+| "Bulk uses the same map" | there is no bulk status endpoint for jobs or files; a test pins that `bulk-register` is the only bulk route | Q36 planned bulk only for registration |
+| Override for guarded job states | service call only, no endpoint | `republish` is the normal path (A-7) |
+| Nothing about who moves a job to Exporting or Exported | the states are in the map but no endpoint reaches them | no endpoint was designed; Q39 |
+
+Frontend flows that assumed free movement (read from `studiohub-react`, not run):
+
+| Flow | Where | After Phase 4 |
+|---|---|---|
+| Retry on a Failed job | `PublishCard.tsx:205`, `PublishDetailsModal.tsx:320` | works |
+| Republish on any other job | same | works from any status |
+| "Re-Run Validation" in the details modal | `PublishDetailsModal.tsx` (always shown) | works on Pending and Validated jobs; **409 on Failed (use Retry), Exported, Cancelled** |
+| "Unpublish" on every job that is not "Unpublished" | `PublishDetailsModal.tsx:306` | works until the job is Exporting or Exported; **409 after** |
+| Guards use `can('delivery.update')` for publishing actions | `PublishingPage.tsx:64-70` | unrelated to this phase: the UI checks the wrong code |

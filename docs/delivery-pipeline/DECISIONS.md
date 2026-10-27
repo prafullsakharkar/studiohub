@@ -145,6 +145,21 @@ Recommendation and default: **A**. Blocks: Phases 5, 8, 11.
 | A-5 | 2026-10-27 | A 409 `path_already_registered` tells a member that a path is taken even if the other file belongs to a project they cannot see (storage paths are studio-wide and the unique constraint spans projects). It reveals existence only: no version, project, size or checksum. | ACCEPTED RISK (low) | Phase 5 review |
 | A-6 | 2026-10-27 | `PublishItem.is_archived` is still read (old rows that were archived keep reading "Unpublished") but nothing writes it. | ASSUMED (Q33 A, stage 1) | Phase 4 |
 
+### Phase 4
+
+| ID | Date | What | Status | Affects |
+|---|---|---|---|---|
+| A-7 | 2026-10-27 | Leaving a guarded job state (Exported, Cancelled) is a service call with `publishing.status.override` and a reason; no endpoint. Republishing is the normal way to run a finished job again. | ASSUMED | Phase 5 |
+| A-8 | 2026-10-27 | `republish` works from a job in any status: it creates a new job and changes nothing on the old one, so the brief's "guard meaningful states only" gives no reason to restrict it. | ASSUMED | |
+| A-9 | 2026-10-27 | Rules that need the artist's machine or a mounted disk are reported `not_checked`, and a job still validates when only `not_checked` rules remain (otherwise nothing could validate). `dependencies` and `permissions` rules are always `not_checked` (dependencies are Later, Q5). | ASSUMED (Q14 A) | Phase 5 |
+
+**Q39 (OPEN, non-blocking). Who moves an export job to Exporting, Exported or Failed-during-export?**
+The map has these states (they existed in the model) but no endpoint reaches them: validation only produces Validated or Failed, and the DCC tool has no way to report that an export started or finished. Why it matters: today a job can never become Exported through the API, so the "Published" word the UI shows comes from Validated.
+* **A. Leave it (assumed for now).** Nothing changes; the states stay reachable only through `JobService.move`.
+* B. Add `POST /{id}/start-export/`, `/complete-export/` and `/fail/` (code `publishing.update`, project-scoped from Phase 5), so a pipeline tool can report progress; `complete-export` could record the files the job produced.
+* C. Remove Exporting and Exported from the map until a tool needs them.
+Recommendation: **B**, but only once you know which tool reports the export; until then **A**. Default if "your call": **A**. Blocks: nothing.
+
 ## Checks only you can make
 
 1. **`btree_gist`** (Q32): on the production database, as the application role, does `CREATE EXTENSION IF NOT EXISTS btree_gist;` succeed (or is it already installed: `SELECT extname FROM pg_extension;`)? It is a trusted extension since PostgreSQL 13, so a role with `CREATE` on the database can install it.

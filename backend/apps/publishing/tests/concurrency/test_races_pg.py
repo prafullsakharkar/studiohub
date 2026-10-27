@@ -4,7 +4,8 @@ Races that need real row locks, so they run against PostgreSQL (SQLite ignores r
 Each thread has its own database connection; the data is committed before the threads start
 (``transaction=True``). Checked by hand on 2026-10-27 that each test fails when its guard is taken
 out: numbering without the counter row lock, revoke without the file row lock, registration
-without the unique constraint's IntegrityError handling.
+without the unique constraint's IntegrityError handling, and (Phase 4) the job retry and cancel races
+without the job row lock.
 """
 
 from __future__ import annotations
@@ -21,6 +22,7 @@ from apps.publishing.exceptions import InvalidTransition, PathAlreadyRegistered
 from apps.publishing.models import PublishedFile, PublishedFileEvent, PublishItem
 from apps.publishing.services.files import PublishedFileService
 from apps.publishing.services.jobs import create_job
+from apps.publishing.services.workflow import JobService
 from apps.publishing.tests.helpers import (
     OTHER_SHA,
     member,
@@ -164,3 +166,52 @@ def test_concurrent_registrations_on_two_roots_do_not_interfere(project):
 
     assert Counter(created for ok, (_f, created) in results if ok) == {True: 2, False: 2}
     assert PublishedFile.objects.count() == 2
+
+
+def _job(project, status):
+    job = create_job(actor=None, data={**BODY, "project_id": str(project.pk)})
+    PublishItem.objects.filter(pk=job.pk).update(status=status)
+    return job
+
+
+def test_concurrent_retries_of_a_failed_job_have_one_success_and_one_conflict(project):
+    job = _job(project, "Failed")
+
+    results = run_parallel(2, lambda _: JobService.retry(actor=None, job=job))
+
+    outcomes = Counter("ok" if ok else type(value).__name__ for ok, value in results)
+    assert outcomes == {"ok": 1, "InvalidTransition": 1}
+    fresh = PublishItem.objects.get(pk=job.pk)
+    assert (fresh.status, fresh.retry_count) == ("Pending", 1)  # counted once, not twice
+
+
+def test_concurrent_cancels_have_one_success_and_one_conflict(project):
+    job = _job(project, "Validated")
+
+    results = run_parallel(
+        2, lambda i: JobService.cancel(actor=None, job=job, reason=f"reason {i}")
+    )
+
+    outcomes = Counter("ok" if ok else type(value).__name__ for ok, value in results)
+    assert outcomes == {"ok": 1, "InvalidTransition": 1}
+    assert PublishItem.objects.get(pk=job.pk).status == "Cancelled"
+
+
+def test_a_validation_racing_a_cancel_never_leaves_a_half_moved_job(project):
+    """Whichever wins, the job ends in a status the map allows from where it started."""
+    job = _job(project, "Pending")
+
+    results = run_parallel(
+        2,
+        lambda i: (
+            JobService.validate(actor=None, job=job)
+            if i == 0
+            else JobService.cancel(actor=None, job=job, reason="stop")
+        ),
+    )
+
+    assert any(ok for ok, _ in results)
+    final = PublishItem.objects.get(pk=job.pk).status
+    assert final in {"Validated", "Cancelled"}
+    for ok, value in results:
+        assert ok or isinstance(value, InvalidTransition)

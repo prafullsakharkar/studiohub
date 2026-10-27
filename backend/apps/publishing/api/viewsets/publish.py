@@ -62,6 +62,17 @@ class PublishingViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTy
     search_fields = ("name", "code", "entity_code", "entity_name")
     ordering_fields = ("name", "created_at", "status")
 
+    def update(self, request, *args, **kwargs):
+        """Edit a job's details (only while it is Pending or Failed); answers with the detail shape."""
+        partial = kwargs.pop("partial", False)
+        job = self.get_object()
+        serializer = PublishUpdateSerializer(
+            job, data=request.data, partial=partial, context=self.get_serializer_context()
+        )
+        serializer.is_valid(raise_exception=True)
+        job = serializer.save()
+        return Response(PublishDetailSerializer(job, context=self.get_serializer_context()).data)
+
     @action(detail=True, methods=["post"], url_path="validate")
     def validate(self, request, *args, **kwargs):
         """Validate publish pre-flight rules."""
@@ -90,6 +101,7 @@ class PublishingViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTy
             executor_kwargs={
                 "publish_id": str(publish.id),
                 "user_id": str(request.user.id) if request.user.is_authenticated else None,
+                "comment": serializer.validated_data.get("comment", ""),
             },
         )
 
@@ -116,6 +128,7 @@ class PublishingViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTy
         publish = unpublish(
             publish_id=str(publish.id),
             user_id=str(request.user.id) if request.user.is_authenticated else None,
+            reason=serializer.validated_data.get("reason", ""),
         )
 
         return Response(PublishDetailSerializer(publish).data)

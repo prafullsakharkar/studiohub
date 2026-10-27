@@ -24,3 +24,10 @@ class TransitionNotPermitted(PermissionDeniedException):
 
     default_detail = "You may not make this status change."
     default_code = "transition_not_permitted"
+
+
+class JobNotEditable(ConflictException):
+    """The export job is past the point where its details can be edited (409)."""
+
+    default_detail = "This export job can no longer be edited."
+    default_code = "job_not_editable"

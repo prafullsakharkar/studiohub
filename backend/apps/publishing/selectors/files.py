@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from typing import Any
 from uuid import UUID
 
-from django.db.models import QuerySet
+from django.db.models import Exists, OuterRef, Q, QuerySet
 
 from apps.core.selectors.base import BaseSelector
 from apps.production.selectors.base import ProductionBaseSelector
@@ -77,7 +77,38 @@ class PublishedFileSelector(BaseSelector):
             root = params.get("storage_root")
             if root:
                 qs = qs.filter(storage_root__code__iexact=root)
+            if str(params.get("latest", "")).lower() in {"1", "true", "yes"}:
+                qs = cls.only_latest(qs)
         return qs
+
+    @classmethod
+    def only_latest(cls, qs: QuerySet[PublishedFile]) -> QuerySet[PublishedFile]:
+        """
+        The newest Registered file of each version and role.
+
+        "Latest" is derived, never stored, so it cannot go stale: a deprecated or revoked file
+        stops being latest and the one registered before it takes its place. Ties on the
+        registration time break on the id so exactly one file wins.
+        """
+        newer = PublishedFile.objects.filter(
+            version_id=OuterRef("version_id"),
+            role=OuterRef("role"),
+            status=PublishedFile.Status.REGISTERED,
+        ).filter(
+            Q(created_at__gt=OuterRef("created_at"))
+            | Q(created_at=OuterRef("created_at"), pk__gt=OuterRef("pk"))
+        )
+        return qs.filter(status=PublishedFile.Status.REGISTERED).exclude(Exists(newer))
+
+    @classmethod
+    def latest_for_versions(
+        cls, version_ids: Iterable[UUID]
+    ) -> dict[tuple[UUID, str], FileSnapshot]:
+        """``{(version id, role): snapshot}`` of the latest Registered file of each, for other apps."""
+        rows = cls.only_latest(
+            PublishedFile.objects.filter(version_id__in=list(version_ids))
+        ).select_related("storage_root", "file_type")
+        return {(file.version_id, file.role): _snapshot(file) for file in rows}  # pyright: ignore[reportAttributeAccessIssue]
 
     @classmethod
     def files_for_versions(cls, version_ids: Iterable[UUID]) -> dict[UUID, list[FileSnapshot]]:
