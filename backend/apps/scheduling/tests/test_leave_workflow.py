@@ -87,7 +87,8 @@ class TestRequestsStartPendingAndCannotBeForged:
         )
 
         assert resp.status_code == 201, resp.json()
-        assert (resp.json()["status"], resp.json()["total_days"]) == ("Pending", 5)
+        # Tuesday 1 to Saturday 5 September: four working days (decision Q20; it was five calendar days)
+        assert (resp.json()["status"], resp.json()["total_days"]) == ("Pending", 4)
 
     @pytest.mark.parametrize(
         ("field", "value"),
@@ -150,7 +151,8 @@ class TestRequestsStartPendingAndCannotBeForged:
         assert forged.status_code == 400 and "status" in forged.json()
         assert edited.status_code == 200, edited.json()
         leave.refresh_from_db()
-        assert (leave.status, leave.total_days) == ("Pending", 10)
+        # Tuesday 1 to Thursday 10 September: eight working days (it was ten calendar days)
+        assert (leave.status, leave.total_days) == ("Pending", 8)
 
     def test_a_decided_request_cannot_be_edited(self, manager):
         leave = _leave(_person(UserFactory.create()), status="Approved")

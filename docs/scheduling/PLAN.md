@@ -95,6 +95,18 @@ Tests:
 * `migrations/test_checks_stop_and_list.py`; round-trip 0004-0007.
 * Production: capacity endpoints answer the same shape at the same paths after the move (existing tests in `apps/production/tests` keep passing unmodified).
 
+#### Phase 9 as built (2026-10-27)
+
+Status: **implemented, committed on `feature/scheduling-improvement`** (hash in the Phase 9 report). Differences from the plan above:
+
+* **Branch base.** The branch starts from the deliveries tip (`66649be`), not from `develop` (A-43).
+* **Migration tests** are `tests/migrations/test_phase9_migrations.py` (all of 0004 to 0007, including one stop-and-list case per check, the deleted-row cases, the PROTECT and enforcement cases and the reverse that refuses two calendars holding one date), not `test_checks_stop_and_list.py`. Only one round trip goes back to 0003, because PostgreSQL never reuses dropped-column slots.
+* **Capacity move.** The three capacity views now live in `apps/scheduling/api/views/capacity.py` at the same paths and names `capacity`, `overbooking`, `resolve-overbooking` under `api:v1:scheduling`. Production no longer imports Scheduling (checked by an AST test, `tests/test_boundaries.py`). The one Production route that still invents milestones, `ProjectScheduleView`, is replaced in Phase 10 through the provider.
+* **Capacity week** is computed per resource in its calendar's time zone; leave and holidays do not reduce capacity yet (Phase 10).
+* **Writes** to calendars and milestones are gated by the existing `schedule.update` / `schedule.create` / `schedule.delete` codes until Phase 11 adds `schedule.manage` (A-45).
+* **Read-only report** `manage.py report_leave_days` lists leave rows whose stored count differs from their working days. It changes nothing and prints no reasons.
+* New defects found by the new checks and fixed here: a booking whose end equals its start passed the serializer and failed on the database check (a 500), and the create responses for events and resources carried no `id`.
+
 ### Phase 10: bookings and capacity (`scheduling(phase-10): bookings and capacity`)
 
 Migration `0008_booking_exclusion`: `CREATE EXTENSION IF NOT EXISTS btree_gist` and the exclusion constraint, PostgreSQL only; refuses and lists overlapping pairs first (staging S1).

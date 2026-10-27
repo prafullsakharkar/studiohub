@@ -236,8 +236,9 @@ def test_every_code_the_production_constants_define_is_enforced_or_deliberately_
         OPT_IN_PERMISSION_CODES
     )
     # Declared, but the analytics views are scoped by membership only (CONTRACTS C-04).
-    # schedule.create/delete are checked by the scheduling app's own viewsets, not by production.
-    not_enforced = {"analytics.view", "schedule.create", "schedule.delete"}
+    # schedule.create/update/delete are checked by the scheduling app's own viewsets, not by
+    # production (schedule.update moved with the capacity routes, scheduling Phase 9).
+    not_enforced = {"analytics.view", "schedule.create", "schedule.update", "schedule.delete"}
 
     assert defined - _enforced_codes() - checked_inline - not_enforced == set()
     assert checked_inline <= defined | set(OPT_IN_PERMISSION_CODES)

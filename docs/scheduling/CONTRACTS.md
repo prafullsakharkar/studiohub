@@ -1,6 +1,6 @@
 # Scheduling contracts
 
-Phase 2 target design, 2026-10-27. Status: **PROPOSED**; items marked *(Qnn)* follow the recommended answer of an open Phase 2 question. Production decisions **D-09, D-20, D-21, D-22** stand and are built on, not reopened. Cross-app rules: `docs/delivery-pipeline/CONTRACTS.md`. Audit: `ANALYSIS.md`. Order of work: `PLAN.md`.
+Phase 2 target design, 2026-10-27. Status: **PROPOSED**, except what "Phase 9 as built" (end of this file) marks as built; items marked *(Qnn)* follow the recommended answer of an open Phase 2 question. Production decisions **D-09, D-20, D-21, D-22** stand and are built on, not reopened. Cross-app rules: `docs/delivery-pipeline/CONTRACTS.md`. Audit: `ANALYSIS.md`. Order of work: `PLAN.md`.
 
 **What the app is after this work** (Q5, Q19-Q22): the studio calendar, bookable resources with bookings that cannot double-book a resource, leave with own-request and approval rules, **work calendars** (time zone, working week, holidays per office), **project milestones** replacing Production's invented ones, and capacity figures that account for leave and holidays. Task dates stay in Production (`Task.due_date`, the single source). Dependencies, recurring events and reminders are LATER (Q5).
 
@@ -183,3 +183,28 @@ Scheduling models join the change log (`apps/audit/signals/change_tracking.py`),
 | Unknown / foreign resource, task, event, project, calendar | 400 "Unknown ..." (D-22 wording) |
 | Lost race on a booking or a leave decision | 409 / 400 as today for leave (D-20 keeps 400) |
 | Unknown IANA zone | 400 |
+
+## 9. Phase 9 as built (2026-10-27)
+
+What exists now, against sections 1 to 8. Anything not listed here is still proposed (Phases 10 and 11).
+
+| Contract | State | Notes |
+|---|---|---|
+| Section 1, time policy | **built** | `apps/scheduling/domain/calendar.py` holds the arithmetic (`is_working_day`, `working_days`, `week_bounds`, `week_bounds_for_date`, `week_start_date`, `local_date`, `working_hours`). Weeks are computed with `zoneinfo`; a DST week is 167 or 169 hours. A date-time without `Z` or an offset is a 400 on events, bookings, `book` and `block` (`api/fields.py::StrictDateTimeField`). Responses stay UTC with `Z`. |
+| DOM-SCH-01 `WorkCalendar` | **built** | Migration 0004 seeds "STUDIO" (UTC, Mon-Fri, 8h) as the default. `WorkCalendarService` (`create`, `update`, `set_default`, `delete`, `ensure_default`) owns the rules: code unique in any case over all rows, one calendar per office, one default, zone validated against `zoneinfo`, 1 to 7 distinct ISO weekdays, hours in (0, 24]. Deleting the default, or a calendar a live resource or holiday uses, is a 409 `calendar_in_use`. |
+| DOM-SCH-02 `Holiday` | **built** | `calendar` FK (PROTECT); migration 0005 attaches every existing holiday, deleted ones too, to the default. Unique `(calendar, holiday_date)` among live rows. Optional holidays do not remove a working day. A holiday sent without a calendar goes to the default (recreated on demand if missing). |
+| DOM-SCH-03 `Resource` | **partly built** | `calendar` FK (PROTECT, null means the default), rate not negative, upper-case unique code. Derived `status` is Phase 10. |
+| DOM-SCH-04 `ResourceSchedule` | **partly built** | Database check `end_time > start_time`; the serializers refuse an equal end with a 400. The overlap rule and exclusion constraint are Phase 10. |
+| DOM-SCH-05 `ResourceLeave` | **partly built** | New requests, and edits that change the dates, count **working days** of the resource's calendar (decision Q20); an edit that leaves the dates alone keeps the stored count, and a different total is a 400 saying what it is for those dates. A leave of only non-working days is allowed and counts 0 (A-47). Check `end_date >= start_date`. Own-request, overlap and approval rules are Phase 11. |
+| DOM-SCH-06 `Milestone` | **built** | Table `scheduling_milestone`, `MilestoneService` (`create`, `update`, `complete`, `reopen`). Status is Pending, In Progress or Completed; Completed is reached only through `complete` (sets `completed_at`, `completed_by`) and left only through `reopen`, which returns to In Progress (A-48). Name unique per project in any case among live rows. A `delivery` milestone needs a `delivery_package_id` that the `deliveries.project_figures` provider lists for that project; without the provider the answer is a 400 "not available", never an import of Deliveries. Database checks: delivery kind needs a package id; Completed has a time. |
+| DOM-SCH-07 `CalendarEvent` | **built (checks only)** | Check `end_time >= start_time`; `project` is PROTECT. |
+| API-SCH-08 `/calendars/` | **built** | CRUD plus `POST /calendars/{id}/set-default/`. Reads `schedule.view`; create, update and set-default `schedule.update`; delete `schedule.delete` (A-45). Studio-wide: no project scoping. |
+| API-SCH-09 `/holidays/` | **built** | `calendar_id` on write; `calendar` and `calendar_name` on read; `?calendar_id=` filter. |
+| API-SCH-07 (part) | **built** | Resources accept `calendar_id`; list and detail show `calendar` and `calendar_name`; rate and weekly capacity reject negative values. |
+| API-SCH-10 `/milestones/` | **built** | `?project_id=` (id or code) filter; list and detail narrowed to the caller's projects (`ProductionBaseSelector.visible_project_ids`); a foreign project or milestone answers exactly like an unknown one (404 or 400 "Unknown project"). `complete` and `reopen` actions. Reads `schedule.view`, create `schedule.create`, update and the two actions `schedule.update`, delete `schedule.delete`. The project cannot be changed after creation (an echo is accepted). |
+| API-SCH-12 capacity move | **built** | Same paths, codes and shapes. Each resource's week is Monday to Monday in its calendar's zone; an alert's `id` and `date` carry that zone's Monday. Leave and holiday subtraction is Phase 10. |
+| API-SCH-13 naive date-times | **built** | See section 1 row above. |
+| API-SCH-11 Production schedule route | proposed | Phase 10. |
+| API-SCH-01 to 06, 14; section 5 new codes; section 6 SEC-SCH-01 to 05; section 7 audit | proposed | Phases 10 and 11. |
+
+Changes a client can see: create responses for events and resources now carry `id`; a booking with `end_time == start_time` is a 400 (it used to be stored as a zero-length booking; with the new database check and no serializer rule it would have been a 500); `PUT` of a leave echoing its stored `total_days` is accepted. Everything else listed above is additive.

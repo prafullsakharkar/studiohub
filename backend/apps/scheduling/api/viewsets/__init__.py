@@ -1,6 +1,7 @@
 """
 Scheduling viewsets for API endpoints.
 """
+
 from django.core.exceptions import ValidationError
 from rest_framework import status
 from rest_framework.decorators import action
@@ -17,21 +18,27 @@ from apps.scheduling.api.serializers import (
     CalendarEventListSerializer,
     CalendarEventUpdateSerializer,
     HolidaySerializer,
+    MilestoneSerializer,
+    MilestoneWriteSerializer,
     ResourceCreateSerializer,
     ResourceDetailSerializer,
     ResourceLeaveSerializer,
     ResourceListSerializer,
     ResourceScheduleSerializer,
     ResourceUpdateSerializer,
+    WorkCalendarSerializer,
+    WorkCalendarWriteSerializer,
 )
 from apps.scheduling.constants.permissions import SchedulingPermissions
 from apps.scheduling.models import Resource
 from apps.scheduling.selectors import (
     CalendarEventSelector,
     HolidaySelector,
+    MilestoneSelector,
     ResourceLeaveSelector,
     ResourceScheduleSelector,
     ResourceSelector,
+    WorkCalendarSelector,
 )
 from apps.scheduling.services import (
     approve_leave,
@@ -39,7 +46,10 @@ from apps.scheduling.services import (
     book_resource,
     reject_leave,
     update_calendar_event_status,
+    working_leave_days,
 )
+from apps.scheduling.services.calendar import WorkCalendarService
+from apps.scheduling.services.milestone import MilestoneService
 
 _NO_USER_RESOURCE_ERROR = "No scheduling resource is associated with the current user."
 
@@ -238,7 +248,12 @@ class ResourceLeaveViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissin
             ).first()
         if resource is None:
             raise ValidationError({"resource": _NO_USER_RESOURCE_ERROR})
-        serializer.save(resource=resource)
+        data = serializer.validated_data
+        # Working days of the calendar this resource follows (the serializer may not have known it)
+        serializer.save(
+            resource=resource,
+            total_days=working_leave_days(resource, data["start_date"], data["end_date"]),
+        )
 
     def perform_update(self, serializer):
         serializer.save()
@@ -293,3 +308,96 @@ class HolidayViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeA
 
     search_fields = ("name", "description")
     ordering_fields = ("holiday_date", "created_at")
+
+
+class WorkCalendarViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeArgument]
+    """
+    Work calendars (studio-wide): time zone, working week, hours per day, one default.
+
+    Writes need ``schedule.update`` for now; ``schedule.manage`` takes over with the roles in
+    Phase 11. A calendar that is the default, or that a resource or holiday uses, is not deleted.
+    """
+
+    selector_class = WorkCalendarSelector
+    # Frontend contract: bare-array lists.
+    pagination_class = None
+    permission_classes = (IsAuthenticatedPermission, HasPermission)
+
+    serializer_map = {
+        "list": WorkCalendarSerializer,
+        "retrieve": WorkCalendarSerializer,
+        "create": WorkCalendarWriteSerializer,
+        "update": WorkCalendarWriteSerializer,
+        "partial_update": WorkCalendarWriteSerializer,
+    }
+
+    permission_map = {
+        "list": (SchedulingPermissions.VIEW,),
+        "retrieve": (SchedulingPermissions.VIEW,),
+        "create": (SchedulingPermissions.UPDATE,),
+        "update": (SchedulingPermissions.UPDATE,),
+        "partial_update": (SchedulingPermissions.UPDATE,),
+        "destroy": (SchedulingPermissions.DELETE,),
+        "set_default": (SchedulingPermissions.UPDATE,),
+    }
+
+    search_fields = ("code", "name")
+    ordering_fields = ("name", "code", "created_at")
+
+    @action(detail=True, methods=["post"], url_path="set-default")
+    def set_default(self, request, *args, **kwargs):
+        """Make this calendar the default; the previous default stops being one."""
+        calendar = WorkCalendarService.set_default(actor=request.user, calendar=self.get_object())
+        return Response(
+            WorkCalendarSerializer(calendar, context=self.get_serializer_context()).data
+        )
+
+    def perform_destroy(self, instance):
+        WorkCalendarService.delete(actor=self.request.user, calendar=instance)
+
+
+class MilestoneViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeArgument]
+    """
+    Project milestones, narrowed to the caller's projects (another project's id is a 404).
+
+    Writes follow the schedule codes for now; ``schedule.manage`` takes over in Phase 11.
+    """
+
+    selector_class = MilestoneSelector
+    # Frontend contract: bare-array lists.
+    pagination_class = None
+    permission_classes = (IsAuthenticatedPermission, HasPermission)
+
+    serializer_map = {
+        "list": MilestoneSerializer,
+        "retrieve": MilestoneSerializer,
+        "create": MilestoneWriteSerializer,
+        "update": MilestoneWriteSerializer,
+        "partial_update": MilestoneWriteSerializer,
+    }
+
+    permission_map = {
+        "list": (SchedulingPermissions.VIEW,),
+        "retrieve": (SchedulingPermissions.VIEW,),
+        "create": (SchedulingPermissions.CREATE,),
+        "update": (SchedulingPermissions.UPDATE,),
+        "partial_update": (SchedulingPermissions.UPDATE,),
+        "destroy": (SchedulingPermissions.DELETE,),
+        "complete": (SchedulingPermissions.UPDATE,),
+        "reopen": (SchedulingPermissions.UPDATE,),
+    }
+
+    search_fields = ("name",)
+    ordering_fields = ("due_date", "order", "name", "created_at")
+
+    @action(detail=True, methods=["post"], url_path="complete")
+    def complete(self, request, *args, **kwargs):
+        """Mark the milestone completed, recording who and when."""
+        milestone = MilestoneService.complete(actor=request.user, milestone=self.get_object())
+        return Response(MilestoneSerializer(milestone, context=self.get_serializer_context()).data)
+
+    @action(detail=True, methods=["post"], url_path="reopen")
+    def reopen(self, request, *args, **kwargs):
+        """Take a completed milestone back to In Progress."""
+        milestone = MilestoneService.reopen(actor=request.user, milestone=self.get_object())
+        return Response(MilestoneSerializer(milestone, context=self.get_serializer_context()).data)

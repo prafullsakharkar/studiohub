@@ -23,3 +23,18 @@ Cross-app decisions (Q1-Q4, Q6-Q12) are in `docs/delivery-pipeline/DECISIONS.md`
 | Q37 | Leave-reason retention | **A**, as recommended (`delivery-pipeline/DECISIONS.md`) | 2026-10-27 | ASSUMED | |
 
 Full text of Q25-Q38: `docs/delivery-pipeline/DECISIONS.md`. Phase 1 analysis: `ANALYSIS.md`. Design: `CONTRACTS.md`, `PLAN.md`.
+
+## While implementing
+
+Phase 9 (2026-10-27). Numbers continue the shared list in `docs/delivery-pipeline/DECISIONS.md`; full text is there.
+
+| # | Date | Assumption | Status | Affects |
+|---|---|---|---|---|
+| A-43 | 2026-10-27 | `feature/scheduling-improvement` starts from the deliveries tip (`66649be`), not `develop` | ASSUMED | branch |
+| A-44 | 2026-10-27 | Calendar default, fallback and recreation: with no default row the built-in rules (UTC, Mon-Fri, 8h) apply, and creating a holiday recreates the default | ASSUMED | `selectors/calendar.py`, `services/calendar.py` |
+| A-45 | 2026-10-27 | Calendar and milestone writes use `schedule.update` / `create` / `delete` until Phase 11 adds `schedule.manage` | ASSUMED | `api/viewsets` |
+| A-46 | 2026-10-27 | Leave overlap and the other leave rules wait for Phase 11 | ASSUMED | DOM-SCH-05 |
+| A-47 | 2026-10-27 | A leave with no working day is allowed and counts 0 | ASSUMED | `services/leave.py` |
+| A-48 | 2026-10-27 | Reopening a milestone returns it to In Progress | ASSUMED | `services/milestone.py` |
+| A-49 | 2026-10-27 | Calendars and milestones are view-only in the admin | ASSUMED | `admin/scheduling.py` |
+| A-50 | 2026-10-27 | Event and resource create responses now carry `id` | ASSUMED | serializers |

@@ -1,9 +1,11 @@
 """
 Scheduling selectors for query operations.
 """
+
 from __future__ import annotations
 
 from typing import Any
+from uuid import UUID
 
 from django.db.models import QuerySet
 
@@ -11,9 +13,11 @@ from apps.core.selectors.base import BaseSelector
 from apps.scheduling.models import (
     CalendarEvent,
     Holiday,
+    Milestone,
     Resource,
     ResourceLeave,
     ResourceSchedule,
+    WorkCalendar,
 )
 from apps.scheduling.selectors.scope import ViewerScope
 
@@ -43,6 +47,7 @@ class ResourceSelector(BaseSelector):
             "department",
             "team",
             "user",
+            "calendar",
         )
 
     @classmethod
@@ -137,4 +142,50 @@ class HolidaySelector(BaseSelector):
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
-        return cls.model.objects.all()
+        queryset = cls.model.objects.select_related("calendar")
+        params = getattr(request, "query_params", None)
+        calendar = params.get("calendar_id") if params is not None else None
+        if calendar:
+            try:
+                queryset = queryset.filter(calendar_id=UUID(calendar))
+            except ValueError:
+                return queryset.none()
+        return queryset
+
+
+class WorkCalendarSelector(BaseSelector):
+    """Read-side data access for work calendars (studio-wide)."""
+
+    model = WorkCalendar
+
+    @classmethod
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
+        return cls.model.objects.select_related("office")
+
+
+class MilestoneSelector(BaseSelector):
+    """
+    Read-side data access for project milestones, narrowed to the caller's projects.
+
+    Anything else is a 404 exactly like an unknown id. Platform admins see every milestone; a read
+    without a request sees none.
+    """
+
+    model = Milestone
+
+    @classmethod
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
+        from apps.production.selectors.base import ProductionBaseSelector
+
+        queryset = cls.model.objects.select_related("project", "completed_by")
+        visible = ProductionBaseSelector.visible_project_ids(request) if request is not None else []
+        if visible is not None:  # None: platform admin, nothing narrows
+            queryset = queryset.filter(project_id__in=visible)
+        params = getattr(request, "query_params", None)
+        project = params.get("project_id") if params is not None else None
+        if project:
+            try:
+                queryset = queryset.filter(project_id=UUID(project))
+            except ValueError:
+                return queryset.none()
+        return queryset

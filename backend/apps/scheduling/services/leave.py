@@ -20,8 +20,26 @@ if TYPE_CHECKING:
 
 
 def count_leave_days(start: date, end: date) -> int:
-    """Calendar days from ``start`` to ``end``, both included."""
+    """
+    Calendar days from ``start`` to ``end``, both included.
+
+    How leave was counted before work calendars (D-20). New requests use ``working_leave_days``;
+    this stays for the rows that were counted this way and for the report that compares the two.
+    """
     return (end - start).days + 1
+
+
+def working_leave_days(resource: Any, start: date, end: date) -> int:
+    """
+    Working days from ``start`` to ``end``, both included, in the calendar ``resource`` follows
+    (decision Q20): weekends the calendar does not work and its non-optional holidays do not count.
+    A resource with no calendar follows the default calendar.
+    """
+    from apps.scheduling.domain.calendar import working_days
+    from apps.scheduling.selectors.calendar import CalendarSelector
+
+    rules, holidays = CalendarSelector.rules_and_holidays(resource, start, end)
+    return working_days(rules, start, end, holidays)
 
 
 def _locked(leave_id: str) -> ResourceLeave:

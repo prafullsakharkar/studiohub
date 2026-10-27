@@ -4,17 +4,29 @@ Capacity / overbooking aggregation selectors.
 Computes the frontend `SchedulingCapacitySummary[]` and
 `SchedulingOverbookingAlert[]` shapes from real `Resource` /
 `ResourceSchedule` rows. The aggregation window is the current calendar week
-(Monday 00:00 UTC → Sunday 24:00 UTC); slots partially overlapping the window
-contribute only their overlapping hours. Only `Booked`/`Overbooked` slots
-consume capacity.
+of each resource: Monday 00:00 to the next Monday 00:00 in the time zone of the
+work calendar the resource follows (docs/scheduling/CONTRACTS.md section 1); a
+resource with no calendar follows the default one, which is UTC out of the box.
+Slots partially overlapping the window contribute only their overlapping hours.
+Only `Booked`/`Overbooked` slots consume capacity. Leave and holidays reduce
+capacity from Phase 10; for now capacity is the resource's weekly figure.
 """
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from dataclasses import dataclass
+from datetime import date, datetime
 from typing import Any
 
 from django.utils import timezone
+
+from apps.scheduling.domain.calendar import (
+    DEFAULT_RULES,
+    CalendarRules,
+    week_bounds,
+    week_bounds_for_date,
+)
+from apps.scheduling.selectors.calendar import CalendarSelector, rules_of
 
 # Backend resource_type → frontend ResourceCategory. The frontend union has no
 # Room/Studio members; bookable rooms/studios surface as 'office' (a place).
@@ -41,23 +53,18 @@ ALLOCATED_STATUSES = ("Booked", "Overbooked")
 UNASSIGNED_DEPARTMENT = "Unassigned"
 
 
-def current_week_bounds(now: datetime | None = None) -> tuple[datetime, datetime]:
-    """Return (week_start, week_end) datetimes for the current week (UTC)."""
-    now = now or timezone.now()
-    week_start = (now - timedelta(days=now.weekday())).replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
-    return week_start, week_start + timedelta(days=7)
+def current_week_bounds(
+    now: datetime | None = None, rules: CalendarRules = DEFAULT_RULES
+) -> tuple[datetime, datetime]:
+    """Return (week_start, week_end) in UTC of the current week in the calendar's time zone."""
+    return week_bounds(rules, now or timezone.now())
 
 
-def week_bounds_from_date(week_start_date) -> tuple[datetime, datetime]:
-    """Return (week_start, week_end) for the week containing the given date."""
-    start = datetime(
-        week_start_date.year, week_start_date.month, week_start_date.day,
-        tzinfo=UTC,
-    )
-    start = start - timedelta(days=start.weekday())
-    return start, start + timedelta(days=7)
+def week_bounds_from_date(
+    week_start_date: date, rules: CalendarRules = DEFAULT_RULES
+) -> tuple[datetime, datetime]:
+    """Return (week_start, week_end) in UTC of the week containing the given local date."""
+    return week_bounds_for_date(rules, week_start_date)
 
 
 def _overlap_hours(start, end, window_start, window_end) -> float:
@@ -65,32 +72,106 @@ def _overlap_hours(start, end, window_start, window_end) -> float:
     return max(0.0, overlap)
 
 
-def _week_slots(organization=None, week_start=None, week_end=None, **kwargs):
+def _slots_in(window_start, window_end, resource_ids=None):
     from apps.scheduling.models import ResourceSchedule
 
+    queryset = ResourceSchedule.objects.filter(
+        status__in=ALLOCATED_STATUSES,
+        start_time__lt=window_end,
+        end_time__gt=window_start,
+    )
+    if resource_ids is not None:
+        queryset = queryset.filter(resource_id__in=resource_ids)
+    return queryset.select_related(
+        "resource", "resource__department", "event", "event__project", "task"
+    ).order_by("start_time")
+
+
+def _week_slots(organization=None, week_start=None, week_end=None, **kwargs):
     # ``organization`` is accepted for backwards compatibility with callers
-    # that have not been migrated off org-scoped resolution yet (the
-    # production capacity proxies, owned by B7/final); it is ignored —
+    # that have not been migrated off org-scoped resolution yet; it is ignored,
     # capacity aggregates platform-wide.
     if week_start is None or week_end is None:
         week_start, week_end = current_week_bounds()
-    return (
-        ResourceSchedule.objects.filter(
-            status__in=ALLOCATED_STATUSES,
-            start_time__lt=week_end,
-            end_time__gt=week_start,
+    return _slots_in(week_start, week_end, kwargs.get("resource_ids"))
+
+
+@dataclass
+class ResourceWeek:
+    """One resource's week: the calendar it follows, the window and the bookings inside it."""
+
+    resource: Any
+    rules: CalendarRules
+    start: datetime
+    end: datetime
+    slots: list[Any]
+    hours: float
+
+    @property
+    def day(self) -> date:
+        """The Monday of the window, as a date in the calendar's zone (what an alert id carries)."""
+        return self.start.astimezone(self.rules.tz).date()
+
+
+def week_window_for(
+    resource: Any, *, week_day: date | None = None, now: datetime | None = None
+) -> tuple[CalendarRules, datetime, datetime]:
+    """The rules ``resource`` follows and its week window (the current one, or the one of ``week_day``)."""
+    rules = CalendarSelector.rules_for(resource)
+    if week_day is not None:
+        start, end = week_bounds_for_date(rules, week_day)
+    else:
+        start, end = week_bounds(rules, now or timezone.now())
+    return rules, start, end
+
+
+def resource_weeks(
+    *, now: datetime | None = None, week_day: date | None = None
+) -> list[ResourceWeek]:
+    """
+    Every resource with its own week window and its allocated hours.
+
+    Resources that follow the same rules share one window and one query; a studio on a single
+    calendar costs the same as before.
+    """
+    from apps.scheduling.models import Resource
+
+    now = now or timezone.now()
+    default_rules = rules_of(CalendarSelector.default_calendar())
+    resources = list(Resource.objects.select_related("department", "calendar"))
+    groups: dict[CalendarRules, list[Any]] = {}
+    for resource in resources:
+        own = resource.calendar
+        rules = default_rules if own is None or own.is_deleted else rules_of(own)
+        groups.setdefault(rules, []).append(resource)
+
+    weeks: list[ResourceWeek] = []
+    for rules, members in groups.items():
+        start, end = (
+            week_bounds_for_date(rules, week_day)
+            if week_day is not None
+            else week_bounds(rules, now)
         )
-        .select_related("resource", "resource__department", "event", "event__project", "task")
-        .order_by("start_time")
-    )
+        slots_by_resource: dict[Any, list[Any]] = {}
+        for slot in _slots_in(start, end, [member.id for member in members]):
+            slots_by_resource.setdefault(slot.resource_id, []).append(slot)
+        for member in members:
+            slots = slots_by_resource.get(member.id, [])
+            hours = sum(
+                _overlap_hours(slot.start_time, slot.end_time, start, end) for slot in slots
+            )
+            weeks.append(ResourceWeek(member, rules, start, end, slots, hours))
+    return weeks
 
 
-def _allocated_hours_by_resource(organization=None, week_start=None, week_end=None) -> dict:
+def _allocated_hours_by_resource(
+    organization=None, week_start=None, week_end=None
+) -> dict[Any, float]:
+    """Allocated hours per resource in one explicit window (kept for the resolve service)."""
     hours: dict[Any, float] = {}
     for slot in _week_slots(organization, week_start, week_end):
-        hours[slot.resource_id] = (
-            hours.get(slot.resource_id, 0.0)
-            + _overlap_hours(slot.start_time, slot.end_time, week_start, week_end)
+        hours[slot.resource_id] = hours.get(slot.resource_id, 0.0) + _overlap_hours(
+            slot.start_time, slot.end_time, week_start, week_end
         )
     return hours
 
@@ -98,17 +179,12 @@ def _allocated_hours_by_resource(organization=None, week_start=None, week_end=No
 def get_capacity_summary(organization=None) -> list[dict[str, Any]]:
     """Per-department capacity summary for the current week (frontend shape).
 
-    Platform-global: ``organization`` (still passed by the production
-    capacity proxies) is ignored.
+    Platform-global: ``organization`` is ignored. Each resource's week is the one of its work
+    calendar's time zone.
     """
-    from apps.scheduling.models import Resource
-
-    week_start, week_end = current_week_bounds()
-    hours = _allocated_hours_by_resource(organization, week_start, week_end)
-
     groups: dict[str, dict[str, Any]] = {}
-    resources = Resource.objects.all().select_related("department")
-    for resource in resources:
+    for week in resource_weeks():
+        resource = week.resource
         department = resource.department.name if resource.department else UNASSIGNED_DEPARTMENT
         group = groups.setdefault(
             department,
@@ -120,7 +196,7 @@ def get_capacity_summary(organization=None) -> list[dict[str, Any]]:
                 "overbooked_count": 0,
             },
         )
-        allocated = round(hours.get(resource.id, 0.0), 2)
+        allocated = round(week.hours, 2)
         group["total_resources"] += 1
         group["total_capacity_hours"] += resource.capacity_hours_per_week
         group["allocated_hours"] = round(group["allocated_hours"] + allocated, 2)
@@ -220,40 +296,32 @@ def get_overbooking_alerts(organization=None, visible_project_ids=None) -> list[
 
     Hours always count every booking, so the excess is true. The bookings listed under
     an alert are limited to ``visible_project_ids`` (``None``: all); the others appear
-    as anonymous entries.
+    as anonymous entries. The week is the current one in each resource's calendar zone and the
+    alert's ``date`` is that week's Monday there.
     """
-    from apps.scheduling.models import Resource
-
-    week_start, week_end = current_week_bounds()
-    hours = _allocated_hours_by_resource(organization, week_start, week_end)
-
-    slots_by_resource: dict[Any, list] = {}
-    for slot in _week_slots(organization, week_start, week_end):
-        slots_by_resource.setdefault(slot.resource_id, []).append(slot)
-
     alerts = []
-    resources = Resource.objects.all().select_related("department")
-    for resource in resources:
-        allocated = round(hours.get(resource.id, 0.0), 2)
+    for week in resource_weeks():
+        resource = week.resource
+        allocated = round(week.hours, 2)
         capacity = resource.capacity_hours_per_week
         if allocated <= capacity:
             continue
         excess = round(allocated - capacity, 2)
         conflicting = []
-        for slot in slots_by_resource.get(resource.id, []):
+        for slot in week.slots:
             entry = _conflicting_event(slot, visible_project_ids)
             entry["hours"] = round(
-                _overlap_hours(slot.start_time, slot.end_time, week_start, week_end), 2
+                _overlap_hours(slot.start_time, slot.end_time, week.start, week.end), 2
             )
             conflicting.append(entry)
         alerts.append(
             {
-                "id": f"ob-{resource.id}-{week_start:%Y%m%d}",
+                "id": f"ob-{resource.id}-{week.day:%Y%m%d}",
                 "resource_id": str(resource.id),
                 "resource_name": resource.name,
                 "resource_type": RESOURCE_TYPE_MAP.get(resource.resource_type, "equipment"),
                 "department": resource.department.name if resource.department else None,
-                "date": week_start.date().isoformat(),
+                "date": week.day.isoformat(),
                 "scheduled_hours": allocated,
                 "max_capacity_hours": capacity,
                 "excess_hours": excess,

@@ -1,15 +1,25 @@
 """
 Scheduling serializers.
 """
+
 import uuid
 from typing import Any
 
 from rest_framework import serializers
 
-from apps.scheduling.models import CalendarEvent, Holiday, Resource, ResourceLeave, ResourceSchedule
+from apps.scheduling.api.fields import StrictDateTimeField
+from apps.scheduling.models import (
+    CalendarEvent,
+    Holiday,
+    Milestone,
+    Resource,
+    ResourceLeave,
+    ResourceSchedule,
+    WorkCalendar,
+)
 from apps.scheduling.selectors import ResourceLeaveSelector, ResourceSelector
 from apps.scheduling.selectors.scope import RESTRICTED_TITLE, ViewerScope
-from apps.scheduling.services.leave import count_leave_days
+from apps.scheduling.services.leave import working_leave_days
 
 
 class ScopedLinkField(serializers.PrimaryKeyRelatedField):  # pyright: ignore[reportMissingTypeArgument]
@@ -74,9 +84,17 @@ def _task_link(**extra):
     )
 
 
-def _ensure_end_after_start(start, end, *, field="end_time"):
-    if start is not None and end is not None and end < start:
+def _ensure_end_after_start(start, end, *, field="end_time", strict=False):
+    """
+    The end is not before the start. ``strict`` (bookings) also refuses an end equal to the start:
+    a booking needs a duration, and the database check says so too.
+    """
+    if start is None or end is None:
+        return
+    if end < start:
         raise serializers.ValidationError({field: ["The end cannot be before the start."]})
+    if strict and end == start:
+        raise serializers.ValidationError({field: ["The end must be after the start."]})
 
 
 def _ensure_known(model, value, noun):
@@ -87,12 +105,12 @@ def _ensure_known(model, value, noun):
 
 class CalendarEventListSerializer(serializers.ModelSerializer[Any]):
     """Serializer for calendar event list view."""
-    
+
     project_name = serializers.CharField(source="project.name", read_only=True)
     event_type_display = serializers.CharField(source="get_event_type_display", read_only=True)
     status_display = serializers.CharField(source="get_status_display", read_only=True)
     visibility_display = serializers.CharField(source="get_visibility_display", read_only=True)
-    
+
     class Meta:
         model = CalendarEvent
         fields = (
@@ -119,13 +137,13 @@ class CalendarEventListSerializer(serializers.ModelSerializer[Any]):
 
 class CalendarEventDetailSerializer(serializers.ModelSerializer[Any]):
     """Serializer for calendar event detail view."""
-    
+
     project = serializers.UUIDField(source="project.id", read_only=True)
     project_name = serializers.CharField(source="project.name", read_only=True)
     event_type_display = serializers.CharField(source="get_event_type_display", read_only=True)
     status_display = serializers.CharField(source="get_status_display", read_only=True)
     visibility_display = serializers.CharField(source="get_visibility_display", read_only=True)
-    
+
     class Meta:
         model = CalendarEvent
         fields = (
@@ -155,15 +173,21 @@ class CalendarEventDetailSerializer(serializers.ModelSerializer[Any]):
 
 class CalendarEventCreateSerializer(serializers.Serializer[Any]):
     """Serializer for creating a calendar event."""
-    
+
+    id = serializers.UUIDField(read_only=True)
     title = serializers.CharField(required=True, max_length=255)
     description = serializers.CharField(required=False, allow_blank=True)
-    start_time = serializers.DateTimeField(required=True)
-    end_time = serializers.DateTimeField(required=True)
+    start_time = StrictDateTimeField(required=True)
+    end_time = StrictDateTimeField(required=True)
     event_type = serializers.ChoiceField(
         choices=[
-            "Meeting", "Deadline", "Milestone", "Review Session",
-            "Holiday", "Leave", "Work Block"
+            "Meeting",
+            "Deadline",
+            "Milestone",
+            "Review Session",
+            "Holiday",
+            "Leave",
+            "Work Block",
         ],
         default="Meeting",
     )
@@ -188,7 +212,10 @@ class CalendarEventCreateSerializer(serializers.Serializer[Any]):
         from apps.production.models import Project
 
         scope = ViewerScope.of(self.context.get("request"))
-        if not (scope.is_admin or value in scope.project_ids) or not Project.objects.filter(pk=value).exists():
+        if (
+            not (scope.is_admin or value in scope.project_ids)
+            or not Project.objects.filter(pk=value).exists()
+        ):
             raise serializers.ValidationError("Unknown project.")
         return value
 
@@ -201,6 +228,7 @@ class CalendarEventCreateSerializer(serializers.Serializer[Any]):
 
         if project_id:
             from apps.production.models import Project
+
             validated_data["project"] = Project.objects.filter(pk=project_id).first()
 
         return CalendarEvent.objects.create(**validated_data)
@@ -208,11 +236,11 @@ class CalendarEventCreateSerializer(serializers.Serializer[Any]):
 
 class CalendarEventUpdateSerializer(serializers.Serializer[Any]):
     """Serializer for updating a calendar event."""
-    
+
     title = serializers.CharField(required=False, max_length=255)
     description = serializers.CharField(required=False, allow_blank=True)
-    start_time = serializers.DateTimeField(required=False)
-    end_time = serializers.DateTimeField(required=False)
+    start_time = StrictDateTimeField(required=False)
+    end_time = StrictDateTimeField(required=False)
     status = serializers.ChoiceField(
         choices=["Scheduled", "In Progress", "Completed", "Cancelled", "Postponed"],
         required=False,
@@ -264,13 +292,17 @@ class ResourceRatesMixin(serializers.Serializer[Any]):
 
 class ResourceListSerializer(ResourceRatesMixin, serializers.ModelSerializer[Any]):  # pyright: ignore[reportUnsafeMultipleInheritance]
     """Serializer for resource list view."""
-    
+
     department_name = serializers.CharField(source="department.name", read_only=True)
     team_name = serializers.CharField(source="team.name", read_only=True)
     user_email = serializers.CharField(source="user.email", read_only=True)
-    resource_type_display = serializers.CharField(source="get_resource_type_display", read_only=True)
+    resource_type_display = serializers.CharField(
+        source="get_resource_type_display", read_only=True
+    )
     status_display = serializers.CharField(source="get_status_display", read_only=True)
-    
+    calendar = serializers.UUIDField(source="calendar_id", read_only=True)
+    calendar_name = serializers.CharField(source="calendar.name", read_only=True, default="")
+
     class Meta:
         model = Resource
         fields = (
@@ -287,6 +319,8 @@ class ResourceListSerializer(ResourceRatesMixin, serializers.ModelSerializer[Any
             "team_name",
             "user",
             "user_email",
+            "calendar",
+            "calendar_name",
             "capacity_hours_per_week",
             "hourly_rate_usd",
             "location",
@@ -298,16 +332,20 @@ class ResourceListSerializer(ResourceRatesMixin, serializers.ModelSerializer[Any
 
 class ResourceDetailSerializer(ResourceRatesMixin, serializers.ModelSerializer[Any]):  # pyright: ignore[reportUnsafeMultipleInheritance]
     """Serializer for resource detail view."""
-    
+
     department = serializers.UUIDField(source="department.id", read_only=True)
     department_name = serializers.CharField(source="department.name", read_only=True)
     team = serializers.UUIDField(source="team.id", read_only=True)
     team_name = serializers.CharField(source="team.name", read_only=True)
     user = serializers.UUIDField(source="user.id", read_only=True)
     user_email = serializers.CharField(source="user.email", read_only=True)
-    resource_type_display = serializers.CharField(source="get_resource_type_display", read_only=True)
+    resource_type_display = serializers.CharField(
+        source="get_resource_type_display", read_only=True
+    )
     status_display = serializers.CharField(source="get_status_display", read_only=True)
-    
+    calendar = serializers.UUIDField(source="calendar_id", read_only=True)
+    calendar_name = serializers.CharField(source="calendar.name", read_only=True, default="")
+
     class Meta:
         model = Resource
         fields = (
@@ -324,6 +362,8 @@ class ResourceDetailSerializer(ResourceRatesMixin, serializers.ModelSerializer[A
             "team_name",
             "user",
             "user_email",
+            "calendar",
+            "calendar_name",
             "capacity_hours_per_week",
             "hourly_rate_usd",
             "location",
@@ -336,7 +376,8 @@ class ResourceDetailSerializer(ResourceRatesMixin, serializers.ModelSerializer[A
 
 class ResourceCreateSerializer(serializers.Serializer[Any]):
     """Serializer for creating a resource."""
-    
+
+    id = serializers.UUIDField(read_only=True)
     name = serializers.CharField(required=True, max_length=255)
     code = serializers.CharField(required=True, max_length=50)
     resource_type = serializers.ChoiceField(
@@ -350,12 +391,14 @@ class ResourceCreateSerializer(serializers.Serializer[Any]):
     department_id = serializers.UUIDField(required=False, allow_null=True)
     team_id = serializers.UUIDField(required=False, allow_null=True)
     user_id = serializers.UUIDField(required=False, allow_null=True)
-    capacity_hours_per_week = serializers.IntegerField(required=False, default=40)
+    calendar_id = serializers.UUIDField(required=False, allow_null=True)
+    capacity_hours_per_week = serializers.IntegerField(required=False, default=40, min_value=0)
     hourly_rate_usd = serializers.DecimalField(
         max_digits=10,
         decimal_places=2,
         required=False,
         default="0.00",
+        min_value=0,
     )
     location = serializers.CharField(required=False, allow_blank=True, max_length=255)
 
@@ -379,6 +422,9 @@ class ResourceCreateSerializer(serializers.Serializer[Any]):
 
         return _ensure_known(Team, value, "team")
 
+    def validate_calendar_id(self, value):
+        return _ensure_known(WorkCalendar, value, "calendar")
+
     def create(self, validated_data):
         from apps.identity.models import User
         from apps.masterdata.models import Department, Team
@@ -386,6 +432,9 @@ class ResourceCreateSerializer(serializers.Serializer[Any]):
         department_id = validated_data.pop("department_id", None)
         team_id = validated_data.pop("team_id", None)
         user_id = validated_data.pop("user_id", None)
+        calendar_id = validated_data.pop("calendar_id", None)
+        if calendar_id:
+            validated_data["calendar"] = WorkCalendar.objects.get(pk=calendar_id)
 
         if department_id:
             validated_data["department"] = Department.objects.filter(pk=department_id).first()
@@ -399,7 +448,7 @@ class ResourceCreateSerializer(serializers.Serializer[Any]):
 
 class ResourceUpdateSerializer(serializers.Serializer[Any]):
     """Serializer for updating a resource."""
-    
+
     name = serializers.CharField(required=False, max_length=255)
     status = serializers.ChoiceField(
         choices=["Active", "On Leave", "Unavailable"],
@@ -407,11 +456,13 @@ class ResourceUpdateSerializer(serializers.Serializer[Any]):
     )
     department_id = serializers.UUIDField(required=False, allow_null=True)
     team_id = serializers.UUIDField(required=False, allow_null=True)
-    capacity_hours_per_week = serializers.IntegerField(required=False)
+    calendar_id = serializers.UUIDField(required=False, allow_null=True)
+    capacity_hours_per_week = serializers.IntegerField(required=False, min_value=0)
     hourly_rate_usd = serializers.DecimalField(
         max_digits=10,
         decimal_places=2,
         required=False,
+        min_value=0,
     )
     location = serializers.CharField(required=False, allow_blank=True, max_length=255)
 
@@ -425,12 +476,21 @@ class ResourceUpdateSerializer(serializers.Serializer[Any]):
 
         return _ensure_known(Team, value, "team")
 
+    def validate_calendar_id(self, value):
+        return _ensure_known(WorkCalendar, value, "calendar")
+
     def update(self, instance, validated_data):
         from apps.masterdata.models import Department, Team
 
+        if "calendar_id" in validated_data:
+            calendar_id = validated_data.pop("calendar_id")
+            instance.calendar = WorkCalendar.objects.get(pk=calendar_id) if calendar_id else None
+
         if "department_id" in validated_data:
             department_id = validated_data.pop("department_id")
-            instance.department = Department.objects.get(pk=department_id) if department_id else None
+            instance.department = (
+                Department.objects.get(pk=department_id) if department_id else None
+            )
         if "team_id" in validated_data:
             team_id = validated_data.pop("team_id")
             instance.team = Team.objects.get(pk=team_id) if team_id else None
@@ -445,13 +505,15 @@ class ResourceUpdateSerializer(serializers.Serializer[Any]):
 
 class ResourceScheduleSerializer(serializers.ModelSerializer[Any]):
     """Serializer for resource schedule."""
-    
+
     resource_name = serializers.CharField(source="resource.name", read_only=True)
     resource_code = serializers.CharField(source="resource.code", read_only=True)
     event_title = serializers.CharField(source="event.title", read_only=True)
     task_title = serializers.CharField(source="task.title", read_only=True)
     event = _event_link()
     task = _task_link()
+    start_time = StrictDateTimeField()
+    end_time = StrictDateTimeField()
 
     class Meta:
         model = ResourceSchedule
@@ -480,6 +542,7 @@ class ResourceScheduleSerializer(serializers.ModelSerializer[Any]):
         _ensure_end_after_start(
             attrs.get("start_time", getattr(instance, "start_time", None)),
             attrs.get("end_time", getattr(instance, "end_time", None)),
+            strict=True,
         )
         return attrs
 
@@ -594,9 +657,7 @@ class ResourceLeaveSerializer(serializers.ModelSerializer[Any]):
     def validate(self, attrs):
         instance = self.instance
         if instance is not None and instance.status != ResourceLeave.STATUS_PENDING:
-            raise serializers.ValidationError(
-                {"status": ["Only a pending leave can be changed."]}
-            )
+            raise serializers.ValidationError({"status": ["Only a pending leave can be changed."]})
         start = attrs.get("start_date", getattr(instance, "start_date", None))
         end = attrs.get("end_date", getattr(instance, "end_date", None))
         if start is not None and end is not None:
@@ -604,14 +665,25 @@ class ResourceLeaveSerializer(serializers.ModelSerializer[Any]):
                 raise serializers.ValidationError(
                     {"end_date": ["The end date cannot be before the start date."]}
                 )
-            days = count_leave_days(start, end)
+            attrs["total_days"] = days = self._days(attrs, instance, start, end)
             sent = self.initial_data.get("total_days") if hasattr(self, "initial_data") else None
             if sent not in (None, "", 0, "0") and str(sent) != str(days):
                 raise serializers.ValidationError(
                     {"total_days": [f"Cannot be set directly. It is {days} for these dates."]}
                 )
-            attrs["total_days"] = days
         return attrs
+
+    @staticmethod
+    def _days(attrs, instance, start, end) -> int:
+        """
+        Working days of the resource's calendar (decision Q20). A request already stored keeps its
+        count while its dates stay the same: old rows were counted in calendar days and are not
+        recomputed. A new request, or one whose dates change, is counted now.
+        """
+        if instance is not None and start == instance.start_date and end == instance.end_date:
+            return instance.total_days
+        resource = attrs.get("resource") or getattr(instance, "resource", None)
+        return working_leave_days(resource, start, end)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -626,14 +698,36 @@ class ResourceLeaveSerializer(serializers.ModelSerializer[Any]):
 
 
 class HolidaySerializer(serializers.ModelSerializer[Any]):
-    """Serializer for holiday."""
-    
+    """
+    Serializer for holiday.
+
+    A holiday belongs to a work calendar: ``calendar_id`` chooses it and defaults to the default
+    calendar, so clients that never knew about calendars keep working. A calendar has one live
+    holiday per date.
+    """
+
+    calendar = serializers.UUIDField(source="calendar_id", read_only=True)
+    calendar_name = serializers.CharField(source="calendar.name", read_only=True, default="")
+    calendar_id = serializers.PrimaryKeyRelatedField(
+        source="calendar",
+        queryset=WorkCalendar.objects.all(),
+        required=False,
+        write_only=True,
+        error_messages={
+            "does_not_exist": "Unknown calendar.",
+            "incorrect_type": "Unknown calendar.",
+        },
+    )
+
     class Meta:
         model = Holiday
         fields = (
             "id",
             "name",
             "holiday_date",
+            "calendar",
+            "calendar_name",
+            "calendar_id",
             "is_paid",
             "is_optional",
             "description",
@@ -641,13 +735,225 @@ class HolidaySerializer(serializers.ModelSerializer[Any]):
             "updated_at",
         )
         read_only_fields = ("id", "created_at", "updated_at")
+        validators: list[Any] = []
+
+    def validate(self, attrs):
+        instance = self.instance
+        calendar = attrs.get("calendar") or getattr(instance, "calendar", None)
+        if calendar is None:
+            from apps.scheduling.services.calendar import WorkCalendarService
+
+            calendar = attrs["calendar"] = WorkCalendarService.ensure_default()
+        day = attrs.get("holiday_date", getattr(instance, "holiday_date", None))
+        clash = Holiday.objects.filter(calendar=calendar, holiday_date=day)
+        if instance is not None:
+            clash = clash.exclude(pk=instance.pk)
+        if clash.exists():
+            raise serializers.ValidationError(
+                {"holiday_date": ["This calendar already has a holiday on this date."]}
+            )
+        return attrs
+
+
+class WorkCalendarSerializer(serializers.ModelSerializer[Any]):
+    """A work calendar as read."""
+
+    office = serializers.UUIDField(source="office_id", read_only=True)
+    office_name = serializers.CharField(source="office.name", read_only=True, default="")
+    resource_count = serializers.SerializerMethodField()
+
+    def get_resource_count(self, obj) -> int:
+        return obj.resources.filter(is_deleted=False).count()
+
+    class Meta:
+        model = WorkCalendar
+        fields = (
+            "id",
+            "code",
+            "name",
+            "time_zone",
+            "office",
+            "office_name",
+            "working_weekdays",
+            "hours_per_day",
+            "is_default",
+            "resource_count",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = fields
+
+
+class WorkCalendarWriteSerializer(serializers.Serializer[Any]):
+    """
+    Body of a calendar create or edit. The rules (zone, weekdays, hours, the one default, one
+    calendar per office) are the service's; the answer is the calendar as read.
+    """
+
+    code = serializers.CharField(required=False, max_length=50)
+    name = serializers.CharField(required=False, max_length=255)
+    time_zone = serializers.CharField(required=False, max_length=64)
+    office_id = serializers.UUIDField(required=False, allow_null=True)
+    working_weekdays = serializers.ListField(
+        child=serializers.IntegerField(), required=False, allow_empty=False
+    )
+    hours_per_day = serializers.DecimalField(
+        max_digits=4, decimal_places=2, required=False, min_value=0, max_value=24
+    )
+    is_default = serializers.BooleanField(required=False)
+
+    def validate(self, attrs):
+        if self.instance is None and not attrs.get("code"):
+            raise serializers.ValidationError({"code": ["A code is required."]})
+        if self.instance is not None and "code" in attrs:
+            if attrs["code"] != self.instance.code:
+                raise serializers.ValidationError({"code": ["The code cannot be changed."]})
+            attrs.pop("code")
+        if "office_id" in attrs:
+            attrs["office"] = self._office(attrs.pop("office_id"))
+        return attrs
+
+    @staticmethod
+    def _office(value):
+        if value is None:
+            return None
+        from apps.masterdata.models import Office
+
+        office = Office.objects.filter(pk=value).first()
+        if office is None:
+            raise serializers.ValidationError({"office_id": ["Unknown office."]})
+        return office
+
+    def _actor(self):
+        return getattr(self.context.get("request"), "user", None)
+
+    def create(self, validated_data):
+        from apps.scheduling.services.calendar import WorkCalendarService
+
+        return WorkCalendarService.create(actor=self._actor(), data=validated_data)
+
+    def update(self, instance, validated_data):
+        from apps.scheduling.services.calendar import WorkCalendarService
+
+        return WorkCalendarService.update(
+            actor=self._actor(), calendar=instance, data=validated_data
+        )
+
+    def to_representation(self, instance):
+        return WorkCalendarSerializer(instance, context=self.context).data
+
+
+class MilestoneSerializer(serializers.ModelSerializer[Any]):
+    """A project milestone as read."""
+
+    project = serializers.UUIDField(source="project_id", read_only=True)
+    project_name = serializers.CharField(source="project.name", read_only=True)
+    project_code = serializers.CharField(source="project.code", read_only=True)
+
+    class Meta:
+        model = Milestone
+        fields = (
+            "id",
+            "project",
+            "project_name",
+            "project_code",
+            "name",
+            "due_date",
+            "status",
+            "order",
+            "kind",
+            "delivery_package_id",
+            "notes",
+            "completed_at",
+            "completed_by",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = fields
+
+
+class MilestoneWriteSerializer(serializers.Serializer[Any]):
+    """
+    Body of a milestone create or edit. The project is chosen on create (an id or a code, one the
+    caller may use) and cannot change afterwards; ``status`` moves between Pending and In Progress
+    (Completed has its own actions). The rules are the service's.
+    """
+
+    project_id = serializers.CharField(required=False, max_length=64)
+    name = serializers.CharField(required=False, max_length=255)
+    due_date = serializers.DateField(required=False)
+    status = serializers.ChoiceField(
+        choices=[value for value, _ in Milestone.STATUS_CHOICES], required=False
+    )
+    order = serializers.IntegerField(required=False, min_value=0)
+    kind = serializers.ChoiceField(
+        choices=[value for value, _ in Milestone.KIND_CHOICES], required=False
+    )
+    delivery_package_id = serializers.UUIDField(required=False, allow_null=True)
+    notes = serializers.CharField(required=False, allow_blank=True)
+
+    def validate(self, attrs):
+        if self.instance is None:
+            missing = [name for name in ("project_id", "name", "due_date") if name not in attrs]
+            if missing:
+                raise serializers.ValidationError(
+                    {name: ["This field is required."] for name in missing}
+                )
+            return attrs
+        if "project_id" in attrs:
+            if str(attrs["project_id"]) not in {
+                str(self.instance.project_id),
+                self.instance.project.code,
+            }:
+                raise serializers.ValidationError({"project_id": ["Cannot be changed."]})
+            attrs.pop("project_id")
+        return attrs
+
+    def _actor(self):
+        return getattr(self.context.get("request"), "user", None)
+
+    def create(self, validated_data):
+        from apps.production.selectors.project import ProjectSelector
+        from apps.scheduling.services.milestone import MilestoneService
+
+        request = self.context.get("request")
+        project = ProjectSelector.resolve_visible(request, validated_data.pop("project_id"))
+        if project is None:
+            raise serializers.ValidationError({"project_id": ["Unknown project."]})
+        return MilestoneService.create(actor=self._actor(), project=project, data=validated_data)
+
+    def update(self, instance, validated_data):
+        from apps.scheduling.services.milestone import MilestoneService
+
+        return MilestoneService.update(actor=self._actor(), milestone=instance, data=validated_data)
+
+    def to_representation(self, instance):
+        return MilestoneSerializer(instance, context=self.context).data
+
+
+class ResolveOverbookingSerializer(serializers.Serializer[Any]):
+    """
+    Body of ``POST /resolve-overbooking/``: the alert to triage, and optionally its resource.
+    A key it does not declare is a 400, as it was when Production served this endpoint.
+    """
+
+    alert_id = serializers.CharField()
+    resource_id = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
+    def to_internal_value(self, data):
+        if not hasattr(data, "keys"):
+            raise serializers.ValidationError({"non_field_errors": ["Expected an object."]})
+        unknown = sorted(set(data.keys()) - set(self.fields))
+        if unknown:
+            raise serializers.ValidationError({key: ["Unknown field."] for key in unknown})
+        return super().to_internal_value(data)
 
 
 class BookResourceSerializer(serializers.Serializer[Any]):
     """Body of ``POST /resources/{id}/book/``."""
 
-    start_time = serializers.DateTimeField()
-    end_time = serializers.DateTimeField()
+    start_time = StrictDateTimeField()
+    end_time = StrictDateTimeField()
     status = serializers.ChoiceField(
         choices=[value for value, _ in ResourceSchedule.STATUS_CHOICES], default="Booked"
     )
@@ -656,17 +962,17 @@ class BookResourceSerializer(serializers.Serializer[Any]):
     notes = serializers.CharField(required=False, allow_blank=True, default="")
 
     def validate(self, attrs):
-        _ensure_end_after_start(attrs.get("start_time"), attrs.get("end_time"))
+        _ensure_end_after_start(attrs.get("start_time"), attrs.get("end_time"), strict=True)
         return attrs
 
 
 class BlockResourceSerializer(serializers.Serializer[Any]):
     """Body of ``POST /resources/{id}/block/``."""
 
-    start_time = serializers.DateTimeField()
-    end_time = serializers.DateTimeField()
+    start_time = StrictDateTimeField()
+    end_time = StrictDateTimeField()
     reason = serializers.CharField(required=False, allow_blank=True, default="")
 
     def validate(self, attrs):
-        _ensure_end_after_start(attrs.get("start_time"), attrs.get("end_time"))
+        _ensure_end_after_start(attrs.get("start_time"), attrs.get("end_time"), strict=True)
         return attrs
