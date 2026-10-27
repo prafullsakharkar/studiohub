@@ -156,7 +156,7 @@ Recommendation and default: **A**. Blocks: Phases 5, 8, 11.
 | A-11 | 2026-10-27 | Old export jobs that name no project are visible to platform admins only (nobody else is a member of "no project"). | ASSUMED | Phase 5 |
 | A-12 | 2026-10-27 | `create_job` called without a request (internal callers, tests) is trusted: any existing project is accepted. Every API call passes its request, so membership is always checked there. | ASSUMED | |
 | A-13 | 2026-10-27 | The admin for export jobs is view-only; validation rules and destinations stay editable (rules have no API). | ASSUMED | Phase 5 |
-| A-14 | 2026-10-27 | Signed-URL expiry does not apply (Q3/Q4: no files are served and no links exist); "a disabled user loses access" is tested across the three apps in Phase 12. | ASSUMED | Phase 12 |
+| A-14 | 2026-10-27 | Signed-URL expiry does not apply (Q3/Q4: no files are served and no links exist); "a disabled user loses access" is tested across the three apps in Phase 12. **Done:** `apps/core/tests/integration/test_disabled_user_three_apps.py`. | ASSUMED (done) | Phase 12 |
 | A-15 | 2026-10-27 | `PATCH`/`PUT /deliveries/{id}/` are built in Phase 6, not later: the plan gave them (DLV-08) to no phase and the item rules need one edit path. | ASSUMED | `DeliveryService.update`, `tests/api/test_core_api.py` |
 | A-16 | 2026-10-27 | Create accepts any existing project and client (existence only). Project membership scoping and destination constraints stay Phase 8, like publishing's A-2. | ASSUMED | Phase 8 |
 | A-17 | 2026-10-27 | The passcode is no longer returned by any endpoint (`has_passcode` instead) and is out of the admin, but it is still stored in plain text until Phase 7 (encryption, `delivery.view_secret`). | ASSUMED | `api/serializers/delivery.py`, Phase 7 |
@@ -206,10 +206,21 @@ Recommendation and default: **A**. Blocks: Phases 5, 8, 11.
 | A-61 | 2026-10-27 | A leave override reason is stored in the audit row's metadata; leave overlap is held by the resource lock only (no database constraint). | ASSUMED | `services/leave.py` |
 | A-62 | 2026-10-27 | Bookings and leave are view-only in the admin. | ASSUMED | `admin/scheduling.py` |
 | A-63 | 2026-10-27 | Q37: N = 3 years for `redact_leave_reasons`, run by hand, never scheduled. | ASSUMED (Q37 default) | `redact_leave_reasons` |
+| A-64 | 2026-10-27 | **Phase 12 branch.** The standing note said the Phase 12 branch would be asked at the Phase 11 gate; I did not ask. Phase 12 is committed on `feature/scheduling-improvement`, the tip that already contains the publishing and deliveries work, because it touches all three apps. Merge order is yours (publishing, deliveries, scheduling). | ASSUMED | git history |
+| A-65 | 2026-10-27 | **Q10 B was not done.** No disposable database was provided for a forward, backward, forward round trip of the three apps' migrations; only the per-phase round trips inside the test database (Q10 A) were done. The commands for you are in `VERIFICATION.md`. | ASSUMED (UNVERIFIED) | migrations |
+| A-66 | 2026-10-27 | **Selectors, not models (X-03, X-06).** Scheduling's serializers still queried Production's `Project` and Masterdata's `Department`, `Team` and `Office` models directly. They now go through `ProjectSelector`, `DepartmentSelector`, `TeamSelector` and `OfficeSelector`, and a test pins it for all three apps. Identity's `User` is still looked up directly, and the booking and event links use the relation's manager for `Task` (both accepted: no selector contract exists for them). | ASSUMED | `apps/core/tests/test_dependency_direction.py` |
 
 **Q40 (ANSWERED 2026-10-27: A). Should `init_platform` also withdraw the grants Q34 removes?**
 
 **Answer: A.** `init_platform` has a short `WITHDRAWN_GRANTS` list (system roles only: `vfx-supervisor` loses `publishing.delete`, `delivery.delete`, `delivery.send`, `delivery.view_secret`) and removes those grants on every run, with real deletes so the RBAC signals clear the holders' cached permissions. Rerunning the command makes any database match the matrix; an admin's own re-grant of those codes to that role is undone on the next run. The command prints how many it removed. Options not taken: B (additive, manual revoke) and C (a separate one-off command). Status: ANSWERED, A.
+
+**Q41 (OPEN, non-blocking; default A used). Should archiving a shot with published work be refused?**
+
+Found in Phase 12 while testing "archive a shot with versions, publishes and deliveries". Production's rule (D-13, D-29) refuses to archive or delete a **published version** and refuses to archive a sequence or episode that still has live children, but a **shot** can be archived freely and its versions stay live and published. Nothing is lost (the delivery, its files and its history stay readable, and restoring the shot brings it back), but a delivered version can end up belonging to an archived shot. Why it matters: the contract text I wrote first said this would be refused; it is not, and the rule lives in Production, which these three apps do not change.
+* **A. Leave Production as it is (used).** Soft archive is reversible and history stays readable; no change to a module outside this work.
+* B. Refuse to archive a shot (or an asset) while it has a published version: "Unpublish it first", like D-13. Consistent with the version rule; a Production change with its own tests, and it blocks the bulk archive for those shots.
+* C. Also warn in the archive response which deliveries carry the shot's versions. Informative only.
+Recommendation and default: **A** until someone asks for B. Blocks nothing. Status: ASSUMED (A).
 
 **Q39 (ANSWERED 2026-10-27: B). Who moves an export job to Exporting, Exported or Failed-during-export?**
 
@@ -235,10 +246,13 @@ Recommendation was **B** once the reporting tool is known; default **A**. Status
 10. Which office time zones the work calendars should use (Q21, Q31): until you create them every resource follows the UTC "STUDIO" calendar, so capacity weeks are UTC weeks.
 11. **After deploying scheduling Phase 11, run `manage.py init_platform` on every environment.** The new codes `schedule.manage` and `schedule.approve` reach roles only when it runs; until then nobody but a superuser can approve leave, book a resource or create calendars, holidays and milestones. Afterwards check (UNVERIFIED on your databases): org-admin, production-admin and vfx-supervisor hold `schedule.manage` and `schedule.approve`; lead-artist and artist hold `schedule.create`; **no role holds `schedule.sod.override`**.
 12. Decide whether to run `manage.py redact_leave_reasons` (Q37) and from when; it is a dry run unless `--apply`.
+13. **Migration round trip on a disposable database (Q10 B, not done).** On an empty database you can throw away, with the environment pointing at it, run: `uv run python manage.py migrate`, then `migrate scheduling 0003_leave_rejected_by`, `migrate deliveries 0001_initial`, `migrate publishing 0001_initial`, then `migrate` again. I have not run this sequence on any database (UNVERIFIED); each app's own migrations were round-tripped one by one in the test database. Expect each step to finish without error, and the last `migrate` to end at the latest migration (`uv run python manage.py showmigrations scheduling deliveries publishing`). Never run this on a database that holds data you need: the backward steps drop columns and tables of those apps.
+14. **The live database's `btree_gist`** (Q32): scheduling migration 0008 creates the extension if it is missing. Check first with the two queries in `docs/scheduling/BTREE_GIST.sql`, and count overlapping bookings with query S1 (`ANALYSIS.md` section 8); a pair makes the migration stop and list it.
+15. **Q41:** say whether archiving a shot that has published work should be refused (default: no).
 
 ## Standing assumptions
 
-* Full test suite at every gate (about 23 minutes; Phase 0 baseline 4340 passed, 1 skipped).
+* Full test suite at every gate (about 23 minutes at the start, about 35 now; Phase 0 baseline 4340 passed, 1 skipped). It was held back from Phase 4 to Phase 7 and again from Phase 10 to Phase 12 at the owner's request; Phase 12 ran it.
 * `../studiohub-react` (`main` @ `0209812`) is the current frontend. It is read, never run or changed.
 * **Brief vs Q5:** the brief's Phase 4 (publish dependencies) and Phase 9 (schedule dependencies) items are not built, because Q5 put dependencies in LATER. Reversing that is a new answer, not a re-ask.
 * **Branch bases:** `feature/deliveries-improvement` starts from `develop` if the publishing branch has been merged by the owner, otherwise from the last publishing commit (`docs/deliveries/PLAN.md`). Scheduling was started from the deliveries tip instead (A-43). The Phase 12 commit's branch is asked at the Phase 11 gate.

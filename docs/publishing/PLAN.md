@@ -225,7 +225,7 @@ Differences from the plan:
 | Plan said | Built | Why |
 |---|---|---|
 | Signed-URL expiry | not applicable; a test pins that no publishing response carries a URL, token or signed link | Q3: StudioHub registers paths and never serves files |
-| Disabled user loses access | not tested here | it is an identity property; Phase 12 tests it across all three apps |
+| Disabled user loses access | tested in Phase 12 | `apps/core/tests/integration/test_disabled_user_three_apps.py` covers every operation of all three apps |
 | Admin hardening for rules and destinations | left editable | validation rules have no API: the admin is the only way to manage them |
 | Role matrix test across production roles | the production matrix pin was updated for the two changed grants | `apps/production/tests/test_permission_matrix.py` pins `publishing.*` too |
 

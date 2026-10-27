@@ -3,7 +3,7 @@
 Written against `docs/APP_ARCHITECTURE_TEMPLATE.md`. The authoritative detail is in
 `docs/publishing/` (`ANALYSIS.md`, `CONTRACTS.md`, `DECISIONS.md`, `PLAN.md`) and
 `docs/delivery-pipeline/`. Status: **phases 3 to 5 done** (integrity and storage; export job workflow; authorization and
-hardening). Phase 12 re-checks it together with the other two apps.
+hardening). Phase 12 (integration and final verification) re-checked it together with the other two apps.
 
 ## 2. Application information
 

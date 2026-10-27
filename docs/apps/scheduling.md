@@ -3,7 +3,7 @@
 Written against `docs/APP_ARCHITECTURE_TEMPLATE.md`. The authoritative detail is in
 `docs/scheduling/` (`ANALYSIS.md`, `CONTRACTS.md`, `DECISIONS.md`, `PLAN.md`) and
 `docs/delivery-pipeline/`. Status: **phases 9 to 11 done** (calendars, dates and integrity; bookings and capacity; authorization
-and hardening). Phase 12 re-checks the app with the other two.
+and hardening). Phase 12 (integration and final verification) re-checked the app with the other two.
 
 ## 2. Application information
 

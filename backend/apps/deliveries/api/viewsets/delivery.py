@@ -15,6 +15,7 @@ from rest_framework.response import Response
 
 from apps.audit.services.background_job import BackgroundJobService
 from apps.core.api.pagination import StandardPagination
+from apps.core.api.viewsets.platform_crud import PlatformCrudViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.deliveries.api.serializers.delivery import (
     STATUS_OUTPUT_MAP,
@@ -40,7 +41,6 @@ from apps.deliveries.api.serializers.delivery import (
     DeliveryUpdateSerializer,
     DeliveryValidateSerializer,
 )
-from apps.deliveries.api.viewsets.base import PlatformCrudViewSet
 from apps.deliveries.constants.permissions import DeliveryPermissions
 from apps.deliveries.exceptions import InvalidTransition, TransitionNotPermitted
 from apps.deliveries.models import DeliveryQCCheck

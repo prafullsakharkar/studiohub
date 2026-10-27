@@ -3,7 +3,7 @@
 Written against `docs/APP_ARCHITECTURE_TEMPLATE.md`. The authoritative detail is in
 `docs/deliveries/` (`ANALYSIS.md`, `CONTRACTS.md`, `DECISIONS.md`, `PLAN.md`) and
 `docs/delivery-pipeline/`. Status: **phases 6 to 8 done** (core model and integrity; workflow, approvals and the encrypted
-passcode; scoping, destinations, bulk cancel, roles, admin and OpenAPI). Phase 12 re-checks it with
+passcode; scoping, destinations, bulk cancel, roles, admin and OpenAPI). Phase 12 (integration and final verification) re-checked it with
 the other two apps.
 
 ## 2. Application information

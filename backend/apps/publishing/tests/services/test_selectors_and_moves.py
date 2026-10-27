@@ -105,27 +105,27 @@ def test_an_unknown_version_gives_nothing():
     assert PublishedFileSelector.files_for_versions([UUID(int=0)]) == {}
 
 
-def test_the_viewset_base_lives_in_core_and_the_old_import_still_works():
-    from apps.core.api.viewsets.platform_crud import PlatformCrudViewSet, PlatformReadViewSet
-    from apps.deliveries.api.viewsets.base import (
-        PlatformCrudViewSet as OldCrud,
-    )
-    from apps.deliveries.api.viewsets.base import (
-        PlatformReadViewSet as OldRead,
-    )
+def test_the_viewset_base_lives_in_core_and_the_old_module_is_gone():
+    """X-02, removed in Phase 12 as Q38 planned: the re-export is deleted and nothing needs it."""
+    import importlib.util
 
-    assert OldCrud is PlatformCrudViewSet
-    assert OldRead is PlatformReadViewSet
+    from apps.core.api.viewsets.platform_crud import PlatformCrudViewSet
+    from apps.deliveries.api.viewsets.delivery import DeliveryViewSet
+    from apps.deliveries.api.viewsets.destination import DestinationViewSet
+
+    assert importlib.util.find_spec("apps.deliveries.api.viewsets.base") is None
+    assert issubclass(DeliveryViewSet, PlatformCrudViewSet)
+    assert issubclass(DestinationViewSet, PlatformCrudViewSet)
 
 
-def test_publishing_scheduling_and_production_no_longer_import_the_deliveries_base():
+def test_no_app_imports_the_deliveries_base_any_more():
     import pathlib
 
     root = pathlib.Path(__file__).resolve().parents[4]
     needle = "apps.deliveries.api.viewsets.base"
     offenders = [
         str(path.relative_to(root))
-        for app in ("publishing", "scheduling", "production")
+        for app in ("publishing", "scheduling", "production", "deliveries")
         for path in (root / app).rglob("*.py")
         if "/tests/" not in str(path) and needle in path.read_text()
     ]

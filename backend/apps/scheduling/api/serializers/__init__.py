@@ -105,8 +105,10 @@ def _ensure_end_after_start(start, end, *, field="end_time", strict=False):
         raise serializers.ValidationError({field: ["The end must be after the start."]})
 
 
-def _ensure_known(model, value, noun):
-    if value is not None and not model.objects.filter(pk=value).exists():
+def _ensure_known(source, value, noun):
+    """``value`` as it is when ``source`` (a model of this app or another app's selector) has it."""
+    rows = source.get_queryset() if hasattr(source, "get_queryset") else source.objects.all()
+    if value is not None and not rows.filter(pk=value).exists():
         raise serializers.ValidationError(f"Unknown {noun}.")
     return value
 
@@ -217,12 +219,12 @@ class CalendarEventCreateSerializer(serializers.Serializer[Any]):
         """A project the caller belongs to (any project for platform admins); else 'Unknown'."""
         if value is None:
             return value
-        from apps.production.models import Project
+        from apps.production.selectors.project import ProjectSelector
 
         scope = ViewerScope.of(self.context.get("request"))
         if (
             not (scope.is_admin or value in scope.project_ids)
-            or not Project.objects.filter(pk=value).exists()
+            or ProjectSelector.resolve_by_lookup(value) is None
         ):
             raise serializers.ValidationError("Unknown project.")
         return value
@@ -235,9 +237,9 @@ class CalendarEventCreateSerializer(serializers.Serializer[Any]):
         project_id = validated_data.pop("project_id", None)
 
         if project_id:
-            from apps.production.models import Project
+            from apps.production.selectors.project import ProjectSelector
 
-            validated_data["project"] = Project.objects.filter(pk=project_id).first()
+            validated_data["project"] = ProjectSelector.resolve_by_lookup(project_id)
 
         return CalendarEvent.objects.create(**validated_data)
 
@@ -444,21 +446,21 @@ class ResourceCreateSerializer(serializers.Serializer[Any]):
         return _ensure_known(User, value, "user")
 
     def validate_department_id(self, value):
-        from apps.masterdata.models import Department
+        from apps.masterdata.selectors.directory import DepartmentSelector
 
-        return _ensure_known(Department, value, "department")
+        return _ensure_known(DepartmentSelector, value, "department")
 
     def validate_team_id(self, value):
-        from apps.masterdata.models import Team
+        from apps.masterdata.selectors.directory import TeamSelector
 
-        return _ensure_known(Team, value, "team")
+        return _ensure_known(TeamSelector, value, "team")
 
     def validate_calendar_id(self, value):
         return _ensure_known(WorkCalendar, value, "calendar")
 
     def create(self, validated_data):
         from apps.identity.models import User
-        from apps.masterdata.models import Department, Team
+        from apps.masterdata.selectors.directory import DepartmentSelector, TeamSelector
 
         department_id = validated_data.pop("department_id", None)
         team_id = validated_data.pop("team_id", None)
@@ -468,9 +470,11 @@ class ResourceCreateSerializer(serializers.Serializer[Any]):
             validated_data["calendar"] = WorkCalendar.objects.get(pk=calendar_id)
 
         if department_id:
-            validated_data["department"] = Department.objects.filter(pk=department_id).first()
+            validated_data["department"] = (
+                DepartmentSelector.get_queryset().filter(pk=department_id).first()
+            )
         if team_id:
-            validated_data["team"] = Team.objects.filter(pk=team_id).first()
+            validated_data["team"] = TeamSelector.get_queryset().filter(pk=team_id).first()
         if user_id:
             validated_data["user"] = User.objects.filter(pk=user_id).first()
 
@@ -498,14 +502,14 @@ class ResourceUpdateSerializer(serializers.Serializer[Any]):
     location = serializers.CharField(required=False, allow_blank=True, max_length=255)
 
     def validate_department_id(self, value):
-        from apps.masterdata.models import Department
+        from apps.masterdata.selectors.directory import DepartmentSelector
 
-        return _ensure_known(Department, value, "department")
+        return _ensure_known(DepartmentSelector, value, "department")
 
     def validate_team_id(self, value):
-        from apps.masterdata.models import Team
+        from apps.masterdata.selectors.directory import TeamSelector
 
-        return _ensure_known(Team, value, "team")
+        return _ensure_known(TeamSelector, value, "team")
 
     def validate_calendar_id(self, value):
         return _ensure_known(WorkCalendar, value, "calendar")
@@ -522,7 +526,7 @@ class ResourceUpdateSerializer(serializers.Serializer[Any]):
         raise serializers.ValidationError(DERIVED_STATUS_MESSAGE)
 
     def update(self, instance, validated_data):
-        from apps.masterdata.models import Department, Team
+        from apps.masterdata.selectors.directory import DepartmentSelector, TeamSelector
 
         if "calendar_id" in validated_data:
             calendar_id = validated_data.pop("calendar_id")
@@ -531,11 +535,11 @@ class ResourceUpdateSerializer(serializers.Serializer[Any]):
         if "department_id" in validated_data:
             department_id = validated_data.pop("department_id")
             instance.department = (
-                Department.objects.get(pk=department_id) if department_id else None
+                DepartmentSelector.get_queryset().get(pk=department_id) if department_id else None
             )
         if "team_id" in validated_data:
             team_id = validated_data.pop("team_id")
-            instance.team = Team.objects.get(pk=team_id) if team_id else None
+            instance.team = TeamSelector.get_queryset().get(pk=team_id) if team_id else None
         for name, value in validated_data.items():
             setattr(instance, name, value)
         instance.save()
@@ -868,9 +872,9 @@ class WorkCalendarWriteSerializer(serializers.Serializer[Any]):
     def _office(value):
         if value is None:
             return None
-        from apps.masterdata.models import Office
+        from apps.masterdata.selectors.directory import OfficeSelector
 
-        office = Office.objects.filter(pk=value).first()
+        office = OfficeSelector.get_queryset().filter(pk=value).first()
         if office is None:
             raise serializers.ValidationError({"office_id": ["Unknown office."]})
         return office

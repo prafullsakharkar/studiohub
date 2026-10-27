@@ -141,7 +141,7 @@ Every gate: as publishing (`docs/publishing/PLAN.md` §4).
 * **Project by code** is accepted on create, as in publishing (A-35).
 * **`init_platform` withdraws grants** (Q40 = A, a follow-up commit): `WITHDRAWN_GRANTS` removes the codes Q34 takes from the vfx-supervisor on every run.
 * **Verified by removing the guard:** selector scoping (27 tests fail), bulk-cancel scoping (2), the alias conflict check (3), the vfx-supervisor withheld grants (3), the create-side project check (1), the destination name rule (1).
-* **Not done here:** "a disabled user loses access" across the three apps (Phase 12, A-14); removal of the `deliveries/api/viewsets/base.py` re-export (Phase 12).
+* **Done in Phase 12:** "a disabled user loses access" across the three apps (`apps/core/tests/integration/test_disabled_user_three_apps.py`, A-14) and removal of the `deliveries/api/viewsets/base.py` re-export (X-02).
 
 ## 5. Frontend flows that assume free movement (Q27)
 
