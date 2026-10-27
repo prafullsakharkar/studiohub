@@ -39,7 +39,3 @@ class DestinationViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingT
 
     search_fields = ("name", "endpoint", "storage_region")
     ordering_fields = ("name", "created_at")
-
-    def perform_create(self, serializer):
-        user = self.request.user
-        serializer.save(created_by=user if user.is_authenticated else None)

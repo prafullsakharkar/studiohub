@@ -38,6 +38,14 @@ def operator(project: Any, *codes: str, superuser: bool = False):
     return user
 
 
+def outsider(*codes: str, superuser: bool = False):
+    """A user who holds ``codes`` but is a member of no project."""
+    user = UserFactory.create(is_superuser=superuser)
+    if codes:
+        grant_permissions(user, *codes)
+    return user
+
+
 def client_for(user) -> APIClient:
     client = APIClient()
     client.force_authenticate(user=user)
@@ -116,4 +124,15 @@ ALL_CODES = (
     "delivery.send",
     "delivery.view_secret",
     P.VIEW,
+)
+
+#: Every delivery code that opens an action (the two overrides are deliberately absent).
+DELIVERY_CODES = (
+    "delivery.view",
+    "delivery.create",
+    "delivery.update",
+    "delivery.delete",
+    "delivery.approve",
+    "delivery.send",
+    "delivery.view_secret",
 )

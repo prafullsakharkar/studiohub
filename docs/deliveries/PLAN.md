@@ -1,4 +1,4 @@
-# Deliveries plan (Phases 6-8)
+# Deliveries plan (Phases 6-8, all built)
 
 Phase 2 design, 2026-10-27. Branch `feature/deliveries-improvement`, created at the start of Phase 6. Deliveries reads Publishing's `FileSnapshot` (X-04), so the branch starts from `develop` if you have merged `feature/publishing-improvement` by then, otherwise from the last commit of `feature/publishing-improvement` (its history then includes the publishing commits until you merge; I never merge). Scheduling does the same with the deliveries branch only if Phase 12's integration tests need it; Phases 9-11 depend only on Production. Contracts: `CONTRACTS.md`.
 
@@ -133,6 +133,15 @@ Everything above was built except where noted. Differences from the plan:
 * `test_permission_matrix.py`, admin tests, OpenAPI schema test.
 
 Every gate: as publishing (`docs/publishing/PLAN.md` §4).
+
+### Phase 8 as built
+
+* **Test files:** `api/test_access_matrix.py` (scoping, IDOR on every action, create-side checks, every action's code, scoped keys), `api/test_frontend_bodies.py`, `api/test_bulk_cancel.py`, `api/test_destinations_rules.py`, `api/test_admin.py`, `api/test_openapi.py`, `test_permission_matrix.py`, `migrations/test_phase8_migrations.py`. The plan's names are kept.
+* **Destination text kept writable** while no destination is chosen (A-34), instead of read-only at once.
+* **Project by code** is accepted on create, as in publishing (A-35).
+* **`init_platform` adds but does not remove** grants, so the withdrawals in Q34 need a decision (Q40).
+* **Verified by removing the guard:** selector scoping (27 tests fail), bulk-cancel scoping (2), the alias conflict check (3), the vfx-supervisor withheld grants (3), the create-side project check (1), the destination name rule (1).
+* **Not done here:** "a disabled user loses access" across the three apps (Phase 12, A-14); removal of the `deliveries/api/viewsets/base.py` re-export (Phase 12).
 
 ## 5. Frontend flows that assume free movement (Q27)
 

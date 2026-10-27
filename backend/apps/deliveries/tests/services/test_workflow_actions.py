@@ -19,6 +19,7 @@ from apps.deliveries.tests.helpers import (
     _Request,
     client_for,
     make_package,
+    operator,
     package_with_items,
     prepared_package,
     published_version,
@@ -284,8 +285,7 @@ class TestEndpoints:
     def test_each_action_needs_its_own_code(self):
         package = signed_off_package()
         base = f"/api/v1/deliveries/{package.pk}"
-        viewer = UserFactory.create()
-        grant_permissions(viewer, P.VIEW, P.UPDATE, P.CREATE)
+        viewer = operator(package.project, P.VIEW, P.UPDATE, P.CREATE)
         client = client_for(viewer)
 
         assert client.post(f"{base}/submit/", {}, format="json").status_code == 403

@@ -2,8 +2,9 @@
 
 Written against `docs/APP_ARCHITECTURE_TEMPLATE.md`. The authoritative detail is in
 `docs/deliveries/` (`ANALYSIS.md`, `CONTRACTS.md`, `DECISIONS.md`, `PLAN.md`) and
-`docs/delivery-pipeline/`. Status: **phases 6 and 7 done** (core model and integrity; workflow, approvals and the encrypted
-passcode). Phase 8 (sensitive data, API, hardening) is not built.
+`docs/delivery-pipeline/`. Status: **phases 6 to 8 done** (core model and integrity; workflow, approvals and the encrypted
+passcode; scoping, destinations, bulk cancel, roles, admin and OpenAPI). Phase 12 re-checks it with
+the other two apps.
 
 ## 2. Application information
 
@@ -25,7 +26,7 @@ destinations.
 (Publishing), the transfer itself (StudioHub sends nothing; the sender records a
 `transfer_reference`, decision Q4).
 
-## 4. What exists after Phase 7
+## 4. What exists after Phase 8
 
 | Piece | Where |
 |---|---|
@@ -40,14 +41,18 @@ destinations.
 | Numbering | `DLV-<PROJECT>-<0001>`, per-project counter row lock |
 | History protection | package, item and item-file deletes are PROTECT; frozen rows refuse update and delete |
 | Provider | `providers.py` registers `deliveries.project_figures`; Production reads delivery counts, rows and the dashboard through `apps/core/providers.py` and imports nothing from this app |
-| Admin | packages editable except status and workflow columns (passcode excluded); item files, QC checks, history and counters view-only |
+| Scoping | deliveries are narrowed to the caller's projects (`DeliverySelector`); other ids are 404; platform admins see all, including old deliveries without a project |
+| Destinations | name unique in any case among live destinations, one live default (`services/destination.py`, plus DB constraints); a delivery chooses one by `destination_id`, the old free text works while none is chosen |
+| Bodies | `reason` / `notes` accepted beside `rejection_reason` / `cancellation_reason` / `client_notes`; both at once must agree |
+| Bulk | `POST bulk-cancel/` (1 to 100 ids, 200 or 207, identical `not_found`, no override); no bulk sign-off or send |
+| Admin | packages, items, item files, QC checks, history and counters are view-only; destinations editable with the name rule |
 | Migrations | 0004 protect history, 0005 items, snapshot and QC, 0006 package fields, 0007 unique code (stops and lists case-only duplicates), 0008 workflow and history, 0009 encrypts passcodes (refuses without a key) |
 
 ## 5. Rules worth knowing
 
 * The passcode is never in a list or detail; only the audited endpoint returns it.
 * A sent delivery cannot be edited, and a package row with sent data cannot be re-sent, even if its status is set back.
-* The new codes (`delivery.approve`, `delivery.send`, `delivery.view_secret`, the two overrides) are held by no role until Phase 8.
+* Roles: platform-admin, org-admin and production-admin hold every delivery code; vfx-supervisor view, create, update and approve; lead-artist and artist view. The two override codes are held by no role. `init_platform` adds grants but does not remove them (Q40).
 * Totals are derived from the items; the stored columns are no longer written.
 * Legacy items without registered files cannot pass QC.
 

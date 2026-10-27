@@ -17,6 +17,7 @@ from __future__ import annotations
 from typing import Any
 
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
@@ -33,7 +34,9 @@ from apps.deliveries.exceptions import (
     UndeliverableVersion,
 )
 from apps.deliveries.models import DeliveryPackage, DeliveryStatusChange, DeliveryVersionRef
+from apps.deliveries.selectors.destination import DestinationSelector
 from apps.deliveries.services import audit, duties, items, manifest, numbering, qc, transitions
+from apps.deliveries.services.destination import address
 from apps.masterdata.selectors.directory import ClientSelector
 from apps.production.permissions.checks import has_explicit_permission_code, has_permission_code
 from apps.production.selectors.base import ProductionBaseSelector
@@ -42,7 +45,6 @@ from apps.production.selectors.project import ProjectSelector
 EDITABLE_FIELDS = (
     "name",
     "delivery_method",
-    "delivery_destination",
     "expires_at",
     "notes",
     "client_notes",
@@ -83,27 +85,76 @@ class DeliveryService:
     def _qc_failed(result: dict[str, Any]) -> QCFailed:
         return QCFailed({"code": "qc_failed", "checks": qc.failures(result)})  # pyright: ignore[reportArgumentType]
 
+    @staticmethod
+    def _resolve_destination(data: dict[str, Any]) -> tuple[bool, Any]:
+        """``(sent, destination)``: whether ``destination_id`` was sent, and the active destination it names."""
+        if "destination_id" not in data:
+            return False, None
+        value = data["destination_id"]
+        if value in (None, ""):
+            return True, None
+        destination = DestinationSelector.get_queryset().filter(pk=value, is_active=True).first()
+        if destination is None:
+            raise ValidationError({"destination_id": ["Unknown destination."]})
+        return True, destination
+
+    @staticmethod
+    def _check_destination_text(data: dict[str, Any], destination: Any) -> None:
+        """The deprecated free text may not disagree with the destination that is chosen."""
+        text = data.get("delivery_destination")
+        if destination is not None and text not in (None, "") and text != address(destination):
+            raise ValidationError(
+                {
+                    "delivery_destination": [
+                        "Cannot be set directly while a destination is chosen. Send destination_id."
+                    ]
+                }
+            )
+
     # -- create / edit --------------------------------------------------------------------
 
     @classmethod
     @transaction.atomic
-    def create(cls, *, actor: Any, data: dict[str, Any]) -> DeliveryPackage:
+    def create(cls, *, actor: Any, data: dict[str, Any], request: Any = None) -> DeliveryPackage:
         """
         Create a delivery. A blank code is numbered by the server from the project; a code that is
-        sent must be unused in any case. An unknown project or client is a 400. A passcode is
-        stored encrypted (503 when no key is configured).
+        sent must be unused in any case. A passcode is stored encrypted (503 when no key is
+        configured).
+
+        With a ``request`` (every API call) the project must be one the caller may use and is
+        required unless the caller is a platform admin sending a code. An unknown project, one the
+        caller is not in and a malformed id all give the same "Unknown project." (no way to tell
+        them apart). Without a ``request`` (internal callers, which are trusted) any existing
+        project is accepted. The client and the destination must exist and be active.
         """
         data = dict(data)
         project = None
         if data.get("project_id") not in (None, ""):
-            project = ProjectSelector.resolve_by_lookup(data["project_id"])
+            project = (
+                ProjectSelector.resolve_visible(request, data["project_id"])
+                if request is not None
+                else ProjectSelector.resolve_by_lookup(data["project_id"])
+            )
             if project is None:
                 raise ValidationError({"project_id": ["Unknown project."]})
+        if (
+            project is None
+            and request is not None
+            and not ProductionBaseSelector.is_platform_admin(getattr(request, "user", None))
+        ):
+            raise ValidationError({"project_id": ["A project is required."]})
         client = None
         if data.get("client_id"):
-            client = ClientSelector.get_queryset().filter(pk=data["client_id"]).first()
+            client = (
+                ClientSelector.get_queryset()
+                .filter(Q(status__iexact="active") | Q(status=""))
+                .filter(pk=data["client_id"])
+                .first()
+            )
             if client is None:
                 raise ValidationError({"client_id": ["Unknown client."]})
+        _, destination = cls._resolve_destination(data)
+        cls._check_destination_text(data, destination)
 
         code = str(data.get("code") or "").strip()
         if code:
@@ -122,7 +173,8 @@ class DeliveryService:
             project=project,
             client=client,
             delivery_method=data.get("delivery_method") or DeliveryPackage.METHOD_S3,
-            delivery_destination=data.get("delivery_destination", ""),
+            destination=destination,
+            delivery_destination="" if destination else data.get("delivery_destination", ""),
             passcode=passcode.encrypt(data.get("passcode") or ""),
             expires_at=data.get("expires_at"),
             notes=data.get("notes", ""),
@@ -145,7 +197,23 @@ class DeliveryService:
         """Edit a delivery's details; only before it is sent. The status is never edited here."""
         locked = cls._lock(package)
         cls._require_editable(locked)
+        sent, destination = cls._resolve_destination(data)
+        effective = destination if sent else locked.destination
+        cls._check_destination_text(data, effective)
         changed = []
+        if sent and locked.destination_id != (destination.pk if destination else None):  # pyright: ignore[reportAttributeAccessIssue]
+            locked.destination = destination
+            changed.append("destination")
+        if destination is not None and locked.delivery_destination:
+            locked.delivery_destination = ""
+            changed.append("delivery_destination")
+        elif (
+            effective is None
+            and "delivery_destination" in data
+            and locked.delivery_destination != data["delivery_destination"]
+        ):
+            locked.delivery_destination = data["delivery_destination"]
+            changed.append("delivery_destination")
         for name in EDITABLE_FIELDS:
             if name in data and getattr(locked, name) != data[name]:
                 setattr(locked, name, data[name])
@@ -620,6 +688,7 @@ class DeliveryService:
             project=project,
             client=old.client,
             delivery_method=old.delivery_method,
+            destination=old.destination,
             delivery_destination=old.delivery_destination,
             expires_at=old.expires_at,
             notes=old.notes,

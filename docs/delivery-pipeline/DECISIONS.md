@@ -176,6 +176,20 @@ Recommendation and default: **A**. Blocks: Phases 5, 8, 11.
 | A-31 | 2026-10-27 | The new codes (`delivery.approve`, `delivery.send`, `delivery.view_secret`, `delivery.status.override`, `delivery.sod.override`) are in the permission catalog but **held by no role until Phase 8's role seeding**. Until then only superusers (and the test grants) can sign off, send or answer; the two override codes are held by nobody. | ASSUMED | `init_platform.py`, Phase 8 |
 | A-32 | 2026-10-27 | Notifications and domain events for the workflow are not built (Q5 puts them in LATER). The one event handler is Publishing's `PublishedFileRevoked`. | ASSUMED | Q5 |
 | A-33 | 2026-10-27 | Phase 6 tests that asserted free movement (approve/reject from Draft, complete from Draft, retry resetting to Prepared, send from Prepared, late files picked up at send) now start from the state the map requires; their assertions about what the endpoint answers are unchanged. Retry's old "reset to Prepared" is replaced by "re-run QC while Validating" (CONTRACTS DOM-DLV-02). | ASSUMED | `tests/test_api.py` |
+| A-34 | 2026-10-27 | Q33 said to make `delivery_destination` read-only at once. The frontend only sends that text (`RESTDeliveryAdapter.ts`), so it stays writable while no destination is chosen (Q38: deprecated request fields keep working for one minor release). With a destination chosen, a different text is a 400. | ASSUMED (differs from Q33 stage 1) | `DeliveryService._check_destination_text` |
+| A-35 | 2026-10-27 | Create requires a project unless a platform admin sends a code (as publishing's A-2); a project may be named by id or code; an unknown, foreign or malformed one is the same "Unknown project." The client must be Active (blank status counts as Active) and the destination active. | ASSUMED | `DeliveryService.create` |
+| A-36 | 2026-10-27 | Old deliveries that name no project are visible to platform admins only, like old export jobs (A-11). | ASSUMED | `DeliverySelector` |
+| A-37 | 2026-10-27 | Destinations are studio-wide reference data: no project scoping, the existing codes (`view`, `create`, `update`, `delete`) gate them. A destination in use cannot be hard-deleted (PROTECT); a soft-deleted one frees its name. | ASSUMED | `DestinationViewSet` |
+| A-38 | 2026-10-27 | In `bulk-cancel` a cancel the caller's codes do not allow (a signed-off delivery without `delivery.approve`) reports `not_found` like an unknown one (Q36: forbidden reports the identical `not_found`). | ASSUMED | `DeliveryViewSet.bulk_cancel` |
+| A-39 | 2026-10-27 | The package, item, snapshot, QC, history and counter admins are view-only (as publishing's A-13). Destinations stay editable; saving a default in the admin moves it, as the API does. | ASSUMED | `admin/delivery.py` |
+| A-40 | 2026-10-27 | The deliveries tests' `staff_user` is a platform admin (scoping would otherwise hide every delivery from it); the scoping tests build their own members. | ASSUMED | `tests/conftest.py` |
+| A-41 | 2026-10-27 | `init_platform` only adds role grants. On an existing database the new delivery codes are added, but the vfx-supervisor keeps `delivery.delete` (and `publishing.delete` from Phase 5) until revoked by hand. See Q40. | OPEN (needs you) | `init_platform.py` |
+
+**Q40 (OPEN). Should `init_platform` also withdraw the grants Q34 removes?** Why: `init_platform` is additive (`get_or_create`), so rerunning it on staging or production never takes `delivery.delete` / `publishing.delete` away from vfx-supervisor.
+* **A. Add a short "withdrawn grants" list (system roles only: `vfx-supervisor` loses `publishing.delete` and `delivery.delete`) that `init_platform` removes idempotently, using real deletes so the RBAC signals clear the cached permissions.** Rerunning the command then makes every database match the matrix. Role customisations by an admin to those two codes on that role would be undone.
+* B. Leave it additive and document the manual revoke (the two queries in "Checks only you can make"). Nothing is ever taken away automatically; staging and production drift from the matrix until someone acts.
+* C. A separate one-off management command run by hand, dry run by default.
+Recommendation: **A**. Default used now (**ASSUMED B**): additive, documented. Blocks: nothing in Phase 8; the matrix test already pins the seeded roles.
 
 **Q39 (ANSWERED 2026-10-27: B). Who moves an export job to Exporting, Exported or Failed-during-export?**
 
@@ -194,6 +208,9 @@ Recommendation was **B** once the reporting tool is known; default **A**. Status
 4. Storage roots and whether any is mounted on the app server (Q25).
 5. Offices, their time zones and holidays (Q21, Q31).
 6. The staging counts of `docs/delivery-pipeline/ANALYSIS.md` §8 (decide whether the stop-and-list migrations will stop).
+7. Before migrating deliveries 0010 on staging, count destination clashes (read-only):
+   `SELECT upper(name), count(*) FROM deliveries_destination WHERE NOT is_deleted GROUP BY 1 HAVING count(*) > 1;` and `SELECT id, name FROM deliveries_destination WHERE is_default AND NOT is_deleted;` (more than one row means the migration will stop and list them).
+8. After `manage.py init_platform` on each environment, check who still holds the withdrawn grants (Q40): `SELECT r.code, p.code FROM identity_rolepermission rp JOIN identity_role r ON r.id = rp.role_id JOIN identity_permission p ON p.id = rp.permission_id WHERE r.code = 'vfx-supervisor' AND p.code IN ('delivery.delete', 'publishing.delete', 'delivery.send', 'delivery.view_secret');` (table names may differ: check with `\dt identity_*`; this is UNVERIFIED against your schema).
 
 ## Standing assumptions
 

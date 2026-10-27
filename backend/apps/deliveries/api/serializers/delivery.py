@@ -1,6 +1,7 @@
 """
 Delivery serializers.
 """
+
 import json
 from typing import Any
 
@@ -13,6 +14,7 @@ from apps.deliveries.models import (
     DeliveryStatusChange,
     DeliveryVersionRef,
 )
+from apps.deliveries.services.destination import address
 from apps.deliveries.services.package import DeliveryService
 from apps.publishing.selectors.files import PublishedFileSelector
 
@@ -157,6 +159,13 @@ class DeliveryDetailSerializer(serializers.ModelSerializer[DeliveryPackage]):
         return bool(obj.passcode)
 
     has_revoked_content = serializers.SerializerMethodField()
+    destination = serializers.UUIDField(source="destination_id", read_only=True)
+    destination_name = serializers.CharField(source="destination.name", read_only=True, default="")
+    # Deprecated free text: with a destination chosen, that destination's own address.
+    delivery_destination = serializers.SerializerMethodField()
+
+    def get_delivery_destination(self, obj) -> str:
+        return address(obj.destination) if obj.destination_id else obj.delivery_destination
 
     def get_has_revoked_content(self, obj) -> bool:
         """Whether a file recorded in this delivery has been revoked since (read from Publishing)."""
@@ -174,6 +183,8 @@ class DeliveryDetailSerializer(serializers.ModelSerializer[DeliveryPackage]):
             "status",
             "client_status",
             "delivery_method",
+            "destination",
+            "destination_name",
             "delivery_destination",
             "has_passcode",
             "has_revoked_content",
@@ -215,21 +226,29 @@ class DeliveryCreateSerializer(serializers.Serializer[Any]):
     id = serializers.UUIDField(read_only=True)
     code = serializers.CharField(required=False, allow_blank=True, max_length=50)
     name = serializers.CharField(required=True, max_length=255)
-    project_id = serializers.UUIDField(required=False, allow_null=True)
+    # A project id or code; the service resolves it and answers "Unknown project." for any miss.
+    project_id = serializers.CharField(
+        required=False, allow_null=True, allow_blank=True, max_length=64
+    )
     client_id = serializers.UUIDField(required=False, allow_null=True)
     delivery_method = serializers.ChoiceField(
         choices=["Aspera", "S3", "FTP", "Web Download"],
         default="S3",
     )
+    destination_id = serializers.UUIDField(required=False, allow_null=True)
     delivery_destination = serializers.CharField(required=False, allow_blank=True)
-    passcode = serializers.CharField(required=False, allow_blank=True, max_length=64, write_only=True)
+    passcode = serializers.CharField(
+        required=False, allow_blank=True, max_length=64, write_only=True
+    )
     expires_at = serializers.DateTimeField(required=False, allow_null=True)
     notes = serializers.CharField(required=False, allow_blank=True)
     client_notes = serializers.CharField(required=False, allow_blank=True)
 
     def create(self, validated_data):
         request = self.context.get("request")
-        return DeliveryService.create(actor=getattr(request, "user", None), data=validated_data)
+        return DeliveryService.create(
+            actor=getattr(request, "user", None), data=validated_data, request=request
+        )
 
 
 class DeliveryUpdateSerializer(serializers.Serializer[Any]):
@@ -251,6 +270,7 @@ class DeliveryUpdateSerializer(serializers.Serializer[Any]):
         "total_frames": lambda p: {derived_totals(p)[1], p.total_frames},
         "manifest_data": lambda p: {json.dumps(p.manifest_data, sort_keys=True)},
         "checksums": lambda p: {json.dumps(p.checksums, sort_keys=True)},
+        "destination": lambda p: {str(p.destination_id) if p.destination_id else None},
     }
 
     name = serializers.CharField(required=False, max_length=255)
@@ -258,8 +278,11 @@ class DeliveryUpdateSerializer(serializers.Serializer[Any]):
         choices=["Aspera", "S3", "FTP", "Web Download"],
         required=False,
     )
+    destination_id = serializers.UUIDField(required=False, allow_null=True)
     delivery_destination = serializers.CharField(required=False, allow_blank=True)
-    passcode = serializers.CharField(required=False, allow_blank=True, max_length=64, write_only=True)
+    passcode = serializers.CharField(
+        required=False, allow_blank=True, max_length=64, write_only=True
+    )
     expires_at = serializers.DateTimeField(required=False, allow_null=True)
     notes = serializers.CharField(required=False, allow_blank=True)
     client_notes = serializers.CharField(required=False, allow_blank=True)
@@ -272,7 +295,9 @@ class DeliveryUpdateSerializer(serializers.Serializer[Any]):
                 if name not in data:
                     continue
                 sent = data[name]
-                comparable = json.dumps(sent, sort_keys=True) if isinstance(sent, (dict, list)) else sent
+                comparable = (
+                    json.dumps(sent, sort_keys=True) if isinstance(sent, (dict, list)) else sent
+                )
                 if comparable not in current(package):
                     refused[name] = ["Cannot be set directly."]
         if refused:
@@ -341,20 +366,105 @@ class DeliverySignOffSerializer(serializers.Serializer[Any]):
     override_reason = serializers.CharField(required=False, allow_blank=True, max_length=500)
 
 
-class DeliveryApproveSerializer(serializers.Serializer[Any]):
-    """The client approved: ``client_notes`` is their feedback, if any."""
+class AliasedBody(serializers.Serializer[Any]):
+    """
+    A body that accepts the frontend's spelling beside the backend's (decision Q18).
+
+    ``ALIASES`` maps the backend name to the frontend's (``{"rejection_reason": "reason"}``). Either
+    may be sent; both at once must agree, else it is a 400 (never a silent pick). The old spellings
+    stay accepted indefinitely (Q38).
+    """
+
+    ALIASES: dict[str, str] = {}
+
+    def to_internal_value(self, data: Any) -> dict[str, Any]:
+        if hasattr(data, "get") and self.ALIASES:
+            data = dict(data.items())
+            for name, alias in self.ALIASES.items():
+                if alias not in data:
+                    continue
+                if name in data and data[name] != data[alias]:
+                    raise serializers.ValidationError(
+                        {alias: [f"Differs from {name}. Send only one of the two."]}
+                    )
+                data.setdefault(name, data[alias])
+                del data[alias]
+        return super().to_internal_value(data)
+
+
+class DeliveryApproveSerializer(AliasedBody):
+    """The client approved: ``client_notes`` (or ``notes``) is their feedback, if any."""
+
+    ALIASES = {"client_notes": "notes"}
 
     client_notes = serializers.CharField(required=False, allow_blank=True)
+    notes = serializers.CharField(required=False, allow_blank=True, write_only=True)
 
 
-class DeliveryRejectSerializer(serializers.Serializer[Any]):
-    """The client rejected: the reason is required and is kept in its own column."""
+class DeliveryRejectSerializer(AliasedBody):
+    """The client rejected: ``rejection_reason`` (or ``reason``) is required, kept in its own column."""
+
+    ALIASES = {"rejection_reason": "reason"}
 
     rejection_reason = serializers.CharField(required=True, allow_blank=False, max_length=500)
+    reason = serializers.CharField(
+        required=False, allow_blank=True, max_length=500, write_only=True
+    )
 
 
-class DeliveryCancelSerializer(serializers.Serializer[Any]):
+class DeliveryCancelSerializer(AliasedBody):
+    ALIASES = {"cancellation_reason": "reason"}
+
     cancellation_reason = serializers.CharField(required=False, allow_blank=True, max_length=500)
+    reason = serializers.CharField(
+        required=False, allow_blank=True, max_length=500, write_only=True
+    )
+
+
+class DeliveryBulkCancelSerializer(DeliveryCancelSerializer):
+    """Body of ``bulk-cancel``: 1 to 100 distinct delivery ids and one reason for all of them."""
+
+    ids = serializers.ListField(
+        child=serializers.UUIDField(), min_length=1, max_length=100, allow_empty=False
+    )
+
+    def validate_ids(self, value):
+        if len(set(value)) != len(value):
+            raise serializers.ValidationError("Each id may appear once.")
+        return value
+
+
+class BulkResultSerializer(serializers.Serializer[Any]):
+    id = serializers.UUIDField()
+    ok = serializers.BooleanField()
+    #: null on success, else ``not_found`` or ``invalid_transition``
+    error = serializers.CharField(allow_null=True)
+
+
+class DeliveryBulkCancelResponseSerializer(serializers.Serializer[Any]):
+    success = serializers.BooleanField()
+    succeeded_count = serializers.IntegerField()
+    failed_count = serializers.IntegerField()
+    results = BulkResultSerializer(many=True)
+
+
+class DeliveryPasscodeResponseSerializer(serializers.Serializer[Any]):
+    passcode = serializers.CharField(allow_blank=True)
+
+
+class SkippedVersionSerializer(serializers.Serializer[Any]):
+    version_id = serializers.UUIDField()
+    reason = serializers.CharField()
+
+
+class DeliveryReviseResponseSerializer(DeliveryDetailSerializer):
+    """The new Draft, with the versions that could not be carried over."""
+
+    skipped_versions = SkippedVersionSerializer(many=True, read_only=True)
+
+    class Meta(DeliveryDetailSerializer.Meta):
+        fields = (*DeliveryDetailSerializer.Meta.fields, "skipped_versions")
+        read_only_fields = fields
 
 
 class DeliveryReopenSerializer(serializers.Serializer[Any]):

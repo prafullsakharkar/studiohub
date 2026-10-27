@@ -12,6 +12,7 @@ CHAIN_TABLES = (
     "deliveries_item_file",
     "deliveries_version_ref",
     "deliveries_package",
+    "deliveries_destination",
 )
 
 

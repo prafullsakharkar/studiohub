@@ -1,20 +1,23 @@
 """
 Delivery destination serializers.
 """
+
 from rest_framework import serializers
 
 from apps.deliveries.models import DeliveryDestination
+from apps.deliveries.services.destination import DestinationService
 
 
 class DestinationListSerializer(serializers.ModelSerializer[DeliveryDestination]):
     """Serializer for delivery destination list view."""
 
     type = serializers.CharField(source="destination_type")
+    # Declared so DRF does not turn the "one live default" constraint into a validator that would
+    # refuse a new default before the service can move the old one (DestinationService).
+    is_default = serializers.BooleanField(required=False)
     # Frontend contract aliases (write-only): the UI posts `rate`/`region`
     # instead of `transfer_rate_mbps`/`storage_region`.
-    rate = serializers.IntegerField(
-        write_only=True, required=False, min_value=0, allow_null=True
-    )
+    rate = serializers.IntegerField(write_only=True, required=False, min_value=0, allow_null=True)
     region = serializers.CharField(
         write_only=True, required=False, allow_blank=True, max_length=255
     )
@@ -55,11 +58,19 @@ class DestinationListSerializer(serializers.ModelSerializer[DeliveryDestination]
                 validated_data["storage_region"] = region
         return validated_data
 
+    def _actor(self):
+        request = self.context.get("request")
+        return getattr(request, "user", None)
+
     def create(self, validated_data):
-        return super().create(self._apply_aliases(validated_data))
+        return DestinationService.create(
+            actor=self._actor(), data=self._apply_aliases(validated_data)
+        )
 
     def update(self, instance, validated_data):
-        return super().update(instance, self._apply_aliases(validated_data))
+        return DestinationService.update(
+            actor=self._actor(), destination=instance, data=self._apply_aliases(validated_data)
+        )
 
 
 class DestinationDetailSerializer(DestinationListSerializer):

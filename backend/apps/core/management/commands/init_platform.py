@@ -60,13 +60,11 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     ("delivery.view", "deliveries", "read"),
     ("delivery.update", "deliveries", "update"),
     ("delivery.delete", "deliveries", "delete"),
-    # Workflow codes (docs/deliveries/CONTRACTS.md section 4). Granted to roles in Phase 8; the two
-    # override codes are granted to no role and checked explicitly (a superuser does not hold them).
+    # Workflow codes (docs/deliveries/CONTRACTS.md section 4, roles in docs/deliveries/PLAN.md
+    # section 6). The two override codes are in OPT_IN_PERMISSIONS below: granted to no role.
     ("delivery.approve", "deliveries", "approve"),
     ("delivery.send", "deliveries", "send"),
     ("delivery.view_secret", "deliveries_secret", "view_secret"),
-    ("delivery.status.override", "deliveries_override", "status_override"),
-    ("delivery.sod.override", "deliveries_override", "sod_override"),
     ("publishing.create", "publishing", "create"),
     ("publishing.view", "publishing", "read"),
     ("publishing.update", "publishing", "update"),
@@ -180,7 +178,8 @@ _PRODUCTION_RESOURCES: dict[str, tuple[str, tuple[str, ...]]] = {
     "track": ("tracks", ("view", "create", "update", "delete")),
     "show": ("shows", ("view", "create", "update", "delete")),
     "automation": ("automation", ("view", "create", "update", "delete")),
-    "delivery": ("deliveries", ("view", "create", "update", "delete")),
+    # approve = sign off; send = send and record the client's answer; view_secret = the passcode
+    "delivery": ("deliveries", ("view", "create", "update", "delete", "approve", "send", "view_secret")),
     # deprecate / revoke = move a registered file between its lifecycle states
     "publishing": ("publishing", ("view", "create", "update", "delete", "deprecate", "revoke")),
 }
@@ -191,6 +190,10 @@ OPT_IN_PERMISSIONS = [
     ("production.sod.override", "production_sod", "override"),
     # Leaving a guarded published-file state (Revoked), with a reason; docs/publishing/CONTRACTS.md.
     ("publishing.status.override", "publishing_status", "override"),
+    # Correcting the status of a sent or cancelled delivery, and signing off one's own work; both
+    # need a reason (docs/deliveries/CONTRACTS.md DOM-DLV-02, DOM-DLV-07).
+    ("delivery.status.override", "delivery_status", "override"),
+    ("delivery.sod.override", "delivery_sod", "override"),
 ]
 OPT_IN_PERMISSION_CODES = frozenset(code for code, _, _ in OPT_IN_PERMISSIONS)
 
@@ -225,6 +228,11 @@ PRODUCTION_FULL_PERMISSIONS = [
     code for resource, (_, actions) in _PRODUCTION_RESOURCES.items() for code in
     (f"{resource}.{action}" for action in actions)
 ] + ["note.create", "audit.view"]
+
+# What a vfx-supervisor does not hold of the full production set (docs/delivery-pipeline Q34).
+VFX_SUPERVISOR_WITHHELD = frozenset(
+    {"publishing.delete", "delivery.delete", "delivery.send", "delivery.view_secret"}
+)
 
 # Production admins track contract and budget figures; supervisors, leads and
 # artists share PRODUCTION_FULL_PERMISSIONS or less and do not see them.
@@ -321,8 +329,11 @@ ROLE_SPECS: list[dict[str, Any]] = [
         "name": "VFX Supervisor",
         "priority": 30,  # identity RolePriority.LEAD
         "scope": "project",
-        # Deleting export job records is an admin task (docs/delivery-pipeline Q34).
-        "permissions": [c for c in PRODUCTION_FULL_PERMISSIONS if c != "publishing.delete"],
+        # Deleting export job records and deliveries is an admin task, and producers send and read
+        # the passcode: supervisors sign off (docs/delivery-pipeline Q34).
+        "permissions": [
+            c for c in PRODUCTION_FULL_PERMISSIONS if c not in VFX_SUPERVISOR_WITHHELD
+        ],
     },
     {
         "code": "lead-artist",

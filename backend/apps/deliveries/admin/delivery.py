@@ -1,4 +1,6 @@
+from django import forms
 from django.contrib import admin
+from django.db import transaction
 
 from apps.core.admin.base import PlatformScopedModelAdmin
 from apps.deliveries.models import (
@@ -10,10 +12,32 @@ from apps.deliveries.models import (
     DeliveryStatusChange,
     DeliveryVersionRef,
 )
+from apps.deliveries.services.destination import clear_other_defaults, name_taken
+
+
+class ViewOnlyMixin:
+    """
+    Deliveries, items, the snapshot, QC records, the history and the counter are written by the
+    services only: numbering, locks, the transition map, separation of duties and the audit trail
+    do not run when a row is edited here. Read them here; change them through the API.
+    """
+
+    def has_add_permission(self, request, *args, **kwargs):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class ViewOnlyAdmin(ViewOnlyMixin, admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
+    pass
 
 
 @admin.register(DeliveryPackage)
-class DeliveryPackageAdmin(PlatformScopedModelAdmin):
+class DeliveryPackageAdmin(ViewOnlyMixin, PlatformScopedModelAdmin):
     list_display = (
         "code",
         "name",
@@ -21,6 +45,7 @@ class DeliveryPackageAdmin(PlatformScopedModelAdmin):
         "client",
         "status",
         "delivery_method",
+        "destination",
         "expires_at",
     )
 
@@ -39,9 +64,15 @@ class DeliveryPackageAdmin(PlatformScopedModelAdmin):
     # The passcode is a secret for an external service (DLV-01): never searchable, never in a form.
     exclude = ("passcode",)
 
-    # The status and everything the workflow writes are not editable here: the admin would
-    # bypass the transition map, separation of duties and the history (DOM-DLV-02).
+    # Read-only (ViewOnlyMixin): the admin would bypass the transition map, separation of duties
+    # and the history (DOM-DLV-02). The fields below are listed so none is ever offered as a form
+    # input if the mixin is removed by mistake.
     readonly_fields = (
+        "code",
+        "project",
+        "client",
+        "destination",
+        "delivery_destination",
         "status",
         "client_status",
         "sent_by",
@@ -62,15 +93,49 @@ class DeliveryPackageAdmin(PlatformScopedModelAdmin):
         "is_archived",
     )
 
-    list_select_related = ("project", "client")
+    list_select_related = ("project", "client", "destination")
 
     date_hierarchy = "expires_at"
 
     ordering = ("-created_at",)
 
 
+class DeliveryDestinationForm(forms.ModelForm):  # pyright: ignore[reportMissingTypeArgument]
+    """Applies the same name rule as the API (any case, among live destinations)."""
+
+    class Meta:
+        model = DeliveryDestination
+        fields = (
+            "name",
+            "destination_type",
+            "endpoint",
+            "credentials_configured",
+            "transfer_rate_mbps",
+            "storage_region",
+            "port",
+            "target_directory",
+            "is_default",
+            "is_active",
+        )
+
+    def clean_name(self):
+        name = (self.cleaned_data.get("name") or "").strip()
+        if name_taken(name, exclude=self.instance.pk):
+            raise forms.ValidationError("A destination with this name already exists.")
+        return name
+
+
 @admin.register(DeliveryDestination)
 class DeliveryDestinationAdmin(PlatformScopedModelAdmin):
+    form = DeliveryDestinationForm
+
+    def save_model(self, request, obj, form, change):
+        # Choosing a default moves it, exactly as the API does (DestinationService).
+        with transaction.atomic():
+            if obj.is_default:
+                clear_other_defaults(keep=obj.pk)
+            super().save_model(request, obj, form, change)
+
     list_display = (
         "name",
         "destination_type",
@@ -95,7 +160,7 @@ class DeliveryDestinationAdmin(PlatformScopedModelAdmin):
 
 
 @admin.register(DeliveryVersionRef)
-class DeliveryVersionRefAdmin(PlatformScopedModelAdmin):
+class DeliveryVersionRefAdmin(ViewOnlyMixin, PlatformScopedModelAdmin):
     list_display = (
         "version_number",
         "delivery",
@@ -117,24 +182,9 @@ class DeliveryVersionRefAdmin(PlatformScopedModelAdmin):
         "checksum_md5",
     )
 
-    autocomplete_fields = ("delivery", "version")
-
     list_select_related = ("delivery", "version")
 
     ordering = ("-created_at",)
-
-
-class ViewOnlyAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
-    """The snapshot, the QC records and the counter are written by the services only."""
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
 
 
 @admin.register(DeliveryItemFile)

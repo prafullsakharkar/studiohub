@@ -298,3 +298,51 @@ without a key, reverse decrypts). Setting: `DELIVERY_SECRET_KEY` (`.env.example`
 * New: `POST reopen/`, `POST revise/` (201, with `skipped_versions`), `GET history/`, `GET qc/`;
   detail field `has_revoked_content`.
 
+## 10. Phase 8 as built (differences from the target above)
+
+Built: project scoping and IDOR tests, the destination link and rules, the `reason` / `notes` body
+aliases (Q18), `bulk-cancel` (Q36), role-to-code grants and their matrix test, admin hardening,
+OpenAPI declarations. The access matrix covers anonymous, member, non-member, every code, platform
+admin and scoped API keys; "a disabled user loses access" is Phase 12 (A-14).
+
+| Target | Built in Phase 8 |
+|---|---|
+| SEC-DLV-01 narrow every read and write to the caller's projects | `DeliverySelector` filters on `visible_project_ids`; every action uses `get_object`, so a foreign id is the same 404 as an unknown one. Platform admins see everything, including old deliveries that name no project; members see none of those. `bulk-cancel` resolves ids through the same selector |
+| API-DLV-02 create: project required and visible, client active | `create(actor, data, request)`: a project is required unless a platform admin sends a code; an unknown, foreign or malformed project is the same 400 "Unknown project."; `project_id` is an id or a code. The client must exist and be Active (blank counts as Active); the destination must exist and be active |
+| `destination` FK, `delivery_destination` read-only (Q33) | `destination` FK (nullable, PROTECT) set by `destination_id`. The deprecated `delivery_destination` text stays writable while **no** destination is chosen (the current frontend sends only text, Q38); with a destination chosen the API shows its address (target directory, else endpoint) and a *different* text is a 400. Reads show `destination`, `destination_name`. The read name `destination` cannot be used to change it (400 unless echoed) |
+| API-DLV-18 destinations | name unique in any case among live destinations, at most one live default, both also as database constraints. Choosing a new default (API or admin) moves it. Migration 0010 stops and lists clashes |
+| API-DLV-11 to 13 aliases (Q18) | `approve` takes `client_notes` or `notes`; `reject` `rejection_reason` or `reason`; `cancel` and `bulk-cancel` `cancellation_reason` or `reason`. Both at once with different values: 400 "Send only one of the two". The alias is never a stored or returned field |
+| API-DLV-17 `bulk-cancel` | `POST /deliveries/bulk-cancel/` with `ids` (1 to 100 distinct) and one reason. Each id is its own transaction. 200 when all succeed, 207 otherwise, body `{success, succeeded_count, failed_count, results: [{id, ok, error}]}`. `error` is `null`, `not_found` (unknown, another project, legacy without a project, or a cancel the caller's codes do not allow, all identical) or `invalid_transition`. Code `delivery.update`; the same map as a single cancel; never an override. There is no bulk sign-off or send |
+| Role matrix (PLAN section 6) | seeded as planned (below) |
+| Admin read-only | packages, items, item files, QC rows, history and counters are view-only in the admin (no add, change or delete); destinations stay editable, the form applies the name rule and saving a default moves it |
+| OpenAPI | every action declares its body and answer; `history` and `qc` are plain arrays (not paginated); PATCH and PUT answer with the detail; the alias spellings are write-only |
+
+**Seeded grants** (`init_platform`; `tests/test_permission_matrix.py` pins them to the enforced codes):
+
+| Code | platform-admin | org-admin | production-admin | vfx-supervisor | lead-artist | artist | org-member |
+|---|---|---|---|---|---|---|---|
+| `delivery.view` | Y | Y | Y | Y | Y | Y | |
+| `delivery.create`, `delivery.update` | Y | Y | Y | Y | | | |
+| `delivery.delete` | Y | Y | Y | | | | |
+| `delivery.approve` | Y | Y | Y | Y | | | |
+| `delivery.send`, `delivery.view_secret` | Y | Y | Y | | | | |
+| `delivery.status.override`, `delivery.sod.override` | | | | | | | |
+
+The two override codes are opt-in (in the catalog, in no role, not even platform-admin's "everything").
+`init_platform` only **adds** grants: on an existing database the vfx-supervisor keeps a
+`delivery.delete` it already had (and Phase 5's `publishing.delete`) until someone revokes it (Q40).
+
+Migration `0010_destinations`: the destination FK, the case-insensitive live-name constraint and the
+one-live-default constraint (it replaces the case-sensitive name constraint); stops and lists clashes.
+
+**Frontend impact of Phase 8**
+
+* A member creating a delivery must name a project (a 400 "A project is required." otherwise); a
+  platform admin may send a code instead.
+* People now see only the deliveries of their own projects; other ids are 404.
+* `approve`, `reject` and `cancel` accept the spellings the UI already sends (`notes`, `reason`).
+* New: `destination_id` on create and edit, `destination` and `destination_name` on the detail,
+  `POST bulk-cancel/`.
+* Sign-off, send and the passcode need the new codes: re-run `manage.py init_platform` so the seeded
+  roles hold them.
+

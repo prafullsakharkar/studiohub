@@ -235,14 +235,16 @@ class TestEveryPath:
         assert response.status_code == 403
         assert "separation_of_duties" not in response.content.decode()
 
-    def test_there_is_no_bulk_route_to_sign_off(self):
+    def test_the_only_bulk_route_is_cancel_and_it_needs_neither_sign_off_nor_send(self):
         from apps.deliveries.api.viewsets.delivery import DeliveryViewSet
 
         names = {getattr(a, "url_path", "") for a in DeliveryViewSet.get_extra_actions()}
+        bulk_actions = {n for n in DeliveryViewSet.permission_map if "bulk" in n}
 
         assert "sign-off" in names
-        assert not [n for n in names if "bulk" in n]
-        assert not [n for n in DeliveryViewSet.permission_map if "bulk" in n]
+        assert {n for n in names if "bulk" in n} == {"bulk-cancel"}
+        assert bulk_actions == {"bulk_cancel"}
+        assert DeliveryViewSet.permission_map["bulk_cancel"] == (P.UPDATE,)
 
     def test_a_qc_that_fails_at_sign_off_keeps_its_rows_and_signs_nothing(self):
         creator, signer = UserFactory.create(), UserFactory.create()
