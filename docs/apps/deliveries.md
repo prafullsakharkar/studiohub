@@ -52,7 +52,7 @@ destinations.
 
 * The passcode is never in a list or detail; only the audited endpoint returns it.
 * A sent delivery cannot be edited, and a package row with sent data cannot be re-sent, even if its status is set back.
-* Roles: platform-admin, org-admin and production-admin hold every delivery code; vfx-supervisor view, create, update and approve; lead-artist and artist view. The two override codes are held by no role. `init_platform` adds grants but does not remove them (Q40).
+* Roles: platform-admin, org-admin and production-admin hold every delivery code; vfx-supervisor view, create, update and approve; lead-artist and artist view. The two override codes are held by no role. `init_platform` adds the grants and withdraws the ones the matrix removed (Q40 = A).
 * Totals are derived from the items; the stored columns are no longer written.
 * Legacy items without registered files cannot pass QC.
 

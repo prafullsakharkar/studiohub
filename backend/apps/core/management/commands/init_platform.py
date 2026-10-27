@@ -234,6 +234,13 @@ VFX_SUPERVISOR_WITHHELD = frozenset(
     {"publishing.delete", "delivery.delete", "delivery.send", "delivery.view_secret"}
 )
 
+# Grants a system role no longer holds, removed by ``init_platform`` on every run so rerunning it
+# makes an existing database match the matrix (docs/delivery-pipeline Q34, answered A in Q40).
+# Only system roles are touched; the codes are never in that role's own matrix.
+WITHDRAWN_GRANTS: dict[str, tuple[str, ...]] = {
+    "vfx-supervisor": tuple(sorted(VFX_SUPERVISOR_WITHHELD)),
+}
+
 # Production admins track contract and budget figures; supervisors, leads and
 # artists share PRODUCTION_FULL_PERMISSIONS or less and do not see them.
 PRODUCTION_ADMIN_PERMISSIONS = PRODUCTION_FULL_PERMISSIONS + [
@@ -405,7 +412,8 @@ class Command(BaseCommand):
         with transaction.atomic():
             perms = self._seed_permissions()
             retired = self._retire_permissions()
-            self._seed_roles(perms)
+            roles = self._seed_roles(perms)
+            withdrawn = self._withdraw_grants(roles)
             self._seed_statuses()
             self._seed_departments()
             self._seed_teams()
@@ -414,7 +422,8 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 f"Platform initialized: {len(perms)} permissions"
-                f"{f' ({retired} retired grants/codes removed)' if retired else ''}, "
+                f"{f' ({retired} retired grants/codes removed)' if retired else ''}"
+                f"{f' ({withdrawn} withdrawn role grants removed)' if withdrawn else ''}, "
                 f"{len(ROLE_SPECS)} roles, {len(STATUS_SPECS)} statuses, "
                 f"{len(DEPARTMENT_SPECS)} departments, {len(TEAM_SPECS)} teams, "
                 f"{len(OFFICE_SPECS)} offices, {len(POSITION_SPECS)} positions."
@@ -460,6 +469,26 @@ class Command(BaseCommand):
         for permission in Permission.all_objects.filter(code__in=RETIRED_PERMISSION_CODES):
             permission.hard_delete()
             removed += 1
+        return removed
+
+    def _withdraw_grants(self, roles) -> int:
+        """Remove the grants in ``WITHDRAWN_GRANTS`` from the seeded system roles (idempotent).
+
+        Real deletes, not soft ones, like ``_retire_permissions``: the RBAC delete signals then
+        drop the holders' cached permissions. Returns how many grants were removed.
+        """
+        from apps.identity.models import RolePermission
+
+        removed = 0
+        for role_code, codes in WITHDRAWN_GRANTS.items():
+            role = roles.get(role_code)
+            if role is None or not role.is_system:
+                continue
+            for grant in RolePermission.all_objects.filter(
+                role=role, permission__code__in=codes
+            ):
+                grant.hard_delete()
+                removed += 1
         return removed
 
     def _role_perm_matrix(self, perm_by_code):

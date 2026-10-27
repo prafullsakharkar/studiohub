@@ -183,13 +183,11 @@ Recommendation and default: **A**. Blocks: Phases 5, 8, 11.
 | A-38 | 2026-10-27 | In `bulk-cancel` a cancel the caller's codes do not allow (a signed-off delivery without `delivery.approve`) reports `not_found` like an unknown one (Q36: forbidden reports the identical `not_found`). | ASSUMED | `DeliveryViewSet.bulk_cancel` |
 | A-39 | 2026-10-27 | The package, item, snapshot, QC, history and counter admins are view-only (as publishing's A-13). Destinations stay editable; saving a default in the admin moves it, as the API does. | ASSUMED | `admin/delivery.py` |
 | A-40 | 2026-10-27 | The deliveries tests' `staff_user` is a platform admin (scoping would otherwise hide every delivery from it); the scoping tests build their own members. | ASSUMED | `tests/conftest.py` |
-| A-41 | 2026-10-27 | `init_platform` only adds role grants. On an existing database the new delivery codes are added, but the vfx-supervisor keeps `delivery.delete` (and `publishing.delete` from Phase 5) until revoked by hand. See Q40. | OPEN (needs you) | `init_platform.py` |
+| A-41 | 2026-10-27 | `init_platform` only added role grants, so rerunning it never took `delivery.delete` / `publishing.delete` from the vfx-supervisor. **Resolved by Q40 = A (2026-10-27):** it now removes the codes in `WITHDRAWN_GRANTS` from the seeded system roles on every run (real deletes, so the permission cache is cleared). | ANSWERED (done) | `init_platform.py`, `apps/core/tests/test_init_platform_withdrawn.py` |
 
-**Q40 (OPEN). Should `init_platform` also withdraw the grants Q34 removes?** Why: `init_platform` is additive (`get_or_create`), so rerunning it on staging or production never takes `delivery.delete` / `publishing.delete` away from vfx-supervisor.
-* **A. Add a short "withdrawn grants" list (system roles only: `vfx-supervisor` loses `publishing.delete` and `delivery.delete`) that `init_platform` removes idempotently, using real deletes so the RBAC signals clear the cached permissions.** Rerunning the command then makes every database match the matrix. Role customisations by an admin to those two codes on that role would be undone.
-* B. Leave it additive and document the manual revoke (the two queries in "Checks only you can make"). Nothing is ever taken away automatically; staging and production drift from the matrix until someone acts.
-* C. A separate one-off management command run by hand, dry run by default.
-Recommendation: **A**. Default used now (**ASSUMED B**): additive, documented. Blocks: nothing in Phase 8; the matrix test already pins the seeded roles.
+**Q40 (ANSWERED 2026-10-27: A). Should `init_platform` also withdraw the grants Q34 removes?**
+
+**Answer: A.** `init_platform` has a short `WITHDRAWN_GRANTS` list (system roles only: `vfx-supervisor` loses `publishing.delete`, `delivery.delete`, `delivery.send`, `delivery.view_secret`) and removes those grants on every run, with real deletes so the RBAC signals clear the holders' cached permissions. Rerunning the command makes any database match the matrix; an admin's own re-grant of those codes to that role is undone on the next run. The command prints how many it removed. Options not taken: B (additive, manual revoke) and C (a separate one-off command). Status: ANSWERED, A.
 
 **Q39 (ANSWERED 2026-10-27: B). Who moves an export job to Exporting, Exported or Failed-during-export?**
 
@@ -210,7 +208,7 @@ Recommendation was **B** once the reporting tool is known; default **A**. Status
 6. The staging counts of `docs/delivery-pipeline/ANALYSIS.md` §8 (decide whether the stop-and-list migrations will stop).
 7. Before migrating deliveries 0010 on staging, count destination clashes (read-only):
    `SELECT upper(name), count(*) FROM deliveries_destination WHERE NOT is_deleted GROUP BY 1 HAVING count(*) > 1;` and `SELECT id, name FROM deliveries_destination WHERE is_default AND NOT is_deleted;` (more than one row means the migration will stop and list them).
-8. After `manage.py init_platform` on each environment, check who still holds the withdrawn grants (Q40): `SELECT r.code, p.code FROM identity_rolepermission rp JOIN identity_role r ON r.id = rp.role_id JOIN identity_permission p ON p.id = rp.permission_id WHERE r.code = 'vfx-supervisor' AND p.code IN ('delivery.delete', 'publishing.delete', 'delivery.send', 'delivery.view_secret');` (table names may differ: check with `\dt identity_*`; this is UNVERIFIED against your schema).
+8. Run `manage.py init_platform` on each environment and read its last line: it says how many withdrawn role grants it removed (Q40 = A). Afterwards the vfx-supervisor should hold none of `delivery.delete`, `delivery.send`, `delivery.view_secret`, `publishing.delete` (UNVERIFIED on your databases; check in the admin or with your own query).
 
 ## Standing assumptions
 

@@ -329,8 +329,9 @@ admin and scoped API keys; "a disabled user loses access" is Phase 12 (A-14).
 | `delivery.status.override`, `delivery.sod.override` | | | | | | | |
 
 The two override codes are opt-in (in the catalog, in no role, not even platform-admin's "everything").
-`init_platform` only **adds** grants: on an existing database the vfx-supervisor keeps a
-`delivery.delete` it already had (and Phase 5's `publishing.delete`) until someone revokes it (Q40).
+`init_platform` also **withdraws** the grants the matrix removed (`WITHDRAWN_GRANTS`, Q40 = A): on every run it
+removes `delivery.delete`, `delivery.send`, `delivery.view_secret` and `publishing.delete` from the
+vfx-supervisor, so rerunning it makes an existing database match.
 
 Migration `0010_destinations`: the destination FK, the case-insensitive live-name constraint and the
 one-live-default constraint (it replaces the case-sensitive name constraint); stops and lists clashes.

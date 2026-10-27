@@ -139,7 +139,7 @@ Every gate: as publishing (`docs/publishing/PLAN.md` §4).
 * **Test files:** `api/test_access_matrix.py` (scoping, IDOR on every action, create-side checks, every action's code, scoped keys), `api/test_frontend_bodies.py`, `api/test_bulk_cancel.py`, `api/test_destinations_rules.py`, `api/test_admin.py`, `api/test_openapi.py`, `test_permission_matrix.py`, `migrations/test_phase8_migrations.py`. The plan's names are kept.
 * **Destination text kept writable** while no destination is chosen (A-34), instead of read-only at once.
 * **Project by code** is accepted on create, as in publishing (A-35).
-* **`init_platform` adds but does not remove** grants, so the withdrawals in Q34 need a decision (Q40).
+* **`init_platform` withdraws grants** (Q40 = A, a follow-up commit): `WITHDRAWN_GRANTS` removes the codes Q34 takes from the vfx-supervisor on every run.
 * **Verified by removing the guard:** selector scoping (27 tests fail), bulk-cancel scoping (2), the alias conflict check (3), the vfx-supervisor withheld grants (3), the create-side project check (1), the destination name rule (1).
 * **Not done here:** "a disabled user loses access" across the three apps (Phase 12, A-14); removal of the `deliveries/api/viewsets/base.py` re-export (Phase 12).
 
