@@ -13,6 +13,7 @@ from django.utils import timezone
 from apps.core.models.bases.entity import EntityModel
 from apps.deliveries.constants import workflow as _wf
 from apps.deliveries.models.counter import DeliveryCounter
+from apps.deliveries.models.history import DeliveryStatusChange
 from apps.deliveries.models.item_file import DeliveryItemFile, FrozenSnapshotError
 from apps.deliveries.models.qc import DeliveryQCCheck
 
@@ -29,6 +30,7 @@ class DeliveryPackage(EntityModel):
     STATUS_DRAFT = "Draft"
     STATUS_VALIDATING = "Validating"
     STATUS_PREPARED = "Prepared"
+    STATUS_SIGNED_OFF = "Signed Off"
     STATUS_SUBMITTED = "Submitted"
     STATUS_APPROVED = "Approved"
     STATUS_REJECTED = "Rejected"
@@ -39,6 +41,7 @@ class DeliveryPackage(EntityModel):
         (STATUS_DRAFT, "Draft"),
         (STATUS_VALIDATING, "Validating"),
         (STATUS_PREPARED, "Prepared"),
+        (STATUS_SIGNED_OFF, "Signed Off"),
         (STATUS_SUBMITTED, "Submitted"),
         (STATUS_APPROVED, "Approved"),
         (STATUS_REJECTED, "Rejected"),
@@ -134,9 +137,12 @@ class DeliveryPackage(EntityModel):
     )
     
     passcode = models.CharField(
-        max_length=64,
+        max_length=255,
         blank=True,
-        help_text="Security passcode for client access",
+        help_text=(
+            "Security passcode for client access, stored encrypted (apps.deliveries.passcode). "
+            "Never read this column directly."
+        ),
     )
     
     expires_at = models.DateTimeField(
@@ -211,7 +217,43 @@ class DeliveryPackage(EntityModel):
         blank=True,
         help_text="The latest QC run of this delivery (rows in DeliveryQCCheck)",
     )
-    
+
+    # -- internal approval, the client's answer, the reasons ---------------------------
+    signed_off_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        help_text="Who signed the delivery off (internal approval)",
+    )
+
+    signed_off_at = models.DateTimeField(null=True, blank=True)
+
+    client_answered_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        help_text="Who recorded the client's answer",
+    )
+
+    client_answered_at = models.DateTimeField(null=True, blank=True)
+
+    cancellation_reason = models.CharField(max_length=500, blank=True, default="")
+
+    rejection_reason = models.CharField(max_length=500, blank=True, default="")
+
+    revision_of = models.ForeignKey(
+        "self",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="revisions",
+        help_text="The rejected delivery this one re-delivers",
+    )
+
     class Meta:
         db_table = "deliveries_package"
         ordering = ("-created_at",)
@@ -471,5 +513,6 @@ __all__ = [
     "DeliveryItemFile",
     "DeliveryPackage",
     "DeliveryQCCheck",
+    "DeliveryStatusChange",
     "DeliveryVersionRef",
 ]

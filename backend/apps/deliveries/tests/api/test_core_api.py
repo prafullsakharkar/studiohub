@@ -4,13 +4,17 @@ from __future__ import annotations
 
 import pytest
 
+from apps.deliveries import passcode
 from apps.deliveries.models import DeliveryPackage
 from apps.deliveries.tests.helpers import (
+    client_for,
     make_package,
     package_with_items,
     prepared_package,
     published_version,
+    signed_off_package,
 )
+from apps.identity.tests.factories import UserFactory
 from apps.production.tests.factories import ProjectFactory
 
 pytestmark = pytest.mark.django_db
@@ -118,7 +122,9 @@ class TestThePasscodeIsNeverReturned:
 
         staff_client.patch(f"{URL}{delivery_id}/", {"passcode": "NEW-ONE"}, format="json")
 
-        assert DeliveryPackage.objects.get(pk=delivery_id).passcode == "NEW-ONE"
+        stored = DeliveryPackage.objects.get(pk=delivery_id).passcode
+        assert stored != "NEW-ONE" and passcode.is_encrypted(stored)
+        assert passcode.decrypt(stored) == "NEW-ONE"
 
     def test_it_is_not_in_the_admin_search_or_form(self, client):
         from django.contrib import admin
@@ -175,7 +181,7 @@ class TestEditing:
         assert DeliveryPackage.objects.get(pk=package.pk).status == "Prepared"
 
     def test_a_sent_delivery_cannot_be_edited(self, staff_client):
-        package = prepared_package(code="SENT-1")
+        package = signed_off_package(code="SENT-1")
         staff_client.post(f"{URL}{package.pk}/submit/", {}, format="json")
 
         response = staff_client.patch(f"{URL}{package.pk}/", {"name": "x"}, format="json")
@@ -297,15 +303,18 @@ class TestActions:
         text = response.content.decode()
         assert "qc_failed" in text and "has_items" in text
 
-    def test_prepare_then_submit(self, staff_client):
+    def test_prepare_sign_off_then_submit(self, staff_client):
         package = package_with_items(code="FLOW-1")
+        signer = client_for(UserFactory.create(is_superuser=True))
 
         prepared = staff_client.post(f"{URL}{package.pk}/prepare/", {}, format="json").json()
+        signed = signer.post(f"{URL}{package.pk}/sign-off/", {}, format="json")
         sent = staff_client.post(
             f"{URL}{package.pk}/submit/", {"transfer_reference": "ASP-9"}, format="json"
         )
 
         assert prepared["status"] == "Ready" and len(prepared["checksums"]["manifest_sha256"]) == 64
+        assert signed.status_code == 200 and signed.json()["status"] == "Signed Off"
         assert sent.status_code == 200 and sent["X-Background-Job"]
         body = sent.json()
         assert (
@@ -317,7 +326,7 @@ class TestActions:
         assert detail["versions"][0]["files"][0]["frozen_at"]
 
     def test_submitting_twice_is_a_409_and_changes_nothing(self, staff_client):
-        package = prepared_package(code="TWICE-1")
+        package = signed_off_package(code="TWICE-1")
         first = staff_client.post(f"{URL}{package.pk}/submit/", {}, format="json")
         sent_at = DeliveryPackage.objects.get(pk=package.pk).sent_at
 
@@ -327,13 +336,14 @@ class TestActions:
         assert "invalid_transition" in second.content.decode()
         assert DeliveryPackage.objects.get(pk=package.pk).sent_at == sent_at
 
-    def test_submitting_a_delivery_that_was_not_prepared_is_a_409(self, staff_client):
-        package = package_with_items(code="DRAFT-SEND")
+    @pytest.mark.parametrize("build", [package_with_items, prepared_package])
+    def test_submitting_a_delivery_that_was_not_signed_off_is_a_409(self, staff_client, build):
+        package = build(code=f"NOSIGN-{build.__name__[:4]}")
 
         assert staff_client.post(f"{URL}{package.pk}/submit/", {}, format="json").status_code == 409
 
     def test_an_item_cannot_be_added_after_the_send(self, staff_client):
-        package = prepared_package(code="LATE-1")
+        package = signed_off_package(code="LATE-1")
         staff_client.post(f"{URL}{package.pk}/submit/", {}, format="json")
         version = published_version(package.project)
 

@@ -112,7 +112,11 @@ def run(package: Any, actor: Any) -> dict[str, Any]:
         failing = [name for name, outcome, _ in checks if outcome == FAIL]
         ref.is_validated = not failing
         ref.validation_notes = "" if not failing else "Failed: " + ", ".join(failing)
-        ref.save(update_fields=["is_validated", "validation_notes"])
+        # A queryset update on purpose: QC also runs on a Signed Off delivery (at send), whose
+        # items refuse ``save``. Only these two derived fields are written, never the snapshot.
+        type(ref).objects.filter(pk=ref.pk).update(
+            is_validated=ref.is_validated, validation_notes=ref.validation_notes
+        )
         per_item.append({"ref": ref, "checks": checks, "passed": not failing})
 
     DeliveryQCCheck.objects.bulk_create(rows)

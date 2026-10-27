@@ -2,9 +2,32 @@
 
 from __future__ import annotations
 
-from rest_framework.exceptions import ValidationError
+from rest_framework import status
+from rest_framework.exceptions import APIException, ValidationError
 
-from apps.core.api.exceptions.api import ConflictException
+from apps.core.api.exceptions.api import ConflictException, PermissionDeniedException
+
+
+class TransitionNotPermitted(PermissionDeniedException):
+    """The caller lacks the permission the status change needs (403)."""
+
+    default_detail = "You may not make this status change."
+    default_code = "transition_not_permitted"
+
+
+class SeparationOfDuties(PermissionDeniedException):
+    """The caller prepared this delivery and so cannot sign it off (403, SEC-DLV-03)."""
+
+    default_detail = "You prepared this delivery, so someone else must sign it off."
+    default_code = "separation_of_duties"
+
+
+class SecretStorageUnavailable(APIException):
+    """The passcode cannot be encrypted or decrypted right now: no usable key (503)."""
+
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    default_detail = "Delivery passcodes are temporarily unavailable."
+    default_code = "secret_storage_unavailable"
 
 
 class InvalidTransition(ConflictException):

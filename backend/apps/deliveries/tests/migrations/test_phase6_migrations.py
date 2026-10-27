@@ -9,12 +9,21 @@ returned to the latest migration even when a test fails.
 from __future__ import annotations
 
 import pytest
-from django.db import connection
-from django.db.migrations.executor import MigrationExecutor
 
+from apps.deliveries.tests.migration_helpers import (
+    columns,
+    constraint_names,
+    migrate,
+    migrate_to_latest,
+    restore_latest,  # noqa: F401  (a fixture, used through the mark below)
+    tables,
+)
 from apps.production.tests.factories import ProjectFactory, VersionFactory
 
-pytestmark = pytest.mark.django_db(transaction=True)
+pytestmark = [
+    pytest.mark.django_db(transaction=True),
+    pytest.mark.usefixtures("restore_latest"),
+]
 
 BEFORE = [
     (
@@ -25,50 +34,6 @@ BEFORE = [
 AT_0004 = [("deliveries", "0004_protect_history")]
 AT_0006 = [("deliveries", "0006_package_fields")]
 AT_0007 = [("deliveries", "0007_code_unique")]
-
-
-def migrate(targets):
-    executor = MigrationExecutor(connection)
-    executor.loader.build_graph()
-    executor.migrate(targets)
-    return MigrationExecutor(connection).loader.project_state(targets).apps
-
-
-def migrate_to_latest():
-    executor = MigrationExecutor(connection)
-    executor.loader.build_graph()
-    executor.migrate(executor.loader.graph.leaf_nodes())
-
-
-def tables():
-    return set(connection.introspection.table_names())
-
-
-def constraint_names(table):
-    with connection.cursor() as cursor:
-        return set(connection.introspection.get_constraints(cursor, table))
-
-
-def columns(table):
-    with connection.cursor() as cursor:
-        return {c.name for c in connection.introspection.get_table_description(cursor, table)}
-
-
-@pytest.fixture(autouse=True)
-def restore_latest():
-    yield
-    # The refusal tests leave conflicting rows behind: clear them, or moving forward refuses again.
-    present = tables()
-    with connection.cursor() as cursor:
-        for table in (
-            "deliveries_qc_check",
-            "deliveries_item_file",
-            "deliveries_version_ref",
-            "deliveries_package",
-        ):
-            if table in present:
-                cursor.execute(f"DELETE FROM {table}")
-    migrate_to_latest()
 
 
 def _package(apps, code, **extra):

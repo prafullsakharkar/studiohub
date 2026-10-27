@@ -101,10 +101,19 @@ def prepared_package(project=None, **fields: Any) -> DeliveryPackage:
     return package
 
 
+def signed_off_package(project=None, signer=None, **fields: Any) -> DeliveryPackage:
+    """A Prepared delivery signed off by ``signer`` (a new user, so not one who prepared it)."""
+    package = prepared_package(project, **fields)
+    return DeliveryService.sign_off(actor=signer or UserFactory.create(), package=package)
+
+
 ALL_CODES = (
     "delivery.view",
     "delivery.create",
     "delivery.update",
     "delivery.delete",
+    "delivery.approve",
+    "delivery.send",
+    "delivery.view_secret",
     P.VIEW,
 )

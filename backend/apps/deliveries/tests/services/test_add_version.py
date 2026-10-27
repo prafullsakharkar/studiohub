@@ -201,9 +201,9 @@ class TestTheSnapshotIsTheServers:
 
 class TestOnlyBeforeItIsSent:
     @pytest.mark.parametrize(
-        "state", ["Submitted", "Approved", "Rejected", "Complete", "Cancelled"]
+        "state", ["Signed Off", "Submitted", "Approved", "Rejected", "Complete", "Cancelled"]
     )
-    def test_a_delivery_past_sending_takes_no_changes(self, package, state):
+    def test_a_delivery_past_sign_off_takes_no_changes(self, package, state):
         version = published_version(package.project)
         extra = published_version(package.project)
         ref = _add(package, version)
@@ -222,7 +222,7 @@ class TestOnlyBeforeItIsSent:
         assert _add(package, published_version(package.project)).pk
 
     def test_a_delivery_that_was_sent_stays_closed_even_if_its_status_is_moved_back(self, package):
-        """``retry`` can set the status back to Prepared; ``sent_at`` still says it went out."""
+        """A forced status change (the admin, an override) leaves ``sent_at``: it still went out."""
         from django.utils import timezone
 
         _add(package, published_version(package.project))

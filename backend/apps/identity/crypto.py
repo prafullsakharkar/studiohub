@@ -12,17 +12,19 @@ unencrypted stored value, a tampered token or a token made under an unknown
 key raises ``SecretUnavailable``; nothing falls back to plaintext. Error
 messages never include the value or the key.
 
-This module deliberately imports no identity models so model fields can use it.
+The mechanics are in ``apps.core.security.fernet``; this module fixes the key
+settings and the error. It deliberately imports no identity models so model
+fields can use it.
 """
 
 from __future__ import annotations
 
-from cryptography.fernet import Fernet, InvalidToken, MultiFernet
-from django.conf import settings
 from rest_framework import status
 from rest_framework.exceptions import APIException
 
-PREFIX = "enc:v1:"
+from apps.core.security.fernet import PREFIX, FieldCipher
+
+__all__ = ["PREFIX", "SecretUnavailable", "decrypt", "enabled", "encrypt", "is_encrypted"]
 
 
 class SecretUnavailable(APIException):
@@ -33,60 +35,13 @@ class SecretUnavailable(APIException):
     default_code = "mfa_secret_unavailable"
 
 
-def _cipher() -> MultiFernet:
-    keys: tuple[str, ...] = tuple(getattr(settings, "MFA_ENCRYPTION_KEYS", ()) or ())
+_cipher = FieldCipher(
+    keys_setting="MFA_ENCRYPTION_KEYS",
+    enabled_setting="MFA_ENCRYPTION_ENABLED",
+    error=SecretUnavailable,
+)
 
-    if not keys:
-        raise SecretUnavailable()
-
-    try:
-        return MultiFernet([Fernet(key.encode()) for key in keys])
-    except (ValueError, TypeError):
-        raise SecretUnavailable() from None
-
-
-def enabled() -> bool:
-    """Whether new secrets are encrypted (``MFA_ENCRYPTION_ENABLED``, default on)."""
-
-    return bool(getattr(settings, "MFA_ENCRYPTION_ENABLED", True))
-
-
-def is_encrypted(value: str | None) -> bool:
-    return bool(value) and str(value).startswith(PREFIX)
-
-
-def encrypt(plaintext: str | None) -> str:
-    """
-    Encrypt a secret; the empty string stays empty (no secret stored).
-
-    With encryption switched off the value is stored as given.
-    """
-
-    if not plaintext:
-        return ""
-
-    if not enabled():
-        return plaintext
-
-    return PREFIX + _cipher().encrypt(plaintext.encode()).decode()
-
-
-def decrypt(stored: str | None) -> str:
-    """Decrypt a stored secret; refuses anything not encrypted by ``encrypt``."""
-
-    if not stored:
-        return ""
-
-    if not is_encrypted(stored):
-        if not enabled():
-            # Operator has switched encryption off: plaintext is the format.
-            return stored
-
-        # With encryption on, a plaintext value at rest is never trusted or
-        # returned (run ``manage.py mfa_encrypt_secrets`` to convert).
-        raise SecretUnavailable()
-
-    try:
-        return _cipher().decrypt(stored[len(PREFIX) :].encode()).decode()
-    except (InvalidToken, ValueError):
-        raise SecretUnavailable() from None
+enabled = _cipher.enabled
+is_encrypted = _cipher.is_encrypted
+encrypt = _cipher.encrypt
+decrypt = _cipher.decrypt

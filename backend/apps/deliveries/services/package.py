@@ -1,11 +1,15 @@
 """
-Delivery use cases (docs/deliveries/CONTRACTS.md DOM-DLV-01 to DOM-DLV-06).
+Delivery use cases (docs/deliveries/CONTRACTS.md DOM-DLV-01 to DOM-DLV-11).
 
 Every public method is one ``transaction.atomic()`` and takes a row lock on the package, so of two
 requests that race (two sends, two adds of the same version) the loser sees the winner's result.
-Authorization by project membership is Phase 8; the viewset gates these with ``delivery.update``
-for now. Moving a delivery through approval is Phase 7: this module only writes the statuses the
-core model needs (Validating, Prepared, Submitted).
+The status is written only by ``transitions.move`` (the map is ``constants.workflow``).
+
+Methods that need the caller's permissions take the ``request``: a move is checked against the
+code the map names for it, on every path. A call without a request (internal callers, tests) is
+trusted. Authorization by project membership is Phase 8.
+
+A QC run that fails keeps its rows: the 409 ``qc_failed`` is raised after the transaction commits.
 """
 
 from __future__ import annotations
@@ -17,23 +21,39 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from apps.audit.models import AuditLog
-from apps.core.api.exceptions.api import NotFoundException
+from apps.core.api.exceptions.api import ConflictException, NotFoundException
+from apps.deliveries import passcode
 from apps.deliveries.constants import workflow as wf
-from apps.deliveries.exceptions import DeliveryNotEditable, InvalidTransition, QCFailed
-from apps.deliveries.models import DeliveryPackage, DeliveryVersionRef
-from apps.deliveries.services import audit, items, manifest, numbering, qc
+from apps.deliveries.constants.permissions import DeliveryPermissions
+from apps.deliveries.exceptions import (
+    DeliveryNotEditable,
+    QCFailed,
+    SeparationOfDuties,
+    TransitionNotPermitted,
+    UndeliverableVersion,
+)
+from apps.deliveries.models import DeliveryPackage, DeliveryStatusChange, DeliveryVersionRef
+from apps.deliveries.services import audit, duties, items, manifest, numbering, qc, transitions
 from apps.masterdata.selectors.directory import ClientSelector
+from apps.production.permissions.checks import has_explicit_permission_code, has_permission_code
+from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.project import ProjectSelector
 
 EDITABLE_FIELDS = (
     "name",
     "delivery_method",
     "delivery_destination",
-    "passcode",
     "expires_at",
     "notes",
     "client_notes",
 )
+
+
+class AlreadyRevised(ConflictException):
+    """A live revision of this rejected delivery already exists (409)."""
+
+    default_detail = "This delivery has already been revised."
+    default_code = "already_revised"
 
 
 def _actor_or_none(actor: Any):
@@ -54,15 +74,14 @@ class DeliveryService:
         except DeliveryPackage.DoesNotExist as error:
             raise NotFoundException() from error
 
-    @staticmethod
-    def _refuse(source: str, target: str) -> InvalidTransition:
-        # Also the loser of a race: the winner already moved the delivery.
-        return InvalidTransition({"code": "invalid_transition", "from": source, "to": target})  # pyright: ignore[reportArgumentType]
-
     @classmethod
     def _require_editable(cls, package: DeliveryPackage) -> None:
         if not is_editable(package):
             raise DeliveryNotEditable()
+
+    @staticmethod
+    def _qc_failed(result: dict[str, Any]) -> QCFailed:
+        return QCFailed({"code": "qc_failed", "checks": qc.failures(result)})  # pyright: ignore[reportArgumentType]
 
     # -- create / edit --------------------------------------------------------------------
 
@@ -71,7 +90,8 @@ class DeliveryService:
     def create(cls, *, actor: Any, data: dict[str, Any]) -> DeliveryPackage:
         """
         Create a delivery. A blank code is numbered by the server from the project; a code that is
-        sent must be unused in any case. An unknown project or client is a 400.
+        sent must be unused in any case. An unknown project or client is a 400. A passcode is
+        stored encrypted (503 when no key is configured).
         """
         data = dict(data)
         project = None
@@ -103,12 +123,13 @@ class DeliveryService:
             client=client,
             delivery_method=data.get("delivery_method") or DeliveryPackage.METHOD_S3,
             delivery_destination=data.get("delivery_destination", ""),
-            passcode=data.get("passcode") or "",
+            passcode=passcode.encrypt(data.get("passcode") or ""),
             expires_at=data.get("expires_at"),
             notes=data.get("notes", ""),
             client_notes=data.get("client_notes", ""),
             created_by=_actor_or_none(actor),
         )
+        transitions.record_creation(package, actor)
         audit.record(
             actor=actor,
             action=AuditLog.ACTION_CREATE,
@@ -129,6 +150,12 @@ class DeliveryService:
             if name in data and getattr(locked, name) != data[name]:
                 setattr(locked, name, data[name])
                 changed.append(name)
+        if "passcode" in data:
+            new_value = data["passcode"] or ""
+            # Ciphertext differs on every write, so compare on presence, not value.
+            if new_value or locked.passcode:
+                locked.passcode = passcode.encrypt(new_value)
+                changed.append("passcode")
         if changed:
             locked.updated_by = _actor_or_none(actor)
             locked.save(update_fields=[*changed, "updated_by", "updated_at"])
@@ -140,6 +167,32 @@ class DeliveryService:
                 metadata={"fields": changed},
             )
         return locked
+
+    # -- the passcode ----------------------------------------------------------------------
+
+    @classmethod
+    @transaction.atomic
+    def read_passcode(cls, *, actor: Any, package: Any, request: Any) -> str:
+        """
+        The passcode in plain text, for a holder of ``delivery.view_secret`` who may see the
+        delivery's project. Every read is audited (without the value).
+        """
+        locked = cls._lock(package)
+        if request is None or not has_permission_code(request, DeliveryPermissions.VIEW_SECRET):
+            raise TransitionNotPermitted()
+        if not ProductionBaseSelector.user_has_project_access(
+            request=request, project=locked.project
+        ):
+            raise NotFoundException()
+        value = passcode.decrypt(locked.passcode)
+        audit.record(
+            actor=actor,
+            action=AuditLog.ACTION_UPDATE,
+            package=locked,
+            description=f"Delivery {locked.code} passcode viewed",
+            metadata={"set": bool(value)},
+        )
+        return value
 
     # -- items ----------------------------------------------------------------------------
 
@@ -208,18 +261,19 @@ class DeliveryService:
         )
         return locked
 
-    # -- QC, prepare, send -----------------------------------------------------------------
+    # -- QC, prepare, sign-off, send ---------------------------------------------------------
 
     @classmethod
     @transaction.atomic
-    def validate(cls, *, actor: Any, package: Any) -> tuple[DeliveryPackage, dict[str, Any]]:
+    def validate(
+        cls, *, actor: Any, package: Any, request: Any = None
+    ) -> tuple[DeliveryPackage, dict[str, Any]]:
         """Run QC and record it. A Draft delivery becomes Validating; the other editable ones keep their status."""
         locked = cls._lock(package)
         cls._require_editable(locked)
         result = qc.run(locked, actor)
         if locked.status == wf.DRAFT:
-            locked.status = wf.VALIDATING
-            locked.save(update_fields=["status", "updated_at"])
+            transitions.move(locked, wf.VALIDATING, actor=actor, request=request)
         audit.record(
             actor=actor,
             action=AuditLog.ACTION_UPDATE,
@@ -230,7 +284,27 @@ class DeliveryService:
         return locked, result
 
     @classmethod
-    def prepare(cls, *, actor: Any, package: Any) -> tuple[DeliveryPackage, dict[str, Any]]:
+    @transaction.atomic
+    def retry(cls, *, actor: Any, package: Any, request: Any = None) -> DeliveryPackage:
+        """Run QC again. Only a Validating delivery retries; anything else is a 409."""
+        locked = cls._lock(package)
+        if locked.status != wf.VALIDATING or locked.sent_at is not None:
+            raise transitions.refuse(locked.status, wf.VALIDATING)
+        result = qc.run(locked, actor)
+        audit.record(
+            actor=actor,
+            action=AuditLog.ACTION_UPDATE,
+            package=locked,
+            description=f"Delivery {locked.code} validated again: "
+            f"{'passed' if result['passed'] else 'failed'}",
+            metadata={"run_id": str(result["run_id"]), "passed": result["passed"]},
+        )
+        return locked
+
+    @classmethod
+    def prepare(
+        cls, *, actor: Any, package: Any, request: Any = None
+    ) -> tuple[DeliveryPackage, dict[str, Any]]:
         """
         Refresh every item from the registry, run QC and, only if it passes, build the manifest and
         mark the delivery Prepared. A failing QC is a 409 listing the failing checks; the run's rows
@@ -245,8 +319,16 @@ class DeliveryService:
                 manifest_data, checksums = manifest.build(locked)
                 locked.manifest_data = manifest_data
                 locked.checksums = checksums
-                locked.status = wf.PREPARED
-                locked.save(update_fields=["manifest_data", "checksums", "status", "updated_at"])
+                if locked.status == wf.PREPARED:
+                    locked.save(update_fields=["manifest_data", "checksums", "updated_at"])
+                else:
+                    transitions.move(
+                        locked,
+                        wf.PREPARED,
+                        actor=actor,
+                        request=request,
+                        extra={"manifest_data": manifest_data, "checksums": checksums},
+                    )
                 audit.record(
                     actor=actor,
                     action=AuditLog.ACTION_EXPORT,
@@ -258,64 +340,316 @@ class DeliveryService:
                     },
                 )
         if not result["passed"]:
-            raise QCFailed({"code": "qc_failed", "checks": qc.failures(result)})  # pyright: ignore[reportArgumentType]
+            raise cls._qc_failed(result)
         return locked, result
 
     @classmethod
-    def send(cls, *, actor: Any, package: Any, transfer_reference: str = "") -> DeliveryPackage:
+    def sign_off(
+        cls,
+        *,
+        actor: Any,
+        package: Any,
+        request: Any = None,
+        notes: str = "",
+        override_reason: str | None = None,
+    ) -> DeliveryPackage:
         """
-        Record that the delivery was sent: Prepared to Submitted, once.
-
-        Refreshes the items one last time, requires QC to pass, rebuilds the manifest, freezes the
-        snapshot and records who sent it and when (the real time). A second send, or one racing the
-        first, is a 409. If QC fails, nothing is sent and the 409 is raised after the run's rows are
-        committed. StudioHub does not transfer anything (decision Q4).
+        Internal approval: Prepared to Signed Off (decision Q16). Refused when the caller prepared
+        the delivery (403 ``separation_of_duties``) unless they hold ``delivery.sod.override`` and
+        give a reason, which is recorded as ``self_approval``. QC runs again; a failing run keeps
+        its rows and is a 409.
         """
+        if _actor_or_none(actor) is None:
+            raise TransitionNotPermitted()
         with transaction.atomic():
             locked = cls._lock(package)
             if locked.status != wf.PREPARED or locked.sent_at is not None:
-                raise cls._refuse(locked.status, wf.SUBMITTED)
+                raise transitions.refuse(locked.status, wf.SIGNED_OFF)
+            kind = ""
+            if duties.prepared_by(locked, actor):
+                reason = (override_reason or "").strip()
+                if not (
+                    reason
+                    and request is not None
+                    and has_explicit_permission_code(request, DeliveryPermissions.SOD_OVERRIDE)
+                ):
+                    raise SeparationOfDuties()
+                kind = DeliveryStatusChange.Kind.SELF_APPROVAL.value
             items.refresh(locked)
             result = qc.run(locked, actor)
             if result["passed"]:
-                cls._seal(locked, actor, result, transfer_reference)
+                now = timezone.now()
+                transitions.move(
+                    locked,
+                    wf.SIGNED_OFF,
+                    actor=actor,
+                    request=request,
+                    reason=(override_reason or "").strip() if kind else (notes or "").strip(),
+                    override_kind=kind,
+                    extra={"signed_off_by": _actor_or_none(actor), "signed_off_at": now},
+                )
+                audit.record(
+                    actor=actor,
+                    action=AuditLog.ACTION_UPDATE,
+                    package=locked,
+                    description=f"Delivery {locked.code} signed off"
+                    + (" (self sign-off override)" if kind else ""),
+                    metadata={"run_id": str(result["run_id"]), "self_approval": bool(kind)},
+                )
         if not result["passed"]:
-            raise QCFailed({"code": "qc_failed", "checks": qc.failures(result)})  # pyright: ignore[reportArgumentType]
+            raise cls._qc_failed(result)
         return locked
 
     @classmethod
-    def _seal(
-        cls, locked: DeliveryPackage, actor: Any, result: dict[str, Any], transfer_reference: str
-    ) -> None:
-        """Freeze the items, build the manifest and mark ``locked`` Submitted (inside the send transaction)."""
-        manifest_data, checksums = manifest.build(locked)
-        now = timezone.now()
-        items.freeze(locked)
-        locked.manifest_data = manifest_data
-        locked.checksums = checksums
-        locked.status = wf.SUBMITTED
-        locked.sent_by = _actor_or_none(actor)
-        locked.sent_at = now
-        locked.transfer_reference = (transfer_reference or "").strip()[:200]
-        locked.save(
-            update_fields=[
-                "manifest_data",
-                "checksums",
-                "status",
-                "sent_by",
-                "sent_at",
-                "transfer_reference",
-                "updated_at",
-            ]
+    @transaction.atomic
+    def reopen(cls, *, actor: Any, package: Any, request: Any = None) -> DeliveryPackage:
+        """Take back a sign-off: Signed Off to Prepared. The sign-off is cleared."""
+        locked = cls._lock(package)
+        if locked.status != wf.SIGNED_OFF:
+            raise transitions.refuse(locked.status, wf.PREPARED)
+        transitions.move(
+            locked,
+            wf.PREPARED,
+            actor=actor,
+            request=request,
+            extra={"signed_off_by": None, "signed_off_at": None},
         )
+        audit.record(
+            actor=actor,
+            action=AuditLog.ACTION_UPDATE,
+            package=locked,
+            description=f"Delivery {locked.code} sign-off withdrawn",
+        )
+        return locked
+
+    @classmethod
+    def send(
+        cls,
+        *,
+        actor: Any,
+        package: Any,
+        transfer_reference: str = "",
+        request: Any = None,
+    ) -> DeliveryPackage:
+        """
+        Record that the delivery was sent: Signed Off to Submitted, once.
+
+        QC runs one last time on what was signed off (a file registered, deprecated or revoked since
+        then fails ``snapshot_current`` and the delivery stays Signed Off for someone to reopen). On
+        success the manifest is rebuilt, the snapshot frozen and who and when recorded (the real
+        time). A second send, or one racing the first, is a 409. If QC fails nothing is sent and the
+        409 is raised after the run's rows are committed. StudioHub does not transfer anything (Q4).
+        """
+        with transaction.atomic():
+            locked = cls._lock(package)
+            if locked.status != wf.SIGNED_OFF or locked.sent_at is not None:
+                raise transitions.refuse(locked.status, wf.SUBMITTED)
+            result = qc.run(locked, actor)
+            if result["passed"]:
+                manifest_data, checksums = manifest.build(locked)
+                now = timezone.now()
+                items.freeze(locked)
+                transitions.move(
+                    locked,
+                    wf.SUBMITTED,
+                    actor=actor,
+                    request=request,
+                    extra={
+                        "manifest_data": manifest_data,
+                        "checksums": checksums,
+                        "sent_by": _actor_or_none(actor),
+                        "sent_at": now,
+                        "transfer_reference": (transfer_reference or "").strip()[:200],
+                    },
+                )
+                audit.record(
+                    actor=actor,
+                    action=AuditLog.ACTION_EXPORT,
+                    package=locked,
+                    description=f"Delivery {locked.code} submitted via {locked.delivery_method}",
+                    metadata={
+                        "run_id": str(result["run_id"]),
+                        "sent_at": now.isoformat(),
+                        "transfer_reference_given": bool(locked.transfer_reference),
+                    },
+                )
+        if not result["passed"]:
+            raise cls._qc_failed(result)
+        return locked
+
+    # -- after the send --------------------------------------------------------------------
+
+    @classmethod
+    @transaction.atomic
+    def record_client_answer(
+        cls,
+        *,
+        actor: Any,
+        package: Any,
+        accepted: bool,
+        reason: str = "",
+        notes: str = "",
+        request: Any = None,
+    ) -> DeliveryPackage:
+        """
+        Record what the client answered: Submitted to Approved or Rejected. A rejection needs a
+        reason (kept in its own column, never in the client's notes); ``notes`` is the client's
+        feedback.
+        """
+        reason = (reason or "").strip()
+        if not accepted and not reason:
+            raise ValidationError({"rejection_reason": ["A reason is required."]})
+        locked = cls._lock(package)
+        target = wf.APPROVED if accepted else wf.REJECTED
+        extra: dict[str, Any] = {
+            "client_status": (
+                DeliveryPackage.CLIENT_STATUS_APPROVED
+                if accepted
+                else DeliveryPackage.CLIENT_STATUS_REJECTED
+            ),
+            "client_answered_by": _actor_or_none(actor),
+            "client_answered_at": timezone.now(),
+        }
+        if notes:
+            extra["client_notes"] = notes
+        if not accepted:
+            extra["rejection_reason"] = reason[:500]
+        transitions.move(
+            locked,
+            target,
+            actor=actor,
+            request=request,
+            reason="" if accepted else reason,
+            extra=extra,
+        )
+        audit.record(
+            actor=actor,
+            action=AuditLog.ACTION_UPDATE,
+            package=locked,
+            description=f"Delivery {locked.code} {'approved' if accepted else 'rejected'} by the client",
+        )
+        return locked
+
+    @classmethod
+    @transaction.atomic
+    def complete(cls, *, actor: Any, package: Any, request: Any = None) -> DeliveryPackage:
+        """Approved to Complete."""
+        locked = cls._lock(package)
+        transitions.move(locked, wf.COMPLETE, actor=actor, request=request)
         audit.record(
             actor=actor,
             action=AuditLog.ACTION_EXPORT,
             package=locked,
-            description=f"Delivery {locked.code} submitted via {locked.delivery_method}",
-            metadata={
-                "run_id": str(result["run_id"]),
-                "sent_at": now.isoformat(),
-                "transfer_reference_given": bool(locked.transfer_reference),
-            },
+            description=f"Delivery {locked.code} marked as complete",
         )
+        return locked
+
+    @classmethod
+    @transaction.atomic
+    def cancel(
+        cls, *, actor: Any, package: Any, reason: str = "", request: Any = None
+    ) -> DeliveryPackage:
+        """Cancel a delivery that has not been sent (a signed-off one needs ``delivery.approve``)."""
+        locked = cls._lock(package)
+        transitions.move(
+            locked,
+            wf.CANCELLED,
+            actor=actor,
+            request=request,
+            reason=(reason or "").strip(),
+            extra={"cancellation_reason": (reason or "").strip()[:500]},
+        )
+        audit.record(
+            actor=actor,
+            action=AuditLog.ACTION_DELETE,
+            package=locked,
+            description=f"Delivery {locked.code} cancelled",
+        )
+        return locked
+
+    @classmethod
+    @transaction.atomic
+    def override_status(
+        cls,
+        *,
+        actor: Any,
+        package: Any,
+        target: str,
+        override_reason: str,
+        request: Any,
+    ) -> DeliveryPackage:
+        """
+        Correct the status of a sent or cancelled delivery outside the map. Needs
+        ``delivery.status.override`` (granted to no role) and a reason. Service-only: no endpoint.
+        """
+        locked = cls._lock(package)
+        transitions.move(
+            locked, target, actor=actor, request=request, override_reason=override_reason
+        )
+        audit.record(
+            actor=actor,
+            action=AuditLog.ACTION_UPDATE,
+            package=locked,
+            description=f"Delivery {locked.code} status corrected to {target} (override)",
+            severity=AuditLog.SEVERITY_WARNING,
+        )
+        return locked
+
+    @classmethod
+    @transaction.atomic
+    def revise(
+        cls, *, actor: Any, package: Any, request: Any = None
+    ) -> tuple[DeliveryPackage, list[dict[str, str]]]:
+        """
+        Re-deliver a rejected delivery: a new Draft with ``revision_of`` set and the same versions,
+        refreshed from the registry. A version that is no longer deliverable is left out and
+        reported (``[{"version_id", "reason"}]``) rather than silently dropped. The passcode is not
+        copied. One live revision per rejected delivery.
+        """
+        old = cls._lock(package)
+        if old.status != wf.REJECTED:
+            raise transitions.refuse(old.status, wf.DRAFT)
+        if request is not None and not has_permission_code(request, DeliveryPermissions.SEND):
+            raise TransitionNotPermitted()
+        if old.revisions.exclude(status=wf.CANCELLED).exists():  # pyright: ignore[reportAttributeAccessIssue]
+            raise AlreadyRevised()
+        project = old.project
+        new = DeliveryPackage.objects.create(
+            name=old.name,
+            code=numbering.allocate_code(project) if project else f"{old.code}-R",
+            project=project,
+            client=old.client,
+            delivery_method=old.delivery_method,
+            delivery_destination=old.delivery_destination,
+            expires_at=old.expires_at,
+            notes=old.notes,
+            revision_of=old,
+            created_by=_actor_or_none(actor),
+        )
+        transitions.record_creation(new, actor)
+        skipped: list[dict[str, str]] = []
+        for ref in old.versions.select_related("version"):  # pyright: ignore[reportAttributeAccessIssue]
+            try:
+                version, files = items.check_deliverable(new.project_id, ref.version_id)  # pyright: ignore[reportAttributeAccessIssue]
+            except UndeliverableVersion as error:
+                skipped.append({"version_id": str(ref.version_id), "reason": error.reason})
+                continue
+            copy = DeliveryVersionRef.objects.create(
+                delivery=new,
+                version=version,
+                added_by=_actor_or_none(actor),
+                version_number=version.version_number,
+                entity_type=version.entity_type,
+                entity_code=version.entity_code,
+                entity_name=version.entity_name,
+                file_path="",
+            )
+            items.apply_snapshot(copy, version, files)
+        audit.record(
+            actor=actor,
+            action=AuditLog.ACTION_CREATE,
+            package=new,
+            description=f"Delivery {new.code} created as a revision of {old.code}",
+            metadata={"revision_of": str(old.pk), "skipped_versions": len(skipped)},
+        )
+        return new, skipped

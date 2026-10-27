@@ -25,9 +25,14 @@ from django.db import connection
 
 from apps.audit.models import AuditLog
 from apps.deliveries.exceptions import DeliveryNotEditable, InvalidTransition
-from apps.deliveries.models import DeliveryItemFile, DeliveryPackage
+from apps.deliveries.models import DeliveryPackage
 from apps.deliveries.services.package import DeliveryService
-from apps.deliveries.tests.helpers import make_package, prepared_package, published_version
+from apps.deliveries.tests.helpers import (
+    make_package,
+    prepared_package,
+    published_version,
+    signed_off_package,
+)
 from apps.production.tests.factories import ProjectFactory
 
 pytestmark = [
@@ -61,7 +66,7 @@ def run_parallel(count, work):
 
 
 def test_two_sends_of_the_same_delivery_have_one_success_and_one_conflict():
-    package = prepared_package()
+    package = signed_off_package()
 
     results = run_parallel(2, lambda _: DeliveryService.send(actor=None, package=package))
 
@@ -76,7 +81,7 @@ def test_two_sends_of_the_same_delivery_have_one_success_and_one_conflict():
 
 
 def test_many_sends_still_send_once():
-    package = prepared_package()
+    package = signed_off_package()
 
     results = run_parallel(5, lambda _: DeliveryService.send(actor=None, package=package))
 
@@ -100,37 +105,37 @@ def test_concurrent_creates_get_distinct_consecutive_codes():
     assert sorted(v for _, v in results) == [f"DLV-RACE-{n:04d}" for n in range(1, 9)]
 
 
-def _send_while_adding(package, extra):
-    """Send ``package`` in one thread and add ``extra`` to it in another, together."""
+def _sign_off_while_adding(package, extra, signer):
+    """Sign ``package`` off in one thread and add ``extra`` to it in another, together."""
     return run_parallel(
         2,
         lambda i: (
-            DeliveryService.send(actor=None, package=package)
+            DeliveryService.sign_off(actor=signer, package=package)
             if i == 0
             else DeliveryService.add_version(actor=None, package=package, version_id=extra.pk)
         ),
     )
 
 
-def test_an_item_added_while_the_delivery_is_sent_is_either_in_the_send_or_refused():
-    """Never half and half: a Submitted delivery has no unfrozen item, whichever request wins."""
+def test_an_item_added_while_the_delivery_is_signed_off_is_either_in_it_or_refused():
+    """Never half and half: a Signed Off delivery holds exactly the items that were checked."""
+    from apps.identity.tests.factories import UserFactory
+
+    signer = UserFactory.create()
     for _ in range(6):
         package = prepared_package()
         extra = published_version(package.project)
 
-        send, add = _send_while_adding(package, extra)
+        signed, add = _sign_off_while_adding(package, extra, signer)
 
-        assert send[0], send[1]
-        sent = DeliveryPackage.objects.get(pk=package.pk)
-        assert sent.status == "Submitted"
-        items = sent.versions.count()
+        assert signed[0], signed[1]
+        done = DeliveryPackage.objects.get(pk=package.pk)
+        assert done.status == "Signed Off"
+        items = done.versions.count()
         assert items == (2 if add[0] else 1)
         if not add[0]:
             assert isinstance(add[1], DeliveryNotEditable)
-        assert not DeliveryItemFile.objects.filter(
-            item__delivery=sent, frozen_at__isnull=True
-        ).exists(), "an item of a sent delivery was left unfrozen"
-        assert sent.checksums["version_count"] == items
+        assert not done.versions.filter(is_validated=False).exists(), "an unchecked item got in"
 
 
 def test_two_adds_of_the_same_version_make_one_item():

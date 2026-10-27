@@ -19,13 +19,13 @@ from apps.audit.models import AuditLog
 from apps.deliveries.exceptions import DeliveryNotEditable, InvalidTransition, QCFailed
 from apps.deliveries.models import DeliveryItemFile, DeliveryQCCheck, DeliveryVersionRef
 from apps.deliveries.models.item_file import FrozenSnapshotError
-from apps.deliveries.services.delivery import retry_delivery
 from apps.deliveries.services.package import DeliveryService
 from apps.deliveries.tests.helpers import (
     _Request,
     make_package,
     package_with_items,
     prepared_package,
+    signed_off_package,
     storage_root,
 )
 from apps.identity.tests.factories import UserFactory
@@ -130,7 +130,7 @@ class TestPrepare:
             DeliveryService.prepare(actor=None, package=package)
 
     def test_no_prepare_after_the_delivery_was_sent(self):
-        package = prepared_package()
+        package = signed_off_package()
         _send(package)
 
         with pytest.raises(DeliveryNotEditable):
@@ -138,8 +138,8 @@ class TestPrepare:
 
 
 class TestSend:
-    def test_a_prepared_delivery_is_sent_with_the_real_time_and_the_sender(self, monkeypatch):
-        package = prepared_package()
+    def test_a_signed_off_delivery_is_sent_with_the_real_time_and_the_sender(self, monkeypatch):
+        package = signed_off_package()
         sender = UserFactory.create()
         monkeypatch.setattr(timezone, "now", lambda: NOW)
 
@@ -154,9 +154,18 @@ class TestSend:
 
     @pytest.mark.parametrize(
         "state",
-        ["Draft", "Validating", "Submitted", "Approved", "Rejected", "Complete", "Cancelled"],
+        [
+            "Draft",
+            "Validating",
+            "Prepared",
+            "Submitted",
+            "Approved",
+            "Rejected",
+            "Complete",
+            "Cancelled",
+        ],
     )
-    def test_only_a_prepared_delivery_can_be_sent(self, state):
+    def test_only_a_signed_off_delivery_can_be_sent(self, state):
         package = package_with_items()
         type(package).objects.filter(pk=package.pk).update(status=state)
 
@@ -167,25 +176,22 @@ class TestSend:
         assert package.status == state and package.sent_at is None
 
     def test_sending_twice_is_refused(self):
-        package = prepared_package()
+        package = signed_off_package()
         _send(package)
 
         with pytest.raises(InvalidTransition):
             _send(package)
 
-    def test_retry_cannot_make_a_sent_delivery_sendable_again(self):
-        package = prepared_package()
+    def test_a_sent_delivery_cannot_be_sent_again_even_if_its_status_is_forced_back(self):
+        package = signed_off_package()
         _send(package)
-        retry_delivery(
-            delivery_id=str(package.pk),
-            user_id=None,  # pyright: ignore[reportArgumentType]
-        )  # the old Phase 7 behaviour: back to Prepared
+        type(package).objects.filter(pk=package.pk).update(status="Signed Off")
 
         with pytest.raises(InvalidTransition):
             _send(package)
 
     def test_a_delivery_that_no_longer_passes_qc_is_not_sent(self):
-        package = prepared_package()
+        package = signed_off_package()
         version = Version.objects.get(delivery_references__delivery=package)
         Version.objects.filter(pk=version.pk).update(is_published=False)
 
@@ -193,11 +199,11 @@ class TestSend:
             _send(package)
 
         package.refresh_from_db()
-        assert package.status == "Prepared" and package.sent_at is None
+        assert package.status == "Signed Off" and package.sent_at is None
         assert not DeliveryItemFile.objects.filter(frozen_at__isnull=False).exists()
 
     def test_a_failed_send_keeps_the_record_of_the_run(self):
-        package = prepared_package()
+        package = signed_off_package()
         before = DeliveryQCCheck.objects.filter(delivery=package).count()
         version = Version.objects.get(delivery_references__delivery=package)
         Version.objects.filter(pk=version.pk).update(is_published=False)
@@ -209,18 +215,23 @@ class TestSend:
         assert DeliveryQCCheck.objects.filter(delivery=package).count() > before
         assert "version_published" in {row.check_name for row in failed}
 
-    def test_the_last_look_at_the_registry_picks_up_files_added_since_prepare(self):
-        package = prepared_package()
+    def test_a_file_registered_after_sign_off_stops_the_send_and_changes_nothing(self):
+        package = signed_off_package()
         version = Version.objects.get(delivery_references__delivery=package)
         _register_file(version, "late/extra.exr")
 
-        sent = _send(package)
+        with pytest.raises(QCFailed) as error:
+            _send(package)
 
-        assert sent.versions.get().files.count() == 2
-        assert sent.checksums["total_size_bytes"] == 1007
+        detail: Any = error.value.detail
+        assert "snapshot_current" in {c["check"] for c in detail["checks"]}
+        package.refresh_from_db()
+        assert package.status == "Signed Off" and package.sent_at is None
+        assert package.versions.get().files.count() == 1
+        assert not DeliveryItemFile.objects.filter(frozen_at__isnull=False).exists()
 
     def test_it_is_audited_without_paths_or_the_reference(self):
-        package = prepared_package()
+        package = signed_off_package()
         _send(package, transfer_reference="SECRET-REF")
 
         row = AuditLog.objects.filter(target_id=str(package.pk), target_type="delivery").latest(
@@ -233,7 +244,7 @@ class TestSend:
 
 class TestWhatWasSentNeverChanges:
     def test_every_file_is_frozen_at_the_send(self, monkeypatch):
-        package = prepared_package()
+        package = signed_off_package()
         monkeypatch.setattr(timezone, "now", lambda: NOW)
 
         _send(package)
@@ -241,7 +252,7 @@ class TestWhatWasSentNeverChanges:
         assert set(DeliveryItemFile.objects.values_list("frozen_at", flat=True)) == {NOW}
 
     def test_unpublishing_or_revoking_afterwards_changes_nothing_that_was_sent(self):
-        package = prepared_package()
+        package = signed_off_package()
         sent = _send(package)
         before_manifest = json.dumps(sent.manifest_data, sort_keys=True)
         before_checksum = sent.checksums["manifest_sha256"]
@@ -268,7 +279,7 @@ class TestWhatWasSentNeverChanges:
         )
 
     def test_frozen_files_refuse_to_change_or_go(self):
-        _send(prepared_package())
+        _send(signed_off_package())
         frozen = DeliveryItemFile.objects.get()
 
         frozen.sha256 = "f" * 64
@@ -283,7 +294,7 @@ class TestWhatWasSentNeverChanges:
         assert DeliveryItemFile.objects.get().sha256 == "1" * 64
 
     def test_the_item_of_a_sent_delivery_refuses_to_change_or_go(self):
-        sent = _send(prepared_package())
+        sent = _send(signed_off_package())
         item = DeliveryVersionRef.objects.get(delivery=sent)
 
         item.file_size_bytes = 1
@@ -294,7 +305,7 @@ class TestWhatWasSentNeverChanges:
         assert DeliveryVersionRef.objects.get(pk=item.pk).file_size_bytes == 1000
 
     def test_items_cannot_be_added_or_removed_after_the_send(self):
-        sent = _send(prepared_package())
+        sent = _send(signed_off_package())
         item = DeliveryVersionRef.objects.get(delivery=sent)
 
         with pytest.raises(DeliveryNotEditable):
@@ -303,7 +314,7 @@ class TestWhatWasSentNeverChanges:
     def test_the_database_keeps_the_history(self):
         from django.db.models import ProtectedError
 
-        sent = _send(prepared_package())
+        sent = _send(signed_off_package())
         version = Version.objects.get(delivery_references__delivery=sent)
 
         with pytest.raises(ProtectedError):

@@ -6,8 +6,15 @@ from typing import Any
 
 from rest_framework import serializers
 
-from apps.deliveries.models import DeliveryItemFile, DeliveryPackage, DeliveryVersionRef
+from apps.deliveries.models import (
+    DeliveryItemFile,
+    DeliveryPackage,
+    DeliveryQCCheck,
+    DeliveryStatusChange,
+    DeliveryVersionRef,
+)
 from apps.deliveries.services.package import DeliveryService
+from apps.publishing.selectors.files import PublishedFileSelector
 
 # Backend status -> frontend contract words (types/deliveries.ts
 # DeliveryStatus). DB keeps backend words; only the read shape is mapped.
@@ -149,6 +156,15 @@ class DeliveryDetailSerializer(serializers.ModelSerializer[DeliveryPackage]):
     def get_has_passcode(self, obj) -> bool:
         return bool(obj.passcode)
 
+    has_revoked_content = serializers.SerializerMethodField()
+
+    def get_has_revoked_content(self, obj) -> bool:
+        """Whether a file recorded in this delivery has been revoked since (read from Publishing)."""
+        recorded = {
+            file.published_file_id for ref in obj.versions.all() for file in ref.files.all()
+        }
+        return bool(recorded) and bool(PublishedFileSelector.revoked_file_ids(recorded))
+
     class Meta:
         model = DeliveryPackage
         fields = (
@@ -160,6 +176,7 @@ class DeliveryDetailSerializer(serializers.ModelSerializer[DeliveryPackage]):
             "delivery_method",
             "delivery_destination",
             "has_passcode",
+            "has_revoked_content",
             "expires_at",
             "total_size_bytes",
             "total_frames",
@@ -174,6 +191,13 @@ class DeliveryDetailSerializer(serializers.ModelSerializer[DeliveryPackage]):
             "project_name",
             "sent_at",
             "transfer_reference",
+            "signed_off_by",
+            "signed_off_at",
+            "client_answered_by",
+            "client_answered_at",
+            "cancellation_reason",
+            "rejection_reason",
+            "revision_of",
             "versions",
             "created_at",
             "updated_at",
@@ -307,13 +331,55 @@ class DeliverySubmitSerializer(serializers.Serializer[Any]):
     transfer_reference = serializers.CharField(required=False, allow_blank=True, max_length=200)
 
 
+class DeliverySignOffSerializer(serializers.Serializer[Any]):
+    """
+    Body of ``sign-off``. ``override_reason`` is only for someone who prepared the delivery and
+    holds ``delivery.sod.override``; the service decides, this only carries it.
+    """
+
+    notes = serializers.CharField(required=False, allow_blank=True, max_length=500)
+    override_reason = serializers.CharField(required=False, allow_blank=True, max_length=500)
+
+
 class DeliveryApproveSerializer(serializers.Serializer[Any]):
-    """Serializer for approving a delivery."""
-    
+    """The client approved: ``client_notes`` is their feedback, if any."""
+
     client_notes = serializers.CharField(required=False, allow_blank=True)
 
 
 class DeliveryRejectSerializer(serializers.Serializer[Any]):
-    """Serializer for rejecting a delivery."""
-    
-    rejection_reason = serializers.CharField(required=True, allow_blank=False)
+    """The client rejected: the reason is required and is kept in its own column."""
+
+    rejection_reason = serializers.CharField(required=True, allow_blank=False, max_length=500)
+
+
+class DeliveryCancelSerializer(serializers.Serializer[Any]):
+    cancellation_reason = serializers.CharField(required=False, allow_blank=True, max_length=500)
+
+
+class DeliveryReopenSerializer(serializers.Serializer[Any]):
+    """The reopen action takes no body."""
+
+
+class DeliveryReviseSerializer(serializers.Serializer[Any]):
+    """The revise action takes no body."""
+
+
+class DeliveryStatusChangeSerializer(serializers.ModelSerializer[DeliveryStatusChange]):
+    """One row of a delivery's status history."""
+
+    class Meta:
+        model = DeliveryStatusChange
+        fields = ("id", "from_status", "to_status", "actor", "reason", "override_kind", "at")
+        read_only_fields = fields
+
+
+class DeliveryQCCheckSerializer(serializers.ModelSerializer[DeliveryQCCheck]):
+    """One check of a QC run."""
+
+    item = serializers.UUIDField(source="item.uid", read_only=True, default=None)
+
+    class Meta:
+        model = DeliveryQCCheck
+        fields = ("run_id", "item", "check_name", "outcome", "detail", "checked_by", "checked_at")
+        read_only_fields = fields

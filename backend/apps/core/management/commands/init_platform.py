@@ -60,6 +60,13 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     ("delivery.view", "deliveries", "read"),
     ("delivery.update", "deliveries", "update"),
     ("delivery.delete", "deliveries", "delete"),
+    # Workflow codes (docs/deliveries/CONTRACTS.md section 4). Granted to roles in Phase 8; the two
+    # override codes are granted to no role and checked explicitly (a superuser does not hold them).
+    ("delivery.approve", "deliveries", "approve"),
+    ("delivery.send", "deliveries", "send"),
+    ("delivery.view_secret", "deliveries_secret", "view_secret"),
+    ("delivery.status.override", "deliveries_override", "status_override"),
+    ("delivery.sod.override", "deliveries_override", "sod_override"),
     ("publishing.create", "publishing", "create"),
     ("publishing.view", "publishing", "read"),
     ("publishing.update", "publishing", "update"),

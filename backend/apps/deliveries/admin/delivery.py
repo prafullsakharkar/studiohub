@@ -7,6 +7,7 @@ from apps.deliveries.models import (
     DeliveryItemFile,
     DeliveryPackage,
     DeliveryQCCheck,
+    DeliveryStatusChange,
     DeliveryVersionRef,
 )
 
@@ -37,6 +38,29 @@ class DeliveryPackageAdmin(PlatformScopedModelAdmin):
 
     # The passcode is a secret for an external service (DLV-01): never searchable, never in a form.
     exclude = ("passcode",)
+
+    # The status and everything the workflow writes are not editable here: the admin would
+    # bypass the transition map, separation of duties and the history (DOM-DLV-02).
+    readonly_fields = (
+        "status",
+        "client_status",
+        "sent_by",
+        "sent_at",
+        "transfer_reference",
+        "qc_run_id",
+        "signed_off_by",
+        "signed_off_at",
+        "client_answered_by",
+        "client_answered_at",
+        "cancellation_reason",
+        "rejection_reason",
+        "revision_of",
+        "manifest_data",
+        "checksums",
+        "total_size_bytes",
+        "total_frames",
+        "is_archived",
+    )
 
     list_select_related = ("project", "client")
 
@@ -127,6 +151,14 @@ class DeliveryQCCheckAdmin(ViewOnlyAdmin):
     list_filter = ("check_name", "outcome")
     list_select_related = ("delivery",)
     ordering = ("-checked_at",)
+
+
+@admin.register(DeliveryStatusChange)
+class DeliveryStatusChangeAdmin(ViewOnlyAdmin):
+    list_display = ("delivery", "from_status", "to_status", "actor", "override_kind", "at")
+    list_filter = ("to_status", "override_kind")
+    list_select_related = ("delivery", "actor")
+    ordering = ("-at",)
 
 
 @admin.register(DeliveryCounter)

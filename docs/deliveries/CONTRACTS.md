@@ -245,3 +245,56 @@ Item response shape: `id` (integer), `uid` (UUID), `version_id`, snapshot fields
 * `total_size_bytes` and `total_frames` are derived from the items.
 * `PATCH`/`PUT` now answer 200 instead of 500.
 
+## 9. Phase 7 as built (differences from the target above)
+
+Built: the transition map in `constants/workflow.py`, `DeliveryStatusChange`, sign-off with
+separation of duties, the audited overrides, the client's answer, complete, cancel, reopen, retry,
+revise, revocation handling, the encrypted passcode and its audited read. Not built (Phase 8):
+project-membership scoping, destination constraints, the `reason` / `notes` body aliases (Q18),
+`bulk-cancel`, role-to-code grants, admin hardening beyond the read-only status.
+
+| Target | Built in Phase 7 |
+|---|---|
+| `transitions.move(package, to_status, *, actor, reason, override_reason)` | `move(package, target, *, actor, request=None, reason="", override_reason=None, system=False, override_kind="", extra=None)`. Works on a locked package; writes the status, the `extra` columns and the history row in one save. The permission code is checked per move when a request is given. The override branch is entered only when `override_reason` is passed (never by an ordinary action), so cancelling or completing a sent delivery is the map's 409 |
+| `sign_off(*, actor, package, notes, override_reason)` | adds `request`. Refused 403 `separation_of_duties` for the creator, the adder of a current item and whoever moved it into Prepared, unless the caller holds `delivery.sod.override` (explicit; a superuser does not) and gives a reason (`override_kind="self_approval"`). Refreshes the items and runs QC; a failing run keeps its rows and is a 409 `qc_failed` |
+| `send` from Signed Off, re-runs QC, freezes | as designed, but it does **not** refresh the snapshot: it sends what was signed. A file registered, deprecated or revoked since fails `snapshot_current` (A-27) |
+| `record_client_answer(accepted, reason, notes)` | as designed. A rejection needs a reason (`rejection_reason` column); `client_notes` holds only the client's feedback |
+| `cancel(reason)` | `cancellation_reason` column; a Signed Off delivery needs `delivery.approve` (checked in the service) |
+| `revise` returns the new Draft | returns `(new, skipped)`; the API adds `skipped_versions` to the 201 body. One live revision per rejected delivery (409 `already_revised`) |
+| `set_passcode`, `read_passcode` | the passcode is set through `create` / `update` (write-only field); `read_passcode(actor, package, request)` needs `delivery.view_secret` and project access (404 otherwise) and writes an audit row without the value |
+| `override_status` | built, service-only (no endpoint), `delivery.status.override` + reason, audited as a warning (A-28) |
+| API-DLV-01: `passcode` in the detail for `view_secret` holders | `GET /deliveries/{id}/passcode/` returns `{"passcode": ...}` with `Cache-Control: no-store` (A-24). The detail adds `signed_off_by/at`, `client_answered_by/at`, `cancellation_reason`, `rejection_reason`, `revision_of`, `has_revoked_content` |
+| API-DLV-06 `retry` | re-runs QC while Validating; any other status is 409 |
+| API-DLV-08, 09 | `POST sign-off/` (`notes`, `override_reason`), `POST reopen/`, both `delivery.approve` |
+| API-DLV-10 | `submit` works from Signed Off only |
+| API-DLV-11, 12 | `approve` (`client_notes`), `reject` (`rejection_reason`, required): from Submitted, `delivery.send` |
+| API-DLV-14, 15, 16 | `complete` (Approved only, `delivery.update`), `revise` (Rejected only, `delivery.send`), `GET history/` and `GET qc/` (`delivery.view`) |
+| Events published after commit | none; notifications are LATER (A-32). The one subscription is Publishing's `PublishedFileRevoked` (`events/`) |
+| Admin read-only status | `status`, `client_status`, sent/sign-off/answer columns, reasons, totals, manifest and checksums are read-only in the package admin; `DeliveryStatusChange` is view-only |
+
+Authorization today: each action is gated by the code in `DeliveryViewSet.permission_map`
+(sign-off and reopen `delivery.approve`; submit, approve, reject, revise `delivery.send`;
+`passcode` `delivery.view_secret`). The new codes are in the catalog but no role holds them until
+Phase 8 (A-31).
+
+Failure behaviour added: 403 `separation_of_duties`, 403 `transition_not_permitted`,
+409 `already_revised`, 503 `secret_storage_unavailable`.
+
+Migrations: `0008_workflow` (history table, Signed Off, the new columns, a creation row per existing
+delivery; reversible), `0009_encrypt_passcode` (widens the column, encrypts in place, refuses
+without a key, reverse decrypts). Setting: `DELIVERY_SECRET_KEY` (`.env.example`).
+
+**Frontend impact of Phase 7**
+
+* A "Sign off" button is needed between Ready and Submit (`POST sign-off/`); Submit on a Ready
+  delivery is now a 409. The person who prepared the delivery cannot sign it off (403
+  `separation_of_duties`).
+* `approve` / `reject` / `complete` / `retry` / `cancel` answer with the detail shape and refuse
+  other statuses with 409 (they used to work from any status). `retry` no longer resets to Ready.
+* A rejection reason is shown from `rejection_reason`, a cancellation reason from
+  `cancellation_reason`; `client_notes` is the client's feedback only.
+* `status` can read `"Signed Off"`, a value the frontend's union accepts but has no colour for.
+* The passcode is fetched with `GET /passcode/` by users who hold `delivery.view_secret`.
+* New: `POST reopen/`, `POST revise/` (201, with `skipped_versions`), `GET history/`, `GET qc/`;
+  detail field `has_revoked_content`.
+

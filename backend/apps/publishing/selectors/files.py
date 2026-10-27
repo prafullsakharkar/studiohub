@@ -140,6 +140,15 @@ class PublishedFileSelector(BaseSelector):
         )
         return cls._group(rows)
 
+    @classmethod
+    def revoked_file_ids(cls, file_ids: Iterable[UUID]) -> set[UUID]:
+        """Which of ``file_ids`` are Revoked now (Deliveries asks about the files it recorded)."""
+        return set(
+            PublishedFile.objects.filter(
+                pk__in=list(file_ids), status=PublishedFile.Status.REVOKED
+            ).values_list("pk", flat=True)
+        )
+
     @staticmethod
     def _group(rows: Iterable[PublishedFile]) -> dict[UUID, list[FileSnapshot]]:
         grouped: dict[UUID, list[FileSnapshot]] = {}

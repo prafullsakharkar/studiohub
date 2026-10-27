@@ -8,6 +8,7 @@ from .delivery import (
     DeliveryItemFileAdmin,
     DeliveryPackageAdmin,
     DeliveryQCCheckAdmin,
+    DeliveryStatusChangeAdmin,
     DeliveryVersionRefAdmin,
 )
 
@@ -17,5 +18,6 @@ __all__ = [
     "DeliveryItemFileAdmin",
     "DeliveryPackageAdmin",
     "DeliveryQCCheckAdmin",
+    "DeliveryStatusChangeAdmin",
     "DeliveryVersionRefAdmin",
 ]

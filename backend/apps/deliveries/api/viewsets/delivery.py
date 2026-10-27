@@ -1,5 +1,10 @@
 """
 Delivery viewset for API endpoints.
+
+Views stay thin: the rules (the transition map, who may sign off, QC, immutability) are in
+``DeliveryService``. The permission map gates each action with the code the map names for it;
+a move whose code depends on the status (cancelling a signed-off delivery) is checked again in the
+service, with the request.
 """
 from rest_framework import status
 from rest_framework.decorators import action
@@ -12,26 +17,28 @@ from apps.deliveries.api.serializers.delivery import (
     STATUS_OUTPUT_MAP,
     DeliveryAddVersionSerializer,
     DeliveryApproveSerializer,
+    DeliveryCancelSerializer,
     DeliveryCreateSerializer,
     DeliveryDetailSerializer,
     DeliveryListSerializer,
     DeliveryPrepareSerializer,
+    DeliveryQCCheckSerializer,
     DeliveryRejectSerializer,
     DeliveryRemoveVersionSerializer,
+    DeliveryReopenSerializer,
+    DeliveryReviseSerializer,
+    DeliverySignOffSerializer,
+    DeliveryStatusChangeSerializer,
     DeliverySubmitSerializer,
     DeliveryUpdateSerializer,
     DeliveryValidateSerializer,
 )
 from apps.deliveries.api.viewsets.base import PlatformCrudViewSet
 from apps.deliveries.constants.permissions import DeliveryPermissions
+from apps.deliveries.models import DeliveryQCCheck
 from apps.deliveries.selectors.delivery import DeliverySelector
 from apps.deliveries.services.delivery import (
-    approve_delivery,
-    cancel_delivery,
-    complete_delivery,
     prepare_delivery,
-    reject_delivery,
-    retry_delivery,
     submit_delivery,
     validate_delivery,
 )
@@ -57,6 +64,8 @@ class DeliveryViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingType
     permission_map = {
         "list": (DeliveryPermissions.VIEW,),
         "retrieve": (DeliveryPermissions.VIEW,),
+        "history": (DeliveryPermissions.VIEW,),
+        "qc": (DeliveryPermissions.VIEW,),
         "create": (DeliveryPermissions.CREATE,),
         "update": (DeliveryPermissions.UPDATE,),
         "partial_update": (DeliveryPermissions.UPDATE,),
@@ -65,12 +74,16 @@ class DeliveryViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingType
         "remove_version": (DeliveryPermissions.UPDATE,),
         "validate": (DeliveryPermissions.UPDATE,),
         "prepare": (DeliveryPermissions.UPDATE,),
-        "submit": (DeliveryPermissions.UPDATE,),
-        "approve": (DeliveryPermissions.UPDATE,),
-        "reject": (DeliveryPermissions.UPDATE,),
+        "retry": (DeliveryPermissions.UPDATE,),
         "complete": (DeliveryPermissions.UPDATE,),
         "cancel": (DeliveryPermissions.UPDATE,),
-        "retry": (DeliveryPermissions.UPDATE,),
+        "sign_off": (DeliveryPermissions.APPROVE,),
+        "reopen": (DeliveryPermissions.APPROVE,),
+        "submit": (DeliveryPermissions.SEND,),
+        "approve": (DeliveryPermissions.SEND,),
+        "reject": (DeliveryPermissions.SEND,),
+        "revise": (DeliveryPermissions.SEND,),
+        "passcode": (DeliveryPermissions.VIEW_SECRET,),
     }
 
     search_fields = ("name", "code", "client__name")
@@ -102,6 +115,8 @@ class DeliveryViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingType
         delivery = serializer.save()
         return Response(self._detail(delivery))
 
+    # -- items ---------------------------------------------------------------------------
+
     @action(detail=True, methods=["post"], url_path="add-version")
     def add_version(self, request, *args, **kwargs):
         """Add a published version of the delivery's project; its files come from the registry."""
@@ -129,9 +144,11 @@ class DeliveryViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingType
 
         return Response(self._detail(delivery))
 
+    # -- QC, prepare, sign-off, send -------------------------------------------------------
+
     @action(detail=True, methods=["post"], url_path="validate")
     def validate(self, request, *args, **kwargs):
-        """Validate delivery package contents."""
+        """Run QC on the delivery."""
         delivery = self.get_object()
         serializer = DeliveryValidateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -143,9 +160,16 @@ class DeliveryViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingType
 
         return Response(self._frontend_result(result))
 
+    @action(detail=True, methods=["post"], url_path="retry")
+    def retry(self, request, *args, **kwargs):
+        """Run QC again on a Validating delivery (any other status is a 409)."""
+        delivery = self.get_object()
+        DeliveryService.retry(actor=request.user, package=delivery, request=request)
+        return Response(self._detail(delivery))
+
     @action(detail=True, methods=["post"], url_path="prepare")
     def prepare(self, request, *args, **kwargs):
-        """Prepare delivery package for submission."""
+        """Prepare the delivery for sign-off: refresh the items, run QC, build the manifest."""
         delivery = self.get_object()
         serializer = DeliveryPrepareSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -157,9 +181,37 @@ class DeliveryViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingType
 
         return Response(self._frontend_result(result))
 
+    @action(detail=True, methods=["post"], url_path="sign-off")
+    def sign_off(self, request, *args, **kwargs):
+        """Internal approval (Prepared to Signed Off). Not by whoever prepared the delivery."""
+        delivery = self.get_object()
+        serializer = DeliverySignOffSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        DeliveryService.sign_off(
+            actor=request.user,
+            package=delivery,
+            request=request,
+            notes=serializer.validated_data.get("notes", ""),
+            override_reason=serializer.validated_data.get("override_reason"),
+        )
+
+        return Response(self._detail(delivery))
+
+    @action(detail=True, methods=["post"], url_path="reopen")
+    def reopen(self, request, *args, **kwargs):
+        """Take back a sign-off (Signed Off to Prepared)."""
+        delivery = self.get_object()
+        serializer = DeliveryReopenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        DeliveryService.reopen(actor=request.user, package=delivery, request=request)
+
+        return Response(self._detail(delivery))
+
     @action(detail=True, methods=["post"], url_path="submit")
     def submit(self, request, *args, **kwargs):
-        """Submit delivery to destination."""
+        """Record that a signed-off delivery was sent."""
         delivery = self.get_object()
         serializer = DeliverySubmitSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -181,69 +233,109 @@ class DeliveryViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingType
             headers={"X-Background-Job": job.job_id},
         )
 
+    # -- the client's answer and what follows ----------------------------------------------
+
     @action(detail=True, methods=["post"], url_path="approve")
     def approve(self, request, *args, **kwargs):
-        """Approve delivery by client."""
+        """Record that the client approved (from Submitted)."""
         delivery = self.get_object()
         serializer = DeliveryApproveSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        delivery = approve_delivery(
-            delivery_id=str(delivery.id),
-            user_id=str(request.user.id),
-            client_notes=serializer.validated_data.get("client_notes", ""),
+        DeliveryService.record_client_answer(
+            actor=request.user,
+            package=delivery,
+            accepted=True,
+            notes=serializer.validated_data.get("client_notes", ""),
+            request=request,
         )
 
-        return Response(DeliveryDetailSerializer(delivery).data)
+        return Response(self._detail(delivery))
 
     @action(detail=True, methods=["post"], url_path="reject")
     def reject(self, request, *args, **kwargs):
-        """Reject delivery with feedback."""
+        """Record that the client rejected, with the reason (from Submitted)."""
         delivery = self.get_object()
         serializer = DeliveryRejectSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        delivery = reject_delivery(
-            delivery_id=str(delivery.id),
-            user_id=str(request.user.id),
-            rejection_reason=serializer.validated_data["rejection_reason"],
+        DeliveryService.record_client_answer(
+            actor=request.user,
+            package=delivery,
+            accepted=False,
+            reason=serializer.validated_data["rejection_reason"],
+            request=request,
         )
 
-        return Response(DeliveryDetailSerializer(delivery).data)
+        return Response(self._detail(delivery))
 
     @action(detail=True, methods=["post"], url_path="complete")
     def complete(self, request, *args, **kwargs):
-        """Mark delivery as complete."""
+        """Mark an approved delivery as complete."""
         delivery = self.get_object()
 
-        delivery = complete_delivery(
-            delivery_id=str(delivery.id),
-            user_id=str(request.user.id),
-        )
+        DeliveryService.complete(actor=request.user, package=delivery, request=request)
 
-        return Response(DeliveryDetailSerializer(delivery).data)
+        return Response(self._detail(delivery))
 
     @action(detail=True, methods=["post"], url_path="cancel")
     def cancel(self, request, *args, **kwargs):
-        """Cancel a delivery."""
+        """Cancel a delivery that has not been sent."""
         delivery = self.get_object()
+        serializer = DeliveryCancelSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        delivery = cancel_delivery(
-            delivery_id=str(delivery.id),
-            user_id=str(request.user.id),
-            cancellation_reason=request.data.get("cancellation_reason", ""),
+        DeliveryService.cancel(
+            actor=request.user,
+            package=delivery,
+            reason=serializer.validated_data.get("cancellation_reason", ""),
+            request=request,
         )
 
-        return Response(DeliveryDetailSerializer(delivery).data)
+        return Response(self._detail(delivery))
 
-    @action(detail=True, methods=["post"], url_path="retry")
-    def retry(self, request, *args, **kwargs):
-        """Retry a delivery: reset to Prepared (frontend `retryDelivery`)."""
+    @action(detail=True, methods=["post"], url_path="revise")
+    def revise(self, request, *args, **kwargs):
+        """Re-deliver a rejected delivery: a new Draft with the same versions."""
         delivery = self.get_object()
+        serializer = DeliveryReviseSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        delivery = retry_delivery(
-            delivery_id=str(delivery.id),
-            user_id=str(request.user.id),
+        revision, skipped = DeliveryService.revise(
+            actor=request.user, package=delivery, request=request
         )
 
-        return Response(DeliveryDetailSerializer(delivery).data)
+        return Response(
+            {**self._detail(revision), "skipped_versions": skipped},
+            status=status.HTTP_201_CREATED,
+        )
+
+    # -- reads that are not the plain detail ----------------------------------------------
+
+    @action(detail=True, methods=["get"], url_path="history")
+    def history(self, request, *args, **kwargs):
+        """Every status change of the delivery, oldest first."""
+        delivery = self.get_object()
+        rows = delivery.status_changes.all()
+        return Response(DeliveryStatusChangeSerializer(rows, many=True).data)
+
+    @action(detail=True, methods=["get"], url_path="qc")
+    def qc(self, request, *args, **kwargs):
+        """The checks of the delivery's latest QC run."""
+        delivery = self.get_object()
+        rows = (
+            DeliveryQCCheck.objects.filter(delivery=delivery, run_id=delivery.qc_run_id)
+            .select_related("item")
+            if delivery.qc_run_id
+            else DeliveryQCCheck.objects.none()
+        )
+        return Response(DeliveryQCCheckSerializer(rows, many=True).data)
+
+    @action(detail=True, methods=["get"], url_path="passcode")
+    def passcode(self, request, *args, **kwargs):
+        """The passcode, for a holder of ``delivery.view_secret``. Every read is audited."""
+        delivery = self.get_object()
+        value = DeliveryService.read_passcode(
+            actor=request.user, package=delivery, request=request
+        )
+        return Response({"passcode": value}, headers={"Cache-Control": "no-store"})

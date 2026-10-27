@@ -145,10 +145,10 @@ class TestDeliveryEndpoints:
         assert "success" in response.data
 
     def test_submit_delivery(self, staff_client):
-        """Test submitting a prepared delivery."""
-        from apps.deliveries.tests.helpers import prepared_package
+        """Test submitting a signed-off delivery."""
+        from apps.deliveries.tests.helpers import signed_off_package
 
-        delivery = prepared_package(code="DEL-TEST-006")
+        delivery = signed_off_package(code="DEL-TEST-006")
 
         url = reverse("api:v1:deliveries:delivery-submit", kwargs={"uuid": str(delivery.id)})
         response = staff_client.post(url)
@@ -157,10 +157,11 @@ class TestDeliveryEndpoints:
         assert "success" in response.data
 
     def test_approve_delivery(self, staff_client):
-        """Test approving a delivery."""
+        """Test recording the client's approval of a sent delivery."""
         delivery = DeliveryPackage.objects.create(
             name="Test Delivery",
             code="DEL-TEST-007",
+            status=DeliveryPackage.STATUS_SUBMITTED,
         )
 
         url = reverse("api:v1:deliveries:delivery-approve", kwargs={"uuid": str(delivery.id)})
@@ -171,10 +172,11 @@ class TestDeliveryEndpoints:
         assert response.data["status"] == "Approved"
 
     def test_reject_delivery(self, staff_client):
-        """Test rejecting a delivery."""
+        """Test recording the client's rejection of a sent delivery."""
         delivery = DeliveryPackage.objects.create(
             name="Test Delivery",
             code="DEL-TEST-008",
+            status=DeliveryPackage.STATUS_SUBMITTED,
         )
 
         url = reverse("api:v1:deliveries:delivery-reject", kwargs={"uuid": str(delivery.id)})
@@ -185,10 +187,11 @@ class TestDeliveryEndpoints:
         assert response.data["status"] == "Rejected"
 
     def test_complete_delivery(self, staff_client):
-        """Test completing a delivery."""
+        """Test completing an approved delivery."""
         delivery = DeliveryPackage.objects.create(
             name="Test Delivery",
             code="DEL-TEST-009",
+            status=DeliveryPackage.STATUS_APPROVED,
         )
 
         url = reverse("api:v1:deliveries:delivery-complete", kwargs={"uuid": str(delivery.id)})
@@ -212,20 +215,34 @@ class TestDeliveryEndpoints:
         assert response.data["status"] == "Cancelled"
 
     def test_retry_delivery(self, staff_client):
-        """Test retrying a delivery resets it to Prepared (reads as Ready)."""
+        """Retry runs QC again on a Validating delivery and leaves it Validating."""
         delivery = DeliveryPackage.objects.create(
             name="Test Delivery",
             code="DEL-TEST-011",
-            status=DeliveryPackage.STATUS_SUBMITTED,
+            status=DeliveryPackage.STATUS_VALIDATING,
         )
 
         url = reverse("api:v1:deliveries:delivery-retry", kwargs={"uuid": str(delivery.id)})
         response = staff_client.post(url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["status"] == "Ready"
+        assert response.data["status"] == "Validating"
         delivery.refresh_from_db()
-        assert delivery.status == DeliveryPackage.STATUS_PREPARED
+        assert delivery.status == DeliveryPackage.STATUS_VALIDATING
+
+    def test_retry_is_refused_outside_validating(self, staff_client):
+        delivery = DeliveryPackage.objects.create(
+            name="Test Delivery",
+            code="DEL-TEST-011B",
+            status=DeliveryPackage.STATUS_SUBMITTED,
+        )
+
+        url = reverse("api:v1:deliveries:delivery-retry", kwargs={"uuid": str(delivery.id)})
+        response = staff_client.post(url)
+
+        assert response.status_code == status.HTTP_409_CONFLICT
+        delivery.refresh_from_db()
+        assert delivery.status == DeliveryPackage.STATUS_SUBMITTED
 
     def test_prepare_reads_as_ready(self, staff_client):
         """Test the prepare action output uses the frontend status word."""

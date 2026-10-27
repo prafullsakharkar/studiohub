@@ -115,6 +115,16 @@ Everything above was built except where noted. Differences from the plan:
 * `security/test_passcode.py`: encrypted in the DB; absent without `view_secret`; read audited; missing key → 503 on write; not searchable; admin list hides it; migration encrypts and reverse decrypts.
 * `security/test_logs.py`: no passcode, reason text or path in logs.
 
+### Phase 7 as built
+
+* **Test files:** `services/test_transition_map.py` (every pair of statuses, per-move codes, history, the override, "only the service writes the status"), `services/test_separation_of_duties.py` (creator, adder, preparer, reassigned creator, override with and without code or reason, the endpoint, no bulk route), `services/test_workflow_actions.py` (client answer, complete, cancel, reopen, retry, revise, the flow through the API), `services/test_revocation.py` (also through the event bus), `security/test_passcode.py`, `security/test_logs.py` (with a canary proving the capture works), `migrations/test_phase7_migrations.py`. The plan's `test_revocation.py` and `security/` names are kept.
+* **Passcode on the detail** became its own endpoint (A-24).
+* **Send does not refresh** the snapshot (A-27), so a late file stops the send instead of joining it.
+* **Override** is service-only (A-28); the SoD override is reachable through `sign-off` with `override_reason`.
+* **Role grants** wait for Phase 8 (A-31); the new codes are in the catalog only.
+* **Phase 6 tests** that assumed free movement now start from the state the map requires (A-33).
+* **Verified by removing the guard:** separation of duties (12 tests fail), passcode encryption (8), the transition map (70), revocation (7), the passcode permission (fails only when both the viewset gate and the service check are removed, which is why there are two).
+
 ### Phase 8: sensitive data, API, hardening (`deliveries(phase-8): sensitive data, api and hardening`)
 
 * `api/test_access_matrix.py` (anonymous, member/non-member, each code, platform admin, API key scopes, disabled user).

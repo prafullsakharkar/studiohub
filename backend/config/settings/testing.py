@@ -42,6 +42,9 @@ TEST_RUNNER = "config.test_runner.PreserveDatabaseTestRunner"
 # production and local environments supply their own via MFA_ENCRYPTION_KEY.
 MFA_ENCRYPTION_KEYS = ("xKCk8KJf2A36NFV8Q5G6QNKpXUU74tK2oCBJrowYZCo=",)  # pyright: ignore[reportConstantRedefinition]
 
+# Test-only Fernet key for delivery passcodes (a different key from MFA's on purpose).
+DELIVERY_SECRET_KEYS = ("ZGVsaXZlcnktdGVzdC1vbmx5LWtleS0wMTIzNDU2Nzg=",)  # pyright: ignore[reportConstantRedefinition]
+
 # Pinned on: tests assert the default behaviour and must not depend on the
 # operator's MFA_ENCRYPTION_ENABLED in whichever env file the run loaded.
 MFA_ENCRYPTION_ENABLED = True  # pyright: ignore[reportConstantRedefinition]
