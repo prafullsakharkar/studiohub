@@ -32,6 +32,17 @@ def _reader(project, *codes):
     return client_for(operator(project, "delivery.view", *codes))
 
 
+def test_the_test_run_gets_its_passcode_key_from_the_env_file(settings):
+    """`DELIVERY_SECRET_KEY` is read from `.env.test` (pytest sets DJANGO_ENV=testing), not hardcoded."""
+    import inspect
+
+    from config.settings import testing
+
+    assert "DELIVERY_SECRET_KEYS" not in inspect.getsource(testing)
+    assert len(settings.DELIVERY_SECRET_KEYS) == 1
+    Fernet(settings.DELIVERY_SECRET_KEYS[0].encode())  # a valid key
+
+
 class TestStoredEncrypted:
     def test_the_column_holds_ciphertext_and_never_the_passcode(self):
         package = _locked_delivery()

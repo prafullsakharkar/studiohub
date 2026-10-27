@@ -126,11 +126,12 @@ class TestPasscodeEncryption0009:
     def test_without_a_key_and_without_passcodes_it_applies(self, settings):
         apps = migrate(AT_0008)
         _package(apps, "PC-7")
+        keys = settings.DELIVERY_SECRET_KEYS
         settings.DELIVERY_SECRET_KEYS = ()
 
         migrate(AT_0009)
 
-        settings.DELIVERY_SECRET_KEYS = ("ZGVsaXZlcnktdGVzdC1vbmx5LWtleS0wMTIzNDU2Nzg=",)
+        settings.DELIVERY_SECRET_KEYS = keys
 
     def test_reversing_decrypts_them_and_going_forward_encrypts_again(self):
         apps = migrate(AT_0008)
