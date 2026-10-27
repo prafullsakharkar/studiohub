@@ -16,7 +16,9 @@ from apps.publishing.models import (
 )
 
 
-class ReadOnlyAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
+class ViewOnlyMixin:
+    """No add, change or delete in the admin, superusers included: the services are the writers."""
+
     def has_add_permission(self, request):
         return False
 
@@ -25,6 +27,10 @@ class ReadOnlyAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgum
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+class ReadOnlyAdmin(ViewOnlyMixin, admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
+    pass
 
 
 @admin.register(StorageRoot)

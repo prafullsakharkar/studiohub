@@ -20,6 +20,6 @@ Cross-app decisions (Q1-Q4, Q6-Q12) are in `docs/delivery-pipeline/DECISIONS.md`
 | Q36 | Bulk contract (`bulk-register`) | **A**, as recommended (`delivery-pipeline/DECISIONS.md`) | 2026-10-27 | ASSUMED | API-PUB-10 |
 | Q38 | Compatibility | **A**, as recommended (`delivery-pipeline/DECISIONS.md`) | 2026-10-27 | ASSUMED | |
 
-Implementation assumptions A-1 to A-9 and the open question Q39 (who moves a job to Exporting/Exported) (no Celery app, job membership in Phase 5, seeding, audit targets, 409 existence, `is_archived`): `docs/delivery-pipeline/DECISIONS.md`.
+Implementation assumptions A-1 to A-9 and Q39 (answered B on 2026-10-27: actions to report export progress, built in Phase 5) (no Celery app, job membership in Phase 5, seeding, audit targets, 409 existence, `is_archived`): `docs/delivery-pipeline/DECISIONS.md`.
 
 Full text of Q25-Q38: `docs/delivery-pipeline/DECISIONS.md`. Phase 1 analysis: `ANALYSIS.md`. Design: `CONTRACTS.md`, `PLAN.md`.

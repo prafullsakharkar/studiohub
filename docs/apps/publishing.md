@@ -2,8 +2,8 @@
 
 Written against `docs/APP_ARCHITECTURE_TEMPLATE.md`. The authoritative detail is in
 `docs/publishing/` (`ANALYSIS.md`, `CONTRACTS.md`, `DECISIONS.md`, `PLAN.md`) and
-`docs/delivery-pipeline/`. Status: **phase 4 of 5 done** (integrity and storage; export job workflow); phase 5
-(authorization and hardening) follows.
+`docs/delivery-pipeline/`. Status: **phases 3 to 5 done** (integrity and storage; export job workflow; authorization and
+hardening). Phase 12 re-checks it together with the other two apps.
 
 ## 2. Application information
 
@@ -70,10 +70,10 @@ does not allow is 409 `invalid_transition`. Details and error vocabulary: `CONTR
 
 ## 8. Permissions
 
-`publishing.view / create / update / delete` (existing), `publishing.deprecate`,
+`publishing.view / create / update / delete` (existing; vfx-supervisor no longer holds `delete`, lead-artist now holds `create`), `publishing.deprecate`,
 `publishing.revoke`, `publishing.storage.manage`, and `publishing.status.override` (needed with a
 reason to leave Revoked; granted to no role, not implied by superuser, a scoped credential must
-list it). Project membership narrows files; jobs are not yet narrowed (phase 5).
+list it). Project membership narrows files and jobs; a job or file of another project is a 404, the same as an unknown id. Platform admins see everything, including old jobs that name no project.
 
 ## 8b. Export job workflow
 
@@ -83,6 +83,10 @@ Pending (retry) or Cancelled. Exported and Cancelled are final. `JobService` (`s
 is the only writer of a job's status; every other path (`PATCH`, the admin) is read-only for it.
 A move the map forbids, or the loser of a race, is 409 `invalid_transition`. A job's details can be
 edited only while it is Pending or Failed. `republish` starts a new job from any status.
+
+Pipeline tools report an export with `start-export` (Validated to Exporting), `complete-export`
+(to Exported, final) and `fail` (to Failed, with a reason); the files it produced are linked when they are
+registered with `export_job_id`.
 
 Validation (`services/validation.py`) reports each active rule as `passed`, `failed`, `warning` or
 `not_checked`. It only says `passed` for what the server checked (the job's details, its registered

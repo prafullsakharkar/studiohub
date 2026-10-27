@@ -92,7 +92,8 @@ LEAD = {
     "track": "view",
     "show": "view",
     "delivery": "view",
-    "publishing": "view",
+    # lead-artists register the files of their own published versions (docs/delivery-pipeline Q34)
+    "publishing": "view create",
     "note": "create",
     "audit": "view",
 }
@@ -128,7 +129,8 @@ def _codes(table: dict[str, str]) -> set[str]:
 EXPECTED = {
     # The code freeze on shots and assets is lifted by production-admin only.
     "production-admin": _codes(FULL) | {"production.code.rename"},
-    "vfx-supervisor": _codes(FULL),
+    # Deleting export job records is an admin task (Q34).
+    "vfx-supervisor": _codes(FULL) - {"publishing.delete"},
     # Storage roots are studio-wide; org-admin administers them.
     "org-admin": _codes(FULL) | {"publishing.storage.manage"},
     "lead-artist": _codes(LEAD),

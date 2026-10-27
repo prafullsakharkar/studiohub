@@ -215,3 +215,32 @@ def test_a_validation_racing_a_cancel_never_leaves_a_half_moved_job(project):
     assert final in {"Validated", "Cancelled"}
     for ok, value in results:
         assert ok or isinstance(value, InvalidTransition)
+
+
+def test_concurrent_start_exports_have_one_success_and_one_conflict(project):
+    job = _job(project, "Validated")
+
+    results = run_parallel(2, lambda _: JobService.start_export(actor=None, job=job))
+
+    outcomes = Counter("ok" if ok else type(value).__name__ for ok, value in results)
+    assert outcomes == {"ok": 1, "InvalidTransition": 1}
+    assert PublishItem.objects.get(pk=job.pk).status == "Exporting"
+
+
+def test_a_completion_racing_a_failure_has_exactly_one_winner(project):
+    job = _job(project, "Exporting")
+
+    results = run_parallel(
+        2,
+        lambda i: (
+            JobService.complete_export(actor=None, job=job)
+            if i == 0
+            else JobService.fail(actor=None, job=job, reason="boom")
+        ),
+    )
+
+    outcomes = Counter("ok" if ok else type(value).__name__ for ok, value in results)
+    assert outcomes == {"ok": 1, "InvalidTransition": 1}
+    fresh = PublishItem.objects.get(pk=job.pk)
+    assert fresh.status in {"Exported", "Failed"}
+    assert (fresh.status == "Failed") == (fresh.error_message == "boom")  # no half-written outcome

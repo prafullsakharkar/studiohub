@@ -145,20 +145,27 @@ Recommendation and default: **A**. Blocks: Phases 5, 8, 11.
 | A-5 | 2026-10-27 | A 409 `path_already_registered` tells a member that a path is taken even if the other file belongs to a project they cannot see (storage paths are studio-wide and the unique constraint spans projects). It reveals existence only: no version, project, size or checksum. | ACCEPTED RISK (low) | Phase 5 review |
 | A-6 | 2026-10-27 | `PublishItem.is_archived` is still read (old rows that were archived keep reading "Unpublished") but nothing writes it. | ASSUMED (Q33 A, stage 1) | Phase 4 |
 
-### Phase 4
+### Phase 4 and after
 
 | ID | Date | What | Status | Affects |
 |---|---|---|---|---|
 | A-7 | 2026-10-27 | Leaving a guarded job state (Exported, Cancelled) is a service call with `publishing.status.override` and a reason; no endpoint. Republishing is the normal way to run a finished job again. | ASSUMED | Phase 5 |
 | A-8 | 2026-10-27 | `republish` works from a job in any status: it creates a new job and changes nothing on the old one, so the brief's "guard meaningful states only" gives no reason to restrict it. | ASSUMED | |
 | A-9 | 2026-10-27 | Rules that need the artist's machine or a mounted disk are reported `not_checked`, and a job still validates when only `not_checked` rules remain (otherwise nothing could validate). `dependencies` and `permissions` rules are always `not_checked` (dependencies are Later, Q5). | ASSUMED (Q14 A) | Phase 5 |
+| A-10 | 2026-10-27 | `complete-export` (Q39 B, Phase 5) does not require a registered file; validation reports a missing one. | ASSUMED | Phase 5 |
+| A-11 | 2026-10-27 | Old export jobs that name no project are visible to platform admins only (nobody else is a member of "no project"). | ASSUMED | Phase 5 |
+| A-12 | 2026-10-27 | `create_job` called without a request (internal callers, tests) is trusted: any existing project is accepted. Every API call passes its request, so membership is always checked there. | ASSUMED | |
+| A-13 | 2026-10-27 | The admin for export jobs is view-only; validation rules and destinations stay editable (rules have no API). | ASSUMED | Phase 5 |
+| A-14 | 2026-10-27 | Signed-URL expiry does not apply (Q3/Q4: no files are served and no links exist); "a disabled user loses access" is tested across the three apps in Phase 12. | ASSUMED | Phase 12 |
 
-**Q39 (OPEN, non-blocking). Who moves an export job to Exporting, Exported or Failed-during-export?**
+**Q39 (ANSWERED 2026-10-27: B). Who moves an export job to Exporting, Exported or Failed-during-export?**
+
+**Answer: B.** Add `start-export`, `complete-export` and `fail` actions so a pipeline tool can report progress. Built in Phase 5 (project-scoped from the start); the details are in `docs/publishing/PLAN.md` section 9. The question and options as asked:
 The map has these states (they existed in the model) but no endpoint reaches them: validation only produces Validated or Failed, and the DCC tool has no way to report that an export started or finished. Why it matters: today a job can never become Exported through the API, so the "Published" word the UI shows comes from Validated.
 * **A. Leave it (assumed for now).** Nothing changes; the states stay reachable only through `JobService.move`.
 * B. Add `POST /{id}/start-export/`, `/complete-export/` and `/fail/` (code `publishing.update`, project-scoped from Phase 5), so a pipeline tool can report progress; `complete-export` could record the files the job produced.
 * C. Remove Exporting and Exported from the map until a tool needs them.
-Recommendation: **B**, but only once you know which tool reports the export; until then **A**. Default if "your call": **A**. Blocks: nothing.
+Recommendation was **B** once the reporting tool is known; default **A**. Status: ANSWERED, B.
 
 ## Checks only you can make
 

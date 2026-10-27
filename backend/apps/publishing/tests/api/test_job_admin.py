@@ -31,7 +31,7 @@ def test_the_status_and_history_fields_are_read_only_in_the_admin():
     assert set(model_admin.get_readonly_fields(request, obj=PublishItem())) >= PROTECTED
 
 
-def test_a_posted_status_is_ignored_by_the_admin_form(client, project):
+def test_jobs_are_view_only_in_the_admin_even_for_a_superuser(client, project):
     from django.urls import reverse
 
     from apps.identity.tests.factories import UserFactory
@@ -45,9 +45,15 @@ def test_a_posted_status_is_ignored_by_the_admin_form(client, project):
         },
     )  # fmt: skip
     client.force_login(UserFactory.create(is_superuser=True, is_staff=True))
-    url = reverse("admin:publishing_publishitem_change", args=[job.pk])
 
-    client.post(url, {"name": "n", "status": "Exported", "retry_count": 9, "code": "HACK-1"})
-
+    assert client.get(reverse("admin:publishing_publishitem_changelist")).status_code == 200
+    assert client.get(reverse("admin:publishing_publishitem_add")).status_code == 403
+    change = reverse("admin:publishing_publishitem_change", args=[job.pk])
+    delete = reverse("admin:publishing_publishitem_delete", args=[job.pk])
+    assert (
+        client.post(change, {"name": "n", "status": "Exported", "code": "HACK-1"}).status_code
+        == 403
+    )
+    assert client.post(delete, {"post": "yes"}).status_code == 403
     fresh = PublishItem.objects.get(pk=job.pk)
-    assert (fresh.status, fresh.retry_count, fresh.code) == ("Pending", 0, job.code)
+    assert (fresh.status, fresh.code) == ("Pending", job.code)

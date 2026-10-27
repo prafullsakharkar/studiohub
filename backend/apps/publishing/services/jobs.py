@@ -5,13 +5,13 @@ Export job use cases: server-made codes and creation (docs/publishing/CONTRACTS.
 from __future__ import annotations
 
 from typing import Any
-from uuid import UUID
 
 from django.db import transaction
 from django.db.models.functions import Upper
 from rest_framework.exceptions import ValidationError
 
 from apps.audit.models import AuditLog
+from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.project import ProjectSelector
 from apps.production.selectors.version import VersionSelector
 from apps.publishing.models import PublishCounter, PublishItem
@@ -67,34 +67,57 @@ def _copy_entity_from_version(version: Any, data: dict[str, Any]) -> dict[str, A
     return copied
 
 
+def _resolve_project(value: Any, request: Any):
+    """The project a job is for: any existing one for internal calls, one the caller may use for a request."""
+    if request is None:
+        return ProjectSelector.resolve_by_lookup(value)
+    return ProjectSelector.resolve_visible(request, value)
+
+
+def _resolve_version(version_id: Any, request: Any):
+    if request is None:
+        return VersionSelector.resolve(version_id)
+    return VersionSelector.resolve_visible(request, version_id)
+
+
 @transaction.atomic
-def create_job(*, actor: Any, data: dict[str, Any]) -> PublishItem:
+def create_job(*, actor: Any, data: dict[str, Any], request: Any = None) -> PublishItem:
     """
     Create an export job.
 
-    ``project_id`` (a UUID or code) must name an existing project; ``version_id`` may name the
-    version the job produced, which supplies the project and the shot or asset. A blank ``code``
-    is numbered by the server (needs a project); a code that is sent must be unused in any case.
+    With a ``request`` (every API call) the project and the version must be ones the caller may
+    use, and a project is required unless the caller is a platform admin. An unknown project, a
+    project the caller is not in and a malformed id all give the same "Unknown project." (no way to
+    tell them apart). Without a ``request`` (internal callers, which are trusted) any existing
+    project is accepted.
+
+    ``version_id`` may name the version the job produced, which supplies the project and the shot or
+    asset. A blank ``code`` is numbered by the server (needs a project); a code that is sent must be
+    unused in any case.
     """
     data = dict(data)
     project = None
     if data.get("project_id") not in (None, ""):
-        project = ProjectSelector.resolve_by_lookup(data["project_id"])
+        project = _resolve_project(data["project_id"], request)
         if project is None:
             raise ValidationError({"project_id": ["Unknown project."]})
 
     version = None
     if data.get("version_id") not in (None, ""):
-        try:
-            version = VersionSelector.resolve(UUID(str(data["version_id"])))
-        except ValueError:
-            version = None
+        version = _resolve_version(data["version_id"], request)
         if version is None or (
             project is not None and version.project_id != project.pk  # pyright: ignore[reportAttributeAccessIssue]
         ):
             raise ValidationError({"version_id": ["Unknown version."]})
         project = project or version.project
         data.update(_copy_entity_from_version(version, data))
+
+    if (
+        project is None
+        and request is not None
+        and not ProductionBaseSelector.is_platform_admin(getattr(request, "user", None))
+    ):
+        raise ValidationError({"project_id": ["A project is required."]})
 
     missing = [
         name

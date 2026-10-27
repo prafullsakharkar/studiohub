@@ -13,8 +13,13 @@ from apps.identity.tests.factories import UserFactory
 
 @pytest.fixture
 def staff_user(db):
-    """Create a staff user."""
-    return UserFactory(is_staff=True)
+    """An operator who sees every project: a platform admin (superuser) who is staff.
+
+    The older job tests create jobs with no project and read them back, which only a platform
+    admin may do since jobs are narrowed to the caller's projects. Tests about scoping use
+    ``member()`` and ``outsider()`` from ``tests/helpers.py`` instead.
+    """
+    return UserFactory(is_staff=True, is_superuser=True)
 
 
 @pytest.fixture

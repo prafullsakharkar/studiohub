@@ -246,7 +246,7 @@ PRODUCTION_LEAD_PERMISSIONS = _production_codes(
     track="view",
     show="view",
     delivery="view",
-    publishing="view",
+    publishing="view create",
 ) + ["audit.view", "note.create"]
 
 # An artist reads what the work needs, logs their own time and publishes their own versions.
@@ -314,7 +314,8 @@ ROLE_SPECS: list[dict[str, Any]] = [
         "name": "VFX Supervisor",
         "priority": 30,  # identity RolePriority.LEAD
         "scope": "project",
-        "permissions": PRODUCTION_FULL_PERMISSIONS,
+        # Deleting export job records is an admin task (docs/delivery-pipeline Q34).
+        "permissions": [c for c in PRODUCTION_FULL_PERMISSIONS if c != "publishing.delete"],
     },
     {
         "code": "lead-artist",

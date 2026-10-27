@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from apps.core.admin.base import PlatformScopedModelAdmin
+from apps.publishing.admin.files import ViewOnlyMixin
 from apps.publishing.models import (
     PublishDestination,
     PublishItem,
@@ -9,7 +10,7 @@ from apps.publishing.models import (
 
 
 @admin.register(PublishItem)
-class PublishItemAdmin(PlatformScopedModelAdmin):
+class PublishItemAdmin(ViewOnlyMixin, PlatformScopedModelAdmin):
     list_display = (
         "code",
         "name",
@@ -42,8 +43,9 @@ class PublishItemAdmin(PlatformScopedModelAdmin):
 
     ordering = ("-created_at",)
 
-    # The status moves only through the workflow service (constants/workflow.py); results and
-    # lineage are records of what happened.
+    # View only: numbering, project checks and the status map live in the services
+    # (services/jobs.py, services/workflow.py), and the admin would bypass all of them.
+    # (The fields below are read-only too, in case a deployment re-enables editing.)
     readonly_fields = (
         "code",
         "status",

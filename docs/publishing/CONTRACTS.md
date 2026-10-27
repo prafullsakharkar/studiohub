@@ -1,6 +1,6 @@
 # Publishing contracts
 
-Phase 2 target design, 2026-10-27. Q13-Q38 are answered (ASSUMED, `DECISIONS.md`). **Phases 3 and 4 are implemented** (Phase 3: storage roots, files, lifecycle, job codes and links, constraints, verification command; Phase 4: the job workflow, honest validation, working `PATCH`, derived latest file); sections marked *Phase 5* are still design. Items marked *(Qnn)* cite the decision. Cross-app rules: `docs/delivery-pipeline/CONTRACTS.md` (X-01 to X-10). Audit: `ANALYSIS.md`. Order of work: `PLAN.md`.
+Phase 2 target design, 2026-10-27. Q13-Q38 are answered (ASSUMED, `DECISIONS.md`). **Phases 3, 4 and 5 are implemented** (Phase 3: storage roots, files, lifecycle, job codes and links, constraints, verification command; Phase 4: the job workflow, honest validation, working `PATCH`, derived latest file; Phase 5: project scoping of jobs, the export-report actions, `job_status`, role changes, admin, OpenAPI). Rows below say **Built** where a phase has done them. Items marked *(Qnn)* cite the decision. Cross-app rules: `docs/delivery-pipeline/CONTRACTS.md` (X-01 to X-10). Audit: `ANALYSIS.md`. Order of work: `PLAN.md`.
 
 **What the app is after this work** (Q1, Q3, Q13): Production's `Version` stays the published record (numbering, approval, publish, hero: production D-29). Publishing owns (1) the **registry of files** of a published version, with their checksums and lifecycle, (2) the **storage roots** those files live under, and (3) the existing **DCC export jobs** (`PublishItem`), now linked to the version they produced. StudioHub registers paths; it never stores or moves bytes.
 
@@ -158,14 +158,15 @@ All under `/api/v1/publishing/`. Existing paths keep their shapes unless stated.
 
 | ID | Endpoint | Before | After | Client impact |
 |---|---|---|---|---|
-| API-PUB-01 | `GET /publishing/`, `GET /publishing/{id}/` | every project's jobs | jobs of the caller's projects (X-03); platform admins all; others' ids 404 | lists shrink for non-admins |
-| API-PUB-02 | `POST /publishing/` | any project id; unknown id → 500; client code | **Phase 3:** an unknown project is 400 "Unknown project."; `version_id` optional (must exist, of that project); blank code → server code (needs a project); a sent code must be unused in any case; the response now includes `id`. **Phase 5:** project required and membership checked | none yet; the frontend's `project_id` must be sent from Phase 5 on (it already sends it when it is a UUID) |
+| API-PUB-01 | `GET /publishing/`, `GET /publishing/{id}/` | every project's jobs | **Built (Phase 5):** jobs of the caller's projects (X-03); platform admins see all, including old jobs that name no project (everyone else sees none of those); another project's id is a 404 identical to an unknown id; every action on a foreign job is a 404 too; leaving a project takes effect on the next request | lists shrink for non-admins |
+| API-PUB-02 | `POST /publishing/` | any project id; unknown id → 500; client code | **Built:** the project is required unless the caller is a platform admin (400 "A project is required."); an unknown project, a project the caller is not in and a malformed id all give the same 400 "Unknown project."; `version_id` optional (must be a version of a project the caller may use, and of that project, else 400 "Unknown version."); blank code → server code (needs a project); a sent code must be unused in any case; the response includes `id` | **the frontend sends `project_id` only when it looks like a UUID, so a non-admin whose active project is not a UUID now gets a 400** |
 | API-PUB-03 | `PATCH/PUT /publishing/{id}/` | 500 | **Built (Phase 4):** 200 with the detail shape; editable `name`, `dcc_tool`, `dcc_version`, `source_file`, `source_version`, `export_path`, `export_format`, `export_options`, `validation_rules` while the job is Pending or Failed (otherwise 409 `job_not_editable`); `status`, `is_archived`, `retry_count`, `code` are read-only (400 "Cannot be set directly." unless the value is the current one; the API's word for the status, e.g. "Queued", counts as current). Paths are stored as sent: they are DCC-side paths, not registry paths | the frontend never calls it |
 | API-PUB-04 | `POST /{id}/validate/` | any state; "Published" after unpublish | **Built:** only from Pending, or Validated (re-validation); anything else 409. The answer keeps `success`, `publish_id`, `status`, `validation_results` (now a list of rules with `status` passed / failed / warning / not_checked and the old boolean `passed`, which is `null` for not_checked), `all_passed` (no blocking failure), and adds `counts` and `checked_at`. The same summary is stored in the job's `validation_results` | the UI does not read the answer's rule list (it reads the job's `validation_rules`) |
 | API-PUB-05 | `POST /{id}/retry/` | 500 unless Failed | **Built:** 409 `invalid_transition` unless Failed *(Q27)*; clears the error, counts the attempt once | |
 | API-PUB-06 | `POST /{id}/republish/` | duplicate codes | **Built:** a new Pending job with a server code and `republished_from`, from a job in any status (the old job is untouched); the body `comment` is noted in the audit row (that a comment was given, not its text), `artist_name` is ignored | |
 | API-PUB-07 | `POST /{id}/unpublish/` | reason ignored | **Built:** `reason` stored as `cancel_reason`; from Pending, Validating, Validated or Failed only; from Exporting, Exported or Cancelled 409. `user_name` is ignored (the actor is the caller). The job reads "Unpublished" as before | the UI offers Unpublish on every job that is not already "Unpublished": on an Exported (or Exporting) job it now gets a 409 |
-| API-PUB-08 | read shape `status` | Validated/Exported → "Published" | unchanged until Phase 5 (*Q15 = A*); Phase 5 adds `job_status` (raw) beside it; the label change waits for a frontend release | none now |
+| API-PUB-08 | read shape `status` | Validated/Exported → "Published" | **Built:** `status` is unchanged (*Q15 = A*); `job_status` (the stored word, read-only) is added beside it in the list and detail shapes; the label change waits for a frontend release | additive |
+| API-PUB-14 | `POST /publishing/{id}/start-export/`, `/complete-export/`, `/fail/` | — | **Built (Q39 B):** Validated → Exporting; Exporting → Exported (final, no file required); Exporting → Failed with a required `reason` stored as the error message. `publishing.update`, project-scoped, audited (reason text not recorded), 409 `invalid_transition` from any other state | new; lets a pipeline tool report the export |
 | API-PUB-09 | `GET/POST /publishing/files/`, `GET /publishing/files/{id}/` | — | new; list filters `version_id`, `project_id`, `status`, `role`, `storage_root`; POST registers one file (201, or 200 for an identical retry); no PUT/PATCH/DELETE (405) | new |
 | API-PUB-10 | `POST /publishing/files/bulk-register/` | — | new; Q36 bulk contract (1-100 items, 200/207, per-item `id`, `ok`, `error`) | new |
 | API-PUB-11 | `POST /publishing/files/{id}/deprecate|restore|revoke/` | — | new; body `note` / `reason` / `override_reason` | new |
@@ -180,7 +181,7 @@ All under `/api/v1/publishing/`. Existing paths keep their shapes unless stated.
 |---|---|---|
 | list / read jobs and files | `publishing.view` | project membership; platform admin all |
 | create job, register files | `publishing.create` | member of the version's project |
-| edit job, validate, retry, republish, cancel | `publishing.update` | member |
+| edit job, validate, retry, republish, cancel, start-export, complete-export, fail | `publishing.update` | member (a job of another project is a 404) |
 | delete job (soft) | `publishing.delete` | member; refused for jobs with registered files |
 | deprecate, restore file | `publishing.deprecate` (new) | member |
 | revoke file | `publishing.revoke` (new) | member; reason required |
@@ -188,7 +189,7 @@ All under `/api/v1/publishing/`. Existing paths keep their shapes unless stated.
 | manage storage roots | `publishing.storage.manage` (new) | studio-wide |
 | destinations | `publishing.view/create/update/delete` (as today) | studio-wide |
 
-Role-to-code proposal: `PLAN.md` §6 (*Q34*).
+Roles (*Q34*, **built**): `PLAN.md` §6; pinned by `tests/test_permission_matrix.py`.
 
 ## 5. Security contracts
 
@@ -198,7 +199,7 @@ Role-to-code proposal: `PLAN.md` §6 (*Q34*).
 | SEC-PUB-02 | No user-controlled value is ever joined to a server path except through DOM-PUB-03; the server opens files only under configured mounts. |
 | SEC-PUB-03 | No endpoint returns file contents or signed URLs (Q3: register-only). |
 | SEC-PUB-04 | Logs carry ids and codes only: no paths of revoked files, no revoke reasons, no checksums of mismatching files (log-capture test). |
-| SEC-PUB-05 | The admin is read-only for files, storage roots in use, job status and validation results; no delete for files. |
+| SEC-PUB-05 | **Built:** the admin is view-only for storage roots, files, file events, the counter and export jobs (no add, change or delete, superusers included). Validation rules and destinations stay editable there. |
 
 ## 6. Audit events
 

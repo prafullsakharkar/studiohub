@@ -45,6 +45,8 @@ class PublishListSerializer(serializers.ModelSerializer[PublishItem]):
     entity_type_display = serializers.CharField(source="get_entity_type_display", read_only=True)
     dcc_tool_display = serializers.CharField(source="get_dcc_tool_display", read_only=True)
     status = serializers.SerializerMethodField()
+    # The stored status, unmapped: the label in ``status`` is kept for the frontend (decision Q15).
+    job_status = serializers.CharField(source="status", read_only=True)
 
     def get_status(self, obj):
         return frontend_status(obj)
@@ -66,6 +68,7 @@ class PublishListSerializer(serializers.ModelSerializer[PublishItem]):
             "export_path",
             "export_format",
             "status",
+            "job_status",
             "is_success",
             "is_failed",
             "retry_count",
@@ -78,6 +81,7 @@ class PublishListSerializer(serializers.ModelSerializer[PublishItem]):
             "id",
             "code",
             "status",
+            "job_status",
             "is_success",
             "is_failed",
             "retry_count",
@@ -94,6 +98,7 @@ class PublishDetailSerializer(serializers.ModelSerializer[PublishItem]):
     entity_type_display = serializers.CharField(source="get_entity_type_display", read_only=True)
     dcc_tool_display = serializers.CharField(source="get_dcc_tool_display", read_only=True)
     status = serializers.SerializerMethodField()
+    job_status = serializers.CharField(source="status", read_only=True)
 
     def get_status(self, obj):
         return frontend_status(obj)
@@ -117,6 +122,7 @@ class PublishDetailSerializer(serializers.ModelSerializer[PublishItem]):
             "export_path",
             "export_format",
             "status",
+            "job_status",
             "validation_rules",
             "validation_results",
             "export_options",
@@ -132,6 +138,7 @@ class PublishDetailSerializer(serializers.ModelSerializer[PublishItem]):
             "id",
             "code",
             "status",
+            "job_status",
             "validation_results",
             "error_message",
             "retry_count",
@@ -173,7 +180,9 @@ class PublishCreateSerializer(serializers.Serializer[Any]):
         from apps.publishing.services.jobs import create_job
 
         request = self.context.get("request")
-        return create_job(actor=getattr(request, "user", None), data=validated_data)
+        return create_job(
+            actor=getattr(request, "user", None), data=validated_data, request=request
+        )
 
 
 class PublishUpdateSerializer(serializers.Serializer[Any]):
@@ -244,3 +253,9 @@ class PublishUnpublishSerializer(serializers.Serializer[Any]):
 
 class PublishRetrySerializer(serializers.Serializer[Any]):
     """The retry action takes no body."""
+
+
+class PublishFailSerializer(serializers.Serializer[Any]):
+    """Body of the fail action: why the export failed (stored as the job's error message)."""
+
+    reason = serializers.CharField(max_length=2000)

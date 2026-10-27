@@ -1,6 +1,6 @@
 # Publishing plan (Phases 3-5)
 
-**Status:** Phases 3 and 4 implemented 2026-10-27 (see "Phase 3 as built" and "Phase 4 as built" at the end); Phase 5 not started.
+**Status:** Phases 3, 4 and 5 implemented 2026-10-27 (see "Phase 3/4/5 as built" at the end). The publishing plan is complete; remaining cross-app checks are in Phase 12.
 
 Phase 2 design, 2026-10-27. Branch `feature/publishing-improvement`, created at the start of Phase 3 from `develop`. One commit per phase after its gate. Contracts: `CONTRACTS.md`. Decisions: `DECISIONS.md`, `docs/delivery-pipeline/DECISIONS.md`.
 
@@ -191,3 +191,45 @@ Frontend flows that assumed free movement (read from `studiohub-react`, not run)
 | "Re-Run Validation" in the details modal | `PublishDetailsModal.tsx` (always shown) | works on Pending and Validated jobs; **409 on Failed (use Retry), Exported, Cancelled** |
 | "Unpublish" on every job that is not "Unpublished" | `PublishDetailsModal.tsx:306` | works until the job is Exporting or Exported; **409 after** |
 | Guards use `can('delivery.update')` for publishing actions | `PublishingPage.tsx:64-70` | unrelated to this phase: the UI checks the wrong code |
+
+## 9. Added to Phase 5 by Q39 = B (answered 2026-10-27)
+
+Three actions let a pipeline tool report the export, so a job can reach Exporting, Exported and Failed
+through the API. They are additive; nothing existing changes.
+
+| Action | From | To | Body | Code |
+|---|---|---|---|---|
+| `POST /publishing/{id}/start-export/` | Validated | Exporting | none | `publishing.update` |
+| `POST /publishing/{id}/complete-export/` | Exporting | Exported | none | `publishing.update` |
+| `POST /publishing/{id}/fail/` | Exporting | Failed | `reason` (stored as `error_message`) | `publishing.update` |
+
+They go through `JobService` and the existing map (so a wrong state is 409 `invalid_transition`, and
+the race tests apply), are narrowed to the caller's projects like the other job actions, write an audit
+row, and appear in OpenAPI. Files the export produced are linked when they are registered
+(`export_job_id` on `files/`), not by `complete-export`; the `file_exists` validation rule already reads
+those. Assumption A-10: `complete-export` does not require any registered file (a job may export
+something that is registered later), so a missing file is reported by validation, not refused here.
+After this, a job that is Exported can no longer be unpublished (it is final), as already documented
+for the UI.
+
+## 10. Phase 5 as built
+
+Done as planned: P-12 (jobs narrowed to the caller's projects, project required on create, membership
+checked for the project and version; IDOR tests for every action), P-13 (Q34 role changes: vfx-supervisor
+loses `publishing.delete`, lead-artist gains `publishing.create`; the publishing role matrix is pinned
+and "no enforced code is orphaned" is tested), P-14 (job admin view-only, `job_status`, OpenAPI bodies,
+log-capture test), P-15 (Q39 B: `start-export`, `complete-export`, `fail`).
+
+Differences from the plan:
+
+| Plan said | Built | Why |
+|---|---|---|
+| Signed-URL expiry | not applicable; a test pins that no publishing response carries a URL, token or signed link | Q3: StudioHub registers paths and never serves files |
+| Disabled user loses access | not tested here | it is an identity property; Phase 12 tests it across all three apps |
+| Admin hardening for rules and destinations | left editable | validation rules have no API: the admin is the only way to manage them |
+| Role matrix test across production roles | the production matrix pin was updated for the two changed grants | `apps/production/tests/test_permission_matrix.py` pins `publishing.*` too |
+
+Frontend impact (read from `studiohub-react`, not run): the create form sends `project_id` only when it
+looks like a UUID (`RESTPublishingAdapter.ts`), so a non-admin working in a project whose id is not a UUID
+now gets a 400; lists are narrower; old jobs that name no project are visible to platform admins only; the
+"Unpublish" button gets 409s on Exporting/Exported jobs (now reachable through the new actions).

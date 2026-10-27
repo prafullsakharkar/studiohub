@@ -186,6 +186,60 @@ class JobService:
 
     @classmethod
     @transaction.atomic
+    def start_export(cls, *, actor: Any, job: Any) -> PublishItem:
+        """A pipeline tool reports that the export began: Validated to Exporting."""
+        locked = cls._lock(job)
+        source = locked.status
+        cls._step(locked, wf.JOB_EXPORTING)
+        cls._audit(
+            actor,
+            locked,
+            AuditLog.ACTION_UPDATE,
+            f"Publish {locked.code} export started",
+            **{"from": source, "to": wf.JOB_EXPORTING},
+        )
+        return locked
+
+    @classmethod
+    @transaction.atomic
+    def complete_export(cls, *, actor: Any, job: Any) -> PublishItem:
+        """The export finished: Exporting to Exported (final). No file is required; validation reports a missing one."""
+        locked = cls._lock(job)
+        source = locked.status
+        cls._step(locked, wf.JOB_EXPORTED)
+        cls._audit(
+            actor,
+            locked,
+            AuditLog.ACTION_UPDATE,
+            f"Publish {locked.code} export completed",
+            **{"from": source, "to": wf.JOB_EXPORTED},
+        )
+        return locked
+
+    @classmethod
+    @transaction.atomic
+    def fail(cls, *, actor: Any, job: Any, reason: str) -> PublishItem:
+        """The export failed: Exporting to Failed, with the reason the tool gives (stored as the error message)."""
+        reason = (reason or "").strip()
+        if not reason:
+            raise ValidationError({"reason": ["A reason is required."]})
+        locked = cls._lock(job)
+        source = locked.status
+        if source != wf.JOB_EXPORTING:
+            # The map also allows Validating to Failed, but that is a validation result, not an export report.
+            raise cls._refuse(source, wf.JOB_FAILED)
+        cls._step(locked, wf.JOB_FAILED, extra={"error_message": reason})
+        cls._audit(
+            actor,
+            locked,
+            AuditLog.ACTION_UPDATE,
+            f"Publish {locked.code} export failed",
+            **{"from": source, "to": wf.JOB_FAILED, "reason_given": True},
+        )
+        return locked
+
+    @classmethod
+    @transaction.atomic
     def cancel(cls, *, actor: Any, job: Any, reason: str = "") -> PublishItem:
         """Cancel a job that has not finished (the ``unpublish`` action). Exported and Cancelled jobs are final."""
         locked = cls._lock(job)
