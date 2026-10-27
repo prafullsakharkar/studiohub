@@ -185,6 +185,18 @@ class Settings(BaseSettings):
     )
 
     ####################################################################
+    # Published file storage roots
+    ####################################################################
+
+    # JSON object {"<storage root code>": "<directory the app server can read>"}, for example
+    # {"PROJECTS": "/mnt/projects"}. Only roots listed here have their checksums verified; a
+    # root is otherwise registered-only. Empty by default (nothing is read from disk). The
+    # codes match publishing StorageRoot.code in any case.
+    publishing_storage_mounts: dict[str, str] = Field(
+        default_factory=dict, alias="PUBLISHING_STORAGE_MOUNTS"
+    )
+
+    ####################################################################
     # API key / personal access token hashing
     ####################################################################
 

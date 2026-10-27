@@ -11,51 +11,11 @@ if TYPE_CHECKING:
     from apps.publishing.models import PublishItem
 
 
-def create_publish_item(
-    *,
-    name: str,
-    code: str,
-    project_id: str | None = None,
-    entity_type: str,
-    entity_id: str,
-    entity_code: str,
-    entity_name: str,
-    dcc_tool: str,
-    dcc_version: str = "",
-    source_file: str = "",
-    source_version: str = "",
-    export_path: str = "",
-    export_format: str = "",
-    created_by_id: str | None = None,
-) -> PublishItem:
-    """Create a new publish item."""
-    from apps.publishing.models import PublishItem
-
-    publish = PublishItem.objects.create(
-        name=name,
-        code=code,
-        project_id=project_id,
-        entity_type=entity_type,
-        entity_id=entity_id,
-        entity_code=entity_code,
-        entity_name=entity_name,
-        dcc_tool=dcc_tool,
-        dcc_version=dcc_version,
-        source_file=source_file,
-        source_version=source_version,
-        export_path=export_path,
-        export_format=export_format,
-        created_by_id=created_by_id,
-    )
-    
-    return publish
-
-
 @transaction.atomic
 def validate_publish(
     *,
     publish_id: str,
-    user_id: str,
+    user_id: str | None,
 ) -> dict[Any, Any]:
     """Run validation on a publish item."""
     from apps.audit.models import AuditLog
@@ -140,7 +100,7 @@ def validate_publish(
 def republish(
     *,
     publish_id: str,
-    user_id: str,
+    user_id: str | None,
 ) -> PublishItem:
     """Create a new iteration of a publish."""
     from apps.audit.models import AuditLog
@@ -148,13 +108,16 @@ def republish(
     
     original = PublishItem.objects.get(id=publish_id)
     
-    # Increment version
-    new_code = f"{original.code}_v{original.retry_count + 2}"
+    from apps.publishing.services.jobs import next_republish_code
+
+    new_code = next_republish_code(original)
     
     publish = PublishItem.objects.create(
         name=original.name,
         code=new_code,
         project=original.project,
+        version=original.version,
+        republished_from=original,
         entity_type=original.entity_type,
         entity_id=original.entity_id,
         entity_code=original.entity_code,
@@ -188,7 +151,7 @@ def republish(
 def unpublish(
     *,
     publish_id: str,
-    user_id: str,
+    user_id: str | None,
 ) -> PublishItem:
     """Deprecate and unlink a publish."""
     from apps.audit.models import AuditLog
@@ -197,8 +160,7 @@ def unpublish(
     publish = PublishItem.objects.get(id=publish_id)
     
     publish.status = PublishItem.STATUS_CANCELLED
-    publish.is_archived = True
-    publish.save(update_fields=["status", "is_archived"])
+    publish.save(update_fields=["status"])
     
     # Create audit log
     AuditLog.objects.create(
@@ -217,7 +179,7 @@ def unpublish(
 def retry_publish(
     *,
     publish_id: str,
-    user_id: str,
+    user_id: str | None,
 ) -> PublishItem:
     """Re-trigger a failed publish."""
     from apps.audit.models import AuditLog

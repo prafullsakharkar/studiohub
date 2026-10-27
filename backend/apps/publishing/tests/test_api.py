@@ -1,6 +1,7 @@
 """
 API tests for publishing endpoints (platform-global, org-free).
 """
+
 import pytest
 from django.urls import reverse
 from rest_framework import status

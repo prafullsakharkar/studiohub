@@ -68,7 +68,9 @@ FULL = {
     "show": ALL_ACTIONS,
     "automation": ALL_ACTIONS,
     "delivery": ALL_ACTIONS,
-    "publishing": ALL_ACTIONS,
+    # deprecate / revoke: move a registered file between its lifecycle states
+    # (docs/publishing/CONTRACTS.md; delivery-pipeline Q34)
+    "publishing": f"{ALL_ACTIONS} deprecate revoke",
     "note": "create",
     "audit": "view",
 }
@@ -127,7 +129,8 @@ EXPECTED = {
     # The code freeze on shots and assets is lifted by production-admin only.
     "production-admin": _codes(FULL) | {"production.code.rename"},
     "vfx-supervisor": _codes(FULL),
-    "org-admin": _codes(FULL),
+    # Storage roots are studio-wide; org-admin administers them.
+    "org-admin": _codes(FULL) | {"publishing.storage.manage"},
     "lead-artist": _codes(LEAD),
     "artist": _codes(ARTIST),
     "org-member": set(),

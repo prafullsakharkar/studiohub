@@ -1,6 +1,7 @@
 """
 API tests for publish destination endpoints (platform-global, org-free).
 """
+
 import pytest
 from django.urls import reverse
 from rest_framework import status
@@ -37,17 +38,13 @@ class TestDestinationEndpoints:
         assert response.data["type"] == "Storage Cluster"
         assert response.data["protocol"] == "NFS"
 
-    def test_list_destinations_forbidden_for_regular_user(
-        self, authenticated_client
-    ):
+    def test_list_destinations_forbidden_for_regular_user(self, authenticated_client):
         url = reverse("api:v1:publishing:destination-list")
         response = authenticated_client.get(url)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_create_destination_forbidden_for_regular_user(
-        self, authenticated_client
-    ):
+    def test_create_destination_forbidden_for_regular_user(self, authenticated_client):
         url = reverse("api:v1:publishing:destination-list")
         response = authenticated_client.post(
             url,

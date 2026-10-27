@@ -2,8 +2,8 @@
 Publish destination viewset for API endpoints.
 """
 from apps.core.api.pagination import StandardPagination
+from apps.core.api.viewsets.platform_crud import PlatformCrudViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
-from apps.deliveries.api.viewsets.base import PlatformCrudViewSet
 from apps.identity.permissions import HasPermission
 from apps.publishing.api.serializers.destination import (
     DestinationDetailSerializer,

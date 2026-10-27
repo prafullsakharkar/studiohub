@@ -1,6 +1,7 @@
 """
 Publishing test configuration.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -30,3 +31,17 @@ def staff_client(staff_user) -> APIClient:
     client = APIClient()
     client.force_authenticate(user=staff_user)
     return client
+
+
+@pytest.fixture
+def project(db):
+    from apps.production.tests.factories import ProjectFactory
+
+    return ProjectFactory.create(code="PUBP")
+
+
+@pytest.fixture
+def root(db):
+    from apps.publishing.tests.helpers import storage_root
+
+    return storage_root()

@@ -141,18 +141,24 @@ class PublishDetailSerializer(serializers.ModelSerializer[PublishItem]):
 
 
 class PublishCreateSerializer(serializers.Serializer[Any]):
-    """Serializer for creating a publish."""
-    
+    """
+    Serializer for creating an export job.
+
+    Everything beyond field shapes (project, version, numbering, codes) is the service's
+    (``services.jobs.create_job``); this class only describes the body.
+    """
+
+    id = serializers.UUIDField(read_only=True)
     name = serializers.CharField(required=True, max_length=255)
-    code = serializers.CharField(required=True, max_length=50)
-    project_id = serializers.UUIDField(required=False, allow_null=True)
-    entity_type = serializers.ChoiceField(
-        choices=["Shot", "Asset"],
-        required=True,
-    )
-    entity_id = serializers.CharField(required=True, max_length=100)
-    entity_code = serializers.CharField(required=True, max_length=255)
-    entity_name = serializers.CharField(required=True, max_length=255)
+    # Blank: the server numbers it from the project (needs project_id).
+    code = serializers.CharField(required=False, allow_blank=True, max_length=50)
+    project_id = serializers.CharField(required=False, allow_null=True, allow_blank=True, max_length=64)
+    version_id = serializers.UUIDField(required=False, allow_null=True)
+    # Required unless version_id names a version of a shot or asset (checked by the service).
+    entity_type = serializers.ChoiceField(choices=["Shot", "Asset"], required=False)
+    entity_id = serializers.CharField(required=False, max_length=100)
+    entity_code = serializers.CharField(required=False, max_length=255)
+    entity_name = serializers.CharField(required=False, max_length=255)
     dcc_tool = serializers.ChoiceField(
         choices=[c[0] for c in PublishItem.TOOL_CHOICES],
         required=True,
@@ -164,14 +170,10 @@ class PublishCreateSerializer(serializers.Serializer[Any]):
     export_format = serializers.CharField(required=False, allow_blank=True, max_length=50)
 
     def create(self, validated_data):
-        """Create a publish item."""
-        from apps.publishing.models import PublishItem
+        from apps.publishing.services.jobs import create_job
 
-        created_by = validated_data.pop("created_by", None)
-        return PublishItem.objects.create(
-            created_by=created_by,
-            **validated_data,
-        )
+        request = self.context.get("request")
+        return create_job(actor=getattr(request, "user", None), data=validated_data)
 
 
 class PublishUpdateSerializer(serializers.Serializer[Any]):

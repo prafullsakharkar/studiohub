@@ -92,6 +92,8 @@ class AuditLog(EntityModel, TimeStampedModel):
     TARGET_THEME = "theme"
     TARGET_LOCALIZATION = "localization"
     TARGET_MASTERDATA = "masterdata"
+    TARGET_PUBLISHING = "publishing"
+    TARGET_SCHEDULING = "scheduling"
 
     TARGET_CHOICES = [
         (TARGET_USER, _("User")),
@@ -119,6 +121,8 @@ class AuditLog(EntityModel, TimeStampedModel):
         (TARGET_THEME, _("Theme")),
         (TARGET_LOCALIZATION, _("Localization")),
         (TARGET_MASTERDATA, _("Master data")),
+        (TARGET_PUBLISHING, _("Publishing")),
+        (TARGET_SCHEDULING, _("Scheduling")),
     ]
     
     action = models.CharField(

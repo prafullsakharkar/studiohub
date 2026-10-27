@@ -7,8 +7,8 @@ from rest_framework.response import Response
 
 from apps.audit.services.background_job import BackgroundJobService
 from apps.core.api.pagination import StandardPagination
+from apps.core.api.viewsets.platform_crud import PlatformCrudViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
-from apps.deliveries.api.viewsets.base import PlatformCrudViewSet
 from apps.identity.permissions import HasPermission
 from apps.publishing.api.serializers.publish import (
     PublishCreateSerializer,
@@ -61,10 +61,6 @@ class PublishingViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTy
 
     search_fields = ("name", "code", "entity_code", "entity_name")
     ordering_fields = ("name", "created_at", "status")
-
-    def perform_create(self, serializer):
-        user = self.request.user
-        serializer.save(created_by=user if user.is_authenticated else None)
 
     @action(detail=True, methods=["post"], url_path="validate")
     def validate(self, request, *args, **kwargs):

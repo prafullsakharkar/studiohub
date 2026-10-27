@@ -34,6 +34,8 @@ class AuditTargetCodes:
     THEME = "theme"
     LOCALIZATION = "localization"
     MASTERDATA = "masterdata"
+    PUBLISHING = "publishing"
+    SCHEDULING = "scheduling"
 
     ALL = [
         USER,
@@ -61,6 +63,8 @@ class AuditTargetCodes:
         THEME,
         LOCALIZATION,
         MASTERDATA,
+        PUBLISHING,
+        SCHEDULING,
     ]
 
     DESCRIPTIONS = {
@@ -89,4 +93,6 @@ class AuditTargetCodes:
         THEME: "Theme entity",
         LOCALIZATION: "Localization entity",
         MASTERDATA: "Master data entity",
+        PUBLISHING: "Publishing entity (published files, export jobs, storage roots)",
+        SCHEDULING: "Scheduling entity (calendars, bookings, leave, milestones)",
     }
