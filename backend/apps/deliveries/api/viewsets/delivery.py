@@ -26,17 +26,16 @@ from apps.deliveries.api.viewsets.base import PlatformCrudViewSet
 from apps.deliveries.constants.permissions import DeliveryPermissions
 from apps.deliveries.selectors.delivery import DeliverySelector
 from apps.deliveries.services.delivery import (
-    add_version_to_delivery,
     approve_delivery,
     cancel_delivery,
     complete_delivery,
     prepare_delivery,
     reject_delivery,
-    remove_version_from_delivery,
     retry_delivery,
     submit_delivery,
     validate_delivery,
 )
+from apps.deliveries.services.package import DeliveryService
 from apps.identity.permissions import HasPermission
 
 
@@ -87,46 +86,48 @@ class DeliveryViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingType
             }
         return result
 
-    def perform_create(self, serializer):
-        user = self.request.user
-        serializer.save(created_by=user if user.is_authenticated else None)
+    def _detail(self, package):
+        """The detail shape of ``package``, read fresh so its items and files are included."""
+        fresh = DeliverySelector.get_queryset(request=self.request).get(pk=package.pk)
+        return DeliveryDetailSerializer(fresh, context=self.get_serializer_context()).data
+
+    def update(self, request, *args, **kwargs):
+        """Edit a delivery's details (only before it is sent); answers with the detail shape."""
+        partial = kwargs.pop("partial", False)
+        delivery = self.get_object()
+        serializer = DeliveryUpdateSerializer(
+            delivery, data=request.data, partial=partial, context=self.get_serializer_context()
+        )
+        serializer.is_valid(raise_exception=True)
+        delivery = serializer.save()
+        return Response(self._detail(delivery))
 
     @action(detail=True, methods=["post"], url_path="add-version")
     def add_version(self, request, *args, **kwargs):
-        """Add a version to the delivery."""
+        """Add a published version of the delivery's project; its files come from the registry."""
         delivery = self.get_object()
         serializer = DeliveryAddVersionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        add_version_to_delivery(
-            delivery_id=str(delivery.id),
+        DeliveryService.add_version(
+            actor=request.user,
+            package=delivery,
             version_id=serializer.validated_data["version_id"],
-            version_number=serializer.validated_data["version_number"],
-            entity_type=serializer.validated_data["entity_type"],
-            entity_code=serializer.validated_data["entity_code"],
-            entity_name=serializer.validated_data["entity_name"],
-            file_size_bytes=serializer.validated_data.get("file_size_bytes", 0),
-            frame_count=serializer.validated_data.get("frame_count", 0),
-            file_path=serializer.validated_data["file_path"],
-            checksum_md5=serializer.validated_data.get("checksum_md5", ""),
-            checksum_sha256=serializer.validated_data.get("checksum_sha256", ""),
         )
 
-        return Response(DeliveryDetailSerializer(delivery).data, status=status.HTTP_201_CREATED)
+        return Response(self._detail(delivery), status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"], url_path="remove-version")
     def remove_version(self, request, *args, **kwargs):
-        """Remove a version reference from the delivery."""
+        """Remove an item (by ``item_id``, or the older integer ``version_ref_id``)."""
         delivery = self.get_object()
         serializer = DeliveryRemoveVersionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        key = serializer.validated_data.get("item_id") or serializer.validated_data["version_ref_id"]
 
-        delivery = remove_version_from_delivery(
-            delivery_id=str(delivery.id),
-            version_ref_id=str(serializer.validated_data["version_ref_id"]),
-        )
+        DeliveryService.remove_version(actor=request.user, package=delivery, item_key=key)
 
-        return Response(DeliveryDetailSerializer(delivery).data)
+        return Response(self._detail(delivery))
 
     @action(detail=True, methods=["post"], url_path="validate")
     def validate(self, request, *args, **kwargs):
@@ -170,6 +171,7 @@ class DeliveryViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingType
             executor_kwargs={
                 "delivery_id": str(delivery.id),
                 "user_id": str(request.user.id),
+                "transfer_reference": serializer.validated_data.get("transfer_reference", ""),
             },
         )
 

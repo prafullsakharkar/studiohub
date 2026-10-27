@@ -3,10 +3,18 @@ Delivery Package model for client turnover.
 """
 from __future__ import annotations
 
+import uuid
+
+from django.conf import settings
 from django.db import models
+from django.db.models.functions import Upper
 from django.utils import timezone
 
 from apps.core.models.bases.entity import EntityModel
+from apps.deliveries.constants import workflow as _wf
+from apps.deliveries.models.counter import DeliveryCounter
+from apps.deliveries.models.item_file import DeliveryItemFile, FrozenSnapshotError
+from apps.deliveries.models.qc import DeliveryQCCheck
 
 
 class DeliveryPackage(EntityModel):
@@ -79,7 +87,7 @@ class DeliveryPackage(EntityModel):
     
     project = models.ForeignKey(
         "production.Project",
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         null=True,
         blank=True,
         related_name="delivery_packages",
@@ -89,7 +97,7 @@ class DeliveryPackage(EntityModel):
     
     client = models.ForeignKey(
         "masterdata.Client",
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         null=True,
         blank=True,
         related_name="delivery_packages",
@@ -174,12 +182,46 @@ class DeliveryPackage(EntityModel):
         default=False,
         help_text="Whether this delivery is archived",
     )
+
+    # -- what was sent (set once, by the send) ------------------------------------------
+    sent_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        help_text="Who sent the delivery",
+    )
+
+    sent_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the delivery was sent (the real time, not the last edit)",
+    )
+
+    transfer_reference = models.CharField(
+        max_length=200,
+        blank=True,
+        default="",
+        help_text="Id of the transfer outside StudioHub (Aspera job, ticket), typed by the sender",
+    )
+
+    qc_run_id = models.UUIDField(
+        null=True,
+        blank=True,
+        help_text="The latest QC run of this delivery (rows in DeliveryQCCheck)",
+    )
     
     class Meta:
         db_table = "deliveries_package"
         ordering = ("-created_at",)
         verbose_name = "Delivery Package"
         verbose_name_plural = "Delivery Packages"
+        constraints = [
+            # Any case, every row (deleted ones keep their code); the server numbers new
+            # deliveries and a code that is sent is checked against this.
+            models.UniqueConstraint(Upper("code"), name="deliveries_package_ucode_uniq"),
+        ]
     
     def __str__(self):
         return f"{self.code}: {self.name}"
@@ -204,7 +246,7 @@ class DeliveryVersionRef(models.Model):
     
     delivery = models.ForeignKey(
         DeliveryPackage,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="versions",
         db_index=True,
         help_text="Delivery package",
@@ -212,12 +254,28 @@ class DeliveryVersionRef(models.Model):
     
     version = models.ForeignKey(
         "production.Version",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="delivery_references",
         db_index=True,
         help_text="Version being delivered",
     )
     
+    uid = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        help_text="Id the API uses for this item (the integer pk is kept for older clients)",
+    )
+
+    added_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        help_text="Who added this item",
+    )
+
     version_number = models.CharField(
         max_length=50,
         help_text="Version number at time of delivery",
@@ -289,6 +347,21 @@ class DeliveryVersionRef(models.Model):
     
     def __str__(self):
         return f"{self.delivery.code} - {self.version_number}"
+
+    def save(self, *args, **kwargs):
+        """An item of a delivery that has been sent never changes."""
+        if not self._state.adding and not self._delivery_can_change():
+            raise FrozenSnapshotError("This item belongs to a delivery that was sent.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        if not self._delivery_can_change():
+            raise FrozenSnapshotError("This item belongs to a delivery that was sent.")
+        return super().delete(*args, **kwargs)
+
+    def _delivery_can_change(self) -> bool:
+        package = self.delivery
+        return package.status in _wf.WORKING_STATES and package.sent_at is None
 
 
 class DeliveryDestination(EntityModel):
@@ -390,3 +463,13 @@ class DeliveryDestination(EntityModel):
 
     def __str__(self):
         return f"{self.name} ({self.destination_type})"
+
+
+__all__ = [
+    "DeliveryCounter",
+    "DeliveryDestination",
+    "DeliveryItemFile",
+    "DeliveryPackage",
+    "DeliveryQCCheck",
+    "DeliveryVersionRef",
+]

@@ -88,7 +88,7 @@ One row per file of an item, copied from `FileSnapshot` (X-04): `item` (FK, `PRO
 
 ### DOM-DLV-06 QC: `DeliveryQCCheck` (new, append-only, table `deliveries_qc_check`)
 
-`delivery`, `item` (nullable for package checks), `run_id` (UUID per run), `check` (`version_published`, `same_project`, `files_present`, `checksum_ok`, `not_revoked`, plus spec checks when specs exist, LATER per Q5), `outcome` (`pass`, `fail`, `not_checked`), `detail`, `checked_by`, `checked_at`. A run is **current** when no item, file or version changed since it ran (compared by `run_id` stored on the package). Sign-off and send require a current run with no `fail`. No update or delete (append-only queryset, as production `StatusHistory`).
+`delivery`, `item` (nullable for package checks), `run_id` (UUID per run), `check_name` (`version_published`, `same_project`, `files_present`, `checksum_ok`, `not_revoked`, plus spec checks when specs exist, LATER per Q5), `outcome` (`pass`, `fail`, `not_checked`), `detail`, `checked_by`, `checked_at`. A run is **current** when no item, file or version changed since it ran (compared by `run_id` stored on the package). Sign-off and send require a current run with no `fail`. No update or delete (append-only queryset, as production `StatusHistory`).
 
 ### DOM-DLV-07 Separation of duties *(Q28)*
 
@@ -214,3 +214,34 @@ Role matrix proposal: `PLAN.md` §6.
 | QC fails on prepare / sign-off / send | 409 `qc_failed` with the failing checks |
 | Self sign-off | 403 `separation_of_duties` |
 | Passcode key missing | 503 `secret_storage_unavailable` on write; reads omit the value |
+
+## 8. Phase 6 as built (differences from the target above)
+
+Sections 1 to 7 are the target for Phases 6 to 8. What Phase 6 built, where it differs:
+
+| Target | Built in Phase 6 |
+|---|---|
+| `create(actor, request, data)` | `create(actor, data)`; project and client are checked for existence only (Phase 8 adds scoping). Code is server-made `DLV-<PROJECT>-<0001>` when blank (`services/numbering.py`, `DeliveryCounter`) |
+| `run_qc` | `DeliveryService.validate` (Draft to Validating; runs QC) and `services/qc.run` |
+| `prepare`: working states, QC, manifest | the same, from any editable state; a failed QC is a 409 `qc_failed` listing the checks, and the run's rows are kept |
+| `send` from Signed Off | from **Prepared** only, while `sent_at` is empty; second call 409 `invalid_transition`; response is the detail shape |
+| `sign_off`, `reopen`, `revise`, `cancel`, `set_passcode`, `read_passcode`, `DeliveryStatusChange`, `transitions.move` | Phase 7 |
+| API-DLV-01 (`passcode` with `delivery.view_secret`) | the passcode is never returned; `has_passcode` is (Phase 7 adds the secret read) |
+| API-DLV-03 | built. Not editable: `status`, `code`, `client_status`, `is_archived`, totals, `manifest_data`, `checksums` (400 `Cannot be set directly.` unless echoed unchanged). `destination_id` is Phase 8 |
+| API-DLV-04 | `version_id` only; a version must be published, of the delivery's project, with at least one Registered file and no checksum mismatch or missing; else 400 with `reason` (`unknown_version`, `not_published`, `no_registered_files`, `checksum_problem`). Typed snapshot keys are ignored |
+| API-DLV-05 | `item_id` (item `uid`) or the old integer `version_ref_id` |
+| API-DLV-06 | `validate` runs QC and returns the run; `retry` is unchanged (Phase 7) |
+| API-DLV-07 | `prepare` as in the row above |
+| API-DLV-10 | `submit` takes `transfer_reference`; it runs through `BackgroundJobService` as before |
+| `DeliveryQCCheck.check` | the field is `check_name` (`check` collides with `Model.check()`) |
+
+Item response shape: `id` (integer), `uid` (UUID), `version_id`, snapshot fields, `is_validated`, `validation_notes`, and `files` (`storage_root_code`, `relative_path`, `role`, `file_type_code`, `size_bytes`, `sha256`, `frame_start`, `frame_end`, `frozen_at`). Detail also has `sent_at`, `transfer_reference`, `has_passcode`.
+
+**Frontend impact of Phase 6**
+
+* Submit on a delivery that was never prepared, and Prepare on a delivery whose versions have no registered files, are now 409 / 400 (they used to "succeed" with placeholders).
+* `add-version` needs a published version with registered files; the typed snapshot values are ignored.
+* The passcode is not in any response; read `has_passcode`.
+* `total_size_bytes` and `total_frames` are derived from the items.
+* `PATCH`/`PUT` now answer 200 instead of 500.
+

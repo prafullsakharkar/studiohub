@@ -52,63 +52,50 @@ class TestDeliveryEndpoints:
         assert response.data["name"] == "Test Delivery"
 
     def test_add_version_to_delivery(self, staff_client):
-        """Test adding a version to a delivery."""
-        delivery = DeliveryPackage.objects.create(
-            name="Test Delivery",
-            code="DEL-TEST-003",
-        )
-        from apps.production.models import Version
-        from apps.production.tests.factories import ProjectFactory
-        version = Version.objects.create(
-            code="VER-001",
-            project=ProjectFactory.create(code="DLV1"),  # a version always has a project (D-29)
-        )
+        """A published version is added; its number and files come from the registry, not the body."""
+        from apps.deliveries.tests.helpers import make_package, published_version
+
+        delivery = make_package(code="DEL-TEST-003")
+        version = published_version(delivery.project)
 
         url = reverse("api:v1:deliveries:delivery-add-version", kwargs={"uuid": str(delivery.id)})
         data = {
             "version_id": str(version.id),
-            "version_number": "v001",
+            # what older clients still send; accepted and ignored
+            "version_number": "v999",
             "entity_type": "Shot",
-            "entity_code": "SH001",
-            "entity_name": "Test Shot",
+            "entity_code": "WRONG",
+            "entity_name": "Typed by the client",
             "file_path": "/path/to/file.exr",
+            "checksum_sha256": "nothex",
         }
 
         response = staff_client.post(url, data, format="json")
 
         assert response.status_code == status.HTTP_201_CREATED
         assert delivery.versions.count() == 1
+        ref = delivery.versions.get()
+        assert ref.version_number == version.version_number != "v999"
+        assert ref.file_path.startswith("PROJECTS:show/")
+        assert ref.checksum_sha256 == "1" * 64
 
     def test_remove_version_from_delivery(self, staff_client):
-        """Test removing a version reference from a delivery."""
-        delivery = DeliveryPackage.objects.create(
-            name="Test Delivery",
-            code="DEL-TEST-004",
-        )
-        from apps.production.models import Version
-        from apps.production.tests.factories import ProjectFactory
-        version = Version.objects.create(
-            code="VER-002",
-            project=ProjectFactory.create(code="DLV2"),  # a version always has a project (D-29)
-        )
+        """Test removing a version reference from a delivery (by the older integer id)."""
+        from apps.deliveries.tests.helpers import make_package, published_version
 
-        add_url = reverse("api:v1:deliveries:delivery-add-version", kwargs={"uuid": str(delivery.id)})
-        staff_client.post(
-            add_url,
-            {
-                "version_id": str(version.id),
-                "version_number": "v001",
-                "entity_type": "Shot",
-                "entity_code": "SH001",
-                "entity_name": "Test Shot",
-                "file_path": "/path/to/file.exr",
-            },
-            format="json",
+        delivery = make_package(code="DEL-TEST-004R")
+        version = published_version(delivery.project)
+
+        add_url = reverse(
+            "api:v1:deliveries:delivery-add-version", kwargs={"uuid": str(delivery.id)}
         )
+        staff_client.post(add_url, {"version_id": str(version.id)}, format="json")
         assert delivery.versions.count() == 1
         ref_id = str(delivery.versions.first().id)  # type: ignore[union-attr]
 
-        url = reverse("api:v1:deliveries:delivery-remove-version", kwargs={"uuid": str(delivery.id)})
+        url = reverse(
+            "api:v1:deliveries:delivery-remove-version", kwargs={"uuid": str(delivery.id)}
+        )
         response = staff_client.post(
             url,
             {"version_ref_id": ref_id},
@@ -146,11 +133,10 @@ class TestDeliveryEndpoints:
         assert "success" in response.data
 
     def test_prepare_delivery(self, staff_client):
-        """Test preparing a delivery."""
-        delivery = DeliveryPackage.objects.create(
-            name="Test Delivery",
-            code="DEL-TEST-005",
-        )
+        """Test preparing a delivery that holds a published version."""
+        from apps.deliveries.tests.helpers import package_with_items
+
+        delivery = package_with_items(code="DEL-TEST-005")
 
         url = reverse("api:v1:deliveries:delivery-prepare", kwargs={"uuid": str(delivery.id)})
         response = staff_client.post(url)
@@ -159,11 +145,10 @@ class TestDeliveryEndpoints:
         assert "success" in response.data
 
     def test_submit_delivery(self, staff_client):
-        """Test submitting a delivery."""
-        delivery = DeliveryPackage.objects.create(
-            name="Test Delivery",
-            code="DEL-TEST-006",
-        )
+        """Test submitting a prepared delivery."""
+        from apps.deliveries.tests.helpers import prepared_package
+
+        delivery = prepared_package(code="DEL-TEST-006")
 
         url = reverse("api:v1:deliveries:delivery-submit", kwargs={"uuid": str(delivery.id)})
         response = staff_client.post(url)
@@ -244,12 +229,12 @@ class TestDeliveryEndpoints:
 
     def test_prepare_reads_as_ready(self, staff_client):
         """Test the prepare action output uses the frontend status word."""
-        delivery = DeliveryPackage.objects.create(
-            name="Test Delivery",
-            code="DEL-TEST-012",
-        )
+        from apps.deliveries.tests.helpers import package_with_items
+
+        delivery = package_with_items(code="DEL-TEST-012")
 
         url = reverse("api:v1:deliveries:delivery-prepare", kwargs={"uuid": str(delivery.id)})
         response = staff_client.post(url)
 
         assert response.status_code == status.HTTP_200_OK
+        assert response.data["status"] == "Ready"

@@ -23,6 +23,7 @@ from django.db.models import Count, Q
 from django.utils import timezone
 
 from apps.production.selectors.base import ProductionBaseSelector
+from apps.production.selectors.delivery_figures import delivery_figures
 from apps.production.selectors.rollups import ShotCurrentVersionSelector
 
 
@@ -82,10 +83,10 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         small `recent_*` example lists are sliced.
         """
 
-        from apps.deliveries.models import DeliveryPackage
         from apps.production.models import Asset, Review, Shot, Task
 
         today = timezone.localdate()
+        figures = delivery_figures()
         scope = {"project": project}
 
         shot_statuses = (
@@ -100,9 +101,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         review_statuses = (
             Review.objects.filter(**scope).values("status").annotate(count=Count("id"))
         )
-        delivery_rows = list(
-            DeliveryPackage.objects.filter(**scope).values("status", "expires_at")
-        )
+        delivery_rows = figures.status_rows(project)
 
         from django.db.models.functions import Lower
 
@@ -143,11 +142,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             )
             .order_by("-updated_at")[:6]
         )
-        recent_deliveries = list(
-            DeliveryPackage.objects.filter(**scope)
-            .select_related("client")
-            .order_by("-updated_at")[:6]
-        )
+        recent_deliveries = figures.recent_items(project, 6)
 
         shot_stats = cls._shot_stats(cls._status_counts(shot_statuses))
         task_stats = cls._task_stats(
@@ -239,7 +234,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
                 "upcoming": delivery_stats["upcoming"],
                 "delivered": delivery_stats["delivered"],
                 "late": delivery_stats["late"],
-                "items": [cls._delivery_item(d) for d in recent_deliveries],
+                "items": recent_deliveries,
             },
             "activity": cls._activity(project, recent_shots, recent_tasks),
         }
@@ -474,27 +469,6 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             "upcoming": total - delivered - late,
         }
 
-    @classmethod
-    def _delivery_item(cls, delivery) -> dict[str, Any]:
-        client = getattr(delivery, "client", None)
-        try:
-            item_count = delivery.version_count
-        except Exception:  # noqa: BLE001
-            item_count = 0
-        item: dict[str, Any] = {
-            "id": str(delivery.id),
-            "title": delivery.name,
-            "package_name": delivery.code or "TURNOVER_PKG",
-            "status": delivery.status or "Draft",
-            "recipient": getattr(client, "name", "") or "",
-        }
-        expires_at = getattr(delivery, "expires_at", None)
-        # Contract requires `due_date` (string); empty when unscheduled.
-        item["due_date"] = expires_at.date().isoformat() if expires_at is not None else ""
-        if item_count:
-            item["item_count"] = item_count
-        return item
-
     # -- progress / schedule / workload -----------------------------------
 
     @classmethod
@@ -570,7 +544,6 @@ class ProjectDashboardSelector(ProductionBaseSelector):
 
     @classmethod
     def _next_deadline(cls, project, today: date) -> dict | None:
-        from apps.deliveries.models import DeliveryPackage
         from apps.production.models import Task
 
         upcoming_task = (
@@ -587,18 +560,11 @@ class ProjectDashboardSelector(ProductionBaseSelector):
                 "days_away": max(0, (upcoming_task.due_date - today).days),
                 "type": "Task",
             }
-        upcoming_delivery = (
-            DeliveryPackage.objects.filter(
-                project=project,
-                expires_at__date__gte=today,
-            )
-            .order_by("expires_at")
-            .first()
-        )
-        if upcoming_delivery is not None and upcoming_delivery.expires_at is not None:
-            due = upcoming_delivery.expires_at.date()
+        upcoming_delivery = delivery_figures().next_due(project, today)
+        if upcoming_delivery is not None:
+            due = upcoming_delivery["due"]
             return {
-                "title": upcoming_delivery.name,
+                "title": upcoming_delivery["title"],
                 "date": due.isoformat(),
                 "days_away": max(0, (due - today).days),
                 "type": "Delivery",
@@ -769,7 +735,6 @@ class ProjectDashboardSelector(ProductionBaseSelector):
 
     @classmethod
     def _project_entity_ids(cls, project) -> dict[str, set[str]]:
-        from apps.deliveries.models import DeliveryPackage
         from apps.production.models import (
             Asset,
             Review,
@@ -787,12 +752,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             ("Task", Task.objects.filter(project=project).values_list("id", flat=True)),
             ("Version", Version.objects.filter(project=project).values_list("id", flat=True)),
             ("Review", Review.objects.filter(project=project).values_list("id", flat=True)),
-            (
-                "DeliveryPackage",
-                DeliveryPackage.objects.filter(
-                    project=project
-                ).values_list("id", flat=True),
-            ),
+            ("DeliveryPackage", delivery_figures().entity_ids(project)),
         )
         return {name: {str(value) for value in ids} for name, ids in pairs}
 

@@ -2,8 +2,11 @@ from django.contrib import admin
 
 from apps.core.admin.base import PlatformScopedModelAdmin
 from apps.deliveries.models import (
+    DeliveryCounter,
     DeliveryDestination,
+    DeliveryItemFile,
     DeliveryPackage,
+    DeliveryQCCheck,
     DeliveryVersionRef,
 )
 
@@ -30,10 +33,10 @@ class DeliveryPackageAdmin(PlatformScopedModelAdmin):
     search_fields = (
         "code",
         "name",
-        "passcode",
     )
 
-
+    # The passcode is a secret for an external service (DLV-01): never searchable, never in a form.
+    exclude = ("passcode",)
 
     list_select_related = ("project", "client")
 
@@ -95,3 +98,37 @@ class DeliveryVersionRefAdmin(PlatformScopedModelAdmin):
     list_select_related = ("delivery", "version")
 
     ordering = ("-created_at",)
+
+
+class ViewOnlyAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
+    """The snapshot, the QC records and the counter are written by the services only."""
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(DeliveryItemFile)
+class DeliveryItemFileAdmin(ViewOnlyAdmin):
+    list_display = ("storage_root_code", "relative_path", "role", "item", "frozen_at")
+    list_filter = ("role",)
+    search_fields = ("relative_path",)
+    list_select_related = ("item",)
+
+
+@admin.register(DeliveryQCCheck)
+class DeliveryQCCheckAdmin(ViewOnlyAdmin):
+    list_display = ("delivery", "check_name", "outcome", "checked_at")
+    list_filter = ("check_name", "outcome")
+    list_select_related = ("delivery",)
+    ordering = ("-checked_at",)
+
+
+@admin.register(DeliveryCounter)
+class DeliveryCounterAdmin(ViewOnlyAdmin):
+    list_display = ("project_id", "last_number")

@@ -157,6 +157,14 @@ Recommendation and default: **A**. Blocks: Phases 5, 8, 11.
 | A-12 | 2026-10-27 | `create_job` called without a request (internal callers, tests) is trusted: any existing project is accepted. Every API call passes its request, so membership is always checked there. | ASSUMED | |
 | A-13 | 2026-10-27 | The admin for export jobs is view-only; validation rules and destinations stay editable (rules have no API). | ASSUMED | Phase 5 |
 | A-14 | 2026-10-27 | Signed-URL expiry does not apply (Q3/Q4: no files are served and no links exist); "a disabled user loses access" is tested across the three apps in Phase 12. | ASSUMED | Phase 12 |
+| A-15 | 2026-10-27 | `PATCH`/`PUT /deliveries/{id}/` are built in Phase 6, not later: the plan gave them (DLV-08) to no phase and the item rules need one edit path. | ASSUMED | `DeliveryService.update`, `tests/api/test_core_api.py` |
+| A-16 | 2026-10-27 | Create accepts any existing project and client (existence only). Project membership scoping and destination constraints stay Phase 8, like publishing's A-2. | ASSUMED | Phase 8 |
+| A-17 | 2026-10-27 | The passcode is no longer returned by any endpoint (`has_passcode` instead) and is out of the admin, but it is still stored in plain text until Phase 7 (encryption, `delivery.view_secret`). | ASSUMED | `api/serializers/delivery.py`, Phase 7 |
+| A-18 | 2026-10-27 | Send works from Prepared only and only while `sent_at` is empty. The old `retry` can set the status back to Prepared, but `sent_at` keeps the delivery closed: not editable, not sendable again. | ASSUMED | `DeliveryService.send`, `test_prepare_and_send.py` |
+| A-19 | 2026-10-27 | The stored totals columns are no longer written. Responses derive size and frames from the item snapshots. Old rows keep their stored values. | ASSUMED | `derived_totals` |
+| A-20 | 2026-10-27 | A failed QC on `prepare` or `send` commits the run's rows and the refreshed snapshot, then raises the 409. A refused attempt stays on record. | ASSUMED | `DeliveryService.prepare/send` |
+| A-21 | 2026-10-27 | Legacy items (typed snapshot, no item files) cannot pass QC until their version has registered files. They are not migrated or invented. | ASSUMED | `0005`, `qc.py` |
+| A-22 | 2026-10-27 | The test database has a hard limit: PostgreSQL keeps dropped columns forever, 1600 per table. `production_review` in `test_studiohub` has reached 1596 (1573 dropped) from repeated runs of the production migration tests, so three tests in `apps/production/tests/test_migrations_hierarchy.py` fail with `tables can have at most 1600 columns`. That is test-database state, not a code defect. The database must be recreated by someone with CREATEDB (or its schema reset); `deliveries_package` is at 78 of 1600. | OPEN (needs you) | Phase 6 gate |
 
 **Q39 (ANSWERED 2026-10-27: B). Who moves an export job to Exporting, Exported or Failed-during-export?**
 

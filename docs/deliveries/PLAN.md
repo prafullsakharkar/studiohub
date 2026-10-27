@@ -94,6 +94,19 @@ Tests:
 * `migrations/test_0007_stop_and_list.py`, round-trip of 0004-0007.
 * `production` tests: dashboard and nested route answer the same shapes through the provider; with the provider unregistered they answer empty shapes.
 
+### Phase 6 as built
+
+Everything above was built except where noted. Differences from the plan:
+
+* **Test files.** The plan's names became `tests/services/{test_add_version,test_qc,test_prepare_and_send,test_numbering_and_create}.py`, `tests/api/test_core_api.py`, `tests/test_provider.py`, `tests/concurrency/test_races_pg.py` and `tests/migrations/test_phase6_migrations.py`. Snapshot immutability and the manifest checksum are covered in `test_prepare_and_send.py`.
+* **PATCH/PUT pulled forward.** The plan gave `PATCH`/`PUT` (DLV-08) to no phase, so they are in Phase 6 (A-15).
+* **QC checks built:** `has_items` (package), then per item `same_project`, `version_published`, `files_present`, `checksum_ok`, `snapshot_current`. `not_revoked` is covered by `files_present` (only Registered files count); spec checks stay LATER (Q5).
+* **`send` works from Prepared** (the plan's target is Signed Off, which needs Phase 7's sign-off). It is single-use: `sent_at` set means closed (A-18).
+* **Failed QC keeps its rows.** `prepare` and `send` commit the QC run and raise the 409 afterwards, so a refused attempt is on record (A-20).
+* **Dashboard and nested route** read deliveries through a provider registered in `apps/core/providers.py`; Production no longer imports Deliveries (`tests/test_provider.py` checks this by parsing the imports).
+* **Migration tests** run the chain 0003 to latest and back once. PostgreSQL never reuses the slot of a dropped column (limit 1600 per table), so repeated round trips use up a table; see the note in `docs/delivery-pipeline/DECISIONS.md` (A-22).
+* **Races verified by removing the guard:** the package row lock (two sends) and the counter row lock (numbering) each make their tests fail when removed. The add-versus-send and double-add tests pass without the lock because the item save guard and the unique constraint also hold the invariant; they test the outcome, not the lock.
+
 ### Phase 7: workflow, approvals, secrets (`deliveries(phase-7): workflow, approvals and access`)
 
 * `test_transition_map.py`: every (from, to) pair; allowed pass, others give the Q27 status; actions, PATCH and bulk use the same map.

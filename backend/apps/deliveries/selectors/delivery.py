@@ -21,7 +21,7 @@ class DeliverySelector(BaseSelector):
         qs = cls.model.objects.select_related(
             "project",
             "client",
-        ).prefetch_related("versions")
+        ).prefetch_related("versions__files")
 
         if view is not None and hasattr(view, "filterset_class"):
             filterset = view.filterset_class(

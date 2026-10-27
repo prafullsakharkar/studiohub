@@ -1,11 +1,13 @@
 """
 Delivery serializers.
 """
+import json
 from typing import Any
 
 from rest_framework import serializers
 
-from apps.deliveries.models import DeliveryPackage, DeliveryVersionRef
+from apps.deliveries.models import DeliveryItemFile, DeliveryPackage, DeliveryVersionRef
+from apps.deliveries.services.package import DeliveryService
 
 # Backend status -> frontend contract words (types/deliveries.ts
 # DeliveryStatus). DB keeps backend words; only the read shape is mapped.
@@ -15,19 +17,49 @@ STATUS_OUTPUT_MAP = {
 }
 
 
+def derived_totals(package) -> tuple[int, int]:
+    """Total bytes and frames, summed from the items' snapshots (the stored columns are deprecated)."""
+    refs = list(package.versions.all())
+    return (
+        sum(ref.file_size_bytes or 0 for ref in refs),
+        sum(ref.frame_count or 0 for ref in refs),
+    )
+
+
+class DeliveryItemFileSerializer(serializers.ModelSerializer[DeliveryItemFile]):
+    """One file of an item, as copied from the published file registry."""
+
+    class Meta:
+        model = DeliveryItemFile
+        fields = (
+            "storage_root_code",
+            "relative_path",
+            "role",
+            "file_type_code",
+            "size_bytes",
+            "sha256",
+            "frame_start",
+            "frame_end",
+            "frozen_at",
+        )
+        read_only_fields = fields
+
+
 class DeliveryVersionRefSerializer(serializers.ModelSerializer[DeliveryVersionRef]):
-    """Serializer for delivery version references."""
-    
+    """Serializer for delivery version references. Everything about the files is the server's."""
+
     version_id = serializers.UUIDField(source="version.id", read_only=True)
     version_number = serializers.CharField(read_only=True)
     entity_type = serializers.CharField(read_only=True)
     entity_code = serializers.CharField(read_only=True)
     entity_name = serializers.CharField(read_only=True)
-    
+    files = DeliveryItemFileSerializer(many=True, read_only=True)
+
     class Meta:
         model = DeliveryVersionRef
         fields = (
             "id",
+            "uid",
             "version_id",
             "version_number",
             "entity_type",
@@ -40,23 +72,10 @@ class DeliveryVersionRefSerializer(serializers.ModelSerializer[DeliveryVersionRe
             "checksum_sha256",
             "is_validated",
             "validation_notes",
+            "files",
             "created_at",
         )
-        read_only_fields = (
-            "id",
-            "version_id",
-            "version_number",
-            "entity_type",
-            "entity_code",
-            "entity_name",
-            "file_size_bytes",
-            "frame_count",
-            "file_path",
-            "checksum_md5",
-            "checksum_sha256",
-            "is_validated",
-            "created_at",
-        )
+        read_only_fields = fields
 
 
 class DeliveryListSerializer(serializers.ModelSerializer[DeliveryPackage]):
@@ -67,12 +86,20 @@ class DeliveryListSerializer(serializers.ModelSerializer[DeliveryPackage]):
     version_count = serializers.IntegerField(read_only=True)
     is_expired = serializers.BooleanField(read_only=True)
     status = serializers.SerializerMethodField()
+    total_size_bytes = serializers.SerializerMethodField()
+    total_frames = serializers.SerializerMethodField()
 
     def get_status(self, obj):
         # Frontend contract words (types/deliveries.ts DeliveryStatus):
         # backend Prepared/Complete read as Ready/Completed.
         return STATUS_OUTPUT_MAP.get(obj.status, obj.status)
-    
+
+    def get_total_size_bytes(self, obj) -> int:
+        return derived_totals(obj)[0]
+
+    def get_total_frames(self, obj) -> int:
+        return derived_totals(obj)[1]
+
     class Meta:
         model = DeliveryPackage
         fields = (
@@ -93,33 +120,35 @@ class DeliveryListSerializer(serializers.ModelSerializer[DeliveryPackage]):
             "created_at",
             "updated_at",
         )
-        read_only_fields = (
-            "id",
-            "code",
-            "status",
-            "client_status",
-            "version_count",
-            "total_size_bytes",
-            "total_frames",
-            "is_expired",
-            "created_at",
-            "updated_at",
-        )
+        read_only_fields = fields
 
 
 class DeliveryDetailSerializer(serializers.ModelSerializer[DeliveryPackage]):
     """Serializer for delivery detail view."""
-    
+
     client = serializers.UUIDField(source="client.id", read_only=True)
     client_name = serializers.CharField(source="client.name", read_only=True)
     project = serializers.UUIDField(source="project.id", read_only=True)
     project_name = serializers.CharField(source="project.name", read_only=True)
     versions = DeliveryVersionRefSerializer(many=True, read_only=True)
     status = serializers.SerializerMethodField()
+    total_size_bytes = serializers.SerializerMethodField()
+    total_frames = serializers.SerializerMethodField()
+    # The passcode is never returned (DLV-01). Whether one is set is.
+    has_passcode = serializers.SerializerMethodField()
 
     def get_status(self, obj):
         return STATUS_OUTPUT_MAP.get(obj.status, obj.status)
-    
+
+    def get_total_size_bytes(self, obj) -> int:
+        return derived_totals(obj)[0]
+
+    def get_total_frames(self, obj) -> int:
+        return derived_totals(obj)[1]
+
+    def get_has_passcode(self, obj) -> bool:
+        return bool(obj.passcode)
+
     class Meta:
         model = DeliveryPackage
         fields = (
@@ -130,7 +159,7 @@ class DeliveryDetailSerializer(serializers.ModelSerializer[DeliveryPackage]):
             "client_status",
             "delivery_method",
             "delivery_destination",
-            "passcode",
+            "has_passcode",
             "expires_at",
             "total_size_bytes",
             "total_frames",
@@ -143,29 +172,25 @@ class DeliveryDetailSerializer(serializers.ModelSerializer[DeliveryPackage]):
             "client_name",
             "project",
             "project_name",
+            "sent_at",
+            "transfer_reference",
             "versions",
             "created_at",
             "updated_at",
         )
-        read_only_fields = (
-            "id",
-            "code",
-            "status",
-            "client_status",
-            "total_size_bytes",
-            "total_frames",
-            "manifest_data",
-            "checksums",
-            "created_at",
-            "updated_at",
-        )
+        read_only_fields = fields
 
 
 class DeliveryCreateSerializer(serializers.Serializer[Any]):
-    """Serializer for creating a delivery."""
-    
+    """
+    Body of ``POST /deliveries/``. Rules (project, client, numbering) are the service's.
+
+    A blank code is numbered by the server from ``project_id``. The passcode is write-only.
+    """
+
+    id = serializers.UUIDField(read_only=True)
+    code = serializers.CharField(required=False, allow_blank=True, max_length=50)
     name = serializers.CharField(required=True, max_length=255)
-    code = serializers.CharField(required=True, max_length=50)
     project_id = serializers.UUIDField(required=False, allow_null=True)
     client_id = serializers.UUIDField(required=False, allow_null=True)
     delivery_method = serializers.ChoiceField(
@@ -173,89 +198,113 @@ class DeliveryCreateSerializer(serializers.Serializer[Any]):
         default="S3",
     )
     delivery_destination = serializers.CharField(required=False, allow_blank=True)
-    passcode = serializers.CharField(required=False, allow_blank=True, max_length=64)
+    passcode = serializers.CharField(required=False, allow_blank=True, max_length=64, write_only=True)
     expires_at = serializers.DateTimeField(required=False, allow_null=True)
     notes = serializers.CharField(required=False, allow_blank=True)
     client_notes = serializers.CharField(required=False, allow_blank=True)
-    
-    def validate_code(self, value):
-        """Validate delivery code uniqueness."""
-        from apps.deliveries.models import DeliveryPackage
-        
-        if DeliveryPackage.objects.filter(code=value).exists():
-            raise serializers.ValidationError("A delivery with this code already exists.")
-        return value
 
     def create(self, validated_data):
-        """Create a delivery package."""
-        from apps.deliveries.models import DeliveryPackage
-
-        created_by = validated_data.pop("created_by", None)
-        return DeliveryPackage.objects.create(
-            created_by=created_by,
-            **validated_data,
-        )
+        request = self.context.get("request")
+        return DeliveryService.create(actor=getattr(request, "user", None), data=validated_data)
 
 
 class DeliveryUpdateSerializer(serializers.Serializer[Any]):
-    """Serializer for updating a delivery."""
-    
+    """
+    Body of ``PATCH``/``PUT``. Editable only before the delivery is sent (the service checks).
+
+    The status, code, client status, totals, manifest and archive flag are not editable: sending
+    a different value is a 400 "Cannot be set directly", sending the current one (an echo, as a
+    full ``PUT`` does) is accepted. Both the stored status and the word the API shows for it count
+    as current.
+    """
+
+    READ_ONLY_ECHO = {
+        "status": lambda p: {p.status, STATUS_OUTPUT_MAP.get(p.status, p.status)},
+        "code": lambda p: {p.code},
+        "client_status": lambda p: {p.client_status},
+        "is_archived": lambda p: {p.is_archived},
+        "total_size_bytes": lambda p: {derived_totals(p)[0], p.total_size_bytes},
+        "total_frames": lambda p: {derived_totals(p)[1], p.total_frames},
+        "manifest_data": lambda p: {json.dumps(p.manifest_data, sort_keys=True)},
+        "checksums": lambda p: {json.dumps(p.checksums, sort_keys=True)},
+    }
+
     name = serializers.CharField(required=False, max_length=255)
     delivery_method = serializers.ChoiceField(
         choices=["Aspera", "S3", "FTP", "Web Download"],
         required=False,
     )
     delivery_destination = serializers.CharField(required=False, allow_blank=True)
-    passcode = serializers.CharField(required=False, allow_blank=True, max_length=64)
+    passcode = serializers.CharField(required=False, allow_blank=True, max_length=64, write_only=True)
     expires_at = serializers.DateTimeField(required=False, allow_null=True)
     notes = serializers.CharField(required=False, allow_blank=True)
     client_notes = serializers.CharField(required=False, allow_blank=True)
 
+    def to_internal_value(self, data: Any) -> dict[str, Any]:
+        package = self.instance
+        refused = {}
+        if package is not None and hasattr(data, "get"):
+            for name, current in self.READ_ONLY_ECHO.items():
+                if name not in data:
+                    continue
+                sent = data[name]
+                comparable = json.dumps(sent, sort_keys=True) if isinstance(sent, (dict, list)) else sent
+                if comparable not in current(package):
+                    refused[name] = ["Cannot be set directly."]
+        if refused:
+            raise serializers.ValidationError(refused)
+        return super().to_internal_value(data)
+
+    def update(self, instance, validated_data):
+        request = self.context.get("request")
+        return DeliveryService.update(
+            actor=getattr(request, "user", None), package=instance, data=validated_data
+        )
+
 
 class DeliveryAddVersionSerializer(serializers.Serializer[Any]):
-    """Serializer for adding a version to a delivery."""
-    
+    """
+    Body of ``add-version``: only ``version_id`` counts. The version number, the shot or asset, the
+    files, sizes and checksums come from the published file registry; the keys older clients still
+    send for them are accepted and ignored.
+    """
+
     version_id = serializers.UUIDField(required=True)
-    version_number = serializers.CharField(required=True, max_length=50)
-    entity_type = serializers.CharField(required=True, max_length=50)
-    entity_code = serializers.CharField(required=True, max_length=255)
-    entity_name = serializers.CharField(required=True, max_length=255)
-    file_size_bytes = serializers.IntegerField(required=False, default=0)
-    frame_count = serializers.IntegerField(required=False, default=0)
-    file_path = serializers.CharField(required=True, max_length=500)
+    version_number = serializers.CharField(required=False, allow_blank=True, max_length=50)
+    entity_type = serializers.CharField(required=False, allow_blank=True, max_length=50)
+    entity_code = serializers.CharField(required=False, allow_blank=True, max_length=255)
+    entity_name = serializers.CharField(required=False, allow_blank=True, max_length=255)
+    file_size_bytes = serializers.IntegerField(required=False)
+    frame_count = serializers.IntegerField(required=False)
+    file_path = serializers.CharField(required=False, allow_blank=True, max_length=500)
     checksum_md5 = serializers.CharField(required=False, allow_blank=True, max_length=32)
     checksum_sha256 = serializers.CharField(required=False, allow_blank=True, max_length=64)
 
 
 class DeliveryRemoveVersionSerializer(serializers.Serializer[Any]):
-    """Serializer for removing a version reference from a delivery."""
+    """Body of ``remove-version``: the item's ``uid``, or the older integer ``version_ref_id``."""
 
-    # DeliveryVersionRef uses the default integer PK (not a UUID).
-    version_ref_id = serializers.IntegerField(required=True)
+    version_ref_id = serializers.IntegerField(required=False)
+    item_id = serializers.UUIDField(required=False)
+
+    def validate(self, attrs):
+        if "item_id" not in attrs and "version_ref_id" not in attrs:
+            raise serializers.ValidationError("Send item_id (or the older version_ref_id).")
+        return attrs
 
 
 class DeliveryValidateSerializer(serializers.Serializer[Any]):
-    """Serializer for validating a delivery."""
-    
-    def validate(self, data):
-        """Validate the delivery."""
-        return data
+    """The validate action takes no body."""
 
 
 class DeliveryPrepareSerializer(serializers.Serializer[Any]):
-    """Serializer for preparing a delivery."""
-    
-    def validate(self, data):
-        """Validate the preparation."""
-        return data
+    """The prepare action takes no body."""
 
 
 class DeliverySubmitSerializer(serializers.Serializer[Any]):
-    """Serializer for submitting a delivery."""
-    
-    def validate(self, data):
-        """Validate the submission."""
-        return data
+    """Body of the submit action: the id of the transfer made outside StudioHub, if any."""
+
+    transfer_reference = serializers.CharField(required=False, allow_blank=True, max_length=200)
 
 
 class DeliveryApproveSerializer(serializers.Serializer[Any]):
