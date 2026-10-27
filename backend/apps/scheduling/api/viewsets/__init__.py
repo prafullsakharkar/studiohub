@@ -40,14 +40,14 @@ from apps.scheduling.selectors import (
     ResourceSelector,
     WorkCalendarSelector,
 )
+from apps.scheduling.selectors.scope import ViewerScope
 from apps.scheduling.services import (
     approve_leave,
-    block_resource,
-    book_resource,
     reject_leave,
     update_calendar_event_status,
     working_leave_days,
 )
+from apps.scheduling.services.booking import BookingService
 from apps.scheduling.services.calendar import WorkCalendarService
 from apps.scheduling.services.milestone import MilestoneService
 
@@ -137,16 +137,17 @@ class ResourceViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingType
         body = BookResourceSerializer(data=request.data, context=self.get_serializer_context())
         body.is_valid(raise_exception=True)
         data = body.validated_data
-        event, task = data.get("event"), data.get("task")
 
-        schedule = book_resource(
-            resource_id=str(resource.id),
-            start_time=data["start_time"],
-            end_time=data["end_time"],
-            event_id=str(event.id) if event else None,
-            task_id=str(task.id) if task else None,
+        schedule = BookingService.book(
+            actor=request.user,
+            resource=resource,
+            start=data["start_time"],
+            end=data["end_time"],
             status=data["status"],
+            event=data.get("event"),
+            task=data.get("task"),
             notes=data["notes"],
+            viewer=ViewerScope.of(request),
         )
 
         return Response(
@@ -162,11 +163,14 @@ class ResourceViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingType
         body.is_valid(raise_exception=True)
         data = body.validated_data
 
-        schedule = block_resource(
-            resource_id=str(resource.id),
-            start_time=data["start_time"],
-            end_time=data["end_time"],
-            reason=data["reason"],
+        schedule = BookingService.book(
+            actor=request.user,
+            resource=resource,
+            start=data["start_time"],
+            end=data["end_time"],
+            status="Blocked",
+            notes=data["reason"],
+            viewer=ViewerScope.of(request),
         )
 
         return Response(
@@ -204,10 +208,28 @@ class ResourceScheduleViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMis
     ordering_fields = ("start_time", "end_time", "created_at")
 
     def perform_create(self, serializer):
-        serializer.save()
+        data = serializer.validated_data
+        serializer.instance = BookingService.book(
+            actor=self.request.user,
+            resource=data["resource"],
+            start=data["start_time"],
+            end=data["end_time"],
+            status=data.get("status", "Available"),
+            event=data.get("event"),
+            task=data.get("task"),
+            notes=data.get("notes", ""),
+            viewer=ViewerScope.of(self.request),
+        )
 
     def perform_update(self, serializer):
-        serializer.save()
+        booking = serializer.instance
+        assert booking is not None  # an update always has the row it changes
+        serializer.instance = BookingService.update(
+            actor=self.request.user,
+            booking=booking,
+            data=serializer.validated_data,
+            viewer=ViewerScope.of(self.request),
+        )
 
 
 class ResourceLeaveViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeArgument]

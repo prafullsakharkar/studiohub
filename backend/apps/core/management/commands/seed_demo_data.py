@@ -621,14 +621,25 @@ class Command(BaseCommand):
                 ).exists():
                     reporter.add("scheduling_schedules", "existing")
                     continue
-                ResourceSchedule.objects.create(
-                    resource=resource,
-                    start_time=start,
-                    end_time=end,
-                    status="Booked",
-                    task=task,
-                    notes=assignment.get("task_title", ""),
-                )
+                # A resource cannot hold two bookings at once (scheduling Phase 10): an assignment
+                # that overlaps one already seeded is skipped and reported, not a crash.
+                try:
+                    with transaction.atomic():
+                        ResourceSchedule.objects.create(
+                            resource=resource,
+                            start_time=start,
+                            end_time=end,
+                            status="Booked",
+                            task=task,
+                            notes=assignment.get("task_title", ""),
+                        )
+                except IntegrityError:
+                    reporter.add("scheduling_schedules", "skipped")
+                    reporter.note(
+                        "scheduling_schedules",
+                        f"{resource.code}: {start:%Y-%m-%d} overlaps another booking, skipped",
+                    )
+                    continue
                 reporter.add("scheduling_schedules", "created")
 
         for item in _load_ts_mock_array(path, "mockResourceLeaves"):

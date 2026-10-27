@@ -124,3 +124,44 @@ def working_hours(
                 total += share * rules.hours_per_day
         day += timedelta(days=1)
     return total.quantize(_CENTS, rounding=ROUND_HALF_UP)
+
+
+def week_days(rules: CalendarRules, monday: date) -> list[date]:
+    """The seven local dates of the week that starts on ``monday``."""
+    return [monday + timedelta(days=offset) for offset in range(7)]
+
+
+def available_days(
+    rules: CalendarRules,
+    monday: date,
+    holidays: Collection[date] = (),
+    leave_days: Collection[date] = (),
+) -> tuple[int, int]:
+    """
+    ``(available, usual)`` working days of the week that starts on ``monday``.
+
+    ``usual`` counts the days the calendar works in an ordinary week (holidays ignored);
+    ``available`` also drops the holidays and the days covered by ``leave_days``.
+    """
+    usual = [day for day in week_days(rules, monday) if is_working_day(rules, day)]
+    available = [day for day in usual if day not in holidays and day not in leave_days]
+    return len(available), len(usual)
+
+
+def week_capacity_hours(
+    rules: CalendarRules,
+    monday: date,
+    weekly_hours: Decimal | int | float,
+    holidays: Collection[date] = (),
+    leave_days: Collection[date] = (),
+) -> Decimal:
+    """
+    A resource's capacity for one week: its weekly hours scaled by the share of the usual working
+    days that are still available. An ordinary week gives ``weekly_hours`` unchanged, a week with
+    one holiday out of five working days gives four fifths of it, a week of leave gives 0.
+    """
+    available, usual = available_days(rules, monday, holidays, leave_days)
+    if usual == 0:
+        return Decimal(0).quantize(_CENTS)
+    hours = Decimal(str(weekly_hours)) * Decimal(available) / Decimal(usual)
+    return hours.quantize(_CENTS, rounding=ROUND_HALF_UP)

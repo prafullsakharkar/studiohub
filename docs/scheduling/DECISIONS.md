@@ -38,3 +38,15 @@ Phase 9 (2026-10-27). Numbers continue the shared list in `docs/delivery-pipelin
 | A-48 | 2026-10-27 | Reopening a milestone returns it to In Progress | ASSUMED | `services/milestone.py` |
 | A-49 | 2026-10-27 | Calendars and milestones are view-only in the admin | ASSUMED | `admin/scheduling.py` |
 | A-50 | 2026-10-27 | Event and resource create responses now carry `id` | ASSUMED | serializers |
+
+Phase 10 (2026-10-27):
+
+| # | Date | Assumption | Status | Affects |
+|---|---|---|---|---|
+| A-51 | 2026-10-27 | Superseded by A-57: Q32 ran as option B for part of Phase 10, on a wrong finding about `btree_gist` | SUPERSEDED | |
+| A-52 | 2026-10-27 | Overbooked bookings occupy time like Booked and Blocked | ASSUMED | `services/booking.py` |
+| A-53 | 2026-10-27 | Capacity is scaled by available/usual working days, not capped at working days times hours per day | ASSUMED (differs from CONTRACTS DOM-SCH-03 as proposed) | `domain/calendar.py`, `selectors/capacity.py` |
+| A-54 | 2026-10-27 | Only Approved leave reduces capacity or shows "On Leave" | ASSUMED | selectors |
+| A-55 | 2026-10-27 | Existing overlapping rows are left; `?status=` still filters the stored column; the admin can still write overlaps (Phase 11) | ASSUMED | |
+| A-56 | 2026-10-27 | Provider names `scheduling.project_milestones` and `scheduling.capacity`; the dashboard card keeps deriving its own milestones | ASSUMED | `providers.py` |
+| A-57 | 2026-10-27 | Q32 is option A as designed: service lock plus the PostgreSQL exclusion constraint (migration 0008). User: "Option 2, add the constraint and commit" | ANSWERED (user) | `migrations/0008_booking_exclusion.py`, `services/booking.py` |

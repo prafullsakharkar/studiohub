@@ -8,14 +8,16 @@ of each resource: Monday 00:00 to the next Monday 00:00 in the time zone of the
 work calendar the resource follows (docs/scheduling/CONTRACTS.md section 1); a
 resource with no calendar follows the default one, which is UTC out of the box.
 Slots partially overlapping the window contribute only their overlapping hours.
-Only `Booked`/`Overbooked` slots consume capacity. Leave and holidays reduce
-capacity from Phase 10; for now capacity is the resource's weekly figure.
+Only `Booked`/`Overbooked` slots consume capacity. A resource's capacity for the week is its weekly
+figure scaled by the share of the calendar's usual working days that are still available: holidays
+of its calendar (non-optional) and days covered by its approved leave take days away
+(``week_capacity_hours``).
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Any
 
 from django.utils import timezone
@@ -25,6 +27,7 @@ from apps.scheduling.domain.calendar import (
     CalendarRules,
     week_bounds,
     week_bounds_for_date,
+    week_capacity_hours,
 )
 from apps.scheduling.selectors.calendar import CalendarSelector, rules_of
 
@@ -98,7 +101,7 @@ def _week_slots(organization=None, week_start=None, week_end=None, **kwargs):
 
 @dataclass
 class ResourceWeek:
-    """One resource's week: the calendar it follows, the window and the bookings inside it."""
+    """One resource's week: the calendar it follows, the window, the bookings and the capacity."""
 
     resource: Any
     rules: CalendarRules
@@ -106,6 +109,8 @@ class ResourceWeek:
     end: datetime
     slots: list[Any]
     hours: float
+    #: the resource's weekly hours after holidays and approved leave are taken out
+    capacity: float = 0.0
 
     @property
     def day(self) -> date:
@@ -125,25 +130,61 @@ def week_window_for(
     return rules, start, end
 
 
+def _leave_days_by_resource(resource_ids: list[Any], monday: date) -> dict[Any, set[date]]:
+    """The dates of the week from ``monday`` that approved leave covers, per resource."""
+    from apps.scheduling.models import ResourceLeave
+
+    sunday = monday + timedelta(days=6)
+    days: dict[Any, set[date]] = {}
+    leaves = ResourceLeave.objects.filter(
+        resource_id__in=resource_ids,
+        status="Approved",
+        start_date__lte=sunday,
+        end_date__gte=monday,
+    ).values_list("resource_id", "start_date", "end_date")
+    for resource_id, first, last in leaves:
+        covered = days.setdefault(resource_id, set())
+        day = max(first, monday)
+        while day <= min(last, sunday):
+            covered.add(day)
+            day += timedelta(days=1)
+    return days
+
+
 def resource_weeks(
-    *, now: datetime | None = None, week_day: date | None = None
+    *,
+    now: datetime | None = None,
+    week_day: date | None = None,
+    resource_ids: list[Any] | None = None,
+    department_id: Any = None,
+    team_id: Any = None,
 ) -> list[ResourceWeek]:
     """
-    Every resource with its own week window and its allocated hours.
+    Every resource with its own week window, allocated hours and capacity.
 
-    Resources that follow the same rules share one window and one query; a studio on a single
-    calendar costs the same as before.
+    Resources that follow the same rules share one window and one booking query; a studio on a
+    single calendar costs the same as before. Holidays are read once per calendar and approved
+    leave once per window. ``resource_ids``, ``department_id`` and ``team_id`` narrow the list.
     """
     from apps.scheduling.models import Resource
 
     now = now or timezone.now()
-    default_rules = rules_of(CalendarSelector.default_calendar())
-    resources = list(Resource.objects.select_related("department", "calendar"))
+    default_calendar = CalendarSelector.default_calendar()
+    default_rules = rules_of(default_calendar)
+    queryset = Resource.objects.select_related("department", "calendar")
+    if resource_ids is not None:
+        queryset = queryset.filter(pk__in=resource_ids)
+    if department_id is not None:
+        queryset = queryset.filter(department_id=department_id)
+    if team_id is not None:
+        queryset = queryset.filter(team_id=team_id)
     groups: dict[CalendarRules, list[Any]] = {}
-    for resource in resources:
+    calendars: dict[Any, Any] = {}
+    for resource in queryset:
         own = resource.calendar
-        rules = default_rules if own is None or own.is_deleted else rules_of(own)
-        groups.setdefault(rules, []).append(resource)
+        calendar = default_calendar if own is None or own.is_deleted else own
+        calendars[resource.pk] = calendar
+        groups.setdefault(rules_of(calendar) if calendar else default_rules, []).append(resource)
 
     weeks: list[ResourceWeek] = []
     for rules, members in groups.items():
@@ -152,15 +193,30 @@ def resource_weeks(
             if week_day is not None
             else week_bounds(rules, now)
         )
+        monday = start.astimezone(rules.tz).date()
+        sunday = monday + timedelta(days=6)
         slots_by_resource: dict[Any, list[Any]] = {}
         for slot in _slots_in(start, end, [member.id for member in members]):
             slots_by_resource.setdefault(slot.resource_id, []).append(slot)
+        leave_days = _leave_days_by_resource([member.id for member in members], monday)
+        holidays: dict[Any, set[date]] = {}
         for member in members:
             slots = slots_by_resource.get(member.id, [])
             hours = sum(
                 _overlap_hours(slot.start_time, slot.end_time, start, end) for slot in slots
             )
-            weeks.append(ResourceWeek(member, rules, start, end, slots, hours))
+            calendar = calendars[member.pk]
+            key = calendar.pk if calendar is not None else None
+            if key not in holidays:
+                holidays[key] = CalendarSelector.holiday_dates(calendar, monday, sunday)
+            capacity = week_capacity_hours(
+                rules,
+                monday,
+                member.capacity_hours_per_week,
+                holidays[key],
+                leave_days.get(member.id, ()),
+            )
+            weeks.append(ResourceWeek(member, rules, start, end, slots, hours, float(capacity)))
     return weeks
 
 
@@ -174,6 +230,12 @@ def _allocated_hours_by_resource(
             slot.start_time, slot.end_time, week_start, week_end
         )
     return hours
+
+
+def _plain_number(value: float) -> int | float:
+    """A whole figure stays an integer (40, not 40.0), as the weekly figure always was."""
+    rounded = round(value, 2)
+    return int(rounded) if rounded == int(rounded) else rounded
 
 
 def get_capacity_summary(organization=None) -> list[dict[str, Any]]:
@@ -191,21 +253,21 @@ def get_capacity_summary(organization=None) -> list[dict[str, Any]]:
             {
                 "department": department,
                 "total_resources": 0,
-                "total_capacity_hours": 0,
+                "total_capacity_hours": 0.0,
                 "allocated_hours": 0.0,
                 "overbooked_count": 0,
             },
         )
         allocated = round(week.hours, 2)
         group["total_resources"] += 1
-        group["total_capacity_hours"] += resource.capacity_hours_per_week
+        group["total_capacity_hours"] += week.capacity
         group["allocated_hours"] = round(group["allocated_hours"] + allocated, 2)
-        if allocated > resource.capacity_hours_per_week:
+        if allocated > week.capacity:
             group["overbooked_count"] += 1
 
     summaries = []
     for group in groups.values():
-        capacity = group["total_capacity_hours"]
+        capacity = _plain_number(group["total_capacity_hours"])
         allocated = group["allocated_hours"]
         summaries.append(
             {
@@ -303,7 +365,7 @@ def get_overbooking_alerts(organization=None, visible_project_ids=None) -> list[
     for week in resource_weeks():
         resource = week.resource
         allocated = round(week.hours, 2)
-        capacity = resource.capacity_hours_per_week
+        capacity = _plain_number(week.capacity)
         if allocated <= capacity:
             continue
         excess = round(allocated - capacity, 2)
@@ -332,3 +394,52 @@ def get_overbooking_alerts(organization=None, visible_project_ids=None) -> list[
             }
         )
     return sorted(alerts, key=lambda alert: (-alert["excess_hours"], alert["resource_name"]))
+
+
+def resource_week(resource: Any, *, week_day: date | None = None) -> ResourceWeek | None:
+    """One resource's week (the current one, or the one containing ``week_day``), if it is live."""
+    weeks = resource_weeks(resource_ids=[resource.pk], week_day=week_day)
+    return weeks[0] if weeks else None
+
+
+@dataclass(frozen=True)
+class CapacityFigures:
+    """Capacity of one or more resources for one week, after holidays and approved leave."""
+
+    resources: int
+    capacity_hours: float
+    allocated_hours: float
+    free_hours: float
+    utilization_pct: float
+
+    @classmethod
+    def of(cls, weeks: list[ResourceWeek]) -> CapacityFigures:
+        capacity = round(sum(week.capacity for week in weeks), 2)
+        allocated = round(sum(week.hours for week in weeks), 2)
+        return cls(
+            resources=len(weeks),
+            capacity_hours=capacity,
+            allocated_hours=allocated,
+            free_hours=round(max(capacity - allocated, 0), 2),
+            utilization_pct=round(allocated / capacity * 100, 1) if capacity else 0.0,
+        )
+
+
+class CapacitySelector:
+    """
+    Public figures for other apps (Masterdata's utilization reads them through the
+    ``scheduling.capacity`` provider). ``week_start`` is any local date in the week wanted, in the
+    time zone of each resource's own calendar; ``None`` is the current week.
+    """
+
+    @staticmethod
+    def resource_week(resource_id: Any, week_start: date | None = None) -> CapacityFigures:
+        return CapacityFigures.of(resource_weeks(resource_ids=[resource_id], week_day=week_start))
+
+    @staticmethod
+    def department_week(department_id: Any, week_start: date | None = None) -> CapacityFigures:
+        return CapacityFigures.of(resource_weeks(department_id=department_id, week_day=week_start))
+
+    @staticmethod
+    def team_week(team_id: Any, week_start: date | None = None) -> CapacityFigures:
+        return CapacityFigures.of(resource_weeks(team_id=team_id, week_day=week_start))

@@ -57,6 +57,8 @@ def board():
     resource = Resource.objects.create(
         name="Compositor", code="SCH-1", resource_type="Person", capacity_hours_per_week=20
     )
+    # End to end, not stacked: since scheduling Phase 10 a resource cannot hold two bookings at the
+    # same time, so the 40 hours over a 20-hour week are three consecutive slots.
     start = _monday() + timedelta(hours=9)
     slots = {}
     for key, project, hours, title in (
@@ -64,16 +66,14 @@ def board():
         ("b", project_b, 15, "B secret grade"),
         ("studio", None, 10, "All hands"),
     ):
+        end = start + timedelta(hours=hours)
         event = CalendarEvent.objects.create(
-            title=title, project=project, start_time=start, end_time=start + timedelta(hours=hours)
+            title=title, project=project, start_time=start, end_time=end
         )
         slots[key] = ResourceSchedule.objects.create(
-            resource=resource,
-            event=event,
-            start_time=start,
-            end_time=start + timedelta(hours=hours),
-            status="Booked",
+            resource=resource, event=event, start_time=start, end_time=end, status="Booked"
         )
+        start = end
     return {"a": project_a, "b": project_b, "resource": resource, "slots": slots}
 
 

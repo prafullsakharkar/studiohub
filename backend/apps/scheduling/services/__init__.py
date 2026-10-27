@@ -15,8 +15,6 @@ from apps.scheduling.services.leave import (
 
 __all__ = [
     "approve_leave",
-    "block_resource",
-    "book_resource",
     "count_leave_days",
     "create_calendar_event",
     "create_holiday",
@@ -33,7 +31,6 @@ if TYPE_CHECKING:
         CalendarEvent,
         Holiday,
         ResourceLeave,
-        ResourceSchedule,
     )
 
 
@@ -117,57 +114,6 @@ def update_calendar_event(*, event: CalendarEvent, data: dict[str, Any]) -> Cale
         setattr(event, name, value)
     event.save()
     return event
-
-
-def book_resource(
-    *,
-    resource_id: str,
-    start_time: str,
-    end_time: str,
-    event_id: str | None = None,
-    task_id: str | None = None,
-    status: str = "Booked",
-    notes: str = "",
-) -> ResourceSchedule:
-    """Book a resource for a time slot."""
-    from apps.scheduling.models import Resource, ResourceSchedule
-
-    resource = Resource.objects.get(id=resource_id)
-
-    schedule = ResourceSchedule.objects.create(
-        resource=resource,
-        start_time=start_time,
-        end_time=end_time,
-        event_id=event_id,
-        task_id=task_id,
-        status=status,
-        notes=notes,
-    )
-
-    return schedule
-
-
-def block_resource(
-    *,
-    resource_id: str,
-    start_time: str,
-    end_time: str,
-    reason: str = "",
-) -> ResourceSchedule:
-    """Block a resource (mark as unavailable)."""
-    from apps.scheduling.models import Resource, ResourceSchedule
-
-    resource = Resource.objects.get(id=resource_id)
-
-    schedule = ResourceSchedule.objects.create(
-        resource=resource,
-        start_time=start_time,
-        end_time=end_time,
-        status="Blocked",
-        notes=reason,
-    )
-
-    return schedule
 
 
 def submit_leave_request(

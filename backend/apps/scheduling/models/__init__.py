@@ -3,11 +3,13 @@ Scheduling models for resource management and calendar events.
 """
 from __future__ import annotations
 
+from django.contrib.postgres.fields import DateTimeRangeField, RangeOperators
 from django.db import models
-from django.db.models import F, Q
+from django.db.models import F, Func, Q, Value
 from django.db.models.functions import Upper
 
 from apps.core.models.bases.entity import EntityModel
+from apps.masterdata.constraints import PostgresOnlyExclusionConstraint
 
 
 class CalendarEvent(EntityModel):
@@ -387,6 +389,27 @@ class ResourceSchedule(EntityModel):
             models.CheckConstraint(
                 condition=Q(end_time__gt=F("start_time")),
                 name="scheduling_booking_end_after_start",
+            ),
+            # A resource is in one place at a time (DOM-SCH-04, Q32): no two live bookings that
+            # occupy it (Booked, Blocked, Overbooked) overlap. The range includes its start and
+            # not its end, so back-to-back bookings are fine. PostgreSQL only (needs btree_gist);
+            # BookingService checks the same rule under a row lock on every database.
+            PostgresOnlyExclusionConstraint(
+                name="scheduling_booking_no_overlap",
+                expressions=[
+                    (F("resource"), RangeOperators.EQUAL),
+                    (
+                        Func(
+                            F("start_time"),
+                            F("end_time"),
+                            Value("[)"),
+                            function="tstzrange",
+                            output_field=DateTimeRangeField(),
+                        ),
+                        RangeOperators.OVERLAPS,
+                    ),
+                ],
+                condition=Q(status__in=("Booked", "Blocked", "Overbooked"), is_deleted=False),
             ),
         ]
     

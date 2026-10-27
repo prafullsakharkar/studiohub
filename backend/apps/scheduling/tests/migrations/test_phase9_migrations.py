@@ -6,6 +6,8 @@ Scheduling migrations 0004 to 0007 on the test database.
 * 0006 refuses, changing nothing, while a row would break a check or the resource-code rule, and
   names the rows. Deleted rows are included. Otherwise it adds the checks and reverses them.
 * 0007 adds the milestone table and reverses it.
+* 0008 (booking exclusion) refuses, changing nothing, while live bookings that occupy a resource
+  overlap, names the pairs, and otherwise adds the constraint and reverses it.
 
 Only the 0003 round trips drop columns (PostgreSQL never reuses their slots), so there are few.
 The database is returned to the latest migration even when a test fails.
@@ -37,6 +39,7 @@ AT_0004 = [("scheduling", "0004_work_calendar")]
 AT_0005 = [("scheduling", "0005_holiday_calendar")]
 AT_0006 = [("scheduling", "0006_checks_protect")]
 AT_0007 = [("scheduling", "0007_milestone")]
+AT_0008 = [("scheduling", "0008_booking_exclusion")]
 
 NINE = datetime(2026, 11, 2, 9, tzinfo=UTC)
 TEN = datetime(2026, 11, 2, 10, tzinfo=UTC)
@@ -80,7 +83,9 @@ class TestCalendarsAndHolidays:
         assert Holiday._base_manager.get(pk=live.pk).calendar_id == default.pk
         assert Holiday._base_manager.get(pk=gone.pk).calendar_id == default.pk
         assert apps.get_model("scheduling", "Resource").objects.get(pk=resource.pk).calendar is None
-        assert "scheduling_holiday_calendar_date_live_uniq" in constraint_names("scheduling_holiday")
+        assert "scheduling_holiday_calendar_date_live_uniq" in constraint_names(
+            "scheduling_holiday"
+        )
         assert "scheduling_calendar_ucode_uniq" in constraint_names("scheduling_work_calendar")
 
         back = migrate(AT_0003)
@@ -263,7 +268,72 @@ class TestMilestones:
         assert "scheduling_milestone" not in tables()
 
 
+class TestBookingExclusion:
+    @staticmethod
+    def _booking(apps, resource, first, last, status="Booked", **extra):
+        return apps.get_model("scheduling", "ResourceSchedule").objects.create(
+            resource=resource,
+            start_time=datetime(2026, 11, 2, first, tzinfo=UTC),
+            end_time=datetime(2026, 11, 2, last, tzinfo=UTC),
+            status=status,
+            **extra,
+        )
+
+    def test_it_refuses_overlapping_pairs_and_names_them(self):
+        apps = migrate(AT_0007)
+        resource = _resource(apps, "pair")
+        first = self._booking(apps, resource, 9, 12)
+        second = self._booking(apps, resource, 11, 14, status="Blocked")
+
+        with pytest.raises(RuntimeError) as error:
+            migrate(AT_0008)
+
+        message = str(error.value)
+        assert "scheduling 0008 stopped, nothing was changed" in message
+        assert "resource pair" in message and str(first.pk) in message and str(second.pk) in message
+        assert "scheduling_booking_no_overlap" not in constraint_names(
+            "scheduling_resource_schedule"
+        )
+
+    def test_rows_that_cannot_conflict_do_not_stop_it(self):
+        apps = migrate(AT_0007)
+        resource = _resource(apps, "fine")
+        self._booking(apps, resource, 9, 12)
+        self._booking(apps, resource, 12, 14)  # adjacent
+        self._booking(apps, resource, 10, 11, status="Available")  # never occupies
+        self._booking(apps, resource, 10, 11, is_deleted=True)  # deleted
+        self._booking(apps, _resource(apps, "other"), 9, 12)  # another resource
+
+        migrate(AT_0008)
+
+        assert "scheduling_booking_no_overlap" in constraint_names("scheduling_resource_schedule")
+
+    def test_it_applies_keeping_the_rows_and_reverses_leaving_the_extension(self):
+        from django.db import connection
+
+        apps = migrate(AT_0007)
+        resource = _resource(apps, "keep-b")
+        self._booking(apps, resource, 9, 12)
+
+        applied = migrate(AT_0008)
+        assert applied.get_model("scheduling", "ResourceSchedule").objects.count() == 1
+        with pytest.raises(IntegrityError):
+            self._booking(
+                applied, applied.get_model("scheduling", "Resource").objects.get(), 10, 11
+            )
+
+        back = migrate(AT_0007)
+
+        assert "scheduling_booking_no_overlap" not in constraint_names(
+            "scheduling_resource_schedule"
+        )
+        assert back.get_model("scheduling", "ResourceSchedule").objects.count() == 1
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1 FROM pg_extension WHERE extname = 'btree_gist'")
+            assert cursor.fetchone() is not None  # other objects may rely on it
+
+
 def test_nothing_is_pending_after_the_chain():
     """The fixture's last step: clearing then migrating forward leaves no model change unmade."""
     clear_scheduling()
-    migrate(AT_0007)
+    migrate(AT_0008)

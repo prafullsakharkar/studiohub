@@ -118,6 +118,17 @@ Tests:
 * `api/test_resource_status.py`: "On Leave" derived; writing it is a 400.
 * `api/test_project_schedule.py` (Production route): real milestones, same keys; empty list without milestones.
 
+#### Phase 10 as built (2026-10-27)
+
+Status: **implemented, committed on `feature/scheduling-improvement`** (hash in the Phase 10 report). Differences from the plan above:
+
+* **Migration `0008_booking_exclusion` is built, after a first pass without it.** Phase 10 was first built with the service lock only (Q32 option B) because I wrongly reported `btree_gist` as missing from the database server (it was missing from a different, unused server; see `delivery-pipeline/DECISIONS.md` check 1). On the user's instruction ("Option 2, add the constraint and commit") the constraint was added: `0008` refuses and lists overlapping pairs (S1, live bookings that occupy a resource), creates `btree_gist` if missing (reusing masterdata's `EnsureBtreeGistExtension`, whose reverse leaves it installed), and adds `PostgresOnlyExclusionConstraint` `scheduling_booking_no_overlap` (reusing masterdata's class, so other engines get no SQL and keep the service check). Q32 is option A as designed (A-51 superseded by A-57).
+* **Overbooked also occupies time** (A-52), so a booking flagged by triage cannot be double-booked.
+* **Capacity** is scaled, not capped (A-53): see CONTRACTS section 10.
+* **Providers:** `scheduling.project_milestones` (Production's schedule route) and `scheduling.capacity` (`CapacitySelector`; nothing consumes it yet because Masterdata's utilization is not part of this work).
+* **Tests** are at `services/test_booking_overlap.py` (service rule and database rule), `concurrency/test_booking_pg.py` (PostgreSQL; eight threads through the service, and eight writing straight to the table: exactly one wins each time), `migrations/test_phase9_migrations.py` (0008 too), `services/test_capacity_leave_holidays.py`, `domain/test_week_capacity.py`, `api/test_resource_status.py`, `api/test_project_schedule.py`.
+* **Existing test changed:** `tests/test_write_checks.py::test_a_resource_can_be_edited` set the status to "On Leave", which Q33 now refuses; it sets "Unavailable" instead (same assertions otherwise).
+
 ### Phase 11: authorization and hardening (`scheduling(phase-11): authorization and hardening`)
 
 * `api/test_side_channels.py`: search by hidden reason and note finds nothing; ordering by rate ignored without the code.

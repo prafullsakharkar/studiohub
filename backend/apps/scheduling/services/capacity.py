@@ -13,6 +13,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from apps.scheduling.selectors.capacity import (
     _overlap_hours,
     _slots_in,
+    resource_week,
     visible_slots,
     week_window_for,
 )
@@ -90,7 +91,10 @@ def resolve_overbooking(
         ),
         2,
     )
-    excess = round(allocated - resource.capacity_hours_per_week, 2)
+    # Capacity of that week: the weekly figure less the holidays and approved leave in it.
+    week = resource_week(resource, week_day=week_day)
+    capacity = week.capacity if week is not None else float(resource.capacity_hours_per_week)
+    excess = round(allocated - capacity, 2)
     week_label = week_start.astimezone(rules.tz).date().isoformat()
 
     if excess <= 0:

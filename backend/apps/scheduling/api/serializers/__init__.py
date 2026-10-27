@@ -18,8 +18,15 @@ from apps.scheduling.models import (
     WorkCalendar,
 )
 from apps.scheduling.selectors import ResourceLeaveSelector, ResourceSelector
+from apps.scheduling.selectors.resource_status import ResourceStatusSelector
 from apps.scheduling.selectors.scope import RESTRICTED_TITLE, ViewerScope
 from apps.scheduling.services.leave import working_leave_days
+
+ON_LEAVE_STATUS = "On Leave"
+DERIVED_STATUS_MESSAGE = (
+    '"On Leave" is shown while an approved leave covers today; it cannot be set. '
+    "Request leave instead."
+)
 
 
 class ScopedLinkField(serializers.PrimaryKeyRelatedField):  # pyright: ignore[reportMissingTypeArgument]
@@ -290,7 +297,22 @@ class ResourceRatesMixin(serializers.Serializer[Any]):
         return data
 
 
-class ResourceListSerializer(ResourceRatesMixin, serializers.ModelSerializer[Any]):  # pyright: ignore[reportUnsafeMultipleInheritance]
+class ResourceStatusMixin(serializers.Serializer[Any]):
+    """``status`` is derived (decision Q33): "On Leave" while an approved leave covers today."""
+
+    _statuses: ResourceStatusSelector | None = None
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if self._statuses is None:  # once per request: the child serializer serves every row
+            self._statuses = ResourceStatusSelector()
+        data["status"] = data["status_display"] = self._statuses.status_of(instance)
+        return data
+
+
+class ResourceListSerializer(  # pyright: ignore[reportUnsafeMultipleInheritance]
+    ResourceStatusMixin, ResourceRatesMixin, serializers.ModelSerializer[Any]
+):
     """Serializer for resource list view."""
 
     department_name = serializers.CharField(source="department.name", read_only=True)
@@ -330,7 +352,9 @@ class ResourceListSerializer(ResourceRatesMixin, serializers.ModelSerializer[Any
         read_only_fields = ("id", "created_at", "updated_at")
 
 
-class ResourceDetailSerializer(ResourceRatesMixin, serializers.ModelSerializer[Any]):  # pyright: ignore[reportUnsafeMultipleInheritance]
+class ResourceDetailSerializer(  # pyright: ignore[reportUnsafeMultipleInheritance]
+    ResourceStatusMixin, ResourceRatesMixin, serializers.ModelSerializer[Any]
+):
     """Serializer for resource detail view."""
 
     department = serializers.UUIDField(source="department.id", read_only=True)
@@ -388,6 +412,7 @@ class ResourceCreateSerializer(serializers.Serializer[Any]):
         choices=["Active", "On Leave", "Unavailable"],
         default="Active",
     )
+
     department_id = serializers.UUIDField(required=False, allow_null=True)
     team_id = serializers.UUIDField(required=False, allow_null=True)
     user_id = serializers.UUIDField(required=False, allow_null=True)
@@ -401,6 +426,11 @@ class ResourceCreateSerializer(serializers.Serializer[Any]):
         min_value=0,
     )
     location = serializers.CharField(required=False, allow_blank=True, max_length=255)
+
+    def validate_status(self, value):
+        if value == ON_LEAVE_STATUS:
+            raise serializers.ValidationError(DERIVED_STATUS_MESSAGE)
+        return value
 
     def validate_code(self, value):
         if Resource.all_objects.filter(code__iexact=value).exists():
@@ -478,6 +508,17 @@ class ResourceUpdateSerializer(serializers.Serializer[Any]):
 
     def validate_calendar_id(self, value):
         return _ensure_known(WorkCalendar, value, "calendar")
+
+    def validate_status(self, value):
+        """ "On Leave" is derived, so it cannot be set; sending back what a read showed is accepted
+        and changes nothing."""
+        if value != ON_LEAVE_STATUS:
+            return value
+        if self.instance is not None and ResourceStatusSelector().status_of(self.instance) == (
+            ON_LEAVE_STATUS
+        ):
+            return self.instance.status
+        raise serializers.ValidationError(DERIVED_STATUS_MESSAGE)
 
     def update(self, instance, validated_data):
         from apps.masterdata.models import Department, Team

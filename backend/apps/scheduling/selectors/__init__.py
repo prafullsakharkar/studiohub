@@ -43,12 +43,14 @@ class ResourceSelector(BaseSelector):
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
+        from apps.scheduling.selectors.resource_status import current_leaves_prefetch
+
         return cls.model.objects.select_related(
             "department",
             "team",
             "user",
             "calendar",
-        )
+        ).prefetch_related(current_leaves_prefetch())
 
     @classmethod
     def can_see_rates(cls, user: Any, resource: Any, *, holder: bool | None = None) -> bool:
