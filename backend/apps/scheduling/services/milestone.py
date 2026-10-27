@@ -17,9 +17,11 @@ from django.db.models.functions import Upper
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
+from apps.audit.models import AuditLog
 from apps.core import providers
 from apps.core.api.exceptions.api import NotFoundException
 from apps.scheduling.models import Milestone
+from apps.scheduling.services import audit
 
 #: the name Deliveries registers its figures under (docs/delivery-pipeline/CONTRACTS.md X-05)
 DELIVERY_FIGURES = "deliveries.project_figures"
@@ -148,7 +150,23 @@ class MilestoneService:
         locked.save(
             update_fields=["status", "completed_at", "completed_by", "updated_by", "updated_at"]
         )
+        cls._audit(actor, locked, "completed")
         return locked
+
+    @staticmethod
+    def _audit(actor: Any, milestone: Any, what: str) -> None:
+        audit.record(
+            actor=actor,
+            action=AuditLog.ACTION_UPDATE,
+            target_id=milestone.pk,
+            target_name=f"Milestone {milestone.name}",
+            description=f"Milestone {milestone.name} {what}",
+            metadata={
+                "event": f"milestone.{what}",
+                "project_id": str(milestone.project_id),
+                "due_date": str(milestone.due_date),
+            },
+        )
 
     @classmethod
     @transaction.atomic
@@ -164,4 +182,5 @@ class MilestoneService:
         locked.save(
             update_fields=["status", "completed_at", "completed_by", "updated_by", "updated_at"]
         )
+        cls._audit(actor, locked, "reopened")
         return locked

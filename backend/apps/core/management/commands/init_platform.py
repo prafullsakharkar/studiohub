@@ -172,7 +172,12 @@ _PRODUCTION_RESOURCES: dict[str, tuple[str, tuple[str, ...]]] = {
     "media": ("media", ("view", "create", "update", "delete")),
     "workflow": ("workflows", ("view", "create", "update", "delete")),
     # view_rates = resources' pay rates and e-mail addresses (full roles only)
-    "schedule": ("scheduling", ("view", "view_rates", "create", "update", "delete")),
+    # manage = bookings of any resource, leave for others, calendars, holidays, milestones;
+    # approve = decide leave requests (docs/scheduling/PLAN.md section 6)
+    "schedule": (
+        "scheduling",
+        ("view", "view_rates", "create", "update", "delete", "manage", "approve"),
+    ),
     # manage_studio = templates that belong to the whole studio rather than one project
     "tasktemplate": ("task_templates", ("view", "create", "update", "delete", "manage_studio")),
     "track": ("tracks", ("view", "create", "update", "delete")),
@@ -194,6 +199,8 @@ OPT_IN_PERMISSIONS = [
     # need a reason (docs/deliveries/CONTRACTS.md DOM-DLV-02, DOM-DLV-07).
     ("delivery.status.override", "delivery_status", "override"),
     ("delivery.sod.override", "delivery_sod", "override"),
+    # Deciding one's own leave request, with a reason (docs/scheduling/CONTRACTS.md DOM-SCH-05).
+    ("schedule.sod.override", "schedule_sod", "override"),
 ]
 OPT_IN_PERMISSION_CODES = frozenset(code for code, _, _ in OPT_IN_PERMISSIONS)
 
@@ -263,7 +270,7 @@ PRODUCTION_LEAD_PERMISSIONS = _production_codes(
     playlist="view create update",
     media="view create update",
     workflow="view",
-    schedule="view",
+    schedule="view create",
     tasktemplate="view",
     track="view",
     show="view",
@@ -285,7 +292,7 @@ PRODUCTION_ARTIST_PERMISSIONS = _production_codes(
     playlist="view",
     media="view create",
     workflow="view",
-    schedule="view",
+    schedule="view create",
     tasktemplate="view",
     track="view",
     show="view",

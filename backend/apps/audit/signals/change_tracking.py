@@ -232,6 +232,14 @@ _TRACKED_MODEL_PATHS = (
     "apps.production.models.ProjectMembership",
     "apps.deliveries.models.DeliveryPackage",
     "apps.publishing.models.PublishItem",
+    # Scheduling: pay rates, notes and leave reasons are excluded per model (audit_exclude_fields).
+    "apps.scheduling.models.Resource",
+    "apps.scheduling.models.ResourceSchedule",
+    "apps.scheduling.models.ResourceLeave",
+    "apps.scheduling.models.CalendarEvent",
+    "apps.scheduling.models.Holiday",
+    "apps.scheduling.models.WorkCalendar",
+    "apps.scheduling.models.Milestone",
     # Global directory / RBAC entities (post B2/B3 canonicals) — edit-page
     # writes must produce the same field-diff rows as production entities
     # (who/when/entity/old→new). Org-app entities die with B7.

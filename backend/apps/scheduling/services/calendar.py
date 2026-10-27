@@ -19,8 +19,10 @@ from django.db import IntegrityError, transaction
 from django.db.models.functions import Upper
 from rest_framework.exceptions import ValidationError
 
+from apps.audit.models import AuditLog
 from apps.core.api.exceptions.api import ConflictException, NotFoundException
 from apps.scheduling.models import Holiday, Resource, WorkCalendar
+from apps.scheduling.services import audit
 
 EDITABLE_FIELDS = ("name", "time_zone", "working_weekdays", "hours_per_day", "office")
 
@@ -225,6 +227,14 @@ class WorkCalendarService:
             locked.is_default = True
             locked.updated_by = _actor_or_none(actor)
             locked.save(update_fields=["is_default", "updated_by", "updated_at"])
+            audit.record(
+                actor=actor,
+                action=AuditLog.ACTION_UPDATE,
+                target_id=locked.pk,
+                target_name=f"Calendar {locked.code}",
+                description=f"Calendar {locked.code} is now the default",
+                metadata={"event": "calendar.default_changed", "calendar": locked.code},
+            )
         return locked
 
     @classmethod

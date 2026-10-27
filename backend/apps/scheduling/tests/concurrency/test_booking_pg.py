@@ -155,3 +155,36 @@ def test_different_resources_do_not_wait_for_each_other():
     )
 
     assert all(ok for ok, _ in results)
+
+
+def test_six_overlapping_leave_requests_for_one_resource_have_exactly_one_winner():
+    """The resource row lock puts the overlap check and the insert in a queue (DOM-SCH-05)."""
+    from datetime import date
+
+    from rest_framework.exceptions import ValidationError
+
+    from apps.scheduling.models import ResourceLeave
+    from apps.scheduling.services.leave import create_leave
+    from apps.scheduling.tests.helpers import default_calendar, person
+
+    default_calendar()
+    user = person()
+    resource = make_resource(user=user)
+
+    results = run_parallel(
+        6,
+        lambda i: create_leave(
+            actor=user,
+            manager=False,
+            requested=resource,
+            data={
+                "leave_type": "Vacation",
+                "start_date": date(2026, 9, 1 + i % 2),  # all overlap one another
+                "end_date": date(2026, 9, 5),
+            },
+        ),
+    )
+
+    assert sum(1 for ok, _ in results if ok) == 1
+    assert all(isinstance(error, ValidationError) for ok, error in results if not ok)
+    assert ResourceLeave.objects.filter(resource=resource).count() == 1

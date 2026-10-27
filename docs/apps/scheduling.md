@@ -2,8 +2,8 @@
 
 Written against `docs/APP_ARCHITECTURE_TEMPLATE.md`. The authoritative detail is in
 `docs/scheduling/` (`ANALYSIS.md`, `CONTRACTS.md`, `DECISIONS.md`, `PLAN.md`) and
-`docs/delivery-pipeline/`. Status: **phases 9 and 10 done** (calendars, dates and integrity; bookings and capacity). Phase 11
-(authorization and hardening) is not built; Phase 12 re-checks the app with the other two.
+`docs/delivery-pipeline/`. Status: **phases 9 to 11 done** (calendars, dates and integrity; bookings and capacity; authorization
+and hardening). Phase 12 re-checks the app with the other two.
 
 ## 2. Application information
 
@@ -27,7 +27,7 @@ the `deliveries.project_figures` provider (`apps/core/providers.py`).
 **Does not own:** projects, tasks and their dates (Production; `Task.due_date` stays the single source),
 departments and offices (Masterdata), deliveries (Deliveries; a milestone only holds a delivery's id).
 
-## 4. What exists after Phase 10
+## 4. What exists after Phase 11
 
 | Piece | Where |
 |---|---|
@@ -43,6 +43,12 @@ departments and offices (Masterdata), deliveries (Deliveries; a milestone only h
 | Capacity | after Phase 10, a week's capacity is the weekly figure scaled by available over usual working days: the calendar's holidays and the resource's Approved leave remove days. `CapacitySelector` (`resource_week`, `department_week`, `team_week`) is public through the `scheduling.capacity` provider. |
 | Resource status | `selectors/resource_status.py`: shown as "On Leave" while an Approved leave covers today in the resource's calendar zone; writing "On Leave" is a 400. |
 | Providers | `providers.py`, registered in `SchedulingConfig.ready`: `scheduling.project_milestones` (Production's schedule route) and `scheduling.capacity`. |
+| Authorization | codes `schedule.manage` (bookings of any resource, leave for others, resources' creation, calendars, holidays, milestones), `schedule.approve` (decide leave) and the opt-in `schedule.sod.override` (decide one's own leave, with a reason); `services/access.py`. A matrix test pins seeded grants to enforced codes. |
+| Leave rules | `services/leave.py`: own leave with `create`, others' with `manage` ("Unknown resource" otherwise); no overlapping pending or approved leave per resource (resource lock); no deciding one's own leave except with the override. |
+| Side channels | notes and reasons cannot be searched or filtered; ordering by pay rate is ignored without `schedule.view_rates` (`api/filters.py`). |
+| Audit | `services/audit.py` writes `scheduling` audit rows (leave decisions and overrides, default calendar changes, milestone completion, redaction); the change log tracks the scheduling models with notes, reasons, rates and event text excluded. |
+| Bulk delete | `POST /schedules/bulk-delete/` (Q36). |
+| Retention | `manage.py redact_leave_reasons [--older-than-years N] [--apply]` (Q37). |
 | Report | `manage.py report_leave_days [--status S] [--limit N]`: read-only list of leave rows that would count differently as working days. |
 
 Endpoints under `/api/v1/scheduling/`: `calendars/` (+ `set-default/`), `holidays/` (`?calendar_id=`),
@@ -59,8 +65,8 @@ Endpoints under `/api/v1/scheduling/`: `calendars/` (+ `set-default/`), `holiday
 * **A calendar in use cannot be deleted** (409 `calendar_in_use`), nor can the default.
 * **Milestones are narrowed to the caller's projects.** Another project's milestone answers 404, the same
   as an unknown id; a platform admin sees all.
-* **Interim write gates** (A-45): calendars and milestones use `schedule.update` / `create` / `delete`
-  until Phase 11 adds `schedule.manage` and `schedule.approve`.
+* **After deploying Phase 11 run `manage.py init_platform`**: the new codes reach roles only then.
+* The admin is read-only for bookings, leave, calendars and milestones (it would bypass the rules).
 * **Overlaps are refused twice.** `BookingService` checks under a resource lock on every database; on PostgreSQL migration 0008 adds an exclusion constraint (`btree_gist`) so the admin or raw SQL cannot overlap either. Migration 0008 stops and lists existing overlapping pairs first. `docs/scheduling/BTREE_GIST.sql` is the script for installing the extension on a database that lacks it (check the live database first).
 * Over-allocation (more booked hours than the week's capacity) is still allowed and reported; overlap in time is not.
 

@@ -2,22 +2,31 @@
 Scheduling viewsets for API endpoints.
 """
 
-from django.core.exceptions import ValidationError
+from django.db import transaction
+from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 
 from apps.core.api.viewsets.platform_crud import PlatformCrudViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
+from apps.scheduling.api.filters import RatesOrderingFilter
 from apps.scheduling.api.serializers import (
     BlockResourceSerializer,
+    BookingBulkDeleteResponseSerializer,
+    BookingBulkDeleteSerializer,
     BookResourceSerializer,
     CalendarEventCreateSerializer,
     CalendarEventDetailSerializer,
     CalendarEventListSerializer,
     CalendarEventUpdateSerializer,
+    EventStatusSerializer,
     HolidaySerializer,
+    LeaveDecisionSerializer,
+    LeaveRejectSerializer,
     MilestoneSerializer,
     MilestoneWriteSerializer,
     ResourceCreateSerializer,
@@ -30,7 +39,6 @@ from apps.scheduling.api.serializers import (
     WorkCalendarWriteSerializer,
 )
 from apps.scheduling.constants.permissions import SchedulingPermissions
-from apps.scheduling.models import Resource
 from apps.scheduling.selectors import (
     CalendarEventSelector,
     HolidaySelector,
@@ -41,17 +49,12 @@ from apps.scheduling.selectors import (
     WorkCalendarSelector,
 )
 from apps.scheduling.selectors.scope import ViewerScope
-from apps.scheduling.services import (
-    approve_leave,
-    reject_leave,
-    update_calendar_event_status,
-    working_leave_days,
-)
+from apps.scheduling.services import update_calendar_event_status
+from apps.scheduling.services.access import can_decide_own_leave, can_manage
 from apps.scheduling.services.booking import BookingService
 from apps.scheduling.services.calendar import WorkCalendarService
+from apps.scheduling.services.leave import approve_leave, create_leave, reject_leave, update_leave
 from apps.scheduling.services.milestone import MilestoneService
-
-_NO_USER_RESOURCE_ERROR = "No scheduling resource is associated with the current user."
 
 
 class CalendarEventViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeArgument]
@@ -83,6 +86,7 @@ class CalendarEventViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissin
     search_fields = ("title", "description", "location")
     ordering_fields = ("start_time", "end_time", "created_at")
 
+    @extend_schema(request=EventStatusSerializer, responses={200: CalendarEventDetailSerializer})
     @action(detail=True, methods=["post"], url_path="update-status")
     def update_status(self, request, *args, **kwargs):
         """Update event status."""
@@ -119,16 +123,18 @@ class ResourceViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingType
     permission_map = {
         "list": (SchedulingPermissions.VIEW,),
         "retrieve": (SchedulingPermissions.VIEW,),
-        "create": (SchedulingPermissions.CREATE,),
+        "create": (SchedulingPermissions.MANAGE,),
         "update": (SchedulingPermissions.UPDATE,),
         "partial_update": (SchedulingPermissions.UPDATE,),
         "destroy": (SchedulingPermissions.DELETE,),
-        "book": (SchedulingPermissions.UPDATE,),
-        "block": (SchedulingPermissions.UPDATE,),
+        "book": (SchedulingPermissions.MANAGE,),
+        "block": (SchedulingPermissions.MANAGE,),
     }
 
     search_fields = ("name", "code", "location")
     ordering_fields = ("name", "capacity_hours_per_week", "hourly_rate_usd")
+    # Ordering by pay rate is honoured only for holders of schedule.view_rates (SEC-SCH-01)
+    filter_backends = (DjangoFilterBackend, RatesOrderingFilter, SearchFilter)
 
     @action(detail=True, methods=["post"], url_path="book")
     def book(self, request, *args, **kwargs):
@@ -198,13 +204,17 @@ class ResourceScheduleViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMis
     permission_map = {
         "list": (SchedulingPermissions.VIEW,),
         "retrieve": (SchedulingPermissions.VIEW,),
-        "create": (SchedulingPermissions.CREATE,),
-        "update": (SchedulingPermissions.UPDATE,),
-        "partial_update": (SchedulingPermissions.UPDATE,),
+        "create": (SchedulingPermissions.MANAGE,),
+        "update": (SchedulingPermissions.MANAGE,),
+        "partial_update": (SchedulingPermissions.MANAGE,),
         "destroy": (SchedulingPermissions.DELETE,),
+        "bulk_delete": (SchedulingPermissions.DELETE,),
     }
 
-    search_fields = ("notes",)
+    # Notes of a booking can be hidden from the caller (D-21), so they are not searchable
+    # (SEC-SCH-01): search matches the resource's name or code. The list takes ``start`` and
+    # ``end`` (ISO 8601 with a time zone) to narrow to the bookings overlapping that window.
+    search_fields = ("resource__name", "resource__code")
     ordering_fields = ("start_time", "end_time", "created_at")
 
     def perform_create(self, serializer):
@@ -231,6 +241,45 @@ class ResourceScheduleViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMis
             viewer=ViewerScope.of(self.request),
         )
 
+    @extend_schema(
+        request=BookingBulkDeleteSerializer,
+        responses={
+            200: BookingBulkDeleteResponseSerializer,
+            207: BookingBulkDeleteResponseSerializer,
+        },
+    )
+    @action(detail=False, methods=["post"], url_path="bulk-delete")
+    def bulk_delete(self, request, *args, **kwargs):
+        """
+        Delete up to 100 bookings (decision Q36), for planners clearing a week. Each is its own
+        transaction, so one failing does not stop the rest: 200 when all succeed, 207 otherwise.
+        An unknown or already deleted booking reports ``not_found``.
+        """
+        body = BookingBulkDeleteSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        visible = ResourceScheduleSelector.get_queryset(request=request)
+
+        results = []
+        for booking_id in body.validated_data["ids"]:
+            booking = visible.filter(pk=booking_id).first()
+            error = "not_found"
+            if booking is not None:
+                with transaction.atomic():
+                    booking.soft_delete(user=request.user)
+                error = None
+            results.append({"id": str(booking_id), "ok": error is None, "error": error})
+
+        failed = sum(1 for result in results if not result["ok"])
+        return Response(
+            {
+                "success": failed == 0,
+                "succeeded_count": len(results) - failed,
+                "failed_count": failed,
+                "results": results,
+            },
+            status=status.HTTP_200_OK if failed == 0 else status.HTTP_207_MULTI_STATUS,
+        )
+
 
 class ResourceLeaveViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for ResourceLeave."""
@@ -252,52 +301,68 @@ class ResourceLeaveViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissin
         "list": (SchedulingPermissions.VIEW,),
         "retrieve": (SchedulingPermissions.VIEW,),
         "create": (SchedulingPermissions.CREATE,),
-        "update": (SchedulingPermissions.UPDATE,),
-        "partial_update": (SchedulingPermissions.UPDATE,),
+        "update": (SchedulingPermissions.CREATE,),
+        "partial_update": (SchedulingPermissions.CREATE,),
         "destroy": (SchedulingPermissions.DELETE,),
-        "approve": (SchedulingPermissions.UPDATE,),
-        "reject": (SchedulingPermissions.UPDATE,),
+        "approve": (SchedulingPermissions.APPROVE,),
+        "reject": (SchedulingPermissions.APPROVE,),
     }
 
-    search_fields = ("reason",)
+    # The reason of a leave is hidden from most callers (D-20), so it is not searchable
+    # (SEC-SCH-01): search matches the resource's name or code.
+    search_fields = ("resource__name", "resource__code")
     ordering_fields = ("start_date", "created_at")
 
     def perform_create(self, serializer):
-        resource = serializer.validated_data.get("resource")
-        if resource is None:
-            resource = Resource.objects.filter(
-                user=self.request.user,
-            ).first()
-        if resource is None:
-            raise ValidationError({"resource": _NO_USER_RESOURCE_ERROR})
-        data = serializer.validated_data
-        # Working days of the calendar this resource follows (the serializer may not have known it)
-        serializer.save(
-            resource=resource,
-            total_days=working_leave_days(resource, data["start_date"], data["end_date"]),
+        serializer.instance = create_leave(
+            actor=self.request.user,
+            manager=can_manage(self.request),
+            requested=serializer.validated_data.get("resource"),
+            data=serializer.validated_data,
         )
 
     def perform_update(self, serializer):
-        serializer.save()
+        leave = serializer.instance
+        assert leave is not None  # an update always has the row it changes
+        serializer.instance = update_leave(
+            actor=self.request.user,
+            manager=can_manage(self.request),
+            leave=leave,
+            data=serializer.validated_data,
+        )
 
+    @extend_schema(request=LeaveDecisionSerializer, responses={200: ResourceLeaveSerializer})
     @action(detail=True, methods=["post"], url_path="approve")
     def approve(self, request, *args, **kwargs):
-        """Approve a pending leave request (not your own; D-20)."""
+        """Approve a pending leave request. Not your own, unless you hold the override (D-20)."""
         leave = self.get_object()
+        body = LeaveDecisionSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
 
-        leave = approve_leave(leave_id=str(leave.id), actor=request.user)
+        leave = approve_leave(
+            leave_id=leave.id,
+            actor=request.user,
+            can_override=can_decide_own_leave(request),
+            override_reason=body.validated_data.get("override_reason", ""),
+        )
 
         return Response(ResourceLeaveSerializer(leave, context=self.get_serializer_context()).data)
 
+    @extend_schema(request=LeaveRejectSerializer, responses={200: ResourceLeaveSerializer})
     @action(detail=True, methods=["post"], url_path="reject")
     def reject(self, request, *args, **kwargs):
-        """Reject a pending leave request with a reason (not your own; D-20)."""
+        """Reject a pending leave request with a reason. Not your own, unless you hold the override."""
         leave = self.get_object()
+        body = LeaveRejectSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        data = body.validated_data
 
         leave = reject_leave(
-            leave_id=str(leave.id),
+            leave_id=leave.id,
             actor=request.user,
-            rejection_reason=request.data.get("rejection_reason", ""),
+            rejection_reason=data.get("rejection_reason") or data.get("reason") or "",
+            can_override=can_decide_own_leave(request),
+            override_reason=data.get("override_reason", ""),
         )
 
         return Response(ResourceLeaveSerializer(leave, context=self.get_serializer_context()).data)
@@ -322,10 +387,10 @@ class HolidayViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeA
     permission_map = {
         "list": (SchedulingPermissions.VIEW,),
         "retrieve": (SchedulingPermissions.VIEW,),
-        "create": (SchedulingPermissions.CREATE,),
-        "update": (SchedulingPermissions.UPDATE,),
-        "partial_update": (SchedulingPermissions.UPDATE,),
-        "destroy": (SchedulingPermissions.DELETE,),
+        "create": (SchedulingPermissions.MANAGE,),
+        "update": (SchedulingPermissions.MANAGE,),
+        "partial_update": (SchedulingPermissions.MANAGE,),
+        "destroy": (SchedulingPermissions.MANAGE,),
     }
 
     search_fields = ("name", "description")
@@ -356,11 +421,11 @@ class WorkCalendarViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissing
     permission_map = {
         "list": (SchedulingPermissions.VIEW,),
         "retrieve": (SchedulingPermissions.VIEW,),
-        "create": (SchedulingPermissions.UPDATE,),
-        "update": (SchedulingPermissions.UPDATE,),
-        "partial_update": (SchedulingPermissions.UPDATE,),
-        "destroy": (SchedulingPermissions.DELETE,),
-        "set_default": (SchedulingPermissions.UPDATE,),
+        "create": (SchedulingPermissions.MANAGE,),
+        "update": (SchedulingPermissions.MANAGE,),
+        "partial_update": (SchedulingPermissions.MANAGE,),
+        "destroy": (SchedulingPermissions.MANAGE,),
+        "set_default": (SchedulingPermissions.MANAGE,),
     }
 
     search_fields = ("code", "name")
@@ -401,12 +466,12 @@ class MilestoneViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTyp
     permission_map = {
         "list": (SchedulingPermissions.VIEW,),
         "retrieve": (SchedulingPermissions.VIEW,),
-        "create": (SchedulingPermissions.CREATE,),
-        "update": (SchedulingPermissions.UPDATE,),
-        "partial_update": (SchedulingPermissions.UPDATE,),
-        "destroy": (SchedulingPermissions.DELETE,),
-        "complete": (SchedulingPermissions.UPDATE,),
-        "reopen": (SchedulingPermissions.UPDATE,),
+        "create": (SchedulingPermissions.MANAGE,),
+        "update": (SchedulingPermissions.MANAGE,),
+        "partial_update": (SchedulingPermissions.MANAGE,),
+        "destroy": (SchedulingPermissions.MANAGE,),
+        "complete": (SchedulingPermissions.MANAGE,),
+        "reopen": (SchedulingPermissions.MANAGE,),
     }
 
     search_fields = ("name",)

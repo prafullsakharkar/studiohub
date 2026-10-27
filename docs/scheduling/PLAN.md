@@ -138,6 +138,17 @@ Status: **implemented, committed on `feature/scheduling-improvement`** (hash in 
 
 Every gate: as publishing (`docs/publishing/PLAN.md` §4).
 
+#### Phase 11 as built (2026-10-27)
+
+Status: **implemented, committed on `feature/scheduling-improvement`** (hash in the Phase 11 report). Differences from the plan above:
+
+* **Test files** are `api/test_side_channels.py`, `api/test_leave_rules.py`, `api/test_access_matrix.py` (every route needs exactly its code), `test_permission_matrix.py` (seeded = enforced), `api/test_bulk_delete.py`, `api/test_booking_window.py`, `api/test_audit_and_logs.py` (audit rows, change-log masking and a log-capture test), `api/test_openapi.py`, `test_admin_and_commands.py` (admin and `redact_leave_reasons`), and a PostgreSQL race test for concurrent leave requests in `concurrency/test_booking_pg.py`.
+* **Search** is not switched off: bookings and leave are searchable by resource name and code, never by notes or reasons (A-60).
+* **Resource creation** needs `schedule.manage`, not `schedule.create` (A-58), because lead-artist and artist now hold `create`.
+* **Admin:** bookings and leave are view-only too, not only leave decisions (A-62).
+* **Not built:** a leave `cancel` endpoint (the contract's service signature listed it, the API table did not) and a database constraint on leave overlap (A-59, A-61).
+* **Existing tests changed:** `test_leave_workflow.py` and `test_write_checks.py` give their planner users `manage` and `approve`; Production's `test_permission_matrix.py` expects the new role grants (`schedule.create` for lead-artist and artist, `manage` and `approve` for the full roles); Production's scheduling-route and seed fixtures were changed in Phase 10.
+
 ## 5. Risks
 
 | Risk | Mitigation |

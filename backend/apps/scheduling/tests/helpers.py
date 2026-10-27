@@ -19,7 +19,11 @@ VIEW = "schedule.view"
 CREATE = "schedule.create"
 UPDATE = "schedule.update"
 DELETE = "schedule.delete"
-ALL_CODES = (VIEW, CREATE, UPDATE, DELETE)
+MANAGE = "schedule.manage"
+APPROVE = "schedule.approve"
+SOD_OVERRIDE = "schedule.sod.override"
+#: what a planner holds (the full roles); the override code is held by nobody
+ALL_CODES = (VIEW, CREATE, UPDATE, DELETE, MANAGE, APPROVE)
 
 
 def client_for(user) -> APIClient:

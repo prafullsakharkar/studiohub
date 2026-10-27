@@ -50,3 +50,15 @@ Phase 10 (2026-10-27):
 | A-55 | 2026-10-27 | Existing overlapping rows are left; `?status=` still filters the stored column; the admin can still write overlaps (Phase 11) | ASSUMED | |
 | A-56 | 2026-10-27 | Provider names `scheduling.project_milestones` and `scheduling.capacity`; the dashboard card keeps deriving its own milestones | ASSUMED | `providers.py` |
 | A-57 | 2026-10-27 | Q32 is option A as designed: service lock plus the PostgreSQL exclusion constraint (migration 0008). User: "Option 2, add the constraint and commit" | ANSWERED (user) | `migrations/0008_booking_exclusion.py`, `services/booking.py` |
+
+Phase 11 (2026-10-27):
+
+| # | Date | Assumption | Status | Affects |
+|---|---|---|---|---|
+| A-58 | 2026-10-27 | Replaces the interim gates of A-45: calendar, holiday and milestone writes, bookings, book and block need `schedule.manage`. **Resource creation also moves to `schedule.manage`** (it was `create`), because lead-artist and artist now hold `create`; otherwise they could create resources | ASSUMED | `api/viewsets` |
+| A-59 | 2026-10-27 | Editing a pending leave needs `schedule.create` (own) or `schedule.manage`; deleting stays `schedule.delete`. No `cancel` endpoint is built (the contract's service list had one, its API table did not) | ASSUMED | `api/viewsets`, `services/leave.py` |
+| A-60 | 2026-10-27 | Bookings and leave are searchable by resource name and code; notes and reasons are not. The contract only said the hidden fields are not searchable | ASSUMED | SEC-SCH-01 |
+| A-61 | 2026-10-27 | The override reason a person gives for deciding their own leave is stored in the audit row's metadata (it explains the override; it is not a leave reason). Leave overlap has no database constraint: the resource lock decides races | ASSUMED | `services/leave.py` |
+| A-62 | 2026-10-27 | Bookings and leave are view-only in the admin, like calendars and milestones | ASSUMED | `admin/scheduling.py` |
+| A-63 | 2026-10-27 | Q37 retention: N = 3 years, command run by hand, never scheduled; blanks both reason columns of decided leave, deleted rows included | ASSUMED (Q37 default) | `redact_leave_reasons` |
+

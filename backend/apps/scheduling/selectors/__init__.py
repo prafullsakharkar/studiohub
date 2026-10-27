@@ -87,11 +87,44 @@ class ResourceScheduleSelector(BaseSelector):
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
-        return cls.model.objects.select_related(
+        queryset = cls.model.objects.select_related(
             "resource",
             "event",
             "task",
         )
+        params = getattr(request, "query_params", None)
+        if params is not None:
+            start, end = cls._window(params.get("start")), cls._window(params.get("end"))
+            if start is not None:
+                queryset = queryset.filter(
+                    end_time__gt=start
+                )  # still running after the window opens
+            if end is not None:
+                queryset = queryset.filter(start_time__lt=end)  # begun before the window closes
+        return queryset
+
+    @staticmethod
+    def _window(raw: Any):
+        """An optional ``start`` / ``end`` query value: ISO 8601 with a time zone, else a 400."""
+        if raw in (None, ""):
+            return None
+        from django.utils.dateparse import parse_datetime
+        from django.utils.timezone import is_naive
+        from rest_framework.exceptions import ValidationError
+
+        try:
+            parsed = parse_datetime(raw)
+        except ValueError:
+            parsed = None
+        if parsed is None:
+            raise ValidationError(
+                "Send start and end as ISO 8601 date-times, e.g. 2026-11-02T00:00:00Z."
+            )
+        if is_naive(parsed):
+            raise ValidationError(
+                "Send the time zone too: end the date-time with Z or add an offset such as +02:00."
+            )
+        return parsed
 
 
 class ResourceLeaveSelector(BaseSelector):
@@ -109,19 +142,11 @@ class ResourceLeaveSelector(BaseSelector):
 
     @classmethod
     def is_approver(cls, user: Any) -> bool:
-        """Whether ``user`` may decide leave requests: the update code, or a superuser."""
-        from apps.identity.services.permission_cache import PermissionCacheService
+        """Whether ``user`` may decide leave requests: the approve code, or a superuser."""
+        from apps.production.permissions.checks import user_has_permission_code
         from apps.scheduling.constants.permissions import SchedulingPermissions
 
-        if user is None or not getattr(user, "is_authenticated", False):
-            return False
-        if getattr(user, "is_superuser", False):
-            return True
-        return bool(
-            PermissionCacheService.has_permission(
-                user=user, permission=SchedulingPermissions.UPDATE
-            )
-        )
+        return user_has_permission_code(user, SchedulingPermissions.APPROVE)
 
     @classmethod
     def can_see_details(cls, user: Any, leave: Any, *, approver: bool | None = None) -> bool:

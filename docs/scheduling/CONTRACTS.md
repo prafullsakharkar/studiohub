@@ -186,7 +186,7 @@ Scheduling models join the change log (`apps/audit/signals/change_tracking.py`),
 
 ## 9. Phase 9 as built (2026-10-27)
 
-What exists now, against sections 1 to 8. Anything not listed here is still proposed (Phases 10 and 11).
+What exists now, against sections 1 to 8. Anything not listed here is still proposed (Phases 10 and 11). The write codes named here (`schedule.update`, `create`, `delete` for calendars and milestones) were interim gates (A-45); section 11 replaces them with `schedule.manage`.
 
 | Contract | State | Notes |
 |---|---|---|
@@ -225,3 +225,26 @@ Changes a client can see: create responses for events and resources now carry `i
 | API-SCH-06, API-SCH-14, section 5 new codes, SEC-SCH-01 to 05, section 7 audit | proposed | Phase 11. |
 
 Changes a client can see: overlapping bookings are now refused (409 `booking_overlap`); resource `status` can read "On Leave" without anyone writing it, and writing it is a 400; capacity and overbooking alerts drop in weeks with holidays or approved leave; milestone ids on the project schedule route are UUIDs (they were `m-1` to `m-5`) and the route is empty until milestones exist.
+
+## 11. Phase 11 as built (2026-10-27)
+
+Everything in sections 4 to 7 is now built except what the last row lists.
+
+| Contract | State | Notes |
+|---|---|---|
+| Section 5 codes | **built** | `schedule.manage`, `schedule.approve` (catalog, held by the roles that held `schedule.update`: platform-admin, org-admin, production-admin, vfx-supervisor) and `schedule.sod.override` (opt-in, held by no role, not implied by being a superuser). `schedule.create` is now also held by lead-artist and artist. Existing databases get the grants when `manage.py init_platform` runs. |
+| Who needs which code | **built** | `schedule.manage`: create resources, book and block, create and edit bookings, create, edit and delete calendars, holidays and milestones, set the default calendar, complete and reopen milestones. `schedule.approve`: approve and reject leave. `schedule.create`: file leave for one's own resource, edit one's own pending leave, create events. `schedule.update`/`delete`: as before for resources, events and deletes; bulk delete of bookings needs `schedule.delete`. A matrix test pins every route to its code. The interim gates of Phase 9 (A-45) are gone. |
+| DOM-SCH-05 leave rules | **built** | Own leave with `create`; someone else's resource needs `manage`, otherwise 400 "Unknown resource." (identical to an unknown id). Editing a pending request: its person (with `create`) or a manager; moving it to another resource is a 400. Overlapping pending or approved leave of one resource is a 400 naming the other's dates, checked under a lock on the resource row. |
+| Leave decisions | **built** | `approve` and `reject` need `schedule.approve`. Nobody decides their own leave (403), except a holder of `schedule.sod.override` who sends `override_reason` (400 without it): the decision is made and recorded as an override. Reject takes `rejection_reason` or `reason`. Reasons are shown to the person and to holders of `schedule.approve`. |
+| SEC-SCH-01 side channels | **built** | No search term, filter or ordering reveals a booking note or a leave reason: bookings and leave are searchable by resource name and code only; no query parameter filters on notes, reasons or rates; `?ordering=hourly_rate_usd` is ignored (default order) without `schedule.view_rates`, being the resource yourself does not unlock it. |
+| API-SCH-06 | **built** | `GET /schedules/?start=&end=` (ISO 8601 with a time zone, else 400) narrows to bookings overlapping the window; touching the edge does not overlap; without them nothing changes. |
+| API-SCH-14 bulk delete | **built** | `POST /schedules/bulk-delete/` per Q36: 1 to 100 distinct ids, each its own transaction, 200 when all succeed and 207 otherwise, `results[]` of `id`, `ok`, `error` (`null` or `not_found`). Needs `schedule.delete`. |
+| Section 7 audit | **built** | Audit rows (target `scheduling`) for leave decisions (an override is a warning-severity row carrying the approver's reason), calendar default changes, milestone completion and reopening, and redaction runs. The change log now tracks Resource, ResourceSchedule, ResourceLeave, CalendarEvent, Holiday, WorkCalendar and Milestone; leave reasons, booking notes, pay rates and event text are excluded. |
+| SEC-SCH-05 | **built** | A test captures the application log while leave with a reason, bookings with notes, a resource with a rate and a rejection are sent through the API, and finds none of the text. |
+| Admin | **built** | Bookings, leave, calendars and milestones are read-only in the admin (they would bypass the rules above). |
+| OpenAPI | **built** | `approve`, `reject`, `update-status` and `bulk-delete` declare their request bodies and answers. |
+| Q37 retention | **built** | `manage.py redact_leave_reasons [--older-than-years N] [--apply]` (default 3, dry run unless `--apply`, counts only): blanks `reason` and `rejection_reason` of Approved and Rejected leave that ended more than N years ago, deleted rows included, pending leave never; one audit row with the count. Not scheduled. |
+| Not built | | A leave `cancel` endpoint, and a database constraint on overlapping leave (the service lock decides races). |
+
+Changes a client can see: approving or rejecting leave now needs `schedule.approve` (was `schedule.update`); booking, creating resources, calendars, holidays and milestones need `schedule.manage`; an artist can file and edit their own leave and creates events; filing leave for another person without `manage` is a 400; overlapping leave is a 400; the `reason` query filters and note and reason search no longer match; `?ordering=hourly_rate_usd` has no effect without `schedule.view_rates`.
+

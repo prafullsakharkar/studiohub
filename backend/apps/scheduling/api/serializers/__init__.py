@@ -20,7 +20,8 @@ from apps.scheduling.models import (
 from apps.scheduling.selectors import ResourceLeaveSelector, ResourceSelector
 from apps.scheduling.selectors.resource_status import ResourceStatusSelector
 from apps.scheduling.selectors.scope import RESTRICTED_TITLE, ViewerScope
-from apps.scheduling.services.leave import working_leave_days
+from apps.scheduling.services.access import can_manage, owns
+from apps.scheduling.services.leave import UNKNOWN_RESOURCE, working_leave_days
 
 ON_LEAVE_STATUS = "On Leave"
 DERIVED_STATUS_MESSAGE = (
@@ -635,6 +636,7 @@ class ResourceLeaveSerializer(serializers.ModelSerializer[Any]):
     resource = serializers.PrimaryKeyRelatedField(
         queryset=Resource.objects.all(),
         required=False,
+        error_messages={"does_not_exist": UNKNOWN_RESOURCE, "incorrect_type": UNKNOWN_RESOURCE},
     )
 
     class Meta:
@@ -694,6 +696,14 @@ class ResourceLeaveSerializer(serializers.ModelSerializer[Any]):
         if raw in (None, "") and held in (None, ""):
             return False
         return str(raw) != str(held)
+
+    def validate_resource(self, value):
+        """Someone else's resource is "Unknown" to a caller who does not manage the schedule: the
+        same answer as for an id that does not exist, so it reveals nothing about it."""
+        request = self.context.get("request")
+        if request is not None and not (can_manage(request) or owns(request.user, value)):
+            raise serializers.ValidationError(UNKNOWN_RESOURCE)
+        return value
 
     def validate(self, attrs):
         instance = self.instance
@@ -1017,3 +1027,49 @@ class BlockResourceSerializer(serializers.Serializer[Any]):
     def validate(self, attrs):
         _ensure_end_after_start(attrs.get("start_time"), attrs.get("end_time"), strict=True)
         return attrs
+
+
+class LeaveDecisionSerializer(serializers.Serializer[Any]):
+    """Body of ``approve``: nothing, unless the caller decides their own leave."""
+
+    override_reason = serializers.CharField(required=False, allow_blank=True, max_length=500)
+
+
+class LeaveRejectSerializer(LeaveDecisionSerializer):
+    """Body of ``reject``: why. ``reason`` is accepted as another spelling of ``rejection_reason``."""
+
+    rejection_reason = serializers.CharField(required=False, allow_blank=True)
+    reason = serializers.CharField(required=False, allow_blank=True)
+
+
+class EventStatusSerializer(serializers.Serializer[Any]):
+    """Body of ``update-status``: the status to move to."""
+
+    status = serializers.CharField()
+
+
+class BookingBulkDeleteSerializer(serializers.Serializer[Any]):
+    """Body of ``bulk-delete``: 1 to 100 distinct booking ids."""
+
+    ids = serializers.ListField(
+        child=serializers.UUIDField(), min_length=1, max_length=100, allow_empty=False
+    )
+
+    def validate_ids(self, value):
+        if len(set(value)) != len(value):
+            raise serializers.ValidationError("Each id may appear once.")
+        return value
+
+
+class BulkResultSerializer(serializers.Serializer[Any]):
+    id = serializers.UUIDField()
+    ok = serializers.BooleanField()
+    #: null on success, else ``not_found``
+    error = serializers.CharField(allow_null=True)
+
+
+class BookingBulkDeleteResponseSerializer(serializers.Serializer[Any]):
+    success = serializers.BooleanField()
+    succeeded_count = serializers.IntegerField()
+    failed_count = serializers.IntegerField()
+    results = BulkResultSerializer(many=True)

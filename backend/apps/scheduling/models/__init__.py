@@ -146,6 +146,9 @@ class CalendarEvent(EntityModel):
         help_text="Additional event metadata",
     )
     
+    # Private text and links; the change log records that an event changed, not what it says.
+    audit_exclude_fields = ("description", "notes", "meeting_url", "metadata")
+
     class Meta:
         db_table = "scheduling_calendar_event"
         ordering = ("start_time",)
@@ -293,6 +296,9 @@ class Resource(EntityModel):
         help_text="Additional resource metadata",
     )
     
+    # Kept out of the change log (SEC-SCH-05): pay rate and free-form metadata.
+    audit_exclude_fields = ("hourly_rate_usd", "metadata")
+
     class Meta:
         db_table = "scheduling_resource"
         ordering = ("name",)
@@ -380,6 +386,9 @@ class ResourceSchedule(EntityModel):
         help_text="Slot notes",
     )
     
+    # Notes can be hidden from other callers (D-21), so the change log does not copy them.
+    audit_exclude_fields = ("notes",)
+
     class Meta:
         db_table = "scheduling_resource_schedule"
         ordering = ("start_time",)
@@ -535,6 +544,9 @@ class ResourceLeave(EntityModel):
         help_text="Reason for rejection",
     )
     
+    # The reasons are private to the person and approvers (D-20).
+    audit_exclude_fields = ("reason", "rejection_reason")
+
     class Meta:
         db_table = "scheduling_resource_leave"
         ordering = ("-start_date",)

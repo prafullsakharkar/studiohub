@@ -20,7 +20,7 @@ from apps.scheduling.models import CalendarEvent, Resource, ResourceSchedule
 
 pytestmark = pytest.mark.django_db
 
-CODES = ("schedule.view", "schedule.create", "schedule.update")
+CODES = ("schedule.view", "schedule.create", "schedule.update", "schedule.manage")
 
 
 def _editor(*projects):

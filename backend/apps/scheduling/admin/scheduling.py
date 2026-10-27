@@ -12,6 +12,24 @@ from apps.scheduling.models import (
 )
 
 
+class ViewOnlyMixin:
+    """
+    Calendars, milestones, bookings and leave are written through their services (one default
+    calendar, one calendar per office, project scoping, who completed a milestone, no overlapping
+    bookings, who may file and decide leave), which the admin would bypass. Read them here; change
+    them through the API.
+    """
+
+    def has_add_permission(self, request, *args, **kwargs):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(Resource)
 class ResourceAdmin(PlatformScopedModelAdmin):
     list_display = (
@@ -94,7 +112,7 @@ class HolidayAdmin(PlatformScopedModelAdmin):
 
 
 @admin.register(ResourceLeave)
-class ResourceLeaveAdmin(PlatformScopedModelAdmin):
+class ResourceLeaveAdmin(ViewOnlyMixin, PlatformScopedModelAdmin):
     list_display = (
         "resource",
         "leave_type",
@@ -121,7 +139,7 @@ class ResourceLeaveAdmin(PlatformScopedModelAdmin):
 
 
 @admin.register(ResourceSchedule)
-class ResourceScheduleAdmin(PlatformScopedModelAdmin):
+class ResourceScheduleAdmin(ViewOnlyMixin, PlatformScopedModelAdmin):
     list_display = (
         "resource",
         "start_time",
@@ -140,23 +158,6 @@ class ResourceScheduleAdmin(PlatformScopedModelAdmin):
     date_hierarchy = "start_time"
 
     ordering = ("-start_time",)
-
-
-class ViewOnlyMixin:
-    """
-    Calendars and milestones are written through their services (one default calendar, one calendar
-    per office, project scoping, who completed a milestone), which the admin would bypass. Read them
-    here; change them through the API.
-    """
-
-    def has_add_permission(self, request, *args, **kwargs):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
 
 
 @admin.register(WorkCalendar)

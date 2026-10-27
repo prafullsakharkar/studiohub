@@ -68,7 +68,10 @@ def owner():
 
 @pytest.fixture
 def manager():
-    return _user("schedule.view", "schedule.create", "schedule.update")
+    # A planner who also decides leave: the full roles hold both manage and approve (Phase 11).
+    return _user(
+        "schedule.view", "schedule.create", "schedule.update", "schedule.manage", "schedule.approve"
+    )
 
 
 class TestRequestsStartPendingAndCannotBeForged:
@@ -294,7 +297,7 @@ class TestServiceLevel:
 @pytest.mark.django_db(transaction=True)
 def test_two_racing_decisions_cannot_both_win():
     """Approve and reject at once: exactly one takes effect, the loser is refused."""
-    first, second = _user("schedule.update"), _user("schedule.update")
+    first, second = _user("schedule.approve"), _user("schedule.approve")
     leave = _leave(_person(UserFactory.create()))
     outcomes: list[str] = []
     start = threading.Barrier(2)

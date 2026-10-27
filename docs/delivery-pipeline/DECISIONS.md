@@ -200,6 +200,12 @@ Recommendation and default: **A**. Blocks: Phases 5, 8, 11.
 | A-55 | 2026-10-27 | Existing overlapping bookings are left alone and can still be edited (notes, event, task); only a change of resource, times or status is checked. The `?status=` filter on resources still reads the stored column. | ASSUMED | `services/booking.py` |
 | A-56 | 2026-10-27 | Scheduling publishes `scheduling.project_milestones` and `scheduling.capacity` through `apps.core.providers`. Nothing reads the capacity provider yet (Masterdata's utilization is not part of this work). The project dashboard card keeps deriving its own milestone list. | ASSUMED | `apps/scheduling/providers.py` |
 | A-57 | 2026-10-27 | **Q32 is option A.** Migration `0008_booking_exclusion` adds the exclusion constraint on top of the service lock (user: "Option 2, add the constraint and commit"). It reuses masterdata's `PostgresOnlyExclusionConstraint` and `EnsureBtreeGistExtension` (an allowed dependency: Scheduling depends on Masterdata). It stops and lists existing overlapping pairs first. Staging: run S1 first; the live database's extension is UNVERIFIED (check 1). | ANSWERED (user) | `migrations/0008_booking_exclusion.py` |
+| A-58 | 2026-10-27 | **Scheduling write gates.** `schedule.manage` replaces the interim gates of Phase 9 (A-45) for calendars, holidays, milestones, bookings, and **also for creating resources** (it was `schedule.create`, which lead-artist and artist now hold). | ASSUMED | `apps/scheduling/api/viewsets` |
+| A-59 | 2026-10-27 | Editing a pending leave needs `schedule.create` (own) or `schedule.manage`; no leave `cancel` endpoint is built. | ASSUMED | `services/leave.py` |
+| A-60 | 2026-10-27 | Bookings and leave are searchable by resource name and code; notes and reasons never. | ASSUMED | SEC-SCH-01 |
+| A-61 | 2026-10-27 | A leave override reason is stored in the audit row's metadata; leave overlap is held by the resource lock only (no database constraint). | ASSUMED | `services/leave.py` |
+| A-62 | 2026-10-27 | Bookings and leave are view-only in the admin. | ASSUMED | `admin/scheduling.py` |
+| A-63 | 2026-10-27 | Q37: N = 3 years for `redact_leave_reasons`, run by hand, never scheduled. | ASSUMED (Q37 default) | `redact_leave_reasons` |
 
 **Q40 (ANSWERED 2026-10-27: A). Should `init_platform` also withdraw the grants Q34 removes?**
 
@@ -227,6 +233,8 @@ Recommendation was **B** once the reporting tool is known; default **A**. Status
 8. Run `manage.py init_platform` on each environment and read its last line: it says how many withdrawn role grants it removed (Q40 = A). Afterwards the vfx-supervisor should hold none of `delivery.delete`, `delivery.send`, `delivery.view_secret`, `publishing.delete` (UNVERIFIED on your databases; check in the admin or with your own query).
 9. Before migrating scheduling 0006 on staging, count the rows it will refuse (read-only, S2 of `ANALYSIS.md` §8): events with `end_time < start_time`, bookings with `end_time <= start_time`, leave with `end_date < start_date`, resources with `hourly_rate_usd < 0`, and `SELECT upper(code), count(*) FROM scheduling_resource GROUP BY 1 HAVING count(*) > 1;` (deleted rows count). Any row returned makes the migration stop and list it. Also `manage.py report_leave_days` shows how many existing leave rows would count differently as working days (it changes nothing; run it only against a database you mean to read).
 10. Which office time zones the work calendars should use (Q21, Q31): until you create them every resource follows the UTC "STUDIO" calendar, so capacity weeks are UTC weeks.
+11. **After deploying scheduling Phase 11, run `manage.py init_platform` on every environment.** The new codes `schedule.manage` and `schedule.approve` reach roles only when it runs; until then nobody but a superuser can approve leave, book a resource or create calendars, holidays and milestones. Afterwards check (UNVERIFIED on your databases): org-admin, production-admin and vfx-supervisor hold `schedule.manage` and `schedule.approve`; lead-artist and artist hold `schedule.create`; **no role holds `schedule.sod.override`**.
+12. Decide whether to run `manage.py redact_leave_reasons` (Q37) and from when; it is a dry run unless `--apply`.
 
 ## Standing assumptions
 

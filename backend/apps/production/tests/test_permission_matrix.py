@@ -62,7 +62,8 @@ FULL = {
     "playlist": ALL_ACTIONS,
     "media": ALL_ACTIONS,
     "workflow": ALL_ACTIONS,
-    "schedule": f"{ALL_ACTIONS} view_rates",
+    # manage and approve: scheduling Phase 11 (docs/scheduling/PLAN.md section 6)
+    "schedule": f"{ALL_ACTIONS} view_rates manage approve",
     "tasktemplate": f"{ALL_ACTIONS} manage_studio",
     "track": ALL_ACTIONS,
     "show": ALL_ACTIONS,
@@ -87,7 +88,8 @@ LEAD = {
     "playlist": "view create update",
     "media": "view create update",
     "workflow": "view",
-    "schedule": "view",
+    # create: own leave and own events (scheduling Phase 11, Q34)
+    "schedule": "view create",
     "tasktemplate": "view",
     "track": "view",
     "show": "view",
@@ -110,7 +112,7 @@ ARTIST = {
     "playlist": "view",
     "media": "view create",
     "workflow": "view",
-    "schedule": "view",
+    "schedule": "view create",  # as the lead: own leave and own events (Q34)
     "tasktemplate": "view",
     "track": "view",
     "show": "view",
