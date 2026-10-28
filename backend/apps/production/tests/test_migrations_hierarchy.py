@@ -16,7 +16,7 @@ from django.core.management import call_command
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
 
-pytestmark = pytest.mark.django_db(transaction=True)
+pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.migrations]
 
 BEFORE_CONSTRAINTS = [("production", "0024_status_override_and_timelog_adjustment")]
 WITH_CONSTRAINTS = [("production", "0025_code_and_frame_constraints")]

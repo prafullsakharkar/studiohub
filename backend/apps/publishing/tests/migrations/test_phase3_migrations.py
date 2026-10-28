@@ -12,7 +12,7 @@ import pytest
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
 
-pytestmark = pytest.mark.django_db(transaction=True)
+pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.migrations]
 
 BEFORE = [("publishing", "0005_remove_publishdestination_uniq_publish_destination_name_per_org_and_more")]
 AT_0007 = [("publishing", "0007_publish_item_links")]

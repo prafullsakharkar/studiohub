@@ -24,6 +24,7 @@ from apps.identity.tests.factories import UserFactory
 
 pytestmark = [
     pytest.mark.django_db(transaction=True),
+    pytest.mark.migrations,
     pytest.mark.usefixtures("restore_latest"),
 ]
 

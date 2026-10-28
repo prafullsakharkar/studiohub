@@ -148,6 +148,12 @@ addopts = ["--reuse-db", "--strict-markers", "--cov=apps", "--import-mode=import
 
 testpaths = ["apps"]
 
+markers = [
+    # Tests that run `migrate` forward and backward on the test database. About two thirds of the
+    # run time of the apps that have them; deselect with -m "not migrations" for a quicker local run.
+    "migrations: runs migrations forward and backward on the test database (slow)",
+]
+
 filterwarnings = [
     # Core deprecation FutureWarnings are expected until the domain move (production) is complete
     "ignore::FutureWarning:apps.core.*",

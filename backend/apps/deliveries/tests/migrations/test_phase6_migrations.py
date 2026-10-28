@@ -22,6 +22,7 @@ from apps.production.tests.factories import ProjectFactory, VersionFactory
 
 pytestmark = [
     pytest.mark.django_db(transaction=True),
+    pytest.mark.migrations,
     pytest.mark.usefixtures("restore_latest"),
 ]
 

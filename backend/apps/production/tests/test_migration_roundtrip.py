@@ -15,7 +15,7 @@ from django.db.migrations.executor import MigrationExecutor
 
 from apps.production.tests.factories import ProjectFactory, TaskFactory, TimelogFactory
 
-pytestmark = pytest.mark.django_db(transaction=True)
+pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.migrations]
 
 BEFORE = [("production", "0022_remove_asset_production__organiz_4d58b7_idx_and_more")]
 AFTER_0023 = [("production", "0023_status_history")]

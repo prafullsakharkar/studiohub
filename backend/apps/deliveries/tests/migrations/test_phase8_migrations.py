@@ -21,6 +21,7 @@ from apps.deliveries.tests.migration_helpers import (
 
 pytestmark = [
     pytest.mark.django_db(transaction=True),
+    pytest.mark.migrations,
     pytest.mark.usefixtures("restore_latest"),
 ]
 
