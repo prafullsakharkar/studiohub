@@ -219,6 +219,26 @@ class Settings(BaseSettings):
     api_key_pepper: SecretStr = Field(default=SecretStr(""), alias="API_KEY_PEPPER")
 
     ####################################################################
+    # Uploaded files (attachments)
+    ####################################################################
+
+    # URL prefix of an nginx ``internal`` location that maps to MEDIA_ROOT, for example
+    # ``/_protected_media``. Empty (default): Django streams the file itself. Either way a file
+    # leaves only through an authorized download link; nginx never serves attachments by path.
+    media_accel_prefix: str = Field(default="", alias="MEDIA_ACCEL_PREFIX")
+
+    ####################################################################
+    # Operator surfaces (off unless switched on)
+    ####################################################################
+
+    # Django admin site. Its login does not go through the API's MFA, lockout or throttling, so
+    # it is not mounted outside DEBUG unless an operator turns it on.
+    admin_enabled: bool = Field(default=False, alias="ADMIN_ENABLED")
+
+    # OpenAPI schema and Swagger UI. When on, the schema still needs an authenticated caller.
+    api_docs_enabled: bool = Field(default=False, alias="API_DOCS_ENABLED")
+
+    ####################################################################
     # Celery
     ####################################################################
 

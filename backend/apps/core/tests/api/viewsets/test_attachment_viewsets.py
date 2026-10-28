@@ -15,9 +15,9 @@ class TestAttachmentViewSet:
     """Tests for AttachmentViewSet."""
 
     @pytest.mark.django_db
-    def test_list_attachments(self, authenticated_client):
+    def test_list_attachments(self, authenticated_client, user):
         """Test listing attachments."""
-        AttachmentFactory.create_batch(3)
+        AttachmentFactory.create_batch(3, created_by=user)
 
         url = reverse("api:v1:core:attachment-list")
         response = authenticated_client.get(url)
@@ -41,9 +41,9 @@ class TestAttachmentViewSet:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_list_attachments_with_pagination(self, authenticated_client):
+    def test_list_attachments_with_pagination(self, authenticated_client, user):
         """Test listing attachments with pagination."""
-        AttachmentFactory.create_batch(15)
+        AttachmentFactory.create_batch(15, created_by=user)
 
         url = reverse("api:v1:core:attachment-list")
         response = authenticated_client.get(url, {"page_size": 5, "page": 1})
@@ -57,9 +57,9 @@ class TestAttachmentViewSet:
         assert "next" in data
 
     @pytest.mark.django_db
-    def test_retrieve_attachment(self, authenticated_client):
+    def test_retrieve_attachment(self, authenticated_client, user):
         """Test retrieving a single attachment."""
-        attachment = AttachmentFactory.create()
+        attachment = AttachmentFactory.create(created_by=user)
 
         url = reverse("api:v1:core:attachment-detail", kwargs={"uuid": attachment.uuid})
         response = authenticated_client.get(url)
@@ -121,9 +121,9 @@ class TestAttachmentViewSet:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_update_attachment(self, authenticated_client):
+    def test_update_attachment(self, authenticated_client, user):
         """Test updating an attachment."""
-        attachment = AttachmentFactory.create()
+        attachment = AttachmentFactory.create(created_by=user)
 
         url = reverse("api:v1:core:attachment-detail", kwargs={"uuid": attachment.uuid})
         data = {
@@ -143,9 +143,9 @@ class TestAttachmentViewSet:
         assert data["file_type"] == "image"
 
     @pytest.mark.django_db
-    def test_partial_update_attachment(self, authenticated_client):
+    def test_partial_update_attachment(self, authenticated_client, user):
         """Test partially updating an attachment."""
-        attachment = AttachmentFactory.create()
+        attachment = AttachmentFactory.create(created_by=user)
 
         url = reverse("api:v1:core:attachment-detail", kwargs={"uuid": attachment.uuid})
         data = {
@@ -161,9 +161,9 @@ class TestAttachmentViewSet:
         assert data["description"] == "A partially updated attachment"
 
     @pytest.mark.django_db
-    def test_delete_attachment(self, authenticated_client):
+    def test_delete_attachment(self, authenticated_client, user):
         """Test deleting an attachment."""
-        attachment = AttachmentFactory.create()
+        attachment = AttachmentFactory.create(created_by=user)
 
         url = reverse("api:v1:core:attachment-detail", kwargs={"uuid": attachment.uuid})
         response = authenticated_client.delete(url)
@@ -176,15 +176,15 @@ class TestAttachmentViewSet:
         assert attachment.is_deleted is True
 
     @pytest.mark.django_db
-    def test_search_attachments(self, authenticated_client):
+    def test_search_attachments(self, authenticated_client, user):
         """Test searching attachments."""
         # Pin descriptions: search covers name+description+mime_type and
         # Faker text could randomly contain the search term (flaky count).
         AttachmentFactory.create_batch(
-            3, name="Search Attachment", description="alpha beta gamma"
+            3, created_by=user, name="Search Attachment", description="alpha beta gamma"
         )
         AttachmentFactory.create_batch(
-            2, name="Other Attachment", description="delta epsilon zeta"
+            2, created_by=user, name="Other Attachment", description="delta epsilon zeta"
         )
 
         url = reverse("api:v1:core:attachment-list")
@@ -197,9 +197,9 @@ class TestAttachmentViewSet:
         assert data["count"] == 3
 
     @pytest.mark.django_db
-    def test_order_attachments(self, authenticated_client):
+    def test_order_attachments(self, authenticated_client, user):
         """Test ordering attachments."""
-        AttachmentFactory.create_batch(3)
+        AttachmentFactory.create_batch(3, created_by=user)
 
         url = reverse("api:v1:core:attachment-list")
         response = authenticated_client.get(url, {"ordering": "name"})
@@ -211,10 +211,10 @@ class TestAttachmentViewSet:
         assert data["count"] == 3
 
     @pytest.mark.django_db
-    def test_filter_attachments(self, authenticated_client):
+    def test_filter_attachments(self, authenticated_client, user):
         """Test filtering attachments."""
-        AttachmentFactory.create_batch(3, file_type="document")
-        AttachmentFactory.create_batch(2, file_type="image")
+        AttachmentFactory.create_batch(3, created_by=user, file_type="document")
+        AttachmentFactory.create_batch(2, created_by=user, file_type="image")
 
         url = reverse("api:v1:core:attachment-list")
         response = authenticated_client.get(url, {"file_type": "document"})

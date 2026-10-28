@@ -95,16 +95,25 @@ handler404 = not_found
 
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
     path("health/", health),
     path("api/", include("config.api_urls")),
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path(
-        "api/schema/swagger-ui/",
-        SpectacularSwaggerView.as_view(url_name="schema"),
-        name="swagger-ui",
-    ),
 ]
+
+# The admin login bypasses the API's MFA, lockout and throttling, and the schema maps every
+# endpoint: neither is mounted in production unless an operator opts in (ADMIN_ENABLED,
+# API_DOCS_ENABLED). nginx blocks both paths as well.
+if settings.DEBUG or settings.ADMIN_ENABLED:
+    urlpatterns += [path("admin/", admin.site.urls)]
+
+if settings.DEBUG or settings.API_DOCS_ENABLED:
+    urlpatterns += [
+        path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+        path(
+            "api/schema/swagger-ui/",
+            SpectacularSwaggerView.as_view(url_name="schema"),
+            name="swagger-ui",
+        ),
+    ]
 
 if settings.DEBUG:
     import debug_toolbar

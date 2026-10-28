@@ -1,0 +1,12 @@
+# Secret scanning (CI job `secrets` in .github/workflows/ci.yml).
+# Extends gitleaks' default rules; only values that are test-only by design are allowed.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Test-only keys that protect nothing real"
+paths = [
+  '''backend/\.env\.test$''',
+  '''backend/config/settings/testing\.py$''',
+]

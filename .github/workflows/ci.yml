@@ -72,6 +72,22 @@ jobs:
   # contract protection runs in studiohub-react/.github/workflows/ci.yml
   # (tsc + vitest incl. contract conformance + build).
 
+  # Scans the commits of the push / pull request for committed secrets (rules and test-only
+  # allowances in .gitleaks.toml). Findings in older history are reviewed with
+  # `gitleaks detect` and answered by rotating the credential, not by this job.
+  secrets:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   docs:
     name: Docs (link check)
     runs-on: ubuntu-latest

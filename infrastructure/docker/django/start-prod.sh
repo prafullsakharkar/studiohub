@@ -8,6 +8,9 @@
 
 set -eu
 
+echo "Running deployment checks..."
+python manage.py check --deploy --fail-level ERROR
+
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
 

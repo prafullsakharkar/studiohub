@@ -77,7 +77,15 @@ from .components.security import (
     X_FRAME_OPTIONS,
 )
 from .components.static import STATIC_ROOT, STATIC_URL
-from .components.storage import MEDIA_ROOT, MEDIA_URL, PUBLISHING_STORAGE_MOUNTS
+from .components.storage import (
+    ATTACHMENT_ALLOWED_EXTENSIONS,
+    ATTACHMENT_LINK_TTL_SECONDS,
+    ATTACHMENT_MAX_BYTES,
+    MEDIA_ACCEL_PREFIX,
+    MEDIA_ROOT,
+    MEDIA_URL,
+    PUBLISHING_STORAGE_MOUNTS,
+)
 from .components.templates import TEMPLATES
 from .logging import LOGGING
 
@@ -96,6 +104,11 @@ RATE_LIMIT_GLOBAL = 100  # requests per window for anonymous users
 SECRET_KEY = settings.secret_key
 
 DEBUG = settings.debug
+
+# Operator surfaces: mounted only in DEBUG or when an operator opts in (config/urls.py).
+ADMIN_ENABLED = settings.admin_enabled
+
+API_DOCS_ENABLED = settings.api_docs_enabled
 
 ALLOWED_HOSTS = settings.allowed_hosts
 
