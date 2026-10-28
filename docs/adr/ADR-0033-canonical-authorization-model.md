@@ -91,9 +91,13 @@ never covers sibling shows.
 > - **Creating** into a project as a show-bound member files the record under their show, so it does not
 >   vanish from their own view. `manage.py assign_shows` assigns existing records to a show.
 >
-> Not done: assigning a show through the API (only the command and the creation default set it; the
-> serializers expose `show_id` read-only), and media attached to entity types other than task, shot,
-> asset and version stays project-wide.
+> - **Assigning through the API:** `show_id` is accepted on create and update of episodes, sequences,
+>   shots and assets (`null` clears it). The show must belong to the record's project (another project's
+>   show answers `400 Unknown show.`). Only a platform administrator, a full project member, or a member
+>   bound to a show (their own show only, and they cannot clear it) may set it; a department-narrowed or
+>   external member gets `403`.
+>
+> Not done: media attached to entity types other than task, shot, asset and version stays project-wide.
 
 ## D3 — Canonical permission code format
 

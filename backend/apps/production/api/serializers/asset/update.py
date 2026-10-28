@@ -27,9 +27,15 @@ class AssetUpdateSerializer(NormalizedCodeMixin, LockedFieldsMixin, BaseWriteSer
         queryset=Asset.objects.all(), required=False, allow_null=True
     )
 
+    # Files the record under a show (TPN review TM-002). The viewset resolves it inside the project.
+    show_id = serializers.UUIDField(
+        source="show", write_only=True, required=False, allow_null=True
+    )
+
     class Meta:
         model = Asset
         fields = (
+            "show_id",
             "name",
             "code",
             "category",

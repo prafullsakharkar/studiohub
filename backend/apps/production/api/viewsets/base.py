@@ -16,9 +16,11 @@ from apps.core.api.viewsets.service import ServiceModelViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
 from apps.production.constants import workflow
+from apps.production.models import Show
 from apps.production.permissions.checks import has_explicit_permission_code, has_permission_code
 from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.services.status import StatusService
+from apps.production.validators.references import resolve_in_project, unknown
 
 
 class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMissingTypeArgument]
@@ -393,6 +395,7 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         self.validate_references(project, data)
         self._guard_privileged_values(data)
         self._guard_initial_status(data)
+        self._resolve_show(project, data)
         data = self._with_default_show(model, project, data)
         # Always pass the resolved instance: validated_data may carry the
         # raw reference string from the project_id/project_code aliases,
@@ -401,6 +404,42 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         serializer.instance = self.service_class.create(  # pyright: ignore[reportAttributeAccessIssue]
             user=self.request.user, **{**data, "project": project}
         )
+
+    def _resolve_show(self, project, data):
+        """
+        ``show`` arrives as an id: make it a show of ``project`` (or clear it), if the caller may.
+
+        Filing a record under a show decides who sees it (TPN review TM-002), so it is limited to
+        platform administrators, full project members, and members bound to a show, who may use
+        only their own. A show of another project looks like an unknown one.
+        """
+        if "show" not in data or "show" not in {
+            f.name for f in self.get_queryset().model._meta.fields
+        }:
+            return
+
+        user = self.request.user
+        bound = ProductionBaseSelector.default_show_id(self.request, project)
+
+        if not (
+            ProductionBaseSelector.is_platform_admin(user)
+            or bound
+            or ProductionBaseSelector.user_has_full_project_access(
+                request=self.request, project=project
+            )
+        ):
+            raise PermissionDenied("Only a full project member can assign a show.")
+
+        ref = data["show"]
+        if ref is None:
+            if bound:
+                raise PermissionDenied("A member bound to a show cannot take a record out of it.")
+            return
+
+        show = resolve_in_project(Show, project, ref, field="show_id", label="show")
+        if bound and show.pk != bound:
+            raise unknown("show_id", "show")
+        data["show"] = show
 
     def _with_default_show(self, model, project, data):
         """A caller bound to a show creates into that show, or the record would vanish from their view."""
@@ -416,6 +455,7 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         data = serializer.validated_data if isinstance(serializer.validated_data, dict) else {}
         self.validate_references(getattr(instance, "project", None), data, instance=instance)
         self._guard_privileged_values(data, instance=instance)
+        self._resolve_show(getattr(instance, "project", None), data)
         serializer.instance = self._apply_update(instance, dict(data))
 
     # -- status workflow ------------------------------------------------
