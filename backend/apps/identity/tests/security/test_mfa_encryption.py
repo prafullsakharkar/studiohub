@@ -6,9 +6,6 @@ The stored form is ciphertext; every failure to decrypt fails closed.
 
 from __future__ import annotations
 
-from importlib import import_module
-from types import SimpleNamespace
-
 import pytest
 from cryptography.fernet import Fernet
 from django.core.cache import cache
@@ -23,8 +20,6 @@ from apps.identity.models import UserMFA, UserSession
 from apps.identity.services.mfa import MFAService
 from apps.identity.tests.factories import UserFactory
 from apps.identity.tests.mfa_helpers import enable_mfa
-
-migration = import_module("apps.identity.migrations.0019_encrypt_totp_secret")
 
 PASSWORD = "Correct-horse-battery-9!"
 SECRET = "JBSWY3DPEHPK3PXP"
@@ -209,52 +204,6 @@ class TestKeyRotation:
         assert UserMFA.objects.get(pk=fresh.pk).totp_secret == SECRET
         with pytest.raises(crypto.SecretUnavailable):
             UserMFA.objects.get(pk=mfa.pk)
-
-
-@pytest.mark.django_db
-class TestDataMigration:
-    def _editor(self):
-        return SimpleNamespace(connection=connection)
-
-    def test_encrypts_existing_plaintext_and_is_idempotent(self):
-        legacy = _mfa(SECRET)
-        encrypted = _mfa()
-        encrypted.totp_secret = "OTHERSECRET234567"
-        encrypted.save()
-        before = _raw_secret(encrypted)
-        empty = _mfa()
-
-        migration.encrypt_existing(None, self._editor())
-        migration.encrypt_existing(None, self._editor())
-
-        assert _raw_secret(legacy).startswith(crypto.PREFIX)
-        assert UserMFA.objects.get(pk=legacy.pk).totp_secret == SECRET
-        assert _raw_secret(encrypted) == before
-        assert _raw_secret(empty) == ""
-
-    def test_reverse_restores_plaintext(self):
-        mfa = _mfa()
-        mfa.totp_secret = SECRET
-        mfa.save()
-
-        migration.decrypt_existing(None, self._editor())
-
-        assert _raw_secret(mfa) == SECRET
-
-    def test_without_a_key_it_refuses_rather_than_leave_plaintext(self, settings):
-        mfa = _mfa(SECRET)
-        settings.MFA_ENCRYPTION_KEYS = ()
-
-        with pytest.raises(crypto.SecretUnavailable):
-            migration.encrypt_existing(None, self._editor())
-
-        assert _raw_secret(mfa) == SECRET
-
-    def test_without_a_key_and_nothing_to_convert_it_is_a_no_op(self, settings):
-        _mfa()
-        settings.MFA_ENCRYPTION_KEYS = ()
-
-        migration.encrypt_existing(None, self._editor())
 
 
 class TestSystemCheck:

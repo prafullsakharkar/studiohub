@@ -144,17 +144,11 @@ DJANGO_SETTINGS_MODULE = "config.settings.testing"
 
 python_files = ["test_*.py", "*_test.py"]
 
-# The default run is the fast one: no coverage and no migration tests (about 60% of the time).
-# The full run, which CI uses, is `pytest --cov=apps -m ""`.
-addopts = ["--reuse-db", "--strict-markers", "--import-mode=importlib", "-m", "not migrations"]
+# Coverage is off by default (it costs about a quarter of the run); CI and `make test-full` add --cov=apps.
+addopts = ["--reuse-db", "--strict-markers", "--import-mode=importlib"]
 
 testpaths = ["apps"]
 
-markers = [
-    # Tests that run `migrate` forward and backward on the test database. About two thirds of the
-    # run time of the apps that have them; deselect with -m "not migrations" for a quicker local run.
-    "migrations: runs migrations forward and backward on the test database (slow)",
-]
 
 filterwarnings = [
     # Core deprecation FutureWarnings are expected until the domain move (production) is complete

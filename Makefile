@@ -134,7 +134,7 @@ test:
 
 .PHONY: test-full
 test-full:
-	$(COMPOSE) exec django pytest --cov=apps -m ""
+	$(COMPOSE) exec django pytest --cov=apps
 
 .PHONY: pytest
 pytest:
