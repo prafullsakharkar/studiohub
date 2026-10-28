@@ -83,9 +83,20 @@ class IdentityRbacGuard:
     # their POST/DELETE still require the owning resource's UPDATE grant.
     READ_SUB_ACTIONS = ("permissions", "users", "groups", "members", "roles")
 
+    #: sub-resource lists that return users
+    IDENTITY_LISTING_ACTIONS = ("users", "members")
+
+    #: the permission those lists need; set by each viewset that has them
+    listing_permission: str | None = None
+
     def get_permission_required(self):
         action = getattr(self, "action", None)
         if action in self.READ_SUB_ACTIONS and getattr(self.request, "method", "") == "GET":
+            # Who holds a role / belongs to a group is user data (ids and emails): it needs the
+            # resource's view permission. The other sub-lists name roles, groups and permission
+            # codes only and stay shared reference data (TPN review TM-018).
+            if action in self.IDENTITY_LISTING_ACTIONS:
+                return (self.listing_permission,) if self.listing_permission else None
             return ()
         return super().get_permission_required()  # pyright: ignore[reportAttributeAccessIssue]
 
@@ -123,6 +134,7 @@ class RoleViewSet(
     serializer_class = RoleSerializer
     selector_class = RoleSelector
     service_class = RoleService
+    listing_permission = RolePermissions.VIEW
     pagination_class = StandardPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["role_type", "scope", "is_system", "is_default", "is_active"]
@@ -304,6 +316,7 @@ class GroupViewSet(
     serializer_class = GroupSerializer
     selector_class = GroupSelector
     service_class = GroupService
+    listing_permission = GroupPermissions.VIEW
     pagination_class = StandardPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["is_system"]

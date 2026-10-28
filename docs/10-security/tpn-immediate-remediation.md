@@ -107,3 +107,18 @@ Operator steps: set `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_USE_TLS=tru
 and `FRONTEND_BASE_URL`; set `TRUSTED_PROXY_IPS` and `FORWARDED_ALLOW_IPS` to the proxy range (the
 templates already do); recreate the compose network once so the fixed subnet takes effect
 (`docker compose down` then `up`); run `migrate`.
+
+# Follow-up: user administration and membership lists (TM-022, TM-018)
+
+- **Target rule.** Administering a user (update, delete, activate, deactivate, archive, restore,
+  suspend, change or reset password, force password change, revoke sessions) is refused when the
+  target outranks the actor: a superuser can be administered only by a superuser, and nobody can
+  administer a user who holds permissions they do not. Before, a holder of `identity.user.reset_password`
+  could force a reset and revoke every session of a superuser.
+- **Staff and activation.** Only a superuser can grant or remove `is_staff`. Changing `is_active`
+  through a plain update now needs the activate or deactivate permission.
+- **Membership lists.** `GET roles/<id>/users/` and `GET groups/<id>/members/` return user ids and emails
+  and now need `identity.role.view` / `identity.group.view`. No seeded role holds those codes, so
+  grant them to the roles whose holders manage access; superusers are unaffected. The role, group and
+  permission lists themselves stay open.
+- Contracts SEC-AUTHZ-06, -07 and -08 in `docs/identity/CONTRACTS.md`.
