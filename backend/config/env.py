@@ -151,6 +151,25 @@ class Settings(BaseSettings):
 
     email_port: int = Field(default=1025, alias="EMAIL_PORT")
 
+    # How mail leaves the application. Development uses a local catcher (mailpit) without TLS;
+    # production uses an authenticated relay with STARTTLS (587) or implicit TLS (465).
+    email_backend: str = Field(
+        default="django.core.mail.backends.smtp.EmailBackend", alias="EMAIL_BACKEND"
+    )
+
+    email_host_user: str = Field(default="", alias="EMAIL_HOST_USER")
+
+    email_host_password: SecretStr = Field(default=SecretStr(""), alias="EMAIL_HOST_PASSWORD")
+
+    email_use_tls: bool = Field(default=False, alias="EMAIL_USE_TLS")
+
+    email_use_ssl: bool = Field(default=False, alias="EMAIL_USE_SSL")
+
+    default_from_email: str = Field(default="noreply@studiohub.local", alias="DEFAULT_FROM_EMAIL")
+
+    # Origin of the web client; the password-reset email links to ``<this>/reset-password?token=``.
+    frontend_base_url: str = Field(default="", alias="FRONTEND_BASE_URL")
+
     ####################################################################
     # Logging
     ####################################################################
