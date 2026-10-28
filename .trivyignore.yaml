@@ -1,0 +1,20 @@
+# Findings the Trivy gate in .github/workflows/ci.yml accepts, each with the reason and a review date.
+# Anything not listed here fails the build. Paths are relative to the scanned directory (infrastructure).
+
+misconfigurations:
+  - id: DS-0002
+    paths:
+      - docker/nginx/Dockerfile
+    statement: >-
+      The official nginx image starts its master process as root to bind ports 80 and 443 and runs the
+      workers as the unprivileged `nginx` user. Moving to the unprivileged image means ports above 1024
+      and a compose change; planned with the TLS work (TM-009).
+    expired_at: 2027-03-31
+
+  - id: DS-0002
+    paths:
+      - docker/postgres/Dockerfile
+    statement: >-
+      The official postgres image's entrypoint starts as root only to prepare the data directory, then
+      drops to the `postgres` user (gosu) before the server starts.
+    expired_at: 2027-03-31

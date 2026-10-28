@@ -23,7 +23,7 @@ services:
       - backend
 
   redis:
-    image: redis:8-alpine
+    image: redis:8-alpine@sha256:47b08295737773de3b711fb86f13ae802f5074e96a9a2d29f5f80164ac08c046
 
     command:
       - redis-server

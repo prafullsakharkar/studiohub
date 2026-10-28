@@ -12,6 +12,7 @@ mc mb --ignore-existing local/static
 mc mb --ignore-existing local/backups
 mc mb --ignore-existing local/exports
 
-mc anonymous set public local/media
+# Private. Nothing here is served by path; files leave only through the application.
+mc anonymous set none local/media
 
 echo "Buckets created."
