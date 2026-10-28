@@ -54,6 +54,28 @@ OWN` with terminal external branches `VENDOR_PROJECT(_ASSIGNED)` / `CLIENT_PROJE
 grants to that show. A project-wide membership covers all of its shows; a show grant
 never covers sibling shows.
 
+> **Amendment (2026-10-28, TPN review TM-002): external members are compartmentalized.**
+> The production selectors used to scope by project only, so a vendor or client member saw the
+> whole project. A `ProjectMembership` that names a vendor (`vendor_id`) or a client (`client_id`)
+> is now *external* on that project and sees only what it was given; a membership naming neither is
+> internal and behaves as before. The rules live in `apps/production/selectors/external_scope.py`
+> and are deny-by-default:
+>
+> - **Vendor:** the tasks of the vendor (by `vendor_id` or `vendor_code`, case-insensitive) and what
+>   is reached through them: the task's shot, asset, sequence and episode, its versions and
+>   timelogs, the reviews containing those versions, and media attached to any of it.
+> - **Client:** the reviews they participate in, the versions in them, and media attached to those.
+> - **Both:** the project record (with budget, totals, client and other vendors removed), their own
+>   membership, the playlists and notes they created, and the project's workflow definitions.
+> - **Not shown to external members:** shows, editorial, automation, status history, task templates,
+>   other members, and every whole-project view (statistics, dashboard, summary, schedule, notes,
+>   deliveries). Deliveries, publishing and scheduling are filtered by `visible_project_ids`, which
+>   now lists internal projects only.
+>
+> Still open: SHOW and DEPARTMENT narrowing for *internal* members. `Shot`, `Sequence`, `Episode`
+> and `Asset` carry no link to a show, so a show-bound membership cannot restrict them until that
+> link exists; department is a free-text field on only some models.
+
 ## D3 — Canonical permission code format
 
 `<resource>.<action>` in dot notation with singular resources

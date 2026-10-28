@@ -26,6 +26,9 @@ class ProductionBaseSelector(BaseSelector):
       - No authenticated user resolves to an empty queryset.
       - Superusers and holders of a global ADMIN-priority identity role
         keep platform-wide visibility (break-glass / platform admin).
+      - A membership that names a vendor or a client is *external*: it shows
+        only what that vendor/client was given (``external_scope``), never the
+        whole project. A membership with neither is internal.
     """
 
     @classmethod
@@ -56,24 +59,66 @@ class ProductionBaseSelector(BaseSelector):
             return False
         return bool(getattr(user, "is_superuser", False)) or cls._has_global_admin_role(user)
 
+    @staticmethod
+    def _active_memberships(user):
+        from apps.production.models.project_membership import ProjectMembership
+
+        return ProjectMembership.objects.filter(user=user, is_deleted=False, status__iexact="active")
+
+    @classmethod
+    def _internal_memberships(cls, user):
+        """Active memberships that name neither a vendor nor a client."""
+        return cls._active_memberships(user).filter(vendor_id="", client_id="")
+
+    @classmethod
+    def external_grants(cls, user) -> list[Any]:
+        """What each of the caller's external memberships may be shown (see ``external_scope``)."""
+        from apps.production.selectors.external_scope import Grant
+
+        rows = (
+            cls._active_memberships(user)
+            .exclude(vendor_id="", client_id="")
+            .values_list("project_id", "vendor_id", "client_id")
+        )
+        return [Grant(project_id, vendor, client, user) for project_id, vendor, client in rows]
+
+    @classmethod
+    def is_external_on(cls, request, project_id) -> bool:
+        """
+        Whether the caller is an external (vendor/client) member of ``project_id`` and not a
+        platform administrator. Cached on the request: serializers ask once per row.
+        """
+        user = getattr(request, "user", None)
+        if user is None or not getattr(user, "is_authenticated", False):
+            return False
+
+        cached = getattr(request, "_external_project_ids", None)
+        if cached is None:
+            cached = (
+                set()
+                if cls.is_platform_admin(user)
+                else {grant.project_id for grant in cls.external_grants(user)}
+            )
+            request._external_project_ids = cached
+
+        return project_id in cached
+
     @classmethod
     def visible_project_ids(cls, request) -> list[Any] | None:
         """
-        Ids of the projects the caller belongs to, or ``None`` when nothing narrows them
-        (platform admins). Unauthenticated callers belong to none.
-        """
-        from apps.production.models.project_membership import ProjectMembership
+        Ids of the projects in which the caller has full (internal) access, or ``None`` when
+        nothing narrows them (platform admins). Unauthenticated callers belong to none.
 
+        An external (vendor/client) membership is deliberately not listed: callers use this to
+        filter whole-project records (deliveries, published files, schedules), which an external
+        member must not see. Per-entity narrowing for them is ``scope_by_project_membership``.
+        """
         user = getattr(request, "user", None)
         if user is None or not getattr(user, "is_authenticated", False):
             return []
         if cls.is_platform_admin(user):
             return None
-        return list(
-            ProjectMembership.objects.filter(user=user, is_deleted=False, status__iexact="active")
-            .values_list("project_id", flat=True)
-            .distinct()
-        )
+        return list(cls._internal_memberships(user).values_list("project_id", flat=True).distinct())
 
     @classmethod
     def scope_by_project_membership(cls, qs, *, request):
@@ -91,7 +136,7 @@ class ProductionBaseSelector(BaseSelector):
         """
         from django.db.models import Q
 
-        from apps.production.models.project_membership import ProjectMembership
+        from apps.production.selectors.external_scope import external_q
 
         user = getattr(request, "user", None)
         if user is None or not getattr(user, "is_authenticated", False):
@@ -101,29 +146,27 @@ class ProductionBaseSelector(BaseSelector):
         if cls._has_global_admin_role(user):
             return qs
 
-        memberships = ProjectMembership.objects.filter(
-            user=user,
-            is_deleted=False,
-            status__iexact="active",
-        )
+        memberships = cls._internal_memberships(user)
+        grants = cls.external_grants(user)
 
         model = qs.model
         model_name = model.__name__
+        external = external_q(model_name, grants) if grants else None
+
         if model_name == "Project":
-            return qs.filter(pk__in=memberships.values_list("project_id", flat=True))
-        if model_name == "Show":
+            internal = Q(pk__in=memberships.values_list("project_id", flat=True))
+        elif model_name == "Show":
             project_wide = memberships.filter(show__isnull=True)
             show_bound = memberships.exclude(show__isnull=True)
-            return qs.filter(
-                Q(project_id__in=project_wide.values_list("project_id", flat=True))
-                | Q(pk__in=show_bound.values_list("show_id", flat=True))
+            internal = Q(project_id__in=project_wide.values_list("project_id", flat=True)) | Q(
+                pk__in=show_bound.values_list("show_id", flat=True)
             )
+        elif "project" in {f.name for f in model._meta.fields}:
+            internal = Q(project_id__in=memberships.values_list("project_id", flat=True))
+        else:
+            return qs.none()
 
-        field_names = {f.name for f in model._meta.fields}
-        if "project" in field_names:
-            return qs.filter(project_id__in=memberships.values_list("project_id", flat=True))
-
-        return qs.none()
+        return qs.filter(internal | external) if external is not None else qs.filter(internal)
 
     @classmethod
     def scope_lifecycle_queryset(cls, queryset, *, request):
@@ -143,7 +186,8 @@ class ProductionBaseSelector(BaseSelector):
         role, or users with an active ProjectMembership on the project (a
         show-bound membership grants access to the project container for
         writes; entity records with their own show linkage are narrowed
-        separately).
+        separately). An external member counts: they may work in the project,
+        but what they can see there is narrowed per entity.
         """
         from apps.production.models.project_membership import ProjectMembership
 
@@ -163,3 +207,22 @@ class ProductionBaseSelector(BaseSelector):
             is_deleted=False,
             status__iexact="active",
         ).exists()
+
+    @classmethod
+    def user_has_full_project_access(cls, *, request, project) -> bool:
+        """
+        Whole-project access: like ``user_has_project_access`` but never for an external
+        (vendor/client) member. Gates the views that summarize the project as a whole
+        (counts, dashboard, schedule, members, notes, deliveries).
+        """
+        user = getattr(request, "user", None)
+        if user is None or not getattr(user, "is_authenticated", False):
+            return False
+        if getattr(user, "is_superuser", False):
+            return True
+        if project is None:
+            return False
+        if cls._has_global_admin_role(user):
+            return True
+
+        return cls._internal_memberships(user).filter(project=project).exists()

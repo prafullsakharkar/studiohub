@@ -22,7 +22,8 @@ from apps.production.api.viewsets.status_history import StatusHistoryMixin
 from apps.production.constants import ProjectWorkflowType
 from apps.production.constants.permissions import AssetPermissions, CodePermissions, ShotPermissions
 from apps.production.constants.shot import ShotStatus
-from apps.production.models import Episode
+from apps.production.models import Asset, Episode
+from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.episode import EpisodeSelector
 from apps.production.selectors.sequence import SequenceSelector
 from apps.production.selectors.shot import ShotSelector
@@ -178,7 +179,12 @@ class ShotViewSet(
     def assets(self, request, *args, **kwargs):
         """The assets this shot uses (live links to live assets)."""
         shot = self.get_object()
-        return Response(ShotAssetSerializer(ShotAssetSelector.for_shot(shot), many=True).data)
+        # Only the assets the caller may see: an external member is not shown the others.
+        visible = ProductionBaseSelector.scope_by_project_membership(
+            Asset.objects.all(), request=request
+        )
+        links = ShotAssetSelector.for_shot(shot).filter(asset_id__in=visible.values("id"))
+        return Response(ShotAssetSerializer(links, many=True).data)
 
     @extend_schema(request=LinkAssetSerializer, responses=ShotAssetSerializer)
     @assets.mapping.post

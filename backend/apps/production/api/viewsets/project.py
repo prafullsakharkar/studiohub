@@ -1,5 +1,6 @@
 from django.db import transaction
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 from apps.core.api.pagination import StandardPagination
@@ -87,10 +88,18 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
             episode_number=1,
         )
 
+    def _require_full_access(self, project):
+        """Whole-project figures are for internal members: an external member gets a 404."""
+        if not ProductionBaseSelector.user_has_full_project_access(
+            request=self.request, project=project
+        ):
+            raise NotFound("Project not found.")
+
     @action(detail=True, methods=["get"], url_path="statistics")
     def statistics(self, request, *args, **kwargs):
         """Frontend contract: GET /api/v1/projects/{id}/statistics/."""
         instance = self.get_object()
+        self._require_full_access(instance)
         return Response(ProjectSelector.summary_counts(instance))
 
     @action(detail=True, methods=["get"], url_path="dashboard")
@@ -102,4 +111,5 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         unknown projects 404 via ``get_object``.
         """
         instance = self.get_object()
+        self._require_full_access(instance)
         return Response(ProjectDashboardSelector.build(instance))

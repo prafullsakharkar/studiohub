@@ -14,8 +14,9 @@ from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.api.viewsets.bulk import ProductionBulkMixin
 from apps.production.api.viewsets.rename_code import RenameCodeMixin
 from apps.production.constants.permissions import AssetPermissions, CodePermissions, ShotPermissions
-from apps.production.models import Asset
+from apps.production.models import Asset, Shot
 from apps.production.selectors.asset import AssetSelector
+from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.shot_asset import ShotAssetSelector
 from apps.production.services.asset import AssetService
 from apps.production.validators.references import resolve_in_project
@@ -74,7 +75,12 @@ class AssetViewSet(RenameCodeMixin, ProductionEntityViewSet, ProductionBulkMixin
     def shots(self, request, *args, **kwargs):
         """The shots that use this asset (live links to live shots)."""
         asset = self.get_object()
-        return Response(AssetShotSerializer(ShotAssetSelector.for_asset(asset), many=True).data)
+        # Only the shots the caller may see: an external member is not shown the others.
+        visible = ProductionBaseSelector.scope_by_project_membership(
+            Shot.objects.all(), request=request
+        )
+        links = ShotAssetSelector.for_asset(asset).filter(shot_id__in=visible.values("id"))
+        return Response(AssetShotSerializer(links, many=True).data)
 
     #: how far up the parent chain a cycle check looks; older data may already hold a loop
     MAX_PARENT_DEPTH = 50
