@@ -258,9 +258,24 @@ class TestFreshInitialMigrations:
             cursor.execute("SELECT 1 FROM pg_extension WHERE extname = 'btree_gist'")
             assert cursor.fetchone() is not None
 
-    def test_the_default_work_calendar_is_seeded(self):
+    def test_the_default_work_calendar_seed_creates_it_once(self):
+        """
+        The migration seeds the calendar, but any ``transaction=True`` test empties the table for
+        the rest of a reused test database, so this runs the migration's own function instead.
+        """
+        from importlib import import_module
+
+        from django.apps import apps as django_apps
+
         from apps.scheduling.models import WorkCalendar
 
-        calendar = WorkCalendar.objects.get(is_default=True)
+        seed = import_module("apps.scheduling.migrations.0001_initial").create_default_calendar
+        WorkCalendar.all_objects.all().delete()
 
+        seed(django_apps, None)
+        seed(django_apps, None)
+
+        calendar = WorkCalendar.objects.get(is_default=True)
         assert calendar.code == "STUDIO" and calendar.working_weekdays == [1, 2, 3, 4, 5]
+        assert calendar.hours_per_day == 8 and calendar.time_zone == "UTC"
+        assert WorkCalendar.objects.count() == 1
