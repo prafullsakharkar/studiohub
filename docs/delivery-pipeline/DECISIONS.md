@@ -214,13 +214,15 @@ Recommendation and default: **A**. Blocks: Phases 5, 8, 11.
 
 **Answer: A.** `init_platform` has a short `WITHDRAWN_GRANTS` list (system roles only: `vfx-supervisor` loses `publishing.delete`, `delivery.delete`, `delivery.send`, `delivery.view_secret`) and removes those grants on every run, with real deletes so the RBAC signals clear the holders' cached permissions. Rerunning the command makes any database match the matrix; an admin's own re-grant of those codes to that role is undone on the next run. The command prints how many it removed. Options not taken: B (additive, manual revoke) and C (a separate one-off command). Status: ANSWERED, A.
 
-**Q41 (OPEN, non-blocking; default A used). Should archiving a shot with published work be refused?**
+**Q41 (ANSWERED 2026-10-28: A). Should archiving a shot with published work be refused?**
+
+**Answer: A.** The user replied "Q41 : Answered" without naming a letter, after A was recommended and was the behaviour in place; recorded as A (Production unchanged). If B or C was meant, reopen this entry. The question and options as asked:
 
 Found in Phase 12 while testing "archive a shot with versions, publishes and deliveries". Production's rule (D-13, D-29) refuses to archive or delete a **published version** and refuses to archive a sequence or episode that still has live children, but a **shot** can be archived freely and its versions stay live and published. Nothing is lost (the delivery, its files and its history stay readable, and restoring the shot brings it back), but a delivered version can end up belonging to an archived shot. Why it matters: the contract text I wrote first said this would be refused; it is not, and the rule lives in Production, which these three apps do not change.
 * **A. Leave Production as it is (used).** Soft archive is reversible and history stays readable; no change to a module outside this work.
 * B. Refuse to archive a shot (or an asset) while it has a published version: "Unpublish it first", like D-13. Consistent with the version rule; a Production change with its own tests, and it blocks the bulk archive for those shots.
 * C. Also warn in the archive response which deliveries carry the shot's versions. Informative only.
-Recommendation and default: **A** until someone asks for B. Blocks nothing. Status: ASSUMED (A).
+Recommendation and default: **A** until someone asks for B. Blocks nothing. Status: ANSWERED, A.
 
 **Q39 (ANSWERED 2026-10-27: B). Who moves an export job to Exporting, Exported or Failed-during-export?**
 
@@ -248,7 +250,7 @@ Recommendation was **B** once the reporting tool is known; default **A**. Status
 12. Decide whether to run `manage.py redact_leave_reasons` (Q37) and from when; it is a dry run unless `--apply`.
 13. **Migration round trip on a disposable database (Q10 B, not done).** On an empty database you can throw away, with the environment pointing at it, run: `uv run python manage.py migrate`, then `migrate scheduling 0003_leave_rejected_by`, `migrate deliveries 0001_initial`, `migrate publishing 0001_initial`, then `migrate` again. I have not run this sequence on any database (UNVERIFIED); each app's own migrations were round-tripped one by one in the test database. Expect each step to finish without error, and the last `migrate` to end at the latest migration (`uv run python manage.py showmigrations scheduling deliveries publishing`). Never run this on a database that holds data you need: the backward steps drop columns and tables of those apps.
 14. **The live database's `btree_gist`** (Q32): scheduling migration 0008 creates the extension if it is missing. Check first with the two queries in `docs/scheduling/BTREE_GIST.sql`, and count overlapping bookings with query S1 (`ANALYSIS.md` section 8); a pair makes the migration stop and list it.
-15. **Q41:** say whether archiving a shot that has published work should be refused (default: no).
+15. **Q41 (ANSWERED 2026-10-28: A):** archiving a shot that has published work stays allowed; nothing to do.
 
 ## Standing assumptions
 

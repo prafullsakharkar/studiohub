@@ -87,7 +87,7 @@ setting for part-timers on fixed days (A-53).
 3. Deploy and run `manage.py migrate`. A stop-and-list migration that refuses has changed nothing:
    fix the rows it names and run it again.
 4. Run `manage.py init_platform` and read its last line.
-5. Decide on `manage.py redact_leave_reasons` (dry run first) and on Q41.
+5. Decide on `manage.py redact_leave_reasons` (dry run first). Q41 is answered (A, 2026-10-28).
 6. Create the office work calendars (time zone Asia/Kolkata was chosen) and their holidays through the
    API; until then every resource follows the UTC "STUDIO" calendar.
 
@@ -108,7 +108,7 @@ The exact list per phase is in each `CONTRACTS.md` "as built" section.
 * A booking whose end equalled its start was stored (and later a 500 under the new check); event and
   resource create responses carried no `id` (fixed, Phase 9).
 * Scheduling queried Production and Masterdata models directly (fixed, A-66).
-* **Open:** archiving a shot with published work is allowed (Q41).
+* **Decided (Q41 = A, 2026-10-28):** archiving a shot with published work is allowed; Production is unchanged.
 * **My own error, corrected:** I reported `btree_gist` as missing from the database server after
   checking the wrong server (port 5432, not the 5439 one the tests use). The record is corrected in
   `DECISIONS.md`; the lesson is to read database state only from inside a pytest run.
