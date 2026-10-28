@@ -76,7 +76,7 @@ from .components.security import (
     X_FRAME_OPTIONS,
 )
 from .components.static import STATIC_ROOT, STATIC_URL
-from .components.storage import MEDIA_ROOT, MEDIA_URL
+from .components.storage import MEDIA_ROOT, MEDIA_URL, PUBLISHING_STORAGE_MOUNTS
 from .components.templates import TEMPLATES
 from .logging import LOGGING
 

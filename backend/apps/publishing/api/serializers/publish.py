@@ -45,6 +45,8 @@ class PublishListSerializer(serializers.ModelSerializer[PublishItem]):
     entity_type_display = serializers.CharField(source="get_entity_type_display", read_only=True)
     dcc_tool_display = serializers.CharField(source="get_dcc_tool_display", read_only=True)
     status = serializers.SerializerMethodField()
+    # The stored status, unmapped: the label in ``status`` is kept for the frontend (decision Q15).
+    job_status = serializers.CharField(source="status", read_only=True)
 
     def get_status(self, obj):
         return frontend_status(obj)
@@ -66,6 +68,7 @@ class PublishListSerializer(serializers.ModelSerializer[PublishItem]):
             "export_path",
             "export_format",
             "status",
+            "job_status",
             "is_success",
             "is_failed",
             "retry_count",
@@ -78,6 +81,7 @@ class PublishListSerializer(serializers.ModelSerializer[PublishItem]):
             "id",
             "code",
             "status",
+            "job_status",
             "is_success",
             "is_failed",
             "retry_count",
@@ -94,6 +98,7 @@ class PublishDetailSerializer(serializers.ModelSerializer[PublishItem]):
     entity_type_display = serializers.CharField(source="get_entity_type_display", read_only=True)
     dcc_tool_display = serializers.CharField(source="get_dcc_tool_display", read_only=True)
     status = serializers.SerializerMethodField()
+    job_status = serializers.CharField(source="status", read_only=True)
 
     def get_status(self, obj):
         return frontend_status(obj)
@@ -117,6 +122,7 @@ class PublishDetailSerializer(serializers.ModelSerializer[PublishItem]):
             "export_path",
             "export_format",
             "status",
+            "job_status",
             "validation_rules",
             "validation_results",
             "export_options",
@@ -132,6 +138,7 @@ class PublishDetailSerializer(serializers.ModelSerializer[PublishItem]):
             "id",
             "code",
             "status",
+            "job_status",
             "validation_results",
             "error_message",
             "retry_count",
@@ -141,18 +148,24 @@ class PublishDetailSerializer(serializers.ModelSerializer[PublishItem]):
 
 
 class PublishCreateSerializer(serializers.Serializer[Any]):
-    """Serializer for creating a publish."""
-    
+    """
+    Serializer for creating an export job.
+
+    Everything beyond field shapes (project, version, numbering, codes) is the service's
+    (``services.jobs.create_job``); this class only describes the body.
+    """
+
+    id = serializers.UUIDField(read_only=True)
     name = serializers.CharField(required=True, max_length=255)
-    code = serializers.CharField(required=True, max_length=50)
-    project_id = serializers.UUIDField(required=False, allow_null=True)
-    entity_type = serializers.ChoiceField(
-        choices=["Shot", "Asset"],
-        required=True,
-    )
-    entity_id = serializers.CharField(required=True, max_length=100)
-    entity_code = serializers.CharField(required=True, max_length=255)
-    entity_name = serializers.CharField(required=True, max_length=255)
+    # Blank: the server numbers it from the project (needs project_id).
+    code = serializers.CharField(required=False, allow_blank=True, max_length=50)
+    project_id = serializers.CharField(required=False, allow_null=True, allow_blank=True, max_length=64)
+    version_id = serializers.UUIDField(required=False, allow_null=True)
+    # Required unless version_id names a version of a shot or asset (checked by the service).
+    entity_type = serializers.ChoiceField(choices=["Shot", "Asset"], required=False)
+    entity_id = serializers.CharField(required=False, max_length=100)
+    entity_code = serializers.CharField(required=False, max_length=255)
+    entity_name = serializers.CharField(required=False, max_length=255)
     dcc_tool = serializers.ChoiceField(
         choices=[c[0] for c in PublishItem.TOOL_CHOICES],
         required=True,
@@ -164,51 +177,85 @@ class PublishCreateSerializer(serializers.Serializer[Any]):
     export_format = serializers.CharField(required=False, allow_blank=True, max_length=50)
 
     def create(self, validated_data):
-        """Create a publish item."""
-        from apps.publishing.models import PublishItem
+        from apps.publishing.services.jobs import create_job
 
-        created_by = validated_data.pop("created_by", None)
-        return PublishItem.objects.create(
-            created_by=created_by,
-            **validated_data,
+        request = self.context.get("request")
+        return create_job(
+            actor=getattr(request, "user", None), data=validated_data, request=request
         )
 
 
 class PublishUpdateSerializer(serializers.Serializer[Any]):
-    """Serializer for updating a publish."""
-    
+    """
+    Body of ``PATCH``/``PUT`` on an export job.
+
+    Only these details can be edited, and only while the job is Pending or Failed (the service
+    checks). The status, code, archive flag and retry count are not editable: sending a different
+    value is a 400 "Cannot be set directly", sending the current one (an echo, as a full ``PUT``
+    does) is accepted. Both the stored status and the word the API shows for it count as current.
+    """
+
+    #: field -> how to read its current value from the job
+    READ_ONLY_ECHO = {
+        "status": lambda job: {job.status, frontend_status(job)},
+        "code": lambda job: {job.code},
+        "is_archived": lambda job: {job.is_archived},
+        "retry_count": lambda job: {job.retry_count},
+    }
+
     name = serializers.CharField(required=False, max_length=255)
+    dcc_tool = serializers.ChoiceField(choices=[c[0] for c in PublishItem.TOOL_CHOICES], required=False)
+    dcc_version = serializers.CharField(required=False, allow_blank=True, max_length=50)
+    source_file = serializers.CharField(required=False, allow_blank=True, max_length=500)
+    source_version = serializers.CharField(required=False, allow_blank=True, max_length=50)
     export_path = serializers.CharField(required=False, allow_blank=True, max_length=500)
     export_format = serializers.CharField(required=False, allow_blank=True, max_length=50)
+    export_options = serializers.JSONField(required=False)
+    validation_rules = serializers.JSONField(required=False)
+
+    def to_internal_value(self, data: Any) -> dict[str, Any]:
+        job = self.instance
+        refused = {}
+        if job is not None and hasattr(data, "get"):
+            for name, current in self.READ_ONLY_ECHO.items():
+                if name in data and data[name] not in current(job):
+                    refused[name] = ["Cannot be set directly."]
+        if refused:
+            raise serializers.ValidationError(refused)
+        return super().to_internal_value(data)
+
+    def update(self, instance, validated_data):
+        from apps.publishing.services.workflow import JobService
+
+        request = self.context.get("request")
+        return JobService.update(
+            actor=getattr(request, "user", None), job=instance, data=validated_data
+        )
 
 
 class PublishValidateSerializer(serializers.Serializer[Any]):
-    """Serializer for validating a publish."""
-    
-    def validate(self, data):
-        """Validate the publish."""
-        return data
+    """The validate action takes no body."""
 
 
 class PublishRepublishSerializer(serializers.Serializer[Any]):
-    """Serializer for republishing."""
-    
-    def validate(self, data):
-        """Validate the republish."""
-        return data
+    """Body of the republish action. The comment is noted in the audit trail; ``artist_name`` is ignored."""
+
+    comment = serializers.CharField(required=False, allow_blank=True, max_length=1000)
+    artist_name = serializers.CharField(required=False, allow_blank=True, max_length=255)
 
 
 class PublishUnpublishSerializer(serializers.Serializer[Any]):
-    """Serializer for unpublishing."""
-    
-    def validate(self, data):
-        """Validate the unpublish."""
-        return data
+    """Body of the unpublish (cancel) action. ``user_name`` is ignored: the actor is the caller."""
+
+    reason = serializers.CharField(required=False, allow_blank=True, max_length=1000)
+    user_name = serializers.CharField(required=False, allow_blank=True, max_length=255)
 
 
 class PublishRetrySerializer(serializers.Serializer[Any]):
-    """Serializer for retrying a publish."""
-    
-    def validate(self, data):
-        """Validate the retry."""
-        return data
+    """The retry action takes no body."""
+
+
+class PublishFailSerializer(serializers.Serializer[Any]):
+    """Body of the fail action: why the export failed (stored as the job's error message)."""
+
+    reason = serializers.CharField(max_length=2000)

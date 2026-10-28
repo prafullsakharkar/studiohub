@@ -1,6 +1,7 @@
 """
 Publishing test configuration.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -12,8 +13,13 @@ from apps.identity.tests.factories import UserFactory
 
 @pytest.fixture
 def staff_user(db):
-    """Create a staff user."""
-    return UserFactory(is_staff=True)
+    """An operator who sees every project: a platform admin (superuser) who is staff.
+
+    The older job tests create jobs with no project and read them back, which only a platform
+    admin may do since jobs are narrowed to the caller's projects. Tests about scoping use
+    ``member()`` and ``outsider()`` from ``tests/helpers.py`` instead.
+    """
+    return UserFactory(is_staff=True, is_superuser=True)
 
 
 @pytest.fixture
@@ -30,3 +36,17 @@ def staff_client(staff_user) -> APIClient:
     client = APIClient()
     client.force_authenticate(user=staff_user)
     return client
+
+
+@pytest.fixture
+def project(db):
+    from apps.production.tests.factories import ProjectFactory
+
+    return ProjectFactory.create(code="PUBP")
+
+
+@pytest.fixture
+def root(db):
+    from apps.publishing.tests.helpers import storage_root
+
+    return storage_root()

@@ -36,6 +36,25 @@ class LookupSelector(BaseSelector):
         """Every row, soft-deleted included (restore and hard delete only)."""
         return cls.model.all_objects.all()
 
+    @classmethod
+    def resolve_active(cls, value: Any) -> Any:
+        """
+        The live, active catalog row named by UUID or code (any case), or ``None``.
+
+        For other apps that reference a catalog entry by UUID: an unknown, deleted or inactive
+        entry all resolve to ``None``.
+        """
+        from uuid import UUID
+
+        text = str(value or "").strip()
+        if not text:
+            return None
+        rows = cls.get_queryset().filter(status=CatalogStatus.ACTIVE)
+        try:
+            return rows.filter(pk=UUID(text)).first()
+        except ValueError:
+            return rows.filter(code__iexact=text).first()
+
 
 class SoftwareSelector(LookupSelector):
     model = Software

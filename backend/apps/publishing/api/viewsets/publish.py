@@ -1,18 +1,21 @@
 """
 Publishing viewset for API endpoints.
 """
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.audit.services.background_job import BackgroundJobService
 from apps.core.api.pagination import StandardPagination
+from apps.core.api.viewsets.platform_crud import PlatformCrudViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
-from apps.deliveries.api.viewsets.base import PlatformCrudViewSet
 from apps.identity.permissions import HasPermission
 from apps.publishing.api.serializers.publish import (
     PublishCreateSerializer,
     PublishDetailSerializer,
+    PublishFailSerializer,
     PublishListSerializer,
     PublishRepublishSerializer,
     PublishRetrySerializer,
@@ -29,10 +32,15 @@ from apps.publishing.services.publish import (
     unpublish,
     validate_publish,
 )
+from apps.publishing.services.workflow import JobService
 
 
+@extend_schema_view(
+    update=extend_schema(request=PublishUpdateSerializer, responses=PublishDetailSerializer),
+    partial_update=extend_schema(request=PublishUpdateSerializer, responses=PublishDetailSerializer),
+)
 class PublishingViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeArgument]
-    """ViewSet for PublishItem."""
+    """ViewSet for PublishItem (export jobs). Every read and write is narrowed to the caller's projects."""
 
     selector_class = PublishSelector
     pagination_class = StandardPagination
@@ -57,15 +65,26 @@ class PublishingViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTy
         "republish": (PublishPermissions.UPDATE,),
         "unpublish": (PublishPermissions.UPDATE,),
         "retry": (PublishPermissions.UPDATE,),
+        "start_export": (PublishPermissions.UPDATE,),
+        "complete_export": (PublishPermissions.UPDATE,),
+        "fail": (PublishPermissions.UPDATE,),
     }
 
     search_fields = ("name", "code", "entity_code", "entity_name")
     ordering_fields = ("name", "created_at", "status")
 
-    def perform_create(self, serializer):
-        user = self.request.user
-        serializer.save(created_by=user if user.is_authenticated else None)
+    def update(self, request, *args, **kwargs):
+        """Edit a job's details (only while it is Pending or Failed); answers with the detail shape."""
+        partial = kwargs.pop("partial", False)
+        job = self.get_object()
+        serializer = PublishUpdateSerializer(
+            job, data=request.data, partial=partial, context=self.get_serializer_context()
+        )
+        serializer.is_valid(raise_exception=True)
+        job = serializer.save()
+        return Response(PublishDetailSerializer(job, context=self.get_serializer_context()).data)
 
+    @extend_schema(request=PublishValidateSerializer, responses=OpenApiTypes.OBJECT)
     @action(detail=True, methods=["post"], url_path="validate")
     def validate(self, request, *args, **kwargs):
         """Validate publish pre-flight rules."""
@@ -80,6 +99,7 @@ class PublishingViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTy
 
         return Response(frontend_result_status(result))
 
+    @extend_schema(request=PublishRepublishSerializer, responses={201: PublishDetailSerializer})
     @action(detail=True, methods=["post"], url_path="republish")
     def republish(self, request, *args, **kwargs):
         """Create new iteration of a publish."""
@@ -94,6 +114,7 @@ class PublishingViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTy
             executor_kwargs={
                 "publish_id": str(publish.id),
                 "user_id": str(request.user.id) if request.user.is_authenticated else None,
+                "comment": serializer.validated_data.get("comment", ""),
             },
         )
 
@@ -110,6 +131,7 @@ class PublishingViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTy
             headers={"X-Background-Job": job.job_id},
         )
 
+    @extend_schema(request=PublishUnpublishSerializer, responses=PublishDetailSerializer)
     @action(detail=True, methods=["post"], url_path="unpublish")
     def unpublish(self, request, *args, **kwargs):
         """Deprecate and unlink a publish."""
@@ -120,10 +142,12 @@ class PublishingViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTy
         publish = unpublish(
             publish_id=str(publish.id),
             user_id=str(request.user.id) if request.user.is_authenticated else None,
+            reason=serializer.validated_data.get("reason", ""),
         )
 
         return Response(PublishDetailSerializer(publish).data)
 
+    @extend_schema(request=PublishRetrySerializer, responses=PublishDetailSerializer)
     @action(detail=True, methods=["post"], url_path="retry")
     def retry(self, request, *args, **kwargs):
         """Re-trigger a failed publish."""
@@ -137,3 +161,28 @@ class PublishingViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTy
         )
 
         return Response(PublishDetailSerializer(publish).data)
+
+    @extend_schema(request=None, responses=PublishDetailSerializer)
+    @action(detail=True, methods=["post"], url_path="start-export")
+    def start_export(self, request, *args, **kwargs):
+        """A pipeline tool reports that the export began (Validated to Exporting)."""
+        job = JobService.start_export(actor=request.user, job=self.get_object())
+        return Response(PublishDetailSerializer(job, context=self.get_serializer_context()).data)
+
+    @extend_schema(request=None, responses=PublishDetailSerializer)
+    @action(detail=True, methods=["post"], url_path="complete-export")
+    def complete_export(self, request, *args, **kwargs):
+        """The export finished (Exporting to Exported, final). No file is required."""
+        job = JobService.complete_export(actor=request.user, job=self.get_object())
+        return Response(PublishDetailSerializer(job, context=self.get_serializer_context()).data)
+
+    @extend_schema(request=PublishFailSerializer, responses=PublishDetailSerializer)
+    @action(detail=True, methods=["post"], url_path="fail")
+    def fail(self, request, *args, **kwargs):
+        """The export failed (Exporting to Failed); the reason is stored as the error message."""
+        body = PublishFailSerializer(data=request.data)
+        body.is_valid(raise_exception=True)
+        job = JobService.fail(
+            actor=request.user, job=self.get_object(), reason=body.validated_data["reason"]
+        )
+        return Response(PublishDetailSerializer(job, context=self.get_serializer_context()).data)

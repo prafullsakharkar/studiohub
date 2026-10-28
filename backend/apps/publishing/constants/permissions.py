@@ -1,9 +1,10 @@
 """
-Publishing permissions — module:action codes matching frontend RBAC (e.g., 'publishing:read').
+Publishing permission codes, checked with ``HasPermission`` (identity RBAC).
 
-These are distinct from Organization RBAC (organization.*) and map to frontend's
-`types/auth.ts` Permission union. They are checked via HasPermission with
-organization context, but the permission codes are publishing-specific.
+``DEPRECATE`` and ``REVOKE`` move a registered file between its lifecycle states,
+``STORAGE_MANAGE`` administers storage roots (studio-wide), and ``STATUS_OVERRIDE`` is the audited correction that
+leaves a guarded state: granted to no seeded role, not implied by superuser, and a scoped
+credential must list it (delivery-pipeline X-07).
 """
 
 
@@ -12,3 +13,7 @@ class PublishPermissions:
     CREATE = "publishing.create"
     UPDATE = "publishing.update"
     DELETE = "publishing.delete"
+    DEPRECATE = "publishing.deprecate"
+    REVOKE = "publishing.revoke"
+    STORAGE_MANAGE = "publishing.storage.manage"
+    STATUS_OVERRIDE = "publishing.status.override"

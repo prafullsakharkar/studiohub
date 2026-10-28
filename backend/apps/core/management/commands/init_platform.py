@@ -64,6 +64,8 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     ("publishing.view", "publishing", "read"),
     ("publishing.update", "publishing", "update"),
     ("publishing.delete", "publishing", "delete"),
+    # Storage roots are studio-wide: platform-admin (full catalog) and org-admin hold it.
+    ("publishing.storage.manage", "publishing_storage", "manage"),
     ("track.create", "tracks", "create"),
     ("track.view", "tracks", "read"),
     ("track.update", "tracks", "update"),
@@ -172,13 +174,16 @@ _PRODUCTION_RESOURCES: dict[str, tuple[str, tuple[str, ...]]] = {
     "show": ("shows", ("view", "create", "update", "delete")),
     "automation": ("automation", ("view", "create", "update", "delete")),
     "delivery": ("deliveries", ("view", "create", "update", "delete")),
-    "publishing": ("publishing", ("view", "create", "update", "delete")),
+    # deprecate / revoke = move a registered file between its lifecycle states
+    "publishing": ("publishing", ("view", "create", "update", "delete", "deprecate", "revoke")),
 }
 
 # Opt-in corrections: in the catalog so an admin can grant them, in no seeded role.
 OPT_IN_PERMISSIONS = [
     ("production.status.override", "production_status", "override"),
     ("production.sod.override", "production_sod", "override"),
+    # Leaving a guarded published-file state (Revoked), with a reason; docs/publishing/CONTRACTS.md.
+    ("publishing.status.override", "publishing_status", "override"),
 ]
 OPT_IN_PERMISSION_CODES = frozenset(code for code, _, _ in OPT_IN_PERMISSIONS)
 
@@ -241,7 +246,7 @@ PRODUCTION_LEAD_PERMISSIONS = _production_codes(
     track="view",
     show="view",
     delivery="view",
-    publishing="view",
+    publishing="view create",
 ) + ["audit.view", "note.create"]
 
 # An artist reads what the work needs, logs their own time and publishes their own versions.
@@ -287,7 +292,7 @@ ROLE_SPECS: list[dict[str, Any]] = [
         "permissions": (
             DIRECTORY_CRUD_PERMISSIONS
             + PRODUCTION_FULL_PERMISSIONS
-            + ["settings.manage", "settings.update", "user.manage"]
+            + ["settings.manage", "settings.update", "user.manage", "publishing.storage.manage"]
         ),
     },
     {
@@ -309,7 +314,8 @@ ROLE_SPECS: list[dict[str, Any]] = [
         "name": "VFX Supervisor",
         "priority": 30,  # identity RolePriority.LEAD
         "scope": "project",
-        "permissions": PRODUCTION_FULL_PERMISSIONS,
+        # Deleting export job records is an admin task (docs/delivery-pipeline Q34).
+        "permissions": [c for c in PRODUCTION_FULL_PERMISSIONS if c != "publishing.delete"],
     },
     {
         "code": "lead-artist",

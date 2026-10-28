@@ -2,6 +2,12 @@
 Publishing admin module.
 """
 
+from .files import (
+    PublishCounterAdmin,
+    PublishedFileAdmin,
+    PublishedFileEventAdmin,
+    StorageRootAdmin,
+)
 from .publishing import (
     PublishDestinationAdmin,
     PublishItemAdmin,
@@ -9,7 +15,11 @@ from .publishing import (
 )
 
 __all__ = [
-    "PublishItemAdmin",
+    "PublishCounterAdmin",
     "PublishDestinationAdmin",
+    "PublishItemAdmin",
     "PublishValidationRuleAdmin",
+    "PublishedFileAdmin",
+    "PublishedFileEventAdmin",
+    "StorageRootAdmin",
 ]

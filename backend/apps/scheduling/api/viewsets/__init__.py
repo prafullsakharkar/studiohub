@@ -6,8 +6,8 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.core.api.viewsets.platform_crud import PlatformCrudViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
-from apps.deliveries.api.viewsets.base import PlatformCrudViewSet
 from apps.identity.permissions import HasPermission
 from apps.scheduling.api.serializers import (
     BlockResourceSerializer,

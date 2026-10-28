@@ -33,6 +33,19 @@ class ProjectSelector(ProductionBaseSelector):
         ).all()
 
     @classmethod
+    def resolve_visible(cls, request, value: Any) -> Project | None:
+        """
+        The project named by UUID, code or mock id, if the caller may use it.
+
+        ``None`` for an unknown, deleted or out-of-reach project alike, so a caller answers the
+        same "Unknown project." for each (no existence oracle). Platform admins reach every project.
+        """
+        project = cls.resolve_by_lookup(value)
+        if project is None or not cls.user_has_project_access(request=request, project=project):
+            return None
+        return project
+
+    @classmethod
     def resolve_by_lookup(cls, lookup: Any) -> Project | None:
         """
         Resolve a project from a list-filter value.

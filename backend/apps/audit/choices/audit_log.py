@@ -69,3 +69,5 @@ class AuditTarget(models.TextChoices):
     THEME = "theme", _("Theme")
     LOCALIZATION = "localization", _("Localization")
     MASTERDATA = "masterdata", _("Master data")
+    PUBLISHING = "publishing", _("Publishing")
+    SCHEDULING = "scheduling", _("Scheduling")
