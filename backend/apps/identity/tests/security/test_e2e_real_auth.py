@@ -41,6 +41,15 @@ def _clean_cache():
     cache.clear()
 
 
+@pytest.fixture(autouse=True)
+def _operator_needs_no_mfa(monkeypatch):
+    """These journeys are about the *user's* MFA; the operator signs in with a password only."""
+    from apps.identity.services.mfa import MFAPolicyService
+
+    monkeypatch.setattr(MFAPolicyService, "REQUIRE_STAFF_MFA", False)
+    monkeypatch.setattr(MFAPolicyService, "REQUIRE_SUPERUSER_MFA", False)
+
+
 def _client(scheme=None, token=None):
     client = APIClient()
     if token:

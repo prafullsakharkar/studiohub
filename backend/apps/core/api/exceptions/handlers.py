@@ -340,6 +340,9 @@ def _translate(exc: BaseException, context: Any, request: Any) -> Response:
     elif (
         isinstance(exc, PermissionDenied)
         and response.status_code == status.HTTP_403_FORBIDDEN
+        # An authenticator can refuse a user it has just identified (a restricted session): that
+        # is a 403 with its own code, not a failed sign-in.
+        and not getattr(exc, "keeps_forbidden_status", False)
     ):
         user = getattr(request, "user", None)
         if user is None or not user.is_authenticated:

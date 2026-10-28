@@ -59,7 +59,21 @@ class MFAPolicyService:
         if cls.REQUIRE_STAFF_MFA and user.is_staff:
             return True
 
-        return cls.REQUIRE_MFA
+        if cls.REQUIRE_MFA:
+            return True
+
+        # Read per call: an external (vendor/client) project member reaches pre-release content
+        # from outside the studio, so a password alone is not enough (TPN review TM-007).
+        return bool(getattr(settings, "MFA_REQUIRE_EXTERNAL", True)) and cls._is_external(user)
+
+    @staticmethod
+    def _is_external(user) -> bool:
+        """Production's answer, asked by name; no Production installed means nobody is external."""
+        from apps.core import providers
+
+        provider = providers.get("production.external_membership")
+
+        return provider is not None and provider.is_external(user)
 
     @classmethod
     def can_skip(cls, *, user) -> bool:

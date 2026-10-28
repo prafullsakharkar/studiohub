@@ -108,7 +108,8 @@ created ──activate──► active ──deactivate──► inactive
 |---|---|---|
 | DOM-PRO-01 | Exactly one `Profile` per `User` (OneToOne, `models/profile.py:18-22`) | DB |
 | DOM-PRO-02 | A user may create/update only their own profile through self-service; creating for another user requires `identity.profile.create` | Serializer + permission (WP 3.4) |
-| DOM-PRO-03 | `must_change_password` lives on `Profile` (`models/profile.py:82-85`) and is cleared only by a successful password change | `PasswordService` (WP 3.3) |
+| DOM-PRO-03 | `must_change_password` lives on `Profile` (`models/profile.py:82-85`) and is cleared only by a successful password change; until then the session is restricted (SEC-AUTH-06) | `PasswordService` (WP 3.3), `authentication/restrictions.py` |
+| DOM-PWD-01 | One password policy (`validators/password.py`): 12 to 128 characters (`PASSWORD_MIN_LENGTH`, `PASSWORD_MAX_LENGTH`), upper, lower and digit, Django's similarity/common/numeric validators; no password equal to the current one or any of the last `PASSWORD_HISTORY_COUNT` (5), kept as hashes in `PasswordHistory` | `PasswordService` (TM-007) |
 | DOM-PRF-01 | **DECIDED A2:** `UserPreference` is removed; `Profile.preferences` is the single preference store | Migration + API (WP 3.6) |
 | DOM-PRF-02 | Preferences are self-scoped and never expose another user's settings | selector scoping |
 
@@ -196,6 +197,7 @@ ENABLED  ──locked (N failures)──► LOCKED (until locked_until)
 | DOM-MFA-05 | `MFA_MAX_FAILED_ATTEMPTS=5`, `MFA_LOCKOUT_MINUTES=15` are enforced with a single lockout implementation | `services/mfa/lockout.py` (WP 6.4) |
 | DOM-MFA-06 | Backup codes are single-use, hashed, expiring, and atomically consumed | Service/queryset (WP 6.5) |
 | DOM-MFA-07 | Enrollment is reachable over HTTP and activation requires a valid code | API (WP 6.1) |
+| DOM-MFA-08 | MFA is required of superusers, staff, external (vendor/client) project members (`MFA_REQUIRE_EXTERNAL`, default on) and, when `MFA_REQUIRE_ALL` is set, everyone. A required user without a factor holds a restricted session (SEC-AUTH-06), not a full one | `MFAPolicyService.is_required`, `authentication/restrictions.py` (TM-007) |
 
 ### 2.8 Devices
 
@@ -239,6 +241,15 @@ ENABLED  ──locked (N failures)──► LOCKED (until locked_until)
 **SEC-AUTH-02.** An authenticator returns a principal **only if the owner is usable** (§2.2). It must not return a user whose `is_active` is false or `is_deleted` is true.
 
 **SEC-AUTH-03.** Authentication failures are `401` with a generic message; authorization failures are `403`. The exception handler normalises DRF's 403-to-401 coercion (`apps/core/api/exceptions/handlers.py:328-345`).
+
+**SEC-AUTH-06 (TM-007, ADR-0038).** A session that still owes something is *restricted*. `SessionBoundJWTAuthentication` raises `403 {"detail", "code"}` for every endpoint except the ones that settle the debt, plus `auth/me` and `logout`:
+
+| Code | Owed when | Reachable meanwhile |
+|---|---|---|
+| `password_change_required` | the token carries `must_change_password` (admin reset, bootstrapped account) | `auth/change-password`, `password/change` |
+| `mfa_enrollment_required` | policy requires MFA of the user and no factor is enabled | `mfa/config`, `mfa/totp/{setup,enable,verify}`, `mfa/recovery-codes*`, `auth/mfa/{enroll,verify,recovery*}` |
+
+The password is settled first when both are owed. PATs and API keys are not sessions and are not restricted.
 
 **SEC-AUTH-04.** Public auth endpoints (`login`, `refresh`, `forgot-password`, `resend-verification`) disable authentication and use scoped throttling (`api/views/auth_compat.py:48-52`).
 

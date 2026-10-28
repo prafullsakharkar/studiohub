@@ -20,8 +20,8 @@ class TestAuthCompatChangePassword:
             "/api/v1/auth/change-password/",
             {
                 "old_password": "Old-pass-1",
-                "new_password": "New-pass-1",
-                "confirm_password": "New-pass-1",
+                "new_password": "New-passphrase-12",
+                "confirm_password": "New-passphrase-12",
             },
             format="json",
         )
@@ -29,7 +29,7 @@ class TestAuthCompatChangePassword:
         assert response.status_code == 200
         assert "detail" in response.data
         user.refresh_from_db()
-        assert user.check_password("New-pass-1")
+        assert user.check_password("New-passphrase-12")
 
     def test_wrong_old_password_returns_401(self):
         user = UserFactory.create(is_active=True)
@@ -43,8 +43,8 @@ class TestAuthCompatChangePassword:
             "/api/v1/auth/change-password/",
             {
                 "old_password": "wrong",
-                "new_password": "New-pass-1",
-                "confirm_password": "New-pass-1",
+                "new_password": "New-passphrase-12",
+                "confirm_password": "New-passphrase-12",
             },
             format="json",
         )
@@ -58,8 +58,8 @@ class TestAuthCompatChangePassword:
             "/api/v1/auth/change-password/",
             {
                 "old_password": "x",
-                "new_password": "New-pass-1",
-                "confirm_password": "New-pass-1",
+                "new_password": "New-passphrase-12",
+                "confirm_password": "New-passphrase-12",
             },
             format="json",
         )

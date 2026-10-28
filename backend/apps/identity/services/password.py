@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from django.conf import settings
 from django.contrib.auth.hashers import check_password
+from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from apps.core.api.exceptions.authentication import InvalidCredentials
@@ -39,6 +41,8 @@ class PasswordService:
 
         validate_password(new_password, user=user)
 
+        cls._refuse_reuse(user, new_password)
+
         user.set_password(new_password)
 
         user.save(
@@ -48,6 +52,7 @@ class PasswordService:
             ],
         )
 
+        cls._remember(user)
         cls._clear_must_change_password(user)
         cls._revoke_sessions(user)
         cls._record_event(
@@ -93,6 +98,54 @@ class PasswordService:
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
+
+    @classmethod
+    def _history_count(cls) -> int:
+        return int(getattr(settings, "PASSWORD_HISTORY_COUNT", 5))
+
+    @classmethod
+    def _refuse_reuse(cls, user, new_password) -> None:
+        """A new password may not equal the current one or any of the last few."""
+        from apps.identity.models import PasswordHistory
+
+        count = cls._history_count()
+
+        if count <= 0:
+            return
+
+        hashes = list(
+            PasswordHistory.objects.filter(user=user)
+            .order_by("-created_at", "-id")
+            .values_list("password_hash", flat=True)[:count]
+        )
+
+        if user.password:
+            hashes.append(user.password)
+
+        if any(check_password(new_password, stored) for stored in hashes if stored):
+            raise ValidationError(
+                f"Choose a password you have not used in your last {count} passwords."
+            )
+
+    @classmethod
+    def _remember(cls, user) -> None:
+        """Record the hash just set and drop what falls out of the window."""
+        from apps.identity.models import PasswordHistory
+
+        count = cls._history_count()
+
+        if count <= 0:
+            return
+
+        PasswordHistory.objects.create(user=user, password_hash=user.password)
+
+        keep = list(
+            PasswordHistory.objects.filter(user=user)
+            .order_by("-created_at", "-id")
+            .values_list("id", flat=True)[:count]
+        )
+
+        PasswordHistory.objects.filter(user=user).exclude(id__in=keep).delete()
 
     @classmethod
     def _clear_must_change_password(cls, user) -> None:

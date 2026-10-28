@@ -196,7 +196,9 @@ class TestAuditEndpointRootCauses:
         # are append-only and every audit ViewSet is List+Retrieve-only.
         # Frontend ``recordLog``/mocks assume a writable collection here —
         # that contract mismatch is the 405 root cause.
-        user = UserFactory.create(is_staff=True)
+        # An ordinary user: a staff user owes an MFA enrollment and this real-token client
+        # would be refused before it reached the route (SEC-AUTH-06).
+        user = UserFactory.create()
 
         with capture_logs() as records:
             response = _auth_client(user).post(
