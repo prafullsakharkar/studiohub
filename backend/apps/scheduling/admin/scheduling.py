@@ -4,10 +4,30 @@ from apps.core.admin.base import PlatformScopedModelAdmin
 from apps.scheduling.models import (
     CalendarEvent,
     Holiday,
+    Milestone,
     Resource,
     ResourceLeave,
     ResourceSchedule,
+    WorkCalendar,
 )
+
+
+class ViewOnlyMixin:
+    """
+    Calendars, milestones, bookings and leave are written through their services (one default
+    calendar, one calendar per office, project scoping, who completed a milestone, no overlapping
+    bookings, who may file and decide leave), which the admin would bypass. Read them here; change
+    them through the API.
+    """
+
+    def has_add_permission(self, request, *args, **kwargs):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(Resource)
@@ -29,8 +49,6 @@ class ResourceAdmin(PlatformScopedModelAdmin):
         "code",
         "name",
     )
-
-
 
     list_select_related = ()
 
@@ -86,8 +104,6 @@ class HolidayAdmin(PlatformScopedModelAdmin):
 
     search_fields = ("name",)
 
-
-
     list_select_related = ()
 
     date_hierarchy = "holiday_date"
@@ -96,7 +112,7 @@ class HolidayAdmin(PlatformScopedModelAdmin):
 
 
 @admin.register(ResourceLeave)
-class ResourceLeaveAdmin(PlatformScopedModelAdmin):
+class ResourceLeaveAdmin(ViewOnlyMixin, PlatformScopedModelAdmin):
     list_display = (
         "resource",
         "leave_type",
@@ -123,7 +139,7 @@ class ResourceLeaveAdmin(PlatformScopedModelAdmin):
 
 
 @admin.register(ResourceSchedule)
-class ResourceScheduleAdmin(PlatformScopedModelAdmin):
+class ResourceScheduleAdmin(ViewOnlyMixin, PlatformScopedModelAdmin):
     list_display = (
         "resource",
         "start_time",
@@ -142,3 +158,21 @@ class ResourceScheduleAdmin(PlatformScopedModelAdmin):
     date_hierarchy = "start_time"
 
     ordering = ("-start_time",)
+
+
+@admin.register(WorkCalendar)
+class WorkCalendarAdmin(ViewOnlyMixin, PlatformScopedModelAdmin):
+    list_display = ("code", "name", "time_zone", "office", "hours_per_day", "is_default")
+    list_filter = ("is_default",)
+    search_fields = ("code", "name")
+    list_select_related = ("office",)
+    ordering = ("name",)
+
+
+@admin.register(Milestone)
+class MilestoneAdmin(ViewOnlyMixin, PlatformScopedModelAdmin):
+    list_display = ("name", "project", "due_date", "status", "kind")
+    list_filter = ("status", "kind")
+    search_fields = ("name",)
+    list_select_related = ("project",)
+    ordering = ("project", "order", "due_date")

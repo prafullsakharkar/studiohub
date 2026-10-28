@@ -95,6 +95,7 @@ from apps.production.selectors.project_scoped import (
 )
 from apps.production.selectors.review import ReviewSelector
 from apps.production.selectors.rollups import TaskHoursSelector
+from apps.production.selectors.schedule_milestones import project_milestones
 from apps.production.selectors.sequence import SequenceSelector
 from apps.production.selectors.shot import ShotSelector
 from apps.production.selectors.task import TaskSelector
@@ -114,16 +115,6 @@ DCC_INTEGRATIONS = [
 ]
 USD_SCHEMA_VERSION = "23.11"
 OCIO_CONFIG = "/studio/configs/aces_1.2/config.ocio"
-
-# Contractual schedule template: phase names mirror the frontend mock;
-# dates interpolate the project's real start/delivery dates.
-SCHEDULE_PHASES = [
-    "Principal Turnover",
-    "Post-Viz / Layout Approval",
-    "50% Dailies Screening",
-    "Final Comp Picture Lock",
-    "Master DCI Delivery",
-]
 
 
 class ProjectScopeMixin:
@@ -586,28 +577,7 @@ class ProjectScheduleView(ProjectScopedAPIView):
         end = project.delivery_date or (start + timedelta(days=180))
         if end <= start:
             end = start + timedelta(days=180)
-        span = (end - start).days
-        today = date.today()
-        milestones = []
-        for index, name in enumerate(SCHEDULE_PHASES):
-            point = start + timedelta(days=round(span * index / (len(SCHEDULE_PHASES) - 1)))
-            if point < today:
-                milestone_status = "Completed"
-            elif index == 0 or (
-                start + timedelta(days=round(span * (index - 1) / (len(SCHEDULE_PHASES) - 1)))
-                < today
-            ):
-                milestone_status = "In Progress"
-            else:
-                milestone_status = "Pending"
-            milestones.append(
-                {
-                    "id": f"m-{index + 1}",
-                    "name": name,
-                    "date": point.isoformat(),
-                    "status": milestone_status,
-                }
-            )
+        milestones = project_milestones(project)
         return Response(
             {
                 "project_id": str(project.id),

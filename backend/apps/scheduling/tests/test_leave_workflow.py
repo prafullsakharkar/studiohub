@@ -68,7 +68,10 @@ def owner():
 
 @pytest.fixture
 def manager():
-    return _user("schedule.view", "schedule.create", "schedule.update")
+    # A planner who also decides leave: the full roles hold both manage and approve (Phase 11).
+    return _user(
+        "schedule.view", "schedule.create", "schedule.update", "schedule.manage", "schedule.approve"
+    )
 
 
 class TestRequestsStartPendingAndCannotBeForged:
@@ -87,7 +90,8 @@ class TestRequestsStartPendingAndCannotBeForged:
         )
 
         assert resp.status_code == 201, resp.json()
-        assert (resp.json()["status"], resp.json()["total_days"]) == ("Pending", 5)
+        # Tuesday 1 to Saturday 5 September: four working days (decision Q20; it was five calendar days)
+        assert (resp.json()["status"], resp.json()["total_days"]) == ("Pending", 4)
 
     @pytest.mark.parametrize(
         ("field", "value"),
@@ -150,7 +154,8 @@ class TestRequestsStartPendingAndCannotBeForged:
         assert forged.status_code == 400 and "status" in forged.json()
         assert edited.status_code == 200, edited.json()
         leave.refresh_from_db()
-        assert (leave.status, leave.total_days) == ("Pending", 10)
+        # Tuesday 1 to Thursday 10 September: eight working days (it was ten calendar days)
+        assert (leave.status, leave.total_days) == ("Pending", 8)
 
     def test_a_decided_request_cannot_be_edited(self, manager):
         leave = _leave(_person(UserFactory.create()), status="Approved")
@@ -292,7 +297,7 @@ class TestServiceLevel:
 @pytest.mark.django_db(transaction=True)
 def test_two_racing_decisions_cannot_both_win():
     """Approve and reject at once: exactly one takes effect, the loser is refused."""
-    first, second = _user("schedule.update"), _user("schedule.update")
+    first, second = _user("schedule.approve"), _user("schedule.approve")
     leave = _leave(_person(UserFactory.create()))
     outcomes: list[str] = []
     start = threading.Barrier(2)

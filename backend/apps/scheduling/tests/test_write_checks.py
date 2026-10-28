@@ -20,7 +20,7 @@ from apps.scheduling.models import CalendarEvent, Resource, ResourceSchedule
 
 pytestmark = pytest.mark.django_db
 
-CODES = ("schedule.view", "schedule.create", "schedule.update")
+CODES = ("schedule.view", "schedule.create", "schedule.update", "schedule.manage")
 
 
 def _editor(*projects):
@@ -94,7 +94,9 @@ class TestEditEndpoints:
 
         resp = api.patch(
             url,
-            {"hourly_rate_usd": "80.00", "capacity_hours_per_week": 32, "status": "On Leave"},
+            # "On Leave" is derived from approved leave since Phase 10 (Q33) and cannot be written;
+            # "Unavailable" is still a stored, writable status.
+            {"hourly_rate_usd": "80.00", "capacity_hours_per_week": 32, "status": "Unavailable"},
             format="json",
         )
 
@@ -104,7 +106,7 @@ class TestEditEndpoints:
             str(resource.hourly_rate_usd),
             resource.capacity_hours_per_week,
             resource.status,
-        ) == ("80.00", 32, "On Leave")
+        ) == ("80.00", 32, "Unavailable")
 
     def test_a_resource_edit_cannot_point_at_a_missing_department(self):
         _, api = _editor()

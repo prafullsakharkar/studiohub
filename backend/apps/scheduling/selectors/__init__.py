@@ -1,9 +1,11 @@
 """
 Scheduling selectors for query operations.
 """
+
 from __future__ import annotations
 
 from typing import Any
+from uuid import UUID
 
 from django.db.models import QuerySet
 
@@ -11,9 +13,11 @@ from apps.core.selectors.base import BaseSelector
 from apps.scheduling.models import (
     CalendarEvent,
     Holiday,
+    Milestone,
     Resource,
     ResourceLeave,
     ResourceSchedule,
+    WorkCalendar,
 )
 from apps.scheduling.selectors.scope import ViewerScope
 
@@ -39,11 +43,14 @@ class ResourceSelector(BaseSelector):
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
+        from apps.scheduling.selectors.resource_status import current_leaves_prefetch
+
         return cls.model.objects.select_related(
             "department",
             "team",
             "user",
-        )
+            "calendar",
+        ).prefetch_related(current_leaves_prefetch())
 
     @classmethod
     def can_see_rates(cls, user: Any, resource: Any, *, holder: bool | None = None) -> bool:
@@ -80,11 +87,44 @@ class ResourceScheduleSelector(BaseSelector):
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
-        return cls.model.objects.select_related(
+        queryset = cls.model.objects.select_related(
             "resource",
             "event",
             "task",
         )
+        params = getattr(request, "query_params", None)
+        if params is not None:
+            start, end = cls._window(params.get("start")), cls._window(params.get("end"))
+            if start is not None:
+                queryset = queryset.filter(
+                    end_time__gt=start
+                )  # still running after the window opens
+            if end is not None:
+                queryset = queryset.filter(start_time__lt=end)  # begun before the window closes
+        return queryset
+
+    @staticmethod
+    def _window(raw: Any):
+        """An optional ``start`` / ``end`` query value: ISO 8601 with a time zone, else a 400."""
+        if raw in (None, ""):
+            return None
+        from django.utils.dateparse import parse_datetime
+        from django.utils.timezone import is_naive
+        from rest_framework.exceptions import ValidationError
+
+        try:
+            parsed = parse_datetime(raw)
+        except ValueError:
+            parsed = None
+        if parsed is None:
+            raise ValidationError(
+                "Send start and end as ISO 8601 date-times, e.g. 2026-11-02T00:00:00Z."
+            )
+        if is_naive(parsed):
+            raise ValidationError(
+                "Send the time zone too: end the date-time with Z or add an offset such as +02:00."
+            )
+        return parsed
 
 
 class ResourceLeaveSelector(BaseSelector):
@@ -102,19 +142,11 @@ class ResourceLeaveSelector(BaseSelector):
 
     @classmethod
     def is_approver(cls, user: Any) -> bool:
-        """Whether ``user`` may decide leave requests: the update code, or a superuser."""
-        from apps.identity.services.permission_cache import PermissionCacheService
+        """Whether ``user`` may decide leave requests: the approve code, or a superuser."""
+        from apps.production.permissions.checks import user_has_permission_code
         from apps.scheduling.constants.permissions import SchedulingPermissions
 
-        if user is None or not getattr(user, "is_authenticated", False):
-            return False
-        if getattr(user, "is_superuser", False):
-            return True
-        return bool(
-            PermissionCacheService.has_permission(
-                user=user, permission=SchedulingPermissions.UPDATE
-            )
-        )
+        return user_has_permission_code(user, SchedulingPermissions.APPROVE)
 
     @classmethod
     def can_see_details(cls, user: Any, leave: Any, *, approver: bool | None = None) -> bool:
@@ -137,4 +169,50 @@ class HolidaySelector(BaseSelector):
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
-        return cls.model.objects.all()
+        queryset = cls.model.objects.select_related("calendar")
+        params = getattr(request, "query_params", None)
+        calendar = params.get("calendar_id") if params is not None else None
+        if calendar:
+            try:
+                queryset = queryset.filter(calendar_id=UUID(calendar))
+            except ValueError:
+                return queryset.none()
+        return queryset
+
+
+class WorkCalendarSelector(BaseSelector):
+    """Read-side data access for work calendars (studio-wide)."""
+
+    model = WorkCalendar
+
+    @classmethod
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
+        return cls.model.objects.select_related("office")
+
+
+class MilestoneSelector(BaseSelector):
+    """
+    Read-side data access for project milestones, narrowed to the caller's projects.
+
+    Anything else is a 404 exactly like an unknown id. Platform admins see every milestone; a read
+    without a request sees none.
+    """
+
+    model = Milestone
+
+    @classmethod
+    def get_queryset(cls, *, request=None, view=None) -> QuerySet[Any, Any]:
+        from apps.production.selectors.base import ProductionBaseSelector
+
+        queryset = cls.model.objects.select_related("project", "completed_by")
+        visible = ProductionBaseSelector.visible_project_ids(request) if request is not None else []
+        if visible is not None:  # None: platform admin, nothing narrows
+            queryset = queryset.filter(project_id__in=visible)
+        params = getattr(request, "query_params", None)
+        project = params.get("project_id") if params is not None else None
+        if project:
+            try:
+                queryset = queryset.filter(project_id=UUID(project))
+            except ValueError:
+                return queryset.none()
+        return queryset

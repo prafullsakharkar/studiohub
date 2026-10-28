@@ -20,9 +20,9 @@ from django.utils import timezone
 from apps.masterdata.models import Department
 from apps.scheduling.models import CalendarEvent, Resource, ResourceSchedule
 
-CAPACITY_URL = reverse("api:v1:production:scheduling-capacity")
-OVERBOOKING_URL = reverse("api:v1:production:scheduling-overbooking")
-RESOLVE_URL = reverse("api:v1:production:scheduling-resolve-overbooking")
+CAPACITY_URL = reverse("api:v1:scheduling:capacity")
+OVERBOOKING_URL = reverse("api:v1:scheduling:overbooking")
+RESOLVE_URL = reverse("api:v1:scheduling:resolve-overbooking")
 
 def _week_slot(weekday, start_hour, duration_hours):
     now = timezone.now()

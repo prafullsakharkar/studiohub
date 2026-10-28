@@ -42,7 +42,7 @@ Rules (checked by an import test in Phase 12, `apps/core/tests/test_dependency_d
 
 ## X-02 Moving the shared viewset base (Q2)
 
-`PlatformCrudViewSet` and its read-only sibling move from `apps/deliveries/api/viewsets/base.py` to `apps/core/api/viewsets/platform_crud.py`, unchanged in behaviour. The old module keeps a re-export for one release (removed in Phase 12) so nothing breaks in between. Importers to update: `apps/publishing/api/viewsets/{publish,destination}.py`, `apps/scheduling/api/viewsets/__init__.py:10`, `apps/production/api/viewsets/task_template.py:13`. Done in Phase 3 (the first implementation phase).
+`PlatformCrudViewSet` and its read-only sibling move from `apps/deliveries/api/viewsets/base.py` to `apps/core/api/viewsets/platform_crud.py`, unchanged in behaviour. The old module kept a re-export for one release; it is **removed** (Phase 12) and `apps/deliveries/api/viewsets/{delivery,destination}.py` import the core module. Importers to update: `apps/publishing/api/viewsets/{publish,destination}.py`, `apps/scheduling/api/viewsets/__init__.py:10`, `apps/production/api/viewsets/task_template.py:13`. Done in Phase 3 (the first implementation phase).
 
 ## X-03 What Publishing, Deliveries and Scheduling read from Production
 
@@ -156,11 +156,13 @@ Masterdata is never changed beyond additive selector methods, and Masterdata imp
 
 ## X-10 Phase 12 integration checks (what "done" means across apps)
 
-| Check | Test |
-|---|---|
-| Publish, deliver, schedule the delivery milestone | `apps/deliveries/tests/integration/test_pipeline_flow.py`: register files on a published version, add it to a delivery, sign off as a second user, send, link a milestone, read the project schedule through Production's route |
-| Revoke a file after send | snapshot unchanged, `has_revoked_content` true, unsent delivery loses approval |
-| Archive a shot with versions, publishes and deliveries | refused while a published version exists (production D-29), history stays readable |
-| Disabled user | 401 on every endpoint of the three apps on the next request |
-| Production imports none of the three apps | X-01 test |
-| Migrations | forward, backward, forward on a disposable database (Q10 B) |
+**Built in Phase 12** (2026-10-27). Rows 3 and 6 differ from the first reading, as noted.
+
+| Check | Test | State |
+|---|---|---|
+| Publish, deliver, schedule the delivery milestone | `apps/deliveries/tests/integration/test_pipeline_flow.py::TestPublishDeliverSchedule`: register files on a published version, add it to a delivery, prepare, sign off as a second user, send, create a delivery milestone (Scheduling asks Deliveries through the provider), read the project schedule through Production's route, complete the milestone; a milestone cannot name another project's delivery; the preparer cannot sign off | built |
+| Revoke a file after send | `TestRevokeAfterSend`: the sent delivery's snapshot is unchanged and shows `has_revoked_content`; a signed-off, unsent delivery of the same version goes back to Prepared | built |
+| Archive a shot with versions, publishes and deliveries | `TestArchivingPublishedWork`. **Not "refused" as first written.** Production (D-13, D-29) refuses to archive or delete a *published version*; it does not refuse to archive a *shot* that has one. The shot is archived, its versions stay live and published, and the delivery history stays readable. Whether that should change is decision **Q41** | built, behaviour differs from the first reading |
+| Disabled user | `apps/core/tests/integration/test_disabled_user_three_apps.py`: every operation of the three apps (read from the OpenAPI schema, 116 at the time) answers 401 once the account is disabled, with the same token that worked before; deactivating through the service does the same; reactivating restores access | built |
+| Dependency direction, no organization fields | `apps/core/tests/test_dependency_direction.py`: AST scan of every non-test module (rules 1 and 2 of X-01, plus: the three apps read Production and Masterdata through selectors, not their models, rule 3); no organization field on any model of the three apps (rule 6) | built |
+| Migrations | forward, backward, forward on a disposable database (Q10 B) | **not done**: no disposable database was provided. Per-phase round trips inside the test database were done (Q10 A). The commands for the owner are in `VERIFICATION.md` |

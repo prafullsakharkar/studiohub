@@ -21,9 +21,6 @@ from apps.production.api.viewsets.scheduling import (
     AutomationAuditLogsView,
     AutomationRuleDetailView,
     AutomationRulesView,
-    SchedulingCapacityView,
-    SchedulingOverbookingView,
-    SchedulingResolveOverbookingView,
 )
 from apps.production.api.viewsets.sequence import SequenceViewSet
 from apps.production.api.viewsets.shot import ShotViewSet
@@ -59,10 +56,6 @@ urlpatterns = router.urls + [
     path("automations/rules/", AutomationRulesView.as_view(), name="automation-rules-list"),
     path("automations/rules/<str:pk>/", AutomationRuleDetailView.as_view(), name="automation-rules-detail"),
     path("automations/audit-logs/", AutomationAuditLogsView.as_view(), name="automation-audit-logs"),
-    # Scheduling capacity/overbooking (not provided by the scheduling app)
-    path("scheduling/capacity/", SchedulingCapacityView.as_view(), name="scheduling-capacity"),
-    path("scheduling/overbooking/", SchedulingOverbookingView.as_view(), name="scheduling-overbooking"),
-    path("scheduling/resolve-overbooking/", SchedulingResolveOverbookingView.as_view(), name="scheduling-resolve-overbooking"),
     # Analytics
     path("analytics/kpis/", AnalyticsKpisView.as_view(), name="analytics-kpis"),
     path("analytics/departments/", AnalyticsDepartmentsView.as_view(), name="analytics-departments"),

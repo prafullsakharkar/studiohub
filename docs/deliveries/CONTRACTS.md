@@ -303,7 +303,7 @@ without a key, reverse decrypts). Setting: `DELIVERY_SECRET_KEY` (`.env.example`
 Built: project scoping and IDOR tests, the destination link and rules, the `reason` / `notes` body
 aliases (Q18), `bulk-cancel` (Q36), role-to-code grants and their matrix test, admin hardening,
 OpenAPI declarations. The access matrix covers anonymous, member, non-member, every code, platform
-admin and scoped API keys; "a disabled user loses access" is Phase 12 (A-14).
+admin and scoped API keys; "a disabled user loses access" is tested across the three apps in Phase 12 (A-14, done).
 
 | Target | Built in Phase 8 |
 |---|---|

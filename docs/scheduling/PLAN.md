@@ -95,6 +95,18 @@ Tests:
 * `migrations/test_checks_stop_and_list.py`; round-trip 0004-0007.
 * Production: capacity endpoints answer the same shape at the same paths after the move (existing tests in `apps/production/tests` keep passing unmodified).
 
+#### Phase 9 as built (2026-10-27)
+
+Status: **implemented, committed on `feature/scheduling-improvement`** (hash in the Phase 9 report). Differences from the plan above:
+
+* **Branch base.** The branch starts from the deliveries tip (`66649be`), not from `develop` (A-43).
+* **Migration tests** are `tests/migrations/test_phase9_migrations.py` (all of 0004 to 0007, including one stop-and-list case per check, the deleted-row cases, the PROTECT and enforcement cases and the reverse that refuses two calendars holding one date), not `test_checks_stop_and_list.py`. Only one round trip goes back to 0003, because PostgreSQL never reuses dropped-column slots.
+* **Capacity move.** The three capacity views now live in `apps/scheduling/api/views/capacity.py` at the same paths and names `capacity`, `overbooking`, `resolve-overbooking` under `api:v1:scheduling`. Production no longer imports Scheduling (checked by an AST test, `tests/test_boundaries.py`). The one Production route that still invents milestones, `ProjectScheduleView`, is replaced in Phase 10 through the provider.
+* **Capacity week** is computed per resource in its calendar's time zone; leave and holidays do not reduce capacity yet (Phase 10).
+* **Writes** to calendars and milestones are gated by the existing `schedule.update` / `schedule.create` / `schedule.delete` codes until Phase 11 adds `schedule.manage` (A-45).
+* **Read-only report** `manage.py report_leave_days` lists leave rows whose stored count differs from their working days. It changes nothing and prints no reasons.
+* New defects found by the new checks and fixed here: a booking whose end equals its start passed the serializer and failed on the database check (a 500), and the create responses for events and resources carried no `id`.
+
 ### Phase 10: bookings and capacity (`scheduling(phase-10): bookings and capacity`)
 
 Migration `0008_booking_exclusion`: `CREATE EXTENSION IF NOT EXISTS btree_gist` and the exclusion constraint, PostgreSQL only; refuses and lists overlapping pairs first (staging S1).
@@ -106,6 +118,17 @@ Tests:
 * `api/test_resource_status.py`: "On Leave" derived; writing it is a 400.
 * `api/test_project_schedule.py` (Production route): real milestones, same keys; empty list without milestones.
 
+#### Phase 10 as built (2026-10-27)
+
+Status: **implemented, committed on `feature/scheduling-improvement`** (hash in the Phase 10 report). Differences from the plan above:
+
+* **Migration `0008_booking_exclusion` is built, after a first pass without it.** Phase 10 was first built with the service lock only (Q32 option B) because I wrongly reported `btree_gist` as missing from the database server (it was missing from a different, unused server; see `delivery-pipeline/DECISIONS.md` check 1). On the user's instruction ("Option 2, add the constraint and commit") the constraint was added: `0008` refuses and lists overlapping pairs (S1, live bookings that occupy a resource), creates `btree_gist` if missing (reusing masterdata's `EnsureBtreeGistExtension`, whose reverse leaves it installed), and adds `PostgresOnlyExclusionConstraint` `scheduling_booking_no_overlap` (reusing masterdata's class, so other engines get no SQL and keep the service check). Q32 is option A as designed (A-51 superseded by A-57).
+* **Overbooked also occupies time** (A-52), so a booking flagged by triage cannot be double-booked.
+* **Capacity** is scaled, not capped (A-53): see CONTRACTS section 10.
+* **Providers:** `scheduling.project_milestones` (Production's schedule route) and `scheduling.capacity` (`CapacitySelector`; nothing consumes it yet because Masterdata's utilization is not part of this work).
+* **Tests** are at `services/test_booking_overlap.py` (service rule and database rule), `concurrency/test_booking_pg.py` (PostgreSQL; eight threads through the service, and eight writing straight to the table: exactly one wins each time), `migrations/test_phase9_migrations.py` (0008 too), `services/test_capacity_leave_holidays.py`, `domain/test_week_capacity.py`, `api/test_resource_status.py`, `api/test_project_schedule.py`.
+* **Existing test changed:** `tests/test_write_checks.py::test_a_resource_can_be_edited` set the status to "On Leave", which Q33 now refuses; it sets "Unavailable" instead (same assertions otherwise).
+
 ### Phase 11: authorization and hardening (`scheduling(phase-11): authorization and hardening`)
 
 * `api/test_side_channels.py`: search by hidden reason and note finds nothing; ordering by rate ignored without the code.
@@ -114,6 +137,17 @@ Tests:
 * `api/test_bulk_delete.py` (Q36).
 
 Every gate: as publishing (`docs/publishing/PLAN.md` §4).
+
+#### Phase 11 as built (2026-10-27)
+
+Status: **implemented, committed on `feature/scheduling-improvement`** (hash in the Phase 11 report). Differences from the plan above:
+
+* **Test files** are `api/test_side_channels.py`, `api/test_leave_rules.py`, `api/test_access_matrix.py` (every route needs exactly its code), `test_permission_matrix.py` (seeded = enforced), `api/test_bulk_delete.py`, `api/test_booking_window.py`, `api/test_audit_and_logs.py` (audit rows, change-log masking and a log-capture test), `api/test_openapi.py`, `test_admin_and_commands.py` (admin and `redact_leave_reasons`), and a PostgreSQL race test for concurrent leave requests in `concurrency/test_booking_pg.py`.
+* **Search** is not switched off: bookings and leave are searchable by resource name and code, never by notes or reasons (A-60).
+* **Resource creation** needs `schedule.manage`, not `schedule.create` (A-58), because lead-artist and artist now hold `create`.
+* **Admin:** bookings and leave are view-only too, not only leave decisions (A-62).
+* **Not built:** a leave `cancel` endpoint (the contract's service signature listed it, the API table did not) and a database constraint on leave overlap (A-59, A-61).
+* **Existing tests changed:** `test_leave_workflow.py` and `test_write_checks.py` give their planner users `manage` and `approve`; Production's `test_permission_matrix.py` expects the new role grants (`schedule.create` for lead-artist and artist, `manage` and `approve` for the full roles); Production's scheduling-route and seed fixtures were changed in Phase 10.
 
 ## 5. Risks
 

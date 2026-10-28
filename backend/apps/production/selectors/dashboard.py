@@ -53,8 +53,8 @@ class ProjectDashboardSelector(ProductionBaseSelector):
 
     # Milestone scaffolding: names mirror the frontend mock; dates
     # interpolate the project's real start/delivery dates and statuses derive
-    # from the real overall progress. Same precedent as SCHEDULE_PHASES in
-    # the project-scoped schedule view.
+    # from the real overall progress. (The project-scoped schedule view now reads real
+    # milestones through the scheduling provider; this dashboard card still derives its own.)
     MILESTONES = (
         "Plate Turnover & Ingest",
         "Rough Layout & Asset Conform",

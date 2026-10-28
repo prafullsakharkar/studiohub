@@ -2,12 +2,12 @@
 Delivery destination viewset for API endpoints.
 """
 from apps.core.api.pagination import StandardPagination
+from apps.core.api.viewsets.platform_crud import PlatformCrudViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.deliveries.api.serializers.destination import (
     DestinationDetailSerializer,
     DestinationListSerializer,
 )
-from apps.deliveries.api.viewsets.base import PlatformCrudViewSet
 from apps.deliveries.constants.permissions import DeliveryPermissions
 from apps.deliveries.selectors.destination import DestinationSelector
 from apps.identity.permissions import HasPermission

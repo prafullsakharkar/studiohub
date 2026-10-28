@@ -11,11 +11,11 @@ from uuid import UUID
 from django.core.exceptions import ValidationError as DjangoValidationError
 
 from apps.scheduling.selectors.capacity import (
-    _allocated_hours_by_resource,
-    _week_slots,
-    current_week_bounds,
+    _overlap_hours,
+    _slots_in,
+    resource_week,
     visible_slots,
-    week_bounds_from_date,
+    week_window_for,
 )
 
 
@@ -80,17 +80,22 @@ def resolve_overbooking(
     if resource is None:
         return None
 
-    if week_day is None:
-        week_start, week_end = current_week_bounds()
-    else:
-        week_start, week_end = week_bounds_from_date(week_day)
-
+    # The week is the one of the resource's work calendar (its time zone), the alert's own day
+    # when it names one, else the current week.
+    rules, week_start, week_end = week_window_for(resource, week_day=week_day)
+    week_slots = _slots_in(week_start, week_end, [resource.id])
     allocated = round(
-        _allocated_hours_by_resource(organization, week_start, week_end).get(resource.id, 0.0),
+        sum(
+            _overlap_hours(slot.start_time, slot.end_time, week_start, week_end)
+            for slot in week_slots
+        ),
         2,
     )
-    excess = round(allocated - resource.capacity_hours_per_week, 2)
-    week_label = week_start.date().isoformat()
+    # Capacity of that week: the weekly figure less the holidays and approved leave in it.
+    week = resource_week(resource, week_day=week_day)
+    capacity = week.capacity if week is not None else float(resource.capacity_hours_per_week)
+    excess = round(allocated - capacity, 2)
+    week_label = week_start.astimezone(rules.tz).date().isoformat()
 
     if excess <= 0:
         return {
@@ -98,11 +103,10 @@ def resolve_overbooking(
             "message": f"{resource.name} is already within capacity for the week of {week_label}.",
         }
 
-    flagged = visible_slots(
-        _week_slots(organization, week_start, week_end).filter(resource=resource, status="Booked"),
-        visible_project_ids,
+    flagged = visible_slots(week_slots.filter(status="Booked"), visible_project_ids)
+    flagged = ResourceSchedule.objects.filter(pk__in=flagged.values("pk")).update(
+        status="Overbooked"
     )
-    flagged = ResourceSchedule.objects.filter(pk__in=flagged.values("pk")).update(status="Overbooked")
 
     if flagged:
         message = (

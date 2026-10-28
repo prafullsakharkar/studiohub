@@ -212,11 +212,6 @@ class ReviewVersionAddSerializer(StrictSerializer):
 # -- scheduling ------------------------------------------------------------
 
 
-class ResolveOverbookingSerializer(StrictSerializer):
-    alert_id = serializers.CharField()
-    resource_id = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-
-
 class LinkAssetSerializer(StrictSerializer):
     """Body of ``POST /shots/{id}/assets/``: the asset (id or code) with how many and a note."""
 

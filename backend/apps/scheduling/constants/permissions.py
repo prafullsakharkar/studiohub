@@ -14,3 +14,10 @@ class SchedulingPermissions:
     CREATE = "schedule.create"
     UPDATE = "schedule.update"
     DELETE = "schedule.delete"
+    # Bookings of any resource, leave for someone else, calendars, holidays and milestones
+    # (docs/scheduling/CONTRACTS.md section 5). Held by the roles that hold UPDATE.
+    MANAGE = "schedule.manage"
+    # Approving and rejecting leave requests.
+    APPROVE = "schedule.approve"
+    # Deciding one's own leave, with a reason. In the catalog, held by no role.
+    SOD_OVERRIDE = "schedule.sod.override"
