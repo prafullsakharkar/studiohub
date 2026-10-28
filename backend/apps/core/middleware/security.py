@@ -6,7 +6,6 @@ from .base import BaseMiddleware
 
 
 class SecurityHeadersMiddleware(BaseMiddleware):
-
     def process_response(
         self,
         request,
@@ -27,5 +26,18 @@ class SecurityHeadersMiddleware(BaseMiddleware):
             "Referrer-Policy",
             "same-origin",
         )
+
+        response.setdefault(
+            "Permissions-Policy",
+            "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+        )
+
+        # JSON and file responses are data, never a page: nothing in them may load or run anything.
+        # HTML (the debug toolbar, Swagger UI in development) keeps working without a policy.
+        if not response.get("Content-Type", "").startswith("text/html"):
+            response.setdefault(
+                "Content-Security-Policy",
+                "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+            )
 
         return response

@@ -57,3 +57,32 @@ class SessionStatusCache:
             return "inactive"
 
         return "active"
+
+
+TOUCH_PREFIX = "identity.session.touch"
+TOUCH_INTERVAL_SECONDS = 60
+
+
+class SessionActivity:
+    """
+    Records that a session is in use, for the idle timeout.
+
+    Called on every authenticated request but writes at most once a minute per session (one
+    ``UPDATE``, no read). A cache outage skips the write rather than failing the request; the cost is
+    an idle clock that runs a little long, never a refused request.
+    """
+
+    @classmethod
+    def touch(cls, jti: str | None) -> None:
+        if not jti:
+            return
+
+        try:
+            if not cache.add(f"{TOUCH_PREFIX}:{jti}", 1, TOUCH_INTERVAL_SECONDS):
+                return
+
+            from apps.identity.models import UserSession
+
+            UserSession.objects.filter(access_token_jti=jti).update(last_activity=timezone.now())
+        except Exception:  # noqa: BLE001 - bookkeeping must never break a request
+            return

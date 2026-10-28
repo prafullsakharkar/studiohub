@@ -266,6 +266,14 @@ class Settings(BaseSettings):
     api_key_accept_legacy_hash: bool = Field(default=True, alias="API_KEY_ACCEPT_LEGACY_HASH")
 
     ####################################################################
+    # Sessions
+    ####################################################################
+
+    # A session that has made no authenticated request for this long cannot be refreshed and ends.
+    # 0 turns the idle limit off. Access tokens last 30 minutes, refresh tokens 7 days (jwt.py).
+    session_idle_timeout_minutes: int = Field(default=120, alias="SESSION_IDLE_TIMEOUT_MINUTES")
+
+    ####################################################################
     # Celery
     ####################################################################
 

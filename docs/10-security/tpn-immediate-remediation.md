@@ -137,3 +137,23 @@ templates already do); recreate the compose network once so the fixed subnet tak
   for uploads) instead of an hour; header and body timeouts cut off stalled clients. The application
   adds a per-user quota (`ATTACHMENT_USER_QUOTA_BYTES`, 5 GB of live attachments) and a per-user upload
   rate limit (`upload`, 60 per hour). A request over a limit gets 413, 400 or 429.
+
+# Follow-up: session lifetime and browser headers (TM-020, TM-023)
+
+- **Sessions (TM-020).** Refresh tokens now last 7 days (were 30) and a session ends 30 days after it
+  began (the 90-day figure was never in force: the setting was not exported, so the service used its
+  fallback). A session with no authenticated request for `SESSION_IDLE_TIMEOUT_MINUTES` (default 120,
+  0 turns it off) cannot be refreshed and is expired. A refresh does not count as activity, so a
+  front end that refreshes in the background does not keep an unattended session alive. Sessions that
+  were already idle when this deploys must sign in again at their next refresh.
+- **Token storage.** Tokens are still returned in response bodies. With the proxy's strict
+  `Content-Security-Policy` (`default-src 'none'` for everything it serves) and these lifetimes the
+  exposure is smaller, but how the web client stores them is a front-end decision this repository
+  cannot settle: prefer memory for the access token, and ask for the refresh token to move to an
+  `HttpOnly` cookie if the client allows it.
+- **Headers (TM-023).** The proxy is now authoritative for HSTS, `nosniff`, `X-Frame-Options`,
+  `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy` and a CSP of
+  `default-src 'none'; frame-ancestors 'none'; base-uri 'none'`, on its own responses and on proxied
+  ones; the application's copies are hidden so none is sent twice (checked against a real nginx and a
+  stub upstream). Uploads keep their stricter `sandbox` policy. The application also sends
+  `Permissions-Policy` and the CSP for non-HTML responses, for deployments without this proxy.

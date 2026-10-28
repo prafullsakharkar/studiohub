@@ -31,7 +31,8 @@ class TestRollingSessionExpiry:
         )
 
         session.refresh_from_db()
-        assert session.expires_at > timezone.now() + timedelta(days=20)
+        # refresh tokens last 7 days (config/settings/components/jwt.py)
+        assert session.expires_at > timezone.now() + timedelta(days=6)
 
     def test_absolute_cap_never_exceeded(self):
         user = UserFactory.create(is_active=True)
@@ -41,9 +42,13 @@ class TestRollingSessionExpiry:
             refresh_token_jti="r1",
             access_token_jti="a1",
             status=SessionStatus.ACTIVE,
-            created_at=timezone.now() - timedelta(days=85),
             expires_at=timezone.now() + timedelta(days=1),
         )
+        # created_at is auto_now_add, so it can only be moved afterwards
+        UserSession.objects.filter(pk=session.pk).update(
+            created_at=timezone.now() - timedelta(days=29)
+        )
+        session.refresh_from_db()
 
         UserSessionService.refresh(
             session,
@@ -52,4 +57,5 @@ class TestRollingSessionExpiry:
         )
 
         session.refresh_from_db()
-        assert session.expires_at <= timezone.now() + timedelta(days=90)
+        # the absolute cap is 30 days from the session's start, not 7 more days
+        assert session.expires_at <= timezone.now() + timedelta(days=1, minutes=1)

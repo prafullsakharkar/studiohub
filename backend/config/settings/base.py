@@ -58,7 +58,11 @@ from .components.internationalization import (
     USE_I18N,
     USE_TZ,
 )
-from .components.jwt import SIMPLE_JWT
+from .components.jwt import (
+    SESSION_IDLE_TIMEOUT_MINUTES,
+    SESSION_MAX_ABSOLUTE_LIFETIME_DAYS,
+    SIMPLE_JWT,
+)
 from .components.logging import LOGGING_CONFIG
 from .components.middleware import MIDDLEWARE
 from .components.security import (
