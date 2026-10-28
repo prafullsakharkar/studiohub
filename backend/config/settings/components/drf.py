@@ -50,6 +50,8 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "StudioHub API",
     "DESCRIPTION": "StudioHub Production Management Platform",
     "VERSION": "1.0.0",
+    # The schema maps every endpoint and field: only an authenticated caller may read it.
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAuthenticated"],
     "POSTPROCESSING_HOOKS": [
         # Flag deprecated paths (Deprecation/Sunset headers) in the schema.
         "apps.core.api.deprecations.mark_deprecated_paths",

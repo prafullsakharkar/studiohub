@@ -14,3 +14,5 @@ class CoreConfig(AppConfig):
 
         autodiscover_events()
         configure_structlog()
+
+        import apps.core.checks  # noqa: F401

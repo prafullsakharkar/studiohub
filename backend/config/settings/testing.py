@@ -48,3 +48,8 @@ MFA_ENCRYPTION_ENABLED = True  # pyright: ignore[reportConstantRedefinition]
 
 # Test-only pepper for credential digests; protects nothing real.
 API_KEY_PEPPER = "test-only-api-key-pepper-0123456789abcdef"  # pyright: ignore[reportConstantRedefinition]
+
+# The admin site and API docs are off by default; tests exercise both.
+ADMIN_ENABLED = True  # pyright: ignore[reportConstantRedefinition]
+
+API_DOCS_ENABLED = True  # pyright: ignore[reportConstantRedefinition]

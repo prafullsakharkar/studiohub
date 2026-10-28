@@ -5,6 +5,7 @@ URLs for Core API.
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
+from apps.core.api.views.attachment_download import AttachmentDownloadView
 from apps.core.api.viewsets.attachment import AttachmentViewSet
 from apps.core.api.viewsets.tag import TagViewSet
 
@@ -15,5 +16,10 @@ router.register(r"tags", TagViewSet, basename="tag")
 app_name = "core"
 
 urlpatterns = [
+    path(
+        "attachments/<uuid:uuid>/download/",
+        AttachmentDownloadView.as_view(),
+        name="attachment-download",
+    ),
     path("", include(router.urls)),
 ]
