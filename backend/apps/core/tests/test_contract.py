@@ -165,13 +165,11 @@ def test_openapi_schema_contains_core_contract_endpoints():
 @pytest.mark.django_db
 def test_pagination_contract_via_api_client():
     """Verify that paginated endpoints return {count, next, previous, results}."""
-    from django.contrib.auth import get_user_model
     from rest_framework.test import APIClient
 
-    User = get_user_model()
-    user = User.objects.filter(is_active=True).first()
-    if not user:
-        pytest.skip("No user for pagination test")
+    from apps.identity.tests.factories import UserFactory
+
+    user = UserFactory.create(is_superuser=True)
 
     client = APIClient()
     client.force_authenticate(user=user)
