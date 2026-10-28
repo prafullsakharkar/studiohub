@@ -221,8 +221,9 @@ templates already do); recreate the compose network once so the fixed subnet tak
   matches no task will see nothing.
 - **Whole-project views** (statistics, dashboards, deliveries, publishing, schedules, audit rows of the
   project) are withheld from narrowed members, as for external members.
-- **Limits.** The show cannot yet be set through the API except by creating as a show-bound member;
-  `show_id` is read-only in responses.
+- **API.** `show_id` is accepted on create and update of episodes, sequences, shots and assets, and
+  reported in responses. Only administrators, full project members and show-bound members (own show
+  only) may set it.
 
 ## Correction: the object-store bucket
 

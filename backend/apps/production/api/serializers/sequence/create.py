@@ -21,9 +21,15 @@ class SequenceCreateSerializer(NormalizedCodeMixin, FrameRangeMixin, ProjectRefe
         source="episode", write_only=True, required=False, allow_blank=True
     )
 
+    # Files the record under a show (TPN review TM-002). The viewset resolves it inside the project.
+    show_id = serializers.UUIDField(
+        source="show", write_only=True, required=False, allow_null=True
+    )
+
     class Meta:
         model = Sequence
         fields = (
+            "show_id",
             "id",
             "uuid",
             "project",
