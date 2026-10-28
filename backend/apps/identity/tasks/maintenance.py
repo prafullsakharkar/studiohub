@@ -29,3 +29,11 @@ def run_cleanup() -> dict[str, int]:
 @shared_task(name="identity.cleanup")
 def identity_cleanup():
     return run_cleanup()
+
+
+@shared_task(name="identity.security_alerts")
+def security_alerts():
+    """Hourly: log (and optionally email) spikes of failed logins, lockouts and privileged changes."""
+    from apps.identity.services import security_alerts as alerts
+
+    return len(alerts.run())

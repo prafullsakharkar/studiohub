@@ -17,4 +17,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {"NAME": ("django.contrib.auth.password_validation." "CommonPasswordValidator")},
     {"NAME": ("django.contrib.auth.password_validation." "NumericPasswordValidator")},
+    # No-op unless PASSWORD_BREACH_CHECK is on (TPN review TM-007).
+    {"NAME": "apps.identity.validators.breach.BreachedPasswordValidator"},
 ]

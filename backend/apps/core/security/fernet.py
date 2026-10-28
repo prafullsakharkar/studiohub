@@ -66,6 +66,29 @@ class FieldCipher:
             return plaintext
         return PREFIX + self._cipher().encrypt(plaintext.encode()).decode()
 
+    def uses_primary_key(self, stored: str | None) -> bool:
+        """Whether ``stored`` is already encrypted under the first (current) key."""
+        keys: tuple[str, ...] = tuple(getattr(settings, self.keys_setting, ()) or ())
+        if not keys or not self.is_encrypted(stored):
+            return False
+        try:
+            Fernet(keys[0].encode()).decrypt(str(stored)[len(PREFIX) :].encode())
+        except (InvalidToken, ValueError, TypeError):
+            return False
+        return True
+
+    def rekey(self, stored: str) -> str:
+        """
+        Re-encrypt ``stored`` under the first key (any listed key may have made it), so the older
+        keys can be removed from the setting once every value has been rekeyed.
+        """
+        if not self.is_encrypted(stored):
+            raise self.error()
+        try:
+            return PREFIX + self._cipher().rotate(stored[len(PREFIX) :].encode()).decode()
+        except (InvalidToken, ValueError):
+            raise self.error() from None
+
     def decrypt(self, stored: str | None) -> str:
         """Decrypt a stored secret; refuses anything not encrypted by ``encrypt``."""
         if not stored:

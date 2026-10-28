@@ -123,6 +123,33 @@ def _extract_array_source(text: str, var_name: str) -> str | None:
     return text[start:end]
 
 
+def _strip_line_comments(source: str) -> str:
+    """Remove ``// ...`` comments from JS source, leaving any ``//`` inside a quoted string alone."""
+    out: list[str] = []
+    quote = ""
+    i = 0
+    while i < len(source):
+        char = source[i]
+        if quote:
+            out.append(char)
+            if char == "\\" and i + 1 < len(source):
+                out.append(source[i + 1])
+                i += 1
+            elif char == quote:
+                quote = ""
+        elif char in "\"'`":
+            quote = char
+            out.append(char)
+        elif char == "/" and source[i + 1 : i + 2] == "/":
+            while i < len(source) and source[i] != "\n":
+                i += 1
+            continue
+        else:
+            out.append(char)
+        i += 1
+    return "".join(out)
+
+
 def _load_ts_mock_array(ts_path: Path, var_name: str) -> list[dict[str, Any]]:
     """
     Very small TS mock parser: extracts `export const <var_name>: Type[] = [ ... ];`
@@ -169,8 +196,8 @@ def _load_ts_mock_array(ts_path: Path, var_name: str) -> list[dict[str, Any]]:
         pass
     # Fallback: try to convert single quotes to double and trailing commas
     try:
-        # Remove single-line comments
-        js_array = re.sub(r"//.*", "", js_array)
+        # Remove single-line comments (not the // inside a string, such as an https:// URL)
+        js_array = _strip_line_comments(js_array)
         # Replace single quotes with double (naive)
         # Use a simple approach: replace ' with " and handle escaped
         js_array = js_array.replace("'", '"')

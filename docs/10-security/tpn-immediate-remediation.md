@@ -92,6 +92,9 @@ storing the link. A `/media/...` URL stored earlier no longer works.
    and Redis restart with TLS (a short outage), and Django serves HTTPS to nginx. Run
    `infrastructure/scripts/check-encryption-at-rest.sh` on the host and keep its output (or the provider
    evidence) as proof of encryption at rest. Back up the `tls_ca` volume with the other secrets.
+8. Run `infrastructure/scripts/github-settings.sh` (dry run), then with `--apply`; set
+   `SECURITY_ALERT_EMAILS`, `PASSWORD_BREACH_CHECK` (if you accept the outbound call) and the backup
+   certificate (`backup.sh keygen`, `BACKUP_CERT`); schedule `backup.sh backup` and `backup.sh verify`.
 
 # Follow-up: mail, client address, and the publishing index (TM-017, TM-014)
 
@@ -250,6 +253,33 @@ templates already do); recreate the compose network once so the fixed subnet tak
   secrets is unchanged.
 - **Not done.** Uploaded files are not encrypted by the application (only by the storage under them), and
   there is no backup tooling to encrypt.
+
+# Follow-up: the High and Medium residuals
+
+Work on the entries that still rated High or Medium after the first round.
+
+- **TM-006 (secrets).** The repository is public. A scan of all 351 commits for secret-like assignments and
+  known token formats (reporting locations only) found no production-grade secret: the committed compose
+  environment file held short placeholder values, the committed test environment holds test-only keys,
+  and a private-key-shaped string in old front-end mock data has no key body. Local environment files are
+  mode 600. Added `manage.py generate_secrets`, `mfa_rekey` and `delivery_rekey` (re-encrypt under the new
+  Fernet key so the old one can be removed), and `secrets-rotation.md`. **Still yours:** rotate anything that
+  was real, and decide whether the repository should be public.
+- **TM-007.** MFA for every account is now the production default; breached-password screening is available
+  (opt-in, k-anonymity). See ADR-0038.
+- **TM-002.** Playlists, project notes and media on sequences, episodes and reviews are narrowed too;
+  `manage.py check_narrowing` reports misconfigured narrowing.
+- **TM-008 / TM-016.** The first CI runs were observed: dependency audit and container scan passed; one test
+  failed and was fixed (a seed parser fallback). Repository-host settings are scripted
+  (`github-settings.sh`, dry run by default) but not applied.
+- **TM-009.** Encrypted backup, restore and verify (`backup.sh`), tested against a real PostgreSQL.
+- **TM-011.** An hourly `security_alerts` job logs `security_alert` lines (failed-login spikes, many failures
+  from one address, lockouts, role/permission/MFA/user-deletion/suspicious events) and mails a counts-only
+  summary to `SECURITY_ALERT_EMAILS`. Central log collection is still the operator's.
+- **TM-014.** The production compose now defaults the trusted proxy range to the fixed backend subnet.
+  Check the value in your compose `.env`: a `FORWARDED_ALLOW_IPS`/`TRUSTED_PROXY_IPS` of `127.0.0.1` there
+  overrides the default and makes client addresses the proxy's.
+- **TM-020.** `frontend-token-handling.md` lists what the web client must do; the client was not reviewed.
 
 ## Correction: the object-store bucket, and its removal
 

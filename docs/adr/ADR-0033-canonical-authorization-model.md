@@ -97,7 +97,12 @@ never covers sibling shows.
 >   bound to a show (their own show only, and they cannot clear it) may set it; a department-narrowed or
 >   external member gets `403`.
 >
-> Not done: media attached to entity types other than task, shot, asset and version stays project-wide.
+> - **Also narrowed for internal members (follow-up):** playlists (those the member made, and those whose
+>   entries are all inside the reach), project notes (the member's own), and media attached to sequences,
+>   episodes and reviews. `manage.py check_narrowing [--project CODE]` flags a show-bound member with no
+>   record assigned to the show and a department that no task of the project carries (exit status 1).
+>
+> Not done: media attached to other entity types stays project-wide.
 
 ## D3 — Canonical permission code format
 

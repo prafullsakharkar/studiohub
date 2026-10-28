@@ -45,3 +45,15 @@ eight characters.
 Password expiry (NIST 800-63B advises against periodic rotation) and breach-corpus screening (needs an
 outbound call or a shipped list) are left out; `must_change_password` after an administrator's reset
 covers the compromise case.
+
+## Amendment (2026-10-28, TPN review follow-up)
+
+- **MFA for every account is the production default.** `MFA_REQUIRE_ALL` now defaults to on in
+  production and off elsewhere; setting it explicitly overrides either way.
+- **Breached-password screening is available, opt-in.** Decision 4 left it out because it needs an
+  outbound call. It is now a validator (`PASSWORD_BREACH_CHECK`, default off) that queries the Have I
+  Been Pwned range API with k-anonymity: only the first five characters of the password's SHA-1 are sent,
+  responses are padded, and the comparison happens here. If the service cannot be reached the password is
+  accepted and a warning is logged, unless `PASSWORD_BREACH_CHECK_FAIL_CLOSED` is set. Enabling it adds one
+  outbound HTTPS destination (`api.pwnedpasswords.com`) to the deployment's egress rules.
+- Periodic expiry stays out, as before.
