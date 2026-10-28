@@ -4,7 +4,7 @@
 - **Date:** 2026-07-13
 - **Decision Makers:** Architecture Team
 - **Supersedes:** None
-- **Superseded By:** None
+- **Superseded By:** ADR-0034 in part: the runtime has no organization model; identity and audit are platform-global, and tenancy is enforced through `ProjectMembership` (ADR-0033)
 
 ---
 

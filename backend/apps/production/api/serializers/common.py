@@ -21,7 +21,7 @@ class LenientUniqueTogetherValidator(UniqueTogetherValidator):
     The ``project`` attr may be a raw reference string (UUID, code, or mock
     id) from the ``ProjectReferenceMixin`` aliases instead of a model
     instance. Non-UUID strings cannot match any PK, so the check is skipped
-    for them — the viewset resolves the reference org-scoped (or 400s) and
+    for them — the viewset resolves the reference (or 400s) and
     enforces natural-key uniqueness itself before saving.
     """
 
@@ -59,7 +59,7 @@ class ProjectReferenceMixin(serializers.Serializer):  # type: ignore[type-arg]
     ``proj-001``) and ``project_code`` instead of the ``project`` PK field.
     These write-only aliases land in ``validated_data["project"]`` as raw
     strings so unique-together validation still sees the field; the viewset
-    resolves them org-scoped (UUID/code/mock-id aware) before saving.
+    resolves them (UUID/code/mock-id aware) before saving.
     """
 
     project_id = serializers.CharField(

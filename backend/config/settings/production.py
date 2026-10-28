@@ -30,4 +30,3 @@ ALLOWED_HOSTS = settings.allowed_hosts  # pyright: ignore[reportConstantRedefini
 REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
     "apps.core.api.renderers.StandardJSONRenderer",
 ]
-LOGGING["handlers"]["console"]["formatter"] = "json"

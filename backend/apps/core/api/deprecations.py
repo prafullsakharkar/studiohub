@@ -1,7 +1,7 @@
 """
 Central registry of deprecated API paths.
 
-StudioHub is consolidating its organization-scoped route trees and auth
+StudioHub has consolidated its former organization-scoped route trees and auth
 namespace (ADR-0032). During the migration window the superseded paths keep
 serving requests with unchanged behavior, but they are marked deprecated:
 
