@@ -273,6 +273,11 @@ Recovery procedures should be documented and rehearsed.
 
 Recommended targets
 
+> **Status of these targets.** They are proposals, not commitments: this repository contains no backup or
+> restore tooling, no backup encryption and no restore test, so none of them has been demonstrated.
+> `docs/11-operations/disaster-recovery.md` proposes a 15-minute RPO; the two documents must be
+> reconciled once the business sets the targets and a restore has been tested.
+
 | Metric | Target |
 |---------|---------|
 | Recovery Time Objective (RTO) | < 2 Hours |

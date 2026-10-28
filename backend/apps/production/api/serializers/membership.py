@@ -111,7 +111,7 @@ class ProjectMembershipCreateSerializer(BaseWriteSerializer[Any]):
     # given (``selectors/external_scope.py``), not the whole project.
     vendor_id = serializers.CharField(required=False, allow_blank=True, default="", max_length=50)
     client_id = serializers.CharField(required=False, allow_blank=True, default="", max_length=50)
-    # Canonical RBAC role (N7); resolved org-scoped in validate, fail closed.
+    # Canonical RBAC role (N7); resolved platform-wide in validate, fail closed.
     role_id = serializers.UUIDField(required=False, allow_null=True, write_only=True)
     # Frontend contract sends Title Case ("Active"); DB stores lowercase.
     status = CaseInsensitiveChoiceField(

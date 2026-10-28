@@ -62,11 +62,10 @@ class UserViewSet(
     credential_open_actions = ("me",)
 
     permission_map = {
-        # ADR-0033 D6: the user directory is organization-scoped.
-        # list/retrieve require the identity.user.view grant and are
-        # narrowed to users sharing an active membership in the request
-        # organization (superusers see all). ``me`` stays open for
-        # self-service.
+        # ADR-0033 D6 / ADR-0034: the user directory is platform-global.
+        # list/retrieve require the identity.user.view grant; ``UserSelector``
+        # then shows staff and superusers everyone and any other caller only
+        # themselves. ``me`` stays open for self-service.
         "list": (UserPermissions.VIEW,),
         "retrieve": (UserPermissions.VIEW,),
         "me": (),

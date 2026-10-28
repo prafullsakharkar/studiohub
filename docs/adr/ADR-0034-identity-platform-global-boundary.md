@@ -3,7 +3,7 @@
 - **Status:** Accepted
 - **Date:** 2026-10-22
 - **Decision Makers:** Architecture Team
-- **Supersedes:** None
+- **Supersedes:** ADR-0010 in part (the organization model is not part of the runtime)
 - **Superseded By:** None
 
 ---
