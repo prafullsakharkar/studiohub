@@ -11,7 +11,7 @@
 # The lock file (uv.lock) is authoritative. No dependency resolution happens
 # during production deployment.
 
-FROM python:3.14-slim AS builder
+FROM python:3.14-slim@sha256:cd89c30eda26ee911a4611b18680086e0ea42e6f5f8cbe653d07fa7958c9cec8 AS builder
 
 ENV \
     UV_COMPILE_BYTECODE=1 \
@@ -20,7 +20,7 @@ ENV \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-COPY --from=ghcr.io/astral-sh/uv:0.11 /uv /uvx /usr/local/bin/
+COPY --from=ghcr.io/astral-sh/uv:0.11@sha256:77280f2f771df71f90786c314fe1bbc1e023feac652969bbf139c280babf2eb7 /uv /uvx /usr/local/bin/
 
 WORKDIR /app
 
@@ -43,7 +43,7 @@ RUN uv sync --frozen --no-install-project --no-dev
 
 # ---------------------------------------------------------------------------
 
-FROM python:3.14-slim AS runtime
+FROM python:3.14-slim@sha256:cd89c30eda26ee911a4611b18680086e0ea42e6f5f8cbe653d07fa7958c9cec8 AS runtime
 
 ENV \
     PYTHONUNBUFFERED=1 \
@@ -61,6 +61,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --system --gid 10001 app \
     && useradd --system --uid 10001 --gid app --home-dir /app --shell /usr/sbin/nologin app
+
+# The application runs from /opt/venv, which has no pip. The base image's own pip (and the copies of
+# urllib3, msgpack and others vendored inside it) is not needed at runtime: remove it, so production
+# has no package installer and the vulnerability scanner has nothing to report there.
+RUN /usr/local/bin/python -m pip uninstall -y pip
 
 # Reproducible dependency set produced in the builder stage.
 COPY --from=builder /opt/venv /opt/venv

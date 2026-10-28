@@ -20,14 +20,14 @@ class Command(BaseCommand):
 
         with connection.cursor() as cursor:
             cursor.execute(
-                f"SELECT id, totp_secret FROM {TABLE} "
+                f"SELECT id, totp_secret FROM {TABLE} "  # noqa: S608 - TABLE is a constant
                 "WHERE totp_secret <> '' AND totp_secret NOT LIKE %s",
                 [crypto.PREFIX + "%"],
             )
 
             for pk, secret in cursor.fetchall():
                 cursor.execute(
-                    f"UPDATE {TABLE} SET totp_secret = %s WHERE id = %s",
+                    f"UPDATE {TABLE} SET totp_secret = %s WHERE id = %s",  # noqa: S608 - constant
                     [crypto.encrypt(secret), pk],
                 )
                 converted += 1

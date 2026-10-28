@@ -157,3 +157,41 @@ templates already do); recreate the compose network once so the fixed subnet tak
   ones; the application's copies are hidden so none is sent twice (checked against a real nginx and a
   stub upstream). Uploads keep their stricter `sandbox` policy. The application also sends
   `Permissions-Policy` and the CSP for non-HTML responses, for deployments without this proxy.
+
+# Follow-up: CI and supply chain (TM-016)
+
+- **Production image contents.** `.dockerignore` patterns such as `.venv/`, `media/` and `__pycache__/`
+  matched only at the root of the build context, but the Dockerfile copies `backend/`. The image
+  therefore carried a developer's `.venv` (785 MB, Python 3.13 and dev tools), `backend/media` (120 MB of
+  local uploaded files), logs, caches and a `.coverage` file. No env file got in. Patterns now start with
+  `**/`; the image went from 1.57 GB to about 370 MB, `/app` from 785 MB to 20 MB. The runtime stage
+  also removes the base image's own `pip` (which vendors copies of urllib3 and msgpack the scanner
+  flagged), so production has no package installer. **If images built before this were pushed to a
+  registry, treat their contents (including any media files) as exposed to whoever can pull them.**
+- **Pinning.** GitHub Actions are pinned to commit SHAs and base images to digests, with the version tag
+  kept as a comment; Dependabot proposes updates (now including the compose files). Workflow tokens are
+  limited to `contents: read` and checkouts do not persist credentials.
+- **Scanning.** New `Containers` workflow: builds the production image, checks it carries no
+  development files, scans it with Trivy (fixed HIGH/CRITICAL fail the job) and scans the Dockerfiles
+  and compose files for misconfigurations; weekly and on change. Trivy runs from a digest-pinned image
+  and reads the built image as a file, never the Docker socket. Accepted findings are in
+  `.trivyignore.yaml` with reasons and an expiry. The first run of the image scan found nothing in the
+  final image; it found the leaks above in the first build.
+- **Static analysis.** flake8-bandit (`S`) rules are part of the normal `ruff check`. Classes that only
+  flag names or style are switched off in `ruff.toml` with the reason; the three real hits (md5 used as
+  a cache key and fingerprint helper, a development command that runs node) are annotated.
+- **Controls.** `CODEOWNERS`, `SECURITY.md` and `docs/10-security/repository-controls.md` (including the
+  GitHub settings an administrator must switch on).
+- **Verified:** the production image builds and imports the upgraded stack (Pillow 13, Django 6.0.9,
+  DRF 3.18.3, PyJWT 2.15.1) on Python 3.14.10 as UID 10001.
+
+## Correction: the object-store bucket
+
+An earlier summary said the public-read setting on the MinIO `media` bucket had been removed. It had
+not. `create-buckets.sh` now sets the bucket private (`mc anonymous set none`).
+
+The MinIO images the compose files use (`quay.io/minio/minio`, `quay.io/minio/mc`) can no longer be
+resolved without credentials, so they cannot be pinned and a fresh `docker compose up` may be unable to
+pull them. The application does not use the object store (no storage backend is configured), so the
+service, its credentials and its bucket script are candidates for removal; that is a deployment decision
+and was not made here.

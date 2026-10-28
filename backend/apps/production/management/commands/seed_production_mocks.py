@@ -161,7 +161,8 @@ def _load_ts_mock_array(ts_path: Path, var_name: str) -> list[dict[str, Any]]:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".js", delete=False) as f:
             f.write(js)
             fname = f.name
-        out = subprocess.check_output(["node", fname], text=True, timeout=5)
+        # Development seeding only: runs the repository's own mock data file through node.
+        out = subprocess.check_output(["node", fname], text=True, timeout=5)  # noqa: S603, S607
         os.unlink(fname)
         return _json.loads(out)
     except Exception:

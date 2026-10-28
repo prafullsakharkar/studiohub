@@ -8,37 +8,42 @@
 **/.env
 **/.env.*
 
-# Python
-__pycache__/
-*.py[cod]
-*.so
-*.egg-info/
-.eggs/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-htmlcov/
-.pydeps/
+# Python. Every pattern here starts with `**/`: the Dockerfile copies `backend/`, and a pattern
+# without it matches only at the root of the build context (which is how a developer's `.venv`,
+# `media/` and caches once ended up inside the production image).
+**/__pycache__
+**/*.py[cod]
+**/*.so
+**/*.egg-info
+**/.eggs
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.coverage
+**/.coverage.*
+**/*.cover
+**/htmlcov
+**/.pydeps
 
 # Virtual environments
-.venv/
-venv/
+**/.venv
+**/venv
 
 # Node / frontend build artefacts
-node_modules/
-dist/
-build/
+**/node_modules
+**/dist
+**/build
 
 # Local databases and generated media (collectstatic runs inside the image)
-db.sqlite3
-media/
-static/
-staticfiles/
+**/db.sqlite3
+**/media
+**/static
+**/staticfiles
 
-# Celery beat / runtime scratch files
-celerybeat-schedule*
-*.log
+# Celery beat / runtime scratch files, logs
+**/celerybeat-schedule*
+**/*.log
+**/logs
 
 # IDEs / OS
 .vscode/
@@ -49,4 +54,7 @@ Thumbs.db
 # CI / tooling
 .github/
 scripts/
+**/.serena
+**/.opencode
+**/.superpowers
 infrastructure/compose/.env

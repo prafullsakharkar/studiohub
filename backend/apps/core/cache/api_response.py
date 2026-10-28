@@ -70,8 +70,9 @@ class APIResponseCache:
             "user_id": user_id,
         }
         
+        # A cache key, not a security digest.
         data_hash = hashlib.md5(
-            json.dumps(request_data, sort_keys=True).encode()
+            json.dumps(request_data, sort_keys=True).encode(), usedforsecurity=False
         ).hexdigest()
         
         return f"api_response:{data_hash}:{suffix}" if suffix else f"api_response:{data_hash}"
