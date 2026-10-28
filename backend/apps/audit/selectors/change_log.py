@@ -16,6 +16,7 @@ class ChangeLogSelector(AuditBaseSelector):
     """
     
     model = ChangeLog
+    visibility = "project"
     
     @classmethod
     def get_queryset(

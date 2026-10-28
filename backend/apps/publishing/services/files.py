@@ -337,6 +337,7 @@ class PublishedFileService:
             target_id=locked.pk,
             target_name=f"{locked.storage_root_id}:{locked.role}",  # pyright: ignore[reportAttributeAccessIssue]
             description=f"File {source} -> {target}" + (" (override)" if override_kind else ""),
+            project_id=locked.project_id,  # pyright: ignore[reportAttributeAccessIssue]
             metadata={
                 "from": source,
                 "to": target,

@@ -16,6 +16,7 @@ class APIRequestSelector(AuditBaseSelector):
     """
     
     model = APIRequest
+    visibility = "own"
     
     @classmethod
     def get_queryset(

@@ -274,6 +274,18 @@ class Settings(BaseSettings):
     session_idle_timeout_minutes: int = Field(default=120, alias="SESSION_IDLE_TIMEOUT_MINUTES")
 
     ####################################################################
+    # Audit retention (days; 0 keeps the rows)
+    ####################################################################
+
+    # Audit log and change log: the record of who did what. Keep two years by default.
+    audit_retention_days: int = Field(default=730, alias="AUDIT_RETENTION_DAYS")
+
+    # API request telemetry and user-behaviour tracking are high volume and carry IP addresses.
+    api_request_retention_days: int = Field(default=180, alias="API_REQUEST_RETENTION_DAYS")
+
+    track_retention_days: int = Field(default=90, alias="TRACK_RETENTION_DAYS")
+
+    ####################################################################
     # Celery
     ####################################################################
 

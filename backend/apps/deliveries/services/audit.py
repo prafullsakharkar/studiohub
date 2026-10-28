@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import Any
 
 from apps.audit.models import AuditLog
+from apps.audit.utils.project import project_id_of
 
 
 def record(
@@ -27,6 +28,7 @@ def record(
         target_type=AuditLog.TARGET_DELIVERY,
         target_id=str(package.pk),
         target_name=package.name[:255],
+        project_id=project_id_of(package),
         description=description,
         actor_id=getattr(actor, "pk", None),
         metadata=metadata or {},

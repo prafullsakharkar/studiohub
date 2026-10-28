@@ -16,6 +16,7 @@ class TrackSelector(AuditBaseSelector):
     """
     
     model = Track
+    visibility = "own"
     
     @classmethod
     def get_queryset(

@@ -71,3 +71,5 @@ class AuditTarget(models.TextChoices):
     MASTERDATA = "masterdata", _("Master data")
     PUBLISHING = "publishing", _("Publishing")
     SCHEDULING = "scheduling", _("Scheduling")
+    ATTACHMENT = "attachment", _("Attachment")
+    AUDIT = "audit", _("Audit")

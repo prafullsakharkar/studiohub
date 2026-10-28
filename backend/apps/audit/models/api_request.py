@@ -6,12 +6,13 @@ from __future__ import annotations
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from apps.audit.models.append_only import AppendOnlyModel
 from apps.core.models.bases.entity import EntityModel
 from apps.core.models.bases.timestamp import TimeStampedModel
 from apps.identity.models.user import User
 
 
-class APIRequest(EntityModel, TimeStampedModel):
+class APIRequest(AppendOnlyModel, EntityModel, TimeStampedModel):
     """
     API request log for tracking API calls.
     

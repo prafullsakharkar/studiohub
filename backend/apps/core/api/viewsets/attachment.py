@@ -13,6 +13,12 @@ from apps.core.api.serializers.attachment import (
     AttachmentSerializer,
     AttachmentUpdateSerializer,
 )
+from apps.core.events.attachment_events import (
+    AttachmentChanged,
+    AttachmentRemoved,
+    AttachmentUploaded,
+    attachment_payload,
+)
 from apps.core.logging.logger import get_logger
 from apps.core.models.attachment import Attachment
 from apps.core.selectors.attachment import AttachmentSelector
@@ -67,8 +73,19 @@ class AttachmentViewSet(ResponseEnvelopeMixin, viewsets.ModelViewSet):  # pyrigh
             **extra,
         )
 
+    def _publish(self, event, attachment, **extra):
+        event.dispatch(
+            **attachment_payload(
+                attachment,
+                actor_id=self.request.user.pk,
+                ip=client_ip_from_meta(self.request.META),
+                **extra,
+            )
+        )
+
     def perform_create(self, serializer):
         attachment = serializer.save(created_by=self.request.user, updated_by=self.request.user)
+        self._publish(AttachmentUploaded, attachment)
         self._log(
             "attachment_uploaded",
             attachment,
@@ -78,10 +95,13 @@ class AttachmentViewSet(ResponseEnvelopeMixin, viewsets.ModelViewSet):  # pyrigh
 
     def perform_update(self, serializer):
         attachment = serializer.save(updated_by=self.request.user)
-        self._log("attachment_updated", attachment, fields=sorted(serializer.validated_data))
+        fields = sorted(serializer.validated_data)
+        self._log("attachment_updated", attachment, fields=fields)
+        self._publish(AttachmentChanged, attachment, fields=fields)
 
     def perform_destroy(self, instance):
         self._log("attachment_deleted", instance, file_size=instance.file_size)
+        self._publish(AttachmentRemoved, instance)
         instance.delete()
 
     def get_serializer_class(self):

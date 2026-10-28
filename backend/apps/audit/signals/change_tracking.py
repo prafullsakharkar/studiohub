@@ -140,6 +140,7 @@ def _target_name(instance) -> str:
 
 def _record(change_type: str, instance, before: dict, after: dict) -> None:
     from apps.audit.models import ChangeLog
+    from apps.audit.utils.project import project_id_of
     from apps.core.middleware.request_context import get_current_user
 
     changed = sorted(
@@ -150,6 +151,7 @@ def _record(change_type: str, instance, before: dict, after: dict) -> None:
         target_type=type(instance).__name__,
         target_id=str(instance.pk),
         target_name=_target_name(instance),
+        project_id=project_id_of(instance),
         user=get_current_user(),
         before_values=before,
         after_values=after,

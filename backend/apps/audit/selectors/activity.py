@@ -16,6 +16,7 @@ class ActivitySelector(AuditBaseSelector):
     """
     
     model = Activity
+    visibility = "project"
     
     @classmethod
     def get_queryset(
