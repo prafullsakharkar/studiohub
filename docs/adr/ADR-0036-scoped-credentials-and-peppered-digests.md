@@ -63,3 +63,21 @@ revoked.
 - The legacy digest path and the unscoped-credential exception should be
   retired once ops confirm every credential has been used (or reissued) since
   the change.
+
+## Amendment (2026-10-28, TPN review TM-013): scopes also bind where no code is checked
+
+`HasPermission` returned `True` before looking at scopes when an action's permission tuple was empty
+("open to every signed-in user"), and views that do not use `HasPermission` at all (attachments, tags,
+analytics) never looked at the credential. A key scoped to one permission therefore still had its
+owner's self-service and shared-directory access there. Now:
+
+- an open action is refused to a scoped credential unless the view lists it in
+  `credential_open_actions` (`users/me`; the master-data catalogs; feature flags);
+- a view whose permission classes do not set `enforces_credential_scopes` is refused to a scoped
+  credential (`403`, code `credential_scope_not_applicable`) unless it sets `credential_open`.
+  The check runs in both credential authenticators, so no view can be missed.
+
+Legacy credentials with no scopes keep the owner's full access (the exception above); the way to
+narrow them is to reissue them with scopes. Anything a tool needs beyond those open actions must be a
+permission code in its scopes.
+

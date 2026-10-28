@@ -10,6 +10,9 @@ logger = get_logger("authorization")
 class HasPermission(
     IdentityPermission,
 ):
+    #: read by ``scopes.view_honors_scopes``: a view using this class applies credential scopes
+    enforces_credential_scopes = True
+
     def has_permission(  # pyright: ignore[reportIncompatibleMethodOverride]
         self,
         request,
@@ -30,7 +33,7 @@ class HasPermission(
             return False
 
         if not permissions:
-            return True
+            return self._open_action_allowed(request, view)
 
         user = request.user
 
@@ -76,6 +79,31 @@ class HasPermission(
             )
             for permission in permissions
         )
+
+    @staticmethod
+    def _open_action_allowed(request, view) -> bool:
+        """
+        An action with an empty permission tuple is open to every signed-in user, but a scoped
+        credential may do only what its scopes list, and an open action lists nothing. It passes
+        only where the view names the action in ``credential_open_actions`` (reference data and
+        the caller's own identity), so a narrow key cannot revoke sessions or read the directory.
+        """
+        if credential_scopes(request) is None:
+            return True
+
+        action = getattr(view, "action", None)
+
+        # No action means the method is not routed: let DRF answer 405.
+        if action is None or action in getattr(view, "credential_open_actions", ()):
+            return True
+
+        logger.warning(
+            "authorization_deny_credential_scope",
+            user_id=getattr(getattr(request, "user", None), "pk", None),
+            view=getattr(view, "__class__", type(view)).__name__,
+            action=action,
+        )
+        return False
 
     def has_object_permission(  # pyright: ignore[reportIncompatibleMethodOverride]
         self,

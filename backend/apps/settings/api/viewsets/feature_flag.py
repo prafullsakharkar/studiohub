@@ -33,6 +33,9 @@ class FeatureFlagViewSet(
         HasPermission,
     )
 
+    # Which features are on is not sensitive and tools adapt to it.
+    credential_open_actions = ("list", "retrieve")
+
     permission_map = {
         "list": (),
         "retrieve": (),
