@@ -6,6 +6,7 @@ and file delivery only through a short-lived signed link.
 from __future__ import annotations
 
 import pytest
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.utils import timezone
@@ -238,3 +239,45 @@ class TestDownload:
         assert response["X-Accel-Redirect"] == f"/_protected_media/{attachment.file.name}"
         assert response.content == b""
         assert response["X-Content-Type-Options"] == "nosniff"
+
+
+@pytest.mark.django_db
+class TestUploadLimits:
+    def test_an_upload_past_the_users_quota_is_refused(self, settings):
+        settings.ATTACHMENT_USER_QUOTA_BYTES = len(PDF) * 2 + 1
+        client = _client(UserFactory())
+
+        assert _upload(client, name="one.pdf").status_code == 201
+        assert _upload(client, name="two.pdf").status_code == 201
+
+        third = _upload(client, name="three.pdf")
+
+        assert third.status_code == 400
+        assert "storage limit" in third.content.decode()
+
+    def test_the_quota_is_per_user_and_deleting_frees_it(self, settings):
+        settings.ATTACHMENT_USER_QUOTA_BYTES = len(PDF) + 1
+        first, second = UserFactory(), UserFactory()
+
+        assert _upload(_client(first)).status_code == 201
+        assert _upload(_client(second)).status_code == 201
+        assert _upload(_client(first), name="again.pdf").status_code == 400
+
+        mine = Attachment.objects.get(created_by=first)
+        _client(first).delete(reverse("api:v1:core:attachment-detail", kwargs={"uuid": mine.pk}))
+
+        assert _upload(_client(first), name="again.pdf").status_code == 201
+
+    def test_uploads_are_rate_limited_per_user_and_reads_are_not(self, monkeypatch):
+        from apps.core.api.throttling import ResilientScopedRateThrottle
+
+        monkeypatch.setattr(ResilientScopedRateThrottle, "THROTTLE_RATES", {"upload": "2/min"})
+        cache.clear()
+        client = _client(UserFactory())
+
+        assert _upload(client, name="a.pdf").status_code == 201
+        assert _upload(client, name="b.pdf").status_code == 201
+        assert _upload(client, name="c.pdf").status_code == 429
+
+        for _ in range(5):
+            assert client.get(reverse("api:v1:core:attachment-list")).status_code == 200

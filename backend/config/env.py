@@ -261,6 +261,10 @@ class Settings(BaseSettings):
     # OpenAPI schema and Swagger UI. When on, the schema still needs an authenticated caller.
     api_docs_enabled: bool = Field(default=False, alias="API_DOCS_ENABLED")
 
+    # Keep accepting API keys / PATs stored with the old digest while they upgrade on use. Turn off
+    # once `manage.py legacy_credentials` lists none (or with --revoke); check --deploy warns while on.
+    api_key_accept_legacy_hash: bool = Field(default=True, alias="API_KEY_ACCEPT_LEGACY_HASH")
+
     ####################################################################
     # Celery
     ####################################################################

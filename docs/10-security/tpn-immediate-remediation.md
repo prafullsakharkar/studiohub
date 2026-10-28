@@ -122,3 +122,18 @@ templates already do); recreate the compose network once so the fixed subnet tak
   grant them to the roles whose holders manage access; superusers are unaffected. The role, group and
   permission lists themselves stay open.
 - Contracts SEC-AUTHZ-06, -07 and -08 in `docs/identity/CONTRACTS.md`.
+
+# Follow-up: credential-protection switches and upload limits (TM-019, TM-015)
+
+- **Switches (TM-019).** `check --deploy` (run by `start-prod.sh`) now fails with `core.E005` when
+  `MFA_ENCRYPTION_ENABLED=false` (TOTP secrets in plaintext) and warns with `core.W005` while
+  `API_KEY_ACCEPT_LEGACY_HASH` is true. The latter is now an environment variable. Legacy keys upgrade
+  only when used, so a rarely used one stays on the old digest: `manage.py legacy_credentials` lists
+  them, `--revoke` revokes them (owners reissue), and then the switch can go to `false`.
+  If production runs with MFA encryption off, run `manage.py mfa_encrypt_secrets` after turning it on,
+  or the next start is refused.
+- **Upload limits (TM-015).** nginx's body limit is 10 MB everywhere except the attachment upload route
+  (520 MB, the application limit plus form overhead), replacing 20 GB; proxy timeouts are 120 s (600 s
+  for uploads) instead of an hour; header and body timeouts cut off stalled clients. The application
+  adds a per-user quota (`ATTACHMENT_USER_QUOTA_BYTES`, 5 GB of live attachments) and a per-user upload
+  rate limit (`upload`, 60 per hour). A request over a limit gets 413, 400 or 429.

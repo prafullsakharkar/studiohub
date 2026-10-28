@@ -43,6 +43,8 @@ REST_FRAMEWORK = {
         # (change password, MFA, credential issuing): a stolen session must
         # not be able to guess at them.
         "sensitive": "20/min",
+        # Attachment uploads, per user: each one can be hundreds of megabytes.
+        "upload": "60/hour",
     },
 }
 
