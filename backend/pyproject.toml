@@ -160,6 +160,10 @@ filterwarnings = [
 
 [tool.coverage.run]
 
+# sys.monitoring (Python 3.12+) is cheaper than the default tracer for line coverage; branch
+# coverage is not used here. CI runs Python 3.13.
+core = "sysmon"
+
 source = ["apps"]
 
 omit = ["*/migrations/*", "*/tests/*"]

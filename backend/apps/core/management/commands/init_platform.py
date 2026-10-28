@@ -444,19 +444,23 @@ class Command(BaseCommand):
     def _seed_permissions(self):
         from apps.identity.models import Permission
 
+        # One lookup instead of a get_or_create per code: a rerun on a seeded database then
+        # costs a few queries, not hundreds.
+        codes = [spec[0] for spec in PERMISSION_SPECS]
+        existing = {p.code: p for p in Permission.objects.filter(code__in=codes)}
         perms = []
         for code, module, action in PERMISSION_SPECS:
-            perm, _ = Permission.objects.get_or_create(
-                code=code,
-                defaults={
-                    "name": code,
-                    "module": module,
-                    "action": action,
-                    "category": "general",
-                    "is_system": True,
-                    "is_active": True,
-                },
-            )
+            perm = existing.get(code)
+            if perm is None:
+                perm = Permission.objects.create(
+                    code=code,
+                    name=code,
+                    module=module,
+                    action=action,
+                    category="general",
+                    is_system=True,
+                    is_active=True,
+                )
             perms.append(perm)
         return perms
 
@@ -521,14 +525,14 @@ class Command(BaseCommand):
         from apps.identity.models import RolePermission
 
         wanted = role_perms.get(role.code, [])
+        # One lookup of what the role already holds, then create only the missing grants. They
+        # are created one by one (not bulk) so the RBAC signals still clear the holders' caches.
+        held = set(RolePermission.objects.filter(role=role).values_list("permission_id", flat=True))
         for perm_code in wanted:
             perm = perm_by_code.get(perm_code)
-            if perm:
-                RolePermission.objects.get_or_create(
-                    role=role,
-                    permission=perm,
-                    defaults={"granted": True},
-                )
+            if perm and perm.pk not in held:
+                RolePermission.objects.create(role=role, permission=perm, granted=True)
+                held.add(perm.pk)
 
     def _seed_roles(self, perms):
         from apps.identity.models import Role
