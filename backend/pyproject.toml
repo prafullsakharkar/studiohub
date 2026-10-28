@@ -144,7 +144,9 @@ DJANGO_SETTINGS_MODULE = "config.settings.testing"
 
 python_files = ["test_*.py", "*_test.py"]
 
-addopts = ["--reuse-db", "--strict-markers", "--cov=apps", "--import-mode=importlib"]
+# The default run is the fast one: no coverage and no migration tests (about 60% of the time).
+# The full run, which CI uses, is `pytest --cov=apps -m ""`.
+addopts = ["--reuse-db", "--strict-markers", "--import-mode=importlib", "-m", "not migrations"]
 
 testpaths = ["apps"]
 

@@ -26,7 +26,9 @@ uv sync                                          # install deps
 uv run python manage.py check
 uv run python manage.py migrate
 uv run python manage.py makemigrations
-uv run pytest                                    # full suite (coverage gate fail_under=72)
+uv run pytest                                    # fast run: no coverage, skips the 68 `migrations` tests
+uv run pytest --cov=apps -m ""                   # full run as CI does it (coverage gate fail_under=72)
+uv run pytest -m migrations                      # only the slow migration forward/backward tests
 uv run pytest apps/identity                      # one app
 uv run pytest apps/identity/tests/services/test_rbac_services.py::TestClass::test_name   # single test
 uv run ruff check . && uv run ruff format .

@@ -132,6 +132,10 @@ dbshell:
 test:
 	$(COMPOSE) exec django pytest
 
+.PHONY: test-full
+test-full:
+	$(COMPOSE) exec django pytest --cov=apps -m ""
+
 .PHONY: pytest
 pytest:
 	$(COMPOSE) exec django pytest -vv

@@ -63,7 +63,9 @@ jobs:
         run: uv run python manage.py makemigrations --check
 
       - name: Run tests
-        run: uv run pytest -q
+        # The full run: coverage (gate fail_under=72) and the migration tests, which the
+        # default `pytest` skips (pyproject.toml addopts).
+        run: uv run pytest -q --cov=apps -m ""
 
   # NOTE (Phase 7): the frontend lives in the sibling studiohub-react repo,
   # so there is intentionally no frontend job here (a working-directory of
