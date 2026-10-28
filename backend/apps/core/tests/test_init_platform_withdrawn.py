@@ -53,9 +53,8 @@ def _run() -> str:
 
 
 @pytest.fixture
-def old_database():
+def old_database(seeded_platform_module):
     """A database seeded before the matrix changed: the vfx-supervisor still holds the old codes."""
-    _run()
     _give("vfx-supervisor", *OLD_GRANTS)
     assert set(OLD_GRANTS) <= _codes("vfx-supervisor")
 

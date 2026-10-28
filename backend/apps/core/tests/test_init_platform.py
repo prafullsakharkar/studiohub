@@ -32,13 +32,15 @@ def _counts():
     }
 
 
-def test_init_platform_is_idempotent(db):
-    call_command("init_platform")
+# The first run is the shared ``seeded_platform_module`` fixture (conftest.py), so a failing first
+# run errors every test here; each test below starts from that seed.
+
+
+def test_init_platform_is_idempotent(db, seeded_platform_module):
     call_command("init_platform")
 
 
-def test_init_platform_seeds_expected_rows(db):
-    call_command("init_platform")
+def test_init_platform_seeds_expected_rows(db, seeded_platform_module):
     counts = _counts()
     assert counts["permissions"] == len(PERMISSION_SPECS)
     assert counts["roles"] == len(ROLE_SPECS)
@@ -49,15 +51,13 @@ def test_init_platform_seeds_expected_rows(db):
     assert counts["positions"] == len(POSITION_SPECS)
 
 
-def test_init_platform_second_run_adds_nothing(db):
-    call_command("init_platform")
+def test_init_platform_second_run_adds_nothing(db, seeded_platform_module):
     before = _counts()
     call_command("init_platform")
     assert _counts() == before
 
 
-def test_init_platform_grants_role_permissions(db):
-    call_command("init_platform")
+def test_init_platform_grants_role_permissions(db, seeded_platform_module):
     from apps.identity.models import Role, RolePermission
 
     artist = Role.objects.get(code="artist")

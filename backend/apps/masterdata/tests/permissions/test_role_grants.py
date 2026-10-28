@@ -18,8 +18,8 @@ MASTERDATA_PREFIXES = ("masterdata.", "platform.master_data.")
 
 
 @pytest.fixture(autouse=True)
-def seeded():
-    call_command("init_platform")
+def seeded(seeded_platform_module):
+    """Every test here reads the seed; it runs once for the module (conftest.py)."""
 
 
 def granted(role_code: str) -> set[str]:
