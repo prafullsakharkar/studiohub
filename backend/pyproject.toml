@@ -29,8 +29,6 @@ dependencies = [
     "django-celery-beat>=2.9",
     # Images
     "pillow>=13.0.0",
-    # Storage
-    "minio>=7.2",
     # JSON
     "orjson>=3.11",
     # Authentication

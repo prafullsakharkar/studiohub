@@ -6,7 +6,7 @@
 #                  --env-file infrastructure/compose/.env up -d --build
 #
 # Only Nginx is exposed publicly. All other services live on the internal
-# `backend` network. PostgreSQL, Redis and MinIO data persist on named volumes.
+# `backend` network. PostgreSQL and Redis data persist on named volumes.
 #
 # Migrations are a controlled step and are NOT run by the Django container:
 #   docker compose -f infrastructure/compose/compose.yml \
@@ -60,8 +60,6 @@ services:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_healthy
-      minio:
         condition: service_healthy
     volumes:
       - static_volume:/app/static
@@ -160,29 +158,6 @@ services:
     networks:
       - backend
 
-  # ----------------------------------------------------------- MinIO (override)
-  minio:
-    logging: *default-logging
-    env_file:
-      - .env
-    restart: always
-    networks:
-      - backend
-
-  # ------------------------------------------ MinIO bucket bootstrap (one-shot)
-  minio-init:
-    image: quay.io/minio/mc:latest
-    env_file:
-      - .env
-    entrypoint: ["/bin/sh", "/create-buckets.sh"]
-    volumes:
-      - ../docker/minio/create-buckets.sh:/create-buckets.sh:ro
-    depends_on:
-      minio:
-        condition: service_healthy
-    restart: "no"
-    networks:
-      - backend
 
 volumes:
   static_volume:

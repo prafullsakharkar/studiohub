@@ -42,7 +42,5 @@ Settings → Code security:
 
 ## Known gaps
 
-- The MinIO images the compose files reference are no longer published at `quay.io/minio`, so they
-  cannot be pinned (see `docs/10-security/tpn-immediate-remediation.md`).
 - nginx and postgres images start as root by design of the official images; accepted with an expiry in
   `.trivyignore.yaml`.

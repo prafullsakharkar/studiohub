@@ -130,20 +130,6 @@ class Settings(BaseSettings):
     redis_password: str = Field(default="", alias="REDIS_PASSWORD")
 
     ####################################################################
-    # MinIO
-    ####################################################################
-
-    minio_endpoint: str = Field(alias="MINIO_ENDPOINT")
-
-    minio_access_key: str = Field(alias="MINIO_ACCESS_KEY")
-
-    minio_secret_key: str = Field(alias="MINIO_SECRET_KEY")
-
-    minio_bucket: str = Field(alias="MINIO_BUCKET")
-
-    minio_secure: bool = Field(default=False, alias="MINIO_SECURE")
-
-    ####################################################################
     # Email
     ####################################################################
 

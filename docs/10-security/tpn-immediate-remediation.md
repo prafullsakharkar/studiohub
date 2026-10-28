@@ -77,7 +77,7 @@ storing the link. A `/media/...` URL stored earlier no longer works.
 2. Rebuild and restart nginx and the stack together; the nginx and Django changes depend on each other.
 3. Rotate every credential that could have been in the July 2026 commits that touched the compose env
    file, and any secret kept in a world-readable file: `DJANGO_SECRET_KEY` (this signs out everyone),
-   database, Redis, MinIO, `API_KEY_PEPPER` (invalidates every API key and PAT), `MFA_ENCRYPTION_KEY`
+   database, Redis, `API_KEY_PEPPER` (invalidates every API key and PAT), `MFA_ENCRYPTION_KEY`
    and `DELIVERY_SECRET_KEY` (add the new key first and keep the old one in the list so existing data
    stays readable). Then run `gitleaks detect` over the full history to find what else needs it.
 4. Check the file permissions on the production host, not only the development machine.
@@ -225,13 +225,15 @@ templates already do); recreate the compose network once so the fixed subnet tak
   reported in responses. Only administrators, full project members and show-bound members (own show
   only) may set it.
 
-## Correction: the object-store bucket
+## Correction: the object-store bucket, and its removal
 
 An earlier summary said the public-read setting on the MinIO `media` bucket had been removed. It had
-not. `create-buckets.sh` now sets the bucket private (`mc anonymous set none`).
+not. The bucket script set it private, and the images could no longer be pulled to be pinned.
 
-The MinIO images the compose files use (`quay.io/minio/minio`, `quay.io/minio/mc`) can no longer be
-resolved without credentials, so they cannot be pinned and a fresh `docker compose up` may be unable to
-pull them. The application does not use the object store (no storage backend is configured), so the
-service, its credentials and its bucket script are candidates for removal; that is a deployment decision
-and was not made here.
+MinIO has since been removed altogether, because the application never used it (no storage backend is
+configured; uploads and published files use the local `MEDIA_ROOT`): the `minio` and `minio-init` services
+and their volume, the bucket script, the `MINIO_*` settings and example entries, and the unused `minio`
+Python package (with `pycryptodome`, which only it needed). Old `MINIO_*` lines left in an env file are
+ignored. If object storage is wanted later, add it with a pinned image and a configured `STORAGES` backend
+at that point. Operators: delete the `minio_data` volume and the `MINIO_*` values from the production env
+file and its secret store once nothing else depends on them.
