@@ -62,6 +62,9 @@ class APIKeyAuthentication(
             )
 
         from apps.identity.models import ApiKey
+        from apps.identity.permissions.scopes import gate_scoped_credential
+
+        gate_scoped_credential(request, api_key)
 
         CredentialResolver.touch(
             ApiKey,

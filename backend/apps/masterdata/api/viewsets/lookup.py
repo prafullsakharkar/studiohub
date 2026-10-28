@@ -81,6 +81,8 @@ class LookupCatalogViewSet(
 ):
     schema = MasterdataAutoSchema()
     permission_classes = (IsAuthenticatedPermission, HasPermission)
+    # Reference data (statuses, task types, ...): pipeline tools with a scoped credential need it.
+    credential_open_actions = ("list", "retrieve")
     permission_map = {
         "list": (),
         "retrieve": (),

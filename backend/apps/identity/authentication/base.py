@@ -48,6 +48,10 @@ class IdentityAuthentication(BaseAuthentication):
         ):
             return None
 
+        from apps.identity.permissions.scopes import gate_scoped_credential
+
+        gate_scoped_credential(request, principal)
+
         self.on_authenticated(
             request,
             principal,

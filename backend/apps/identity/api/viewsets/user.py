@@ -58,6 +58,9 @@ class UserViewSet(
         "change_password": UserChangePasswordSerializer,
     }
 
+    # A scoped API key / PAT may still ask who it is; it reaches nothing else without a code.
+    credential_open_actions = ("me",)
+
     permission_map = {
         # ADR-0033 D6: the user directory is organization-scoped.
         # list/retrieve require the identity.user.view grant and are
