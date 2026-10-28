@@ -172,7 +172,7 @@ class PublishedFile(EntityModel):
         ]
         indexes = [
             models.Index(fields=["version", "status"], name="publishing_file_ver_status_idx"),
-            models.Index(fields=["project", "status"], name="publishing_file_proj_status_idx"),
+            models.Index(fields=["project", "status"], name="publishing_file_proj_stat_idx"),
             models.Index(fields=["sha256"], name="publishing_file_sha256_idx"),
         ]
 

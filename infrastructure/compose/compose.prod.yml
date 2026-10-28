@@ -173,3 +173,10 @@ volumes:
 
 networks:
   public:
+
+  # A fixed subnet so TRUSTED_PROXY_IPS (and FORWARDED_ALLOW_IPS) can name the proxy's range.
+  # Keep it in step with the value in the env file; change both if it clashes with your network.
+  backend:
+    ipam:
+      config:
+        - subnet: 172.31.250.0/24

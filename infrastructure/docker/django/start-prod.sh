@@ -21,4 +21,4 @@ exec uvicorn config.asgi:application \
     --port 8000 \
     --workers "${WEB_CONCURRENCY:-2}" \
     --proxy-headers \
-    --forwarded-allow-ips "${FORWARDED_ALLOW_IPS:-127.0.0.1}"
+    --forwarded-allow-ips "${FORWARDED_ALLOW_IPS:-${TRUSTED_PROXY_IPS:-127.0.0.1}}"

@@ -83,3 +83,27 @@ storing the link. A `/media/...` URL stored earlier no longer works.
 4. Check the file permissions on the production host, not only the development machine.
 5. Move any file that must stay downloadable by its link out of `/media/` direct references in the
    front end.
+
+# Follow-up: mail, client address, and the publishing index (TM-017, TM-014)
+
+- **Mail (TM-017).** `EMAIL_HOST` and `EMAIL_PORT` were read from the environment and then dropped, so
+  production sent through Django's default local relay without TLS, and the reset email had no link
+  base. They now reach Django settings together with `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`,
+  `EMAIL_USE_TLS` / `EMAIL_USE_SSL`, `DEFAULT_FROM_EMAIL` and `FRONTEND_BASE_URL`, and sends time out
+  after 10 s. `check --deploy` fails (`core.E003`) for SMTP without TLS, and (`core.E004`) when
+  `FRONTEND_BASE_URL` is not an `https://` address; `core.W003` warns about the placeholder sender.
+- **Client address (TM-014).** nginx now sets `X-Forwarded-For` to the address that connected instead of
+  appending to what the client sent. The compose backend network has a fixed subnet
+  (`172.31.250.0/24`), which the templates use for both `TRUSTED_PROXY_IPS` (the application) and
+  `FORWARDED_ALLOW_IPS` (uvicorn; it falls back to `TRUSTED_PROXY_IPS`). `check --deploy` warns
+  (`core.W004`) when `TRUSTED_PROXY_IPS` is empty. Behind another load balancer, add nginx
+  `set_real_ip_from` / `real_ip_header` so it carries the real address on.
+- **Publishing index.** `publishing_file_proj_status_idx` was 31 characters; Django allows 30, and
+  `migrate` stopped on it (`models.E034`) while the plain `check` CI runs did not. Renamed to
+  `publishing_file_proj_stat_idx` (migration `publishing 0002`), with a test that runs the
+  database-aware model checks.
+
+Operator steps: set `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_USE_TLS=true`, `DEFAULT_FROM_EMAIL`
+and `FRONTEND_BASE_URL`; set `TRUSTED_PROXY_IPS` and `FORWARDED_ALLOW_IPS` to the proxy range (the
+templates already do); recreate the compose network once so the fixed subnet takes effect
+(`docker compose down` then `up`); run `migrate`.

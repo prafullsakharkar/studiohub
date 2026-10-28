@@ -97,3 +97,76 @@ def operator_surfaces_are_off(app_configs, **kwargs):
         )
 
     return findings
+
+
+@register(Tags.security, deploy=True)
+def mail_is_sent_over_tls(app_configs, **kwargs):
+    """
+    Password-reset links travel by mail: the relay connection must be encrypted, and the link needs
+    the web client's https address (without it the email carries a bare token).
+    """
+
+    findings = []
+    backend = getattr(settings, "EMAIL_BACKEND", "")
+
+    if backend.endswith("smtp.EmailBackend"):
+        use_tls = bool(getattr(settings, "EMAIL_USE_TLS", False))
+        use_ssl = bool(getattr(settings, "EMAIL_USE_SSL", False))
+
+        if use_tls and use_ssl:
+            findings.append(
+                Error(
+                    "EMAIL_USE_TLS and EMAIL_USE_SSL are both set; Django accepts only one.",
+                    hint="Use EMAIL_USE_TLS=true with port 587, or EMAIL_USE_SSL=true with port 465.",
+                    id="core.E003",
+                )
+            )
+        elif not (use_tls or use_ssl):
+            findings.append(
+                Error(
+                    "Mail is sent over SMTP without TLS.",
+                    hint="Set EMAIL_USE_TLS=true (port 587) or EMAIL_USE_SSL=true (port 465).",
+                    id="core.E003",
+                )
+            )
+
+    base_url = getattr(settings, "FRONTEND_BASE_URL", "") or ""
+
+    if not base_url.startswith("https://"):
+        findings.append(
+            Error(
+                "FRONTEND_BASE_URL is not an https:// address: reset emails would not carry a usable link.",
+                hint="Set FRONTEND_BASE_URL=https://<web client host>.",
+                id="core.E004",
+            )
+        )
+
+    if str(getattr(settings, "DEFAULT_FROM_EMAIL", "")).lower().endswith((".local", ".localhost")):
+        findings.append(
+            Warning(
+                "DEFAULT_FROM_EMAIL is still the development placeholder.",
+                hint="Set DEFAULT_FROM_EMAIL to an address the relay may send as.",
+                id="core.W003",
+            )
+        )
+
+    return findings
+
+
+@register(Tags.security, deploy=True)
+def client_address_comes_from_the_proxy(app_configs, **kwargs):
+    """
+    Behind the reverse proxy every peer is the proxy. Without TRUSTED_PROXY_IPS the recorded client
+    address, the per-client throttles and the IP blocklist all see that one address.
+    """
+
+    if getattr(settings, "TRUSTED_PROXY_IPS", ()):
+        return []
+
+    return [
+        Warning(
+            "TRUSTED_PROXY_IPS is empty: client IPs in logs, throttles and IP blocks are the proxy's.",
+            hint="Set TRUSTED_PROXY_IPS to the proxy's address or network (e.g. the compose backend subnet).",
+            id="core.W004",
+        )
+    ]

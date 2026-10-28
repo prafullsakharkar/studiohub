@@ -38,6 +38,19 @@ from .components.cors import (
 )
 from .components.database import DATABASES
 from .components.drf import REST_FRAMEWORK, SPECTACULAR_SETTINGS
+from .components.email import (
+    DEFAULT_FROM_EMAIL,
+    EMAIL_BACKEND,
+    EMAIL_HOST,
+    EMAIL_HOST_PASSWORD,
+    EMAIL_HOST_USER,
+    EMAIL_PORT,
+    EMAIL_TIMEOUT,
+    EMAIL_USE_SSL,
+    EMAIL_USE_TLS,
+    FRONTEND_BASE_URL,
+    SERVER_EMAIL,
+)
 from .components.internationalization import (
     LANGUAGE_CODE,
     LOCALE_PATHS,
