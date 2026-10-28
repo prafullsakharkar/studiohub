@@ -102,8 +102,14 @@ class AttachmentCreateSerializer(AttachmentSerializer):
     def validate_file(self, value):
         if value is None:
             return value
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+
         try:
             AttachmentValidator.validate_upload(value)
+            AttachmentValidator.validate_quota(
+                user if getattr(user, "is_authenticated", False) else None, value.size
+            )
         except DjangoValidationError as error:
             raise serializers.ValidationError(error.messages) from error
         return value

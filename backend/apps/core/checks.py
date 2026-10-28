@@ -170,3 +170,36 @@ def client_address_comes_from_the_proxy(app_configs, **kwargs):
             id="core.W004",
         )
     ]
+
+
+@register(Tags.security, deploy=True)
+def credential_protection_is_not_weakened(app_configs, **kwargs):
+    """
+    Two switches trade protection of stored secrets for convenience. Both are fine in development;
+    a production start refuses the first and flags the second (TPN review TM-019).
+    """
+
+    findings = []
+
+    if not getattr(settings, "MFA_ENCRYPTION_ENABLED", True):
+        findings.append(
+            Error(
+                "MFA_ENCRYPTION_ENABLED is false: TOTP secrets are stored in plaintext.",
+                hint="Set MFA_ENCRYPTION_ENABLED=true, then run `manage.py mfa_encrypt_secrets`.",
+                id="core.E005",
+            )
+        )
+
+    if getattr(settings, "API_KEY_ACCEPT_LEGACY_HASH", True):
+        findings.append(
+            Warning(
+                "API keys and tokens stored with the old digest are still accepted.",
+                hint=(
+                    "Run `manage.py legacy_credentials` to see which remain (--revoke revokes them), "
+                    "then set API_KEY_ACCEPT_LEGACY_HASH=false."
+                ),
+                id="core.W005",
+            )
+        )
+
+    return findings

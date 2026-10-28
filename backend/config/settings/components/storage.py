@@ -39,6 +39,9 @@ ATTACHMENT_ALLOWED_EXTENSIONS = frozenset(
     }
 )  # fmt: skip
 
+# What one user may hold in live attachments, in bytes. An upload past it is refused.
+ATTACHMENT_USER_QUOTA_BYTES = 5 * 1024 * 1024 * 1024
+
 # How long a download link stays valid after it was issued.
 ATTACHMENT_LINK_TTL_SECONDS = 300
 

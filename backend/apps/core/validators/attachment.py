@@ -40,6 +40,28 @@ class AttachmentValidator:
     """Validator for Attachment models."""
 
     @staticmethod
+    def validate_quota(user: Any, size: int) -> None:
+        """Refuse an upload that would take ``user`` past ``ATTACHMENT_USER_QUOTA_BYTES``."""
+        from django.db.models import Sum
+
+        from apps.core.models.attachment import Attachment
+
+        quota = int(settings.ATTACHMENT_USER_QUOTA_BYTES)
+
+        if quota <= 0 or user is None:
+            return
+
+        used = (
+            Attachment.objects.filter(created_by=user).aggregate(total=Sum("file_size"))["total"]
+            or 0
+        )
+
+        if used + int(size) > quota:
+            raise ValidationError(
+                f"This upload would exceed your storage limit of {quota // (1024 * 1024)} MB."
+            )
+
+    @staticmethod
     def validate_upload(file: Any) -> None:
         """
         Refuse an upload that is too large, has an unlisted extension, or looks like web content.

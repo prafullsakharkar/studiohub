@@ -32,6 +32,11 @@ class AttachmentViewSet(ResponseEnvelopeMixin, viewsets.ModelViewSet):  # pyrigh
 
     permission_classes = (IsAuthenticated,)
 
+    @property
+    def throttle_scope(self):
+        """Uploads are rate limited per user (``upload`` in DRF's throttle rates); reads are not."""
+        return "upload" if getattr(self, "action", None) == "create" else None
+
     queryset = Attachment.objects.all()
     serializer_class = AttachmentSerializer
     lookup_field = "id"
