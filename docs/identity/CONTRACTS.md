@@ -277,6 +277,12 @@ The password is settled first when both are owed. PATs and API keys are not sess
 
 **SEC-AUTHZ-05.** Denials are logged with `event=permission_denied` and never leak the permission inventory.
 
+**SEC-AUTHZ-06 (TM-022).** A user-administration permission says what an actor may do, not to whom. Acting on another user (update, delete, activate, deactivate, archive, restore, suspend, change or reset password, force password change, revoke sessions) needs the target not to outrank the actor: only a superuser may act on a superuser, and nobody may act on a user who holds permissions they lack (the same principle as the RBAC grant guard). Enforced in `UserViewSet.get_object` via `UserAdministrationGuard`.
+
+**SEC-AUTHZ-07 (TM-022).** `is_staff` widens what a user sees (the whole directory) and who can reach the admin site, so only a superuser grants or removes it, on create or update. Setting `is_active` through a plain update needs the activate or deactivate permission, as the dedicated actions do.
+
+**SEC-AUTHZ-08 (TM-018).** Who holds a role or belongs to a group is user data: `GET roles/<id>/users/` needs `identity.role.view` and `GET groups/<id>/members/` needs `identity.group.view`. The role, group and permission lists and their other sub-lists are shared reference data and stay open.
+
 ### 3.4 Multi-tenancy / isolation
 
 **SEC-ISO-01.** Identity data is platform-global; no request field may select another tenant (there is no tenant). Project-scoped data remains guarded by `apps.production` selectors — Identity must not weaken them.

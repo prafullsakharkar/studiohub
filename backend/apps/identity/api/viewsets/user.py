@@ -30,6 +30,7 @@ from apps.identity.services.password import (
 from apps.identity.services.user import (
     UserService,
 )
+from apps.identity.services.user_admin_guard import UserAdministrationGuard
 from apps.identity.services.user_session import (
     UserSessionService,
 )
@@ -38,7 +39,6 @@ from apps.identity.services.user_session import (
 class UserViewSet(
     IdentityViewSet,  # pyright: ignore[reportMissingTypeArgument]
 ):
-
     queryset = User.objects.all()
 
     selector_class = UserSelector
@@ -85,6 +85,86 @@ class UserViewSet(
         "force_password_change": (UserPermissions.UPDATE,),
         "revoke_sessions": (UserPermissions.UPDATE,),
     }
+
+    #: detail actions that change another user's account; each is checked against the target
+    ADMINISTRATIVE_ACTIONS = frozenset(
+        {
+            "update",
+            "partial_update",
+            "destroy",
+            "activate",
+            "deactivate",
+            "archive",
+            "restore",
+            "change_password",
+            "suspend",
+            "unsuspend",
+            "reset_password",
+            "force_password_change",
+            "revoke_sessions",
+        }
+    )
+
+    def get_object(self):
+        user = super().get_object()
+
+        if self.action in self.ADMINISTRATIVE_ACTIONS:
+            UserAdministrationGuard.require_may_administer(self.request.user, user)
+
+        return user
+
+    def perform_create(self, serializer):
+        self._guard_privileged_fields(serializer.validated_data, None)
+        super().perform_create(serializer)
+
+    def perform_update(self, serializer):
+        self._guard_privileged_fields(serializer.validated_data, serializer.instance)
+        super().perform_update(serializer)
+
+    def _holds(self, code):
+        """Whether the caller holds ``code``: superuser, or a role grant within any credential scope."""
+        from apps.identity.permissions.scopes import credential_scopes
+        from apps.identity.services.permission_cache import PermissionCacheService
+
+        actor = self.request.user
+
+        scopes = credential_scopes(self.request)
+
+        if scopes is not None and code not in scopes:
+            return False
+
+        return bool(
+            getattr(actor, "is_superuser", False)
+            or PermissionCacheService.has_permission(user=actor, permission=code)
+        )
+
+    def _guard_privileged_fields(self, data, instance):
+        """
+        Fields that need more than the update permission.
+
+        ``is_staff`` widens what a user can see (the whole directory, the admin site), so only a
+        superuser grants or removes it. ``is_active`` has its own permissions: flipping it through a
+        plain update must not be a way around them.
+        """
+        from rest_framework.exceptions import PermissionDenied
+
+        actor = self.request.user
+
+        if "is_staff" in data:
+            current = bool(instance.is_staff) if instance is not None else False
+
+            if bool(data["is_staff"]) != current and not getattr(actor, "is_superuser", False):
+                raise PermissionDenied("Only a superuser can grant or remove staff status.")
+
+        if (
+            instance is not None
+            and "is_active" in data
+            and bool(data["is_active"]) != instance.is_active
+        ):
+            needed = UserPermissions.ACTIVATE if data["is_active"] else UserPermissions.DEACTIVATE
+
+            if not self._holds(needed):
+                raise PermissionDenied(f"Changing is_active needs the '{needed}' permission.")
 
     @action(
         detail=False,
