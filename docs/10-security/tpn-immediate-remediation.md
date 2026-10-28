@@ -86,6 +86,12 @@ storing the link. A `/media/...` URL stored earlier no longer works.
 6. Audit: set `AUDIT_RETENTION_DAYS`, `API_REQUEST_RETENTION_DAYS` and `TRACK_RETENTION_DAYS` to the
    periods your policy requires, run `manage.py migrate` (adds `project_id` and the triggers), make sure
    Celery beat runs (or schedule `manage.py audit_purge`), and send container logs to a central collector.
+7. Internal TLS: set the values in `infrastructure/compose/.env.example` (`DB_SSLMODE=verify-full`,
+   `DB_SSLROOTCERT=/tls/ca.pem`, `REDIS_TLS=true`, `REDIS_CA_CERT=/tls/ca.pem`, `rediss://` Celery URLs,
+   `INTERNAL_TLS_REQUIRED=true`), then rebuild and restart the stack: `tls-init` runs first, PostgreSQL
+   and Redis restart with TLS (a short outage), and Django serves HTTPS to nginx. Run
+   `infrastructure/scripts/check-encryption-at-rest.sh` on the host and keep its output (or the provider
+   evidence) as proof of encryption at rest. Back up the `tls_ca` volume with the other secrets.
 
 # Follow-up: mail, client address, and the publishing index (TM-017, TM-014)
 
@@ -224,6 +230,26 @@ templates already do); recreate the compose network once so the fixed subnet tak
 - **API.** `show_id` is accepted on create and update of episodes, sequences, shots and assets, and
   reported in responses. Only administrators, full project members and show-bound members (own show
   only) may set it.
+
+# Follow-up: internal links and encryption at rest (TM-009)
+
+- **In transit.** Production now encrypts every internal hop and verifies the server: nginx to Django over
+  HTTPS, Django and Celery to PostgreSQL (`hostssl` only, `verify-full`) and to Redis (TLS port only,
+  plain port closed). A one-shot `tls-init` service creates the internal CA and certificates; see
+  `docs/10-security/encryption.md`. New settings: `DB_SSLMODE`, `DB_SSLROOTCERT`, `REDIS_TLS`,
+  `REDIS_CA_CERT`, `INTERNAL_TLS_REQUIRED`. `check --deploy` reports `core.W006`/`W007` (errors
+  `E006`/`E007` when `INTERNAL_TLS_REQUIRED=true`).
+- **Verified, not only configured.** Against real PostgreSQL 17 and Redis 8 containers: plain connections
+  are refused; verified TLS works (TLS 1.3); a client with the wrong CA or hostname is refused; Django's
+  cache, database, Celery broker and result backend all connect with the settings above; nginx proxies to
+  a Django served over the generated certificate. This caught one defect before merge: the first CA lacked
+  the key-usage extensions that Python 3.13 requires.
+- **At rest.** Encryption of the database, uploads and backups is the storage's job; the repository cannot
+  provide it. `infrastructure/scripts/check-encryption-at-rest.sh` reports whether each volume is on
+  dm-crypt/LUKS or encrypted ZFS, or records provider-level evidence. Application-level encryption of
+  secrets is unchanged.
+- **Not done.** Uploaded files are not encrypted by the application (only by the storage under them), and
+  there is no backup tooling to encrypt.
 
 ## Correction: the object-store bucket, and its removal
 

@@ -11,6 +11,10 @@ CACHES = {
     }
 }
 
+if settings.redis_tls and settings.redis_ca_cert:
+    # A private CA signed the Redis certificate (TPN review TM-009).
+    CACHES["default"]["OPTIONS"] = {"ssl_ca_certs": settings.redis_ca_cert}
+
 CACHE_TTL = 60 * 15  # 15 minutes default TTL
 
 # API Response Caching Configuration
