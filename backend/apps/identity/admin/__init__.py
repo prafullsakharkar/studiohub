@@ -6,6 +6,7 @@ from .group_role import *
 from .ip_blacklist import *
 from .login_attempt import *
 from .login_history import *
+from .password_history import *
 from .password_reset_token import *
 from .permission import *
 from .personal_access_token import *

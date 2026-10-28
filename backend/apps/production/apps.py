@@ -11,6 +11,10 @@ class ProductionConfig(AppConfig):
     verbose_name = "Production"
 
     def ready(self):
+        from . import providers
+
+        providers.register()
+
         # Import signals if any
         with contextlib.suppress(ImportError):
             from . import signals  # noqa: F401

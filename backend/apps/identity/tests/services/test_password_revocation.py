@@ -29,7 +29,7 @@ class TestPasswordChangeRevokes:
         PasswordService.change_password(
             user=user,
             old_password="Old-pass-1",
-            new_password="New-pass-1",
+            new_password="New-passphrase-12",
         )
 
         assert not UserSession.objects.active().by_user(user).exists()
@@ -38,7 +38,7 @@ class TestPasswordChangeRevokes:
             event_type=SecurityEventType.PASSWORD_CHANGED,
         ).first()
         assert event is not None
-        assert user.check_password("New-pass-1")
+        assert user.check_password("New-passphrase-12")
 
     def test_change_password_rejects_wrong_old_password(self):
         # PasswordService raises the core exception class (not the identity
@@ -53,5 +53,5 @@ class TestPasswordChangeRevokes:
             PasswordService.change_password(
                 user=user,
                 old_password="wrong",
-                new_password="New-pass-1",
+                new_password="New-passphrase-12",
             )

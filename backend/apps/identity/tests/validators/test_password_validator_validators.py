@@ -17,10 +17,10 @@ class TestPasswordValidator:
     def test_valid_password(self):
         """Test valid passwords."""
         valid_passwords = [
-            "Password123!",
-            "MyP@ssw0rd",
-            "SecurePass123!",
-            "Test1234@",
+            "Password123!Ok",
+            "MyP@ssw0rd-2026",
+            "SecurePass123!x",
+            "Test1234@Test1",
         ]
 
         for password in valid_passwords:

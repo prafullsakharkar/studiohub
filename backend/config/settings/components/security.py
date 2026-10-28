@@ -54,11 +54,23 @@ MFA_RECOVERY_CODE_DAYS = 365
 MFA_CHALLENGE_TTL_SECONDS = 300
 
 # Policy: who must use MFA (see MFAPolicyService).
-MFA_REQUIRE_MFA = False
+# MFA_REQUIRE_ALL (env) turns it on for every account; production templates set it.
+MFA_REQUIRE_MFA = settings.mfa_require_all
 
 MFA_REQUIRE_STAFF = True
 
 MFA_REQUIRE_SUPERUSER = True
+
+# Vendor and client members of a project (a membership naming a vendor or client).
+MFA_REQUIRE_EXTERNAL = True
+
+# Password policy (identity/validators/password.py, services/password.py).
+PASSWORD_MIN_LENGTH = 12
+
+PASSWORD_MAX_LENGTH = 128
+
+# A new password may not equal the current one or any of the last N.
+PASSWORD_HISTORY_COUNT = 5
 
 # Reverse proxies allowed to set X-Forwarded-For (IPs / CIDR). Empty means the
 # direct peer (REMOTE_ADDR) is always the client address. Consumed only by

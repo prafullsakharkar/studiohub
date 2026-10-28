@@ -184,6 +184,10 @@ class Settings(BaseSettings):
         default=SecretStr(""), alias="MFA_ENCRYPTION_KEY"
     )
 
+    # Require MFA for every account, not only staff, superusers and external (vendor/client)
+    # members. Production templates turn this on.
+    mfa_require_all: bool = Field(default=False, alias="MFA_REQUIRE_ALL")
+
     ####################################################################
     # Delivery passcode encryption
     ####################################################################

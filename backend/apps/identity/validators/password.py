@@ -14,10 +14,17 @@ class PasswordValidator(IdentityBaseValidator):
 
     def validate(self, value: str) -> None:
         """Validate password strength."""
+        from django.conf import settings
         from django.core.exceptions import ValidationError
 
-        if len(value) < 8:
-            raise ValidationError("Password must be at least 8 characters long.")
+        minimum = int(getattr(settings, "PASSWORD_MIN_LENGTH", 12))
+        maximum = int(getattr(settings, "PASSWORD_MAX_LENGTH", 128))
+
+        if len(value) < minimum:
+            raise ValidationError(f"Password must be at least {minimum} characters long.")
+
+        if len(value) > maximum:
+            raise ValidationError(f"Password must be at most {maximum} characters long.")
 
         if not re.search(r"[A-Z]", value):
             raise ValidationError("Password must contain at least one uppercase letter.")

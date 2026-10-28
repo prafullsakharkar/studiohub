@@ -32,7 +32,7 @@ Only with `DJANGO_ENV` set to `local` or `testing` may both be left out. Then th
 are used: email `admin@studiohub.local`, password `ChangeMe-Dev-2026!`. In any other environment
 (`production`, `docker`, `ci`, anything else) the command stops with an error unless both are set, and
 it never prints the password. In every case the account must change its password at the first login
-(`must_change_password`). **Never use the development default anywhere a stranger can reach.**
+(`must_change_password`): until it does, and until it has enrolled MFA, the session can reach only the endpoints that do those two things. **Never use the development default anywhere a stranger can reach.**
 
 ## Wiping a development or test database
 

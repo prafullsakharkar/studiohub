@@ -20,8 +20,8 @@ class TestUserChangePassword:
             self._url(),
             {
                 "old_password": "Wrong-pass-1",
-                "new_password": "New-pass-1",
-                "confirm_password": "New-pass-1",
+                "new_password": "New-passphrase-12",
+                "confirm_password": "New-passphrase-12",
             },
             format="json",
         )
@@ -49,8 +49,8 @@ class TestUserChangePassword:
             self._url(),
             {
                 "old_password": "Old-pass-1",
-                "new_password": "New-pass-1",
-                "confirm_password": "New-pass-1",
+                "new_password": "New-passphrase-12",
+                "confirm_password": "New-passphrase-12",
             },
             format="json",
         )
@@ -58,7 +58,7 @@ class TestUserChangePassword:
         assert response.status_code == 200
 
         staff_user.refresh_from_db()
-        assert staff_user.check_password("New-pass-1")
+        assert staff_user.check_password("New-passphrase-12")
 
         profile.refresh_from_db()
         assert profile.must_change_password is False
@@ -86,7 +86,7 @@ class TestUserChangePassword:
             self._url(),
             {
                 "old_password": "Old-pass-1",
-                "new_password": "New-pass-1",
+                "new_password": "New-passphrase-12",
                 "confirm_password": "Different-pass-1",
             },
             format="json",
