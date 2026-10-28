@@ -67,7 +67,7 @@ FULL = {
     "track": ALL_ACTIONS,
     "show": ALL_ACTIONS,
     "automation": ALL_ACTIONS,
-    "delivery": ALL_ACTIONS,
+    "delivery": f"{ALL_ACTIONS} approve send view_secret",
     # deprecate / revoke: move a registered file between its lifecycle states
     # (docs/publishing/CONTRACTS.md; delivery-pipeline Q34)
     "publishing": f"{ALL_ACTIONS} deprecate revoke",
@@ -129,8 +129,10 @@ def _codes(table: dict[str, str]) -> set[str]:
 EXPECTED = {
     # The code freeze on shots and assets is lifted by production-admin only.
     "production-admin": _codes(FULL) | {"production.code.rename"},
-    # Deleting export job records is an admin task (Q34).
-    "vfx-supervisor": _codes(FULL) - {"publishing.delete"},
+    # Deleting export job records and deliveries is an admin task; producers send and read the
+    # passcode, supervisors sign off (Q34).
+    "vfx-supervisor": _codes(FULL)
+    - {"publishing.delete", "delivery.delete", "delivery.send", "delivery.view_secret"},
     # Storage roots are studio-wide; org-admin administers them.
     "org-admin": _codes(FULL) | {"publishing.storage.manage"},
     "lead-artist": _codes(LEAD),

@@ -13,8 +13,9 @@ from apps.identity.tests.factories import UserFactory
 
 @pytest.fixture
 def staff_user(db):
-    """Create a staff user."""
-    return UserFactory(is_staff=True)
+    """A staff user who is a platform admin: deliveries are narrowed to the caller's projects, and
+    the tests that use this fixture are not about scoping (those build their own members)."""
+    return UserFactory(is_staff=True, is_superuser=True)
 
 
 @pytest.fixture

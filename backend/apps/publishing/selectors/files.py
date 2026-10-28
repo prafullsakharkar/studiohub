@@ -34,6 +34,8 @@ class FileSnapshot:
     frame_start: int | None
     frame_end: int | None
     status: str
+    #: declared / verified / mismatch / missing (docs/publishing/CONTRACTS.md DOM-PUB-04)
+    checksum_state: str = "declared"
 
 
 def _snapshot(file: PublishedFile) -> FileSnapshot:
@@ -50,6 +52,7 @@ def _snapshot(file: PublishedFile) -> FileSnapshot:
         frame_start=file.frame_start,
         frame_end=file.frame_end,
         status=file.status,
+        checksum_state=file.checksum_state,
     )
 
 
@@ -136,6 +139,15 @@ class PublishedFileSelector(BaseSelector):
             .select_related("storage_root", "file_type")
         )
         return cls._group(rows)
+
+    @classmethod
+    def revoked_file_ids(cls, file_ids: Iterable[UUID]) -> set[UUID]:
+        """Which of ``file_ids`` are Revoked now (Deliveries asks about the files it recorded)."""
+        return set(
+            PublishedFile.objects.filter(
+                pk__in=list(file_ids), status=PublishedFile.Status.REVOKED
+            ).values_list("pk", flat=True)
+        )
 
     @staticmethod
     def _group(rows: Iterable[PublishedFile]) -> dict[UUID, list[FileSnapshot]]:

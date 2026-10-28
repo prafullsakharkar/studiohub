@@ -40,9 +40,6 @@ from apps.audit.filters.activity import ActivityFilter
 from apps.audit.serializers.activity import ActivitySerializer
 from apps.core.api.pagination import StandardPagination
 from apps.core.permissions.base import IsAuthenticatedPermission
-from apps.deliveries.api.serializers.delivery import DeliveryListSerializer
-from apps.deliveries.constants.permissions import DeliveryPermissions
-from apps.deliveries.selectors.delivery import DeliverySelector
 from apps.identity.permissions import HasPermission
 from apps.production.api.serializers.asset.list import AssetListSerializer
 from apps.production.api.serializers.editorial import EditorialCutSerializer
@@ -88,6 +85,7 @@ from apps.production.models import (
 )
 from apps.production.selectors.asset import AssetSelector
 from apps.production.selectors.dashboard import ProjectDashboardSelector
+from apps.production.selectors.delivery_figures import DELIVERY_VIEW, delivery_figures
 from apps.production.selectors.media import MediaSelector
 from apps.production.selectors.project import ProjectSelector
 from apps.production.selectors.project_scoped import (
@@ -498,12 +496,15 @@ class ProjectNotesView(ProjectScopedAPIView):
 
 
 class ProjectDeliveriesView(ProjectScopedAPIView):
-    permission_map = {"get": (DeliveryPermissions.VIEW,)}
+    permission_map = {"get": (DELIVERY_VIEW,)}
 
     def get(self, request, *args, **kwargs):
+        figures = delivery_figures()
+        if figures.selector_class is None:  # the deliveries app is not installed
+            return Response([])
         return self._entity_list(
-            selector_cls=DeliverySelector,
-            serializer_cls=DeliveryListSerializer,
+            selector_cls=figures.selector_class,
+            serializer_cls=figures.list_serializer_class,
             search_fields=("name", "code"),
             ordering_fields=("name", "created_at", "status"),
         )

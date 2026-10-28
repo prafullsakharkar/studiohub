@@ -88,7 +88,7 @@ One row per file of an item, copied from `FileSnapshot` (X-04): `item` (FK, `PRO
 
 ### DOM-DLV-06 QC: `DeliveryQCCheck` (new, append-only, table `deliveries_qc_check`)
 
-`delivery`, `item` (nullable for package checks), `run_id` (UUID per run), `check` (`version_published`, `same_project`, `files_present`, `checksum_ok`, `not_revoked`, plus spec checks when specs exist, LATER per Q5), `outcome` (`pass`, `fail`, `not_checked`), `detail`, `checked_by`, `checked_at`. A run is **current** when no item, file or version changed since it ran (compared by `run_id` stored on the package). Sign-off and send require a current run with no `fail`. No update or delete (append-only queryset, as production `StatusHistory`).
+`delivery`, `item` (nullable for package checks), `run_id` (UUID per run), `check_name` (`version_published`, `same_project`, `files_present`, `checksum_ok`, `not_revoked`, plus spec checks when specs exist, LATER per Q5), `outcome` (`pass`, `fail`, `not_checked`), `detail`, `checked_by`, `checked_at`. A run is **current** when no item, file or version changed since it ran (compared by `run_id` stored on the package). Sign-off and send require a current run with no `fail`. No update or delete (append-only queryset, as production `StatusHistory`).
 
 ### DOM-DLV-07 Separation of duties *(Q28)*
 
@@ -214,3 +214,136 @@ Role matrix proposal: `PLAN.md` §6.
 | QC fails on prepare / sign-off / send | 409 `qc_failed` with the failing checks |
 | Self sign-off | 403 `separation_of_duties` |
 | Passcode key missing | 503 `secret_storage_unavailable` on write; reads omit the value |
+
+## 8. Phase 6 as built (differences from the target above)
+
+Sections 1 to 7 are the target for Phases 6 to 8. What Phase 6 built, where it differs:
+
+| Target | Built in Phase 6 |
+|---|---|
+| `create(actor, request, data)` | `create(actor, data)`; project and client are checked for existence only (Phase 8 adds scoping). Code is server-made `DLV-<PROJECT>-<0001>` when blank (`services/numbering.py`, `DeliveryCounter`) |
+| `run_qc` | `DeliveryService.validate` (Draft to Validating; runs QC) and `services/qc.run` |
+| `prepare`: working states, QC, manifest | the same, from any editable state; a failed QC is a 409 `qc_failed` listing the checks, and the run's rows are kept |
+| `send` from Signed Off | from **Prepared** only, while `sent_at` is empty; second call 409 `invalid_transition`; response is the detail shape |
+| `sign_off`, `reopen`, `revise`, `cancel`, `set_passcode`, `read_passcode`, `DeliveryStatusChange`, `transitions.move` | Phase 7 |
+| API-DLV-01 (`passcode` with `delivery.view_secret`) | the passcode is never returned; `has_passcode` is (Phase 7 adds the secret read) |
+| API-DLV-03 | built. Not editable: `status`, `code`, `client_status`, `is_archived`, totals, `manifest_data`, `checksums` (400 `Cannot be set directly.` unless echoed unchanged). `destination_id` is Phase 8 |
+| API-DLV-04 | `version_id` only; a version must be published, of the delivery's project, with at least one Registered file and no checksum mismatch or missing; else 400 with `reason` (`unknown_version`, `not_published`, `no_registered_files`, `checksum_problem`). Typed snapshot keys are ignored |
+| API-DLV-05 | `item_id` (item `uid`) or the old integer `version_ref_id` |
+| API-DLV-06 | `validate` runs QC and returns the run; `retry` is unchanged (Phase 7) |
+| API-DLV-07 | `prepare` as in the row above |
+| API-DLV-10 | `submit` takes `transfer_reference`; it runs through `BackgroundJobService` as before |
+| `DeliveryQCCheck.check` | the field is `check_name` (`check` collides with `Model.check()`) |
+
+Item response shape: `id` (integer), `uid` (UUID), `version_id`, snapshot fields, `is_validated`, `validation_notes`, and `files` (`storage_root_code`, `relative_path`, `role`, `file_type_code`, `size_bytes`, `sha256`, `frame_start`, `frame_end`, `frozen_at`). Detail also has `sent_at`, `transfer_reference`, `has_passcode`.
+
+**Frontend impact of Phase 6**
+
+* Submit on a delivery that was never prepared, and Prepare on a delivery whose versions have no registered files, are now 409 / 400 (they used to "succeed" with placeholders).
+* `add-version` needs a published version with registered files; the typed snapshot values are ignored.
+* The passcode is not in any response; read `has_passcode`.
+* `total_size_bytes` and `total_frames` are derived from the items.
+* `PATCH`/`PUT` now answer 200 instead of 500.
+
+## 9. Phase 7 as built (differences from the target above)
+
+Built: the transition map in `constants/workflow.py`, `DeliveryStatusChange`, sign-off with
+separation of duties, the audited overrides, the client's answer, complete, cancel, reopen, retry,
+revise, revocation handling, the encrypted passcode and its audited read. Not built (Phase 8):
+project-membership scoping, destination constraints, the `reason` / `notes` body aliases (Q18),
+`bulk-cancel`, role-to-code grants, admin hardening beyond the read-only status.
+
+| Target | Built in Phase 7 |
+|---|---|
+| `transitions.move(package, to_status, *, actor, reason, override_reason)` | `move(package, target, *, actor, request=None, reason="", override_reason=None, system=False, override_kind="", extra=None)`. Works on a locked package; writes the status, the `extra` columns and the history row in one save. The permission code is checked per move when a request is given. The override branch is entered only when `override_reason` is passed (never by an ordinary action), so cancelling or completing a sent delivery is the map's 409 |
+| `sign_off(*, actor, package, notes, override_reason)` | adds `request`. Refused 403 `separation_of_duties` for the creator, the adder of a current item and whoever moved it into Prepared, unless the caller holds `delivery.sod.override` (explicit; a superuser does not) and gives a reason (`override_kind="self_approval"`). Refreshes the items and runs QC; a failing run keeps its rows and is a 409 `qc_failed` |
+| `send` from Signed Off, re-runs QC, freezes | as designed, but it does **not** refresh the snapshot: it sends what was signed. A file registered, deprecated or revoked since fails `snapshot_current` (A-27) |
+| `record_client_answer(accepted, reason, notes)` | as designed. A rejection needs a reason (`rejection_reason` column); `client_notes` holds only the client's feedback |
+| `cancel(reason)` | `cancellation_reason` column; a Signed Off delivery needs `delivery.approve` (checked in the service) |
+| `revise` returns the new Draft | returns `(new, skipped)`; the API adds `skipped_versions` to the 201 body. One live revision per rejected delivery (409 `already_revised`) |
+| `set_passcode`, `read_passcode` | the passcode is set through `create` / `update` (write-only field); `read_passcode(actor, package, request)` needs `delivery.view_secret` and project access (404 otherwise) and writes an audit row without the value |
+| `override_status` | built, service-only (no endpoint), `delivery.status.override` + reason, audited as a warning (A-28) |
+| API-DLV-01: `passcode` in the detail for `view_secret` holders | `GET /deliveries/{id}/passcode/` returns `{"passcode": ...}` with `Cache-Control: no-store` (A-24). The detail adds `signed_off_by/at`, `client_answered_by/at`, `cancellation_reason`, `rejection_reason`, `revision_of`, `has_revoked_content` |
+| API-DLV-06 `retry` | re-runs QC while Validating; any other status is 409 |
+| API-DLV-08, 09 | `POST sign-off/` (`notes`, `override_reason`), `POST reopen/`, both `delivery.approve` |
+| API-DLV-10 | `submit` works from Signed Off only |
+| API-DLV-11, 12 | `approve` (`client_notes`), `reject` (`rejection_reason`, required): from Submitted, `delivery.send` |
+| API-DLV-14, 15, 16 | `complete` (Approved only, `delivery.update`), `revise` (Rejected only, `delivery.send`), `GET history/` and `GET qc/` (`delivery.view`) |
+| Events published after commit | none; notifications are LATER (A-32). The one subscription is Publishing's `PublishedFileRevoked` (`events/`) |
+| Admin read-only status | `status`, `client_status`, sent/sign-off/answer columns, reasons, totals, manifest and checksums are read-only in the package admin; `DeliveryStatusChange` is view-only |
+
+Authorization today: each action is gated by the code in `DeliveryViewSet.permission_map`
+(sign-off and reopen `delivery.approve`; submit, approve, reject, revise `delivery.send`;
+`passcode` `delivery.view_secret`). The new codes are in the catalog but no role holds them until
+Phase 8 (A-31).
+
+Failure behaviour added: 403 `separation_of_duties`, 403 `transition_not_permitted`,
+409 `already_revised`, 503 `secret_storage_unavailable`.
+
+Migrations: `0008_workflow` (history table, Signed Off, the new columns, a creation row per existing
+delivery; reversible), `0009_encrypt_passcode` (widens the column, encrypts in place, refuses
+without a key, reverse decrypts). Setting: `DELIVERY_SECRET_KEY` (`.env.example`).
+
+**Frontend impact of Phase 7**
+
+* A "Sign off" button is needed between Ready and Submit (`POST sign-off/`); Submit on a Ready
+  delivery is now a 409. The person who prepared the delivery cannot sign it off (403
+  `separation_of_duties`).
+* `approve` / `reject` / `complete` / `retry` / `cancel` answer with the detail shape and refuse
+  other statuses with 409 (they used to work from any status). `retry` no longer resets to Ready.
+* A rejection reason is shown from `rejection_reason`, a cancellation reason from
+  `cancellation_reason`; `client_notes` is the client's feedback only.
+* `status` can read `"Signed Off"`, a value the frontend's union accepts but has no colour for.
+* The passcode is fetched with `GET /passcode/` by users who hold `delivery.view_secret`.
+* New: `POST reopen/`, `POST revise/` (201, with `skipped_versions`), `GET history/`, `GET qc/`;
+  detail field `has_revoked_content`.
+
+## 10. Phase 8 as built (differences from the target above)
+
+Built: project scoping and IDOR tests, the destination link and rules, the `reason` / `notes` body
+aliases (Q18), `bulk-cancel` (Q36), role-to-code grants and their matrix test, admin hardening,
+OpenAPI declarations. The access matrix covers anonymous, member, non-member, every code, platform
+admin and scoped API keys; "a disabled user loses access" is Phase 12 (A-14).
+
+| Target | Built in Phase 8 |
+|---|---|
+| SEC-DLV-01 narrow every read and write to the caller's projects | `DeliverySelector` filters on `visible_project_ids`; every action uses `get_object`, so a foreign id is the same 404 as an unknown one. Platform admins see everything, including old deliveries that name no project; members see none of those. `bulk-cancel` resolves ids through the same selector |
+| API-DLV-02 create: project required and visible, client active | `create(actor, data, request)`: a project is required unless a platform admin sends a code; an unknown, foreign or malformed project is the same 400 "Unknown project."; `project_id` is an id or a code. The client must exist and be Active (blank counts as Active); the destination must exist and be active |
+| `destination` FK, `delivery_destination` read-only (Q33) | `destination` FK (nullable, PROTECT) set by `destination_id`. The deprecated `delivery_destination` text stays writable while **no** destination is chosen (the current frontend sends only text, Q38); with a destination chosen the API shows its address (target directory, else endpoint) and a *different* text is a 400. Reads show `destination`, `destination_name`. The read name `destination` cannot be used to change it (400 unless echoed) |
+| API-DLV-18 destinations | name unique in any case among live destinations, at most one live default, both also as database constraints. Choosing a new default (API or admin) moves it. Migration 0010 stops and lists clashes |
+| API-DLV-11 to 13 aliases (Q18) | `approve` takes `client_notes` or `notes`; `reject` `rejection_reason` or `reason`; `cancel` and `bulk-cancel` `cancellation_reason` or `reason`. Both at once with different values: 400 "Send only one of the two". The alias is never a stored or returned field |
+| API-DLV-17 `bulk-cancel` | `POST /deliveries/bulk-cancel/` with `ids` (1 to 100 distinct) and one reason. Each id is its own transaction. 200 when all succeed, 207 otherwise, body `{success, succeeded_count, failed_count, results: [{id, ok, error}]}`. `error` is `null`, `not_found` (unknown, another project, legacy without a project, or a cancel the caller's codes do not allow, all identical) or `invalid_transition`. Code `delivery.update`; the same map as a single cancel; never an override. There is no bulk sign-off or send |
+| Role matrix (PLAN section 6) | seeded as planned (below) |
+| Admin read-only | packages, items, item files, QC rows, history and counters are view-only in the admin (no add, change or delete); destinations stay editable, the form applies the name rule and saving a default moves it |
+| OpenAPI | every action declares its body and answer; `history` and `qc` are plain arrays (not paginated); PATCH and PUT answer with the detail; the alias spellings are write-only |
+
+**Seeded grants** (`init_platform`; `tests/test_permission_matrix.py` pins them to the enforced codes):
+
+| Code | platform-admin | org-admin | production-admin | vfx-supervisor | lead-artist | artist | org-member |
+|---|---|---|---|---|---|---|---|
+| `delivery.view` | Y | Y | Y | Y | Y | Y | |
+| `delivery.create`, `delivery.update` | Y | Y | Y | Y | | | |
+| `delivery.delete` | Y | Y | Y | | | | |
+| `delivery.approve` | Y | Y | Y | Y | | | |
+| `delivery.send`, `delivery.view_secret` | Y | Y | Y | | | | |
+| `delivery.status.override`, `delivery.sod.override` | | | | | | | |
+
+The two override codes are opt-in (in the catalog, in no role, not even platform-admin's "everything").
+`init_platform` also **withdraws** the grants the matrix removed (`WITHDRAWN_GRANTS`, Q40 = A): on every run it
+removes `delivery.delete`, `delivery.send`, `delivery.view_secret` and `publishing.delete` from the
+vfx-supervisor, so rerunning it makes an existing database match.
+
+Migration `0010_destinations`: the destination FK, the case-insensitive live-name constraint and the
+one-live-default constraint (it replaces the case-sensitive name constraint); stops and lists clashes.
+
+**Frontend impact of Phase 8**
+
+* A member creating a delivery must name a project (a 400 "A project is required." otherwise); a
+  platform admin may send a code instead.
+* People now see only the deliveries of their own projects; other ids are 404.
+* `approve`, `reject` and `cancel` accept the spellings the UI already sends (`notes`, `reason`).
+* New: `destination_id` on create and edit, `destination` and `destination_name` on the detail,
+  `POST bulk-cancel/`.
+* Sign-off, send and the passcode need the new codes: re-run `manage.py init_platform` so the seeded
+  roles hold them.
+

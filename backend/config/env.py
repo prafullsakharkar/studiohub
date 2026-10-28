@@ -185,6 +185,19 @@ class Settings(BaseSettings):
     )
 
     ####################################################################
+    # Delivery passcode encryption
+    ####################################################################
+
+    # Fernet key(s) (urlsafe base64, 32 bytes) protecting delivery passcodes at
+    # rest. Comma-separated for rotation: the first key encrypts, every key
+    # decrypts. Empty: a passcode cannot be set or read (fails closed); a
+    # delivery without a passcode is unaffected. Not MFA_ENCRYPTION_KEY: the two
+    # secrets have different owners and are rotated separately.
+    delivery_secret_key: SecretStr = Field(
+        default=SecretStr(""), alias="DELIVERY_SECRET_KEY"
+    )
+
+    ####################################################################
     # Published file storage roots
     ####################################################################
 
@@ -248,6 +261,15 @@ class Settings(BaseSettings):
         return tuple(
             entry.strip()
             for entry in self.mfa_encryption_key.get_secret_value().split(",")
+            if entry.strip()
+        )
+
+    @property
+    def delivery_secret_keys(self) -> tuple[str, ...]:
+        # A plain property, like mfa_encryption_keys: never in a dump or repr.
+        return tuple(
+            entry.strip()
+            for entry in self.delivery_secret_key.get_secret_value().split(",")
             if entry.strip()
         )
 

@@ -72,6 +72,10 @@ MFA_ENCRYPTION_KEYS = settings.mfa_encryption_keys
 # False stores new TOTP secrets in plaintext (default True). See apps.identity.crypto.
 MFA_ENCRYPTION_ENABLED = settings.mfa_encryption_enabled
 
+# Fernet keys protecting delivery passcodes at rest (first encrypts, all decrypt).
+# Read only by apps.deliveries.passcode; an empty tuple fails closed.
+DELIVERY_SECRET_KEYS = settings.delivery_secret_keys
+
 # HMAC pepper for API key / PAT digests (see apps.identity.api_keys.hashing).
 API_KEY_PEPPER = settings.api_key_pepper.get_secret_value()
 
