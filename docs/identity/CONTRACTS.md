@@ -175,7 +175,8 @@ login ──► UserSession(ACTIVE) ──► JWT(access 30m, refresh 30d)
 | DOM-SES-03 | Logout and `logout_all` are symmetric: they mark sessions and blacklist every outstanding refresh JTI | WP 5.2 |
 | DOM-SES-04 | Privilege change reaches live sessions on the next request (permissions are resolved server-side, never baked into tokens); sessions are not terminated | WP 5.12 (done by design) |
 | DOM-SES-06 | A rotated refresh token presented again revokes its session and records `SUSPICIOUS_ACTIVITY` (refresh tokens carry a stable `sid`) | Phase 5 |
-| DOM-SES-05 | Absolute session lifetime is bounded (`SESSION_MAX_ABSOLUTE_LIFETIME_DAYS = 90`, `config/settings/components/jwt.py:3`) | Service (CURRENT) |
+| DOM-SES-05 | Absolute session lifetime is bounded (`SESSION_MAX_ABSOLUTE_LIFETIME_DAYS = 30`, `config/settings/components/jwt.py`; exported to Django settings only since TM-020, before that the service silently used its fallback). Refresh tokens last 7 days | Service (CURRENT) |
+| DOM-SES-07 | A session with no authenticated request for `SESSION_IDLE_TIMEOUT_MINUTES` (default 120, 0 = off) cannot be refreshed and is expired. Activity is the authenticated API request (written at most once a minute per session), not the refresh | `AuthenticationValidator.validate_refresh`, `SessionActivity.touch` (TM-020) |
 | DOM-SES-06 | Expired sessions/attempts are cleaned by a scheduled job | WP 5.10 |
 
 ### 2.7 MFA

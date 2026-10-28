@@ -4,7 +4,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from apps.identity.authentication import restrictions
-from apps.identity.authentication.session_status import SessionStatusCache
+from apps.identity.authentication.session_status import SessionActivity, SessionStatusCache
 
 
 class SessionExpired(AuthenticationFailed):
@@ -41,5 +41,7 @@ class SessionBoundJWTAuthentication(JWTAuthentication):
             )
 
         restrictions.enforce(request, user, validated_token.payload)
+
+        SessionActivity.touch(jti)
 
         return result

@@ -167,6 +167,35 @@ class AuthenticationValidator(
             session,
         )
 
+        cls._validate_not_idle(session)
+
+    @classmethod
+    def _validate_not_idle(
+        cls,
+        session,
+    ):
+        """
+        A session with no authenticated request for ``SESSION_IDLE_TIMEOUT_MINUTES`` ends here: it
+        cannot be refreshed back to life by a token that sat in storage (TPN review TM-020).
+        """
+        from datetime import timedelta
+
+        from django.conf import settings
+
+        minutes = int(getattr(settings, "SESSION_IDLE_TIMEOUT_MINUTES", 0))
+
+        if minutes <= 0 or session.last_activity is None:
+            return
+
+        if session.last_activity + timedelta(minutes=minutes) > timezone.now():
+            return
+
+        from apps.identity.services.user_session import UserSessionService
+
+        UserSessionService.expire(session)
+
+        raise SessionExpired()
+
     # ---------------------------------------------------------
     # Authentication
     # ---------------------------------------------------------
