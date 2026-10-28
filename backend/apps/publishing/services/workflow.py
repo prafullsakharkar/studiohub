@@ -101,6 +101,7 @@ class JobService:
             target_id=job.pk,
             target_name=job.name,
             description=description,
+            project_id=job.project_id,  # pyright: ignore[reportAttributeAccessIssue]
             metadata=metadata,
         )
 

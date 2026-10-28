@@ -8,7 +8,10 @@ from typing import Any
 
 from django.db.models import QuerySet
 
+from apps.core import providers
 from apps.core.selectors.base import BaseSelector
+
+AUDIT_SCOPE = "production.audit_scope"  # offered by Production (apps/production/providers.py)
 
 
 class AuditBaseSelector(BaseSelector):
@@ -19,6 +22,8 @@ class AuditBaseSelector(BaseSelector):
 
         - AuditLog
         - AuditTrail
+
+    Reads are narrowed per caller by :attr:`visibility`.
     """
 
     @classmethod
@@ -33,6 +38,27 @@ class AuditBaseSelector(BaseSelector):
         """
         raise NotImplementedError
 
+    # How a caller's reach is narrowed (TPN review TM-012). Subclasses choose one:
+    #   "project": rows of the caller's own projects (``project_id``); rows with no project are
+    #              visible to platform administrators only.
+    #   "own":     the caller's own rows (``owner_field``).
+    #   "admin":   platform administrators only.
+    # Platform administrators see every row under every mode.
+    visibility = "admin"
+    owner_field = "user_id"
+
+    @classmethod
+    def _visible_project_ids(cls, request) -> list[Any] | None:
+        """Project ids the caller may read audit rows of; ``None`` for every project."""
+        scope = providers.get(AUDIT_SCOPE)
+
+        if scope is not None:
+            return scope.visible_project_ids(request)
+
+        # Without Production no project is known: only a superuser is not narrowed.
+        user = getattr(request, "user", None)
+        return None if getattr(user, "is_superuser", False) else []
+
     @classmethod
     def _scope_by_request(
         cls,
@@ -40,12 +66,12 @@ class AuditBaseSelector(BaseSelector):
         request=None,
     ) -> QuerySet[Any, Any]:
         """
-        Platform-global audit visibility (org-free).
+        Project-scoped audit visibility.
 
-        Audit rows carry no tenant partition: every caller who passes the
-        viewset's permission gate sees the platform-wide log; anonymous
-        callers see nothing. ``permission_map`` codes on each viewset gate
-        reads (``audit.view``) and restricted actions.
+        Anonymous callers see nothing. ``permission_map`` codes on each viewset gate the read
+        (``audit.view``); this narrows *which* rows. A caller who is not a platform administrator
+        sees rows of the projects they work on (``visibility = "project"``), only their own rows
+        (``"own"``), or none (``"admin"``). Internal callers with ``request=None`` are unscoped.
         """
         if request is None:
             return queryset
@@ -55,7 +81,18 @@ class AuditBaseSelector(BaseSelector):
         if user is None or not user.is_authenticated:
             return queryset.none()
 
-        return queryset
+        project_ids = cls._visible_project_ids(request)
+
+        if project_ids is None:
+            return queryset
+
+        if cls.visibility == "project":
+            return queryset.filter(project_id__in=project_ids)
+
+        if cls.visibility == "own":
+            return queryset.filter(**{cls.owner_field: user.pk})
+
+        return queryset.none()
 
     @classmethod
     def _scope_by_user_or_organization(

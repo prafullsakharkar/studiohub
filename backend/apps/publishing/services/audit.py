@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import Any
 
 from apps.audit.models import AuditLog
+from apps.audit.utils.project import as_project_id
 
 
 def record(
@@ -20,6 +21,7 @@ def record(
     target_name: str,
     description: str,
     metadata: dict[str, Any] | None = None,
+    project_id: Any = None,
 ) -> None:
     AuditLog.objects.create(
         action=action,
@@ -28,5 +30,6 @@ def record(
         target_name=target_name[:255],
         description=description,
         actor_id=getattr(actor, "pk", None),
+        project_id=as_project_id(project_id) or as_project_id((metadata or {}).get("project_id")),
         metadata=metadata or {},
     )

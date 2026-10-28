@@ -23,6 +23,10 @@ from rest_framework.exceptions import NotFound
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
+from apps.core.events.attachment_events import (
+    AttachmentDownloaded,
+    attachment_payload,
+)
 from apps.core.logging.logger import get_logger
 from apps.core.selectors.attachment import AttachmentSelector
 from apps.core.services import attachment_links
@@ -62,6 +66,11 @@ class AttachmentDownloadView(APIView):
             user_id=str(user.pk),
             ip=client_ip_from_meta(request.META),
             file_size=attachment.file_size,
+        )
+        AttachmentDownloaded.dispatch(
+            **attachment_payload(
+                attachment, actor_id=user.pk, ip=client_ip_from_meta(request.META)
+            )
         )
 
         return self._file_response(attachment)

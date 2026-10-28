@@ -109,6 +109,9 @@ class Activity(EntityModel, TimeStampedModel):
         help_text="Additional metadata about the activity",
     )
     
+    # See AuditLog.project_id.
+    project_id = models.UUIDField(null=True, blank=True, db_index=True)
+
     class Meta:
         db_table = "activities"
         ordering = ("-created_at",)

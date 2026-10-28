@@ -1,8 +1,8 @@
 # Audit API
 
-Audit records are append-only and server-generated. All resources are
-org-scoped via `AuditBaseSelector` (members see their organizations' rows;
-staff bypass; anonymous sees nothing) and follow Core conventions: JWT auth,
+Audit records are append-only and server-generated. Reads are narrowed per caller by
+`AuditBaseSelector` (see [Who sees which rows](#who-sees-which-rows)); the log is no longer one
+platform-wide list for everyone with `audit.view`. Resources follow Core conventions: JWT auth,
 `StandardPagination` (`{count,next,previous,results}`, `page`/`page_size`,
 `search`, `ordering`), Core error envelope.
 
@@ -57,7 +57,45 @@ Detail lookup is by `uuid` on every resource.
 * All writers are best-effort (`try/except: pass`) — audit never breaks
   business operations.
 
+## Who sees which rows
+
+Having `audit.view` lets a caller reach the endpoints; the selector decides which rows they get
+(TPN review TM-012). A platform administrator (superuser or global ADMIN-priority role) sees
+everything. Everyone else:
+
+| Resource | Rows a non-administrator sees |
+| -------- | ----------------------------- |
+| Audit logs, change logs, activity | Rows whose `project_id` is a project they are an **internal** active member of. Rows with no project (user, role and settings changes, attachments, masterdata) are administrator-only. External (vendor/client) members see none. |
+| API requests, tracks | Their own rows only. |
+| Error logs, background jobs | None (administrators only). |
+
+`project_id` is a nullable column on `audit_logs`, `change_logs` and `activity`. Writers set it from the
+entity (`apps/audit/utils/project.py`): the change-tracking signal, and the deliveries, publishing and
+scheduling audit helpers. Audit asks Production which projects a caller may read through the
+`production.audit_scope` provider; without Production only a superuser is unrestricted.
+
 ## Append-only policy
+
+The tables `audit_logs`, `change_logs` and `api_requests` cannot be changed after they are written:
+
+* the model refuses `save()` on a stored row, `delete()` and `soft_delete()` (`ImmutableRecordError`);
+* a PostgreSQL trigger (migration `0003`) refuses `UPDATE`, and `DELETE` unless the transaction has set
+  `studiohub.audit_purge` (only the retention job does), so queryset updates and raw SQL are refused too.
+  `TRUNCATE` is not guarded, so test cleanup works; withhold it from the application role in production.
+
+## Retention
+
+`audit.purge` (Celery beat, 03:45 daily) or `manage.py audit_purge [--dry-run]` removes rows older than
+their window, in batches, and writes one audit entry saying what was removed. Windows, in days
+(`0` keeps the table): `AUDIT_RETENTION_DAYS` = 730 (audit and change logs),
+`API_REQUEST_RETENTION_DAYS` = 180, `TRACK_RETENTION_DAYS` = 90.
+
+## Attachment events
+
+Upload, update, delete and signed-link download of an attachment each write an audit log row
+(`target_type=attachment`; actor, file size, type and client address, never the content or link).
+
+## Client-facing writes
 
 `POST /api/v1/audit/` → 405 (locked by regression test). Rationale: the audit
 trail must only contain server-observed events. Frontend `recordLog` callers
@@ -73,6 +111,9 @@ path (`POST /api/v1/audit/tracks/`).
 
 ## Tests
 
+* `apps/audit/tests/test_append_only.py`, `test_retention.py`, `test_project_visibility.py`,
+  `test_attachment_events.py` — immutability (model and trigger), retention, per-caller visibility,
+  attachment audit events.
 * `apps/audit/tests/api/test_flat_alias.py` — flat shape, search/action filter.
 * `apps/audit/tests/api/test_audit_filter_contract.py` (Phase 6, 11 tests) —
   `organization_id` alias, tenant isolation for members, flat detail + 404,

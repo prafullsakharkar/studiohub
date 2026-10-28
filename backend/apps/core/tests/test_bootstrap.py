@@ -250,7 +250,10 @@ class TestFreshInitialMigrations:
         for app in ("audit", "core", "deliveries", "identity", "masterdata", "production"):
             names = sorted(name for label, name in loader.disk_migrations if label == app)
             assert names and names[0] == "0001_initial", (app, names)
-            assert len(names) <= 2, (app, names)  # 0002 only where apps depend on each other
+            # 0002 only where apps depend on each other; audit's 0003 adds project scope and the
+            # append-only triggers to tables that already exist in deployed databases (TM-011).
+            limit = 3 if app == "audit" else 2
+            assert len(names) <= limit, (app, names)
 
     @pytest.mark.skipif(connection.vendor != "postgresql", reason="the extension is PostgreSQL's")
     def test_btree_gist_is_installed_for_the_exclusion_constraints(self):

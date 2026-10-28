@@ -29,4 +29,8 @@ CELERY_BEAT_SCHEDULE = {
         "task": "identity.cleanup",
         "schedule": crontab(hour=3, minute=15),
     },
+    "audit-purge": {
+        "task": "audit.purge",
+        "schedule": crontab(hour=3, minute=45),
+    },
 }

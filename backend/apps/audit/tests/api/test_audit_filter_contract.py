@@ -31,19 +31,19 @@ from apps.identity.tests.factories import UserFactory
 
 @pytest.mark.django_db
 class TestAuditPlatformGlobalAlias:
-    def test_audit_logs_are_platform_global(self, staff_client):
+    def test_audit_logs_are_platform_global(self, admin_client):
         AuditLogFactory.create(action="UPDATE", target_type="Shot")
         AuditLogFactory.create(action="APPROVE", target_type="Review")
 
-        resp = staff_client.get("/api/v1/audit/")
+        resp = admin_client.get("/api/v1/audit/")
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert resp.data["count"] == 2
 
-    def test_organization_id_param_is_ignored(self, staff_client):
+    def test_organization_id_param_is_ignored(self, admin_client):
         AuditLogFactory.create(action="UPDATE", target_type="Shot")
         AuditLogFactory.create(action="APPROVE", target_type="Review")
 
-        resp = staff_client.get(
+        resp = admin_client.get(
             "/api/v1/audit/?organization_id=00000000-0000-0000-0000-000000000000"
         )
         assert resp.status_code == status.HTTP_200_OK, resp.data
@@ -54,7 +54,7 @@ class TestAuditPlatformGlobalAlias:
 
         from apps.identity.tests.rbac_helpers import grant_permissions
 
-        user = UserFactory()
+        user = UserFactory(is_superuser=True)
         grant_permissions(user, "audit.view")
         client = APIClient()
         client.force_authenticate(user=user)
@@ -72,12 +72,12 @@ class TestAuditPlatformGlobalAlias:
 
 @pytest.mark.django_db
 class TestAuditFlatDetail:
-    def test_detail_returns_frontend_shape(self, staff_client):
+    def test_detail_returns_frontend_shape(self, admin_client):
         log = AuditLogFactory.create(
             action="APPROVE", target_type="Review",
             target_id="rev-1", target_name="REV-1",
         )
-        resp = staff_client.get(f"/api/v1/audit/{log.uuid}/")
+        resp = admin_client.get(f"/api/v1/audit/{log.uuid}/")
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert resp.data["id"] == str(log.id)
         assert resp.data["entity_type"] == "Review"
@@ -107,45 +107,45 @@ class TestActivityFlatAlias:
 class TestNamespacedFilteringRegression:
     """Filters on namespaced resources must apply (negative controls)."""
 
-    def test_change_logs_filter_by_change_type(self, staff_client):
+    def test_change_logs_filter_by_change_type(self, admin_client):
         ChangeLogFactory.create(
             change_type="create", target_type="Shot", target_id="s-1"
         )
         ChangeLogFactory.create(
             change_type="update", target_type="Shot", target_id="s-2"
         )
-        resp = staff_client.get(
+        resp = admin_client.get(
             "/api/v1/audit/change-logs/?change_type=create&target_type=Shot",
         )
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert resp.data["count"] == 1
         assert resp.data["results"][0]["target_id"] == "s-1"
 
-    def test_tracks_filter_by_event_type(self, staff_client):
+    def test_tracks_filter_by_event_type(self, admin_client):
         TrackFactory.create(event_type=Track.EVENT_CLICK)
         TrackFactory.create(event_type=Track.EVENT_FORM_SUBMIT)
-        resp = staff_client.get(
+        resp = admin_client.get(
             f"/api/v1/audit/tracks/?event_type={Track.EVENT_CLICK}",
         )
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert resp.data["count"] == 1
         assert resp.data["results"][0]["event_type"] == Track.EVENT_CLICK
 
-    def test_tracks_search_and_ordering(self, staff_client):
+    def test_tracks_search_and_ordering(self, admin_client):
         TrackFactory.create(
             event_type=Track.EVENT_CLICK, event_name="open-shot"
         )
         TrackFactory.create(
             event_type=Track.EVENT_CLICK, event_name="close-shot"
         )
-        resp = staff_client.get(
+        resp = admin_client.get(
             "/api/v1/audit/tracks/?search=open-shot&ordering=-created_at",
         )
         assert resp.status_code == status.HTTP_200_OK, resp.data
         assert resp.data["count"] == 1
         assert resp.data["results"][0]["event_name"] == "open-shot"
 
-    def test_change_logs_before_after_and_actor_shape(self, staff_client):
+    def test_change_logs_before_after_and_actor_shape(self, admin_client):
         actor = UserFactory.create(email="sam.rivera@example.com")
         ChangeLogFactory.create(
             user=actor, change_type="update",
@@ -154,7 +154,7 @@ class TestNamespacedFilteringRegression:
             after_values={"status": "In Progress"},
             changed_fields=["status"],
         )
-        resp = staff_client.get("/api/v1/audit/change-logs/")
+        resp = admin_client.get("/api/v1/audit/change-logs/")
         assert resp.status_code == status.HTTP_200_OK, resp.data
         row = resp.data["results"][0]
         assert row["before_values"] == {"status": "Not Started"}

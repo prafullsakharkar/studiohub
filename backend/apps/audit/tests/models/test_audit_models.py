@@ -9,6 +9,7 @@ import pytest
 
 from apps.audit.models.activity import Activity
 from apps.audit.models.api_request import APIRequest
+from apps.audit.models.append_only import ImmutableRecordError
 from apps.audit.models.audit_log import AuditLog
 from apps.audit.models.background_job import BackgroundJob
 from apps.audit.models.change_log import ChangeLog
@@ -53,8 +54,9 @@ class TestAuditLogModel:
 
     @pytest.mark.django_db
     def test_audit_log_soft_delete(self, audit_log: AuditLog) -> None:
-        """Test soft delete functionality."""
-        _assert_soft_delete(audit_log)
+        """A recorded row is append-only: soft delete is refused too (TM-011)."""
+        with pytest.raises(ImmutableRecordError):
+            audit_log.soft_delete()
 
     @pytest.mark.django_db
     def test_audit_log_action_choices(self, audit_log: AuditLog) -> None:
@@ -119,8 +121,9 @@ class TestAPIRequestModel:
 
     @pytest.mark.django_db
     def test_api_request_soft_delete(self, api_request: APIRequest) -> None:
-        """Test soft delete functionality."""
-        _assert_soft_delete(api_request)
+        """A recorded row is append-only: soft delete is refused too (TM-011)."""
+        with pytest.raises(ImmutableRecordError):
+            api_request.soft_delete()
 
 
 class TestBackgroundJobModel:
@@ -195,8 +198,9 @@ class TestChangeLogModel:
 
     @pytest.mark.django_db
     def test_change_log_soft_delete(self, change_log: ChangeLog) -> None:
-        """Test soft delete functionality."""
-        _assert_soft_delete(change_log)
+        """A recorded row is append-only: soft delete is refused too (TM-011)."""
+        with pytest.raises(ImmutableRecordError):
+            change_log.soft_delete()
 
 
 class TestErrorLogModel:

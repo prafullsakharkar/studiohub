@@ -83,6 +83,9 @@ storing the link. A `/media/...` URL stored earlier no longer works.
 4. Check the file permissions on the production host, not only the development machine.
 5. Move any file that must stay downloadable by its link out of `/media/` direct references in the
    front end.
+6. Audit: set `AUDIT_RETENTION_DAYS`, `API_REQUEST_RETENTION_DAYS` and `TRACK_RETENTION_DAYS` to the
+   periods your policy requires, run `manage.py migrate` (adds `project_id` and the triggers), make sure
+   Celery beat runs (or schedule `manage.py audit_purge`), and send container logs to a central collector.
 
 # Follow-up: mail, client address, and the publishing index (TM-017, TM-014)
 
@@ -184,6 +187,27 @@ templates already do); recreate the compose network once so the fixed subnet tak
   GitHub settings an administrator must switch on).
 - **Verified:** the production image builds and imports the upgraded stack (Pillow 13, Django 6.0.9,
   DRF 3.18.3, PyJWT 2.15.1) on Python 3.14.10 as UID 10001.
+
+# Follow-up: audit trail integrity, retention and visibility (TM-011, TM-012)
+
+- **Append-only (TM-011).** `audit_logs`, `change_logs` and `api_requests` refuse changes in the model
+  and in the database (a trigger on `UPDATE` and `DELETE`), so a compromised application account cannot
+  quietly rewrite history. Only the retention job may delete, inside a transaction that sets a flag the
+  trigger checks. `TRUNCATE` is not guarded: do not grant the application role `TRUNCATE` on these tables
+  in production, and keep the database owner separate from the application role.
+- **Retention (TM-011).** Daily `audit.purge` (and `manage.py audit_purge --dry-run`) with
+  `AUDIT_RETENTION_DAYS` (730), `API_REQUEST_RETENTION_DAYS` (180), `TRACK_RETENTION_DAYS` (90). Each purge
+  that removes rows is itself logged.
+- **Visibility (TM-012).** Audit and change logs carry a `project_id`; a non-administrator reads only the
+  projects they are an internal member of. API requests and tracks are limited to the caller's own rows;
+  error logs and background jobs are administrator-only. Rows without a project are administrator-only.
+  This narrows what `audit.view` returns; roles that relied on seeing the whole log now need a platform
+  administrator role.
+- **Attachment events (TM-012).** Upload, update, delete and download each write an audit log row.
+- **Container logs.** `compose.prod.yml` rotates each service's log (20 MB x 10 files). That keeps the disk
+  safe; it is not a retained record. Ship container logs to a central collector with its own retention.
+- **Existing rows.** Rows written before this change have no `project_id`, so they are administrator-only.
+  They are not backfilled; backfill is a data decision for the operator.
 
 ## Correction: the object-store bucket
 

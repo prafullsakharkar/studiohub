@@ -36,6 +36,8 @@ class AuditTargetCodes:
     MASTERDATA = "masterdata"
     PUBLISHING = "publishing"
     SCHEDULING = "scheduling"
+    ATTACHMENT = "attachment"
+    AUDIT = "audit"
 
     ALL = [
         USER,
@@ -65,6 +67,8 @@ class AuditTargetCodes:
         MASTERDATA,
         PUBLISHING,
         SCHEDULING,
+        ATTACHMENT,
+        AUDIT,
     ]
 
     DESCRIPTIONS = {
@@ -95,4 +99,6 @@ class AuditTargetCodes:
         MASTERDATA: "Master data entity",
         PUBLISHING: "Publishing entity (published files, export jobs, storage roots)",
         SCHEDULING: "Scheduling entity (calendars, bookings, leave, milestones)",
+        ATTACHMENT: "Uploaded file (upload, download, update, delete)",
+        AUDIT: "The audit trail itself (retention purges)",
     }

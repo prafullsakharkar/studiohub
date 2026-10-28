@@ -8,12 +8,13 @@ from typing import Any
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from apps.audit.models.append_only import AppendOnlyModel
 from apps.core.models.bases.entity import EntityModel
 from apps.core.models.bases.timestamp import TimeStampedModel
 from apps.identity.models.user import User
 
 
-class ChangeLog(EntityModel, TimeStampedModel):
+class ChangeLog(AppendOnlyModel, EntityModel, TimeStampedModel):
     """
     Change log for tracking data changes.
     
@@ -95,6 +96,9 @@ class ChangeLog(EntityModel, TimeStampedModel):
         help_text="Description of the change",
     )
     
+    # See AuditLog.project_id.
+    project_id = models.UUIDField(null=True, blank=True, db_index=True)
+
     class Meta:
         db_table = "change_logs"
         ordering = ("-created_at",)

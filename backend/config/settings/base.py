@@ -15,6 +15,11 @@ should override values defined here.
 from config.env import settings
 
 from .components.apps import INSTALLED_APPS
+from .components.audit import (
+    API_REQUEST_RETENTION_DAYS,
+    AUDIT_RETENTION_DAYS,
+    TRACK_RETENTION_DAYS,
+)
 from .components.auth import AUTH_PASSWORD_VALIDATORS, AUTH_USER_MODEL
 from .components.cache import CACHES
 from .components.celery import (

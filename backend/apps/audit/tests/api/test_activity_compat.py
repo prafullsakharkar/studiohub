@@ -41,10 +41,10 @@ def _client(user):
 
 @pytest.mark.django_db
 class TestActivityCompatFeed:
-    def test_flat_returns_paginated_frontend_shape(self, staff_client):
+    def test_flat_returns_paginated_frontend_shape(self, admin_client):
         ActivityFactory.create(description="did a thing")
 
-        response = staff_client.get(_flat_url())
+        response = admin_client.get(_flat_url())
 
         assert response.status_code == 200, response.data
         assert set(("count", "results")) <= set(response.data.keys())
@@ -56,7 +56,7 @@ class TestActivityCompatFeed:
     def test_flat_is_platform_global(self):
         ActivityFactory.create(description="row-a")
         ActivityFactory.create(description="row-b")
-        user = UserFactory.create()
+        user = UserFactory.create(is_superuser=True)
         grant_permissions(user, "audit.view")
         client = _client(user)
 

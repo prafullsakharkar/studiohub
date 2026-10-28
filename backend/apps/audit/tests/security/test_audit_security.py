@@ -14,6 +14,7 @@ from django.db import connection
 from django.urls import reverse
 from rest_framework import status
 
+from apps.audit.models.append_only import ImmutableRecordError
 from apps.audit.models.audit_log import AuditLog
 from apps.audit.tests.factories import AuditLogFactory
 
@@ -38,14 +39,11 @@ class TestAuditLogSecurity:
 
     @pytest.mark.django_db
     def test_audit_log_soft_delete(self, audit_log: AuditLog) -> None:
-        """Test soft delete functionality."""
+        """An audit row cannot be hidden by soft delete (TM-011)."""
         log_id = audit_log.id
-        audit_log.soft_delete()
-        audit_log.refresh_from_db()
-        assert audit_log.is_deleted is True
-        assert audit_log.deleted_at is not None
-        assert AuditLog.objects.filter(id=log_id).count() == 0
-        assert AuditLog.all_objects.filter(id=log_id).count() == 1
+        with pytest.raises(ImmutableRecordError):
+            audit_log.soft_delete()
+        assert AuditLog.objects.filter(id=log_id).count() == 1
 
     @pytest.mark.django_db
     def test_audit_log_action_choices(self, audit_log: AuditLog) -> None:
