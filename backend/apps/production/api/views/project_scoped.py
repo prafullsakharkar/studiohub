@@ -122,6 +122,11 @@ class ProjectScopeMixin:
 
     project_url_kwarg = "project_id"
 
+    #: Whether an external (vendor/client) member may use this view. Off by default: such a view
+    #: summarizes or lists the project as a whole. The entity lists turn it on because they narrow
+    #: every row with ``scope_by_project_membership``.
+    external_allowed: ClassVar[bool] = False
+
     project: Any = None
     # Mixin contract: provided by the APIView this mixin is combined with.
     # Annotations only, no runtime effect.
@@ -160,9 +165,12 @@ class ProjectScopeMixin:
         user = getattr(request, "user", None)
         if user is None or not getattr(user, "is_authenticated", False):
             return False
-        return ProductionBaseSelector.user_has_project_access(
-            request=request, project=self.project
+        check = (
+            ProductionBaseSelector.user_has_project_access
+            if self.external_allowed
+            else ProductionBaseSelector.user_has_full_project_access
         )
+        return check(request=request, project=self.project)
 
     def _require_member_management(self, request):
         """
@@ -227,6 +235,9 @@ class ProjectScopedAPIView(ProjectScopeMixin, APIView):
         qs: DjangoQuerySet[Any] = selector_cls.get_queryset(
             request=self.request, view=self
         ).filter(project=self.project)
+        from apps.production.selectors.base import ProductionBaseSelector
+
+        qs = ProductionBaseSelector.scope_by_project_membership(qs, request=self.request)
         shim = cast(
             Any,
             SimpleNamespace(
@@ -302,6 +313,8 @@ class ProjectMembersView(ProjectScopedAPIView):
             role_ref=payload.get("role_ref"),
             scope=payload.get("scope") or "PROJECT",
             status=payload.get("status") or "active",
+            vendor_id=payload.get("vendor_id") or "",
+            client_id=payload.get("client_id") or "",
         )
         data = ProjectMembershipSerializer(
             membership, context={"request": request}
@@ -353,6 +366,7 @@ class ProjectDashboardView(ProjectScopedAPIView):
 
 
 class _SequenceListView(ProjectScopedAPIView):
+    external_allowed = True
     permission_map = {"get": (SequencePermissions.VIEW,)}
 
     def get(self, request, *args, **kwargs):
@@ -366,6 +380,7 @@ class _SequenceListView(ProjectScopedAPIView):
 
 
 class _ShotListView(ProjectScopedAPIView):
+    external_allowed = True
     permission_map = {"get": (ShotPermissions.VIEW,)}
 
     def get(self, request, *args, **kwargs):
@@ -379,6 +394,7 @@ class _ShotListView(ProjectScopedAPIView):
 
 
 class _TaskListView(ProjectScopedAPIView):
+    external_allowed = True
     permission_map = {"get": (TaskPermissions.VIEW,)}
 
     def get(self, request, *args, **kwargs):
@@ -392,6 +408,7 @@ class _TaskListView(ProjectScopedAPIView):
 
 
 class _AssetListView(ProjectScopedAPIView):
+    external_allowed = True
     permission_map = {"get": (AssetPermissions.VIEW,)}
 
     def get(self, request, *args, **kwargs):
@@ -405,6 +422,7 @@ class _AssetListView(ProjectScopedAPIView):
 
 
 class _VersionListView(ProjectScopedAPIView):
+    external_allowed = True
     permission_map = {"get": (VersionPermissions.VIEW,)}
 
     def get(self, request, *args, **kwargs):
@@ -418,6 +436,7 @@ class _VersionListView(ProjectScopedAPIView):
 
 
 class _ReviewListView(ProjectScopedAPIView):
+    external_allowed = True
     permission_map = {"get": (ReviewPermissions.VIEW,)}
 
     def get(self, request, *args, **kwargs):

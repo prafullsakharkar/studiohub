@@ -107,6 +107,10 @@ class ProjectMembershipCreateSerializer(BaseWriteSerializer[Any]):
         child=serializers.CharField(), required=False, default=list
     )
     scope = serializers.CharField(required=False, allow_blank=True, default="PROJECT")
+    # Making the member external: with either set they see only what that vendor/client was
+    # given (``selectors/external_scope.py``), not the whole project.
+    vendor_id = serializers.CharField(required=False, allow_blank=True, default="", max_length=50)
+    client_id = serializers.CharField(required=False, allow_blank=True, default="", max_length=50)
     # Canonical RBAC role (N7); resolved org-scoped in validate, fail closed.
     role_id = serializers.UUIDField(required=False, allow_null=True, write_only=True)
     # Frontend contract sends Title Case ("Active"); DB stores lowercase.
@@ -116,7 +120,18 @@ class ProjectMembershipCreateSerializer(BaseWriteSerializer[Any]):
 
     class Meta:
         model = ProjectMembership
-        fields = ("userId", "user_id", "email", "role", "roles", "scope", "status", "role_id")
+        fields = (
+            "userId",
+            "user_id",
+            "email",
+            "role",
+            "roles",
+            "scope",
+            "status",
+            "role_id",
+            "vendor_id",
+            "client_id",
+        )
 
     def validate(self, attrs):
         role_ref = attrs.pop("role_id", None)
