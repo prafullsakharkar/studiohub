@@ -117,6 +117,13 @@ class Settings(BaseSettings):
 
     db_port: int = Field(default=5432, alias="DB_PORT")
 
+    # TLS to PostgreSQL (libpq ``sslmode``): "" leaves the driver default (``prefer``: encrypted if
+    # the server offers it, silently plain if not). Production uses ``verify-full`` with the CA that
+    # signed the server certificate in DB_SSLROOTCERT (TPN review TM-009).
+    db_sslmode: str = Field(default="", alias="DB_SSLMODE")
+
+    db_sslrootcert: str = Field(default="", alias="DB_SSLROOTCERT")
+
     ####################################################################
     # Redis
     ####################################################################
@@ -128,6 +135,17 @@ class Settings(BaseSettings):
     redis_db: int = Field(default=0, alias="REDIS_DB")
 
     redis_password: str = Field(default="", alias="REDIS_PASSWORD")
+
+    # TLS to Redis: the cache URL becomes ``rediss://`` and trusts REDIS_CA_CERT (system CAs if empty).
+    # CELERY_BROKER_URL and CELERY_RESULT_BACKEND are separate values: give them ``rediss://`` too and
+    # they use the same CA.
+    redis_tls: bool = Field(default=False, alias="REDIS_TLS")
+
+    redis_ca_cert: str = Field(default="", alias="REDIS_CA_CERT")
+
+    # Make `check --deploy` fail (instead of warn) when the database or Redis link is not encrypted
+    # and verified. The production templates turn it on.
+    internal_tls_required: bool = Field(default=False, alias="INTERNAL_TLS_REQUIRED")
 
     ####################################################################
     # Email
@@ -291,7 +309,13 @@ class Settings(BaseSettings):
                 "ENGINE": "django.db.backends.sqlite3",
                 "NAME": str(BASE_DIR / self.db_sqlite_path),
             }
-        return {
+        options: dict[str, str] = {}
+        if self.db_sslmode.strip():
+            options["sslmode"] = self.db_sslmode.strip()
+        if self.db_sslrootcert.strip():
+            options["sslrootcert"] = self.db_sslrootcert.strip()
+
+        config: dict[Any, Any] = {
             "ENGINE": "django.db.backends.postgresql",
             "NAME": self.db_name,
             "USER": self.db_user,
@@ -299,6 +323,9 @@ class Settings(BaseSettings):
             "HOST": self.db_host,
             "PORT": self.db_port,
         }
+        if options:
+            config["OPTIONS"] = options
+        return config
 
     @computed_field
     @property
@@ -331,8 +358,10 @@ class Settings(BaseSettings):
     def redis_url(self) -> str:
         auth = f":{self.redis_password}@" if self.redis_password else ""
 
+        scheme = "rediss" if self.redis_tls else "redis"
+
         return (
-            f"redis://{auth}" f"{self.redis_host}:" f"{self.redis_port}/" f"{self.redis_db}"
+            f"{scheme}://{auth}" f"{self.redis_host}:" f"{self.redis_port}/" f"{self.redis_db}"
         )
 
 

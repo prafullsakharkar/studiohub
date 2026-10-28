@@ -8,6 +8,12 @@
 # Only Nginx is exposed publicly. All other services live on the internal
 # `backend` network. PostgreSQL and Redis data persist on named volumes.
 #
+# Internal traffic is encrypted (TPN review TM-009): the one-shot `tls-init` job creates a private CA and
+# a certificate per service in the `tls_data` volume (CA key in `tls_ca`, mounted only by that job);
+# PostgreSQL accepts TLS only, Redis listens on its TLS port only, and nginx reaches Django over
+# HTTPS and verifies it. Set DB_SSLMODE=verify-full, DB_SSLROOTCERT=/tls/ca.pem, REDIS_TLS=true,
+# REDIS_CA_CERT=/tls/ca.pem, rediss:// Celery URLs and INTERNAL_TLS_REQUIRED=true (see .env.example).
+#
 # Migrations are a controlled step and are NOT run by the Django container:
 #   docker compose -f infrastructure/compose/compose.yml \
 #                  -f infrastructure/compose/compose.prod.yml \
@@ -24,6 +30,23 @@ x-logging: &default-logging
 
 services:
 
+  # ------------------------------------------------------- Internal TLS bootstrap (one-shot)
+  # Idempotent: keeps current certificates and reissues any that expire within 30 days, so
+  # `docker compose up` (or a scheduled `docker compose run --rm tls-init`) is the renewal.
+  tls-init:
+    logging: *default-logging
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/postgres/Dockerfile
+    entrypoint: ["/bin/sh", "/init.sh"]
+    user: root
+    network_mode: none
+    volumes:
+      - ../docker/tls/init.sh:/init.sh:ro
+      - tls_data:/tls
+      - tls_ca:/ca
+    restart: "no"
+
   # ------------------------------------------------------------------ Nginx
   nginx:
     logging: *default-logging
@@ -36,9 +59,11 @@ services:
       - "443:443"
     depends_on:
       - django
+      - tls-init
     volumes:
       - static_volume:/static:ro
       - media_volume:/media:ro
+      - tls_data:/tls:ro                            # CA that signed Django's certificate
       - ../docker/nginx/certs:/etc/nginx/certs:ro   # TLS certificates (self-signed for validation)
     networks:
       - public
@@ -56,7 +81,12 @@ services:
     restart: always
     expose:
       - "8000"
+    environment:
+      DJANGO_TLS_CERTFILE: /tls/django.pem
+      DJANGO_TLS_KEYFILE: /tls/django.key
     depends_on:
+      tls-init:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
@@ -64,8 +94,9 @@ services:
     volumes:
       - static_volume:/app/static
       - media_volume:/app/media
+      - tls_data:/tls:ro
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS -H 'X-Forwarded-Proto: https' http://localhost:8000/health/"]
+      test: ["CMD-SHELL", "curl -fsS --cacert /tls/ca.pem -H 'X-Forwarded-Proto: https' https://localhost:8000/health/"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -86,6 +117,8 @@ services:
     depends_on:
       django:
         condition: service_healthy
+    volumes:
+      - tls_data:/tls:ro
     networks:
       - backend
 
@@ -101,6 +134,8 @@ services:
     depends_on:
       django:
         condition: service_healthy
+    volumes:
+      - tls_data:/tls:ro
     networks:
       - backend
 
@@ -123,13 +158,36 @@ services:
     depends_on:
       django:
         condition: service_healthy
+    volumes:
+      - tls_data:/tls:ro
     networks:
       - backend
 
   # ----------------------------------------------------- PostgreSQL (override)
+  # TLS only from the network (pg_hba.prod.conf rejects plain TCP); the key is owned by the postgres user.
   postgres:
     logging: *default-logging
     restart: always
+    command:
+      - postgres
+      - -c
+      - ssl=on
+      - -c
+      - ssl_cert_file=/tls/postgres.pem
+      - -c
+      - ssl_key_file=/tls/postgres.key
+      - -c
+      - ssl_ca_file=/tls/ca.pem
+      - -c
+      - ssl_min_protocol_version=TLSv1.2
+      - -c
+      - hba_file=/etc/postgresql/pg_hba.conf
+    depends_on:
+      tls-init:
+        condition: service_completed_successfully
+    volumes:
+      - tls_data:/tls:ro
+      - ../docker/postgres/pg_hba.prod.conf:/etc/postgresql/pg_hba.conf:ro
     networks:
       - backend
 
@@ -147,10 +205,14 @@ services:
       - >-
         [ -n "$$REDIS_PASSWORD" ] || { echo "REDIS_PASSWORD is required" >&2; exit 1; };
         exec redis-server /usr/local/etc/redis/redis.conf --requirepass "$$REDIS_PASSWORD"
+    depends_on:
+      tls-init:
+        condition: service_completed_successfully
     volumes:
       - ../docker/redis/redis.prod.conf:/usr/local/etc/redis/redis.conf:ro
+      - tls_data:/tls:ro
     healthcheck:
-      test: [ "CMD-SHELL", "redis-cli --no-auth-warning -a \"$$REDIS_PASSWORD\" ping | grep -q PONG" ]
+      test: [ "CMD-SHELL", "redis-cli --tls --cacert /tls/ca.pem --no-auth-warning -a \"$$REDIS_PASSWORD\" ping | grep -q PONG" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -162,6 +224,9 @@ services:
 volumes:
   static_volume:
   media_volume:
+  tls_data:
+  # The CA key. Only tls-init mounts it; back it up with the other secrets or accept re-issuing the CA.
+  tls_ca:
 
 networks:
   public:

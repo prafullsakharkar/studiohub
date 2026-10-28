@@ -96,6 +96,10 @@ API_KEY_PEPPER = settings.api_key_pepper.get_secret_value()
 # on the peppered digest.
 API_KEY_ACCEPT_LEGACY_HASH = settings.api_key_accept_legacy_hash
 
+# `check --deploy` fails (rather than warns) when the database or Redis link is not encrypted and
+# verified (TPN review TM-009).
+INTERNAL_TLS_REQUIRED = settings.internal_tls_required
+
 # Active API keys / PATs one user may hold, per kind.
 IDENTITY_MAX_ACTIVE_CREDENTIALS = 50
 

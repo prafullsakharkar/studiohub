@@ -203,3 +203,58 @@ def credential_protection_is_not_weakened(app_configs, **kwargs):
         )
 
     return findings
+
+
+_VERIFYING_SSLMODES = {"verify-ca", "verify-full"}
+
+
+def _tls_finding(message: str, hint: str, error_id: str, warning_id: str):
+    """An Error when the operator requires internal TLS, else a Warning."""
+    if getattr(settings, "INTERNAL_TLS_REQUIRED", False):
+        return Error(message, hint=hint, id=error_id)
+    return Warning(message, hint=hint, id=warning_id)
+
+
+@register(Tags.security, deploy=True)
+def internal_links_are_encrypted(app_configs, **kwargs):
+    """
+    The database and Redis carry credentials, session data and the permission cache: the links to them
+    must be encrypted and the server verified (TPN review TM-009). A warning by default; an error with
+    INTERNAL_TLS_REQUIRED=true.
+    """
+
+    findings = []
+    database = settings.DATABASES.get("default", {})
+
+    if "sqlite" not in str(database.get("ENGINE", "")):
+        mode = str((database.get("OPTIONS") or {}).get("sslmode", "")).lower()
+
+        if mode not in _VERIFYING_SSLMODES:
+            shown = mode or "driver default (prefer)"
+            findings.append(
+                _tls_finding(
+                    f"The database connection does not verify the server's certificate (sslmode: {shown}).",
+                    "Set DB_SSLMODE=verify-full and DB_SSLROOTCERT to the CA that signed the database certificate.",
+                    "core.E006",
+                    "core.W006",
+                )
+            )
+
+    redis_links = {
+        "the cache": (settings.CACHES.get("default", {}) or {}).get("LOCATION", ""),
+        "the Celery broker": getattr(settings, "CELERY_BROKER_URL", ""),
+        "the Celery result backend": getattr(settings, "CELERY_RESULT_BACKEND", ""),
+    }
+
+    for label, url in redis_links.items():
+        if isinstance(url, str) and url.startswith("redis://"):
+            findings.append(
+                _tls_finding(
+                    f"Redis is reached without TLS for {label}.",
+                    "Set REDIS_TLS=true and use rediss:// in CELERY_BROKER_URL and CELERY_RESULT_BACKEND.",
+                    "core.E007",
+                    "core.W007",
+                )
+            )
+
+    return findings
