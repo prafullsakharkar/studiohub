@@ -85,39 +85,43 @@ class TestHolderOfOnlyAnOldCodeIsRefused:
         assert legacy_client().get(url).status_code == 200
 
 
-def test_old_codes_are_not_in_the_permission_catalog_or_any_role_after_the_seed():
-    call_command("init_platform")
-    assert not Permission.objects.filter(code__in=LEGACY).exists()
-    assert not RolePermission.objects.filter(permission__code__in=LEGACY).exists()
+@pytest.mark.usefixtures("seeded_platform_class")
+class TestFromAFreshSeed:
+    """Tests that start from the first ``init_platform`` run, shared across the class (conftest.py)."""
 
+    def test_old_codes_are_not_in_the_permission_catalog_or_any_role_after_the_seed(self):
+        assert not Permission.objects.filter(code__in=LEGACY).exists()
+        assert not RolePermission.objects.filter(permission__code__in=LEGACY).exists()
 
-def test_the_seed_removes_old_codes_and_grants_left_in_an_existing_database():
-    call_command("init_platform")
-    role = Role.objects.get(code="org-admin")
-    legacy = [
-        Permission.objects.create(code=c, name=c, module="master_data", action=c.rsplit(".", 1)[-1])
-        for c in LEGACY
-    ]
-    for permission in legacy:
-        RolePermission.objects.create(role=role, permission=permission, granted=True)
-    holder = UserFactory.create()
-    grant_permissions(holder, *LEGACY)
+    def test_the_seed_removes_old_codes_and_grants_left_in_an_existing_database(self):
+        role = Role.objects.get(code="org-admin")
+        legacy = [
+            Permission.objects.create(
+                code=c, name=c, module="master_data", action=c.rsplit(".", 1)[-1]
+            )
+            for c in LEGACY
+        ]
+        for permission in legacy:
+            RolePermission.objects.create(role=role, permission=permission, granted=True)
+        holder = UserFactory.create()
+        grant_permissions(holder, *LEGACY)
 
-    call_command("init_platform")
+        call_command("init_platform")
 
-    assert not Permission.all_objects.filter(code__in=LEGACY).exists()
-    assert not RolePermission.all_objects.filter(permission__code__in=LEGACY).exists()
-    # The holder's access is gone too (cache invalidated), not just the rows.
-    api = APIClient(raise_request_exception=False)
-    api.force_authenticate(user=holder)
-    assert api.post(f"{API}/clients/", {"code": "X", "name": "X"}, format="json").status_code == 403
+        assert not Permission.all_objects.filter(code__in=LEGACY).exists()
+        assert not RolePermission.all_objects.filter(permission__code__in=LEGACY).exists()
+        # The holder's access is gone too (cache invalidated), not just the rows.
+        api = APIClient(raise_request_exception=False)
+        api.force_authenticate(user=holder)
+        assert (
+            api.post(f"{API}/clients/", {"code": "X", "name": "X"}, format="json").status_code
+            == 403
+        )
 
-
-def test_running_the_seed_again_removes_nothing_more():
-    call_command("init_platform")
-    before = Permission.objects.count(), RolePermission.objects.count()
-    call_command("init_platform")
-    assert (Permission.objects.count(), RolePermission.objects.count()) == before
+    def test_running_the_seed_again_removes_nothing_more(self):
+        before = Permission.objects.count(), RolePermission.objects.count()
+        call_command("init_platform")
+        assert (Permission.objects.count(), RolePermission.objects.count()) == before
 
 
 def test_the_old_code_never_combines_with_a_new_one():

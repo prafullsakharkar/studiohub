@@ -1,10 +1,6 @@
-"""``masterdata`` is a valid audit target (choices-only change, migration 0007)."""
+"""``masterdata`` is a valid audit target."""
 
 from __future__ import annotations
-
-import pytest
-from django.db import connection
-from django.db.migrations.executor import MigrationExecutor
 
 from apps.audit.choices.audit_log import AuditTarget
 from apps.audit.constants.targets import AuditTargetCodes
@@ -27,15 +23,3 @@ def test_the_three_target_lists_agree_and_include_masterdata():
 
 def test_the_validator_accepts_it():
     assert AuditLogValidator().validate_target("masterdata") is True
-
-
-@pytest.mark.django_db
-def test_migration_0007_changes_no_schema():
-    """Only ``choices`` changed, so Django emits no SQL in either direction."""
-    executor = MigrationExecutor(connection)
-    executor.loader.build_graph()
-    migration = executor.loader.graph.nodes[("audit", "0007_alter_auditlog_target_type_masterdata")]
-
-    for backwards in (False, True):
-        statements = executor.loader.collect_sql([(migration, backwards)])
-        assert [s for s in statements if s.strip() and not s.strip().startswith("--")] == []

@@ -4,6 +4,11 @@ Phase 12, 2026-10-27. Branch `feature/scheduling-improvement`, which contains al
 from `develop` at `34168d6`, then the publishing, deliveries and scheduling commits below). Nothing is
 pushed or merged. This file records what was run, what it showed, and what was **not** verified.
 
+> **2026-10-28 update.** The migration chain was reset (A-67): every statement below about stop-and-list
+> migrations, the migration round trip (Q10 B) and migrating real data no longer applies, because the
+> project starts from fresh initial migrations and the old migration tests were removed. Deployment now
+> follows `docs/setup/BOOTSTRAP.md`. The test counts and timings below describe the state at Phase 12.
+
 ## 1. What was built
 
 | Phase | App | Commit | Subject |

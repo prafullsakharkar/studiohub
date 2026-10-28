@@ -144,9 +144,11 @@ DJANGO_SETTINGS_MODULE = "config.settings.testing"
 
 python_files = ["test_*.py", "*_test.py"]
 
-addopts = ["--reuse-db", "--strict-markers", "--cov=apps", "--import-mode=importlib"]
+# Coverage is off by default (it costs about a quarter of the run); CI and `make test-full` add --cov=apps.
+addopts = ["--reuse-db", "--strict-markers", "--import-mode=importlib"]
 
 testpaths = ["apps"]
+
 
 filterwarnings = [
     # Core deprecation FutureWarnings are expected until the domain move (production) is complete
