@@ -1,0 +1,50 @@
+name: Dependency audit
+
+# Known-vulnerability scan of the locked runtime dependencies (the set the production image installs:
+# `uv sync --frozen --no-dev`). Runs when the lock file changes and weekly, because new advisories
+# appear without any commit. A finding fails the job; fix it by upgrading (uv lock --upgrade-package)
+# or, if it cannot be reached or has no fix, record the decision in docs/10-security.
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "backend/uv.lock"
+      - "backend/pyproject.toml"
+      - ".github/workflows/dependency-audit.yml"
+  pull_request:
+    paths:
+      - "backend/uv.lock"
+      - "backend/pyproject.toml"
+      - ".github/workflows/dependency-audit.yml"
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pip-audit:
+    name: Runtime dependencies (pip-audit)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+
+      - name: Export the locked runtime dependencies
+        working-directory: backend
+        run: >-
+          uv export --frozen --no-dev --no-emit-project --format requirements-txt
+          --output-file "$RUNNER_TEMP/runtime-requirements.txt"
+
+      - name: Audit
+        run: >-
+          uvx pip-audit==2.9.0
+          --requirement "$RUNNER_TEMP/runtime-requirements.txt"
+          --require-hashes --disable-pip --no-deps --strict

@@ -1,0 +1,35 @@
+# Weekly update PRs for the three things that carry known-vulnerability risk: Python packages (the
+# lock file), the GitHub Actions the workflows use, and the base images in the Dockerfiles.
+# Security updates are raised as soon as an advisory is published, regardless of this schedule.
+
+version: 2
+
+updates:
+  - package-ecosystem: "uv"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      python-minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker"
+    directory: "/infrastructure/docker/django"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker"
+    directory: "/infrastructure/docker/nginx"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker"
+    directory: "/infrastructure/docker/postgres"
+    schedule:
+      interval: "weekly"
