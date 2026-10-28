@@ -27,6 +27,17 @@ class Sequence(EntityModel):
         related_name="sequences",
         db_index=True,
     )
+    # The show (cut) this record belongs to. A show-bound membership sees only records of its show
+    # (TPN review TM-002, ADR-0033 D2); none means not yet assigned to a show, which hides the record
+    # from show-bound members and leaves it visible to project-wide ones.
+    show = models.ForeignKey(
+        "production.Show",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sequences",
+        db_index=True,
+    )
 
     # Episodic projects file a sequence under an episode; its shots follow it (D-12).
     # Standard projects have none. Legacy rows may have none until someone sets one.

@@ -209,6 +209,21 @@ templates already do); recreate the compose network once so the fixed subnet tak
 - **Existing rows.** Rows written before this change have no `project_id`, so they are administrator-only.
   They are not backfilled; backfill is a data decision for the operator.
 
+# Follow-up: show and department narrowing (TM-002, part 2)
+
+- **Show.** Episodes, sequences, shots and assets can be assigned to a show (`show`, nullable). A member
+  bound to a show sees only records of that show and what hangs off them; unassigned records are hidden
+  from them. Run `manage.py assign_shows --project CODE --show CODE [--dry-run]` to assign existing
+  records; without it a show-bound member sees nothing until records are assigned.
+- **Department.** A membership that names a department sees that department's tasks and what they reach.
+  Match is by `department` text (case-insensitive) or `department_id`, so the values on memberships and
+  tasks must agree. Check them before relying on this: memberships seeded with a mock `department_id` that
+  matches no task will see nothing.
+- **Whole-project views** (statistics, dashboards, deliveries, publishing, schedules, audit rows of the
+  project) are withheld from narrowed members, as for external members.
+- **Limits.** The show cannot yet be set through the API except by creating as a show-bound member;
+  `show_id` is read-only in responses.
+
 ## Correction: the object-store bucket
 
 An earlier summary said the public-read setting on the MinIO `media` bucket had been removed. It had

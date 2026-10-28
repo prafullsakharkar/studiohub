@@ -29,6 +29,8 @@ class ProductionBaseSelector(BaseSelector):
       - A membership that names a vendor or a client is *external*: it shows
         only what that vendor/client was given (``external_scope``), never the
         whole project. A membership with neither is internal.
+      - An internal membership bound to a show, or naming a department, is
+        narrowed to it (``internal_scope``); a full one covers the project.
     """
 
     @classmethod
@@ -71,6 +73,61 @@ class ProductionBaseSelector(BaseSelector):
         return cls._active_memberships(user).filter(vendor_id="", client_id="")
 
     @classmethod
+    def _full_memberships(cls, user):
+        """Internal memberships covering the whole project: bound to no show, naming no department."""
+        return cls._internal_memberships(user).filter(
+            show__isnull=True, department="", department_id=""
+        )
+
+    @classmethod
+    def default_show_id(cls, request, project) -> Any:
+        """
+        The show a record the caller creates in ``project`` belongs to: their own, when their
+        membership is bound to one (otherwise it would vanish from their own view); else ``None``.
+        """
+        user = getattr(request, "user", None)
+        if user is None or not getattr(user, "is_authenticated", False) or project is None:
+            return None
+        return (
+            cls._internal_memberships(user)
+            .filter(project=project, show__isnull=False)
+            .values_list("show_id", flat=True)
+            .first()
+        )
+
+    @classmethod
+    def _internal_q(cls, model_name: str, memberships):
+        """
+        What the caller's internal memberships allow on ``model_name``: a full membership allows
+        the whole project, a narrowed one the project narrowed by show / department
+        (``internal_scope``).
+        """
+        from django.db.models import Q
+
+        from apps.production.selectors import internal_scope
+
+        combined = Q(pk__in=[])
+        full_projects = []
+
+        for membership in memberships:
+            if not internal_scope.is_narrowed(membership):
+                full_projects.append(membership.project_id)
+                continue
+
+            part = Q(project_id=membership.project_id)
+            narrowing = internal_scope.predicate(
+                model_name, internal_scope.narrowing_of(membership)
+            )
+            if narrowing is not None:
+                part &= narrowing
+            combined |= part
+
+        if full_projects:
+            combined |= Q(project_id__in=full_projects)
+
+        return combined
+
+    @classmethod
     def external_grants(cls, user) -> list[Any]:
         """What each of the caller's external memberships may be shown (see ``external_scope``)."""
         from apps.production.selectors.external_scope import Grant
@@ -109,16 +166,17 @@ class ProductionBaseSelector(BaseSelector):
         Ids of the projects in which the caller has full (internal) access, or ``None`` when
         nothing narrows them (platform admins). Unauthenticated callers belong to none.
 
-        An external (vendor/client) membership is deliberately not listed: callers use this to
-        filter whole-project records (deliveries, published files, schedules), which an external
-        member must not see. Per-entity narrowing for them is ``scope_by_project_membership``.
+        An external (vendor/client) membership is deliberately not listed, nor is one narrowed to a
+        show or a department: callers use this to filter whole-project records (deliveries, published
+        files, schedules), which would show those members what their narrowing hides. Per-entity
+        narrowing for them is ``scope_by_project_membership``.
         """
         user = getattr(request, "user", None)
         if user is None or not getattr(user, "is_authenticated", False):
             return []
         if cls.is_platform_admin(user):
             return None
-        return list(cls._internal_memberships(user).values_list("project_id", flat=True).distinct())
+        return list(cls._full_memberships(user).values_list("project_id", flat=True).distinct())
 
     @classmethod
     def scope_by_project_membership(cls, qs, *, request):
@@ -162,7 +220,7 @@ class ProductionBaseSelector(BaseSelector):
                 pk__in=show_bound.values_list("show_id", flat=True)
             )
         elif "project" in {f.name for f in model._meta.fields}:
-            internal = Q(project_id__in=memberships.values_list("project_id", flat=True))
+            internal = cls._internal_q(model_name, memberships)
         else:
             return qs.none()
 
@@ -225,4 +283,4 @@ class ProductionBaseSelector(BaseSelector):
         if cls._has_global_admin_role(user):
             return True
 
-        return cls._internal_memberships(user).filter(project=project).exists()
+        return cls._full_memberships(user).filter(project=project).exists()

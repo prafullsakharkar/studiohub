@@ -23,6 +23,17 @@ class Shot(EntityModel):
         related_name="shots",
         db_index=True,
     )
+    # The show (cut) this record belongs to. A show-bound membership sees only records of its show
+    # (TPN review TM-002, ADR-0033 D2); none means not yet assigned to a show, which hides the record
+    # from show-bound members and leaves it visible to project-wide ones.
+    show = models.ForeignKey(
+        "production.Show",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="shots",
+        db_index=True,
+    )
     # Optional episodic hookup: required-by-validation (not by schema) when the
     # parent project is ``workflow_type == episodic``; the episode must belong
     # to the shot's project. Enforced in the shot viewset chain rules.
