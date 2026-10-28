@@ -40,6 +40,27 @@ Settings → Code security:
 - Enable Dependabot alerts and security updates, secret scanning with push protection, and private
   vulnerability reporting (the route named in `SECURITY.md`).
 
+## State observed on GitHub (28 October 2026)
+
+Read with `infrastructure/scripts/github-settings.sh`:
+
+- The repository is **public**. Anything committed is published; see `secrets-rotation.md`. Confirm that is
+  intended.
+- Secret scanning and push protection are on. Dependabot alerts and security updates were off, and
+  neither `main` nor `develop` had branch protection.
+- `github-settings.sh` shows this and, with `--apply`, enables Dependabot alerts and security updates,
+  private vulnerability reporting, and branch protection (no force push or deletion, CI checks must pass,
+  one code-owner review on pull requests; administrators are not forced to follow it unless
+  `ENFORCE_ADMINS=true`). `REQUIRED_REVIEWS=0` drops the review requirement for a one-maintainer repository.
+- **Applied on 28 October 2026** (owner's choice: alerts on; branch rules without a required review, because
+  there is one maintainer): Dependabot alerts and security updates, private vulnerability reporting, and on
+  `main` and `develop` no force push, no deletion and the checks `Backend (ruff + pytest)`, `Secret scan
+  (gitleaks)` and `Docs (link check)` required on pull requests. Administrators are exempt
+  (`enforce_admins` false). Add a second reviewer and re-run with `REQUIRED_REVIEWS=1` to require review.
+- The first runs of the new workflows: `Dependency audit` and `Containers` passed on the push that carried
+  them; `CI` failed on one seed test whose fallback parser corrupted URLs when `node` was unavailable
+  (fixed, with a test that forces the fallback).
+
 ## Known gaps
 
 - nginx and postgres images start as root by design of the official images; accepted with an expiry in

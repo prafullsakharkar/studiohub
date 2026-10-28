@@ -24,7 +24,16 @@ from rest_framework.exceptions import APIException
 
 from apps.core.security.fernet import PREFIX, FieldCipher
 
-__all__ = ["PREFIX", "SecretUnavailable", "decrypt", "enabled", "encrypt", "is_encrypted"]
+__all__ = [
+    "PREFIX",
+    "SecretUnavailable",
+    "decrypt",
+    "enabled",
+    "encrypt",
+    "is_encrypted",
+    "rekey",
+    "uses_primary_key",
+]
 
 
 class SecretUnavailable(APIException):
@@ -45,3 +54,5 @@ enabled = _cipher.enabled
 is_encrypted = _cipher.is_encrypted
 encrypt = _cipher.encrypt
 decrypt = _cipher.decrypt
+rekey = _cipher.rekey
+uses_primary_key = _cipher.uses_primary_key

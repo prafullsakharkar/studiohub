@@ -437,3 +437,32 @@ class TestSeedMasterdataCatalogRules:
         assert versions["2025"].code == "maya-2025" and versions["2025"].name == "Maya 2025"
         assert versions["2026"].code == "MAYA-2026" and versions["2026"].name == "Maya 2026"
         assert SoftwareVersion.objects.count() == 2
+
+
+class TestMockParserFallback:
+    """Without node the parser falls back to a pure-Python reader; it must not eat ``//`` in strings."""
+
+    def test_urls_survive_and_comments_are_removed(self, tmp_path, monkeypatch):
+        import subprocess
+
+        from apps.production.management.commands import seed_production_mocks as mocks
+
+        path = tmp_path / "users.ts"
+        path.write_text(
+            "export const mockUsers: User[] = [\n"
+            "  // a full-line comment\n"
+            '  { "id": "u1", "avatar": "https://example.com/a.png", "n": 1 }, // trailing comment\n'
+            "  { 'id': 'u2', 'avatar': 'http://x.test/b', },\n"
+            "];\n"
+        )
+
+        def no_node(*args, **kwargs):
+            raise FileNotFoundError("node")
+
+        monkeypatch.setattr(subprocess, "check_output", no_node)
+
+        rows = mocks._load_ts_mock_array(path, "mockUsers")
+
+        assert [row["id"] for row in rows] == ["u1", "u2"]
+        assert rows[0]["avatar"] == "https://example.com/a.png"
+        assert rows[1]["avatar"] == "http://x.test/b"

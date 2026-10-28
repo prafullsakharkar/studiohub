@@ -363,3 +363,143 @@ class TestAssignShowsCommand:
                 "NOPE",
                 stdout=StringIO(),
             )
+
+
+class TestPlaylistsNotesAndMoreMedia:
+    """Free-text notes, playlists of versions, and media on sequences/episodes/reviews are narrowed too."""
+
+    def _playlist(self, world, versions, **extra):
+        from apps.production.models import Playlist, PlaylistEntry
+
+        playlist = Playlist.objects.create(
+            project=world["project"], name=extra.pop("name", "p"), **extra
+        )
+        for position, version in enumerate(versions):
+            PlaylistEntry.objects.create(playlist=playlist, version=version, position=position)
+        return playlist
+
+    def test_a_playlist_with_versions_outside_the_reach_is_hidden(self, world):
+        v_a_comp, v_a_anim, v_b = world["versions"]
+        inside = self._playlist(world, [v_a_comp, v_a_anim], name="in")
+        mixed = self._playlist(world, [v_a_comp, v_b], name="mixed")
+        empty = self._playlist(world, [], name="empty")
+        client = _client(world["in_show_a"])
+
+        visible = _ids(client, "/api/v1/playlists/")
+
+        assert str(inside.pk) in visible
+        assert str(empty.pk) in visible
+        assert str(mixed.pk) not in visible
+
+    def test_a_playlist_the_member_made_is_always_visible(self, world):
+        v_a_comp, _a, v_b = world["versions"]
+        own = self._playlist(world, [v_b], name="mine", created_by=world["in_show_a"])
+
+        assert str(own.pk) in _ids(_client(world["in_show_a"]), "/api/v1/playlists/")
+
+    def test_a_department_member_gets_the_same_rule(self, world):
+        v_a_comp, v_a_anim, v_b = world["versions"]
+        reachable = self._playlist(world, [v_a_comp, v_b], name="comp")
+        leaking = self._playlist(world, [v_a_comp, v_a_anim], name="anim")
+
+        visible = _ids(_client(world["in_comp"]), "/api/v1/playlists/")
+
+        assert str(reachable.pk) in visible
+        assert str(leaking.pk) not in visible
+
+    def test_a_full_member_sees_every_playlist(self, world):
+        v_a_comp, _a, v_b = world["versions"]
+        mixed = self._playlist(world, [v_a_comp, v_b], name="mixed")
+
+        assert str(mixed.pk) in _ids(_client(world["full"]), "/api/v1/playlists/")
+
+    def test_project_notes_are_the_members_own(self, world):
+        from apps.production.models import ProjectNote
+
+        mine = ProjectNote.objects.create(
+            project=world["project"], subject="mine", author=world["in_show_a"]
+        )
+        theirs = ProjectNote.objects.create(
+            project=world["project"], subject="theirs", author=world["full"]
+        )
+        full_view = ProductionBaseSelector.scope_by_project_membership(
+            ProjectNote.objects.all(), request=type("R", (), {"user": world["full"]})()
+        )
+        narrowed_view = ProductionBaseSelector.scope_by_project_membership(
+            ProjectNote.objects.all(), request=type("R", (), {"user": world["in_show_a"]})()
+        )
+
+        assert {mine.pk, theirs.pk} <= set(full_view.values_list("pk", flat=True))
+        assert set(narrowed_view.values_list("pk", flat=True)) == {mine.pk}
+
+    def test_media_on_sequences_episodes_and_reviews_follows_the_reach(self, world):
+        project = world["project"]
+        seq_a, seq_b = world["sequences"]
+        ep_a, ep_none = world["episodes"]
+        review_a, review_b = world["reviews"]
+        media = {
+            "seq_a": Media.objects.create(
+                project=project, code="MS1", entity_type="Sequence", entity_id=str(seq_a.pk)
+            ),
+            "seq_b": Media.objects.create(
+                project=project, code="MS2", entity_type="Sequence", entity_id=str(seq_b.pk)
+            ),
+            "ep_none": Media.objects.create(
+                project=project, code="ME1", entity_type="Episode", entity_id=str(ep_none.pk)
+            ),
+            "rev_a": Media.objects.create(
+                project=project, code="MR1", entity_type="Review", entity_id=str(review_a.pk)
+            ),
+            "rev_b": Media.objects.create(
+                project=project, code="MR2", entity_type="Review", entity_id=str(review_b.pk)
+            ),
+        }
+
+        visible = _ids(_client(world["in_show_a"]), "/api/v1/media/")
+
+        assert str(media["seq_a"].pk) in visible
+        assert str(media["rev_a"].pk) in visible
+        assert str(media["seq_b"].pk) not in visible
+        assert str(media["ep_none"].pk) not in visible
+        assert str(media["rev_b"].pk) not in visible
+
+
+class TestCheckNarrowingCommand:
+    def _run(self, *args):
+        out = StringIO()
+        try:
+            call_command("check_narrowing", *args, stdout=out)
+            status = 0
+        except SystemExit as exit_:
+            status = exit_.code
+        return status, out.getvalue()
+
+    def test_a_working_configuration_passes(self, world):
+        status, output = self._run("--project", world["project"].code)
+
+        assert status == 0, output
+        assert "ok    " in output
+        assert "0 flagged." in output
+
+    def test_it_flags_an_empty_show_and_an_unmatched_department(self, world):
+        empty_show = ShowFactory(project=world["project"])
+        _member(world["project"], show=empty_show)
+        _member(world["project"], department="Lighting")
+
+        status, output = self._run("--project", world["project"].code)
+
+        assert status == 1
+        assert "no episode, sequence, shot or asset is assigned to this show" in output
+        assert "no task of this project has this department" in output
+        assert "departments in use:" in output
+
+    def test_a_clean_project_exits_zero(self, db):
+        project = ProjectFactory()
+        show = ShowFactory(project=project)
+        ShotFactory(project=project, show=show)
+        _member(project, show=show)
+
+        status, output = self._run("--project", project.code)
+
+        assert status == 0
+        assert "1 narrowed membership(s) checked, 0 flagged." in output

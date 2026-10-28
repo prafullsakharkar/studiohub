@@ -18,3 +18,5 @@ _cipher = FieldCipher(keys_setting="DELIVERY_SECRET_KEYS", error=SecretStorageUn
 is_encrypted = _cipher.is_encrypted
 encrypt = _cipher.encrypt
 decrypt = _cipher.decrypt
+rekey = _cipher.rekey
+uses_primary_key = _cipher.uses_primary_key

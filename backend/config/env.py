@@ -208,8 +208,17 @@ class Settings(BaseSettings):
     )
 
     # Require MFA for every account, not only staff, superusers and external (vendor/client)
-    # members. Production templates turn this on.
-    mfa_require_all: bool = Field(default=False, alias="MFA_REQUIRE_ALL")
+    # members. Unset: on in production, off elsewhere; set it to override either way.
+    mfa_require_all: bool | None = Field(default=None, alias="MFA_REQUIRE_ALL")
+
+    # Screen new passwords against the Have I Been Pwned range API (k-anonymity: only the first five
+    # characters of the password's SHA-1 leave the server). Off by default because it is an outbound
+    # call. When the service cannot be reached the password is accepted unless FAIL_CLOSED is set.
+    password_breach_check: bool = Field(default=False, alias="PASSWORD_BREACH_CHECK")
+
+    password_breach_check_fail_closed: bool = Field(
+        default=False, alias="PASSWORD_BREACH_CHECK_FAIL_CLOSED"
+    )
 
     ####################################################################
     # Delivery passcode encryption
@@ -290,6 +299,14 @@ class Settings(BaseSettings):
     track_retention_days: int = Field(default=90, alias="TRACK_RETENTION_DAYS")
 
     ####################################################################
+    # Security alerts
+    ####################################################################
+
+    # Comma-separated addresses that get an hourly summary when failed-login spikes, lockouts or
+    # privileged changes occur. Empty: alerts are only written to the log (event: security_alert).
+    security_alert_emails: str = Field(default="", alias="SECURITY_ALERT_EMAILS")
+
+    ####################################################################
     # Celery
     ####################################################################
 
@@ -333,6 +350,17 @@ class Settings(BaseSettings):
         return tuple(
             entry.strip() for entry in self.trusted_proxy_ips.split(",") if entry.strip()
         )
+
+    @property
+    def security_alert_recipients(self) -> tuple[str, ...]:
+        return tuple(a.strip() for a in self.security_alert_emails.split(",") if a.strip())
+
+    @property
+    def mfa_required_for_all(self) -> bool:
+        """MFA_REQUIRE_ALL when set; otherwise on exactly in production."""
+        if self.mfa_require_all is None:
+            return self.environment == Environment.PRODUCTION
+        return self.mfa_require_all
 
     @property
     def mfa_encryption_keys(self) -> tuple[str, ...]:

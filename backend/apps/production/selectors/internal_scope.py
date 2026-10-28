@@ -13,8 +13,9 @@ An internal membership (no vendor, no client) normally covers the whole project.
   versions, and the media attached to any of it (the same reach a vendor has).
 * **Both** apply together: a record must satisfy each.
 
-Models without a show or task link (workflows, playlists, notes, members, templates) are not narrowed
-here: they are project-wide, like for any internal member. A membership with neither a show nor a
+Playlists (a list of versions) are narrowed to those the member made and those whose entries are all
+within reach, and project notes to the member's own. Models without a show or task link (workflows,
+members, templates) are not narrowed here: they are project-wide, like for any internal member. A membership with neither a show nor a
 department is *full* and is not touched by any of this. Whole-project views (statistics, dashboards,
 deliveries, publishing, schedules) are not available to a narrowed member, because their totals
 would reveal what the narrowing hides; see ``ProductionBaseSelector.visible_project_ids``.
@@ -36,6 +37,7 @@ class Narrowing(NamedTuple):
     show_id: Any
     department: str
     department_id: str
+    user_id: Any = None
 
     @property
     def by_show(self) -> bool:
@@ -61,6 +63,7 @@ def narrowing_of(membership: Any) -> Narrowing:
         show_id=membership.show_id,
         department=(membership.department or "").strip(),
         department_id=(membership.department_id or "").strip(),
+        user_id=membership.user_id,
     )
 
 
@@ -73,7 +76,7 @@ def _text_ids(queryset: QuerySet[Any], field: str = "id") -> QuerySet[Any]:
 
 
 # Media is narrowed only where it hangs off one of these; media on anything else is project-wide.
-_NARROWED_MEDIA_TYPES = ("task", "shot", "asset", "version")
+_NARROWED_MEDIA_TYPES = ("task", "shot", "asset", "version", "sequence", "episode", "review")
 
 
 # ---------------------------------------------------------------------------
@@ -97,6 +100,35 @@ def _dept_shots(n: Narrowing) -> QuerySet[Any]:
 
 def _dept_assets(n: Narrowing) -> QuerySet[Any]:
     return department_tasks(n).filter(asset_id__isnull=False).values("asset_id")
+
+
+def _dept_sequences(n: Narrowing) -> QuerySet[Any]:
+    shot = _model("Shot")
+    return (
+        _model("Sequence")
+        .objects.filter(project_id=n.project_id)
+        .filter(
+            Q(id__in=department_tasks(n).filter(sequence_id__isnull=False).values("sequence_id"))
+            | Q(
+                id__in=shot.objects.filter(id__in=_dept_shots(n))
+                .filter(sequence_id__isnull=False)
+                .values("sequence_id")
+            )
+        )
+    )
+
+
+def _dept_episodes(n: Narrowing) -> QuerySet[Any]:
+    shot = _model("Shot")
+    return (
+        _model("Episode")
+        .objects.filter(project_id=n.project_id)
+        .filter(
+            id__in=shot.objects.filter(id__in=_dept_shots(n))
+            .filter(episode_id__isnull=False)
+            .values("episode_id")
+        )
+    )
 
 
 def _dept_versions(n: Narrowing) -> QuerySet[Any]:
@@ -151,6 +183,9 @@ def _dept_media(n: Narrowing) -> Q:
                 version.objects.filter(id__in=_dept_versions_of(n).values("id"))
             ),
         )
+        | Q(entity_type__iexact="sequence", entity_id__in=_text_ids(_dept_sequences(n)))
+        | Q(entity_type__iexact="episode", entity_id__in=_text_ids(_dept_episodes(n)))
+        | Q(entity_type__iexact="review", entity_id__in=_text_ids(_dept_reviews(n)))
     )
 
 
@@ -245,6 +280,15 @@ def _show_media(n: Narrowing) -> Q:
             entity_type__iexact="version",
             entity_id__in=_text_ids(_show_versions(n)),
         )
+        | Q(
+            entity_type__iexact="sequence",
+            entity_id__in=_text_ids(_model("Sequence").objects.filter(show_id=n.show_id)),
+        )
+        | Q(
+            entity_type__iexact="episode",
+            entity_id__in=_text_ids(_model("Episode").objects.filter(show_id=n.show_id)),
+        )
+        | Q(entity_type__iexact="review", entity_id__in=_text_ids(_show_reviews(n)))
     )
 
 
@@ -273,11 +317,46 @@ def _show_q(model_name: str, n: Narrowing) -> Q | None:
     return None
 
 
+def _playlist_q(n: Narrowing) -> Q:
+    """
+    Playlists the member made, and playlists whose every entry is a version inside their reach. A
+    playlist is a list of versions, so showing one that holds versions outside the reach would show
+    them anyway.
+    """
+    entry = _model("PlaylistEntry")
+    with_version = entry.objects.filter(version_id__isnull=False)
+    outside = Q(pk__in=[])
+
+    if n.by_show:
+        outside |= Q(
+            playlist_id__in=with_version.exclude(
+                version_id__in=_show_versions(n).values("id")
+            ).values("playlist_id")
+        )
+
+    if n.by_department:
+        outside |= Q(
+            playlist_id__in=with_version.exclude(
+                version_id__in=_dept_versions_of(n).values("id")
+            ).values("playlist_id")
+        )
+
+    leaking = entry.objects.filter(outside).values("playlist_id")
+    return Q(created_by_id=n.user_id) | ~Q(id__in=leaking)
+
+
 def predicate(model_name: str, n: Narrowing) -> Q | None:
     """
     The extra condition a narrowed membership puts on ``model_name`` (on top of "in the project"),
     or ``None`` when the model is project-wide for it.
     """
+    if model_name == "ProjectNote":
+        # Free text about the project as a whole: a narrowed member sees only their own.
+        return Q(author_id=n.user_id) | Q(created_by_id=n.user_id)
+
+    if model_name == "Playlist":
+        return _playlist_q(n)
+
     parts: list[Q] = []
 
     if n.by_show:

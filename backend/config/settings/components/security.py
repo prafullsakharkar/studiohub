@@ -55,7 +55,7 @@ MFA_CHALLENGE_TTL_SECONDS = 300
 
 # Policy: who must use MFA (see MFAPolicyService).
 # MFA_REQUIRE_ALL (env) turns it on for every account; production templates set it.
-MFA_REQUIRE_MFA = settings.mfa_require_all
+MFA_REQUIRE_MFA = settings.mfa_required_for_all
 
 MFA_REQUIRE_STAFF = True
 
@@ -68,6 +68,11 @@ MFA_REQUIRE_EXTERNAL = True
 PASSWORD_MIN_LENGTH = 12
 
 PASSWORD_MAX_LENGTH = 128
+
+# Breached-password screening (identity/validators/breach.py). Off unless the operator turns it on.
+PASSWORD_BREACH_CHECK = settings.password_breach_check
+
+PASSWORD_BREACH_CHECK_FAIL_CLOSED = settings.password_breach_check_fail_closed
 
 # A new password may not equal the current one or any of the last N.
 PASSWORD_HISTORY_COUNT = 5
@@ -99,6 +104,9 @@ API_KEY_ACCEPT_LEGACY_HASH = settings.api_key_accept_legacy_hash
 # `check --deploy` fails (rather than warns) when the database or Redis link is not encrypted and
 # verified (TPN review TM-009).
 INTERNAL_TLS_REQUIRED = settings.internal_tls_required
+
+# Who receives the hourly security-alert summary (identity/services/security_alerts.py).
+SECURITY_ALERT_EMAILS = settings.security_alert_recipients
 
 # Active API keys / PATs one user may hold, per kind.
 IDENTITY_MAX_ACTIVE_CREDENTIALS = 50

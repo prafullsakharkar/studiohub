@@ -84,6 +84,10 @@ services:
     environment:
       DJANGO_TLS_CERTFILE: /tls/django.pem
       DJANGO_TLS_KEYFILE: /tls/django.key
+      # nginx is the only proxy and the backend subnet is fixed below, so the trusted range is known
+      # here; the env file may still override it (TPN review TM-014).
+      TRUSTED_PROXY_IPS: ${TRUSTED_PROXY_IPS:-172.31.250.0/24}
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-172.31.250.0/24}
     depends_on:
       tls-init:
         condition: service_completed_successfully

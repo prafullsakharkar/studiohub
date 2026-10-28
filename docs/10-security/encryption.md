@@ -47,8 +47,15 @@ For a managed database or cache, set `DB_SSLMODE`, `DB_SSLROOTCERT` and `REDIS_*
   device and reports `ENCRYPTED` (dm-crypt/LUKS or ZFS native encryption), `ATTESTED` (provider-level
   encryption, with `PROVIDER_ENCRYPTION_REF` pointing at the evidence) or `UNKNOWN` (exit 1). A cloud
   provider's disk encryption is below the guest and cannot be detected; record the evidence instead.
-- **Backups.** The repository has no backup tooling (see `docs/06-infrastructure/backup.md`). Whatever takes
-  them must encrypt them, with keys held apart from the data.
+- **Backups.** `infrastructure/scripts/backup.sh` takes encrypted backups of the database and the uploads
+  and restores them. They are encrypted to a public certificate (CMS, AES-256-GCM), so the server holds only
+  the key that can write them, never the one that can read them; the private key (made by `backup.sh keygen`)
+  belongs off the server. Streams are cut into 256 MB parts, each encrypted on its own, so restoring needs
+  bounded memory. `backup.sh verify` restores the latest backup into a scratch database and checks it, and
+  should be run on a schedule; `restore` refuses to overwrite the live database without `--yes-overwrite`.
+  It does not back up Redis (cache and queue only), the TLS volumes or the environment file: keep those
+  with your secret store. It was tested against a real PostgreSQL container: multi-part backup, restore,
+  data comparison, tamper and wrong-key failures, and pruning.
 
 # Objectives
 
