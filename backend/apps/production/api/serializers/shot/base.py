@@ -9,6 +9,7 @@ from apps.production.models import Shot
 
 class ShotSerializer(ShotCurrentVersionMixin, BaseReadSerializer[Any]):  # pyright: ignore[reportUnsafeMultipleInheritance]
     project_id = serializers.UUIDField(read_only=True)
+    show_id = serializers.UUIDField(read_only=True, allow_null=True)
     project_code = serializers.SerializerMethodField()
     episode_id = serializers.UUIDField(read_only=True, allow_null=True)
     sequence_id = serializers.UUIDField(read_only=True, allow_null=True)
@@ -24,6 +25,7 @@ class ShotSerializer(ShotCurrentVersionMixin, BaseReadSerializer[Any]):  # pyrig
             "id",
             "uuid",
             "project_id",
+            "show_id",
             "project_code",
             "episode_id",
             "sequence_id",

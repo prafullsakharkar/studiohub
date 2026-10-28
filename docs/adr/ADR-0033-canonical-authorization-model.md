@@ -72,9 +72,28 @@ never covers sibling shows.
 >   deliveries). Deliveries, publishing and scheduling are filtered by `visible_project_ids`, which
 >   now lists internal projects only.
 >
-> Still open: SHOW and DEPARTMENT narrowing for *internal* members. `Shot`, `Sequence`, `Episode`
-> and `Asset` carry no link to a show, so a show-bound membership cannot restrict them until that
-> link exists; department is a free-text field on only some models.
+> **Amendment (2026-10-28, TPN review TM-002, part 2): internal members can be narrowed.**
+> `Episode`, `Sequence`, `Shot` and `Asset` now carry a nullable `show` link, so a show-bound
+> membership can be enforced. The rules live in `apps/production/selectors/internal_scope.py` and are
+> deny-by-default:
+>
+> - **Show-bound membership** (`ProjectMembership.show`): the episodes, sequences, shots and assets
+>   assigned to that show; the tasks on those; and the versions, timelogs, reviews containing those
+>   versions, and media attached to any of it. Records not assigned to a show are hidden from it.
+> - **Department** (`department` text, case-insensitive, or `department_id`): the project's tasks of
+>   that department and what they reach (shot, asset, sequence, episode, versions, timelogs, reviews,
+>   media), the same reach a vendor has.
+> - **Both** must hold. A membership with neither is *full* and unchanged. Workflows, playlists, notes,
+>   members and templates are project-wide for every internal member.
+> - **Whole-project views are not available to a narrowed member**: statistics, dashboards, and the
+>   records filtered by `visible_project_ids` (deliveries, publishing, schedules, task templates),
+>   because their totals and lists would reveal what the narrowing hides.
+> - **Creating** into a project as a show-bound member files the record under their show, so it does not
+>   vanish from their own view. `manage.py assign_shows` assigns existing records to a show.
+>
+> Not done: assigning a show through the API (only the command and the creation default set it; the
+> serializers expose `show_id` read-only), and media attached to entity types other than task, shot,
+> asset and version stays project-wide.
 
 ## D3 — Canonical permission code format
 

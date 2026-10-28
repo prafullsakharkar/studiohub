@@ -8,6 +8,7 @@ from apps.production.models import Episode
 
 class EpisodeSerializer(BaseReadSerializer[Any]):
     project_id = serializers.UUIDField(read_only=True)
+    show_id = serializers.UUIDField(read_only=True, allow_null=True)
     project_code = serializers.SerializerMethodField()
     project_name = serializers.SerializerMethodField()
     is_deleted = serializers.BooleanField(read_only=True)
@@ -19,6 +20,7 @@ class EpisodeSerializer(BaseReadSerializer[Any]):
             "id",
             "uuid",
             "project_id",
+            "show_id",
             "project_code",
             "project_name",
             "code",

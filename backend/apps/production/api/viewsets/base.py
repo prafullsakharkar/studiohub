@@ -393,6 +393,7 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         self.validate_references(project, data)
         self._guard_privileged_values(data)
         self._guard_initial_status(data)
+        data = self._with_default_show(model, project, data)
         # Always pass the resolved instance: validated_data may carry the
         # raw reference string from the project_id/project_code aliases,
         # which the ORM cannot assign to the FK directly. The service sets
@@ -400,6 +401,14 @@ class ProductionEntityViewSet(ServiceModelViewSet):  # pyright: ignore[reportMis
         serializer.instance = self.service_class.create(  # pyright: ignore[reportAttributeAccessIssue]
             user=self.request.user, **{**data, "project": project}
         )
+
+    def _with_default_show(self, model, project, data):
+        """A caller bound to a show creates into that show, or the record would vanish from their view."""
+        if "show" not in {f.name for f in model._meta.fields} or data.get("show") is not None:
+            return data
+
+        show_id = ProductionBaseSelector.default_show_id(self.request, project)
+        return {**data, "show_id": show_id} if show_id else data
 
     def perform_update(self, serializer):  # pyright: ignore[reportIncompatibleMethodOverride]
         instance = serializer.instance
