@@ -31,14 +31,15 @@ Ordering follows your default heuristic. One deviation: identity *administration
 
 **In scope**
 - API client: keep `ky`; single URL builder (per-route trailing-slash rule, incl. the slash-less `platform/master-data/*`); auth header; 401 → refresh → retry once; **cross-tab single-flight refresh** (`navigator.locks` with BroadcastChannel fallback; pick up rotated tokens from other tabs); reject queued requests on refresh failure, then logout; `AbortSignal` passthrough; logout sends `{refresh}`.
-- Auth: MFA challenge step (`mfa_required` → `POST /auth/mfa/challenge/`, with `remember_device`), `mfa_enrollment_required` routing, reset-password page, `must_change_password` (keep), profile PATCH limited to Profile fields. Token storage change per Q6.
+- Auth: MFA challenge step (`mfa_required` → `POST /auth/mfa/challenge/`, with `remember_device`), `mfa_enrollment_required` routing, reset-password page, `must_change_password` (keep), profile PATCH limited to Profile fields. Token storage per Q6: access token in memory only, refresh token in `localStorage`.
 - Errors: one `normalizeApiError` → `{status, message, fieldErrors, nonFieldErrors, code, requestId, retryAfter}` covering flat DRF bodies, nested serializer errors, SimpleJWT `code/messages`, `error.{code,request_id}`, 401/403/404/405/409(`has_dependants`)/413/423/429/5xx/network/timeout. Tests built from [samples/](samples/).
 - Types: regenerate `openapi.ts` from the live schema (`pnpm api:generate` with a committed fresh snapshot); `src/api/<app>/` type modules; hand-written types for the 19 un-schema'd views (CR-08) validated against samples; drop or regenerate `ContractValidator`.
 - Data layer: query-key factory per resource; `usePaginatedList` (page/page_size/search/ordering/filters → `{count,next,previous,results}`) and `useFullList` (bare-array endpoints); mutation helpers with invalidation; optimistic updates off by default.
 - Forms: `useServerForm` mapping `fieldErrors` onto react-hook-form fields and `nonFieldErrors` into a banner; field config helpers from OpenAPI (required, maxLength, enum, readOnly, nullable).
 - Permissions: `useCan(code | code[], {projectId?})` = `is_superuser` ∨ code ∈ `user.permissions` (∧ membership for project-scoped checks); `<Can>`/route guards on top; a **mapping table** from the 290 invented codes to backend codes (or to "no backend equivalent → remove the gate"); 403 → "no permission" state, 404 on project-scoped views → "not found / no access".
 - UX primitives: loading/empty/error/retry states, toasts with request id, confirm dialog for destructive actions (shows 409 dependants), upload with progress (`/core/attachments/`, multipart, 413/429 handling).
-- Removals (separate commits, listed in the report): `core/testing/**` + `/testing` route, demo users, stale health probe list (fix `DJANGO_HEALTH_PATH` default to `/health/`), `features/organizations/`, client-side activity recording on login/logout, the client role matrix and unbacked permission engines once the mapping is in place, frontend `CLAUDE.md` mock sections.
+- Export: shared `exportAll(listEndpoint, queryParams)` → CSV for all rows matching the current filters (Q4), with progress, cancel and a 10k-row warning; wired into the shared table toolbar.
+- Removals (separate commits, listed in the report): Reports, Notifications and Data Platform pages + routes + nav + `/reports/` call (Q2), `core/testing/**` + `/testing` route, demo users, stale health probe list (fix `DJANGO_HEALTH_PATH` default to `/health/`), `features/organizations/`, client-side activity recording on login/logout, the client role matrix and unbacked permission engines once the mapping is in place, frontend `CLAUDE.md` mock sections.
 
 **Endpoints in scope:** `/auth/{login,refresh,logout,me,change-password,forgot-password,reset-password,mfa/challenge}/`, `/info/version/`, `/health/`, `/departments/` (sample list/create flow), `/core/attachments/` (upload primitive).
 
@@ -50,9 +51,9 @@ Ordering follows your default heuristic. One deviation: identity *administration
 
 **Why here:** users/roles/permissions are referenced by every other module (assignees, owners, reviewers), and the RBAC screens let an admin grant the codes the later phases gate on.
 
-**Scope:** Users admin (`/identity/users/` CRUD + activate/deactivate/suspend/unsuspend/archive/restore/reset-password/force-password-change/revoke-sessions); roles with `permissions`/`users`/`groups` sub-resources (grant with `expires_at`); groups with `members`/`roles`; permission catalog browser; My account: sessions (current, revoke, revoke-all-other), MFA enroll/verify/disable/recovery codes/trusted devices (canonical `/identity/auth/mfa/*` tree only), personal access tokens and API keys (secret shown once, rotate, revoke); admin ledgers (security events, login history, login attempts, IP blacklist) — superuser-only until CR-02.
+**Scope:** user administration **inside People** (Q1): Account section on the person page — linked user's lifecycle (`/identity/users/{id}/` activate/deactivate/suspend/unsuspend/archive/restore/reset-password/force-password-change/revoke-sessions, role assignment) or "Create login" (`POST /identity/users/` + `POST /people/{id}/link-user/`); the People list/CRUD itself stays in Phase 3; roles with `permissions`/`users`/`groups` sub-resources (grant with `expires_at`); groups with `members`/`roles`; permission catalog browser; My account under `/settings/account/*` (Q3): profile, password, sessions (current, revoke, revoke-all-other), MFA enroll/verify/disable/recovery codes/trusted devices (canonical `/identity/auth/mfa/*` tree only), personal access tokens and API keys (secret shown once, rotate, revoke); admin ledgers (security events, login history, login attempts, IP blacklist) — superuser-only until CR-02.
 
-**Risks:** CR-02 (unseeded codes) limits non-superuser admins; Q1 (Users vs People) decides navigation.
+**Risks:** CR-02 (unseeded codes) limits non-superuser admins; the create-login flow is two non-atomic calls (retry-link path needed).
 **Exit:** an admin can create a user, assign a role, and that user's next `/auth/me/` shows the new permissions and the UI reacts; MFA enroll→login-with-challenge round trip works.
 
 ## Phase 3 — Masterdata (directory + catalog) · `sync/phase-3-masterdata` · size **M**
@@ -93,7 +94,7 @@ Ordering follows your default heuristic. One deviation: identity *administration
 
 ## Phase 9 — Publishing · `sync/phase-9-publishing` · size **M**
 
-**Scope:** publishes (+ validate/retry/republish/unpublish; export callbacks per Q5), published files (+ bulk-register/deprecate/revoke/restore), destinations, storage roots; project Publishing tab. **Depends on:** versions (7).
+**Scope:** publishes (+ validate/retry/republish/unpublish, and `start-export`/`complete-export`/`fail` exposed in the UI per Q5), published files (+ bulk-register/deprecate/revoke/restore), destinations, storage roots; project Publishing tab. **Depends on:** versions (7).
 
 ## Phase 10 — Scheduling · `sync/phase-10-scheduling` · size **L**
 
@@ -101,7 +102,7 @@ Ordering follows your default heuristic. One deviation: identity *administration
 
 ## Phase 11 — Settings & platform admin · `sync/phase-11-settings` · size **M**
 
-**Scope:** system settings (+ lock/unlock), feature flags (+ enable/disable/schedule) and a `useFeatureFlag` hook, themes (+ activate), localizations (+ activate), setting categories/definitions; tags; decisions on Reports/Notifications/Data Platform (Q2) and `/settings` placement (Q3). **Risk:** CR-02 (`settings.view`).
+**Scope:** under `/settings/system/*` (Q3): system settings (+ lock/unlock), feature flags (+ enable/disable/schedule) and a `useFeatureFlag` hook, themes (+ activate), localizations (+ activate), setting categories/definitions; tags; remove the mock DB schema/export section. **Risk:** CR-02 (`settings.view`).
 
 ## Phase 12 — Dashboards & analytics · `sync/phase-12-dashboards` · size **M**
 
