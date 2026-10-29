@@ -198,3 +198,27 @@ A restricted session (see [restricted sessions](samples/identity/_restricted_ses
 ## Note — `/health/` is liveness only
 
 `GET /health/` returns `{"status": "ok"}` without touching the database (`config/urls.py`). It proves the process is up, not that the database is reachable. If a readiness probe is wanted (the frontend server's `isDjangoRunning` and any load balancer), it needs a separate route. Not requested.
+
+---
+
+## Phase 2 findings (identity administration)
+
+Evidence for all of these: [samples/identity/_identity_admin_flow.json](samples/identity/_identity_admin_flow.json), captured through the real MFA-enrolled JWT flow by [tools/test_capture_identity_admin.py](tools/test_capture_identity_admin.py).
+
+### CR-12 — Creating a user whose e-mail differs only by case is a 500 (**bug**)
+`POST /api/v1/identity/users/` with `new@example.test` then `NEW@example.test` → the second answers `500 {"detail": "Internal server error."}` (`users_create_duplicate_case`). The exact duplicate is a clean `400 {"email": ["user with this email already exists."]}` (`users_create_duplicate_exact`). The uniqueness check is case-sensitive but a case-insensitive unique index (or `User.objects.get(email__iexact=…)` in the service) rejects it later as an unhandled `IntegrityError`. **Proposed fix:** compare case-insensitively in the serializer/`UserService.create` and return the same 400 as the exact duplicate. **Frontend workaround:** none that is reliable (a pre-check `GET /identity/users/?email=` is exact-match); the form shows the generic server error with its request id. *Needs your approval; not applied.*
+
+### Q-07 — `POST /roles/` and `POST /groups/` return no `id`
+Both answer `201` with only the submitted fields (`{"name", "code", "description", "parent", "scope", "priority"}`); `id`, `uuid`, `is_system`, … are missing (`roles_create_has_id`, `groups_create_has_id`: false). `POST /identity/users/`, credentials and IP-blacklist entries do return the full object. The frontend works around it by re-reading the row by `code` (`?search=<code>`), which costs a request and is unambiguous only because `code` is unique. **Proposed fix:** return the serialized instance (the service result is evidently not the instance that is serialized).
+
+### Q-08 — nothing stops an administrator from deactivating or deleting their own account
+`POST /identity/users/{self}/deactivate/` → `200`; the very next call is `401 {"code": "user_inactive"}` (`self_deactivate`, `self_after_deactivate_me`). `DELETE /identity/users/{self}/` → `204`, then `401 user_not_found` (`self_delete`). The sole administrator can lock everyone out. **Frontend:** the lifecycle controls are disabled on the signed-in user's own row. **Proposed:** reject self-deactivate/archive/delete (and ideally "last active superuser") with a 400.
+
+### Q-09 — the MFA "devices" tree under `/identity/auth/mfa/` is unusable; revoking your own trusted device needs an admin permission
+`GET /identity/auth/mfa/devices/` and `POST /identity/auth/mfa/devices/revoke/` answer `401 "You do not have permission…"` for a valid, MFA-enrolled session (`mfa_devices`, `mfa_devices_revoke_unknown`). The working list is `GET /identity/trusted-devices/` (bare array), but its `DELETE` needs `identity.trusted_device.delete`, which only `platform-admin` holds after CR-02. So an ordinary user can see but not revoke their trusted devices. **Frontend:** lists via `trusted-devices`, shows revoke only to holders of the code. **Proposed:** let a user delete their own trusted devices (ownership, not a permission), and fix or remove the `auth/mfa/devices` views.
+
+### Q-10 — security ledgers are not paginated
+`GET /identity/{security-events,login-history,login-attempts,ip-blacklist}/` return bare arrays of everything (44 security events after a short test session). They filter by `start_date`/`end_date`/`status`/`ip_address`/…, so the frontend always sends a date window and slices client-side, but a busy installation will return very large bodies. **Proposed:** `StandardPagination` on these four viewsets.
+
+### Note — MFA re-authentication fields
+`POST /identity/mfa/recovery-codes/regenerate/` and `/identity/mfa/totp/disable/` require `{password, code | recovery_code}` (password **and** a verification code). A request with the right password but no code is answered `400 "Invalid verification code."` Regenerate returns `{"codes": [...]}`.
