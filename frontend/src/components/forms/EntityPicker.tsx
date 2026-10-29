@@ -57,6 +57,8 @@ export function EntityPicker<T extends { id: string }>({
     queryFn: ({ pageParam, signal }) => fetchPage({ page: pageParam, page_size: PAGE_SIZE, ...(debounced ? { search: debounced } : {}), ...filters }, signal),
     getNextPageParam: (last, all) => (last.next ? all.length + 1 : undefined),
     staleTime: 30_000,
+    // A disabled picker (waiting for the project to be chosen) must not list everything meanwhile.
+    enabled: !disabled,
   });
 
   const items = useMemo(() => list.data?.pages.flatMap((p) => p.results) ?? [], [list.data]);

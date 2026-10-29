@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { mapHttpError } from '@/api/errors/errorMapper';
+import { InputError, serverMessage } from '@/api/errors/serverMessage';
 import { Dialog } from '@/components/ui/Dialog';
 import { Button } from '@/shared/components/Button';
 
@@ -46,8 +47,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       await onConfirm();
       onClose();
     } catch (error) {
-      const apiError = mapHttpError(error);
-      setFailure({ message: apiError.userMessage || apiError.message, requestId: apiError.requestId });
+      setFailure({ message: serverMessage(error), requestId: error instanceof InputError ? undefined : mapHttpError(error).requestId });
     } finally {
       setPending(false);
     }
