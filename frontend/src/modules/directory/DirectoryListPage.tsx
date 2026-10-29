@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, Download, Plus, Trash2 } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { auditKeys } from '@/api/audit/audit';
 import { ConfirmDialog } from '@/components/system/ConfirmDialog';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { notify } from '@/core/notifications/notify';
@@ -182,7 +183,7 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
         onConfirm={async () => {
           if (!pendingAction) return;
           await pendingAction.run();
-          await queryClient.invalidateQueries({ queryKey: config.queryKey });
+          await Promise.all([queryClient.invalidateQueries({ queryKey: config.queryKey }), queryClient.invalidateQueries({ queryKey: auditKeys.all })]); // a write adds a history entry
         }}
       />
 
@@ -196,7 +197,7 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
         onConfirm={async () => {
           if (!toDelete) return;
           await config.remove(toDelete.id);
-          await queryClient.invalidateQueries({ queryKey: config.queryKey });
+          await Promise.all([queryClient.invalidateQueries({ queryKey: config.queryKey }), queryClient.invalidateQueries({ queryKey: auditKeys.all })]); // a write adds a history entry
           notify.success(`${config.rowName(toDelete)} was deleted.`);
         }}
       />

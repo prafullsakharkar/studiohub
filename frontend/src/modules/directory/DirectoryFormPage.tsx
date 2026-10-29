@@ -1,3 +1,4 @@
+import { auditKeys } from '@/api/audit/audit';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type React from 'react';
@@ -56,7 +57,7 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
       payload[field.name] = wireValue(field, values[field.name]);
     }
     const saved = editing ? await config.update(id as string, payload) : await config.create(payload);
-    await queryClient.invalidateQueries({ queryKey: config.queryKey });
+    await Promise.all([queryClient.invalidateQueries({ queryKey: config.queryKey }), queryClient.invalidateQueries({ queryKey: auditKeys.all })]); // a write adds a history entry
     notify.success(`${config.noun[0].toUpperCase()}${config.noun.slice(1)} ${editing ? 'saved' : 'created'}.`);
     navigate(config.afterSavePath ? config.afterSavePath(saved) : `${config.basePath}/${saved.id}`, { replace: true });
   });

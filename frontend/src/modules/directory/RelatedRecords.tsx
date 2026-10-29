@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import type React from 'react';
 import { useContext, useEffect, useMemo, useState } from 'react';
+import { auditKeys } from '@/api/audit/audit';
 import { ConfirmDialog } from '@/components/system/ConfirmDialog';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { Dialog } from '@/components/ui/Dialog';
@@ -48,7 +49,7 @@ function RecordDialog<T extends { id: string }>({ config, parentId, row, onClose
     }
     if (editing) await config.update((row as T).id, payload);
     else await config.create(payload);
-    await queryClient.invalidateQueries({ queryKey: config.queryKey });
+    await Promise.all([queryClient.invalidateQueries({ queryKey: config.queryKey }), queryClient.invalidateQueries({ queryKey: auditKeys.all })]); // a write adds a history entry
     notify.success(`${config.noun[0].toUpperCase()}${config.noun.slice(1)} ${editing ? 'saved' : 'added'}.`);
     onClose();
   });
@@ -167,7 +168,7 @@ export function RelatedRecords<T extends { id: string }>({ config, parentId }: {
           if (!action) return;
           if (action.askDate && !date) throw new Error(`Choose ${action.askDate.label.toLowerCase()}.`);
           await action.run(date || undefined);
-          await queryClient.invalidateQueries({ queryKey: config.queryKey });
+          await Promise.all([queryClient.invalidateQueries({ queryKey: config.queryKey }), queryClient.invalidateQueries({ queryKey: auditKeys.all })]); // a write adds a history entry
         }}
       />
       <ConfirmDialog
@@ -180,7 +181,7 @@ export function RelatedRecords<T extends { id: string }>({ config, parentId }: {
         onConfirm={async () => {
           if (!toDelete) return;
           await config.remove(toDelete.id);
-          await queryClient.invalidateQueries({ queryKey: config.queryKey });
+          await Promise.all([queryClient.invalidateQueries({ queryKey: config.queryKey }), queryClient.invalidateQueries({ queryKey: auditKeys.all })]); // a write adds a history entry
         }}
       />
     </div>
