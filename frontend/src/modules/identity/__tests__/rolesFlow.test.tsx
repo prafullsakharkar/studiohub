@@ -168,13 +168,15 @@ describe('role detail', () => {
     expect(del.body).toEqual({ permission_id: flow.roles_permissions_get.body.items[0].permission.id });
   });
 
-  it('hides grant and revoke from a user who cannot update roles', async () => {
-    mockFetch(roleServer);
+  it('does not request the grants of a role for a user who cannot update roles (the API would answer 403)', async () => {
+    // RoleViewSet gates the permissions/users/groups actions on identity.role.update even for GET.
+    const { calls } = mockFetch(roleServer);
     renderAt(`/access/roles/${reviewer.id}`, artist);
-    await screen.findByText('shot.update');
 
+    expect(await screen.findByRole('note')).toBeTruthy();
     expect(screen.queryByLabelText('Grant permission')).toBeNull();
-    expect(screen.queryByRole('button', { name: /^Revoke/ })).toBeNull();
+    expect(screen.queryByRole('tab')).toBeNull();
+    expect(calls.map(path).some((p) => p.endsWith('/permissions/'))).toBe(false);
   });
 
   it('shows who holds the role and removes a user by id', async () => {
