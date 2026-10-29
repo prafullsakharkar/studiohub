@@ -45,7 +45,7 @@ export const TaskTimeCell: React.FC<{ task: Task }> = ({ task }) => {
   );
 };
 
-export function useTasksListConfig(): DirectoryListConfig<Task> {
+export function useTasksListConfig(scope?: { projectId: string }): DirectoryListConfig<Task> {
   const me = useContext(AuthContext)?.user?.id ?? '';
   const canUpdate = useCan('task.update');
   return {
@@ -65,6 +65,8 @@ export function useTasksListConfig(): DirectoryListConfig<Task> {
     defaultOrdering: '-created_at',
     searchPlaceholder: 'Search title, code, description',
     basePath: '/tasks',
+    scope: scope ? { project_id: scope.projectId } : undefined,
+    createQuery: scope ? `project=${scope.projectId}` : undefined,
     filters: [
       { key: 'project_id', label: 'Project', optionsFrom: { queryKey: projectsApi.keys.all, fetchPage: projectsApi.list as never, getLabel: ((p: { code: string }) => p.code) as never } },
       { key: 'status', label: 'Status', options: options(TASK_STATUSES.filter((s) => s !== 'Archived')) },

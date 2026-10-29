@@ -14,7 +14,7 @@ const statusVariant = (status: string) => (status === 'Approved' ? 'success' : s
  * Time logged against tasks. An artist sees only their own logs; a holder of `timelog.view_all` (leads,
  * supervisors) sees the whole project's and approves them, except their own (the server refuses that).
  */
-export function useTimelogsListConfig(): DirectoryListConfig<Timelog> {
+export function useTimelogsListConfig(scope?: { projectId: string }): DirectoryListConfig<Timelog> {
   const me = useContext(AuthContext)?.user?.id ?? '';
   const canApprove = useCan('timelog.approve');
   const canViewAll = useCan('timelog.view_all');
@@ -29,6 +29,7 @@ export function useTimelogsListConfig(): DirectoryListConfig<Timelog> {
     defaultOrdering: '-date',
     searchPlaceholder: 'Search notes',
     basePath: '/timelogs',
+    scope: scope ? { project_id: scope.projectId } : undefined,
     rowLink: (row) => `/tasks/${row.task_id}`,
     managePermission: 'timelog.create',
     deletePermission: 'timelog.delete',
