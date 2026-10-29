@@ -11,7 +11,8 @@ const fallbackAuthContext: AuthContextValue = {
   completeMfaLogin: async () => {
     throw new Error('completeMfaLogin called outside AuthProvider');
   },
-  mfaEnrollmentRequired: false,
+  restriction: null,
+  clearRestriction: () => {},
   logout: async () => {},
   hasRole: () => false,
   hasPermission: () => false,

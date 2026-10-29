@@ -67,6 +67,23 @@ describe('normalizeApiError — real backend samples', () => {
   });
 });
 
+describe('normalizeApiError — restricted sessions (real 403 shape, seen on the live backend)', () => {
+  // GET /api/v1/departments/ as a superuser who still owes MFA enrollment (backend: restrictions.py)
+  const restricted = {
+    detail: 'Set up two-factor authentication before continuing.',
+    code: 'mfa_enrollment_required',
+    error: { code: 'permission_denied', request_id: '5dd82e7e-b953-482e-9c78-64dced2f2ac1' },
+  };
+
+  it('keeps the specific top-level code over the generic envelope code', () => {
+    const n = normalizeApiError(403, restricted);
+    expect(n.code).toBe('mfa_enrollment_required');
+    expect(n.message).toBe('Set up two-factor authentication before continuing.');
+    expect(n.requestId).toBe('5dd82e7e-b953-482e-9c78-64dced2f2ac1');
+    expect(n.fieldErrors).toEqual({});
+  });
+});
+
 describe('normalizeApiError — shapes not in the captures', () => {
   it('flattens nested and many=True serializer errors into dotted paths', () => {
     const n = normalizeApiError(400, {

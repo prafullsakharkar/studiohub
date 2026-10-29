@@ -40,7 +40,7 @@ import { TasksPage, TaskDetailPage, TimelogsPage } from '@/modules/tasks';
 
 import { ProjectsPage, ProjectWorkspacePage, ProjectFormPage } from '@/modules/production';
 
-import { LoginPage, ForgotPasswordPage, ResetPasswordPage, ChangePasswordPage } from '@/modules/auth';
+import { LoginPage, ForgotPasswordPage, ResetPasswordPage, ChangePasswordPage, MfaSetupPage } from '@/modules/auth';
 
 import React from 'react';
 
@@ -94,6 +94,7 @@ export const AppRoutes: React.FC = () => {
             authenticated content is reachable while the flag is set. */}
 
         <Route path="/auth/change-password" element={<ChangePasswordPage />} />
+        <Route path="/auth/mfa-setup" element={<MfaSetupPage />} />
 
         <Route element={<RoutePermissionGuard><AppLayout /></RoutePermissionGuard>}>
 

@@ -16,6 +16,7 @@ class CentralErrorHandler {
   private forbiddenListeners: Set<ErrorEventCallback> = new Set();
   private networkFailureListeners: Set<ErrorEventCallback> = new Set();
   private serverFailureListeners: Set<ErrorEventCallback> = new Set();
+  private restrictedListeners: Set<ErrorEventCallback> = new Set();
 
   private isHandlingAuthExpiry = false;
   private isHandlingAccountDisabled = false;
@@ -48,6 +49,17 @@ class CentralErrorHandler {
       if (!isTestOrSimulation) {
         this.handleAccountLocked(error);
       }
+      return;
+    }
+
+    // 2b. A wrong password/code is the form's business, not a lost session: no sign-out, no toast.
+    if (error.type === 'INVALID_CREDENTIALS') {
+      return;
+    }
+
+    // 2c. The session owes a password change or MFA enrollment (403 with a stable code): route there.
+    if (error.type === 'RESTRICTED_SESSION') {
+      this.restrictedListeners.forEach((listener) => listener(error));
       return;
     }
 
@@ -156,6 +168,12 @@ class CentralErrorHandler {
   }
 
   // Subscription APIs
+  /** The session owes `error.requiredAction` before it may use the API. Returns an unsubscribe. */
+  public onSessionRestricted(callback: ErrorEventCallback): () => void {
+    this.restrictedListeners.add(callback);
+    return () => this.restrictedListeners.delete(callback);
+  }
+
   public onAuthExpired(callback: ErrorEventCallback): () => void {
     this.authExpiredListeners.add(callback);
     return () => this.authExpiredListeners.delete(callback);

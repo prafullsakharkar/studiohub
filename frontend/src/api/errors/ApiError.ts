@@ -95,6 +95,12 @@ export class ApiError extends AppError implements IAppError, NormalizedApiError 
     if (upperCode === 'SESSION_EXPIRED' || upperCode === 'TOKEN_EXPIRED') {
       return 'SESSION_EXPIRED';
     }
+    if (upperCode === 'MFA_ENROLLMENT_REQUIRED' || upperCode === 'PASSWORD_CHANGE_REQUIRED') {
+      return 'RESTRICTED_SESSION';
+    }
+    if (upperCode === 'INVALID_CREDENTIALS') {
+      return 'INVALID_CREDENTIALS';
+    }
 
     if (status === 0) return 'NETWORK';
     if (status === 400) return 'VALIDATION';
@@ -160,6 +166,11 @@ export class ApiError extends AppError implements IAppError, NormalizedApiError 
       }
       case 'CONFLICT':
         return 'This record was modified by someone else or already exists. Please refresh and try again.';
+      case 'INVALID_CREDENTIALS':
+      case 'RESTRICTED_SESSION':
+        // The server's own sentence is the right one ("Invalid email or password.",
+        // "Set up two-factor authentication before continuing.").
+        return rawMessage;
       case 'PAYLOAD_TOO_LARGE':
         return 'The file or request is too large. Please reduce its size and try again.';
       case 'RATE_LIMIT':
@@ -184,6 +195,18 @@ export class ApiError extends AppError implements IAppError, NormalizedApiError 
 
   get isAuthError(): boolean {
     return this.type === 'AUTHENTICATION' || this.type === 'SESSION_EXPIRED' || this.status === 401;
+  }
+
+  /** What a restricted session must do before anything else works, from the stable 403 code. */
+  get requiredAction(): 'mfa_enrollment' | 'password_change' | null {
+    if (this.code === 'mfa_enrollment_required') return 'mfa_enrollment';
+    if (this.code === 'password_change_required') return 'password_change';
+    return null;
+  }
+
+  /** A 401 that means "the session is gone" (as opposed to a wrong password/code). */
+  get isSessionLoss(): boolean {
+    return (this.type === 'AUTHENTICATION' || this.type === 'SESSION_EXPIRED') && this.status === 401;
   }
 
   get isAccountDisabled(): boolean {

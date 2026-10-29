@@ -6,5 +6,6 @@ export { authService } from './services/AuthService';
 export { LoginPage } from './pages/LoginPage';
 export { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 export { ResetPasswordPage } from './pages/ResetPasswordPage';
+export { MfaSetupPage } from './pages/MfaSetupPage';
 export { ChangePasswordPage } from './pages/ChangePasswordPage';
 export { shouldForcePasswordChange } from './utils/passwordChangeGuard';

@@ -132,6 +132,7 @@ describe('route registry coverage (Phase 5)', () => {
     // password change must be reachable before any permission-bearing surface,
     // so it renders outside RoutePermissionGuard and has no RBAC metadata.
     PUBLIC.add('/auth/change-password');
+    PUBLIC.add('/auth/mfa-setup'); // authentication-only for the same reason: MFA enrollment can be mandatory
 
     const sample = (path: string) =>
       path

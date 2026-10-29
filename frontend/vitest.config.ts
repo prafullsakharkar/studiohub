@@ -9,7 +9,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
-    exclude: ['node_modules/**', 'dist/**'],
+    // *.live.test.* need a running backend: pnpm test:live (vitest.live.config.ts).
+    exclude: ['node_modules/**', 'dist/**', 'src/**/*.live.test.{ts,tsx}'],
     // Persist transforms between runs (vitest docs suggest this; cuts the
     // repeated ~95s transform pass on every run).
     fsModuleCache: true,

@@ -107,7 +107,7 @@ export class ApiClient implements IApiClient {
         return await requestFn();
       } catch (error: unknown) {
         const normalized = mapHttpError(error);
-        if (!authenticated || !normalized.isAuthError || normalized.isAccountDisabled) throw normalized;
+        if (!authenticated || !normalized.isSessionLoss || normalized.isAccountDisabled) throw normalized;
 
         try {
           await refreshAccessToken(sentToken);
@@ -121,7 +121,11 @@ export class ApiClient implements IApiClient {
       }
     } catch (error: unknown) {
       const finalError = mapHttpError(error);
-      centralErrorHandler.handleError(finalError, { source: 'ApiClient' });
+      // A 401 from login / MFA / password reset is a credential failure the form displays; it is
+      // not an expired session, so it must not sign anyone out or toast "session expired".
+      if (!(finalError.isAuthError && !authenticated)) {
+        centralErrorHandler.handleError(finalError, { source: 'ApiClient' });
+      }
       throw finalError;
     }
   }

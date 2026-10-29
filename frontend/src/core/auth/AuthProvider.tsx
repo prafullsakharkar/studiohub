@@ -1,6 +1,6 @@
 import { authService, LoginFormData } from '@/modules/auth';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { AuthContext, AuthContextValue } from './AuthContext';
+import { AuthContext, AuthContextValue, Restriction } from './AuthContext';
 import { User, Role, Permission, LoginOutcome, MfaChallengeInput } from '@/types/identity';
 import {
   checkUserHasPermission,
@@ -18,7 +18,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [mfaEnrollmentRequired, setMfaEnrollmentRequired] = useState(false);
+  const [restriction, setRestriction] = useState<Restriction | null>(null);
 
   // Phase 4 (ADR-0033): permission state derives from the authenticated user
   // only — the removed Zustand permission store / simulation sync is gone.
@@ -54,16 +54,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       queryClient.clear();
     });
 
+    // 403 `mfa_enrollment_required` / `password_change_required`: the route guard sends the user
+    // to the screen that settles it (this also covers a reload, where /auth/me has no such flag).
+    const unsubRestricted = centralErrorHandler.onSessionRestricted((error) => {
+      logger.warn('AuthProvider', `Session restricted: ${error.code}`);
+      setRestriction(error.requiredAction);
+    });
+
     const unsubDisabled = centralErrorHandler.onAccountDisabled(() => {
       logger.error('AuthProvider', 'Account disabled event received. Clearing local user state.');
       setUser(null);
       queryClient.clear();
     });
 
-    // Signed out (or session lost) in another tab: follow it here.
+    // The session ended, here or in another tab (sign-out, rejected refresh, password changed):
+    // the signed-in user and every cached query go with it.
     const unsubTokens = tokenStorage.subscribe((event) => {
-      if (event.type === 'cleared' && event.remote) {
-        logger.info('AuthProvider', 'Session ended in another tab.');
+      if (event.type === 'cleared') {
+        logger.info('AuthProvider', event.remote ? 'Session ended in another tab.' : 'Session ended.');
         setUser(null);
         queryClient.clear();
       }
@@ -72,6 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => {
       unsubAuth();
       unsubDisabled();
+      unsubRestricted();
       unsubTokens();
     };
   }, []);
@@ -81,7 +90,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (outcome.status !== 'authenticated') return outcome;
       const authedUser = outcome.user;
       setUser(authedUser);
-      setMfaEnrollmentRequired(outcome.mfaEnrollmentRequired);
+      setRestriction(outcome.mfaEnrollmentRequired ? 'mfa_enrollment' : null);
       // Invalidate queries so freshly authenticated user queries populate
       queryClient.invalidateQueries();
 
@@ -108,12 +117,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       logger.warn('AuthProvider', 'Logout error', err);
     } finally {
       setUser(null);
-      setMfaEnrollmentRequired(false);
+      setRestriction(null);
       // Cleanse TanStack query cache to prevent any user data leakage
       queryClient.clear();
       setIsLoading(false);
     }
   }, []);
+
+  const clearRestriction = useCallback(() => setRestriction(null), []);
 
   const refreshUser = useCallback(async () => {
     const currentUser = await authService.getCurrentUser();
@@ -151,7 +162,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       isLoading,
       login,
       completeMfaLogin,
-      mfaEnrollmentRequired,
+      restriction,
+      clearRestriction,
       logout,
       hasRole,
       hasPermission,
@@ -159,7 +171,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       refreshUser,
       updateUserProfile,
     }),
-    [user, isLoading, login, completeMfaLogin, mfaEnrollmentRequired, logout, hasRole, hasPermission, can, refreshUser, updateUserProfile]
+    [user, isLoading, login, completeMfaLogin, restriction, clearRestriction, logout, hasRole, hasPermission, can, refreshUser, updateUserProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

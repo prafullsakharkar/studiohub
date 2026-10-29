@@ -9,6 +9,10 @@ export type ApiErrorType =
   | 'ACCOUNT_DISABLED'
   | 'ACCOUNT_LOCKED'
   | 'SESSION_EXPIRED'
+  /** 401 on an endpoint that checks a password/code (wrong current password): not a lost session. */
+  | 'INVALID_CREDENTIALS'
+  /** 403 `mfa_enrollment_required` / `password_change_required`: the session owes something first. */
+  | 'RESTRICTED_SESSION'
   | 'FORBIDDEN'
   | 'NOT_FOUND'
   | 'VALIDATION'

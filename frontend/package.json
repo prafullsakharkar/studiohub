@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:live": "vitest run --config vitest.live.config.ts",
     "test:coverage": "vitest run --coverage",
     "api:generate": "node scripts/generate-api-contract.mjs",
     "api:validate": "node scripts/validate-api-contract.mjs",

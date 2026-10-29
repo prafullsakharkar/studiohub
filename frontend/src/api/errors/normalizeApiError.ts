@@ -149,7 +149,9 @@ export function normalizeApiError(status: number, body: unknown, headers?: Heade
     result.nonFieldErrors.push(...toMessages(body));
   } else if (isPlainObject(body)) {
     const envelope = isEnvelopeKey('error', body.error, body) && isPlainObject(body.error) ? body.error : undefined;
-    const rawCode = envelope?.code ?? (typeof body.code === 'string' ? body.code : body.error_code);
+    // A top-level `code` is the specific one (`mfa_enrollment_required`, `password_change_required`,
+    // `token_not_valid`); `error.code` is the generic class of the failure (`permission_denied`).
+    const rawCode = (typeof body.code === 'string' ? body.code : undefined) ?? body.error_code ?? envelope?.code;
     if (typeof rawCode === 'string' && rawCode) result.code = rawCode;
     if (typeof envelope?.request_id === 'string' && envelope.request_id) {
       result.requestId = envelope.request_id;
