@@ -1,4 +1,4 @@
-import { DrfErrorResponse } from '@/types/common';
+import type { DrfErrorResponse } from '@/types/common';
 
 export interface IAppError {
   readonly name: string;
