@@ -138,7 +138,10 @@ export const notify = {
       defaultTitle = 'Request Timeout';
     }
 
-    const message = apiError.userMessage || apiError.message;
+    const baseMessage = apiError.userMessage || apiError.message;
+    // Failures the user cannot fix themselves carry the request id so support can find the log line.
+    const needsReference = Boolean(apiError.requestId) && (apiError.status >= 500 || apiError.type === 'UNKNOWN');
+    const message = needsReference ? `${baseMessage} (Ref: ${apiError.requestId})` : baseMessage;
     const title = options?.title || defaultTitle;
     const dedupKey = options?.dedupKey || `${type}:${apiError.status}:${apiError.type}:${message}`;
 

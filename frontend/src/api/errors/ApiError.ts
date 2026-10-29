@@ -249,12 +249,12 @@ export class ApiError extends AppError implements IAppError, NormalizedApiError 
   ): ApiError {
     const normalized = normalizeApiError(status, data, headers);
     const type = ApiError.resolveErrorType(status, normalized.code);
-    const userMessage = ApiError.generateUserMessage(
-      type,
-      normalized.message,
-      status,
-      normalized.fieldErrors
-    );
+    // A delete blocked by references: the server names what still points at the record, which
+    // is the only useful part (the generic conflict text would be misleading here).
+    const userMessage =
+      normalized.code === 'has_dependants'
+        ? `This record is still in use and cannot be deleted. ${normalized.message}`
+        : ApiError.generateUserMessage(type, normalized.message, status, normalized.fieldErrors);
 
     return new ApiError(normalized.message, status, normalized.fieldErrors, {
       type,
