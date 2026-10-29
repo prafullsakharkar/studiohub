@@ -280,7 +280,7 @@ export const showsApi = resourceApi<Show, ShowInput>('shows', `${V1}/shows/`);
 export const tracksApi = resourceApi<EditorialTrack, EditorialTrackInput>('editorial-tracks', `${V1}/editorial/tracks/`);
 
 /** Episodes and sequences: soft-deletable, with archive/restore and the bulk routes. */
-function archivable<Row, Input>(name: string, base: string) {
+export function archivable<Row, Input>(name: string, base: string) {
   return {
     ...resourceApi<Row, Input>(name, base),
     archive: (id: string) => apiClient.post<Row>(`${base}${id}/archive/`, {}),

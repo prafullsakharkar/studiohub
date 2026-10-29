@@ -205,6 +205,7 @@ def test_capture_production_work(django_user_model):
     call(a, "timelogs_admin_list", "GET", f"/api/v1/timelogs/?project_id={pid}&ordering=-date")
 
     probe("fp_timelogs", f"/api/v1/timelogs/?project_id={pid}", [("status", "Approved"), ("status", "Rejected"), ("task", tid), ("person", artist.id), ("billable", "true"), ("billable", "false"), ("date", "2030-01-15"), ("start_date", "2030-01-16"), ("end_date", "2030-01-15"), ("search", "Roto"), ("nonsense", "1")], client=ld)
+
     # ------------------------------------------------------------ the artist/lead wall on shots, assets, tasks
     call(ar, "artist_shot_create", "POST", "/api/v1/shots/", {"project": pid, "code": "SH0777", "name": "x"})
     call(ar, "artist_shot_patch", "PATCH", f"/api/v1/shots/{sid}/", {"description": "nope"})
@@ -247,6 +248,31 @@ def test_capture_production_work(django_user_model):
     call(ar, "templates_artist_list", "GET", "/api/v1/task-templates/")
     call(ld, "templates_lead_create", "POST", "/api/v1/task-templates/", {"name": "Lead tpl", "entity_type": "Shot", "items": items})
     call(a, "templates_delete", "DELETE", f"/api/v1/task-templates/{tpid}/")
+
+    # ------------------------------------------------------------ deletes (what DELETE and bulk-delete really do)
+    d1 = call(a, "del_task_create_1", "POST", "/api/v1/tasks/", {"project": pid, "title": "Del 1", "code": "TD1", "entity_type": "General"}).json()["id"]
+    d2 = call(a, "del_task_create_2", "POST", "/api/v1/tasks/", {"project": pid, "title": "Del 2", "code": "TD2", "entity_type": "General"}).json()["id"]
+    d3 = call(a, "del_task_create_3", "POST", "/api/v1/tasks/", {"project": pid, "title": "Del 3", "code": "TD3", "entity_type": "General"}).json()["id"]
+    call(a, "del_task_single", "DELETE", f"/api/v1/tasks/{d1}/")
+    call(a, "del_task_single_detail_after", "GET", f"/api/v1/tasks/{d1}/")
+    call(a, "del_task_archived_after", "GET", f"/api/v1/tasks/archived/?project_id={pid}")
+    call(a, "del_task_bulk", "POST", "/api/v1/tasks/bulk-delete/", {"ids": [d2, d3]})
+    call(a, "del_task_bulk_task_ids", "POST", "/api/v1/tasks/bulk-delete/", {"task_ids": [d2, d3]})
+    call(a, "del_task_bulk_empty", "POST", "/api/v1/tasks/bulk-delete/", {})
+    ds = call(a, "del_shot_create", "POST", "/api/v1/shots/", {"project": pid, "code": "SHDEL", "name": "Del"}).json()["id"]
+    call(a, "del_shot", "DELETE", f"/api/v1/shots/{ds}/")
+    call(a, "del_shot_archived", "GET", f"/api/v1/shots/archived/?project={pid}")
+    da = call(a, "del_asset_create", "POST", "/api/v1/assets/", {"project": pid, "code": "ASDEL", "name": "Del", "category": "Prop"}).json()["id"]
+    call(a, "del_asset", "DELETE", f"/api/v1/assets/{da}/")
+    call(a, "del_asset_in_use", "DELETE", f"/api/v1/assets/{aid}/")
+    call(a, "del_link_remove", "DELETE", f"/api/v1/shots/{sid}/assets/{aid}/")
+    call(a, "del_link_list_after", "GET", f"/api/v1/shots/{sid}/assets/")
+    call(a, "del_shot_with_tasks", "DELETE", f"/api/v1/shots/{sid}/")
+    call(a, "del_shot_with_tasks_detail", "GET", f"/api/v1/shots/{sid}/")
+    call(ar, "del_timelog_draft_create", "POST", "/api/v1/timelogs/", {"task_id": tid, "duration_hours": "1", "date": "2030-03-01", "status": "Draft"})
+    call(ar, "del_timelog_submitted", "DELETE", f"/api/v1/timelogs/{tlid}/")
+    call(ar, "del_timelog_approved_final", "DELETE", f"/api/v1/timelogs/{tlid}/")
+
 
     (OUT / "production").mkdir(parents=True, exist_ok=True)
     (OUT / "production" / "_work_flow.json").write_text(json.dumps(redact(FLOW), indent=1, sort_keys=True))
