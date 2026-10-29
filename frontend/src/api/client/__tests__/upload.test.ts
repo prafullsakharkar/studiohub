@@ -67,8 +67,10 @@ describe('uploadFile', () => {
     expect(xhr.open).toHaveBeenCalledWith('POST', 'http://api.test/api/v1/core/attachments/');
     expect(xhr.headers.Authorization).toBe('Bearer a1');
     expect(progress).toHaveBeenCalledWith({ loaded: 50, total: 200, percent: 25 });
-    expect(xhr.sent?.get('name')).toBe('shot.mov');
-    expect((xhr.sent?.get('file') as File).name).toBe('shot.mov');
+    const form = xhr.sent as FormData;
+    expect(form).toBeInstanceOf(FormData);
+    expect(form.get('name')).toBe('shot.mov');
+    expect((form.get('file') as File).name).toBe('shot.mov');
   });
 
   it('413 from a proxy (HTML body) becomes PAYLOAD_TOO_LARGE with the generic message', async () => {
