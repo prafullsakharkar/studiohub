@@ -97,16 +97,6 @@ export interface RefreshResponse {
   refresh?: string;
   [key: string]: any;
 }
-export interface DemoUser {
-  id: string;
-  email: string;
-  roleType: string;
-  name: string;
-  roleBadge: string;
-  roleBadgeColor: string;
-  subtitle: string;
-  avatarUrl: string;
-}
 export function getUserMembershipType(user?: User | null): MembershipType {
   if (!user) return 'INTERNAL';
   if (user.is_superuser || user.is_staff) return 'INTERNAL';

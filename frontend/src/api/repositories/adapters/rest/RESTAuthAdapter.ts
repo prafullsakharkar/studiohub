@@ -6,7 +6,6 @@ import {
   MfaRequiredResponse,
   RefreshResponse,
   User,
-  DemoUser,
 } from '@/types/identity';
 import { BaseRESTAdapter } from './BaseRESTAdapter';
 import { tokenStorage } from '@/core/auth/tokenStorage';
@@ -115,11 +114,5 @@ export class RESTAuthAdapter extends BaseRESTAdapter<User> implements IAuthRepos
       method: 'POST',
       body: JSON.stringify(data),
     });
-  }
-
-  async getDemoUsers(): Promise<DemoUser[]> {
-    // Instant demo workspaces are a mock-engine concept. Django exposes no
-    // demo-users endpoint, so resolve empty without any network call.
-    return [];
   }
 }

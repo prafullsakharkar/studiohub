@@ -1,6 +1,6 @@
 import { IAuthRepository, authRepository } from '@/api/repositories';
 import { tokenStorage } from '@/core/auth/tokenStorage';
-import { User, LoginOutcome, LoginResponse, DemoUser, MfaChallengeInput } from '@/types/identity';
+import { User, LoginOutcome, LoginResponse, MfaChallengeInput } from '@/types/identity';
 import { LoginFormData } from '../schemas/authSchemas';
 import { logger } from '@/core/logging/logger';
 import { mapHttpError } from '@/api/errors/errorMapper';
@@ -80,11 +80,6 @@ export class AuthService {
 
   async resetPassword(data: { token: string; new_password: string; confirm_password: string }): Promise<void> {
     await this.repository.resetPassword(data);
-  }
-
-  async getDemoUsers(): Promise<DemoUser[]> {
-    logger.info('AuthService', 'Fetching demo user personas from database via API');
-    return await this.repository.getDemoUsers();
   }
 }
 

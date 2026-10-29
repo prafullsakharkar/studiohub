@@ -5,7 +5,6 @@ import {
   MfaRequiredResponse,
   RefreshResponse,
   User,
-  DemoUser,
 } from '@/types/identity';
 
 export interface IAuthRepository {
@@ -18,5 +17,4 @@ export interface IAuthRepository {
   changePassword(data: { old_password: string; new_password: string; confirm_password: string }): Promise<void>;
   forgotPassword(email: string): Promise<void>;
   resetPassword(data: { token: string; new_password: string; confirm_password: string }): Promise<void>;
-  getDemoUsers(): Promise<DemoUser[]>;
 }

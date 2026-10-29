@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
-import { SmartImg } from '@/components/ui/SmartImg';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, LoginFormData } from '../schemas/authSchemas';
 import { useAuth } from '../hooks/useAuth';
-import { useDemoUsers } from '../hooks/useDemoUsers';
-import { DemoUser } from '@/types/identity';
 import { MfaChallengeForm } from '../components/MfaChallengeForm';
 import { mapHttpError } from '@/api/errors/errorMapper';
 import {
   Sparkles,
   Clapperboard,
-  Cpu,
   Mail,
   Lock,
   Eye,
@@ -83,25 +79,17 @@ const CAPABILITY_TABS: CapabilityTab[] = [
 export const LoginPage: React.FC = () => {
   const { login, completeMfaLogin } = useAuth();
   const navigate = useNavigate();
-  // REST-only: no backend demo-users endpoint exists, so the instant demo
-  // workspaces section is always hidden.
-  const showDemoWorkspaces = false;
-  const { data: demoAccounts = [], isLoading: isLoadingDemoAccounts } = useDemoUsers();
-
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   // Set when the password step succeeded but the account owes a second factor.
   const [mfa, setMfa] = useState<{ challenge: string; expiresIn: number } | null>(null);
   const [activeCapability, setActiveCapability] = useState<string>('athlete');
-  const [fastLoggingInId, setFastLoggingInId] = useState<string | null>(null);
 
   const selectedCapability =
     CAPABILITY_TABS.find((c) => c.id === activeCapability) || CAPABILITY_TABS[0];
 
   const {
     register,
-    setValue,
-    clearErrors,
     submit,
     serverError,
     clearServerError,
@@ -126,27 +114,6 @@ export const LoginPage: React.FC = () => {
   const clearBanner = () => {
     if (apiError) setApiError(null);
     clearServerError();
-  };
-
-  const handleInstantDemoLogin = async (account: DemoUser) => {
-    setFastLoggingInId(account.id);
-    setApiError(null);
-    clearErrors();
-    setValue('email', account.email, { shouldValidate: true });
-    setValue('password', 'password123', { shouldValidate: true });
-    try {
-      await login({
-        email: account.email,
-        password: 'password123',
-      });
-      navigate('/dashboard');
-    } catch (err: any) {
-      const errorMsg =
-        err?.message || `Failed to sign in as ${account.name}. Please try again.`;
-      setApiError(errorMsg);
-    } finally {
-      setFastLoggingInId(null);
-    }
   };
 
   return (
@@ -435,92 +402,6 @@ export const LoginPage: React.FC = () => {
                 <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
               </button>
             </form>
-            )}
-
-            {/* INSTANT DEMO WORKSPACES (mock mode only) */}
-            {showDemoWorkspaces && !mfa && (
-            <div className="pt-2.5 border-t border-slate-800 space-y-2 min-h-0 flex flex-col flex-1">
-              <div className="flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-300 uppercase tracking-wider">
-                  <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>INSTANT DEMO WORKSPACES</span>
-                </div>
-                <span className="text-[10px] text-slate-500 font-medium">
-                  {isLoadingDemoAccounts
-                    ? 'Loading master roles from API...'
-                    : `${demoAccounts.length} Master Roles • Click to Fast Login`}
-                </span>
-              </div>
-
-              {/* Scrollable container for demo workspaces */}
-              <div className="space-y-1.5 overflow-y-auto max-h-[190px] sm:max-h-[220px] pr-1 scrollbar-thin">
-                {isLoadingDemoAccounts ? (
-                  <div className="space-y-1.5 py-1">
-                    {[1, 2, 3].map((i) => (
-                      <div
-                        key={i}
-                        className="p-2 rounded-xl bg-slate-950/40 border border-slate-800/80 animate-pulse flex items-center justify-between gap-2.5"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-7 h-7 rounded-lg bg-slate-800 shrink-0" />
-                          <div className="space-y-1.5">
-                            <div className="h-3 w-28 bg-slate-800 rounded" />
-                            <div className="h-2 w-40 bg-slate-800/60 rounded" />
-                          </div>
-                        </div>
-                        <div className="w-12 h-6 bg-slate-800 rounded-lg" />
-                      </div>
-                    ))}
-                  </div>
-                ) : demoAccounts.length === 0 ? (
-                  <div className="py-4 text-center text-[11px] text-slate-500">
-                    No demo accounts found in database.
-                  </div>
-                ) : (
-                  demoAccounts.map((account) => {
-                    const isBusy = fastLoggingInId === account.id;
-                    return (
-                      <div
-                        key={account.id}
-                        className="p-2 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-slate-700 hover:bg-slate-950/80 transition-all flex items-center justify-between gap-2.5"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <SmartImg
-                            src={account.avatarUrl}
-                            alt={account.name}
-                            className="w-7 h-7 rounded-lg object-cover shrink-0 border border-slate-700"
-                          />
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-semibold text-white truncate">
-                                {account.name}
-                              </span>
-                              <span
-                                className={`text-[9px] font-bold px-1.5 py-0.2 rounded border shrink-0 ${account.roleBadgeColor}`}
-                              >
-                                {account.roleBadge}
-                              </span>
-                            </div>
-                            <p className="text-[10px] text-slate-400 truncate mt-0.5">
-                              {account.subtitle}
-                            </p>
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          disabled={isSubmitting || !!fastLoggingInId}
-                          onClick={() => handleInstantDemoLogin(account)}
-                          className="shrink-0 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-cyan-600 hover:text-white text-slate-200 text-[11px] font-bold border border-slate-700 hover:border-cyan-500 transition-all cursor-pointer disabled:opacity-50"
-                        >
-                          {isBusy ? '...' : 'Sign In'}
-                        </button>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
             )}
 
             {/* Card Security Footnote */}

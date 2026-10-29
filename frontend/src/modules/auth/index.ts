@@ -1,7 +1,6 @@
 // Public boundary for the auth module.
 // External code imports from '@/modules/auth', never deep paths.
 export { useAuth } from './hooks/useAuth';
-export { useDemoUsers } from './hooks/useDemoUsers';
 export type { LoginFormData } from './schemas/authSchemas';
 export { authService } from './services/AuthService';
 export { LoginPage } from './pages/LoginPage';
