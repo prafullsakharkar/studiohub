@@ -8,6 +8,9 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
+    // Hermetic API base URL: tests must not depend on a developer's git-ignored .env
+    // (without a base URL, Node's Request rejects the relative /api/... paths).
+    env: { VITE_API_URL: 'http://api.test' },
     include: ['src/**/*.test.{ts,tsx}'],
     exclude: ['node_modules/**', 'dist/**'],
     // Persist transforms between runs (vitest docs suggest this; cuts the
