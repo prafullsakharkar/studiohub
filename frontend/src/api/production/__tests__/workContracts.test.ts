@@ -189,6 +189,22 @@ describe('the status machine the UI offers matches what the server accepted and 
     expect(isAllowedMove('task', 'In Progress', 'On Hold')).toBe(false); // On Hold is a shot-only state
   });
 
+  it('assets: no transition table, any status may follow any other', () => {
+    ok('assets_status_approved_direct');
+    ok('assets_status_back_to_start');
+    ok('assets_status_retake');
+    expect(isAllowedMove('asset', 'Not Started', 'Approved')).toBe(true);
+    expect(isAllowedMove('asset', 'Approved', 'Not Started')).toBe(true);
+    expect(flow.assets_status_history.status).toBe(404); // and there is no status-history route for them
+  });
+
+  it('a code can be changed by PATCH until a version exists (then rename-code); a new code must be free', () => {
+    expect(flow.shots_patch_code.body.code).toBe('SH7777');
+    expect(flow.assets_patch_code.body.code).toBe('ZZZ_NEW');
+    expect(flow.shots_rename_code.status).toBe(200);
+    expect(flow.artist_rename_code.status).toBe(403);
+  });
+
   it('timelogs', () => {
     expect(isAllowedMove('timelog', 'Submitted', 'Rejected')).toBe(true);
     expect(flow.timelogs_reject.body.status).toBe('Rejected');

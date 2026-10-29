@@ -6,10 +6,12 @@
  *
  * `Archived` is left out of the choices on purpose: archiving is its own action (archive / restore).
  */
-export type WorkflowEntity = 'shot' | 'task' | 'timelog';
+export type WorkflowEntity = 'shot' | 'task' | 'timelog' | 'asset';
 
 const SHOT_WORKING = ['Not Started', 'In Progress', 'Pending Review', 'Retake', 'On Hold'] as const;
 const TASK_WORKING = ['Not Started', 'In Progress', 'Pending Review', 'Retake'] as const;
+/** Assets have no transition table on the server: any status may follow any other (captured: Not Started → Approved → Not Started). */
+const ASSET_STATUSES = ['Not Started', 'In Progress', 'Pending Review', 'Approved', 'Retake'] as const;
 
 function working(states: readonly string[]): Record<string, readonly string[]> {
   const graph: Record<string, readonly string[]> = {};
@@ -23,6 +25,7 @@ function working(states: readonly string[]): Record<string, readonly string[]> {
 const TRANSITIONS: Record<WorkflowEntity, Record<string, readonly string[]>> = {
   shot: working(SHOT_WORKING),
   task: working(TASK_WORKING),
+  asset: Object.fromEntries(ASSET_STATUSES.map((from) => [from, ASSET_STATUSES.filter((to) => to !== from)])),
   timelog: {
     Draft: ['Submitted'],
     Submitted: ['Approved', 'Rejected', 'Draft'],
