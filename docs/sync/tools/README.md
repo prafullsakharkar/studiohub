@@ -15,6 +15,17 @@ Phase 0 discovery scripts. They read the code; none of them changes backend or f
 
 `routes.tsv` comes from `python3 -I ../docs/sync/tools/routes_tsv.py $S/urls.json $S/routes.tsv`; `schema.yaml` comes from `uv run python manage.py spectacular --file $S/schema.yaml`.
 
+## Phase 1 additions
+
+| Script | Produces | Notes |
+|---|---|---|
+| `test_capture_auth_flows.py` | `samples/identity/_auth_mfa_flow.json`, `_auth_password_reset_flow.json` | real MFA login (TOTP, recovery code, wrong/garbage challenge) and password reset; same pytest-test-database rules as below |
+| `test_capture_departments_flow.py` | `samples/masterdata/_departments_flow.json` | the departments list/create flow: search, ordering, filter, paging, duplicate errors, 403 for a non-manager |
+| `test_capture_restricted_flow.py` | `samples/identity/_restricted_sessions_flow.json` | restricted sessions (MFA enrollment owed, password change owed) captured through the **real JWT auth chain**; `force_authenticate` skips this check |
+| `live_backend.py` | a running Django for `pnpm test:live` | pytest-django `live_server` on the pytest test database; seeds users that each exercise a backend rule; see `phase-1-verification.md` §6 |
+
+Same invocation as below, e.g. `SYNC_SAMPLES_OUT=../docs/sync/samples uv run pytest -c pyproject.toml --rootdir . -p no:cacheprovider --no-cov -q ../docs/sync/tools/test_capture_restricted_flow.py`. They do not need `routes.tsv`.
+
 ## Capturing samples
 
 `test_capture_samples.py` is a pytest module that runs **only against the pytest test database** (it asserts the connected DB name is test-prefixed and runs inside one rolled-back transaction). Do not set `DJANGO_ENV` for this run: pytest must resolve the same test database as a normal `uv run pytest`.
