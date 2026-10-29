@@ -34,7 +34,7 @@ import { PersonProjectsTab } from '../components/PersonProjectsTab';
 import { PersonAssignmentsTab } from '../components/PersonAssignmentsTab';
 import { PersonSkillsTab } from '../components/PersonSkillsTab';
 import { PersonAvailabilityTab } from '../components/PersonAvailabilityTab';
-import { PersonSecurityTab } from '../components/PersonSecurityTab';
+import { AccountSection } from '@/modules/identity/components/AccountSection';
 import { PersonActivityTab } from '../components/PersonActivityTab';
 
 export const PersonWorkspacePage: React.FC = () => {
@@ -81,7 +81,7 @@ export const PersonWorkspacePage: React.FC = () => {
     { id: 'assignments', label: 'Assignments', icon: CheckSquare },
     { id: 'skills', label: 'Skills', icon: Sparkles },
     { id: 'availability', label: 'Availability', icon: Clock },
-    { id: 'security', label: 'Security', icon: ShieldCheck },
+    { id: 'security', label: 'Account', icon: ShieldCheck },
     { id: 'activity', label: 'Activity', icon: Activity },
   ];
 
@@ -214,7 +214,12 @@ export const PersonWorkspacePage: React.FC = () => {
           <PersonAvailabilityTab person={person} onUpdateStatus={handleUpdateAvailability} />
         )}
         {activeTab === 'security' && (
-          <PersonSecurityTab person={person} onUpdateStatus={handleUpdateSecurityStatus} />
+          <AccountSection
+            personId={person.id}
+            personName={person.full_name}
+            personEmail={person.email || undefined}
+            userId={person.user ?? person.user_id}
+          />
         )}
         {activeTab === 'activity' && <PersonActivityTab person={person} />}
       </TabContentTransition>

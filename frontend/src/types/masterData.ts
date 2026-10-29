@@ -181,7 +181,9 @@ export interface Position {
   [key: string]: any;
 }
 export interface Person extends BaseEntity {
-  /** Linked auth identity (N1, backend-backed nullable FK, null when unlinked). */
+  /** Linked auth identity as the API sends it: the user's id, null when unlinked. */
+  user?: string | null;
+  /** @deprecated legacy name; the API field is `user` (see docs/sync/02-gap-analysis.md). */
   user_id?: string;
   full_name: string;
   display_name?: string;
