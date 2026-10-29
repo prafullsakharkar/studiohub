@@ -45,7 +45,10 @@ function FilterSelect({ filter, value, onChange }: { filter: ListFilter; value: 
 export function DirectoryListPage<T extends { id: string }>({ config }: { config: DirectoryListConfig<T> }): React.ReactElement {
   const queryClient = useQueryClient();
   const canManage = useCan(config.managePermission);
-  const list = usePaginatedList<T>({ queryKey: config.queryKey, fetchPage: config.fetchPage, ordering: config.defaultOrdering });
+  const [view, setView] = useState<'active' | 'archived'>('active');
+  const inArchive = view === 'archived' && Boolean(config.archived);
+  const fetchPage = inArchive ? (config.archived as NonNullable<typeof config.archived>).fetchPage : config.fetchPage;
+  const list = usePaginatedList<T>({ queryKey: [...config.queryKey, view], fetchPage, ordering: config.defaultOrdering });
   const [toDelete, setToDelete] = useState<T | null>(null);
   const [pendingAction, setPendingAction] = useState<(RowAction & { rowName: string }) | null>(null);
   const [exporting, setExporting] = useState<AbortController | null>(null);
@@ -57,7 +60,7 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
     setExporting(controller);
     try {
       const result = await exportAll<T>({
-        fetchPage: config.fetchPage,
+        fetchPage,
         params: list.params,
         filename: `${config.title.toLowerCase().replace(/\s+/g, '-')}.csv`,
         signal: controller.signal,
@@ -91,6 +94,12 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
           {config.filters?.map((filter) => (
             <FilterSelect key={filter.key} filter={filter} value={String(list.filters[filter.key] ?? '')} onChange={(value) => list.setFilter(filter.key, value)} />
           ))}
+          {config.archived && (
+            <select aria-label="Show" value={view} onChange={(e) => setView(e.target.value as 'active' | 'archived')} className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200">
+              <option value="active">Active</option>
+              <option value="archived">Archived</option>
+            </select>
+          )}
           {config.exportColumns && (
             <Button size="sm" variant="outline" leftIcon={<Download className="w-3.5 h-3.5" />} isLoading={exporting !== null} onClick={() => void runExport()}>
               Export
@@ -152,17 +161,26 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
                   ))}
                   {canManage && (
                     <td className="px-4 py-2 text-right space-x-3 whitespace-nowrap">
-                      {config.rowActions?.(row).map((action) => (
+                      {inArchive && (
+                        <button type="button" className="text-cyan-300 hover:underline" aria-label={`Restore ${config.rowName(row)}`} onClick={() => setPendingAction({ label: 'Restore', confirm: `Restore ${config.rowName(row)}?`, run: () => (config.archived as NonNullable<typeof config.archived>).restore(row.id), rowName: config.rowName(row) })}>
+                          Restore
+                        </button>
+                      )}
+                      {!inArchive && config.rowActions?.(row).map((action) => (
                         <button key={action.label} type="button" className={action.destructive ? 'text-amber-400 hover:underline' : 'text-cyan-300 hover:underline'} aria-label={`${action.label} ${config.rowName(row)}`} onClick={() => setPendingAction({ ...action, rowName: config.rowName(row) })}>
                           {action.label}
                         </button>
                       ))}
-                      <Link to={`${config.basePath}/${row.id}/edit`} className="text-cyan-300 hover:underline" aria-label={`Edit ${config.rowName(row)}`}>
-                        Edit
-                      </Link>
-                      <button type="button" className="text-rose-400 hover:text-rose-300" aria-label={`Delete ${config.rowName(row)}`} onClick={() => setToDelete(row)}>
-                        <Trash2 className="inline w-3.5 h-3.5" />
-                      </button>
+                      {!inArchive && (
+                        <>
+                          <Link to={`${config.basePath}/${row.id}/edit`} className="text-cyan-300 hover:underline" aria-label={`Edit ${config.rowName(row)}`}>
+                            Edit
+                          </Link>
+                          <button type="button" className="text-rose-400 hover:text-rose-300" aria-label={`${config.deleteLabel ?? 'Delete'} ${config.rowName(row)}`} onClick={() => setToDelete(row)}>
+                            {config.deleteLabel ?? <Trash2 className="inline w-3.5 h-3.5" />}
+                          </button>
+                        </>
+                      )}
                     </td>
                   )}
                 </tr>
@@ -189,9 +207,9 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
 
       <ConfirmDialog
         isOpen={toDelete !== null}
-        title={`Delete ${config.noun}`}
-        message={`Delete "${toDelete ? config.rowName(toDelete) : ''}"? This cannot be undone.`}
-        confirmLabel="Delete"
+        title={`${config.deleteLabel ?? 'Delete'} ${config.noun}`}
+        message={config.deleteLabel ? `${config.deleteLabel} "${toDelete ? config.rowName(toDelete) : ''}"? It moves to the Archived view and can be restored.` : `Delete "${toDelete ? config.rowName(toDelete) : ''}"? This cannot be undone.`}
+        confirmLabel={config.deleteLabel ?? 'Delete'}
         destructive
         onClose={() => setToDelete(null)}
         onConfirm={async () => {

@@ -3,6 +3,8 @@ import type { PageFetcher } from '@/shared/data/listing';
 
 /** A foreign key on a form: the page renders whatever picker fits (see components/forms/EntityPicker). */
 export interface EntityFieldRenderProps {
+  /** The parent record's id when the form lives inside one (a project's sequences pick that project's episodes). */
+  parentId?: string;
   value: string;
   onChange: (id: string) => void;
   error?: string;
@@ -16,7 +18,7 @@ export interface FieldGate {
 export type FieldDef = FieldGate &
   (
     | { kind: 'text' | 'textarea' | 'email' | 'url' | 'tel' | 'number' | 'date'; name: string; label: string; required?: boolean; hint?: string; maxLength?: number }
-    | { kind: 'select'; name: string; label: string; options: ReadonlyArray<{ value: string; label: string }>; required?: boolean }
+    | { kind: 'select'; name: string; label: string; options: ReadonlyArray<{ value: string; label: string }>; required?: boolean; hint?: string }
     | { kind: 'checkbox'; name: string; label: string }
     | { kind: 'entity'; name: string; label: string; required?: boolean; render: (props: EntityFieldRenderProps) => React.ReactNode }
   );
@@ -59,6 +61,10 @@ export interface DirectoryListConfig<T extends { id: string }> {
   /** Permission code that shows the create/edit/delete controls. */
   managePermission: string;
   exportColumns?: ReadonlyArray<{ header: string; value: (row: T) => unknown }>;
+  /** Soft-deleted rows live on their own route: adds an Active / Archived switch, and Restore in the archived view. */
+  archived?: { fetchPage: PageFetcher<T>; restore: (id: string) => Promise<unknown> };
+  /** What the delete control is called when "delete" really archives (default "Delete"). */
+  deleteLabel?: string;
   /** Lifecycle actions on a row (deactivate, restore, …), each behind a confirmation; shown with the manage permission. */
   rowActions?: (row: T) => ReadonlyArray<RowAction>;
 }
@@ -91,8 +97,10 @@ export interface RelatedRecordsConfig<T extends { id: string }> {
   noun: string;
   title: string;
   queryKey: readonly unknown[];
-  /** Backend filter and body field that names the parent: `client` or `vendor`. */
+  /** Body field that names the parent: `client`, `vendor` or `project`. */
   parentField: string;
+  /** The list filter that names the parent when it differs from the body field (editorial tracks filter on `project_id`). */
+  filterField?: string;
   fetchPage: PageFetcher<T>;
   create: (input: Record<string, unknown>) => Promise<unknown>;
   update: (id: string, patch: Record<string, unknown>) => Promise<unknown>;
@@ -103,6 +111,10 @@ export interface RelatedRecordsConfig<T extends { id: string }> {
   defaultOrdering: string;
   managePermission: string;
   rowActions?: (row: T) => ReadonlyArray<RowAction>;
+  /** "Delete" really archives (default "Delete"). */
+  deleteLabel?: string;
+  /** Soft-deleted rows on their own route: adds an Active / Archived switch and Restore. */
+  archived?: { fetchPage: PageFetcher<T>; restore: (id: string) => Promise<unknown> };
   /** Fields the API refuses to change after creation (e.g. a contract's status: use the lifecycle actions). */
   immutableOnEdit?: ReadonlyArray<string>;
 }

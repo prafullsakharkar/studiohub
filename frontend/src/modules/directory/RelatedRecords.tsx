@@ -58,7 +58,7 @@ function RecordDialog<T extends { id: string }>({ config, parentId, row, onClose
     <Dialog isOpen onClose={onClose} title={editing ? `Edit ${config.noun}` : `Add ${config.noun}`} size="lg">
       <form noValidate onSubmit={onSubmit} className="space-y-4">
         <FormBanner error={serverError} />
-        <FieldInputs fields={fields} editing={editing} immutableOnEdit={config.immutableOnEdit} register={register} control={control} errors={errors} clearServerError={clearServerError} />
+        <FieldInputs fields={fields} parentId={parentId} editing={editing} immutableOnEdit={config.immutableOnEdit} register={register} control={control} errors={errors} clearServerError={clearServerError} />
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="ghost" onClick={onClose}>
             Cancel
@@ -79,7 +79,10 @@ function RecordDialog<T extends { id: string }>({ config, parentId, row, onClose
 export function RelatedRecords<T extends { id: string }>({ config, parentId }: { config: RelatedRecordsConfig<T>; parentId: string }): React.ReactElement {
   const queryClient = useQueryClient();
   const canManage = useCan(config.managePermission);
-  const list = usePaginatedList<T>({ queryKey: [...config.queryKey, parentId], fetchPage: config.fetchPage, ordering: config.defaultOrdering, filters: { [config.parentField]: parentId } });
+  const [view, setView] = useState<'active' | 'archived'>('active');
+  const inArchive = view === 'archived' && Boolean(config.archived);
+  const fetchPage = inArchive ? (config.archived as NonNullable<typeof config.archived>).fetchPage : config.fetchPage;
+  const list = usePaginatedList<T>({ queryKey: [...config.queryKey, parentId, view], fetchPage, ordering: config.defaultOrdering, filters: { [config.filterField ?? config.parentField]: parentId } });
   const [dialog, setDialog] = useState<{ row: T | null } | null>(null);
   const [toDelete, setToDelete] = useState<T | null>(null);
   const [action, setAction] = useState<(RowAction & { rowName: string }) | null>(null);
@@ -89,7 +92,13 @@ export function RelatedRecords<T extends { id: string }>({ config, parentId }: {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-white">{config.title}</h3>
-        {canManage && (
+        {config.archived && (
+          <select aria-label="Show" value={view} onChange={(e) => setView(e.target.value as 'active' | 'archived')} className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200">
+            <option value="active">Active</option>
+            <option value="archived">Archived</option>
+          </select>
+        )}
+        {canManage && !inArchive && (
           <Button size="sm" variant="primary" leftIcon={<Plus className="w-3.5 h-3.5" />} onClick={() => setDialog({ row: null })}>
             Add {config.noun}
           </Button>
@@ -113,7 +122,12 @@ export function RelatedRecords<T extends { id: string }>({ config, parentId }: {
                 </td>
               ))}
               <td className="px-4 py-2 text-right space-x-3 whitespace-nowrap">
-                {canManage &&
+                {canManage && inArchive && (
+                  <button type="button" className="text-cyan-300 hover:underline" aria-label={`Restore ${config.rowName(row)}`} onClick={() => setAction({ label: 'Restore', confirm: `Restore ${config.rowName(row)}?`, rowName: config.rowName(row), run: () => (config.archived as NonNullable<typeof config.archived>).restore(row.id) })}>
+                    Restore
+                  </button>
+                )}
+                {canManage && !inArchive &&
                   config.rowActions?.(row).map((a) => (
                     <button
                       key={a.label}
@@ -128,13 +142,13 @@ export function RelatedRecords<T extends { id: string }>({ config, parentId }: {
                       {a.label}
                     </button>
                   ))}
-                {canManage && (
+                {canManage && !inArchive && (
                   <>
                     <button type="button" className="text-cyan-300 hover:underline" aria-label={`Edit ${config.rowName(row)}`} onClick={() => setDialog({ row })}>
                       Edit
                     </button>
-                    <button type="button" className="text-rose-400 hover:underline" aria-label={`Delete ${config.rowName(row)}`} onClick={() => setToDelete(row)}>
-                      Delete
+                    <button type="button" className="text-rose-400 hover:underline" aria-label={`${config.deleteLabel ?? 'Delete'} ${config.rowName(row)}`} onClick={() => setToDelete(row)}>
+                      {config.deleteLabel ?? 'Delete'}
                     </button>
                   </>
                 )}
@@ -173,9 +187,9 @@ export function RelatedRecords<T extends { id: string }>({ config, parentId }: {
       />
       <ConfirmDialog
         isOpen={toDelete !== null}
-        title={`Delete ${config.noun}`}
-        message={`Delete "${toDelete ? config.rowName(toDelete) : ''}"? This cannot be undone.`}
-        confirmLabel="Delete"
+        title={`${config.deleteLabel ?? 'Delete'} ${config.noun}`}
+        message={config.deleteLabel ? `${config.deleteLabel} "${toDelete ? config.rowName(toDelete) : ''}"? It moves to the Archived view and can be restored.` : `Delete "${toDelete ? config.rowName(toDelete) : ''}"? This cannot be undone.`}
+        confirmLabel={config.deleteLabel ?? 'Delete'}
         destructive
         onClose={() => setToDelete(null)}
         onConfirm={async () => {

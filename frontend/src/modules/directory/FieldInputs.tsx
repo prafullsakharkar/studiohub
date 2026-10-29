@@ -7,6 +7,7 @@ import type { FieldDef } from './types';
 
 export interface FieldInputsProps {
   fields: ReadonlyArray<FieldDef>;
+  parentId?: string;
   editing: boolean;
   immutableOnEdit?: ReadonlyArray<string>;
   register: UseFormRegister<Values>;
@@ -16,7 +17,7 @@ export interface FieldInputsProps {
 }
 
 /** Renders the inputs of a directory form from its field definitions. */
-export const FieldInputs: React.FC<FieldInputsProps> = ({ fields, editing, immutableOnEdit, register, control, errors, clearServerError }) => {
+export const FieldInputs: React.FC<FieldInputsProps> = ({ fields, parentId, editing, immutableOnEdit, register, control, errors, clearServerError }) => {
   const err = (name: string) => (errors[name]?.message as string | undefined) ?? undefined;
   return (
     <>
@@ -36,12 +37,12 @@ export const FieldInputs: React.FC<FieldInputsProps> = ({ fields, editing, immut
                   key={field.name}
                   control={control}
                   name={field.name}
-                  render={({ field: f }) => <>{field.render({ value: String(f.value ?? ''), onChange: (v) => { clearServerError(); f.onChange(v); }, error: err(field.name) })}</>}
+                  render={({ field: f }) => <>{field.render({ parentId, value: String(f.value ?? ''), onChange: (v) => { clearServerError(); f.onChange(v); }, error: err(field.name) })}</>}
                 />
               );
             }
             return (
-              <Field key={field.name} id={id} label={`${field.label}${field.required ? ' *' : ''}`} error={err(field.name)} hint={readOnly ? 'Cannot be changed after creation.' : field.kind !== 'select' ? field.hint : undefined}>
+              <Field key={field.name} id={id} label={`${field.label}${field.required ? ' *' : ''}`} error={err(field.name)} hint={readOnly ? 'Cannot be changed after creation.' : field.hint}>
                 {field.kind === 'textarea' ? (
                   <textarea id={id} rows={3} disabled={readOnly} className={inputClass(Boolean(err(field.name)))} {...register(field.name, { onChange: clearServerError })} />
                 ) : field.kind === 'select' ? (

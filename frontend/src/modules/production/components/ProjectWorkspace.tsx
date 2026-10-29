@@ -59,6 +59,8 @@ import { ScrollableTabs } from '@/shared/components/tabs/ScrollableTabs';
 import { ProjectOverviewTab } from './project-tabs/ProjectOverviewTab';
 import { ProjectEditorialTab } from './project-tabs/ProjectEditorialTab';
 import { ProjectEpisodesTab } from './project-tabs/ProjectEpisodesTab';
+import { ProjectMembersTab } from './project-tabs/ProjectMembersTab';
+import { ProjectShowsTab } from './project-tabs/ProjectShowsTab';
 import { ProjectSequencesTab } from './project-tabs/ProjectSequencesTab';
 import { ProjectShotsTab } from './project-tabs/ProjectShotsTab';
 import { ProjectAssetsTab } from './project-tabs/ProjectAssetsTab';
@@ -83,6 +85,8 @@ import { ProjectAttachmentsTab } from './project-tabs/ProjectAttachmentsTab';
 
 export type ProjectTabId =
   | 'overview'
+  | 'members'
+  | 'shows'
   | 'episodes'
   | 'editorial'
   | 'sequences'
@@ -119,12 +123,16 @@ export const PROJECT_WORKSPACE_SECTIONS: ProjectWorkspaceSectionDef[] = [
   {
     id: 'overview',
     title: 'Overview',
-    tabs: [{ id: 'overview', label: 'Overview', icon: Building }],
+    tabs: [
+      { id: 'overview', label: 'Overview', icon: Building },
+      { id: 'members', label: 'Members', icon: Users },
+    ],
   },
   {
     id: 'production',
     title: 'Production',
     tabs: [
+      { id: 'shows', label: 'Shows', icon: Tv },
       { id: 'episodes', label: 'Episodes', icon: Tv },
       { id: 'editorial', label: 'Editorial', icon: Scissors },
       { id: 'sequences', label: 'Sequences', icon: Layers },
@@ -787,6 +795,10 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
             {activeTab === 'overview' && (
               <ProjectOverviewTab project={project} onNavigateTab={handleNavigateTabWithContext} />
             )}
+            {activeTab === 'members' && <ProjectMembersTab project={project} />}
+
+            {activeTab === 'shows' && <ProjectShowsTab project={project} />}
+
             {activeTab === 'episodes' && (
               <ProjectEpisodesTab project={project} onNavigateTab={handleNavigateTabWithContext} />
             )}
