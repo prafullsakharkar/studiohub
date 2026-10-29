@@ -9,7 +9,6 @@ import { DrfErrorResponse } from '@/types/common';
 
 import { getApiBaseUrl } from '@/api/repositories/config';
 import { centralErrorHandler } from '@/core/api/error-handler';
-import { ContractValidator } from '@/core/api/generated/validator';
 
 /**
  * Auth endpoints that must never carry a Bearer header or trigger a refresh: the caller has
@@ -138,8 +137,6 @@ export class ApiClient implements IApiClient {
   }
 
   private async dispatch<T>(method: string, url: string, body?: unknown, options?: RequestOptions): Promise<T> {
-    ContractValidator.validateRequest(method, url, body, options?.params);
-
     return this.executeWithAuthRetry(url, options, async () => {
       const kyOptions: KyOptions = {
         ...options,
@@ -165,7 +162,6 @@ export class ApiClient implements IApiClient {
       } else {
         result = await this.client(url, { ...kyOptions, method }).json<T>();
       }
-      ContractValidator.validateResponse(method, url, 200, result);
       return result;
     });
   }
