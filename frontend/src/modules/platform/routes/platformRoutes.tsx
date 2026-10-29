@@ -6,10 +6,25 @@ import { PermissionRoute } from '@/routes/PermissionRoute';
 import { PlatformAdminPage } from '@/modules/platform/pages/PlatformAdminPage';
 import { ApiHealthPage } from '@/modules/platform/pages/ApiHealthPage';
 import { PreserveQueryRedirect } from '@/routes/PreserveQueryRedirect';
+import { CatalogAdminPage } from '@/modules/catalog/CatalogAdminPage';
 
+const CATALOG_TABS: Record<string, string> = {
+  software: 'software',
+  statuses: 'statuses',
+  'task-types': 'task-types',
+  'asset-types': 'asset-types',
+  'shot-types': 'shot-types',
+  'review-types': 'review-types',
+  'file-types': 'file-types',
+  'asset-shot-types': 'asset-types',
+  'review-file-types': 'review-types',
+};
+
+/** The old master-data tabs (`/platform/master-data/:tab`, `/platform/admin/:tab`) now live under /platform/catalog. */
 const MasterDataRedirect: React.FC = () => {
   const { tab } = useParams<{ tab?: string }>();
-  return <Navigate to={tab ? `/platform/admin/${tab}` : '/platform/admin'} replace />;
+  const kind = tab ? CATALOG_TABS[tab] : undefined;
+  return <Navigate to={kind ? `/platform/catalog/${kind}` : '/platform/catalog'} replace />;
 };
 
 /**
@@ -21,6 +36,8 @@ export const platformRoutes = (
   <>
     {/* PLATFORM APPS */}
     <Route path="/platform/health" element={<ApiHealthPage />} />
+    <Route path="/platform/catalog" element={<CatalogAdminPage />} />
+    <Route path="/platform/catalog/:kind" element={<CatalogAdminPage />} />
     <Route path="/api-health" element={<PreserveQueryRedirect to="/platform/health" />} />
 
     <Route element={<PermissionRoute permissions={['platform.admin.view', 'platform.master_data.view', 'platform.software.view', 'platform.status.view', 'settings.view', 'page.settings']} requireAny={true} />}>

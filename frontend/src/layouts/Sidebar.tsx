@@ -22,6 +22,7 @@ import {
   Cpu,
   Users,
   MapPin,
+  Layers,
   Workflow,
   Building2,
   Briefcase,
@@ -126,6 +127,13 @@ export const Sidebar: React.FC = () => {
           icon: Users,
           pagePermission: 'page.teams',
           permissions: ['team.view'],
+        },
+        {
+          id: 'catalog',
+          to: '/platform/catalog',
+          label: 'Catalog',
+          icon: Layers,
+          pagePermission: 'page.catalog',
         },
         {
           id: 'positions',

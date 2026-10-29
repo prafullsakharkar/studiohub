@@ -188,6 +188,7 @@ export const PERMISSION_MAP: Readonly<Record<string, PermissionRule>> = {
   'page.departments': open(DIRECTORY_READ),
   'page.offices': open(DIRECTORY_READ),
   'page.positions': open(DIRECTORY_READ),
+  'page.catalog': open('Catalog lists are readable by every signed-in user; changing them needs masterdata.catalog.manage (checked per control and by the API).'),
   'page.teams': open(DIRECTORY_READ),
   'page.platform_admin': catalogAdminScreen(),
   'page.platform_master_data': catalogAdminScreen(),

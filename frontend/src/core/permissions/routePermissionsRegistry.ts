@@ -72,6 +72,8 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
     name: 'Create Team',
     permissions: ['team.create'],
   },
+  '/platform/catalog': { path: '/platform/catalog', name: 'Catalog', pagePermission: 'page.catalog' },
+  '/platform/catalog/:kind': { path: '/platform/catalog/:kind', name: 'Catalog section', pagePermission: 'page.catalog' },
   '/positions': {
     path: '/positions',
     name: 'Positions',
