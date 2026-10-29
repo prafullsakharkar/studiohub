@@ -1,6 +1,7 @@
 
 from rest_framework import serializers
 
+from apps.identity.models import User
 from apps.identity.services.user import (
     UserService,
 )
@@ -21,6 +22,22 @@ class UserCreateSerializer(
         UserBaseSerializer.Meta,
     ):
         fields = UserBaseSerializer.Meta.fields + ("password",)
+
+    def validate_email(
+        self,
+        value: str,
+    ) -> str:
+        """
+        Reject an address that differs from an existing one only by case.
+
+        The database enforces ``lower(email)`` uniqueness, but the field's own
+        ``UniqueValidator`` compares case-sensitively, so ``NEW@x`` after ``new@x``
+        passed validation and failed at the constraint as an unhandled 500 (CR-12).
+        """
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("user with this email already exists.")
+
+        return value
 
     def validate_password(
         self,
