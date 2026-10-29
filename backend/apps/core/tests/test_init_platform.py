@@ -121,16 +121,16 @@ def test_every_enforced_identity_and_settings_code_is_seeded(db, seeded_platform
     from apps.identity.models import Permission
 
     seeded = set(Permission.objects.values_list("code", flat=True))
-    assert ENFORCED_BUT_FORMERLY_UNSEEDED <= seeded
+    assert seeded >= ENFORCED_BUT_FORMERLY_UNSEEDED
 
 
 def test_platform_admin_holds_all_of_them(db, seeded_platform_module):
-    assert ENFORCED_BUT_FORMERLY_UNSEEDED <= _codes_of("platform-admin")
+    assert _codes_of("platform-admin") >= ENFORCED_BUT_FORMERLY_UNSEEDED
 
 
 def test_org_admin_holds_lifecycle_and_read_only_ledgers_but_not_ledger_writes(db, seeded_platform_module):
     held = _codes_of("org-admin")
-    assert ORG_ADMIN_IDENTITY <= held
+    assert held >= ORG_ADMIN_IDENTITY
     # Writing to the ledgers and the IP blacklist is platform-admin only.
     assert not (
         {
