@@ -17,7 +17,6 @@ from .trusted_device import (
     TrustedDeviceListAPIView,
     TrustedDeviceRevokeAPIView,
 )
-from .verify_email import VerifyEmailAPIView
 from .verify_mfa import MFAVerifyAPIView
 
 __all__ = [
@@ -27,7 +26,6 @@ __all__ = [
     "ForgotPasswordAPIView",
     "ResetPasswordAPIView",
     "ChangePasswordAPIView",
-    "VerifyEmailAPIView",
     "ResendVerificationAPIView",
     "MeAPIView",
     "LogoutAllAPIView",

@@ -1,20 +1,23 @@
 """
 Delivery selector for query operations.
 """
+
 from __future__ import annotations
 
 from django.db.models import QuerySet
 
 from apps.core.selectors.base import BaseSelector
 from apps.deliveries.models import DeliveryPackage
+from apps.production.selectors.base import ProductionBaseSelector
 
 
 class DeliverySelector(BaseSelector):
     """
-    Read-side data access for delivery packages.
+    Read-side data access for delivery packages, narrowed to the caller's projects (SEC-DLV-01).
 
-    Organization scoping is applied by the viewset through
-    ``scope_by_request`` (fail closed).
+    Everything else is a 404 exactly like an unknown id. Platform admins see every delivery,
+    including old ones that name no project; everyone else sees none of those. A read without a
+    request sees nothing.
     """
 
     model = DeliveryPackage
@@ -22,10 +25,14 @@ class DeliverySelector(BaseSelector):
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[DeliveryPackage]:
         qs = cls.model.objects.select_related(
-            "organization",
             "project",
             "client",
-        ).prefetch_related("versions")
+            "destination",
+        ).prefetch_related("versions__files")
+
+        visible = ProductionBaseSelector.visible_project_ids(request) if request is not None else []
+        if visible is not None:  # None: platform admin, nothing narrows
+            qs = qs.filter(project_id__in=visible)
 
         if view is not None and hasattr(view, "filterset_class"):
             filterset = view.filterset_class(

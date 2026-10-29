@@ -84,6 +84,10 @@ Recovery procedures should exist for each critical scenario.
 
 Define measurable recovery targets.
 
+> **Status.** The figures below are examples. No backup, restore or failover tooling exists in this
+> repository, and no restore has been tested, so StudioHub does not currently demonstrate any RTO or RPO.
+> `docs/06-infrastructure/backup.md` proposes a 1-hour RPO; reconcile the two when the targets are set.
+
 | Objective | Description |
 |-----------|-------------|
 | RTO | Maximum acceptable service outage |

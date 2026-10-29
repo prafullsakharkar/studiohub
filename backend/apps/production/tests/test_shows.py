@@ -10,25 +10,8 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
-from apps.organization.tests.factories import (
-    OrganizationFactory,
-    OrganizationMembershipFactory,
-)
-from apps.production.models import Show
+from apps.production.models import ProjectMembership, Show
 from apps.production.tests.factories import ProjectFactory
-
-
-def _org_header(org):
-    return {"HTTP_X_ORGANIZATION_ID": str(org.id)}
-
-
-def _seed_org():
-    from apps.identity.tests.factories import UserFactory
-
-    org = OrganizationFactory.create()
-    user = UserFactory.create()
-    OrganizationMembershipFactory.create(organization=org, user=user)
-    return org
 
 
 @pytest.mark.django_db
@@ -36,9 +19,11 @@ class TestShowEndpoints:
     def _list_url(self):
         return reverse("api:v1:production:show-list")
 
-    def test_crud_lifecycle(self, staff_client):
-        org = _seed_org()
-        project = ProjectFactory.create(organization=org)
+    def test_crud_lifecycle(self, staff_client, staff_user):
+        project = ProjectFactory.create()
+        ProjectMembership.objects.create(
+            user=staff_user, project=project, status="active", role="Artist"
+        )
 
         create = staff_client.post(
             self._list_url(),
@@ -50,7 +35,6 @@ class TestShowEndpoints:
                 "is_primary": True,
             },
             format="json",
-            **_org_header(org),
         )
         assert create.status_code == status.HTTP_201_CREATED, create.data
         show_id = create.data["id"]
@@ -58,7 +42,7 @@ class TestShowEndpoints:
         assert create.data["type"] == "Feature Film"
 
         listing = staff_client.get(
-            self._list_url() + f"?project_id={project.id}", **_org_header(org)
+            self._list_url() + f"?project_id={project.id}"
         )
         assert listing.status_code == status.HTTP_200_OK
         assert listing.data["count"] == 1
@@ -69,28 +53,24 @@ class TestShowEndpoints:
         by_code = reverse(
             "api:v1:production:show-detail", kwargs={"uuid": "MAIN"}
         )
-        assert (
-            staff_client.get(by_code, **_org_header(org)).status_code
-            == status.HTTP_200_OK
-        )
+        assert staff_client.get(by_code).status_code == status.HTTP_200_OK
 
-        deleted = staff_client.delete(detail_url, **_org_header(org))
+        deleted = staff_client.delete(detail_url)
         assert deleted.status_code == status.HTTP_204_NO_CONTENT
         assert Show.objects.filter(pk=show_id).count() == 0
 
-    def test_org_isolation(self, staff_client):
-        org_a = _seed_org()
-        org_b = _seed_org()
-        project_b = ProjectFactory.create(organization=org_b)
+    def test_cross_project_isolation(self, staff_client, staff_user):
+        project_a = ProjectFactory.create()
+        project_b = ProjectFactory.create()
+        ProjectMembership.objects.create(
+            user=staff_user, project=project_a, status="active", role="Artist"
+        )
         show = Show.objects.create(
-            organization=org_b, project=project_b, name="Foreign", code="F1"
+            project=project_b, name="Foreign", code="F1"
         )
         url = reverse(
             "api:v1:production:show-detail", kwargs={"uuid": str(show.id)}
         )
-        assert (
-            staff_client.get(url, **_org_header(org_a)).status_code
-            == status.HTTP_404_NOT_FOUND
-        )
-        listing = staff_client.get(self._list_url(), **_org_header(org_a))
+        assert staff_client.get(url).status_code == status.HTTP_404_NOT_FOUND
+        listing = staff_client.get(self._list_url())
         assert listing.data["count"] == 0

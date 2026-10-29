@@ -62,6 +62,18 @@ Mocks return `*_id` + `*_name` pairs throughout. Serializers must include read-o
 display fields resolved via selector annotations (follow the existing organization
 selector pattern). This applies to every flat-contract entity.
 
+## Phase 1 Consolidation Contract Notes (N1/N2/N7)
+
+- Person read shape gains `user_id` (UUID, null when unlinked). Writes accept
+  `user_id` (UUID, null clears); unknown ids are rejected 400 fail-closed.
+- ProjectMembership `status` is canonical lowercase
+  (`active|on_leave|terminated|suspended`); writes accept legacy Title Case
+  (`"Active"` → `"active"`) and reject unknown values 400.
+- ProjectMembership read shape gains `role_id` (UUID of `role_ref`, null when
+  unmatched). Writes accept `role_id` scoped to global + own-org roles;
+  unknown or sibling-org ids are rejected 400. The `role` Char remains as the
+  display snapshot.
+
 ## Mock → Model Mapping
 
 | Mock entity | Django model | Status |

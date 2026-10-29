@@ -1,5 +1,5 @@
 from .change_password import ChangePasswordSerializer
-from .disable_mfa import MFADisableSerializer
+from .disable_mfa import MFADisableSerializer, MFAReauthSerializer
 from .enroll_mfa import MFAEnrollResponseSerializer, MFAEnrollSerializer
 from .forgot_password import ForgotPasswordSerializer
 from .login import LoginSerializer
@@ -10,8 +10,7 @@ from .refresh import RefreshSerializer
 from .resend_verification import ResendVerificationSerializer
 from .reset_password import ResetPasswordSerializer
 from .trusted_device import TrustedDeviceRevokeSerializer, TrustedDeviceSerializer
-from .verify_email import VerifyEmailSerializer
-from .verify_mfa import MFAVerifySerializer
+from .verify_mfa import MFAChallengeSerializer, MFAVerifySerializer
 
 __all__ = [
     "MeSerializer",
@@ -21,7 +20,6 @@ __all__ = [
     "ChangePasswordSerializer",
     "ForgotPasswordSerializer",
     "ResetPasswordSerializer",
-    "VerifyEmailSerializer",
     "ResendVerificationSerializer",
     "MFADisableSerializer",
     "MFAEnrollResponseSerializer",
@@ -31,4 +29,6 @@ __all__ = [
     "TrustedDeviceRevokeSerializer",
     "TrustedDeviceSerializer",
     "MFAVerifySerializer",
+    "MFAChallengeSerializer",
+    "MFAReauthSerializer",
 ]

@@ -8,17 +8,14 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.models.bases.entity import EntityModel
 from apps.core.models.bases.timestamp import TimeStampedModel
-from apps.organization.models.organization import Organization
 
 
 class FeatureFlag(EntityModel, TimeStampedModel):
     """
     Feature flag for enabling/disabling features.
-    
-    Supports multiple scopes:
-    - Organization: Enable for specific organizations
-    - User: Enable for specific users
-    - System: Global feature flag
+
+    Global platform flag: rollout applies platform-wide (boolean switch
+    or stable per-user percentage), with no organization partition.
     """
     
     # Feature flag types
@@ -105,16 +102,6 @@ class FeatureFlag(EntityModel, TimeStampedModel):
         help_text="When to disable this feature",
     )
     
-    # Organization scope
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="feature_flags",
-        null=True,
-        blank=True,
-        db_index=True,
-        help_text="Organization to enable this feature for (null = system-wide)",
-    )
     
     # Additional configuration
     config = models.JSONField(
@@ -146,7 +133,6 @@ class FeatureFlag(EntityModel, TimeStampedModel):
         ordering = ("name",)
         verbose_name = "Feature Flag"
         verbose_name_plural = "Feature Flags"
-        unique_together = ("code", "organization")
     
     def __str__(self):
         return self.name
@@ -170,17 +156,14 @@ class FeatureFlag(EntityModel, TimeStampedModel):
         
         return False
     
-    def is_enabled_for_organization(self, organization: Organization) -> bool:
-        """Check if the feature is enabled for a specific organization."""
-        if self.organization and self.organization != organization:
-            return False
-        
+    def is_enabled_for_user(self, user) -> bool:
+        """Check if the feature is enabled for a specific user (global flag)."""
         if not self.is_active:
             return False
-        
+
         if self.feature_type == self.TYPE_BOOLEAN:
             return self.is_enabled
-        
+
         if self.feature_type == self.TYPE_PERCENTAGE:
             # Stable hash-based percentage check (``hash()`` is salted per
             # process, which would make rollouts non-deterministic across
@@ -188,10 +171,10 @@ class FeatureFlag(EntityModel, TimeStampedModel):
             import hashlib
 
             digest = hashlib.sha256(
-                str(organization.id).encode(),
+                str(getattr(user, "id", user)).encode(),
             ).hexdigest()
 
             hash_value = int(digest[:8], 16) % 100
             return hash_value < self.percentage
-        
+
         return False

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.http import HttpRequest, HttpResponse
 
-from apps.identity.authentication.device import TrustedDeviceService
+from apps.identity.authentication.device import DeviceTokenService
 
 from .base import BaseMFAService
 
@@ -19,7 +19,7 @@ class MFACookieService(BaseMFAService):
         user,
         fingerprint: str,
     ) -> str:
-        return TrustedDeviceService.sign(
+        return DeviceTokenService.sign(
             user_id=user.pk,
             fingerprint=fingerprint,
         )
@@ -29,7 +29,7 @@ class MFACookieService(BaseMFAService):
         cls,
         token: str,
     ):
-        return TrustedDeviceService.verify(token)
+        return DeviceTokenService.verify(token)
 
     @classmethod
     def create_cookie(
@@ -39,7 +39,7 @@ class MFACookieService(BaseMFAService):
         request: HttpRequest,
         user,
     ) -> HttpResponse:
-        fingerprint = TrustedDeviceService.build_fingerprint(request)
+        fingerprint = DeviceTokenService.build_fingerprint(request)
 
         token = cls.build_token(
             user=user,
@@ -47,9 +47,9 @@ class MFACookieService(BaseMFAService):
         )
 
         response.set_cookie(
-            TrustedDeviceService.COOKIE_NAME,
+            DeviceTokenService.COOKIE_NAME,
             token,
-            **TrustedDeviceService.cookie_kwargs(),
+            **DeviceTokenService.cookie_kwargs(),
         )
 
         return response
@@ -60,7 +60,7 @@ class MFACookieService(BaseMFAService):
         response: HttpResponse,
     ) -> HttpResponse:
         response.delete_cookie(
-            TrustedDeviceService.COOKIE_NAME,
+            DeviceTokenService.COOKIE_NAME,
         )
 
         return response
@@ -73,13 +73,13 @@ class MFACookieService(BaseMFAService):
         user,
     ) -> bool:
         token = request.COOKIES.get(
-            TrustedDeviceService.COOKIE_NAME,
+            DeviceTokenService.COOKIE_NAME,
         )
 
         if not token:
             return False
 
-        return TrustedDeviceService.matches(
+        return DeviceTokenService.matches(
             token=token,
             request=request,
             user_id=user.pk,

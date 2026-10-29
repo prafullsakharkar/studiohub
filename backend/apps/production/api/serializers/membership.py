@@ -3,6 +3,7 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseReadSerializer, BaseWriteSerializer
+from apps.core.api.serializers.fields import CaseInsensitiveChoiceField
 from apps.production.models import ProjectMembership
 
 
@@ -31,9 +32,8 @@ class ProjectMembershipSerializer(BaseReadSerializer[Any]):
     """Frontend ProjectMembership shape (dual snake/camel keys + denormalized user)."""
 
     userId = serializers.SerializerMethodField()
-    organizationId = serializers.SerializerMethodField()
     projectId = serializers.SerializerMethodField()
-    organization_id = serializers.UUIDField(read_only=True)
+    role_id = serializers.UUIDField(source="role_ref_id", read_only=True, allow_null=True)
     project_id = serializers.UUIDField(read_only=True)
     user_id = serializers.UUIDField(read_only=True)
     project_code = serializers.SerializerMethodField()
@@ -48,8 +48,6 @@ class ProjectMembershipSerializer(BaseReadSerializer[Any]):
             "id",
             "user_id",
             "userId",
-            "organization_id",
-            "organizationId",
             "project_id",
             "projectId",
             "project_code",
@@ -58,6 +56,7 @@ class ProjectMembershipSerializer(BaseReadSerializer[Any]):
             "email",
             "avatar_url",
             "role",
+            "role_id",
             "roles",
             "scope",
             "status",
@@ -77,9 +76,6 @@ class ProjectMembershipSerializer(BaseReadSerializer[Any]):
 
     def get_userId(self, obj):
         return str(obj.user_id)
-
-    def get_organizationId(self, obj):
-        return str(obj.organization_id)
 
     def get_projectId(self, obj):
         return str(obj.project_id)
@@ -111,7 +107,48 @@ class ProjectMembershipCreateSerializer(BaseWriteSerializer[Any]):
         child=serializers.CharField(), required=False, default=list
     )
     scope = serializers.CharField(required=False, allow_blank=True, default="PROJECT")
+    # Making the member external: with either set they see only what that vendor/client was
+    # given (``selectors/external_scope.py``), not the whole project.
+    vendor_id = serializers.CharField(required=False, allow_blank=True, default="", max_length=50)
+    client_id = serializers.CharField(required=False, allow_blank=True, default="", max_length=50)
+    # Canonical RBAC role (N7); resolved platform-wide in validate, fail closed.
+    role_id = serializers.UUIDField(required=False, allow_null=True, write_only=True)
+    # Frontend contract sends Title Case ("Active"); DB stores lowercase.
+    status = CaseInsensitiveChoiceField(
+        choices=ProjectMembership.STATUS_CHOICES, required=False, default="active"
+    )
 
     class Meta:
         model = ProjectMembership
-        fields = ("userId", "user_id", "email", "role", "roles", "scope")
+        fields = (
+            "userId",
+            "user_id",
+            "email",
+            "role",
+            "roles",
+            "scope",
+            "status",
+            "role_id",
+            "vendor_id",
+            "client_id",
+        )
+
+    def validate(self, attrs):
+        role_ref = attrs.pop("role_id", None)
+        if role_ref is not None:
+            attrs["role_ref"] = self._resolve_role_ref(role_ref)
+        return attrs
+
+    def _resolve_role_ref(self, role_ref):
+        """Resolve a role id against the global identity roles.
+
+        Unknown ids are rejected — fail closed.
+        """
+        from apps.identity.models import Role
+
+        role = Role.objects.filter(id=role_ref, is_deleted=False).first()
+        if role is None:
+            raise serializers.ValidationError(
+                {"role_id": "Unknown role."}
+            )
+        return role

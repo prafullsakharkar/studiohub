@@ -23,19 +23,24 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from apps.core.api.throttling import ResilientScopedRateThrottle
+from apps.core.api.throttling import FailClosedScopedRateThrottle
 from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import (
     LoginSerializer,
     LogoutSerializer,
+    MFAChallengeSerializer,
     RefreshSerializer,
 )
 from apps.identity.api.serializers.frontend_user import (
-    serialize_frontend_membership,
+    MePatchSerializer,
     serialize_frontend_user,
 )
+from apps.identity.authentication.session_bound_jwt import SessionBoundJWTAuthentication
+from apps.identity.models import Profile
+from apps.identity.services.authentication import AuthenticationService
+from apps.identity.services.mfa import MFAService
+from apps.identity.services.profile import ProfileService
 
 User = get_user_model()
 
@@ -45,7 +50,7 @@ class AuthLoginView(BaseAPIView):
 
     authentication_classes = ()
     permission_classes = (AllowAny,)
-    throttle_classes = (ResilientScopedRateThrottle,)
+    throttle_classes = (FailClosedScopedRateThrottle,)
     throttle_scope = "login"
     serializer_class = LoginSerializer
 
@@ -57,10 +62,26 @@ class AuthLoginView(BaseAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = serializer.save()  # {access, refresh, session}
+        data = serializer.save()  # {access, refresh, session} or an MFA challenge
+
+        if data.get("mfa_required"):
+            # SEC-LOGIN-04: password accepted, second factor still owed. No
+            # tokens and no user payload until the challenge is completed.
+            return Response(
+                {
+                    "mfa_required": True,
+                    "challenge": data["challenge"],
+                    "expires_in": data["expires_in"],
+                },
+                status=status.HTTP_200_OK,
+            )
 
         # Resolve user for frontend payload (email is normalized to lower)
-        email = serializer.validated_data.get("email") or serializer.validated_data.get("username") or request.data.get("email")
+        email = (
+            serializer.validated_data.get("email")
+            or serializer.validated_data.get("username")
+            or request.data.get("email")
+        )
         user = None
         if email:
             try:
@@ -76,16 +97,69 @@ class AuthLoginView(BaseAPIView):
 
         frontend_user = serialize_frontend_user(user, request) if user else None
 
-        return Response(
+        body = {
+            "tokens": {
+                "access": data.get("access"),
+                "refresh": data.get("refresh"),
+            },
+            "user": frontend_user,
+        }
+
+        if data.get("mfa_enrollment_required"):
+            body["mfa_enrollment_required"] = True
+
+        return Response(body, status=status.HTTP_200_OK)
+
+
+class AuthMFAChallengeView(BaseAPIView):
+    """
+    Second step of an MFA login (API-MFA-09).
+
+    Exchanges the challenge from ``/auth/login/`` plus a TOTP code or a
+    recovery code for the session tokens.
+    """
+
+    authentication_classes = ()
+    permission_classes = (AllowAny,)
+    throttle_classes = (FailClosedScopedRateThrottle,)
+    throttle_scope = "login"
+    serializer_class = MFAChallengeSerializer
+
+    @extend_schema(
+        request=MFAChallengeSerializer,
+        responses={200: OpenApiTypes.OBJECT},
+        description="Complete an MFA login. Returns {tokens:{access,refresh}, user}",
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        data = serializer.validated_data
+
+        user, tokens = AuthenticationService.complete_mfa_login(
+            request=request,
+            challenge=data["challenge"],
+            code=data["code"],
+            recovery_code=data["recovery_code"],
+        )
+
+        response = Response(
             {
                 "tokens": {
-                    "access": data.get("access"),
-                    "refresh": data.get("refresh"),
+                    "access": tokens["access"],
+                    "refresh": tokens["refresh"],
                 },
-                "user": frontend_user,
+                "user": serialize_frontend_user(user, request),
             },
             status=status.HTTP_200_OK,
         )
+
+        if data["remember_device"] and MFAService.can_trust_device_cookie():
+            MFAService.register_device(user=user, request=request)
+
+            MFAService.create_cookie(response=response, request=request, user=user)
+
+        return response
 
 
 class AuthRefreshView(BaseAPIView):
@@ -99,7 +173,7 @@ class AuthRefreshView(BaseAPIView):
 
     authentication_classes = ()
     permission_classes = (AllowAny,)
-    throttle_classes = (ResilientScopedRateThrottle,)
+    throttle_classes = (FailClosedScopedRateThrottle,)
     throttle_scope = "refresh"
     serializer_class = RefreshSerializer
 
@@ -123,7 +197,7 @@ class AuthRefreshView(BaseAPIView):
 class AuthLogoutView(BaseAPIView):
     """Frontend-compatible logout: clears session and blacklists refresh if provided."""
 
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     serializer_class = LogoutSerializer
@@ -146,7 +220,7 @@ class AuthLogoutView(BaseAPIView):
 class AuthMeView(BaseAPIView):
     """Frontend-compatible current user: returns FrontendUser."""
 
-    authentication_classes = (JWTAuthentication,)
+    authentication_classes = (SessionBoundJWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     @extend_schema(
@@ -158,32 +232,19 @@ class AuthMeView(BaseAPIView):
         data = serialize_frontend_user(user, request)
         return Response(data, status=status.HTTP_200_OK)
 
-
-class AuthMembershipsView(BaseAPIView):
-    """Frontend-compatible memberships: GET /api/v1/auth/memberships/.
-
-    Returns the current user's OrganizationMembership rows in the frontend
-    OrganizationMembership shape (also served at the legacy alias
-    /api/v1/users/me/memberships/).
-    """
-
-    authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
-
     @extend_schema(
+        request=OpenApiTypes.OBJECT,
         responses={200: OpenApiTypes.OBJECT},
-        description="Return current user's organization memberships.",
+        description="Update the authenticated user's own profile.",
     )
-    def get(self, request, *args, **kwargs):
-        from apps.organization.models import OrganizationMembership
+    def patch(self, request, *args, **kwargs):
+        user = request.user
+        profile = Profile.objects.get_or_create(user=user)[0]
 
-        memberships = (
-            OrganizationMembership.objects.filter(
-                user=request.user,
-                is_deleted=False,
-            )
-            .select_related("organization", "role", "department")
-            .order_by("-is_primary", "organization__name")
-        )
-        data = [serialize_frontend_membership(m) for m in memberships]
+        serializer = MePatchSerializer(profile, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        ProfileService.update_profile(profile, **serializer.validated_data)
+
+        data = serialize_frontend_user(user, request)
         return Response(data, status=status.HTTP_200_OK)

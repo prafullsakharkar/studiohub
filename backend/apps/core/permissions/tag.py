@@ -28,8 +28,8 @@ class TagPermissions(BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
 
-        # Staff users have full access
-        if getattr(request.user, "is_staff", False):
+        # Superusers have full (break-glass) access — ADR-0033 D4.
+        if getattr(request.user, "is_superuser", False):
             return True
 
         # Organization members can view and manage their own tags
@@ -48,8 +48,8 @@ class TagPermissions(BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
 
-        # Staff users have full access
-        if getattr(request.user, "is_staff", False):
+        # Superusers have full (break-glass) access — ADR-0033 D4.
+        if getattr(request.user, "is_superuser", False):
             return True
 
         # Organization members can manage their own tags

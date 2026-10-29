@@ -3,10 +3,11 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseReadSerializer
+from apps.production.api.serializers.task.hours import TaskHoursMixin
 from apps.production.models import Task
 
 
-class TaskSerializer(BaseReadSerializer[Any]):
+class TaskSerializer(TaskHoursMixin, BaseReadSerializer[Any]):  # pyright: ignore[reportUnsafeMultipleInheritance]
     project_id = serializers.UUIDField(read_only=True)
     project_code = serializers.SerializerMethodField()
     project_name = serializers.SerializerMethodField()
@@ -20,6 +21,13 @@ class TaskSerializer(BaseReadSerializer[Any]):
     reviewer_name = serializers.SerializerMethodField()
     reviewer_avatar = serializers.SerializerMethodField()
     department = serializers.CharField(read_only=True)
+    shot_id = serializers.UUIDField(read_only=True, allow_null=True)
+    asset_id = serializers.UUIDField(read_only=True, allow_null=True)
+    sequence_id = serializers.UUIDField(read_only=True, allow_null=True)
+    task_type_id = serializers.UUIDField(read_only=True, allow_null=True)
+    task_type_code = serializers.SerializerMethodField()
+    task_type_name = serializers.SerializerMethodField()
+    is_archived = serializers.BooleanField(source="is_deleted", read_only=True)
     entity_type = serializers.CharField(read_only=True)
     entity_id = serializers.CharField(read_only=True)
     entity_code = serializers.CharField(read_only=True)
@@ -35,6 +43,9 @@ class TaskSerializer(BaseReadSerializer[Any]):
             "project_id",
             "project_code",
             "project_name",
+            "shot_id",
+            "asset_id",
+            "sequence_id",
             "entity_type",
             "entity_id",
             "entity_code",
@@ -64,11 +75,21 @@ class TaskSerializer(BaseReadSerializer[Any]):
             "is_archived",
             "due_date",
             "estimated_hours",
+            "task_type_id",
+            "task_type_code",
+            "task_type_name",
             "logged_hours",
+            "pending_hours",
             "created_at",
             "updated_at",
         )
         read_only_fields = ("id", "uuid", "created_at", "updated_at")
+
+    def get_task_type_code(self, obj):
+        return obj.task_type.code if obj.task_type_id else ""
+
+    def get_task_type_name(self, obj):
+        return obj.task_type.name if obj.task_type_id else ""
 
     def get_project_code(self, obj):
         return obj.project.code if obj.project else ""

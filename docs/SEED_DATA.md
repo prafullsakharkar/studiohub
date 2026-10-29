@@ -52,11 +52,11 @@ unresolvable references are skipped and reported, never guessed.
 predates: masterdata catalog + org configs (`masterData/initialMasterData.ts`),
 automation rules/logs (`production/workflow.ts` — the served dataset),
 scheduling resources/schedules/leaves/holidays/events
-(`production/scheduling.ts`), saved/recent searches (`intelligence/search.ts`).
+(`production/scheduling.ts`).
 
 ```bash
 seed_demo_data --force [--dry-run] [--skip-base] [--skip-validate]
-               [--only masterdata,automations,scheduling,search]
+               [--only masterdata,automations,scheduling]
 ```
 
 - Same idempotency contract as `seed_studiohub` (natural keys,
@@ -70,9 +70,8 @@ seed_demo_data --force [--dry-run] [--skip-base] [--skip-validate]
   (`_update_or_create`): re-runs no longer re-INSERT soft-deleted natural
   keys (was `IntegrityError` on shots); timelog seeding dedupes on
   (task, person, date, duration).
-- Deterministic seed decisions (reported, never silent): saved/recent
-  searches go to the primary demo user (`usr-001`) in their first org;
-  studio holidays are seeded into every org (`(organization, date)` key);
+- Deterministic seed decisions (reported, never silent): studio holidays are
+  seeded into every org (`(organization, date)` key);
   `SoftwareVersion.code` reuses the unique `version_code`;
   `MasterFileType.code` is derived from the extension; the two reused
   status codes keep the bare code for the first-seen entity type and get

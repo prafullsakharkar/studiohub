@@ -2,7 +2,7 @@ from django.db import models
 from django.test import SimpleTestCase
 
 from apps.core.models.bases.metadata import MetadataModel
-from apps.core.models.bases.ownership import OrganizationOwnedModel, ProjectOwnedModel
+from apps.core.models.bases.ownership import ProjectOwnedModel
 from apps.core.models.bases.project import ProjectEntityModel
 from apps.core.models.bases.soft_delete import SoftDeleteModel
 from apps.core.models.bases.timestamp import TimeStampedModel
@@ -45,7 +45,6 @@ class TestModelFoundation(SimpleTestCase):
         self.assertIsInstance(metadata_field, models.JSONField)
 
     def test_ownership_models_are_abstract(self):
-        self.assertTrue(OrganizationOwnedModel._meta.abstract)
         self.assertTrue(ProjectOwnedModel._meta.abstract)
 
     def test_project_entity_model_is_abstract(self):

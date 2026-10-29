@@ -3,7 +3,9 @@ Tests for the persisted automation rules / audit-log endpoints.
 
 Contract: studiohub-react `WorkflowService.ts` — bare-array lists, full rule
 shape with nested `trigger`, 201 on create, 204 on delete; audit-logs
-read-only list.
+read-only list. Rules belong to a project the caller is a member of; only
+platform admins may own project-less (global) rules. The authorization matrix
+lives in ``security/test_automation_authz.py``.
 """
 
 from __future__ import annotations
@@ -11,9 +13,9 @@ from __future__ import annotations
 import pytest
 from django.urls import reverse
 
-from apps.organization.tests.factories import OrganizationFactory
-from apps.production.models import AutomationAuditLog, AutomationRule, Workflow
+from apps.production.models import AutomationRule, ProjectMembership, Workflow
 from apps.production.services.automation import log_execution
+from apps.production.tests.factories import ProjectFactory
 
 RULES_URL = reverse("api:v1:production:automation-rules-list")
 LOGS_URL = reverse("api:v1:production:automation-audit-logs")
@@ -21,10 +23,6 @@ LOGS_URL = reverse("api:v1:production:automation-audit-logs")
 
 def _rule_detail_url(rule_id):
     return reverse("api:v1:production:automation-rules-detail", kwargs={"pk": str(rule_id)})
-
-
-def _org_header(org):
-    return {"HTTP_X_ORGANIZATION_ID": str(org.id)}
 
 
 def _rule_payload(**overrides):
@@ -45,15 +43,24 @@ def _rule_payload(**overrides):
     return data
 
 
+@pytest.fixture
+def project(staff_user):
+    """A project ``staff_user`` is an active member of."""
+    project = ProjectFactory.create(code="AUTO01")
+    ProjectMembership.objects.create(user=staff_user, project=project, status="active", role="Artist")
+    return project
+
+
 @pytest.mark.django_db
 class TestAutomationRules:
     def test_unauthenticated_401(self, api_client):
         assert api_client.get(RULES_URL).status_code == 401
         assert api_client.post(RULES_URL, {}).status_code == 401
 
-    def test_crud_round_trip(self, staff_client):
-        org = OrganizationFactory.create()
-        created = staff_client.post(RULES_URL, _rule_payload(), **_org_header(org), format="json")
+    def test_crud_round_trip(self, staff_client, project):
+        created = staff_client.post(
+            RULES_URL, _rule_payload(project_id=str(project.id)), format="json"
+        )
 
         assert created.status_code == 201, created.data
         rule_id = created.data["id"]
@@ -66,7 +73,7 @@ class TestAutomationRules:
         assert created.data["workflow_id"] is None
         assert created.data["execution_count"] == 0
 
-        listed = staff_client.get(RULES_URL, **_org_header(org))
+        listed = staff_client.get(RULES_URL)
         assert [row["id"] for row in listed.data] == [rule_id]
 
         detail = staff_client.get(_rule_detail_url(rule_id))
@@ -89,58 +96,44 @@ class TestAutomationRules:
         assert AutomationRule.objects.filter(id=rule_id).count() == 0
 
     def test_create_requires_name(self, staff_client):
-        org = OrganizationFactory.create()
         payload = _rule_payload()
         del payload["name"]
-        resp = staff_client.post(RULES_URL, payload, **_org_header(org), format="json")
+        resp = staff_client.post(RULES_URL, payload, format="json")
         assert resp.status_code == 400
 
     def test_trigger_must_be_object(self, staff_client):
-        org = OrganizationFactory.create()
         resp = staff_client.post(
-            RULES_URL, _rule_payload(trigger="review.approved"), **_org_header(org), format="json"
+            RULES_URL, _rule_payload(trigger="review.approved"), format="json"
         )
         assert resp.status_code == 400
 
-    def test_workflow_linking(self, staff_client):
-        org = OrganizationFactory.create()
-        workflow = Workflow.objects.create(organization=org, name="Dailies", code="DAILIES")
+    def test_workflow_linking(self, staff_client, project):
+        workflow = Workflow.objects.create(name="Dailies", code="DAILIES", project=project)
         created = staff_client.post(
             RULES_URL,
             _rule_payload(workflow_id=str(workflow.id)),
-            **_org_header(org),
             format="json",
         )
         assert created.status_code == 201, created.data
         assert created.data["workflow_id"] == str(workflow.id)
 
-    def test_mock_workflow_id_ignored(self, staff_client):
-        org = OrganizationFactory.create()
+    def test_mock_workflow_id_ignored(self, staff_client, project):
         created = staff_client.post(
-            RULES_URL, _rule_payload(workflow_id="wf-001"), **_org_header(org), format="json"
+            RULES_URL,
+            _rule_payload(workflow_id="wf-001", project_id=str(project.id)),
+            format="json",
         )
         assert created.status_code == 201, created.data
         assert created.data["workflow_id"] is None
 
-    def test_org_isolation(self, staff_client):
-        org_a = OrganizationFactory.create()
-        org_b = OrganizationFactory.create()
-        rule = AutomationRule.objects.create(organization=org_a, name="A-rule")
-
-        assert staff_client.get(RULES_URL, **_org_header(org_b)).data == []
-        assert staff_client.get(_rule_detail_url(rule.id), **_org_header(org_b)).status_code == 404
-        assert (
-            staff_client.delete(_rule_detail_url(rule.id), **_org_header(org_b)).status_code
-            == 404
-        )
+    def test_platform_admin_creates_global_rule(self, admin_client):
+        # Only platform admins own project-less rules.
+        resp = admin_client.post(RULES_URL, _rule_payload(), format="json")
+        assert resp.status_code == 201, resp.data
+        assert AutomationRule.objects.get(id=resp.data["id"]).project_id is None
 
     def test_detail_invalid_pk_404(self, staff_client):
-        org = OrganizationFactory.create()
-        resp = staff_client.get(_rule_detail_url("not-a-uuid"), **_org_header(org))
-        assert resp.status_code == 404
-
-    def test_no_organization_404_on_create(self, staff_client):
-        resp = staff_client.post(RULES_URL, _rule_payload(), format="json")
+        resp = staff_client.get(_rule_detail_url("not-a-uuid"))
         assert resp.status_code == 404
 
 
@@ -149,16 +142,14 @@ class TestAutomationAuditLogs:
     def test_unauthenticated_401(self, api_client):
         assert api_client.get(LOGS_URL).status_code == 401
 
-    def test_list_empty_then_logged(self, staff_client, staff_user):
-        org = OrganizationFactory.create()
-        assert staff_client.get(LOGS_URL, **_org_header(org)).data == []
+    def test_list_empty_then_logged(self, staff_client, staff_user, project):
+        assert staff_client.get(LOGS_URL).data == []
 
-        workflow = Workflow.objects.create(organization=org, name="Dailies", code="DAILIES")
+        workflow = Workflow.objects.create(name="Dailies", code="DAILIES", project=project)
         rule = AutomationRule.objects.create(
-            organization=org, workflow=workflow, name="Auto publish"
+            project=project, workflow=workflow, name="Auto publish"
         )
         log_execution(
-            organization=org,
             rule=rule,
             entity_type="Review",
             entity_id="rev-1",
@@ -171,7 +162,7 @@ class TestAutomationAuditLogs:
             step_logs=[{"step": "publish", "action_type": "publish", "status": "success"}],
         )
 
-        listed = staff_client.get(LOGS_URL, **_org_header(org))
+        listed = staff_client.get(LOGS_URL)
         assert listed.status_code == 200
         assert len(listed.data) == 1
         row = listed.data[0]
@@ -182,11 +173,3 @@ class TestAutomationAuditLogs:
         assert row["actor_id"] == str(staff_user.id)
         assert row["duration_ms"] == 120
         assert row["step_logs"][0]["step"] == "publish"
-
-    def test_org_isolation(self, staff_client):
-        org_a = OrganizationFactory.create()
-        org_b = OrganizationFactory.create()
-        log_execution(organization=org_a, rule=None, trigger_event="x")
-
-        assert staff_client.get(LOGS_URL, **_org_header(org_b)).data == []
-        assert AutomationAuditLog.objects.filter(organization=org_a).count() == 1

@@ -12,15 +12,16 @@ for contract work)::
 
 What it does:
 
-1. Runs the ``seed_dev`` foundation unless ``--skip-base`` (organizations,
-   users, roles, permission catalog, in-repo production mocks, clients,
-   billing, knowledge, activities, deliveries).
+1. Runs the ``seed_dev`` foundation unless ``--skip-base`` (users, roles,
+   permission catalog, platform/masterdata directory, clients, activities,
+   deliveries, publishes, destinations, pipeline settings).
 2. Overlays the studiohub-react mock dataset (source of truth for sample
-   data): all mock organizations with their own projects, production
-   entities per organization, mock-driven user/roleenburg memberships,
-   supplemental persona users, editorial cuts, project notes, and activity
-   project linkage.
-3. Validates relationships and integrity afterwards (fails on critical
+   data): mock projects with their production entities (org-free),
+   mock-driven users/profiles, project memberships, supplemental persona
+   users, editorial cuts, project notes, and activity project linkage.
+3. Seeds the masterdata catalog (software/versions, statuses, entity types)
+   so the Platform Admin surfaces real data against the API.
+4. Validates relationships and integrity afterwards (fails on critical
    violations unless ``--skip-validate``).
 
 Contract rules honored:
@@ -30,7 +31,7 @@ Contract rules honored:
   duplicated (§12).
 - Mock ``is_deleted`` flags are preserved as soft-deleted rows so restore
   flows stay testable (§25).
-- Memberships come from the mock, never blanket-granted (§9, §22).
+- Project memberships come from the mock, never blanket-granted (§9, §22).
 - Nothing is destroyed without explicit ``--reset`` (§26, §27).
 - ``--dry-run`` executes everything inside a rolled-back transaction and
   reports without writing (§16).
@@ -38,9 +39,8 @@ Contract rules honored:
 
 from __future__ import annotations
 
-import json
 import os
-import tempfile
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -49,8 +49,18 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
+
+def _stable_uuid(seed: str) -> uuid.UUID:
+    """Derive a deterministic UUID from a mock string id (e.g. ``notif-01``).
+
+    Mock ids are opaque frontend labels, but platform models use UUID primary
+    keys. Mapping through a fixed namespace keeps seeding idempotent while
+    producing valid model ids.
+    """
+    return uuid.uuid5(uuid.NAMESPACE_OID, seed)
+
+
 REACT_MOCK_FILES = {
-    "organizations": ("organization/organization.ts", "mockOrganizations"),
     "users": ("identity/users.ts", "mockUsers"),
     "projects": ("production/projects.ts", "mockProjects"),
     "sequences": ("production/sequences.ts", "mockSequences"),
@@ -65,8 +75,6 @@ REACT_MOCK_FILES = {
     "workflows": ("production/workflow.ts", "mockWorkflows"),
     "editorial": ("production/editorial.ts", "mockEditorialCuts"),
     "notes": ("production/notes.ts", "mockProjectNotes"),
-    "notifications": ("organization/organization.ts", "mockStudioNotifications"),
-    "reports": ("organization/organization.ts", "mockProductionReports"),
 }
 
 # Mock user-id fields rewritten to emails before seeding (the production
@@ -89,36 +97,36 @@ USER_ID_FIELDS = {
 # src/core/permissions + mockAuthGuard; tailwind `hover:*` excluded).
 # Used by validation to confirm catalog coverage.
 FRONTEND_PERMISSION_CODES = [
-    "projects:create",
-    "projects:read",
-    "projects:update",
-    "projects:delete",
-    "shots:create",
-    "shots:read",
-    "shots:update",
-    "shots:delete",
-    "shots:approve",
-    "assets:create",
-    "assets:read",
-    "assets:update",
-    "assets:delete",
-    "tasks:create",
-    "tasks:read",
-    "tasks:update",
-    "tasks:delete",
-    "reviews:create",
-    "reviews:read",
-    "reviews:approve",
-    "audit:read",
-    "settings:update",
-    "users:manage",
-    "deliveries:read",
-    "publishing:read",
-    "scheduling:read",
+    "project.create",
+    "project.view",
+    "project.update",
+    "project.delete",
+    "shot.create",
+    "shot.view",
+    "shot.update",
+    "shot.delete",
+    "shot.approve",
+    "asset.create",
+    "asset.view",
+    "asset.update",
+    "asset.delete",
+    "task.create",
+    "task.view",
+    "task.update",
+    "task.delete",
+    "review.create",
+    "review.view",
+    "review.approve",
+    "audit.view",
+    "settings.update",
+    "user.manage",
+    "delivery.view",
+    "publishing.view",
+    "schedule.view",
 ]
 
 # Mock display role name -> existing global role code. Roles are global by
-# code in this codebase, so cross-org memberships reuse the same role row.
+# code in this codebase, so memberships reuse the same role row.
 # Assumptions documented in docs/SEED_DATA.md.
 ROLE_NAME_MAP = {
     "Artist": "artist",
@@ -133,31 +141,31 @@ ROLE_NAME_MAP = {
 }
 
 _READ_PERMS = [
-    "projects:read",
-    "shots:read",
-    "assets:read",
-    "tasks:read",
-    "reviews:read",
-    "deliveries:read",
-    "publishing:read",
+    "project.view",
+    "shot.view",
+    "asset.view",
+    "task.view",
+    "review.view",
+    "delivery.view",
+    "publishing.view",
 ]
 _VENDOR_PERMS = [
-    "projects:read",
-    "shots:read",
-    "assets:read",
-    "tasks:read",
-    "tasks:update",
-    "reviews:read",
-    "reviews:create",
-    "deliveries:read",
+    "project.view",
+    "shot.view",
+    "asset.view",
+    "task.view",
+    "task.update",
+    "review.view",
+    "review.create",
+    "delivery.view",
 ]
 _CLIENT_PERMS = [
-    "projects:read",
-    "shots:read",
-    "reviews:read",
-    "reviews:approve",
-    "deliveries:read",
-    "publishing:read",
+    "project.view",
+    "shot.view",
+    "review.view",
+    "review.approve",
+    "delivery.view",
+    "publishing.view",
 ]
 
 # Supplemental global roles (mock names with no seeded equivalent).
@@ -165,7 +173,7 @@ _CLIENT_PERMS = [
 SUPPLEMENTAL_ROLES = {
     "viewer": ("Viewer", _READ_PERMS),
     "client-viewer": ("Client Viewer", _READ_PERMS),
-    "auditor": ("Auditor", ["audit:read", "projects:read"]),
+    "auditor": ("Auditor", ["audit.view", "project.view"]),
     "vendor-artist": ("Vendor Artist", _VENDOR_PERMS),
     "vendor-admin": ("Vendor Admin", _VENDOR_PERMS),
     "vendor-manager": ("Vendor Manager", _VENDOR_PERMS),
@@ -174,104 +182,57 @@ SUPPLEMENTAL_ROLES = {
     "client-producer": ("Client Producer", _CLIENT_PERMS),
 }
 
-# All mock users become Django users (seed_dev covers 4; the rest are
-# personas: client, vendor staff, viewer, auditor, producer, owner…).
-# Names come from the mock; password is the documented dev default.
-
-PHASES = ("base", "orgs", "production", "access", "content", "platform")
-
 
 class SeedReporter:
-    """Per-entity outcome counters with a §17-style summary."""
+    """Collects per-entity outcome counts and prints a summary table."""
 
-    OUTCOMES = (
-        "created",
-        "updated",
-        "existing",
-        "skipped",
-        "restored",
-        "processed",
-        "errors",
-    )
+    OUTCOMES = ("created", "updated", "existing", "restored", "skipped", "processed")
 
     def __init__(self):
         self.rows: dict[str, dict[str, int]] = {}
-        self.messages: list[str] = []
+        self.errors: list[tuple[str, str]] = []
+        self.notes: list[tuple[str, str]] = []
 
-    def add(self, entity, outcome, n=1):
-        if outcome not in self.OUTCOMES:
-            raise ValueError(f"unknown seed outcome: {outcome}")
+    def add(self, entity: str, outcome: str, count: int = 1):
         row = self.rows.setdefault(entity, dict.fromkeys(self.OUTCOMES, 0))
-        row[outcome] += n
+        row[outcome] = row.get(outcome, 0) + count
 
-    def error(self, entity, message):
-        self.add(entity, "errors")
-        self.messages.append(f"{entity}: {message}")
+    def note(self, entity: str, message: str):
+        self.notes.append((entity, message))
 
-    def note(self, entity, message):
-        """Informational message (does not affect error counts)."""
-        self.messages.append(f"{entity}: note: {message}")
+    def error(self, entity: str, message: str):
+        self.errors.append((entity, message))
 
-    def totals(self):
-        totals = dict.fromkeys(self.OUTCOMES, 0)
-        for row in self.rows.values():
-            for outcome in self.OUTCOMES:
-                totals[outcome] += row[outcome]
-        return totals
-
-    def summary(self):
-        lines = [
-            "========================================",
-            "StudioHub Seed Summary",
-            "========================================",
-            "",
-        ]
-        for entity in sorted(self.rows):
-            row = self.rows[entity]
-            parts = [f"{outcome}: {row[outcome]}" for outcome in self.OUTCOMES if row[outcome]]
-            lines.append(f"{entity}\n  " + ("  ".join(parts) if parts else "no changes"))
-        lines += ["", f"Errors: {self.totals()['errors']}", "========================================"]
-        if self.messages:
-            lines.append("Error details (first 20):")
-            lines.extend(f"  - {message}" for message in self.messages[:20])
+    def summary(self) -> str:
+        lines = ["\nStudioHub Seed Summary"]
+        for entity, row in sorted(self.rows.items()):
+            parts = [f"{k}: {v}" for k, v in row.items() if v]
+            lines.append(f"  {entity}: {', '.join(parts)}")
+        for entity, message in self.notes:
+            lines.append(f"  note [{entity}]: {message}")
+        for entity, message in self.errors:
+            lines.append(f"  error [{entity}]: {message}")
+        lines.append(f"  Errors: {len(self.errors)}")
         return "\n".join(lines)
 
 
 class Command(BaseCommand):
-    help = "Seed backend data from the frontend mock dataset (canonical seed)."
-
-    _timelog_task_map: dict[str, str] = {}
-    _timelog_email_to_id: dict[str, str] = {}
+    help = "Seed StudioHub from the frontend mock dataset (idempotent)"
 
     def add_arguments(self, parser):
-        parser.add_argument("--force", action="store_true",
-                            help="Allow seeding even when DEBUG is False.")
-        parser.add_argument("--reset", action="store_true",
-                            help="Delete existing seed data before seeding (passed to seed_dev).")
-        parser.add_argument("--skip-base", action="store_true",
-                            help="Skip seed_dev; only apply the react-mock overlay.")
-        parser.add_argument("--dry-run", action="store_true",
-                            help="Compute and report everything, then roll back (no writes).")
-        parser.add_argument("--skip-validate", action="store_true",
-                            help="Skip post-seed relationship validation.")
-        parser.add_argument("--validate-only", action="store_true",
-                            help="Only run post-seed validation against current data.")
-        parser.add_argument("--organizations", action="store_true",
-                            help="Only ensure organizations (+ catalog).")
-        parser.add_argument("--production", action="store_true",
-                            help="Only seed the production overlay (+ org ensure).")
-        parser.add_argument("--permissions", action="store_true",
-                            help="Only ensure the permission catalog.")
-        parser.add_argument("--access", action="store_true",
-                            help="Only seed users/memberships (needs orgs).")
-        parser.add_argument("--content", action="store_true",
-                            help="Only seed editorial/notes/activity linkage.")
-        parser.add_argument("--platform", action="store_true",
-                            help="Only seed notifications/reports (+ orgs/content).")
-
-    # ------------------------------------------------------------------
-    # Entry point
-    # ------------------------------------------------------------------
+        parser.add_argument("--force", action="store_true", help="Allow seeding when DEBUG is False.")
+        parser.add_argument("--reset", action="store_true", help="Delete existing seed data before seeding.")
+        parser.add_argument("--dry-run", action="store_true", help="Roll back all writes after seeding.")
+        parser.add_argument("--skip-base", action="store_true", help="Skip the seed_dev foundation.")
+        parser.add_argument("--skip-validate", action="store_true", help="Skip post-seed validation.")
+        parser.add_argument("--validate-only", action="store_true", help="Run validation only.")
+        parser.add_argument("--only", dest="only", nargs="+", default=[], help="Seed only the given phases.")
+        parser.add_argument("--organizations", action="store_true", help="Deprecated: organizations are removed.")
+        parser.add_argument("--permissions", action="store_true", help="Seed only the permission catalog.")
+        parser.add_argument("--production", action="store_true", help="Seed only the production overlay.")
+        parser.add_argument("--access", action="store_true", help="Seed only users and project memberships.")
+        parser.add_argument("--content", action="store_true", help="Seed only editorial cuts and notes.")
+        parser.add_argument("--platform", action="store_true", help="Seed only platform + masterdata phases.")
 
     def handle(self, *args, **options):
         # Validation is read-only: no env gate needed.
@@ -314,26 +275,19 @@ class Command(BaseCommand):
         mock_root = self._resolve_mock_root()
         if "permissions" in phases:
             self._ensure_permission_catalog(reporter)
-        org_by_code = None
-        # Dependency order: orgs -> users -> production -> project access ->
-        # content. Project memberships need projects; production FK
-        # assignments (assignees, authors) need users to exist first.
-        if "orgs" in phases:
-            org_by_code = self._seed_overlay_orgs(mock_root, reporter)
+        # Dependency order: users -> production -> project access -> content.
+        # Project memberships need projects; production FK assignments
+        # (assignees, authors) need users to exist first.
         if "access-users" in phases:
-            org_by_code = org_by_code or self._seed_overlay_orgs(mock_root, reporter)
-            self._seed_overlay_access_users(mock_root, reporter, org_by_code)
+            self._seed_overlay_access_users(mock_root, reporter)
         if "production" in phases:
-            org_by_code = org_by_code or self._seed_overlay_orgs(mock_root, reporter)
-            self._seed_overlay_production(mock_root, reporter, org_by_code=org_by_code)
+            self._seed_overlay_production(mock_root, reporter)
         if "access-projects" in phases:
-            org_by_code = org_by_code or self._seed_overlay_orgs(mock_root, reporter)
             self._seed_overlay_access_projects(mock_root, reporter)
         if "content" in phases:
             self._seed_overlay_content(mock_root, reporter)
         if "platform" in phases:
-            org_by_code = org_by_code or self._seed_overlay_orgs(mock_root, reporter)
-            self._seed_overlay_platform(mock_root, reporter, org_by_code)
+            self._seed_overlay_masterdata(mock_root, reporter)
         self.stdout.write(reporter.summary())
         if not options["skip_validate"]:
             criticals = self._validate(reporter)
@@ -347,18 +301,19 @@ class Command(BaseCommand):
     PHASE_DEPS = {
         "base": set(),
         "permissions": set(),
-        "orgs": set(),
-        "access-users": {"orgs"},
-        "production": {"orgs", "access-users"},
-        "access-projects": {"orgs", "access-users", "production"},
-        "content": {"orgs", "production"},
-        "platform": {"orgs", "content"},
+        "access-users": set(),
+        "production": {"access-users"},
+        "access-projects": {"access-users", "production"},
+        "content": {"production"},
+        "platform": {"content"},
     }
 
     def _select_phases(self, options):
         selected = set()
         if options["organizations"]:
-            selected.add("orgs")
+            # Organizations are removed (org-removal B6); the flag is kept
+            # for CLI compatibility and contributes nothing.
+            selected.add("permissions")
         if options["production"]:
             selected.add("production")
         if options["permissions"]:
@@ -370,7 +325,7 @@ class Command(BaseCommand):
         if options["platform"]:
             selected.add("platform")
         if not selected:
-            selected = {"base", "permissions", "orgs", "access-users",
+            selected = {"base", "permissions", "access-users",
                         "production", "access-projects", "content", "platform"}
         # Close over dependencies.
         closure = set(selected)
@@ -434,45 +389,18 @@ class Command(BaseCommand):
     # ------------------------------------------------------------------
 
     def _ensure_permission_catalog(self, reporter):
-        from apps.core.management.commands.seed_dev import Command as SeedDevCommand
+        from apps.core.management.commands.init_platform import (
+            Command as InitPlatformCommand,
+        )
 
-        cmd = SeedDevCommand()
+        cmd = InitPlatformCommand()
         cmd.stdout = self.stdout
         perms = cmd._seed_permissions()
         reporter.add("permissions", "existing", len(perms))
         self.stdout.write(f"  permission catalog: {len(perms)} codes ensured")
 
     # ------------------------------------------------------------------
-    # Phase: orgs
-    # ------------------------------------------------------------------
-
-    def _seed_overlay_orgs(self, mock_root, reporter, mock_orgs=None):
-        from apps.organization.models import Organization
-
-        mock_orgs = mock_orgs if mock_orgs is not None else self._load(mock_root, "organizations")
-        org_by_code = {}
-        for item in mock_orgs:
-            code = (item.get("code") or "").strip().upper()
-            if not code:
-                reporter.add("organizations", "skipped")
-                continue
-            _, created = Organization.objects.update_or_create(
-                code=code,
-                defaults={
-                    "name": item.get("name", code),
-                    "slug": (item.get("slug") or code).lower(),
-                    "status": "Active",
-                    "headquarters": item.get("headquarters", ""),
-                    "primary_contact_name": item.get("primary_contact_name", ""),
-                    "email": item.get("primary_contact_email", ""),
-                },
-            )
-            reporter.add("organizations", "created" if created else "updated")
-            org_by_code[code] = Organization.objects.get(code=code)
-        return org_by_code
-
-    # ------------------------------------------------------------------
-    # Phase: production overlay
+    # Phase: production overlay (org-free, inline)
     # ------------------------------------------------------------------
 
     def _rewrite_user_ids(self, item, id_to_email):
@@ -481,13 +409,6 @@ class Command(BaseCommand):
             if isinstance(value, str) and "@" not in value and value in id_to_email:
                 item[key] = id_to_email[value]
         return item
-
-    def _write_temp_ts(self, var_name, items):
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".ts", delete=False, prefix="seed_overlay_"
-        ) as tmp:
-            tmp.write(f"export const {var_name} = {json.dumps(items, default=str)};\n")
-            return Path(tmp.name)
 
     def _restore_matching(self, model, lookup, reporter, entity):
         """§12: reuse soft-deleted rows instead of duplicating them."""
@@ -501,12 +422,38 @@ class Command(BaseCommand):
             obj.save(update_fields=["is_deleted", "deleted_at", "updated_at"])
             reporter.add(entity, "restored")
 
-    def _seed_overlay_production(self, mock_root, reporter, org_by_code=None):
-        from unittest.mock import MagicMock
+    @staticmethod
+    def _timestamp_defaults(item):
+        """Return mock `created_at`/`updated_at` for seed defaults when the
+        mock provides them. Passing ``None`` for the auto_now_add/auto_now
+        timestamps breaks idempotent re-runs: UPDATE would NULL a NOT NULL
+        column (``IntegrityError`` on the second run)."""
+        defaults = {}
+        if item.get("created_at"):
+            defaults["created_at"] = item["created_at"]
+        if item.get("updated_at"):
+            defaults["updated_at"] = item["updated_at"]
+        return defaults
 
-        from apps.production.management.commands.seed_production_mocks import (
-            Command as ProdMockCommand,
-        )
+    @staticmethod
+    def _update_or_create(model, defaults=None, **lookup):
+        """update_or_create that restores soft-deleted rows (never duplicates)."""
+        defaults = defaults or {}
+        manager = getattr(model, "all_objects", model.objects)
+        try:
+            existing = manager.filter(**lookup).first()
+        except Exception:  # noqa: BLE001
+            existing = None
+        if existing is not None and getattr(existing, "is_deleted", False):
+            for key, value in defaults.items():
+                setattr(existing, key, value)
+            existing.is_deleted = False
+            existing.deleted_at = None
+            existing.save()
+            return existing, False
+        return model.objects.update_or_create(defaults=defaults, **lookup)
+
+    def _seed_overlay_production(self, mock_root, reporter):
         from apps.production.models import (
             Asset,
             Media,
@@ -516,244 +463,497 @@ class Command(BaseCommand):
             Sequence,
             Shot,
             Task,
+            Timelog,
             Version,
             Workflow,
         )
+        from apps.production.services.playlist import PlaylistService
+        from apps.production.services.review import ReviewService
 
-        if org_by_code is None:
-            org_by_code = self._seed_overlay_orgs(mock_root, reporter)
-        mock_orgs = self._load(mock_root, "organizations")
         mock_users = self._load(mock_root, "users")
-        mock_org_id_to_code = {
-            item.get("id"): (item.get("code") or "").strip().upper()
-            for item in mock_orgs
-            if item.get("id")
-        }
         id_to_email = {
             item.get("id"): item.get("email")
             for item in mock_users
             if item.get("id") and item.get("email")
         }
+        project_items = self._load(mock_root, "projects")
 
-        from apps.production.models import Timelog
-
-        stats_models = {
-            "projects": Project,
-            "sequences": Sequence,
-            "shots": Shot,
-            "assets": Asset,
-            "tasks": Task,
-            "timelogs": Timelog,
-            "versions": Version,
-            "reviews": Review,
-            "playlists": Playlist,
-            "media": Media,
-            "workflows": Workflow,
-        }
-
-        cmd = ProdMockCommand()
-        cmd.stdout = MagicMock()
-
-        # Projects first so later entities resolve project_code per org.
-        projects = self._load(mock_root, "projects")
-        by_org: dict[str, list[dict[str, Any]]] = {}
-        for item in projects:
-            code = mock_org_id_to_code.get(item.get("organization_id"), "")
-            org = org_by_code.get(code)
-            if org is None:
+        # Projects first so later entities resolve project_code.
+        for item in project_items:
+            code = (item.get("code") or "").strip().upper()
+            if not code:
                 reporter.add("projects", "skipped")
                 continue
             self._rewrite_user_ids(item, id_to_email)
-            self._restore_matching(
+            self._restore_matching(Project, {"code": code}, reporter, "projects")
+            self._update_or_create(
                 Project,
-                {"code": item.get("code"), "organization": org},
-                reporter,
-                "projects",
+                defaults={
+                    "name": item.get("name", code),
+                    "description": item.get("description", ""),
+                    "type": item.get("type", "Feature Film"),
+                    "status": item.get("status", "In Progress"),
+                    "fps": item.get("fps", 24),
+                    "resolution": item.get("resolution", "4096x2160"),
+                    "aspect_ratio": item.get("aspect_ratio", "2.39:1"),
+                    "color_space": item.get("color_space", "ACEScg"),
+                    "thumbnail_url": item.get("thumbnail_url", ""),
+                    "budget_usd": item.get("budget_usd", 0) or 0,
+                    "client_id": item.get("client_id", ""),
+                    "client_name": item.get("client_name", ""),
+                    "client_contact_id": item.get("client_contact_id", ""),
+                    "client_contact_name": item.get("client_contact_name", ""),
+                    "vendor_ids": item.get("vendor_ids", []),
+                    "vendor_names": item.get("vendor_names", []),
+                    "vendor_team_ids": item.get("vendor_team_ids", []),
+                    "total_shots": item.get("total_shots", 0),
+                    "approved_shots": item.get("approved_shots", 0),
+                    "in_progress_shots": item.get("in_progress_shots", 0),
+                    "total_assets": item.get("total_assets", 0),
+                    **self._timestamp_defaults(item),
+                },
+                code=code,
             )
-            by_org.setdefault(org.code, []).append(item)
-        for org_code, items in by_org.items():
-            org = org_by_code[org_code]
-            before = Project.objects.filter(organization=org).count()
-            tmp = self._write_temp_ts("mockProjects", items)
-            try:
-                processed = cmd._seed_projects(tmp, org) or 0
-            finally:
-                tmp.unlink(missing_ok=True)
-            created = Project.objects.filter(organization=org).count() - before
-            reporter.add("projects", "created", max(created, 0))
-            reporter.add("projects", "updated", max(processed - max(created, 0), 0))
+            reporter.add("projects", "created", 1)
 
-        project_code_to_org_code: dict[str, str] = {}
-        for project in Project.objects.filter(organization__in=org_by_code.values()):
-            project_code_to_org_code.setdefault(project.code, project.organization.code)
+        project_by_code = {p.code: p for p in Project.objects.all()}
 
-        task_code_to_project_code: dict[str, str] = {}
+        def resolve_project(project_code):
+            project_code = (project_code or "").strip().upper()
+            if project_code in ("VEL1",):
+                project_code = "VEL01"  # known mock inconsistency
+            return project_by_code.get(project_code)
+
+        # Sequences.
+        for item in self._load(mock_root, "sequences"):
+            code = item.get("code")
+            project = resolve_project(item.get("project_code"))
+            if project is None or not code:
+                reporter.add("sequences", "skipped")
+                continue
+            self._restore_matching(
+                Sequence, {"project": project, "code": code}, reporter, "sequences"
+            )
+            self._update_or_create(
+                Sequence,
+                defaults={
+                    "name": item.get("name", code),
+                    "description": item.get("description", ""),
+                    "status": item.get("status", "Not Started"),
+                    "frame_in": item.get("start_frame", 1001) or 1001,
+                    "frame_out": item.get("end_frame", 1100) or 1100,
+                    "department": item.get("department", ""),
+                    "tags": item.get("tags", []),
+                    "metadata": item.get("metadata", {}),
+                    **self._timestamp_defaults(item),
+                },
+                code=code,
+                project=project,
+            )
+            reporter.add("sequences", "created", 1)
+
+        # Shots.
+        for item in self._load(mock_root, "shots"):
+            code = item.get("code")
+            project = resolve_project(item.get("project_code"))
+            if project is None or not code:
+                reporter.add("shots", "skipped")
+                continue
+            self._rewrite_user_ids(item, id_to_email)
+            self._restore_matching(
+                Shot, {"project": project, "code": code}, reporter, "shots"
+            )
+            self._update_or_create(
+                Shot,
+                defaults={
+                    "sequence": Sequence.objects.filter(
+                        project=project, code__iexact=item.get("sequence_code", "")
+                    ).first(),
+                    "name": item.get("name", code),
+                    "description": item.get("description", ""),
+                    "status": item.get("status", "Not Started"),
+                    "frame_in": item.get("frame_in", 1001),
+                    "frame_out": item.get("frame_out", 1100),
+                    "handle_frames": item.get("handle_frames", 8),
+                    "thumbnail_url": item.get("thumbnail_url", ""),
+                    "video_url": item.get("video_url", ""),
+                    "supervisor_approved": item.get("supervisor_approved", False),
+                    "client_approved": item.get("client_approved", False),
+                    "pipeline": item.get("pipeline", {}),
+                    **self._timestamp_defaults(item),
+                },
+                code=code,
+                project=project,
+            )
+            reporter.add("shots", "created", 1)
+
+        # Assets.
+        from apps.masterdata.models import Department, Team
+
+        dept_by_name = {d.name: d for d in Department.objects.all()}
+        team_by_name = {t.name: t for t in Team.objects.all()}
+        for item in self._load(mock_root, "assets"):
+            code = item.get("code")
+            project = resolve_project(item.get("project_code"))
+            if project is None or not code:
+                reporter.add("assets", "skipped")
+                continue
+            self._rewrite_user_ids(item, id_to_email)
+            self._restore_matching(
+                Asset, {"project": project, "code": code}, reporter, "assets"
+            )
+            self._update_or_create(
+                Asset,
+                defaults={
+                    "name": item.get("name", code),
+                    "category": item.get("category", "Prop"),
+                    "description": item.get("description", ""),
+                    "status": item.get("status", "Not Started"),
+                    "version": item.get("version", "v001"),
+                    "file_format": item.get("file_format", "OpenUSD"),
+                    "poly_count": item.get("poly_count", 0) or 0,
+                    "lod_levels": item.get("lod_levels", 1) or 1,
+                    "software": item.get("software", "Maya"),
+                    "thumbnail_url": item.get("thumbnail_url", ""),
+                    "department": dept_by_name.get(item.get("department_name", "")),
+                    "team": team_by_name.get(item.get("team_name", "")),
+                    "tags": item.get("tags", []),
+                    "usd_prim_path": item.get("usd_prim_path", ""),
+                    **self._timestamp_defaults(item),
+                },
+                code=code,
+                project=project,
+            )
+            reporter.add("assets", "created", 1)
+
+        # Tasks.
         for item in self._load(mock_root, "tasks"):
-            if item.get("code") and item.get("project_code"):
-                task_code_to_project_code.setdefault(item["code"], item["project_code"])
+            code = item.get("code")
+            project = resolve_project(item.get("project_code"))
+            if project is None or not code:
+                reporter.add("tasks", "skipped")
+                continue
+            self._rewrite_user_ids(item, id_to_email)
+            self._restore_matching(
+                Task, {"project": project, "code": code}, reporter, "tasks"
+            )
+            self._update_or_create(
+                Task,
+                defaults={
+                    "title": item.get("title", code),
+                    "entity_type": item.get("entity_type", "Shot"),
+                    "entity_id": item.get("entity_id", ""),
+                    "entity_code": item.get("entity_code", ""),
+                    "entity_name": item.get("entity_name", ""),
+                    "department": item.get("department", ""),
+                    "status": item.get("status", "Not Started"),
+                    "priority": item.get("priority", "Medium"),
+                    "workflow": item.get("workflow", {}),
+                    "schedule": item.get("schedule", {}),
+                    "dependencies": item.get("dependencies", {}),
+                    "description": item.get("description", ""),
+                    "software": item.get("software", ""),
+                    "tags": item.get("tags", []),
+                    **self._timestamp_defaults(item),
+                },
+                code=code,
+                project=project,
+            )
+            reporter.add("tasks", "created", 1)
 
-        # Timelog idempotency: get_or_create has no DB uniqueness, so drop
-        # items that already exist (task, person, date, duration).
-        timelog_existing = self._timelog_key_set(org_by_code)
+        # Versions.
+        for item in self._load(mock_root, "versions"):
+            code = item.get("code")
+            project = resolve_project(item.get("project_code"))
+            if project is None or not code:
+                reporter.add("versions", "skipped")
+                continue
+            self._rewrite_user_ids(item, id_to_email)
+            self._restore_matching(
+                Version, {"project": project, "code": code}, reporter, "versions"
+            )
+            self._update_or_create(
+                Version,
+                defaults={
+                    "version_number": item.get("version_number", "v001"),
+                    "version_index": item.get("version_index", 1),
+                    "entity_type": item.get("entity_type", "Shot"),
+                    "entity_id": item.get("entity_id", ""),
+                    "entity_code": item.get("entity_code", ""),
+                    "department": str(item.get("department", "")),
+                    "status": item.get("status", "Pending Review"),
+                    "is_published": item.get("is_published", False),
+                    "is_hero": item.get("is_hero", False),
+                    "thumbnail_url": item.get("thumbnail_url", ""),
+                    "video_url": item.get("video_url", ""),
+                    "resolution": item.get("resolution", "4096x2160"),
+                    "fps": item.get("fps", 24),
+                    "file_size_mb": item.get("file_size_mb", 0) or 0,
+                    "color_space": item.get("color_space", "ACEScg"),
+                    "publishing_info": item.get("publishing_info", {}),
+                    "tags": item.get("tags", []),
+                    **self._timestamp_defaults(item),
+                },
+                code=code,
+                project=project,
+            )
+            reporter.add("versions", "created", 1)
 
-        jobs = [
-            ("sequences", "_seed_sequences", "project_code", None, Sequence,
-             lambda org, project, item: {"project": project, "code": item.get("code")}),
-            ("shots", "_seed_shots", "project_code", None, Shot,
-             lambda org, project, item: {"project": project, "code": item.get("code")}),
-            ("assets", "_seed_assets", "project_code", None, Asset,
-             lambda org, project, item: {"project": project, "code": item.get("code")}),
-            ("tasks", "_seed_tasks", "project_code", None, Task,
-             lambda org, project, item: {"project": project, "code": item.get("code")}),
-            ("timelogs", "_seed_timelogs", None, "task_code", None, None),
-            ("versions", "_seed_versions", "project_code", None, Version,
-             lambda org, project, item: {"project": project, "code": item.get("code")}),
-            ("reviews", "_seed_reviews", "project_code", None, Review,
-             lambda org, project, item: {"organization": org, "code": item.get("code")}),
-            ("playlists", "_seed_playlists", "project_code", None, Playlist,
-             lambda org, project, item: {"organization": org, "code": item.get("code")}),
-            ("media", "_seed_media", "project_code", None, Media,
-             lambda org, project, item: {
-                 "organization": org, "project": project,
-                 "entity_type": item.get("entity_type", ""),
-                 "entity_id": item.get("entity_id", ""),
-                 "media_type": item.get("media_type", "image")}),
-            ("workflows", "_seed_workflows", "project_code", None, Workflow,
-             lambda org, project, item: {"organization": org, "code": item.get("code")}),
-        ]
-        # Known mock inconsistency (frontend file untouched): sequences.ts
-        # references project "VEL1", which does not exist; intent is VEL01.
-        code_fixes = {"VEL1": "VEL01"}
-        for key, method, project_key, task_key, model, key_fn in jobs:
-            items = self._load(mock_root, key)
-            grouped: dict[str, list[dict[str, Any]]] = {}
-            for item in items:
-                if task_key:
-                    proj_code = task_code_to_project_code.get(item.get(task_key, ""))
-                else:
-                    proj_code = item.get(project_key or "", "")
-                proj_code = code_fixes.get(proj_code or "", proj_code)
-                org_code = project_code_to_org_code.get(proj_code or "")
-                org = org_by_code.get(org_code or "")
-                if org is None:
-                    reporter.add(key, "skipped")
-                    continue
-                self._rewrite_user_ids(item, id_to_email)
-                if key == "timelogs" and self._timelog_key(item) in timelog_existing:
-                    reporter.add(key, "existing")
-                    continue
-                if model is not None and key_fn is not None:
-                    project = self._resolve_project(org, proj_code)
-                    if project is None:
-                        reporter.add(key, "skipped")
-                        continue
-                    self._restore_matching(model, key_fn(org, project, item), reporter, key)
-                grouped.setdefault(org.code, []).append(item)
-            total_processed = 0
-            for org_code, group in grouped.items():
-                model_cls = stats_models[key]
-                before = model_cls.objects.filter(
-                    organization=org_by_code[org_code]
-                ).count()
-                tmp = self._write_temp_ts(REACT_MOCK_FILES[key][1], group)
-                try:
-                    processed = getattr(cmd, method)(tmp, org_by_code[org_code]) or 0
-                finally:
-                    tmp.unlink(missing_ok=True)
-                total_processed += processed
-                if processed == 0 and group:
-                    # Legacy seeders skip silently (missing tasks/users); say so.
-                    reporter.note(
-                        key,
-                        f"0 of {len(group)} item(s) processed — "
-                        "check linked tasks/users exist",
+        # Reviews.
+        for item in self._load(mock_root, "reviews"):
+            code = item.get("code")
+            project = resolve_project(item.get("project_code"))
+            if project is None or not code:
+                reporter.add("reviews", "skipped")
+                continue
+            self._rewrite_user_ids(item, id_to_email)
+            self._restore_matching(
+                Review, {"project": project, "code": code}, reporter, "reviews"
+            )
+            review, _ = self._update_or_create(
+                Review,
+                defaults={
+                    "title": item.get("title", code),
+                    "description": item.get("description", ""),
+                    "entity_type": item.get("entity_type", "Shot"),
+                    "entity_id": item.get("entity_id", ""),
+                    "entity_code": item.get("entity_code", ""),
+                    "status": item.get("status", "Pending Review"),
+                    "lead_reviewer_name": item.get("lead_reviewer_name", ""),
+                    "thumbnail_url": item.get("thumbnail_url", ""),
+                    "video_url": item.get("video_url", ""),
+                    **self._timestamp_defaults(item),
+                },
+                code=code,
+                project=project,
+            )
+            ReviewService.import_legacy_json(
+                review,
+                {
+                    name: item.get(name, [])
+                    for name in (
+                        "versions",
+                        "reviewers",
+                        "comments",
+                        "notes",
+                        "annotations",
+                        "activity",
                     )
-                after = model_cls.objects.filter(
-                    organization=org_by_code[org_code]
-                ).count()
-                created = max(after - before, 0)
-                reporter.add(key, "created", created)
-                reporter.add(key, "updated", max(processed - created, 0))
+                },
+            )
+            reporter.add("reviews", "created", 1)
+
+        # Playlists.
+        for item in self._load(mock_root, "playlists"):
+            code = item.get("code") or item.get("id")
+            project = resolve_project(item.get("project_code"))
+            if project is None or not code:
+                reporter.add("playlists", "skipped")
+                continue
+            self._restore_matching(
+                Playlist, {"project": project, "code": code}, reporter, "playlists"
+            )
+            playlist, _ = self._update_or_create(
+                Playlist,
+                defaults={
+                    "name": item.get("name", code),
+                    "description": item.get("description", ""),
+                    "status": item.get("status", "Active"),
+                    "share_settings": item.get("share_settings", {}),
+                    **self._timestamp_defaults(item),
+                },
+                code=code,
+                project=project,
+            )
+            PlaylistService.import_legacy_json(playlist, item.get("entries", []))
+            reporter.add("playlists", "created", 1)
+
+        # Media.
+        for item in self._load(mock_root, "media"):
+            code = item.get("code", "")
+            project = resolve_project(item.get("project_code"))
+            if project is None:
+                reporter.add("media", "skipped")
+                continue
+            self._restore_matching(
+                Media,
+                {
+                    "project": project,
+                    "entity_type": item.get("entity_type", ""),
+                    "entity_id": item.get("entity_id", ""),
+                    "media_type": item.get("media_type", "image"),
+                },
+                reporter,
+                "media",
+            )
+            self._update_or_create(
+                Media,
+                defaults={
+                    "name": item.get("name", ""),
+                    "title": item.get("title", "") or item.get("name", ""),
+                    "file_name": item.get("file_name", ""),
+                    "category": item.get("category", ""),
+                    "file_format": item.get("file_format", "jpg"),
+                    "source_url": item.get("source_url", "") or item.get("url", ""),
+                    "preview_url": item.get("preview_url", ""),
+                    "thumbnail_url": item.get("thumbnail_url", ""),
+                    "file_size_mb": item.get("file_size_mb", 0) or 0,
+                    **self._timestamp_defaults(item),
+                },
+                code=code,
+                project=project,
+                entity_type=item.get("entity_type", ""),
+                entity_id=item.get("entity_id", ""),
+                media_type=item.get("media_type", "image"),
+            )
+            reporter.add("media", "created", 1)
+
+        # Workflows.
+        for item in self._load(mock_root, "workflows"):
+            code = item.get("code")
+            project = resolve_project(item.get("project_code"))
+            if project is None or not code:
+                reporter.add("workflows", "skipped")
+                continue
+            self._restore_matching(
+                Workflow, {"project": project, "code": code}, reporter, "workflows"
+            )
+            self._update_or_create(
+                Workflow,
+                defaults={
+                    "name": item.get("name", code),
+                    "description": item.get("description", ""),
+                    "category": item.get("category", "production"),
+                    "is_active": item.get("is_active", True),
+                    "nodes": item.get("nodes", []),
+                    "transitions": item.get("transitions", []),
+                    "automation_rules": item.get("automation_rules", []),
+                    **self._timestamp_defaults(item),
+                },
+                code=code,
+                project=project,
+            )
+            reporter.add("workflows", "created", 1)
+
+        # Timelogs (no DB uniqueness, so skip rows that already exist).
+        timelog_keys = self._timelog_key_set()
+        for item in self._load(mock_root, "timelogs"):
+            project = resolve_project(item.get("project_code"))
+            if project is None:
+                reporter.add("timelogs", "skipped")
+                continue
+            self._rewrite_user_ids(item, id_to_email)
+            task = self._resolve_task(item)
+            person = self._resolve_person(item, task)
+            if task is None or person is None:
+                reporter.add("timelogs", "skipped")
+                continue
+            date_val = self._parse_timelog_date(item)
+            try:
+                hours = float(item.get("duration_hours", item.get("hours_logged", 0)) or 0)
+            except (TypeError, ValueError):
+                hours = 0.0
+            key = (str(task.id), str(person.id), str(date_val), hours)
+            if key in timelog_keys:
+                reporter.add("timelogs", "existing")
+                continue
+            Timelog.objects.get_or_create(
+                task=task,
+                person=person,
+                date=date_val,
+                duration_hours=hours,
+                defaults={
+                    "project": task.project,
+                    "department": item.get("department", task.department if task else ""),
+                    "billable": item.get("billable", not item.get("is_overtime", False)),
+                    "notes": item.get("notes", item.get("description", "")),
+                    "status": item.get("status", "Submitted"),
+                    "activity_category": item.get("activity_category", "Direct Work"),
+                    "hourly_rate_usd": item.get("hourly_rate_usd", item.get("billing_rate_usd", 0)) or 0,
+                    "task_code": task.code if task else "",
+                    "task_title": task.title if task else "",
+                    "project_code": task.project.code if task and task.project else "",
+                },
+            )
+            reporter.add("timelogs", "created", 1)
         # Apply mock is_deleted flags as soft-deleted restore fixtures (§25).
-        self._apply_mock_deletions(mock_root, reporter, org_by_code)
+        self._apply_mock_deletions(mock_root, reporter)
 
-    def _resolve_project(self, org, project_code):
-        from apps.production.models import Project
+    def _resolve_task(self, item):
+        from apps.production.models import Task
 
-        if not project_code:
-            return None
-        return Project.objects.filter(
-            organization=org, code=project_code
-        ).first()
+        task_code = item.get("task_code") or item.get("task_id") or ""
+        if task_code:
+            task = Task.objects.filter(code=task_code).first()
+            if task is not None:
+                return task
+        if item.get("entity_code"):
+            return Task.objects.filter(entity_code=item["entity_code"]).first()
+        return Task.objects.first()
 
-    def _timelog_key_set(self, org_by_code):
+    def _resolve_person(self, item, task):
         from django.contrib.auth import get_user_model
 
-        from apps.production.models import Project, Task, Timelog
-
         user_model = get_user_model()
-        email_to_id = {
-            str(getattr(u, "email", "")).lower(): str(getattr(u, "id", ""))
-            for u in user_model.objects.all()
-        }
-        task_map = {}
-        for task in Task.objects.filter(organization__in=org_by_code.values()):
-            task_map.setdefault(task.code, task)
-        project_by_id = {str(p.id): p for p in Project.objects.all()}
+        person_ref = item.get("person_id") or item.get("artist_id") or ""
+        if person_ref:
+            user = user_model.objects.filter(email__iexact=person_ref).first()
+            if user is None:
+                user = user_model.objects.filter(pk=person_ref).first()
+            if user is not None:
+                return user
+        if task is not None and task.assignee is not None:
+            return task.assignee
+        return user_model.objects.filter(is_active=True).first()
+
+    @staticmethod
+    def _parse_timelog_date(item):
+        from datetime import date as date_type
+        from datetime import datetime
+
+        value = item.get("date") or item.get("date_logged")
+        if not value:
+            return date_type(2026, 8, 26)
+        try:
+            return datetime.fromisoformat(str(value).replace("Z", "+00:00")).date()
+        except (TypeError, ValueError):
+            try:
+                return datetime.strptime(str(value), "%Y-%m-%d").date()
+            except (TypeError, ValueError):
+                return date_type(2026, 8, 26)
+
+    def _timelog_key_set(self):
+        from apps.production.models import Timelog
+
         keys = set()
-        for row in Timelog.objects.filter(
-            organization__in=org_by_code.values()
-        ).values("task_id", "person_id", "date", "duration_hours"):
+        for row in Timelog.objects.values(
+            "task_id", "person_id", "date", "duration_hours"
+        ):
             keys.add((
                 str(row["task_id"]),
                 str(row["person_id"]),
                 str(row["date"]),
                 float(row["duration_hours"] or 0),
             ))
-        # Remember maps for item-side matching.
-        self._timelog_task_map = {
-            code: str(task.id) for code, task in task_map.items()
-        }
-        self._timelog_email_to_id = email_to_id
-        void = project_by_id  # keep linters calm about breadth; unused
-        del void
         return keys
 
-    def _timelog_key(self, item):
-        task_id = self._timelog_task_map.get(item.get("task_code", ""), "")
-        person_ref = item.get("person_id", "")
-        if isinstance(person_ref, str) and "@" not in person_ref:
-            person_id = person_ref  # already rewritten to email below
-        else:
-            person_id = person_ref
-        person_id = self._timelog_email_to_id.get(str(person_id).lower(), str(person_id))
-        date_val = item.get("date") or item.get("date_logged", "")
-        try:
-            hours = float(item.get("duration_hours", 0) or 0)
-        except (TypeError, ValueError):
-            hours = 0.0
-        return (str(task_id), str(person_id), str(date_val), hours)
-
-    def _apply_mock_deletions(self, mock_root, reporter, org_by_code):
+    def _apply_mock_deletions(self, mock_root, reporter):
         """Preserve mock is_deleted rows as soft-deleted restore fixtures."""
         from django.utils import timezone
 
-        from apps.production.models import Sequence, Shot
+        from apps.production.models import Project, Sequence, Shot
 
-        code_to_project = {}
-        for project in __import__(
-            "apps.production.models", fromlist=["Project"]
-        ).Project.objects.filter(organization__in=org_by_code.values()):
-            code_to_project.setdefault(project.code, project)
+        code_to_project = {p.code: p for p in Project.objects.all()}
         for key, model in (("sequences", Sequence), ("shots", Shot)):
             for item in self._load(mock_root, key):
                 if not item.get("is_deleted"):
                     continue
-                project = code_to_project.get(item.get("project_code", ""))
+                project = code_to_project.get(
+                    (item.get("project_code") or "").strip().upper()
+                )
                 if project is None or not item.get("code"):
                     continue
                 updated = model.objects.filter(
-                    organization=project.organization,
                     project=project,
                     code=item["code"],
                     is_deleted=False,
@@ -762,11 +962,11 @@ class Command(BaseCommand):
                     reporter.add(f"{key}_archived", "updated", updated)
 
     # ------------------------------------------------------------------
-    # Phase: access (users + memberships from mock, never blanket grants)
+    # Phase: access (users from mock, never blanket grants)
     # ------------------------------------------------------------------
 
     def _resolve_role(self, role_name, reporter):
-        from apps.organization.models import Permission, Role, RolePermission
+        from apps.identity.models import Permission, Role, RolePermission
 
         if not role_name:
             return Role.objects.filter(code="artist").first() or Role.objects.first()
@@ -799,25 +999,32 @@ class Command(BaseCommand):
         reporter.add("roles", "created")
         return role
 
-    def _seed_overlay_access_users(self, mock_root, reporter, org_by_code=None):
-        """Supplemental accounts + mock-driven org memberships (no blanket grants)."""
+    @staticmethod
+    def _parse_mock_date(value):
+        """Parse a mock ISO-8601 timestamp into a date (or None)."""
+        if not value:
+            return None
+        try:
+            from datetime import datetime
+
+            return datetime.fromisoformat(str(value).replace("Z", "+00:00")).date()
+        except (TypeError, ValueError):
+            return None
+
+    def _seed_overlay_access_users(self, mock_root, reporter):
+        """Supplemental accounts + profiles from mock (no org memberships).
+
+        Syncs the mock user payload to the backend so API data matches the
+        frontend source of truth: account flags (is_active/is_staff/is_superuser)
+        and profile names/avatar_url. All writes are idempotent.
+        """
         from django.contrib.auth import get_user_model
 
         from apps.identity.models import Profile
-        from apps.organization.models import OrganizationMembership
 
-        if org_by_code is None:
-            org_by_code = self._seed_overlay_orgs(mock_root, reporter)
-        mock_orgs = self._load(mock_root, "organizations")
         mock_users = self._load(mock_root, "users")
-        mock_org_id_to_code = {
-            item.get("id"): (item.get("code") or "").strip().upper()
-            for item in mock_orgs
-            if item.get("id")
-        }
         user_model = get_user_model()
 
-        # Every mock user gets a Django account (seed_dev covers 4).
         for mock_user in mock_users:
             email = (mock_user.get("email") or "").lower()
             if not email or "@" not in email:
@@ -825,7 +1032,12 @@ class Command(BaseCommand):
                 continue
             user, created = user_model.objects.get_or_create(
                 email=email,
-                defaults={"is_active": True, "is_staff": False, "is_superuser": False},
+                defaults={
+                    "is_active": True,
+                    "is_staff": False,
+                    "is_superuser": False,
+                    **self._timestamp_defaults(mock_user),
+                },
             )
             if created:
                 user.set_password("password123")
@@ -833,56 +1045,50 @@ class Command(BaseCommand):
                 reporter.add("users", "created")
             else:
                 reporter.add("users", "existing")
+
+            # Reconcile account flags to the mock (idempotent for both paths).
+            flag_updates = {}
+            for flag in ("is_active", "is_staff", "is_superuser"):
+                mock_value = mock_user.get(flag)
+                if mock_value is not None and getattr(user, flag) != mock_value:
+                    flag_updates[flag] = mock_value
+            if flag_updates:
+                user_model.objects.filter(pk=user.pk).update(**flag_updates)
+                reporter.add("users", "updated")
+
             first = mock_user.get("first_name") or ""
             last = mock_user.get("last_name") or ""
             if not first and mock_user.get("full_name"):
                 parts = mock_user["full_name"].split()
                 first, last = parts[0], " ".join(parts[1:])
-            _, profile_created = Profile.objects.get_or_create(
+            display_name = mock_user.get("full_name") or f"{first} {last}".strip()
+            avatar_url = mock_user.get("avatar_url") or ""
+            profile, profile_created = Profile.objects.get_or_create(
                 user=user,
                 defaults={
                     "first_name": first,
                     "last_name": last,
-                    "display_name": mock_user.get("full_name") or f"{first} {last}".strip(),
+                    "display_name": display_name,
+                    "avatar_url": avatar_url,
                     "timezone": "Asia/Kolkata",
                     "language": "en",
                 },
             )
             if profile_created:
                 reporter.add("profiles", "created")
-
-        # Org memberships strictly from mock (reconcile role to mock value).
-        email_to_user = {
-            str(getattr(u, "email", "")).lower(): u
-            for u in user_model.objects.all()
-        }
-        for mock_user in mock_users:
-            user = email_to_user.get((mock_user.get("email") or "").lower())
-            if user is None:
-                continue
-            for membership in mock_user.get("memberships") or []:
-                org = org_by_code.get(
-                    mock_org_id_to_code.get(membership.get("organization_id"), "")
-                )
-                if org is None:
-                    reporter.add("organization_memberships", "skipped")
-                    continue
-                role = self._resolve_role(membership.get("role"), reporter)
-                if role is None:
-                    reporter.add("organization_memberships", "skipped")
-                    continue
-                _, created = OrganizationMembership.objects.get_or_create(
-                    user=user,
-                    organization=org,
-                    defaults={"role": role, "status": "active"},
-                )
-                if created:
-                    reporter.add("organization_memberships", "created")
-                else:
-                    OrganizationMembership.objects.filter(
-                        user=user, organization=org
-                    ).update(role=role, status="active")
-                    reporter.add("organization_memberships", "updated")
+            else:
+                profile_updates = {}
+                if first and profile.first_name != first:
+                    profile_updates["first_name"] = first
+                if last and profile.last_name != last:
+                    profile_updates["last_name"] = last
+                if display_name and profile.display_name != display_name:
+                    profile_updates["display_name"] = display_name
+                if avatar_url and profile.avatar_url != avatar_url:
+                    profile_updates["avatar_url"] = avatar_url
+                if profile_updates:
+                    Profile.objects.filter(pk=profile.pk).update(**profile_updates)
+                    reporter.add("profiles", "updated")
 
         return mock_users
 
@@ -932,7 +1138,6 @@ class Command(BaseCommand):
                     continue
                 roles = pm.get("roles") or [pm.get("role") or "Artist"]
                 _, was_created = ProjectMembershipService.add_member(
-                    organization=project.organization,
                     project=project,
                     user=user,
                     role=pm.get("role") or "Artist",
@@ -957,14 +1162,7 @@ class Command(BaseCommand):
     def _seed_overlay_content(self, mock_root, reporter):
         from apps.production.models import EditorialCut, Project, ProjectNote
 
-        code_to_project = {}
-        for project in Project.objects.select_related("organization").all():
-            code_to_project.setdefault(project.code, project)
-
-        id_to_email = {}
-        for item in self._load(mock_root, "users"):
-            if item.get("id") and item.get("email"):
-                id_to_email[item["id"]] = item["email"]
+        code_to_project = {p.code: p for p in Project.objects.all()}
 
         for item in self._load(mock_root, "editorial"):
             project = code_to_project.get((item.get("project_code") or "").upper())
@@ -973,13 +1171,11 @@ class Command(BaseCommand):
                 continue
             self._restore_matching(
                 EditorialCut,
-                {"organization": project.organization, "project": project,
-                 "code": item["code"]},
+                {"project": project, "code": item["code"]},
                 reporter,
                 "editorial",
             )
             _, was_created = EditorialCut.objects.update_or_create(
-                organization=project.organization,
                 project=project,
                 code=item["code"],
                 defaults={
@@ -1013,7 +1209,6 @@ class Command(BaseCommand):
                 reporter.add("notes", "skipped")
                 continue
             lookup = {
-                "organization": project.organization,
                 "project": project,
                 "subject": item.get("subject", ""),
                 "entity_code": item.get("entity_code", ""),
@@ -1041,79 +1236,21 @@ class Command(BaseCommand):
 
         reporter.add("activity_links", "processed", self._link_activities())
 
-    # ------------------------------------------------------------------
-    # Platform overlay (notifications, reports)
-    # ------------------------------------------------------------------
+    def _seed_overlay_masterdata(self, mock_root, reporter):
+        """Seed the masterdata catalog (software/versions, statuses, entity
+        types) by reusing ``seed_demo_data``'s deterministic phase, so a
+        canonical ``seed_studiohub`` run populates the Platform Admin catalog.
+        Idempotent and safe if ``seed_demo_data`` later runs."""
+        from apps.core.management.commands.seed_demo_data import Command as DemoCommand
 
-    def _seed_overlay_platform(self, mock_root, reporter, org_by_code=None):
-        from apps.organization.models import Organization
-        from apps.platform.models import ProductionReport, StudioNotification
+        if not (mock_root / "masterData" / "initialMasterData.ts").is_file():
+            reporter.add("masterdata", "skipped")
+            reporter.note("masterdata", "no masterData/initialMasterData.ts mock source")
+            return
 
-        if org_by_code is None:
-            org_by_code = {}
-            for org in Organization.objects.all():
-                org_by_code.setdefault(org.code, org)
-
-        def resolve_org(item):
-            code = (item.get("project_code") or item.get("org_code") or "").upper()
-            return org_by_code.get(code) or org_by_code.get("APEX")
-
-        for item in self._load(mock_root, "notifications"):
-            org = resolve_org(item)
-            if org is None or not item.get("id"):
-                reporter.add("notifications", "skipped")
-                continue
-            self._restore_matching(
-                StudioNotification,
-                {"organization": org, "id": item["id"]},
-                reporter,
-                "notifications",
-            )
-            _, was_created = StudioNotification.objects.update_or_create(
-                organization=org,
-                id=item["id"],
-                defaults={
-                    "title": item.get("title", ""),
-                    "message": item.get("message", ""),
-                    "type": item.get("type", "info"),
-                    "category": item.get("category", ""),
-                    "read": item.get("read", False),
-                    "link": item.get("link", ""),
-                    "timestamp": item.get("timestamp", ""),
-                    "created_at": item.get("created_at") or None,
-                    "updated_at": item.get("updated_at") or None,
-                },
-            )
-            reporter.add("notifications", "created" if was_created else "updated")
-
-        for item in self._load(mock_root, "reports"):
-            org = resolve_org(item)
-            if org is None or not item.get("id"):
-                reporter.add("reports", "skipped")
-                continue
-            self._restore_matching(
-                ProductionReport,
-                {"organization": org, "id": item["id"]},
-                reporter,
-                "reports",
-            )
-            _, was_created = ProductionReport.objects.update_or_create(
-                organization=org,
-                id=item["id"],
-                defaults={
-                    "title": item.get("title", ""),
-                    "project_code": item.get("project_code", ""),
-                    "category": item.get("category", ""),
-                    "generated_at": item.get("generated_at", ""),
-                    "generated_by": item.get("generated_by", ""),
-                    "status": item.get("status", "Complete"),
-                    "summary_metrics": item.get("summary_metrics", {}),
-                    "download_url": item.get("download_url", ""),
-                    "created_at": item.get("created_at") or None,
-                    "updated_at": item.get("updated_at") or None,
-                },
-            )
-            reporter.add("reports", "created" if was_created else "updated")
+        demo = DemoCommand()
+        context = demo._build_context(mock_root, reporter)
+        demo._seed_masterdata(mock_root, reporter, context)
 
     # ------------------------------------------------------------------
     # Activity linkage
@@ -1123,7 +1260,7 @@ class Command(BaseCommand):
         from apps.audit.models.activity import Activity
         from apps.production.models import Project
 
-        projects = list(Project.objects.select_related("organization").all())
+        projects = list(Project.objects.all())
         by_code = {p.code.upper(): p for p in projects}
         by_name = {p.name.lower(): p for p in projects}
 
@@ -1133,9 +1270,7 @@ class Command(BaseCommand):
         ).exclude(metadata__has_key="project_id")
         for activity in pending.iterator():
             entity = (activity.metadata or {}).get("entity") or {}
-            project = self._match_project(
-                entity, by_code, by_name, activity.organization_id
-            )
+            project = self._match_project(entity, by_code, by_name)
             if project is None:
                 continue
             metadata = dict(activity.metadata or {})
@@ -1146,7 +1281,7 @@ class Command(BaseCommand):
         return linked
 
     @staticmethod
-    def _match_project(entity, by_code, by_name, organization_id):
+    def _match_project(entity, by_code, by_name):
         candidates = [
             entity.get("id"),
             entity.get("code"),
@@ -1157,16 +1292,11 @@ class Command(BaseCommand):
             if not candidate or not isinstance(candidate, str):
                 continue
             project = by_code.get(candidate.strip().upper())
-            if project is not None and (
-                organization_id is None or project.organization_id == organization_id
-            ):
+            if project is not None:
                 return project
             lowered = candidate.strip().lower()
             for name, project in by_name.items():
-                if (lowered in name or name in lowered) and (
-                    organization_id is None
-                    or project.organization_id == organization_id
-                ):
+                if lowered in name or name in lowered:
                     return project
         return None
 
@@ -1178,11 +1308,7 @@ class Command(BaseCommand):
         from django.db import models
 
         from apps.deliveries.models import DeliveryPackage
-        from apps.organization.models import (
-            Organization,
-            OrganizationMembership,
-            Permission,
-        )
+        from apps.identity.models import Permission
         from apps.production.models import (
             Asset,
             EditorialCut,
@@ -1213,6 +1339,8 @@ class Command(BaseCommand):
         def warn(entity, message):
             reporter.error(entity, f"warning: {message}")
 
+        # Every scoped row must belong to a real project (FK guarantees it),
+        # and soft-deleted rows must not shadow live natural keys.
         scoped: list[tuple[str, Any]] = [
             ("sequences", Sequence),
             ("shots", Shot),
@@ -1230,37 +1358,13 @@ class Command(BaseCommand):
         if PublishItem is not None:
             scoped.append(("publishes", PublishItem))
         for entity, model in scoped:
-            # Compare org ownership row by row (works across backends).
-            mismatched = 0
-            for row in model.objects.select_related("organization", "project").only(
-                "id", "organization_id", "project__organization_id"
-            ).iterator():
-                if row.project_id and row.organization_id != row.project.organization_id:
-                    mismatched += 1
-            if mismatched:
-                critical(entity, f"{mismatched} row(s) with project in another organization")
-
-        # Project memberships must live in their project's organization.
-        pm_bad = 0
-        for row in ProjectMembership.objects.select_related(
-            "organization", "project__organization"
-        ).only("id", "organization_id", "project__organization_id").iterator():
-            if row.organization_id != row.project.organization_id:
-                pm_bad += 1
-        if pm_bad:
-            critical("project_memberships", f"{pm_bad} row(s) outside their project organization")
-
-        # Org memberships must reference existing users/orgs (FKs guarantee it;
-        # check soft-deleted users still holding active memberships).
-        stale = OrganizationMembership.objects.filter(
-            user__is_active=False, status="active"
-        ).count()
-        if stale:
-            warn("organization_memberships", f"{stale} active membership(s) for inactive users")
+            orphaned = model.objects.filter(project__isnull=True).count()
+            if orphaned:
+                critical(entity, f"{orphaned} row(s) without a project")
 
         # Duplicate natural keys where uniqueness is expected.
         for entity, model, fields in [
-            ("projects", Project, ["organization", "code"]),
+            ("projects", Project, ["code"]),
             ("sequences", Sequence, ["project", "code"]),
             ("shots", Shot, ["project", "code"]),
             ("assets", Asset, ["project", "code"]),
@@ -1283,21 +1387,13 @@ class Command(BaseCommand):
         if missing:
             warn("permissions", f"frontend-checked codes missing: {sorted(missing)}")
 
-        # Users without any membership cannot use anything.
-        from django.contrib.auth import get_user_model
-
-        user_model = get_user_model()
-        member_ids = set(
-            OrganizationMembership.objects.values_list("user_id", flat=True)
-        )
-        homeless = user_model.objects.exclude(id__in=member_ids).count()
-        if homeless:
-            warn("users", f"{homeless} user(s) without organization membership")
-
-        # Orgs without projects cannot demo anything.
-        for org in Organization.objects.all():
-            if not Project.objects.filter(organization=org).exists():
-                warn("organizations", f"{org.code} has no projects")
+        # Project memberships must reference existing projects/users (FKs
+        # guarantee it) — check for orphaned soft-deleted references.
+        stale = ProjectMembership.objects.filter(
+            project__is_deleted=True, status="active"
+        ).count()
+        if stale:
+            warn("project_memberships", f"{stale} active membership(s) on soft-deleted projects")
 
         # Restore fixtures present (info-level honesty).
         archived = Sequence.objects.filter(is_deleted=True).count() + Shot.objects.filter(

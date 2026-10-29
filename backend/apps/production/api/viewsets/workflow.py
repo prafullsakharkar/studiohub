@@ -42,6 +42,8 @@ class WorkflowViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissing
         "activate": (WorkflowPermissions.UPDATE,),
         "deactivate": (WorkflowPermissions.UPDATE,),
         "archive": (WorkflowPermissions.DELETE,),
+        "archived": (WorkflowPermissions.VIEW,),
+        "restore": (WorkflowPermissions.UPDATE,),
     }
 
     search_fields = ("name", "code", "description")
@@ -64,7 +66,6 @@ class WorkflowViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissing
     def clone(self, request, *args, **kwargs):
         instance = self.get_object()
         new = Workflow.objects.create(
-            organization=instance.organization,
             project=instance.project,
             name=instance.name + " (Copy)",
             code=instance.code + "-COPY",
@@ -92,10 +93,7 @@ class WorkflowViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissing
         instance.save(update_fields=["is_active"])
         return Response(WorkflowDetailSerializer(instance).data)
 
-    @action(detail=True, methods=["post"], url_path="archive")
-    def archive(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.is_archived = True
+    def after_archive(self, instance):
+        # An archived workflow no longer runs; restoring it does not switch it back on.
         instance.is_active = False
-        instance.save(update_fields=["is_archived", "is_active"])
-        return Response(WorkflowDetailSerializer(instance).data)
+        instance.save(update_fields=["is_active"])

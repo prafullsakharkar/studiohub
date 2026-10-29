@@ -41,12 +41,10 @@ class SettingsBaseSelector(BaseSelector):
         request=None,
     ) -> QuerySet[Any, Any]:
         """
-        Restrict org-scoped settings to the caller's organizations.
+        Platform-global settings visibility (org-free).
 
-        Regular users only see settings for organizations they belong to.
-        Staff and superusers see everything. When the model supports a
-        ``null`` organization (default themes / localizations), those
-        platform defaults remain visible to all authenticated users.
+        Settings carry no tenant partition: every authenticated caller
+        sees the platform-wide rows; anonymous callers see nothing.
         """
         if request is None:
             return queryset
@@ -56,28 +54,7 @@ class SettingsBaseSelector(BaseSelector):
         if user is None or not user.is_authenticated:
             return queryset.none()
 
-        if user.is_staff or user.is_superuser:
-            return queryset
-
-        from django.db.models import Q
-
-        organization_ids = list(
-            user.organizations.values_list("id", flat=True),
-        )
-
-        return queryset.filter(
-            Q(organization_id__in=organization_ids)
-            | Q(organization__isnull=True),
-        )
-
-    @classmethod
-    def for_organization(
-        cls,
-        organization,
-    ):
-        return cls.filter(
-            organization=organization,
-        )
+        return queryset
 
     @classmethod
     def active(cls):

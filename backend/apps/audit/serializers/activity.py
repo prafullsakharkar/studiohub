@@ -19,7 +19,6 @@ class ActivityFrontendSerializer(serializers.ModelSerializer[Activity]):
     actor_name = serializers.CharField(source="user.full_name", read_only=True)
     actor_email = serializers.CharField(source="user.email", read_only=True)
     action = serializers.CharField(source="activity_type", read_only=True)
-    organization_id = serializers.UUIDField(source="organization.id", read_only=True)
 
     class Meta:
         model = Activity
@@ -30,7 +29,6 @@ class ActivityFrontendSerializer(serializers.ModelSerializer[Activity]):
             "actor_email",
             "action",
             "description",
-            "organization_id",
             "metadata",
             "created_at",
         )
@@ -44,7 +42,6 @@ class ActivitySerializer(serializers.ModelSerializer[Activity]):
 
     user_email = serializers.CharField(source="user.email", read_only=True)
     user_name = serializers.CharField(source="user.full_name", read_only=True)
-    organization_name = serializers.CharField(source="organization.name", read_only=True)
     
     class Meta:
         model = Activity
@@ -57,8 +54,6 @@ class ActivitySerializer(serializers.ModelSerializer[Activity]):
             "user",
             "user_email",
             "user_name",
-            "organization",
-            "organization_name",
             "ip_address",
             "user_agent",
             "duration_seconds",

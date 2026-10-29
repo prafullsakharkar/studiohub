@@ -12,7 +12,6 @@ from apps.core.models.managers import (
     AllPublishedManager,
     BaseManager,
     DeletedObjectsManager,
-    OrganizationManager,
     PublishedManager,
     SoftDeleteManager,
 )
@@ -23,7 +22,6 @@ __all__ = [
     "AllPublishedManager",
     "BaseManager",
     "DeletedObjectsManager",
-    "OrganizationManager",
     "PublishedManager",
     "SoftDeleteManager",
 ]

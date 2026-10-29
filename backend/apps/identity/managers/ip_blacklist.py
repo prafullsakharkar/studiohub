@@ -40,6 +40,9 @@ class IPBlacklistManager(BaseManager):
     def count_ip_blacklist(self, *args: Any, **kwargs: Any):
         return self.get_queryset().count_ip_blacklist(*args, **kwargs)
 
+    def matching(self, *args: Any, **kwargs: Any):
+        return self.get_queryset().matching(*args, **kwargs)
+
     def is_ip_blacklisted(self, *args: Any, **kwargs: Any):
         return self.get_queryset().is_ip_blacklisted(*args, **kwargs)
 

@@ -1,266 +1,179 @@
-from typing import Any
+from typing import Any, ClassVar
+from uuid import UUID
 
-from django.core.exceptions import ValidationError as DjangoValidationError
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
-from rest_framework import serializers
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.organization.middleware.organization_context import (
-    resolve_organization_context,
-)
-from apps.organization.models import Organization
+from apps.identity.permissions import HasPermission
 from apps.production.api.serializers.automation import (
     AutomationAuditLogSerializer,
     AutomationRuleSerializer,
 )
-from apps.production.models import AutomationAuditLog, AutomationRule
+from apps.production.constants.permissions import AutomationPermissions
+from apps.production.selectors.automation import (
+    AutomationAuditLogSelector,
+    AutomationRuleSelector,
+)
+from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.services import automation as automation_service
 
 
-class DummySerializer(serializers.Serializer[Any]):
-    pass
-
-
-def _resolve_organization(request):
+class MethodPermissionMixin:
     """
-    Resolve the automation organization: explicit request context first,
-    then the first org for staff (admin context).
+    Permission codes by HTTP method, checked by ``HasPermission`` (fail closed: a method
+    without an entry is denied).
     """
-    resolve_organization_context(request, force=True)
-    organization = getattr(request, "organization", None)
-    if organization is not None:
-        return organization
-    user = getattr(request, "user", None)
-    if user is not None and (user.is_staff or user.is_superuser):
-        return Organization.objects.first()
-    return None
+
+    permission_classes = (IsAuthenticated, HasPermission)
+    permission_map: ClassVar[dict[str, tuple[str, ...]]] = {}
+    request: Any  # pyright: ignore[reportUninitializedInstanceVariable]
+
+    def get_permission_required(self):
+        method = (self.request.method or "").lower()
+        if method == "head":
+            method = "get"
+        return self.permission_map.get(method)
 
 
-def _scoped_rules(request):
-    organization = _resolve_organization(request)
-    if organization is None:
-        return AutomationRule.objects.none()
-    return AutomationRule.objects.filter(organization=organization)
+class _AutomationView(MethodPermissionMixin, GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
+    """
+    Shared access rules for the automation endpoints.
 
+    Authorization is the ``automation.*`` permission codes AND the caller's
+    project memberships (``AutomationRuleSelector`` scoping). A rule outside
+    that scope answers 404, like an unknown id. Rules without a project are
+    platform-global: only platform admins see or write them.
+    """
 
-def _scoped_audit_logs(request):
-    organization = _resolve_organization(request)
-    if organization is None:
-        return AutomationAuditLog.objects.none()
-    return AutomationAuditLog.objects.filter(organization=organization)
-
-
-def _get_rule(request, pk):
-    try:
-        return _scoped_rules(request).filter(id=pk).first()
-    except (DjangoValidationError, ValueError):
-        return None
-
-
-class SchedulingEventsView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
-
-    @extend_schema(responses=OpenApiTypes.OBJECT)
-    def get(self, request):
-        return Response([])
-
-    @extend_schema(request=DummySerializer, responses=DummySerializer)
-    def post(self, request):
-        return Response({"id": "evt-001", **request.data}, status=201)
-
-
-class SchedulingEventDetailView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
-
-    @extend_schema(responses=OpenApiTypes.OBJECT)
-    def get(self, request, pk=None):
-        return Response({"id": pk})
-
-    @extend_schema(request=DummySerializer, responses=DummySerializer)
-    def patch(self, request, pk=None):
-        return Response({"id": pk, **request.data})
-
-    @extend_schema(request=DummySerializer, responses=DummySerializer)
-    def put(self, request, pk=None):
-        return Response({"id": pk, **request.data})
-
-    def delete(self, request, pk=None):
-        return Response(status=204)
-
-
-class SchedulingResourcesView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
-
-    @extend_schema(responses=OpenApiTypes.OBJECT)
-    def get(self, request):
-        return Response([])
-
-    @extend_schema(request=DummySerializer, responses=DummySerializer)
-    def patch(self, request, pk=None):
-        return Response({"id": pk, **request.data})
-
-
-class SchedulingCapacityView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
-
-    @extend_schema(responses=OpenApiTypes.OBJECT)
-    def get(self, request):
-        from apps.scheduling.selectors.capacity import get_capacity_summary
-
-        organization = _resolve_organization(request)
-        if organization is None:
-            return Response([])
-        return Response(get_capacity_summary(organization))
-
-
-class SchedulingOverbookingView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
-
-    @extend_schema(responses=OpenApiTypes.OBJECT)
-    def get(self, request):
-        from apps.scheduling.selectors.capacity import get_overbooking_alerts
-
-        organization = _resolve_organization(request)
-        if organization is None:
-            return Response([])
-        return Response(get_overbooking_alerts(organization))
-
-
-class SchedulingResolveOverbookingView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
-
-    @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
-    def post(self, request):
-        from apps.scheduling.services.capacity import resolve_overbooking
-
-        organization = _resolve_organization(request)
-        if organization is None:
-            return Response({"detail": "No organization found."}, status=404)
-        data = request.data or {}
-        if not data.get("alert_id"):
-            return Response({"alert_id": ["This field is required."]}, status=400)
+    @staticmethod
+    def _uuid_or_none(value):
         try:
-            result = resolve_overbooking(
-                organization=organization,
-                alert_id=data.get("alert_id"),
-                resource_id=data.get("resource_id"),
-            )
-        except DjangoValidationError as exc:
-            return Response({"detail": str(exc)}, status=400)
-        if result is None:
-            return Response({"detail": "Not found."}, status=404)
-        return Response(result)
+            return UUID(str(value))
+        except ValueError:
+            return None
+
+    def _workflow_from(self, raw, *, project):
+        """
+        Resolve ``workflow_id`` from the payload inside the caller's scope.
+
+        Mock-style ids (``wf-001``) are not UUIDs and are ignored (frontend
+        contract). A UUID outside the caller's scope, or from another project
+        than the rule's, is rejected with the same error as an unknown one.
+        """
+        if not raw or self._uuid_or_none(raw) is None:
+            return None
+        workflow = AutomationRuleSelector.resolve_workflow(
+            request=self.request, lookup=raw, project=project
+        )
+        if workflow is None:
+            raise ValidationError({"workflow_id": ["Unknown workflow."]})
+        return workflow
 
 
-class SchedulingHolidaysView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
-
-    @extend_schema(responses=OpenApiTypes.OBJECT)
-    def get(self, request):
-        return Response([])
-
-
-class SchedulingLeavesView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
-
-    @extend_schema(responses=OpenApiTypes.OBJECT)
-    def get(self, request):
-        return Response([])
-
-    @extend_schema(request=DummySerializer, responses=DummySerializer)
-    def post(self, request):
-        return Response({"id": "leave-001", **request.data}, status=201)
-
-
-class AutomationRulesView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
+class AutomationRulesView(_AutomationView):
+    serializer_class = AutomationRuleSerializer
+    permission_map = {
+        "get": (AutomationPermissions.VIEW,),
+        "post": (AutomationPermissions.CREATE,),
+    }
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
-        rules = _scoped_rules(request)
+        rules = AutomationRuleSelector.get_queryset(request=request)
         return Response(AutomationRuleSerializer(rules, many=True).data)
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def post(self, request):
-        organization = _resolve_organization(request)
-        if organization is None:
-            return Response({"detail": "No organization found."}, status=404)
         serializer = AutomationRuleSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         validated = serializer.validated_data
         data = dict(validated) if isinstance(validated, dict) else {}
-        data["workflow_id"] = (request.data or {}).get("workflow_id")
+        body = request.data or {}
+
+        project = None
+        raw_project = body.get("project_id")
+        if raw_project not in (None, ""):
+            project = AutomationRuleSelector.resolve_project(request=request, lookup=raw_project)
+            if project is None:
+                raise ValidationError({"project_id": ["Unknown project."]})
+        workflow = self._workflow_from(body.get("workflow_id"), project=project)
+        if project is None and workflow is not None:
+            project = workflow.project
+        if project is None and not ProductionBaseSelector.is_platform_admin(request.user):
+            raise ValidationError({"project_id": ["A project is required."]})
+
         rule = automation_service.create_rule(
-            organization=organization,
             user=request.user,
             data=data,
+            project=project,
+            workflow=workflow,
         )
         return Response(AutomationRuleSerializer(rule).data, status=201)
 
 
-class AutomationRuleDetailView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
+class AutomationRuleDetailView(_AutomationView):
+    serializer_class = AutomationRuleSerializer
+    permission_map = {
+        "get": (AutomationPermissions.VIEW,),
+        "patch": (AutomationPermissions.UPDATE,),
+        "put": (AutomationPermissions.UPDATE,),
+        "delete": (AutomationPermissions.DELETE,),
+    }
+
+    def _rule_or_404(self, pk):
+        rule = AutomationRuleSelector.get_by_id(request=self.request, pk=pk)
+        if rule is None:
+            raise NotFound("Not found.")
+        return rule
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request, pk=None):
-        rule = _get_rule(request, pk)
-        if rule is None:
-            return Response({"detail": "Not found."}, status=404)
-        return Response(AutomationRuleSerializer(rule).data)
+        return Response(AutomationRuleSerializer(self._rule_or_404(pk)).data)
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def patch(self, request, pk=None):
-        rule = _get_rule(request, pk)
-        if rule is None:
-            return Response({"detail": "Not found."}, status=404)
+        rule = self._rule_or_404(pk)
         serializer = AutomationRuleSerializer(instance=rule, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         validated = serializer.validated_data
         data = dict(validated) if isinstance(validated, dict) else {}
-        if (request.data or {}).get("workflow_id") is not None:
-            data["workflow_id"] = request.data.get("workflow_id")
-        rule = automation_service.update_rule(rule=rule, data=data)
+        kwargs = {}
+        raw_workflow = (request.data or {}).get("workflow_id")
+        if raw_workflow is not None:
+            kwargs["workflow"] = self._workflow_from(raw_workflow, project=rule.project)
+        rule = automation_service.update_rule(rule=rule, data=data, user=request.user, **kwargs)
         return Response(AutomationRuleSerializer(rule).data)
 
     @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def put(self, request, pk=None):
-        rule = _get_rule(request, pk)
-        if rule is None:
-            return Response({"detail": "Not found."}, status=404)
+        rule = self._rule_or_404(pk)
         serializer = AutomationRuleSerializer(instance=rule, data=request.data)
         serializer.is_valid(raise_exception=True)
         validated = serializer.validated_data
         data = dict(validated) if isinstance(validated, dict) else {}
-        data["workflow_id"] = (request.data or {}).get("workflow_id")
-        rule = automation_service.update_rule(rule=rule, data=data)
+        workflow = self._workflow_from(
+            (request.data or {}).get("workflow_id"), project=rule.project
+        )
+        rule = automation_service.update_rule(
+            rule=rule, data=data, user=request.user, workflow=workflow
+        )
         return Response(AutomationRuleSerializer(rule).data)
 
     def delete(self, request, pk=None):
-        rule = _get_rule(request, pk)
-        if rule is None:
-            return Response({"detail": "Not found."}, status=404)
-        automation_service.delete_rule(rule=rule, user=getattr(request, "user", None))
+        rule = self._rule_or_404(pk)
+        automation_service.delete_rule(rule=rule, user=request.user)
         return Response(status=204)
 
 
-class AutomationAuditLogsView(GenericAPIView):  # pyright: ignore[reportMissingTypeArgument]
-    permission_classes = (IsAuthenticated,)
-    serializer_class = DummySerializer
+class AutomationAuditLogsView(_AutomationView):
+    serializer_class = AutomationAuditLogSerializer
+    permission_map = {"get": (AutomationPermissions.VIEW,)}
 
     @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
-        logs = _scoped_audit_logs(request)
+        logs = AutomationAuditLogSelector.get_queryset(request=request)
         return Response(AutomationAuditLogSerializer(logs, many=True).data)

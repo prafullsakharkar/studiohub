@@ -37,13 +37,28 @@ class IdentityAuthentication(BaseAuthentication):
                 "Invalid credentials.",
             )
 
+        user = self.get_user(principal)
+
+        # A credential is not valid past its principal's account state:
+        # deactivated/soft-deleted owners must not retain API access.
+        if (
+            user is None
+            or not getattr(user, "is_active", False)
+            or getattr(user, "is_deleted", False)
+        ):
+            return None
+
+        from apps.identity.permissions.scopes import gate_scoped_credential
+
+        gate_scoped_credential(request, principal)
+
         self.on_authenticated(
             request,
             principal,
         )
 
         return (
-            self.get_user(principal),
+            user,
             principal,
         )
 
@@ -83,15 +98,10 @@ class IdentityAuthentication(BaseAuthentication):
         self,
         request,
     ) -> str | None:
-        forwarded = request.META.get(
-            "HTTP_X_FORWARDED_FOR",
-        )
+        from apps.identity.authentication.utils import AuthenticationUtils
 
-        if forwarded:
-            return forwarded.split(",")[0].strip()
-
-        return request.META.get(
-            "REMOTE_ADDR",
+        return AuthenticationUtils.get_client_ip(
+            request,
         )
 
     def get_user_agent(

@@ -40,12 +40,13 @@ class ProjectMembershipService(BusinessService):
     def add_member(
         cls,
         *,
-        organization,
         project,
         user,
         role="Artist",
         roles=None,
+        role_ref=None,
         scope="PROJECT",
+        status="active",
         vendor_id="",
         client_id="",
         team_id="",
@@ -57,7 +58,6 @@ class ProjectMembershipService(BusinessService):
         """
         membership = (
             ProjectMembership.all_objects.filter(
-                organization=organization,
                 project=project,
                 user=user,
             ).first()
@@ -65,8 +65,10 @@ class ProjectMembershipService(BusinessService):
         if membership is not None and not membership.is_deleted:
             membership.role = role or membership.role
             membership.roles = roles or membership.roles
+            if role_ref is not None:
+                membership.role_ref = role_ref
             membership.scope = scope or membership.scope
-            membership.status = "Active"
+            membership.status = status or membership.status
             membership.vendor_id = vendor_id or membership.vendor_id
             membership.client_id = client_id or membership.client_id
             membership.team_id = team_id or membership.team_id
@@ -79,8 +81,9 @@ class ProjectMembershipService(BusinessService):
             membership.deleted_at = None
             membership.role = role or "Artist"
             membership.roles = roles or [role or "Artist"]
+            membership.role_ref = role_ref
             membership.scope = scope or "PROJECT"
-            membership.status = "Active"
+            membership.status = status or "active"
             membership.vendor_id = vendor_id or ""
             membership.client_id = client_id or ""
             membership.team_id = team_id or ""
@@ -88,13 +91,13 @@ class ProjectMembershipService(BusinessService):
             membership.save()
             return membership, False
         membership = ProjectMembership.objects.create(
-            organization=organization,
             project=project,
             user=user,
             role=role or "Artist",
             roles=roles or [role or "Artist"],
+            role_ref=role_ref,
             scope=scope or "PROJECT",
-            status="Active",
+            status=status or "active",
             vendor_id=vendor_id or "",
             client_id=client_id or "",
             team_id=team_id or "",
@@ -107,13 +110,27 @@ class ProjectNoteService(BusinessService):
     model = ProjectNote
 
     @classmethod
-    def create_note(cls, *, user=None, organization, project, author=None, **fields):
-        """Create a note with server-resolved ownership (author defaults to user)."""
+    def create_note(cls, *, user=None, project, author=None, **fields):
+        """
+        Create a note with server-resolved ownership (author defaults to user).
+
+        The author's name and role are the signed-in user's own (D-30); what a client sends for them is
+        ignored. A note with no user (a seed) keeps the values it was given.
+        """
+        who = author if author is not None else user
+        if who is not None and getattr(who, "pk", None):
+            membership = ProjectMembership.objects.filter(
+                user=who, project=project, status__iexact="active"
+            ).first()
+            fields["author_name"] = (
+                getattr(who, "display_name", "") or getattr(who, "email", "") or ""
+            ).strip()
+            fields["author_role"] = membership.role if membership else ""
+            fields["author_avatar"] = ""
         payload: dict[str, Any] = {
             "user": user,
-            "organization": organization,
             "project": project,
-            "author": author if author is not None else user,
+            "author": who,
             **fields,
         }
         return cls.create(**payload)

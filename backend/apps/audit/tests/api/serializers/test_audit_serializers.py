@@ -12,7 +12,6 @@ from apps.audit.serializers.audit_log import AuditLogSerializer
 from apps.audit.serializers.background_job import BackgroundJobSerializer
 from apps.audit.serializers.change_log import ChangeLogSerializer
 from apps.audit.serializers.error_log import ErrorLogSerializer
-from apps.audit.serializers.login_history import LoginHistorySerializer
 from apps.audit.serializers.track import TrackSerializer
 from apps.audit.tests.factories import (
     ActivityFactory,
@@ -21,7 +20,6 @@ from apps.audit.tests.factories import (
     BackgroundJobFactory,
     ChangeLogFactory,
     ErrorLogFactory,
-    LoginHistoryFactory,
     TrackFactory,
 )
 
@@ -43,7 +41,6 @@ class TestAuditLogSerializer:
         assert data["target_id"] == log.target_id
         assert data["actor"] == log.actor_id
         assert data["actor_email"] == log.actor.email
-        assert data["organization"] == log.organization_id
 
     @pytest.mark.django_db
     def test_read_only_fields(self) -> None:
@@ -128,20 +125,6 @@ class TestErrorLogSerializer:
         assert data["id"] == str(error_log.id)
         assert data["severity"] == error_log.severity
         assert data["error_type"] == error_log.error_type
-
-
-class TestLoginHistorySerializer:
-    """Tests for LoginHistorySerializer."""
-
-    @pytest.mark.django_db
-    def test_serializes_instance(self) -> None:
-        """Serializer produces expected data for a real login history entry."""
-        entry = LoginHistoryFactory()
-        serializer = LoginHistorySerializer(entry)
-        data = serializer.data
-        assert data["id"] == str(entry.id)
-        assert data["login_type"] == entry.login_type
-        assert data["status"] == entry.status
 
 
 class TestTrackSerializer:

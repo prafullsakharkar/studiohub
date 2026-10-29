@@ -63,10 +63,10 @@ class TestValidateLoginAttempts:
         )
 
     @pytest.mark.django_db
-    def test_window_is_scoped_per_user_and_ip(self):
+    def test_window_is_scoped_per_user(self):
         _record_failures("other@example.com", "127.0.0.1", 5)
-        _record_failures("user@example.com", "10.0.0.2", 5)
-        # Must not raise: no recent failures for this user+ip pair.
+        # Must not raise: failures for another username do not count here
+        # (lockout keys on username only, not username+IP).
         AuthenticationValidator.validate_login_attempts(
             username="user@example.com",
             ip_address="127.0.0.1",

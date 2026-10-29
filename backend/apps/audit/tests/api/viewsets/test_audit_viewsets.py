@@ -36,9 +36,9 @@ class TestAuditLogViewSet:
         assert response.status_code == status.HTTP_200_OK
 
     @pytest.mark.django_db
-    def test_retrieve_audit_log(self, staff_client, audit_log: AuditLog) -> None:
+    def test_retrieve_audit_log(self, admin_client, audit_log: AuditLog) -> None:
         """Test retrieving a single audit log."""
-        response = staff_client.get(self._detail_url(audit_log))
+        response = admin_client.get(self._detail_url(audit_log))
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(audit_log.id)
 
@@ -67,12 +67,12 @@ class TestAuditLogViewSet:
         assert response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
 
     @pytest.mark.django_db
-    def test_filter_audit_logs_by_action(self, staff_client) -> None:
+    def test_filter_audit_logs_by_action(self, admin_client) -> None:
         """Test filtering audit logs by action."""
         AuditLogFactory.create_batch(
             2, action=AuditLog.ACTION_CREATE
         )
-        response = staff_client.get(
+        response = admin_client.get(
             f"{self._list_url()}?action={AuditLog.ACTION_CREATE}"
         )
         assert response.status_code == status.HTTP_200_OK
@@ -93,9 +93,23 @@ class TestAuditLogViewSetPermissions:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     @pytest.mark.django_db
-    def test_authenticated_user_can_list(self, authenticated_client) -> None:
-        """Authenticated users can list audit logs."""
+    def test_authenticated_user_without_audit_view_cannot_list(
+        self, authenticated_client
+    ) -> None:
+        """audit.view is required: a plain authenticated user is denied."""
         response = authenticated_client.get(self._list_url())
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    @pytest.mark.django_db
+    def test_user_with_audit_view_can_list(self, api_client) -> None:
+        """Holders of the audit.view permission can list audit logs."""
+        from apps.identity.tests.factories import UserFactory
+        from apps.identity.tests.rbac_helpers import grant_permissions
+
+        user = UserFactory()
+        grant_permissions(user, "audit.view")
+        api_client.force_authenticate(user=user)
+        response = api_client.get(self._list_url())
         assert response.status_code == status.HTTP_200_OK
 
 
@@ -103,7 +117,7 @@ class TestBackgroundJobActions:
     """Retry/cancel actions (frontend job cards call these in both modes)."""
 
     @pytest.mark.django_db
-    def test_retry_job_requeues(self, staff_client) -> None:
+    def test_retry_job_requeues(self, admin_client) -> None:
         from apps.audit.models.background_job import BackgroundJob
         from apps.audit.tests.factories import BackgroundJobFactory
 
@@ -113,14 +127,14 @@ class TestBackgroundJobActions:
         url = reverse(
             "api:v1:audit:background-job-retry", kwargs={"uuid": job.uuid}
         )
-        response = staff_client.post(url)
+        response = admin_client.post(url)
         assert response.status_code == status.HTTP_200_OK
         job.refresh_from_db()
         assert job.status == BackgroundJob.STATUS_QUEUED
         assert job.progress == 0
 
     @pytest.mark.django_db
-    def test_cancel_job(self, staff_client) -> None:
+    def test_cancel_job(self, admin_client) -> None:
         from apps.audit.models.background_job import BackgroundJob
         from apps.audit.tests.factories import BackgroundJobFactory
 
@@ -130,20 +144,20 @@ class TestBackgroundJobActions:
         url = reverse(
             "api:v1:audit:background-job-cancel", kwargs={"uuid": job.uuid}
         )
-        response = staff_client.post(url)
+        response = admin_client.post(url)
         assert response.status_code == status.HTTP_200_OK
         job.refresh_from_db()
         assert job.status == BackgroundJob.STATUS_CANCELLED
 
     @pytest.mark.django_db
-    def test_resolve_error_log(self, staff_client) -> None:
+    def test_resolve_error_log(self, admin_client) -> None:
         from apps.audit.tests.factories import ErrorLogFactory
 
         entry = ErrorLogFactory.create(resolved=False)
         url = reverse(
             "api:v1:audit:error-log-resolve", kwargs={"uuid": entry.uuid}
         )
-        response = staff_client.post(url)
+        response = admin_client.post(url)
         assert response.status_code == status.HTTP_200_OK
         entry.refresh_from_db()
         assert entry.resolved is True
@@ -155,14 +169,8 @@ class TestTrackIngest:
     @pytest.mark.django_db
     def test_ingest_track_with_aliases(self, staff_client) -> None:
         from apps.identity.tests.factories import UserFactory
-        from apps.organization.tests.factories import (
-            OrganizationFactory,
-            OrganizationMembershipFactory,
-        )
 
         user = UserFactory.create()
-        org = OrganizationFactory.create()
-        OrganizationMembershipFactory.create(organization=org, user=user)
         user.set_password("password123")
         user.save()
 
@@ -184,12 +192,10 @@ class TestTrackIngest:
             },
             format="json",
             HTTP_AUTHORIZATION=f"Bearer {token}",
-            HTTP_X_ORGANIZATION_ID=str(org.id),
         )
         assert response.status_code == status.HTTP_201_CREATED, response.data
         assert response.data["event_name"] == "Shot card opened"
         assert response.data["metadata"]["duration_ms"] == 120
-        assert str(response.data["organization"]) == str(org.id)
 
 
 class TestChangeTrackingSignals:
@@ -198,16 +204,13 @@ class TestChangeTrackingSignals:
     @pytest.mark.django_db
     def test_create_and_update_record_changelog(self) -> None:
         from apps.audit.models import ChangeLog
-        from apps.organization.tests.factories import OrganizationFactory
         from apps.production.tests.factories import ProjectFactory
 
-        org = OrganizationFactory.create()
-        project = ProjectFactory.create(organization=org, name="Signal Test")
+        project = ProjectFactory.create(name="Signal Test")
         created = ChangeLog.objects.filter(
             target_type="Project", target_id=str(project.pk), change_type="create"
         )
         assert created.count() == 1
-        assert created.first().organization_id == org.id
 
         project.name = "Signal Test Renamed"
         project.save()
@@ -220,11 +223,9 @@ class TestChangeTrackingSignals:
     @pytest.mark.django_db
     def test_noop_save_records_nothing(self) -> None:
         from apps.audit.models import ChangeLog
-        from apps.organization.tests.factories import OrganizationFactory
         from apps.production.tests.factories import ProjectFactory
 
-        org = OrganizationFactory.create()
-        project = ProjectFactory.create(organization=org, name="Quiet")
+        project = ProjectFactory.create(name="Quiet")
         before = ChangeLog.objects.filter(target_id=str(project.pk)).count()
         project.save()
         after = ChangeLog.objects.filter(target_id=str(project.pk)).count()
@@ -238,14 +239,8 @@ class TestTelemetryWriters:
     def test_api_middleware_records_request(self, staff_client) -> None:
         from apps.audit.models import APIRequest
         from apps.identity.tests.factories import UserFactory
-        from apps.organization.tests.factories import (
-            OrganizationFactory,
-            OrganizationMembershipFactory,
-        )
 
         user = UserFactory.create()
-        org = OrganizationFactory.create()
-        OrganizationMembershipFactory.create(organization=org, user=user)
         user.set_password("password123")
         user.save()
         login = staff_client.post(
@@ -258,7 +253,6 @@ class TestTelemetryWriters:
         staff_client.get(
             "/api/v1/projects/?page_size=1",
             HTTP_AUTHORIZATION=f"Bearer {token}",
-            HTTP_X_ORGANIZATION_ID=str(org.id),
         )
         rows = APIRequest.objects.order_by("-created_at")[:1]
         assert APIRequest.objects.count() == before + 1
@@ -266,7 +260,6 @@ class TestTelemetryWriters:
         assert row.method == "GET"
         assert row.path == "/api/v1/projects/"
         assert row.status_category == "2xx"
-        assert row.organization_id == org.id
 
     @pytest.mark.django_db
     def test_exception_handler_records_500(self) -> None:
@@ -275,18 +268,15 @@ class TestTelemetryWriters:
         from apps.audit.models import ErrorLog
         from apps.core.api.exceptions.handlers import custom_exception_handler
         from apps.identity.tests.factories import UserFactory
-        from apps.organization.tests.factories import (
-            OrganizationFactory,
-            OrganizationMembershipFactory,
-        )
 
         user = UserFactory.create()
-        org = OrganizationFactory.create()
-        OrganizationMembershipFactory.create(organization=org, user=user)
         factory = APIRequestFactory()
         request = factory.get("/api/v1/projects/")
         request.user = user
-        request.organization = org
+        # Legacy org-context gate in the core handler (de-orged in B6): a
+        # truthy org context keeps the 500 recorder running. The value is
+        # dropped by the audit ErrorLog compat manager.
+        request.organization = True
         response = custom_exception_handler(
             RuntimeError("boom"), {"request": request, "view": None}
         )
@@ -294,4 +284,3 @@ class TestTelemetryWriters:
         row = ErrorLog.objects.order_by("-created_at").first()
         assert row is not None
         assert "boom" in row.message
-        assert row.organization_id == org.id

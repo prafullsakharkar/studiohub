@@ -1,6 +1,6 @@
 [project]
 name = "studiohub-backend"
-version = "2.3.0"
+version = "2.4.0"
 description = "Enterprise VFX/CG Studio Management Platform"
 requires-python = ">=3.13"
 
@@ -10,8 +10,8 @@ license = { text = "Proprietary" }
 
 dependencies = [
     # Django
-    "django>=6.0",
-    "djangorestframework>=3.16",
+    "django>=6.0.9",
+    "djangorestframework>=3.18.3",
     "django-filter>=25.1",
     "drf-spectacular>=0.28",
     # PostgreSQL
@@ -28,9 +28,7 @@ dependencies = [
     "django-celery-results>=2.6",
     "django-celery-beat>=2.9",
     # Images
-    "pillow>=11.3",
-    # Storage
-    "minio>=7.2",
+    "pillow>=13.0.0",
     # JSON
     "orjson>=3.11",
     # Authentication
@@ -70,6 +68,8 @@ dependencies = [
     "whitenoise>=6.12.0",
     "django-countries>=9.0.0",
     "djangorestframework-simplejwt>=5.5.1",
+    # Signs and verifies every access/refresh token; floor set past known advisories (TM-008).
+    "pyjwt>=2.15.1",
     "user-agents>=2.2.0",
     "pyotp>=2.10.0",
     "qrcode[pil]>=8.2",
@@ -77,6 +77,7 @@ dependencies = [
     "openpyxl>=3.1.5",
     # ASGI server
     "uvicorn[standard]>=0.34",
+    "cryptography>=50.0.2",
 ]
 
 [dependency-groups]
@@ -100,8 +101,6 @@ dev = [
     "django-stubs>=5.2",
     # Git
     "pre-commit>=4.2",
-    # HTTP
-    "httpie>=3.2",
     # Shell
     "rich>=14.1",
     "djangorestframework-stubs>=3.17.0",
@@ -143,9 +142,11 @@ DJANGO_SETTINGS_MODULE = "config.settings.testing"
 
 python_files = ["test_*.py", "*_test.py"]
 
-addopts = ["--reuse-db", "--strict-markers", "--cov=apps", "--import-mode=importlib"]
+# Coverage is off by default (it costs about a quarter of the run); CI and `make test-full` add --cov=apps.
+addopts = ["--reuse-db", "--strict-markers", "--import-mode=importlib"]
 
 testpaths = ["apps"]
+
 
 filterwarnings = [
     # Core deprecation FutureWarnings are expected until the domain move (production) is complete
@@ -156,6 +157,10 @@ filterwarnings = [
 ]
 
 [tool.coverage.run]
+
+# sys.monitoring (Python 3.12+) is cheaper than the default tracer for line coverage; branch
+# coverage is not used here. CI runs Python 3.13.
+core = "sysmon"
 
 source = ["apps"]
 

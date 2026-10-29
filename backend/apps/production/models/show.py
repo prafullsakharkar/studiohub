@@ -28,12 +28,6 @@ class Show(EntityModel):
     Distributable show/cut belonging to exactly one project.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="shows",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
@@ -62,7 +56,6 @@ class Show(EntityModel):
         ordering = ("project", "-is_primary", "code")
         unique_together = [("project", "code")]
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["project", "code"]),
         ]
 

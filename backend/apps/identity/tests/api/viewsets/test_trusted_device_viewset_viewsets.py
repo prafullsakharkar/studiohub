@@ -63,13 +63,13 @@ class TestTrustedDeviceViewSet:
         assert response.status_code == 404
 
     @pytest.mark.django_db
-    def test_retrieve_trusted_device_staff_sees_all(self, staff_client):
-        """Test staff can retrieve any trusted device."""
+    def test_retrieve_trusted_device_staff_is_self_scoped(self, staff_client):
+        """ADR-0033 D4: staff is not an authorization tier; other users' records are 404."""
         device = TrustedDeviceFactory.create()
         response = staff_client.get(
             reverse("api:v1:identity:trusted-device-detail", kwargs={"pk": device.id})
         )
-        assert response.status_code == 200
+        assert response.status_code == 404
 
     @pytest.mark.django_db
     def test_create_trusted_device_unauthenticated(self, api_client):
@@ -82,14 +82,16 @@ class TestTrustedDeviceViewSet:
 
     @pytest.mark.django_db
     def test_create_trusted_device_authenticated(self, authenticated_client):
-        """Test creating trusted device with authentication."""
-        data = {
-            "fingerprint": "test-device-fingerprint",
-        }
+        """Trust is minted server-side after MFA; the API cannot create devices."""
+        from apps.identity.models import TrustedDevice
+
+        before = TrustedDevice.objects.count()
         response = authenticated_client.post(
-            reverse("api:v1:identity:trusted-device-list"), data
+            reverse("api:v1:identity:trusted-device-list"),
+            {"fingerprint": "test-device-fingerprint"},
         )
-        assert response.status_code == 201
+        assert response.status_code in (403, 405)
+        assert TrustedDevice.objects.count() == before
 
     @pytest.mark.django_db
     def test_update_trusted_device_unauthenticated(self, api_client):
@@ -103,23 +105,27 @@ class TestTrustedDeviceViewSet:
 
     @pytest.mark.django_db
     def test_update_trusted_device_authenticated(self, authenticated_client, user):
-        """Test updating own trusted device with authentication."""
-        device = TrustedDeviceFactory.create(user=user)
-        data = {"browser": "Firefox"}
-        response = authenticated_client.patch(
-            reverse("api:v1:identity:trusted-device-detail", kwargs={"pk": device.id}), data
+        """A client cannot edit a device (e.g. extend trust or un-revoke it)."""
+        device = TrustedDeviceFactory.create(user=user, browser="Chrome")
+        response = authenticated_client.put(
+            reverse("api:v1:identity:trusted-device-detail", kwargs={"pk": device.id}),
+            {"browser": "Firefox"},
         )
-        assert response.status_code == 200
+        assert response.status_code in (403, 405)
+        device.refresh_from_db()
+        assert device.browser == "Chrome"
 
     @pytest.mark.django_db
     def test_update_other_users_device_not_found(self, authenticated_client):
-        """Test updating another user's device is scoped out."""
-        device = TrustedDeviceFactory.create()
-        data = {"browser": "Firefox"}
+        """Another user's device is neither editable nor visible."""
+        device = TrustedDeviceFactory.create(browser="Chrome")
         response = authenticated_client.patch(
-            reverse("api:v1:identity:trusted-device-detail", kwargs={"pk": device.id}), data
+            reverse("api:v1:identity:trusted-device-detail", kwargs={"pk": device.id}),
+            {"browser": "Firefox"},
         )
-        assert response.status_code == 404
+        assert response.status_code in (403, 404, 405)
+        device.refresh_from_db()
+        assert device.browser == "Chrome"
 
     @pytest.mark.django_db
     def test_partial_update_trusted_device_unauthenticated(self, api_client):
@@ -133,13 +139,19 @@ class TestTrustedDeviceViewSet:
 
     @pytest.mark.django_db
     def test_partial_update_trusted_device_authenticated(self, authenticated_client, user):
-        """Test partially updating own trusted device with authentication."""
-        device = TrustedDeviceFactory.create(user=user)
-        data = {"device_name": "Updated Device"}
+        """PATCH is refused too: an owner cannot lift their own revocation."""
+        from django.utils import timezone
+
+        device = TrustedDeviceFactory.create(user=user, is_trusted=False, revoked_at=timezone.now())
         response = authenticated_client.patch(
-            reverse("api:v1:identity:trusted-device-detail", kwargs={"pk": device.id}), data
+            reverse("api:v1:identity:trusted-device-detail", kwargs={"pk": device.id}),
+            {"is_trusted": True, "revoked_at": None},
+            format="json",
         )
-        assert response.status_code == 200
+        assert response.status_code in (403, 405)
+        device.refresh_from_db()
+        assert device.is_trusted is False
+        assert device.revoked_at is not None
 
     @pytest.mark.django_db
     def test_destroy_trusted_device_unauthenticated(self, api_client):

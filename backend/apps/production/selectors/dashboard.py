@@ -3,7 +3,7 @@ Project dashboard aggregation selector.
 
 Builds the ``ProjectDashboardData`` payload consumed by the frontend Project
 Command Center (``GET /api/v1/projects/{id}/dashboard/`` with the nested
-``/api/organizations/{org}/projects/{project}/dashboard`` fallback).
+``/projects/{project}/dashboard`` fallback).
 
 The aggregation rules intentionally mirror the frontend mock builder
 (``studiohub-react/src/features/dashboard/api/buildProjectDashboardMock.ts``)
@@ -19,10 +19,12 @@ import contextlib
 from datetime import date, timedelta
 from typing import Any
 
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.utils import timezone
 
 from apps.production.selectors.base import ProductionBaseSelector
+from apps.production.selectors.delivery_figures import delivery_figures
+from apps.production.selectors.rollups import ShotCurrentVersionSelector
 
 
 class ProjectDashboardSelector(ProductionBaseSelector):
@@ -51,8 +53,8 @@ class ProjectDashboardSelector(ProductionBaseSelector):
 
     # Milestone scaffolding: names mirror the frontend mock; dates
     # interpolate the project's real start/delivery dates and statuses derive
-    # from the real overall progress. Same precedent as SCHEDULE_PHASES in
-    # the project-scoped schedule view.
+    # from the real overall progress. (The project-scoped schedule view now reads real
+    # milestones through the scheduling provider; this dashboard card still derives its own.)
     MILESTONES = (
         "Plate Turnover & Ingest",
         "Rough Layout & Asset Conform",
@@ -80,14 +82,12 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         the payload never counts a paginated or truncated page. Only the
         small `recent_*` example lists are sliced.
         """
-        from django.db.models import Count
 
-        from apps.deliveries.models import DeliveryPackage
         from apps.production.models import Asset, Review, Shot, Task
 
-        organization = project.organization
         today = timezone.localdate()
-        scope = {"organization": organization, "project": project}
+        figures = delivery_figures()
+        scope = {"project": project}
 
         shot_statuses = (
             Shot.objects.filter(**scope).values("status").annotate(count=Count("id"))
@@ -101,9 +101,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         review_statuses = (
             Review.objects.filter(**scope).values("status").annotate(count=Count("id"))
         )
-        delivery_rows = list(
-            DeliveryPackage.objects.filter(**scope).values("status", "expires_at")
-        )
+        delivery_rows = figures.status_rows(project)
 
         from django.db.models.functions import Lower
 
@@ -125,9 +123,9 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         critical_count = overdue_count + blocked_count - overlap_count
 
         recent_shots = list(
-            Shot.objects.filter(**scope)
-            .select_related("assigned_artist")
-            .order_by("-updated_at")[:8]
+            ShotCurrentVersionSelector.annotate(
+                Shot.objects.filter(**scope).select_related("assigned_artist", "sequence")
+            ).order_by("-updated_at")[:8]
         )
         recent_tasks = list(
             Task.objects.filter(**scope)
@@ -137,13 +135,14 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         recent_reviews = list(
             Review.objects.filter(**scope)
             .select_related("lead_reviewer")
+            .annotate(
+                participant_count=Count(
+                    "participants", filter=Q(participants__is_deleted=False), distinct=True
+                )
+            )
             .order_by("-updated_at")[:6]
         )
-        recent_deliveries = list(
-            DeliveryPackage.objects.filter(**scope)
-            .select_related("client")
-            .order_by("-updated_at")[:6]
-        )
+        recent_deliveries = figures.recent_items(project, 6)
 
         shot_stats = cls._shot_stats(cls._status_counts(shot_statuses))
         task_stats = cls._task_stats(
@@ -166,7 +165,6 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             overall,
             task_stats["overdue"],
             delivery_stats["late"],
-            organization,
             today,
         )
 
@@ -230,15 +228,15 @@ class ProjectDashboardSelector(ProductionBaseSelector):
                 "recent_reviews": [cls._review_item(r) for r in recent_reviews],
             },
             "schedule": schedule,
-            "workload": {"team_members": cls._workload(organization, project, today)},
+            "workload": {"team_members": cls._workload(project, today)},
             "deliveries": {
                 "total": delivery_stats["total"],
                 "upcoming": delivery_stats["upcoming"],
                 "delivered": delivery_stats["delivered"],
                 "late": delivery_stats["late"],
-                "items": [cls._delivery_item(d) for d in recent_deliveries],
+                "items": recent_deliveries,
             },
-            "activity": cls._activity(project, organization, recent_shots, recent_tasks),
+            "activity": cls._activity(project, recent_shots, recent_tasks),
         }
 
     # -- project ----------------------------------------------------------
@@ -247,7 +245,6 @@ class ProjectDashboardSelector(ProductionBaseSelector):
     def _project_metadata(cls, project) -> dict[str, Any]:
         payload: dict[str, Any] = {
             "id": str(project.id),
-            "organization_id": str(project.organization_id),
             "name": project.name,
             "code": project.code,
             "type": project.type or "",
@@ -329,8 +326,9 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             item["assigned_artist_avatar"] = avatar
         with contextlib.suppress(Exception):
             item["frame_count"] = shot.frame_count
-        if shot.current_version:
-            item["current_version"] = shot.current_version
+        current_version = ShotCurrentVersionSelector.of(shot)[0]
+        if current_version:
+            item["current_version"] = current_version
         return item
 
     # -- tasks ------------------------------------------------------------
@@ -437,7 +435,6 @@ class ProjectDashboardSelector(ProductionBaseSelector):
 
     @classmethod
     def _review_item(cls, review) -> dict[str, Any]:
-        reviewers = getattr(review, "reviewers", None) or []
         return {
             "id": str(review.id),
             "title": review.title or "Screening Session",
@@ -445,7 +442,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             # entity under review is the honest, useful label.
             "type": f"{review.entity_type or 'Shot'} Review",
             "status": review.status or "Pending Review",
-            "reviewers_count": len(reviewers) if isinstance(reviewers, list) else 0,
+            "reviewers_count": review.participant_count,
             "updated_at": review.updated_at.isoformat() if review.updated_at else "",
         }
 
@@ -472,27 +469,6 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             "upcoming": total - delivered - late,
         }
 
-    @classmethod
-    def _delivery_item(cls, delivery) -> dict[str, Any]:
-        client = getattr(delivery, "client", None)
-        try:
-            item_count = delivery.version_count
-        except Exception:  # noqa: BLE001
-            item_count = 0
-        item: dict[str, Any] = {
-            "id": str(delivery.id),
-            "title": delivery.name,
-            "package_name": delivery.code or "TURNOVER_PKG",
-            "status": delivery.status or "Draft",
-            "recipient": getattr(client, "name", "") or "",
-        }
-        expires_at = getattr(delivery, "expires_at", None)
-        # Contract requires `due_date` (string); empty when unscheduled.
-        item["due_date"] = expires_at.date().isoformat() if expires_at is not None else ""
-        if item_count:
-            item["item_count"] = item_count
-        return item
-
     # -- progress / schedule / workload -----------------------------------
 
     @classmethod
@@ -510,7 +486,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
     @classmethod
     def _schedule(
         cls, project, overall: int, overdue_tasks: int, late_deliveries: int,
-        organization, today: date,
+        today: date,
     ) -> dict[str, Any]:
         # Same defaulting rule as the project-scoped schedule view: a project
         # without dates still yields a well-formed schedule section.
@@ -561,19 +537,18 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             "is_delayed": late_deliveries > 0 or overdue_tasks > 2,
             "milestones": milestones,
         }
-        deadline = cls._next_deadline(organization, project, today)
+        deadline = cls._next_deadline(project, today)
         if deadline is not None:
             payload["next_deadline"] = deadline
         return payload
 
     @classmethod
-    def _next_deadline(cls, organization, project, today: date) -> dict | None:
-        from apps.deliveries.models import DeliveryPackage
+    def _next_deadline(cls, project, today: date) -> dict | None:
         from apps.production.models import Task
 
         upcoming_task = (
             Task.objects.filter(
-                organization=organization, project=project, due_date__gte=today
+                project=project, due_date__gte=today
             )
             .order_by("due_date")
             .first()
@@ -585,19 +560,11 @@ class ProjectDashboardSelector(ProductionBaseSelector):
                 "days_away": max(0, (upcoming_task.due_date - today).days),
                 "type": "Task",
             }
-        upcoming_delivery = (
-            DeliveryPackage.objects.filter(
-                organization=organization,
-                project=project,
-                expires_at__date__gte=today,
-            )
-            .order_by("expires_at")
-            .first()
-        )
-        if upcoming_delivery is not None and upcoming_delivery.expires_at is not None:
-            due = upcoming_delivery.expires_at.date()
+        upcoming_delivery = delivery_figures().next_due(project, today)
+        if upcoming_delivery is not None:
+            due = upcoming_delivery["due"]
             return {
-                "title": upcoming_delivery.name,
+                "title": upcoming_delivery["title"],
                 "date": due.isoformat(),
                 "days_away": max(0, (due - today).days),
                 "type": "Delivery",
@@ -605,7 +572,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         return None
 
     @classmethod
-    def _workload(cls, organization, project, today: date) -> list[dict[str, Any]]:
+    def _workload(cls, project, today: date) -> list[dict[str, Any]]:
         from django.db.models import Count
 
         from apps.production.models import Task
@@ -613,7 +580,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         # Per-(assignee, department) aggregates in one query; merged per
         # assignee below with the busiest department as representative.
         rows = list(
-            Task.objects.filter(organization=organization, project=project)
+            Task.objects.filter(project=project)
             .values("assignee", "department")
             .annotate(
                 assigned=Count("id"),
@@ -686,9 +653,9 @@ class ProjectDashboardSelector(ProductionBaseSelector):
 
     @classmethod
     def _activity(
-        cls, project, organization, recent_shots: list, recent_tasks: list
+        cls, project, recent_shots: list, recent_tasks: list
     ) -> list[dict]:
-        items = cls._activity_from_changelog(project, organization)
+        items = cls._activity_from_changelog(project)
         if items:
             return items
         # No recorded changes yet: surface the most recently touched
@@ -730,15 +697,14 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         return items
 
     @classmethod
-    def _activity_from_changelog(cls, project, organization) -> list[dict]:
+    def _activity_from_changelog(cls, project) -> list[dict]:
         from apps.audit.models import ChangeLog
 
         labels = {"create": "Created", "update": "Updated", "delete": "Deleted"}
-        project_ids = cls._project_entity_ids(project, organization)
+        project_ids = cls._project_entity_ids(project)
         try:
             rows = list(
-                ChangeLog.objects.filter(organization=organization)
-                .select_related("user")
+                ChangeLog.objects.select_related("user")
                 .order_by("-created_at")[: cls.ACTIVITY_SCAN_LIMIT]
             )
         except Exception:  # noqa: BLE001
@@ -768,8 +734,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         return items
 
     @classmethod
-    def _project_entity_ids(cls, project, organization) -> dict[str, set[str]]:
-        from apps.deliveries.models import DeliveryPackage
+    def _project_entity_ids(cls, project) -> dict[str, set[str]]:
         from apps.production.models import (
             Asset,
             Review,
@@ -781,18 +746,13 @@ class ProjectDashboardSelector(ProductionBaseSelector):
 
         pairs = (
             ("Project", (project.id,)),
-            ("Sequence", Sequence.objects.filter(organization=organization, project=project).values_list("id", flat=True)),
-            ("Shot", Shot.objects.filter(organization=organization, project=project).values_list("id", flat=True)),
-            ("Asset", Asset.objects.filter(organization=organization, project=project).values_list("id", flat=True)),
-            ("Task", Task.objects.filter(organization=organization, project=project).values_list("id", flat=True)),
-            ("Version", Version.objects.filter(organization=organization, project=project).values_list("id", flat=True)),
-            ("Review", Review.objects.filter(organization=organization, project=project).values_list("id", flat=True)),
-            (
-                "DeliveryPackage",
-                DeliveryPackage.objects.filter(
-                    organization=organization, project=project
-                ).values_list("id", flat=True),
-            ),
+            ("Sequence", Sequence.objects.filter(project=project).values_list("id", flat=True)),
+            ("Shot", Shot.objects.filter(project=project).values_list("id", flat=True)),
+            ("Asset", Asset.objects.filter(project=project).values_list("id", flat=True)),
+            ("Task", Task.objects.filter(project=project).values_list("id", flat=True)),
+            ("Version", Version.objects.filter(project=project).values_list("id", flat=True)),
+            ("Review", Review.objects.filter(project=project).values_list("id", flat=True)),
+            ("DeliveryPackage", delivery_figures().entity_ids(project)),
         )
         return {name: {str(value) for value in ids} for name, ids in pairs}
 

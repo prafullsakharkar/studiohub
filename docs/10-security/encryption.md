@@ -8,6 +8,55 @@ Encryption is one layer of a broader defense-in-depth strategy and should always
 
 ---
 
+# What this repository implements
+
+The sections below are the general guide. This one says what the code and the production compose
+overlay do today (TPN review TM-009).
+
+## In transit
+
+| Link | Protection |
+| ---- | ---------- |
+| Browser to nginx | TLS 1.2/1.3 with your certificate (`infrastructure/docker/nginx/certs`), HSTS |
+| nginx to Django | HTTPS; nginx verifies Django's certificate against the internal CA (`proxy_ssl_verify on`) |
+| Django, Celery to PostgreSQL | TLS 1.2+; `DB_SSLMODE=verify-full` with `DB_SSLROOTCERT`. The server accepts only `hostssl` connections (`pg_hba.prod.conf`) |
+| Django, Celery to Redis | TLS (`REDIS_TLS=true`, `rediss://` Celery URLs) verified against `REDIS_CA_CERT`; Redis' plain port is closed and a password is required |
+| Django to the mail relay | STARTTLS or implicit TLS; `check --deploy` refuses plain SMTP |
+
+`manage.py check --deploy` reports a database or Redis link that is not encrypted and verified as warnings
+`core.W006` / `core.W007`, and as errors `core.E006` / `core.E007` with `INTERNAL_TLS_REQUIRED=true` (the
+production template sets it), so a misconfigured start is refused.
+
+**Certificates.** The one-shot `tls-init` service creates a private CA (10 years) and one certificate per
+service (PostgreSQL, Redis, Django; 397 days) in the `tls_data` volume. The CA key stays in `tls_ca`, which
+only that job mounts. Each private key is readable only by its service's user. `docker compose up`
+re-runs the job, and certificates within 30 days of expiry are reissued from the same CA; restart the
+services to load them. To replace the CA, remove both volumes and bring the stack up again. To use your own
+CA, put `ca.pem` and `<service>.pem` / `<service>.key` in `tls_data` first; existing files are not touched.
+For a managed database or cache, set `DB_SSLMODE`, `DB_SSLROOTCERT` and `REDIS_*` for the provider's CA.
+
+## At rest
+
+- **Encrypted by the application:** passwords (Django hashers), password-reset tokens, API keys and personal
+  access tokens (HMAC digests keyed by `API_KEY_PEPPER`), TOTP secrets (`MFA_ENCRYPTION_KEY`) and delivery
+  passcodes (`DELIVERY_SECRET_KEY`), both Fernet with rotation.
+- **Not encrypted by the application:** the other database rows, uploaded files (`media_volume`) and any
+  backup. They rely on the storage underneath, so these volumes must be on encrypted storage:
+  `postgres_data`, `redis_data`, `media_volume`, `tls_data` and `tls_ca` (private keys and the CA key).
+- **Evidence.** `infrastructure/scripts/check-encryption-at-rest.sh [project]` finds each volume's backing
+  device and reports `ENCRYPTED` (dm-crypt/LUKS or ZFS native encryption), `ATTESTED` (provider-level
+  encryption, with `PROVIDER_ENCRYPTION_REF` pointing at the evidence) or `UNKNOWN` (exit 1). A cloud
+  provider's disk encryption is below the guest and cannot be detected; record the evidence instead.
+- **Backups.** `infrastructure/scripts/backup.sh` takes encrypted backups of the database and the uploads
+  and restores them. They are encrypted to a public certificate (CMS, AES-256-GCM), so the server holds only
+  the key that can write them, never the one that can read them; the private key (made by `backup.sh keygen`)
+  belongs off the server. Streams are cut into 256 MB parts, each encrypted on its own, so restoring needs
+  bounded memory. `backup.sh verify` restores the latest backup into a scratch database and checks it, and
+  should be run on a schedule; `restore` refuses to overwrite the live database without `--yes-overwrite`.
+  It does not back up Redis (cache and queue only), the TLS volumes or the environment file: keep those
+  with your secret store. It was tested against a real PostgreSQL container: multi-part backup, restore,
+  data comparison, tamper and wrong-key failures, and pruning.
+
 # Objectives
 
 The encryption strategy aims to:

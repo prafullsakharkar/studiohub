@@ -1,7 +1,7 @@
 """
 Project-scoped nested routes for the frontend contract.
 
-Mounted at /api/organizations/<org>/projects/<project>/... (no /v1/).
+Mounted at /api/organizations/projects/<project>/... (no /v1/).
 Both slashless and trailing-slash variants are served to match
 `projectScopedApi.ts` exactly.
 """
@@ -28,7 +28,6 @@ from apps.production.api.views.project_scoped import (
     ProjectVersionsView,
 )
 
-ORG = "<str:organization_id>"
 PROJECT = "<str:project_id>"
 
 _ROUTES = [
@@ -55,7 +54,7 @@ app_name = "production-project-scoped"
 
 urlpatterns = []
 for _subpath, _view in _ROUTES:
-    _base = f"{ORG}/projects/{PROJECT}/{_subpath}"
+    _base = f"projects/{PROJECT}/{_subpath}"
     urlpatterns += [
         path(f"{_base}", _view.as_view(), name=f"project-{_subpath}"),
         path(f"{_base}/", _view.as_view(), name=f"project-{_subpath}-slash"),

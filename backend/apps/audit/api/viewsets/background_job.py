@@ -24,11 +24,11 @@ class BackgroundJobViewSet(
     
     serializer_class = BackgroundJobSerializer
 
-    # Reads stay open to authenticated users (org-scoped selectors);
-    # retry/cancel re-drive privileged work and require the UPDATE grant.
+    # Reads require the audit.view permission (seeded to production-tier
+    # roles); retry/cancel re-drive privileged work and require UPDATE.
     permission_map = {
-        "list": (),
-        "retrieve": (),
+        "list": (AuditPermissions.VIEW,),
+        "retrieve": (AuditPermissions.VIEW,),
         "retry": (AuditPermissions.UPDATE,),
         "cancel": (AuditPermissions.UPDATE,),
     }

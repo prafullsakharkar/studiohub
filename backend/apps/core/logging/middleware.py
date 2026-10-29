@@ -29,14 +29,6 @@ class LoggingContextMiddleware:
             )
         )
 
-        context.organization.set(
-            getattr(
-                request,
-                "organization",
-                None,
-            )
-        )
-
         context.user.set(
             getattr(
                 request,

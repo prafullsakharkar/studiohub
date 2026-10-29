@@ -27,7 +27,9 @@ def attachment_upload_path(instance: Attachment, filename: str) -> str:
         org_id = str(organization.id)
     
     # Generate unique filename
-    ext = filename.split(".")[-1] if "." in filename else "dat"
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if not (ext.isalnum() and ext.isascii() and len(ext) <= 10):
+        ext = "dat"
     unique_filename = f"{uuid.uuid4().hex}.{ext}"
     
     # Create path with date-based organization

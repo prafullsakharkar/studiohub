@@ -2,9 +2,9 @@
 Publish destination viewset for API endpoints.
 """
 from apps.core.api.pagination import StandardPagination
+from apps.core.api.viewsets.platform_crud import PlatformCrudViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
-from apps.organization.api.viewsets.scoped import OrganizationScopedViewSet
 from apps.publishing.api.serializers.destination import (
     DestinationDetailSerializer,
     DestinationListSerializer,
@@ -13,7 +13,7 @@ from apps.publishing.constants.permissions import PublishPermissions
 from apps.publishing.selectors.destination import DestinationSelector
 
 
-class DestinationViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class DestinationViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for PublishDestination."""
 
     selector_class = DestinationSelector
@@ -40,8 +40,6 @@ class DestinationViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMi
     search_fields = ("name", "path", "region")
     ordering_fields = ("name", "created_at")
 
-    def get_perform_create_kwargs(self):
+    def perform_create(self, serializer):
         user = self.request.user
-        return {
-            "created_by": user if user.is_authenticated else None,
-        }
+        serializer.save(created_by=user if user.is_authenticated else None)

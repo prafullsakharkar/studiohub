@@ -1,9 +1,9 @@
 """
 ProjectMembership model.
 
-Grants a user a role/scope on a specific Project within an Organization.
+Grants a user a role/scope on a specific Project.
 Mirrors the frontend ``ProjectMembership`` contract
-(``user_id/organization_id/project_id/role/roles/scope/status`` with
+(``user_id/project_id/role/roles/scope/status`` with
 denormalized display fields served by the serializer).
 """
 
@@ -20,17 +20,30 @@ class ProjectMembership(EntityModel):
     Membership of a user on a project (frontend contract entity).
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="project_memberships",
-        db_index=True,
+    STATUS_CHOICES = (
+        ("active", "Active"),
+        ("on_leave", "On Leave"),
+        ("terminated", "Terminated"),
+        ("suspended", "Suspended"),
     )
+
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
         related_name="memberships",
         db_index=True,
+    )
+    show = models.ForeignKey(
+        "production.Show",
+        on_delete=models.CASCADE,
+        related_name="memberships",
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text=(
+            "Optional show binding (ADR-0033 D2): narrows this membership to "
+            "a single show within the project."
+        ),
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -41,8 +54,25 @@ class ProjectMembership(EntityModel):
 
     role = models.CharField(max_length=100, default="Artist", db_index=True)
     roles = models.JSONField(default=list, blank=True)
+    role_ref = models.ForeignKey(
+        "identity.Role",
+        on_delete=models.SET_NULL,
+        related_name="project_memberships",
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text=(
+            "Canonical RBAC role (N7 consolidation). "
+            "`role` Char stays as display snapshot."
+        ),
+    )
     scope = models.CharField(max_length=30, default="PROJECT", db_index=True)
-    status = models.CharField(max_length=20, default="Active", db_index=True)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="active",
+        db_index=True,
+    )
 
     department = models.CharField(max_length=100, blank=True, default="")
     department_id = models.CharField(max_length=50, blank=True, default="")
@@ -50,12 +80,25 @@ class ProjectMembership(EntityModel):
     vendor_id = models.CharField(max_length=50, blank=True, default="")
     client_id = models.CharField(max_length=50, blank=True, default="")
 
+    def save(self, *args, **kwargs):
+        # ADR-0033 D2: a show-bound membership is SHOW scope by definition.
+        if self.show_id:
+            self.scope = "SHOW"
+        elif self.scope == "SHOW":
+            # show removed → fall back to the project container
+            self.scope = "PROJECT"
+        # N2: normalize known statuses case-insensitively (frontend sends
+        # Title Case). Unknown values are left for full_clean/API to reject.
+        normalized = (self.status or "").strip().lower()
+        if normalized in dict(self.STATUS_CHOICES):
+            self.status = normalized
+        super().save(*args, **kwargs)
+
     class Meta:
         db_table = "production_project_membership"
         ordering = ("project", "user")
         unique_together = [("project", "user")]
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["project", "status"]),
             models.Index(fields=["user", "status"]),
         ]

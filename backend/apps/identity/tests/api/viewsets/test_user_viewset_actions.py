@@ -7,8 +7,7 @@ from __future__ import annotations
 import pytest
 from django.urls import reverse
 
-from apps.identity.tests.factories import UserFactory
-from apps.organization.tests.factories import UserSessionFactory
+from apps.identity.tests.factories import UserFactory, UserSessionFactory
 
 
 @pytest.mark.django_db
@@ -25,57 +24,66 @@ class TestUserAccountActions:
         )
         assert response.status_code == 401
 
-    def test_suspend_user(self, staff_client):
+    def test_suspend_user(self, staff_client, staff_user, org_admin_context):
         user = UserFactory.create()
+        headers = org_admin_context(user)
         response = staff_client.post(
             reverse(
                 "api:v1:identity:user-suspend",
                 kwargs={"pk": user.id},
             ),
+            **headers,
         )
         assert response.status_code == 200
 
         user.refresh_from_db()
         assert user.is_active is False
 
-    def test_unsuspend_user(self, staff_client):
+    def test_unsuspend_user(self, staff_client, staff_user, org_admin_context):
         user = UserFactory.create(is_active=False)
+        headers = org_admin_context(user)
         response = staff_client.post(
             reverse(
                 "api:v1:identity:user-unsuspend",
                 kwargs={"pk": user.id},
             ),
+            **headers,
         )
         assert response.status_code == 200
 
         user.refresh_from_db()
         assert user.is_active is True
 
-    def test_reset_password_user(self, staff_client):
+    def test_reset_password_user(self, staff_client, staff_user, org_admin_context):
         user = UserFactory.create()
+        headers = org_admin_context(user)
         response = staff_client.post(
             reverse(
                 "api:v1:identity:user-reset-password",
                 kwargs={"pk": user.id},
             ),
+            **headers,
         )
         assert response.status_code == 200
 
-    def test_force_password_change(self, staff_client):
+    def test_force_password_change(self, staff_client, staff_user, org_admin_context):
         user = UserFactory.create()
+        headers = org_admin_context(user)
         response = staff_client.post(
             reverse(
                 "api:v1:identity:user-force-password-change",
                 kwargs={"pk": user.id},
             ),
+            **headers,
         )
         assert response.status_code == 200
 
         user.profile.refresh_from_db()
         assert user.profile.must_change_password is True
 
-    def test_revoke_sessions(self, staff_client):
+    def test_revoke_sessions(self, staff_client, staff_user, org_admin_context):
         user = UserFactory.create()
+        headers = org_admin_context(user)
 
         UserSessionFactory.create_batch(
             2,
@@ -87,8 +95,9 @@ class TestUserAccountActions:
                 "api:v1:identity:user-revoke-sessions",
                 kwargs={"pk": user.id},
             ),
+            **headers,
         )
         assert response.status_code == 200
         assert response.data["sessions"] == 2
 
-        user.organization_sessions.all().delete()
+        user.identity_sessions.all().delete()

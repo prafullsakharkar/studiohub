@@ -17,6 +17,10 @@ class TaskFilterSet(BaseFilterSet):
     project_id = django_filters.CharFilter(method="filter_project")
     entity_type = django_filters.CharFilter(method="filter_entity_type")
     entity_id = django_filters.CharFilter(field_name="entity_id")
+    # By the link (an id or a code of a record of any visible project); a task about another record matches none.
+    shot_id = django_filters.CharFilter(method="filter_link")
+    asset_id = django_filters.CharFilter(method="filter_link")
+    sequence_id = django_filters.CharFilter(method="filter_link")
     department = django_filters.CharFilter(method="filter_department")
     team = django_filters.CharFilter(method="filter_team")
     team_id = django_filters.CharFilter(method="filter_team")
@@ -33,15 +37,13 @@ class TaskFilterSet(BaseFilterSet):
         model = Task
         fields = ["status", "priority", "project", "project_id", "entity_type", "entity_id", "department", "team", "team_id", "assignee", "assignee_id", "vendor_id", "show_id", "is_archived"]
 
-    def _org(self):
-        return getattr(getattr(self, "request", None), "organization", None)
 
     def filter_project(self, queryset, name, value):
         if not value:
             return queryset
         from apps.production.selectors.project import ProjectSelector
 
-        project = ProjectSelector.resolve_by_lookup(self._org(), value)
+        project = ProjectSelector.resolve_by_lookup(value)
         if project is None:
             return queryset.none()
         return queryset.filter(project=project)
@@ -89,6 +91,18 @@ class TaskFilterSet(BaseFilterSet):
             return queryset
         return queryset.filter(priority__iexact=value)
 
+    def filter_link(self, queryset, name, value):
+        if not value:
+            return queryset
+        field = name.removesuffix("_id")
+        text = str(value).strip()
+        try:
+            from uuid import UUID
+
+            return queryset.filter(**{f"{field}_id": UUID(text)})
+        except ValueError:
+            return queryset.filter(**{f"{field}__code__iexact": text})
+
     def filter_entity_type(self, queryset, name, value):
         if not value or value == "ALL":
             return queryset
@@ -104,4 +118,4 @@ class TaskFilterSet(BaseFilterSet):
             return queryset
         # Handle string boolean
         val = value.lower() in ("true", "1", "yes") if isinstance(value, str) else bool(value)
-        return queryset.filter(is_archived=val)
+        return queryset.filter(is_deleted=val)

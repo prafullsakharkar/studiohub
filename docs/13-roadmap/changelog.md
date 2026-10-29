@@ -77,6 +77,22 @@ Not every release requires every category.
 
 ---
 
+# [2.4.0] - 2026-09-22
+
+## Added
+
+- Soft-delete archive API for all production entities: `GET /api/v1/<entities>/archived/` listing and `POST /api/v1/<entities>/<id>/restore/` for project, show, editorial-track, version, review, playlist, media, timelog, and workflow entities.
+- Generic `get_archived` organization-scoped query on the core soft-delete service mixin, inherited by every business service.
+- Shot API test suite covering CRUD, organization isolation, soft-delete/restore, bulk operations, existence checks, and the approve action.
+- Shared parametrized archived/restore contract tests locking the soft-delete API behavior across all production entities.
+
+## Fixed
+
+- Archived endpoints for assets and tasks were unreachable (403 deny-by-default) due to missing permission mappings.
+- Test factories (`ShotFactory`, `AssetFactory`, `TaskFactory`) created projects in a different organization than the entity, breaking organization invariants.
+
+---
+
 # [1.0.0] - TBD
 
 ## Added

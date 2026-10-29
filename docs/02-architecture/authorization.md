@@ -1,5 +1,14 @@
 # StudioHub Backend Authorization Analysis
 
+> **Superseded (2026-09-23):** decision 7 / "org-wide, no per-project gate" is
+> replaced by **ADR-0033** (`docs/adr/ADR-0033-canonical-authorization-model.md`):
+> per-project RBAC is canonical — production entities are scoped by active
+> `ProjectMembership` unless an ADMIN-priority organization role applies, SHOW is
+> a first-class scope tier, permission codes are dot-notation, and `is_staff` is
+> not an authorization tier. The remainder of this document's gate-hardening
+> findings (ADR-0032) still stand.
+
+
 > **Scope:** backend only. No frontend files were modified.
 > **Date:** 2026-09-18
 > **Required docs status:** all present — `AGENTS.md`, `backend/AGENTS.md`,
@@ -8,7 +17,7 @@
 > `docs/APP_ARCHITECTURE_TEMPLATE.md`. No missing document to report.
 >
 > **Implementation status (2026-09-18): ALL findings implemented.**
-> Decisions recorded in `docs/adr/ADR-0032-backend-authorization-hardening.md`.
+> Decisions recorded in `docs/adr/ADR-0032-backend-authorization-hardening.md` (superseded in part by `ADR-0033`).
 > Full backend suite green (2000 passed, 1 skipped). Corrections to the
 > original analysis discovered during implementation are listed in
 > Appendix B.
@@ -272,7 +281,7 @@ Auth-only (no `HasPermission`, any authenticated user allowed) — each verified
 
 | Surface | File | Note |
 |---|---|---|
-| Audit log/activity/track/login-history/error/change/api-request | `apps/audit/api/viewsets/*.py` | No `permission_classes`/`permission_map`; background-job `retry`/`cancel` privileged with zero check |
+| Audit log/activity/track/error/change/api-request | `apps/audit/api/viewsets/*.py` | No `permission_classes`/`permission_map`; background-job `retry`/`cancel` privileged with zero check |
 | Intelligence search/knowledge/AI/analytics | `apps/intelligence/api/viewsets/*.py` (17× `IsAuthenticated`) | Hand-rolled org scoping; any member can write; staff fallback to `Organization.objects.first()` |
 | Masterdata global catalog | `apps/masterdata/api/viewsets/catalog.py` | Any authenticated user can POST/PATCH/archive/restore/DELETE global rows |
 | Settings theme/localization/feature-flag/org-setting | `apps/settings/api/viewsets/theme.py`, `localization.py`, `feature_flag.py`, `organization.py` | `activate/enable/disable/schedule/lock/unlock` open (definition/category/system correctly `IsStaff`) |
@@ -793,3 +802,11 @@ All 10 implementation phases complete. Acceptance checklist from the analysis:
   invitations, plain-view gates, task bulk, negatives, member management).
 - **Phase 10 — Verification:** `manage.py check` clean; full backend suite
   2000 passed / 1 skipped; ruff clean on all touched files; ADR-0032.
+---
+
+## 15. Closing notes (strict superuser monitoring)
+
+- The only break-glass identifier is `User.is_superuser`. `is_staff`, org-owner/admin labels, and role-name shortcuts are not bypasses.
+- `OrganizationMembership.is_deleted=False` (or hard-delete) is the immediate source of truth for org access; membership revocation flips detail `403/404` + drops the org from `me/organizations/` instantly.
+- Org-scoped **list** queries stay 200-empty (selector-scoped); **detail/write** accesses on foreign orgs are 404/403 by the membership/`permission_map` contract.
+- `GET /api/v1/info/version/` is public metadata (`{version, environment}`); nothing secret is exposed there.

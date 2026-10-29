@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 from django.utils import timezone
 
 from apps.core.services.business import BusinessService
@@ -18,11 +20,11 @@ from apps.identity.events.user_session import (
     SessionTrusted,
     SessionUpdated,
 )
-from apps.organization.models import UserSession
-from apps.organization.selectors.user_session import (
+from apps.identity.models import UserSession
+from apps.identity.selectors.user_session import (
     UserSessionSelector,
 )
-from apps.organization.validators.user_session import (
+from apps.identity.validators.user_session import (
     UserSessionValidator,
 )
 
@@ -145,6 +147,25 @@ class UserSessionService(
             session,
         )
 
+        from django.conf import settings
+
+        absolute = timedelta(
+            days=getattr(
+                settings,
+                "SESSION_MAX_ABSOLUTE_LIFETIME_DAYS",
+                90,
+            ),
+        )
+
+        now = timezone.now()
+
+        session.expires_at = min(
+            now + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"],
+            session.created_at + absolute,
+        )
+
+        previous_access_jti = session.access_token_jti
+
         session.access_token_jti = access_token_jti
 
         session.refresh_token_jti = refresh_token_jti
@@ -153,14 +174,57 @@ class UserSessionService(
             update_fields=[
                 "access_token_jti",
                 "refresh_token_jti",
+                "expires_at",
             ],
         )
+
+        # The access token being replaced is no longer bound to this session.
+        # Evict its cached "active" snapshot so it stops working now, not when
+        # the 60 s snapshot expires (which could be after a logout or a
+        # deactivation, or even after the account is re-activated).
+        from apps.identity.authentication.session_status import (
+            SessionStatusCache,
+        )
+
+        SessionStatusCache.invalidate(previous_access_jti)
 
         SessionRefreshed.dispatch(
             instance=session,
         )
 
         return session
+
+    # ---------------------------------------------------------
+    # Token release (single choke point for every session close)
+    # ---------------------------------------------------------
+
+    @classmethod
+    def _release_tokens(
+        cls,
+        session,
+    ):
+        """
+        Make a closed session's tokens unusable immediately.
+
+        Every transition out of ACTIVE (logout, revoke, expire — and therefore
+        ``logout_all`` / ``logout_other_devices``) blacklists the refresh jti
+        and evicts the cached access-token snapshot, so a revoked access token
+        is rejected on its next request instead of after the 60 s snapshot TTL.
+        """
+        from apps.identity.authentication.jwt import JWTService
+        from apps.identity.authentication.session_status import (
+            SessionStatusCache,
+        )
+
+        JWTService.blacklist_refresh_jti(
+            user=session.user,
+            jti=session.refresh_token_jti,
+            expires_at=session.expires_at,
+        )
+
+        SessionStatusCache.invalidate(
+            session.access_token_jti,
+        )
 
     # ---------------------------------------------------------
     # Logout
@@ -193,6 +257,8 @@ class UserSessionService(
                 "is_current",
             ],
         )
+
+        cls._release_tokens(session)
 
         SessionLoggedOut.dispatch(
             instance=session,
@@ -266,6 +332,8 @@ class UserSessionService(
             ],
         )
 
+        cls._release_tokens(session)
+
         SessionRevoked.dispatch(
             instance=session,
         )
@@ -287,6 +355,8 @@ class UserSessionService(
                 "logged_out_at",
             ],
         )
+
+        cls._release_tokens(session)
 
         SessionExpired.dispatch(
             instance=session,

@@ -1,7 +1,7 @@
 """
 Project-scoped nested API for the frontend contract.
 
-Mount: /api/organizations/<org>/projects/<project>/...
+Mount: /api/organizations/projects/<project>/...
 
 Matches ``projectScopedApi.ts`` (no /v1/, slashless sub-paths):
 
@@ -10,15 +10,16 @@ Matches ``projectScopedApi.ts`` (no /v1/, slashless sub-paths):
     editorial | notes (GET list + POST create) | deliveries
     schedule | resources | pipeline | files | activity
 
-``<org>`` accepts id/code/slug; ``<project>`` accepts id/code (both scoped
-to the organization; unknown values 404 with ``{detail}``).
+``<project>`` accepts id/code (unknown or non-member values 404 with
+``{detail}``).
 
 Entity lists reuse the flat viewsets' selector + filterset + search +
 ordering + pagination machinery so shapes and query params are identical to
 the top-level endpoints, additionally constrained to the URL project.
-Authorization: authenticated users with an organization or project
-membership (staff/superuser included); otherwise 403. The organization
-boundary is always enforced server-side.
+Authorization: the permission code of the matching flat endpoint AND a
+project membership (or platform admin). An unknown project and a project the
+caller is not a member of both answer 404. The project boundary is always
+enforced server-side.
 """
 
 from __future__ import annotations
@@ -34,13 +35,12 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.audit.constants.permissions import AuditPermissions
 from apps.audit.filters.activity import ActivityFilter
 from apps.audit.serializers.activity import ActivitySerializer
 from apps.core.api.pagination import StandardPagination
 from apps.core.permissions.base import IsAuthenticatedPermission
-from apps.deliveries.api.serializers.delivery import DeliveryListSerializer
-from apps.deliveries.selectors.delivery import DeliverySelector
-from apps.organization.models import OrganizationMembership
+from apps.identity.permissions import HasPermission
 from apps.production.api.serializers.asset.list import AssetListSerializer
 from apps.production.api.serializers.editorial import EditorialCutSerializer
 from apps.production.api.serializers.media.list import MediaListSerializer
@@ -65,14 +65,27 @@ from apps.production.api.viewsets.sequence import SequenceViewSet
 from apps.production.api.viewsets.shot import ShotViewSet
 from apps.production.api.viewsets.task import TaskViewSet
 from apps.production.api.viewsets.version import VersionViewSet
+from apps.production.constants.permissions import (
+    AssetPermissions,
+    EditorialTrackPermissions,
+    MediaPermissions,
+    NotePermissions,
+    ProjectPermissions,
+    ReviewPermissions,
+    SchedulingPermissions,
+    SequencePermissions,
+    ShotPermissions,
+    TaskPermissions,
+    VersionPermissions,
+)
 from apps.production.models import (
     Project,
-    ProjectMembership,
     Task,
     Workflow,
 )
 from apps.production.selectors.asset import AssetSelector
 from apps.production.selectors.dashboard import ProjectDashboardSelector
+from apps.production.selectors.delivery_figures import DELIVERY_VIEW, delivery_figures
 from apps.production.selectors.media import MediaSelector
 from apps.production.selectors.project import ProjectSelector
 from apps.production.selectors.project_scoped import (
@@ -81,6 +94,8 @@ from apps.production.selectors.project_scoped import (
     ProjectNoteSelector,
 )
 from apps.production.selectors.review import ReviewSelector
+from apps.production.selectors.rollups import TaskHoursSelector
+from apps.production.selectors.schedule_milestones import project_milestones
 from apps.production.selectors.sequence import SequenceSelector
 from apps.production.selectors.shot import ShotSelector
 from apps.production.selectors.task import TaskSelector
@@ -101,24 +116,17 @@ DCC_INTEGRATIONS = [
 USD_SCHEMA_VERSION = "23.11"
 OCIO_CONFIG = "/studio/configs/aces_1.2/config.ocio"
 
-# Contractual schedule template: phase names mirror the frontend mock;
-# dates interpolate the project's real start/delivery dates.
-SCHEDULE_PHASES = [
-    "Principal Turnover",
-    "Post-Viz / Layout Approval",
-    "50% Dailies Screening",
-    "Final Comp Picture Lock",
-    "Master DCI Delivery",
-]
-
 
 class ProjectScopeMixin:
-    """Resolve <org>/<project> from the URL and enforce membership gating."""
+    """Resolve <project> from the URL and enforce membership gating."""
 
-    organization_url_kwarg = "organization_id"
     project_url_kwarg = "project_id"
 
-    organization: Any = None
+    #: Whether an external (vendor/client) member may use this view. Off by default: such a view
+    #: summarizes or lists the project as a whole. The entity lists turn it on because they narrow
+    #: every row with ``scope_by_project_membership``.
+    external_allowed: ClassVar[bool] = False
+
     project: Any = None
     # Mixin contract: provided by the APIView this mixin is combined with.
     # Annotations only, no runtime effect.
@@ -127,107 +135,85 @@ class ProjectScopeMixin:
     def initial(self, request, *args, **kwargs):
         # reportAttributeAccessIssue: super() is the combined APIView.
         super().initial(request, *args, **kwargs)  # pyright: ignore[reportAttributeAccessIssue]
-        self.organization = self._resolve_organization(kwargs.get(self.organization_url_kwarg))
-        self.project = self._resolve_project(
-            self.organization, kwargs.get(self.project_url_kwarg)
-        )
-        request.organization = self.organization
-        request.membership = self._resolve_membership(request)
-        request._org_context_resolved = True
+        lookup = kwargs.get(self.project_url_kwarg)
+        self.project = self._resolve_project(lookup)
         if not self._has_access(request):
-            from rest_framework.exceptions import PermissionDenied
-
-            raise PermissionDenied(
-                "You are not a member of this project or organization."
-            )
+            # Same answer as an unknown project: a non-member learns nothing
+            # about which projects exist (ADR-0032 / ADR-0033 posture).
+            raise Http404(f"Project {lookup} not found.")
 
     @staticmethod
-    def _resolve_organization(lookup):
-        if not lookup:
-            raise Http404("Organization not found.")
-        from apps.organization.selectors.organization import OrganizationSelector
-
-        org = OrganizationSelector.resolve_by_lookup(lookup)
-        if org is None:
-            raise Http404(f"Project {lookup} not found in organization.")
-        return org
-
-    @staticmethod
-    def _resolve_project(organization, lookup):
+    def _resolve_project(lookup):
         from django.core.exceptions import ValidationError as DjangoValidationError
 
         if not lookup:
             raise Http404("Project not found.")
         project = None
         try:
-            project = Project.objects.filter(
-                organization=organization, id=lookup
-            ).first()
+            project = Project.objects.filter(id=lookup).first()
         except (ValueError, TypeError, DjangoValidationError):
             project = None
         if project is None:
-            project = Project.objects.filter(
-                organization=organization, code__iexact=lookup
-            ).first()
+            project = Project.objects.filter(code__iexact=lookup).first()
         if project is None:
-            raise Http404(f"Project {lookup} not found in organization.")
+            raise Http404(f"Project {lookup} not found.")
         return project
 
-    def _resolve_membership(self, request):
-        user = getattr(request, "user", None)
-        if user is None or not getattr(user, "is_authenticated", False):
-            return None
-        return (
-            OrganizationMembership.objects.filter(
-                user=user, organization=self.organization, is_deleted=False
-            )
-            .select_related("role")
-            .first()
-        )
-
-    def _require_member_management(self, request):
-        """
-        Adding project members is privileged: staff/superusers or members
-        holding the organization ADMIN role. Plain members (or project-only
-        members) cannot grow project access.
-        """
-        from rest_framework.exceptions import PermissionDenied
-
-        from apps.organization.choices.role_priority import RolePriority
-
-        user = getattr(request, "user", None)
-        if user is not None and (
-            getattr(user, "is_staff", False) or getattr(user, "is_superuser", False)
-        ):
-            return
-        membership = getattr(request, "membership", None)
-        role = getattr(membership, "role", None)
-        if (
-            membership is not None
-            and getattr(membership, "status", None) == "active"
-            and role is not None
-            and getattr(role, "priority", None) == RolePriority.ADMIN
-        ):
-            return
-        raise PermissionDenied("Only organization admins may manage project members.")
-
     def _has_access(self, request):
+        from apps.production.selectors.base import ProductionBaseSelector
+
         user = getattr(request, "user", None)
         if user is None or not getattr(user, "is_authenticated", False):
             return False
-        if getattr(user, "is_staff", False) or getattr(user, "is_superuser", False):
-            return True
-        if getattr(request, "membership", None) is not None:
-            return True
-        return ProjectMembership.objects.filter(
-            organization=self.organization,
-            project=self.project,
-            user=user,
-            is_deleted=False,
-        ).exists()
+        check = (
+            ProductionBaseSelector.user_has_project_access
+            if self.external_allowed
+            else ProductionBaseSelector.user_has_full_project_access
+        )
+        return check(request=request, project=self.project)
+
+    def _require_member_management(self, request):
+        """
+        Adding project members is privileged: superusers, holders of a
+        global ADMIN-priority identity role, or the person who created the
+        project (D-14). Plain project members cannot grow project access.
+        """
+        from rest_framework.exceptions import PermissionDenied
+
+        from apps.production.selectors.base import ProductionBaseSelector
+
+        user = getattr(request, "user", None)
+        if user is not None and getattr(user, "is_superuser", False):
+            return
+        if user is not None and ProductionBaseSelector._has_global_admin_role(user):
+            return
+        project = getattr(self, "project", None)
+        if (
+            user is not None
+            and project is not None
+            and getattr(project, "created_by_id", None) is not None
+            and project.created_by_id == getattr(user, "pk", None)
+        ):
+            return
+        raise PermissionDenied("Only platform admins or the project's creator may manage project members.")
+
 
 class ProjectScopedAPIView(ProjectScopeMixin, APIView):
-    permission_classes = (IsAuthenticatedPermission,)
+    """
+    Authorization is two layers: the ``permission_map`` code for the HTTP
+    method (checked first, independent of the project, so it reveals nothing
+    about which projects exist) and then project membership (404 otherwise).
+    A method without a ``permission_map`` entry is denied.
+    """
+
+    permission_classes = (IsAuthenticatedPermission, HasPermission)
+    permission_map: ClassVar[dict[str, tuple[str, ...]]] = {}
+
+    def get_permission_required(self):
+        method = (self.request.method or "").lower()
+        if method == "head":
+            method = "get"
+        return self.permission_map.get(method)
 
     # -- shared list machinery -------------------------------------------
     # Reuses the flat viewsets' filterset + search + ordering + pagination
@@ -249,6 +235,9 @@ class ProjectScopedAPIView(ProjectScopeMixin, APIView):
         qs: DjangoQuerySet[Any] = selector_cls.get_queryset(
             request=self.request, view=self
         ).filter(project=self.project)
+        from apps.production.selectors.base import ProductionBaseSelector
+
+        qs = ProductionBaseSelector.scope_by_project_membership(qs, request=self.request)
         shim = cast(
             Any,
             SimpleNamespace(
@@ -282,10 +271,12 @@ class ProjectScopedAPIView(ProjectScopeMixin, APIView):
 class ProjectMembersView(ProjectScopedAPIView):
     """GET {count, results[]} + POST create (201, 200 when already a member)."""
 
+    permission_map = {"get": (ProjectPermissions.VIEW,), "post": (ProjectPermissions.UPDATE,)}
+
     def get(self, request, *args, **kwargs):
         qs = (
             ProjectMembershipSelector.get_queryset(request=request, view=self)
-            .filter(organization=self.organization, project=self.project)
+            .filter(project=self.project)
             .select_related("user", "project")
             .order_by("user__email")
         )
@@ -299,7 +290,9 @@ class ProjectMembersView(ProjectScopedAPIView):
         from rest_framework import status as http_status
 
         self._require_member_management(request)
-        serializer = ProjectMembershipCreateSerializer(data=request.data or {})
+        serializer = ProjectMembershipCreateSerializer(
+            data=request.data or {}, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         payload = cast(dict[str, Any], serializer.validated_data)
         user = ProjectMembershipService.resolve_user(
@@ -308,17 +301,20 @@ class ProjectMembersView(ProjectScopedAPIView):
         )
         if user is None:
             return Response(
-                {"detail": "User not found in organization."},
+                {"detail": "User not found."},
                 status=http_status.HTTP_404_NOT_FOUND,
             )
         roles = payload.get("roles") or [payload.get("role") or "Artist"]
         membership, created = ProjectMembershipService.add_member(
-            organization=self.organization,
             project=self.project,
             user=user,
             role=payload.get("role") or "Artist",
             roles=roles,
+            role_ref=payload.get("role_ref"),
             scope=payload.get("scope") or "PROJECT",
+            status=payload.get("status") or "active",
+            vendor_id=payload.get("vendor_id") or "",
+            client_id=payload.get("client_id") or "",
         )
         data = ProjectMembershipSerializer(
             membership, context={"request": request}
@@ -335,6 +331,8 @@ class ProjectMembersView(ProjectScopedAPIView):
 
 
 class ProjectSummaryView(ProjectScopedAPIView):
+    permission_map = {"get": (ProjectPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         project_data = ProjectDetailSerializer(
             self.project, context={"request": request}
@@ -343,7 +341,6 @@ class ProjectSummaryView(ProjectScopedAPIView):
             {
                 "project": project_data,
                 "counts": ProjectSelector.summary_counts(self.project),
-                "organization_id": str(self.organization.id),
                 "project_id": str(self.project.id),
             }
         )
@@ -354,8 +351,10 @@ class ProjectDashboardView(ProjectScopedAPIView):
 
     Same payload as ``GET /api/v1/projects/{id}/dashboard/`` (the frontend
     calls the primary first and falls back here). ``<project>`` accepts UUID
-    or code; unknown values 404 and non-members 403 via the scope mixin.
+    or code; unknown values and non-members both 404 via the scope mixin.
     """
+
+    permission_map = {"get": (ProjectPermissions.VIEW,)}
 
     def get(self, request, *args, **kwargs):
         return Response(ProjectDashboardSelector.build(self.project))
@@ -367,6 +366,9 @@ class ProjectDashboardView(ProjectScopedAPIView):
 
 
 class _SequenceListView(ProjectScopedAPIView):
+    external_allowed = True
+    permission_map = {"get": (SequencePermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=SequenceSelector,
@@ -378,6 +380,9 @@ class _SequenceListView(ProjectScopedAPIView):
 
 
 class _ShotListView(ProjectScopedAPIView):
+    external_allowed = True
+    permission_map = {"get": (ShotPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=ShotSelector,
@@ -389,6 +394,9 @@ class _ShotListView(ProjectScopedAPIView):
 
 
 class _TaskListView(ProjectScopedAPIView):
+    external_allowed = True
+    permission_map = {"get": (TaskPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=TaskSelector,
@@ -400,6 +408,9 @@ class _TaskListView(ProjectScopedAPIView):
 
 
 class _AssetListView(ProjectScopedAPIView):
+    external_allowed = True
+    permission_map = {"get": (AssetPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=AssetSelector,
@@ -411,6 +422,9 @@ class _AssetListView(ProjectScopedAPIView):
 
 
 class _VersionListView(ProjectScopedAPIView):
+    external_allowed = True
+    permission_map = {"get": (VersionPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=VersionSelector,
@@ -422,6 +436,9 @@ class _VersionListView(ProjectScopedAPIView):
 
 
 class _ReviewListView(ProjectScopedAPIView):
+    external_allowed = True
+    permission_map = {"get": (ReviewPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=ReviewSelector,
@@ -441,6 +458,8 @@ ProjectReviewsView = _ReviewListView
 
 
 class ProjectEditorialView(ProjectScopedAPIView):
+    permission_map = {"get": (EditorialTrackPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=EditorialCutSelector,
@@ -451,6 +470,8 @@ class ProjectEditorialView(ProjectScopedAPIView):
 
 
 class ProjectNotesView(ProjectScopedAPIView):
+    permission_map = {"get": (ProjectPermissions.VIEW,), "post": (NotePermissions.CREATE,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=ProjectNoteSelector,
@@ -476,7 +497,6 @@ class ProjectNotesView(ProjectScopedAPIView):
         validated["author_name"] = author_name
         note = ProjectNoteService.create_note(
             user=user,
-            organization=self.organization,
             project=self.project,
             author=user,
             **validated,
@@ -486,16 +506,23 @@ class ProjectNotesView(ProjectScopedAPIView):
 
 
 class ProjectDeliveriesView(ProjectScopedAPIView):
+    permission_map = {"get": (DELIVERY_VIEW,)}
+
     def get(self, request, *args, **kwargs):
+        figures = delivery_figures()
+        if figures.selector_class is None:  # the deliveries app is not installed
+            return Response([])
         return self._entity_list(
-            selector_cls=DeliverySelector,
-            serializer_cls=DeliveryListSerializer,
+            selector_cls=figures.selector_class,
+            serializer_cls=figures.list_serializer_class,
             search_fields=("name", "code"),
             ordering_fields=("name", "created_at", "status"),
         )
 
 
 class ProjectFilesView(ProjectScopedAPIView):
+    permission_map = {"get": (MediaPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         return self._entity_list(
             selector_cls=MediaSelector,
@@ -514,13 +541,13 @@ class ProjectFilesView(ProjectScopedAPIView):
 
 
 class ProjectActivityView(ProjectScopedAPIView):
+    permission_map = {"get": (AuditPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         project_key = str(self.project.id)
 
         def _scoped(qs):
-            return qs.filter(
-                organization=self.organization, metadata__project_id=project_key
-            )
+            return qs.filter(metadata__project_id=project_key)
 
         from apps.audit.selectors.activity import ActivitySelector
 
@@ -561,34 +588,15 @@ class ProjectActivityView(ProjectScopedAPIView):
 
 
 class ProjectScheduleView(ProjectScopedAPIView):
+    permission_map = {"get": (SchedulingPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         project = self.project
         start = project.start_date or date.today()
         end = project.delivery_date or (start + timedelta(days=180))
         if end <= start:
             end = start + timedelta(days=180)
-        span = (end - start).days
-        today = date.today()
-        milestones = []
-        for index, name in enumerate(SCHEDULE_PHASES):
-            point = start + timedelta(days=round(span * index / (len(SCHEDULE_PHASES) - 1)))
-            if point < today:
-                milestone_status = "Completed"
-            elif index == 0 or (
-                start + timedelta(days=round(span * (index - 1) / (len(SCHEDULE_PHASES) - 1)))
-                < today
-            ):
-                milestone_status = "In Progress"
-            else:
-                milestone_status = "Pending"
-            milestones.append(
-                {
-                    "id": f"m-{index + 1}",
-                    "name": name,
-                    "date": point.isoformat(),
-                    "status": milestone_status,
-                }
-            )
+        milestones = project_milestones(project)
         return Response(
             {
                 "project_id": str(project.id),
@@ -600,11 +608,11 @@ class ProjectScheduleView(ProjectScopedAPIView):
 
 
 class ProjectResourcesView(ProjectScopedAPIView):
+    permission_map = {"get": (TaskPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
-        tasks = (
-            Task.objects.filter(organization=self.organization, project=self.project)
-            .select_related("assignee")
-            .all()
+        tasks = TaskHoursSelector.annotate(
+            Task.objects.filter(project=self.project).select_related("assignee")
         )
         artists: dict[str, dict[str, Any]] = {}
         departments: set[str] = set()
@@ -636,7 +644,7 @@ class ProjectResourcesView(ProjectScopedAPIView):
             existing["task_count"] = int(existing.get("task_count") or 0) + 1
             logged = float(existing.get("hours_logged") or 0.0)
             with contextlib.suppress(TypeError, ValueError):
-                logged += float(task.logged_hours or 0)
+                logged += float(TaskHoursSelector.of(task)[0])
             existing["hours_logged"] = logged
         return Response(
             {
@@ -649,10 +657,12 @@ class ProjectResourcesView(ProjectScopedAPIView):
 
 
 class ProjectPipelineView(ProjectScopedAPIView):
+    permission_map = {"get": (ProjectPermissions.VIEW,)}
+
     def get(self, request, *args, **kwargs):
         project = self.project
         workflow = (
-            Workflow.objects.filter(organization=self.organization, project=project)
+            Workflow.objects.filter(project=project)
             .order_by("created_at")
             .first()
         )

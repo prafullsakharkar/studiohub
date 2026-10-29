@@ -1,16 +1,16 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedModelAdmin
+from apps.core.admin.base import StudioHubModelAdmin
+from apps.production.admin.mixins import NoHardDeleteMixin
 from apps.production.models import Sequence
 
 
 @admin.register(Sequence)
-class SequenceAdmin(OrganizationScopedModelAdmin):
+class SequenceAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     list_display = (
         "code",
         "name",
         "project",
-        "organization",
         "status",
         "department",
         "frame_in",
@@ -20,7 +20,6 @@ class SequenceAdmin(OrganizationScopedModelAdmin):
     list_filter = (
         "status",
         "department",
-        "organization",
     )
 
     search_fields = (
@@ -28,8 +27,8 @@ class SequenceAdmin(OrganizationScopedModelAdmin):
         "name",
     )
 
-    autocomplete_fields = ("project", "organization")
+    autocomplete_fields = ("project",)
 
-    list_select_related = ("project", "organization")
+    list_select_related = ("project",)
 
     ordering = ("code",)

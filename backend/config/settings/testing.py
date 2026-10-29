@@ -37,3 +37,19 @@ CELERY_TASK_EAGER_PROPAGATES = True
 # The test runner will run tests against this database directly
 # without trying to create/drop the test database
 TEST_RUNNER = "config.test_runner.PreserveDatabaseTestRunner"
+
+# Test-only Fernet key for MFA secret encryption. It protects nothing real;
+# production and local environments supply their own via MFA_ENCRYPTION_KEY.
+MFA_ENCRYPTION_KEYS = ("xKCk8KJf2A36NFV8Q5G6QNKpXUU74tK2oCBJrowYZCo=",)  # pyright: ignore[reportConstantRedefinition]
+
+# Pinned on: tests assert the default behaviour and must not depend on the
+# operator's MFA_ENCRYPTION_ENABLED in whichever env file the run loaded.
+MFA_ENCRYPTION_ENABLED = True  # pyright: ignore[reportConstantRedefinition]
+
+# Test-only pepper for credential digests; protects nothing real.
+API_KEY_PEPPER = "test-only-api-key-pepper-0123456789abcdef"  # pyright: ignore[reportConstantRedefinition]
+
+# The admin site and API docs are off by default; tests exercise both.
+ADMIN_ENABLED = True  # pyright: ignore[reportConstantRedefinition]
+
+API_DOCS_ENABLED = True  # pyright: ignore[reportConstantRedefinition]

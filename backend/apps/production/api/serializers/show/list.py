@@ -20,7 +20,6 @@ class ShowListSerializer(BaseModelSerializer[Any]):
             "uuid",
             "project_id",
             "project_code",
-            "organization_id",
             "name",
             "code",
             "type",

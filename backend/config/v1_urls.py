@@ -9,40 +9,33 @@ under its own ``app_name``. This module aggregates them under the versioned
 from django.urls import include, path
 
 from apps.audit.api.viewsets.activity import ActivityCompatViewSet
-from apps.identity.api.views.auth_compat import AuthMembershipsView
+from apps.core.api.views.version import VersionInfoView
 
 app_name = "v1"
 
 urlpatterns = [
     # Foundation
     path("core/", include("apps.core.api.urls")),
+    # Public application info surfaced in the frontend header
+    path("info/version/", VersionInfoView.as_view(), name="info-version"),
     # Frontend-compatible aliases (must precede legacy paths for routing clarity)
     path("auth/", include("apps.identity.api.urls_auth_compat")),
     path("attachments/", include("apps.core.api.urls_compat")),
-    # Legacy alias for the frontend memberships call (frontend contract path).
-    path(
-        "users/me/memberships/",
-        AuthMembershipsView.as_view(),
-        name="users-me-memberships",
-    ),
-    # Legacy flat organization aliases for frontend `organizationApi.ts`
-    # (bare-array vs paginated, id-or-code lookup)
-    path("", include("apps.organization.api.urls_legacy")),
     # Production — top-level to match frontend /api/v1/{projects,shots,assets}/
     path("", include("apps.production.api.urls")),
-    # Intelligence — search, knowledge, AI workspace
-    path("intelligence/", include("apps.intelligence.api.urls")),
     # Identity (authentication, users, security)
     path("identity/", include(("apps.identity.api.urls", "identity"))),
-    # Organization (tenants, departments, teams, offices, RBAC) — namespaced v2
-    path("organization/", include(("apps.organization.api.urls", "organization"))),
+    # Identity RBAC — flat platform-global roles/groups/permissions
+    # (top-level to match frontend /api/v1/{roles,groups,permissions}/)
+    path("", include(("apps.identity.api.urls_rbac", "identity-rbac"))),
     # Settings (categories, definitions, feature flags, themes, localization)
     path("settings/", include(("apps.settings.api.urls", "settings"))),
     # Audit (audit logs, login history, change logs, API requests)
     path("audit/", include(("apps.audit.api.urls", "audit"))),
-    # Frontend-contract fallback for `organizationApi.getActivity()` when no
-    # active organization is selected: paginated activity feed, same viewset
-    # as the nested `/api/organizations/<org>/activity/` route.
+    # Platform-global activity feed (frontend `organizationApi.getActivity()`
+    # fallback). The organization app is gone (B7), so this is the only
+    # activity route; the old nested `/api/organizations/<org>/activity/`
+    # tree 404s by absence.
     path(
         "activity/",
         ActivityCompatViewSet.as_view({"get": "list"}),
@@ -54,8 +47,6 @@ urlpatterns = [
     path("publishing/", include("apps.publishing.api.urls")),
     # Scheduling (resources, events, leaves)
     path("scheduling/", include("apps.scheduling.api.urls")),
-    # Platform (notifications, reports)
-    path("", include("apps.platform.api.urls")),
     # Masterdata (catalog, platform, organization config)
     path("", include(("apps.masterdata.api.urls", "masterdata"))),
 ]

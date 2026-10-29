@@ -3,12 +3,16 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseReadSerializer
+from apps.production.api.serializers.shot.current_version import ShotCurrentVersionMixin
 from apps.production.models import Shot
 
 
-class ShotSerializer(BaseReadSerializer[Any]):
+class ShotSerializer(ShotCurrentVersionMixin, BaseReadSerializer[Any]):  # pyright: ignore[reportUnsafeMultipleInheritance]
     project_id = serializers.UUIDField(read_only=True)
+    show_id = serializers.UUIDField(read_only=True, allow_null=True)
     project_code = serializers.SerializerMethodField()
+    episode_id = serializers.UUIDField(read_only=True, allow_null=True)
+    sequence_id = serializers.UUIDField(read_only=True, allow_null=True)
     sequence_code = serializers.CharField(read_only=True)
     frame_count = serializers.IntegerField(read_only=True)
     assigned_artist_id = serializers.UUIDField(read_only=True, allow_null=True)
@@ -21,7 +25,10 @@ class ShotSerializer(BaseReadSerializer[Any]):
             "id",
             "uuid",
             "project_id",
+            "show_id",
             "project_code",
+            "episode_id",
+            "sequence_id",
             "sequence_code",
             "code",
             "name",
@@ -34,6 +41,7 @@ class ShotSerializer(BaseReadSerializer[Any]):
             "thumbnail_url",
             "video_url",
             "current_version",
+            "current_version_id",
             "assigned_artist_id",
             "assigned_artist_name",
             "supervisor_approved",

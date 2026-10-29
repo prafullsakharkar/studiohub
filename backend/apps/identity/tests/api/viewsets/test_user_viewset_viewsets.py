@@ -10,6 +10,11 @@ from django.urls import reverse
 from apps.identity.tests.factories import UserFactory
 
 
+def _staff_context(staff_client, staff_user, target):
+    """Platform staff context: staff_client already carries full grants."""
+    return {}
+
+
 class TestUserViewSet:
     """Tests for UserViewSet."""
 
@@ -21,9 +26,9 @@ class TestUserViewSet:
 
     @pytest.mark.django_db
     def test_list_users_authenticated(self, authenticated_client):
-        """Test listing users with authentication."""
+        """ADR-0033 D6: directory list requires the identity.user.view grant."""
         response = authenticated_client.get(reverse("api:v1:identity:user-list"))
-        assert response.status_code == 200
+        assert response.status_code == 403
 
     @pytest.mark.django_db
     def test_list_users_staff(self, staff_client):
@@ -48,11 +53,17 @@ class TestUserViewSet:
 
     @pytest.mark.django_db
     def test_retrieve_user_authenticated(self, authenticated_client):
-        """Test retrieving user with authentication."""
+        """Regular users cannot retrieve other users without the view grant."""
         user = UserFactory.create()
         response = authenticated_client.get(
             reverse("api:v1:identity:user-detail", kwargs={"pk": user.id})
         )
+        assert response.status_code == 403
+
+    @pytest.mark.django_db
+    def test_retrieve_self_via_me_endpoint(self, authenticated_client):
+        """Self-service goes through ``me`` (no identity.user.view needed)."""
+        response = authenticated_client.get(reverse("api:v1:identity:user-me"))
         assert response.status_code == 200
 
     @pytest.mark.django_db
@@ -116,12 +127,15 @@ class TestUserViewSet:
         assert response.status_code == 403
 
     @pytest.mark.django_db
-    def test_update_user_staff(self, staff_client):
-        """Test updating user with staff privileges."""
+    def test_update_user_staff(self, staff_client, staff_user):
+        """Staff can update users (platform grants)."""
         user = UserFactory.create()
+        headers = _staff_context(staff_client, staff_user, user)
         data = {"email": "updated@example.com"}
         response = staff_client.put(
-            reverse("api:v1:identity:user-detail", kwargs={"pk": user.id}), data
+            reverse("api:v1:identity:user-detail", kwargs={"pk": user.id}),
+            data,
+            **headers,
         )
         assert response.status_code == 200
 
@@ -156,12 +170,15 @@ class TestUserViewSet:
         assert response.status_code == 403
 
     @pytest.mark.django_db
-    def test_partial_update_user_staff(self, staff_client):
-        """Test partially updating user with staff privileges."""
+    def test_partial_update_user_staff(self, staff_client, staff_user):
+        """Staff can partially update users (platform grants)."""
         user = UserFactory.create()
+        headers = _staff_context(staff_client, staff_user, user)
         data = {"email": "updated@example.com"}
         response = staff_client.patch(
-            reverse("api:v1:identity:user-detail", kwargs={"pk": user.id}), data
+            reverse("api:v1:identity:user-detail", kwargs={"pk": user.id}),
+            data,
+            **headers,
         )
         assert response.status_code == 200
 
@@ -194,11 +211,13 @@ class TestUserViewSet:
         assert response.status_code == 403
 
     @pytest.mark.django_db
-    def test_destroy_user_staff(self, staff_client):
-        """Test deleting user with staff privileges."""
+    def test_destroy_user_staff(self, staff_client, staff_user):
+        """Staff can delete users (platform grants)."""
         user = UserFactory.create()
+        headers = _staff_context(staff_client, staff_user, user)
         response = staff_client.delete(
-            reverse("api:v1:identity:user-detail", kwargs={"pk": user.id})
+            reverse("api:v1:identity:user-detail", kwargs={"pk": user.id}),
+            **headers,
         )
         assert response.status_code == 204
 

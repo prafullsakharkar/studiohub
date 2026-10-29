@@ -15,20 +15,27 @@ class SequenceFilterSet(BaseFilterSet):
     # exact-match semantics), never a 400.
     project_id = django_filters.CharFilter(method="filter_project")
     department = django_filters.CharFilter(field_name="department", lookup_expr="iexact")
+    # An id, or a code of the episode in any project the caller can see.
+    episode_id = django_filters.CharFilter(method="filter_episode")
 
     class Meta:
         model = Sequence
-        fields = ["status", "project", "project_id", "department"]
+        fields = ["status", "project", "project_id", "department", "episode_id"]
 
-    def _org(self):
-        return getattr(getattr(self, "request", None), "organization", None)
+    def filter_episode(self, queryset, name, value):
+        if not value:
+            return queryset
+        from apps.production.selectors.episode import EpisodeSelector
+
+        return queryset.filter(EpisodeSelector.lookup_q(value, prefix="episode__"))
+
 
     def filter_project(self, queryset, name, value):
         if not value:
             return queryset
         from apps.production.selectors.project import ProjectSelector
 
-        project = ProjectSelector.resolve_by_lookup(self._org(), value)
+        project = ProjectSelector.resolve_by_lookup(value)
         if project is None:
             return queryset.none()
         return queryset.filter(project=project)

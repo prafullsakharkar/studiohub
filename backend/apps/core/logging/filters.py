@@ -21,8 +21,6 @@ class RequestContextFilter(
 
         record.request_id = context.request_id.get()
 
-        record.organization = context.organization.get()
-
         record.user = context.user.get()
 
         return True

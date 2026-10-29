@@ -24,10 +24,10 @@ class TestUserPermissions:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_authenticated_user_can_view_user_list(self, authenticated_client):
-        """Test that authenticated user can view user list."""
+    def test_authenticated_user_cannot_view_user_list(self, authenticated_client):
+        """ADR-0033 D6: list requires the identity.user.view grant."""
         response = authenticated_client.get("/api/v1/identity/users/")
-        assert response.status_code == 200
+        assert response.status_code == 403
 
     @pytest.mark.django_db
     def test_staff_user_can_view_user_list(self, staff_client):
@@ -98,12 +98,14 @@ class TestUserPermissions:
         assert response.status_code == 403
 
     @pytest.mark.django_db
-    def test_staff_user_can_update_user(self, staff_client):
-        """Test that staff user can update user."""
+    def test_staff_user_can_update_user(self, staff_client, staff_user, org_admin_context):
+        """Org-scoped admins can update users in their org (ADR-0033 D6)."""
         user = UserFactory.create()
+        headers = org_admin_context(user)
         response = staff_client.patch(
             f"/api/v1/identity/users/{user.id}/",
             {"email": "updated@example.com"},
+            **headers,
         )
         assert response.status_code == 200
 
@@ -132,10 +134,11 @@ class TestUserPermissions:
         assert response.status_code == 403
 
     @pytest.mark.django_db
-    def test_staff_user_can_delete_user(self, staff_client):
-        """Test that staff user can delete user."""
+    def test_staff_user_can_delete_user(self, staff_client, staff_user, org_admin_context):
+        """Org-scoped admins can delete users in their org (ADR-0033 D6)."""
         user = UserFactory.create()
-        response = staff_client.delete(f"/api/v1/identity/users/{user.id}/")
+        headers = org_admin_context(user)
+        response = staff_client.delete(f"/api/v1/identity/users/{user.id}/", **headers)
         assert response.status_code == 204
 
     @pytest.mark.django_db

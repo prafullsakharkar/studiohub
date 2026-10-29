@@ -5,7 +5,6 @@ from .bases.color import ColorModel
 from .bases.metadata import MetadataModel
 from .bases.notes import NotesModel
 from .bases.orderable import OrderableModel
-from .bases.ownership import OrganizationOwnedModel
 from .bases.publishable import PublishableModel
 from .bases.soft_delete import SoftDeleteModel
 from .bases.timestamp import TimeStampedModel
@@ -22,7 +21,6 @@ class BaseModel(
     PublishableModel,
     MetadataModel,
     NotesModel,
-    OrganizationOwnedModel,
     ColorModel,
     SoftDeleteMixin,
 ):

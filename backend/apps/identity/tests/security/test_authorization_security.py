@@ -31,9 +31,7 @@ class TestAuthorizationSecurity:
         """Test accessing protected endpoint with expired token."""
         user = UserFactory.create()
         api_client.force_authenticate(user=user)
-        response = api_client.get(
-            reverse("api:v1:identity:user-detail", kwargs={"pk": user.id})
-        )
+        response = api_client.get(reverse("api:v1:identity:user-me"))
         assert response.status_code == 200
 
     @pytest.mark.django_db
@@ -84,12 +82,12 @@ class TestAuthorizationSecurity:
         assert response.status_code == 404
 
     @pytest.mark.django_db
-    def test_staff_can_view_other_profile(self, staff_client):
-        """Test that staff can view other profile."""
+    def test_staff_cannot_view_other_profile(self, staff_client):
+        """ADR-0033 D4: staff is not an authorization tier (self-scope)."""
         from apps.identity.tests.factories import ProfileFactory
 
         profile = ProfileFactory.create()
         response = staff_client.get(
             reverse("api:v1:identity:profile-detail", kwargs={"pk": profile.id})
         )
-        assert response.status_code == 200
+        assert response.status_code == 404

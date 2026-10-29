@@ -13,7 +13,6 @@ class ErrorLogSerializer(serializers.ModelSerializer[ErrorLog]):
     
     user_email = serializers.CharField(source="user.email", read_only=True)
     user_name = serializers.CharField(source="user.full_name", read_only=True)
-    organization_name = serializers.CharField(source="organization.name", read_only=True)
     resolved_by_email = serializers.CharField(source="resolved_by.email", read_only=True)
     resolved_by_name = serializers.CharField(source="resolved_by.full_name", read_only=True)
     
@@ -30,8 +29,6 @@ class ErrorLogSerializer(serializers.ModelSerializer[ErrorLog]):
             "user",
             "user_email",
             "user_name",
-            "organization",
-            "organization_name",
             "ip_address",
             "user_agent",
             "request_path",

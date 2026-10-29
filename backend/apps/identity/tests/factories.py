@@ -12,18 +12,17 @@ from factory.django import DjangoModelFactory
 
 from apps.identity.choices import (
     SecurityEventType,
+    SessionStatus,
 )
 from apps.identity.models.backup_code import BackupCode
 from apps.identity.models.ip_blacklist import IPBlacklist
-from apps.identity.models.known_device import KnownDevice
 from apps.identity.models.login_attempt import LoginAttempt
-from apps.identity.models.oauth_account import OAuthAccount
-from apps.identity.models.oauth_provider import OAuthProvider
 from apps.identity.models.profile import Profile
 from apps.identity.models.security_event import SecurityEvent
 from apps.identity.models.trusted_device import TrustedDevice
 from apps.identity.models.user import User
 from apps.identity.models.user_mfa import UserMFA
+from apps.identity.models.user_session import UserSession
 
 
 class UserFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
@@ -79,41 +78,6 @@ class ProfileFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeAr
     preferences = {}
 
 
-class OAuthProviderFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
-    """Factory for OAuthProvider model."""
-
-    class Meta:
-        model = OAuthProvider
-        django_get_or_create = ("name",)
-
-    name = factory.Faker("word")
-    client_id = factory.Faker("uuid4")
-    client_secret = factory.Faker("uuid4")
-    authorization_url = factory.Faker("url")
-    token_url = factory.Faker("url")
-    userinfo_url = factory.Faker("url")
-    scope = "openid profile email"
-    is_active = True
-
-
-class OAuthAccountFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
-    """Factory for OAuthAccount model."""
-
-    class Meta:
-        model = OAuthAccount
-        django_get_or_create = ("user", "provider", "provider_account_id")
-
-    user = factory.SubFactory(UserFactory)
-    provider = factory.SubFactory(OAuthProviderFactory)
-    provider_account_id = factory.Faker("uuid4")
-    access_token = factory.Faker("uuid4")
-    refresh_token = factory.Faker("uuid4")
-    expires_at = factory.Faker("date_time_this_year")
-    scope = "openid profile email"
-    is_connected = True
-    last_connected_at = factory.Faker("date_time_this_month")
-
-
 class BackupCodeFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     """Factory for BackupCode model."""
 
@@ -146,23 +110,6 @@ class TrustedDeviceFactory(DjangoModelFactory):  # pyright: ignore[reportMissing
     is_trusted = True
 
 
-class KnownDeviceFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
-    """Factory for KnownDevice model."""
-
-    class Meta:
-        model = KnownDevice
-        django_get_or_create = ("user", "fingerprint")
-
-    user = factory.SubFactory(UserFactory)
-    fingerprint = factory.Faker("uuid4")
-    browser = factory.Faker("word")
-    platform = factory.Faker("word")
-    device_type = "web"
-    ip_address = "127.0.0.1"
-    user_agent = "Mozilla/5.0"
-    first_seen_at = factory.Faker("date_time_this_year")
-    last_seen_at = factory.Faker("date_time_this_month")
-    is_trusted = False
 
 
 class LoginAttemptFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
@@ -236,3 +183,18 @@ class IPBlacklistFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTy
     last_hit_at = None
     hit_count = 0
     metadata = {}
+
+
+class UserSessionFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    """Factory for the identity-owned UserSession model."""
+
+    class Meta:
+        model = UserSession
+
+    user = factory.SubFactory(UserFactory)
+    session_key = factory.Faker("uuid4")
+    ip_address = factory.Faker("ipv4")
+    user_agent = factory.Faker("user_agent")
+    status = SessionStatus.ACTIVE
+    expires_at = factory.LazyFunction(lambda: timezone.now() + timedelta(days=30))
+    logged_out_at = None

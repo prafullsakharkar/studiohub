@@ -23,7 +23,7 @@ services:
       - backend
 
   redis:
-    image: redis:8-alpine
+    image: redis:8-alpine@sha256:47b08295737773de3b711fb86f13ae802f5074e96a9a2d29f5f80164ac08c046
 
     command:
       - redis-server
@@ -43,38 +43,12 @@ services:
     networks:
       - backend
 
-  minio:
-    image: quay.io/minio/minio
-
-    command:
-      - server
-      - /data
-      - --console-address
-      - ":9001"
-
-    env_file:
-      - ../../backend/.env.local
-
-    volumes:
-      - minio_data:/data
-
-    healthcheck:
-      test: [ "CMD-SHELL", "curl -fsS http://localhost:9000/minio/health/live || exit 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
-    networks:
-      - backend
 
 volumes:
 
   postgres_data:
 
   redis_data:
-
-  minio_data:
 
 networks:
 

@@ -6,12 +6,12 @@ from __future__ import annotations
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from apps.audit.models.append_only import AppendOnlyModel
 from apps.core.models.bases.entity import EntityModel
 from apps.core.models.bases.timestamp import TimeStampedModel
-from apps.organization.models.organization import Organization
 
 
-class AuditLog(EntityModel, TimeStampedModel):
+class AuditLog(AppendOnlyModel, EntityModel, TimeStampedModel):
     """
     Audit log for tracking system events.
     
@@ -92,6 +92,11 @@ class AuditLog(EntityModel, TimeStampedModel):
     TARGET_FEATURE_FLAG = "feature_flag"
     TARGET_THEME = "theme"
     TARGET_LOCALIZATION = "localization"
+    TARGET_MASTERDATA = "masterdata"
+    TARGET_PUBLISHING = "publishing"
+    TARGET_ATTACHMENT = "attachment"
+    TARGET_SCHEDULING = "scheduling"
+    TARGET_AUDIT = "audit"
 
     TARGET_CHOICES = [
         (TARGET_USER, _("User")),
@@ -118,6 +123,11 @@ class AuditLog(EntityModel, TimeStampedModel):
         (TARGET_FEATURE_FLAG, _("Feature Flag")),
         (TARGET_THEME, _("Theme")),
         (TARGET_LOCALIZATION, _("Localization")),
+        (TARGET_MASTERDATA, _("Master data")),
+        (TARGET_PUBLISHING, _("Publishing")),
+        (TARGET_SCHEDULING, _("Scheduling")),
+        (TARGET_ATTACHMENT, _("Attachment")),
+        (TARGET_AUDIT, _("Audit")),
     ]
     
     action = models.CharField(
@@ -169,13 +179,6 @@ class AuditLog(EntityModel, TimeStampedModel):
         help_text="User who performed the action",
     )
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="audit_logs",
-        db_index=True,
-        help_text="Organization context",
-    )
     
     ip_address = models.GenericIPAddressField(
         null=True,
@@ -194,6 +197,10 @@ class AuditLog(EntityModel, TimeStampedModel):
         help_text="Additional metadata about the event",
     )
     
+    # The project the event belongs to, when it has one. Rows without it (sign-ins, role changes,
+    # platform settings) are for platform administrators; a project member sees only their projects'.
+    project_id = models.UUIDField(null=True, blank=True, db_index=True)
+
     class Meta:
         db_table = "audit_logs"
         ordering = ("-created_at",)

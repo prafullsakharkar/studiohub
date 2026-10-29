@@ -3,7 +3,7 @@ from .backend import EnterpriseAuthenticationBackend as EnterpriseAuthentication
 from .base import IdentityAuthentication as IdentityAuthentication
 from .blacklist import TokenBlacklistService as TokenBlacklistService
 from .claims import AuthenticationClaims as AuthenticationClaims
-from .device import TrustedDeviceService as TrustedDeviceService
+from .device import DeviceTokenService as DeviceTokenService
 from .exceptions import (
     AccountLocked as AccountLocked,
 )

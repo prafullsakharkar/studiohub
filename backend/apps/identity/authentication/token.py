@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import contextlib
+
 from django.utils import timezone
 
 from apps.identity.authentication.jwt import JWTService
 from apps.identity.authentication.utils import AuthenticationUtils
-from apps.identity.choices import AuthenticationMethod
+from apps.identity.choices import AuthenticationMethod, LogoutReason
 
 
 class TokenService:
@@ -31,6 +33,9 @@ class TokenService:
         team=None,
         authentication_method=AuthenticationMethod.PASSWORD,
     ):
+        # ``organization``/``office``/``department``/``team`` are accepted
+        # for backwards compatibility but ignored: sessions are
+        # platform-global and carry no org context.
         from apps.identity.services.login_history import LoginHistoryService
         from apps.identity.services.user_session import UserSessionService
 
@@ -52,10 +57,6 @@ class TokenService:
 
         session = UserSessionService.create_login_session(
             user=user,
-            organization=organization,
-            office=office,
-            department=department,
-            team=team,
             authentication_method=authentication_method,
             session_key=refresh["jti"],
             access_token_jti=JWTService.get_jti(access),
@@ -89,21 +90,25 @@ class TokenService:
         session,
         refresh_token: str,
     ):
+        from django.db import transaction
+
         from apps.identity.services.user_session import UserSessionService
 
-        new_refresh, new_access = JWTService.rotate_refresh_token(
-            refresh_token,
-        )
+        with transaction.atomic():
+            new_refresh, new_access = JWTService.rotate_refresh_token(
+                refresh_token,
+                sid=session.session_key,
+            )
 
-        UserSessionService.refresh(
-            session,
-            access_token_jti=JWTService.get_jti(
-                new_access,
-            ),
-            refresh_token_jti=JWTService.get_jti(
-                new_refresh,
-            ),
-        )
+            UserSessionService.refresh(
+                session,
+                access_token_jti=JWTService.get_jti(
+                    new_access,
+                ),
+                refresh_token_jti=JWTService.get_jti(
+                    new_refresh,
+                ),
+            )
 
         return {
             "access": str(new_access),
@@ -138,13 +143,16 @@ class TokenService:
         from apps.identity.services.user_session import UserSessionService
 
         if refresh_token:
-            JWTService.blacklist(
-                refresh_token,
-            )
+            # Already blacklisted/rotated — logout stays idempotent.
+            with contextlib.suppress(Exception):
+                JWTService.blacklist(
+                    refresh_token,
+                )
 
-        UserSessionService.logout(
-            session,
-        )
+        if session is not None:
+            UserSessionService.logout(
+                session,
+            )
 
     @classmethod
     def logout_all(
@@ -157,6 +165,28 @@ class TokenService:
         UserSessionService.logout_all(
             user=user,
         )
+
+    @classmethod
+    def revoke_all_for_user(
+        cls,
+        *,
+        user,
+        reason=LogoutReason.USER,
+    ) -> int:
+        from apps.identity.services.user_session import UserSessionService
+
+        # Sweep refresh jtis BEFORE logout_all: the sweep only covers
+        # active sessions, and logout_all flips them to LOGGED_OUT.
+        swept = JWTService.blacklist_sweep_for_user(
+            user=user,
+        )
+
+        UserSessionService.logout_all(
+            user=user,
+            reason=reason,
+        )
+
+        return swept
 
     @classmethod
     def logout_other_devices(

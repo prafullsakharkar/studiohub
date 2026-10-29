@@ -9,11 +9,11 @@ import pytest
 
 from apps.audit.models.activity import Activity
 from apps.audit.models.api_request import APIRequest
+from apps.audit.models.append_only import ImmutableRecordError
 from apps.audit.models.audit_log import AuditLog
 from apps.audit.models.background_job import BackgroundJob
 from apps.audit.models.change_log import ChangeLog
 from apps.audit.models.error_log import ErrorLog
-from apps.audit.models.login_history import LoginHistory
 from apps.audit.models.track import Track
 
 
@@ -54,8 +54,9 @@ class TestAuditLogModel:
 
     @pytest.mark.django_db
     def test_audit_log_soft_delete(self, audit_log: AuditLog) -> None:
-        """Test soft delete functionality."""
-        _assert_soft_delete(audit_log)
+        """A recorded row is append-only: soft delete is refused too (TM-011)."""
+        with pytest.raises(ImmutableRecordError):
+            audit_log.soft_delete()
 
     @pytest.mark.django_db
     def test_audit_log_action_choices(self, audit_log: AuditLog) -> None:
@@ -120,8 +121,9 @@ class TestAPIRequestModel:
 
     @pytest.mark.django_db
     def test_api_request_soft_delete(self, api_request: APIRequest) -> None:
-        """Test soft delete functionality."""
-        _assert_soft_delete(api_request)
+        """A recorded row is append-only: soft delete is refused too (TM-011)."""
+        with pytest.raises(ImmutableRecordError):
+            api_request.soft_delete()
 
 
 class TestBackgroundJobModel:
@@ -196,8 +198,9 @@ class TestChangeLogModel:
 
     @pytest.mark.django_db
     def test_change_log_soft_delete(self, change_log: ChangeLog) -> None:
-        """Test soft delete functionality."""
-        _assert_soft_delete(change_log)
+        """A recorded row is append-only: soft delete is refused too (TM-011)."""
+        with pytest.raises(ImmutableRecordError):
+            change_log.soft_delete()
 
 
 class TestErrorLogModel:
@@ -236,41 +239,6 @@ class TestErrorLogModel:
         assert error_log.severity in valid_severities
 
 
-class TestLoginHistoryModel:
-    """Tests for LoginHistory model."""
-
-    @pytest.mark.django_db
-    def test_create_login_history(self, login_history: LoginHistory) -> None:
-        """Test creating a login history instance."""
-        assert login_history.uuid is not None
-        assert login_history.login_type is not None
-
-    @pytest.mark.django_db
-    def test_login_history_str_method(
-        self, login_history: LoginHistory
-    ) -> None:
-        """Test __str__ method."""
-        assert str(login_history) == (
-            f"{login_history.user.email}: {login_history.login_type} "
-            f"({login_history.status})"
-        )
-
-    @pytest.mark.django_db
-    def test_login_history_audit_fields(
-        self, login_history: LoginHistory
-    ) -> None:
-        """Test audit fields are present and nullable."""
-        assert login_history.created_at is not None
-        assert login_history.updated_at is not None
-        assert login_history.created_by is None
-        assert login_history.updated_by is None
-
-    @pytest.mark.django_db
-    def test_login_history_soft_delete(
-        self, login_history: LoginHistory
-    ) -> None:
-        """Test soft delete functionality."""
-        _assert_soft_delete(login_history)
 
 
 class TestTrackModel:

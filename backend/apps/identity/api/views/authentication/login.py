@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from apps.core.api.throttling import ResilientScopedRateThrottle
+from apps.core.api.throttling import FailClosedScopedRateThrottle
 from apps.core.api.views import BaseAPIView
 from apps.identity.api.serializers.authentication import (
     LoginSerializer,
@@ -18,7 +18,7 @@ class LoginAPIView(BaseAPIView):
 
     permission_classes = (AllowAny,)
 
-    throttle_classes = (ResilientScopedRateThrottle,)
+    throttle_classes = (FailClosedScopedRateThrottle,)
 
     throttle_scope = "login"
 

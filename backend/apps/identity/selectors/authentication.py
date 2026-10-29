@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from django.contrib.auth import get_user_model
 
-from apps.audit.models import LoginHistory
+from apps.identity.models import (
+    LoginHistory,
+    UserSession,
+)
 from apps.identity.selectors.base import (
     IdentityBaseSelector,
 )
 from apps.identity.selectors.login_attempt import (
     LoginAttemptSelector,
-)
-from apps.organization.models import (
-    UserSession,
 )
 
 User = get_user_model()
@@ -22,8 +22,8 @@ class AuthenticationSelector(
     """
     Read-only selector used by the authentication subsystem.
 
-    Sessions and login history are owned by ``apps.organization``; identity
-    reads them here to drive the authentication flows.
+    Sessions are owned by ``apps.identity``; identity reads them here to
+    drive the authentication flows. Login history is owned by ``apps.audit``.
     """
 
     @classmethod
@@ -55,8 +55,11 @@ class AuthenticationSelector(
         *,
         uuid,
     ):
+        # ``uuid`` is a Python property aliasing the UUID primary key
+        # (``UUIDModel.uuid``), not a database field, so the lookup must use
+        # the primary key.
         return User.objects.filter(
-            uuid=uuid,
+            pk=uuid,
         ).first()
 
     @classmethod

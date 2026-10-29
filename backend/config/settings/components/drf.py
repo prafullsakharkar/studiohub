@@ -15,9 +15,12 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        # JWTAuthentication is the primary (and only) contract-facing scheme.
-        # Tokens are issued via JWTService using stock SimpleJWT AccessToken/RefreshToken.
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        # SessionBoundJWTAuthentication stays first: the PAT scheme shares the
+        # Bearer keyword, so JWT must win for JWTs (DRF stops at first success).
+        # It extends SimpleJWT to enforce the owning UserSession's status.
+        "apps.identity.authentication.session_bound_jwt.SessionBoundJWTAuthentication",
+        "apps.identity.authentication.personal_access_token.PersonalAccessTokenAuthentication",
+        "apps.identity.authentication.api_key.APIKeyAuthentication",
     ],
     "DEFAULT_RENDERER_CLASSES": (
         "apps.core.api.renderers.StandardJSONRenderer",
@@ -35,6 +38,13 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "login": "30/min",
         "refresh": "60/min",
+        "password_reset": "5/min",
+        # Authenticated endpoints that verify a password or a second factor
+        # (change password, MFA, credential issuing): a stolen session must
+        # not be able to guess at them.
+        "sensitive": "20/min",
+        # Attachment uploads, per user: each one can be hundreds of megabytes.
+        "upload": "60/hour",
     },
 }
 
@@ -42,6 +52,8 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "StudioHub API",
     "DESCRIPTION": "StudioHub Production Management Platform",
     "VERSION": "1.0.0",
+    # The schema maps every endpoint and field: only an authenticated caller may read it.
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAuthenticated"],
     "POSTPROCESSING_HOOKS": [
         # Flag deprecated paths (Deprecation/Sunset headers) in the schema.
         "apps.core.api.deprecations.mark_deprecated_paths",

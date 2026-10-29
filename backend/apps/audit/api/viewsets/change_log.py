@@ -4,6 +4,7 @@ Change Log ViewSet.
 from rest_framework import mixins
 
 from apps.audit.api.viewsets.base import AuditEntityViewSet
+from apps.audit.constants.permissions import AuditPermissions
 from apps.audit.filters.change_log import ChangeLogFilter
 from apps.audit.selectors.change_log import ChangeLogSelector
 from apps.audit.serializers.change_log import ChangeLogSerializer
@@ -22,10 +23,11 @@ class ChangeLogViewSet(
     
     serializer_class = ChangeLogSerializer
 
-    # Reads stay open to authenticated users (org-scoped selectors).
+    # Reads require the audit.view permission (seeded to production-tier
+    # roles); audit rows are platform-global, not open to every user.
     permission_map = {
-        "list": (),
-        "retrieve": (),
+        "list": (AuditPermissions.VIEW,),
+        "retrieve": (AuditPermissions.VIEW,),
     }
     service_class = ChangeLogService
     pagination_class = StandardPagination

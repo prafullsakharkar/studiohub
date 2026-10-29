@@ -11,21 +11,18 @@ from apps.settings.models.category import SettingCategory
 from apps.settings.models.definition import SettingDefinition
 from apps.settings.models.feature_flag import FeatureFlag
 from apps.settings.models.localization import Localization
-from apps.settings.models.organization import OrganizationSetting
 from apps.settings.models.system import SystemSetting
 from apps.settings.models.theme import Theme
 from apps.settings.selectors.category import SettingCategorySelector
 from apps.settings.selectors.definition import SettingDefinitionSelector
 from apps.settings.selectors.feature_flag import FeatureFlagSelector
 from apps.settings.selectors.localization import LocalizationSelector
-from apps.settings.selectors.organization import OrganizationSettingSelector
 from apps.settings.selectors.system import SystemSettingSelector
 from apps.settings.selectors.theme import ThemeSelector
 from apps.settings.services.category import SettingCategoryService
 from apps.settings.services.definition import SettingDefinitionService
 from apps.settings.services.feature_flag import FeatureFlagService
 from apps.settings.services.localization import LocalizationService
-from apps.settings.services.organization import OrganizationSettingService
 from apps.settings.services.system import SystemSettingService
 from apps.settings.services.theme import ThemeService
 
@@ -165,34 +162,6 @@ class TestSettingsWorkflow:
         # Delete
         LocalizationService.delete_localization(localization)
         assert Localization.objects.filter(id=localization.id).count() == 0
-
-    @pytest.mark.django_db
-    def test_full_organization_setting_workflow(
-        self, organization, definition: SettingDefinition
-    ) -> None:
-        """Test complete workflow: create, read, update, delete."""
-        # Create
-        setting = OrganizationSettingService.create_setting(
-            organization=organization,
-            setting_code=definition.code,
-            value={"key": "value"},
-        )
-        assert setting.uuid is not None
-
-        # Read
-        assert setting in OrganizationSettingSelector.for_organization(
-            organization
-        )
-
-        # Update
-        setting.value = '{"key": "updated"}'
-        setting.save()
-        setting.refresh_from_db()
-        assert setting.value == '{"key": "updated"}'
-
-        # Delete
-        OrganizationSettingService.delete_setting(setting)
-        assert OrganizationSetting.objects.filter(id=setting.id).count() == 0
 
     @pytest.mark.django_db
     def test_full_system_setting_workflow(self, definition: SettingDefinition) -> None:

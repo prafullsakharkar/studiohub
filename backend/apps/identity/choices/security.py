@@ -11,11 +11,20 @@ class SecurityEventType(models.TextChoices):
     MFA_ENABLED = "mfa_enabled", "MFA Enabled"
     MFA_DISABLED = "mfa_disabled", "MFA Disabled"
     MFA_VERIFIED = "mfa_verified", "MFA Verified"
+    MFA_FAILED = "mfa_failed", "MFA Failed"
+    MFA_LOCKED = "mfa_locked", "MFA Locked"
+    MFA_RECOVERY_CODE_USED = "mfa_recovery_code_used", "MFA Recovery Code Used"
+    MFA_RECOVERY_CODES_REGENERATED = (
+        "mfa_recovery_codes_regenerated",
+        "MFA Recovery Codes Regenerated",
+    )
     TOKEN_REFRESHED = "token_refreshed", "Token Refreshed"
     SESSION_CREATED = "session_created", "Session Created"
     SESSION_TERMINATED = "session_terminated", "Session Terminated"
     ACCOUNT_LOCKED = "account_locked", "Account Locked"
     ACCOUNT_UNLOCKED = "account_unlocked", "Account Unlocked"
+    ACCOUNT_DEACTIVATED = "account_deactivated", "Account Deactivated"
+    ACCOUNT_ACTIVATED = "account_activated", "Account Activated"
     IP_BLOCKED = "ip_blocked", "IP Blocked"
     IP_UNBLOCKED = "ip_unblocked", "IP Unblocked"
     TRUSTED_DEVICE_ADDED = "trusted_device_added", "Trusted Device Added"
@@ -31,20 +40,3 @@ class SecurityEventType(models.TextChoices):
     SUSPICIOUS_ACTIVITY = "suspicious_activity", "Suspicious Activity"
     DATA_EXPORT = "data_export", "Data Export"
     DATA_IMPORT = "data_import", "Data Import"
-
-
-class OAuthProviderName(models.TextChoices):
-    GOOGLE = "google", "Google"
-    GITHUB = "github", "GitHub"
-    GITLAB = "gitlab", "GitLab"
-    BITBUCKET = "bitbucket", "Bitbucket"
-    FACEBOOK = "facebook", "Facebook"
-    LINKEDIN = "linkedin", "LinkedIn"
-    TWITTER = "twitter", "Twitter"
-    MICROSOFT = "microsoft", "Microsoft"
-    APPLE = "apple", "Apple"
-    SLACK = "slack", "Slack"
-    DISCORD = "discord", "Discord"
-    AUTH0 = "auth0", "Auth0"
-    OKTA = "okta", "Okta"
-    CUSTOM = "custom", "Custom"

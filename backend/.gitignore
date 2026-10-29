@@ -106,10 +106,6 @@ dump.rdb
 appendonly.aof
 redis-data/
 
-# ── MinIO / Object storage ──────────────────────────────
-minio-data/
-.minio/
-
 # ── Nginx ────────────────────────────────────────────────
 *.access.log
 *.error.log

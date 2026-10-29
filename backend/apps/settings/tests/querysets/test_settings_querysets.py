@@ -11,7 +11,6 @@ from apps.settings.models.category import SettingCategory
 from apps.settings.models.definition import SettingDefinition
 from apps.settings.models.feature_flag import FeatureFlag
 from apps.settings.models.localization import Localization
-from apps.settings.models.organization import OrganizationSetting
 from apps.settings.models.system import SystemSetting
 from apps.settings.models.theme import Theme
 from apps.settings.tests.factories import (
@@ -19,7 +18,6 @@ from apps.settings.tests.factories import (
     DefinitionFactory,
     FeatureFlagFactory,
     LocalizationFactory,
-    OrganizationSettingFactory,
     SystemSettingFactory,
     ThemeFactory,
 )
@@ -38,10 +36,10 @@ class TestThemeQuerySet:
         assert theme2 not in queryset
 
     @pytest.mark.django_db
-    def test_queryset_select_related(self) -> None:
-        """Test select_related optimization."""
+    def test_queryset_all(self) -> None:
+        """Test plain queryset over themes."""
         theme = ThemeFactory()
-        queryset = Theme.objects.select_related("organization")
+        queryset = Theme.objects.all()
         assert theme in queryset
 
 
@@ -81,12 +79,12 @@ class TestDefinitionQuerySet:
 
     @pytest.mark.django_db
     def test_queryset_filter_by_scope(self) -> None:
-        """Test filtering by scope."""
-        definition1 = DefinitionFactory(scope="organization")
+        """Test filtering by scope (system-wide only)."""
+        definition1 = DefinitionFactory(scope="system")
         definition2 = DefinitionFactory(scope="system")
-        queryset = SettingDefinition.objects.filter(scope="organization")
+        queryset = SettingDefinition.objects.filter(scope="system")
         assert definition1 in queryset
-        assert definition2 not in queryset
+        assert definition2 in queryset
 
 
 class TestFeatureFlagQuerySet:
@@ -131,21 +129,6 @@ class TestLocalizationQuerySet:
         queryset = Localization.objects.filter(timezone="Asia/Kolkata")
         assert localization1 in queryset
         assert localization2 not in queryset
-
-
-class TestOrganizationSettingQuerySet:
-    """Tests for OrganizationSetting queryset."""
-
-    @pytest.mark.django_db
-    def test_queryset_filter_by_organization(
-        self, organization: OrganizationSettingFactory
-    ) -> None:
-        """Test filtering by organization."""
-        setting1 = OrganizationSettingFactory(organization=organization)
-        setting2 = OrganizationSettingFactory()
-        queryset = OrganizationSetting.objects.filter(organization=organization)
-        assert setting1 in queryset
-        assert setting2 not in queryset
 
 
 class TestSystemSettingQuerySet:

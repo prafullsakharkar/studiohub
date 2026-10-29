@@ -10,12 +10,11 @@ from .named import NamedEntityModel
 from .network import NetworkInformationModel
 from .notes import NotesModel
 from .orderable import OrderableModel
-from .organization import OrganizationEntityModel
-from .ownership import OrganizationOwnedModel, ProjectOwnedModel, UserOwnedModel
+from .ownership import ProjectOwnedModel, UserOwnedModel
 from .project import ProjectEntityModel
 from .publishable import PublishableModel
 from .scopes import (
-    OrganizationScopedModel,
+    PlatformScopedModel,
     ProjectScopedModel,
     ReviewScopedModel,
     SequenceScopedModel,
@@ -37,7 +36,7 @@ __all__ = [
     "SoftDeleteModel",
     "TimeStampedModel",
     "UUIDModel",
-    "OrganizationScopedModel",
+    "PlatformScopedModel",
     "ProjectScopedModel",
     "ReviewScopedModel",
     "SequenceScopedModel",
@@ -46,8 +45,6 @@ __all__ = [
     "UserScopedModel",
     "EntityModel",
     "NamedEntityModel",
-    "OrganizationEntityModel",
-    "OrganizationOwnedModel",
     "ProjectEntityModel",
     "ProjectOwnedModel",
     "UserOwnedModel",

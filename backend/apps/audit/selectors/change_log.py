@@ -16,6 +16,7 @@ class ChangeLogSelector(AuditBaseSelector):
     """
     
     model = ChangeLog
+    visibility = "project"
     
     @classmethod
     def get_queryset(
@@ -43,13 +44,7 @@ class ChangeLogSelector(AuditBaseSelector):
         """
         return cls.get_queryset().filter(user_id=user_id)
     
-    @classmethod
-    def by_organization(cls, organization_id: str):
-        """
-        Get change logs for an organization.
-        """
-        return cls.get_queryset().filter(organization_id=organization_id)
-    
+
     @classmethod
     def by_target(cls, target_type: str, target_id: str):
         """

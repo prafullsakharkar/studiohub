@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
+from django.conf import settings
+from django.utils import timezone
+
 from apps.identity.events.login_attempt import (
     AccountLocked as AccountLockedEvent,
 )
@@ -14,6 +19,8 @@ from apps.identity.selectors.login_attempt import (
 from apps.identity.validators.login_attempt import (
     LoginAttemptValidator,
 )
+
+DEFAULT_RETENTION_DAYS = 90
 
 
 class LoginAttemptService:
@@ -132,7 +139,7 @@ class LoginAttemptService:
         return True
 
     # ---------------------------------------------------------
-    # CRUD (used by the LoginAttemptViewSet)
+    # Create (used by the LoginAttemptViewSet; rows are never updated)
     # ---------------------------------------------------------
 
     @classmethod
@@ -152,27 +159,35 @@ class LoginAttemptService:
             **validated_data,
         )
 
+    # ---------------------------------------------------------
+    # Retention (the only sanctioned deletion path)
+    # ---------------------------------------------------------
+
     @classmethod
-    def update(
+    def purge_expired(
         cls,
-        instance,
-        **validated_data,
-    ):
-        for key, value in validated_data.items():
-            setattr(
-                instance,
-                key,
-                value,
+        *,
+        retention_days=None,
+    ) -> int:
+        """
+        Delete attempts older than the retention window.
+
+        Keyed on ``attempted_at``: ``locked_until`` is never written, so the
+        previous cleanup removed nothing. The lockout window (minutes) is far
+        shorter than any sane retention, so purging never weakens lockout.
+        """
+
+        if retention_days is None:
+            retention_days = getattr(
+                settings,
+                "IDENTITY_LOGIN_ATTEMPT_RETENTION_DAYS",
+                DEFAULT_RETENTION_DAYS,
             )
 
-        instance.save()
+        cutoff = timezone.now() - timedelta(days=retention_days)
 
-        return instance
+        deleted, _ = LoginAttempt.objects.filter(
+            attempted_at__lt=cutoff,
+        ).delete()
 
-    @classmethod
-    def delete(
-        cls,
-        instance,
-        **kwargs,
-    ):
-        instance.delete()
+        return deleted

@@ -1,10 +1,11 @@
 from django.contrib import admin
 
+from apps.identity.admin.ledger import ReadOnlyLedgerAdminMixin
 from apps.identity.models import BackupCode
 
 
 @admin.register(BackupCode)
-class BackupCodeAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
+class BackupCodeAdmin(ReadOnlyLedgerAdminMixin, admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     list_display = (
         "user",
         "used",

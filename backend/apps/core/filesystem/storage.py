@@ -24,59 +24,45 @@ class StorageService:
         name: str,
         content: bytes,
         directory: str = "",
-        organization_id: str | None = None
     ) -> str:
         """
         Save a file to storage.
-        
+
         Args:
             name: Original filename
             content: File content as bytes
             directory: Directory path within storage
-            organization_id: Optional organization ID for path organization
-            
+
         Returns:
             Path to saved file
         """
         # Build full path
-        if organization_id and directory:
-            full_path = f"{directory}/{organization_id}/{name}"
-        elif directory:
-            full_path = f"{directory}/{name}"
-        else:
-            full_path = name
-        
+        full_path = f"{directory}/{name}" if directory else name
+
         # Save file using Django's default storage
         default_storage.save(full_path, ContentFile(content))
         return full_path
-    
+
     @staticmethod
     def save_file_from_file_object(
         name: str,
         file_object: BinaryIO,
         directory: str = "",
-        organization_id: str | None = None
     ) -> str:
         """
         Save a file from a file object.
-        
+
         Args:
             name: Original filename
             file_object: File-like object to read from
             directory: Directory path within storage
-            organization_id: Optional organization ID for path organization
-            
+
         Returns:
             Path to saved file
         """
         # Build full path
-        if organization_id and directory:
-            full_path = f"{directory}/{organization_id}/{name}"
-        elif directory:
-            full_path = f"{directory}/{name}"
-        else:
-            full_path = name
-        
+        full_path = f"{directory}/{name}" if directory else name
+
         # Save file using Django's default storage
         default_storage.save(full_path, ContentFile(file_object.read()))
         return full_path

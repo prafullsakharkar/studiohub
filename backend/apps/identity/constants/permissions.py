@@ -54,3 +54,35 @@ class TrustedDevicePermissions:
     CREATE = "identity.trusted_device.create"
     UPDATE = "identity.trusted_device.update"
     DELETE = "identity.trusted_device.delete"
+
+
+class RolePermissions:
+    VIEW = "identity.role.view"
+    CREATE = "identity.role.create"
+    UPDATE = "identity.role.update"
+    DELETE = "identity.role.delete"
+
+
+class GroupPermissions:
+    VIEW = "identity.group.view"
+    CREATE = "identity.group.create"
+    UPDATE = "identity.group.update"
+    DELETE = "identity.group.delete"
+
+
+class PermissionPermissions:
+    VIEW = "identity.permission.view"
+    CREATE = "identity.permission.create"
+    UPDATE = "identity.permission.update"
+    DELETE = "identity.permission.delete"
+
+
+class LoginHistoryPermissions:
+    # Read-only: the history is written by the authentication flows only.
+    VIEW = "identity.login_history.view"
+
+
+class CredentialPermissions:
+    # Administrative: see and revoke other users' API keys / PATs. Owners
+    # manage their own credentials without any permission code.
+    MANAGE = "identity.credential.manage"

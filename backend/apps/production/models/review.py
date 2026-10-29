@@ -11,15 +11,9 @@ from apps.core.models.bases import EntityModel
 
 
 class Review(EntityModel):
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="reviews",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="reviews",
         null=True,
         blank=True,
@@ -54,13 +48,7 @@ class Review(EntityModel):
     thumbnail_url = models.URLField(max_length=500, blank=True, default="")
     video_url = models.URLField(max_length=500, blank=True, default="")
 
-    # JSON for complex nested
-    versions = models.JSONField(default=list, blank=True)
-    reviewers = models.JSONField(default=list, blank=True)
-    comments = models.JSONField(default=list, blank=True)
-    notes = models.JSONField(default=list, blank=True)
-    annotations = models.JSONField(default=list, blank=True)
-    activity = models.JSONField(default=list, blank=True)
+    # The versions, reviewers, comments, notes, annotations and activity are rows (review_parts.py).
     client = models.JSONField(default=dict, blank=True)
     vendor = models.JSONField(default=dict, blank=True)
 
@@ -68,7 +56,6 @@ class Review(EntityModel):
         db_table = "production_review"
         ordering = ("-created_at",)
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["entity_code"]),
             models.Index(fields=["status"]),
         ]

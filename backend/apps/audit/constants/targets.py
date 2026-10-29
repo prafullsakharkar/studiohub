@@ -33,6 +33,11 @@ class AuditTargetCodes:
     FEATURE_FLAG = "feature_flag"
     THEME = "theme"
     LOCALIZATION = "localization"
+    MASTERDATA = "masterdata"
+    PUBLISHING = "publishing"
+    SCHEDULING = "scheduling"
+    ATTACHMENT = "attachment"
+    AUDIT = "audit"
 
     ALL = [
         USER,
@@ -59,6 +64,11 @@ class AuditTargetCodes:
         FEATURE_FLAG,
         THEME,
         LOCALIZATION,
+        MASTERDATA,
+        PUBLISHING,
+        SCHEDULING,
+        ATTACHMENT,
+        AUDIT,
     ]
 
     DESCRIPTIONS = {
@@ -86,4 +96,9 @@ class AuditTargetCodes:
         FEATURE_FLAG: "Feature Flag entity",
         THEME: "Theme entity",
         LOCALIZATION: "Localization entity",
+        MASTERDATA: "Master data entity",
+        PUBLISHING: "Publishing entity (published files, export jobs, storage roots)",
+        SCHEDULING: "Scheduling entity (calendars, bookings, leave, milestones)",
+        ATTACHMENT: "Uploaded file (upload, download, update, delete)",
+        AUDIT: "The audit trail itself (retention purges)",
     }

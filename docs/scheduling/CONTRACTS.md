@@ -1,0 +1,250 @@
+# Scheduling contracts
+
+Phase 2 target design, 2026-10-27. Status: **PROPOSED**, except what "Phase 9 as built" (end of this file) marks as built; items marked *(Qnn)* follow the recommended answer of an open Phase 2 question. Production decisions **D-09, D-20, D-21, D-22** stand and are built on, not reopened. Cross-app rules: `docs/delivery-pipeline/CONTRACTS.md`. Audit: `ANALYSIS.md`. Order of work: `PLAN.md`.
+
+**What the app is after this work** (Q5, Q19-Q22): the studio calendar, bookable resources with bookings that cannot double-book a resource, leave with own-request and approval rules, **work calendars** (time zone, working week, holidays per office), **project milestones** replacing Production's invented ones, and capacity figures that account for leave and holidays. Task dates stay in Production (`Task.due_date`, the single source). Dependencies, recurring events and reminders are LATER (Q5).
+
+## 1. Time and date policy *(Q31)*
+
+| Kind of value | Stored as | Example |
+|---|---|---|
+| A moment (event, booking start/end) | `DateTimeField`, UTC (`USE_TZ=True`, `TIME_ZONE="UTC"`) | `2026-11-02T09:00:00Z` |
+| A day (leave, holiday, milestone due date, all-day event) | `DateField`, meaning the day **in the calendar's time zone** | `2026-12-25` |
+| A week (capacity) | computed: Monday 00:00 to next Monday 00:00 **in the calendar's time zone**, converted to UTC for the query | |
+
+* The API accepts ISO 8601 with an offset or `Z`; a naive date-time is a 400 (today it is taken as UTC silently). Responses are UTC with `Z`.
+* Working-day arithmetic lives in one module, `apps/scheduling/domain/calendar.py` (pure functions, no ORM): `is_working_day(calendar, day)`, `working_days(calendar, start, end) -> int`, `week_bounds(calendar, instant) -> (start_utc, end_utc)`, `working_hours(calendar, start_utc, end_utc) -> Decimal`. Holidays are passed in by a selector, so the functions test without a database.
+* DST: a week that crosses a DST change is 167 or 169 hours long; `week_bounds` uses `zoneinfo`, never fixed offsets. Tests freeze the clock on both European and US change dates.
+
+## 2. Domain contracts
+
+### DOM-SCH-01 `WorkCalendar` (new, table `scheduling_work_calendar`, studio-wide) *(Q21 = A)*
+
+| Field | Rule |
+|---|---|
+| base | `EntityModel` |
+| `code` | unique `upper(code)` over all rows |
+| `name` | Char 255 |
+| `time_zone` | IANA name, validated against `zoneinfo.available_timezones()`; default from the office's `timezone` when `office` is set |
+| `office` | FK `masterdata.Office`, `PROTECT`, nullable, unique among live rows (one calendar per office) |
+| `working_weekdays` | JSON list of ISO weekdays, default `[1,2,3,4,5]`; 1 to 7 distinct values |
+| `hours_per_day` | Decimal(4,2), `> 0`, `<= 24`, default 8 |
+| `is_default` | at most one live default (partial unique); migration creates "Studio" (UTC, Mon-Fri, 8h) as the default |
+
+### DOM-SCH-02 `Holiday` (existing)
+
+New `calendar` FK (`PROTECT`). Migration attaches every existing holiday to the default calendar, then replaces `unique_together(holiday_date)` with unique `(calendar, holiday_date)` among live rows. `is_paid`, `is_optional` keep their meaning; an optional holiday does **not** remove a working day in arithmetic (documented, test).
+
+### DOM-SCH-03 `Resource` (existing)
+
+| Field | Today | Target |
+|---|---|---|
+| `calendar` | none | FK `WorkCalendar`, `PROTECT`, nullable; null means the default calendar |
+| `status` | typed (Active, On Leave, Unavailable) | **derived** in responses: "On Leave" when an approved leave covers today in the resource's calendar, otherwise the stored value if "Unavailable", otherwise "Active"; writing "On Leave" is a 400; the stored column is kept, read-only for that value (*Q33*) |
+| `hourly_rate_usd` | no lower bound | DB check `>= 0`; serializer `min_value=0` |
+| `capacity_hours_per_week` | PositiveInt | kept; when the calendar is known, capacity per week = `working days in that week × hours_per_day`, capped by this value (*Q31*) |
+| `code` | unique case-sensitive at DB | DB constraint `upper(code)` (D-22 checks in the service already) |
+
+### DOM-SCH-04 `ResourceSchedule` (booking, existing) *(Q32 = A)*
+
+* **No overlap for a resource**: two live bookings of the same resource with status in (Booked, Blocked) may not overlap in time. Enforced twice:
+  1. service: inside `transaction.atomic()`, lock the resource row (`select_for_update`), query for an overlapping live booking, refuse with 409 `booking_overlap` naming the other booking's id (and its title only if the caller may see it, D-21);
+  2. PostgreSQL: `ExclusionConstraint` on `(resource_id WITH =, tstzrange(start_time, end_time, '[)') WITH &&)` where `status IN ('Booked','Blocked') AND NOT is_deleted`. Needs the `btree_gist` extension (created in the migration with `CREATE EXTENSION IF NOT EXISTS btree_gist`; **UNVERIFIED** whether the application role may create it, see `DECISIONS.md` checks). On SQLite the migration operation is skipped (vendor check) and the service check alone applies.
+* **Over-allocation** (more booked hours in a week than capacity) stays allowed and reported (D-09, `Overbooked` status, `resolve_overbooking`), now with leave and holidays reducing capacity.
+* Adjacent bookings (`[)` ranges) do not overlap: 09:00-12:00 and 12:00-15:00 are fine.
+* `Available` slots never block.
+* DB checks: `end_time > start_time` (bookings), `end_time >= start_time` (events), `end_date >= start_date` (leave).
+* `resource` on-delete `PROTECT` (Q24); bookings keep their history.
+* Migration refuses, changing nothing, while overlapping live Booked/Blocked pairs exist, and lists them (staging query S1 counts them first).
+
+### DOM-SCH-05 `ResourceLeave` (existing, D-20 stands) *(Q19 = A, Q20 = A)*
+
+* **Own leave for everyone:** a leave for the caller's own resource needs `schedule.create`; for anyone else's resource `schedule.manage` (new). Editing a pending request follows the same rule; moving a request to another resource is a 400 (create a new one).
+* **Days counted as working days** of the resource's calendar (weekends and non-optional holidays excluded); `total_days` stays a server-computed column. Existing rows are **not** recomputed (their counts stay as approved); a report command lists rows whose working-day count would differ.
+* Overlapping pending or approved leave for the same resource is a 400.
+* Decisions need `schedule.approve` (new; seeded to the roles that hold `schedule.update` today, so nobody loses the ability). Not deciding your own leave stays (D-20). Override for single-manager studios: `schedule.sod.override` + reason, seeded to no role.
+* `resource` on-delete `PROTECT`.
+* `reason` and `rejection_reason`: excluded from search, filters and ordering for everyone (SCH-01 fix; searching for text you may see is lost too, which keeps the rule simple).
+
+### DOM-SCH-06 `Milestone` (new, table `scheduling_milestone`) *(Q22 = A)*
+
+| Field | Rule |
+|---|---|
+| base | `EntityModel` |
+| `project` | FK `production.Project`, `PROTECT` |
+| `name` | Char 255; unique `(project, upper(name))` among live rows |
+| `due_date` | Date (project's default calendar zone) |
+| `status` | Pending, In Progress, Completed (the three values today's invented list uses); Completed sets `completed_at`, `completed_by`; Completed is left only with `schedule.manage` |
+| `order` | PositiveInt, for display |
+| `kind` | `general`, `delivery` |
+| `delivery_package_id` | UUID, nullable, **no FK** (Scheduling must not depend on Deliveries, X-01); checked at write time through the `deliveries.project_figures` provider ("a delivery of this project"); `kind=delivery` requires it |
+| `notes` | Text |
+
+Production's `GET /organizations/projects/{id}/schedule` returns `{project_id, start_date, delivery_date, milestones}` built from these rows through the provider (X-05): same keys per milestone as today (`name`, `date`, `status`, plus `id`); a project with no milestones returns `milestones: []` instead of the five invented phases.
+
+### DOM-SCH-07 `CalendarEvent` (existing, D-21/D-22 stand)
+
+Additions only: DB check on times, `project` on-delete `PROTECT` (Q24), naive date-times refused (§1). `event_type="Milestone"` events stay as they are (calendar entries); real milestones are DOM-SCH-06.
+
+## 3. Services (signatures)
+
+```python
+# apps/scheduling/services/calendar.py
+class WorkCalendarService:
+    create(*, actor, data) -> WorkCalendar
+    update(*, actor, calendar, data) -> WorkCalendar
+    set_default(*, actor, calendar) -> WorkCalendar
+
+# apps/scheduling/services/booking.py (replaces book_resource / block_resource)
+class BookingService:
+    book(*, actor, request, resource, start, end, status="Booked", event=None, task=None, notes="") -> ResourceSchedule
+    move(*, actor, request, booking, start, end) -> ResourceSchedule
+    cancel(*, actor, request, booking) -> None
+
+# apps/scheduling/services/leave.py (existing approve/reject kept)
+class LeaveService:
+    request(*, actor, request, resource, data) -> ResourceLeave
+    update(*, actor, request, leave, data) -> ResourceLeave
+    approve(*, actor, leave, override_reason=None) -> ResourceLeave
+    reject(*, actor, leave, reason, override_reason=None) -> ResourceLeave
+    cancel(*, actor, leave) -> ResourceLeave
+
+# apps/scheduling/services/milestone.py
+class MilestoneService:
+    create(*, actor, request, data) -> Milestone
+    update(*, actor, request, milestone, data) -> Milestone
+    complete(*, actor, milestone) -> Milestone
+    reopen(*, actor, milestone) -> Milestone
+
+# apps/scheduling/selectors/capacity.py (public, also used by Masterdata Phase 6 through a provider)
+class CapacitySelector:
+    resource_week(resource_id, week_start) -> CapacityFigures
+    department_week(department_id, week_start) -> CapacityFigures      # utilization for Masterdata
+    team_week(team_id, week_start) -> CapacityFigures
+```
+
+## 4. API contracts
+
+Under `/api/v1/scheduling/` unless stated. Lists stay **bare arrays** (frontend contract).
+
+| ID | Endpoint | Before | After | Client impact |
+|---|---|---|---|---|
+| API-SCH-01 | `GET /schedules/?search=`, `GET /leaves/?search=` | matches hidden notes / reasons (SCH-01) | `notes`, `reason` not searchable | searching for a reason finds nothing |
+| API-SCH-02 | `GET /resources/?ordering=hourly_rate_usd` | allowed without `view_rates` (SCH-02) | ignored (default order) without `view_rates` | |
+| API-SCH-03 | `POST/PATCH /leaves/` | anyone's resource | own resource with `schedule.create`; others need `schedule.manage` (400 "Unknown resource." otherwise, no oracle) | artists can request their own leave once seeded |
+| API-SCH-04 | `POST /leaves/{id}/approve|reject/` | `schedule.update` | `schedule.approve`; body `rejection_reason` or `reason` | none for seeded roles |
+| API-SCH-05 | `POST /schedules/`, `POST /resources/{id}/book/`, `PATCH /schedules/{id}/` | overlaps allowed | 409 `booking_overlap` | planners see refusals they did not before |
+| API-SCH-06 | `GET /schedules/` | unbounded | optional `start` / `end` window filters (overlap semantics); default unchanged | none |
+| API-SCH-07 | `GET /resources/` | typed `status` | derived `status`; new `calendar_id` | "On Leave" appears without anyone typing it |
+| API-SCH-08 | `/calendars/` | — | new CRUD (studio-wide), `schedule.manage` for writes | new |
+| API-SCH-09 | `/holidays/` | one per date | `calendar_id` (defaults to the default calendar); unique per calendar and date | old clients keep working against the default calendar |
+| API-SCH-10 | `/milestones/` | — | new; project-scoped; `complete`, `reopen` actions | new |
+| API-SCH-11 | `GET /organizations/projects/{id}/schedule` (Production route) | invented phases | real milestones, same keys, empty list when none | projects show no milestones until someone creates them |
+| API-SCH-12 | `/scheduling/capacity|overbooking|resolve-overbooking/` | served by Production | served by Scheduling at the **same paths**, same codes and shapes (X-05); capacity now subtracts leave and holidays | numbers drop in leave and holiday weeks |
+| API-SCH-13 | Date-times without offset | taken as UTC | 400 *(Q31)* | clients must send `Z` or an offset. The frontend's event form sends `start_date` / `end_date` days, not `start_time` / `end_time` (`modules/scheduling/components/CreateEventModal.tsx:87-88`, posted unchanged by `SchedulingRepository.ts:20`), so its event create is likely already a 400 today (**UNVERIFIED**, not run); this rule does not change that |
+| API-SCH-14 | `POST /schedules/bulk-delete/` | — | new, Q36 contract (planners clearing a week) | new |
+
+## 5. Authorization
+
+| Action | Code | Extra |
+|---|---|---|
+| read calendar, resources, bookings, leave, holidays, milestones | `schedule.view` | events by visibility (D-21); bookings masked (D-21); milestones by project membership |
+| rates, e-mail | `schedule.view_rates` | own resource always (D-21) |
+| create own leave, own events | `schedule.create` | |
+| leave for others, bookings of any resource, calendars, holidays, milestones | **`schedule.manage`** (new) | milestones need project membership |
+| edit events, resources | `schedule.update` | as today |
+| approve / reject leave | **`schedule.approve`** (new) | not your own (D-20) |
+| delete | `schedule.delete` | |
+| decide your own leave | **`schedule.sod.override`** (no role) | reason |
+
+Role matrix proposal: `PLAN.md` §6.
+
+## 6. Security contracts
+
+| ID | Contract |
+|---|---|
+| SEC-SCH-01 | Hidden values (leave reasons, out-of-scope booking notes, rates without the code) cannot be read back through search, filters or ordering (test per field). |
+| SEC-SCH-02 | Nobody files leave for, or books, someone else without `schedule.manage`. |
+| SEC-SCH-03 | Nobody decides their own leave without the override (D-20 plus override). |
+| SEC-SCH-04 | Two concurrent bookings of the same slot: exactly one wins (PostgreSQL test). |
+| SEC-SCH-05 | Logs never contain leave reasons, notes or rates. |
+
+## 7. Audit events
+
+Scheduling models join the change log (`apps/audit/signals/change_tracking.py`), with `reason`, `rejection_reason`, `notes`, `hourly_rate_usd` masked; `AuditLog` target `scheduling` (Q23) for leave decisions, overrides, calendar default changes and milestone completion.
+
+## 8. Failure behaviour
+
+| Case | Answer |
+|---|---|
+| Overlapping booking | 409 `booking_overlap` |
+| Overlapping leave | 400 |
+| Naive date-time, end before start | 400 |
+| Unknown / foreign resource, task, event, project, calendar | 400 "Unknown ..." (D-22 wording) |
+| Lost race on a booking or a leave decision | 409 / 400 as today for leave (D-20 keeps 400) |
+| Unknown IANA zone | 400 |
+
+## 9. Phase 9 as built (2026-10-27)
+
+What exists now, against sections 1 to 8. Anything not listed here is still proposed (Phases 10 and 11). The write codes named here (`schedule.update`, `create`, `delete` for calendars and milestones) were interim gates (A-45); section 11 replaces them with `schedule.manage`.
+
+| Contract | State | Notes |
+|---|---|---|
+| Section 1, time policy | **built** | `apps/scheduling/domain/calendar.py` holds the arithmetic (`is_working_day`, `working_days`, `week_bounds`, `week_bounds_for_date`, `week_start_date`, `local_date`, `working_hours`). Weeks are computed with `zoneinfo`; a DST week is 167 or 169 hours. A date-time without `Z` or an offset is a 400 on events, bookings, `book` and `block` (`api/fields.py::StrictDateTimeField`). Responses stay UTC with `Z`. |
+| DOM-SCH-01 `WorkCalendar` | **built** | Migration 0004 seeds "STUDIO" (UTC, Mon-Fri, 8h) as the default. `WorkCalendarService` (`create`, `update`, `set_default`, `delete`, `ensure_default`) owns the rules: code unique in any case over all rows, one calendar per office, one default, zone validated against `zoneinfo`, 1 to 7 distinct ISO weekdays, hours in (0, 24]. Deleting the default, or a calendar a live resource or holiday uses, is a 409 `calendar_in_use`. |
+| DOM-SCH-02 `Holiday` | **built** | `calendar` FK (PROTECT); migration 0005 attaches every existing holiday, deleted ones too, to the default. Unique `(calendar, holiday_date)` among live rows. Optional holidays do not remove a working day. A holiday sent without a calendar goes to the default (recreated on demand if missing). |
+| DOM-SCH-03 `Resource` | **partly built** | `calendar` FK (PROTECT, null means the default), rate not negative, upper-case unique code. Derived `status` is Phase 10. |
+| DOM-SCH-04 `ResourceSchedule` | **partly built** | Database check `end_time > start_time`; the serializers refuse an equal end with a 400. The overlap rule and exclusion constraint are Phase 10. |
+| DOM-SCH-05 `ResourceLeave` | **partly built** | New requests, and edits that change the dates, count **working days** of the resource's calendar (decision Q20); an edit that leaves the dates alone keeps the stored count, and a different total is a 400 saying what it is for those dates. A leave of only non-working days is allowed and counts 0 (A-47). Check `end_date >= start_date`. Own-request, overlap and approval rules are Phase 11. |
+| DOM-SCH-06 `Milestone` | **built** | Table `scheduling_milestone`, `MilestoneService` (`create`, `update`, `complete`, `reopen`). Status is Pending, In Progress or Completed; Completed is reached only through `complete` (sets `completed_at`, `completed_by`) and left only through `reopen`, which returns to In Progress (A-48). Name unique per project in any case among live rows. A `delivery` milestone needs a `delivery_package_id` that the `deliveries.project_figures` provider lists for that project; without the provider the answer is a 400 "not available", never an import of Deliveries. Database checks: delivery kind needs a package id; Completed has a time. |
+| DOM-SCH-07 `CalendarEvent` | **built (checks only)** | Check `end_time >= start_time`; `project` is PROTECT. |
+| API-SCH-08 `/calendars/` | **built** | CRUD plus `POST /calendars/{id}/set-default/`. Reads `schedule.view`; create, update and set-default `schedule.update`; delete `schedule.delete` (A-45). Studio-wide: no project scoping. |
+| API-SCH-09 `/holidays/` | **built** | `calendar_id` on write; `calendar` and `calendar_name` on read; `?calendar_id=` filter. |
+| API-SCH-07 (part) | **built** | Resources accept `calendar_id`; list and detail show `calendar` and `calendar_name`; rate and weekly capacity reject negative values. |
+| API-SCH-10 `/milestones/` | **built** | `?project_id=` (id or code) filter; list and detail narrowed to the caller's projects (`ProductionBaseSelector.visible_project_ids`); a foreign project or milestone answers exactly like an unknown one (404 or 400 "Unknown project"). `complete` and `reopen` actions. Reads `schedule.view`, create `schedule.create`, update and the two actions `schedule.update`, delete `schedule.delete`. The project cannot be changed after creation (an echo is accepted). |
+| API-SCH-12 capacity move | **built** | Same paths, codes and shapes. Each resource's week is Monday to Monday in its calendar's zone; an alert's `id` and `date` carry that zone's Monday. Leave and holiday subtraction is Phase 10. |
+| API-SCH-13 naive date-times | **built** | See section 1 row above. |
+| API-SCH-11 Production schedule route | proposed | Phase 10. |
+| API-SCH-01 to 06, 14; section 5 new codes; section 6 SEC-SCH-01 to 05; section 7 audit | proposed | Phases 10 and 11. |
+
+Changes a client can see: create responses for events and resources now carry `id`; a booking with `end_time == start_time` is a 400 (it used to be stored as a zero-length booking; with the new database check and no serializer rule it would have been a 500); `PUT` of a leave echoing its stored `total_days` is accepted. Everything else listed above is additive.
+
+## 10. Phase 10 as built (2026-10-27)
+
+| Contract | State | Notes |
+|---|---|---|
+| DOM-SCH-04 no overlap, service half | **built** | `services/booking.py::BookingService.book` and `update` lock the resource row (`select_for_update`) and refuse an overlap with 409 `booking_overlap`, naming the other booking's id, its UTC time and status, and its title only when the caller may see the event (D-21). Booked, Blocked **and Overbooked** bookings occupy time; Available never does; adjacent bookings are fine; deleted ones are ignored. `update` looks again only when the resource, times or status change. |
+| DOM-SCH-04 exclusion constraint | **built** | Migration `0008_booking_exclusion`: `scheduling_booking_no_overlap` on `(resource, tstzrange(start_time, end_time, '[)'))` for live bookings with status Booked, Blocked or Overbooked. Refuses and lists existing overlapping pairs first (nothing is changed). PostgreSQL only (other engines keep the service check). A write that bypasses the service (admin, raw SQL) is refused by the database; if the constraint fires inside the service it is reported as the same 409. Under a race between direct writers the database admits exactly one, and a loser is told either `23P01` (exclusion) or `40P01` (deadlock victim); writers through the service are queued by the resource lock and never see the second. |
+| `book`, `block`, `POST/PATCH /schedules/` | **built** | All go through `BookingService`; `book_resource` and `block_resource` are gone. The contract's `move` and `cancel` are `update` and the existing delete. |
+| DOM-SCH-03 derived `status` | **built** | `selectors/resource_status.py`. "On Leave" while an Approved leave covers today's date in the resource's calendar zone; else "Unavailable" if stored so; else "Active". `status` and `status_display` are derived on every resource response. Creating or editing with "On Leave" is a 400; sending back what a read showed is accepted and keeps the stored value. The column is kept and a stored "On Leave" is ignored when no leave backs it. `?status=` filters still read the stored column. |
+| Capacity minus leave and holidays | **built** | A resource's capacity for a week is `capacity_hours_per_week × available days ÷ usual working days`, rounded to hundredths. Usual days are the calendar's working weekdays; available days also drop the non-optional holidays of the resource's calendar and the days covered by its **Approved** leave. An ordinary week is unchanged whatever the weekly figure (45 stays 45); one holiday in a five-day week gives four fifths; a week of leave gives 0. This replaces the contract's earlier wording ("working days × hours per day, capped by the weekly figure"), which would have cut a 45-hour resource to 40 in ordinary weeks (A-53). Used by capacity, overbooking alerts and `resolve-overbooking`. |
+| `CapacitySelector` | **built** | `resource_week`, `department_week`, `team_week` return `CapacityFigures` (resources, capacity, allocated, free hours, utilization). Registered as provider `scheduling.capacity`. |
+| API-SCH-11 Production schedule route | **built** | `GET /organizations/projects/{id}/schedule` returns the project's real milestones (`id`, `name`, `date`, `status`) in order (`order`, `due_date`, `name`) through provider `scheduling.project_milestones`; no milestones gives `[]`; no provider gives `[]`. Production reads it in `selectors/schedule_milestones.py` without importing Scheduling. The dashboard card still derives its own milestone list (not part of this contract). |
+| API-SCH-05 | **built** | 409 `booking_overlap` on `POST /schedules/`, `POST /resources/{id}/book/` and `block/`, and `PATCH /schedules/{id}/`. |
+| API-SCH-07 | **built** | Derived `status`. |
+| API-SCH-06, API-SCH-14, section 5 new codes, SEC-SCH-01 to 05, section 7 audit | proposed | Phase 11. |
+
+Changes a client can see: overlapping bookings are now refused (409 `booking_overlap`); resource `status` can read "On Leave" without anyone writing it, and writing it is a 400; capacity and overbooking alerts drop in weeks with holidays or approved leave; milestone ids on the project schedule route are UUIDs (they were `m-1` to `m-5`) and the route is empty until milestones exist.
+
+## 11. Phase 11 as built (2026-10-27)
+
+Everything in sections 4 to 7 is now built except what the last row lists.
+
+| Contract | State | Notes |
+|---|---|---|
+| Section 5 codes | **built** | `schedule.manage`, `schedule.approve` (catalog, held by the roles that held `schedule.update`: platform-admin, org-admin, production-admin, vfx-supervisor) and `schedule.sod.override` (opt-in, held by no role, not implied by being a superuser). `schedule.create` is now also held by lead-artist and artist. Existing databases get the grants when `manage.py init_platform` runs. |
+| Who needs which code | **built** | `schedule.manage`: create resources, book and block, create and edit bookings, create, edit and delete calendars, holidays and milestones, set the default calendar, complete and reopen milestones. `schedule.approve`: approve and reject leave. `schedule.create`: file leave for one's own resource, edit one's own pending leave, create events. `schedule.update`/`delete`: as before for resources, events and deletes; bulk delete of bookings needs `schedule.delete`. A matrix test pins every route to its code. The interim gates of Phase 9 (A-45) are gone. |
+| DOM-SCH-05 leave rules | **built** | Own leave with `create`; someone else's resource needs `manage`, otherwise 400 "Unknown resource." (identical to an unknown id). Editing a pending request: its person (with `create`) or a manager; moving it to another resource is a 400. Overlapping pending or approved leave of one resource is a 400 naming the other's dates, checked under a lock on the resource row. |
+| Leave decisions | **built** | `approve` and `reject` need `schedule.approve`. Nobody decides their own leave (403), except a holder of `schedule.sod.override` who sends `override_reason` (400 without it): the decision is made and recorded as an override. Reject takes `rejection_reason` or `reason`. Reasons are shown to the person and to holders of `schedule.approve`. |
+| SEC-SCH-01 side channels | **built** | No search term, filter or ordering reveals a booking note or a leave reason: bookings and leave are searchable by resource name and code only; no query parameter filters on notes, reasons or rates; `?ordering=hourly_rate_usd` is ignored (default order) without `schedule.view_rates`, being the resource yourself does not unlock it. |
+| API-SCH-06 | **built** | `GET /schedules/?start=&end=` (ISO 8601 with a time zone, else 400) narrows to bookings overlapping the window; touching the edge does not overlap; without them nothing changes. |
+| API-SCH-14 bulk delete | **built** | `POST /schedules/bulk-delete/` per Q36: 1 to 100 distinct ids, each its own transaction, 200 when all succeed and 207 otherwise, `results[]` of `id`, `ok`, `error` (`null` or `not_found`). Needs `schedule.delete`. |
+| Section 7 audit | **built** | Audit rows (target `scheduling`) for leave decisions (an override is a warning-severity row carrying the approver's reason), calendar default changes, milestone completion and reopening, and redaction runs. The change log now tracks Resource, ResourceSchedule, ResourceLeave, CalendarEvent, Holiday, WorkCalendar and Milestone; leave reasons, booking notes, pay rates and event text are excluded. |
+| SEC-SCH-05 | **built** | A test captures the application log while leave with a reason, bookings with notes, a resource with a rate and a rejection are sent through the API, and finds none of the text. |
+| Admin | **built** | Bookings, leave, calendars and milestones are read-only in the admin (they would bypass the rules above). |
+| OpenAPI | **built** | `approve`, `reject`, `update-status` and `bulk-delete` declare their request bodies and answers. |
+| Q37 retention | **built** | `manage.py redact_leave_reasons [--older-than-years N] [--apply]` (default 3, dry run unless `--apply`, counts only): blanks `reason` and `rejection_reason` of Approved and Rejected leave that ended more than N years ago, deleted rows included, pending leave never; one audit row with the count. Not scheduled. |
+| Not built | | A leave `cancel` endpoint, and a database constraint on overlapping leave (the service lock decides races). |
+
+Changes a client can see: approving or rejecting leave now needs `schedule.approve` (was `schedule.update`); booking, creating resources, calendars, holidays and milestones need `schedule.manage`; an artist can file and edit their own leave and creates events; filing leave for another person without `manage` is a 400; overlapping leave is a 400; the `reason` query filters and note and reason search no longer match; `?ordering=hourly_rate_usd` has no effect without `schedule.view_rates`.
+

@@ -11,16 +11,11 @@ from apps.deliveries.models import DeliveryDestination
 
 class DestinationSelector(BaseSelector):
     """
-    Read-side data access for delivery destinations.
-
-    Organization scoping is applied by the viewset through
-    ``scope_by_request`` (fail closed).
+    Read-side data access for delivery destinations (platform-global).
     """
 
     model = DeliveryDestination
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[DeliveryDestination]:
-        return cls.model.objects.select_related(
-            "organization",
-        )
+        return cls.model.objects.all()

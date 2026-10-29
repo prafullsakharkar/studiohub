@@ -1,3 +1,0 @@
-"""
-Organization querysets tests.
-"""

@@ -309,7 +309,6 @@ class IsAdminPermission(BasePermission):
         return bool(
             request.user
             and request.user.is_authenticated
-            and getattr(request.user, "is_staff", False)
             and getattr(request.user, "is_superuser", False),
         )
 
@@ -333,7 +332,6 @@ class IsAdminPermission(BasePermission):
         return bool(
             request.user
             and request.user.is_authenticated
-            and getattr(request.user, "is_staff", False)
             and getattr(request.user, "is_superuser", False),
         )
 

@@ -1,3 +1,5 @@
+import ipaddress
+
 from django.db import models
 from django.utils import timezone
 
@@ -34,12 +36,38 @@ class IPBlacklistQuerySet(IdentityQuerySet):
     def by_user(self, user):
         return self.filter(blocked_by=user)
 
-    def is_blacklisted(self, ip_address):
-        return (
-            self.active()
-            .filter(ip_address=ip_address)
-            .exists()
+    def matching(self, ip_address):
+        """
+        Active entries that cover ``ip_address``: an exact address or a CIDR
+        range that contains it. CIDR containment is evaluated in Python so it
+        stays database-portable; the active network set is small and only the
+        login path asks.
+        """
+        try:
+            address = ipaddress.ip_address(str(ip_address).strip())
+        except ValueError:
+            return self.none()
+
+        mapped = getattr(address, "ipv4_mapped", None)
+        address = mapped or address
+
+        active = self.active()
+        ids = set(
+            active.filter(ip_address=str(address)).values_list("pk", flat=True)
         )
+
+        for pk, network in active.exclude(network="").values_list("pk", "network"):
+            try:
+                if address in ipaddress.ip_network(network, strict=False):
+                    ids.add(pk)
+            except ValueError:
+                # A malformed stored range must never match (or crash login).
+                continue
+
+        return self.filter(pk__in=ids)
+
+    def is_blacklisted(self, ip_address):
+        return self.matching(ip_address).exists()
 
     def select_related_all(self):
         return self.select_related("blocked_by")

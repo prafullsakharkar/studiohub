@@ -18,7 +18,7 @@ class TrustedDeviceSelector(IdentityBaseSelector):
 
         user = getattr(request, "user", None)
 
-        if user is None or user.is_staff or user.is_superuser:
+        if user is None or user.is_superuser:
             return queryset
 
         if not getattr(user, "is_authenticated", False):
@@ -33,8 +33,9 @@ class TrustedDeviceSelector(IdentityBaseSelector):
         return TrustedDevice.objects.active().by_user(user)
 
     @classmethod
-    def get_by_fingerprint(cls, fingerprint):
-        return TrustedDevice.objects.by_fingerprint(fingerprint).first()
+    def get_by_fingerprint(cls, user, fingerprint):
+        """A user's own device for ``fingerprint``; never another user's row."""
+        return TrustedDevice.objects.by_user(user).by_fingerprint(fingerprint).first()
 
     @classmethod
     def is_trusted(cls, user, fingerprint):

@@ -1,32 +1,46 @@
 from __future__ import annotations
 
-from datetime import timedelta
-
 from django.utils import timezone
 
-from apps.identity.authentication.recovery import RecoveryCodeService
-from apps.identity.authentication.totp import TOTPService
-from apps.identity.choices.mfa import MFAStatus
+from apps.identity.authentication.exceptions import (
+    MFACodeInvalid,
+    MFALockedOut,
+)
+from apps.identity.choices import SecurityEventType
 from apps.identity.events.mfa import (
-    BackupCodeUsed,
-    MFALocked,
     MFAVerificationFailed,
     MFAVerified,
 )
 
 from .base import BaseMFAService
+from .lockout import MFALockoutService
+from .recovery import MFARecoveryService
 
 
 class MFAVerificationService(BaseMFAService):
     """
-    MFA verification service.
+    Second-factor verification.
 
-    Supports:
-    - TOTP verification
-    - Recovery code verification
-    - Failed attempt tracking
-    - Account lockout
+    - TOTP: a time step is consumable once per user (DOM-MFA-04).
+    - Recovery code: single use, atomic.
+    - Failures from either factor feed the one lockout counter (DOM-MFA-05).
+
+    The user's MFA row is locked for the duration so concurrent guesses
+    cannot race the counter or reuse a step.
     """
+
+    @classmethod
+    def lock_row(cls, user):
+        """
+        Fetch the user's MFA row under a row lock (must be inside a transaction).
+        """
+
+        return (
+            cls.UserMFA.objects.select_for_update(of=("self",))
+            .select_related("user")
+            .filter(user=user)
+            .first()
+        )
 
     @classmethod
     @BaseMFAService.transaction.atomic
@@ -35,41 +49,21 @@ class MFAVerificationService(BaseMFAService):
         *,
         user,
         code: str,
+        request=None,
     ) -> bool:
         """
-        Verify TOTP code.
+        Verify a TOTP code for an account that has MFA enabled.
         """
 
-        mfa = cls.UserMFASelector.get_by_user(user)
+        mfa = cls.lock_row(user)
 
         cls.UserMFAValidator.validate_verify(mfa)
 
         assert mfa is not None  # guaranteed by validate_verify above
-        if TOTPService.verify(
-            secret=mfa.totp_secret,
-            code=code,
-        ):
-            cls.reset_failed_attempts(mfa)
 
-            cls.publish(
-                MFAVerified(
-                    user=user,
-                    mfa=mfa,
-                )
-            )
+        cls.ensure_not_locked(mfa)
 
-            return True
-
-        cls.record_failed_attempt(mfa)
-
-        cls.publish(
-            MFAVerificationFailed(
-                user=user,
-                mfa=mfa,
-            )
-        )
-
-        return False
+        return cls.check_totp(mfa, code, request=request)
 
     @classmethod
     @BaseMFAService.transaction.atomic
@@ -78,147 +72,194 @@ class MFAVerificationService(BaseMFAService):
         *,
         user,
         code: str,
+        request=None,
     ) -> bool:
         """
-        Verify recovery code.
+        Verify (and spend) a recovery code for an account with MFA enabled.
         """
 
-        backup_codes = cls.BackupCodeSelector.get_available(
-            user=user,
-        )
+        mfa = cls.lock_row(user)
 
-        for backup in backup_codes:
+        cls.UserMFAValidator.validate_verify(mfa)
 
-            if RecoveryCodeService.verify(
-                code=code,
-                hashed_code=backup.code_hash,
-            ):
-                backup.used = True
-                backup.used_at = timezone.now()
+        assert mfa is not None  # guaranteed by validate_verify above
 
-                backup.save(
-                    update_fields=[
-                        "used",
-                        "used_at",
-                    ]
-                )
+        cls.ensure_not_locked(mfa)
 
-                cls.reset_failed_attempts(
-                    cls.UserMFASelector.get_by_user(user),
-                )
+        if MFARecoveryService.consume(user=user, code=code, request=request):
+            cls.record_success(mfa, request=request, method="recovery")
+            return True
 
-                cls.publish(
-                    BackupCodeUsed(
-                        user=user,
-                        backup_code=backup,
-                    )
-                )
-
-                return True
+        cls.record_failure(mfa, request=request, method="recovery")
 
         return False
 
     @classmethod
-    def record_failed_attempt(
+    def verify_second_factor(
         cls,
-        mfa,
+        *,
+        user,
+        code: str = "",
+        recovery_code: str = "",
+        request=None,
+    ) -> bool:
+        """
+        Accept either a TOTP code or a recovery code.
+        """
+
+        if recovery_code:
+            return cls.verify_recovery_code(
+                user=user,
+                code=recovery_code,
+                request=request,
+            )
+
+        return cls.verify(user=user, code=code, request=request)
+
+    @classmethod
+    def reauthenticate(
+        cls,
+        *,
+        user,
+        password: str,
+        code: str = "",
+        recovery_code: str = "",
+        request=None,
     ):
         """
-        Increment failed attempts.
+        Prove it is really the account holder before a sensitive MFA change.
+
+        Needs the password and, when MFA is enabled, a valid second factor.
+        One message for every wrong input; a locked second factor raises
+        ``MFALockedOut``.
         """
 
-        mfa.failed_attempts += 1
+        if not user.check_password(password or ""):
+            raise MFACodeInvalid()
 
-        if mfa.failed_attempts >= cls.MAX_FAILED_ATTEMPTS:
-            cls.lock(mfa)
+        mfa = cls.UserMFASelector.get_by_user(user)
+
+        if mfa is None or not mfa.requires_challenge:
             return
 
-        mfa.save(
-            update_fields=[
-                "failed_attempts",
-            ]
-        )
+        if not cls.verify_second_factor(
+            user=user,
+            code=code,
+            recovery_code=recovery_code,
+            request=request,
+        ):
+            raise MFACodeInvalid()
+
+    # ------------------------------------------------------------------
+    # Building blocks (callers hold the row lock)
+    # ------------------------------------------------------------------
 
     @classmethod
-    def reset_failed_attempts(
-        cls,
-        mfa,
-    ):
-        """
-        Reset failure counters.
-        """
-
-        mfa.failed_attempts = 0
-        mfa.locked_until = None
-        mfa.totp_confirmed_at = timezone.now()
-
-        if mfa.status == MFAStatus.LOCKED:
-            mfa.status = MFAStatus.ENABLED
-
-        mfa.save(
-            update_fields=[
-                "failed_attempts",
-                "locked_until",
-                "totp_confirmed_at",
-                "status",
-            ]
-        )
+    def ensure_not_locked(cls, mfa):
+        if MFALockoutService.is_locked(mfa=mfa):
+            raise MFALockedOut()
 
     @classmethod
-    def lock(
+    def check_totp(
         cls,
         mfa,
-    ):
-        """
-        Lock MFA.
-        """
-
-        mfa.status = MFAStatus.LOCKED
-
-        mfa.locked_until = timezone.now() + timedelta(
-            minutes=cls.LOCKOUT_MINUTES,
+        code: str,
+        *,
+        request=None,
+    ) -> bool:
+        step = cls.totp.matching_step(
+            secret=mfa.totp_secret,
+            code=code,
         )
 
-        mfa.save(
-            update_fields=[
-                "status",
-                "locked_until",
-                "failed_attempts",
-            ]
+        replayed = (
+            step is not None and mfa.last_used_step is not None and step <= mfa.last_used_step
+        )
+
+        if step is None or replayed:
+            cls.record_failure(
+                mfa,
+                request=request,
+                method="totp",
+                reason="replayed_code" if replayed else "invalid_code",
+            )
+
+            return False
+
+        mfa.last_used_step = step
+        mfa.last_used_at = timezone.now()
+
+        mfa.save(update_fields=["last_used_step", "last_used_at", "updated_at"])
+
+        cls.record_success(mfa, request=request, method="totp")
+
+        return True
+
+    @classmethod
+    def record_success(
+        cls,
+        mfa,
+        *,
+        request=None,
+        method: str,
+    ):
+        MFALockoutService.reset(mfa=mfa)
+
+        cls.audit(
+            user=mfa.user,
+            event_type=SecurityEventType.MFA_VERIFIED,
+            description="MFA verified.",
+            request=request,
+            metadata={"method": method},
         )
 
         cls.publish(
-            MFALocked(
+            MFAVerified(
                 user=mfa.user,
                 mfa=mfa,
             )
         )
 
     @classmethod
+    def record_failure(
+        cls,
+        mfa,
+        *,
+        request=None,
+        method: str,
+        reason: str = "invalid_code",
+    ):
+        MFALockoutService.record_failure(mfa=mfa, request=request)
+
+        cls.audit(
+            user=mfa.user,
+            event_type=SecurityEventType.MFA_FAILED,
+            description="MFA verification failed.",
+            request=request,
+            metadata={"method": method, "reason": reason},
+        )
+
+        cls.publish(
+            MFAVerificationFailed(
+                user=mfa.user,
+                mfa=mfa,
+            )
+        )
+
+    # ------------------------------------------------------------------
+    # Lockout passthroughs
+    # ------------------------------------------------------------------
+
+    @classmethod
+    @BaseMFAService.transaction.atomic
     def unlock(
         cls,
         *,
         user,
     ):
-        """
-        Unlock MFA.
-        """
+        mfa = cls.lock_row(user)
 
-        mfa = cls.UserMFASelector.get_by_user(user)
-
-        mfa.failed_attempts = 0
-        mfa.locked_until = None
-        mfa.status = MFAStatus.ENABLED
-
-        mfa.save(
-            update_fields=[
-                "failed_attempts",
-                "locked_until",
-                "status",
-            ]
-        )
-
-        return mfa
+        return MFALockoutService.reset(mfa=mfa)
 
     @classmethod
     def is_locked(
@@ -226,16 +267,9 @@ class MFAVerificationService(BaseMFAService):
         *,
         user,
     ) -> bool:
-        """
-        Check whether MFA is currently locked.
-        """
-
         mfa = cls.UserMFASelector.get_by_user(user)
 
         if mfa is None:
             return False
 
-        if not mfa.locked_until:
-            return False
-
-        return mfa.locked_until > timezone.now()
+        return bool(mfa.locked_until and mfa.locked_until > timezone.now())

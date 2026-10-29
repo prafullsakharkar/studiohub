@@ -1,13 +1,15 @@
 """
 Identity user MFA admin configuration.
 """
+
 from django.contrib import admin
 
+from apps.identity.admin.ledger import ReadOnlyLedgerAdminMixin
 from apps.identity.models import UserMFA
 
 
 @admin.register(UserMFA)
-class UserMFAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
+class UserMFAdmin(ReadOnlyLedgerAdminMixin, admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     """Admin for UserMFA."""
 
     list_display = (
@@ -25,9 +27,7 @@ class UserMFAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgumen
         "created_at",
     )
 
-    search_fields = (
-        "user__email",
-    )
+    search_fields = ("user__email",)
 
     readonly_fields = (
         "id",

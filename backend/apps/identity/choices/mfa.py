@@ -14,6 +14,7 @@ class MFAPriority(models.TextChoices):
 
 
 class MFAStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
     ENABLED = "enabled", "Enabled"
     DISABLED = "disabled", "Disabled"
     LOCKED = "locked", "Locked"

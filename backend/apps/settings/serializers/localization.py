@@ -18,7 +18,6 @@ class LocalizationSerializer(serializers.ModelSerializer[Localization]):
             "uuid",
             "code",
             "name",
-            "organization",
             "language",
             "timezone",
             "date_format",

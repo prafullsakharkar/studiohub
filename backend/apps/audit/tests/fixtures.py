@@ -14,7 +14,6 @@ from apps.audit.tests.factories import (
     BackgroundJobFactory,
     ChangeLogFactory,
     ErrorLogFactory,
-    LoginHistoryFactory,
     TrackFactory,
 )
 
@@ -53,12 +52,6 @@ def change_log(db) -> ChangeLogFactory:
 def error_log(db) -> ErrorLogFactory:
     """Create an error log instance."""
     return ErrorLogFactory()
-
-
-@pytest.fixture
-def login_history(db) -> LoginHistoryFactory:
-    """Create a login history instance."""
-    return LoginHistoryFactory()
 
 
 @pytest.fixture

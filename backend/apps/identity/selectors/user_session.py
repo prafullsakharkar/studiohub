@@ -1,4 +1,4 @@
-from apps.organization.models import (
+from apps.identity.models import (
     UserSession,
 )
 

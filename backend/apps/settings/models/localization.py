@@ -8,13 +8,12 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.models.bases.entity import EntityModel
 from apps.core.models.bases.timestamp import TimeStampedModel
-from apps.organization.models.organization import Organization
 
 
 class Localization(EntityModel, TimeStampedModel):
     """
-    Localization settings for organizations.
-    
+    Platform localization settings.
+
     Manages language, timezone, date/time formats, and other
     localization-related settings.
     """
@@ -113,15 +112,6 @@ class Localization(EntityModel, TimeStampedModel):
         help_text="Display name for the localization",
     )
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="localizations",
-        null=True,
-        blank=True,
-        db_index=True,
-        help_text="Organization this localization belongs to (null = default)",
-    )
     
     # Language settings
     language = models.CharField(

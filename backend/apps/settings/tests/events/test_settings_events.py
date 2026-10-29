@@ -18,9 +18,6 @@ from apps.settings.events import (
     LocalizationCreated,
     LocalizationDeleted,
     LocalizationUpdated,
-    OrganizationSettingCreated,
-    OrganizationSettingDeleted,
-    OrganizationSettingUpdated,
     SystemSettingCreated,
     SystemSettingDeleted,
     SystemSettingUpdated,
@@ -165,34 +162,6 @@ class TestLocalizationEvents:
         """Test LocalizationDeleted event."""
         event = LocalizationDeleted(localization_uuid=THEME_UUID)
         assert event.event_type == "localization.deleted"
-
-
-class TestOrganizationSettingEvents:
-    """Tests for OrganizationSetting events."""
-
-    def test_organization_setting_created_event(self) -> None:
-        """Test OrganizationSettingCreated event."""
-        event = OrganizationSettingCreated(
-            organization_setting_uuid=THEME_UUID,
-            organization_id="org-1",
-        )
-        assert event.event_type == "organization_setting.created"
-        assert event.payload["organization_id"] == "org-1"
-
-    def test_organization_setting_updated_event(self) -> None:
-        """Test OrganizationSettingUpdated event."""
-        event = OrganizationSettingUpdated(
-            organization_setting_uuid=THEME_UUID,
-            organization_id="org-1",
-        )
-        assert event.event_type == "organization_setting.updated"
-
-    def test_organization_setting_deleted_event(self) -> None:
-        """Test OrganizationSettingDeleted event."""
-        event = OrganizationSettingDeleted(
-            organization_setting_uuid=THEME_UUID
-        )
-        assert event.event_type == "organization_setting.deleted"
 
 
 class TestSystemSettingEvents:

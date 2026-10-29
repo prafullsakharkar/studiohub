@@ -15,7 +15,28 @@ class UserManager(BaseUserManager):  # pyright: ignore[reportMissingTypeArgument
     use_in_migrations = True
 
     def get_queryset(self) -> UserQuerySet:
-        return UserQuerySet(self.model, using=self._db)
+        """
+        Default manager excludes soft-deleted users.
+
+        Recovery/audit code must use ``User.all_objects`` (or the explicit
+        ``deleted()``/``with_deleted()`` helpers) so soft-deleted accounts are
+        never reachable through ordinary lookups or authentication.
+        """
+
+        return UserQuerySet(self.model, using=self._db).alive()
+
+    def deleted(self, *args: Any, **kwargs: Any):
+        """Return only soft-deleted users (bypasses the alive default)."""
+
+        return UserQuerySet(self.model, using=self._db).deleted(*args, **kwargs)
+
+    def with_deleted(self, *args: Any, **kwargs: Any):
+        """Return users including soft-deleted rows."""
+
+        return UserQuerySet(self.model, using=self._db).with_deleted(
+            *args,
+            **kwargs,
+        )
 
     def active(self, *args: Any, **kwargs: Any):
         return self.get_queryset().active(*args, **kwargs)
@@ -81,7 +102,19 @@ class UserManager(BaseUserManager):  # pyright: ignore[reportMissingTypeArgument
         if not email:
             raise ValueError("Email is required.")
 
-        email = self.normalize_email(email)
+        email = self.normalize_email(email.strip()).lower()
+
+        # Soft-deleted accounts keep their email and are still covered by the
+        # database uniqueness constraint. Fail with a clear restore hint rather
+        # than letting the insert raise an opaque IntegrityError.
+        existing = self.model.all_objects.filter(email__iexact=email).first()
+
+        if existing is not None:
+            if existing.is_deleted:
+                raise ValueError(
+                    "A soft-deleted user with this email exists. Restore it instead of creating a duplicate."
+                )
+            raise ValueError("User with this email already exists.")
 
         user = self.model(
             email=email,

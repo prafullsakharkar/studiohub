@@ -299,6 +299,50 @@ Automatic, at the logging pipeline (not per call site):
 - Tokens, headers, cookies, and request bodies are never logged.
 - `request_id` values are sanitized against log injection.
 
+## 11.1 Personal data in query strings
+
+A request such as `GET /api/v1/people/?search=jane@example.com` carries personal
+data in its query string. Apps declare, per URL path prefix, which parameter
+**names** hold such data; their **values** are then replaced with
+`***REDACTED***` (names stay, for diagnosis) in the two places this repo
+records query strings:
+
+| Recorder | What it stores | Redacted |
+|---|---|---|
+| Structured request and exception logs (`query_params`) | `apps/core/api/diagnostics/context.py` | yes |
+| `audit.APIRequest.full_path` (database table) | `apps/audit/middleware/telemetry.py` | yes |
+
+Mechanism: `apps/core/logging/redaction.py` (`register_sensitive_query_params`,
+whole-path-segment prefix match, case-insensitive, django-filter lookups such
+as `email__icontains` count as `email`). Core knows no app routes; an app
+registers its own in `AppConfig.ready()`. Masterdata does it in
+`apps/masterdata/logging_policy.py` for every directory route
+(`search`, `email`, `phone`, `contact_name`, `date_of_birth`, `nationality`,
+`security_clearance`, `salary_range`); a test fails if the router gains a route
+that is not registered. Paths nobody registered log exactly as before.
+
+## 11.2 Where URLs and query strings are recorded
+
+| # | Place | Records the query string? | In this repo's code? | Redacted by 11.1 |
+|---|---|---|---|---|
+| 1 | Structured request / exception logs | yes, `query_params` | yes | **yes** |
+| 2 | `audit.APIRequest.full_path` (DB) | yes, raw | yes | **yes** |
+| 3 | Django `django.request` logger | no, path only | yes | n/a |
+| 4 | Django `runserver` (`django.server`), development only | yes, full request line | no (framework) | no |
+| 5 | **uvicorn access log** (`infrastructure/docker/django/start-prod.sh` does not pass `--no-access-log`) | **yes**, full request line | config in repo, runs outside Django | **no** |
+| 6 | **nginx access log** (`infrastructure/docker/nginx/nginx.conf`: default `access_log`, `combined` format with `$request`) | **yes** | config in repo, runs outside Django | **no** |
+| 7 | Any load balancer / reverse proxy / CDN in front of nginx | yes, typically | **outside the repo** | no |
+| 8 | PostgreSQL server log (`log_statement`, `log_min_duration_statement`; the repo sets none) | SQL with filter values | **outside the repo** | no |
+| 9 | Error tracker / APM | none configured; `opentelemetry-api/sdk` are declared in `pyproject.toml` but unused. If HTTP auto-instrumentation is ever enabled, span attributes (`http.url`, `http.target`) carry the query string. | outside the repo today | no |
+| 10 | API response cache (`apps/core/cache/api_response.py`) | key built from query parameters | yes | no consumer exists |
+| 11 | Pagination `next` / `previous` links in API responses | yes, returned to the same caller | yes | n/a (response body) |
+| 12 | Browser history, frontend analytics, client-side logging | yes | **outside the repo** | no |
+
+Rows 5 and 6 are configuration files in this repo that control processes running
+outside Django; they were left unchanged on purpose (operators may rely on those
+logs). Options: pass `--no-access-log` to uvicorn (nginx already logs requests),
+and give nginx a `log_format` that uses `$uri` instead of `$request` / `$request_uri`.
+
 ---
 
 # 12. Debugging Playbook

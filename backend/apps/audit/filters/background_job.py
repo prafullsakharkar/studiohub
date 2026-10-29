@@ -17,6 +17,5 @@ class BackgroundJobFilter(AuditBaseFilter):
         fields = {
             "job_type": ["exact"],
             "status": ["exact"],
-            "organization": ["exact"],
             "created_at": ["exact", "gte", "lte"],
         }

@@ -16,6 +16,7 @@ class AuditLogSelector(AuditBaseSelector):
     """
     
     model = AuditLog
+    visibility = "project"
     
     @classmethod
     def get_queryset(
@@ -36,13 +37,7 @@ class AuditLogSelector(AuditBaseSelector):
         """
         return cls.get_queryset().get(id=audit_log_id)
     
-    @classmethod
-    def by_organization(cls, organization_id: str):
-        """
-        Get audit logs for an organization.
-        """
-        return cls.get_queryset().filter(organization_id=organization_id)
-    
+
     @classmethod
     def by_actor(cls, user_id: str):
         """

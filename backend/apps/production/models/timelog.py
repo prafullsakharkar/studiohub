@@ -15,15 +15,9 @@ class Timelog(EntityModel):
     Timelog entry linked to a Task.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="timelogs",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="timelogs",
         null=True,
         blank=True,
@@ -37,7 +31,7 @@ class Timelog(EntityModel):
 
     person = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="timelogs",
         db_index=True,
     )
@@ -75,6 +69,15 @@ class Timelog(EntityModel):
         related_name="approved_timelogs",
     )
     approved_at = models.DateTimeField(null=True, blank=True)
+    # An approved timelog is final; a correction is a new entry that points at it
+    # (``duration_hours`` may be negative on such an entry).
+    adjustment_of = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="adjustments",
+    )
     rejection_reason = models.TextField(blank=True, default="")
 
     activity_category = models.CharField(
@@ -88,7 +91,6 @@ class Timelog(EntityModel):
         db_table = "production_timelog"
         ordering = ("-date", "-created_at")
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["task"]),
             models.Index(fields=["person"]),
             models.Index(fields=["status"]),

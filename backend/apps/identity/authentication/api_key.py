@@ -3,6 +3,8 @@ from __future__ import annotations
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
+from apps.identity.api_keys.resolver import CredentialResolver
+
 
 class APIKeyAuthentication(
     BaseAuthentication,
@@ -10,7 +12,10 @@ class APIKeyAuthentication(
     """
     Authenticate requests using API Keys.
 
-    Authorization: Api-Key <token>
+    Authorization: Api-Key <prefix.secret>
+
+    The key acts as its principal (owner, else creator). Scope restrictions
+    are applied by ``HasPermission`` from ``request.auth``.
     """
 
     keyword = "Api-Key"
@@ -37,12 +42,8 @@ class APIKeyAuthentication(
         if keyword != self.keyword:
             return None
 
-        # Imported lazily to avoid a circular import between
-        # apps.identity.services and apps.identity.authentication.
-        from apps.identity.services import APIKeyService
-
-        api_key = APIKeyService.verify(
-            token,
+        api_key = self._verify(
+            token.strip(),
         )
 
         if api_key is None:
@@ -50,7 +51,23 @@ class APIKeyAuthentication(
                 "Invalid API Key.",
             )
 
-        APIKeyService.touch(
+        # Same account-state rule as the JWT path: a deactivated or deleted
+        # principal loses access immediately. One message, so a caller cannot
+        # tell a dead key from a dead account.
+        principal = api_key.principal
+
+        if principal is None or not principal.is_active or getattr(principal, "is_deleted", False):
+            raise AuthenticationFailed(
+                "Invalid API Key.",
+            )
+
+        from apps.identity.models import ApiKey
+        from apps.identity.permissions.scopes import gate_scoped_credential
+
+        gate_scoped_credential(request, api_key)
+
+        CredentialResolver.touch(
+            ApiKey,
             api_key,
             ip_address=self._get_ip(request),
         )
@@ -58,21 +75,29 @@ class APIKeyAuthentication(
         request.api_key = api_key
 
         return (
-            api_key.created_by,
+            principal,
             api_key,
+        )
+
+    def _verify(
+        self,
+        plain: str,
+    ):
+        """Resolve a live platform ApiKey from a presented secret."""
+        from apps.identity.models import ApiKey
+
+        return CredentialResolver.resolve(
+            model=ApiKey,
+            hash_field="hashed_key",
+            plain=plain,
         )
 
     def _get_ip(
         self,
         request,
     ):
-        forwarded = request.META.get(
-            "HTTP_X_FORWARDED_FOR",
-        )
+        from apps.identity.authentication.utils import AuthenticationUtils
 
-        if forwarded:
-            return forwarded.split(",")[0].strip()
-
-        return request.META.get(
-            "REMOTE_ADDR",
+        return AuthenticationUtils.get_client_ip(
+            request,
         )

@@ -17,11 +17,9 @@ STUDIOHUB_APP_LABELS = frozenset(
     {
         "core",
         "identity",
-        "organization",
         "settings",
         "audit",
         "production",
-        "intelligence",
         "deliveries",
         "publishing",
         "scheduling",
@@ -95,26 +93,18 @@ class TestAdminRegistryDiscovery:
         assert failures == []
 
     def test_reversible_secrets_never_exposed(self):
-        from apps.identity.admin.oauth import OAuthAccountAdmin, OAuthProviderAdmin
         from apps.identity.admin.user_mfa import UserMFAdmin
 
-        assert "access_token" in (OAuthAccountAdmin.exclude or ())
-        assert "refresh_token" in (OAuthAccountAdmin.exclude or ())
-        assert "client_secret" in (OAuthProviderAdmin.exclude or ())
         assert "totp_secret" in (UserMFAdmin.exclude or ())
 
     @pytest.mark.django_db
     def test_high_volume_admins_are_searchable(self):
-        from apps.organization.admin.client import ClientAdmin
-        from apps.organization.admin.vendor import VendorAdmin
         from apps.production.admin.project import ProjectAdmin
         from apps.production.admin.shot import ShotAdmin
         from apps.production.admin.task import TaskAdmin
         from apps.production.admin.version import VersionAdmin
 
         for admin_class in (
-            ClientAdmin,
-            VendorAdmin,
             ProjectAdmin,
             ShotAdmin,
             TaskAdmin,

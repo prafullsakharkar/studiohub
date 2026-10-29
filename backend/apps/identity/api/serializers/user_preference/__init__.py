@@ -6,7 +6,6 @@ from .base import (
 from .create import (
     ProfileCreateSerializer,
     SecurityEventCreateSerializer,
-    TrustedDeviceCreateSerializer,
 )
 from .detail import (
     ProfileDetailSerializer,
@@ -20,8 +19,6 @@ from .list import (
 )
 from .update import (
     ProfileUpdateSerializer,
-    SecurityEventUpdateSerializer,
-    TrustedDeviceUpdateSerializer,
 )
 
 __all__ = [
@@ -34,10 +31,7 @@ __all__ = [
     "SecurityEventCreateSerializer",
     "SecurityEventDetailSerializer",
     "SecurityEventListSerializer",
-    "SecurityEventUpdateSerializer",
     "TrustedDeviceBaseSerializer",
-    "TrustedDeviceCreateSerializer",
     "TrustedDeviceDetailSerializer",
     "TrustedDeviceListSerializer",
-    "TrustedDeviceUpdateSerializer",
 ]

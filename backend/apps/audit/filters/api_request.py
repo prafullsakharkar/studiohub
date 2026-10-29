@@ -18,6 +18,5 @@ class APIRequestFilter(AuditBaseFilter):
             "method": ["exact"],
             "status_code": ["exact"],
             "user": ["exact"],
-            "organization": ["exact"],
             "created_at": ["exact", "gte", "lte"],
         }

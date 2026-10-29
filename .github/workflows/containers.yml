@@ -1,0 +1,85 @@
+name: Containers
+
+# Builds the production image and scans it, and scans the Dockerfiles and compose files for
+# misconfigurations. Runs when the build inputs change and every Monday, because new CVEs in a base
+# image appear without any commit. Findings that are accepted on purpose are in .trivyignore.yaml
+# with a reason and an expiry; anything else fails the job.
+#
+# Trivy runs from an image pinned by digest and sees the built image as a file, never the Docker
+# socket.
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "infrastructure/**"
+      - "backend/uv.lock"
+      - "backend/pyproject.toml"
+      - ".dockerignore"
+      - ".trivyignore.yaml"
+      - ".github/workflows/containers.yml"
+  pull_request:
+    paths:
+      - "infrastructure/**"
+      - "backend/uv.lock"
+      - "backend/pyproject.toml"
+      - ".dockerignore"
+      - ".trivyignore.yaml"
+      - ".github/workflows/containers.yml"
+  schedule:
+    - cron: "41 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # aquasec/trivy, pinned by digest. Dependabot proposes newer ones.
+  TRIVY_IMAGE: aquasec/trivy@sha256:790fd66d1697395d8693d1acaa1ea702406a20f109b6fc7bac8db623eca6c06c
+
+jobs:
+  misconfiguration:
+    name: Dockerfile and compose misconfiguration
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Scan
+        run: >-
+          docker run --rm -v "$PWD:/src:ro" -w /src "$TRIVY_IMAGE"
+          config --severity HIGH,CRITICAL --ignorefile /src/.trivyignore.yaml --exit-code 1
+          infrastructure
+
+  image:
+    name: Production image vulnerabilities
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Build
+        run: docker build -f infrastructure/docker/django/Dockerfile -t studiohub-django:scan .
+
+      - name: The image carries no development files
+        run: |
+          docker run --rm --entrypoint sh studiohub-django:scan -c '
+            cd /app
+            for unwanted in .venv media/* logs .coverage .pytest_cache .git .env; do
+              if [ -e "$unwanted" ]; then echo "unexpected in image: $unwanted"; exit 1; fi
+            done
+            ls -A | grep -E "^\.env" && exit 1 || true
+          '
+
+      - name: Export the image to a file
+        run: docker save studiohub-django:scan -o "$RUNNER_TEMP/studiohub-django.tar"
+
+      - name: Scan (fixed HIGH and CRITICAL findings fail the job)
+        run: >-
+          docker run --rm -v "$RUNNER_TEMP/studiohub-django.tar:/image.tar:ro" "$TRIVY_IMAGE"
+          image --input /image.tar --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed
+          --exit-code 1

@@ -1,10 +1,27 @@
 from typing import Any
 
+from rest_framework import serializers
+
 from apps.core.api.serializers.base import BaseWriteSerializer
+from apps.production.api.serializers.common import LockedFieldsMixin, NormalizedCodeMixin
+from apps.production.api.serializers.task.hours import TaskHoursMixin
 from apps.production.models import Task
 
 
-class TaskUpdateSerializer(BaseWriteSerializer[Any]):
+class TaskUpdateSerializer(  # pyright: ignore[reportUnsafeMultipleInheritance]
+    TaskHoursMixin, NormalizedCodeMixin, LockedFieldsMixin, BaseWriteSerializer[Any]
+):
+    locked_fields = {
+        "is_archived": "Use the archive and restore actions.",
+        "logged_hours": "Derived from the task's timelogs.",
+    }
+
+    is_archived = serializers.BooleanField(source="is_deleted", read_only=True)
+    # The pipeline step: an id or code of an active task type in the catalog (resolved by the viewset).
+    task_type_id = serializers.CharField(
+        source="task_type", write_only=True, required=False, allow_blank=True, allow_null=True
+    )
+
     class Meta:
         model = Task
         fields = (
@@ -33,5 +50,8 @@ class TaskUpdateSerializer(BaseWriteSerializer[Any]):
             "is_archived",
             "due_date",
             "estimated_hours",
+            "task_type_id",
             "logged_hours",
+            "pending_hours",
         )
+        read_only_fields = ("is_archived", "logged_hours")

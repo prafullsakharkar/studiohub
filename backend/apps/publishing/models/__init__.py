@@ -4,9 +4,12 @@ PublishItem model for DCC publish validation.
 from __future__ import annotations
 
 from django.db import models
+from django.db.models.functions import Upper
 
 from apps.core.models.bases.entity import EntityModel
-from apps.organization.models.organization import Organization
+from apps.publishing.models.counter import PublishCounter
+from apps.publishing.models.file import PublishedFile, PublishedFileEvent
+from apps.publishing.models.storage import StorageRoot
 
 
 class PublishItem(EntityModel):
@@ -79,22 +82,39 @@ class PublishItem(EntityModel):
         help_text="Publish code",
     )
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="publish_items",
-        db_index=True,
-        help_text="Organization context",
-    )
     
     project = models.ForeignKey(
         "production.Project",
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         null=True,
         blank=True,
         related_name="publish_items",
         db_index=True,
         help_text="Associated project",
+    )
+
+    version = models.ForeignKey(
+        "production.Version",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="publish_items",
+        help_text="The production version this export job produced (old jobs are not linked)",
+    )
+
+    republished_from = models.ForeignKey(
+        "self",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="republished_as",
+        help_text="The job this one was republished from",
+    )
+
+    cancel_reason = models.TextField(
+        blank=True,
+        default="",
+        help_text="Why the job was cancelled",
     )
     
     entity_type = models.CharField(
@@ -191,14 +211,21 @@ class PublishItem(EntityModel):
         help_text="Number of retry attempts",
     )
     
+    # Deprecated (docs/publishing/DECISIONS.md Q33): no longer written. A cancelled job is
+    # Cancelled; deleting it is the soft delete. Old rows keep the value they had.
     is_archived = models.BooleanField(
         default=False,
-        help_text="Whether this publish is archived",
+        help_text="Deprecated and no longer written; use the status and the soft delete",
     )
     
     class Meta:
         db_table = "publishing_item"
         ordering = ("-created_at",)
+        constraints = [
+            # Any case, every row (deleted ones keep their code): the server numbers new jobs,
+            # a code that is sent is checked against this.
+            models.UniqueConstraint(Upper("code"), name="publishing_item_ucode_uniq"),
+        ]
         verbose_name = "Publish Item"
         verbose_name_plural = "Publish Items"
     
@@ -221,13 +248,6 @@ class PublishValidationRule(models.Model):
     Validation rule for publish items.
     """
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="publish_validation_rules",
-        db_index=True,
-        help_text="Organization context",
-    )
     
     # Rule types
     RULE_FILE_EXISTS = "file_exists"
@@ -312,7 +332,7 @@ class PublishDestination(EntityModel):
     """
     Publish destination for DCC publish output routing.
 
-    Static reference data curated per organization (storage clusters,
+    Static reference data curated platform-wide (storage clusters,
     cloud buckets, client ingest points). Presented as dropdown options
     in publish creation flows.
     """
@@ -349,13 +369,6 @@ class PublishDestination(EntityModel):
         (PROTOCOL_LOCAL, "Local POSIX"),
     ]
 
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="publish_destinations",
-        db_index=True,
-        help_text="Organization context",
-    )
 
     name = models.CharField(
         max_length=255,
@@ -402,11 +415,30 @@ class PublishDestination(EntityModel):
         verbose_name = "Publish Destination"
         verbose_name_plural = "Publish Destinations"
         constraints = [
+            # Any case, live rows only: a deleted destination's name can be used again.
             models.UniqueConstraint(
-                fields=["organization", "name"],
-                name="uniq_publish_destination_name_per_org",
+                Upper("name"),
+                condition=models.Q(is_deleted=False),
+                name="publishing_destination_uname_uniq",
+            ),
+            # One default destination at a time.
+            models.UniqueConstraint(
+                fields=["is_default"],
+                condition=models.Q(is_default=True, is_deleted=False),
+                name="publishing_destination_one_default",
             ),
         ]
 
     def __str__(self):
         return f"{self.name} ({self.protocol})"
+
+
+__all__ = [
+    "PublishCounter",
+    "PublishDestination",
+    "PublishItem",
+    "PublishValidationRule",
+    "PublishedFile",
+    "PublishedFileEvent",
+    "StorageRoot",
+]

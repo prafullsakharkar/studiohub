@@ -19,5 +19,4 @@ class ThemeFilter(SettingsBaseFilter):
             "name": ["exact", "icontains"],
             "theme_type": ["exact"],
             "is_active": ["exact"],
-            "organization": ["exact"],
         }

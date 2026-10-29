@@ -38,19 +38,25 @@ class TestUserLifecyclePermissions:
         "action",
         ["activate", "deactivate", "archive", "restore"],
     )
-    def test_lifecycle_actions_allowed_for_staff(self, staff_client, action):
+    def test_lifecycle_actions_allowed_for_staff(
+        self, staff_client, staff_user, org_admin_context, action
+    ):
+        """Org-scoped admins may run lifecycle actions on org users (D4/D6)."""
         user = UserFactory.create()
+        headers = org_admin_context(user)
         response = staff_client.post(
             reverse(
                 f"api:v1:identity:user-{action}",
                 kwargs={"pk": user.id},
             ),
+            **headers,
         )
         assert response.status_code == 200
 
-    def test_user_list_open_to_authenticated(self, authenticated_client):
+    def test_user_list_open_to_authenticated(self, authenticated_client, user):
+        """D6: list requires identity.user.view; self is always visible."""
         response = authenticated_client.get(reverse("api:v1:identity:user-list"))
-        assert response.status_code == 200
+        assert response.status_code == 403
 
 
 @pytest.mark.django_db

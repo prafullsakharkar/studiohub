@@ -51,31 +51,31 @@ class TestTrustedDevicePermissions:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_authenticated_user_can_create_trusted_device(self, authenticated_client):
-        """Test that authenticated user can create trusted device."""
+    def test_authenticated_user_cannot_create_trusted_device(self, authenticated_client):
+        """No actor can create a trusted device through the API."""
         response = authenticated_client.post(
             "/api/v1/identity/trusted-devices/",
             {"fingerprint": "test-device-fingerprint"},
         )
-        assert response.status_code == 201
+        assert response.status_code in (403, 405)
 
     @pytest.mark.django_db
-    def test_staff_user_can_create_trusted_device(self, staff_client):
-        """Test that staff user can create trusted device."""
+    def test_staff_user_cannot_create_trusted_device(self, staff_client):
+        """No actor can create a trusted device through the API."""
         response = staff_client.post(
             "/api/v1/identity/trusted-devices/",
             {"fingerprint": "test-device-fingerprint"},
         )
-        assert response.status_code == 201
+        assert response.status_code in (403, 405)
 
     @pytest.mark.django_db
-    def test_admin_user_can_create_trusted_device(self, admin_client):
-        """Test that admin user can create trusted device."""
+    def test_admin_user_cannot_create_trusted_device(self, admin_client):
+        """No actor can create a trusted device through the API."""
         response = admin_client.post(
             "/api/v1/identity/trusted-devices/",
             {"fingerprint": "test-device-fingerprint"},
         )
-        assert response.status_code == 201
+        assert response.status_code in (403, 405)
 
     @pytest.mark.django_db
     def test_anonymous_user_cannot_update_trusted_device(self):
@@ -88,34 +88,40 @@ class TestTrustedDevicePermissions:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_authenticated_user_can_update_own_trusted_device(self, authenticated_client, user):
-        """Test that authenticated user can update own trusted device."""
-        device = TrustedDeviceFactory.create(user=user)
+    def test_authenticated_user_cannot_update_own_trusted_device(self, authenticated_client, user):
+        """Even the owner cannot edit trust fields."""
+        device = TrustedDeviceFactory.create(user=user, browser="Chrome")
         response = authenticated_client.patch(
             f"/api/v1/identity/trusted-devices/{device.id}/",
-            {"browser": "Chrome"},
+            {"browser": "Firefox"},
         )
-        assert response.status_code == 200
+        assert response.status_code in (403, 405)
+        device.refresh_from_db()
+        assert device.browser == "Chrome"
 
     @pytest.mark.django_db
-    def test_staff_user_can_update_trusted_device(self, staff_client):
-        """Test that staff user can update trusted device."""
-        device = TrustedDeviceFactory.create()
+    def test_staff_user_cannot_update_other_device(self, staff_client):
+        """ADR-0033 D4: staff is not an authorization tier."""
+        device = TrustedDeviceFactory.create(browser="Chrome")
         response = staff_client.patch(
             f"/api/v1/identity/trusted-devices/{device.id}/",
-            {"browser": "Chrome"},
+            {"browser": "Firefox"},
         )
-        assert response.status_code == 200
+        assert response.status_code in (403, 404, 405)
+        device.refresh_from_db()
+        assert device.browser == "Chrome"
 
     @pytest.mark.django_db
-    def test_admin_user_can_update_trusted_device(self, admin_client):
-        """Test that admin user can update trusted device."""
-        device = TrustedDeviceFactory.create()
+    def test_admin_user_cannot_update_trusted_device(self, admin_client):
+        """Not even a superuser edits a device; trust is server-minted."""
+        device = TrustedDeviceFactory.create(browser="Chrome")
         response = admin_client.patch(
             f"/api/v1/identity/trusted-devices/{device.id}/",
-            {"browser": "Chrome"},
+            {"browser": "Firefox"},
         )
-        assert response.status_code == 200
+        assert response.status_code in (403, 405)
+        device.refresh_from_db()
+        assert device.browser == "Chrome"
 
     @pytest.mark.django_db
     def test_anonymous_user_cannot_delete_trusted_device(self):
@@ -125,22 +131,18 @@ class TestTrustedDevicePermissions:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_authenticated_user_cannot_delete_other_trusted_device(
-        self, authenticated_client
-    ):
+    def test_authenticated_user_cannot_delete_other_trusted_device(self, authenticated_client):
         """Test that authenticated user cannot delete other trusted device."""
         device = TrustedDeviceFactory.create()
-        response = authenticated_client.delete(
-            f"/api/v1/identity/trusted-devices/{device.id}/"
-        )
+        response = authenticated_client.delete(f"/api/v1/identity/trusted-devices/{device.id}/")
         assert response.status_code == 403
 
     @pytest.mark.django_db
-    def test_staff_user_can_delete_trusted_device(self, staff_client):
-        """Test that staff user can delete trusted device."""
+    def test_staff_user_cannot_delete_other_device(self, staff_client):
+        """ADR-0033 D4: staff is not an authorization tier."""
         device = TrustedDeviceFactory.create()
         response = staff_client.delete(f"/api/v1/identity/trusted-devices/{device.id}/")
-        assert response.status_code == 204
+        assert response.status_code == 404
 
     @pytest.mark.django_db
     def test_admin_user_can_delete_trusted_device(self, admin_client):

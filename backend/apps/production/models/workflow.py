@@ -10,12 +10,6 @@ from apps.core.models.bases import EntityModel
 
 
 class Workflow(EntityModel):
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="workflows",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
@@ -38,13 +32,10 @@ class Workflow(EntityModel):
     automation_rules = models.JSONField(default=list, blank=True)
     execution_stats = models.JSONField(default=dict, blank=True)
 
-    is_archived = models.BooleanField(default=False)
-
     class Meta:
         db_table = "production_workflow"
         ordering = ("-created_at",)
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["category"]),
             models.Index(fields=["is_active"]),
             models.Index(fields=["department"]),

@@ -4,6 +4,7 @@ Track ViewSet.
 from rest_framework import mixins
 
 from apps.audit.api.viewsets.base import AuditEntityViewSet
+from apps.audit.constants.permissions import AuditPermissions
 from apps.audit.filters.track import TrackFilter
 from apps.audit.selectors.track import TrackSelector
 from apps.audit.serializers.track import TrackIngestSerializer, TrackSerializer
@@ -23,11 +24,11 @@ class TrackViewSet(
     
     serializer_class = TrackSerializer
 
-    # Reads and telemetry ingest stay open to authenticated users
-    # (org-scoped selectors).
+    # Reads require the audit.view permission (seeded to production-tier
+    # roles); telemetry ingest stays open to any authenticated client.
     permission_map = {
-        "list": (),
-        "retrieve": (),
+        "list": (AuditPermissions.VIEW,),
+        "retrieve": (AuditPermissions.VIEW,),
         "create": (),
     }
     service_class = TrackService
@@ -52,8 +53,7 @@ class TrackViewSet(
         return super().get_serializer_class()
 
     def create(self, request, *args, **kwargs):
-        # Respond with the full read shape (organization_name etc.),
-        # not the ingest payload shape.
+        # Respond with the full read shape, not the ingest payload shape.
         from rest_framework.response import Response
 
         serializer = self.get_serializer(data=request.data)
@@ -69,12 +69,10 @@ class TrackViewSet(
         """
         Ingest one client telemetry event.
 
-        ``user``/``organization`` always resolve server-side — client
-        values are ignored per organization-isolation rules. Mock-flavored
-        aliases (``track_name``, ``duration_ms``) fold into real fields.
+        ``user`` always resolves server-side — client values are ignored.
+        Mock-flavored aliases (``track_name``, ``duration_ms``) fold into
+        real fields.
         """
-        from rest_framework.exceptions import ValidationError
-
         from apps.audit.validators.track import TrackValidator
 
         data = dict(serializer.validated_data)
@@ -88,13 +86,7 @@ class TrackViewSet(
         TrackValidator().validate_event_type(data.get("event_type", ""))
 
         user = self.request.user
-        organization = getattr(self.request, "organization", None)
-        if organization is None:
-            raise ValidationError(
-                {"organization": "Organization context is required."}
-            )
         serializer.instance = self.service_class.create_track(
             user=user if user.is_authenticated else None,
-            organization=organization,
             **data,
         )

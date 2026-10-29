@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.db import models
+from django.db.models.functions import Upper
 
 from apps.core.models.bases import EntityModel
 from apps.production.constants import ShotStatus
@@ -16,19 +17,42 @@ class Shot(EntityModel):
     Shot within a Project.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="shots",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
         related_name="shots",
         db_index=True,
     )
-    sequence_code = models.CharField(max_length=20, blank=True, default="", db_index=True)
+    # The show (cut) this record belongs to. A show-bound membership sees only records of its show
+    # (TPN review TM-002, ADR-0033 D2); none means not yet assigned to a show, which hides the record
+    # from show-bound members and leaves it visible to project-wide ones.
+    show = models.ForeignKey(
+        "production.Show",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="shots",
+        db_index=True,
+    )
+    # Optional episodic hookup: required-by-validation (not by schema) when the
+    # parent project is ``workflow_type == episodic``; the episode must belong
+    # to the shot's project. Enforced in the shot viewset chain rules.
+    episode = models.ForeignKey(
+        "production.Episode",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="shots",
+        db_index=True,
+    )
+    # The sequence the shot belongs to; ``sequence_code`` is read from it (DECISIONS D-32).
+    sequence = models.ForeignKey(
+        "production.Sequence",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="shots",
+    )
     code = models.CharField(max_length=30, db_index=True)
     name = models.CharField(max_length=255, blank=True, default="")
     description = models.TextField(blank=True, default="")
@@ -46,8 +70,6 @@ class Shot(EntityModel):
 
     thumbnail_url = models.URLField(max_length=500, blank=True, default="")
     video_url = models.URLField(max_length=500, blank=True, default="")
-
-    current_version = models.CharField(max_length=20, blank=True, default="v001")
 
     assigned_artist = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -71,15 +93,28 @@ class Shot(EntityModel):
         db_table = "production_shot"
         ordering = ("code",)
         unique_together = [("project", "code")]
+        constraints = [
+            models.UniqueConstraint(
+                Upper("code"), "project", name="production_shot_project_ucode_uniq"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(frame_out__gte=models.F("frame_in")),
+                name="production_shot_frame_range_ck",
+            ),
+        ]
         indexes = [
-            models.Index(fields=["organization", "project"]),
-            models.Index(fields=["project", "sequence_code"]),
+            models.Index(fields=["project", "sequence"]),
             models.Index(fields=["project", "code"]),
             models.Index(fields=["status"]),
         ]
 
     def __str__(self):
         return f"{self.code} - {self.name}"
+
+    @property
+    def sequence_code(self) -> str:
+        """The code of the shot's sequence ("" when it has none); filters use ``sequence__code``."""
+        return self.sequence.code if self.sequence_id else ""  # pyright: ignore[reportAttributeAccessIssue, reportOptionalMemberAccess]
 
     @property
     def frame_count(self):

@@ -10,12 +10,6 @@ from apps.core.models.bases import EntityModel
 
 
 class Media(EntityModel):
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="media_items",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
@@ -51,7 +45,6 @@ class Media(EntityModel):
         db_table = "production_media"
         ordering = ("-created_at",)
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["entity_type", "entity_id"]),
             models.Index(fields=["media_type"]),
         ]

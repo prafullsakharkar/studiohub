@@ -7,19 +7,24 @@ from __future__ import annotations
 from django.conf import settings
 from django.db import models
 
-from apps.production.constants import ProjectStatus, ProjectType
-from apps.production.models.base import ProductionEntityModel
+from apps.core.models.bases import EntityModel
+from apps.production.constants import (
+    ProjectStatus,
+    ProjectType,
+    ProjectWorkflowType,
+)
 
 
-class Project(ProductionEntityModel):
+class Project(EntityModel):
     """
-    Project within an Organization (e.g., Feature Film, Episodic Series).
+    Project — the top-level production container (e.g., Feature Film, Episodic Series).
 
+    Project scope only: no organization FK. ``code`` is globally unique.
     Frontend expects many denormalized fields; we store core fields and expose
     denormalized display names via serializers/selectors.
     """
 
-    code = models.CharField(max_length=20, db_index=True)
+    code = models.CharField(max_length=20, unique=True, db_index=True)
     name = models.CharField(max_length=255, db_index=True)
     description = models.TextField(blank=True, default="")
 
@@ -34,6 +39,16 @@ class Project(ProductionEntityModel):
         choices=ProjectStatus.choices,
         default=ProjectStatus.IN_PROGRESS,
         db_index=True,
+    )
+    workflow_type = models.CharField(
+        max_length=20,
+        choices=ProjectWorkflowType.choices,
+        default=ProjectWorkflowType.STANDARD,
+        db_index=True,
+        help_text=(
+            "'episodic' projects bootstrap an initial episode on create and "
+            "allow episode creation; 'standard' projects have no episodes."
+        ),
     )
 
     fps = models.DecimalField(max_digits=5, decimal_places=3, default=24)
@@ -81,12 +96,6 @@ class Project(ProductionEntityModel):
     class Meta:
         db_table = "production_project"
         ordering = ("-created_at",)
-        unique_together = [("organization", "code")]
-        indexes = [
-            models.Index(fields=["organization", "code"]),
-            models.Index(fields=["organization", "status"]),
-            models.Index(fields=["organization", "type"]),
-        ]
 
     def __str__(self):
         return f"{self.name} ({self.code})"

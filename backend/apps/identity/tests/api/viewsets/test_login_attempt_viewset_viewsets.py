@@ -86,13 +86,15 @@ class TestLoginAttemptViewSet:
 
     @pytest.mark.django_db
     def test_update_login_attempt_staff(self, staff_client):
-        """Test updating login attempt with staff privileges."""
-        attempt = LoginAttemptFactory.create()
-        data = {"success": False}
+        """The attempt ledger is append-only: PATCH is refused and nothing changes."""
+        attempt = LoginAttemptFactory.create(success=True)
         response = staff_client.patch(
-            reverse("api:v1:identity:login-attempt-detail", kwargs={"pk": attempt.id}), data
+            reverse("api:v1:identity:login-attempt-detail", kwargs={"pk": attempt.id}),
+            {"success": False},
         )
-        assert response.status_code == 200
+        assert response.status_code in (403, 405)
+        attempt.refresh_from_db()
+        assert attempt.success is True
 
     @pytest.mark.django_db
     def test_partial_update_login_attempt_unauthenticated(self, api_client):
@@ -106,13 +108,15 @@ class TestLoginAttemptViewSet:
 
     @pytest.mark.django_db
     def test_partial_update_login_attempt_staff(self, staff_client):
-        """Test partially updating login attempt with staff privileges."""
-        attempt = LoginAttemptFactory.create()
-        data = {"success": False}
-        response = staff_client.patch(
-            reverse("api:v1:identity:login-attempt-detail", kwargs={"pk": attempt.id}), data
+        """PUT is refused as well."""
+        attempt = LoginAttemptFactory.create(success=True)
+        response = staff_client.put(
+            reverse("api:v1:identity:login-attempt-detail", kwargs={"pk": attempt.id}),
+            {"success": False},
         )
-        assert response.status_code == 200
+        assert response.status_code in (403, 405)
+        attempt.refresh_from_db()
+        assert attempt.success is True
 
     @pytest.mark.django_db
     def test_destroy_login_attempt_unauthenticated(self, api_client):
@@ -125,9 +129,10 @@ class TestLoginAttemptViewSet:
 
     @pytest.mark.django_db
     def test_destroy_login_attempt_staff(self, staff_client):
-        """Test deleting login attempt with staff privileges."""
+        """DELETE is refused: rows leave only through the retention job."""
         attempt = LoginAttemptFactory.create()
         response = staff_client.delete(
             reverse("api:v1:identity:login-attempt-detail", kwargs={"pk": attempt.id})
         )
-        assert response.status_code == 204
+        assert response.status_code in (403, 405)
+        assert type(attempt).objects.filter(pk=attempt.pk).exists()

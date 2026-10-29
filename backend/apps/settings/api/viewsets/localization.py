@@ -6,8 +6,10 @@ from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.core.api.mixins import StaffWritesRequiredMixin
+from apps.core.permissions.base import IsAuthenticatedPermission
+from apps.identity.permissions import HasPermission
 from apps.settings.api.viewsets.base import SettingsBaseViewSet
+from apps.settings.constants.permissions import SettingsPermissions
 from apps.settings.filters.localization import LocalizationFilter
 from apps.settings.selectors.localization import LocalizationSelector
 from apps.settings.serializers.localization import LocalizationSerializer
@@ -15,7 +17,6 @@ from apps.settings.services.localization import LocalizationService
 
 
 class LocalizationViewSet(
-    StaffWritesRequiredMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
@@ -26,6 +27,24 @@ class LocalizationViewSet(
     """
     ViewSet for Localization.
     """
+
+    permission_classes = (
+        IsAuthenticatedPermission,
+        HasPermission,
+    )
+
+    permission_map = {
+        "list": (SettingsPermissions.VIEW,),
+        "retrieve": (SettingsPermissions.VIEW,),
+        "create": (SettingsPermissions.MANAGE,),
+        "update": (SettingsPermissions.MANAGE,),
+        "partial_update": (SettingsPermissions.MANAGE,),
+        "destroy": (SettingsPermissions.MANAGE,),
+        "activate": (SettingsPermissions.MANAGE,),
+        "deactivate": (SettingsPermissions.MANAGE,),
+        "lock": (SettingsPermissions.MANAGE,),
+        "unlock": (SettingsPermissions.MANAGE,),
+    }
 
     serializer_class = LocalizationSerializer
     service_class = LocalizationService

@@ -12,7 +12,6 @@ from apps.settings.tests.factories import (
     DefinitionFactory,
     FeatureFlagFactory,
     LocalizationFactory,
-    OrganizationSettingFactory,
     SystemSettingFactory,
     ThemeFactory,
 )
@@ -46,12 +45,6 @@ def feature_flag(db) -> FeatureFlagFactory:
 def localization(db) -> LocalizationFactory:
     """Create a localization instance."""
     return LocalizationFactory()
-
-
-@pytest.fixture
-def organization_setting(db) -> OrganizationSettingFactory:
-    """Create an organization setting instance."""
-    return OrganizationSettingFactory()
 
 
 @pytest.fixture

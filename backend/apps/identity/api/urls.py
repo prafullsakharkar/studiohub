@@ -11,7 +11,6 @@ from apps.identity.api.views.authentication import (
     RefreshAPIView,
     ResendVerificationAPIView,
     ResetPasswordAPIView,
-    VerifyEmailAPIView,
 )
 
 from .views.authentication import (
@@ -26,14 +25,8 @@ from .views.authentication import (
 from .views.mfa_compat import (
     MFAAdminResetView,
     MFAConfigView,
-    MFAEmailDisableView,
-    MFAEmailEnableView,
-    MFAEmailVerifyView,
     MFARecoveryCodesRegenerateView,
     MFARecoveryCodesView,
-    MFASMSDisableView,
-    MFASMSEnableView,
-    MFASMSVerifyView,
     MFATOTPDisableView,
     MFATOTPEnableView,
     MFATOTPSetupView,
@@ -70,11 +63,6 @@ urlpatterns = router_urls + [
         "password/reset/",
         ResetPasswordAPIView.as_view(),
         name="reset-password",
-    ),
-    path(
-        "email/verify/",
-        VerifyEmailAPIView.as_view(),
-        name="verify-email",
     ),
     path(
         "email/resend/",
@@ -122,12 +110,6 @@ urlpatterns = router_urls + [
     path("mfa/totp/enable/", MFATOTPEnableView.as_view(), name="mfa-totp-enable"),
     path("mfa/totp/verify/", MFATOTPVerifyView.as_view(), name="mfa-totp-verify"),
     path("mfa/totp/disable/", MFATOTPDisableView.as_view(), name="mfa-totp-disable"),
-    path("mfa/sms/enable/", MFASMSEnableView.as_view(), name="mfa-sms-enable"),
-    path("mfa/sms/verify/", MFASMSVerifyView.as_view(), name="mfa-sms-verify"),
-    path("mfa/sms/disable/", MFASMSDisableView.as_view(), name="mfa-sms-disable"),
-    path("mfa/email/enable/", MFAEmailEnableView.as_view(), name="mfa-email-enable"),
-    path("mfa/email/verify/", MFAEmailVerifyView.as_view(), name="mfa-email-verify"),
-    path("mfa/email/disable/", MFAEmailDisableView.as_view(), name="mfa-email-disable"),
     path("mfa/recovery-codes/", MFARecoveryCodesView.as_view(), name="mfa-recovery-codes"),
     path(
         "mfa/recovery-codes/regenerate/",

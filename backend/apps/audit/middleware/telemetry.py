@@ -14,6 +14,9 @@ from __future__ import annotations
 import contextlib
 import time
 
+from apps.core.logging.redaction import redact_full_path, sensitive_names_for_path
+from apps.core.utils.client_ip import get_client_ip
+
 # Paths that are never telemetry (docs, schema, health, non-API traffic).
 _SKIP_PREFIXES = (
     "/api/schema",
@@ -49,9 +52,8 @@ class APITelemetryMiddleware:
     """
     Record API ingress telemetry.
 
-    Place after ``OrganizationMiddleware`` so ``request.organization``
-    is resolved. Skips anonymous/system traffic (the organization FK is
-    required) and non-API paths.
+    Platform-global (org-free): one ``APIRequest`` row per API call.
+    Skips non-API paths.
     """
 
     def __init__(self, get_response):
@@ -75,32 +77,36 @@ class APITelemetryMiddleware:
         from apps.audit.models import APIRequest
 
         user = getattr(request, "user", None)
-        organization = getattr(request, "organization", None)
-        if organization is None:
-            return
-        if user is None or not getattr(user, "is_authenticated", False):
+        if user is not None and not getattr(user, "is_authenticated", False):
             user = None
 
         status_code = getattr(response, "status_code", 0) or 0
         APIRequest.objects.create(
             method=(request.method or "GET").upper(),
             path=request.path or "/",
-            full_path=request.get_full_path()[:2000],
+            full_path=self._full_path(request)[:2000],
             status_code=status_code,
             status_category=_status_category(status_code),
             response_time_ms=max(elapsed_ms, 0),
             request_size_bytes=int(request.META.get("CONTENT_LENGTH") or 0),
             response_size_bytes=0,
             user=user,
-            organization=organization,
             ip_address=self._client_ip(request),
             user_agent=(request.META.get("HTTP_USER_AGENT") or "")[:1000],
             api_version=_api_version(request.path),
         )
 
     @staticmethod
+    def _full_path(request) -> str:
+        """Path plus query string, with registered personal-data values redacted.
+
+        Unregistered paths keep Django's own ``get_full_path()`` unchanged.
+        """
+        path = request.path or "/"
+        if sensitive_names_for_path(path):
+            return redact_full_path(path, request.META.get("QUERY_STRING", ""))
+        return request.get_full_path()
+
+    @staticmethod
     def _client_ip(request) -> str | None:
-        forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
-        if forwarded:
-            return forwarded.split(",")[0].strip()[:45]
-        return (request.META.get("REMOTE_ADDR") or None)
+        return get_client_ip(request)

@@ -1,9 +1,7 @@
 """
 Shared Django admin base classes.
 
-Domain-neutral only: Core must never import business domains, so
-organization-aware behavior lives in
-``apps.organization.admin.base`` instead.
+Domain-neutral only: Core must never import business domains.
 """
 
 from __future__ import annotations
@@ -42,3 +40,12 @@ class StudioHubModelAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTyp
             if name in available and name not in fields:
                 fields.append(name)
         return tuple(fields)
+
+
+class PlatformScopedModelAdmin(StudioHubModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
+    """
+    Base admin for platform-global entities.
+
+    No organization scoping and no organization list filters:
+    platform data has no tenant partition.
+    """

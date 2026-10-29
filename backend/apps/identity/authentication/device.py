@@ -8,6 +8,8 @@ from django.conf import settings
 from django.core import signing
 from django.http import HttpRequest
 
+from apps.core.utils.client_ip import get_client_ip
+
 
 @dataclass(frozen=True)
 class DeviceFingerprint:
@@ -18,9 +20,12 @@ class DeviceFingerprint:
     ip_address: str | None
 
 
-class TrustedDeviceService:
+class DeviceTokenService:
     """
-    Enterprise trusted device helper.
+    Device fingerprint and signed remember-device token helper.
+
+    (Not the trusted-device CRUD service: that is
+    ``apps.identity.services.trusted_device.TrustedDeviceService``.)
 
     Features
     --------
@@ -95,12 +100,7 @@ class TrustedDeviceService:
         cls,
         request: HttpRequest,
     ) -> str | None:
-        forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
-
-        if forwarded:
-            return forwarded.split(",")[0].strip()
-
-        return request.META.get("REMOTE_ADDR")
+        return get_client_ip(request)
 
     @classmethod
     def browser(

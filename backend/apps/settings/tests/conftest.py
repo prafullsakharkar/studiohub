@@ -9,13 +9,11 @@ import pytest
 from django.test import RequestFactory
 
 from apps.identity.tests.factories import UserFactory
-from apps.organization.tests.factories import OrganizationFactory
 from apps.settings.tests.factories import (
     CategoryFactory,
     DefinitionFactory,
     FeatureFlagFactory,
     LocalizationFactory,
-    OrganizationSettingFactory,
     SystemSettingFactory,
     ThemeFactory,
 )
@@ -64,22 +62,26 @@ def authenticated_client(user):
 
 
 @pytest.fixture
+def admin_client(admin_user):
+    """Get a superuser API client (break-glass, ADR-0033 D4)."""
+    from rest_framework.test import APIClient
+
+    client = APIClient()
+    client.force_authenticate(user=admin_user)
+    return client
+
+
+@pytest.fixture
 def staff_client(staff_user):
     """Get a staff API client (staff holds explicit full permission grants)."""
     from rest_framework.test import APIClient
 
-    from apps.organization.tests.rbac_helpers import grant_all_known_codes
+    from apps.identity.tests.rbac_helpers import grant_all_known_codes
 
     grant_all_known_codes(staff_user)
     client = APIClient()
     client.force_authenticate(user=staff_user)
     return client
-
-
-@pytest.fixture
-def organization() -> OrganizationFactory:
-    """Create an organization."""
-    return OrganizationFactory()
 
 
 @pytest.fixture
@@ -110,12 +112,6 @@ def feature_flag() -> FeatureFlagFactory:
 def localization() -> LocalizationFactory:
     """Create a localization instance."""
     return LocalizationFactory()
-
-
-@pytest.fixture
-def organization_setting() -> OrganizationSettingFactory:
-    """Create an organization setting instance."""
-    return OrganizationSettingFactory()
 
 
 @pytest.fixture

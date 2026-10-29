@@ -14,10 +14,8 @@ from apps.audit.models.audit_log import AuditLog
 from apps.audit.models.background_job import BackgroundJob
 from apps.audit.models.change_log import ChangeLog
 from apps.audit.models.error_log import ErrorLog
-from apps.audit.models.login_history import LoginHistory
 from apps.audit.models.track import Track
 from apps.identity.tests.factories import UserFactory
-from apps.organization.tests.factories import OrganizationFactory
 
 
 class AuditLogFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
@@ -26,7 +24,6 @@ class AuditLogFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeA
     class Meta:
         model = AuditLog
 
-    organization = factory.SubFactory(OrganizationFactory)
     actor = factory.SubFactory(UserFactory)
     action = factory.Faker(
         "random_element",
@@ -53,7 +50,6 @@ class ActivityFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeA
     class Meta:
         model = Activity
 
-    organization = factory.SubFactory(OrganizationFactory)
     user = factory.SubFactory(UserFactory)
     activity_type = factory.Faker(
         "random_element",
@@ -80,7 +76,6 @@ class APIRequestFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTyp
     class Meta:
         model = APIRequest
 
-    organization = factory.SubFactory(OrganizationFactory)
     user = factory.SubFactory(UserFactory)
     method = factory.Faker(
         "random_element", elements=["GET", "POST", "PUT", "PATCH", "DELETE"]
@@ -102,7 +97,6 @@ class BackgroundJobFactory(DjangoModelFactory):  # pyright: ignore[reportMissing
     class Meta:
         model = BackgroundJob
 
-    organization = factory.SubFactory(OrganizationFactory)
     job_type = factory.Faker(
         "random_element",
         elements=["email", "sms", "push", "report", "cleanup", "sync"],
@@ -129,7 +123,6 @@ class ChangeLogFactory(DjangoModelFactory):  # pyright: ignore[reportMissingType
     class Meta:
         model = ChangeLog
 
-    organization = factory.SubFactory(OrganizationFactory)
     user = factory.SubFactory(UserFactory)
     change_type = factory.Faker(
         "random_element",
@@ -154,7 +147,6 @@ class ErrorLogFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeA
     class Meta:
         model = ErrorLog
 
-    organization = factory.SubFactory(OrganizationFactory)
     user = factory.SubFactory(UserFactory)
     error_type = factory.Faker(
         "random_element",
@@ -182,39 +174,6 @@ class ErrorLogFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeA
     error_code = factory.Faker("word")
 
 
-class LoginHistoryFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
-    """Factory for LoginHistory model."""
-
-    class Meta:
-        model = LoginHistory
-
-    organization = factory.SubFactory(OrganizationFactory)
-    user = factory.SubFactory(UserFactory)
-    login_type = factory.Faker(
-        "random_element",
-        elements=[
-            LoginHistory.TYPE_LOGIN,
-            LoginHistory.TYPE_LOGOUT,
-            LoginHistory.TYPE_DEVICE_LOGIN,
-        ],
-    )
-    login_method = factory.Faker(
-        "random_element", elements=["password", "oauth", "sso", "api_key"]
-    )
-    status = factory.Faker(
-        "random_element",
-        elements=[
-            LoginHistory.STATUS_SUCCESS,
-            LoginHistory.STATUS_FAILED,
-            LoginHistory.STATUS_EXPIRED,
-        ],
-    )
-    ip_address = factory.Faker("ipv4")
-    user_agent = factory.Faker("user_agent")
-    mfa_enabled = factory.Faker("boolean")
-    failure_reason = factory.Faker("text", max_nb_chars=200)
-    session_id = factory.Faker("uuid4")
-    browser = factory.Faker("word")
 
 
 class TrackFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
@@ -223,7 +182,6 @@ class TrackFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgu
     class Meta:
         model = Track
 
-    organization = factory.SubFactory(OrganizationFactory)
     user = factory.SubFactory(UserFactory)
     event_type = factory.Faker(
         "random_element",

@@ -3,10 +3,11 @@ from __future__ import annotations
 from datetime import timedelta
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 
-from apps.identity.authentication.device import TrustedDeviceService
+from apps.identity.authentication.device import DeviceTokenService
 from apps.identity.events.mfa import (
     TrustedDeviceRegistered,
     TrustedDeviceRevoked,
@@ -27,19 +28,35 @@ class MFATrustedDeviceService(BaseMFAService):
     )
 
     @classmethod
+    def _audit(cls, *, user, event, device):
+        """Best-effort security event; never fails the device operation."""
+        from apps.identity.choices import SecurityEventType
+        from apps.identity.services.security_event import SecurityEventService
+
+        SecurityEventService.emit(
+            user=user,
+            event_type=getattr(SecurityEventType, event),
+            description=event.replace("_", " ").capitalize() + ".",
+            metadata={"device_id": str(device.pk)},
+        )
+
+    @classmethod
     @transaction.atomic
     def register(
         cls,
         *,
         user,
         request,
-        device_name: str | None = None,
     ):
         """
-        Register current device as trusted.
+        Register current device as trusted for ``user``.
+
+        Trust is minted here, server-side, after the caller has verified an
+        MFA challenge; it is never accepted from client input. Re-registering
+        a revoked device renews it (a fresh, explicit grant).
         """
 
-        fingerprint = TrustedDeviceService.build_fingerprint(
+        fingerprint = DeviceTokenService.build_fingerprint(
             request,
         )
 
@@ -51,15 +68,21 @@ class MFATrustedDeviceService(BaseMFAService):
             user=user,
             fingerprint=fingerprint.fingerprint,
             defaults={
-                "device_name": device_name or fingerprint.browser,
                 "browser": fingerprint.browser,
-                "operating_system": fingerprint.operating_system,
+                "platform": fingerprint.operating_system,
                 "ip_address": fingerprint.ip_address,
-                "trusted": True,
-                "revoked": False,
-                "last_used_at": timezone.now(),
+                "user_agent": fingerprint.user_agent,
+                "is_trusted": True,
+                "revoked_at": None,
+                "last_login_at": timezone.now(),
                 "expires_at": expires_at,
             },
+        )
+
+        cls._audit(
+            user=user,
+            event="TRUSTED_DEVICE_ADDED",
+            device=device,
         )
 
         cls.publish(
@@ -84,14 +107,21 @@ class MFATrustedDeviceService(BaseMFAService):
 
         cls.TrustedDeviceValidator.validate_trust(device)
 
-        device.trusted = False
-        device.revoked = True
+        device.is_trusted = False
+        device.revoked_at = timezone.now()
 
         device.save(
             update_fields=[
-                "trusted",
-                "revoked",
+                "is_trusted",
+                "revoked_at",
+                "updated_at",
             ]
+        )
+
+        cls._audit(
+            user=device.user,
+            event="TRUSTED_DEVICE_REMOVED",
+            device=device,
         )
 
         cls.publish(
@@ -116,11 +146,13 @@ class MFATrustedDeviceService(BaseMFAService):
 
         devices = cls.TrustedDevice.objects.filter(
             user=user,
-            revoked=False,
+            revoked_at__isnull=True,
         )
 
         for device in devices:
             cls.revoke(device=device)
+
+        return len(devices)
 
     @classmethod
     def validate(
@@ -134,31 +166,42 @@ class MFATrustedDeviceService(BaseMFAService):
         """
 
         token = request.COOKIES.get(
-            TrustedDeviceService.COOKIE_NAME,
+            DeviceTokenService.COOKIE_NAME,
         )
 
         if not token:
             return False
 
-        if not TrustedDeviceService.matches(
+        if not DeviceTokenService.matches(
             token=token,
             request=request,
             user_id=user.pk,
         ):
             return False
 
-        fingerprint = TrustedDeviceService.build_fingerprint(
+        fingerprint = DeviceTokenService.build_fingerprint(
             request,
         )
 
-        device = cls.TrustedDeviceSelector.get_by_fingerprint(
-            fingerprint.fingerprint,
+        # Owner-scoped: a device row belonging to anyone else never counts,
+        # even if its fingerprint matches (DOM-DEV-01).
+        device = (
+            cls.TrustedDevice.objects.filter(
+                user=user,
+                fingerprint=fingerprint.fingerprint,
+            )
+            .select_related("user")
+            .first()
         )
 
-        if device is None:
+        if device is None or not device.is_trusted:
             return False
 
-        cls.TrustedDeviceValidator.validate_use(device)
+        # Revoked or expired devices fail closed instead of raising.
+        try:
+            cls.TrustedDeviceValidator.validate_use(device)
+        except ValidationError:
+            return False
 
         cls.touch(device=device)
 
@@ -174,11 +217,12 @@ class MFATrustedDeviceService(BaseMFAService):
         Update last used timestamp.
         """
 
-        device.last_used_at = timezone.now()
+        device.last_login_at = timezone.now()
 
         device.save(
             update_fields=[
-                "last_used_at",
+                "last_login_at",
+                "updated_at",
             ]
         )
 
@@ -196,19 +240,19 @@ class MFATrustedDeviceService(BaseMFAService):
         Attach remember-device cookie.
         """
 
-        fingerprint = TrustedDeviceService.build_fingerprint(
+        fingerprint = DeviceTokenService.build_fingerprint(
             request,
         )
 
-        token = TrustedDeviceService.sign(
+        token = DeviceTokenService.sign(
             fingerprint=fingerprint.fingerprint,
             user_id=user.pk,
         )
 
         response.set_cookie(
-            TrustedDeviceService.COOKIE_NAME,
+            DeviceTokenService.COOKIE_NAME,
             token,
-            **TrustedDeviceService.cookie_kwargs(),
+            **DeviceTokenService.cookie_kwargs(),
         )
 
         return response
@@ -224,7 +268,7 @@ class MFATrustedDeviceService(BaseMFAService):
         """
 
         response.delete_cookie(
-            TrustedDeviceService.COOKIE_NAME,
+            DeviceTokenService.COOKIE_NAME,
         )
 
         return response

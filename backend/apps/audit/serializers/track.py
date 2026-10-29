@@ -15,7 +15,6 @@ class TrackSerializer(serializers.ModelSerializer[Track]):
     
     user_email = serializers.CharField(source="user.email", read_only=True)
     user_name = serializers.CharField(source="user.full_name", read_only=True)
-    organization_name = serializers.CharField(source="organization.name", read_only=True)
     
     class Meta:
         model = Track
@@ -27,8 +26,6 @@ class TrackSerializer(serializers.ModelSerializer[Track]):
             "user",
             "user_email",
             "user_name",
-            "organization",
-            "organization_name",
             "session_id",
             "page_url",
             "page_title",
@@ -52,7 +49,7 @@ class TrackIngestSerializer(serializers.Serializer[Any]):
 
     Accepts the frontend contract including its mock-flavored aliases
     (``track_name`` -> ``event_name``, ``duration_ms`` folded into
-    ``metadata``). ``user``/``organization`` are never accepted from the
+    ``metadata``). ``user`` is never accepted from the
     client — the viewset resolves them server-side.
     """
 

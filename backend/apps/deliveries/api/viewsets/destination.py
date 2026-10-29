@@ -2,6 +2,7 @@
 Delivery destination viewset for API endpoints.
 """
 from apps.core.api.pagination import StandardPagination
+from apps.core.api.viewsets.platform_crud import PlatformCrudViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.deliveries.api.serializers.destination import (
     DestinationDetailSerializer,
@@ -10,10 +11,9 @@ from apps.deliveries.api.serializers.destination import (
 from apps.deliveries.constants.permissions import DeliveryPermissions
 from apps.deliveries.selectors.destination import DestinationSelector
 from apps.identity.permissions import HasPermission
-from apps.organization.api.viewsets.scoped import OrganizationScopedViewSet
 
 
-class DestinationViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMissingTypeArgument]
+class DestinationViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTypeArgument]
     """ViewSet for DeliveryDestination."""
 
     selector_class = DestinationSelector
@@ -39,9 +39,3 @@ class DestinationViewSet(OrganizationScopedViewSet):  # pyright: ignore[reportMi
 
     search_fields = ("name", "endpoint", "storage_region")
     ordering_fields = ("name", "created_at")
-
-    def get_perform_create_kwargs(self):
-        user = self.request.user
-        return {
-            "created_by": user if user.is_authenticated else None,
-        }

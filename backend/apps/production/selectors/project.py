@@ -6,6 +6,7 @@ from django.db.models import QuerySet
 
 from apps.production.models import Project
 from apps.production.selectors.base import ProductionBaseSelector
+from apps.production.selectors.delivery_figures import delivery_figures
 
 
 class ProjectSelector(ProductionBaseSelector):
@@ -29,13 +30,26 @@ class ProjectSelector(ProductionBaseSelector):
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Project]:
         return Project.objects.select_related(
-            "organization", "supervisor", "coordinator"
+            "supervisor", "coordinator"
         ).all()
 
     @classmethod
-    def resolve_by_lookup(cls, organization, lookup: Any) -> Project | None:
+    def resolve_visible(cls, request, value: Any) -> Project | None:
         """
-        Resolve a project within ``organization`` from a list-filter value.
+        The project named by UUID, code or mock id, if the caller may use it.
+
+        ``None`` for an unknown, deleted or out-of-reach project alike, so a caller answers the
+        same "Unknown project." for each (no existence oracle). Platform admins reach every project.
+        """
+        project = cls.resolve_by_lookup(value)
+        if project is None or not cls.user_has_project_access(request=request, project=project):
+            return None
+        return project
+
+    @classmethod
+    def resolve_by_lookup(cls, lookup: Any) -> Project | None:
+        """
+        Resolve a project from a list-filter value.
 
         Accepts UUID pk, ``code`` (case-insensitive), or frontend mock-dataset
         id (``proj-001`` …). Returns ``None`` when unresolvable; callers turn
@@ -49,12 +63,7 @@ class ProjectSelector(ProductionBaseSelector):
         text = str(lookup).strip()
         if not text:
             return None
-        # No org context (e.g. header-less staff call): resolve globally so
-        # previously working UUID lookups keep working. With an org, scope to
-        # it so mock ids/codes can never cross the tenant boundary.
         base = cls.get_queryset().filter(is_deleted=False)
-        if organization is not None:
-            base = base.filter(organization=organization)
         hit: Any = None
         try:
             hit = base.filter(id=text).first()
@@ -75,7 +84,6 @@ class ProjectSelector(ProductionBaseSelector):
     @classmethod
     def summary_counts(cls, project) -> dict:
         """Aggregate entity counts for a project (summary/statistics contract)."""
-        from apps.deliveries.models import DeliveryPackage
         from apps.production.models import (
             Asset,
             EditorialCut,
@@ -87,19 +95,16 @@ class ProjectSelector(ProductionBaseSelector):
             Version,
         )
 
-        organization = project.organization
-        sequences = Sequence.objects.filter(organization=organization, project=project).count()
-        shots_qs = Shot.objects.filter(organization=organization, project=project)
+        sequences = Sequence.objects.filter(project=project).count()
+        shots_qs = Shot.objects.filter(project=project)
         shots = shots_qs.count()
-        tasks_qs = Task.objects.filter(organization=organization, project=project)
+        tasks_qs = Task.objects.filter(project=project)
         tasks = tasks_qs.count()
-        assets = Asset.objects.filter(organization=organization, project=project).count()
-        versions = Version.objects.filter(organization=organization, project=project).count()
-        reviews = Review.objects.filter(organization=organization, project=project).count()
-        deliveries = DeliveryPackage.objects.filter(
-            organization=organization, project=project
-        ).count()
-        notes = ProjectNote.objects.filter(organization=organization, project=project).count()
+        assets = Asset.objects.filter(project=project).count()
+        versions = Version.objects.filter(project=project).count()
+        reviews = Review.objects.filter(project=project).count()
+        deliveries = delivery_figures().count(project)
+        notes = ProjectNote.objects.filter(project=project).count()
         return {
             "sequences": sequences,
             "shots": shots,
@@ -110,7 +115,7 @@ class ProjectSelector(ProductionBaseSelector):
             "deliveries": deliveries,
             "notes": notes,
             "editorial": EditorialCut.objects.filter(
-                organization=organization, project=project
+                project=project
             ).count(),
             "approved_shots": shots_qs.filter(status="Approved").count(),
             "in_progress_shots": shots_qs.filter(status="In Progress").count(),

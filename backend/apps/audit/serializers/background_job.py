@@ -11,7 +11,6 @@ class BackgroundJobSerializer(serializers.ModelSerializer[BackgroundJob]):
     Serializer for BackgroundJob.
     """
     
-    organization_name = serializers.CharField(source="organization.name", read_only=True)
     
     class Meta:
         model = BackgroundJob
@@ -22,8 +21,6 @@ class BackgroundJobSerializer(serializers.ModelSerializer[BackgroundJob]):
             "status",
             "progress",
             "description",
-            "organization",
-            "organization_name",
             "job_id",
             "queue_name",
             "worker_id",

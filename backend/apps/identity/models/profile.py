@@ -23,6 +23,8 @@ class Profile(EntityModel):
 
     first_name = models.CharField(
         max_length=100,
+        blank=True,
+        default="",
     )
 
     last_name = models.CharField(
@@ -32,12 +34,23 @@ class Profile(EntityModel):
 
     display_name = models.CharField(
         max_length=255,
+        blank=True,
+        default="",
     )
 
     avatar = models.ImageField(
         upload_to="avatars/",
         blank=True,
         null=True,
+    )
+
+    # Remote avatar URL (frontend mock `avatar_url`, e.g. Unsplash). Mirrors
+    # the org Client/Vendor `logo_url` pattern; uploaded files still use
+    # `avatar`. The API prefers `avatar_url` when set.
+    avatar_url = models.URLField(
+        max_length=500,
+        blank=True,
+        default="",
     )
 
     phone = models.CharField(

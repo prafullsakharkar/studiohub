@@ -7,7 +7,24 @@ class AuthenticationException(AuthenticationFailed):
 
 
 class InvalidCredentials(AuthenticationException):
+    """
+    The single client-visible login failure.
+
+    Unknown user, wrong password, inactive, deleted and locked accounts all
+    raise this with the same message and status so a caller cannot tell them
+    apart. ``internal_reason`` records the precise cause for the (access
+    restricted) login-attempt ledger and is never serialized.
+    """
+
     default_detail = "Invalid username or password."
+
+    internal_reason = "invalid_credentials"
+
+    def __init__(self, detail=None, code=None, *, reason=None):
+        super().__init__(detail, code)
+
+        if reason:
+            self.internal_reason = reason
 
 
 class UserInactive(AuthenticationException):
@@ -45,6 +62,8 @@ class SessionRevoked(AuthenticationException):
 class TooManyLoginAttempts(AuthenticationException):
     default_detail = "Too many login attempts."
 
+    internal_reason = "too_many_attempts"
+
 
 class IPBlocked(APIException):
     """
@@ -70,3 +89,29 @@ class AccountLocked(AuthenticationException):
 
 class MFARequired(AuthenticationException):
     default_detail = "Multi-factor Authentication Required."
+
+
+class MFAChallengeInvalid(AuthenticationException):
+    """
+    The pre-auth challenge is unknown, expired, tampered with or already used.
+
+    One message for every cause, so a caller cannot probe the challenge.
+    """
+
+    default_detail = "Invalid or expired verification challenge."
+
+    default_code = "mfa_challenge_invalid"
+
+
+class MFACodeInvalid(AuthenticationException):
+    default_detail = "Invalid verification code."
+
+    default_code = "mfa_code_invalid"
+
+
+class MFALockedOut(APIException):
+    """Too many failed second-factor attempts; retry after the lockout."""
+
+    status_code = status.HTTP_429_TOO_MANY_REQUESTS
+    default_detail = "Too many failed verification attempts. Try again later."
+    default_code = "mfa_locked"

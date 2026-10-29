@@ -36,9 +36,9 @@ class IsAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request: Request, view: APIView) -> bool:
         if request.method in permissions.SAFE_METHODS:
             return True
-        return bool(request.user and getattr(request.user, "is_staff", False))
+        return bool(request.user and getattr(request.user, "is_superuser", False))
 
     def has_object_permission(self, request: Request, view: APIView, obj: Any) -> bool:
         if request.method in permissions.SAFE_METHODS:
             return True
-        return bool(request.user and getattr(request.user, "is_staff", False))
+        return bool(request.user and getattr(request.user, "is_superuser", False))

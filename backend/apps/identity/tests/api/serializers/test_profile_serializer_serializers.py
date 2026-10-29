@@ -51,7 +51,12 @@ class TestProfileSerializer:
         serializer = ProfileCreateSerializer(data=data)
         assert serializer.is_valid()
 
-        profile = serializer.save()
+        # ``user`` is read-only: a client-supplied value is ignored and the
+        # caller must bind the owner explicitly.
+        assert "user" not in serializer.validated_data
+
+        profile = serializer.save(user=user)
+        assert profile.user_id == user.id
         assert profile.first_name == "John"
         assert profile.last_name == "Doe"
 

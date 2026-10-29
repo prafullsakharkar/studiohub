@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.db import models
+from django.db.models.functions import Upper
 
 from apps.core.models.bases import EntityModel
 from apps.production.constants import TaskPriority, TaskStatus
@@ -13,18 +14,16 @@ from apps.production.constants import TaskPriority, TaskStatus
 
 class Task(EntityModel):
     """
-    Task assigned to a resource, linked to a Shot or Asset via entity_type/id.
+    Task assigned to a resource, about one Shot, Asset or Sequence of its project (or none).
+
+    ``shot`` / ``asset`` / ``sequence`` are the link (at most one; DECISIONS D-28). The
+    ``entity_*`` text columns are copies of it kept in step on save; on a task whose old text
+    could not be matched to a real record they remain the only trace.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="tasks",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="tasks",
         null=True,
         blank=True,
@@ -33,6 +32,17 @@ class Task(EntityModel):
 
     title = models.CharField(max_length=255, db_index=True)
     code = models.CharField(max_length=50, db_index=True)
+
+    # What the task is about. At most one is set; none means a project-level (General) task.
+    shot = models.ForeignKey(
+        "production.Shot", on_delete=models.PROTECT, null=True, blank=True, related_name="tasks"
+    )
+    asset = models.ForeignKey(
+        "production.Asset", on_delete=models.PROTECT, null=True, blank=True, related_name="tasks"
+    )
+    sequence = models.ForeignKey(
+        "production.Sequence", on_delete=models.PROTECT, null=True, blank=True, related_name="tasks"
+    )
 
     entity_type = models.CharField(
         max_length=20,
@@ -44,11 +54,21 @@ class Task(EntityModel):
     entity_code = models.CharField(max_length=50, blank=True, default="")
     entity_name = models.CharField(max_length=255, blank=True, default="")
 
+    # The pipeline step, from the studio's task type catalog. Empty on older tasks: their
+    # ``department`` text is a department, not a step, so nothing was guessed (D-27).
+    task_type = models.ForeignKey(
+        "masterdata.MasterTaskType",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="tasks",
+    )
+
     department = models.CharField(max_length=100, blank=True, default="", db_index=True)
     department_id = models.CharField(max_length=50, blank=True, default="")
 
     team = models.ForeignKey(
-        "organization.Team",
+        "masterdata.Team",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -96,26 +116,56 @@ class Task(EntityModel):
         db_index=True,
     )
 
-    is_archived = models.BooleanField(default=False, db_index=True)
-
     # Denormalized for quick filtering (also in schedule)
     due_date = models.DateField(null=True, blank=True)
     estimated_hours = models.DecimalField(max_digits=6, decimal_places=2, default=0)
-    logged_hours = models.DecimalField(max_digits=6, decimal_places=2, default=0)
 
     class Meta:
         db_table = "production_task"
         ordering = ("-created_at",)
         unique_together = [("project", "code")]
+        constraints = [
+            models.UniqueConstraint(
+                Upper("code"), "project", name="production_task_project_ucode_uniq"
+            ),
+            # At most one of shot / asset / sequence: at least two of the three are empty.
+            models.CheckConstraint(
+                condition=(
+                    models.Q(shot__isnull=True, asset__isnull=True)
+                    | models.Q(shot__isnull=True, sequence__isnull=True)
+                    | models.Q(asset__isnull=True, sequence__isnull=True)
+                ),
+                name="production_task_one_entity_ck",
+            ),
+        ]
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["project", "entity_type"]),
             models.Index(fields=["project", "entity_id"]),
             models.Index(fields=["status"]),
             models.Index(fields=["priority"]),
-            models.Index(fields=["is_archived"]),
             models.Index(fields=["department"]),
         ]
 
     def __str__(self):
         return f"{self.code} - {self.title}"
+
+    def save(self, *args, **kwargs):
+        # Keep the text copies in step with the link they copy (not when a save leaves the link alone).
+        update_fields = kwargs.get("update_fields")
+        touches_link = update_fields is None or {"shot", "asset", "sequence"} & set(update_fields)
+        linked = self.shot_id or self.asset_id or self.sequence_id  # pyright: ignore[reportAttributeAccessIssue]
+        if linked and touches_link:
+            entity = self.shot if self.shot_id else self.asset if self.asset_id else self.sequence  # pyright: ignore[reportAttributeAccessIssue]
+            self.entity_type = type(entity).__name__
+            self.entity_id = str(entity.pk)
+            self.entity_code = entity.code
+            self.entity_name = getattr(entity, "name", "") or ""
+            if update_fields is not None:
+                kwargs["update_fields"] = {
+                    *update_fields,
+                    "entity_type",
+                    "entity_id",
+                    "entity_code",
+                    "entity_name",
+                }
+        super().save(*args, **kwargs)

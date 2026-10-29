@@ -2,7 +2,6 @@ from .base import BaseFilterSet
 from .date import DateRangeFilterMixin
 from .metadata import MetadataFilterMixin
 from .ordering import OrderingFilterMixin
-from .organization import OrganizationFilterMixin
 from .ownership import OwnershipFilterMixin
 from .search import SearchFilterMixin
 from .soft_delete import SoftDeleteFilterMixin
@@ -17,7 +16,6 @@ __all__ = [
     "DateRangeFilterMixin",
     "MetadataFilterMixin",
     "OrderingFilterMixin",
-    "OrganizationFilterMixin",
     "OwnershipFilterMixin",
     "SearchFilterMixin",
     "SoftDeleteFilterMixin",

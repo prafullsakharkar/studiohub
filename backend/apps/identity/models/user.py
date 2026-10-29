@@ -4,6 +4,7 @@ from django.contrib.auth.models import (
 )
 from django.core.validators import validate_email
 from django.db import models
+from django.db.models.functions import Lower
 
 from apps.core.models import EntityModel
 from apps.identity.managers import UserManager
@@ -62,6 +63,13 @@ class User(EntityModel, AbstractBaseUser, PermissionsMixin):
             ),
         ]
 
+        constraints = [
+            models.UniqueConstraint(
+                Lower("email"),
+                name="uniq_identity_user_email_lower",
+            ),
+        ]
+
     def clean(self):
         self.email = self.__class__.objects.normalize_email(self.email).lower()
 
@@ -77,17 +85,6 @@ class User(EntityModel, AbstractBaseUser, PermissionsMixin):
     def username(self):
         """Usernames are the user's email address in this system."""
         return self.email
-
-    @property
-    def organizations(self):
-        """
-        Organizations the user belongs to (via organization memberships).
-        """
-        from apps.organization.models import Organization
-
-        return Organization.objects.filter(
-            memberships__user=self,
-        )
 
     @property
     def display_name(self):

@@ -1,17 +1,31 @@
 import factory
+from django.utils import timezone
 from factory.django import DjangoModelFactory
 
 from apps.identity.tests.factories import UserFactory
-from apps.organization.tests.factories import OrganizationFactory
-from apps.production.models import Asset, Project, Sequence, Shot, Task
+from apps.production.models import (
+    Asset,
+    EditorialTrack,
+    Episode,
+    Media,
+    Playlist,
+    Project,
+    Review,
+    Sequence,
+    Shot,
+    Show,
+    Task,
+    Timelog,
+    Version,
+    Workflow,
+)
 
 
 class ProjectFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     class Meta:
         model = Project
-        django_get_or_create = ("code", "organization")
+        django_get_or_create = ("code",)
 
-    organization = factory.SubFactory(OrganizationFactory)
     code = factory.Sequence(lambda n: f"PROJ{n:03d}")
     name = factory.Sequence(lambda n: f"Project {n}")
     type = "Feature Film"
@@ -31,9 +45,20 @@ class ShotFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgum
         model = Shot
         django_get_or_create = ("code", "project")
 
-    organization = factory.SubFactory(OrganizationFactory)
+    class Params:
+        #: ``ShotFactory(sequence_code="SQ1")`` links the shot to that sequence (made if missing)
+        sequence_code = ""
+
     project = factory.SubFactory(ProjectFactory)
-    sequence_code = "SEQ01"
+    sequence = factory.LazyAttribute(
+        lambda o: (
+            Sequence.objects.get_or_create(
+                project=o.project, code=o.sequence_code, defaults={"name": o.sequence_code}
+            )[0]
+            if o.sequence_code
+            else None
+        )
+    )
     code = factory.Sequence(lambda n: f"SHOT{n:03d}")
     name = factory.Sequence(lambda n: f"Shot {n}")
     status = "Not Started"
@@ -49,11 +74,7 @@ class SequenceFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeA
         model = Sequence
         django_get_or_create = ("code", "project")
 
-    organization = factory.SubFactory(OrganizationFactory)
-    project = factory.SubFactory(
-        ProjectFactory,
-        organization=factory.SelfAttribute("..organization"),
-    )
+    project = factory.SubFactory(ProjectFactory)
     code = factory.Sequence(lambda n: f"SEQ{n:03d}")
     name = factory.Sequence(lambda n: f"Sequence {n}")
     status = "Not Started"
@@ -63,12 +84,26 @@ class SequenceFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeA
     tags = factory.LazyFunction(list)
 
 
+class EpisodeFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = Episode
+        django_get_or_create = ("code", "project")
+
+    project = factory.SubFactory(ProjectFactory)
+    code = factory.Sequence(lambda n: f"EP{n:03d}")
+    name = factory.Sequence(lambda n: f"Episode {n}")
+    season_number = 1
+    episode_number = factory.Sequence(lambda n: n + 1)
+    status = "Not Started"
+    frame_in = 1001
+    frame_out = 1100
+
+
 class AssetFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
     class Meta:
         model = Asset
         django_get_or_create = ("code", "project")
 
-    organization = factory.SubFactory(OrganizationFactory)
     project = factory.SubFactory(ProjectFactory)
     name = factory.Sequence(lambda n: f"Asset {n}")
     code = factory.Sequence(lambda n: f"AST{n:03d}")
@@ -86,7 +121,6 @@ class TaskFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgum
         model = Task
         django_get_or_create = ("code", "project")
 
-    organization = factory.SubFactory(OrganizationFactory)
     project = factory.SubFactory(ProjectFactory)
     title = factory.Sequence(lambda n: f"Task {n}")
     code = factory.Sequence(lambda n: f"TSK{n:03d}")
@@ -98,4 +132,72 @@ class TaskFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgum
     workflow = {}
     schedule = {}
     dependencies = {}
-    is_archived = False
+
+
+class ShowFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = Show
+        django_get_or_create = ("code", "project")
+
+    project = factory.SubFactory(ProjectFactory)
+    code = factory.Sequence(lambda n: f"SHOW{n:03d}")
+    name = factory.Sequence(lambda n: f"Show {n}")
+
+
+class VersionFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = Version
+        django_get_or_create = ("code", "project")
+
+    project = factory.SubFactory(ProjectFactory)
+    code = factory.Sequence(lambda n: f"VER{n:03d}")
+
+
+class MediaFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = Media
+
+    project = factory.SubFactory(ProjectFactory)
+    code = factory.Sequence(lambda n: f"MED{n:03d}")
+
+
+class PlaylistFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = Playlist
+
+    project = factory.SubFactory(ProjectFactory)
+    name = factory.Sequence(lambda n: f"Playlist {n}")
+
+
+class ReviewFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = Review
+
+    project = factory.SubFactory(ProjectFactory)
+    title = factory.Sequence(lambda n: f"Review {n}")
+
+
+class EditorialTrackFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = EditorialTrack
+
+    project = factory.SubFactory(ProjectFactory)
+    name = factory.Sequence(lambda n: f"Editorial Track {n}")
+
+
+class WorkflowFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = Workflow
+
+    project = factory.SubFactory(ProjectFactory)
+    name = factory.Sequence(lambda n: f"Workflow {n}")
+
+
+class TimelogFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = Timelog
+
+    task = factory.SubFactory(TaskFactory)
+    project = factory.SelfAttribute("task.project")
+    person = factory.SubFactory(UserFactory)
+    date = factory.LazyFunction(lambda: timezone.now().date())

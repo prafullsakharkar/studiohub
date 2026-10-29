@@ -5,37 +5,34 @@ Automation services for business logic.
 from __future__ import annotations
 
 from typing import Any
-from uuid import UUID
 
 from django.utils import timezone
 
-
-def _resolve_workflow(organization, workflow_id: Any):
-    """Resolve a client-supplied workflow id to an org workflow, else None."""
-    from apps.production.models import Workflow
-
-    if not workflow_id:
-        return None
-    try:
-        workflow_uuid = UUID(str(workflow_id))
-    except (ValueError, AttributeError, TypeError):
-        # Mock-style ids (e.g. "wf-001") never resolve — never trust them.
-        return None
-    return Workflow.objects.filter(id=workflow_uuid, organization=organization).first()
+# Distinguishes "leave the workflow link alone" from "unlink it" (``None``).
+_UNSET: Any = object()
 
 
 def create_rule(
     *,
-    organization,
     user,
     data: dict[str, Any],
+    project=None,
+    workflow=None,
 ):
-    """Create an automation rule owned by the organization."""
+    """
+    Create an automation rule.
+
+    ``project`` and ``workflow`` are already resolved and authorized by the
+    caller (``AutomationRuleSelector``). A rule created for a workflow takes
+    the workflow's project unless one is given.
+    """
     from apps.production.models import AutomationRule
 
-    workflow = _resolve_workflow(organization, data.get("workflow_id"))
+    resolved_project = project
+    if resolved_project is None and workflow is not None:
+        resolved_project = workflow.project
     return AutomationRule.objects.create(
-        organization=organization,
+        project=resolved_project,
         workflow=workflow,
         name=data.get("name", ""),
         description=data.get("description", ""),
@@ -46,6 +43,7 @@ def create_rule(
         actions=data.get("actions") or [],
         is_active=data.get("is_active", True),
         required_role=data.get("required_role", ""),
+        created_by=user if getattr(user, "is_authenticated", False) else None,
     )
 
 
@@ -53,8 +51,15 @@ def update_rule(
     *,
     rule,
     data: dict[str, Any],
+    user=None,
+    workflow=_UNSET,
 ):
-    """Update an automation rule (partial or full)."""
+    """
+    Update an automation rule (partial or full).
+
+    ``workflow`` is the resolved workflow to link (``None`` unlinks); leave it
+    out to keep the current link.
+    """
     updatable = (
         "name",
         "description",
@@ -69,8 +74,10 @@ def update_rule(
     for field in updatable:
         if field in data:
             setattr(rule, field, data[field])
-    if "workflow_id" in data:
-        rule.workflow = _resolve_workflow(rule.organization, data.get("workflow_id"))
+    if workflow is not _UNSET:
+        rule.workflow = workflow
+    if getattr(user, "is_authenticated", False):
+        rule.updated_by = user
     rule.save()
     return rule
 
@@ -86,7 +93,6 @@ def delete_rule(
 
 def log_execution(
     *,
-    organization,
     rule=None,
     trigger_event: str = "",
     entity_type: str = "",
@@ -104,8 +110,11 @@ def log_execution(
     from apps.production.models import AutomationAuditLog
 
     workflow = getattr(rule, "workflow", None)
+    project = getattr(rule, "project", None)
+    if project is None and workflow is not None:
+        project = getattr(workflow, "project", None)
     return AutomationAuditLog.objects.create(
-        organization=organization,
+        project=project,
         rule=rule,
         rule_name=getattr(rule, "name", "") or "",
         workflow=workflow,

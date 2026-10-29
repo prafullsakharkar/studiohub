@@ -9,7 +9,6 @@ import pytest
 from rest_framework.test import APIClient
 
 from apps.identity.tests.factories import UserFactory
-from apps.organization.tests.factories import OrganizationFactory
 
 from .fixtures import *  # noqa: F401, F403
 
@@ -47,13 +46,12 @@ def authenticated_client(api_client: APIClient) -> APIClient:
 
 
 @pytest.fixture
-def staff_client(api_client: APIClient) -> APIClient:
+def staff_client(api_client: APIClient, staff_user) -> APIClient:
     """Staff user authenticated API client fixture (explicit full grants)."""
-    from apps.organization.tests.rbac_helpers import grant_all_known_codes
+    from apps.identity.tests.rbac_helpers import grant_all_known_codes
 
-    user = UserFactory(is_staff=True)
-    grant_all_known_codes(user)
-    api_client.force_authenticate(user=user)
+    grant_all_known_codes(staff_user)
+    api_client.force_authenticate(user=staff_user)
     return api_client
 
 
@@ -63,9 +61,3 @@ def admin_client(api_client: APIClient) -> APIClient:
     user = UserFactory(is_superuser=True, is_staff=True)
     api_client.force_authenticate(user=user)
     return api_client
-
-
-@pytest.fixture
-def organization(db) -> OrganizationFactory:
-    """Organization fixture."""
-    return OrganizationFactory()

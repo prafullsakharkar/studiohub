@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import pytest
 
+from apps.audit.models.append_only import ImmutableRecordError
 from apps.audit.models.audit_log import AuditLog
 from apps.audit.models.background_job import BackgroundJob
 from apps.audit.services.audit_log import AuditLogService
@@ -17,10 +18,9 @@ class TestAuditLogService:
     """Tests for AuditLog service."""
 
     @pytest.mark.django_db
-    def test_service_create_audit_log(self, organization, user) -> None:
+    def test_service_create_audit_log(self, user) -> None:
         """Test service create_log method."""
         audit_log = AuditLogService.create_log(
-            organization=organization,
             actor=user,
             action=AuditLog.ACTION_CREATE,
             target_type="TestModel",
@@ -37,32 +37,30 @@ class TestAuditLogService:
 
     @pytest.mark.django_db
     def test_service_update_audit_log(self, audit_log: AuditLog) -> None:
-        """Test service update_log method."""
-        updated = AuditLogService.update_log(
-            audit_log, description="Updated description"
-        )
-        assert updated.description == "Updated description"
-        assert AuditLog.objects.get(id=audit_log.id).description == (
-            "Updated description"
-        )
+        """update_log is refused: audit rows are append-only (TM-011)."""
+        before = audit_log.description
+        with pytest.raises(ImmutableRecordError):
+            AuditLogService.update_log(audit_log, description="Updated description")
+        assert AuditLog.objects.get(id=audit_log.id).description == before
 
     @pytest.mark.django_db
     def test_service_delete_audit_log(self, audit_log: AuditLog) -> None:
-        """Test service delete_log method."""
-        AuditLogService.delete_log(audit_log)
+        """delete_log is refused: audit rows are append-only (TM-011)."""
+        with pytest.raises(ImmutableRecordError):
+            AuditLogService.delete_log(audit_log)
+        assert AuditLog.objects.filter(id=audit_log.id).exists()
 
 
 class TestBackgroundJobService:
     """Tests for BackgroundJob inline job producer."""
 
     @pytest.mark.django_db
-    def test_enqueue_and_run_success(self, organization) -> None:
+    def test_enqueue_and_run_success(self) -> None:
         def _executor(value):
             return {"doubled": value * 2}
 
         job = BackgroundJobService.enqueue_and_run(
             job_type="export",
-            organization_id=str(organization.id),
             description="Test export",
             executor=_executor,
             executor_kwargs={"value": 21},
@@ -77,14 +75,13 @@ class TestBackgroundJobService:
         assert BackgroundJob.objects.filter(job_id=job.job_id).exists()
 
     @pytest.mark.django_db
-    def test_enqueue_and_run_records_failure(self, organization) -> None:
+    def test_enqueue_and_run_records_failure(self) -> None:
         def _executor():
             raise ValueError("boom")
 
         with pytest.raises(ValueError):
             BackgroundJobService.enqueue_and_run(
                 job_type="export",
-                organization_id=str(organization.id),
                 description="Failing export",
                 executor=_executor,
             )
@@ -94,17 +91,16 @@ class TestBackgroundJobService:
         assert job.error_message == "boom"
 
     @pytest.mark.django_db
-    def test_enqueue_and_run_serializes_orm_result(self, organization) -> None:
+    def test_enqueue_and_run_serializes_orm_result(self, user) -> None:
         def _executor():
-            return organization
+            return user
 
         job = BackgroundJobService.enqueue_and_run(
             job_type="export",
-            organization_id=str(organization.id),
             description="ORM result export",
             executor=_executor,
         )
 
         assert job.status == BackgroundJob.STATUS_COMPLETED
-        assert job.result_data["result_id"] == str(organization.pk)
-        assert job.result_data["result_type"] == type(organization).__name__
+        assert job.result_data["result_id"] == str(user.pk)
+        assert job.result_data["result_type"] == type(user).__name__

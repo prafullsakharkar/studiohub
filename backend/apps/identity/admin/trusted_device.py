@@ -1,10 +1,11 @@
 from django.contrib import admin
 
+from apps.identity.admin.ledger import ReadOnlyLedgerAdminMixin
 from apps.identity.models import TrustedDevice
 
 
 @admin.register(TrustedDevice)
-class TrustedDeviceAdmin(admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
+class TrustedDeviceAdmin(ReadOnlyLedgerAdminMixin, admin.ModelAdmin):  # pyright: ignore[reportMissingTypeArgument]
     list_display = (
         "user",
         "platform",

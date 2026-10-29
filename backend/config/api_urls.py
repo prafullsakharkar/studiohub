@@ -15,10 +15,10 @@ app_name = "api"
 
 urlpatterns = [
     path("v1/", include(("config.v1_urls", "v1"), namespace="v1")),
-    # Nested organization routes for the frontend contract
-    # (/api/organizations/<org>/<resource>/, no /v1/, optional trailing slash).
-    path("organizations/", include("apps.organization.api.urls_nested")),
-    # Project-scoped nested routes for the frontend contract
-    # (/api/organizations/<org>/projects/<project>/..., slash-optional).
+    # Project-scoped nested routes for the frontend contract, served as
+    # /api/organizations/projects/<project>/... (slash-optional). The
+    # `/api/organizations/` prefix is vestigial from the org architecture:
+    # the organization app is gone (B7) and the tree carries no org segment
+    # or org scoping. The old org-scoped trees 404 by absence.
     path("organizations/", include("apps.production.api.urls_project_scoped")),
 ]

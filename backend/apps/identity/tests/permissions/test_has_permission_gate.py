@@ -1,23 +1,42 @@
 """
 HasPermission gate tests: deny-by-default, no staff bypass, superuser
-break-glass, and the object-level organization consistency check.
+break-glass, and the platform-global object check.
+
+Resolution is platform-global: grants flow through identity Role ->
+RolePermission -> Permission rows assigned via UserRole (direct) or
+GroupRole + live GroupMember rows (group-conferred). There is no
+organization scoping.
 """
 
 from __future__ import annotations
 
+import uuid
+
 import pytest
 from rest_framework.test import APIClient, APIRequestFactory
 
+from apps.identity.models import (
+    Group,
+    GroupMember,
+    GroupRole,
+    Role,
+    RolePermission,
+    UserRole,
+)
 from apps.identity.permissions.permission import HasPermission
 from apps.identity.tests.factories import UserFactory
-from apps.organization.tests.factories import (
-    OrganizationFactory,
-    OrganizationMembershipFactory,
-    PermissionFactory,
-    RoleFactory,
-    RolePermissionFactory,
-    UserRoleFactory,
-)
+from apps.identity.tests.rbac_helpers import ensure_permission, grant_permissions
+
+
+def _unique_code(prefix: str) -> str:
+    return f"{prefix}-{uuid.uuid4().hex[:12]}"
+
+
+def _make_role(**kwargs) -> Role:
+    kwargs.setdefault("name", f"Role {uuid.uuid4().hex[:8]}")
+    kwargs.setdefault("code", _unique_code("role"))
+    kwargs.setdefault("is_active", True)
+    return Role.objects.create(**kwargs)
 
 
 class _StubView:
@@ -56,14 +75,12 @@ class TestHasPermissionGate:
 
     def test_staff_without_grant_denied(self):
         staff = UserFactory.create(is_staff=True)
-        PermissionFactory.create(code="gate.staff.probe")
+        ensure_permission("gate.staff.probe")
         gate = HasPermission()
         view = _StubView("probe", {"probe": ("gate.staff.probe",)})
         assert gate.has_permission(_request(staff), view) is False
 
     def test_staff_with_grant_allowed(self):
-        from apps.organization.tests.rbac_helpers import grant_permissions
-
         staff = UserFactory.create(is_staff=True)
         grant_permissions(staff, "gate.staff.granted")
         gate = HasPermission()
@@ -76,35 +93,30 @@ class TestHasPermissionGate:
         view = _StubView("probe", {"probe": ("gate.superuser.anything",)})
         assert gate.has_permission(_request(admin), view) is True
 
-    def test_object_org_mismatch_denied(self):
-        from apps.organization.tests.rbac_helpers import grant_permissions
-
-        org_a = OrganizationFactory.create()
-        org_b = OrganizationFactory.create()
+    def test_object_check_is_global(self):
+        # Platform-global resources have no org partition, so the
+        # object check never denies on org mismatch.
         user = UserFactory.create()
-        grant_permissions(user, "gate.object.probe", organization=org_a)
+        grant_permissions(user, "gate.object.probe")
 
         class _Obj:
             pass
 
         obj = _Obj()
-        obj.organization = org_b
+        obj.organization = "some-other-org"
         gate = HasPermission()
         view = _StubView("probe", {"probe": ("gate.object.probe",)})
-        assert gate.has_object_permission(_request(user, org_a), view, obj) is False
+        assert gate.has_object_permission(_request(user), view, obj) is True
 
-    def test_object_same_org_allowed(self):
-        org = OrganizationFactory.create()
+    def test_object_check_allows_without_org(self):
         user = UserFactory.create()
 
         class _Obj:
             pass
 
-        obj = _Obj()
-        obj.organization = org
         gate = HasPermission()
         view = _StubView("probe", {"probe": ("gate.object.probe",)})
-        assert gate.has_object_permission(_request(user, org), view, obj) is True
+        assert gate.has_object_permission(_request(user), view, _Obj()) is True
 
 
 @pytest.mark.django_db
@@ -113,89 +125,91 @@ class TestPermissionResolverFilters:
         from apps.identity.resolvers.permission import PermissionResolver
 
         user = UserFactory.create(is_active=False)
-        role = RoleFactory.create()
-        permission = PermissionFactory.create(code="gate.inactive.user")
-        RolePermissionFactory.create(role=role, permission=permission)
-        UserRoleFactory.create(user=user, role=role)
+        role = _make_role()
+        permission = ensure_permission("gate.inactive.user")
+        RolePermission.objects.create(role=role, permission=permission)
+        UserRole.objects.create(user=user, role=role)
         assert PermissionResolver.resolve(user=user) == set()
 
-    def test_suspended_membership_confes_nothing(self):
+    def test_direct_grant_resolves(self):
         from apps.identity.resolvers.permission import PermissionResolver
 
-        org = OrganizationFactory.create()
         user = UserFactory.create()
-        role = RoleFactory.create(organization=org)
-        permission = PermissionFactory.create(code="gate.suspended.membership")
-        RolePermissionFactory.create(role=role, permission=permission)
-        OrganizationMembershipFactory.create(
-            user=user, organization=org, role=role, status="suspended"
+        grant_permissions(user, "gate.direct.grant")
+        assert "gate.direct.grant" in PermissionResolver.resolve(user=user)
+
+    def test_group_grant_resolves(self):
+        from apps.identity.resolvers.permission import PermissionResolver
+
+        user = UserFactory.create()
+        role = _make_role()
+        permission = ensure_permission("gate.group.grant")
+        RolePermission.objects.create(role=role, permission=permission)
+        group = Group.objects.create(
+            code=_unique_code("group"), name="G", is_deleted=False
         )
-        assert permission.code not in PermissionResolver.resolve(
-            user=user, organization=org
+        GroupMember.objects.create(group=group, user=user)
+        GroupRole.objects.create(group=group, role=role)
+        assert "gate.group.grant" in PermissionResolver.resolve(user=user)
+
+    def test_soft_deleted_group_membership_confers_nothing(self):
+        from apps.identity.resolvers.permission import PermissionResolver
+
+        user = UserFactory.create()
+        role = _make_role()
+        permission = ensure_permission("gate.soft.deleted.membership")
+        RolePermission.objects.create(role=role, permission=permission)
+        group = Group.objects.create(
+            code=_unique_code("group"), name="G", is_deleted=False
         )
+        GroupMember.objects.create(group=group, user=user, is_deleted=True)
+        GroupRole.objects.create(group=group, role=role)
+        assert permission.code not in PermissionResolver.resolve(user=user)
 
     def test_revoked_grant_confes_nothing(self):
         from apps.identity.resolvers.permission import PermissionResolver
 
         user = UserFactory.create()
-        role = RoleFactory.create()
-        permission = PermissionFactory.create(code="gate.revoked.grant")
-        RolePermissionFactory.create(role=role, permission=permission, granted=False)
-        UserRoleFactory.create(user=user, role=role)
+        role = _make_role()
+        permission = ensure_permission("gate.revoked.grant")
+        RolePermission.objects.create(role=role, permission=permission, granted=False)
+        UserRole.objects.create(user=user, role=role)
         assert permission.code not in PermissionResolver.resolve(user=user)
 
     def test_inactive_role_confes_nothing(self):
         from apps.identity.resolvers.permission import PermissionResolver
 
         user = UserFactory.create()
-        role = RoleFactory.create(is_active=False)
-        permission = PermissionFactory.create(code="gate.inactive.role")
-        RolePermissionFactory.create(role=role, permission=permission)
-        UserRoleFactory.create(user=user, role=role)
+        role = _make_role(is_active=False)
+        permission = ensure_permission("gate.inactive.role")
+        RolePermission.objects.create(role=role, permission=permission)
+        UserRole.objects.create(user=user, role=role)
         assert permission.code not in PermissionResolver.resolve(user=user)
 
     def test_inactive_permission_confes_nothing(self):
         from apps.identity.resolvers.permission import PermissionResolver
 
         user = UserFactory.create()
-        role = RoleFactory.create()
-        permission = PermissionFactory.create(
-            code="gate.inactive.permission", is_active=False
-        )
-        RolePermissionFactory.create(role=role, permission=permission)
-        UserRoleFactory.create(user=user, role=role)
+        role = _make_role()
+        permission = ensure_permission("gate.inactive.permission")
+        permission.is_active = False
+        permission.save(update_fields=["is_active", "updated_at"])
+        RolePermission.objects.create(role=role, permission=permission)
+        UserRole.objects.create(user=user, role=role)
         assert permission.code not in PermissionResolver.resolve(user=user)
 
-    def test_org_scoped_role_does_not_leak(self):
+    def test_ungranted_user_resolves_empty(self):
         from apps.identity.resolvers.permission import PermissionResolver
 
-        org_a = OrganizationFactory.create()
-        org_b = OrganizationFactory.create()
         user = UserFactory.create()
-        role = RoleFactory.create(organization=org_a)
-        permission = PermissionFactory.create(code="gate.scoped.role")
-        RolePermissionFactory.create(role=role, permission=permission)
-        UserRoleFactory.create(user=user, role=role)
-        assert permission.code in PermissionResolver.resolve(
-            user=user, organization=org_a
-        )
-        assert permission.code not in PermissionResolver.resolve(
-            user=user, organization=org_b
-        )
-        assert permission.code not in PermissionResolver.resolve(user=user)
+        assert PermissionResolver.resolve(user=user) == set()
 
-    def test_global_role_applies_in_org(self):
-        from apps.identity.resolvers.permission import PermissionResolver
+    def test_cache_key_has_no_org_segment(self):
+        from apps.identity.services.permission_cache import get_permission_cache_key
 
-        org = OrganizationFactory.create()
-        user = UserFactory.create()
-        role = RoleFactory.create(organization=None)
-        permission = PermissionFactory.create(code="gate.global.role")
-        RolePermissionFactory.create(role=role, permission=permission)
-        UserRoleFactory.create(user=user, role=role)
-        assert permission.code in PermissionResolver.resolve(
-            user=user, organization=org
-        )
+        key = get_permission_cache_key("user-1")
+        assert key == "identity.permission:user-1:1"
+        assert "global" not in key
 
 
 @pytest.mark.django_db

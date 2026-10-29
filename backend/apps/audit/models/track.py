@@ -9,7 +9,6 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.models.bases.entity import EntityModel
 from apps.core.models.bases.timestamp import TimeStampedModel
 from apps.identity.models.user import User
-from apps.organization.models.organization import Organization
 
 
 class Track(EntityModel, TimeStampedModel):
@@ -71,13 +70,6 @@ class Track(EntityModel, TimeStampedModel):
         help_text="User who triggered the event",
     )
     
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="tracks",
-        db_index=True,
-        help_text="Organization context",
-    )
     
     session_id = models.CharField(
         max_length=100,

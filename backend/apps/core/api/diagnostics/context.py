@@ -13,6 +13,8 @@ from typing import Any
 
 from apps.core.logging import context as log_context
 from apps.core.logging.constants import SENSITIVE_KEYS
+from apps.core.logging.redaction import redact_query_params
+from apps.core.utils.client_ip import client_ip_from_meta
 
 MAX_REQUEST_ID_LENGTH = 128
 MAX_QUERY_PARAMS = 20
@@ -214,14 +216,13 @@ def _actor_info(request: Any) -> dict[str, Any]:
     """
     Capture the authenticated actor without triggering extra queries.
 
-    ``user_id``/``organization_id`` are ids only. ``authenticated`` reflects
-    the resolved user; ``auth_scheme`` names the presented credential scheme
+    ``user_id`` is an id only. ``authenticated`` reflects the resolved
+    user; ``auth_scheme`` names the presented credential scheme
     (``Bearer``/``Basic``/...) without ever including the credential itself.
     """
 
     info: dict[str, Any] = {
         "user_id": None,
-        "organization_id": None,
         "authenticated": False,
         "auth_scheme": None,
     }
@@ -237,10 +238,6 @@ def _actor_info(request: Any) -> dict[str, Any]:
         if authenticated:
             info["user_id"] = _compact_id(user)
 
-    organization = _resolve_organization(request)
-    if organization is not None:
-        info["organization_id"] = _compact_id(organization)
-
     info["auth_scheme"] = auth_scheme(request)
 
     return info
@@ -251,22 +248,6 @@ def _resolve_user(request: Any) -> Any:
         getattr(request, "user", None),
         getattr(getattr(request, "_request", None), "user", None),
         log_context.user.get(None),
-    ):
-        if candidate is not None:
-            return candidate
-
-    return None
-
-
-def _resolve_organization(request: Any) -> Any:
-    raw = getattr(request, "_request", request)
-
-    for candidate in (
-        getattr(request, "organization", None),
-        getattr(raw, "organization", None),
-        getattr(request, "membership", None),
-        getattr(raw, "membership", None),
-        log_context.organization.get(None),
     ):
         if candidate is not None:
             return candidate
@@ -321,18 +302,10 @@ def _client_info(request: Any) -> dict[str, Any]:
             getattr(request, "_request", None), "META", None
         )
         if isinstance(meta, dict):
-            forwarded = meta.get("HTTP_X_FORWARDED_FOR", "")
-            if forwarded:
-                info["client_ip"] = forwarded.split(",")[0].strip()[
-                    :MAX_VALUE_LENGTH
-                ]
-            else:
-                remote = meta.get("REMOTE_ADDR")
-                info["client_ip"] = (
-                    str(remote)[:MAX_VALUE_LENGTH]
-                    if remote is not None
-                    else None
-                )
+            client_ip = client_ip_from_meta(meta)
+            info["client_ip"] = (
+                client_ip[:MAX_VALUE_LENGTH] if client_ip is not None else None
+            )
 
             user_agent = meta.get("HTTP_USER_AGENT")
             if user_agent:
@@ -387,7 +360,9 @@ def _sanitized_query_params(request: Any) -> dict[str, Any]:
                 ]
             else:
                 params[name] = str(value)[:MAX_VALUE_LENGTH]
+
+        # Apps register parameters whose values carry personal data for their
+        # paths (core.logging.redaction); names stay, values are replaced.
+        return redact_query_params(str(getattr(request, "path", "") or ""), params)
     except Exception:
         return {}
-
-    return params

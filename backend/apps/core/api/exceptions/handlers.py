@@ -52,6 +52,8 @@ from apps.core.api.diagnostics.reasons import (
 )
 from apps.core.exceptions.base import BaseDomainException
 from apps.core.logging.logger import get_logger
+from apps.core.logging.redaction import redact_database_detail
+from apps.core.utils.client_ip import get_client_ip
 
 _logger = get_logger("api")
 _fallback_logger = logging.getLogger(__name__)
@@ -224,12 +226,6 @@ def _sync_identity_context(request: Any) -> None:
             getattr(user, "is_authenticated", False)
         ):
             log_context.user.set(user)
-
-        organization = getattr(request, "organization", None) or getattr(
-            request, "membership", None
-        )
-        if organization is not None:
-            log_context.organization.set(organization)
     except Exception:
         pass
 
@@ -289,7 +285,7 @@ def _safe_detail(exc: BaseException) -> str | None:
 
 def _safe_message(exc: BaseException) -> str | None:
     try:
-        return str(exc)[:500] or None
+        return redact_database_detail(str(exc))[:500] or None
     except Exception:
         return None
 
@@ -344,6 +340,9 @@ def _translate(exc: BaseException, context: Any, request: Any) -> Response:
     elif (
         isinstance(exc, PermissionDenied)
         and response.status_code == status.HTTP_403_FORBIDDEN
+        # An authenticator can refuse a user it has just identified (a restricted session): that
+        # is a 403 with its own code, not a failed sign-in.
+        and not getattr(exc, "keeps_forbidden_status", False)
     ):
         user = getattr(request, "user", None)
         if user is None or not user.is_authenticated:
@@ -439,14 +438,10 @@ def _record_error_log(
     Persist server-side crashes to the observability ledger (ErrorLog).
 
     Best-effort: failures here must never affect the error response.
-    Skipped when no organization context is resolvable (the FK requires
-    one) — e.g. pre-auth crashes.
+    Error rows are platform-global (no organization partition).
     """
     from apps.audit.models import ErrorLog
 
-    organization = getattr(request, "organization", None)
-    if organization is None:
-        return
     user = getattr(request, "user", None)
     if user is not None and not getattr(user, "is_authenticated", False):
         user = None
@@ -463,7 +458,6 @@ def _record_error_log(
             traceback.format_exception(type(exc), exc, exc.__traceback__)
         )[:20000],
         user=user,
-        organization=organization,
         ip_address=_request_ip(request),
         user_agent=str(meta.get("HTTP_USER_AGENT") or "")[:1000],
         request_path=str(getattr(request, "path", "") or "")[:500],
@@ -477,10 +471,6 @@ def _record_error_log(
 
 def _request_ip(request: Any) -> str | None:
     try:
-        meta = getattr(request, "META", {}) or {}
-        forwarded = meta.get("HTTP_X_FORWARDED_FOR")
-        if forwarded:
-            return str(forwarded).split(",")[0].strip()[:45]
-        return meta.get("REMOTE_ADDR")
+        return get_client_ip(request)
     except Exception:
         return None

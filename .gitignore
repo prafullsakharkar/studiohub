@@ -478,3 +478,5 @@ backups/
 # ============================================================
 
 infrastructure/docker/nginx/certs/
+
+.worktrees/

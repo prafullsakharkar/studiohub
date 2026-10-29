@@ -2,8 +2,9 @@
 """
 Security tests for Audit application.
 
-Audit records are append-only: the API is read-only (list/retrieve) and
-requires authentication. These tests verify the security contract.
+Audit records are append-only: the API is read-only (list/retrieve),
+requires authentication, and gates reads on the ``audit.view`` permission.
+These tests verify the security contract.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ from django.db import connection
 from django.urls import reverse
 from rest_framework import status
 
+from apps.audit.models.append_only import ImmutableRecordError
 from apps.audit.models.audit_log import AuditLog
 from apps.audit.tests.factories import AuditLogFactory
 
@@ -37,14 +39,11 @@ class TestAuditLogSecurity:
 
     @pytest.mark.django_db
     def test_audit_log_soft_delete(self, audit_log: AuditLog) -> None:
-        """Test soft delete functionality."""
+        """An audit row cannot be hidden by soft delete (TM-011)."""
         log_id = audit_log.id
-        audit_log.soft_delete()
-        audit_log.refresh_from_db()
-        assert audit_log.is_deleted is True
-        assert audit_log.deleted_at is not None
-        assert AuditLog.objects.filter(id=log_id).count() == 0
-        assert AuditLog.all_objects.filter(id=log_id).count() == 1
+        with pytest.raises(ImmutableRecordError):
+            audit_log.soft_delete()
+        assert AuditLog.objects.filter(id=log_id).count() == 1
 
     @pytest.mark.django_db
     def test_audit_log_action_choices(self, audit_log: AuditLog) -> None:
@@ -72,11 +71,23 @@ class TestAuditLogAPIPermissions:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     @pytest.mark.django_db
-    def test_authenticated_user_can_view(
+    def test_authenticated_user_without_audit_view_cannot_view(
         self, authenticated_client
     ) -> None:
-        """Authenticated users can view audit logs."""
+        """audit.view is required: a plain authenticated user is denied."""
         response = authenticated_client.get(self._list_url())
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    @pytest.mark.django_db
+    def test_user_with_audit_view_can_view(self, api_client) -> None:
+        """Holders of the audit.view permission can view audit logs."""
+        from apps.identity.tests.factories import UserFactory
+        from apps.identity.tests.rbac_helpers import grant_permissions
+
+        user = UserFactory()
+        grant_permissions(user, "audit.view")
+        api_client.force_authenticate(user=user)
+        response = api_client.get(self._list_url())
         assert response.status_code == status.HTTP_200_OK
 
     @pytest.mark.django_db

@@ -65,13 +65,13 @@ class TestProfileViewSet:
         assert response.status_code == 404
 
     @pytest.mark.django_db
-    def test_retrieve_profile_staff_sees_all(self, staff_client):
-        """Test staff can retrieve any profile."""
+    def test_retrieve_profile_staff_is_self_scoped(self, staff_client):
+        """ADR-0033 D4: staff is not an authorization tier; other users' records are 404."""
         profile = ProfileFactory.create()
         response = staff_client.get(
             reverse("api:v1:identity:profile-detail", kwargs={"pk": profile.id})
         )
-        assert response.status_code == 200
+        assert response.status_code == 404
 
     @pytest.mark.django_db
     def test_create_profile_unauthenticated(self, api_client):
@@ -92,6 +92,28 @@ class TestProfileViewSet:
         }
         response = authenticated_client.post(reverse("api:v1:identity:profile-list"), data)
         assert response.status_code == 201
+
+    @pytest.mark.django_db
+    def test_create_profile_ignores_client_supplied_user(self, authenticated_client, user):
+        """A client cannot create a profile for another account."""
+        from apps.identity.models import Profile
+        from apps.identity.tests.factories import UserFactory
+
+        other = UserFactory.create()
+
+        response = authenticated_client.post(
+            reverse("api:v1:identity:profile-list"),
+            {
+                "user": other.id,
+                "first_name": "Self",
+                "last_name": "Owned",
+            },
+        )
+
+        assert response.status_code == 201
+
+        profile = Profile.objects.get(pk=response.data["id"])
+        assert profile.user_id == user.id
 
     @pytest.mark.django_db
     def test_update_profile_unauthenticated(self, api_client):

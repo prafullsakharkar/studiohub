@@ -13,7 +13,6 @@ class APIRequestSerializer(serializers.ModelSerializer[APIRequest]):
     
     user_email = serializers.CharField(source="user.email", read_only=True)
     user_name = serializers.CharField(source="user.full_name", read_only=True)
-    organization_name = serializers.CharField(source="organization.name", read_only=True)
     
     class Meta:
         model = APIRequest
@@ -31,8 +30,6 @@ class APIRequestSerializer(serializers.ModelSerializer[APIRequest]):
             "user",
             "user_email",
             "user_name",
-            "organization",
-            "organization_name",
             "ip_address",
             "user_agent",
             "api_version",

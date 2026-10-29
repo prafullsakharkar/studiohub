@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import (
+    check_password,
+    is_password_usable,
+    make_password,
+)
 from django.utils import timezone
 
 from apps.identity.authentication.exceptions import (
@@ -37,6 +41,8 @@ class AuthenticationValidator(
     # forever (successes never reset the counter).
     MAX_LOGIN_ATTEMPT_WINDOW_MINUTES = 15
 
+    _DUMMY_PASSWORD_HASH: str | None = None
+
     # ---------------------------------------------------------
     # User
     # ---------------------------------------------------------
@@ -56,6 +62,21 @@ class AuthenticationValidator(
     ):
         if not user.is_active:
             raise UserInactive()
+
+    @classmethod
+    def validate_user_not_deleted(
+        cls,
+        user,
+    ):
+        """
+        Soft-deleted principals are not authenticatable.
+
+        The selector already excludes them; this is defense in depth for any
+        caller that resolves a user through ``all_objects``.
+        """
+
+        if getattr(user, "is_deleted", False):
+            raise InvalidCredentials()
 
     @classmethod
     def validate_email_verified(
@@ -104,12 +125,12 @@ class AuthenticationValidator(
         username: str,
         ip_address: str,
     ):
+        # Username-only keying: an attacker rotating source IPs must not
+        # bypass the counter. ``ip_address`` is still accepted (and still
+        # recorded per-attempt for forensics) but does not gate the count.
         failed_attempts = (
             LoginAttempt.objects.failed()
-            .filter(
-                username=username,
-                ip_address=ip_address,
-            )
+            .for_username(username)
             .recent(cls.MAX_LOGIN_ATTEMPT_WINDOW_MINUTES)
             .count()
         )
@@ -128,7 +149,7 @@ class AuthenticationValidator(
     ):
         cls.check_not_none(session, "Session not found.")
 
-        if session.status == SessionStatus.REVOKED:
+        if session.status in (SessionStatus.REVOKED, SessionStatus.LOGGED_OUT):
             raise SessionRevoked()
 
         if session.status == SessionStatus.EXPIRED:
@@ -146,9 +167,55 @@ class AuthenticationValidator(
             session,
         )
 
+        cls._validate_not_idle(session)
+
+    @classmethod
+    def _validate_not_idle(
+        cls,
+        session,
+    ):
+        """
+        A session with no authenticated request for ``SESSION_IDLE_TIMEOUT_MINUTES`` ends here: it
+        cannot be refreshed back to life by a token that sat in storage (TPN review TM-020).
+        """
+        from datetime import timedelta
+
+        from django.conf import settings
+
+        minutes = int(getattr(settings, "SESSION_IDLE_TIMEOUT_MINUTES", 0))
+
+        if minutes <= 0 or session.last_activity is None:
+            return
+
+        if session.last_activity + timedelta(minutes=minutes) > timezone.now():
+            return
+
+        from apps.identity.services.user_session import UserSessionService
+
+        UserSessionService.expire(session)
+
+        raise SessionExpired()
+
     # ---------------------------------------------------------
     # Authentication
     # ---------------------------------------------------------
+
+    @classmethod
+    def _dummy_hash(cls) -> str:
+        """
+        Hash compared against when there is no usable stored password.
+
+        Built once per process with the configured primary hasher so the
+        work factor matches real accounts and unknown-user logins cost the
+        same as wrong-password logins.
+        """
+
+        if cls._DUMMY_PASSWORD_HASH is None:
+            cls._DUMMY_PASSWORD_HASH = make_password(
+                "dummy-password-used-only-for-timing",
+            )
+
+        return cls._DUMMY_PASSWORD_HASH
 
     @classmethod
     def validate_login(
@@ -159,31 +226,50 @@ class AuthenticationValidator(
         user,
         ip_address: str,
     ):
+        """
+        Validate credentials without revealing which part failed.
+
+        Every call performs exactly one password-hash comparison, whether or
+        not the account exists, so response time does not disclose account
+        existence. Account state (deleted / inactive / locked) is checked
+        only after the comparison and surfaces as the same generic failure;
+        the precise cause is carried on ``InvalidCredentials.internal_reason``
+        for the login-attempt ledger.
+        """
+
         cls.validate_login_attempts(
             username=username,
             ip_address=ip_address,
         )
 
-        cls.validate_user_exists(
-            user,
+        stored_hash = (
+            user.password if user is not None and is_password_usable(user.password) else None
         )
 
-        cls.validate_user_active(
-            user,
+        password_ok = check_password(
+            password,
+            stored_hash or cls._dummy_hash(),
         )
 
         # NOTE: email verification is intentionally not enforced here (see
         # validate_email_verified). Verification state must not lock users
         # out of login until the product adopts it as a gate.
 
-        cls.validate_user_locked(
-            user,
-        )
+        reason = None
 
-        cls.validate_password(
-            password=password,
-            user=user,
-        )
+        if user is None:
+            reason = "unknown_user"
+        elif stored_hash is None or not password_ok:
+            reason = "invalid_password"
+        elif getattr(user, "is_deleted", False):
+            reason = "user_deleted"
+        elif not user.is_active:
+            reason = "user_inactive"
+        elif getattr(user, "is_locked", False):
+            reason = "user_locked"
+
+        if reason is not None:
+            raise InvalidCredentials(reason=reason)
 
     @classmethod
     def validate_logout(

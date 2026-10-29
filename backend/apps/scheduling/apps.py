@@ -8,3 +8,8 @@ class SchedulingConfig(AppConfig):
     """Scheduling app configuration."""
     name = "apps.scheduling"
     verbose_name = "Scheduling"
+
+    def ready(self) -> None:
+        from apps.scheduling import providers
+
+        providers.register()

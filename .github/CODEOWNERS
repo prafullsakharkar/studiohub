@@ -1,0 +1,21 @@
+# Required reviewers when branch protection asks for code-owner review (docs/10-security/repository-controls.md).
+# The last matching pattern wins. Replace or extend with a team handle once there is more than one maintainer.
+
+*                                   @prafullsakharkar
+
+# Authentication, authorization and the credential model
+/backend/apps/identity/             @prafullsakharkar
+/backend/apps/core/api/             @prafullsakharkar
+/backend/apps/production/selectors/ @prafullsakharkar
+/docs/identity/                     @prafullsakharkar
+/docs/adr/                          @prafullsakharkar
+
+# Anything that decides what is deployed, how it is built, or what CI trusts
+/infrastructure/                    @prafullsakharkar
+/.github/                           @prafullsakharkar
+/.dockerignore                      @prafullsakharkar
+/.trivyignore.yaml                  @prafullsakharkar
+/.gitleaks.toml                     @prafullsakharkar
+/backend/config/                    @prafullsakharkar
+/backend/uv.lock                    @prafullsakharkar
+/backend/pyproject.toml             @prafullsakharkar

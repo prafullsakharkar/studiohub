@@ -1,4 +1,4 @@
-from django.contrib.auth.hashers import make_password
+from __future__ import annotations
 
 from apps.core.services.business import (
     BusinessService,
@@ -6,13 +6,21 @@ from apps.core.services.business import (
 from apps.identity.models import (
     User,
 )
+from apps.identity.services.password import (
+    PasswordService,
+)
 
 
 class UserPasswordService(
     BusinessService,
 ):
     """
-    User password operations.
+    Administrative password operations.
+
+    Kept as a thin compatibility facade over :class:`PasswordService`, which is
+    the single owner of password validation, session revocation, and audit
+    events. Self-service changes must call ``PasswordService.change_password``
+    so the current password is verified.
     """
 
     model = User
@@ -22,43 +30,26 @@ class UserPasswordService(
         cls,
         user,
         password,
+        *,
+        request=None,
     ):
-        user.password = make_password(
-            password,
+        return PasswordService.set_password(
+            user=user,
+            new_password=password,
+            request=request,
+            origin="admin",
         )
-
-        user.save(
-            update_fields=[
-                "password",
-                "updated_at",
-            ],
-        )
-
-        profile = getattr(
-            user,
-            "profile",
-            None,
-        )
-
-        if profile and profile.must_change_password:
-            profile.must_change_password = False
-
-            profile.save(
-                update_fields=[
-                    "must_change_password",
-                    "updated_at",
-                ],
-            )
-
-        return user
 
     @classmethod
     def set_password(
         cls,
         user,
         password,
+        *,
+        request=None,
     ):
         return cls.change_password(
             user,
             password,
+            request=request,
         )

@@ -1,480 +1,81 @@
 """
-Delivery service for business logic.
+Executors for the delivery actions that run through ``BackgroundJobService`` (validate, prepare,
+submit). They take ids only, as a job payload must, and call ``DeliveryService``; the status
+moves, the approvals and the rest live there.
 """
+
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-from django.db import transaction
-
-if TYPE_CHECKING:
-    from apps.deliveries.models import DeliveryPackage, DeliveryVersionRef
+from apps.deliveries.services.package import DeliveryService
 
 
-def create_delivery(
-    *,
-    name: str,
-    code: str,
-    organization_id: str,
-    project_id: str | None = None,
-    client_id: str | None = None,
-    delivery_method: str = "S3",
-    delivery_destination: str = "",
-    passcode: str | None = None,
-    expires_at: str | None = None,
-    notes: str = "",
-    client_notes: str = "",
-    created_by_id: str | None = None,
-) -> DeliveryPackage:
-    """Create a new delivery package."""
-    from datetime import datetime
+def _actor(user_id: str | None):
+    if not user_id:
+        return None
+    from django.contrib.auth import get_user_model
 
-    from apps.deliveries.models import DeliveryPackage
-    from apps.organization.models import Organization
-
-    org = Organization.objects.get(id=organization_id)
-
-    delivery = DeliveryPackage.objects.create(
-        name=name,
-        code=code,
-        organization=org,
-        project_id=project_id,
-        client_id=client_id,
-        delivery_method=delivery_method,
-        delivery_destination=delivery_destination,
-        passcode=passcode or "",
-        expires_at=datetime.fromisoformat(expires_at) if expires_at else None,
-        notes=notes,
-        client_notes=client_notes,
-        created_by_id=created_by_id,
-    )
-
-    return delivery
+    return get_user_model().objects.filter(pk=user_id).first()
 
 
-@transaction.atomic
-def add_version_to_delivery(
-    *,
-    delivery_id: str,
-    version_id: str,
-    version_number: str,
-    entity_type: str,
-    entity_code: str,
-    entity_name: str,
-    file_size_bytes: int = 0,
-    frame_count: int = 0,
-    file_path: str = "",
-    checksum_md5: str = "",
-    checksum_sha256: str = "",
-    organization_id: str,
-) -> DeliveryVersionRef:
-    """Add a version reference to a delivery."""
-    from apps.deliveries.models import DeliveryPackage, DeliveryVersionRef
-    from apps.production.models import Version
-
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
-    version = Version.objects.get(
-        id=version_id,
-        organization_id=organization_id,
-    )
-
-    ref = DeliveryVersionRef.objects.create(
-        delivery=delivery,
-        version=version,
-        version_number=version_number,
-        entity_type=entity_type,
-        entity_code=entity_code,
-        entity_name=entity_name,
-        file_size_bytes=file_size_bytes,
-        frame_count=frame_count,
-        file_path=file_path,
-        checksum_md5=checksum_md5,
-        checksum_sha256=checksum_sha256,
-    )
-
-    # Update delivery totals
-    delivery.total_size_bytes += file_size_bytes
-    delivery.total_frames += frame_count
-    delivery.save(update_fields=["total_size_bytes", "total_frames"])
-
-    return ref
-
-
-@transaction.atomic
-def remove_version_from_delivery(
-    *,
-    delivery_id: str,
-    version_ref_id: str,
-    organization_id: str,
-) -> DeliveryPackage:
-    """Remove a version reference from a delivery (frontend ``removeVersion``)."""
-    from apps.deliveries.models import DeliveryPackage
-
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
-    ref = delivery.versions.get(id=version_ref_id)
-
-    delivery.total_size_bytes = max(0, (delivery.total_size_bytes or 0) - (ref.file_size_bytes or 0))
-    delivery.total_frames = max(0, (delivery.total_frames or 0) - (ref.frame_count or 0))
-    delivery.save(update_fields=["total_size_bytes", "total_frames"])
-    ref.delete()
-
-    return delivery
-
-
-@transaction.atomic
-def validate_delivery(
-    *,
-    delivery_id: str,
-    user_id: str,
-    organization_id: str,
-) -> dict[Any, Any]:
-    """Validate delivery package contents."""
-    from apps.audit.models import AuditLog
-    from apps.deliveries.models import DeliveryPackage
-
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
-
-    # Validate all versions
-    validation_results = []
-    all_valid = True
-
-    for ref in delivery.versions.all():
-        ref.is_validated = True
-        ref.validation_notes = "Auto-validated"
-        ref.save(update_fields=["is_validated", "validation_notes"])
-
-        validation_results.append({
-            "version_id": str(ref.version_id),
-            "version_number": ref.version_number,
-            "status": "valid",
-            "checksums": {
-                "md5": ref.checksum_md5,
-                "sha256": ref.checksum_sha256,
-            },
-        })
-
-    # Update delivery status
-    delivery.status = DeliveryPackage.STATUS_VALIDATING
-    delivery.save(update_fields=["status"])
-
-    # Create audit log
-    AuditLog.objects.create(
-        action=AuditLog.ACTION_UPDATE,
-        target_type=AuditLog.TARGET_BILLING,  # Reusing for delivery
-        target_id=str(delivery_id),
-        target_name=delivery.name,
-        description=f"Delivery {delivery.code} validated by user {user_id}",
-        actor_id=user_id,
-        organization=delivery.organization,
-        metadata={"validation_results": validation_results},
-    )
-
+def validate_delivery(*, delivery_id: str, user_id: str | None) -> dict[Any, Any]:
+    """Run QC on a delivery. The reply keeps its old keys and adds the checks that ran."""
+    package, result = DeliveryService.validate(actor=_actor(user_id), package=delivery_id)
     return {
         "success": True,
-        "delivery_id": str(delivery_id),
-        "status": delivery.status,
-        "validation_results": validation_results,
-        "all_valid": all_valid,
-    }
-
-
-@transaction.atomic
-def prepare_delivery(
-    *,
-    delivery_id: str,
-    user_id: str,
-    organization_id: str,
-) -> dict[Any, Any]:
-    """Prepare delivery package for submission."""
-    from apps.audit.models import AuditLog
-    from apps.deliveries.models import DeliveryPackage
-
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
-
-    # Generate manifest
-    manifest_data = {
-        "delivery_code": delivery.code,
-        "delivery_name": delivery.name,
-        "created_at": delivery.created_at.isoformat(),
-        "versions": [
+        "delivery_id": str(package.pk),
+        "status": package.status,
+        "validation_results": [
             {
-                "version_number": ref.version_number,
-                "entity_code": ref.entity_code,
-                "file_path": ref.file_path,
-                "file_size_bytes": ref.file_size_bytes,
-                "checksum_md5": ref.checksum_md5,
-                "checksum_sha256": ref.checksum_sha256,
+                "version_id": str(entry["ref"].version_id),
+                "version_number": entry["ref"].version_number,
+                "status": "valid" if entry["passed"] else "invalid",
+                "checks": [
+                    {"check": name, "outcome": outcome, "detail": detail}
+                    for name, outcome, detail in entry["checks"]
+                ],
+                "checksums": {
+                    "md5": entry["ref"].checksum_md5,
+                    "sha256": entry["ref"].checksum_sha256,
+                },
             }
-            for ref in delivery.versions.all()
+            for entry in result["items"]
         ],
+        "package_checks": result["package_checks"],
+        "all_valid": result["passed"],
+        "run_id": str(result["run_id"]),
     }
 
-    # Generate checksums
-    checksums = {
-        "manifest_md5": "placeholder-manifest-checksum",
-        "total_size_bytes": delivery.total_size_bytes,
-        "version_count": delivery.version_count,
-    }
 
-    delivery.manifest_data = manifest_data
-    delivery.checksums = checksums
-    delivery.status = DeliveryPackage.STATUS_PREPARED
-    delivery.save(update_fields=["manifest_data", "checksums", "status"])
-
-    # Create audit log
-    AuditLog.objects.create(
-        action=AuditLog.ACTION_EXPORT,
-        target_type=AuditLog.TARGET_BILLING,
-        target_id=str(delivery_id),
-        target_name=delivery.name,
-        description=f"Delivery {delivery.code} prepared for submission",
-        actor_id=user_id,
-        organization=delivery.organization,
-        metadata={"manifest_generated": True},
-    )
-
+def prepare_delivery(*, delivery_id: str, user_id: str | None) -> dict[Any, Any]:
+    """Prepare a delivery for sign-off: refresh the items, run QC, build the manifest."""
+    package, _result = DeliveryService.prepare(actor=_actor(user_id), package=delivery_id)
     return {
         "success": True,
-        "delivery_id": str(delivery_id),
-        "status": delivery.status,
-        "manifest_data": manifest_data,
-        "checksums": checksums,
+        "delivery_id": str(package.pk),
+        "status": package.status,
+        "manifest_data": package.manifest_data,
+        "checksums": package.checksums,
     }
 
 
-@transaction.atomic
 def submit_delivery(
-    *,
-    delivery_id: str,
-    user_id: str,
-    organization_id: str,
+    *, delivery_id: str, user_id: str | None, transfer_reference: str = ""
 ) -> dict[Any, Any]:
-    """Submit delivery to destination."""
-    from apps.audit.models import AuditLog
-    from apps.deliveries.models import DeliveryPackage
-
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
+    """Record that a Signed Off delivery was sent (once). StudioHub does not transfer anything."""
+    package = DeliveryService.send(
+        actor=_actor(user_id), package=delivery_id, transfer_reference=transfer_reference
     )
-
-    # Simulate submission (in production, this would call Aspera/S3/FTP)
-    submission_result = {
-        "success": True,
-        "delivery_method": delivery.delivery_method,
-        "destination": delivery.delivery_destination,
-        "submitted_at": delivery.updated_at.isoformat(),
-    }
-
-    delivery.status = DeliveryPackage.STATUS_SUBMITTED
-    delivery.save(update_fields=["status"])
-
-    # Create audit log
-    AuditLog.objects.create(
-        action=AuditLog.ACTION_EXPORT,
-        target_type=AuditLog.TARGET_BILLING,
-        target_id=str(delivery_id),
-        target_name=delivery.name,
-        description=f"Delivery {delivery.code} submitted via {delivery.delivery_method}",
-        actor_id=user_id,
-        organization=delivery.organization,
-        metadata=submission_result,
-    )
-
     return {
         "success": True,
-        "delivery_id": str(delivery_id),
-        "status": delivery.status,
-        "submission_result": submission_result,
+        "delivery_id": str(package.pk),
+        "status": package.status,
+        "submission_result": {
+            "success": True,
+            "delivery_method": package.delivery_method,
+            "destination": package.delivery_destination,
+            "submitted_at": package.sent_at.isoformat() if package.sent_at else None,
+            "transfer_reference": package.transfer_reference,
+        },
     }
-
-
-@transaction.atomic
-def approve_delivery(
-    *,
-    delivery_id: str,
-    user_id: str,
-    client_notes: str = "",
-    organization_id: str,
-) -> DeliveryPackage:
-    """Approve delivery by client."""
-    from apps.audit.models import AuditLog
-    from apps.deliveries.models import DeliveryPackage
-
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
-
-    delivery.status = DeliveryPackage.STATUS_APPROVED
-    delivery.client_status = DeliveryPackage.CLIENT_STATUS_APPROVED
-    delivery.client_notes = client_notes
-    delivery.save(update_fields=["status", "client_status", "client_notes"])
-
-    # Create audit log
-    AuditLog.objects.create(
-        action=AuditLog.ACTION_UPDATE,
-        target_type=AuditLog.TARGET_BILLING,
-        target_id=str(delivery_id),
-        target_name=delivery.name,
-        description=f"Delivery {delivery.code} approved by client",
-        actor_id=user_id,
-        organization=delivery.organization,
-        metadata={"client_notes": client_notes},
-    )
-
-    return delivery
-
-
-@transaction.atomic
-def reject_delivery(
-    *,
-    delivery_id: str,
-    user_id: str,
-    rejection_reason: str,
-    organization_id: str,
-) -> DeliveryPackage:
-    """Reject delivery with feedback."""
-    from apps.audit.models import AuditLog
-    from apps.deliveries.models import DeliveryPackage
-
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
-
-    delivery.status = DeliveryPackage.STATUS_REJECTED
-    delivery.client_status = DeliveryPackage.CLIENT_STATUS_REJECTED
-    delivery.client_notes = rejection_reason
-    delivery.save(update_fields=["status", "client_status", "client_notes"])
-
-    # Create audit log
-    AuditLog.objects.create(
-        action=AuditLog.ACTION_UPDATE,
-        target_type=AuditLog.TARGET_BILLING,
-        target_id=str(delivery_id),
-        target_name=delivery.name,
-        description=f"Delivery {delivery.code} rejected: {rejection_reason}",
-        actor_id=user_id,
-        organization=delivery.organization,
-        metadata={"rejection_reason": rejection_reason},
-    )
-
-    return delivery
-
-
-@transaction.atomic
-def complete_delivery(
-    *,
-    delivery_id: str,
-    user_id: str,
-    organization_id: str,
-) -> DeliveryPackage:
-    """Mark delivery as complete."""
-    from apps.audit.models import AuditLog
-    from apps.deliveries.models import DeliveryPackage
-
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
-
-    delivery.status = DeliveryPackage.STATUS_COMPLETE
-    delivery.save(update_fields=["status"])
-
-    # Create audit log
-    AuditLog.objects.create(
-        action=AuditLog.ACTION_EXPORT,
-        target_type=AuditLog.TARGET_BILLING,
-        target_id=str(delivery_id),
-        target_name=delivery.name,
-        description=f"Delivery {delivery.code} marked as complete",
-        actor_id=user_id,
-        organization=delivery.organization,
-    )
-
-    return delivery
-
-
-@transaction.atomic
-def cancel_delivery(
-    *,
-    delivery_id: str,
-    user_id: str,
-    cancellation_reason: str = "",
-    organization_id: str,
-) -> DeliveryPackage:
-    """Cancel a delivery."""
-    from apps.audit.models import AuditLog
-    from apps.deliveries.models import DeliveryPackage
-
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
-
-    delivery.status = DeliveryPackage.STATUS_CANCELLED
-    delivery.client_notes = cancellation_reason
-    delivery.save(update_fields=["status", "client_notes"])
-
-    # Create audit log
-    AuditLog.objects.create(
-        action=AuditLog.ACTION_DELETE,
-        target_type=AuditLog.TARGET_BILLING,
-        target_id=str(delivery_id),
-        target_name=delivery.name,
-        description=f"Delivery {delivery.code} cancelled: {cancellation_reason}",
-        actor_id=user_id,
-        organization=delivery.organization,
-    )
-
-    return delivery
-
-
-@transaction.atomic
-def retry_delivery(
-    *,
-    delivery_id: str,
-    user_id: str,
-    organization_id: str,
-) -> DeliveryPackage:
-    """Retry a delivery: reset to Prepared so it re-enters the submit flow.
-
-    Frontend contract verb (``retryDelivery`` → ``Preparing``); the backend
-    ``Prepared`` state is the equivalent re-queue point.
-    """
-    from apps.audit.models import AuditLog
-    from apps.deliveries.models import DeliveryPackage
-
-    delivery = DeliveryPackage.objects.get(
-        id=delivery_id,
-        organization_id=organization_id,
-    )
-
-    delivery.status = DeliveryPackage.STATUS_PREPARED
-    delivery.save(update_fields=["status"])
-
-    # Create audit log
-    AuditLog.objects.create(
-        action=AuditLog.ACTION_UPDATE,
-        target_type=AuditLog.TARGET_BILLING,
-        target_id=str(delivery_id),
-        target_name=delivery.name,
-        description=f"Delivery {delivery.code} queued for retry",
-        actor_id=user_id,
-        organization=delivery.organization,
-    )
-
-    return delivery

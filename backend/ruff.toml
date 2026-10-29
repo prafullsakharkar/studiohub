@@ -7,17 +7,31 @@ lint.select = [
     "UP",
     "B",
     "SIM",
-    "DJ"
+    "DJ",
+    # flake8-bandit: the static security checks that run in CI (TPN review TM-016)
+    "S",
     ]
 # select = ["E", "F", "I", "D"]
 target-version = "py313"
-lint.ignore = ["E501", "F403", "F405", "DJ008",]
+lint.ignore = [
+    "E501", "F403", "F405", "DJ008",
+    # S101 assert, S110/S112 try-except-pass: style, not vulnerabilities, in this code base.
+    # S105/S106 flag constants whose *name* contains "password" or "token" (event and
+    # permission names such as PASSWORD_CHANGE_REQUIRED), not secrets.
+    "S101", "S105", "S106", "S110", "S112",
+]
 # ignore = ["E501", "D100", "D101", "D102"]
 exclude = [
     ".venv",
     "migrations",
     "node_modules",
 ]
+
+[lint.per-file-ignores]
+# Tests build credentials, use asserts and fixed values on purpose.
+"**/tests/**" = ["S"]
+"**/conftest.py" = ["S"]
+"**/factories.py" = ["S"]
 
 [format]
 quote-style = "double"

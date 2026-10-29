@@ -1,23 +1,10 @@
 """
-API tests for publish destination endpoints.
+API tests for publish destination endpoints (platform-global, org-free).
 """
+
 import pytest
 from django.urls import reverse
 from rest_framework import status
-
-
-@pytest.fixture(autouse=True)
-def _org_membership(user, staff_user):
-    """Give `user` and `staff_user` an organization membership."""
-    from apps.organization.tests.factories import (
-        OrganizationFactory,
-        OrganizationMembershipFactory,
-    )
-
-    org = OrganizationFactory.create()
-    OrganizationMembershipFactory.create(organization=org, user=user)
-    OrganizationMembershipFactory.create(organization=org, user=staff_user)
-    return org
 
 
 @pytest.mark.django_db
@@ -51,17 +38,13 @@ class TestDestinationEndpoints:
         assert response.data["type"] == "Storage Cluster"
         assert response.data["protocol"] == "NFS"
 
-    def test_list_destinations_forbidden_for_regular_user(
-        self, authenticated_client
-    ):
+    def test_list_destinations_forbidden_for_regular_user(self, authenticated_client):
         url = reverse("api:v1:publishing:destination-list")
         response = authenticated_client.get(url)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_create_destination_forbidden_for_regular_user(
-        self, authenticated_client
-    ):
+    def test_create_destination_forbidden_for_regular_user(self, authenticated_client):
         url = reverse("api:v1:publishing:destination-list")
         response = authenticated_client.post(
             url,
@@ -76,29 +59,22 @@ class TestDestinationEndpoints:
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_destinations_isolated_by_organization(
-        self, staff_client, _org_membership
-    ):
-        from apps.organization.tests.factories import OrganizationFactory
-
-        other_org = OrganizationFactory.create()
-
+    def test_destinations_are_platform_global(self, staff_client):
+        """Destinations carry no org partition: every row is visible."""
         url = reverse("api:v1:publishing:destination-list")
         staff_client.post(
             url,
             {
-                "name": "Org Scoped Storage",
+                "name": "Global Storage",
                 "type": "Storage Cluster",
-                "path": "/mnt/scoped",
+                "path": "/mnt/global",
                 "protocol": "NFS",
             },
             format="json",
-            HTTP_X_ORGANIZATION_ID=str(_org_membership.id),
         )
 
-        response = staff_client.get(
-            url, HTTP_X_ORGANIZATION_ID=str(other_org.id)
-        )
+        response = staff_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["results"] == []
+        names = {row["name"] for row in response.data["results"]}
+        assert "Global Storage" in names

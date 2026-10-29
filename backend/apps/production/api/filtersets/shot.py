@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import django_filters
 from django.db.models import Q
 
@@ -14,27 +16,45 @@ class ShotFilterSet(BaseFilterSet):
     # ids, so the alias resolves tolerantly: unresolvable → no rows (mock
     # exact-match semantics), never a 400.
     project_id = django_filters.CharFilter(method="filter_project")
-    sequence_code = django_filters.CharFilter(field_name="sequence_code", lookup_expr="iexact")
+    # Same tolerant-resolution contract as ``project_id``: UUID, episode code,
+    # or mock id; unresolvable → no rows, never a 400.
+    episode_id = django_filters.CharFilter(method="filter_episode")
+    sequence_code = django_filters.CharFilter(field_name="sequence__code", lookup_expr="iexact")
     # Frontend-contract alias (defensive; no current caller sends bare `sequence`).
-    sequence = django_filters.CharFilter(field_name="sequence_code", lookup_expr="iexact")
+    sequence = django_filters.CharFilter(field_name="sequence__code", lookup_expr="iexact")
+    # Id of the sequence, or its code (any case); unknown values return nothing.
+    sequence_id = django_filters.CharFilter(method="filter_sequence_id")
     code = django_filters.CharFilter(field_name="code", lookup_expr="iexact")
 
     class Meta:
         model = Shot
-        fields = ["status", "project", "project_id", "sequence_code", "sequence", "code"]
+        fields = ["status", "project", "project_id", "episode_id", "sequence_id", "sequence_code", "sequence", "code"]
 
-    def _org(self):
-        return getattr(getattr(self, "request", None), "organization", None)
 
     def filter_project(self, queryset, name, value):
         if not value:
             return queryset
         from apps.production.selectors.project import ProjectSelector
 
-        project = ProjectSelector.resolve_by_lookup(self._org(), value)
+        project = ProjectSelector.resolve_by_lookup(value)
         if project is None:
             return queryset.none()
         return queryset.filter(project=project)
+
+    def filter_episode(self, queryset, name, value):
+        if not value:
+            return queryset
+        from apps.production.selectors.episode import EpisodeSelector
+
+        return queryset.filter(EpisodeSelector.lookup_q(value, prefix="episode__"))
+
+    def filter_sequence_id(self, queryset, name, value):
+        if not value:
+            return queryset
+        try:
+            return queryset.filter(sequence_id=UUID(str(value)))
+        except ValueError:
+            return queryset.filter(sequence__code__iexact=str(value).strip())
 
     def filter_search(self, queryset, name, value):
         if not value:
@@ -43,5 +63,5 @@ class ShotFilterSet(BaseFilterSet):
             Q(code__icontains=value) |
             Q(name__icontains=value) |
             Q(description__icontains=value) |
-            Q(sequence_code__icontains=value)
+            Q(sequence__code__icontains=value)
         )

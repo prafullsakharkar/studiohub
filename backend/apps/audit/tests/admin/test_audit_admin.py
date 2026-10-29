@@ -13,7 +13,6 @@ from apps.audit.admin import (
     BackgroundJobAdmin,
     ChangeLogAdmin,
     ErrorLogAdmin,
-    LoginHistoryAdmin,
     TrackAdmin,
 )
 
@@ -31,7 +30,6 @@ class TestAuditLogAdmin:
             "target_type",
             "target_id",
             "actor",
-            "organization",
             "created_at",
         ]
 
@@ -47,7 +45,6 @@ class TestAuditLogAdmin:
     def test_search_fields(self) -> None:
         """Verify the search fields."""
         assert "actor__email" in AuditLogAdmin.search_fields
-        assert "organization__name" in AuditLogAdmin.search_fields
 
     @pytest.mark.django_db
     def test_readonly_fields(self) -> None:
@@ -129,17 +126,6 @@ class TestErrorLogAdmin:
         assert "severity" in ErrorLogAdmin.list_display
         assert "error_type" in ErrorLogAdmin.list_display
         assert "message" in ErrorLogAdmin.list_display
-
-
-class TestLoginHistoryAdmin:
-    """Tests for LoginHistoryAdmin configuration."""
-
-    @pytest.mark.django_db
-    def test_list_display(self) -> None:
-        """Verify the list display columns."""
-        assert "user" in LoginHistoryAdmin.list_display
-        assert "ip_address" in LoginHistoryAdmin.list_display
-        assert "status" in LoginHistoryAdmin.list_display
 
 
 class TestTrackAdmin:

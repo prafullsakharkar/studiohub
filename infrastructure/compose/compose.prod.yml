@@ -6,17 +6,50 @@
 #                  --env-file infrastructure/compose/.env up -d --build
 #
 # Only Nginx is exposed publicly. All other services live on the internal
-# `backend` network. PostgreSQL, Redis and MinIO data persist on named volumes.
+# `backend` network. PostgreSQL and Redis data persist on named volumes.
+#
+# Internal traffic is encrypted (TPN review TM-009): the one-shot `tls-init` job creates a private CA and
+# a certificate per service in the `tls_data` volume (CA key in `tls_ca`, mounted only by that job);
+# PostgreSQL accepts TLS only, Redis listens on its TLS port only, and nginx reaches Django over
+# HTTPS and verifies it. Set DB_SSLMODE=verify-full, DB_SSLROOTCERT=/tls/ca.pem, REDIS_TLS=true,
+# REDIS_CA_CERT=/tls/ca.pem, rediss:// Celery URLs and INTERNAL_TLS_REQUIRED=true (see .env.example).
 #
 # Migrations are a controlled step and are NOT run by the Django container:
 #   docker compose -f infrastructure/compose/compose.yml \
 #                  -f infrastructure/compose/compose.prod.yml \
 #                  exec django python manage.py migrate --noinput
 
+# Container logs (the application logs to stderr) rotate on the host so they cannot fill the disk,
+# but the Docker json-file driver is local, not a retained record. For audit-grade log retention
+# ship them to a central collector (see docs/10-security/tpn-immediate-remediation.md, TM-011).
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "10"
+
 services:
+
+  # ------------------------------------------------------- Internal TLS bootstrap (one-shot)
+  # Idempotent: keeps current certificates and reissues any that expire within 30 days, so
+  # `docker compose up` (or a scheduled `docker compose run --rm tls-init`) is the renewal.
+  tls-init:
+    logging: *default-logging
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/postgres/Dockerfile
+    entrypoint: ["/bin/sh", "/init.sh"]
+    user: root
+    network_mode: none
+    volumes:
+      - ../docker/tls/init.sh:/init.sh:ro
+      - tls_data:/tls
+      - tls_ca:/ca
+    restart: "no"
 
   # ------------------------------------------------------------------ Nginx
   nginx:
+    logging: *default-logging
     build:
       context: ../..
       dockerfile: infrastructure/docker/nginx/Dockerfile
@@ -26,9 +59,11 @@ services:
       - "443:443"
     depends_on:
       - django
+      - tls-init
     volumes:
       - static_volume:/static:ro
       - media_volume:/media:ro
+      - tls_data:/tls:ro                            # CA that signed Django's certificate
       - ../docker/nginx/certs:/etc/nginx/certs:ro   # TLS certificates (self-signed for validation)
     networks:
       - public
@@ -36,6 +71,7 @@ services:
 
   # ------------------------------------------------------------------ Django
   django:
+    logging: *default-logging
     build:
       context: ../..
       dockerfile: infrastructure/docker/django/Dockerfile
@@ -45,18 +81,26 @@ services:
     restart: always
     expose:
       - "8000"
+    environment:
+      DJANGO_TLS_CERTFILE: /tls/django.pem
+      DJANGO_TLS_KEYFILE: /tls/django.key
+      # nginx is the only proxy and the backend subnet is fixed below, so the trusted range is known
+      # here; the env file may still override it (TPN review TM-014).
+      TRUSTED_PROXY_IPS: ${TRUSTED_PROXY_IPS:-172.31.250.0/24}
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-172.31.250.0/24}
     depends_on:
+      tls-init:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-      minio:
-        condition: service_healthy
     volumes:
       - static_volume:/app/static
       - media_volume:/app/media
+      - tls_data:/tls:ro
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS -H 'X-Forwarded-Proto: https' http://localhost:8000/health/"]
+      test: ["CMD-SHELL", "curl -fsS --cacert /tls/ca.pem -H 'X-Forwarded-Proto: https' https://localhost:8000/health/"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -66,6 +110,7 @@ services:
 
   # ------------------------------------------------------------------ Celery
   celery:
+    logging: *default-logging
     build:
       context: ../..
       dockerfile: infrastructure/docker/django/Dockerfile
@@ -76,10 +121,13 @@ services:
     depends_on:
       django:
         condition: service_healthy
+    volumes:
+      - tls_data:/tls:ro
     networks:
       - backend
 
   celery-beat:
+    logging: *default-logging
     build:
       context: ../..
       dockerfile: infrastructure/docker/django/Dockerfile
@@ -90,6 +138,8 @@ services:
     depends_on:
       django:
         condition: service_healthy
+    volumes:
+      - tls_data:/tls:ro
     networks:
       - backend
 
@@ -98,6 +148,7 @@ services:
   # production, put Flower behind an authenticated reverse proxy — never expose
   # it to the public internet unauthenticated.
   flower:
+    logging: *default-logging
     build:
       context: ../..
       dockerfile: infrastructure/docker/django/Dockerfile
@@ -111,47 +162,82 @@ services:
     depends_on:
       django:
         condition: service_healthy
+    volumes:
+      - tls_data:/tls:ro
     networks:
       - backend
 
   # ----------------------------------------------------- PostgreSQL (override)
+  # TLS only from the network (pg_hba.prod.conf rejects plain TCP); the key is owned by the postgres user.
   postgres:
+    logging: *default-logging
     restart: always
+    command:
+      - postgres
+      - -c
+      - ssl=on
+      - -c
+      - ssl_cert_file=/tls/postgres.pem
+      - -c
+      - ssl_key_file=/tls/postgres.key
+      - -c
+      - ssl_ca_file=/tls/ca.pem
+      - -c
+      - ssl_min_protocol_version=TLSv1.2
+      - -c
+      - hba_file=/etc/postgresql/pg_hba.conf
+    depends_on:
+      tls-init:
+        condition: service_completed_successfully
+    volumes:
+      - tls_data:/tls:ro
+      - ../docker/postgres/pg_hba.prod.conf:/etc/postgresql/pg_hba.conf:ro
     networks:
       - backend
 
   # ----------------------------------------------------------- Redis (override)
+  # Authenticated: refuses to start without REDIS_PASSWORD, and the health check logs in with it.
+  # The same password goes into REDIS_PASSWORD, CELERY_BROKER_URL and CELERY_RESULT_BACKEND.
   redis:
+    logging: *default-logging
     restart: always
-    networks:
-      - backend
-
-  # ----------------------------------------------------------- MinIO (override)
-  minio:
     env_file:
       - .env
-    restart: always
-    networks:
-      - backend
-
-  # ------------------------------------------ MinIO bucket bootstrap (one-shot)
-  minio-init:
-    image: quay.io/minio/mc:latest
-    env_file:
-      - .env
-    entrypoint: ["/bin/sh", "/create-buckets.sh"]
-    volumes:
-      - ../docker/minio/create-buckets.sh:/create-buckets.sh:ro
+    command:
+      - sh
+      - -c
+      - >-
+        [ -n "$$REDIS_PASSWORD" ] || { echo "REDIS_PASSWORD is required" >&2; exit 1; };
+        exec redis-server /usr/local/etc/redis/redis.conf --requirepass "$$REDIS_PASSWORD"
     depends_on:
-      minio:
-        condition: service_healthy
-    restart: "no"
+      tls-init:
+        condition: service_completed_successfully
+    volumes:
+      - ../docker/redis/redis.prod.conf:/usr/local/etc/redis/redis.conf:ro
+      - tls_data:/tls:ro
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli --tls --cacert /tls/ca.pem --no-auth-warning -a \"$$REDIS_PASSWORD\" ping | grep -q PONG" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - backend
+
 
 volumes:
   static_volume:
   media_volume:
+  tls_data:
+  # The CA key. Only tls-init mounts it; back it up with the other secrets or accept re-issuing the CA.
+  tls_ca:
 
 networks:
   public:
+
+  # A fixed subnet so TRUSTED_PROXY_IPS (and FORWARDED_ALLOW_IPS) can name the proxy's range.
+  # Keep it in step with the value in the env file; change both if it clashes with your network.
+  backend:
+    ipam:
+      config:
+        - subnet: 172.31.250.0/24

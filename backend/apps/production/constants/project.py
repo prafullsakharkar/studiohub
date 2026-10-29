@@ -14,3 +14,8 @@ class ProjectStatus(models.TextChoices):
     APPROVED = "Approved", "Approved"
     ARCHIVED = "Archived", "Archived"
     ON_HOLD = "On Hold", "On Hold"
+
+
+class ProjectWorkflowType(models.TextChoices):
+    STANDARD = "standard", "Standard"
+    EPISODIC = "episodic", "Episodic"

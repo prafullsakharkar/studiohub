@@ -4,7 +4,6 @@ from .base import BaseMiddleware
 from .deprecation import DeprecationHeaderMiddleware
 from .locale import LocaleMiddleware
 from .maintenance import MaintenanceMiddleware
-from .organization import OrganizationMiddleware
 from .request_id import RequestIDMiddleware
 from .request_logging import RequestLoggingMiddleware
 from .security import SecurityHeadersMiddleware
@@ -18,7 +17,6 @@ __all__ = [
     "DeprecationHeaderMiddleware",
     "LocaleMiddleware",
     "MaintenanceMiddleware",
-    "OrganizationMiddleware",
     "RequestIDMiddleware",
     "RequestLoggingMiddleware",
     "SecurityHeadersMiddleware",

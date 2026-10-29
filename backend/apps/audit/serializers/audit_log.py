@@ -13,7 +13,6 @@ class AuditLogSerializer(serializers.ModelSerializer[AuditLog]):
     
     actor_email = serializers.CharField(source="actor.email", read_only=True)
     actor_name = serializers.CharField(source="actor.full_name", read_only=True)
-    organization_name = serializers.CharField(source="organization.name", read_only=True)
     
     class Meta:
         model = AuditLog
@@ -29,8 +28,6 @@ class AuditLogSerializer(serializers.ModelSerializer[AuditLog]):
             "actor",
             "actor_email",
             "actor_name",
-            "organization",
-            "organization_name",
             "ip_address",
             "user_agent",
             "metadata",
@@ -55,7 +52,6 @@ class AuditLogFrontendSerializer(serializers.ModelSerializer[AuditLog]):
     exposes list only (audit stays append-only, no POST).
     """
 
-    organization_id = serializers.UUIDField(read_only=True)
     user_id = serializers.UUIDField(source="actor_id", read_only=True)
     user_name = serializers.SerializerMethodField()
     user_email = serializers.SerializerMethodField()
@@ -69,7 +65,6 @@ class AuditLogFrontendSerializer(serializers.ModelSerializer[AuditLog]):
         fields = (
             "id",
             "uuid",
-            "organization_id",
             "user_id",
             "user_name",
             "user_email",

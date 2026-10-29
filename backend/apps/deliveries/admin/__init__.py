@@ -3,13 +3,21 @@ Deliveries admin module.
 """
 
 from .delivery import (
+    DeliveryCounterAdmin,
     DeliveryDestinationAdmin,
+    DeliveryItemFileAdmin,
     DeliveryPackageAdmin,
+    DeliveryQCCheckAdmin,
+    DeliveryStatusChangeAdmin,
     DeliveryVersionRefAdmin,
 )
 
 __all__ = [
-    "DeliveryPackageAdmin",
+    "DeliveryCounterAdmin",
     "DeliveryDestinationAdmin",
+    "DeliveryItemFileAdmin",
+    "DeliveryPackageAdmin",
+    "DeliveryQCCheckAdmin",
+    "DeliveryStatusChangeAdmin",
     "DeliveryVersionRefAdmin",
 ]

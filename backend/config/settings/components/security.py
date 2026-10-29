@@ -2,6 +2,8 @@
 Security settings.
 """
 
+from config.env import settings
+
 SESSION_COOKIE_HTTPONLY = True
 
 CSRF_COOKIE_HTTPONLY = True
@@ -43,3 +45,71 @@ MFA_MAX_FAILED_ATTEMPTS = 5
 MFA_LOCKOUT_MINUTES = 15
 
 MFA_RECOVERY_CODE_COUNT = 10
+
+# Recovery codes expire; a regenerated set starts a new clock.
+MFA_RECOVERY_CODE_DAYS = 365
+
+# Lifetime of the pre-auth challenge issued after a correct password for an
+# MFA-enabled account. It carries no session and grants no API access.
+MFA_CHALLENGE_TTL_SECONDS = 300
+
+# Policy: who must use MFA (see MFAPolicyService).
+# MFA_REQUIRE_ALL (env) turns it on for every account; production templates set it.
+MFA_REQUIRE_MFA = settings.mfa_required_for_all
+
+MFA_REQUIRE_STAFF = True
+
+MFA_REQUIRE_SUPERUSER = True
+
+# Vendor and client members of a project (a membership naming a vendor or client).
+MFA_REQUIRE_EXTERNAL = True
+
+# Password policy (identity/validators/password.py, services/password.py).
+PASSWORD_MIN_LENGTH = 12
+
+PASSWORD_MAX_LENGTH = 128
+
+# Breached-password screening (identity/validators/breach.py). Off unless the operator turns it on.
+PASSWORD_BREACH_CHECK = settings.password_breach_check
+
+PASSWORD_BREACH_CHECK_FAIL_CLOSED = settings.password_breach_check_fail_closed
+
+# A new password may not equal the current one or any of the last N.
+PASSWORD_HISTORY_COUNT = 5
+
+# Reverse proxies allowed to set X-Forwarded-For (IPs / CIDR). Empty means the
+# direct peer (REMOTE_ADDR) is always the client address. Consumed only by
+# apps.core.utils.client_ip.
+TRUSTED_PROXY_IPS = settings.trusted_proxies
+
+# Fernet keys protecting TOTP secrets at rest (first encrypts, all decrypt).
+# Read only by apps.identity.crypto; an empty tuple fails closed.
+MFA_ENCRYPTION_KEYS = settings.mfa_encryption_keys
+
+# False stores new TOTP secrets in plaintext (default True). See apps.identity.crypto.
+MFA_ENCRYPTION_ENABLED = settings.mfa_encryption_enabled
+
+# Fernet keys protecting delivery passcodes at rest (first encrypts, all decrypt).
+# Read only by apps.deliveries.passcode; an empty tuple fails closed.
+DELIVERY_SECRET_KEYS = settings.delivery_secret_keys
+
+# HMAC pepper for API key / PAT digests (see apps.identity.api_keys.hashing).
+API_KEY_PEPPER = settings.api_key_pepper.get_secret_value()
+
+# During the rehash window credentials stored with the old unpeppered digest
+# still authenticate (and are upgraded on use). Set False once every row is
+# on the peppered digest.
+API_KEY_ACCEPT_LEGACY_HASH = settings.api_key_accept_legacy_hash
+
+# `check --deploy` fails (rather than warns) when the database or Redis link is not encrypted and
+# verified (TPN review TM-009).
+INTERNAL_TLS_REQUIRED = settings.internal_tls_required
+
+# Who receives the hourly security-alert summary (identity/services/security_alerts.py).
+SECURITY_ALERT_EMAILS = settings.security_alert_recipients
+
+# Active API keys / PATs one user may hold, per kind.
+IDENTITY_MAX_ACTIVE_CREDENTIALS = 50
+
+# last_used_at/ip are written at most this often per credential.
+IDENTITY_CREDENTIAL_TOUCH_SECONDS = 60

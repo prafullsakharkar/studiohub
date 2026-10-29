@@ -1,11 +1,12 @@
 from django.contrib import admin
 
-from apps.organization.admin.base import OrganizationScopedModelAdmin
+from apps.core.admin.base import StudioHubModelAdmin
+from apps.production.admin.mixins import NoHardDeleteMixin
 from apps.production.models import Task
 
 
 @admin.register(Task)
-class TaskAdmin(OrganizationScopedModelAdmin):
+class TaskAdmin(NoHardDeleteMixin, StudioHubModelAdmin):
     list_display = (
         "code",
         "title",
@@ -15,15 +16,14 @@ class TaskAdmin(OrganizationScopedModelAdmin):
         "status",
         "priority",
         "due_date",
-        "is_archived",
+        "is_deleted",
     )
 
     list_filter = (
         "status",
         "priority",
         "department",
-        "is_archived",
-        "organization",
+        "is_deleted",
     )
 
     search_fields = (
@@ -35,13 +35,11 @@ class TaskAdmin(OrganizationScopedModelAdmin):
 
     autocomplete_fields = (
         "project",
-        "organization",
-        "team",
         "assignee",
         "reviewer",
     )
 
-    list_select_related = ("project", "organization")
+    list_select_related = ("project",)
 
     date_hierarchy = "due_date"
 

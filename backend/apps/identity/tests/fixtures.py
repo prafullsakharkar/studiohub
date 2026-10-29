@@ -12,10 +12,7 @@ from apps.identity.models.user import User
 from .factories import (
     BackupCodeFactory,
     IPBlacklistFactory,
-    KnownDeviceFactory,
     LoginAttemptFactory,
-    OAuthAccountFactory,
-    OAuthProviderFactory,
     ProfileFactory,
     SecurityEventFactory,
     TrustedDeviceFactory,
@@ -61,18 +58,6 @@ def profile(db, user):
 
 
 @pytest.fixture
-def oauth_provider(db):
-    """Create an OAuth provider."""
-    return OAuthProviderFactory.create()
-
-
-@pytest.fixture
-def oauth_account(db):
-    """Create an OAuth account."""
-    return OAuthAccountFactory.create()
-
-
-@pytest.fixture
 def backup_code(db):
     """Create a backup code."""
     return BackupCodeFactory.create()
@@ -82,12 +67,6 @@ def backup_code(db):
 def trusted_device(db):
     """Create a trusted device."""
     return TrustedDeviceFactory.create()
-
-
-@pytest.fixture
-def known_device(db):
-    """Create a known device."""
-    return KnownDeviceFactory.create()
 
 
 @pytest.fixture
@@ -143,7 +122,7 @@ def staff_client(staff_user):
     """Get a staff API client (staff holds explicit full permission grants)."""
     from rest_framework.test import APIClient
 
-    from apps.organization.tests.rbac_helpers import grant_all_known_codes
+    from apps.identity.tests.rbac_helpers import grant_all_known_codes
 
     grant_all_known_codes(staff_user)
     client = APIClient()
@@ -159,3 +138,14 @@ def admin_client(admin_user):
     client = APIClient()
     client.force_authenticate(user=admin_user)
     return client
+
+
+@pytest.fixture
+def org_admin_context(staff_user):
+    """
+    Legacy org-context helper. The organization dimension was removed, so
+    this now returns empty headers: staff already resolves full platform
+    grants through ``staff_client``. Retained as a no-op to keep call
+    sites stable while they are migrated.
+    """
+    return lambda target_user: {}

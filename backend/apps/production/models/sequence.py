@@ -1,8 +1,8 @@
 """
 Sequence model.
 
-A Sequence groups Shots within a Project. It is an Organization-owned,
-Project-scoped entity that supports soft-delete (archive) and restore via the
+A Sequence groups Shots within a Project. It is a Project-scoped
+entity that supports soft-delete (archive) and restore via the
 canonical ``EntityModel`` soft-delete machinery.
 """
 
@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.db import models
+from django.db.models.functions import Upper
 
 from apps.core.models.bases import EntityModel
 from apps.production.constants import ProductionStatus
@@ -20,17 +21,32 @@ class Sequence(EntityModel):
     Sequence within a Project.
     """
 
-    organization = models.ForeignKey(
-        "organization.Organization",
-        on_delete=models.CASCADE,
-        related_name="sequences",
-        db_index=True,
-    )
     project = models.ForeignKey(
         "production.Project",
         on_delete=models.CASCADE,
         related_name="sequences",
         db_index=True,
+    )
+    # The show (cut) this record belongs to. A show-bound membership sees only records of its show
+    # (TPN review TM-002, ADR-0033 D2); none means not yet assigned to a show, which hides the record
+    # from show-bound members and leaves it visible to project-wide ones.
+    show = models.ForeignKey(
+        "production.Show",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sequences",
+        db_index=True,
+    )
+
+    # Episodic projects file a sequence under an episode; its shots follow it (D-12).
+    # Standard projects have none. Legacy rows may have none until someone sets one.
+    episode = models.ForeignKey(
+        "production.Episode",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="sequences",
     )
 
     code = models.CharField(max_length=50, db_index=True)
@@ -67,9 +83,18 @@ class Sequence(EntityModel):
         db_table = "production_sequence"
         ordering = ("code",)
         unique_together = [("project", "code")]
+        constraints = [
+            models.UniqueConstraint(
+                Upper("code"), "project", name="production_sequence_project_ucode_uniq"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(frame_out__gte=models.F("frame_in")),
+                name="production_sequence_frame_range_ck",
+            ),
+        ]
         indexes = [
-            models.Index(fields=["organization", "project"]),
             models.Index(fields=["project", "code"]),
+            models.Index(fields=["project", "episode"]),
             models.Index(fields=["status"]),
         ]
 
