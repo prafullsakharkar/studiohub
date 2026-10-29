@@ -30,10 +30,4 @@ export const personApi = {
   deletePerson: async (id: string): Promise<void> => {
     return apiClient.delete<void>(`/api/v1/people/${id}/`);
   },
-  setPersonPassword: async (
-    id: string,
-    payload: { current_password?: string; new_password: string }
-  ): Promise<{ detail: string }> => {
-    return apiClient.post<{ detail: string }>(`/api/v1/people/${id}/set-password/`, payload);
-  },
 };

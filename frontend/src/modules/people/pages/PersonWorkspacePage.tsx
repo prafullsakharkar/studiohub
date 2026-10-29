@@ -132,13 +132,6 @@ export const PersonWorkspacePage: React.FC = () => {
     });
   };
 
-  const handleUpdateSecurityStatus = (status: 'Active' | 'Inactive' | 'Suspended') => {
-    updatePerson.mutate({
-      id: person.id,
-      data: { status },
-    });
-  };
-
   return (
     <div className="p-4 sm:p-6 space-y-6 flex-1 min-h-0">
       {/* Header Bar */}
