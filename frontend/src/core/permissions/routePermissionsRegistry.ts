@@ -302,22 +302,6 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
   },
 
   // Platform Routes
-  '/data-platform': {
-    path: '/data-platform',
-    name: 'Data Platform',
-    pagePermission: 'page.data_platform',
-  },
-  '/notifications': {
-    path: '/notifications',
-    name: 'Notifications',
-    pagePermission: 'page.notifications',
-  },
-  '/reports': {
-    path: '/reports',
-    name: 'Reports',
-    pagePermission: 'page.reports',
-    permissions: ['reports.view'],
-  },
   '/settings': {
     path: '/settings',
     name: 'Settings',
@@ -836,7 +820,6 @@ export function evaluateRouteAccess(
       '/vendors',
       '/pipeline',
       '/audit',
-      '/reports',
       '/resources',
       '/schedules',
     ];

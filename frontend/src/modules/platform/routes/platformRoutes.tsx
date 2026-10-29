@@ -1,11 +1,8 @@
-import { ReportsPage } from '@/modules/platform/pages/ReportsPage';
 import React from 'react';
 import { Navigate, Route, useParams } from 'react-router-dom';
 import { PermissionRoute } from '@/routes/PermissionRoute';
-import { NotificationsPage } from '@/modules/platform/pages/NotificationsPage';
 ;
 ;
-import { DataPlatformPage } from '@/modules/platform/pages/DataPlatformPage';
 import { PlatformAdminPage } from '@/modules/platform/pages/PlatformAdminPage';
 import { ApiHealthPage } from '@/modules/platform/pages/ApiHealthPage';
 import { PreserveQueryRedirect } from '@/routes/PreserveQueryRedirect';
@@ -23,8 +20,6 @@ const MasterDataRedirect: React.FC = () => {
 export const platformRoutes = (
   <>
     {/* PLATFORM APPS */}
-    <Route path="/data-platform" element={<DataPlatformPage />} />
-    <Route path="/notifications" element={<NotificationsPage />} />
     <Route path="/platform/health" element={<ApiHealthPage />} />
     <Route path="/api-health" element={<PreserveQueryRedirect to="/platform/health" />} />
 
@@ -33,10 +28,6 @@ export const platformRoutes = (
       <Route path="/platform/admin/:tab" element={<PlatformAdminPage />} />
       <Route path="/platform/master-data" element={<MasterDataRedirect />} />
       <Route path="/platform/master-data/:tab" element={<MasterDataRedirect />} />
-    </Route>
-
-    <Route element={<PermissionRoute permissions={['reports.view']} />}>
-      <Route path="/reports" element={<ReportsPage />} />
     </Route>
 
   </>
