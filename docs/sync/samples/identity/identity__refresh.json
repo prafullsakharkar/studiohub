@@ -1,0 +1,93 @@
+{
+  "view": "RefreshAPIView",
+  "app": "identity",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/refresh/",
+      "body": null
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2fe299de-07ca-4026-bbd1-1260a90940d7",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"GET\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "2fe299de-07ca-4026-bbd1-1260a90940d7"
+      }
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/refresh/",
+      "body": null
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ff92cf81-eea7-48e3-aad1-4948fb1c0a54",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"GET\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "ff92cf81-eea7-48e3-aad1-4948fb1c0a54"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/refresh/",
+      "body": null
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "145cf35c-0d2b-417b-b1e9-7273574302f3",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"GET\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "145cf35c-0d2b-417b-b1e9-7273574302f3"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/refresh/",
+      "body": null
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "364721e3-bff2-4910-bd20-16291ceae419",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"GET\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "364721e3-bff2-4910-bd20-16291ceae419"
+      }
+    }
+  }
+}

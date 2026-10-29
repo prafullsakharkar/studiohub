@@ -1,0 +1,284 @@
+{
+  "view": "VendorContractViewSet",
+  "app": "masterdata",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendor-contracts/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9a32953c-cce6-4e7f-bf1b-205b88b47cb1",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "e385134b-6e6e-40af-b188-aad251c86278",
+          "vendor": "7ca84d44-aa70-4b37-8e17-045cbf3345b7",
+          "contract_number": "VC-0",
+          "title": "Vendor contract 0",
+          "type": "SOW",
+          "effective_date": null,
+          "expiry_date": null,
+          "total_value_usd": 0,
+          "currency": "USD",
+          "nda_signed": false,
+          "security_tier": "",
+          "status": "Draft",
+          "activated_at": null,
+          "created_at": "2026-10-29T05:37:41.725021Z",
+          "updated_at": "2026-10-29T05:37:41.725031Z"
+        },
+        {
+          "id": "d63d1106-5ea0-4cdb-9e4e-651b44cf2a87",
+          "vendor": "dc499ed1-1989-4b38-b12d-ce8d98552c67",
+          "contract_number": "VC-1",
+          "title": "Vendor contract 1",
+          "type": "SOW",
+          "effective_date": null,
+          "expiry_date": null,
+          "total_value_usd": 0,
+          "currency": "USD",
+          "nda_signed": false,
+          "security_tier": "",
+          "status": "Draft",
+          "activated_at": null,
+          "created_at": "2026-10-29T05:37:41.731948Z",
+          "updated_at": "2026-10-29T05:37:41.731958Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendor-contracts/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2243ee0c-ac2a-4835-9a02-4fcaf55d4f5e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "2243ee0c-ac2a-4835-9a02-4fcaf55d4f5e"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendor-contracts/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d7df4a7a-b26f-43bc-b0d3-667d72c5e3d5",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "e385134b-6e6e-40af-b188-aad251c86278",
+          "vendor": "7ca84d44-aa70-4b37-8e17-045cbf3345b7",
+          "contract_number": "VC-0",
+          "title": "Vendor contract 0",
+          "type": "SOW",
+          "effective_date": null,
+          "expiry_date": null,
+          "currency": "USD",
+          "nda_signed": false,
+          "security_tier": "",
+          "status": "Draft",
+          "activated_at": null,
+          "created_at": "2026-10-29T05:37:41.725021Z",
+          "updated_at": "2026-10-29T05:37:41.725031Z"
+        },
+        {
+          "id": "d63d1106-5ea0-4cdb-9e4e-651b44cf2a87",
+          "vendor": "dc499ed1-1989-4b38-b12d-ce8d98552c67",
+          "contract_number": "VC-1",
+          "title": "Vendor contract 1",
+          "type": "SOW",
+          "effective_date": null,
+          "expiry_date": null,
+          "currency": "USD",
+          "nda_signed": false,
+          "security_tier": "",
+          "status": "Draft",
+          "activated_at": null,
+          "created_at": "2026-10-29T05:37:41.731948Z",
+          "updated_at": "2026-10-29T05:37:41.731958Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendor-contracts/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "73dfb819-fdde-4e5b-b0a6-b71583c92dc5",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "e385134b-6e6e-40af-b188-aad251c86278",
+          "vendor": "7ca84d44-aa70-4b37-8e17-045cbf3345b7",
+          "contract_number": "VC-0",
+          "title": "Vendor contract 0",
+          "type": "SOW",
+          "effective_date": null,
+          "expiry_date": null,
+          "currency": "USD",
+          "nda_signed": false,
+          "security_tier": "",
+          "status": "Draft",
+          "activated_at": null,
+          "created_at": "2026-10-29T05:37:41.725021Z",
+          "updated_at": "2026-10-29T05:37:41.725031Z"
+        },
+        {
+          "id": "d63d1106-5ea0-4cdb-9e4e-651b44cf2a87",
+          "vendor": "dc499ed1-1989-4b38-b12d-ce8d98552c67",
+          "contract_number": "VC-1",
+          "title": "Vendor contract 1",
+          "type": "SOW",
+          "effective_date": null,
+          "expiry_date": null,
+          "currency": "USD",
+          "nda_signed": false,
+          "security_tier": "",
+          "status": "Draft",
+          "activated_at": null,
+          "created_at": "2026-10-29T05:37:41.731948Z",
+          "updated_at": "2026-10-29T05:37:41.731958Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendor-contracts/e385134b-6e6e-40af-b188-aad251c86278/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f78742ca-d377-41c6-80b4-f9c2d2f71b4a",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "e385134b-6e6e-40af-b188-aad251c86278",
+      "vendor": "7ca84d44-aa70-4b37-8e17-045cbf3345b7",
+      "contract_number": "VC-0",
+      "title": "Vendor contract 0",
+      "type": "SOW",
+      "effective_date": null,
+      "expiry_date": null,
+      "total_value_usd": 0,
+      "currency": "USD",
+      "nda_signed": false,
+      "security_tier": "",
+      "status": "Draft",
+      "activated_at": null,
+      "created_at": "2026-10-29T05:37:41.725021Z",
+      "updated_at": "2026-10-29T05:37:41.725031Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendor-contracts/8309e140-1990-4d23-b217-b93084b4b66a/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "522fb24c-0f55-4121-8a7d-a0db5da9b13c",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No VendorContract matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "522fb24c-0f55-4121-8a7d-a0db5da9b13c"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/vendor-contracts/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "be87ea3f-9a0c-4c06-928a-c17d1fcca7aa",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "vendor": [
+        "This field is required."
+      ],
+      "contract_number": [
+        "This field is required."
+      ],
+      "title": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "be87ea3f-9a0c-4c06-928a-c17d1fcca7aa"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/vendor-contracts/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "baeb43c1-2018-460c-b050-5c4e1a0c807d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "baeb43c1-2018-460c-b050-5c4e1a0c807d"
+      }
+    }
+  }
+}

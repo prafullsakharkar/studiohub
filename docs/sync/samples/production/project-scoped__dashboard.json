@@ -1,0 +1,292 @@
+{
+  "view": "ProjectDashboardView",
+  "app": "production",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/dashboard/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2dd55cef-98c2-43e4-aa13-fae87de82d86",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "project": {
+        "id": "90864aa9-6ae0-49a3-807e-e5327db92bf0",
+        "name": "Project 2",
+        "code": "PROJ002",
+        "type": "Feature Film",
+        "description": "",
+        "status": "In Progress",
+        "fps": 24.0,
+        "resolution": "4096x2160",
+        "aspect_ratio": "2.39:1",
+        "color_space": "ACEScg",
+        "start_date": "",
+        "delivery_date": "",
+        "thumbnail_url": "https://www.kelley.com/",
+        "supervisor_name": "user@example.test",
+        "coordinator_name": "user@example.test",
+        "budget_usd": 1000000.0
+      },
+      "summary": {
+        "total_shots": 0,
+        "approved_shots": 0,
+        "in_progress_shots": 0,
+        "shots_at_risk": 0,
+        "shots_completion_pct": 0,
+        "total_tasks": 1,
+        "open_tasks": 1,
+        "in_progress_tasks": 0,
+        "completed_tasks": 0,
+        "overdue_tasks": 0,
+        "tasks_completion_pct": 0,
+        "total_assets": 0,
+        "in_progress_assets": 0,
+        "approved_assets": 0,
+        "needs_revision_assets": 0,
+        "total_reviews": 0,
+        "pending_reviews": 0,
+        "approved_reviews": 0,
+        "changes_requested_reviews": 0,
+        "rejected_reviews": 0,
+        "total_deliveries": 0,
+        "upcoming_deliveries": 0,
+        "delivered_deliveries": 0,
+        "late_deliveries": 0
+      },
+      "production": {
+        "overall_progress_pct": 0,
+        "completed_shots": 0,
+        "in_progress_shots": 0,
+        "not_started_shots": 0,
+        "status_breakdown": [
+          {
+            "status": "Not Started",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "In Progress",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Internal Review",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Client Review",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Approved",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "Final",
+            "count": 0,
+            "percentage": 0
+          },
+          {
+            "status": "On Hold",
+            "count": 0,
+            "percentage": 0
+          }
+        ],
+        "methodology_note": "Weighted aggregate: 60% Approved Shots + 40% Completed Tasks"
+      },
+      "shots": {
+        "total": 0,
+        "by_status": {
+          "Not Started": 0,
+          "In Progress": 0,
+          "Internal Review": 0,
+          "Client Review": 0,
+          "Approved": 0,
+          "Final": 0,
+          "On Hold": 0
+        },
+        "recent_shots": []
+      },
+      "tasks": {
+        "total": 1,
+        "open": 1,
+        "in_progress": 0,
+        "blocked": 0,
+        "review": 0,
+        "completed": 0,
+        "overdue": 0,
+        "critical": 0,
+        "recent_tasks": [
+          {
+            "id": "aea9abc9-541b-4b93-9126-adebf2dbea15",
+            "title": "Task 3",
+            "department": "",
+            "status": "Not Started",
+            "priority": "Medium",
+            "is_overdue": false,
+            "code": "TSK003"
+          }
+        ]
+      },
+      "reviews": {
+        "pending": 0,
+        "approved": 0,
+        "changes_requested": 0,
+        "rejected": 0,
+        "recent_reviews": []
+      },
+      "schedule": {
+        "start_date": "2026-10-29",
+        "delivery_date": "2027-04-27",
+        "days_total": 180,
+        "days_elapsed": 0,
+        "days_remaining": 180,
+        "is_delayed": false,
+        "milestones": [
+          {
+            "id": "m1",
+            "name": "Plate Turnover & Ingest",
+            "date": "2026-10-29",
+            "status": "completed"
+          },
+          {
+            "id": "m2",
+            "name": "Rough Layout & Asset Conform",
+            "date": "2026-12-13",
+            "status": "in_progress"
+          },
+          {
+            "id": "m3",
+            "name": "Mid-Point Client Temp Screening",
+            "date": "2027-01-27",
+            "status": "upcoming"
+          },
+          {
+            "id": "m4",
+            "name": "90% Final Lighting & Comp Review",
+            "date": "2027-03-22",
+            "status": "upcoming"
+          },
+          {
+            "id": "m5",
+            "name": "Final 4K ACES Master Delivery",
+            "date": "2027-04-27",
+            "status": "upcoming"
+          }
+        ]
+      },
+      "workload": {
+        "team_members": [
+          {
+            "id": "unassigned",
+            "name": "Unassigned",
+            "role": "",
+            "department": "",
+            "assigned_count": 1,
+            "in_progress_count": 0,
+            "overdue_count": 0,
+            "workload_level": "normal"
+          }
+        ]
+      },
+      "deliveries": {
+        "total": 0,
+        "upcoming": 0,
+        "delivered": 0,
+        "late": 0,
+        "items": []
+      },
+      "activity": [
+        {
+          "id": "ccb23546-be60-4570-944e-cfa4055e2446",
+          "entity_type": "Task",
+          "entity_id": "aea9abc9-541b-4b93-9126-adebf2dbea15",
+          "action": "Created Task",
+          "user_name": "System",
+          "timestamp": "2026-10-29T05:37:41.670579+00:00",
+          "description": "created Task TSK003",
+          "entity_code": "TSK003"
+        },
+        {
+          "id": "590c31ff-2834-4869-85f1-07a5617922b0",
+          "entity_type": "Project",
+          "entity_id": "90864aa9-6ae0-49a3-807e-e5327db92bf0",
+          "action": "Created Project",
+          "user_name": "System",
+          "timestamp": "2026-10-29T05:37:41.664024+00:00",
+          "description": "created Project Project 2",
+          "entity_code": "Project 2"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/dashboard/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d58d62e3-cea0-41a4-a8e3-97e392280fba",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "d58d62e3-cea0-41a4-a8e3-97e392280fba"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/dashboard/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "02ccf82b-3a20-43f3-897a-cde6b3774ff8",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "02ccf82b-3a20-43f3-897a-cde6b3774ff8"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/dashboard/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5b929cc0-200e-4a58-b5d1-ead1bf76531c",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Project 90864aa9-6ae0-49a3-807e-e5327db92bf0 not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "5b929cc0-200e-4a58-b5d1-ead1bf76531c"
+      }
+    }
+  }
+}

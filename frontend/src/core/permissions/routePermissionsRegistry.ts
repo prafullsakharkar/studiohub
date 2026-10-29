@@ -72,6 +72,24 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
     name: 'Create Team',
     permissions: ['team.create'],
   },
+  '/platform/catalog': { path: '/platform/catalog', name: 'Catalog', pagePermission: 'page.catalog' },
+  '/platform/catalog/:kind': { path: '/platform/catalog/:kind', name: 'Catalog section', pagePermission: 'page.catalog' },
+  '/positions': {
+    path: '/positions',
+    name: 'Positions',
+    pagePermission: 'page.positions',
+    permissions: ['position.view'],
+  },
+  '/positions/new': {
+    path: '/positions/new',
+    name: 'Create Position',
+    permissions: ['position.create'],
+  },
+  '/positions/:id/edit': {
+    path: '/positions/:id/edit',
+    name: 'Edit Position',
+    permissions: ['position.update'],
+  },
   '/offices': {
     path: '/offices',
     name: 'Offices',
@@ -84,6 +102,14 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
     permissions: ['office.create'],
   },
 
+  // My account: personal settings of the signed-in user. No permission code applies; every
+  // endpoint behind these pages acts on the caller's own record (or is gated server-side).
+  '/settings/account': { path: '/settings/account', name: 'My account', pagePermission: 'page.account' },
+  '/settings/account/profile': { path: '/settings/account/profile', name: 'My profile', pagePermission: 'page.account' },
+  '/settings/account/security': { path: '/settings/account/security', name: 'My security', pagePermission: 'page.account' },
+  '/settings/account/sessions': { path: '/settings/account/sessions', name: 'My sessions', pagePermission: 'page.account' },
+  '/settings/account/tokens': { path: '/settings/account/tokens', name: 'My access tokens', pagePermission: 'page.account' },
+
   // Access management routes (project-scoped, no org path segment)
   '/access': {
     path: '/access',
@@ -93,7 +119,13 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
   },
   '/access/:section': {
     path: '/access/:section',
-    name: 'Access Management Section (context)',
+    name: 'Access Administration Section',
+    pagePermission: 'page.permissions',
+    permissions: ['roles.view', 'security.view'],
+  },
+  '/access/:section/:id': {
+    path: '/access/:section/:id',
+    name: 'Access Administration Record',
     pagePermission: 'page.permissions',
     permissions: ['roles.view', 'security.view'],
   },
@@ -195,17 +227,72 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
     pagePermission: 'page.project.assets',
     permissions: ['asset.view'],
   },
+  '/shots/new': {
+    path: '/shots/new',
+    name: 'Create Shot',
+    permissions: ['shot.create'],
+  },
+  '/shots/:id/edit': {
+    path: '/shots/:id/edit',
+    name: 'Edit Shot',
+    permissions: ['shot.update'],
+  },
+  '/assets/new': {
+    path: '/assets/new',
+    name: 'Create Asset',
+    permissions: ['asset.create'],
+  },
+  '/assets/:id/edit': {
+    path: '/assets/:id/edit',
+    name: 'Edit Asset',
+    permissions: ['asset.update'],
+  },
   '/tasks': {
     path: '/tasks',
     name: 'Tasks',
     pagePermission: 'page.project.tasks',
     permissions: ['task.view'],
   },
+  '/task-templates': {
+    path: '/task-templates',
+    name: 'Task Templates',
+    permissions: ['tasktemplate.view'],
+  },
+  '/task-templates/new': {
+    path: '/task-templates/new',
+    name: 'Create Task Template',
+    permissions: ['tasktemplate.create'],
+  },
+  '/task-templates/:id/edit': {
+    path: '/task-templates/:id/edit',
+    name: 'Edit Task Template',
+    permissions: ['tasktemplate.update'],
+  },
+  '/tasks/new': {
+    path: '/tasks/new',
+    name: 'Create Task',
+    permissions: ['task.create'],
+  },
+  '/tasks/:id/edit': {
+    path: '/tasks/:id/edit',
+    name: 'Edit Task',
+    permissions: ['task.update'],
+  },
   '/timelogs': {
     path: '/timelogs',
     name: 'Timelogs',
     pagePermission: 'page.project.timelogs',
     permissions: ['timelog.view'],
+  },
+  '/timelogs/new': {
+    path: '/timelogs/new',
+    name: 'Log Time',
+    permissions: ['timelog.create'],
+  },
+  '/timelogs/:id/edit': {
+    path: '/timelogs/:id/edit',
+    name: 'Edit Time Log',
+    permissions: ['timelog.update'],
   },
   '/versions': {
     path: '/versions',
@@ -302,27 +389,11 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
   },
 
   // Platform Routes
-  '/data-platform': {
-    path: '/data-platform',
-    name: 'Data Platform',
-    pagePermission: 'page.data_platform',
-  },
-  '/notifications': {
-    path: '/notifications',
-    name: 'Notifications',
-    pagePermission: 'page.notifications',
-  },
-  '/reports': {
-    path: '/reports',
-    name: 'Reports',
-    pagePermission: 'page.reports',
-    permissions: ['reports.view'],
-  },
+  // /settings only redirects to My account; system settings get their own guarded routes in Phase 11.
   '/settings': {
     path: '/settings',
     name: 'Settings',
-    pagePermission: 'page.settings',
-    permissions: ['settings.view'],
+    pagePermission: 'page.account',
   },
   '/settings/permissions': {
     path: '/settings/permissions',
@@ -546,13 +617,6 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
     name: 'Activity Timeline (alias)',
     permissions: ['activity.view', 'activities.view', 'page.activities', 'page.activity', 'audit.view'],
     requireAny: true,
-  },
-  '/testing': {
-    path: '/testing',
-    name: 'API & Test Suite',
-    pagePermission: 'page.testing',
-    permissions: ['testing.view'],
-    requiresAdmin: true,
   },
 };
 
@@ -843,7 +907,6 @@ export function evaluateRouteAccess(
       '/vendors',
       '/pipeline',
       '/audit',
-      '/reports',
       '/resources',
       '/schedules',
     ];

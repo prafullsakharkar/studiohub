@@ -1,0 +1,242 @@
+{
+  "view": "AttachmentViewSet",
+  "app": "core",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/core/attachments/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7e7c2f92-a534-4bde-bab3-47e30320fda6",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 4,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "41fadf21-2dcc-4293-a929-4da641616f6c",
+          "uuid": "41fadf21-2dcc-4293-a929-4da641616f6c",
+          "created_at": "2026-10-29T05:37:43.044258Z",
+          "updated_at": "2026-10-29T05:37:43.044266Z",
+          "file": null,
+          "name": "",
+          "description": "",
+          "file_type": "document",
+          "mime_type": "",
+          "file_size": 0,
+          "storage_key": "<redacted>",
+          "is_public": false,
+          "expires_at": null,
+          "created_by": "1ecbd16b-c169-4973-9ac6-409ab5ab08c8",
+          "updated_by": "1ecbd16b-c169-4973-9ac6-409ab5ab08c8",
+          "deleted_by": null,
+          "download_url": null
+        },
+        {
+          "id": "4e4f0adb-0f2a-4171-9b87-3a0a2840f222",
+          "uuid": "4e4f0adb-0f2a-4171-9b87-3a0a2840f222",
+          "created_at": "2026-10-29T05:37:43.038887Z",
+          "updated_at": "2026-10-29T05:37:43.038894Z",
+          "file": null,
+          "name": "",
+          "description": "",
+          "file_type": "document",
+          "mime_type": "",
+          "file_size": 0,
+          "storage_key": "<redacted>",
+          "is_public": false,
+          "expires_at": null,
+          "created_by": "5789d20f-53cd-4a3f-8373-66d38948138c",
+          "updated_by": "5789d20f-53cd-4a3f-8373-66d38948138c",
+          "deleted_by": null,
+          "download_url": null
+        }
+      ],
+      "_results_total_in_page": 4
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/core/attachments/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "32a2ca7e-11b9-49eb-b5d3-f31ecc71548e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "32a2ca7e-11b9-49eb-b5d3-f31ecc71548e"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/core/attachments/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f05d3c7e-a3e1-4708-a628-afa716aec21f",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "41fadf21-2dcc-4293-a929-4da641616f6c",
+          "uuid": "41fadf21-2dcc-4293-a929-4da641616f6c",
+          "created_at": "2026-10-29T05:37:43.044258Z",
+          "updated_at": "2026-10-29T05:37:43.044266Z",
+          "file": null,
+          "name": "",
+          "description": "",
+          "file_type": "document",
+          "mime_type": "",
+          "file_size": 0,
+          "storage_key": "<redacted>",
+          "is_public": false,
+          "expires_at": null,
+          "created_by": "1ecbd16b-c169-4973-9ac6-409ab5ab08c8",
+          "updated_by": "1ecbd16b-c169-4973-9ac6-409ab5ab08c8",
+          "deleted_by": null,
+          "download_url": null
+        }
+      ],
+      "_results_total_in_page": 1
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/core/attachments/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "08a73f99-1cfa-422e-ace8-87ebbd5db1fa",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/core/attachments/41fadf21-2dcc-4293-a929-4da641616f6c/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "422e64d0-9e1a-411a-b774-c51b4d4e0805",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "41fadf21-2dcc-4293-a929-4da641616f6c",
+      "uuid": "41fadf21-2dcc-4293-a929-4da641616f6c",
+      "created_at": "2026-10-29T05:37:43.044258Z",
+      "updated_at": "2026-10-29T05:37:43.044266Z",
+      "file": null,
+      "name": "",
+      "description": "",
+      "file_type": "document",
+      "mime_type": "",
+      "file_size": 0,
+      "storage_key": "<redacted>",
+      "is_public": false,
+      "expires_at": null,
+      "created_by": "1ecbd16b-c169-4973-9ac6-409ab5ab08c8",
+      "updated_by": "1ecbd16b-c169-4973-9ac6-409ab5ab08c8",
+      "deleted_by": null,
+      "download_url": null
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/core/attachments/197651f1-16ae-473f-8075-36968f2e8f48/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "680b85f7-b2a4-4fca-9105-9ecab08c361f",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Attachment matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "680b85f7-b2a4-4fca-9105-9ecab08c361f"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/core/attachments/",
+      "body": {}
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "655c3b27-7a10-420c-97c8-9c1d2bee427e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "file": null,
+      "name": "",
+      "description": "",
+      "file_type": "document",
+      "mime_type": "",
+      "is_public": false,
+      "expires_at": null,
+      "download_url": null
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/core/attachments/",
+      "body": {}
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "bd8a15f1-d7f8-40c6-ac2f-6539e31da8f4",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "file": null,
+      "name": "",
+      "description": "",
+      "file_type": "document",
+      "mime_type": "",
+      "is_public": false,
+      "expires_at": null,
+      "download_url": null
+    }
+  }
+}

@@ -87,7 +87,8 @@ const SHOT_COLUMNS: GridColumn[] = [
     key: 'status',
     label: 'Status',
     type: 'select',
-    options: ['Not Started', 'In Progress', 'Ready for Review', 'Approved', 'On Hold', 'Archived'],
+    // The backend's choices that a NEW shot may start in: Approved is entered from review only and Archived is an action.
+    options: ['Not Started', 'In Progress', 'Pending Review', 'Retake', 'On Hold'],
     width: '140px',
   },
   {

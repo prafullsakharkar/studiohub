@@ -1,0 +1,106 @@
+{
+  "view": "MFAConfigView",
+  "app": "identity",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/config/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1fb85057-73fe-4c55-804d-67a13900aa90",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "enabled": false,
+      "pending": false,
+      "methods": [],
+      "totp": {
+        "verified": false
+      },
+      "sms": {
+        "verified": false
+      },
+      "email": {
+        "verified": false
+      }
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/config/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "653b4635-a3cf-4e3a-80e7-ef1bde3f0461",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "653b4635-a3cf-4e3a-80e7-ef1bde3f0461"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/config/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c9c9900c-40cb-47bb-a1b8-1af258634662",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "enabled": false,
+      "pending": false,
+      "methods": [],
+      "totp": {
+        "verified": false
+      },
+      "sms": {
+        "verified": false
+      },
+      "email": {
+        "verified": false
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/config/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "db869378-4a04-4443-969f-bbceb1a04c9f",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "enabled": false,
+      "pending": false,
+      "methods": [],
+      "totp": {
+        "verified": false
+      },
+      "sms": {
+        "verified": false
+      },
+      "email": {
+        "verified": false
+      }
+    }
+  }
+}

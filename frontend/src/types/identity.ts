@@ -65,8 +65,27 @@ export interface AuthTokens {
   token_type?: string;
   expires_in?: number;
 }
+/** `POST /auth/login/` when the account has MFA: no tokens and no user until the challenge is completed. */
+export interface MfaRequiredResponse {
+  mfa_required: true;
+  challenge: string;
+  expires_in: number;
+}
+/** `POST /auth/mfa/challenge/` body: the challenge plus a TOTP code or a recovery code. */
+export interface MfaChallengeInput {
+  challenge: string;
+  code?: string;
+  recovery_code?: string;
+  remember_device?: boolean;
+}
+export type LoginOutcome =
+  | { status: 'authenticated'; user: User; mfaEnrollmentRequired: boolean }
+  | { status: 'mfa_required'; challenge: string; expiresIn: number };
+
 export interface LoginResponse {
   user: User;
+  /** Policy requires MFA but this user has none yet. */
+  mfa_enrollment_required?: boolean;
   tokens?: AuthTokens;
   access?: string;
   refresh?: string;
@@ -77,16 +96,6 @@ export interface RefreshResponse {
   access: string;
   refresh?: string;
   [key: string]: any;
-}
-export interface DemoUser {
-  id: string;
-  email: string;
-  roleType: string;
-  name: string;
-  roleBadge: string;
-  roleBadgeColor: string;
-  subtitle: string;
-  avatarUrl: string;
 }
 export function getUserMembershipType(user?: User | null): MembershipType {
   if (!user) return 'INTERNAL';

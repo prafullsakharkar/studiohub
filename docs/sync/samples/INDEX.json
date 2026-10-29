@@ -1,0 +1,1322 @@
+[
+ {
+  "app": "production",
+  "view": "ProjectActivityView",
+  "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/activity/",
+  "file": "production/project-scoped__activity.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "production",
+  "view": "_AssetListView",
+  "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/assets/",
+  "file": "production/project-scoped__assets.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 404
+ },
+ {
+  "app": "production",
+  "view": "ProjectDashboardView",
+  "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/dashboard/",
+  "file": "production/project-scoped__dashboard.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 404
+ },
+ {
+  "app": "production",
+  "view": "ProjectDeliveriesView",
+  "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/deliveries/",
+  "file": "production/project-scoped__deliveries.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 404
+ },
+ {
+  "app": "production",
+  "view": "ProjectEditorialView",
+  "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/editorial/",
+  "file": "production/project-scoped__editorial.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 404
+ },
+ {
+  "app": "production",
+  "view": "ProjectFilesView",
+  "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/files/",
+  "file": "production/project-scoped__files.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 404
+ },
+ {
+  "app": "production",
+  "view": "ProjectMembersView",
+  "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/members/",
+  "file": "production/project-scoped__members.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 404
+ },
+ {
+  "app": "production",
+  "view": "ProjectNotesView",
+  "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/notes/",
+  "file": "production/project-scoped__notes.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 404
+ },
+ {
+  "app": "production",
+  "view": "ProjectPipelineView",
+  "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/pipeline/",
+  "file": "production/project-scoped__pipeline.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 404
+ },
+ {
+  "app": "production",
+  "view": "ProjectResourcesView",
+  "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/resources/",
+  "file": "production/project-scoped__resources.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 404
+ },
+ {
+  "app": "production",
+  "view": "_ReviewListView",
+  "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/reviews/",
+  "file": "production/project-scoped__reviews.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 404
+ },
+ {
+  "app": "production",
+  "view": "ProjectScheduleView",
+  "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/schedule/",
+  "file": "production/project-scoped__schedule.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 404
+ },
+ {
+  "app": "production",
+  "view": "_SequenceListView",
+  "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/sequences/",
+  "file": "production/project-scoped__sequences.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 404
+ },
+ {
+  "app": "production",
+  "view": "_ShotListView",
+  "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/shots/",
+  "file": "production/project-scoped__shots.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 404
+ },
+ {
+  "app": "production",
+  "view": "ProjectSummaryView",
+  "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/summary/",
+  "file": "production/project-scoped__summary.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 404
+ },
+ {
+  "app": "production",
+  "view": "_TaskListView",
+  "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/tasks/",
+  "file": "production/project-scoped__tasks.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 404
+ },
+ {
+  "app": "production",
+  "view": "_VersionListView",
+  "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/versions/",
+  "file": "production/project-scoped__versions.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 404
+ },
+ {
+  "app": "audit",
+  "view": "ActivityCompatViewSet",
+  "path": "/api/v1/activity/",
+  "file": "audit/activity.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "production",
+  "view": "AnalyticsDepartmentsView",
+  "path": "/api/v1/analytics/departments/",
+  "file": "production/analytics__departments.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "production",
+  "view": "AnalyticsKpisView",
+  "path": "/api/v1/analytics/kpis/",
+  "file": "production/analytics__kpis.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "production",
+  "view": "AssetViewSet",
+  "path": "/api/v1/assets/",
+  "file": "production/assets.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "core",
+  "view": "CompatAttachmentViewSet",
+  "path": "/api/v1/attachments/",
+  "file": "core/attachments.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "audit",
+  "view": "AuditCompatViewSet",
+  "path": "/api/v1/audit/",
+  "file": "audit/audit.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "audit",
+  "view": "ActivityViewSet",
+  "path": "/api/v1/audit/activities/",
+  "file": "audit/audit__activities.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "audit",
+  "view": "ActivityCompatViewSet",
+  "path": "/api/v1/audit/activity/",
+  "file": "audit/audit__activity.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "audit",
+  "view": "APIRequestViewSet",
+  "path": "/api/v1/audit/api-requests/",
+  "file": "audit/audit__api-requests.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "audit",
+  "view": "AuditLogViewSet",
+  "path": "/api/v1/audit/audit-logs/",
+  "file": "audit/audit__audit-logs.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "audit",
+  "view": "BackgroundJobViewSet",
+  "path": "/api/v1/audit/background-jobs/",
+  "file": "audit/audit__background-jobs.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "audit",
+  "view": "ChangeLogViewSet",
+  "path": "/api/v1/audit/change-logs/",
+  "file": "audit/audit__change-logs.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "audit",
+  "view": "ErrorLogViewSet",
+  "path": "/api/v1/audit/error-logs/",
+  "file": "audit/audit__error-logs.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "audit",
+  "view": "TrackViewSet",
+  "path": "/api/v1/audit/tracks/",
+  "file": "audit/audit__tracks.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "identity",
+  "view": "AuthChangePasswordView",
+  "path": "/api/v1/auth/change-password/",
+  "file": "identity/auth__change-password.json",
+  "list_status": 405,
+  "anon": 401,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "ForgotPasswordAPIView",
+  "path": "/api/v1/auth/forgot-password/",
+  "file": "identity/auth__forgot-password.json",
+  "list_status": 405,
+  "anon": 405,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "AuthLoginView",
+  "path": "/api/v1/auth/login/",
+  "file": "identity/auth__login.json",
+  "list_status": 405,
+  "anon": 405,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "AuthLogoutView",
+  "path": "/api/v1/auth/logout/",
+  "file": "identity/auth__logout.json",
+  "list_status": 405,
+  "anon": 401,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "AuthMeView",
+  "path": "/api/v1/auth/me/",
+  "file": "identity/auth__me.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "identity",
+  "view": "AuthMFAChallengeView",
+  "path": "/api/v1/auth/mfa/challenge/",
+  "file": "identity/auth__mfa__challenge.json",
+  "list_status": 405,
+  "anon": 405,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "AuthRefreshView",
+  "path": "/api/v1/auth/refresh/",
+  "file": "identity/auth__refresh.json",
+  "list_status": 405,
+  "anon": 405,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "ResetPasswordAPIView",
+  "path": "/api/v1/auth/reset-password/",
+  "file": "identity/auth__reset-password.json",
+  "list_status": 405,
+  "anon": 405,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "production",
+  "view": "AutomationAuditLogsView",
+  "path": "/api/v1/automations/audit-logs/",
+  "file": "production/automations__audit-logs.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "production",
+  "view": "AutomationRulesView",
+  "path": "/api/v1/automations/rules/",
+  "file": "production/automations__rules.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "masterdata",
+  "view": "ClientContactViewSet",
+  "path": "/api/v1/client-contacts/",
+  "file": "masterdata/client-contacts.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "masterdata",
+  "view": "ClientContractViewSet",
+  "path": "/api/v1/client-contracts/",
+  "file": "masterdata/client-contracts.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "masterdata",
+  "view": "ClientViewSet",
+  "path": "/api/v1/clients/",
+  "file": "masterdata/clients.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "core",
+  "view": "AttachmentViewSet",
+  "path": "/api/v1/core/attachments/",
+  "file": "core/core__attachments.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "core",
+  "view": "TagViewSet",
+  "path": "/api/v1/core/tags/",
+  "file": "core/core__tags.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "deliveries",
+  "view": "DeliveryViewSet",
+  "path": "/api/v1/deliveries/",
+  "file": "deliveries/deliveries.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "deliveries",
+  "view": "DestinationViewSet",
+  "path": "/api/v1/deliveries/destinations/",
+  "file": "deliveries/deliveries__destinations.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "masterdata",
+  "view": "DepartmentViewSet",
+  "path": "/api/v1/departments/",
+  "file": "masterdata/departments.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "production",
+  "view": "EditorialTrackViewSet",
+  "path": "/api/v1/editorial/tracks/",
+  "file": "production/editorial__tracks.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "production",
+  "view": "EpisodeViewSet",
+  "path": "/api/v1/episodes/",
+  "file": "production/episodes.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "identity",
+  "view": "GroupViewSet",
+  "path": "/api/v1/groups/",
+  "file": "identity/groups.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "identity",
+  "view": "ApiKeyViewSet",
+  "path": "/api/v1/identity/api-keys/",
+  "file": "identity/identity__api-keys.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "identity",
+  "view": "TrustedDeviceListAPIView",
+  "path": "/api/v1/identity/auth/mfa/devices/",
+  "file": "identity/identity__auth__mfa__devices.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "identity",
+  "view": "TrustedDeviceRevokeAPIView",
+  "path": "/api/v1/identity/auth/mfa/devices/revoke/",
+  "file": "identity/identity__auth__mfa__devices__revoke.json",
+  "list_status": 405,
+  "anon": 401,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "MFADisableAPIView",
+  "path": "/api/v1/identity/auth/mfa/disable/",
+  "file": "identity/identity__auth__mfa__disable.json",
+  "list_status": 405,
+  "anon": 401,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "MFAEnrollAPIView",
+  "path": "/api/v1/identity/auth/mfa/enroll/",
+  "file": "identity/identity__auth__mfa__enroll.json",
+  "list_status": 405,
+  "anon": 401,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "MFARecoveryCodesAPIView",
+  "path": "/api/v1/identity/auth/mfa/recovery/",
+  "file": "identity/identity__auth__mfa__recovery.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "identity",
+  "view": "MFARecoveryVerifyAPIView",
+  "path": "/api/v1/identity/auth/mfa/recovery/verify/",
+  "file": "identity/identity__auth__mfa__recovery__verify.json",
+  "list_status": 405,
+  "anon": 401,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "MFAVerifyAPIView",
+  "path": "/api/v1/identity/auth/mfa/verify/",
+  "file": "identity/identity__auth__mfa__verify.json",
+  "list_status": 405,
+  "anon": 401,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "ResendVerificationAPIView",
+  "path": "/api/v1/identity/email/resend/",
+  "file": "identity/identity__email__resend.json",
+  "list_status": 405,
+  "anon": 401,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "IPBlacklistViewSet",
+  "path": "/api/v1/identity/ip-blacklist/",
+  "file": "identity/identity__ip-blacklist.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "identity",
+  "view": "LoginAttemptViewSet",
+  "path": "/api/v1/identity/login-attempts/",
+  "file": "identity/identity__login-attempts.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "identity",
+  "view": "LoginHistoryViewSet",
+  "path": "/api/v1/identity/login-history/",
+  "file": "identity/identity__login-history.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "identity",
+  "view": "LoginAPIView",
+  "path": "/api/v1/identity/login/",
+  "file": "identity/identity__login.json",
+  "list_status": 405,
+  "anon": 405,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "LogoutAPIView",
+  "path": "/api/v1/identity/logout/",
+  "file": "identity/identity__logout.json",
+  "list_status": 405,
+  "anon": 401,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "MFAConfigView",
+  "path": "/api/v1/identity/mfa/config/",
+  "file": "identity/identity__mfa__config.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "identity",
+  "view": "MFARecoveryCodesView",
+  "path": "/api/v1/identity/mfa/recovery-codes/",
+  "file": "identity/identity__mfa__recovery-codes.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "identity",
+  "view": "MFARecoveryCodesRegenerateView",
+  "path": "/api/v1/identity/mfa/recovery-codes/regenerate/",
+  "file": "identity/identity__mfa__recovery-codes__regenerate.json",
+  "list_status": 405,
+  "anon": 401,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "MFATOTPDisableView",
+  "path": "/api/v1/identity/mfa/totp/disable/",
+  "file": "identity/identity__mfa__totp__disable.json",
+  "list_status": 405,
+  "anon": 401,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "MFATOTPEnableView",
+  "path": "/api/v1/identity/mfa/totp/enable/",
+  "file": "identity/identity__mfa__totp__enable.json",
+  "list_status": 405,
+  "anon": 401,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "MFATOTPSetupView",
+  "path": "/api/v1/identity/mfa/totp/setup/",
+  "file": "identity/identity__mfa__totp__setup.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "identity",
+  "view": "MFATOTPVerifyView",
+  "path": "/api/v1/identity/mfa/totp/verify/",
+  "file": "identity/identity__mfa__totp__verify.json",
+  "list_status": 405,
+  "anon": 401,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "ChangePasswordAPIView",
+  "path": "/api/v1/identity/password/change/",
+  "file": "identity/identity__password__change.json",
+  "list_status": 405,
+  "anon": 401,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "ForgotPasswordAPIView",
+  "path": "/api/v1/identity/password/forgot/",
+  "file": "identity/identity__password__forgot.json",
+  "list_status": 405,
+  "anon": 405,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "ResetPasswordAPIView",
+  "path": "/api/v1/identity/password/reset/",
+  "file": "identity/identity__password__reset.json",
+  "list_status": 405,
+  "anon": 405,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "PersonalAccessTokenViewSet",
+  "path": "/api/v1/identity/personal-access-tokens/",
+  "file": "identity/identity__personal-access-tokens.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "identity",
+  "view": "ProfileViewSet",
+  "path": "/api/v1/identity/profiles/",
+  "file": "identity/identity__profiles.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "identity",
+  "view": "RefreshAPIView",
+  "path": "/api/v1/identity/refresh/",
+  "file": "identity/identity__refresh.json",
+  "list_status": 405,
+  "anon": 405,
+  "norole": 405,
+  "artist": 405
+ },
+ {
+  "app": "identity",
+  "view": "SecurityEventViewSet",
+  "path": "/api/v1/identity/security-events/",
+  "file": "identity/identity__security-events.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "identity",
+  "view": "UserSessionViewSet",
+  "path": "/api/v1/identity/sessions/",
+  "file": "identity/identity__sessions.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "identity",
+  "view": "TrustedDeviceViewSet",
+  "path": "/api/v1/identity/trusted-devices/",
+  "file": "identity/identity__trusted-devices.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "identity",
+  "view": "UserViewSet",
+  "path": "/api/v1/identity/users/",
+  "file": "identity/identity__users.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "core",
+  "view": "VersionInfoView",
+  "path": "/api/v1/info/version/",
+  "file": "core/info__version.json",
+  "list_status": 200,
+  "anon": 200,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "production",
+  "view": "MediaViewSet",
+  "path": "/api/v1/media/",
+  "file": "production/media.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "masterdata",
+  "view": "OfficeViewSet",
+  "path": "/api/v1/offices/",
+  "file": "masterdata/offices.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "masterdata",
+  "view": "PersonViewSet",
+  "path": "/api/v1/people/",
+  "file": "masterdata/people.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "identity",
+  "view": "PermissionViewSet",
+  "path": "/api/v1/permissions/",
+  "file": "identity/permissions.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "masterdata",
+  "view": "MasterAssetTypeViewSet",
+  "path": "/api/v1/platform/master-data/asset-types",
+  "file": "masterdata/platform__master-data__asset-types.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "masterdata",
+  "view": "MasterFileTypeViewSet",
+  "path": "/api/v1/platform/master-data/file-types",
+  "file": "masterdata/platform__master-data__file-types.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "masterdata",
+  "view": "MasterReviewTypeViewSet",
+  "path": "/api/v1/platform/master-data/review-types",
+  "file": "masterdata/platform__master-data__review-types.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "masterdata",
+  "view": "MasterShotTypeViewSet",
+  "path": "/api/v1/platform/master-data/shot-types",
+  "file": "masterdata/platform__master-data__shot-types.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "masterdata",
+  "view": "SoftwareViewSet",
+  "path": "/api/v1/platform/master-data/software",
+  "file": "masterdata/platform__master-data__software.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "masterdata",
+  "view": "MasterStatusViewSet",
+  "path": "/api/v1/platform/master-data/statuses",
+  "file": "masterdata/platform__master-data__statuses.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "masterdata",
+  "view": "MasterTaskTypeViewSet",
+  "path": "/api/v1/platform/master-data/task-types",
+  "file": "masterdata/platform__master-data__task-types.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "production",
+  "view": "PlaylistViewSet",
+  "path": "/api/v1/playlists/",
+  "file": "production/playlists.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "masterdata",
+  "view": "PositionViewSet",
+  "path": "/api/v1/positions/",
+  "file": "masterdata/positions.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "production",
+  "view": "ProjectViewSet",
+  "path": "/api/v1/projects/",
+  "file": "production/projects.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "publishing",
+  "view": "PublishingViewSet",
+  "path": "/api/v1/publishing/",
+  "file": "publishing/publishing.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "publishing",
+  "view": "DestinationViewSet",
+  "path": "/api/v1/publishing/destinations/",
+  "file": "publishing/publishing__destinations.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "publishing",
+  "view": "PublishedFileViewSet",
+  "path": "/api/v1/publishing/files/",
+  "file": "publishing/publishing__files.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "publishing",
+  "view": "StorageRootViewSet",
+  "path": "/api/v1/publishing/storage-roots/",
+  "file": "publishing/publishing__storage-roots.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "production",
+  "view": "ReviewViewSet",
+  "path": "/api/v1/reviews/",
+  "file": "production/reviews.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "identity",
+  "view": "RoleViewSet",
+  "path": "/api/v1/roles/",
+  "file": "identity/roles.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "scheduling",
+  "view": "WorkCalendarViewSet",
+  "path": "/api/v1/scheduling/calendars/",
+  "file": "scheduling/scheduling__calendars.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "scheduling",
+  "view": "SchedulingCapacityView",
+  "path": "/api/v1/scheduling/capacity/",
+  "file": "scheduling/scheduling__capacity.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "scheduling",
+  "view": "CalendarEventViewSet",
+  "path": "/api/v1/scheduling/events/",
+  "file": "scheduling/scheduling__events.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "scheduling",
+  "view": "HolidayViewSet",
+  "path": "/api/v1/scheduling/holidays/",
+  "file": "scheduling/scheduling__holidays.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "scheduling",
+  "view": "ResourceLeaveViewSet",
+  "path": "/api/v1/scheduling/leaves/",
+  "file": "scheduling/scheduling__leaves.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "scheduling",
+  "view": "MilestoneViewSet",
+  "path": "/api/v1/scheduling/milestones/",
+  "file": "scheduling/scheduling__milestones.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "scheduling",
+  "view": "SchedulingOverbookingView",
+  "path": "/api/v1/scheduling/overbooking/",
+  "file": "scheduling/scheduling__overbooking.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "scheduling",
+  "view": "SchedulingResolveOverbookingView",
+  "path": "/api/v1/scheduling/resolve-overbooking/",
+  "file": "scheduling/scheduling__resolve-overbooking.json",
+  "list_status": 403,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "scheduling",
+  "view": "ResourceViewSet",
+  "path": "/api/v1/scheduling/resources/",
+  "file": "scheduling/scheduling__resources.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "scheduling",
+  "view": "ResourceScheduleViewSet",
+  "path": "/api/v1/scheduling/schedules/",
+  "file": "scheduling/scheduling__schedules.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "production",
+  "view": "SequenceViewSet",
+  "path": "/api/v1/sequences/",
+  "file": "production/sequences.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "settings",
+  "view": "SettingCategoryViewSet",
+  "path": "/api/v1/settings/categories/",
+  "file": "settings/settings__categories.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "settings",
+  "view": "SettingDefinitionViewSet",
+  "path": "/api/v1/settings/definitions/",
+  "file": "settings/settings__definitions.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "settings",
+  "view": "FeatureFlagViewSet",
+  "path": "/api/v1/settings/feature-flags/",
+  "file": "settings/settings__feature-flags.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "settings",
+  "view": "LocalizationViewSet",
+  "path": "/api/v1/settings/localizations/",
+  "file": "settings/settings__localizations.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "settings",
+  "view": "SystemSettingViewSet",
+  "path": "/api/v1/settings/system-settings/",
+  "file": "settings/settings__system-settings.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "settings",
+  "view": "ThemeViewSet",
+  "path": "/api/v1/settings/themes/",
+  "file": "settings/settings__themes.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "production",
+  "view": "ShotViewSet",
+  "path": "/api/v1/shots/",
+  "file": "production/shots.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "production",
+  "view": "ShowViewSet",
+  "path": "/api/v1/shows/",
+  "file": "production/shows.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "production",
+  "view": "TaskTemplateViewSet",
+  "path": "/api/v1/task-templates/",
+  "file": "production/task-templates.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "production",
+  "view": "TaskViewSet",
+  "path": "/api/v1/tasks/",
+  "file": "production/tasks.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "masterdata",
+  "view": "TeamViewSet",
+  "path": "/api/v1/teams/",
+  "file": "masterdata/teams.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "production",
+  "view": "TimelogViewSet",
+  "path": "/api/v1/timelogs/",
+  "file": "production/timelogs.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "masterdata",
+  "view": "VendorContactViewSet",
+  "path": "/api/v1/vendor-contacts/",
+  "file": "masterdata/vendor-contacts.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 403
+ },
+ {
+  "app": "masterdata",
+  "view": "VendorContractViewSet",
+  "path": "/api/v1/vendor-contracts/",
+  "file": "masterdata/vendor-contracts.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "masterdata",
+  "view": "VendorViewSet",
+  "path": "/api/v1/vendors/",
+  "file": "masterdata/vendors.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 200,
+  "artist": 200
+ },
+ {
+  "app": "production",
+  "view": "VersionViewSet",
+  "path": "/api/v1/versions/",
+  "file": "production/versions.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ },
+ {
+  "app": "production",
+  "view": "WorkflowViewSet",
+  "path": "/api/v1/workflows/",
+  "file": "production/workflows.json",
+  "list_status": 200,
+  "anon": 401,
+  "norole": 403,
+  "artist": 200
+ }
+]

@@ -1,0 +1,149 @@
+{
+  "view": "ResourceScheduleViewSet",
+  "app": "scheduling",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/schedules/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "681a8f04-9e70-4300-a52e-2b640481963e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/schedules/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ece97214-87e1-47e1-9174-2c387a9a7915",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "ece97214-87e1-47e1-9174-2c387a9a7915"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/schedules/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6791bf0f-7f10-4ed1-944a-492014a1bd3a",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "6791bf0f-7f10-4ed1-944a-492014a1bd3a"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/schedules/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4a7b0104-5340-41b9-a69a-7c0c3c92ec97",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/schedules/e023929d-e14c-46db-b697-9f2339177159/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a67b6de8-9ed9-41d3-bea1-ac4b51d808d9",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No ResourceSchedule matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "a67b6de8-9ed9-41d3-bea1-ac4b51d808d9"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/scheduling/schedules/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1194360a-3c5f-4044-9ebb-c4049d809d71",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "resource": [
+        "This field is required."
+      ],
+      "start_time": [
+        "This field is required."
+      ],
+      "end_time": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "1194360a-3c5f-4044-9ebb-c4049d809d71"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/scheduling/schedules/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d1e9051a-1604-4708-9a47-a0d8d89b5693",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "d1e9051a-1604-4708-9a47-a0d8d89b5693"
+      }
+    }
+  }
+}

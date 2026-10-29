@@ -1,0 +1,387 @@
+{
+  "login_ok": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/login/",
+      "body": {
+        "email": "user@example.test",
+        "password": "<redacted>"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0c9731cd-c33f-46d9-8b9c-60e62e1d1ce1",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "tokens": {
+        "access": "<redacted>",
+        "refresh": "<redacted>"
+      },
+      "user": {
+        "id": "1ecbd16b-c169-4973-9ac6-409ab5ab08c8",
+        "email": "user@example.test",
+        "first_name": "",
+        "last_name": "",
+        "full_name": "user@example.test",
+        "avatar_url": null,
+        "role": "Artist",
+        "permissions": [],
+        "project_memberships": [],
+        "is_active": true,
+        "is_staff": false,
+        "is_superuser": false,
+        "must_change_password": false,
+        "created_at": "2026-10-29T05:37:41.409509+00:00",
+        "updated_at": "2026-10-29T05:37:41.410132+00:00"
+      }
+    }
+  },
+  "login_bad_password": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/login/",
+      "body": {
+        "email": "user@example.test",
+        "password": "wrong"
+      }
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "83fd9d47-0531-4ebc-93e9-a2f91e58397e",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Invalid username or password.",
+      "error": {
+        "code": "authentication_failed",
+        "request_id": "83fd9d47-0531-4ebc-93e9-a2f91e58397e"
+      }
+    }
+  },
+  "login_missing_fields": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/login/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1ec894de-2f09-4c46-af3a-0860ba36d12f",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "email": [
+        "This field is required."
+      ],
+      "password": [
+        "<redacted>"
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "1ec894de-2f09-4c46-af3a-0860ba36d12f"
+      }
+    }
+  },
+  "me_jwt": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/auth/me/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "112bbab1-9f3e-4fff-860d-bcb80d4103bc",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "1ecbd16b-c169-4973-9ac6-409ab5ab08c8",
+      "email": "user@example.test",
+      "first_name": "",
+      "last_name": "",
+      "full_name": "user@example.test",
+      "avatar_url": null,
+      "role": "Artist",
+      "permissions": [],
+      "project_memberships": [],
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "must_change_password": false,
+      "created_at": "2026-10-29T05:37:41.409509+00:00",
+      "updated_at": "2026-10-29T05:37:41.410132+00:00"
+    }
+  },
+  "me_patch_invalid": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/auth/me/",
+      "body": {
+        "avatar_url": "not-a-url"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d26ef93a-b13d-4eb4-9c3b-62957c65ea35",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "avatar_url": [
+        "Enter a valid URL."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "d26ef93a-b13d-4eb4-9c3b-62957c65ea35"
+      }
+    }
+  },
+  "refresh_ok": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/refresh/",
+      "body": {
+        "refresh": "<redacted>"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7897cadd-a3b3-4d83-97da-206eb7736f6d",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "access": "<redacted>",
+      "refresh": "<redacted>"
+    }
+  },
+  "refresh_reused_rotated": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/refresh/",
+      "body": {
+        "refresh": "<redacted>"
+      }
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "600f9eb9-3d15-43d5-900e-35b14ecfef1f",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Session has been revoked.",
+      "error": {
+        "code": "authentication_failed",
+        "request_id": "600f9eb9-3d15-43d5-900e-35b14ecfef1f"
+      }
+    }
+  },
+  "refresh_garbage": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/refresh/",
+      "body": {
+        "refresh": "garbage"
+      }
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "068723eb-29a8-43e5-aae1-6705df0ae0a3",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Invalid token.",
+      "error": {
+        "code": "authentication_failed",
+        "request_id": "068723eb-29a8-43e5-aae1-6705df0ae0a3"
+      }
+    }
+  },
+  "me_bad_token": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/auth/me/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1b7dcba5-6a54-45be-9b04-1e664b1f2768",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Given token not valid for any token type",
+      "code": "token_not_valid",
+      "messages": [
+        {
+          "token_class": "AccessToken",
+          "token_type": "access",
+          "message": "Token is invalid"
+        }
+      ],
+      "error": {
+        "code": "token_not_valid",
+        "request_id": "1b7dcba5-6a54-45be-9b04-1e664b1f2768"
+      }
+    }
+  },
+  "me_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/auth/me/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2a1b2e14-ce63-41e7-a216-33be8c4c7f28",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "5789d20f-53cd-4a3f-8373-66d38948138c",
+      "email": "user@example.test",
+      "first_name": "",
+      "last_name": "",
+      "full_name": "user@example.test",
+      "avatar_url": null,
+      "role": "Artist",
+      "permissions": [
+        "project.create",
+        "project.view",
+        "project.update",
+        "project.delete",
+        "shot.create",
+        "shot.view",
+        "shot.update",
+        "shot.delete",
+        "shot.approve",
+        "asset.create",
+        "asset.view",
+        "asset.update",
+        "asset.delete",
+        "task.create",
+        "task.view",
+        "task.update",
+        "task.delete",
+        "review.create",
+        "review.view",
+        "review.approve",
+        "audit.view",
+        "settings.update",
+        "user.manage"
+      ],
+      "project_memberships": [],
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": true,
+      "must_change_password": false,
+      "created_at": "2026-10-29T05:37:41.396302+00:00",
+      "updated_at": "2026-10-29T05:37:41.396312+00:00"
+    }
+  },
+  "me_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/auth/me/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "04bdaa5c-15ef-4937-bfb7-8c0c44e486a8",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "20eb449d-da6a-4ecc-b493-5e56b50c074b",
+      "email": "user@example.test",
+      "first_name": "Peggy",
+      "last_name": "Tucker",
+      "full_name": "Peggy Tucker",
+      "avatar_url": "/media/avatars/avatar_1191GGu.png",
+      "role": "Artist",
+      "permissions": [
+        "asset.view",
+        "delivery.view",
+        "episode.view",
+        "identity.user.view",
+        "media.create",
+        "media.view",
+        "note.create",
+        "playlist.view",
+        "project.view",
+        "publishing.view",
+        "review.view",
+        "schedule.create",
+        "schedule.view",
+        "sequence.view",
+        "shot.view",
+        "show.view",
+        "task.update",
+        "task.view",
+        "tasktemplate.view",
+        "timelog.create",
+        "timelog.update",
+        "timelog.view",
+        "track.view",
+        "version.create",
+        "version.view",
+        "workflow.view"
+      ],
+      "project_memberships": [],
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "must_change_password": false,
+      "created_at": "2026-10-29T05:37:41.418309+00:00",
+      "updated_at": "2026-10-29T05:37:41.418316+00:00"
+    }
+  },
+  "logout": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/logout/",
+      "body": {
+        "refresh": "<redacted>"
+      }
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3300f968-2c32-4346-8545-ba00abe2ecda",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Session is no longer active.",
+      "error": {
+        "code": "session_expired",
+        "request_id": "3300f968-2c32-4346-8545-ba00abe2ecda"
+      }
+    }
+  },
+  "me_after_logout": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/auth/me/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "53db849a-3fac-4260-9c9d-5f10be2758d1",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Session is no longer active.",
+      "error": {
+        "code": "session_expired",
+        "request_id": "53db849a-3fac-4260-9c9d-5f10be2758d1"
+      }
+    }
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "view": "SchedulingResolveOverbookingView",
+  "app": "scheduling",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/resolve-overbooking/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "65515193-8f3f-4198-b7ea-c6bda004c011",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "65515193-8f3f-4198-b7ea-c6bda004c011"
+      }
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/resolve-overbooking/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "88c87465-31dc-4641-8cb2-e328f102192d",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "88c87465-31dc-4641-8cb2-e328f102192d"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/resolve-overbooking/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "18b1f43e-7247-45d2-87a2-9a83d3ea914c",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "18b1f43e-7247-45d2-87a2-9a83d3ea914c"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/resolve-overbooking/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1c195141-9f3e-4dc1-9fc3-2821828f1a86",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "1c195141-9f3e-4dc1-9fc3-2821828f1a86"
+      }
+    }
+  }
+}

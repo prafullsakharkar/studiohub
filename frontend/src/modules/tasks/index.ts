@@ -6,5 +6,6 @@ export { useBulkTasks } from './hooks/useBulkTasks';
 export { useTaskMutations } from './hooks/useTaskMutations';
 export { useTasks } from './hooks/useTasks';
 export { TaskDetailPage } from './pages/TaskDetailPage';
-export { TasksPage } from './pages/TasksPage';
-export { TimelogsPage } from './pages/TimelogsPage';
+export { TaskFormPage, TasksPage } from './pages/TasksPage';
+export { TimelogFormPage, TimelogsPage } from './pages/TimelogsPage';
+export { TaskTemplateFormPage, TaskTemplatesPage } from './pages/TaskTemplatesPage';

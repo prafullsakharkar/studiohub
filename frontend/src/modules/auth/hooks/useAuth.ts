@@ -5,7 +5,14 @@ const fallbackAuthContext: AuthContextValue = {
   user: null,
   isAuthenticated: false,
   isLoading: false,
-  login: async () => {},
+  login: async () => {
+    throw new Error('login called outside AuthProvider');
+  },
+  completeMfaLogin: async () => {
+    throw new Error('completeMfaLogin called outside AuthProvider');
+  },
+  restriction: null,
+  clearRestriction: () => {},
   logout: async () => {},
   hasRole: () => false,
   hasPermission: () => false,

@@ -1,0 +1,94 @@
+{
+  "view": "MFARecoveryCodesAPIView",
+  "app": "identity",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/auth/mfa/recovery/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5eae031a-d8d3-48cc-b239-5f3f428eefd3",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "success": true,
+      "status_code": 200,
+      "message": "Success.",
+      "data": {
+        "remaining": 0
+      },
+      "meta": {},
+      "errors": null
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/auth/mfa/recovery/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "94f8638e-39cb-4f6f-9af4-e28b655fe96d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "94f8638e-39cb-4f6f-9af4-e28b655fe96d"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/auth/mfa/recovery/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a7e45af1-0df8-4e02-8460-fa617f3ac69f",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "success": true,
+      "status_code": 200,
+      "message": "Success.",
+      "data": {
+        "remaining": 0
+      },
+      "meta": {},
+      "errors": null
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/auth/mfa/recovery/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7ae899d7-4d48-48a0-a81f-0b090d3b44b3",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "success": true,
+      "status_code": 200,
+      "message": "Success.",
+      "data": {
+        "remaining": 0
+      },
+      "meta": {},
+      "errors": null
+    }
+  }
+}

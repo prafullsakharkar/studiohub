@@ -1,0 +1,283 @@
+{
+  "view": "TeamViewSet",
+  "app": "masterdata",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/teams/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f2af24c0-5957-4955-bde7-58117b37e4c4",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 5,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "7fd99492-e325-4788-8268-f59408805875",
+          "code": "TEAM-COMP",
+          "name": "Compositing Team",
+          "description": "Seeded team for Compositing",
+          "department": "df1036bb-806c-4c2b-a583-a73641d04b4b",
+          "lead": null,
+          "focus_discipline": "",
+          "current_project_code": "",
+          "color": "",
+          "capacity": 1,
+          "created_at": "2026-10-29T05:37:41.269428Z",
+          "updated_at": "2026-10-29T05:37:41.269439Z"
+        },
+        {
+          "id": "76d7cb60-5870-426b-965a-a5254ccad49c",
+          "code": "TEAM-EDIT",
+          "name": "Editorial Team",
+          "description": "Seeded team for Editorial",
+          "department": "47947787-3cfb-4e4e-b83a-761ab20e338f",
+          "lead": null,
+          "focus_discipline": "",
+          "current_project_code": "",
+          "color": "",
+          "capacity": 1,
+          "created_at": "2026-10-29T05:37:41.257614Z",
+          "updated_at": "2026-10-29T05:37:41.257627Z"
+        }
+      ],
+      "_results_total_in_page": 5
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/teams/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3c104db4-362b-4f49-bc8f-d3436c407dd7",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "3c104db4-362b-4f49-bc8f-d3436c407dd7"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/teams/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b14a5248-4c60-48d5-82b1-d8c324fbd0a2",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 5,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "7fd99492-e325-4788-8268-f59408805875",
+          "code": "TEAM-COMP",
+          "name": "Compositing Team",
+          "description": "Seeded team for Compositing",
+          "department": "df1036bb-806c-4c2b-a583-a73641d04b4b",
+          "lead": null,
+          "focus_discipline": "",
+          "current_project_code": "",
+          "color": "",
+          "capacity": 1,
+          "created_at": "2026-10-29T05:37:41.269428Z",
+          "updated_at": "2026-10-29T05:37:41.269439Z"
+        },
+        {
+          "id": "76d7cb60-5870-426b-965a-a5254ccad49c",
+          "code": "TEAM-EDIT",
+          "name": "Editorial Team",
+          "description": "Seeded team for Editorial",
+          "department": "47947787-3cfb-4e4e-b83a-761ab20e338f",
+          "lead": null,
+          "focus_discipline": "",
+          "current_project_code": "",
+          "color": "",
+          "capacity": 1,
+          "created_at": "2026-10-29T05:37:41.257614Z",
+          "updated_at": "2026-10-29T05:37:41.257627Z"
+        }
+      ],
+      "_results_total_in_page": 5
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/teams/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ccd735f0-71e1-4e23-8db9-75fcb92956c6",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 5,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "7fd99492-e325-4788-8268-f59408805875",
+          "code": "TEAM-COMP",
+          "name": "Compositing Team",
+          "description": "Seeded team for Compositing",
+          "department": "df1036bb-806c-4c2b-a583-a73641d04b4b",
+          "lead": null,
+          "focus_discipline": "",
+          "current_project_code": "",
+          "color": "",
+          "capacity": 1,
+          "created_at": "2026-10-29T05:37:41.269428Z",
+          "updated_at": "2026-10-29T05:37:41.269439Z"
+        },
+        {
+          "id": "76d7cb60-5870-426b-965a-a5254ccad49c",
+          "code": "TEAM-EDIT",
+          "name": "Editorial Team",
+          "description": "Seeded team for Editorial",
+          "department": "47947787-3cfb-4e4e-b83a-761ab20e338f",
+          "lead": null,
+          "focus_discipline": "",
+          "current_project_code": "",
+          "color": "",
+          "capacity": 1,
+          "created_at": "2026-10-29T05:37:41.257614Z",
+          "updated_at": "2026-10-29T05:37:41.257627Z"
+        }
+      ],
+      "_results_total_in_page": 5
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/teams/7fd99492-e325-4788-8268-f59408805875/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f12ba552-f0ab-4e97-95fb-7addb8671f89",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "7fd99492-e325-4788-8268-f59408805875",
+      "code": "TEAM-COMP",
+      "name": "Compositing Team",
+      "description": "Seeded team for Compositing",
+      "department": "df1036bb-806c-4c2b-a583-a73641d04b4b",
+      "lead": null,
+      "focus_discipline": "",
+      "current_project_code": "",
+      "color": "",
+      "capacity": 1,
+      "created_at": "2026-10-29T05:37:41.269428Z",
+      "updated_at": "2026-10-29T05:37:41.269439Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/teams/d2c34cd9-9491-45eb-aa4b-e5189cd9c33a/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d1305d01-9861-4cd4-ba47-b127d8f4461f",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Team matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "d1305d01-9861-4cd4-ba47-b127d8f4461f"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/teams/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "bfebf5cc-10bf-4d02-9cc6-036635b8bad0",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "This field is required."
+      ],
+      "name": [
+        "This field is required."
+      ],
+      "department": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "bfebf5cc-10bf-4d02-9cc6-036635b8bad0"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/teams/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "96a0ffac-f3a0-49c7-8ed3-9ec07d4e4283",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "96a0ffac-f3a0-49c7-8ed3-9ec07d4e4283"
+      }
+    }
+  }
+}

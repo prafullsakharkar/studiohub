@@ -11,14 +11,10 @@ import {
   PlaySquare,
   UploadCloud,
   Send,
-  Bell,
-  FileText,
-  Sliders,
   ShieldCheck,
   ChevronLeft,
   ChevronRight,
   Sparkles,
-  Terminal,
   GitFork,
   Calendar,
   Activity,
@@ -26,6 +22,7 @@ import {
   Cpu,
   Users,
   MapPin,
+  Layers,
   Workflow,
   Building2,
   Briefcase,
@@ -130,6 +127,21 @@ export const Sidebar: React.FC = () => {
           icon: Users,
           pagePermission: 'page.teams',
           permissions: ['team.view'],
+        },
+        {
+          id: 'catalog',
+          to: '/platform/catalog',
+          label: 'Catalog',
+          icon: Layers,
+          pagePermission: 'page.catalog',
+        },
+        {
+          id: 'positions',
+          to: '/positions',
+          label: 'Positions',
+          icon: Users,
+          pagePermission: 'page.positions',
+          permissions: ['position.view'],
         },
         {
           id: 'offices',
@@ -271,47 +283,9 @@ export const Sidebar: React.FC = () => {
         {
           id: 'api-health',
           to: '/platform/health',
-          label: 'API Health — Live Services',
+          label: 'API Health',
           icon: Activity,
           pagePermission: 'page.platform_admin',
-          badge: '99.98%',
-          badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 font-bold',
-        },
-        {
-          id: 'data-platform',
-          to: '/data-platform',
-          label: 'Data Platform',
-          icon: Sliders,
-          pagePermission: 'page.data_platform',
-          badge: 'CRUD/7-VIEWS',
-          badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30 font-bold',
-        },
-        {
-          id: 'notifications',
-          to: '/notifications',
-          label: 'Notifications',
-          icon: Bell,
-          pagePermission: 'page.notifications',
-          badge: '2 New',
-          badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
-        },
-        {
-          id: 'reports',
-          to: '/reports',
-          label: 'Reports',
-          icon: FileText,
-          pagePermission: 'page.reports',
-          permissions: ['reports.view'],
-        },
-        {
-          id: 'testing',
-          to: '/testing',
-          label: 'QA Runner — Test Suites',
-          icon: Terminal,
-          pagePermission: 'page.testing',
-          badge: 'MSW/DRF',
-          badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 font-mono',
-          hotkey: 'T',
         },
       ],
     },
@@ -507,7 +481,7 @@ export const Sidebar: React.FC = () => {
                   {user?.full_name || 'Crew Member'}
                 </span>
                 <span className="text-[9px] text-cyan-600 dark:text-cyan-400 font-mono truncate">
-                  {user?.role || 'Artist'}
+                  {user?.role || 'No role'}
                 </span>
               </div>
             )}

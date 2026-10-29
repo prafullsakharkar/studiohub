@@ -1,0 +1,110 @@
+{
+  "view": "ProjectPipelineView",
+  "app": "production",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/pipeline/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "75037b19-abd4-4068-a855-322658ad3698",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "project_id": "90864aa9-6ae0-49a3-807e-e5327db92bf0",
+      "color_space": "ACEScg",
+      "resolution": "4096x2160",
+      "fps": 24.0,
+      "aspect_ratio": "2.39:1",
+      "pipeline_steps": [],
+      "dcc_integrations": [
+        {
+          "name": "Foundry Nuke Studio",
+          "version": "15.1v2",
+          "plugin": "StudioHub NukeBridge 2.4"
+        },
+        {
+          "name": "SideFX Houdini",
+          "version": "20.5",
+          "plugin": "StudioHub SolarisUSD 3.1"
+        },
+        {
+          "name": "Autodesk Maya",
+          "version": "2025",
+          "plugin": "StudioHub MayaSync 2.0"
+        },
+        {
+          "name": "Epic Unreal Engine",
+          "version": "5.4.3",
+          "plugin": "StudioHub LiveLink 1.8"
+        }
+      ],
+      "usd_schema_version": "23.11",
+      "ocio_config": "/studio/configs/aces_1.2/config.ocio"
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/pipeline/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "fb7049a3-a918-47cb-af7e-725869d8f0b4",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "fb7049a3-a918-47cb-af7e-725869d8f0b4"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/pipeline/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c2a62ced-b42a-429a-8560-411fb514df55",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "c2a62ced-b42a-429a-8560-411fb514df55"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/pipeline/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ad53b7dd-c447-4490-9ae1-fa83a0c5e791",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Project 90864aa9-6ae0-49a3-807e-e5327db92bf0 not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "ad53b7dd-c447-4490-9ae1-fa83a0c5e791"
+      }
+    }
+  }
+}

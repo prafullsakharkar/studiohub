@@ -1,0 +1,221 @@
+{
+  "view": "ShowViewSet",
+  "app": "production",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/shows/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9c565e3b-3d67-4c8f-8f4e-3a66f5aee21b",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "db68de5d-1e14-4462-ba0e-f7df77304b57",
+          "uuid": "db68de5d-1e14-4462-ba0e-f7df77304b57",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "project_code": "PROJ000",
+          "name": "Show 0",
+          "code": "SHOW000",
+          "type": "Feature Film",
+          "status": "",
+          "season": "",
+          "description": "",
+          "start_date": null,
+          "delivery_date": null,
+          "thumbnail_url": "",
+          "is_primary": false,
+          "created_at": "2026-10-29T05:37:41.515008Z",
+          "updated_at": "2026-10-29T05:37:41.515021Z"
+        },
+        {
+          "id": "1015725c-87ca-4d4c-8be8-a6872dfb4497",
+          "uuid": "1015725c-87ca-4d4c-8be8-a6872dfb4497",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "project_code": "PROJ000",
+          "name": "Show 1",
+          "code": "SHOW001",
+          "type": "Feature Film",
+          "status": "",
+          "season": "",
+          "description": "",
+          "start_date": null,
+          "delivery_date": null,
+          "thumbnail_url": "",
+          "is_primary": false,
+          "created_at": "2026-10-29T05:37:41.637479Z",
+          "updated_at": "2026-10-29T05:37:41.637488Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/shows/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4b808147-859e-4546-bf52-726ce80d0397",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "4b808147-859e-4546-bf52-726ce80d0397"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/shows/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "276ea424-cdc9-423d-bddc-32732e82781b",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "276ea424-cdc9-423d-bddc-32732e82781b"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/shows/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3fde4c21-d59f-4c82-833b-a6b3158a71cd",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/shows/db68de5d-1e14-4462-ba0e-f7df77304b57/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1beb2055-8abf-4946-bf8a-48078c9beb7c",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "db68de5d-1e14-4462-ba0e-f7df77304b57",
+      "uuid": "db68de5d-1e14-4462-ba0e-f7df77304b57",
+      "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+      "project_code": "PROJ000",
+      "name": "Show 0",
+      "code": "SHOW000",
+      "type": "Feature Film",
+      "status": "",
+      "season": "",
+      "description": "",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "",
+      "is_primary": false,
+      "created_at": "2026-10-29T05:37:41.515008Z",
+      "updated_at": "2026-10-29T05:37:41.515021Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/shows/1055f4bc-8503-4cb7-b0e7-61dd9c790fbc/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "bb685bc5-2ce3-4ed5-947a-f830e6dd4db0",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "bb685bc5-2ce3-4ed5-947a-f830e6dd4db0"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/shows/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e7f23bd7-1bf4-4fa5-a4e0-a3bfa8138a98",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "project": [
+        "This field is required."
+      ],
+      "name": [
+        "This field is required."
+      ],
+      "code": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "e7f23bd7-1bf4-4fa5-a4e0-a3bfa8138a98"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/shows/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7d4b1756-9b23-4259-b78b-4580ad3a2111",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "7d4b1756-9b23-4259-b78b-4580ad3a2111"
+      }
+    }
+  }
+}

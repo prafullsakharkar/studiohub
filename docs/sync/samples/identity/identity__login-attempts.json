@@ -1,0 +1,193 @@
+{
+  "view": "LoginAttemptViewSet",
+  "app": "identity",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/login-attempts/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d204c99f-4fb2-4b86-8dd3-0fbdb759d995",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "ce98d349-d0ca-4561-9fae-690e834bd332",
+          "uuid": "ce98d349-d0ca-4561-9fae-690e834bd332",
+          "user": "8019d17b-d95f-4253-bdcd-f48ef98a4a05",
+          "username": "user@example.test",
+          "ip_address": "127.0.0.1",
+          "success": false,
+          "reason": "invalid_credentials",
+          "attempted_at": "2026-10-29T05:37:41.970274Z"
+        },
+        {
+          "id": "8d05893b-4c80-4983-a8c1-b86302a2d039",
+          "uuid": "8d05893b-4c80-4983-a8c1-b86302a2d039",
+          "user": "77424f25-b34b-45b4-94c8-669410992dc7",
+          "username": "user@example.test",
+          "ip_address": "127.0.0.1",
+          "success": false,
+          "reason": "invalid_credentials",
+          "attempted_at": "2026-10-29T05:37:41.975295Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/login-attempts/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "62a5f849-c40a-4e00-82e4-a7125ad1a68c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "62a5f849-c40a-4e00-82e4-a7125ad1a68c"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/login-attempts/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c367ded0-2501-4d1a-84fa-890dfd3d5aa7",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "c367ded0-2501-4d1a-84fa-890dfd3d5aa7"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/login-attempts/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ce3e62df-e060-4355-8ace-633869a10c34",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "ce3e62df-e060-4355-8ace-633869a10c34"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/login-attempts/ce98d349-d0ca-4561-9fae-690e834bd332/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f47183b0-4f80-413c-a99d-cc203661b1af",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "ce98d349-d0ca-4561-9fae-690e834bd332",
+      "uuid": "ce98d349-d0ca-4561-9fae-690e834bd332",
+      "user": "8019d17b-d95f-4253-bdcd-f48ef98a4a05",
+      "username": "user@example.test",
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0",
+      "success": false,
+      "reason": "invalid_credentials",
+      "attempted_at": "2026-10-29T05:37:41.970274Z",
+      "locked_until": null,
+      "created_at": "2026-10-29T05:37:41.970223Z",
+      "updated_at": "2026-10-29T05:37:41.970233Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/login-attempts/504f31c7-ae2a-4c5e-8660-cf24246e7dbd/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c4696911-0091-4145-8867-172e16039bfa",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No LoginAttempt matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "c4696911-0091-4145-8867-172e16039bfa"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/login-attempts/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a26c468f-f42c-4073-9be9-62b1817edad8",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "ip_address": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "a26c468f-f42c-4073-9be9-62b1817edad8"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/login-attempts/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "fc2a9a35-98be-4a93-bda3-2a5d31131025",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "fc2a9a35-98be-4a93-bda3-2a5d31131025"
+      }
+    }
+  }
+}

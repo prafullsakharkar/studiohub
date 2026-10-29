@@ -1,0 +1,272 @@
+{
+  "view": "AssetViewSet",
+  "app": "production",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/assets/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "80f85d89-8ab0-4c2f-bed9-267c2edbff73",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "fc562b62-177e-4a0f-ad5c-89fc3e462d8e",
+          "uuid": "fc562b62-177e-4a0f-ad5c-89fc3e462d8e",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "show_id": null,
+          "project_code": "PROJ000",
+          "project_name": "Project 0",
+          "name": "Asset 0",
+          "code": "AST000",
+          "category": "Prop",
+          "description": "",
+          "status": "Not Started",
+          "version": "v001",
+          "thumbnail_url": "",
+          "turntable_video_url": "",
+          "file_format": "OpenUSD",
+          "poly_count": 1000,
+          "lod_levels": 1,
+          "software": "Maya",
+          "department_id": null,
+          "department_name": "",
+          "team_id": null,
+          "team_name": "",
+          "assigned_artist_id": null,
+          "assigned_artist_name": "",
+          "assigned_artist_avatar": null,
+          "parent_asset_id": null,
+          "asset_type_id": null,
+          "asset_type_code": "",
+          "asset_type_name": "",
+          "tags": [],
+          "usd_prim_path": "",
+          "is_archived": false,
+          "created_at": "2026-10-29T05:37:41.496485Z",
+          "updated_at": "2026-10-29T05:37:41.496495Z"
+        },
+        {
+          "id": "39409cf7-bb83-420a-b860-f2f7f929b5db",
+          "uuid": "39409cf7-bb83-420a-b860-f2f7f929b5db",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "show_id": null,
+          "project_code": "PROJ000",
+          "project_name": "Project 0",
+          "name": "Asset 1",
+          "code": "AST001",
+          "category": "Prop",
+          "description": "",
+          "status": "Not Started",
+          "version": "v001",
+          "thumbnail_url": "",
+          "turntable_video_url": "",
+          "file_format": "OpenUSD",
+          "poly_count": 1000,
+          "lod_levels": 1,
+          "software": "Maya",
+          "department_id": null,
+          "department_name": "",
+          "team_id": null,
+          "team_name": "",
+          "assigned_artist_id": null,
+          "assigned_artist_name": "",
+          "assigned_artist_avatar": null,
+          "parent_asset_id": null,
+          "asset_type_id": null,
+          "asset_type_code": "",
+          "asset_type_name": "",
+          "tags": [],
+          "usd_prim_path": "",
+          "is_archived": false,
+          "created_at": "2026-10-29T05:37:41.626663Z",
+          "updated_at": "2026-10-29T05:37:41.626672Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/assets/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0df75b93-547a-44ad-8919-a59f65099064",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "0df75b93-547a-44ad-8919-a59f65099064"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/assets/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "37ff942e-569a-48df-a335-03c30dba0f07",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "37ff942e-569a-48df-a335-03c30dba0f07"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/assets/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8aec3694-6923-40fa-af80-8531df347cdd",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/assets/fc562b62-177e-4a0f-ad5c-89fc3e462d8e/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2aaba3e3-df6d-4990-a93d-0c29a195f178",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "fc562b62-177e-4a0f-ad5c-89fc3e462d8e",
+      "uuid": "fc562b62-177e-4a0f-ad5c-89fc3e462d8e",
+      "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+      "show_id": null,
+      "project_code": "PROJ000",
+      "project_name": "Project 0",
+      "name": "Asset 0",
+      "code": "AST000",
+      "category": "Prop",
+      "description": "",
+      "status": "Not Started",
+      "version": "v001",
+      "thumbnail_url": "",
+      "turntable_video_url": "",
+      "file_format": "OpenUSD",
+      "poly_count": 1000,
+      "lod_levels": 1,
+      "software": "Maya",
+      "department_id": null,
+      "department_name": "",
+      "team_id": null,
+      "team_name": "",
+      "assigned_artist_id": null,
+      "assigned_artist_name": "",
+      "assigned_artist_avatar": null,
+      "parent_asset_id": null,
+      "asset_type_id": null,
+      "asset_type_code": "",
+      "asset_type_name": "",
+      "tags": [],
+      "usd_prim_path": "",
+      "is_archived": false,
+      "created_at": "2026-10-29T05:37:41.496485Z",
+      "updated_at": "2026-10-29T05:37:41.496495Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/assets/aaef7e87-373f-477b-b031-4b6d6ee88ae9/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2658539f-fdb1-4a21-9b13-216277a23cc1",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "2658539f-fdb1-4a21-9b13-216277a23cc1"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/assets/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6afa5bce-fb16-4cb1-ac7d-0c0cc1d6e8d3",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "code": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "6afa5bce-fb16-4cb1-ac7d-0c0cc1d6e8d3"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/assets/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f87bf18a-5058-4c02-8b6e-eb4abb37a2b0",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "f87bf18a-5058-4c02-8b6e-eb4abb37a2b0"
+      }
+    }
+  }
+}

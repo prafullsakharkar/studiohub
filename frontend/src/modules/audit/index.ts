@@ -11,5 +11,4 @@ export { TracksPage } from './pages/TracksPage';
 export { AuditWorkspacePage } from './pages/AuditWorkspacePage';
 export { SystemLogsWorkspacePage } from './pages/SystemLogsWorkspacePage';
 export { JobsWorkspacePage } from './pages/JobsWorkspacePage';
-export { auditService } from './services/auditServices';
 export { auditRoutes, auditRoutePaths } from './routes/auditRoutes';

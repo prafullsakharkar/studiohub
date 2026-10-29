@@ -1,0 +1,296 @@
+{
+  "view": "PermissionViewSet",
+  "app": "identity",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/permissions/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7a9deddf-85ff-4ee0-bd08-4420320379d3",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 127,
+      "next": "http://testserver/api/v1/permissions/?page=2",
+      "previous": null,
+      "results": [
+        {
+          "id": "c9c632b3-b93d-4569-8acd-c27616c6607f",
+          "uuid": "c9c632b3-b93d-4569-8acd-c27616c6607f",
+          "name": "asset.create",
+          "code": "asset.create",
+          "module": "assets",
+          "action": "create",
+          "category": "general",
+          "description": "",
+          "is_system": true,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:36.632955Z",
+          "updated_at": "2026-10-29T05:37:36.632962Z"
+        },
+        {
+          "id": "fd9750e2-1b00-4bbd-bff8-ece1747d19fd",
+          "uuid": "fd9750e2-1b00-4bbd-bff8-ece1747d19fd",
+          "name": "asset.delete",
+          "code": "asset.delete",
+          "module": "assets",
+          "action": "delete",
+          "category": "general",
+          "description": "",
+          "is_system": true,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:36.641422Z",
+          "updated_at": "2026-10-29T05:37:36.641434Z"
+        }
+      ],
+      "_results_total_in_page": 25
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/permissions/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c3585718-9977-4105-b88a-f5abaa52e75c",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "c3585718-9977-4105-b88a-f5abaa52e75c"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/permissions/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d448ff95-e0e7-4a9f-9e17-8188ecd6e847",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 127,
+      "next": "http://testserver/api/v1/permissions/?page=2",
+      "previous": null,
+      "results": [
+        {
+          "id": "c9c632b3-b93d-4569-8acd-c27616c6607f",
+          "uuid": "c9c632b3-b93d-4569-8acd-c27616c6607f",
+          "name": "asset.create",
+          "code": "asset.create",
+          "module": "assets",
+          "action": "create",
+          "category": "general",
+          "description": "",
+          "is_system": true,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:36.632955Z",
+          "updated_at": "2026-10-29T05:37:36.632962Z"
+        },
+        {
+          "id": "fd9750e2-1b00-4bbd-bff8-ece1747d19fd",
+          "uuid": "fd9750e2-1b00-4bbd-bff8-ece1747d19fd",
+          "name": "asset.delete",
+          "code": "asset.delete",
+          "module": "assets",
+          "action": "delete",
+          "category": "general",
+          "description": "",
+          "is_system": true,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:36.641422Z",
+          "updated_at": "2026-10-29T05:37:36.641434Z"
+        }
+      ],
+      "_results_total_in_page": 25
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/permissions/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "aec777a1-8ffd-49d9-87ef-c1650c2212c7",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 127,
+      "next": "http://testserver/api/v1/permissions/?page=2",
+      "previous": null,
+      "results": [
+        {
+          "id": "c9c632b3-b93d-4569-8acd-c27616c6607f",
+          "uuid": "c9c632b3-b93d-4569-8acd-c27616c6607f",
+          "name": "asset.create",
+          "code": "asset.create",
+          "module": "assets",
+          "action": "create",
+          "category": "general",
+          "description": "",
+          "is_system": true,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:36.632955Z",
+          "updated_at": "2026-10-29T05:37:36.632962Z"
+        },
+        {
+          "id": "fd9750e2-1b00-4bbd-bff8-ece1747d19fd",
+          "uuid": "fd9750e2-1b00-4bbd-bff8-ece1747d19fd",
+          "name": "asset.delete",
+          "code": "asset.delete",
+          "module": "assets",
+          "action": "delete",
+          "category": "general",
+          "description": "",
+          "is_system": true,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:36.641422Z",
+          "updated_at": "2026-10-29T05:37:36.641434Z"
+        }
+      ],
+      "_results_total_in_page": 25
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/permissions/c9c632b3-b93d-4569-8acd-c27616c6607f/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "37640639-8beb-4bb9-9c79-5ce6c68fbe90",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "c9c632b3-b93d-4569-8acd-c27616c6607f",
+      "uuid": "c9c632b3-b93d-4569-8acd-c27616c6607f",
+      "name": "asset.create",
+      "code": "asset.create",
+      "module": "assets",
+      "action": "create",
+      "category": "general",
+      "description": "",
+      "is_system": true,
+      "is_active": true,
+      "sort_order": 0,
+      "created_at": "2026-10-29T05:37:36.632955Z",
+      "updated_at": "2026-10-29T05:37:36.632962Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/permissions/cdee6680-a61e-4315-98fb-61a229663563/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "87d4c857-6e0b-4031-927c-d084ea070bb3",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Permission matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "87d4c857-6e0b-4031-927c-d084ea070bb3"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/permissions/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "78f77eed-1d57-4306-8e9e-33c841fb3e46",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "code": [
+        "This field is required."
+      ],
+      "module": [
+        "This field is required."
+      ],
+      "action": [
+        "This field is required."
+      ],
+      "category": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "78f77eed-1d57-4306-8e9e-33c841fb3e46"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/permissions/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a95bd379-1c3c-40e1-a526-dcee78d7a284",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "a95bd379-1c3c-40e1-a526-dcee78d7a284"
+      }
+    }
+  }
+}

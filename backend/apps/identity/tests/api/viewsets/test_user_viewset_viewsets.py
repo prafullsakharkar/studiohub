@@ -107,6 +107,20 @@ class TestUserViewSet:
         assert response.status_code == 201
 
     @pytest.mark.django_db
+    def test_create_user_duplicate_email_differing_only_by_case_is_400(self, admin_client):
+        """CR-12: the lower(email) constraint used to surface as a 500."""
+        data = {"email": "new@example.com", "password": "Password123!x"}
+        assert admin_client.post(reverse("api:v1:identity:user-list"), data).status_code == 201
+
+        for email in ("new@example.com", "NEW@example.com", "New@Example.com"):
+            response = admin_client.post(
+                reverse("api:v1:identity:user-list"),
+                {"email": email, "password": "Password123!x"},
+            )
+            assert response.status_code == 400, email
+            assert response.json()["email"] == ["user with this email already exists."]
+
+    @pytest.mark.django_db
     def test_update_user_unauthenticated(self, api_client):
         """Test updating user without authentication."""
         user = UserFactory.create()

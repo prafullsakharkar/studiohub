@@ -50,6 +50,13 @@ class TestSerializeFrontendUserRole:
         assert payload["role"] == "Admin"
 
     @pytest.mark.django_db
+    def test_user_without_roles_has_an_empty_label_not_artist(self):
+        payload = serialize_frontend_user(UserFactory.create())
+
+        assert payload["role"] == ""
+        assert payload["permissions"] == []
+
+    @pytest.mark.django_db
     def test_payload_has_no_org_fields(self):
         """The frontend payload carries no organization/department fields."""
         user = UserFactory.create()

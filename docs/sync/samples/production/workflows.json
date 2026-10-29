@@ -1,0 +1,215 @@
+{
+  "view": "WorkflowViewSet",
+  "app": "production",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/workflows/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "10d670c5-bee3-4764-adb4-b41225426d96",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "27d91ea1-12ae-48ae-b6d4-391ae201b2f7",
+          "uuid": "27d91ea1-12ae-48ae-b6d4-391ae201b2f7",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "name": "Workflow 1",
+          "code": "",
+          "description": "",
+          "category": "",
+          "is_active": true,
+          "department": "",
+          "nodes": [],
+          "transitions": [],
+          "automation_rules": [],
+          "execution_stats": {},
+          "is_archived": false,
+          "created_at": "2026-10-29T05:37:41.653454Z",
+          "updated_at": "2026-10-29T05:37:41.653463Z"
+        },
+        {
+          "id": "3ee5e672-7b30-4c96-b1c1-adddb19134d2",
+          "uuid": "3ee5e672-7b30-4c96-b1c1-adddb19134d2",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "name": "Workflow 0",
+          "code": "",
+          "description": "",
+          "category": "",
+          "is_active": true,
+          "department": "",
+          "nodes": [],
+          "transitions": [],
+          "automation_rules": [],
+          "execution_stats": {},
+          "is_archived": false,
+          "created_at": "2026-10-29T05:37:41.552033Z",
+          "updated_at": "2026-10-29T05:37:41.552055Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/workflows/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b557b38a-2efb-4b02-8f21-b1cd4a0656c3",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "b557b38a-2efb-4b02-8f21-b1cd4a0656c3"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/workflows/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "94318c14-f174-4afc-80a0-597ed0f8bde7",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "94318c14-f174-4afc-80a0-597ed0f8bde7"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/workflows/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0fd6d05f-0442-4628-adec-4018916a4cb1",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/workflows/27d91ea1-12ae-48ae-b6d4-391ae201b2f7/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "706cee09-a115-4c7b-be70-373032aeaeb7",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "27d91ea1-12ae-48ae-b6d4-391ae201b2f7",
+      "uuid": "27d91ea1-12ae-48ae-b6d4-391ae201b2f7",
+      "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+      "name": "Workflow 1",
+      "code": "",
+      "description": "",
+      "category": "",
+      "is_active": true,
+      "department": "",
+      "nodes": [],
+      "transitions": [],
+      "automation_rules": [],
+      "execution_stats": {},
+      "is_archived": false,
+      "created_at": "2026-10-29T05:37:41.653454Z",
+      "updated_at": "2026-10-29T05:37:41.653463Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/workflows/60f1700b-b599-47eb-ac23-7f12513361e2/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a207ab16-51cd-4517-9320-dcd4ac03b2d7",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "a207ab16-51cd-4517-9320-dcd4ac03b2d7"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/workflows/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "697072ae-c96b-4d00-8882-6c98ea421afc",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "697072ae-c96b-4d00-8882-6c98ea421afc"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/workflows/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "62c741bc-8d35-41d7-867a-4e4e941c114c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "62c741bc-8d35-41d7-867a-4e4e941c114c"
+      }
+    }
+  }
+}

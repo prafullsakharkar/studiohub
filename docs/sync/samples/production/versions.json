@@ -1,0 +1,303 @@
+{
+  "view": "VersionViewSet",
+  "app": "production",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/versions/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4856ba4b-fc94-453c-ad55-a0d868cef70f",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "1b5d7c7b-3d48-4722-a5b7-00829701f69a",
+          "uuid": "1b5d7c7b-3d48-4722-a5b7-00829701f69a",
+          "code": "VER001",
+          "version_number": "v001",
+          "version_index": 1,
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "project_code": "PROJ000",
+          "entity_type": "",
+          "entity_id": "",
+          "entity_code": "",
+          "entity_name": "",
+          "shot_id": null,
+          "asset_id": null,
+          "task_id": null,
+          "department": "",
+          "artist_id": null,
+          "artist_name": "",
+          "status": "Not Started",
+          "is_published": false,
+          "published_at": null,
+          "published_by_id": null,
+          "is_hero": false,
+          "is_archived": false,
+          "thumbnail_url": "",
+          "video_url": "",
+          "source_file_url": "",
+          "frame_range": "",
+          "start_frame": null,
+          "end_frame": null,
+          "resolution": "4096x2160",
+          "fps": "24.000",
+          "file_size_mb": "0.00",
+          "color_space": "ACEScg",
+          "file_path": "",
+          "notes": "",
+          "changelog": "",
+          "tags": [],
+          "publishing_info": {},
+          "media_items": [],
+          "attachments": [],
+          "reviews": [],
+          "playlists": [],
+          "notes_list": [],
+          "activity": [],
+          "created_at": "2026-10-29T05:37:41.642599Z",
+          "updated_at": "2026-10-29T05:37:41.642608Z"
+        },
+        {
+          "id": "82f201df-507e-4e59-9373-f51cec7119ae",
+          "uuid": "82f201df-507e-4e59-9373-f51cec7119ae",
+          "code": "VER000",
+          "version_number": "v001",
+          "version_index": 1,
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "project_code": "PROJ000",
+          "entity_type": "",
+          "entity_id": "",
+          "entity_code": "",
+          "entity_name": "",
+          "shot_id": null,
+          "asset_id": null,
+          "task_id": null,
+          "department": "",
+          "artist_id": null,
+          "artist_name": "",
+          "status": "Not Started",
+          "is_published": false,
+          "published_at": null,
+          "published_by_id": null,
+          "is_hero": false,
+          "is_archived": false,
+          "thumbnail_url": "",
+          "video_url": "",
+          "source_file_url": "",
+          "frame_range": "",
+          "start_frame": null,
+          "end_frame": null,
+          "resolution": "4096x2160",
+          "fps": "24.000",
+          "file_size_mb": "0.00",
+          "color_space": "ACEScg",
+          "file_path": "",
+          "notes": "",
+          "changelog": "",
+          "tags": [],
+          "publishing_info": {},
+          "media_items": [],
+          "attachments": [],
+          "reviews": [],
+          "playlists": [],
+          "notes_list": [],
+          "activity": [],
+          "created_at": "2026-10-29T05:37:41.527954Z",
+          "updated_at": "2026-10-29T05:37:41.527969Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/versions/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "00906c15-74d2-42bb-b599-9878794bd839",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "00906c15-74d2-42bb-b599-9878794bd839"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/versions/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4b4c7b80-f6e2-4053-b11f-b9d909423d9c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "4b4c7b80-f6e2-4053-b11f-b9d909423d9c"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/versions/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b318450d-c570-453f-a604-bce2955ca32a",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/versions/1b5d7c7b-3d48-4722-a5b7-00829701f69a/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "da9de558-ece5-4653-859d-9653dbcd6993",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "1b5d7c7b-3d48-4722-a5b7-00829701f69a",
+      "uuid": "1b5d7c7b-3d48-4722-a5b7-00829701f69a",
+      "code": "VER001",
+      "version_number": "v001",
+      "version_index": 1,
+      "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+      "project_code": "PROJ000",
+      "entity_type": "",
+      "entity_id": "",
+      "entity_code": "",
+      "entity_name": "",
+      "shot_id": null,
+      "asset_id": null,
+      "task_id": null,
+      "department": "",
+      "artist_id": null,
+      "artist_name": "",
+      "status": "Not Started",
+      "is_published": false,
+      "published_at": null,
+      "published_by_id": null,
+      "is_hero": false,
+      "is_archived": false,
+      "thumbnail_url": "",
+      "video_url": "",
+      "source_file_url": "",
+      "frame_range": "",
+      "start_frame": null,
+      "end_frame": null,
+      "resolution": "4096x2160",
+      "fps": "24.000",
+      "file_size_mb": "0.00",
+      "color_space": "ACEScg",
+      "file_path": "",
+      "notes": "",
+      "changelog": "",
+      "tags": [],
+      "publishing_info": {},
+      "media_items": [],
+      "attachments": [],
+      "reviews": [],
+      "playlists": [],
+      "notes_list": [],
+      "activity": [],
+      "created_at": "2026-10-29T05:37:41.642599Z",
+      "updated_at": "2026-10-29T05:37:41.642608Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/versions/e64d3060-7c7c-4913-bd94-efbb767179c5/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4fba960c-5725-46b3-95cf-97ccd17f6d28",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "4fba960c-5725-46b3-95cf-97ccd17f6d28"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/versions/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9b3b8659-27cd-4f5c-8721-345bacef103b",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "project": "This field is required.",
+      "error": {
+        "code": "validation_error",
+        "request_id": "9b3b8659-27cd-4f5c-8721-345bacef103b"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/versions/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "95560a09-3b28-413b-a54a-2cb0f23f1315",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "95560a09-3b28-413b-a54a-2cb0f23f1315"
+      }
+    }
+  }
+}

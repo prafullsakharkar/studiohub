@@ -1,0 +1,632 @@
+{
+  "login_mfa_enrollment_required": {
+    "status": 200,
+    "keys": [
+      "mfa_enrollment_required",
+      "tokens",
+      "user"
+    ],
+    "mfa_enrollment_required": true,
+    "is_superuser": true
+  },
+  "restricted_list_departments": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5b3ac7d1-e74b-481e-abf2-3d53fd8fc4d6",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Set up two-factor authentication before continuing.",
+      "code": "mfa_enrollment_required",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "5b3ac7d1-e74b-481e-abf2-3d53fd8fc4d6"
+      }
+    }
+  },
+  "restricted_create_department": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/departments/",
+      "body": {
+        "code": "<redacted>",
+        "name": "R1",
+        "department_type": "creative"
+      }
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9b280c8d-d821-4992-8d66-a84f228767ed",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Set up two-factor authentication before continuing.",
+      "code": "mfa_enrollment_required",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "9b280c8d-d821-4992-8d66-a84f228767ed"
+      }
+    }
+  },
+  "restricted_me": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/auth/me/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "88d7cd5d-630a-44b8-acf1-4cce86a4fc08",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "01869021-5505-4bff-9f54-970967910568",
+      "email": "user@example.test",
+      "first_name": "",
+      "last_name": "",
+      "full_name": "user@example.test",
+      "avatar_url": null,
+      "role": "Artist",
+      "permissions": [
+        "project.create",
+        "project.view",
+        "project.update",
+        "project.delete",
+        "shot.create",
+        "shot.view",
+        "shot.update",
+        "shot.delete",
+        "shot.approve",
+        "asset.create",
+        "asset.view",
+        "asset.update",
+        "asset.delete",
+        "task.create",
+        "task.view",
+        "task.update",
+        "task.delete",
+        "review.create",
+        "review.view",
+        "review.approve",
+        "audit.view",
+        "settings.update",
+        "user.manage"
+      ],
+      "project_memberships": [],
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": true,
+      "must_change_password": false,
+      "created_at": "2026-10-29T07:14:28.227965+00:00",
+      "updated_at": "2026-10-29T07:14:28.227975+00:00"
+    }
+  },
+  "restricted_mfa_config": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/config/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "eb57ee0b-d6dd-4224-a490-3645c3acbb89",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "enabled": false,
+      "pending": false,
+      "methods": [],
+      "totp": {
+        "verified": false
+      },
+      "sms": {
+        "verified": false
+      },
+      "email": {
+        "verified": false
+      }
+    }
+  },
+  "totp_setup": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/mfa/totp/setup/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ee784d73-f3fd-4a97-9fc7-b04da4380306",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "secret": "<redacted>",
+      "uri": "<redacted>",
+      "qr_code": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAFoAQAAAABSnlx4AAACy0lEQVR4nO2bzW7DMAyDySHv/8rcQb/dYUDRdJNQd0DjpN+B8A\u2026<truncated>",
+      "qr": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAFoAQAAAABSnlx4AAACy0lEQVR4nO2bzW7DMAyDySHv/8rcQb/dYUDRdJNQd0DjpN+B8A\u2026<truncated>"
+    }
+  },
+  "totp_enable_wrong_code": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/mfa/totp/enable/",
+      "body": {
+        "code": "<redacted>"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "645984d5-d65e-49bd-9d36-44aefc92cd36",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Invalid verification code.",
+      "error": {
+        "code": "validation_error",
+        "request_id": "645984d5-d65e-49bd-9d36-44aefc92cd36"
+      }
+    }
+  },
+  "totp_enable_missing_code": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/mfa/totp/enable/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c254b0e8-f1e0-4d54-8786-402a4662eabf",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "c254b0e8-f1e0-4d54-8786-402a4662eabf"
+      }
+    }
+  },
+  "totp_enable_ok": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/mfa/totp/enable/",
+      "body": {
+        "code": "<redacted>"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "61a825db-09c9-47d0-a3ac-bb8d2651de7e",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "enabled": true,
+      "verified": true,
+      "recovery_codes": [
+        "<redacted>",
+        "<redacted>",
+        "<redacted>",
+        "<redacted>",
+        "<redacted>",
+        "<redacted>",
+        "<redacted>",
+        "<redacted>",
+        "<redacted>",
+        "<redacted>"
+      ]
+    }
+  },
+  "after_enrollment_list_departments": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "53a7ac09-abc5-4f86-8a20-cc45f916f7c0",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 5,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "3295bfdd-0046-4c8f-b15b-0dcb8dd6b2fc",
+          "code": "DEPT-COMP",
+          "name": "Compositing",
+          "description": "Compositing department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T07:06:05.740564Z",
+          "updated_at": "2026-10-29T07:06:05.740572Z"
+        },
+        {
+          "id": "1d64a6dd-a0a7-49c9-965a-0d691b62e274",
+          "code": "DEPT-EDIT",
+          "name": "Editorial",
+          "description": "Editorial department (seeded)",
+          "parent": null,
+          "department_type": "production",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T07:06:05.729534Z",
+          "updated_at": "2026-10-29T07:06:05.729544Z"
+        },
+        {
+          "id": "a4bb2a71-5e65-492f-8bc3-1bb8cf92ccfc",
+          "code": "DEPT-FX",
+          "name": "FX",
+          "description": "FX department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T07:06:05.745508Z",
+          "updated_at": "2026-10-29T07:06:05.745517Z"
+        },
+        {
+          "id": "2f868dca-10ac-4437-9a9c-6e1d6fc1d416",
+          "code": "DEPT-LIGHT",
+          "name": "Lighting",
+          "description": "Lighting department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T07:06:05.750366Z",
+          "updated_at": "2026-10-29T07:06:05.750375Z"
+        },
+        {
+          "id": "40e2fc3b-139c-499a-b652-e08149b1324a",
+          "code": "DEPT-PIPELINE",
+          "name": "Pipeline TD",
+          "description": "Pipeline TD department (seeded)",
+          "parent": null,
+          "department_type": "technical",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T07:06:05.735421Z",
+          "updated_at": "2026-10-29T07:06:05.735430Z"
+        }
+      ]
+    }
+  },
+  "after_enrollment_mfa_config": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/config/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "307992a6-e2f0-4f88-a23c-a97d44a64296",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "enabled": true,
+      "pending": false,
+      "methods": [
+        "totp"
+      ],
+      "totp": {
+        "verified": true
+      },
+      "sms": {
+        "verified": false
+      },
+      "email": {
+        "verified": false
+      }
+    }
+  },
+  "login_must_change_password": {
+    "status": 200,
+    "must_change_password": true,
+    "keys": [
+      "tokens",
+      "user"
+    ]
+  },
+  "password_restricted_list_departments": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8c7187c4-fd61-431e-b6b9-67b772f8d29d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Change your password before continuing.",
+      "code": "password_change_required",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "8c7187c4-fd61-431e-b6b9-67b772f8d29d"
+      }
+    }
+  },
+  "password_restricted_me": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/auth/me/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e419ada3-3b7a-4277-9345-e6dc0eb34332",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "42caaebd-f4a4-46a5-b0d4-8504083b27b4",
+      "email": "user@example.test",
+      "first_name": "",
+      "last_name": "",
+      "full_name": "user@example.test",
+      "avatar_url": null,
+      "role": "Artist",
+      "permissions": [],
+      "project_memberships": [],
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "must_change_password": true,
+      "created_at": "2026-10-29T07:14:28.712236+00:00",
+      "updated_at": "2026-10-29T07:14:28.712924+00:00"
+    }
+  },
+  "change_password_wrong_old": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/change-password/",
+      "body": {
+        "old_password": "<redacted>",
+        "new_password": "<redacted>",
+        "confirm_password": "<redacted>"
+      }
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1a10eaed-44da-4039-8b33-df3f4cfd54c8",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Invalid email or password.",
+      "error": {
+        "code": "invalid_credentials",
+        "request_id": "1a10eaed-44da-4039-8b33-df3f4cfd54c8"
+      }
+    }
+  },
+  "change_password_missing_fields": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/change-password/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9edbbd40-9c8b-4d92-afbc-54a9c8b7dbad",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "old_password": [
+        "This field is required."
+      ],
+      "new_password": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "9edbbd40-9c8b-4d92-afbc-54a9c8b7dbad"
+      }
+    }
+  },
+  "change_password_weak": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/change-password/",
+      "body": {
+        "old_password": "<redacted>",
+        "new_password": "<redacted>",
+        "confirm_password": "<redacted>"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4060ebc9-bc4c-495d-9892-284740474f3e",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "new_password": [
+        "This password is too short. It must contain at least 12 characters.",
+        "This password is too common.",
+        "This password is entirely numeric."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "4060ebc9-bc4c-495d-9892-284740474f3e"
+      }
+    }
+  },
+  "change_password_ok": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/change-password/",
+      "body": {
+        "old_password": "<redacted>",
+        "new_password": "<redacted>",
+        "confirm_password": "<redacted>"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f44f67b1-20e7-4238-b6ad-b741d275e8a6",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Password changed. All sessions have been signed out."
+    }
+  },
+  "after_change_old_token_list_departments": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "09e05881-a6e5-461f-ab4d-be0f3e3b047c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Session is no longer active.",
+      "error": {
+        "code": "session_expired",
+        "request_id": "09e05881-a6e5-461f-ab4d-be0f3e3b047c"
+      }
+    }
+  },
+  "relogin_after_change": {
+    "status": 200,
+    "must_change_password": false
+  },
+  "after_change_relogin_list_departments": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f712169d-a5e6-47e4-a6a9-a8081238470c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 5,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "3295bfdd-0046-4c8f-b15b-0dcb8dd6b2fc",
+          "code": "DEPT-COMP",
+          "name": "Compositing",
+          "description": "Compositing department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T07:06:05.740564Z",
+          "updated_at": "2026-10-29T07:06:05.740572Z"
+        },
+        {
+          "id": "1d64a6dd-a0a7-49c9-965a-0d691b62e274",
+          "code": "DEPT-EDIT",
+          "name": "Editorial",
+          "description": "Editorial department (seeded)",
+          "parent": null,
+          "department_type": "production",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T07:06:05.729534Z",
+          "updated_at": "2026-10-29T07:06:05.729544Z"
+        },
+        {
+          "id": "a4bb2a71-5e65-492f-8bc3-1bb8cf92ccfc",
+          "code": "DEPT-FX",
+          "name": "FX",
+          "description": "FX department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T07:06:05.745508Z",
+          "updated_at": "2026-10-29T07:06:05.745517Z"
+        },
+        {
+          "id": "2f868dca-10ac-4437-9a9c-6e1d6fc1d416",
+          "code": "DEPT-LIGHT",
+          "name": "Lighting",
+          "description": "Lighting department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T07:06:05.750366Z",
+          "updated_at": "2026-10-29T07:06:05.750375Z"
+        },
+        {
+          "id": "40e2fc3b-139c-499a-b652-e08149b1324a",
+          "code": "DEPT-PIPELINE",
+          "name": "Pipeline TD",
+          "description": "Pipeline TD department (seeded)",
+          "parent": null,
+          "department_type": "technical",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T07:06:05.735421Z",
+          "updated_at": "2026-10-29T07:06:05.735430Z"
+        }
+      ]
+    }
+  },
+  "change_password_confirm_mismatch": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/change-password/",
+      "body": {
+        "old_password": "<redacted>",
+        "new_password": "<redacted>",
+        "confirm_password": "<redacted>"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6e20d885-1218-458d-9bb1-950f8788a2fd",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Password changed. All sessions have been signed out."
+    }
+  }
+}

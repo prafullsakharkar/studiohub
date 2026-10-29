@@ -16,7 +16,7 @@ StudioHub is a comprehensive React-based studio management platform built with V
 - **Routing:** React Router v7
 - **UI Components:** MUI 9, Lucide React icons
 - **Data Visualization:** Recharts
-- **Mocking:** MSW (Mock Service Worker)
+- **Testing:** Vitest + Testing Library (jsdom); Playwright for e2e
 - **Runtime:** Express.js for server
 
 ## Development Commands
@@ -42,13 +42,13 @@ pnpm lint
 ```
 
 ### Running Tests
-Currently no test runner is configured. Tests should be added using a standard framework like Vitest or Jest.
-
-### Single Test Run
-When a test framework is set up, use:
 ```bash
-pnpm test -- <test-file-path>
+pnpm test                      # vitest run (jsdom)
+pnpm vitest run src/path/to/file.test.ts   # one file
+pnpm typecheck                 # tsc --noEmit
 ```
+Tests must not depend on a developer's git-ignored `.env`: the API base URL is pinned in `vitest.config.ts`.
+**Mocks come from real responses.** `docs/sync/samples/` holds responses captured from the backend (see `docs/sync/samples/README.md`); load them with `loadSample()` from `@/test/samples` and serve them with `mockFetch()` from `@/test/fetchMock`. Do not hand-write response shapes.
 
 ## Project Architecture
 
@@ -86,7 +86,6 @@ src/
 │   ├── utils/             # Utility functions
 │   └── views/             # View helpers
 ├── providers/             # Context providers (Query, Theme)
-├── mocks/                 # MSW mock data and handlers
 ├── types/                 # Global type definitions
 └── pages/                 # Error/system pages (404, 403, 500)
 ```
@@ -188,13 +187,15 @@ import { User } from '@/types/auth';
 import { ProjectService } from '@/modules/production/services/ProjectService';
 ```
 
-### API Mocking
+### Backend contract
 
-MSW handlers in `src/mocks/`:
-- Mock database in `db/` with sample data per domain
-- Handlers in `handlers/` intercept requests before hitting the network
-- Mock data is populated on app load for development/testing
-- Use `enable/disable` to toggle mocks at runtime
+The frontend talks only to the live DRF backend; there is no mock mode. The contract is the backend itself:
+- Types: `src/core/api/generated/openapi.ts`, generated from the backend schema (`pnpm api:generate`, input `src/core/api/generated/schema/django-openapi.yml`). Typed per-app modules live in `src/api/<app>/` (see `src/api/masterdata/departments.ts`).
+- Errors: `normalizeApiError` (`src/api/errors/`) turns every error body into `{status, message, fieldErrors, nonFieldErrors, code, requestId, retryAfter}`.
+- Lists: `usePaginatedList` / `fetchAllRows` / `toPage` (`src/shared/data/`). Never fetch page 1 and treat it as the whole list; 32 list routes return bare arrays and 46 are paginated.
+- Forms: `useServerForm` (`src/shared/forms/`) maps field errors onto inputs and the rest into a banner.
+- Permissions: `useCan(code)` / `evaluateAccess` (`src/core/permissions/access.ts`). Gates use **backend permission codes**; legacy codes are translated by `permissionMap.ts` (each entry says why). A test fails on any gate code with no rule.
+- Sync notes, change requests and the phase plan: `docs/sync/`.
 
 ## Common Development Tasks
 
@@ -208,26 +209,25 @@ MSW handlers in `src/mocks/`:
 7. Add navigation link to sidebar/menu
 
 ### Adding an API Endpoint
-1. Create repository method (extends BaseRepository or custom)
-2. Create service wrapping the repository call
-3. Use React Query's `useQuery` or `useMutation` hook in component
-4. Add mock handler in `src/mocks/handlers/`
+1. Verify the route and its response in `docs/sync/00-backend-inventory.md` or the OpenAPI schema; never invent one.
+2. Add a typed module in `src/api/<app>/` (types from `openapi.ts`, a query-key factory, `listFetcher` for lists).
+3. Use `usePaginatedList` / `useQuery` / `useMutation` in a hook; show errors with `QueryBoundary` and `useServerForm`.
+4. Add a test that serves a captured sample (`loadSample` + `mockFetch`); capture a new one with the tools in `docs/sync/tools/` if none exists.
 
 ### Adding Form Validation
 1. Define Zod schema in `src/modules/<module>/schemas/`
-2. Use `useForm` and `<Controller>` from React Hook Form
-3. Pass schema to `zodResolver`
-4. Display errors from `formState.errors`
+2. Use `useServerForm` (`src/shared/forms/`, a `useForm` that also maps backend errors) with `zodResolver`
+3. Submit with `submit(async (values) => { await mutation.mutateAsync(...) })`: field errors from a 400 land on the inputs, the rest in `serverError`
+4. Display client errors from `formState.errors` and `serverError.banner` / `.details`
 
 ### Checking User Permissions
 ```typescript
-import { usePermissions } from '@/core/permissions/usePermissions';
+import { useCan } from '@/core/permissions/useCan';
 
-// In component:
-const { can, hasRole } = usePermissions();
-if (can('delete_project')) { /* show delete button */ }
-if (hasRole('admin')) { /* show admin panel */ }
+const canManageDirectory = useCan('masterdata.directory.manage');   // a backend permission code
+const canEditShots = useCan(['shot.update', 'shot.view'], { projectId });
 ```
+`is_superuser` passes every check except controls with no backend (`unbacked` rules). Role names are display labels, never used for authorization. This only hides UI; the API checks every request again.
 
 ### Using Workspace Store
 ```typescript

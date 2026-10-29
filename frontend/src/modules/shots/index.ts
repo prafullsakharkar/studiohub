@@ -6,4 +6,4 @@ export { useShotMutations } from './hooks/useShotMutations';
 export { SHOT_QUERY_KEYS } from './hooks/useShots';
 export { useShots } from './hooks/useShots';
 export { ShotWorkspacePage } from './pages/ShotWorkspacePage';
-export { ShotsPage } from './pages/ShotsPage';
+export { ShotFormPage, ShotsPage } from './pages/ShotsPage';

@@ -1,0 +1,294 @@
+{
+  "project_create_duplicate_code": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/projects/",
+      "body": {
+        "name": "Dup",
+        "code": "PROJ002"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ab7683e0-b6ae-42e2-943e-0cb4196209ed",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "project with this code already exists."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "ab7683e0-b6ae-42e2-943e-0cb4196209ed"
+      }
+    }
+  },
+  "project_put_partial_payload": {
+    "request": {
+      "method": "PUT",
+      "path": "/api/v1/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/",
+      "body": {
+        "name": "x"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "bc609d44-8bb5-4242-9a7b-025b03069663",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "bc609d44-8bb5-4242-9a7b-025b03069663"
+      }
+    }
+  },
+  "method_not_allowed": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/audit/audit-logs/",
+      "body": null
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "654b58ae-c6e8-4b46-b410-7cfd89d85a89",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"PATCH\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "654b58ae-c6e8-4b46-b410-7cfd89d85a89"
+      }
+    }
+  },
+  "department_delete_referenced": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/departments/df1036bb-806c-4c2b-a583-a73641d04b4b/",
+      "body": null
+    },
+    "status": 409,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "34c520d1-ffe6-4688-a11f-5aeca7d46700",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Still referenced by: masterdata.Position.department (2), masterdata.Team.department (1).",
+      "error": {
+        "code": "has_dependants",
+        "request_id": "34c520d1-ffe6-4688-a11f-5aeca7d46700"
+      }
+    }
+  },
+  "department_detail_after_delete": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/df1036bb-806c-4c2b-a583-a73641d04b4b/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ee5630f2-deca-4748-850b-9a93814c2547",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "df1036bb-806c-4c2b-a583-a73641d04b4b",
+      "code": "DEPT-COMP",
+      "name": "Compositing",
+      "description": "Compositing department (seeded)",
+      "parent": null,
+      "department_type": "creative",
+      "manager": null,
+      "color": "",
+      "software_stack": [],
+      "created_at": "2026-10-29T05:37:41.236540Z",
+      "updated_at": "2026-10-29T05:37:41.236551Z"
+    }
+  },
+  "page_size_default": {
+    "count_keys": [
+      "count",
+      "next",
+      "previous",
+      "results",
+      "_results_total_in_page"
+    ],
+    "page_len": 4,
+    "count": 4
+  },
+  "page_size_limit_alias": {
+    "page_len": 3,
+    "next": "http://testserver/api/v1/tasks/?limit=3&page=2"
+  },
+  "page_out_of_range": {
+    "detail": "Invalid page.",
+    "error": {
+      "code": "not_found",
+      "request_id": "c63927cc-9c41-41aa-896f-357f00b26911"
+    }
+  },
+  "page_size_default_with_34_rows": {
+    "page_len": 25,
+    "count": 34
+  },
+  "page_size_over_max": {
+    "page_len": 34,
+    "count": 34
+  },
+  "search_no_match": {
+    "count": 0,
+    "next": null,
+    "previous": null,
+    "results": []
+  },
+  "unknown_ordering_field": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/tasks/?ordering=not_a_field",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8f4a5c8f-3f35-49e3-b794-9f7dc21a49a2",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 34,
+      "next": "http://testserver/api/v1/tasks/?ordering=not_a_field&page=2",
+      "previous": null,
+      "results": [
+        {
+          "id": "130085f7-1047-4cb7-8447-151879f040b6",
+          "uuid": "130085f7-1047-4cb7-8447-151879f040b6",
+          "title": "Task 33",
+          "code": "TSK033",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "project_code": "PROJ000",
+          "project_name": "Project 0",
+          "shot_id": null,
+          "asset_id": null,
+          "sequence_id": null,
+          "entity_type": "Shot",
+          "entity_id": "81697675-1059-4ce4-8a92-33e40294ddb9",
+          "entity_code": "ENT033",
+          "entity_name": "",
+          "department": "",
+          "department_id": "",
+          "team_id": null,
+          "team_name": "",
+          "assignee_id": null,
+          "assignee_name": "",
+          "assignee_avatar": null,
+          "assignee_role": "",
+          "reviewer_id": null,
+          "reviewer_name": "",
+          "reviewer_avatar": null,
+          "vendor_id": "",
+          "vendor_name": "",
+          "vendor_code": "",
+          "workflow": {},
+          "status": "Not Started",
+          "priority": "Medium",
+          "schedule": {},
+          "dependencies": {},
+          "description": "",
+          "software": "",
+          "tags": [],
+          "is_archived": false,
+          "due_date": null,
+          "estimated_hours": "0.00",
+          "task_type_id": null,
+          "task_type_code": "",
+          "task_type_name": "",
+          "logged_hours": "0.00",
+          "pending_hours": "0.00",
+          "created_at": "2026-10-29T05:37:49.360333Z",
+          "updated_at": "2026-10-29T05:37:49.360344Z"
+        },
+        {
+          "id": "a0254080-95aa-450f-9c4b-cbec2178c831",
+          "uuid": "a0254080-95aa-450f-9c4b-cbec2178c831",
+          "title": "Task 32",
+          "code": "TSK032",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "project_code": "PROJ000",
+          "project_name": "Project 0",
+          "shot_id": null,
+          "asset_id": null,
+          "sequence_id": null,
+          "entity_type": "Shot",
+          "entity_id": "f338f705-6db6-468d-af14-563804c90415",
+          "entity_code": "ENT032",
+          "entity_name": "",
+          "department": "",
+          "department_id": "",
+          "team_id": null,
+          "team_name": "",
+          "assignee_id": null,
+          "assignee_name": "",
+          "assignee_avatar": null,
+          "assignee_role": "",
+          "reviewer_id": null,
+          "reviewer_name": "",
+          "reviewer_avatar": null,
+          "vendor_id": "",
+          "vendor_name": "",
+          "vendor_code": "",
+          "workflow": {},
+          "status": "Not Started",
+          "priority": "Medium",
+          "schedule": {},
+          "dependencies": {},
+          "description": "",
+          "software": "",
+          "tags": [],
+          "is_archived": false,
+          "due_date": null,
+          "estimated_hours": "0.00",
+          "task_type_id": null,
+          "task_type_code": "",
+          "task_type_name": "",
+          "logged_hours": "0.00",
+          "pending_hours": "0.00",
+          "created_at": "2026-10-29T05:37:49.352346Z",
+          "updated_at": "2026-10-29T05:37:49.352357Z"
+        }
+      ],
+      "_results_total_in_page": 25
+    }
+  },
+  "invalid_filter_value": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/tasks/?project=not-a-uuid",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8b6bb309-852a-4fec-8860-3ae4bb8e4ad3",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  }
+}

@@ -327,5 +327,12 @@ Frontend change list: handle the new 400 when archiving an asset that shots use 
 |---|---|---|---|
 | C-44 | All responses and filters naming `sequence_code`, `current_version`, `logged_hours`, `is_archived`, review `versions` / `reviewers` / `comments` / `notes` / `annotations` / `activity`, playlist `entries` | Read from legacy columns or JSON (already derived since D-15, D-16, D-25, D-30, D-31). | **Unchanged** for clients: the same fields, read from the sequence, the timelogs, the versions, the soft delete and the row tables. Shots with no sequence show `sequence_code: ""`; a shot whose old `sequence_code` text matched no sequence is refused by migration 0044 until fixed. |
 
+## Frontend sync follow-up (CR-13, CR-14)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-45 | `POST /projects/{id}/archive/`, `POST /shows/{id}/archive/` | **403 for everyone**, superusers included: `archive` was missing from the viewsets' `permission_map`, so `HasPermission` failed closed. `DELETE` already archived. | Needs `project.delete` / `show.delete`, the same as `DELETE` and as episodes and sequences. `check-existence` / `existence-check` on projects and shows stay unmapped (403): the viewsets do not implement them, and mapping them would answer 500. |
+| C-46 | `POST /timelogs/`, `PATCH /timelogs/{id}/` (`duration_hours`) | An ordinary entry accepted zero or negative hours. | **400** unless the entry is an adjustment (`adjustment_of` set): an ordinary entry's hours must be greater than zero (also when omitted on create); an adjustment may be negative but never zero (also on update). |
+
 Frontend change list: none required by this phase. (Earlier phases' lists still apply.)
 

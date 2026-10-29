@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { personApi } from '@/modules/people/api/personApi';
-import { trackEntityMutation } from '@/shared/hooks/trackEntityMutation';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import { makeBulkDeleteMutation } from '@/shared/hooks/useBulkDelete';
 import {
@@ -42,17 +41,6 @@ export const usePersonMutations = () => {
         title: 'Crew Member Added',
         message: `${newPerson.full_name} (${newPerson.role}) registered.`,
       });
-      trackEntityMutation(queryClient, {
-        action: 'created',
-        actionLabel: 'Person Created',
-        resourceType: 'person',
-        resourceId: newPerson.id,
-        resourceName: newPerson.full_name,
-        description: `Added crew member ${newPerson.full_name} (${newPerson.role}).`,
-        tags: ['Person', 'Creation'],
-        auditAction: 'CREATE',
-        auditEntityType: 'Person',
-      });
     },
   });
 
@@ -67,17 +55,6 @@ export const usePersonMutations = () => {
         title: 'Artist Profile Updated',
         message: `${updated.full_name}'s record has been updated.`,
       });
-      trackEntityMutation(queryClient, {
-        action: 'updated',
-        actionLabel: 'Person Updated',
-        resourceType: 'person',
-        resourceId: updated.id,
-        resourceName: updated.full_name,
-        description: `Updated crew member ${updated.full_name}.`,
-        tags: ['Person', 'Update'],
-        auditAction: 'UPDATE',
-        auditEntityType: 'Person',
-      });
     },
   });
 
@@ -89,16 +66,6 @@ export const usePersonMutations = () => {
         type: 'info',
         title: 'Artist Removed',
         message: 'The crew member has been removed from the roster.',
-      });
-      trackEntityMutation(queryClient, {
-        action: 'deleted',
-        actionLabel: 'Person Deleted',
-        resourceType: 'person',
-        resourceId: id,
-        description: `Removed crew member ${id} from the roster.`,
-        tags: ['Person', 'Deletion'],
-        auditAction: 'DELETE',
-        auditEntityType: 'Person',
       });
     },
   });

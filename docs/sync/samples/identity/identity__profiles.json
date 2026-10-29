@@ -1,0 +1,210 @@
+{
+  "view": "ProfileViewSet",
+  "app": "identity",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/profiles/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d9f93e77-892a-4f8c-9971-7f4364522668",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 1,
+      "items": [
+        {
+          "id": "9a4cbf29-0a6f-4906-ba6f-58a1682ac8cb",
+          "uuid": "9a4cbf29-0a6f-4906-ba6f-58a1682ac8cb",
+          "user": "20eb449d-da6a-4ecc-b493-5e56b50c074b",
+          "first_name": "Peggy",
+          "last_name": "Tucker",
+          "display_name": "Peggy Tucker",
+          "avatar": "http://testserver/media/avatars/avatar_1191GGu.png",
+          "timezone": "UTC",
+          "language": "en"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/profiles/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8b745b4c-c97e-4d5d-ab97-aa85b3794046",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "8b745b4c-c97e-4d5d-ab97-aa85b3794046"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/profiles/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4c547709-c3f4-4547-b315-40404f75441d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/profiles/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1bfab43d-25b6-4159-bd3c-6f493d5a167d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 1,
+      "items": [
+        {
+          "id": "9a4cbf29-0a6f-4906-ba6f-58a1682ac8cb",
+          "uuid": "9a4cbf29-0a6f-4906-ba6f-58a1682ac8cb",
+          "user": "20eb449d-da6a-4ecc-b493-5e56b50c074b",
+          "first_name": "Peggy",
+          "last_name": "Tucker",
+          "display_name": "Peggy Tucker",
+          "avatar": "http://testserver/media/avatars/avatar_1191GGu.png",
+          "timezone": "UTC",
+          "language": "en"
+        }
+      ]
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/profiles/9a4cbf29-0a6f-4906-ba6f-58a1682ac8cb/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c965ec5b-65b4-48ef-b613-2736e7efa034",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "9a4cbf29-0a6f-4906-ba6f-58a1682ac8cb",
+      "uuid": "9a4cbf29-0a6f-4906-ba6f-58a1682ac8cb",
+      "user": "20eb449d-da6a-4ecc-b493-5e56b50c074b",
+      "first_name": "Peggy",
+      "last_name": "Tucker",
+      "display_name": "Peggy Tucker",
+      "avatar": "http://testserver/media/avatars/avatar_1191GGu.png",
+      "phone": "+1-539-485-5876",
+      "bio": "Spend identify teacher trouble. Better service serve second war occur. Sign drive pass soldier myself test.\nUp air billion front benefit sure later. Sure travel\u2026<truncated>",
+      "timezone": "UTC",
+      "language": "en",
+      "preferences": {},
+      "created_at": "2026-10-29T05:37:41.447219Z",
+      "updated_at": "2026-10-29T05:37:41.447229Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/profiles/f433aa54-d69e-4256-8ea8-40f1f01b11bb/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e372eff3-fa2f-45c0-8056-042421f9959e",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Profile matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "e372eff3-fa2f-45c0-8056-042421f9959e"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/profiles/",
+      "body": {}
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ca08f229-bbfe-48e4-92cb-9532ffed0413",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "ed2c1e0e-8c95-489b-9eaf-bdf56f5dad44",
+      "uuid": "ed2c1e0e-8c95-489b-9eaf-bdf56f5dad44",
+      "user": "5789d20f-53cd-4a3f-8373-66d38948138c",
+      "first_name": "",
+      "last_name": "",
+      "display_name": "user@example.test",
+      "avatar": null,
+      "phone": "",
+      "bio": "",
+      "timezone": "UTC",
+      "language": "en",
+      "preferences": {},
+      "created_at": "2026-10-29T05:37:45.205854Z",
+      "updated_at": "2026-10-29T05:37:45.205865Z"
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/profiles/",
+      "body": {}
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a12853ac-e6e0-43a8-ac9e-10fa7fd7562c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "3991dc8e-896f-47fe-83d6-58a4547a7bb5",
+      "uuid": "3991dc8e-896f-47fe-83d6-58a4547a7bb5",
+      "user": "1ecbd16b-c169-4973-9ac6-409ab5ab08c8",
+      "first_name": "",
+      "last_name": "",
+      "display_name": "user@example.test",
+      "avatar": null,
+      "phone": "",
+      "bio": "",
+      "timezone": "UTC",
+      "language": "en",
+      "preferences": {},
+      "created_at": "2026-10-29T05:37:45.217333Z",
+      "updated_at": "2026-10-29T05:37:45.217356Z"
+    }
+  }
+}

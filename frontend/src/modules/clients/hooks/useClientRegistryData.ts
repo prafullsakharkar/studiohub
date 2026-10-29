@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { masterDataApi } from '@/api/masterDataApi';
-import { trackEntityMutation } from '@/shared/hooks/trackEntityMutation';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import { ClientContact, ClientContract } from '@/types/masterData';
 
@@ -30,17 +29,6 @@ export const useClientContactMutations = () => {
         type: 'success',
         title: 'Client Contact Added',
         message: `${contact.name} has been registered for this client studio.`,
-      });
-      trackEntityMutation(queryClient, {
-        action: 'created',
-        actionLabel: 'Client Contact Created',
-        resourceType: 'client_contact',
-        resourceId: contact.id,
-        resourceName: contact.name,
-        description: `Created client contact ${contact.name}.`,
-        tags: ['Client', 'Contact', 'Creation'],
-        auditAction: 'CREATE',
-        auditEntityType: 'ClientContact',
       });
     },
     onError: () => {
@@ -95,18 +83,6 @@ export const useClientContractMutations = () => {
         type: 'success',
         title: 'Client Contract Registered',
         message: `Contract ${contract.contract_number} has been registered for this client studio.`,
-      });
-      trackEntityMutation(queryClient, {
-        action: 'created',
-        actionLabel: 'Client Contract Created',
-        resourceType: 'client_contract',
-        resourceId: contract.id,
-        resourceName: contract.title,
-        resourceCode: contract.contract_number,
-        description: `Created client contract ${contract.contract_number} — ${contract.title}.`,
-        tags: ['Client', 'Contract', 'Creation'],
-        auditAction: 'CREATE',
-        auditEntityType: 'ClientContract',
       });
     },
     onError: () => {

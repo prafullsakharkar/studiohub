@@ -1,0 +1,307 @@
+{
+  "view": "VendorViewSet",
+  "app": "masterdata",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendors/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e55f39d0-5f12-4520-a154-f73b2c3f0746",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 4,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "14540475-fcb0-406e-8a66-a5bd7f3dc675",
+          "name": "Vendor 0",
+          "code": "VN0",
+          "contact_name": "",
+          "email": "",
+          "specialization": "Roto & Paint",
+          "security_tier": "Standard Studio NDA",
+          "nda_signed": false,
+          "rating": "4.50",
+          "location": "",
+          "status": "Approved Partner",
+          "logo_url": "",
+          "bandwidth_gbps": "10.00",
+          "bandwidth_link": "",
+          "contact_count": 1,
+          "created_at": "2026-10-29T05:37:41.696350Z",
+          "updated_at": "2026-10-29T05:37:41.696360Z"
+        },
+        {
+          "id": "761decc3-ec97-45dd-bda3-01d23273154a",
+          "name": "Vendor 1",
+          "code": "VN1",
+          "contact_name": "",
+          "email": "",
+          "specialization": "Roto & Paint",
+          "security_tier": "Standard Studio NDA",
+          "nda_signed": false,
+          "rating": "4.50",
+          "location": "",
+          "status": "Approved Partner",
+          "logo_url": "",
+          "bandwidth_gbps": "10.00",
+          "bandwidth_link": "",
+          "contact_count": 1,
+          "created_at": "2026-10-29T05:37:41.702775Z",
+          "updated_at": "2026-10-29T05:37:41.702784Z"
+        }
+      ],
+      "_results_total_in_page": 4
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendors/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c38d79b5-83fc-45b5-9992-24b6dec65ef1",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "c38d79b5-83fc-45b5-9992-24b6dec65ef1"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendors/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6b37119e-f696-40aa-aa94-efc8eca18dc1",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 4,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "14540475-fcb0-406e-8a66-a5bd7f3dc675",
+          "name": "Vendor 0",
+          "code": "VN0",
+          "specialization": "Roto & Paint",
+          "security_tier": "Standard Studio NDA",
+          "nda_signed": false,
+          "rating": "4.50",
+          "location": "",
+          "status": "Approved Partner",
+          "logo_url": "",
+          "bandwidth_gbps": "10.00",
+          "bandwidth_link": "",
+          "contact_count": 1,
+          "created_at": "2026-10-29T05:37:41.696350Z",
+          "updated_at": "2026-10-29T05:37:41.696360Z"
+        },
+        {
+          "id": "761decc3-ec97-45dd-bda3-01d23273154a",
+          "name": "Vendor 1",
+          "code": "VN1",
+          "specialization": "Roto & Paint",
+          "security_tier": "Standard Studio NDA",
+          "nda_signed": false,
+          "rating": "4.50",
+          "location": "",
+          "status": "Approved Partner",
+          "logo_url": "",
+          "bandwidth_gbps": "10.00",
+          "bandwidth_link": "",
+          "contact_count": 1,
+          "created_at": "2026-10-29T05:37:41.702775Z",
+          "updated_at": "2026-10-29T05:37:41.702784Z"
+        }
+      ],
+      "_results_total_in_page": 4
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendors/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "01f2fb29-8577-4616-b93e-ae8956ab1585",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 4,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "14540475-fcb0-406e-8a66-a5bd7f3dc675",
+          "name": "Vendor 0",
+          "code": "VN0",
+          "specialization": "Roto & Paint",
+          "security_tier": "Standard Studio NDA",
+          "nda_signed": false,
+          "rating": "4.50",
+          "location": "",
+          "status": "Approved Partner",
+          "logo_url": "",
+          "bandwidth_gbps": "10.00",
+          "bandwidth_link": "",
+          "contact_count": 1,
+          "created_at": "2026-10-29T05:37:41.696350Z",
+          "updated_at": "2026-10-29T05:37:41.696360Z"
+        },
+        {
+          "id": "761decc3-ec97-45dd-bda3-01d23273154a",
+          "name": "Vendor 1",
+          "code": "VN1",
+          "specialization": "Roto & Paint",
+          "security_tier": "Standard Studio NDA",
+          "nda_signed": false,
+          "rating": "4.50",
+          "location": "",
+          "status": "Approved Partner",
+          "logo_url": "",
+          "bandwidth_gbps": "10.00",
+          "bandwidth_link": "",
+          "contact_count": 1,
+          "created_at": "2026-10-29T05:37:41.702775Z",
+          "updated_at": "2026-10-29T05:37:41.702784Z"
+        }
+      ],
+      "_results_total_in_page": 4
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendors/14540475-fcb0-406e-8a66-a5bd7f3dc675/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b46b5af4-bf09-43bc-9063-6e1dd7efa582",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "14540475-fcb0-406e-8a66-a5bd7f3dc675",
+      "name": "Vendor 0",
+      "code": "VN0",
+      "contact_name": "",
+      "email": "",
+      "specialization": "Roto & Paint",
+      "security_tier": "Standard Studio NDA",
+      "nda_signed": false,
+      "rating": "4.50",
+      "location": "",
+      "status": "Approved Partner",
+      "logo_url": "",
+      "bandwidth_gbps": "10.00",
+      "bandwidth_link": "",
+      "contact_count": 1,
+      "created_at": "2026-10-29T05:37:41.696350Z",
+      "updated_at": "2026-10-29T05:37:41.696360Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendors/72465b05-9b39-4a5e-9542-35cb33059947/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e526625e-44d3-4304-a001-6e92a17fc197",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Vendor matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "e526625e-44d3-4304-a001-6e92a17fc197"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/vendors/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3f7c2085-74f8-4f14-b105-77a7414ba0dc",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "code": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "3f7c2085-74f8-4f14-b105-77a7414ba0dc"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/vendors/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "90b5f860-e8b6-463b-bac7-3c676d50d8f6",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "90b5f860-e8b6-463b-bac7-3c676d50d8f6"
+      }
+    }
+  }
+}

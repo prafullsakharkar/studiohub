@@ -1,0 +1,341 @@
+{
+  "view": "PersonViewSet",
+  "app": "masterdata",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/people/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "249996f4-8ade-42fe-abc6-1bd4b22c6fd0",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "6a1311be-7bcb-4513-8956-945f54b42fe5",
+          "name": "Person 0",
+          "full_name": "Person 0",
+          "description": "",
+          "status": "active",
+          "user": null,
+          "role": null,
+          "department": null,
+          "department_name": "",
+          "team": null,
+          "team_name": "",
+          "office": null,
+          "office_name": "",
+          "seniority": "",
+          "skills": [],
+          "timezone": "",
+          "security_clearance": "",
+          "availability_status": "",
+          "email": "",
+          "phone": "",
+          "date_of_birth": null,
+          "nationality": "",
+          "created_at": "2026-10-29T05:37:41.737687Z",
+          "updated_at": "2026-10-29T05:37:41.737698Z"
+        },
+        {
+          "id": "d364803a-db72-402b-891e-f2914e6aa2cd",
+          "name": "Person 1",
+          "full_name": "Person 1",
+          "description": "",
+          "status": "active",
+          "user": null,
+          "role": null,
+          "department": null,
+          "department_name": "",
+          "team": null,
+          "team_name": "",
+          "office": null,
+          "office_name": "",
+          "seniority": "",
+          "skills": [],
+          "timezone": "",
+          "security_clearance": "",
+          "availability_status": "",
+          "email": "",
+          "phone": "",
+          "date_of_birth": null,
+          "nationality": "",
+          "created_at": "2026-10-29T05:37:41.742376Z",
+          "updated_at": "2026-10-29T05:37:41.742386Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/people/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0795ec9c-cf57-4460-90f4-bfbc2dd086db",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "0795ec9c-cf57-4460-90f4-bfbc2dd086db"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/people/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4c467ff4-1e0e-4bf1-a700-9c7e32771e7f",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "6a1311be-7bcb-4513-8956-945f54b42fe5",
+          "name": "Person 0",
+          "full_name": "Person 0",
+          "description": "",
+          "status": "active",
+          "user": null,
+          "role": null,
+          "department": null,
+          "department_name": "",
+          "team": null,
+          "team_name": "",
+          "office": null,
+          "office_name": "",
+          "seniority": "",
+          "skills": [],
+          "timezone": "",
+          "availability_status": "",
+          "created_at": "2026-10-29T05:37:41.737687Z",
+          "updated_at": "2026-10-29T05:37:41.737698Z"
+        },
+        {
+          "id": "d364803a-db72-402b-891e-f2914e6aa2cd",
+          "name": "Person 1",
+          "full_name": "Person 1",
+          "description": "",
+          "status": "active",
+          "user": null,
+          "role": null,
+          "department": null,
+          "department_name": "",
+          "team": null,
+          "team_name": "",
+          "office": null,
+          "office_name": "",
+          "seniority": "",
+          "skills": [],
+          "timezone": "",
+          "availability_status": "",
+          "created_at": "2026-10-29T05:37:41.742376Z",
+          "updated_at": "2026-10-29T05:37:41.742386Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/people/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "33a586e6-dd0f-45cf-907e-38693f6f6010",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "6a1311be-7bcb-4513-8956-945f54b42fe5",
+          "name": "Person 0",
+          "full_name": "Person 0",
+          "description": "",
+          "status": "active",
+          "user": null,
+          "role": null,
+          "department": null,
+          "department_name": "",
+          "team": null,
+          "team_name": "",
+          "office": null,
+          "office_name": "",
+          "seniority": "",
+          "skills": [],
+          "timezone": "",
+          "availability_status": "",
+          "created_at": "2026-10-29T05:37:41.737687Z",
+          "updated_at": "2026-10-29T05:37:41.737698Z"
+        },
+        {
+          "id": "d364803a-db72-402b-891e-f2914e6aa2cd",
+          "name": "Person 1",
+          "full_name": "Person 1",
+          "description": "",
+          "status": "active",
+          "user": null,
+          "role": null,
+          "department": null,
+          "department_name": "",
+          "team": null,
+          "team_name": "",
+          "office": null,
+          "office_name": "",
+          "seniority": "",
+          "skills": [],
+          "timezone": "",
+          "availability_status": "",
+          "created_at": "2026-10-29T05:37:41.742376Z",
+          "updated_at": "2026-10-29T05:37:41.742386Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/people/6a1311be-7bcb-4513-8956-945f54b42fe5/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "eabbc5b4-0077-47ce-8981-350979f49547",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "6a1311be-7bcb-4513-8956-945f54b42fe5",
+      "name": "Person 0",
+      "full_name": "Person 0",
+      "description": "",
+      "status": "active",
+      "user": null,
+      "role": null,
+      "department": null,
+      "department_name": "",
+      "team": null,
+      "team_name": "",
+      "office": null,
+      "office_name": "",
+      "seniority": "",
+      "skills": [],
+      "timezone": "",
+      "security_clearance": "",
+      "availability_status": "",
+      "email": "",
+      "phone": "",
+      "date_of_birth": null,
+      "nationality": "",
+      "created_at": "2026-10-29T05:37:41.737687Z",
+      "updated_at": "2026-10-29T05:37:41.737698Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/people/2eec955e-2ecc-4e39-9d15-293520b75243/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "89ff61e1-602a-498c-84d9-ac00d7f62f43",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Person matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "89ff61e1-602a-498c-84d9-ac00d7f62f43"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/people/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8a871e82-c38f-4ceb-a5a0-e52ef6f3274b",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "8a871e82-c38f-4ceb-a5a0-e52ef6f3274b"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/people/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "25c86705-a617-4cbd-85ec-245304631899",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "25c86705-a617-4cbd-85ec-245304631899"
+      }
+    }
+  }
+}

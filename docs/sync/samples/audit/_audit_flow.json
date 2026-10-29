@@ -1,0 +1,1912 @@
+{
+ "activities_filtered": {
+  "body": {
+   "_bare_list": true,
+   "_len": 0,
+   "items": []
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "1ec7b51b-ccf4-449d-a288-e4a7a764ee73"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/activities/?status=failed"
+  },
+  "status": 200
+ },
+ "activities_native": {
+  "body": {
+   "_bare_list": true,
+   "_len": 0,
+   "items": []
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "16d9c45f-e415-4375-af89-1855c3f5e05d"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/activities/"
+  },
+  "status": 200
+ },
+ "activity_compat": {
+  "body": {
+   "_results_total_in_page": 0,
+   "count": 0,
+   "next": null,
+   "previous": null,
+   "results": []
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "ff0d62bf-3ac9-4ab9-b7e6-6828e10ccd98"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/activity/?page_size=5"
+  },
+  "status": 200
+ },
+ "activity_top": {
+  "body": {
+   "_results_total_in_page": 0,
+   "count": 0,
+   "next": null,
+   "previous": null,
+   "results": []
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "14ec917b-3962-4a74-b5fa-9091c6abae35"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/activity/?page_size=5"
+  },
+  "status": 200
+ },
+ "api_requests": {
+  "body": {
+   "_results_total_in_page": 3,
+   "count": 26,
+   "next": "http://testserver/api/v1/audit/api-requests/?page=2&page_size=3",
+   "previous": null,
+   "results": [
+    {
+     "api_version": "v1",
+     "created_at": "2026-10-29T10:53:01.488047Z",
+     "error_message": "",
+     "full_path": "/api/v1/audit/activities/?status=failed",
+     "id": "a2af29fd-638a-45ac-b0b9-f3183f07aacc",
+     "ip_address": "127.0.0.1",
+     "method": "GET",
+     "path": "/api/v1/audit/activities/",
+     "request_body": {},
+     "request_headers": {},
+     "request_size_bytes": 0,
+     "response_body": {},
+     "response_headers": {},
+     "response_size_bytes": 0,
+     "response_time_ms": 6,
+     "status_category": "2xx",
+     "status_code": 200,
+     "updated_at": "2026-10-29T10:53:01.488053Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_agent": "",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "a2af29fd-638a-45ac-b0b9-f3183f07aacc"
+    },
+    {
+     "api_version": "v1",
+     "created_at": "2026-10-29T10:53:01.478279Z",
+     "error_message": "",
+     "full_path": "/api/v1/audit/activities/",
+     "id": "a133962f-e7e3-4284-b076-09c580ef9886",
+     "ip_address": "127.0.0.1",
+     "method": "GET",
+     "path": "/api/v1/audit/activities/",
+     "request_body": {},
+     "request_headers": {},
+     "request_size_bytes": 0,
+     "response_body": {},
+     "response_headers": {},
+     "response_size_bytes": 0,
+     "response_time_ms": 6,
+     "status_category": "2xx",
+     "status_code": 200,
+     "updated_at": "2026-10-29T10:53:01.478286Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_agent": "",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "a133962f-e7e3-4284-b076-09c580ef9886"
+    },
+    {
+     "api_version": "v1",
+     "created_at": "2026-10-29T10:53:01.468432Z",
+     "error_message": "",
+     "full_path": "/api/v1/activity/?page_size=5",
+     "id": "69dfb1e0-d017-4e54-aa1a-4aa84b9c77e0",
+     "ip_address": "127.0.0.1",
+     "method": "GET",
+     "path": "/api/v1/activity/",
+     "request_body": {},
+     "request_headers": {},
+     "request_size_bytes": 0,
+     "response_body": {},
+     "response_headers": {},
+     "response_size_bytes": 0,
+     "response_time_ms": 5,
+     "status_category": "2xx",
+     "status_code": 200,
+     "updated_at": "2026-10-29T10:53:01.468439Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_agent": "",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "69dfb1e0-d017-4e54-aa1a-4aa84b9c77e0"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "da397723-a6f9-45f4-aee6-dc335f304cd2"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/api-requests/?page_size=3"
+  },
+  "status": 200
+ },
+ "api_requests_filtered": {
+  "body": {
+   "_results_total_in_page": 3,
+   "count": 3,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "api_version": "v1",
+     "created_at": "2026-10-29T10:53:01.181591Z",
+     "error_message": "",
+     "full_path": "/api/v1/teams/2de0a42e-ce30-4412-96cd-2aa5f94f0976/",
+     "id": "d41b0ad0-25ae-45c2-ae4d-abd86e385f9f",
+     "ip_address": "127.0.0.1",
+     "method": "PATCH",
+     "path": "/api/v1/teams/2de0a42e-ce30-4412-96cd-2aa5f94f0976/",
+     "request_body": {},
+     "request_headers": {},
+     "request_size_bytes": 14,
+     "response_body": {},
+     "response_headers": {},
+     "response_size_bytes": 0,
+     "response_time_ms": 17,
+     "status_category": "2xx",
+     "status_code": 200,
+     "updated_at": "2026-10-29T10:53:01.181597Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_agent": "",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "d41b0ad0-25ae-45c2-ae4d-abd86e385f9f"
+    },
+    {
+     "api_version": "v1",
+     "created_at": "2026-10-29T10:53:01.141882Z",
+     "error_message": "",
+     "full_path": "/api/v1/departments/aa1c5814-e2ad-4d99-94f9-7f159f545907/",
+     "id": "633fdb4a-64f4-4db6-b2a4-7a683ef30478",
+     "ip_address": "127.0.0.1",
+     "method": "PATCH",
+     "path": "/api/v1/departments/aa1c5814-e2ad-4d99-94f9-7f159f545907/",
+     "request_body": {},
+     "request_headers": {},
+     "request_size_bytes": 19,
+     "response_body": {},
+     "response_headers": {},
+     "response_size_bytes": 0,
+     "response_time_ms": 17,
+     "status_category": "2xx",
+     "status_code": 200,
+     "updated_at": "2026-10-29T10:53:01.141888Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_agent": "",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "633fdb4a-64f4-4db6-b2a4-7a683ef30478"
+    },
+    {
+     "api_version": "v1",
+     "created_at": "2026-10-29T10:53:01.120378Z",
+     "error_message": "",
+     "full_path": "/api/v1/departments/aa1c5814-e2ad-4d99-94f9-7f159f545907/",
+     "id": "d858e7c3-01e9-482f-8d2d-e70bb14501dd",
+     "ip_address": "127.0.0.1",
+     "method": "PATCH",
+     "path": "/api/v1/departments/aa1c5814-e2ad-4d99-94f9-7f159f545907/",
+     "request_body": {},
+     "request_headers": {},
+     "request_size_bytes": 65,
+     "response_body": {},
+     "response_headers": {},
+     "response_size_bytes": 0,
+     "response_time_ms": 19,
+     "status_category": "2xx",
+     "status_code": 200,
+     "updated_at": "2026-10-29T10:53:01.120385Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_agent": "",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "d858e7c3-01e9-482f-8d2d-e70bb14501dd"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "f0542af7-f4c4-4763-8ce5-e443caefd0f2"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/api-requests/?method=PATCH&status_code=200&page_size=3"
+  },
+  "status": 200
+ },
+ "artist_audit": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "793377af-611a-4da1-b99f-2f9727f7024d"
+   }
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "793377af-611a-4da1-b99f-2f9727f7024d"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/?page_size=2"
+  },
+  "status": 403
+ },
+ "artist_changelogs": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "f086f78f-ce5f-45a6-871f-688f7385481e"
+   }
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "f086f78f-ce5f-45a6-871f-688f7385481e"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/change-logs/?target_id=aa1c5814-e2ad-4d99-94f9-7f159f545907"
+  },
+  "status": 403
+ },
+ "artist_job_cancel": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "e1d6f364-c3e4-4b16-81fe-27f1b0e9f28c"
+   }
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "e1d6f364-c3e4-4b16-81fe-27f1b0e9f28c"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/audit/background-jobs/82dd3765-0981-495d-b20c-c419d6af5cc0/cancel/"
+  },
+  "status": 403
+ },
+ "audit_compat_all": {
+  "body": {
+   "_results_total_in_page": 0,
+   "count": 0,
+   "next": null,
+   "previous": null,
+   "results": []
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "1922c612-b460-4a18-af4a-c1c86bcbc53d"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/?page_size=5"
+  },
+  "status": 200
+ },
+ "audit_compat_search_dept": {
+  "body": {
+   "_results_total_in_page": 0,
+   "count": 0,
+   "next": null,
+   "previous": null,
+   "results": []
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "db54f22d-ddea-4320-bdd9-e33a8f7576ab"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/?search=aa1c5814-e2ad-4d99-94f9-7f159f545907"
+  },
+  "status": 200
+ },
+ "audit_logs_filtered": {
+  "body": {
+   "_bare_list": true,
+   "_len": 0,
+   "items": []
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "8bb54f83-e125-4851-8568-809208cd7579"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/audit-logs/?target_type=department&severity=info"
+  },
+  "status": 200
+ },
+ "audit_logs_native": {
+  "body": {
+   "_bare_list": true,
+   "_len": 0,
+   "items": []
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "124d2db0-10c8-4058-80d0-e3a0b6360191"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/audit-logs/"
+  },
+  "status": 200
+ },
+ "changelog_detail": {
+  "body": {
+   "after_values": {
+    "capacity_hours_weekly": "160",
+    "code": "XLD",
+    "color": "#ff8800",
+    "department_type": "creative",
+    "description": "Look development",
+    "name": "Look Dev Unit Renamed",
+    "software_stack": "[]",
+    "utilization_percentage": "0.0"
+   },
+   "before_values": {
+    "capacity_hours_weekly": "160",
+    "code": "XLD",
+    "color": "",
+    "department_type": "creative",
+    "description": "Look development",
+    "name": "Look Dev Unit Renamed",
+    "software_stack": "[]",
+    "utilization_percentage": "0.0"
+   },
+   "change_type": "update",
+   "changed_fields": [
+    "color"
+   ],
+   "created_at": "2026-10-29T10:53:01.137723Z",
+   "description": "updated Department Look Dev Unit Renamed",
+   "id": "d1351ca0-11de-4fb3-afa1-5132ac4f755f",
+   "target_id": "aa1c5814-e2ad-4d99-94f9-7f159f545907",
+   "target_name": "Look Dev Unit Renamed",
+   "target_type": "Department",
+   "updated_at": "2026-10-29T10:53:01.137729Z",
+   "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+   "user_email": "user@example.test",
+   "user_name": "user@example.test",
+   "uuid": "d1351ca0-11de-4fb3-afa1-5132ac4f755f"
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "24406c1a-9b76-4622-bb8e-18f160c4f1d3"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/change-logs/d1351ca0-11de-4fb3-afa1-5132ac4f755f/"
+  },
+  "status": 200
+ },
+ "changelogs_all": {
+  "body": {
+   "_results_total_in_page": 50,
+   "count": 527,
+   "next": "http://testserver/api/v1/audit/change-logs/?page=2&page_size=50",
+   "previous": null,
+   "results": [
+    {
+     "after_values": {
+      "active_projects": "[]",
+      "code": "ACME",
+      "contract_tier": "Standard Producer",
+      "headquarters": "",
+      "logo_url": "",
+      "name": "Acme",
+      "portal_access": "True",
+      "status": "Active",
+      "studio_type": "Major Studio"
+     },
+     "before_values": {},
+     "change_type": "create",
+     "changed_fields": [
+      "active_projects",
+      "code",
+      "contract_tier",
+      "headquarters",
+      "logo_url",
+      "name",
+      "portal_access",
+      "status",
+      "studio_type"
+     ],
+     "created_at": "2026-10-29T10:53:01.199339Z",
+     "description": "created Client Acme",
+     "id": "93031add-0dd5-438f-9e6f-4303761527a9",
+     "target_id": "9d96e993-1ea3-4519-8d22-e8c931e0db2d",
+     "target_name": "Acme",
+     "target_type": "Client",
+     "updated_at": "2026-10-29T10:53:01.199345Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "93031add-0dd5-438f-9e6f-4303761527a9"
+    },
+    {
+     "after_values": {
+      "capacity": "5",
+      "code": "XLD-A",
+      "color": "",
+      "current_project_code": "",
+      "description": "",
+      "focus_discipline": "",
+      "name": "Look Dev A",
+      "utilization_percentage": "0.0"
+     },
+     "before_values": {
+      "capacity": "1",
+      "code": "XLD-A",
+      "color": "",
+      "current_project_code": "",
+      "description": "",
+      "focus_discipline": "",
+      "name": "Look Dev A",
+      "utilization_percentage": "0.0"
+     },
+     "change_type": "update",
+     "changed_fields": [
+      "capacity"
+     ],
+     "created_at": "2026-10-29T10:53:01.177162Z",
+     "description": "updated Team Look Dev A",
+     "id": "0e8b9e94-5b7c-4d40-8eeb-2a965a973fa6",
+     "target_id": "2de0a42e-ce30-4412-96cd-2aa5f94f0976",
+     "target_name": "Look Dev A",
+     "target_type": "Team",
+     "updated_at": "2026-10-29T10:53:01.177169Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "0e8b9e94-5b7c-4d40-8eeb-2a965a973fa6"
+    },
+    {
+     "after_values": {
+      "capacity": "1",
+      "code": "XLD-A",
+      "color": "",
+      "current_project_code": "",
+      "description": "",
+      "focus_discipline": "",
+      "name": "Look Dev A",
+      "utilization_percentage": "0"
+     },
+     "before_values": {},
+     "change_type": "create",
+     "changed_fields": [
+      "capacity",
+      "code",
+      "color",
+      "current_project_code",
+      "description",
+      "focus_discipline",
+      "name",
+      "utilization_percentage"
+     ],
+     "created_at": "2026-10-29T10:53:01.156088Z",
+     "description": "created Team Look Dev A",
+     "id": "276ca5aa-73fc-4d6c-bf97-5da8e81fb6a4",
+     "target_id": "2de0a42e-ce30-4412-96cd-2aa5f94f0976",
+     "target_name": "Look Dev A",
+     "target_type": "Team",
+     "updated_at": "2026-10-29T10:53:01.156093Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "276ca5aa-73fc-4d6c-bf97-5da8e81fb6a4"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "af4f1086-297d-487e-a0f9-0fd00f98b1db"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/change-logs/?page_size=50"
+  },
+  "status": 200
+ },
+ "changelogs_by_date": {
+  "body": {
+   "_results_total_in_page": 2,
+   "count": 527,
+   "next": "http://testserver/api/v1/audit/change-logs/?created_at__gte=2020-01-01&created_at__lte=2100-01-01&page=2&page_size=2",
+   "previous": null,
+   "results": [
+    {
+     "after_values": {
+      "active_projects": "[]",
+      "code": "ACME",
+      "contract_tier": "Standard Producer",
+      "headquarters": "",
+      "logo_url": "",
+      "name": "Acme",
+      "portal_access": "True",
+      "status": "Active",
+      "studio_type": "Major Studio"
+     },
+     "before_values": {},
+     "change_type": "create",
+     "changed_fields": [
+      "active_projects",
+      "code",
+      "contract_tier",
+      "headquarters",
+      "logo_url",
+      "name",
+      "portal_access",
+      "status",
+      "studio_type"
+     ],
+     "created_at": "2026-10-29T10:53:01.199339Z",
+     "description": "created Client Acme",
+     "id": "93031add-0dd5-438f-9e6f-4303761527a9",
+     "target_id": "9d96e993-1ea3-4519-8d22-e8c931e0db2d",
+     "target_name": "Acme",
+     "target_type": "Client",
+     "updated_at": "2026-10-29T10:53:01.199345Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "93031add-0dd5-438f-9e6f-4303761527a9"
+    },
+    {
+     "after_values": {
+      "capacity": "5",
+      "code": "XLD-A",
+      "color": "",
+      "current_project_code": "",
+      "description": "",
+      "focus_discipline": "",
+      "name": "Look Dev A",
+      "utilization_percentage": "0.0"
+     },
+     "before_values": {
+      "capacity": "1",
+      "code": "XLD-A",
+      "color": "",
+      "current_project_code": "",
+      "description": "",
+      "focus_discipline": "",
+      "name": "Look Dev A",
+      "utilization_percentage": "0.0"
+     },
+     "change_type": "update",
+     "changed_fields": [
+      "capacity"
+     ],
+     "created_at": "2026-10-29T10:53:01.177162Z",
+     "description": "updated Team Look Dev A",
+     "id": "0e8b9e94-5b7c-4d40-8eeb-2a965a973fa6",
+     "target_id": "2de0a42e-ce30-4412-96cd-2aa5f94f0976",
+     "target_name": "Look Dev A",
+     "target_type": "Team",
+     "updated_at": "2026-10-29T10:53:01.177169Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "0e8b9e94-5b7c-4d40-8eeb-2a965a973fa6"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "cdf261dd-4d27-47a2-ab74-c82d8896a94d"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/change-logs/?created_at__gte=2020-01-01&created_at__lte=2100-01-01&page_size=2"
+  },
+  "status": 200
+ },
+ "changelogs_by_type": {
+  "body": {
+   "_results_total_in_page": 2,
+   "count": 2,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "after_values": {
+      "capacity_hours_weekly": "160",
+      "code": "XLD",
+      "color": "#ff8800",
+      "department_type": "creative",
+      "description": "Look development",
+      "name": "Look Dev Unit Renamed",
+      "software_stack": "[]",
+      "utilization_percentage": "0.0"
+     },
+     "before_values": {
+      "capacity_hours_weekly": "160",
+      "code": "XLD",
+      "color": "",
+      "department_type": "creative",
+      "description": "Look development",
+      "name": "Look Dev Unit Renamed",
+      "software_stack": "[]",
+      "utilization_percentage": "0.0"
+     },
+     "change_type": "update",
+     "changed_fields": [
+      "color"
+     ],
+     "created_at": "2026-10-29T10:53:01.137723Z",
+     "description": "updated Department Look Dev Unit Renamed",
+     "id": "d1351ca0-11de-4fb3-afa1-5132ac4f755f",
+     "target_id": "aa1c5814-e2ad-4d99-94f9-7f159f545907",
+     "target_name": "Look Dev Unit Renamed",
+     "target_type": "Department",
+     "updated_at": "2026-10-29T10:53:01.137729Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "d1351ca0-11de-4fb3-afa1-5132ac4f755f"
+    },
+    {
+     "after_values": {
+      "capacity_hours_weekly": "160",
+      "code": "XLD",
+      "color": "",
+      "department_type": "creative",
+      "description": "Look development",
+      "name": "Look Dev Unit Renamed",
+      "software_stack": "[]",
+      "utilization_percentage": "0.0"
+     },
+     "before_values": {
+      "capacity_hours_weekly": "160",
+      "code": "XLD",
+      "color": "",
+      "department_type": "creative",
+      "description": "",
+      "name": "Look Dev Unit",
+      "software_stack": "[]",
+      "utilization_percentage": "0.0"
+     },
+     "change_type": "update",
+     "changed_fields": [
+      "description",
+      "name"
+     ],
+     "created_at": "2026-10-29T10:53:01.116113Z",
+     "description": "updated Department Look Dev Unit Renamed",
+     "id": "4ac4e387-9b88-49ec-80ab-9db9f8b1118a",
+     "target_id": "aa1c5814-e2ad-4d99-94f9-7f159f545907",
+     "target_name": "Look Dev Unit Renamed",
+     "target_type": "Department",
+     "updated_at": "2026-10-29T10:53:01.116119Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "4ac4e387-9b88-49ec-80ab-9db9f8b1118a"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "ac0c72c6-87ce-46df-8d07-dccee574050a"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/change-logs/?target_type=Department&change_type=update"
+  },
+  "status": 200
+ },
+ "changelogs_by_user": {
+  "body": {
+   "_results_total_in_page": 2,
+   "count": 6,
+   "next": "http://testserver/api/v1/audit/change-logs/?page=2&page_size=2&user=53573c6e-8f8c-45db-812d-690cec6634c9",
+   "previous": null,
+   "results": [
+    {
+     "after_values": {
+      "active_projects": "[]",
+      "code": "ACME",
+      "contract_tier": "Standard Producer",
+      "headquarters": "",
+      "logo_url": "",
+      "name": "Acme",
+      "portal_access": "True",
+      "status": "Active",
+      "studio_type": "Major Studio"
+     },
+     "before_values": {},
+     "change_type": "create",
+     "changed_fields": [
+      "active_projects",
+      "code",
+      "contract_tier",
+      "headquarters",
+      "logo_url",
+      "name",
+      "portal_access",
+      "status",
+      "studio_type"
+     ],
+     "created_at": "2026-10-29T10:53:01.199339Z",
+     "description": "created Client Acme",
+     "id": "93031add-0dd5-438f-9e6f-4303761527a9",
+     "target_id": "9d96e993-1ea3-4519-8d22-e8c931e0db2d",
+     "target_name": "Acme",
+     "target_type": "Client",
+     "updated_at": "2026-10-29T10:53:01.199345Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "93031add-0dd5-438f-9e6f-4303761527a9"
+    },
+    {
+     "after_values": {
+      "capacity": "5",
+      "code": "XLD-A",
+      "color": "",
+      "current_project_code": "",
+      "description": "",
+      "focus_discipline": "",
+      "name": "Look Dev A",
+      "utilization_percentage": "0.0"
+     },
+     "before_values": {
+      "capacity": "1",
+      "code": "XLD-A",
+      "color": "",
+      "current_project_code": "",
+      "description": "",
+      "focus_discipline": "",
+      "name": "Look Dev A",
+      "utilization_percentage": "0.0"
+     },
+     "change_type": "update",
+     "changed_fields": [
+      "capacity"
+     ],
+     "created_at": "2026-10-29T10:53:01.177162Z",
+     "description": "updated Team Look Dev A",
+     "id": "0e8b9e94-5b7c-4d40-8eeb-2a965a973fa6",
+     "target_id": "2de0a42e-ce30-4412-96cd-2aa5f94f0976",
+     "target_name": "Look Dev A",
+     "target_type": "Team",
+     "updated_at": "2026-10-29T10:53:01.177169Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "0e8b9e94-5b7c-4d40-8eeb-2a965a973fa6"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "b929088e-1f7c-44b0-9217-2090498fb55e"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/change-logs/?user=53573c6e-8f8c-45db-812d-690cec6634c9&page_size=2"
+  },
+  "status": 200
+ },
+ "changelogs_for_dept": {
+  "body": {
+   "_results_total_in_page": 3,
+   "count": 3,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "after_values": {
+      "capacity_hours_weekly": "160",
+      "code": "XLD",
+      "color": "#ff8800",
+      "department_type": "creative",
+      "description": "Look development",
+      "name": "Look Dev Unit Renamed",
+      "software_stack": "[]",
+      "utilization_percentage": "0.0"
+     },
+     "before_values": {
+      "capacity_hours_weekly": "160",
+      "code": "XLD",
+      "color": "",
+      "department_type": "creative",
+      "description": "Look development",
+      "name": "Look Dev Unit Renamed",
+      "software_stack": "[]",
+      "utilization_percentage": "0.0"
+     },
+     "change_type": "update",
+     "changed_fields": [
+      "color"
+     ],
+     "created_at": "2026-10-29T10:53:01.137723Z",
+     "description": "updated Department Look Dev Unit Renamed",
+     "id": "d1351ca0-11de-4fb3-afa1-5132ac4f755f",
+     "target_id": "aa1c5814-e2ad-4d99-94f9-7f159f545907",
+     "target_name": "Look Dev Unit Renamed",
+     "target_type": "Department",
+     "updated_at": "2026-10-29T10:53:01.137729Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "d1351ca0-11de-4fb3-afa1-5132ac4f755f"
+    },
+    {
+     "after_values": {
+      "capacity_hours_weekly": "160",
+      "code": "XLD",
+      "color": "",
+      "department_type": "creative",
+      "description": "Look development",
+      "name": "Look Dev Unit Renamed",
+      "software_stack": "[]",
+      "utilization_percentage": "0.0"
+     },
+     "before_values": {
+      "capacity_hours_weekly": "160",
+      "code": "XLD",
+      "color": "",
+      "department_type": "creative",
+      "description": "",
+      "name": "Look Dev Unit",
+      "software_stack": "[]",
+      "utilization_percentage": "0.0"
+     },
+     "change_type": "update",
+     "changed_fields": [
+      "description",
+      "name"
+     ],
+     "created_at": "2026-10-29T10:53:01.116113Z",
+     "description": "updated Department Look Dev Unit Renamed",
+     "id": "4ac4e387-9b88-49ec-80ab-9db9f8b1118a",
+     "target_id": "aa1c5814-e2ad-4d99-94f9-7f159f545907",
+     "target_name": "Look Dev Unit Renamed",
+     "target_type": "Department",
+     "updated_at": "2026-10-29T10:53:01.116119Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "4ac4e387-9b88-49ec-80ab-9db9f8b1118a"
+    },
+    {
+     "after_values": {
+      "capacity_hours_weekly": "160",
+      "code": "XLD",
+      "color": "",
+      "department_type": "creative",
+      "description": "",
+      "name": "Look Dev Unit",
+      "software_stack": "[]",
+      "utilization_percentage": "0"
+     },
+     "before_values": {},
+     "change_type": "create",
+     "changed_fields": [
+      "capacity_hours_weekly",
+      "code",
+      "color",
+      "department_type",
+      "description",
+      "name",
+      "software_stack",
+      "utilization_percentage"
+     ],
+     "created_at": "2026-10-29T10:53:01.090210Z",
+     "description": "created Department Look Dev Unit",
+     "id": "9f95dceb-9412-4bfb-a6b9-e3ec220ee1d1",
+     "target_id": "aa1c5814-e2ad-4d99-94f9-7f159f545907",
+     "target_name": "Look Dev Unit",
+     "target_type": "Department",
+     "updated_at": "2026-10-29T10:53:01.090216Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "9f95dceb-9412-4bfb-a6b9-e3ec220ee1d1"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "b388d459-24eb-4cec-a438-7c49ac640816"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/change-logs/?target_id=aa1c5814-e2ad-4d99-94f9-7f159f545907"
+  },
+  "status": 200
+ },
+ "changelogs_for_dept_ordered_asc": {
+  "body": {
+   "_results_total_in_page": 3,
+   "count": 3,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "after_values": {
+      "capacity_hours_weekly": "160",
+      "code": "XLD",
+      "color": "",
+      "department_type": "creative",
+      "description": "",
+      "name": "Look Dev Unit",
+      "software_stack": "[]",
+      "utilization_percentage": "0"
+     },
+     "before_values": {},
+     "change_type": "create",
+     "changed_fields": [
+      "capacity_hours_weekly",
+      "code",
+      "color",
+      "department_type",
+      "description",
+      "name",
+      "software_stack",
+      "utilization_percentage"
+     ],
+     "created_at": "2026-10-29T10:53:01.090210Z",
+     "description": "created Department Look Dev Unit",
+     "id": "9f95dceb-9412-4bfb-a6b9-e3ec220ee1d1",
+     "target_id": "aa1c5814-e2ad-4d99-94f9-7f159f545907",
+     "target_name": "Look Dev Unit",
+     "target_type": "Department",
+     "updated_at": "2026-10-29T10:53:01.090216Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "9f95dceb-9412-4bfb-a6b9-e3ec220ee1d1"
+    },
+    {
+     "after_values": {
+      "capacity_hours_weekly": "160",
+      "code": "XLD",
+      "color": "",
+      "department_type": "creative",
+      "description": "Look development",
+      "name": "Look Dev Unit Renamed",
+      "software_stack": "[]",
+      "utilization_percentage": "0.0"
+     },
+     "before_values": {
+      "capacity_hours_weekly": "160",
+      "code": "XLD",
+      "color": "",
+      "department_type": "creative",
+      "description": "",
+      "name": "Look Dev Unit",
+      "software_stack": "[]",
+      "utilization_percentage": "0.0"
+     },
+     "change_type": "update",
+     "changed_fields": [
+      "description",
+      "name"
+     ],
+     "created_at": "2026-10-29T10:53:01.116113Z",
+     "description": "updated Department Look Dev Unit Renamed",
+     "id": "4ac4e387-9b88-49ec-80ab-9db9f8b1118a",
+     "target_id": "aa1c5814-e2ad-4d99-94f9-7f159f545907",
+     "target_name": "Look Dev Unit Renamed",
+     "target_type": "Department",
+     "updated_at": "2026-10-29T10:53:01.116119Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "4ac4e387-9b88-49ec-80ab-9db9f8b1118a"
+    },
+    {
+     "after_values": {
+      "capacity_hours_weekly": "160",
+      "code": "XLD",
+      "color": "#ff8800",
+      "department_type": "creative",
+      "description": "Look development",
+      "name": "Look Dev Unit Renamed",
+      "software_stack": "[]",
+      "utilization_percentage": "0.0"
+     },
+     "before_values": {
+      "capacity_hours_weekly": "160",
+      "code": "XLD",
+      "color": "",
+      "department_type": "creative",
+      "description": "Look development",
+      "name": "Look Dev Unit Renamed",
+      "software_stack": "[]",
+      "utilization_percentage": "0.0"
+     },
+     "change_type": "update",
+     "changed_fields": [
+      "color"
+     ],
+     "created_at": "2026-10-29T10:53:01.137723Z",
+     "description": "updated Department Look Dev Unit Renamed",
+     "id": "d1351ca0-11de-4fb3-afa1-5132ac4f755f",
+     "target_id": "aa1c5814-e2ad-4d99-94f9-7f159f545907",
+     "target_name": "Look Dev Unit Renamed",
+     "target_type": "Department",
+     "updated_at": "2026-10-29T10:53:01.137729Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "d1351ca0-11de-4fb3-afa1-5132ac4f755f"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "b35a2dda-b4ed-4190-a9f7-8bec10087686"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/change-logs/?target_id=aa1c5814-e2ad-4d99-94f9-7f159f545907&ordering=created_at"
+  },
+  "status": 200
+ },
+ "changelogs_search": {
+  "body": {
+   "_results_total_in_page": 5,
+   "count": 5,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "after_values": {
+      "capacity": "5",
+      "code": "XLD-A",
+      "color": "",
+      "current_project_code": "",
+      "description": "",
+      "focus_discipline": "",
+      "name": "Look Dev A",
+      "utilization_percentage": "0.0"
+     },
+     "before_values": {
+      "capacity": "1",
+      "code": "XLD-A",
+      "color": "",
+      "current_project_code": "",
+      "description": "",
+      "focus_discipline": "",
+      "name": "Look Dev A",
+      "utilization_percentage": "0.0"
+     },
+     "change_type": "update",
+     "changed_fields": [
+      "capacity"
+     ],
+     "created_at": "2026-10-29T10:53:01.177162Z",
+     "description": "updated Team Look Dev A",
+     "id": "0e8b9e94-5b7c-4d40-8eeb-2a965a973fa6",
+     "target_id": "2de0a42e-ce30-4412-96cd-2aa5f94f0976",
+     "target_name": "Look Dev A",
+     "target_type": "Team",
+     "updated_at": "2026-10-29T10:53:01.177169Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "0e8b9e94-5b7c-4d40-8eeb-2a965a973fa6"
+    },
+    {
+     "after_values": {
+      "capacity": "1",
+      "code": "XLD-A",
+      "color": "",
+      "current_project_code": "",
+      "description": "",
+      "focus_discipline": "",
+      "name": "Look Dev A",
+      "utilization_percentage": "0"
+     },
+     "before_values": {},
+     "change_type": "create",
+     "changed_fields": [
+      "capacity",
+      "code",
+      "color",
+      "current_project_code",
+      "description",
+      "focus_discipline",
+      "name",
+      "utilization_percentage"
+     ],
+     "created_at": "2026-10-29T10:53:01.156088Z",
+     "description": "created Team Look Dev A",
+     "id": "276ca5aa-73fc-4d6c-bf97-5da8e81fb6a4",
+     "target_id": "2de0a42e-ce30-4412-96cd-2aa5f94f0976",
+     "target_name": "Look Dev A",
+     "target_type": "Team",
+     "updated_at": "2026-10-29T10:53:01.156093Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "276ca5aa-73fc-4d6c-bf97-5da8e81fb6a4"
+    },
+    {
+     "after_values": {
+      "capacity_hours_weekly": "160",
+      "code": "XLD",
+      "color": "#ff8800",
+      "department_type": "creative",
+      "description": "Look development",
+      "name": "Look Dev Unit Renamed",
+      "software_stack": "[]",
+      "utilization_percentage": "0.0"
+     },
+     "before_values": {
+      "capacity_hours_weekly": "160",
+      "code": "XLD",
+      "color": "",
+      "department_type": "creative",
+      "description": "Look development",
+      "name": "Look Dev Unit Renamed",
+      "software_stack": "[]",
+      "utilization_percentage": "0.0"
+     },
+     "change_type": "update",
+     "changed_fields": [
+      "color"
+     ],
+     "created_at": "2026-10-29T10:53:01.137723Z",
+     "description": "updated Department Look Dev Unit Renamed",
+     "id": "d1351ca0-11de-4fb3-afa1-5132ac4f755f",
+     "target_id": "aa1c5814-e2ad-4d99-94f9-7f159f545907",
+     "target_name": "Look Dev Unit Renamed",
+     "target_type": "Department",
+     "updated_at": "2026-10-29T10:53:01.137729Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "d1351ca0-11de-4fb3-afa1-5132ac4f755f"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "f72e80f5-0739-44b9-b411-63a6c1f40596"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/change-logs/?search=Look"
+  },
+  "status": 200
+ },
+ "changelogs_unknown_ordering": {
+  "body": {
+   "_results_total_in_page": 2,
+   "count": 527,
+   "next": "http://testserver/api/v1/audit/change-logs/?ordering=nope&page=2&page_size=2",
+   "previous": null,
+   "results": [
+    {
+     "after_values": {
+      "active_projects": "[]",
+      "code": "ACME",
+      "contract_tier": "Standard Producer",
+      "headquarters": "",
+      "logo_url": "",
+      "name": "Acme",
+      "portal_access": "True",
+      "status": "Active",
+      "studio_type": "Major Studio"
+     },
+     "before_values": {},
+     "change_type": "create",
+     "changed_fields": [
+      "active_projects",
+      "code",
+      "contract_tier",
+      "headquarters",
+      "logo_url",
+      "name",
+      "portal_access",
+      "status",
+      "studio_type"
+     ],
+     "created_at": "2026-10-29T10:53:01.199339Z",
+     "description": "created Client Acme",
+     "id": "93031add-0dd5-438f-9e6f-4303761527a9",
+     "target_id": "9d96e993-1ea3-4519-8d22-e8c931e0db2d",
+     "target_name": "Acme",
+     "target_type": "Client",
+     "updated_at": "2026-10-29T10:53:01.199345Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "93031add-0dd5-438f-9e6f-4303761527a9"
+    },
+    {
+     "after_values": {
+      "capacity": "5",
+      "code": "XLD-A",
+      "color": "",
+      "current_project_code": "",
+      "description": "",
+      "focus_discipline": "",
+      "name": "Look Dev A",
+      "utilization_percentage": "0.0"
+     },
+     "before_values": {
+      "capacity": "1",
+      "code": "XLD-A",
+      "color": "",
+      "current_project_code": "",
+      "description": "",
+      "focus_discipline": "",
+      "name": "Look Dev A",
+      "utilization_percentage": "0.0"
+     },
+     "change_type": "update",
+     "changed_fields": [
+      "capacity"
+     ],
+     "created_at": "2026-10-29T10:53:01.177162Z",
+     "description": "updated Team Look Dev A",
+     "id": "0e8b9e94-5b7c-4d40-8eeb-2a965a973fa6",
+     "target_id": "2de0a42e-ce30-4412-96cd-2aa5f94f0976",
+     "target_name": "Look Dev A",
+     "target_type": "Team",
+     "updated_at": "2026-10-29T10:53:01.177169Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "0e8b9e94-5b7c-4d40-8eeb-2a965a973fa6"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "c4e17bda-a49b-404c-a8b3-b22d2b330f50"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/change-logs/?ordering=nope&page_size=2"
+  },
+  "status": 200
+ },
+ "client_create": {
+  "body": {
+   "code": "ACME",
+   "contact_count": 0,
+   "contact_name": "",
+   "contract_tier": "Standard Producer",
+   "created_at": "2026-10-29T10:53:01.196936Z",
+   "email": "",
+   "headquarters": "",
+   "id": "9d96e993-1ea3-4519-8d22-e8c931e0db2d",
+   "logo_url": "",
+   "name": "Acme",
+   "phone": "",
+   "portal_access": true,
+   "status": "Active",
+   "studio_type": "Major Studio",
+   "total_billed_usd": null,
+   "updated_at": "2026-10-29T10:53:01.196943Z"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "297f9fef-a765-47d1-87fd-460f8d91a244"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "name": "Acme"
+   },
+   "method": "POST",
+   "path": "/api/v1/clients/"
+  },
+  "status": 201
+ },
+ "dept_create": {
+  "body": {
+   "code": "XLD",
+   "color": "",
+   "created_at": "2026-10-29T10:53:01.089099Z",
+   "department_type": "creative",
+   "description": "",
+   "id": "aa1c5814-e2ad-4d99-94f9-7f159f545907",
+   "manager": null,
+   "name": "Look Dev Unit",
+   "parent": null,
+   "software_stack": [],
+   "updated_at": "2026-10-29T10:53:01.089105Z"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "5f3907af-a8f2-4ae3-9bc6-0f2ef126d89d"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "department_type": "creative",
+    "name": "Look Dev Unit"
+   },
+   "method": "POST",
+   "path": "/api/v1/departments/"
+  },
+  "status": 201
+ },
+ "dept_patch_1": {
+  "body": {
+   "code": "XLD",
+   "color": "",
+   "created_at": "2026-10-29T10:53:01.089099Z",
+   "department_type": "creative",
+   "description": "Look development",
+   "id": "aa1c5814-e2ad-4d99-94f9-7f159f545907",
+   "manager": null,
+   "name": "Look Dev Unit Renamed",
+   "parent": null,
+   "software_stack": [],
+   "updated_at": "2026-10-29T10:53:01.114500Z"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "8772c7ef-4a99-4c34-b082-8fcb7c4b8c87"
+  },
+  "request": {
+   "body": {
+    "description": "Look development",
+    "name": "Look Dev Unit Renamed"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/departments/aa1c5814-e2ad-4d99-94f9-7f159f545907/"
+  },
+  "status": 200
+ },
+ "dept_patch_2": {
+  "body": {
+   "code": "XLD",
+   "color": "#ff8800",
+   "created_at": "2026-10-29T10:53:01.089099Z",
+   "department_type": "creative",
+   "description": "Look development",
+   "id": "aa1c5814-e2ad-4d99-94f9-7f159f545907",
+   "manager": null,
+   "name": "Look Dev Unit Renamed",
+   "parent": null,
+   "software_stack": [],
+   "updated_at": "2026-10-29T10:53:01.136242Z"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "024fd79d-919b-47fa-a339-393248ab4918"
+  },
+  "request": {
+   "body": {
+    "color": "#ff8800"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/departments/aa1c5814-e2ad-4d99-94f9-7f159f545907/"
+  },
+  "status": 200
+ },
+ "error_detail_after": {
+  "body": {
+   "context_data": {},
+   "created_at": "2026-10-29T10:53:01.615914Z",
+   "error_code": "",
+   "error_type": "server",
+   "id": "41c49e71-6068-48e0-814a-f797667f43b6",
+   "ip_address": null,
+   "message": "Boom",
+   "request_method": "",
+   "request_path": "",
+   "resolved": true,
+   "resolved_at": "2026-10-29T10:53:01.655613Z",
+   "resolved_by": "53573c6e-8f8c-45db-812d-690cec6634c9",
+   "resolved_by_email": "user@example.test",
+   "resolved_by_name": "user@example.test",
+   "severity": "error",
+   "stack_trace": "",
+   "updated_at": "2026-10-29T10:53:01.655731Z",
+   "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+   "user_agent": "",
+   "user_email": "user@example.test",
+   "user_name": "user@example.test",
+   "uuid": "41c49e71-6068-48e0-814a-f797667f43b6"
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "598ee0eb-7509-4f8c-b9b0-1f86fae89346"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/error-logs/41c49e71-6068-48e0-814a-f797667f43b6/"
+  },
+  "status": 200
+ },
+ "error_resolve": {
+  "body": {
+   "status": "resolved"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "7f6759ae-500b-4be0-8f7c-36515668ec89"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/audit/error-logs/41c49e71-6068-48e0-814a-f797667f43b6/resolve/"
+  },
+  "status": 200
+ },
+ "errors_filtered": {
+  "body": {
+   "_results_total_in_page": 1,
+   "count": 1,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "context_data": {},
+     "created_at": "2026-10-29T10:53:01.615914Z",
+     "error_code": "",
+     "error_type": "server",
+     "id": "41c49e71-6068-48e0-814a-f797667f43b6",
+     "ip_address": null,
+     "message": "Boom",
+     "request_method": "",
+     "request_path": "",
+     "resolved": false,
+     "resolved_at": null,
+     "resolved_by": null,
+     "severity": "error",
+     "stack_trace": "",
+     "updated_at": "2026-10-29T10:53:01.615920Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_agent": "",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "41c49e71-6068-48e0-814a-f797667f43b6"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "90a26fda-dde3-4813-893d-ed15fe437ce7"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/error-logs/?severity=error"
+  },
+  "status": 200
+ },
+ "errors_list": {
+  "body": {
+   "_results_total_in_page": 1,
+   "count": 1,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "context_data": {},
+     "created_at": "2026-10-29T10:53:01.615914Z",
+     "error_code": "",
+     "error_type": "server",
+     "id": "41c49e71-6068-48e0-814a-f797667f43b6",
+     "ip_address": null,
+     "message": "Boom",
+     "request_method": "",
+     "request_path": "",
+     "resolved": false,
+     "resolved_at": null,
+     "resolved_by": null,
+     "severity": "error",
+     "stack_trace": "",
+     "updated_at": "2026-10-29T10:53:01.615920Z",
+     "user": "53573c6e-8f8c-45db-812d-690cec6634c9",
+     "user_agent": "",
+     "user_email": "user@example.test",
+     "user_name": "user@example.test",
+     "uuid": "41c49e71-6068-48e0-814a-f797667f43b6"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "b12da22a-03ac-4887-8826-182e2fe597f8"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/error-logs/?page_size=5"
+  },
+  "status": 200
+ },
+ "job_cancel": {
+  "body": {
+   "completed_at": "2026-10-29T10:53:01.573228Z",
+   "created_at": "2026-10-29T10:53:01.538540Z",
+   "description": "",
+   "error_message": "",
+   "id": "5eb6243c-bcd3-4ffe-9164-7e4261c08f88",
+   "job_id": "job-queued",
+   "job_type": "report",
+   "progress": 0,
+   "queue_name": "",
+   "result_data": {},
+   "started_at": null,
+   "status": "cancelled",
+   "updated_at": "2026-10-29T10:53:01.538546Z",
+   "uuid": "5eb6243c-bcd3-4ffe-9164-7e4261c08f88",
+   "worker_id": ""
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "15fea08d-780c-4b96-be64-b94200ba18fa"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/audit/background-jobs/5eb6243c-bcd3-4ffe-9164-7e4261c08f88/cancel/"
+  },
+  "status": 200
+ },
+ "job_cancel_again": {
+  "body": {
+   "completed_at": "2026-10-29T10:53:01.586180Z",
+   "created_at": "2026-10-29T10:53:01.538540Z",
+   "description": "",
+   "error_message": "",
+   "id": "5eb6243c-bcd3-4ffe-9164-7e4261c08f88",
+   "job_id": "job-queued",
+   "job_type": "report",
+   "progress": 0,
+   "queue_name": "",
+   "result_data": {},
+   "started_at": null,
+   "status": "cancelled",
+   "updated_at": "2026-10-29T10:53:01.538546Z",
+   "uuid": "5eb6243c-bcd3-4ffe-9164-7e4261c08f88",
+   "worker_id": ""
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "abb64b7f-18e5-47fe-a265-83628ef69df5"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/audit/background-jobs/5eb6243c-bcd3-4ffe-9164-7e4261c08f88/cancel/"
+  },
+  "status": 200
+ },
+ "job_retry": {
+  "body": {
+   "completed_at": null,
+   "created_at": "2026-10-29T10:53:01.542166Z",
+   "description": "",
+   "error_message": "",
+   "id": "82dd3765-0981-495d-b20c-c419d6af5cc0",
+   "job_id": "job-failed",
+   "job_type": "report",
+   "progress": 0,
+   "queue_name": "",
+   "result_data": {},
+   "started_at": null,
+   "status": "queued",
+   "updated_at": "2026-10-29T10:53:01.542173Z",
+   "uuid": "82dd3765-0981-495d-b20c-c419d6af5cc0",
+   "worker_id": ""
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "4a98edcb-a997-4b3b-aa1e-429691cccb1e"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/audit/background-jobs/82dd3765-0981-495d-b20c-c419d6af5cc0/retry/"
+  },
+  "status": 200
+ },
+ "job_retry_not_failed": {
+  "body": {
+   "completed_at": null,
+   "created_at": "2026-10-29T10:53:01.538540Z",
+   "description": "",
+   "error_message": "",
+   "id": "5eb6243c-bcd3-4ffe-9164-7e4261c08f88",
+   "job_id": "job-queued",
+   "job_type": "report",
+   "progress": 0,
+   "queue_name": "",
+   "result_data": {},
+   "started_at": null,
+   "status": "queued",
+   "updated_at": "2026-10-29T10:53:01.538546Z",
+   "uuid": "5eb6243c-bcd3-4ffe-9164-7e4261c08f88",
+   "worker_id": ""
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "12eb125b-5f76-4337-a4c8-87e0df73ec89"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/audit/background-jobs/5eb6243c-bcd3-4ffe-9164-7e4261c08f88/retry/"
+  },
+  "status": 200
+ },
+ "jobs_filtered": {
+  "body": {
+   "_results_total_in_page": 1,
+   "count": 1,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "completed_at": null,
+     "created_at": "2026-10-29T10:53:01.542166Z",
+     "description": "",
+     "error_message": "",
+     "id": "82dd3765-0981-495d-b20c-c419d6af5cc0",
+     "job_id": "job-failed",
+     "job_type": "report",
+     "progress": 0,
+     "queue_name": "",
+     "result_data": {},
+     "started_at": null,
+     "status": "failed",
+     "updated_at": "2026-10-29T10:53:01.542173Z",
+     "uuid": "82dd3765-0981-495d-b20c-c419d6af5cc0",
+     "worker_id": ""
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "39332ac0-72a0-493c-b821-8a0704d6bb18"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/background-jobs/?status=failed"
+  },
+  "status": 200
+ },
+ "jobs_list": {
+  "body": {
+   "_results_total_in_page": 2,
+   "count": 2,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "completed_at": null,
+     "created_at": "2026-10-29T10:53:01.542166Z",
+     "description": "",
+     "error_message": "",
+     "id": "82dd3765-0981-495d-b20c-c419d6af5cc0",
+     "job_id": "job-failed",
+     "job_type": "report",
+     "progress": 0,
+     "queue_name": "",
+     "result_data": {},
+     "started_at": null,
+     "status": "failed",
+     "updated_at": "2026-10-29T10:53:01.542173Z",
+     "uuid": "82dd3765-0981-495d-b20c-c419d6af5cc0",
+     "worker_id": ""
+    },
+    {
+     "completed_at": null,
+     "created_at": "2026-10-29T10:53:01.538540Z",
+     "description": "",
+     "error_message": "",
+     "id": "5eb6243c-bcd3-4ffe-9164-7e4261c08f88",
+     "job_id": "job-queued",
+     "job_type": "report",
+     "progress": 0,
+     "queue_name": "",
+     "result_data": {},
+     "started_at": null,
+     "status": "queued",
+     "updated_at": "2026-10-29T10:53:01.538546Z",
+     "uuid": "5eb6243c-bcd3-4ffe-9164-7e4261c08f88",
+     "worker_id": ""
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "d8955e1a-7e3a-4fe0-a31e-f9a7fff2f7d5"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/background-jobs/?page_size=5"
+  },
+  "status": 200
+ },
+ "team_create": {
+  "body": {
+   "capacity": 1,
+   "code": "XLD-A",
+   "color": "",
+   "created_at": "2026-10-29T10:53:01.155067Z",
+   "current_project_code": "",
+   "department": "aa1c5814-e2ad-4d99-94f9-7f159f545907",
+   "description": "",
+   "focus_discipline": "",
+   "id": "2de0a42e-ce30-4412-96cd-2aa5f94f0976",
+   "lead": null,
+   "name": "Look Dev A",
+   "updated_at": "2026-10-29T10:53:01.155074Z"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "5e2fabad-3d14-4cd5-a348-85caa7aa13d3"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "department": "aa1c5814-e2ad-4d99-94f9-7f159f545907",
+    "name": "Look Dev A"
+   },
+   "method": "POST",
+   "path": "/api/v1/teams/"
+  },
+  "status": 201
+ },
+ "team_patch": {
+  "body": {
+   "capacity": 5,
+   "code": "XLD-A",
+   "color": "",
+   "created_at": "2026-10-29T10:53:01.155067Z",
+   "current_project_code": "",
+   "department": "aa1c5814-e2ad-4d99-94f9-7f159f545907",
+   "description": "",
+   "focus_discipline": "",
+   "id": "2de0a42e-ce30-4412-96cd-2aa5f94f0976",
+   "lead": null,
+   "name": "Look Dev A",
+   "updated_at": "2026-10-29T10:53:01.175643Z"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "6792541d-fa28-496a-b8dd-8030c593d823"
+  },
+  "request": {
+   "body": {
+    "capacity": 5
+   },
+   "method": "PATCH",
+   "path": "/api/v1/teams/2de0a42e-ce30-4412-96cd-2aa5f94f0976/"
+  },
+  "status": 200
+ },
+ "tracks": {
+  "body": {
+   "_results_total_in_page": 0,
+   "count": 0,
+   "next": null,
+   "previous": null,
+   "results": []
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "eaf6ebd4-56a2-4015-9e99-c8cf5bd66d60"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/audit/tracks/?page_size=3"
+  },
+  "status": 200
+ }
+}

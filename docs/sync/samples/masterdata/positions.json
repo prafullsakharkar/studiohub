@@ -1,0 +1,283 @@
+{
+  "view": "PositionViewSet",
+  "app": "masterdata",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/positions/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2242d55d-6f21-4144-a9ae-dec40d421503",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 4,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "f87b58e8-dc13-40a5-a730-31148f76233c",
+          "code": "POS-ARTIST",
+          "name": "Artist",
+          "description": "",
+          "department": "df1036bb-806c-4c2b-a583-a73641d04b4b",
+          "parent": null,
+          "level": 1,
+          "is_managerial": false,
+          "band_level": "",
+          "salary_range": "",
+          "employment_type": "",
+          "created_at": "2026-10-29T05:37:41.305208Z",
+          "updated_at": "2026-10-29T05:37:41.305218Z"
+        },
+        {
+          "id": "b2f243b3-7409-48a6-be8f-ea1f107f0e62",
+          "code": "POS-LEAD",
+          "name": "Lead Artist",
+          "description": "",
+          "department": "df1036bb-806c-4c2b-a583-a73641d04b4b",
+          "parent": null,
+          "level": 2,
+          "is_managerial": true,
+          "band_level": "",
+          "salary_range": "",
+          "employment_type": "",
+          "created_at": "2026-10-29T05:37:41.302988Z",
+          "updated_at": "2026-10-29T05:37:41.302998Z"
+        }
+      ],
+      "_results_total_in_page": 4
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/positions/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f35bdc56-3ab8-41b0-b252-f40923b7e17e",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "f35bdc56-3ab8-41b0-b252-f40923b7e17e"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/positions/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "260bda02-1fa6-49d7-a72b-cc90a1a3add5",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 4,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "f87b58e8-dc13-40a5-a730-31148f76233c",
+          "code": "POS-ARTIST",
+          "name": "Artist",
+          "description": "",
+          "department": "df1036bb-806c-4c2b-a583-a73641d04b4b",
+          "parent": null,
+          "level": 1,
+          "is_managerial": false,
+          "band_level": "",
+          "employment_type": "",
+          "created_at": "2026-10-29T05:37:41.305208Z",
+          "updated_at": "2026-10-29T05:37:41.305218Z"
+        },
+        {
+          "id": "b2f243b3-7409-48a6-be8f-ea1f107f0e62",
+          "code": "POS-LEAD",
+          "name": "Lead Artist",
+          "description": "",
+          "department": "df1036bb-806c-4c2b-a583-a73641d04b4b",
+          "parent": null,
+          "level": 2,
+          "is_managerial": true,
+          "band_level": "",
+          "employment_type": "",
+          "created_at": "2026-10-29T05:37:41.302988Z",
+          "updated_at": "2026-10-29T05:37:41.302998Z"
+        }
+      ],
+      "_results_total_in_page": 4
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/positions/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "71330d10-e0f2-4629-88c8-4523f016038d",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 4,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "f87b58e8-dc13-40a5-a730-31148f76233c",
+          "code": "POS-ARTIST",
+          "name": "Artist",
+          "description": "",
+          "department": "df1036bb-806c-4c2b-a583-a73641d04b4b",
+          "parent": null,
+          "level": 1,
+          "is_managerial": false,
+          "band_level": "",
+          "employment_type": "",
+          "created_at": "2026-10-29T05:37:41.305208Z",
+          "updated_at": "2026-10-29T05:37:41.305218Z"
+        },
+        {
+          "id": "b2f243b3-7409-48a6-be8f-ea1f107f0e62",
+          "code": "POS-LEAD",
+          "name": "Lead Artist",
+          "description": "",
+          "department": "df1036bb-806c-4c2b-a583-a73641d04b4b",
+          "parent": null,
+          "level": 2,
+          "is_managerial": true,
+          "band_level": "",
+          "employment_type": "",
+          "created_at": "2026-10-29T05:37:41.302988Z",
+          "updated_at": "2026-10-29T05:37:41.302998Z"
+        }
+      ],
+      "_results_total_in_page": 4
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/positions/f87b58e8-dc13-40a5-a730-31148f76233c/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e80df9d9-8059-48c2-809c-f376a5c3c24e",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "f87b58e8-dc13-40a5-a730-31148f76233c",
+      "code": "POS-ARTIST",
+      "name": "Artist",
+      "description": "",
+      "department": "df1036bb-806c-4c2b-a583-a73641d04b4b",
+      "parent": null,
+      "level": 1,
+      "is_managerial": false,
+      "band_level": "",
+      "salary_range": "",
+      "employment_type": "",
+      "created_at": "2026-10-29T05:37:41.305208Z",
+      "updated_at": "2026-10-29T05:37:41.305218Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/positions/7d3a2f1f-960c-46f1-9329-cc48666f9e01/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a9140670-b9cb-4f91-8949-395e814073a4",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Position matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "a9140670-b9cb-4f91-8949-395e814073a4"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/positions/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7d28cbe0-af61-4da1-b1ad-3c4b199cd4b8",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "This field is required."
+      ],
+      "name": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "7d28cbe0-af61-4da1-b1ad-3c4b199cd4b8"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/positions/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4f40301d-33f0-4b95-a42f-64585f78ec17",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "4f40301d-33f0-4b95-a42f-64585f78ec17"
+      }
+    }
+  }
+}

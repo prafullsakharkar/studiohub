@@ -1,0 +1,131 @@
+{
+  "view": "ProjectSummaryView",
+  "app": "production",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/summary/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d2af0ce2-8177-4b4d-ac0d-044b2e6db5f6",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "project": {
+        "id": "90864aa9-6ae0-49a3-807e-e5327db92bf0",
+        "uuid": "90864aa9-6ae0-49a3-807e-e5327db92bf0",
+        "code": "PROJ002",
+        "project_code": "PROJ002",
+        "name": "Project 2",
+        "description": "",
+        "type": "Feature Film",
+        "status": "In Progress",
+        "workflow_type": "standard",
+        "fps": "24.000",
+        "resolution": "4096x2160",
+        "aspect_ratio": "2.39:1",
+        "color_space": "ACEScg",
+        "start_date": null,
+        "delivery_date": null,
+        "thumbnail_url": "https://www.kelley.com/",
+        "total_shots": 0,
+        "approved_shots": 0,
+        "in_progress_shots": 0,
+        "total_assets": 0,
+        "budget_usd": "1000000.00",
+        "supervisor_id": "3816c810-f3df-47fd-bcf7-58a81e2c94bc",
+        "supervisor_name": "user@example.test",
+        "coordinator_id": "a8e10293-7ef6-4fc5-885a-067a68b88280",
+        "coordinator_name": "user@example.test",
+        "client_id": "",
+        "client_name": "",
+        "client_contact_id": "",
+        "client_contact_name": "",
+        "vendor_ids": [],
+        "vendor_names": [],
+        "vendor_team_ids": [],
+        "created_at": "2026-10-29T05:37:41.662559Z",
+        "updated_at": "2026-10-29T05:37:41.662568Z"
+      },
+      "counts": {
+        "sequences": 0,
+        "shots": 0,
+        "tasks": 1,
+        "assets": 0,
+        "versions": 0,
+        "reviews": 0,
+        "deliveries": 0,
+        "notes": 0,
+        "editorial": 0,
+        "approved_shots": 0,
+        "in_progress_shots": 0,
+        "completed_tasks": 0
+      },
+      "project_id": "90864aa9-6ae0-49a3-807e-e5327db92bf0"
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/summary/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7e6a55ea-8d35-4137-9a5a-9f58b8ff4a10",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "7e6a55ea-8d35-4137-9a5a-9f58b8ff4a10"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/summary/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a2c12264-beb8-4130-92d6-689c762b6df3",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "a2c12264-beb8-4130-92d6-689c762b6df3"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/summary/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e0a07e22-861f-4fb1-8a76-754844b9d59f",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Project 90864aa9-6ae0-49a3-807e-e5327db92bf0 not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "e0a07e22-861f-4fb1-8a76-754844b9d59f"
+      }
+    }
+  }
+}

@@ -1,0 +1,221 @@
+{
+  "view": "MediaViewSet",
+  "app": "production",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/media/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "50bd7ff0-5c12-47a9-8a9b-62a5462052dd",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "a1d4b28c-68a6-42ed-beb0-75646d5734e0",
+          "uuid": "a1d4b28c-68a6-42ed-beb0-75646d5734e0",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "entity_type": "",
+          "entity_id": "",
+          "code": "MED001",
+          "name": "",
+          "title": "",
+          "file_name": "",
+          "media_type": "image",
+          "category": "",
+          "file_format": "jpg",
+          "storage_tier": "hot",
+          "source_url": "",
+          "preview_url": "",
+          "thumbnail_url": "",
+          "file_size_mb": "0.00",
+          "resolution": "",
+          "created_at": "2026-10-29T05:37:41.645913Z",
+          "updated_at": "2026-10-29T05:37:41.645922Z"
+        },
+        {
+          "id": "1bda892e-a255-4779-adb3-15079e6da191",
+          "uuid": "1bda892e-a255-4779-adb3-15079e6da191",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "entity_type": "",
+          "entity_id": "",
+          "code": "MED000",
+          "name": "",
+          "title": "",
+          "file_name": "",
+          "media_type": "image",
+          "category": "",
+          "file_format": "jpg",
+          "storage_tier": "hot",
+          "source_url": "",
+          "preview_url": "",
+          "thumbnail_url": "",
+          "file_size_mb": "0.00",
+          "resolution": "",
+          "created_at": "2026-10-29T05:37:41.533103Z",
+          "updated_at": "2026-10-29T05:37:41.533118Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/media/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f795b8a4-fac7-4ea0-ac0e-1ec86373551d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "f795b8a4-fac7-4ea0-ac0e-1ec86373551d"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/media/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "94f0e724-a436-44e8-9390-4d1629461ff7",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "94f0e724-a436-44e8-9390-4d1629461ff7"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/media/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3960b0bd-1a4e-4e9c-8cbf-409f33ea57c1",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/media/a1d4b28c-68a6-42ed-beb0-75646d5734e0/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e1d0c430-d2da-4125-848c-21854247d0f8",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "a1d4b28c-68a6-42ed-beb0-75646d5734e0",
+      "uuid": "a1d4b28c-68a6-42ed-beb0-75646d5734e0",
+      "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+      "entity_type": "",
+      "entity_id": "",
+      "code": "MED001",
+      "name": "",
+      "title": "",
+      "file_name": "",
+      "media_type": "image",
+      "category": "",
+      "file_format": "jpg",
+      "storage_tier": "hot",
+      "source_url": "",
+      "preview_url": "",
+      "thumbnail_url": "",
+      "file_size_mb": "0.00",
+      "resolution": "",
+      "created_at": "2026-10-29T05:37:41.645913Z",
+      "updated_at": "2026-10-29T05:37:41.645922Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/media/58127730-9a4c-4588-aac5-5353b4936931/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8df96ece-af0a-4809-97d9-ef4cc16f8053",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "8df96ece-af0a-4809-97d9-ef4cc16f8053"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/media/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "fa8079ad-2df9-4502-a7d2-a3f5245dcaa3",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "project": "This field is required.",
+      "error": {
+        "code": "validation_error",
+        "request_id": "fa8079ad-2df9-4502-a7d2-a3f5245dcaa3"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/media/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "77a6b672-6219-4765-85f9-32a2830d8498",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "77a6b672-6219-4765-85f9-32a2830d8498"
+      }
+    }
+  }
+}

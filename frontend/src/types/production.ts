@@ -70,7 +70,8 @@ export function isEpisodicProject(project?: Partial<Project> | null): boolean {
   return Boolean(
     project.is_episodic === true ||
     project.isEpisodic === true ||
-    project.workflow_type === 'Episodic' ||
+    // `workflow_type` is the authority and the backend sends it lower case ('standard' | 'episodic'); `type` is a separate label.
+    String(project.workflow_type ?? '').toLowerCase() === 'episodic' ||
     project.project_type === 'episodic' ||
     project.type === 'Episodic' ||
     project.type === 'Episodic / TV' ||

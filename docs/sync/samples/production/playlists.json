@@ -1,0 +1,209 @@
+{
+  "view": "PlaylistViewSet",
+  "app": "production",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/playlists/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b3c665b9-c0cd-4af1-96c1-5f4ca7988ad0",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "abbc8bea-2d12-48b6-874a-2c5bed1477af",
+          "uuid": "abbc8bea-2d12-48b6-874a-2c5bed1477af",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "name": "Playlist 1",
+          "code": "",
+          "description": "",
+          "status": "Active",
+          "client_only": false,
+          "entries": [],
+          "share_settings": {},
+          "activity": [],
+          "is_archived": false,
+          "created_at": "2026-10-29T05:37:41.647081Z",
+          "updated_at": "2026-10-29T05:37:41.647090Z"
+        },
+        {
+          "id": "b01f55e9-c68d-4cfb-857e-59edfe6e7c6e",
+          "uuid": "b01f55e9-c68d-4cfb-857e-59edfe6e7c6e",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "name": "Playlist 0",
+          "code": "",
+          "description": "",
+          "status": "Active",
+          "client_only": false,
+          "entries": [],
+          "share_settings": {},
+          "activity": [],
+          "is_archived": false,
+          "created_at": "2026-10-29T05:37:41.536048Z",
+          "updated_at": "2026-10-29T05:37:41.536062Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/playlists/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a19bc378-3b44-4303-a8e6-b4d2aedbd103",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "a19bc378-3b44-4303-a8e6-b4d2aedbd103"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/playlists/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "136b9a03-16e3-456a-938b-809c15f18f1e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "136b9a03-16e3-456a-938b-809c15f18f1e"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/playlists/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "42ae1dad-7926-48c1-8ec5-633aab8b4f2d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/playlists/abbc8bea-2d12-48b6-874a-2c5bed1477af/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "76436be0-2f2b-467d-8a54-6c0f89aa8273",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "abbc8bea-2d12-48b6-874a-2c5bed1477af",
+      "uuid": "abbc8bea-2d12-48b6-874a-2c5bed1477af",
+      "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+      "name": "Playlist 1",
+      "code": "",
+      "description": "",
+      "status": "Active",
+      "client_only": false,
+      "entries": [],
+      "share_settings": {},
+      "activity": [],
+      "is_archived": false,
+      "created_at": "2026-10-29T05:37:41.647081Z",
+      "updated_at": "2026-10-29T05:37:41.647090Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/playlists/e88ea2ed-c1c1-4614-84c2-3f376df1a7d7/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9053144e-1bb5-4e70-8189-1f29c1797a48",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "9053144e-1bb5-4e70-8189-1f29c1797a48"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/playlists/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a8d67fdf-369a-4df4-8ebd-132848df8007",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "a8d67fdf-369a-4df4-8ebd-132848df8007"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/playlists/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1879f955-0487-42e3-85cf-180a2925677e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "1879f955-0487-42e3-85cf-180a2925677e"
+      }
+    }
+  }
+}

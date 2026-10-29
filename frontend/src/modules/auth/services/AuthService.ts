@@ -1,8 +1,9 @@
 import { IAuthRepository, authRepository } from '@/api/repositories';
 import { tokenStorage } from '@/core/auth/tokenStorage';
-import { User, LoginResponse, DemoUser } from '@/types/identity';
+import { User, LoginOutcome, LoginResponse, MfaChallengeInput } from '@/types/identity';
 import { LoginFormData } from '../schemas/authSchemas';
 import { logger } from '@/core/logging/logger';
+import { mapHttpError } from '@/api/errors/errorMapper';
 
 export class AuthService {
   private repository: IAuthRepository;
@@ -11,12 +12,27 @@ export class AuthService {
     this.repository = repository;
   }
 
-  async login(credentials: LoginFormData): Promise<LoginResponse> {
-    logger.info('AuthService', `Attempting login for user: ${credentials.email}`);
+  async login(credentials: LoginFormData): Promise<LoginOutcome> {
+    logger.info('AuthService', 'Attempting login');
     const response = await this.repository.login(credentials);
-    tokenStorage.setTokens(response.tokens);
-    logger.info('AuthService', `Login successful for: ${response.user.full_name} (${response.user.role})`);
-    return response;
+    if ('mfa_required' in response && response.mfa_required) {
+      return { status: 'mfa_required', challenge: response.challenge, expiresIn: response.expires_in };
+    }
+    return this.toAuthenticated(response as LoginResponse);
+  }
+
+  async completeMfaLogin(input: MfaChallengeInput): Promise<LoginOutcome> {
+    logger.info('AuthService', 'Completing MFA login');
+    return this.toAuthenticated(await this.repository.completeMfaLogin(input));
+  }
+
+  private toAuthenticated(response: LoginResponse): LoginOutcome {
+    if (response.tokens) tokenStorage.setTokens(response.tokens);
+    return {
+      status: 'authenticated',
+      user: response.user,
+      mfaEnrollmentRequired: response.mfa_enrollment_required === true,
+    };
   }
 
   async logout(): Promise<void> {
@@ -38,7 +54,9 @@ export class AuthService {
       return await this.repository.getCurrentUser();
     } catch (err) {
       logger.warn('AuthService', 'Failed to retrieve current user', err);
-      tokenStorage.clearTokens();
+      // Only a rejected session ends it. A network error or 5xx at boot must not wipe the
+      // refresh token, or a brief outage would sign the user out of every tab.
+      if (mapHttpError(err).isAuthError) tokenStorage.clearTokens();
       return null;
     }
   }
@@ -56,9 +74,12 @@ export class AuthService {
     await this.repository.changePassword(data);
   }
 
-  async getDemoUsers(): Promise<DemoUser[]> {
-    logger.info('AuthService', 'Fetching demo user personas from database via API');
-    return await this.repository.getDemoUsers();
+  async forgotPassword(email: string): Promise<void> {
+    await this.repository.forgotPassword(email);
+  }
+
+  async resetPassword(data: { token: string; new_password: string; confirm_password: string }): Promise<void> {
+    await this.repository.resetPassword(data);
   }
 }
 

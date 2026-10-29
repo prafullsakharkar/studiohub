@@ -1,0 +1,276 @@
+{
+  "view": "DepartmentViewSet",
+  "app": "masterdata",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b2c445b2-77e7-434e-8ead-cece5c6e14a9",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 5,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "df1036bb-806c-4c2b-a583-a73641d04b4b",
+          "code": "DEPT-COMP",
+          "name": "Compositing",
+          "description": "Compositing department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T05:37:41.236540Z",
+          "updated_at": "2026-10-29T05:37:41.236551Z"
+        },
+        {
+          "id": "47947787-3cfb-4e4e-b83a-761ab20e338f",
+          "code": "DEPT-EDIT",
+          "name": "Editorial",
+          "description": "Editorial department (seeded)",
+          "parent": null,
+          "department_type": "production",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T05:37:41.222685Z",
+          "updated_at": "2026-10-29T05:37:41.222700Z"
+        }
+      ],
+      "_results_total_in_page": 5
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6a18b570-6da0-4e8e-a140-33f6a292b352",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "6a18b570-6da0-4e8e-a140-33f6a292b352"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "53c73f68-8ead-49a7-9047-1b7a7493ea87",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 5,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "df1036bb-806c-4c2b-a583-a73641d04b4b",
+          "code": "DEPT-COMP",
+          "name": "Compositing",
+          "description": "Compositing department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T05:37:41.236540Z",
+          "updated_at": "2026-10-29T05:37:41.236551Z"
+        },
+        {
+          "id": "47947787-3cfb-4e4e-b83a-761ab20e338f",
+          "code": "DEPT-EDIT",
+          "name": "Editorial",
+          "description": "Editorial department (seeded)",
+          "parent": null,
+          "department_type": "production",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T05:37:41.222685Z",
+          "updated_at": "2026-10-29T05:37:41.222700Z"
+        }
+      ],
+      "_results_total_in_page": 5
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "86d06b44-6ad5-45f5-ba27-25fb26f884f0",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 5,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "df1036bb-806c-4c2b-a583-a73641d04b4b",
+          "code": "DEPT-COMP",
+          "name": "Compositing",
+          "description": "Compositing department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T05:37:41.236540Z",
+          "updated_at": "2026-10-29T05:37:41.236551Z"
+        },
+        {
+          "id": "47947787-3cfb-4e4e-b83a-761ab20e338f",
+          "code": "DEPT-EDIT",
+          "name": "Editorial",
+          "description": "Editorial department (seeded)",
+          "parent": null,
+          "department_type": "production",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T05:37:41.222685Z",
+          "updated_at": "2026-10-29T05:37:41.222700Z"
+        }
+      ],
+      "_results_total_in_page": 5
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/df1036bb-806c-4c2b-a583-a73641d04b4b/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4f0eb261-64ac-495a-847a-6da1998850bc",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "df1036bb-806c-4c2b-a583-a73641d04b4b",
+      "code": "DEPT-COMP",
+      "name": "Compositing",
+      "description": "Compositing department (seeded)",
+      "parent": null,
+      "department_type": "creative",
+      "manager": null,
+      "color": "",
+      "software_stack": [],
+      "created_at": "2026-10-29T05:37:41.236540Z",
+      "updated_at": "2026-10-29T05:37:41.236551Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/1b20a3ee-f2d6-41f3-877c-162e67eff5c4/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "db5af665-076f-44c1-8c20-2cf6cada0b75",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Department matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "db5af665-076f-44c1-8c20-2cf6cada0b75"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/departments/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b82d422d-aff8-47d7-bdef-528f937dc289",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "This field is required."
+      ],
+      "name": [
+        "This field is required."
+      ],
+      "department_type": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "b82d422d-aff8-47d7-bdef-528f937dc289"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/departments/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "71116de4-a604-4806-8ed8-a8fc2a224bcb",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "71116de4-a604-4806-8ed8-a8fc2a224bcb"
+      }
+    }
+  }
+}

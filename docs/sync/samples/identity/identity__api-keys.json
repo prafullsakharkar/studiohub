@@ -1,0 +1,155 @@
+{
+  "view": "ApiKeyViewSet",
+  "app": "identity",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/api-keys/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "83e3cfc4-610a-4f73-9a3d-a0f0ba65f6c4",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/api-keys/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "07c8fe84-d92a-4eef-b987-a5298fd7caf7",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "07c8fe84-d92a-4eef-b987-a5298fd7caf7"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/api-keys/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "30bb12fa-6870-4ed0-b644-7780440ac7b5",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/api-keys/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5481367e-4054-426d-b943-f2a6b3567eac",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/api-keys/3d99c51f-f858-4489-bc00-2bea7df35b97/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0ce606a7-16e8-4e5b-9b8b-7ea3dc9c586c",
+      "Allow": "GET, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No ApiKey matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "0ce606a7-16e8-4e5b-9b8b-7ea3dc9c586c"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/api-keys/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d8d3b5e9-7f9e-456b-8437-1526184aa46d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "scopes": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "d8d3b5e9-7f9e-456b-8437-1526184aa46d"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/api-keys/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f319ca33-bc15-4d8e-b47f-a90275e75333",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "scopes": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "f319ca33-bc15-4d8e-b47f-a90275e75333"
+      }
+    }
+  }
+}

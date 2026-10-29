@@ -1,7 +1,7 @@
 import { authService, LoginFormData } from '@/modules/auth';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { AuthContext, AuthContextValue } from './AuthContext';
-import { User, Role, Permission } from '@/types/identity';
+import { AuthContext, AuthContextValue, Restriction } from './AuthContext';
+import { User, Role, Permission, LoginOutcome, MfaChallengeInput } from '@/types/identity';
 import {
   checkUserHasPermission,
   checkUserHasRole,
@@ -9,7 +9,7 @@ import {
 import { logger } from '@/core/logging/logger';
 import { queryClient } from '@/providers/QueryProvider';
 import { centralErrorHandler } from '@/core/api/error-handler';
-import { useActivityStore } from '@/shared/stores/useActivityStore';
+import { tokenStorage } from '@/core/auth/tokenStorage';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -18,7 +18,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const recordActivity = useActivityStore((state) => state.recordActivity);
+  const [restriction, setRestriction] = useState<Restriction | null>(null);
 
   // Phase 4 (ADR-0033): permission state derives from the authenticated user
   // only — the removed Zustand permission store / simulation sync is gone.
@@ -54,80 +54,77 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       queryClient.clear();
     });
 
+    // 403 `mfa_enrollment_required` / `password_change_required`: the route guard sends the user
+    // to the screen that settles it (this also covers a reload, where /auth/me has no such flag).
+    const unsubRestricted = centralErrorHandler.onSessionRestricted((error) => {
+      logger.warn('AuthProvider', `Session restricted: ${error.code}`);
+      setRestriction(error.requiredAction);
+    });
+
     const unsubDisabled = centralErrorHandler.onAccountDisabled(() => {
       logger.error('AuthProvider', 'Account disabled event received. Clearing local user state.');
       setUser(null);
       queryClient.clear();
     });
 
+    // The session ended, here or in another tab (sign-out, rejected refresh, password changed):
+    // the signed-in user and every cached query go with it.
+    const unsubTokens = tokenStorage.subscribe((event) => {
+      if (event.type === 'cleared') {
+        logger.info('AuthProvider', event.remote ? 'Session ended in another tab.' : 'Session ended.');
+        setUser(null);
+        queryClient.clear();
+      }
+    });
+
     return () => {
       unsubAuth();
       unsubDisabled();
+      unsubRestricted();
+      unsubTokens();
     };
   }, []);
 
-  const login = useCallback(async (credentials: LoginFormData) => {
-    const response = await authService.login(credentials);
-    setUser(response.user);
-    // Invalidate queries so freshly authenticated user queries populate
-    queryClient.invalidateQueries();
+  const finishLogin = useCallback(
+    (outcome: LoginOutcome): LoginOutcome => {
+      if (outcome.status !== 'authenticated') return outcome;
+      const authedUser = outcome.user;
+      setUser(authedUser);
+      setRestriction(outcome.mfaEnrollmentRequired ? 'mfa_enrollment' : null);
+      // Invalidate queries so freshly authenticated user queries populate
+      queryClient.invalidateQueries();
 
-    const userName = response.user.full_name || (response.user as any).name || response.user.email;
-    const userAvatar = response.user.avatar_url || (response.user as any).avatar;
+      return outcome;
+    },
+    []
+  );
 
-    recordActivity({
-      action: 'login',
-      actionLabel: 'User Signed In',
-      resourceType: 'user',
-      resourceId: response.user.id,
-      resourceName: userName,
-      actor: {
-        id: response.user.id,
-        name: userName,
-        email: response.user.email,
-        role: typeof response.user.role === 'string' ? response.user.role : 'User',
-        avatarUrl: userAvatar,
-      },
-      description: `Signed in as ${userName} (${response.user.role}).`,
-      tags: ['Authentication', 'Session'],
-    });
-  }, []);
+  const login = useCallback(
+    async (credentials: LoginFormData) => finishLogin(await authService.login(credentials)),
+    [finishLogin]
+  );
+
+  const completeMfaLogin = useCallback(
+    async (input: MfaChallengeInput) => finishLogin(await authService.completeMfaLogin(input)),
+    [finishLogin]
+  );
 
   const logout = useCallback(async () => {
     setIsLoading(true);
-    const prevUser = user;
     try {
       await authService.logout();
-      if (prevUser) {
-        const userName = prevUser.full_name || (prevUser as any).name || prevUser.email;
-        const userAvatar = prevUser.avatar_url || (prevUser as any).avatar;
-
-        recordActivity({
-          action: 'logout',
-          actionLabel: 'User Signed Out',
-          resourceType: 'user',
-          resourceId: prevUser.id,
-          resourceName: userName,
-          actor: {
-            id: prevUser.id,
-            name: userName,
-            email: prevUser.email,
-            role: typeof prevUser.role === 'string' ? prevUser.role : 'User',
-            avatarUrl: userAvatar,
-          },
-          description: `Signed out of session for ${prevUser.email}.`,
-          tags: ['Authentication', 'Session'],
-        });
-      }
     } catch (err) {
       logger.warn('AuthProvider', 'Logout error', err);
     } finally {
       setUser(null);
+      setRestriction(null);
       // Cleanse TanStack query cache to prevent any user data leakage
       queryClient.clear();
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
+
+  const clearRestriction = useCallback(() => setRestriction(null), []);
 
   const refreshUser = useCallback(async () => {
     const currentUser = await authService.getCurrentUser();
@@ -164,6 +161,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       isAuthenticated: !!user,
       isLoading,
       login,
+      completeMfaLogin,
+      restriction,
+      clearRestriction,
       logout,
       hasRole,
       hasPermission,
@@ -171,7 +171,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       refreshUser,
       updateUserProfile,
     }),
-    [user, isLoading, login, logout, hasRole, hasPermission, can, refreshUser, updateUserProfile]
+    [user, isLoading, login, completeMfaLogin, restriction, clearRestriction, logout, hasRole, hasPermission, can, refreshUser, updateUserProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

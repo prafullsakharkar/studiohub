@@ -1,0 +1,180 @@
+{
+  "view": "TrustedDeviceViewSet",
+  "app": "identity",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/trusted-devices/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1676da16-53fb-4b01-ac22-943dab4df810",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 1,
+      "items": [
+        {
+          "id": "0a66fba1-e968-47b7-93ee-933566d791e4",
+          "uuid": "0a66fba1-e968-47b7-93ee-933566d791e4",
+          "user": "5789d20f-53cd-4a3f-8373-66d38948138c",
+          "fingerprint": "c1d7309e-8e71-499c-aa8a-10400a226552",
+          "browser": "nation",
+          "platform": "three",
+          "ip_address": "127.0.0.1",
+          "is_trusted": true,
+          "last_login_at": "2026-10-10T08:54:15.099715Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/trusted-devices/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a125e55c-afaa-4c07-9d63-5f3140303025",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "a125e55c-afaa-4c07-9d63-5f3140303025"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/trusted-devices/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8e7a3880-0885-4a93-a171-16da54242670",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/trusted-devices/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ed417051-2cae-4495-ae4b-ddf483934944",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/trusted-devices/0a66fba1-e968-47b7-93ee-933566d791e4/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "987c91c6-c7c4-4cc2-930d-553d93d1c1ce",
+      "Allow": "GET, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "0a66fba1-e968-47b7-93ee-933566d791e4",
+      "uuid": "0a66fba1-e968-47b7-93ee-933566d791e4",
+      "user": "5789d20f-53cd-4a3f-8373-66d38948138c",
+      "fingerprint": "c1d7309e-8e71-499c-aa8a-10400a226552",
+      "browser": "nation",
+      "platform": "three",
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0",
+      "last_login_at": "2026-10-10T08:54:15.099715Z",
+      "expires_at": "2026-11-28T05:37:41.990971Z",
+      "is_trusted": true,
+      "revoked_at": null,
+      "created_at": "2026-10-29T05:37:41.993480Z",
+      "updated_at": "2026-10-29T05:37:41.993490Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/trusted-devices/88d180c2-8551-447b-a90d-e11d26b67b65/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0c9456d1-622a-4d37-9d6d-18bdeebe64b1",
+      "Allow": "GET, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No TrustedDevice matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "0c9456d1-622a-4d37-9d6d-18bdeebe64b1"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/trusted-devices/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3349bf49-3492-4421-9826-81c9cfb3337d",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "3349bf49-3492-4421-9826-81c9cfb3337d"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/trusted-devices/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d75ae2f3-fc7a-4f5f-9b18-3f34a7e70c8d",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "d75ae2f3-fc7a-4f5f-9b18-3f34a7e70c8d"
+      }
+    }
+  }
+}

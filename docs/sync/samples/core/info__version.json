@@ -1,0 +1,73 @@
+{
+  "view": "VersionInfoView",
+  "app": "core",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/info/version/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1a3cb3f3-a499-48cb-9d49-27dcd17f5bfa",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "version": "1.0.0",
+      "environment": "development"
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/info/version/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d9f3cad1-524c-4566-b693-04b6a9990d0a",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "version": "1.0.0",
+      "environment": "development"
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/info/version/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "61786e12-7913-46d0-a8f2-39ebdccb043e",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "version": "1.0.0",
+      "environment": "development"
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/info/version/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e6ea4c9f-0ffe-4e25-9393-5b3ce709e51d",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "version": "1.0.0",
+      "environment": "development"
+    }
+  }
+}
