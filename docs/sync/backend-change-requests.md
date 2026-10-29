@@ -6,8 +6,8 @@ Rule (HARD RULE 1): no backend file is changed without explicit approval. Each e
 |---|---|---|---|
 | CR-01 | Stale deprecation registry marks the only directory/RBAC routes as deprecated | No (frontend ignores the headers) | Medium |
 | CR-02 | 18 enforced permission codes are never seeded | **APPLIED** (`b728528`): seeded and assigned per Q7 | High |
-| CR-03 | `AuditLog` list has no `target_id` filter | Partly (per-object audit panel for deliveries/publishing/scheduling/masterdata) | Medium |
-| CR-04 | ChangeLog does not track several editable models | Partly (empty History tabs) | Medium — confirm per module phase |
+| CR-03 | `AuditLog` list has no `target_id` filter | Worked around: `/audit/?search=<id>` matches `target_id`; EntityHistory keeps rows whose `entity_id` is the record | Medium |
+| CR-04 | ChangeLog does not track several editable models | **Confirmed live (Phase 4):** positions, client/vendor contracts and contacts, catalog rows leave no entry; clients track only some fields | Medium |
 | CR-05 | Dev seed commands are broken | No (tests use factories) — but blocks a seeded dev backend for e2e/manual verification | Medium |
 | CR-06 | Unmapped methods return 403 instead of 405 on `MethodPermissionMixin` views | No | Low |
 | CR-07 | Superuser fallback permission list contains non-catalog codes | No (frontend treats `is_superuser` as all) | Low |
@@ -260,3 +260,17 @@ Decision (project owner, Phase 3 review): self-action stays allowed, as `service
 - Sensitive fields are omitted (not nulled) for callers without the grant: person `email`, `phone`, `date_of_birth`, `nationality`, `security_clearance`; client `total_billed_usd` (captures + live). Forms render those inputs only for holders of `masterdata.person.view_sensitive` / `masterdata.client.view_financial`.
 - Deleting a department that teams/positions still reference: `409 "Still referenced by: masterdata.Position.department (2), masterdata.Team.department (1)."`.
 - Person `status` ∈ draft/active/inactive/archived; lifecycle through `POST people/{id}/deactivate|reactivate|restore/`.
+
+
+---
+
+## Phase 4 findings (audit) — verified against a running backend; none applied
+
+### Q-15 — what History can and cannot show (CR-04 confirmed)
+Live (`audit.live.test.tsx`): a department, team or client edit writes a ChangeLog row; **position, contract and catalog-row edits write none**; and a client update that only touches `contact_name` writes none either (the tracked client fields are `active_projects, code, contract_tier, headquarters, logo_url, name, portal_access, status, studio_type`). History is therefore silent for those edits. `AuditLog` receives no rows for plain masterdata edits (only business events), so the AuditLog half of EntityHistory is usually empty. **Proposal (not requested):** add the missing models/fields to the ChangeLog tracking list.
+
+### Note — audit routes behave like this
+- ChangeLog: filters `change_type`, `target_type` (the model CLASS NAME, e.g. `Department`), `target_id`, `user`, `created_at__gte|lte`; newest first; `before_values` is `{}` on create; values are strings. An unknown `ordering` is ignored (200).
+- Cancelling an already-cancelled job and retrying a job that is not failed both answer 200 without error (nothing happens), so the UI offers Cancel only on queued/running jobs and Retry only on failed ones. Resolve answers `{"status": "resolved"}`.
+- Every audit read and action answers 403 to a signed-in user without `audit.view` / `audit.update`.
+- The old Logins tab of the system-logs page called a path that does not exist; login history is the identity ledger (`/identity/login-history/`, Phase 2).
