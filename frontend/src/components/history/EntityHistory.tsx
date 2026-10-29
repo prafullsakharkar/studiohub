@@ -15,7 +15,7 @@ const TYPE_VARIANT: Record<string, 'success' | 'info' | 'error' | 'neutral'> = {
 const show = (value: string | undefined) => (value === undefined || value === '' ? '—' : value);
 
 /** What changed in one entry: field, old value, new value. A create lists the values it started with. */
-const ChangeDiff: React.FC<{ log: ChangeLog }> = ({ log }) => {
+export const ChangeDiff: React.FC<{ log: ChangeLog }> = ({ log }) => {
   const fields = log.changed_fields.length > 0 ? log.changed_fields : Object.keys(log.after_values);
   return (
     <table className="w-full text-[11px]" aria-label={`Changes in ${log.target_name}`}>

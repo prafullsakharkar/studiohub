@@ -48,6 +48,8 @@ export interface AuditLogEntry {
   entity_code: string;
   description: string;
   ip_address: string | null;
+  created_at: string;
+  changes_diff?: unknown;
   [field: string]: unknown;
 }
 
@@ -59,6 +61,7 @@ export interface ActivityEntry {
   actor_email: string;
   action: string;
   description: string;
+  created_at: string;
   metadata?: unknown;
   [field: string]: unknown;
 }
