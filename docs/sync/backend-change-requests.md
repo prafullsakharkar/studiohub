@@ -15,6 +15,7 @@ Rule (HARD RULE 1): no backend file is changed without explicit approval. Each e
 | CR-09 | `CONTRACTS.md` states default page size 20; actual 25 | No (doc only) | Low |
 | CR-10 | Server-side CSV/Excel export (`?format=csv` on list views; renderers already exist in `apps/core/api/renderers/`) | No (client-side export works up to ~10k rows) | Low — optional |
 | CR-11 | httpOnly refresh-token cookie for the SPA | No (refresh token in `localStorage` with XSS hygiene) | Low — optional, security hardening |
+| CR-13 | `archive` / `check-existence` on projects and shows are missing from the viewsets' permission_map, so they fail closed (403 even for a superuser) | No (frontend archives with DELETE and checks codes with `?code=`) | Medium — bug |
 | Q-01 | Contacts list 403 for users without directory roles despite an empty `permission_map` entry | Question | — |
 | Q-02 | Attachments accept an empty body | Open question for the owner | — |
 | Q-03 | `change-password` ignores `confirm_password` | **APPLIED** (`553b481`): validated when present, still optional | Low |
@@ -274,3 +275,17 @@ Live (`audit.live.test.tsx`): a department, team or client edit writes a ChangeL
 - Cancelling an already-cancelled job and retrying a job that is not failed both answer 200 without error (nothing happens), so the UI offers Cancel only on queued/running jobs and Retry only on failed ones. Resolve answers `{"status": "resolved"}`.
 - Every audit read and action answers 403 to a signed-in user without `audit.view` / `audit.update`.
 - The old Logins tab of the system-logs page called a path that does not exist; login history is the identity ledger (`/identity/login-history/`, Phase 2).
+
+
+---
+
+## Phase 5 findings (production structure) — verified against a running backend
+
+### CR-13 — project/show `archive` and `check-existence` answer 403 to everyone (**bug**, PROPOSED)
+`POST /projects/{id}/archive/`, `POST /projects/check-existence/` (and `existence-check/`), `POST /shows/{id}/archive/`, `POST /shows/check-existence/` return `403 "You do not have permission to perform this action."` for an MFA-enrolled **superuser** (`_structure_flow.json`: `projects_archive`, `projects_check_existence`, `shows_archive`, `shows_check_existence`). Cause: `ProjectViewSet.permission_map` (and the show viewset's) has no entry for `archive`, `check_existence`, `existence_check`; `HasPermission` denies an unmapped action, logging `authorization_deny_no_map_entry`, even for superusers. The inventory shows these as `archive: —`. Episodes and sequences do map them and work. **Minimal diff:** add `"archive": (ProjectPermissions.DELETE,), "check_existence": (ProjectPermissions.CREATE,), "existence_check": (ProjectPermissions.CREATE,)` to `ProjectViewSet.permission_map` and the show equivalents (`ShowPermissions`). **Frontend workaround (in use):** `DELETE /projects/{id}/` soft-archives (204; the project then lists under `/projects/archived/` and `POST …/restore/` brings it back; its detail answers 404 meanwhile); codes are checked with `GET /projects/?code=`.
+
+### Note — behaviours the project screens rely on
+- Project `type` ∈ Feature Film, Episodic Series, Commercial, Game Cinematic; `status` ∈ In Progress, Pending Review, Approved, Archived, On Hold; `workflow_type` ∈ standard, episodic. An **episodic** project creates its first episode itself (`EP101`), and sequences on an episodic project need `episode_id` ("An episode is required for sequences on episodic projects."). Editorial track `track_type` ∈ Video, Audio, VFX Plates, Reference, Subtitles, Markers.
+- Members are added at `POST /api/organizations/projects/{id}/members/` with `user_id` or `email` and a `role`; 201 when new, 200 when already a member, 404 `User not found.` for an unknown e-mail; only holders of `project.update` may add. A non-member gets 403 on the project list/detail; a member sees only their projects.
+- Bulk routes answer 200 with per-item results (`processed`, `failed`, `partial_success`, `results[].actionTaken`), including when every item failed.
+- Project notes need `subject` (the sample note came back with an empty `body`; the body field name is not `content`).

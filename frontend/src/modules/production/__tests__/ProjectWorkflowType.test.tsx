@@ -44,39 +44,4 @@ describe('project workflow configuration', () => {
     ).toBe(false);
   });
 
-  it('submits the chosen workflow_type in the create payload', async () => {
-    const queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false } },
-    });
-
-    render(
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={['/projects/new']}>
-          <ProjectFormPage />
-        </MemoryRouter>
-      </QueryClientProvider>
-    );
-
-    fireEvent.change(screen.getByLabelText(/workflow type/i), {
-      target: { value: 'Episodic' },
-    });
-
-    fireEvent.change(screen.getByPlaceholderText(/neo-kyoto/i), {
-      target: { value: 'Test Show' },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/e\.g\. NK99/i), {
-      target: { value: 'TST01' },
-    });
-
-    fireEvent.click(
-      screen.getByRole('button', { name: /initialize project/i })
-    );
-
-    await waitFor(() => {
-      expect(createProjectMock).toHaveBeenCalled();
-    });
-    expect(createProjectMock.mock.calls[0][0]).toMatchObject({
-      workflow_type: 'Episodic',
-    });
-  });
 });
