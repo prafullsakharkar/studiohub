@@ -13,6 +13,9 @@ It seeds (each exercises a different backend rule):
   artist   seeded `artist` role         -> ordinary user
   mfa      ordinary user, MFA enrolled  -> MFA login (TOTP + recovery codes)
   pwdue    ordinary user owing a password change
+  delegate ordinary user holding `live-delegate` and `live-viewer` (Phase 2: RBAC admin without being a superuser)
+  selfmfa  ordinary user without MFA (Phase 2: voluntary enrollment from My account)
+  roles    `live-escalation` (grants project.delete, held by nobody), `live-viewer` (grants shot.view) and `live-delegate` (grants identity.role.update/view + identity.user.view)
 Writes the connection details to $SYNC_LIVE_INFO, then keeps serving
 until $SYNC_LIVE_STOP exists (or 20 minutes pass).
 
@@ -40,6 +43,8 @@ PASSWORDS = {
     "artist": "Live-Artist-Pass!9",
     "mfa": "Live-Mfa-Pass!9",
     "pwdue": "Live-Pwdue-Pass!9",
+    "delegate": "Live-Delegate-Pass!9",
+    "selfmfa": "Live-Selfmfa-Pass!9",
 }
 
 
@@ -72,6 +77,26 @@ def test_serve(live_server, django_user_model):
     pwdue.is_active = True
     pwdue.save()
     Profile.objects.update_or_create(user=pwdue, defaults={"must_change_password": True})
+
+    from apps.identity.models import Permission, RolePermission
+
+    def make_role(code: str, name: str, permission_codes: list[str]) -> Role:
+        role = Role.objects.create(name=name, code=code, scope="organization", priority=40)
+        for permission_code in permission_codes:
+            RolePermission.objects.create(role=role, permission=Permission.objects.get(code=permission_code), granted=True)
+        return role
+
+    make_role("live-viewer", "Live Viewer", ["shot.view"])
+    make_role("live-escalation", "Live Escalation", ["project.delete"])
+    delegate_role = make_role("live-delegate", "Live Delegate", ["identity.role.update", "identity.role.view", "identity.user.view"])
+    delegate = users.create_user(email="delegate@example.test", password=PASSWORDS["delegate"])
+    delegate.is_active = True
+    delegate.save()
+    UserRole.objects.create(user=delegate, role=delegate_role)
+    UserRole.objects.create(user=delegate, role=Role.objects.get(code="live-viewer"))
+    selfmfa = users.create_user(email="selfmfa@example.test", password=PASSWORDS["selfmfa"])
+    selfmfa.is_active = True
+    selfmfa.save()
 
     INFO.write_text(
         json.dumps(

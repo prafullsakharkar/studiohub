@@ -19,7 +19,7 @@ type Tab = 'members' | 'roles';
 
 const errorMessage = (error: unknown) => (error instanceof Error ? error.message : 'Something went wrong.');
 
-const MembersTab: React.FC<{ groupId: string }> = ({ groupId }) => {
+const MembersTab: React.FC<{ groupId: string; canEdit: boolean }> = ({ groupId, canEdit }) => {
   const afterChange = useAfterAccessChange();
   const users = useUsersIndex();
   const key = [...groupKeys.detail(groupId), 'members'] as const;
@@ -45,6 +45,7 @@ const MembersTab: React.FC<{ groupId: string }> = ({ groupId }) => {
 
   return (
     <div className="space-y-4">
+      {canEdit && !users.error && (
       <form
         className="flex flex-col sm:flex-row sm:items-end gap-3"
         onSubmit={(e) => {
@@ -74,6 +75,12 @@ const MembersTab: React.FC<{ groupId: string }> = ({ groupId }) => {
           Add
         </Button>
       </form>
+      )}
+      {canEdit && users.error && (
+        <p role="note" className="rounded-lg border border-slate-800 bg-slate-900/60 p-3 text-xs text-slate-400">
+          Choosing a user to add needs the <span className="font-mono text-slate-300">identity.user.view</span> permission.
+        </p>
+      )}
 
       <QueryBoundary
         isLoading={members.isLoading}
@@ -94,9 +101,11 @@ const MembersTab: React.FC<{ groupId: string }> = ({ groupId }) => {
               </td>
               <td className="px-4 py-2 text-slate-400">{formatDate(m.joined_at)}</td>
               <td className="px-4 py-2 text-right">
+                {canEdit && (
                 <button type="button" aria-label={`Remove ${m.user.email}`} className="text-rose-400 hover:text-rose-300" onClick={() => setRemoving({ id: m.user.id, email: m.user.email })}>
                   <Trash2 className="h-4 w-4" />
                 </button>
+                )}
               </td>
             </tr>
           ))}
@@ -120,7 +129,7 @@ const MembersTab: React.FC<{ groupId: string }> = ({ groupId }) => {
   );
 };
 
-const RolesTab: React.FC<{ groupId: string }> = ({ groupId }) => {
+const RolesTab: React.FC<{ groupId: string; canEdit: boolean }> = ({ groupId, canEdit }) => {
   const afterChange = useAfterAccessChange();
   const key = [...groupKeys.detail(groupId), 'roles'] as const;
   const links = useQuery({ queryKey: key, queryFn: ({ signal }) => groupsApi.roles(groupId, signal) });
@@ -142,6 +151,7 @@ const RolesTab: React.FC<{ groupId: string }> = ({ groupId }) => {
 
   return (
     <div className="space-y-4">
+      {canEdit && (
       <form
         className="flex items-end gap-3"
         onSubmit={(e) => {
@@ -165,6 +175,7 @@ const RolesTab: React.FC<{ groupId: string }> = ({ groupId }) => {
           Attach
         </Button>
       </form>
+      )}
 
       <QueryBoundary
         isLoading={links.isLoading}
@@ -184,9 +195,11 @@ const RolesTab: React.FC<{ groupId: string }> = ({ groupId }) => {
               </td>
               <td className="px-4 py-2 font-mono text-slate-300">{l.role.code}</td>
               <td className="px-4 py-2 text-right">
+                {canEdit && (
                 <button type="button" aria-label={`Detach ${l.role.name}`} className="text-rose-400 hover:text-rose-300" onClick={() => setDetaching({ id: l.role.id, name: l.role.name })}>
                   <Trash2 className="h-4 w-4" />
                 </button>
+                )}
               </td>
             </tr>
           ))}
@@ -214,6 +227,7 @@ export const GroupDetailPage: React.FC = () => {
   const { groupId = '' } = useParams();
   const navigate = useNavigate();
   const afterChange = useAfterAccessChange();
+  const canView = useCan('identity.group.view');
   const canUpdate = useCan('identity.group.update');
   const canDelete = useCan('identity.group.delete');
   const [tab, setTab] = useState<Tab>('members');
@@ -241,8 +255,6 @@ export const GroupDetailPage: React.FC = () => {
               {group.data.is_system && <Badge variant="purple">System</Badge>}
             </div>
 
-            {canUpdate ? (
-              <>
                 <div role="tablist" aria-label="Group sections" className="flex gap-1 border-b border-slate-800">
                   {(['members', 'roles'] as const).map((t) => (
                     <button
@@ -257,14 +269,15 @@ export const GroupDetailPage: React.FC = () => {
                     </button>
                   ))}
                 </div>
-                {tab === 'members' && <MembersTab groupId={groupId} />}
-                {tab === 'roles' && <RolesTab groupId={groupId} />}
-              </>
-            ) : (
-              <p role="note" className="rounded-lg border border-slate-800 bg-slate-900/60 p-4 text-xs text-slate-400">
-                Viewing a group&apos;s members and roles requires the <span className="font-mono text-slate-300">identity.group.update</span> permission.
-              </p>
-            )}
+                {tab === 'members' &&
+                  (canView ? (
+                    <MembersTab groupId={groupId} canEdit={canUpdate} />
+                  ) : (
+                    <p role="note" className="rounded-lg border border-slate-800 bg-slate-900/60 p-4 text-xs text-slate-400">
+                      Who belongs to a group is user data: it needs the <span className="font-mono text-slate-300">identity.group.view</span> permission.
+                    </p>
+                  ))}
+                {tab === 'roles' && <RolesTab groupId={groupId} canEdit={canUpdate} />}
           </>
         )}
       </QueryBoundary>

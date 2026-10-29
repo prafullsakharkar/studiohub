@@ -251,7 +251,8 @@ const Linked: React.FC<{ personId: string; userId: string; onChanged: () => Prom
   const queryClient = useQueryClient();
   const { user: me } = useAuth();
   const canUnlink = useCan('people.update');
-  const canAssignRoles = useCan('identity.role.update');
+  // Reading who holds each role needs identity.role.view; assigning needs identity.role.update (verified live).
+  const canAssignRoles = useCan(['identity.role.view', 'identity.role.update']);
   const user = useQuery({ queryKey: userKeys.detail(userId), queryFn: ({ signal }) => usersApi.get(userId, signal) });
   const [pending, setPending] = useState<UserAction | null>(null);
   const [unlinking, setUnlinking] = useState(false);

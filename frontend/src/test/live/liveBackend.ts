@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 
 export interface LiveInfo {
   url: string;
-  users: Record<'admin' | 'enroll' | 'manager' | 'artist' | 'mfa' | 'pwdue', { email: string; password: string }>;
+  users: Record<'admin' | 'enroll' | 'manager' | 'artist' | 'mfa' | 'pwdue' | 'delegate' | 'selfmfa', { email: string; password: string }>;
   mfa: { secret: string; recovery_codes: string[] };
   manager: { secret: string };
 }
@@ -39,7 +39,9 @@ export async function freshTotp(secret: string): Promise<string> {
     } catch {
       // first use
     }
-    if (used[secret] !== step()) {
+    // The harness seeds MFA with a code from its own start-up step, which the server then refuses as a replay.
+    const seedStep = Math.floor(fs.statSync(process.env.SYNC_LIVE_INFO as string).mtimeMs / 30_000);
+    if (used[secret] !== step() && step() > seedStep) {
       used[secret] = step();
       fs.writeFileSync(stateFile, JSON.stringify(used));
       return totp(secret);

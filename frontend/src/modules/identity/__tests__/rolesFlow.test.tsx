@@ -168,15 +168,30 @@ describe('role detail', () => {
     expect(del.body).toEqual({ permission_id: flow.roles_permissions_get.body.items[0].permission.id });
   });
 
-  it('does not request the grants of a role for a user who cannot update roles (the API would answer 403)', async () => {
-    // RoleViewSet gates the permissions/users/groups actions on identity.role.update even for GET.
+  it('read-only visitor: sees the (open) permission list but no grant/revoke controls and no member list', async () => {
+    // RoleViewSet.get_permission_required: GET permissions/groups are open reference data; GET users needs
+    // identity.role.view; writes need identity.role.update (verified live).
     const { calls } = mockFetch(roleServer);
     renderAt(`/access/roles/${reviewer.id}`, artist);
 
-    expect(await screen.findByRole('note')).toBeTruthy();
+    expect(await screen.findByText('shot.update')).toBeTruthy();
     expect(screen.queryByLabelText('Grant permission')).toBeNull();
-    expect(screen.queryByRole('tab')).toBeNull();
-    expect(calls.map(path).some((p) => p.endsWith('/permissions/'))).toBe(false);
+    expect(screen.queryByRole('button', { name: /^Revoke/ })).toBeNull();
+
+    fireEvent.click(screen.getByRole('tab', { name: /users/i }));
+    expect(await screen.findByRole('note')).toBeTruthy();
+    expect(calls.map(path).some((p) => p.endsWith('/users/') && p.includes('/roles/'))).toBe(false);
+  });
+
+  it('explains why users cannot be chosen when the caller may not list users (the API answers 403)', async () => {
+    // Verified live: GET /identity/users/ is 403 without identity.user.view (it is not "self only").
+    mockFetch((c) => (path(c) === '/api/v1/identity/users/' ? { status: 403, body: { detail: 'You do not have permission to perform this action.' } } : roleServer(c)));
+    renderAt(`/access/roles/${reviewer.id}`, superuser);
+    await screen.findByText('shot.update');
+
+    fireEvent.click(screen.getByRole('tab', { name: /users/i }));
+    expect(await screen.findByRole('note')).toBeTruthy();
+    expect(screen.queryByLabelText('Assign to user')).toBeNull();
   });
 
   it('shows who holds the role and removes a user by id', async () => {

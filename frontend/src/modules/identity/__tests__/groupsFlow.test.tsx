@@ -139,7 +139,7 @@ describe('group detail', () => {
     expect(calls.find((c) => c.method === 'DELETE')!.body).toEqual({ role_id: firstLink.role.id });
   });
 
-  it('does not request members for a user who cannot update groups (the API answers 403)', async () => {
+  it('does not request members for a user without identity.group.view (the API answers 403)', async () => {
     const { calls } = mockFetch(groupServer);
     renderAt(`/access/groups/${lighting.id}`, artist);
     expect(await screen.findByRole('note')).toBeTruthy();

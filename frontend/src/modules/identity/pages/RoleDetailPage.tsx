@@ -139,7 +139,7 @@ const UsersTab: React.FC<{ roleId: string; canEdit: boolean }> = ({ roleId, canE
 
   return (
     <div className="space-y-4">
-      {canEdit && (
+      {canEdit && !users.error && (
         <form
           className="flex items-end gap-3"
           onSubmit={(e) => {
@@ -163,6 +163,11 @@ const UsersTab: React.FC<{ roleId: string; canEdit: boolean }> = ({ roleId, canE
             Assign
           </Button>
         </form>
+      )}
+      {canEdit && users.error && (
+        <p role="note" className="rounded-lg border border-slate-800 bg-slate-900/60 p-3 text-xs text-slate-400">
+          Choosing a user to assign needs the <span className="font-mono text-slate-300">identity.user.view</span> permission.
+        </p>
       )}
 
       <QueryBoundary
@@ -239,6 +244,7 @@ export const RoleDetailPage: React.FC = () => {
   const { roleId = '' } = useParams();
   const navigate = useNavigate();
   const afterChange = useAfterAccessChange();
+  const canView = useCan('identity.role.view');
   const canUpdate = useCan('identity.role.update');
   const canDelete = useCan('identity.role.delete');
   const [tab, setTab] = useState<Tab>('permissions');
@@ -267,8 +273,6 @@ export const RoleDetailPage: React.FC = () => {
               <Badge variant={role.data.is_active === false ? 'neutral' : 'success'}>{role.data.is_active === false ? 'Inactive' : 'Active'}</Badge>
             </div>
 
-            {canUpdate ? (
-              <>
               <div role="tablist" aria-label="Role sections" className="flex gap-1 border-b border-slate-800">
                 {(['permissions', 'users', 'groups'] as const).map((t) => (
                   <button
@@ -285,14 +289,15 @@ export const RoleDetailPage: React.FC = () => {
               </div>
 
               {tab === 'permissions' && <PermissionsTab roleId={roleId} canEdit={canUpdate} />}
-              {tab === 'users' && <UsersTab roleId={roleId} canEdit={canUpdate} />}
+              {tab === 'users' &&
+                (canView ? (
+                  <UsersTab roleId={roleId} canEdit={canUpdate} />
+                ) : (
+                  <p role="note" className="rounded-lg border border-slate-800 bg-slate-900/60 p-4 text-xs text-slate-400">
+                    Who holds a role is user data: it needs the <span className="font-mono text-slate-300">identity.role.view</span> permission.
+                  </p>
+                ))}
               {tab === 'groups' && <GroupsTab roleId={roleId} />}
-              </>
-            ) : (
-              <p role="note" className="rounded-lg border border-slate-800 bg-slate-900/60 p-4 text-xs text-slate-400">
-                Viewing a role&apos;s permissions, users and groups requires the <span className="font-mono text-slate-300">identity.role.update</span> permission.
-              </p>
-            )}
           </>
         )}
       </QueryBoundary>
