@@ -1,6 +1,6 @@
 # Phase 1 — Foundation: verification
 
-Branch `sync/phase-1-foundation` (from the Phase 0 tip `28bddad`), 28 commits, **not pushed**. No backend file was modified. Backend changes are only proposed, in [backend-change-requests.md](backend-change-requests.md).
+Branch `sync/phase-1-foundation` (from the Phase 0 tip `28bddad`; `git log 28bddad..HEAD` lists the commits), **not pushed**. No backend file was modified. Backend changes are only proposed, in [backend-change-requests.md](backend-change-requests.md).
 
 ## 1. Exit criteria
 
