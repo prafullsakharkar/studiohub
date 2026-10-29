@@ -244,3 +244,34 @@ describe('clients, vendors and people', () => {
     expect(path(calls.find((c) => c.method === 'POST')!)).toBe(`/api/v1/people/${row.id}/deactivate/`);
   });
 });
+
+describe('DirectoryFormPage refetch safety', () => {
+  it('a background refetch of the record does not wipe what the user has typed (found in the live run)', async () => {
+    const office = offices.detail_admin.body as Record<string, any>;
+    let gets = 0;
+    mockFetch((c) => {
+      if (c.method === 'GET') gets += 1;
+      return { body: { ...office, updated_at: `2030-01-0${gets}T00:00:00Z` } }; // same record, changed on the server between fetches
+    });
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+    render(
+      <QueryClientProvider client={client}>
+        <AuthContext.Provider value={{ user: superuser, refreshUser: vi.fn() } as unknown as AuthContextValue}>
+          <MemoryRouter initialEntries={[`/offices/${office.id}/edit`]}>
+            <Routes>
+              <Route path="/offices/:id/edit" element={<DirectoryFormPage config={officesFormConfig} />} />
+            </Routes>
+          </MemoryRouter>
+        </AuthContext.Provider>
+      </QueryClientProvider>
+    );
+    await waitFor(() => expect((screen.getByLabelText(/^Name/) as HTMLInputElement).value).toBe(office.name));
+
+    fireEvent.change(screen.getByLabelText(/^City/), { target: { value: 'Typed City' } });
+    await client.invalidateQueries();
+    await waitFor(() => expect(gets).toBeGreaterThan(1));
+    await waitFor(() => expect(client.isFetching()).toBe(0));
+    await new Promise((resolve) => setTimeout(resolve, 50)); // let the new data reach the component
+    expect((screen.getByLabelText(/^City/) as HTMLInputElement).value).toBe('Typed City');
+  });
+});

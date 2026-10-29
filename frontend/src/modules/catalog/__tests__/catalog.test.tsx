@@ -72,7 +72,7 @@ describe('catalog', () => {
 
   it('archives with a POST to the archive route; system rows cannot be deleted', async () => {
     const system = (statuses.list_admin.body.items as Array<{ id: string; name: string; is_system: boolean }>).find((s) => s.is_system)!;
-    const { calls } = mockFetch((c) => (c.method === 'POST' ? { body: system } : bare(statuses.list_admin)));
+    const { calls } = mockFetch((c) => (c.method === 'POST' ? { body: { success: true, data: { ...system, status: 'archived' } } } : bare(statuses.list_admin)));
     renderAt('/platform/catalog/statuses', superuser);
     await screen.findAllByText(system.name);
 

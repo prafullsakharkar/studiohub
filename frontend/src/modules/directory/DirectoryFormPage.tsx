@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type React from 'react';
-import { useContext, useEffect, useMemo } from 'react';
+import { useContext, useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { evaluateAccess } from '@/core/permissions/access';
 import { AuthContext } from '@/core/auth/AuthContext';
@@ -36,8 +36,14 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
     formState: { errors, isSubmitting, dirtyFields },
   } = useServerForm<Values>({ resolver: zodResolver(schema) as never, defaultValues: Object.fromEntries(fields.map((f) => [f.name, blank(f)])) });
 
+  // Fill the form ONCE per record. A background refetch (window focus, an invalidation after another
+  // save) hands back a new object for the same record; resetting then would discard what the user is typing.
+  const filledFor = useRef<string | null>(null);
   useEffect(() => {
-    if (row.data) reset(fromRow(fields, row.data as unknown as Record<string, unknown>));
+    if (row.data && filledFor.current !== row.data.id) {
+      filledFor.current = row.data.id;
+      reset(fromRow(fields, row.data as unknown as Record<string, unknown>));
+    }
   }, [row.data, fields, reset]);
 
   const onSubmit = submit(async (values) => {

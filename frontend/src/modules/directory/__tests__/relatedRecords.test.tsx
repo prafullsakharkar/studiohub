@@ -93,7 +93,8 @@ describe('client contracts', () => {
 
     fireEvent.click(screen.getByRole('button', { name: `Edit ${row.contract_number}` }));
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).queryByLabelText(/^Status/)).toBeNull();
+    // The contract's status is shown but locked: the API refuses it on update ("Read-only. Use POST …/activate").
+    expect((within(dialog).getByLabelText(/^Starts as/) as HTMLSelectElement).disabled).toBe(true);
     fireEvent.change(within(dialog).getByLabelText(/^Title/), { target: { value: 'Renamed SOW' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save changes' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'PATCH')).toBe(true));
@@ -111,11 +112,12 @@ describe('client contracts', () => {
     await screen.findByText(row.contract_number);
     fireEvent.click(screen.getByRole('button', { name: 'Add contract' }));
     const dialog = await screen.findByRole('dialog');
+    fireEvent.change(within(dialog).getByLabelText(/^Starts as/), { target: { value: 'Draft' } });
     fireEvent.change(within(dialog).getByLabelText(/^Contract number/), { target: { value: 'C-100' } });
     fireEvent.change(within(dialog).getByLabelText(/^Title/), { target: { value: 'New SOW' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Add contract' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
-    expect(calls.find((c) => c.method === 'POST')!.body).toMatchObject({ client: CLIENT, contract_number: 'C-100', title: 'New SOW', nda_signed: false });
+    expect(calls.find((c) => c.method === 'POST')!.body).toMatchObject({ client: CLIENT, status: 'Draft', contract_number: 'C-100', title: 'New SOW', nda_signed: false });
   });
 });
 

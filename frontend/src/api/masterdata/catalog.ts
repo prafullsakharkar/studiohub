@@ -51,9 +51,11 @@ function api<Row, Input>(base: string) {
     get: (id: string, signal?: AbortSignal) => apiClient.get<Row>(`${base}/${id}`, { signal }),
     create: (input: Input) => apiClient.post<Row>(base, input),
     update: (id: string, patch: Partial<Input>) => apiClient.patch<Row>(`${base}/${id}`, patch),
-    archive: (id: string) => apiClient.post<Row>(`${base}/${id}/archive`, {}),
-    restore: (id: string) => apiClient.post<Row>(`${base}/${id}/restore`, {}),
-    remove: (id: string, hard = false) => apiClient.delete<void>(`${base}/${id}${hard ? '?hard=true' : ''}`),
+    // archive / restore answer `{success, data: row}`; create, update and reorder answer the bare row(s).
+    archive: async (id: string) => (await apiClient.post<{ success: boolean; data: Row }>(`${base}/${id}/archive`, {})).data,
+    restore: async (id: string) => (await apiClient.post<{ success: boolean; data: Row }>(`${base}/${id}/restore`, {})).data,
+    /** A SOFT delete (`{success, message}`, 200): the row disappears from every list. System rows answer 409. */
+    remove: (id: string, hard = false) => apiClient.delete<{ success: boolean; message: string }>(`${base}/${id}${hard ? '?hard=true' : ''}`),
     /** Gives the listed ids positions 10, 20, 30 … in that order; ids not listed keep their old numbers. */
     reorder: (ids: string[]) => apiClient.post<Row[]>(`${base}/reorder`, { ids }),
   };

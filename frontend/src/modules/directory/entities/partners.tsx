@@ -75,6 +75,16 @@ function contractActions(act: (id: string, action: string, body?: Record<string,
 const statusBadge = (status?: string) => <Badge variant={status === 'Active' ? 'success' : status === 'Draft' ? 'info' : 'neutral'}>{status || '—'}</Badge>;
 
 const contractFields = (moneyName: string, extra: ReadonlyArray<FieldDef>): FieldDef[] => [
+  {
+    kind: 'select',
+    name: 'status',
+    label: 'Starts as',
+    required: true,
+    options: [
+      { value: 'Draft', label: 'Draft (editable, not yet in force)' },
+      { value: 'Active', label: 'Active (needs an effective date)' },
+    ],
+  },
   { kind: 'text', name: 'contract_number', label: 'Contract number', required: true },
   { kind: 'text', name: 'title', label: 'Title', required: true },
   { kind: 'text', name: 'type', label: 'Type', hint: 'For example MSA or SOW. At most one active MSA may cover a given period.' },
@@ -107,6 +117,7 @@ export const clientContractsConfig: RelatedRecordsConfig<ClientContract> = {
     { header: 'Value', cell: (c) => (c.value_usd === undefined ? '—' : `${c.value_usd} ${c.currency ?? ''}`) },
     { header: 'Status', cell: (c) => statusBadge(c.status) },
   ],
+  immutableOnEdit: ['status'],
   fields: contractFields('value_usd', [{ kind: 'url', name: 'document_url', label: 'Document URL' }]),
 };
 
@@ -131,5 +142,6 @@ export const vendorContractsConfig: RelatedRecordsConfig<VendorContract> = {
     { header: 'Value', cell: (c) => (c.total_value_usd === undefined ? '—' : `${c.total_value_usd} ${c.currency ?? ''}`) },
     { header: 'Status', cell: (c) => statusBadge(c.status) },
   ],
+  immutableOnEdit: ['status'],
   fields: contractFields('total_value_usd', [{ kind: 'text', name: 'security_tier', label: 'Security tier' }]),
 };
