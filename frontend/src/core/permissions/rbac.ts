@@ -1,7 +1,6 @@
 import { Role, Permission, User, ProjectMembership } from '@/types/identity';
 import { PermissionEvaluationContext, Scope, ContextEntity } from '@/types/identity';
-import { SYSTEM_ROLE_TEMPLATES, getSystemRole } from './systemRoles';
-import { checkPermission } from './enterprisePermissions';
+import { evaluateAccess, findActiveMembership, userHasCode } from './access';
 import { legacyCan } from './can';
 import {
   normalizeScope,
@@ -22,58 +21,6 @@ export {
 };
 
 /**
- * Mapping between legacy colon permissions and canonical dot permissions
- */
-export const LEGACY_TO_CANONICAL_MAP: Record<string, string> = {
-  'project.create': 'project.create',
-  'project.view': 'project.view',
-  'project.update': 'project.update',
-  'project.delete': 'project.delete',
-  'shot.create': 'shot.create',
-  'shot.view': 'shot.view',
-  'shot.update': 'shot.update',
-  'shot.delete': 'shot.delete',
-  'shot.approve': 'shot.approve',
-  'asset.create': 'asset.create',
-  'asset.view': 'asset.view',
-  'asset.update': 'asset.update',
-  'asset.delete': 'asset.delete',
-  'task.create': 'task.create',
-  'task.view': 'task.view',
-  'task.update': 'task.update',
-  'task.delete': 'task.delete',
-  'review.create': 'review.create',
-  'review.view': 'review.view',
-  'review.approve': 'review.approve',
-  'audit.view': 'audit.view',
-  'settings.update': 'settings.update',
-  'user.manage': 'people.update',
-};
-
-export const CANONICAL_TO_LEGACY_MAP: Record<string, string> = Object.entries(
-  LEGACY_TO_CANONICAL_MAP
-).reduce((acc, [legacy, canonical]) => {
-  acc[canonical] = legacy;
-  return acc;
-}, {} as Record<string, string>);
-
-/**
- * Role-Based Access Control hierarchy and default permissions dictionary
- */
-export const ROLE_PERMISSIONS: Record<string, string[]> = SYSTEM_ROLE_TEMPLATES.reduce(
-  (acc, role) => {
-    acc[role.name] = role.permissions;
-    acc[role.code] = role.permissions;
-    return acc;
-  },
-  {} as Record<string, string[]>
-);
-
-// Phase 4 (ADR-0033): legacy cross-project role fallbacks removed.
-// Unknown roles resolve through SYSTEM_ROLE_TEMPLATES only; deny-by-default
-// covers anything else... (no cricket-app remnants).
-
-/**
  * Get user's membership for a specific project
  */
 export function getUserProjectMembership(
@@ -81,21 +28,7 @@ export function getUserProjectMembership(
   projectId?: string
 ): ProjectMembership | undefined {
   if (!user || !projectId) return undefined;
-  if (!user.project_memberships || user.project_memberships.length === 0) {
-    return undefined;
-  }
-
-  return user.project_memberships.find((pm) => {
-    const matchProj =
-      pm.project_id === projectId ||
-      pm.projectId === projectId ||
-      pm.project_id?.toLowerCase() === projectId.toLowerCase() ||
-      pm.projectId?.toLowerCase() === projectId.toLowerCase() ||
-      pm.project_code?.toLowerCase() === projectId.toLowerCase() ||
-      (pm as any).code?.toLowerCase() === projectId.toLowerCase();
-    const isActive = pm.status?.toLowerCase() === 'active' || !pm.status;
-    return matchProj && isActive;
-  });
+  return findActiveMembership(user, projectId);
 }
 
 /**
@@ -188,238 +121,33 @@ export function isUserAdmin(user: User | null): boolean {
   return hasElevatedAccess(user);
 }
 
-const ELEVATED_GRANT_PROBES = [
-  'page.testing',
-  'testing.view',
-  'testing.run',
-  'platform.admin.view',
-  'permissions.manage',
+/** Backend codes that only administrators hold (role/permission writers, settings, catalog). */
+const ELEVATED_CODES = [
+  'identity.role.update',
+  'identity.permission.update',
+  'settings.manage',
+  'masterdata.catalog.manage',
 ];
 
 /**
- * Engine-backed elevated-access check. Replaces `isUserAdmin` substring matching.
- * True for superuser break-glass, or when `evaluateUserPermission` grants any
- * elevated probe. Never true on a role-name substring alone.
+ * True for a superuser or for anyone holding an administrator-only backend code. Never true on a
+ * role label, and never through `open` gates (those are granted to every signed-in user).
  */
 export function hasElevatedAccess(user: User | null): boolean {
   if (!user) return false;
-  if (user.is_superuser) return true;
-  const context: PermissionEvaluationContext = {};
-  return ELEVATED_GRANT_PROBES.some((code) => {
-    try {
-      return evaluateUserPermission(user, code, context);
-    } catch {
-      return false;
-    }
-  });
+  return user.is_superuser === true || ELEVATED_CODES.some((code) => userHasCode(user, code));
 }
 
-// Platform-level RBAC & tenant management permissions that Production Admin cannot execute
-const ADMIN_ONLY_PERMISSIONS = [
-  'role.',
-  'roles.',
-  'group.',
-  'permission.',
-  'permissions.',
-  'person.create',
-  'person.delete',
-  'person.archive',
-  'person.restore',
-  'people.create',
-  'people.delete',
-  'security.',
-  'api_key.',
-  'billing.',
-  'platform.',
-];
-
 /**
- * Evaluates permission across the full StudioHub hierarchy:
- * User → Global Role → Project Membership → Production Role → Permission → Scope → Resource → Action
+ * Whether the signed-in user may do what `requiredPermission` stands for.
+ * Delegates to the single rule in ./access (superuser, backend codes, project membership).
  */
 export function evaluateUserPermission(
   user: User | null,
   requiredPermission: string,
   context?: PermissionEvaluationContext
 ): boolean {
-  if (!user || !requiredPermission) return false;
-  if (user.is_active === false) return false;
-
-  // Check for platform-level administrative permissions
-  const isPlatformPerm =
-    requiredPermission.startsWith('platform.') ||
-    requiredPermission.startsWith('global.') ||
-    requiredPermission === 'page.platform_admin' ||
-    requiredPermission === 'page.platform_master_data';
-
-  if (isPlatformPerm) {
-    // Strict superuser-only: label alone grants no platform permission.
-    // Explicit grants are evaluated below.
-    if (user.is_superuser) {
-      return true;
-    }
-
-    // Collect all permissions explicitly granted to this user across direct perms, roles, and groups
-    const userRole = user.role || '';
-    const rolePerms = ROLE_PERMISSIONS[userRole] || [];
-    const directPerms = user.permissions || [];
-    const customUserPerms = (user as any).custom_permissions || [];
-
-    // Check user groups if present
-    const groupPerms = ((user as any).groups || []).flatMap((g: any) => [
-      ...(g.permissions || []),
-      ...(g.roles || []).flatMap((r: string) => ROLE_PERMISSIONS[r] || []),
-    ]);
-
-    const allGranted = [
-      ...directPerms,
-      ...customUserPerms,
-      ...rolePerms,
-      ...groupPerms,
-    ];
-
-    // Default Deny: Verify explicit platform permission or wildcard matching
-    return (
-      allGranted.includes('*') ||
-      allGranted.includes('platform.*') ||
-      checkPermission(allGranted, requiredPermission)
-    );
-  }
-
-  // 1. Superuser override (strict: label alone grants nothing).
-  if (user.is_superuser) {
-    return true;
-  }
-
-  // Normalize canonical / legacy formats
-  const targetCanonical =
-    LEGACY_TO_CANONICAL_MAP[requiredPermission] || requiredPermission;
-  const targetLegacy =
-    CANONICAL_TO_LEGACY_MAP[requiredPermission] || requiredPermission;
-
-  // 2. Production Admin restriction on platform-level RBAC & security
-  const userRoleLower = (user.role || '').toLowerCase();
-  const isProductionAdmin =
-    user.role === 'Production Admin' ||
-    user.role === 'production_admin' ||
-    userRoleLower.includes('productionadmin');
-
-  if (isProductionAdmin) {
-    const isAdminAction = ADMIN_ONLY_PERMISSIONS.some(
-      (prefix) => targetCanonical.startsWith(prefix) || targetCanonical === prefix
-    );
-    if (isAdminAction) {
-      return false;
-    }
-  }
-
-  // 3. Project-scoped evaluation (User has distinct roles/permissions in each project)
-  if (context?.projectId) {
-    const projMem = getUserProjectMembership(
-      user,
-      context.projectId
-    );
-
-    if (projMem) {
-      // If context has showId and membership is restricted to a different show, reject
-      if (context.showId && projMem.scope === 'SHOW') {
-        const memShowId = projMem.show_id || projMem.showId;
-        if (memShowId && memShowId !== context.showId) {
-          return false;
-        }
-      }
-
-      const projRoles: string[] =
-        projMem.roles && projMem.roles.length > 0
-          ? projMem.roles
-          : projMem.role
-          ? [projMem.role]
-          : [];
-
-      // If project role is Production Admin, disallow platform RBAC
-      if (
-        projRoles.some(
-          (r) =>
-            r === 'Production Admin' ||
-            r === 'production_admin' ||
-            r.toLowerCase().includes('productionadmin')
-        )
-      ) {
-        if (
-          ADMIN_ONLY_PERMISSIONS.some(
-            (prefix) => targetCanonical.startsWith(prefix) || targetCanonical === prefix
-          )
-        ) {
-          return false;
-        }
-      }
-
-      // Combine permissions from all project roles + explicit custom project permissions + user permissions
-      const rolePerms = projRoles.flatMap((r) => ROLE_PERMISSIONS[r] || []);
-      const customPerms = projMem.permissions || [];
-      const userPerms = user.permissions || [];
-      const allProjPerms = [...rolePerms, ...customPerms, ...userPerms];
-
-      const isPermGranted =
-        allProjPerms.includes('*') ||
-        checkPermission(allProjPerms, targetCanonical) ||
-        allProjPerms.includes(targetLegacy);
-
-      if (!isPermGranted) {
-        return false;
-      }
-
-      // Evaluate Scope and Entity Access if an entity is provided in context
-      if (context.entity) {
-        const effectiveScope =
-          context.scope || projMem.scope || getEffectiveScope(projRoles);
-        return isEntityInScope(
-          user,
-          context.entity,
-          context.entity.type || targetCanonical.split('.')[0],
-          effectiveScope,
-          context
-        );
-      }
-      return true;
-    }
-
-    // No direct project membership: deny production data. Project membership
-    // is the only production access dimension.
-    return false;
-  }
-
-  // 4. Global (non-project) evaluation — base role + direct grants.
-  const rolePerms = ROLE_PERMISSIONS[user.role || ''] || [];
-  const grantedPerms = [
-    ...(user.permissions || []),
-    ...rolePerms,
-  ];
-
-  // Check superuser wildcard inside granted
-  if (grantedPerms.includes('*')) return true;
-
-  // Check canonical wildcard matching (e.g. shot.* matches shot.approve)
-  const isPermGranted =
-    checkPermission(grantedPerms, targetCanonical) ||
-    grantedPerms.includes(targetLegacy);
-
-  if (isPermGranted) {
-    if (context?.entity) {
-      const effectiveScope =
-        context.scope || getEffectiveScope(user.role);
-      return isEntityInScope(
-        user,
-        context.entity,
-        context.entity.type || targetCanonical.split('.')[0],
-        effectiveScope,
-        context
-      );
-    }
-    return true;
-  }
-
-  return false;
+  return evaluateAccess(user, requiredPermission, { projectId: context?.projectId, showId: context?.showId });
 }
 
 /**
