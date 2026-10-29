@@ -67,7 +67,9 @@ export interface RowAction {
   label: string;
   confirm: string;
   destructive?: boolean;
-  run: () => Promise<unknown>;
+  /** Ask for a date first (e.g. the new end date of a contract); it is passed to `run`. */
+  askDate?: { label: string; initial?: string | null };
+  run: (date?: string) => Promise<unknown>;
 }
 
 export interface DirectoryFormConfig<T extends { id: string }> {
@@ -81,5 +83,26 @@ export interface DirectoryFormConfig<T extends { id: string }> {
   /** Where to go after saving. Default: the detail page `${basePath}/${id}`. */
   afterSavePath?: (saved: T) => string;
   /** Fields that cannot change after creation (the backend rejects them), shown read-only on edit. */
+  immutableOnEdit?: ReadonlyArray<string>;
+}
+
+/** A list of child records inside a parent's workspace (a client's contacts, a vendor's contracts). */
+export interface RelatedRecordsConfig<T extends { id: string }> {
+  noun: string;
+  title: string;
+  queryKey: readonly unknown[];
+  /** Backend filter and body field that names the parent: `client` or `vendor`. */
+  parentField: string;
+  fetchPage: PageFetcher<T>;
+  create: (input: Record<string, unknown>) => Promise<unknown>;
+  update: (id: string, patch: Record<string, unknown>) => Promise<unknown>;
+  remove: (id: string) => Promise<unknown>;
+  columns: ReadonlyArray<{ header: string; cell: (row: T) => React.ReactNode }>;
+  fields: ReadonlyArray<FieldDef>;
+  rowName: (row: T) => string;
+  defaultOrdering: string;
+  managePermission: string;
+  rowActions?: (row: T) => ReadonlyArray<RowAction>;
+  /** Fields the API refuses to change after creation (e.g. a contract's status: use the lifecycle actions). */
   immutableOnEdit?: ReadonlyArray<string>;
 }
