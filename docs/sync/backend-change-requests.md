@@ -17,6 +17,8 @@ Rule (HARD RULE 1): no backend file is changed without explicit approval. Each e
 | CR-11 | httpOnly refresh-token cookie for the SPA | No (refresh token in `localStorage` with XSS hygiene) | Low — optional, security hardening |
 | CR-13 | `archive` / `check-existence` on projects and shows are missing from the viewsets' permission_map, so they fail closed (403 even for a superuser) | No (frontend archives with DELETE and checks codes with `?code=`) | Medium — bug (**kept for later by the user, 2026-10-29**) |
 | CR-14 | A timelog that is not an adjustment accepts negative `duration_hours` | No (the form requires > 0 unless correcting an approved entry) | Medium — bug |
+| Q-16 | An `artist` can update any task of the project (assignee, status), not only their own | Question for the owner | — |
+| Q-17 | Task Board / Calendar / Timeline views were not rebuilt in Phase 6 | Question for the owner | — |
 | Q-01 | Contacts list 403 for users without directory roles despite an empty `permission_map` entry | Question | — |
 | Q-02 | Attachments accept an empty body | Open question for the owner | — |
 | Q-03 | `change-password` ignores `confirm_password` | **APPLIED** (`553b481`): validated when present, still optional | Low |
