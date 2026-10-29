@@ -1,4 +1,5 @@
 import { apiClient } from '@/api/client/ApiClient';
+import type { components } from '@/core/api/generated/openapi';
 
 /**
  * TOTP enrollment (`apps/identity/api/views/mfa_compat.py`). These are among the few endpoints a
@@ -37,10 +38,8 @@ export interface MfaReauth {
   recovery_code?: string;
 }
 
-export interface TrustedDevice {
-  id: string;
-  [field: string]: unknown;
-}
+/** Row of `GET /identity/trusted-devices/` (generated `TrustedDeviceList`; the capture had no rows to compare). */
+export type TrustedDevice = components['schemas']['TrustedDeviceList'];
 
 export const mfaApi = {
   config: () => apiClient.get<MfaConfig>('/api/v1/identity/mfa/config/'),

@@ -21,6 +21,11 @@ import { SchedulingPage } from '@/modules/scheduling';
 import { TeamsListPage, TeamWorkspacePage, CreateTeamPage, EditTeamPage } from '@/modules/teams';
 
 import { WorkspacePage } from '@/modules/workspace';
+import { AccountLayout } from '@/modules/identity/account/AccountLayout';
+import { ProfilePage } from '@/modules/identity/account/ProfilePage';
+import { SecurityPage } from '@/modules/identity/account/SecurityPage';
+import { SessionsPage } from '@/modules/identity/account/SessionsPage';
+import { TokensPage } from '@/modules/identity/account/TokensPage';
 import { GroupDetailPage } from '@/modules/identity/pages/GroupDetailPage';
 import { GroupsPage } from '@/modules/identity/pages/GroupsPage';
 import { PermissionsPage } from '@/modules/identity/pages/PermissionsPage';
@@ -289,7 +294,18 @@ export const AppRoutes: React.FC = () => {
 
           {platformRoutes}
 
-          <Route path="/settings" element={<PreserveQueryRedirect to="/platform/admin/pipeline" />} />
+          {/* My account (personal settings): any signed-in user. System settings arrive under /settings/system in Phase 11. */}
+          <Route path="/settings" element={<Navigate to="/settings/account/profile" replace />} />
+
+          <Route path="/settings/account" element={<Navigate to="/settings/account/profile" replace />} />
+
+          <Route path="/settings/account/profile" element={<AccountLayout><ProfilePage /></AccountLayout>} />
+
+          <Route path="/settings/account/security" element={<AccountLayout><SecurityPage /></AccountLayout>} />
+
+          <Route path="/settings/account/sessions" element={<AccountLayout><SessionsPage /></AccountLayout>} />
+
+          <Route path="/settings/account/tokens" element={<AccountLayout><TokensPage /></AccountLayout>} />
 
           {/* Access & RBAC workspace — the org-free RBAC surface (Task 12
               sections) is reachable at /access[/:section]; /permissions and

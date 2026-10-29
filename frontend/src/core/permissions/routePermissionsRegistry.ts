@@ -84,6 +84,14 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
     permissions: ['office.create'],
   },
 
+  // My account: personal settings of the signed-in user. No permission code applies; every
+  // endpoint behind these pages acts on the caller's own record (or is gated server-side).
+  '/settings/account': { path: '/settings/account', name: 'My account', pagePermission: 'page.account' },
+  '/settings/account/profile': { path: '/settings/account/profile', name: 'My profile', pagePermission: 'page.account' },
+  '/settings/account/security': { path: '/settings/account/security', name: 'My security', pagePermission: 'page.account' },
+  '/settings/account/sessions': { path: '/settings/account/sessions', name: 'My sessions', pagePermission: 'page.account' },
+  '/settings/account/tokens': { path: '/settings/account/tokens', name: 'My access tokens', pagePermission: 'page.account' },
+
   // Access management routes (project-scoped, no org path segment)
   '/access': {
     path: '/access',
@@ -308,11 +316,11 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
   },
 
   // Platform Routes
+  // /settings only redirects to My account; system settings get their own guarded routes in Phase 11.
   '/settings': {
     path: '/settings',
     name: 'Settings',
-    pagePermission: 'page.settings',
-    permissions: ['settings.view'],
+    pagePermission: 'page.account',
   },
   '/settings/permissions': {
     path: '/settings/permissions',

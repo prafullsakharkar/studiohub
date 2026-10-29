@@ -178,6 +178,7 @@ export const PERMISSION_MAP: Readonly<Record<string, PermissionRule>> = {
 
   // --- Top-level pages ---
   'page.dashboard': open('Dashboard data is scoped by the API.'),
+  'page.account': open('My account acts on the caller\'s own record (profile, sessions, MFA, own credentials); anything wider is gated by the API.'),
   'page.workspace': open('Shell page.'),
   'page.projects': codes('ProjectViewSet.list', 'project.view'),
   'page.people': open(DIRECTORY_READ),

@@ -21,6 +21,7 @@ import {
   HelpCircle,
   Compass,
   Palette,
+  UserCircle,
 } from 'lucide-react';
 import { useCoachMarkStore } from '@/shared/stores/useCoachMarkStore';
 ;
@@ -331,6 +332,17 @@ export const Header: React.FC = () => {
                       <Sliders className="w-3.5 h-3.5 text-slate-400" />
                     </Link>
                   )}
+                  <Link
+                    id="user-menu-my-account-btn"
+                    to="/settings/account/profile"
+                    onClick={() => setShowUserMenu(false)}
+                    className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-300 hover:bg-slate-800 flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <UserCircle className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>My account</span>
+                    </div>
+                  </Link>
                   {canViewSettings && (
                   <Link
                     id="user-menu-theme-editor-btn"
