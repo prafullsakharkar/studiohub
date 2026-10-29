@@ -41,13 +41,13 @@ import { ReviewsPage } from '@/modules/reviews';
 
 import { auditRoutes } from '@/modules/audit';
 
-import { AssetsPage, AssetWorkspacePage } from '@/modules/assets';
+import { AssetFormPage, AssetsPage, AssetWorkspacePage } from '@/modules/assets';
 
 import { VersionsListPage, VersionWorkspacePage } from '@/modules/versions';
 
-import { ShotsPage, ShotWorkspacePage } from '@/modules/shots';
+import { ShotFormPage, ShotsPage, ShotWorkspacePage } from '@/modules/shots';
 
-import { TasksPage, TaskDetailPage, TimelogsPage } from '@/modules/tasks';
+import { TasksPage, TaskDetailPage, TaskFormPage, TaskTemplateFormPage, TaskTemplatesPage, TimelogFormPage, TimelogsPage } from '@/modules/tasks';
 
 import { ProjectsPage, ProjectWorkspacePage, ProjectFormPage } from '@/modules/production';
 
@@ -273,6 +273,10 @@ export const AppRoutes: React.FC = () => {
 
           <Route path="/shots" element={<ShotsPage />} />
 
+          <Route path="/shots/new" element={<ShotFormPage />} />
+
+          <Route path="/shots/:id/edit" element={<ShotFormPage />} />
+
           <Route path="/shots/:shotId" element={<ShotWorkspacePage />} />
 
           <Route path="/shots/:shotId/:tab" element={<ShotWorkspacePage />} />
@@ -282,6 +286,10 @@ export const AppRoutes: React.FC = () => {
           <Route path="/projects/:projectId/shots/:shotId/:tab" element={<ShotWorkspacePage />} />
 
           <Route path="/assets" element={<AssetsPage />} />
+
+          <Route path="/assets/new" element={<AssetFormPage />} />
+
+          <Route path="/assets/:id/edit" element={<AssetFormPage />} />
 
           <Route path="/assets/:assetId" element={<AssetWorkspacePage />} />
 
@@ -293,9 +301,23 @@ export const AppRoutes: React.FC = () => {
 
           <Route path="/tasks" element={<TasksPage />} />
 
+          <Route path="/tasks/new" element={<TaskFormPage />} />
+
+          <Route path="/task-templates" element={<TaskTemplatesPage />} />
+
+          <Route path="/task-templates/new" element={<TaskTemplateFormPage />} />
+
+          <Route path="/task-templates/:id/edit" element={<TaskTemplateFormPage />} />
+
+          <Route path="/tasks/:id/edit" element={<TaskFormPage />} />
+
           <Route path="/tasks/:taskId" element={<TaskDetailPage />} />
 
           <Route path="/timelogs" element={<TimelogsPage />} />
+
+          <Route path="/timelogs/new" element={<TimelogFormPage />} />
+
+          <Route path="/timelogs/:id/edit" element={<TimelogFormPage />} />
 
           <Route path="/versions" element={<VersionsListPage />} />
 

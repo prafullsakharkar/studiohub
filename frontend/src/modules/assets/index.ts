@@ -5,4 +5,4 @@ export { useAssetMutations } from './hooks/useAssetMutations';
 export { useAssets } from './hooks/useAssets';
 export { useBulkAssets } from './hooks/useBulkAssets';
 export { AssetWorkspacePage } from './pages/AssetWorkspacePage';
-export { AssetsPage } from './pages/AssetsPage';
+export { AssetFormPage, AssetsPage } from './pages/AssetsPage';

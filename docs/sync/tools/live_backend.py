@@ -15,6 +15,7 @@ It seeds (each exercises a different backend rule):
   pwdue    ordinary user owing a password change
   delegate ordinary user holding `live-delegate` and `live-viewer` (Phase 2: RBAC admin without being a superuser)
   selfmfa  ordinary user without MFA (Phase 2: voluntary enrollment from My account)
+  lead     holds the seeded `lead-artist` role, no MFA (Phase 6: approves time and shots)
   audit    a queued and a failed background job and an open error log (Phase 4)
   roles    `live-escalation` (grants project.delete, held by nobody), `live-viewer` (grants shot.view) and `live-delegate` (grants identity.role.update/view + identity.user.view)
 Writes the connection details to $SYNC_LIVE_INFO, then keeps serving
@@ -46,6 +47,7 @@ PASSWORDS = {
     "pwdue": "Live-Pwdue-Pass!9",
     "delegate": "Live-Delegate-Pass!9",
     "selfmfa": "Live-Selfmfa-Pass!9",
+    "lead": "Live-Lead-Pass!9",
 }
 
 
@@ -98,6 +100,10 @@ def test_serve(live_server, django_user_model):
     selfmfa = users.create_user(email="selfmfa@example.test", password=PASSWORDS["selfmfa"])
     selfmfa.is_active = True
     selfmfa.save()
+    lead = users.create_user(email="lead@example.test", password=PASSWORDS["lead"])
+    lead.is_active = True
+    lead.save()
+    UserRole.objects.create(user=lead, role=Role.objects.get(code="lead-artist"))
 
     from apps.audit.models import BackgroundJob, ErrorLog
 

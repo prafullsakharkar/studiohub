@@ -41,6 +41,9 @@ async function signInManager() {
   if (outcome.status !== 'mfa_required') throw new Error('expected an MFA challenge for the manager');
   await authService.completeMfaLogin({ challenge: outcome.challenge, code: await freshTotp(live.manager.secret) });
 }
+/** The change-log entries only: the panel also lists audit events (one line per write, from a real server) in a separate list. */
+const changeRows = () => [...screen.getByRole('region', { name: 'History' }).querySelectorAll('ol > li')];
+
 const uid = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`;
 
 describe('History panel, end to end', () => {
@@ -51,7 +54,7 @@ describe('History panel, end to end', () => {
 
     render(tree(<EntityHistory targetType="Department" targetId={dept.id} />));
     expect(await screen.findByText(/changed .*name/, {}, { timeout: 15000 })).toBeTruthy();
-    expect(screen.getAllByRole('listitem')).toHaveLength(2); // update, create (newest first)
+    expect(changeRows()).toHaveLength(2); // update, create (newest first)
 
     fireEvent.click(screen.getByRole('button', { name: /changed/ }));
     const diff = await screen.findByRole('table', { name: /Changes in/ });
@@ -84,7 +87,7 @@ describe('History panel, end to end', () => {
         `/teams/${team.id}/edit`
       )
     );
-    await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(1), { timeout: 15000 }); // the create
+    await waitFor(() => expect(changeRows()).toHaveLength(1), { timeout: 15000 }); // the create
     await waitFor(() => expect((screen.getByLabelText(/^Name/) as HTMLInputElement).value).toBe(team.name));
     fireEvent.change(screen.getByLabelText('Capacity'), { target: { value: '9' } });
     fireEvent.click(screen.getByRole('button', { name: /save changes/i }));

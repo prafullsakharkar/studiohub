@@ -104,7 +104,7 @@ import { ProductionStatus } from '@/types/common';
 
 import { AssetOverviewTab } from '../components/AssetOverviewTab';
 
-import { AssetTasksTab } from '../components/AssetTasksTab';
+import { AssetShotsPanel, EntityTasksPanel, WorkHistoryPanel } from '@/modules/production/work/panels';
 
 import { AssetVersionsTab } from '../components/AssetVersionsTab';
 
@@ -114,7 +114,6 @@ import { AssetAssignmentsTab } from '../components/AssetAssignmentsTab';
 
 import { AssetDependenciesTab } from '../components/AssetDependenciesTab';
 
-import { AssetUsageTab } from '../components/AssetUsageTab';
 
 import { AssetNotesTab } from '../components/AssetNotesTab';
 
@@ -124,17 +123,10 @@ import { AssetAttachmentsTab } from '../components/AssetAttachmentsTab';
 
 import { AssetPublishingTab } from '../components/AssetPublishingTab';
 
-import { AssetActivityTab } from '../components/AssetActivityTab';
-
-import { AssetHistoryTab } from '../components/AssetHistoryTab';
 
 // Modals
 
-import { AssetEditModal } from '../components/AssetEditModal';
-
 import { AssetAssignModal } from '../components/modals/AssetAssignModal';
-
-import { AssetCreateTaskModal } from '../components/modals/AssetCreateTaskModal';
 
 import { AssetSubmitVersionModal } from '../components/modals/AssetSubmitVersionModal';
 
@@ -252,11 +244,7 @@ export const AssetWorkspacePage: React.FC = () => {
 
   // Modals state
 
-  const [isEditOpen, setIsEditOpen] = useState(false);
-
   const [isAssignOpen, setIsAssignOpen] = useState(false);
-
-  const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
 
   const [isSubmitVersionOpen, setIsSubmitVersionOpen] = useState(false);
 
@@ -358,7 +346,7 @@ export const AssetWorkspacePage: React.FC = () => {
 
         shortcut: '⌘E',
 
-        onClick: () => setIsEditOpen(true),
+        onClick: () => navigate(`/assets/${asset.id}/edit`),
 
       },
 
@@ -394,7 +382,7 @@ export const AssetWorkspacePage: React.FC = () => {
 
         permission: 'task.create',
 
-        onClick: () => setIsCreateTaskOpen(true),
+        onClick: () => navigate(`/tasks/new?project=${asset.project_id}&entity_type=Asset&entity_id=${asset.id}`),
 
       },
 
@@ -972,7 +960,7 @@ export const AssetWorkspacePage: React.FC = () => {
 
         )}
 
-        {resolvedTab === 'tasks' && <AssetTasksTab asset={asset} />}
+        {resolvedTab === 'tasks' && <EntityTasksPanel target={{ type: 'Asset', id: asset.id, code: asset.code, projectId: asset.project_id }} />}
 
         {resolvedTab === 'versions' && <AssetVersionsTab asset={asset} />}
 
@@ -1002,7 +990,7 @@ export const AssetWorkspacePage: React.FC = () => {
 
         )}
 
-        {resolvedTab === 'usage' && <AssetUsageTab asset={asset} />}
+        {resolvedTab === 'usage' && <AssetShotsPanel asset={asset} />}
 
         {resolvedTab === 'notes' && (
 
@@ -1022,23 +1010,13 @@ export const AssetWorkspacePage: React.FC = () => {
 
         {resolvedTab === 'publishing' && <AssetPublishingTab asset={asset} />}
 
-        {resolvedTab === 'activity' && <AssetActivityTab asset={asset} />}
+        {resolvedTab === 'activity' && <WorkHistoryPanel targetType="Asset" id={asset.id} />}
 
-        {resolvedTab === 'history' && <AssetHistoryTab asset={asset} />}
+        {resolvedTab === 'history' && <WorkHistoryPanel targetType="Asset" id={asset.id} />}
 
       </div>
 
       {/* Modals */}
-
-      <AssetEditModal
-
-        asset={asset}
-
-        isOpen={isEditOpen}
-
-        onClose={() => setIsEditOpen(false)}
-
-      />
 
       <AssetAssignModal
 
@@ -1047,16 +1025,6 @@ export const AssetWorkspacePage: React.FC = () => {
         isOpen={isAssignOpen}
 
         onClose={() => setIsAssignOpen(false)}
-
-      />
-
-      <AssetCreateTaskModal
-
-        asset={asset}
-
-        isOpen={isCreateTaskOpen}
-
-        onClose={() => setIsCreateTaskOpen(false)}
 
       />
 

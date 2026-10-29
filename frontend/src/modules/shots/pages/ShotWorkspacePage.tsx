@@ -17,6 +17,7 @@ import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import {
 
   Clapperboard,
+  Layers,
 
   LayoutGrid,
 
@@ -82,7 +83,7 @@ import { Button } from '@/shared/components/Button';
 
 import { ShotOverviewTab } from '../components/workspace/ShotOverviewTab';
 
-import { ShotTasksTab } from '../components/workspace/ShotTasksTab';
+import { EntityTasksPanel, ShotAssetsPanel, WorkHistoryPanel } from '@/modules/production/work/panels';
 
 import { ShotVersionsTab } from '../components/workspace/ShotVersionsTab';
 
@@ -90,21 +91,13 @@ import { ShotReviewsTab } from '../components/workspace/ShotReviewsTab';
 
 import { ShotNotesTab } from '../components/workspace/ShotNotesTab';
 
-import { ShotActivityTab } from '../components/workspace/ShotActivityTab';
-
 import { ShotMediaTab } from '../components/workspace/ShotMediaTab';
 
 import { ShotAssignmentsTab } from '../components/workspace/ShotAssignmentsTab';
 
-import { ShotHistoryTab } from '../components/workspace/ShotHistoryTab';
-
 // Modals
 
-import { ShotEditModal } from '../components/workspace/modals/ShotEditModal';
-
 import { ShotAssignModal } from '../components/workspace/modals/ShotAssignModal';
-
-import { ShotCreateTaskModal } from '../components/workspace/modals/ShotCreateTaskModal';
 
 import { ShotSubmitVersionModal } from '../components/workspace/modals/ShotSubmitVersionModal';
 
@@ -208,11 +201,7 @@ export const ShotWorkspacePage: React.FC = () => {
 
   // Modals state
 
-  const [isEditOpen, setIsEditOpen] = useState(false);
-
   const [isAssignOpen, setIsAssignOpen] = useState(false);
-
-  const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
 
   const [isSubmitVersionOpen, setIsSubmitVersionOpen] = useState(false);
 
@@ -314,7 +303,7 @@ export const ShotWorkspacePage: React.FC = () => {
 
         shortcut: '⌘E',
 
-        onClick: () => setIsEditOpen(true),
+        onClick: () => navigate(`/shots/${shot.id}/edit`),
 
       },
 
@@ -350,7 +339,7 @@ export const ShotWorkspacePage: React.FC = () => {
 
         permission: 'task.create',
 
-        onClick: () => setIsCreateTaskOpen(true),
+        onClick: () => navigate(`/tasks/new?project=${shot.project_id}&entity_type=Shot&entity_id=${shot.id}`),
 
       },
 
@@ -602,6 +591,8 @@ export const ShotWorkspacePage: React.FC = () => {
 
       { id: 'tasks', label: 'Tasks', icon: CheckSquare, badge: shotTasks.length || undefined },
 
+      { id: 'assets', label: 'Assets', icon: Layers },
+
       { id: 'versions', label: 'Versions', icon: GitBranch, badge: shotVersions.length || undefined },
 
       { id: 'reviews', label: 'Reviews', icon: Film },
@@ -816,11 +807,11 @@ export const ShotWorkspacePage: React.FC = () => {
 
           onNavigateTab={handleTabChange}
 
-          onOpenEdit={() => setIsEditOpen(true)}
+          onOpenEdit={() => navigate(`/shots/${shot.id}/edit`)}
 
           onOpenAssign={() => setIsAssignOpen(true)}
 
-          onOpenCreateTask={() => setIsCreateTaskOpen(true)}
+          onOpenCreateTask={() => navigate(`/tasks/new?project=${shot.project_id}&entity_type=Shot&entity_id=${shot.id}`)}
 
           onOpenSubmitVersion={() => setIsSubmitVersionOpen(true)}
 
@@ -828,19 +819,9 @@ export const ShotWorkspacePage: React.FC = () => {
 
       )}
 
-      {resolvedTab === 'tasks' && (
+      {resolvedTab === 'tasks' && <EntityTasksPanel target={{ type: 'Shot', id: shot.id, code: shot.code, projectId: shot.project_id }} />}
 
-        <ShotTasksTab
-
-          shot={shot}
-
-          tasks={shotTasks}
-
-          onOpenCreateTask={() => setIsCreateTaskOpen(true)}
-
-        />
-
-      )}
+      {resolvedTab === 'assets' && <ShotAssetsPanel shot={shot} />}
 
       {resolvedTab === 'versions' && (
 
@@ -864,7 +845,7 @@ export const ShotWorkspacePage: React.FC = () => {
 
       )}
 
-      {resolvedTab === 'activity' && <ShotActivityTab shot={shot} />}
+      {resolvedTab === 'activity' && <WorkHistoryPanel targetType="Shot" id={shot.id} />}
 
       {resolvedTab === 'media' && <ShotMediaTab shot={shot} />}
 
@@ -874,23 +855,9 @@ export const ShotWorkspacePage: React.FC = () => {
 
       )}
 
-      {resolvedTab === 'history' && <ShotHistoryTab shot={shot} />}
+      {resolvedTab === 'history' && <WorkHistoryPanel targetType="Shot" id={shot.id} />}
 
       {/* Workspace Modals */}
-
-      {isEditOpen && (
-
-        <ShotEditModal
-
-          isOpen={isEditOpen}
-
-          onClose={() => setIsEditOpen(false)}
-
-          shot={shot}
-
-        />
-
-      )}
 
       {isAssignOpen && (
 
@@ -899,20 +866,6 @@ export const ShotWorkspacePage: React.FC = () => {
           isOpen={isAssignOpen}
 
           onClose={() => setIsAssignOpen(false)}
-
-          shot={shot}
-
-        />
-
-      )}
-
-      {isCreateTaskOpen && (
-
-        <ShotCreateTaskModal
-
-          isOpen={isCreateTaskOpen}
-
-          onClose={() => setIsCreateTaskOpen(false)}
 
           shot={shot}
 

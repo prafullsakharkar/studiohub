@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 
 export interface LiveInfo {
   url: string;
-  users: Record<'admin' | 'enroll' | 'manager' | 'artist' | 'mfa' | 'pwdue' | 'delegate' | 'selfmfa', { email: string; password: string }>;
+  users: Record<'admin' | 'enroll' | 'manager' | 'artist' | 'mfa' | 'pwdue' | 'delegate' | 'selfmfa' | 'lead', { email: string; password: string }>;
   mfa: { secret: string; recovery_codes: string[] };
   manager: { secret: string };
 }

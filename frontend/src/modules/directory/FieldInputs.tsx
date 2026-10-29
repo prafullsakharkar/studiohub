@@ -1,8 +1,8 @@
 import type React from 'react';
-import { Controller } from 'react-hook-form';
+import { Controller, useWatch } from 'react-hook-form';
 import type { Control, FieldErrors, UseFormRegister } from 'react-hook-form';
 import { Field, inputClass } from '@/modules/identity/components/ui';
-import type { Values } from './formModel';
+import { type Values, isVisible } from './formModel';
 import type { FieldDef } from './types';
 
 export interface FieldInputsProps {
@@ -19,9 +19,10 @@ export interface FieldInputsProps {
 /** Renders the inputs of a directory form from its field definitions. */
 export const FieldInputs: React.FC<FieldInputsProps> = ({ fields, parentId, editing, immutableOnEdit, register, control, errors, clearServerError }) => {
   const err = (name: string) => (errors[name]?.message as string | undefined) ?? undefined;
+  const values = useWatch({ control }) as Values;
   return (
     <>
-          {fields.map((field) => {
+          {fields.filter((field) => isVisible(field, values)).map((field) => {
             const readOnly = editing && immutableOnEdit?.includes(field.name);
             const id = `f-${field.name}`;
             if (field.kind === 'checkbox') {
@@ -37,7 +38,7 @@ export const FieldInputs: React.FC<FieldInputsProps> = ({ fields, parentId, edit
                   key={field.name}
                   control={control}
                   name={field.name}
-                  render={({ field: f }) => <>{field.render({ parentId, value: String(f.value ?? ''), onChange: (v) => { clearServerError(); f.onChange(v); }, error: err(field.name) })}</>}
+                  render={({ field: f }) => <>{field.render({ parentId, values, value: String(f.value ?? ''), onChange: (v) => { clearServerError(); f.onChange(v); }, error: err(field.name) })}</>}
                 />
               );
             }
