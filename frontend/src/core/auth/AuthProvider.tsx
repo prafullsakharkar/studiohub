@@ -1,7 +1,7 @@
 import { authService, LoginFormData } from '@/modules/auth';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { AuthContext, AuthContextValue } from './AuthContext';
-import { User, Role, Permission } from '@/types/identity';
+import { User, Role, Permission, LoginOutcome, MfaChallengeInput } from '@/types/identity';
 import {
   checkUserHasPermission,
   checkUserHasRole,
@@ -19,6 +19,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [mfaEnrollmentRequired, setMfaEnrollmentRequired] = useState(false);
   const recordActivity = useActivityStore((state) => state.recordActivity);
 
   // Phase 4 (ADR-0033): permission state derives from the authenticated user
@@ -77,32 +78,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []);
 
-  const login = useCallback(async (credentials: LoginFormData) => {
-    const response = await authService.login(credentials);
-    setUser(response.user);
-    // Invalidate queries so freshly authenticated user queries populate
-    queryClient.invalidateQueries();
+  const finishLogin = useCallback(
+    (outcome: LoginOutcome): LoginOutcome => {
+      if (outcome.status !== 'authenticated') return outcome;
+      const authedUser = outcome.user;
+      setUser(authedUser);
+      setMfaEnrollmentRequired(outcome.mfaEnrollmentRequired);
+      // Invalidate queries so freshly authenticated user queries populate
+      queryClient.invalidateQueries();
 
-    const userName = response.user.full_name || (response.user as any).name || response.user.email;
-    const userAvatar = response.user.avatar_url || (response.user as any).avatar;
+      const userName = authedUser.full_name || (authedUser as any).name || authedUser.email;
+      const userAvatar = authedUser.avatar_url || (authedUser as any).avatar;
 
     recordActivity({
       action: 'login',
       actionLabel: 'User Signed In',
       resourceType: 'user',
-      resourceId: response.user.id,
+      resourceId: authedUser.id,
       resourceName: userName,
       actor: {
-        id: response.user.id,
+        id: authedUser.id,
         name: userName,
-        email: response.user.email,
-        role: typeof response.user.role === 'string' ? response.user.role : 'User',
+        email: authedUser.email,
+        role: typeof authedUser.role === 'string' ? authedUser.role : 'User',
         avatarUrl: userAvatar,
       },
-      description: `Signed in as ${userName} (${response.user.role}).`,
+      description: `Signed in as ${userName} (${authedUser.role}).`,
       tags: ['Authentication', 'Session'],
     });
-  }, []);
+      return outcome;
+    },
+    [recordActivity]
+  );
+
+  const login = useCallback(
+    async (credentials: LoginFormData) => finishLogin(await authService.login(credentials)),
+    [finishLogin]
+  );
+
+  const completeMfaLogin = useCallback(
+    async (input: MfaChallengeInput) => finishLogin(await authService.completeMfaLogin(input)),
+    [finishLogin]
+  );
 
   const logout = useCallback(async () => {
     setIsLoading(true);
@@ -134,6 +151,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       logger.warn('AuthProvider', 'Logout error', err);
     } finally {
       setUser(null);
+      setMfaEnrollmentRequired(false);
       // Cleanse TanStack query cache to prevent any user data leakage
       queryClient.clear();
       setIsLoading(false);
@@ -175,6 +193,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       isAuthenticated: !!user,
       isLoading,
       login,
+      completeMfaLogin,
+      mfaEnrollmentRequired,
       logout,
       hasRole,
       hasPermission,
@@ -182,7 +202,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       refreshUser,
       updateUserProfile,
     }),
-    [user, isLoading, login, logout, hasRole, hasPermission, can, refreshUser, updateUserProfile]
+    [user, isLoading, login, completeMfaLogin, mfaEnrollmentRequired, logout, hasRole, hasPermission, can, refreshUser, updateUserProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,6 +1,6 @@
 import { IAuthRepository, authRepository } from '@/api/repositories';
 import { tokenStorage } from '@/core/auth/tokenStorage';
-import { User, LoginResponse, DemoUser } from '@/types/identity';
+import { User, LoginOutcome, LoginResponse, DemoUser, MfaChallengeInput } from '@/types/identity';
 import { LoginFormData } from '../schemas/authSchemas';
 import { logger } from '@/core/logging/logger';
 import { mapHttpError } from '@/api/errors/errorMapper';
@@ -12,12 +12,27 @@ export class AuthService {
     this.repository = repository;
   }
 
-  async login(credentials: LoginFormData): Promise<LoginResponse> {
-    logger.info('AuthService', `Attempting login for user: ${credentials.email}`);
+  async login(credentials: LoginFormData): Promise<LoginOutcome> {
+    logger.info('AuthService', 'Attempting login');
     const response = await this.repository.login(credentials);
-    tokenStorage.setTokens(response.tokens);
-    logger.info('AuthService', `Login successful for: ${response.user.full_name} (${response.user.role})`);
-    return response;
+    if ('mfa_required' in response && response.mfa_required) {
+      return { status: 'mfa_required', challenge: response.challenge, expiresIn: response.expires_in };
+    }
+    return this.toAuthenticated(response as LoginResponse);
+  }
+
+  async completeMfaLogin(input: MfaChallengeInput): Promise<LoginOutcome> {
+    logger.info('AuthService', 'Completing MFA login');
+    return this.toAuthenticated(await this.repository.completeMfaLogin(input));
+  }
+
+  private toAuthenticated(response: LoginResponse): LoginOutcome {
+    if (response.tokens) tokenStorage.setTokens(response.tokens);
+    return {
+      status: 'authenticated',
+      user: response.user,
+      mfaEnrollmentRequired: response.mfa_enrollment_required === true,
+    };
   }
 
   async logout(): Promise<void> {
@@ -57,6 +72,14 @@ export class AuthService {
     confirm_password: string;
   }): Promise<void> {
     await this.repository.changePassword(data);
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    await this.repository.forgotPassword(email);
+  }
+
+  async resetPassword(data: { token: string; new_password: string; confirm_password: string }): Promise<void> {
+    await this.repository.resetPassword(data);
   }
 
   async getDemoUsers(): Promise<DemoUser[]> {

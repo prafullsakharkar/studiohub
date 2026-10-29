@@ -1,6 +1,13 @@
 import { LoginFormData } from '@/modules/auth';
 import { IAuthRepository } from '../../interfaces/IAuthRepository';
-import { LoginResponse, RefreshResponse, User, DemoUser } from '@/types/identity';
+import {
+  LoginResponse,
+  MfaChallengeInput,
+  MfaRequiredResponse,
+  RefreshResponse,
+  User,
+  DemoUser,
+} from '@/types/identity';
 import { BaseRESTAdapter } from './BaseRESTAdapter';
 import { tokenStorage } from '@/core/auth/tokenStorage';
 
@@ -9,8 +16,8 @@ export class RESTAuthAdapter extends BaseRESTAdapter<User> implements IAuthRepos
     super('/api/v1/auth');
   }
 
-  async login(credentials: LoginFormData): Promise<LoginResponse> {
-    const response = await this.request<LoginResponse>(`${this.basePath}login/`, {
+  async login(credentials: LoginFormData): Promise<LoginResponse | MfaRequiredResponse> {
+    const response = await this.request<LoginResponse | MfaRequiredResponse>(`${this.basePath}login/`, {
       method: 'POST',
       body: JSON.stringify({
         email: credentials.email,
@@ -18,11 +25,40 @@ export class RESTAuthAdapter extends BaseRESTAdapter<User> implements IAuthRepos
       }),
     });
 
-    if (response.tokens) {
+    // With MFA the password step returns a challenge and no tokens (SEC-LOGIN-04).
+    if ('mfa_required' in response && response.mfa_required) {
+      return response;
+    }
+    if ('tokens' in response && response.tokens) {
       tokenStorage.setTokens(response.tokens);
     }
 
     return response;
+  }
+
+  async completeMfaLogin(input: MfaChallengeInput): Promise<LoginResponse> {
+    const response = await this.request<LoginResponse>(`${this.basePath}mfa/challenge/`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+    if (response.tokens) {
+      tokenStorage.setTokens(response.tokens);
+    }
+    return response;
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    await this.request<void>(`${this.basePath}forgot-password/`, {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async resetPassword(data: { token: string; new_password: string; confirm_password: string }): Promise<void> {
+    await this.request<void>(`${this.basePath}reset-password/`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   }
 
   async refreshToken(refreshToken: string): Promise<RefreshResponse> {
