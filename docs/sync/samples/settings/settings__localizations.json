@@ -1,0 +1,216 @@
+{
+  "view": "LocalizationViewSet",
+  "app": "settings",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/localizations/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c77a095c-d597-472e-9650-7b28a050c1b1",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "db9d4612-9f72-4ee6-880e-fbb3164a759c",
+          "uuid": "db9d4612-9f72-4ee6-880e-fbb3164a759c",
+          "code": "localization000",
+          "name": "Localization 0",
+          "language": "en",
+          "timezone": "Europe/London",
+          "date_format": "DD-MM-YYYY",
+          "time_format": "24H",
+          "number_format": "comma",
+          "currency_code": "SCR",
+          "currency_symbol": "$",
+          "week_start": 1,
+          "fiscal_year_start": null,
+          "is_active": true,
+          "created_at": "2026-10-29T05:37:41.952442Z",
+          "updated_at": "2026-10-29T05:37:41.952464Z"
+        },
+        {
+          "id": "6e97d5ed-ab7b-4265-b607-186658f9be65",
+          "uuid": "6e97d5ed-ab7b-4265-b607-186658f9be65",
+          "code": "localization001",
+          "name": "Localization 1",
+          "language": "ru",
+          "timezone": "Asia/Dubai",
+          "date_format": "YYYY-MM-DD",
+          "time_format": "12H",
+          "number_format": "dot",
+          "currency_code": "WST",
+          "currency_symbol": "$",
+          "week_start": 1,
+          "fiscal_year_start": null,
+          "is_active": true,
+          "created_at": "2026-10-29T05:37:41.954600Z",
+          "updated_at": "2026-10-29T05:37:41.954609Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/localizations/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "324d9d6d-71d2-41ed-baae-95e5b9898903",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "324d9d6d-71d2-41ed-baae-95e5b9898903"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/localizations/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f89a92a2-b575-437e-93a0-830e79260f7e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "f89a92a2-b575-437e-93a0-830e79260f7e"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/localizations/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d118605a-fc04-4aba-9650-1247e6a60766",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "d118605a-fc04-4aba-9650-1247e6a60766"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/localizations/db9d4612-9f72-4ee6-880e-fbb3164a759c/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "99b2d07f-60af-4165-a4c2-6981981e06b0",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "db9d4612-9f72-4ee6-880e-fbb3164a759c",
+      "uuid": "db9d4612-9f72-4ee6-880e-fbb3164a759c",
+      "code": "localization000",
+      "name": "Localization 0",
+      "language": "en",
+      "timezone": "Europe/London",
+      "date_format": "DD-MM-YYYY",
+      "time_format": "24H",
+      "number_format": "comma",
+      "currency_code": "SCR",
+      "currency_symbol": "$",
+      "week_start": 1,
+      "fiscal_year_start": null,
+      "is_active": true,
+      "created_at": "2026-10-29T05:37:41.952442Z",
+      "updated_at": "2026-10-29T05:37:41.952464Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/localizations/e63cb2ed-d5b5-401e-99e3-a0c85c8d0265/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f37772df-1651-4821-b58f-0c9d2c7b4011",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Localization matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "f37772df-1651-4821-b58f-0c9d2c7b4011"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/settings/localizations/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9ee63ce0-c58e-4f4f-b88b-fec2a50d601d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "This field is required."
+      ],
+      "name": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "9ee63ce0-c58e-4f4f-b88b-fec2a50d601d"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/settings/localizations/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d2324f9f-01ef-4996-a52c-63af932ec305",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "d2324f9f-01ef-4996-a52c-63af932ec305"
+      }
+    }
+  }
+}

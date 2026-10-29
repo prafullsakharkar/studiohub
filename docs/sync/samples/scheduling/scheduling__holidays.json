@@ -1,0 +1,146 @@
+{
+  "view": "HolidayViewSet",
+  "app": "scheduling",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/holidays/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "955275d5-7cca-414e-9945-7cfbd3f7d730",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/holidays/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9822f8fb-8300-46dc-aa0d-89b4e0003a99",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "9822f8fb-8300-46dc-aa0d-89b4e0003a99"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/holidays/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2475f512-a537-4163-8593-5bad6c70c489",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "2475f512-a537-4163-8593-5bad6c70c489"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/holidays/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "84854928-79cc-4bd7-8242-b8603efd52a3",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/holidays/904e213a-2e4b-4562-a0b4-e5294ef457f8/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4852d0c1-470d-41c6-b38f-5863d96b8e2b",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Holiday matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "4852d0c1-470d-41c6-b38f-5863d96b8e2b"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/scheduling/holidays/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ba9e2ee4-e668-4459-9ecc-159c6e5ea4d3",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "holiday_date": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "ba9e2ee4-e668-4459-9ecc-159c6e5ea4d3"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/scheduling/holidays/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6ac7e211-48c9-4364-85fa-61b985bdabed",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "6ac7e211-48c9-4364-85fa-61b985bdabed"
+      }
+    }
+  }
+}

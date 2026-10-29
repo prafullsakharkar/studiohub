@@ -1,0 +1,153 @@
+{
+  "view": "DestinationViewSet",
+  "app": "deliveries",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/deliveries/destinations/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "888e5a6e-b9e8-41e3-a49c-5d537c8c8e03",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/deliveries/destinations/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "96878b73-b38b-4aff-9d2d-22e5bc370711",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "96878b73-b38b-4aff-9d2d-22e5bc370711"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/deliveries/destinations/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a715611e-8c1d-4d2d-8cb0-62a9b3522c54",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "a715611e-8c1d-4d2d-8cb0-62a9b3522c54"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/deliveries/destinations/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "580271d5-ecc0-4b71-b471-f7027ce068ac",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/deliveries/destinations/a429703c-5f3c-4921-82d5-22d2397a6677/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4b674303-97c9-4d2d-8623-53e7448d3e54",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No DeliveryDestination matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "4b674303-97c9-4d2d-8623-53e7448d3e54"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/deliveries/destinations/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e2bb7b14-3891-4cd1-a4ec-ed9ca9e990ea",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "type": [
+        "This field is required."
+      ],
+      "endpoint": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "e2bb7b14-3891-4cd1-a4ec-ed9ca9e990ea"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/deliveries/destinations/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0b226ca3-5341-4ea5-ab5c-6bd16388cdf7",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "0b226ca3-5341-4ea5-ab5c-6bd16388cdf7"
+      }
+    }
+  }
+}

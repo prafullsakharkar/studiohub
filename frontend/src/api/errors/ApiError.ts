@@ -1,4 +1,5 @@
 import { DrfErrorResponse } from '@/types/common';
+import { normalizeApiError } from './normalizeApiError';
 import { AppError, IAppError } from './AppError';
 import { ApiErrorType, NormalizedApiError } from '@/core/api/types';
 
@@ -8,6 +9,7 @@ export interface ApiErrorInitOptions {
   userMessage?: string;
   details?: unknown;
   fieldErrors?: Record<string, string[]>;
+  nonFieldErrors?: string[];
   requestId?: string;
   retryable?: boolean;
   requiresAuthentication?: boolean;
@@ -22,6 +24,7 @@ export class ApiError extends AppError implements IAppError, NormalizedApiError 
   public readonly userMessage: string;
   public readonly details?: unknown;
   public readonly fieldErrors: Record<string, string[]>;
+  public readonly nonFieldErrors: string[];
   public readonly requestId?: string;
   public readonly retryable: boolean;
   public readonly requiresAuthentication: boolean;
@@ -43,6 +46,7 @@ export class ApiError extends AppError implements IAppError, NormalizedApiError 
       : {};
 
     this.fieldErrors = opts.fieldErrors || errors || {};
+    this.nonFieldErrors = opts.nonFieldErrors || [];
     this.code = opts.code;
     this.details = opts.details !== undefined ? opts.details : options;
     this.requestId = opts.requestId;
@@ -91,6 +95,12 @@ export class ApiError extends AppError implements IAppError, NormalizedApiError 
     if (upperCode === 'SESSION_EXPIRED' || upperCode === 'TOKEN_EXPIRED') {
       return 'SESSION_EXPIRED';
     }
+    if (upperCode === 'MFA_ENROLLMENT_REQUIRED' || upperCode === 'PASSWORD_CHANGE_REQUIRED') {
+      return 'RESTRICTED_SESSION';
+    }
+    if (upperCode === 'INVALID_CREDENTIALS') {
+      return 'INVALID_CREDENTIALS';
+    }
 
     if (status === 0) return 'NETWORK';
     if (status === 400) return 'VALIDATION';
@@ -98,6 +108,7 @@ export class ApiError extends AppError implements IAppError, NormalizedApiError 
     if (status === 403) return 'FORBIDDEN';
     if (status === 404) return 'NOT_FOUND';
     if (status === 409) return 'CONFLICT';
+    if (status === 413) return 'PAYLOAD_TOO_LARGE';
     if (status === 422) return 'VALIDATION';
     if (status === 423) return 'ACCOUNT_LOCKED';
     if (status === 429) return 'RATE_LIMIT';
@@ -155,6 +166,13 @@ export class ApiError extends AppError implements IAppError, NormalizedApiError 
       }
       case 'CONFLICT':
         return 'This record was modified by someone else or already exists. Please refresh and try again.';
+      case 'INVALID_CREDENTIALS':
+      case 'RESTRICTED_SESSION':
+        // The server's own sentence is the right one ("Invalid email or password.",
+        // "Set up two-factor authentication before continuing.").
+        return rawMessage;
+      case 'PAYLOAD_TOO_LARGE':
+        return 'The file or request is too large. Please reduce its size and try again.';
       case 'RATE_LIMIT':
         return 'Too many requests sent to the server. Please wait a moment and try again.';
       case 'BAD_GATEWAY':
@@ -177,6 +195,18 @@ export class ApiError extends AppError implements IAppError, NormalizedApiError 
 
   get isAuthError(): boolean {
     return this.type === 'AUTHENTICATION' || this.type === 'SESSION_EXPIRED' || this.status === 401;
+  }
+
+  /** What a restricted session must do before anything else works, from the stable 403 code. */
+  get requiredAction(): 'mfa_enrollment' | 'password_change' | null {
+    if (this.code === 'mfa_enrollment_required') return 'mfa_enrollment';
+    if (this.code === 'password_change_required') return 'password_change';
+    return null;
+  }
+
+  /** A 401 that means "the session is gone" (as opposed to a wrong password/code). */
+  get isSessionLoss(): boolean {
+    return (this.type === 'AUTHENTICATION' || this.type === 'SESSION_EXPIRED') && this.status === 401;
   }
 
   get isAccountDisabled(): boolean {
@@ -240,72 +270,24 @@ export class ApiError extends AppError implements IAppError, NormalizedApiError 
     data: DrfErrorResponse | string | null | undefined,
     headers?: Headers | Record<string, string | null | undefined>
   ): ApiError {
-    let message = 'An unexpected server error occurred.';
-    let code: string | undefined;
-    const errors: Record<string, string[]> = {};
+    const normalized = normalizeApiError(status, data, headers);
+    const type = ApiError.resolveErrorType(status, normalized.code);
+    // A delete blocked by references: the server names what still points at the record, which
+    // is the only useful part (the generic conflict text would be misleading here).
+    const userMessage =
+      normalized.code === 'has_dependants'
+        ? `This record is still in use and cannot be deleted. ${normalized.message}`
+        : ApiError.generateUserMessage(type, normalized.message, status, normalized.fieldErrors);
 
-    let requestId: string | undefined;
-    let retryAfterMs: number | undefined;
-
-    if (headers) {
-      if (typeof (headers as Headers).get === 'function') {
-        const h = headers as Headers;
-        requestId = h.get('x-request-id') || h.get('x-correlation-id') || h.get('request-id') || undefined;
-        const retryAfter = h.get('retry-after');
-        if (retryAfter) {
-          const parsed = parseInt(retryAfter, 10);
-          if (!isNaN(parsed)) retryAfterMs = parsed * 1000;
-        }
-      } else {
-        const h = headers as Record<string, string | null | undefined>;
-        requestId = h['x-request-id'] || h['x-correlation-id'] || h['request-id'] || undefined;
-        const retryAfter = h['retry-after'];
-        if (retryAfter) {
-          const parsed = parseInt(retryAfter, 10);
-          if (!isNaN(parsed)) retryAfterMs = parsed * 1000;
-        }
-      }
-    }
-
-    if (typeof data === 'string') {
-      message = data;
-    } else if (data && typeof data === 'object') {
-      if ((data as any).code) {
-        code = String((data as any).code);
-      }
-      if ((data as any).error_code) {
-        code = String((data as any).error_code);
-      }
-
-      if (data.detail) {
-        message = data.detail;
-      } else if (data.non_field_errors && data.non_field_errors.length > 0) {
-        message = data.non_field_errors.join(' ');
-      } else if ((data as any).message) {
-        message = (data as any).message;
-      }
-
-      for (const [key, val] of Object.entries(data)) {
-        if (key === 'detail' || key === 'non_field_errors' || key === 'code' || key === 'error_code' || key === 'message') continue;
-        if (Array.isArray(val)) {
-          errors[key] = val.map(String);
-        } else if (typeof val === 'string') {
-          errors[key] = [val];
-        }
-      }
-    }
-
-    const type = ApiError.resolveErrorType(status, code);
-    const userMessage = ApiError.generateUserMessage(type, message, status, errors);
-
-    return new ApiError(message, status, errors, {
+    return new ApiError(normalized.message, status, normalized.fieldErrors, {
       type,
-      code,
+      code: normalized.code,
       userMessage,
       details: data,
-      fieldErrors: errors,
-      requestId,
-      retryAfterMs,
+      fieldErrors: normalized.fieldErrors,
+      nonFieldErrors: normalized.nonFieldErrors,
+      requestId: normalized.requestId,
+      retryAfterMs: normalized.retryAfter !== undefined ? normalized.retryAfter * 1000 : undefined,
     });
   }
 

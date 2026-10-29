@@ -10,9 +10,9 @@ import { OfficesListPage, OfficeWorkspacePage, CreateOfficePage, EditOfficePage 
 
 import { PeopleListPage, PersonWorkspacePage, CreatePersonPage, EditPersonPage } from '@/modules/people';
 
-import { ClientsPage, ClientCreatePage, ClientWorkspacePage } from '@/modules/clients';
+import { ClientsPage, ClientCreatePage, ClientEditPage, ClientWorkspacePage } from '@/modules/clients';
 
-import { VendorsPage, VendorCreatePage, VendorWorkspacePage } from '@/modules/vendors';
+import { VendorsPage, VendorCreatePage, VendorEditPage, VendorWorkspacePage } from '@/modules/vendors';
 
 import { PublishingPage } from '@/modules/publishing';
 
@@ -21,7 +21,18 @@ import { SchedulingPage } from '@/modules/scheduling';
 import { TeamsListPage, TeamWorkspacePage, CreateTeamPage, EditTeamPage } from '@/modules/teams';
 
 import { WorkspacePage } from '@/modules/workspace';
-import { AccessWorkspacePage } from '@/modules/access';
+import { AccountLayout } from '@/modules/identity/account/AccountLayout';
+import { ProfilePage } from '@/modules/identity/account/ProfilePage';
+import { SecurityPage } from '@/modules/identity/account/SecurityPage';
+import { SessionsPage } from '@/modules/identity/account/SessionsPage';
+import { TokensPage } from '@/modules/identity/account/TokensPage';
+import { CreatePositionPage, EditPositionPage, PositionsListPage } from '@/modules/directory/positionPages';
+import { GroupDetailPage } from '@/modules/identity/pages/GroupDetailPage';
+import { GroupsPage } from '@/modules/identity/pages/GroupsPage';
+import { PermissionsPage } from '@/modules/identity/pages/PermissionsPage';
+import { RoleDetailPage } from '@/modules/identity/pages/RoleDetailPage';
+import { RolesPage } from '@/modules/identity/pages/RolesPage';
+import { SecurityLogPage } from '@/modules/identity/pages/SecurityLogPage';
 import { PreserveQueryRedirect } from './PreserveQueryRedirect';
 
 import { WorkflowsPage } from '@/modules/workflows';
@@ -40,7 +51,7 @@ import { TasksPage, TaskDetailPage, TimelogsPage } from '@/modules/tasks';
 
 import { ProjectsPage, ProjectWorkspacePage, ProjectFormPage } from '@/modules/production';
 
-import { LoginPage, ForgotPasswordPage, ChangePasswordPage } from '@/modules/auth';
+import { LoginPage, ForgotPasswordPage, ResetPasswordPage, ChangePasswordPage, MfaSetupPage } from '@/modules/auth';
 
 import React from 'react';
 
@@ -68,7 +79,6 @@ import { UnauthorizedPage } from '@/pages/UnauthorizedPage';
 
 import { ServerErrorPage } from '@/pages/ServerErrorPage';
 
-import { TestingPage } from '@/pages/TestingPage';
 
 export const AppRoutes: React.FC = () => {
 
@@ -83,6 +93,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/login" element={<LoginPage />} />
 
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       </Route>
 
@@ -94,6 +105,7 @@ export const AppRoutes: React.FC = () => {
             authenticated content is reachable while the flag is set. */}
 
         <Route path="/auth/change-password" element={<ChangePasswordPage />} />
+        <Route path="/auth/mfa-setup" element={<MfaSetupPage />} />
 
         <Route element={<RoutePermissionGuard><AppLayout /></RoutePermissionGuard>}>
 
@@ -177,6 +189,18 @@ export const AppRoutes: React.FC = () => {
 
           </Route>
 
+          {/* POSITIONS */}
+
+          <Route path="/positions" element={<PositionsListPage />} />
+
+          <Route path="/positions/new" element={<CreatePositionPage />} />
+
+          <Route element={<PermissionRoute permissions={['position.update']} />}>
+
+            <Route path="/positions/:id/edit" element={<EditPositionPage />} />
+
+          </Route>
+
           {/* CLIENTS & VENDORS */}
 
           <Route path="/clients" element={<ClientsPage />} />
@@ -193,6 +217,12 @@ export const AppRoutes: React.FC = () => {
 
           </Route>
 
+          <Route element={<PermissionRoute permissions={['client.update']} />}>
+
+            <Route path="/clients/:id/edit" element={<ClientEditPage />} />
+
+          </Route>
+
           <Route path="/vendors" element={<VendorsPage />} />
 
           <Route element={<PermissionRoute permissions={['vendor.create']} />}>
@@ -204,6 +234,12 @@ export const AppRoutes: React.FC = () => {
           <Route element={<PermissionRoute permissions={['vendor.view']} />}>
 
             <Route path="/vendors/:id" element={<VendorWorkspacePage />} />
+
+          </Route>
+
+          <Route element={<PermissionRoute permissions={['vendor.update']} />}>
+
+            <Route path="/vendors/:id/edit" element={<VendorEditPage />} />
 
           </Route>
 
@@ -283,7 +319,18 @@ export const AppRoutes: React.FC = () => {
 
           {platformRoutes}
 
-          <Route path="/settings" element={<PreserveQueryRedirect to="/platform/admin/pipeline" />} />
+          {/* My account (personal settings): any signed-in user. System settings arrive under /settings/system in Phase 11. */}
+          <Route path="/settings" element={<Navigate to="/settings/account/profile" replace />} />
+
+          <Route path="/settings/account" element={<Navigate to="/settings/account/profile" replace />} />
+
+          <Route path="/settings/account/profile" element={<AccountLayout><ProfilePage /></AccountLayout>} />
+
+          <Route path="/settings/account/security" element={<AccountLayout><SecurityPage /></AccountLayout>} />
+
+          <Route path="/settings/account/sessions" element={<AccountLayout><SessionsPage /></AccountLayout>} />
+
+          <Route path="/settings/account/tokens" element={<AccountLayout><TokensPage /></AccountLayout>} />
 
           {/* Access & RBAC workspace — the org-free RBAC surface (Task 12
               sections) is reachable at /access[/:section]; /permissions and
@@ -294,9 +341,19 @@ export const AppRoutes: React.FC = () => {
 
             <Route path="/permissions" element={<PreserveQueryRedirect to="/access" />} />
 
-            <Route path="/access" element={<AccessWorkspacePage />} />
+            <Route path="/access" element={<Navigate to="/access/roles" replace />} />
 
-            <Route path="/access/:section" element={<AccessWorkspacePage />} />
+            <Route path="/access/roles" element={<RolesPage />} />
+
+            <Route path="/access/roles/:roleId" element={<RoleDetailPage />} />
+
+            <Route path="/access/groups" element={<GroupsPage />} />
+
+            <Route path="/access/groups/:groupId" element={<GroupDetailPage />} />
+
+            <Route path="/access/permissions" element={<PermissionsPage />} />
+
+            <Route path="/access/security" element={<SecurityLogPage />} />
 
           </Route>
 
@@ -304,7 +361,6 @@ export const AppRoutes: React.FC = () => {
 
           <Route element={<PermissionRoute requireAdmin={true} pagePermission="page.testing" permissions={['testing.view']} requireAny={true} fallbackPath="/forbidden" />}>
 
-            <Route path="/testing" element={<TestingPage />} />
 
           </Route>
 

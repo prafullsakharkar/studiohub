@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useServerForm } from '@/shared/forms/useServerForm';
+import { authService } from '../services/AuthService';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { forgotPasswordSchema, ForgotPasswordFormData } from '../schemas/authSchemas';
 import {
@@ -10,6 +11,7 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
+  AlertCircle,
   KeyRound,
   ShieldCheck,
   Lock,
@@ -25,18 +27,21 @@ export const ForgotPasswordPage: React.FC = () => {
 
   const {
     register,
-    handleSubmit,
+    submit,
+    serverError,
+    clearServerError,
     formState: { errors, isSubmitting },
-  } = useForm<ForgotPasswordFormData>({
+  } = useServerForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
   });
 
-  const onSubmit = async (data: ForgotPasswordFormData) => {
-    // Simulate network latency
-    await new Promise((resolve) => setTimeout(resolve, 600));
+  // Always answers 200 for well-formed input (anti-enumeration), so success says nothing about
+  // whether the account exists.
+  const onSubmit = submit(async (data) => {
+    await authService.forgotPassword(data.email);
     setSubmittedEmail(data.email);
     setSubmitted(true);
-  };
+  });
 
   return (
     <div className="h-screen max-h-screen overflow-hidden w-full bg-slate-950 text-slate-100 flex items-center justify-center p-3 sm:p-5 lg:p-6 antialiased selection:bg-cyan-500 selection:text-slate-950">
@@ -177,7 +182,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 RESET PIPELINE <span className="text-cyan-400">CREDENTIALS</span>
               </h2>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Enter your registered studio email to receive an OpenID cryptographic recovery token.
+                Enter your registered studio email and we will send you a link to choose a new password.
               </p>
             </div>
 
@@ -189,7 +194,7 @@ export const ForgotPasswordPage: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-xs font-extrabold text-white uppercase tracking-wider">
-                      Reset Instructions Dispatched
+                      Check your email
                     </h3>
                     <p className="text-[11px] text-emerald-400/90 font-mono mt-0.5">
                       {submittedEmail || 'email sent'}
@@ -198,7 +203,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 </div>
 
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  If an active workspace profile is associated with this email, your pipeline TD has dispatched an automated single-use recovery token.
+                  If an account exists for this email, a password reset link has been sent. The link is single-use and expires, so use the most recent email.
                 </p>
 
                 <div className="pt-2">
@@ -213,7 +218,16 @@ export const ForgotPasswordPage: React.FC = () => {
               </div>
             ) : (
               /* Form */
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 shrink-0">
+              <form noValidate onSubmit={onSubmit} className="space-y-3 shrink-0">
+                {serverError?.banner && (
+                  <div role="alert" className="p-3 rounded-xl bg-rose-950/80 border border-rose-700/80 text-rose-200 text-xs flex items-start gap-2.5">
+                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                    <p className="text-[11px] leading-normal">
+                      {serverError.banner}
+                      {serverError.retryAfterSeconds ? ` Try again in ${serverError.retryAfterSeconds}s.` : ''}
+                    </p>
+                  </div>
+                )}
                 <div className="space-y-1">
                   <label className="block text-[11px] font-semibold text-slate-300">
                     Registered Studio Email
@@ -225,7 +239,7 @@ export const ForgotPasswordPage: React.FC = () => {
                     <input
                       type="email"
                       placeholder="artist@studiohub.vfx"
-                      {...register('email')}
+                      {...register('email', { onChange: clearServerError })}
                       className={`w-full pl-9 pr-3 py-2 rounded-xl bg-slate-950/80 border text-xs text-slate-100 placeholder-slate-500 focus:outline-hidden focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all ${
                         errors.email ? 'border-rose-500' : 'border-slate-800'
                       }`}
@@ -242,7 +256,7 @@ export const ForgotPasswordPage: React.FC = () => {
                     disabled={isSubmitting}
                     className="w-full py-2.5 px-5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs tracking-wide flex items-center justify-center gap-2 shadow-lg shadow-cyan-950/50 transition-all disabled:opacity-60 cursor-pointer group"
                   >
-                    <span>{isSubmitting ? 'DISPATCHING TOKEN...' : 'DISPATCH RECOVERY TOKEN'}</span>
+                    <span>{isSubmitting ? 'SENDING...' : 'SEND RESET LINK'}</span>
                     <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
                   </button>
                 </div>

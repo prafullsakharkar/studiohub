@@ -1,0 +1,265 @@
+{
+  "login_mfa_required": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/login/",
+      "body": {
+        "email": "user@example.test",
+        "password": "<redacted>"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "X-Request-ID": "a0615404-0966-4e3f-b05d-caed1bbebfaf"
+    },
+    "body": {
+      "mfa_required": true,
+      "challenge": "<redacted>",
+      "expires_in": 300
+    },
+    "_note": "no tokens and no user payload until the challenge is completed"
+  },
+  "challenge_ok": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/challenge/",
+      "body": {
+        "challenge": "<redacted>",
+        "code": "<redacted>"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b00a07d3-b3fb-4c7f-89f2-a51316d2b7df",
+      "Allow": "POST, OPTIONS"
+    },
+    "sets_cookie": true,
+    "body": {
+      "tokens": {
+        "access": "<redacted>",
+        "refresh": "<redacted>"
+      },
+      "user": {
+        "id": "b60ea643-b2e8-4792-9776-04b4be49a7ab",
+        "email": "user@example.test",
+        "first_name": "",
+        "last_name": "",
+        "full_name": "user@example.test",
+        "avatar_url": null,
+        "role": "Artist",
+        "permissions": [],
+        "project_memberships": [],
+        "is_active": true,
+        "is_staff": false,
+        "is_superuser": false,
+        "must_change_password": false,
+        "created_at": "2026-10-29T06:13:02.906563+00:00",
+        "updated_at": "2026-10-29T06:13:02.916946+00:00"
+      }
+    }
+  },
+  "challenge_wrong_code": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/challenge/",
+      "body": {
+        "challenge": "<redacted>",
+        "code": "<redacted>"
+      }
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "97fb6d77-ec84-49bd-9175-67c78c72d983",
+      "Allow": "POST, OPTIONS"
+    },
+    "sets_cookie": false,
+    "body": {
+      "detail": "Invalid verification code.",
+      "error": {
+        "code": "mfa_code_invalid",
+        "request_id": "97fb6d77-ec84-49bd-9175-67c78c72d983"
+      }
+    }
+  },
+  "challenge_missing_code": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/challenge/",
+      "body": {
+        "challenge": "<redacted>"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1f004788-7e84-4e9a-8360-5efca9a019e9",
+      "Allow": "POST, OPTIONS"
+    },
+    "sets_cookie": false,
+    "body": {
+      "non_field_errors": [
+        "Provide a verification code or a recovery code."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "1f004788-7e84-4e9a-8360-5efca9a019e9"
+      }
+    }
+  },
+  "challenge_missing_challenge": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/challenge/",
+      "body": {
+        "code": "<redacted>"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3ac53f97-f71e-441c-957b-0eab6fb7a012",
+      "Allow": "POST, OPTIONS"
+    },
+    "sets_cookie": false,
+    "body": {
+      "challenge": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "3ac53f97-f71e-441c-957b-0eab6fb7a012"
+      }
+    }
+  },
+  "challenge_garbage_challenge": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/challenge/",
+      "body": {
+        "challenge": "<redacted>",
+        "code": "<redacted>"
+      }
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ab6389f0-4d32-4112-9245-fc0b12670515",
+      "Allow": "POST, OPTIONS"
+    },
+    "sets_cookie": false,
+    "body": {
+      "detail": "Invalid or expired verification challenge.",
+      "error": {
+        "code": "mfa_challenge_invalid",
+        "request_id": "ab6389f0-4d32-4112-9245-fc0b12670515"
+      }
+    }
+  },
+  "challenge_recovery_ok": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/challenge/",
+      "body": {
+        "challenge": "<redacted>",
+        "recovery_code": "<redacted>"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9047910a-cf20-4580-874b-617851c12061",
+      "Allow": "POST, OPTIONS"
+    },
+    "sets_cookie": true,
+    "body": {
+      "tokens": {
+        "access": "<redacted>",
+        "refresh": "<redacted>"
+      },
+      "user": {
+        "id": "b60ea643-b2e8-4792-9776-04b4be49a7ab",
+        "email": "user@example.test",
+        "first_name": "",
+        "last_name": "",
+        "full_name": "user@example.test",
+        "avatar_url": null,
+        "role": "Artist",
+        "permissions": [],
+        "project_memberships": [],
+        "is_active": true,
+        "is_staff": false,
+        "is_superuser": false,
+        "must_change_password": false,
+        "created_at": "2026-10-29T06:13:02.906563+00:00",
+        "updated_at": "2026-10-29T06:13:02.916946+00:00"
+      }
+    }
+  },
+  "challenge_recovery_reused": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/challenge/",
+      "body": {
+        "challenge": "<redacted>",
+        "recovery_code": "<redacted>"
+      }
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a9fefd37-71a2-4bea-aaab-2073b62990aa",
+      "Allow": "POST, OPTIONS"
+    },
+    "sets_cookie": false,
+    "body": {
+      "detail": "Invalid verification code.",
+      "error": {
+        "code": "mfa_code_invalid",
+        "request_id": "a9fefd37-71a2-4bea-aaab-2073b62990aa"
+      }
+    }
+  },
+  "challenge_remember_device": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/mfa/challenge/",
+      "body": {
+        "challenge": "<redacted>",
+        "code": "<redacted>",
+        "remember_device": true
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f1c932fc-6352-46c8-aaad-c79e82e6be24",
+      "Allow": "POST, OPTIONS"
+    },
+    "sets_cookie": true,
+    "body": {
+      "tokens": {
+        "access": "<redacted>",
+        "refresh": "<redacted>"
+      },
+      "user": {
+        "id": "b60ea643-b2e8-4792-9776-04b4be49a7ab",
+        "email": "user@example.test",
+        "first_name": "",
+        "last_name": "",
+        "full_name": "user@example.test",
+        "avatar_url": null,
+        "role": "Artist",
+        "permissions": [],
+        "project_memberships": [],
+        "is_active": true,
+        "is_staff": false,
+        "is_superuser": false,
+        "must_change_password": false,
+        "created_at": "2026-10-29T06:13:02.906563+00:00",
+        "updated_at": "2026-10-29T06:13:02.916946+00:00"
+      }
+    }
+  }
+}

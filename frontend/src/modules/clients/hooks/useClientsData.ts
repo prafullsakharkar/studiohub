@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { masterDataApi } from '@/api/masterDataApi';
-import { trackEntityMutation } from '@/shared/hooks/trackEntityMutation';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import {
   Client,
@@ -41,18 +40,6 @@ export const useClientMutations = () => {
         title: 'Client Studio Added',
         message: `${newClient.name} [${newClient.code}] has been registered in the production roster.`,
       });
-      trackEntityMutation(queryClient, {
-        action: 'created',
-        actionLabel: 'Client Created',
-        resourceType: 'client',
-        resourceId: newClient.id,
-        resourceName: newClient.name,
-        resourceCode: newClient.code,
-        description: `Created client studio ${newClient.name} [${newClient.code}].`,
-        tags: ['Client', 'Creation'],
-        auditAction: 'CREATE',
-        auditEntityType: 'Client',
-      });
     },
     onError: () => {
       addNotification({
@@ -74,18 +61,6 @@ export const useClientMutations = () => {
         title: 'Client Account Updated',
         message: `${updated.name} records have been updated successfully.`,
       });
-      trackEntityMutation(queryClient, {
-        action: 'updated',
-        actionLabel: 'Client Updated',
-        resourceType: 'client',
-        resourceId: updated.id,
-        resourceName: updated.name,
-        resourceCode: updated.code,
-        description: `Updated client studio ${updated.name} [${updated.code}].`,
-        tags: ['Client', 'Update'],
-        auditAction: 'UPDATE',
-        auditEntityType: 'Client',
-      });
     },
   });
 
@@ -99,18 +74,6 @@ export const useClientMutations = () => {
         title: 'Client Studio Archived',
         message: `${updated.name} has been archived.`,
       });
-      trackEntityMutation(queryClient, {
-        action: 'archived',
-        actionLabel: 'Client Archived',
-        resourceType: 'client',
-        resourceId: updated.id,
-        resourceName: updated.name,
-        resourceCode: updated.code,
-        description: `Archived client studio ${updated.name} [${updated.code}].`,
-        tags: ['Client', 'Archive'],
-        auditAction: 'ARCHIVE',
-        auditEntityType: 'Client',
-      });
     },
   });
 
@@ -123,18 +86,6 @@ export const useClientMutations = () => {
         type: 'success',
         title: 'Client Studio Restored',
         message: `${updated.name} status restored to Active.`,
-      });
-      trackEntityMutation(queryClient, {
-        action: 'restored',
-        actionLabel: 'Client Restored',
-        resourceType: 'client',
-        resourceId: updated.id,
-        resourceName: updated.name,
-        resourceCode: updated.code,
-        description: `Restored client studio ${updated.name} [${updated.code}].`,
-        tags: ['Client', 'Restore'],
-        auditAction: 'RESTORE',
-        auditEntityType: 'Client',
       });
     },
   });
@@ -154,18 +105,6 @@ export const useClientMutations = () => {
         type: 'info',
         title: 'Client Moved to Trash',
         message: 'The client studio account was soft-deleted and can be retrieved at any time.',
-      });
-      trackEntityMutation(queryClient, {
-        action: 'deleted',
-        actionLabel: 'Client Deleted',
-        resourceType: 'client',
-        resourceId: updated?.id ?? id,
-        resourceName: updated?.name,
-        resourceCode: updated?.code,
-        description: `Deleted client studio ${updated?.name ?? id}.`,
-        tags: ['Client', 'Deletion'],
-        auditAction: 'DELETE',
-        auditEntityType: 'Client',
       });
     },
   });

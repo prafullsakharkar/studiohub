@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { masterDataApi } from '@/api/masterDataApi';
-import { trackEntityMutation } from '@/shared/hooks/trackEntityMutation';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import { makeBulkDeleteMutation } from '@/shared/hooks/useBulkDelete';
 import {
@@ -56,18 +55,6 @@ export const useOfficeMutations = () => {
         title: 'Facility Hub Registered',
         message: `${office.name} [${office.city}] online.`,
       });
-      trackEntityMutation(queryClient, {
-        action: 'created',
-        actionLabel: 'Office Created',
-        resourceType: 'office',
-        resourceId: office.id,
-        resourceName: office.name,
-        resourceCode: office.code,
-        description: `Registered facility hub ${office.name} [${office.city}].`,
-        tags: ['Office', 'Creation'],
-        auditAction: 'CREATE',
-        auditEntityType: 'Office',
-      });
     },
   });
 
@@ -81,18 +68,6 @@ export const useOfficeMutations = () => {
         type: 'success',
         title: 'Facility Hub Updated',
         message: `${office.name} configuration saved.`,
-      });
-      trackEntityMutation(queryClient, {
-        action: 'updated',
-        actionLabel: 'Office Updated',
-        resourceType: 'office',
-        resourceId: office.id,
-        resourceName: office.name,
-        resourceCode: office.code,
-        description: `Updated facility hub ${office.name} [${office.city}].`,
-        tags: ['Office', 'Update'],
-        auditAction: 'UPDATE',
-        auditEntityType: 'Office',
       });
     },
   });
@@ -109,18 +84,6 @@ export const useOfficeMutations = () => {
         type: 'info',
         title: 'Facility Hub Removed',
         message: 'Facility hub has been decommissioned.',
-      });
-      trackEntityMutation(queryClient, {
-        action: 'deleted',
-        actionLabel: 'Office Deleted',
-        resourceType: 'office',
-        resourceId: id,
-        resourceName: name,
-        resourceCode: code,
-        description: `Decommissioned facility hub ${name ?? id}${code ? ` [${code}]` : ''}.`,
-        tags: ['Office', 'Deletion'],
-        auditAction: 'DELETE',
-        auditEntityType: 'Office',
       });
     },
   });

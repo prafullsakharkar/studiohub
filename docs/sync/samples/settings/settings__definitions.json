@@ -1,0 +1,231 @@
+{
+  "view": "SettingDefinitionViewSet",
+  "app": "settings",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/definitions/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "57b93bed-03f0-480c-94d5-e3ea3212f095",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 4,
+      "items": [
+        {
+          "id": "c0b418b0-bd52-453e-87e7-8b8a8797d9db",
+          "uuid": "c0b418b0-bd52-453e-87e7-8b8a8797d9db",
+          "code": "setting000",
+          "name": "Setting 0",
+          "description": "Throw size smile. Field state develop. There that teacher country work thing great produce.\nRoad minute little away allow rise. Change huge exist rock wife very\u2026<truncated>",
+          "category": "32067dd0-5a37-4b63-adc8-1f0eed5ca382",
+          "category_name": "Category 0",
+          "category_code": "general",
+          "data_type": "string",
+          "scope": "system",
+          "is_required": false,
+          "default_value": "Pick do break pull off defense total. Increase bring according after image. How tonight professional.\nEvery per speak talk door anything more. Interest standard\u2026<truncated>",
+          "help_text": "",
+          "order": 0,
+          "is_active": true,
+          "validation_rules": {},
+          "choices": [],
+          "depends_on": "",
+          "created_at": "2026-10-29T05:37:41.942556Z",
+          "updated_at": "2026-10-29T05:37:41.942564Z"
+        },
+        {
+          "id": "621d2c7c-6a27-4e4f-b371-70f3919f6257",
+          "uuid": "621d2c7c-6a27-4e4f-b371-70f3919f6257",
+          "code": "setting001",
+          "name": "Setting 1",
+          "description": "Explain early source by recognize rather gun. Future chair close I nor plant within.\nMan think treat bar half.\nFeeling run smile role. Especially president add \u2026<truncated>",
+          "category": "2edee5f4-0046-49f5-b637-cc7c7dce037b",
+          "category_name": "Category 1",
+          "category_code": "project",
+          "data_type": "multiple_select",
+          "scope": "system",
+          "is_required": false,
+          "default_value": "Project chair attention everything. Concern family far year current direction. Surface thing note international end.\nHuman become tend professional. Provide qui\u2026<truncated>",
+          "help_text": "",
+          "order": 0,
+          "is_active": true,
+          "validation_rules": {},
+          "choices": [],
+          "depends_on": "",
+          "created_at": "2026-10-29T05:37:41.946665Z",
+          "updated_at": "2026-10-29T05:37:41.946673Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/definitions/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "11a00bfc-9341-415b-bf2b-da9f8f16fcc0",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "11a00bfc-9341-415b-bf2b-da9f8f16fcc0"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/definitions/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "cd844764-f2b3-4d3d-bac8-8795f9895855",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "cd844764-f2b3-4d3d-bac8-8795f9895855"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/definitions/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e8dbcf24-55bc-4e21-926b-4d05c9a822d1",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "e8dbcf24-55bc-4e21-926b-4d05c9a822d1"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/definitions/c0b418b0-bd52-453e-87e7-8b8a8797d9db/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b5be88d1-1841-4085-b0ca-30ba932ed1f1",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "c0b418b0-bd52-453e-87e7-8b8a8797d9db",
+      "uuid": "c0b418b0-bd52-453e-87e7-8b8a8797d9db",
+      "code": "setting000",
+      "name": "Setting 0",
+      "description": "Throw size smile. Field state develop. There that teacher country work thing great produce.\nRoad minute little away allow rise. Change huge exist rock wife very\u2026<truncated>",
+      "category": "32067dd0-5a37-4b63-adc8-1f0eed5ca382",
+      "category_name": "Category 0",
+      "category_code": "general",
+      "data_type": "string",
+      "scope": "system",
+      "is_required": false,
+      "default_value": "Pick do break pull off defense total. Increase bring according after image. How tonight professional.\nEvery per speak talk door anything more. Interest standard\u2026<truncated>",
+      "help_text": "",
+      "order": 0,
+      "is_active": true,
+      "validation_rules": {},
+      "choices": [],
+      "depends_on": "",
+      "created_at": "2026-10-29T05:37:41.942556Z",
+      "updated_at": "2026-10-29T05:37:41.942564Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/definitions/7d124855-25ff-40e7-9ab0-b2740e274747/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "47ca3745-8358-488e-8ad7-6a1c0779ae59",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No SettingDefinition matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "47ca3745-8358-488e-8ad7-6a1c0779ae59"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/settings/definitions/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4b82ccfd-c28c-4a04-b9e8-f080497cd3b8",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "This field is required."
+      ],
+      "name": [
+        "This field is required."
+      ],
+      "category": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "4b82ccfd-c28c-4a04-b9e8-f080497cd3b8"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/settings/definitions/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1a61ba47-a91b-44a6-bc25-5f586becbc6b",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "1a61ba47-a91b-44a6-bc25-5f586becbc6b"
+      }
+    }
+  }
+}

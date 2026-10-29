@@ -1,0 +1,272 @@
+{
+  "view": "ProjectViewSet",
+  "app": "production",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "62a40cf5-faa8-4090-9a81-57d117ee0006",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 3,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "90864aa9-6ae0-49a3-807e-e5327db92bf0",
+          "uuid": "90864aa9-6ae0-49a3-807e-e5327db92bf0",
+          "code": "PROJ002",
+          "project_code": "PROJ002",
+          "name": "Project 2",
+          "description": "",
+          "type": "Feature Film",
+          "status": "In Progress",
+          "workflow_type": "standard",
+          "fps": "24.000",
+          "resolution": "4096x2160",
+          "aspect_ratio": "2.39:1",
+          "color_space": "ACEScg",
+          "start_date": null,
+          "delivery_date": null,
+          "thumbnail_url": "https://www.kelley.com/",
+          "total_shots": 0,
+          "approved_shots": 0,
+          "in_progress_shots": 0,
+          "total_assets": 0,
+          "budget_usd": "1000000.00",
+          "supervisor_id": "3816c810-f3df-47fd-bcf7-58a81e2c94bc",
+          "supervisor_name": "user@example.test",
+          "coordinator_id": "a8e10293-7ef6-4fc5-885a-067a68b88280",
+          "coordinator_name": "user@example.test",
+          "client_id": "",
+          "client_name": "",
+          "client_contact_id": "",
+          "client_contact_name": "",
+          "vendor_ids": [],
+          "vendor_names": [],
+          "vendor_team_ids": [],
+          "created_at": "2026-10-29T05:37:41.662559Z",
+          "updated_at": "2026-10-29T05:37:41.662568Z"
+        },
+        {
+          "id": "5484f119-e61d-49ae-b7d9-25a506a6d744",
+          "uuid": "5484f119-e61d-49ae-b7d9-25a506a6d744",
+          "code": "PROJ001",
+          "project_code": "PROJ001",
+          "name": "Project 1",
+          "description": "",
+          "type": "Feature Film",
+          "status": "In Progress",
+          "workflow_type": "standard",
+          "fps": "24.000",
+          "resolution": "4096x2160",
+          "aspect_ratio": "2.39:1",
+          "color_space": "ACEScg",
+          "start_date": null,
+          "delivery_date": null,
+          "thumbnail_url": "http://www.freeman.com/",
+          "total_shots": 0,
+          "approved_shots": 0,
+          "in_progress_shots": 0,
+          "total_assets": 0,
+          "budget_usd": "1000000.00",
+          "supervisor_id": "b0b2866c-e86c-4616-aec7-3d9776a401a0",
+          "supervisor_name": "user@example.test",
+          "coordinator_id": "ecda585b-21d2-4663-94c8-9922cabef4a1",
+          "coordinator_name": "user@example.test",
+          "client_id": "",
+          "client_name": "",
+          "client_contact_id": "",
+          "client_contact_name": "",
+          "vendor_ids": [],
+          "vendor_names": [],
+          "vendor_team_ids": [],
+          "created_at": "2026-10-29T05:37:41.580732Z",
+          "updated_at": "2026-10-29T05:37:41.580753Z"
+        }
+      ],
+      "_results_total_in_page": 3
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c018b26b-8d3d-49ad-b673-4c87e0710e55",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "c018b26b-8d3d-49ad-b673-4c87e0710e55"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1fd5582c-d992-4f94-9d7a-52501d01009d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "1fd5582c-d992-4f94-9d7a-52501d01009d"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0f81ac6d-24db-49c4-83e2-a0a56c3028db",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d7fbd024-3bf9-4e6b-827f-6069a5a7d8a9",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "90864aa9-6ae0-49a3-807e-e5327db92bf0",
+      "uuid": "90864aa9-6ae0-49a3-807e-e5327db92bf0",
+      "code": "PROJ002",
+      "project_code": "PROJ002",
+      "name": "Project 2",
+      "description": "",
+      "type": "Feature Film",
+      "status": "In Progress",
+      "workflow_type": "standard",
+      "fps": "24.000",
+      "resolution": "4096x2160",
+      "aspect_ratio": "2.39:1",
+      "color_space": "ACEScg",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "https://www.kelley.com/",
+      "total_shots": 0,
+      "approved_shots": 0,
+      "in_progress_shots": 0,
+      "total_assets": 0,
+      "budget_usd": "1000000.00",
+      "supervisor_id": "3816c810-f3df-47fd-bcf7-58a81e2c94bc",
+      "supervisor_name": "user@example.test",
+      "coordinator_id": "a8e10293-7ef6-4fc5-885a-067a68b88280",
+      "coordinator_name": "user@example.test",
+      "client_id": "",
+      "client_name": "",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "vendor_ids": [],
+      "vendor_names": [],
+      "vendor_team_ids": [],
+      "created_at": "2026-10-29T05:37:41.662559Z",
+      "updated_at": "2026-10-29T05:37:41.662568Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/82dfa269-c22b-4887-ab61-18a414a80b5a/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a97f5954-bfa6-4b1d-ad1c-9ad6028fc9be",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "a97f5954-bfa6-4b1d-ad1c-9ad6028fc9be"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/projects/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f1ca4931-ded2-453c-8b35-7dddc57211f8",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "This field is required."
+      ],
+      "name": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "f1ca4931-ded2-453c-8b35-7dddc57211f8"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/projects/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4e0fb590-9a8b-4066-863d-eca0d9ad297c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "4e0fb590-9a8b-4066-863d-eca0d9ad297c"
+      }
+    }
+  }
+}

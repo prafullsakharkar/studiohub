@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { masterDataApi } from '@/api/masterDataApi';
-import { trackEntityMutation } from '@/shared/hooks/trackEntityMutation';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import { makeBulkDeleteMutation } from '@/shared/hooks/useBulkDelete';
 import {
@@ -42,18 +41,6 @@ export const useTeamMutations = () => {
         title: 'Team Squad Assembled',
         message: `${team.name} has been created.`,
       });
-      trackEntityMutation(queryClient, {
-        action: 'created',
-        actionLabel: 'Team Created',
-        resourceType: 'team',
-        resourceId: team.id,
-        resourceName: team.name,
-        resourceCode: team.code,
-        description: `Created production squad ${team.name} [${team.code}].`,
-        tags: ['Team', 'Creation'],
-        auditAction: 'CREATE',
-        auditEntityType: 'Team',
-      });
     },
   });
 
@@ -67,18 +54,6 @@ export const useTeamMutations = () => {
         type: 'success',
         title: 'Team Updated',
         message: `${team.name} updated successfully.`,
-      });
-      trackEntityMutation(queryClient, {
-        action: 'updated',
-        actionLabel: 'Team Updated',
-        resourceType: 'team',
-        resourceId: team.id,
-        resourceName: team.name,
-        resourceCode: team.code,
-        description: `Updated production squad ${team.name} [${team.code}].`,
-        tags: ['Team', 'Update'],
-        auditAction: 'UPDATE',
-        auditEntityType: 'Team',
       });
     },
   });
@@ -95,18 +70,6 @@ export const useTeamMutations = () => {
         type: 'info',
         title: 'Team Deleted',
         message: 'Team squad removed.',
-      });
-      trackEntityMutation(queryClient, {
-        action: 'deleted',
-        actionLabel: 'Team Deleted',
-        resourceType: 'team',
-        resourceId: id,
-        resourceName: name,
-        resourceCode: code,
-        description: `Deleted production squad ${name ?? id}${code ? ` [${code}]` : ''}.`,
-        tags: ['Team', 'Deletion'],
-        auditAction: 'DELETE',
-        auditEntityType: 'Team',
       });
     },
   });

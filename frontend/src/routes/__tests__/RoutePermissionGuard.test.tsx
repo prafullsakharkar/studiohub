@@ -126,12 +126,13 @@ describe('route registry coverage (Phase 5)', () => {
     };
     collect((tree as React.ReactElement).props.children);
 
-    const PUBLIC = new Set(['/login', '/forgot-password', '/unauthorized', '/forbidden', '/error', '*', '/', '/calendar']);
+    const PUBLIC = new Set(['/login', '/forgot-password', '/reset-password', '/unauthorized', '/forbidden', '/error', '*', '/', '/calendar']);
     // '/calendar' redirects to '/scheduling' (registry-covered) before guard runs.
     // '/auth/change-password' is authentication-only by design: a forced
     // password change must be reachable before any permission-bearing surface,
     // so it renders outside RoutePermissionGuard and has no RBAC metadata.
     PUBLIC.add('/auth/change-password');
+    PUBLIC.add('/auth/mfa-setup'); // authentication-only for the same reason: MFA enrollment can be mandatory
 
     const sample = (path: string) =>
       path

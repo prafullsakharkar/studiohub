@@ -1,0 +1,83 @@
+{
+  "view": "ProjectMembersView",
+  "app": "production",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/members/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8d7b680b-44aa-4426-b48e-df1cad201aa2",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/members/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "312c8ced-0774-4889-846a-31da50fddaee",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "312c8ced-0774-4889-846a-31da50fddaee"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/members/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ff499333-3a06-47f2-84ba-27e294dbe672",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "ff499333-3a06-47f2-84ba-27e294dbe672"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/members/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "02517b90-2d1e-4836-8670-7899100dcb25",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Project 90864aa9-6ae0-49a3-807e-e5327db92bf0 not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "02517b90-2d1e-4836-8670-7899100dcb25"
+      }
+    }
+  }
+}

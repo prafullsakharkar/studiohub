@@ -1,0 +1,85 @@
+{
+  "view": "ProjectActivityView",
+  "app": "production",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/activity/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ceb332d3-ccbe-4345-a9db-1c307af14097",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/activity/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e861266b-be91-40d3-97e5-83e8352f15d5",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "e861266b-be91-40d3-97e5-83e8352f15d5"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/activity/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "31bc59ef-c115-4a7f-b1c0-a01fe0ddc99f",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "31bc59ef-c115-4a7f-b1c0-a01fe0ddc99f"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/activity/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ba8d19c7-8b9a-4896-8dbe-d7997b720d0e",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "ba8d19c7-8b9a-4896-8dbe-d7997b720d0e"
+      }
+    }
+  }
+}

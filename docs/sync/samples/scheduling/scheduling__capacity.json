@@ -1,0 +1,81 @@
+{
+  "view": "SchedulingCapacityView",
+  "app": "scheduling",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/capacity/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ff0bad09-1875-4882-89e8-81359cbc5a58",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/capacity/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1f4c42e6-0acc-4076-b5d5-aa77f9cb92bd",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "1f4c42e6-0acc-4076-b5d5-aa77f9cb92bd"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/capacity/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "77da1883-bf95-4882-a680-16d91aa80bd4",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "77da1883-bf95-4882-a680-16d91aa80bd4"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/capacity/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "518cd31d-b3ac-4b11-b370-2fc075a3d1bf",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  }
+}

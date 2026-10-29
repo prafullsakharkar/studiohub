@@ -1,0 +1,249 @@
+{
+  "view": "MasterReviewTypeViewSet",
+  "app": "masterdata",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/review-types",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e6ff06c9-dcc6-499a-bfe4-5f41efff05dc",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "4420af9f-29b2-4390-8683-82ef958de307",
+          "name": "Name 0",
+          "code": "code-0",
+          "description": "",
+          "allow_verdicts": true,
+          "require_notes": false,
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.767204Z",
+          "updated_at": "2026-10-29T05:37:41.767219Z"
+        },
+        {
+          "id": "bba1dd25-b5c7-432f-ab5d-5c409dbeb543",
+          "name": "Name 1",
+          "code": "code-1",
+          "description": "",
+          "allow_verdicts": true,
+          "require_notes": false,
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.769939Z",
+          "updated_at": "2026-10-29T05:37:41.769953Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/review-types",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "73864f10-df94-4627-a978-6b31bf606fb0",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "73864f10-df94-4627-a978-6b31bf606fb0"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/review-types",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3b10b090-0e23-4e1f-8dbd-ccbb8df38fe3",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "4420af9f-29b2-4390-8683-82ef958de307",
+          "name": "Name 0",
+          "code": "code-0",
+          "description": "",
+          "allow_verdicts": true,
+          "require_notes": false,
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.767204Z",
+          "updated_at": "2026-10-29T05:37:41.767219Z"
+        },
+        {
+          "id": "bba1dd25-b5c7-432f-ab5d-5c409dbeb543",
+          "name": "Name 1",
+          "code": "code-1",
+          "description": "",
+          "allow_verdicts": true,
+          "require_notes": false,
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.769939Z",
+          "updated_at": "2026-10-29T05:37:41.769953Z"
+        }
+      ]
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/review-types",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5b6d7db2-7429-4605-bb58-0a12bc93414e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "4420af9f-29b2-4390-8683-82ef958de307",
+          "name": "Name 0",
+          "code": "code-0",
+          "description": "",
+          "allow_verdicts": true,
+          "require_notes": false,
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.767204Z",
+          "updated_at": "2026-10-29T05:37:41.767219Z"
+        },
+        {
+          "id": "bba1dd25-b5c7-432f-ab5d-5c409dbeb543",
+          "name": "Name 1",
+          "code": "code-1",
+          "description": "",
+          "allow_verdicts": true,
+          "require_notes": false,
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.769939Z",
+          "updated_at": "2026-10-29T05:37:41.769953Z"
+        }
+      ]
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/review-types4420af9f-29b2-4390-8683-82ef958de307/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b9b7173c-285d-484b-9753-d091451f5879"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "b9b7173c-285d-484b-9753-d091451f5879"
+      }
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/review-typesd2c047e5-d58d-4dc1-ad21-55555251b47b/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a5e3a60d-8c98-40e8-9d83-79d483bfc55b"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "a5e3a60d-8c98-40e8-9d83-79d483bfc55b"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/platform/master-data/review-types",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3a56bd27-7a2d-4c0d-8afa-aa1646f3cfb8",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "code": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "3a56bd27-7a2d-4c0d-8afa-aa1646f3cfb8"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/platform/master-data/review-types",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1b7a12e8-7f91-42fc-b75d-5e9f49cda60f",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "1b7a12e8-7f91-42fc-b75d-5e9f49cda60f"
+      }
+    }
+  }
+}

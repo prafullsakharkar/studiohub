@@ -1,0 +1,292 @@
+{
+  "view": "ClientViewSet",
+  "app": "masterdata",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/clients/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3a586729-372c-4e96-8ce5-116b5bdeb80e",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 4,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "9206f3f1-618a-44a2-8a41-d6217fc6fa00",
+          "name": "Client 0",
+          "code": "CL0",
+          "contact_name": "",
+          "email": "",
+          "phone": "",
+          "studio_type": "Major Studio",
+          "contract_tier": "Standard Producer",
+          "portal_access": true,
+          "status": "Active",
+          "logo_url": "",
+          "headquarters": "",
+          "total_billed_usd": null,
+          "contact_count": 1,
+          "created_at": "2026-10-29T05:37:41.684143Z",
+          "updated_at": "2026-10-29T05:37:41.684150Z"
+        },
+        {
+          "id": "2358a752-c7d3-4a54-9d4c-0df46c77c660",
+          "name": "Client 1",
+          "code": "CL1",
+          "contact_name": "",
+          "email": "",
+          "phone": "",
+          "studio_type": "Major Studio",
+          "contract_tier": "Standard Producer",
+          "portal_access": true,
+          "status": "Active",
+          "logo_url": "",
+          "headquarters": "",
+          "total_billed_usd": null,
+          "contact_count": 1,
+          "created_at": "2026-10-29T05:37:41.689947Z",
+          "updated_at": "2026-10-29T05:37:41.689954Z"
+        }
+      ],
+      "_results_total_in_page": 4
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/clients/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "59bf84d1-df3b-4535-a29f-26fed9810339",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "59bf84d1-df3b-4535-a29f-26fed9810339"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/clients/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8f528668-7a9c-4bf5-be58-bded96918738",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 4,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "9206f3f1-618a-44a2-8a41-d6217fc6fa00",
+          "name": "Client 0",
+          "code": "CL0",
+          "studio_type": "Major Studio",
+          "contract_tier": "Standard Producer",
+          "portal_access": true,
+          "status": "Active",
+          "logo_url": "",
+          "headquarters": "",
+          "contact_count": 1,
+          "created_at": "2026-10-29T05:37:41.684143Z",
+          "updated_at": "2026-10-29T05:37:41.684150Z"
+        },
+        {
+          "id": "2358a752-c7d3-4a54-9d4c-0df46c77c660",
+          "name": "Client 1",
+          "code": "CL1",
+          "studio_type": "Major Studio",
+          "contract_tier": "Standard Producer",
+          "portal_access": true,
+          "status": "Active",
+          "logo_url": "",
+          "headquarters": "",
+          "contact_count": 1,
+          "created_at": "2026-10-29T05:37:41.689947Z",
+          "updated_at": "2026-10-29T05:37:41.689954Z"
+        }
+      ],
+      "_results_total_in_page": 4
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/clients/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ce809788-0c5d-41ef-adc7-6bddc081b5eb",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 4,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "9206f3f1-618a-44a2-8a41-d6217fc6fa00",
+          "name": "Client 0",
+          "code": "CL0",
+          "studio_type": "Major Studio",
+          "contract_tier": "Standard Producer",
+          "portal_access": true,
+          "status": "Active",
+          "logo_url": "",
+          "headquarters": "",
+          "contact_count": 1,
+          "created_at": "2026-10-29T05:37:41.684143Z",
+          "updated_at": "2026-10-29T05:37:41.684150Z"
+        },
+        {
+          "id": "2358a752-c7d3-4a54-9d4c-0df46c77c660",
+          "name": "Client 1",
+          "code": "CL1",
+          "studio_type": "Major Studio",
+          "contract_tier": "Standard Producer",
+          "portal_access": true,
+          "status": "Active",
+          "logo_url": "",
+          "headquarters": "",
+          "contact_count": 1,
+          "created_at": "2026-10-29T05:37:41.689947Z",
+          "updated_at": "2026-10-29T05:37:41.689954Z"
+        }
+      ],
+      "_results_total_in_page": 4
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/clients/9206f3f1-618a-44a2-8a41-d6217fc6fa00/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "75f90b08-f5ce-4252-8b76-0435f8a8d147",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "9206f3f1-618a-44a2-8a41-d6217fc6fa00",
+      "name": "Client 0",
+      "code": "CL0",
+      "contact_name": "",
+      "email": "",
+      "phone": "",
+      "studio_type": "Major Studio",
+      "contract_tier": "Standard Producer",
+      "portal_access": true,
+      "status": "Active",
+      "logo_url": "",
+      "headquarters": "",
+      "total_billed_usd": null,
+      "contact_count": 1,
+      "created_at": "2026-10-29T05:37:41.684143Z",
+      "updated_at": "2026-10-29T05:37:41.684150Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/clients/9eb638a0-9fa4-4722-a163-83bbc7260b80/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8a3e2fed-9fb0-414d-8d55-2581ee9bfea1",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Client matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "8a3e2fed-9fb0-414d-8d55-2581ee9bfea1"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/clients/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5d1d466d-f924-400d-b874-eeafcd82c68b",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "code": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "5d1d466d-f924-400d-b874-eeafcd82c68b"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/clients/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "64428308-6cf0-43fd-99ee-13b5b0fa8e37",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "64428308-6cf0-43fd-99ee-13b5b0fa8e37"
+      }
+    }
+  }
+}

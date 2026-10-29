@@ -1,3 +1,4 @@
+import { EntityHistory } from '@/components/history/EntityHistory';
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
@@ -12,6 +13,7 @@ import {
   Mail,
   Users,
   FileText,
+  History,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { productionApi } from '@/modules/production/api/productionApi';
@@ -75,6 +77,7 @@ export const VendorWorkspacePage: React.FC = () => {
     { id: 'projects', label: 'Projects', icon: Film },
     { id: 'contacts', label: 'Contacts', icon: Users },
     { id: 'contracts', label: 'Contracts', icon: FileText },
+    { id: 'history', label: 'History', icon: History },
   ];
   // Note: Purchase Orders and Reviews deep tabs from the legacy organization
   // module were dropped, not ported: they were mock-data-only surfaces with no
@@ -231,6 +234,8 @@ export const VendorWorkspacePage: React.FC = () => {
         {activeTab === 'contacts' && id && <VendorContactsTab vendorId={id} />}
 
         {activeTab === 'contracts' && id && <VendorContractsTab vendorId={id} />}
+
+        {activeTab === 'history' && id && <EntityHistory targetType="Vendor" targetId={id} title="Vendor history" />}
       </TabContentTransition>
     </div>
   );

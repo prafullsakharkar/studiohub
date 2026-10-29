@@ -1,0 +1,286 @@
+{
+  "view": "FeatureFlagViewSet",
+  "app": "settings",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/feature-flags/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5a479986-7293-4498-8e7b-c9dbc9a68121",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "275fe68e-9413-4c76-a872-9d939dfb4625",
+          "uuid": "275fe68e-9413-4c76-a872-9d939dfb4625",
+          "code": "feature000",
+          "name": "Feature 0",
+          "description": "List year area. Capital expect thousand. Effort town middle guess every word technology.\nNewspaper lead face. Low mean term themselves.\nResponsibility chance ei\u2026<truncated>",
+          "feature_type": "rollout",
+          "status": "disabled",
+          "is_enabled": false,
+          "percentage": 68,
+          "start_date": "2026-05-06T01:25:36.613134Z",
+          "end_date": "2026-09-27T00:57:51.487769Z",
+          "config": {},
+          "created_by": null,
+          "updated_by": null,
+          "created_at": "2026-10-29T05:37:41.948251Z",
+          "updated_at": "2026-10-29T05:37:41.948258Z"
+        },
+        {
+          "id": "9c1fcd95-833d-4bb7-aa13-1bfa40615cd6",
+          "uuid": "9c1fcd95-833d-4bb7-aa13-1bfa40615cd6",
+          "code": "feature001",
+          "name": "Feature 1",
+          "description": "Responsibility record side admit fall table. Owner campaign truth continue care not.\nStudy defense everything now during interesting safe. Smile visit role chal\u2026<truncated>",
+          "feature_type": "boolean",
+          "status": "enabled",
+          "is_enabled": false,
+          "percentage": 93,
+          "start_date": "2026-08-03T07:10:05.640987Z",
+          "end_date": "2026-08-21T07:18:54.024135Z",
+          "config": {},
+          "created_by": null,
+          "updated_by": null,
+          "created_at": "2026-10-29T05:37:41.950213Z",
+          "updated_at": "2026-10-29T05:37:41.950220Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/feature-flags/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1522c000-9ffc-47cf-a77c-13da2bd79974",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "1522c000-9ffc-47cf-a77c-13da2bd79974"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/feature-flags/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "844ea933-4bc5-41c0-b291-acfaec6bb58e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "275fe68e-9413-4c76-a872-9d939dfb4625",
+          "uuid": "275fe68e-9413-4c76-a872-9d939dfb4625",
+          "code": "feature000",
+          "name": "Feature 0",
+          "description": "List year area. Capital expect thousand. Effort town middle guess every word technology.\nNewspaper lead face. Low mean term themselves.\nResponsibility chance ei\u2026<truncated>",
+          "feature_type": "rollout",
+          "status": "disabled",
+          "is_enabled": false,
+          "percentage": 68,
+          "start_date": "2026-05-06T01:25:36.613134Z",
+          "end_date": "2026-09-27T00:57:51.487769Z",
+          "config": {},
+          "created_by": null,
+          "updated_by": null,
+          "created_at": "2026-10-29T05:37:41.948251Z",
+          "updated_at": "2026-10-29T05:37:41.948258Z"
+        },
+        {
+          "id": "9c1fcd95-833d-4bb7-aa13-1bfa40615cd6",
+          "uuid": "9c1fcd95-833d-4bb7-aa13-1bfa40615cd6",
+          "code": "feature001",
+          "name": "Feature 1",
+          "description": "Responsibility record side admit fall table. Owner campaign truth continue care not.\nStudy defense everything now during interesting safe. Smile visit role chal\u2026<truncated>",
+          "feature_type": "boolean",
+          "status": "enabled",
+          "is_enabled": false,
+          "percentage": 93,
+          "start_date": "2026-08-03T07:10:05.640987Z",
+          "end_date": "2026-08-21T07:18:54.024135Z",
+          "config": {},
+          "created_by": null,
+          "updated_by": null,
+          "created_at": "2026-10-29T05:37:41.950213Z",
+          "updated_at": "2026-10-29T05:37:41.950220Z"
+        }
+      ]
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/feature-flags/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3a904b38-00b9-49ef-81b1-ebde40a9a856",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "275fe68e-9413-4c76-a872-9d939dfb4625",
+          "uuid": "275fe68e-9413-4c76-a872-9d939dfb4625",
+          "code": "feature000",
+          "name": "Feature 0",
+          "description": "List year area. Capital expect thousand. Effort town middle guess every word technology.\nNewspaper lead face. Low mean term themselves.\nResponsibility chance ei\u2026<truncated>",
+          "feature_type": "rollout",
+          "status": "disabled",
+          "is_enabled": false,
+          "percentage": 68,
+          "start_date": "2026-05-06T01:25:36.613134Z",
+          "end_date": "2026-09-27T00:57:51.487769Z",
+          "config": {},
+          "created_by": null,
+          "updated_by": null,
+          "created_at": "2026-10-29T05:37:41.948251Z",
+          "updated_at": "2026-10-29T05:37:41.948258Z"
+        },
+        {
+          "id": "9c1fcd95-833d-4bb7-aa13-1bfa40615cd6",
+          "uuid": "9c1fcd95-833d-4bb7-aa13-1bfa40615cd6",
+          "code": "feature001",
+          "name": "Feature 1",
+          "description": "Responsibility record side admit fall table. Owner campaign truth continue care not.\nStudy defense everything now during interesting safe. Smile visit role chal\u2026<truncated>",
+          "feature_type": "boolean",
+          "status": "enabled",
+          "is_enabled": false,
+          "percentage": 93,
+          "start_date": "2026-08-03T07:10:05.640987Z",
+          "end_date": "2026-08-21T07:18:54.024135Z",
+          "config": {},
+          "created_by": null,
+          "updated_by": null,
+          "created_at": "2026-10-29T05:37:41.950213Z",
+          "updated_at": "2026-10-29T05:37:41.950220Z"
+        }
+      ]
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/feature-flags/275fe68e-9413-4c76-a872-9d939dfb4625/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "459fb37e-f535-4d62-adfa-550180a89720",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "275fe68e-9413-4c76-a872-9d939dfb4625",
+      "uuid": "275fe68e-9413-4c76-a872-9d939dfb4625",
+      "code": "feature000",
+      "name": "Feature 0",
+      "description": "List year area. Capital expect thousand. Effort town middle guess every word technology.\nNewspaper lead face. Low mean term themselves.\nResponsibility chance ei\u2026<truncated>",
+      "feature_type": "rollout",
+      "status": "disabled",
+      "is_enabled": false,
+      "percentage": 68,
+      "start_date": "2026-05-06T01:25:36.613134Z",
+      "end_date": "2026-09-27T00:57:51.487769Z",
+      "config": {},
+      "created_by": null,
+      "updated_by": null,
+      "created_at": "2026-10-29T05:37:41.948251Z",
+      "updated_at": "2026-10-29T05:37:41.948258Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/feature-flags/5273c7ea-6d61-48f8-ac2d-ee1abf9aa355/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "970dd5c3-aa9d-488d-8d3b-1d9976c61fbd",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No FeatureFlag matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "970dd5c3-aa9d-488d-8d3b-1d9976c61fbd"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/settings/feature-flags/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d4827803-1d24-4df9-9362-14961f7aa4d3",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "This field is required."
+      ],
+      "name": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "d4827803-1d24-4df9-9362-14961f7aa4d3"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/settings/feature-flags/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5b208541-44f0-4671-90d4-24d7a0b31aae",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "5b208541-44f0-4671-90d4-24d7a0b31aae"
+      }
+    }
+  }
+}

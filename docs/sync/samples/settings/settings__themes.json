@@ -1,0 +1,237 @@
+{
+  "view": "ThemeViewSet",
+  "app": "settings",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/themes/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "762fd38c-8ed8-4e42-ac90-0a8f891a7bea",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "1d9eb2a3-f12f-4b25-bb1b-c156843c0e8b",
+          "uuid": "1d9eb2a3-f12f-4b25-bb1b-c156843c0e8b",
+          "code": "theme000",
+          "name": "Theme 0",
+          "description": "State see north interest may part media huge. Charge accept method sometimes check. Address relate little news ever several blue.\nThird behind offer risk and he\u2026<truncated>",
+          "theme_type": "custom",
+          "primary_color": "#c6fa84",
+          "secondary_color": "#d3ef4a",
+          "accent_color": "#225bb0",
+          "background_color": "#1dd918",
+          "surface_color": "#FFFFFF",
+          "text_primary": "#bd99e6",
+          "text_secondary": "#6d53e0",
+          "border_color": "#E5E7EB",
+          "font_family": "mono",
+          "font_size": 14,
+          "border_radius": 8,
+          "spacing_unit": 8,
+          "sidebar_collapsed": false,
+          "navbar_fixed": true,
+          "is_active": true,
+          "created_at": "2026-10-29T05:37:41.934608Z",
+          "updated_at": "2026-10-29T05:37:41.934621Z"
+        },
+        {
+          "id": "e70630d0-66ff-479e-b0fc-1f3756b5a042",
+          "uuid": "e70630d0-66ff-479e-b0fc-1f3756b5a042",
+          "code": "theme001",
+          "name": "Theme 1",
+          "description": "Second let customer idea. Red great water analysis. Contain near receive go herself knowledge which.\nIndeed add note draw.\nTeach charge treatment whole. Modern \u2026<truncated>",
+          "theme_type": "dark",
+          "primary_color": "#d731a9",
+          "secondary_color": "#c9c014",
+          "accent_color": "#28e4ed",
+          "background_color": "#dde2e0",
+          "surface_color": "#FFFFFF",
+          "text_primary": "#5dc0ad",
+          "text_secondary": "#889b0b",
+          "border_color": "#E5E7EB",
+          "font_family": "sans",
+          "font_size": 14,
+          "border_radius": 8,
+          "spacing_unit": 8,
+          "sidebar_collapsed": false,
+          "navbar_fixed": true,
+          "is_active": true,
+          "created_at": "2026-10-29T05:37:41.937872Z",
+          "updated_at": "2026-10-29T05:37:41.937883Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/themes/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8cf360a0-787a-44ed-a33e-782034bf604a",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "8cf360a0-787a-44ed-a33e-782034bf604a"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/themes/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a4b38feb-e2e6-4ed5-9701-46d791c52b00",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "a4b38feb-e2e6-4ed5-9701-46d791c52b00"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/themes/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "179fac71-f566-4ca3-a4b3-6ca05bf7dd22",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "179fac71-f566-4ca3-a4b3-6ca05bf7dd22"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/themes/1d9eb2a3-f12f-4b25-bb1b-c156843c0e8b/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5e3eff45-4ecb-4de0-adee-916a5bda6730",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "1d9eb2a3-f12f-4b25-bb1b-c156843c0e8b",
+      "uuid": "1d9eb2a3-f12f-4b25-bb1b-c156843c0e8b",
+      "code": "theme000",
+      "name": "Theme 0",
+      "description": "State see north interest may part media huge. Charge accept method sometimes check. Address relate little news ever several blue.\nThird behind offer risk and he\u2026<truncated>",
+      "theme_type": "custom",
+      "primary_color": "#c6fa84",
+      "secondary_color": "#d3ef4a",
+      "accent_color": "#225bb0",
+      "background_color": "#1dd918",
+      "surface_color": "#FFFFFF",
+      "text_primary": "#bd99e6",
+      "text_secondary": "#6d53e0",
+      "border_color": "#E5E7EB",
+      "font_family": "mono",
+      "font_size": 14,
+      "border_radius": 8,
+      "spacing_unit": 8,
+      "sidebar_collapsed": false,
+      "navbar_fixed": true,
+      "is_active": true,
+      "created_at": "2026-10-29T05:37:41.934608Z",
+      "updated_at": "2026-10-29T05:37:41.934621Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/themes/11e91966-5030-4e05-b111-44f06b47deaa/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8a1cc211-d225-4f46-adb7-345bfc41ebdb",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Theme matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "8a1cc211-d225-4f46-adb7-345bfc41ebdb"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/settings/themes/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6aa97f43-1de1-43df-b137-8272b6030cdf",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "This field is required."
+      ],
+      "name": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "6aa97f43-1de1-43df-b137-8272b6030cdf"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/settings/themes/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c3b3380b-9c87-4338-a452-7a34d98d90f2",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "c3b3380b-9c87-4338-a452-7a34d98d90f2"
+      }
+    }
+  }
+}

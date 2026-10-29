@@ -1,0 +1,800 @@
+{
+  "create_ok": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/departments/",
+      "body": {
+        "name": "Lookdev",
+        "code": "DEPT-LOOK",
+        "department_type": "creative",
+        "description": "Look development",
+        "color": "#6366f1",
+        "parent": null,
+        "manager": null,
+        "software_stack": [
+          "Katana",
+          "USD"
+        ]
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "26f18f8d-6360-47f8-bb56-07031f7f5f43",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "579cc54d-a803-41e7-8e3c-4bbf2d971412",
+      "code": "DEPT-LOOK",
+      "name": "Lookdev",
+      "description": "Look development",
+      "parent": null,
+      "department_type": "creative",
+      "manager": null,
+      "color": "#6366f1",
+      "software_stack": [
+        "Katana",
+        "USD"
+      ],
+      "created_at": "2026-10-29T06:48:48.873663Z",
+      "updated_at": "2026-10-29T06:48:48.873671Z"
+    }
+  },
+  "create_duplicate_code": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/departments/",
+      "body": {
+        "name": "Lookdev",
+        "code": "DEPT-LOOK",
+        "department_type": "creative",
+        "description": "Look development",
+        "color": "#6366f1",
+        "parent": null,
+        "manager": null,
+        "software_stack": [
+          "Katana",
+          "USD"
+        ]
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "741884e6-827f-43f6-a235-b2ffad61ec13",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "A department with this code already exists."
+      ],
+      "name": [
+        "A department with this name already exists."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "741884e6-827f-43f6-a235-b2ffad61ec13"
+      }
+    }
+  },
+  "create_duplicate_name_ci": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/departments/",
+      "body": {
+        "name": "LOOKDEV",
+        "code": "DEPT-OTHER",
+        "department_type": "creative",
+        "description": "Look development",
+        "color": "#6366f1",
+        "parent": null,
+        "manager": null,
+        "software_stack": [
+          "Katana",
+          "USD"
+        ]
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3529813b-21ca-4012-a57c-f5062dde3c6f",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "A department with this name already exists."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "3529813b-21ca-4012-a57c-f5062dde3c6f"
+      }
+    }
+  },
+  "create_missing_fields": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/departments/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3bf3c1cb-c8f4-404d-ae72-26f7fa397485",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "This field is required."
+      ],
+      "name": [
+        "This field is required."
+      ],
+      "department_type": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "3bf3c1cb-c8f4-404d-ae72-26f7fa397485"
+      }
+    }
+  },
+  "create_invalid_type": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/departments/",
+      "body": {
+        "name": "Lookdev",
+        "code": "DEPT-X",
+        "department_type": "wizard",
+        "description": "Look development",
+        "color": "#6366f1",
+        "parent": null,
+        "manager": null,
+        "software_stack": [
+          "Katana",
+          "USD"
+        ]
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5101ec8a-d470-4085-b5e5-95a9188836be",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "department_type": [
+        "\"wizard\" is not a valid choice."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "5101ec8a-d470-4085-b5e5-95a9188836be"
+      }
+    }
+  },
+  "create_code_too_long": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/departments/",
+      "body": {
+        "name": "Lookdev",
+        "code": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "department_type": "creative",
+        "description": "Look development",
+        "color": "#6366f1",
+        "parent": null,
+        "manager": null,
+        "software_stack": [
+          "Katana",
+          "USD"
+        ]
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "18294d32-3ac5-4033-adfc-fc14eb7a399c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "Ensure this field has no more than 30 characters."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "18294d32-3ac5-4033-adfc-fc14eb7a399c"
+      }
+    }
+  },
+  "create_as_artist_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/departments/",
+      "body": {
+        "name": "Lookdev",
+        "code": "DEPT-ART",
+        "department_type": "creative",
+        "description": "Look development",
+        "color": "#6366f1",
+        "parent": null,
+        "manager": null,
+        "software_stack": [
+          "Katana",
+          "USD"
+        ]
+      }
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "72b29289-3f31-474c-9089-d52d80215075",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "72b29289-3f31-474c-9089-d52d80215075"
+      }
+    }
+  },
+  "list_as_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c88031d6-b1b9-4cb9-bbf9-7337e66ed3ba",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 6,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "9546ea71-a710-430a-9b7a-70d274a0a751",
+          "code": "DEPT-COMP",
+          "name": "Compositing",
+          "description": "Compositing department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.354937Z",
+          "updated_at": "2026-10-29T06:48:48.354951Z"
+        },
+        {
+          "id": "5f95146d-ef20-477a-8910-ac0dcc81e8d7",
+          "code": "DEPT-EDIT",
+          "name": "Editorial",
+          "description": "Editorial department (seeded)",
+          "parent": null,
+          "department_type": "production",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.338816Z",
+          "updated_at": "2026-10-29T06:48:48.338831Z"
+        },
+        {
+          "id": "c7967f84-4ab7-4d73-b7f5-76407dd72738",
+          "code": "DEPT-FX",
+          "name": "FX",
+          "description": "FX department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.362658Z",
+          "updated_at": "2026-10-29T06:48:48.362671Z"
+        },
+        {
+          "id": "6e0bd365-84d9-4dbc-bd2d-2a127748b6bd",
+          "code": "DEPT-LIGHT",
+          "name": "Lighting",
+          "description": "Lighting department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.369871Z",
+          "updated_at": "2026-10-29T06:48:48.369884Z"
+        },
+        {
+          "id": "579cc54d-a803-41e7-8e3c-4bbf2d971412",
+          "code": "DEPT-LOOK",
+          "name": "Lookdev",
+          "description": "Look development",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "#6366f1",
+          "software_stack": [
+            "Katana",
+            "USD"
+          ],
+          "created_at": "2026-10-29T06:48:48.873663Z",
+          "updated_at": "2026-10-29T06:48:48.873671Z"
+        },
+        {
+          "id": "d71dd4af-22a6-4143-870f-9e1110a3c2f0",
+          "code": "DEPT-PIPELINE",
+          "name": "Pipeline TD",
+          "description": "Pipeline TD department (seeded)",
+          "parent": null,
+          "department_type": "technical",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.347473Z",
+          "updated_at": "2026-10-29T06:48:48.347488Z"
+        }
+      ]
+    }
+  },
+  "list_default": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "03a645fb-85b4-439e-bd85-4dbd700235ce",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 6,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "9546ea71-a710-430a-9b7a-70d274a0a751",
+          "code": "DEPT-COMP",
+          "name": "Compositing",
+          "description": "Compositing department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.354937Z",
+          "updated_at": "2026-10-29T06:48:48.354951Z"
+        },
+        {
+          "id": "5f95146d-ef20-477a-8910-ac0dcc81e8d7",
+          "code": "DEPT-EDIT",
+          "name": "Editorial",
+          "description": "Editorial department (seeded)",
+          "parent": null,
+          "department_type": "production",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.338816Z",
+          "updated_at": "2026-10-29T06:48:48.338831Z"
+        },
+        {
+          "id": "c7967f84-4ab7-4d73-b7f5-76407dd72738",
+          "code": "DEPT-FX",
+          "name": "FX",
+          "description": "FX department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.362658Z",
+          "updated_at": "2026-10-29T06:48:48.362671Z"
+        },
+        {
+          "id": "6e0bd365-84d9-4dbc-bd2d-2a127748b6bd",
+          "code": "DEPT-LIGHT",
+          "name": "Lighting",
+          "description": "Lighting department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.369871Z",
+          "updated_at": "2026-10-29T06:48:48.369884Z"
+        },
+        {
+          "id": "579cc54d-a803-41e7-8e3c-4bbf2d971412",
+          "code": "DEPT-LOOK",
+          "name": "Lookdev",
+          "description": "Look development",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "#6366f1",
+          "software_stack": [
+            "Katana",
+            "USD"
+          ],
+          "created_at": "2026-10-29T06:48:48.873663Z",
+          "updated_at": "2026-10-29T06:48:48.873671Z"
+        },
+        {
+          "id": "d71dd4af-22a6-4143-870f-9e1110a3c2f0",
+          "code": "DEPT-PIPELINE",
+          "name": "Pipeline TD",
+          "description": "Pipeline TD department (seeded)",
+          "parent": null,
+          "department_type": "technical",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.347473Z",
+          "updated_at": "2026-10-29T06:48:48.347488Z"
+        }
+      ]
+    }
+  },
+  "list_search_comp": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/?search=comp",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "26b74954-9365-4ae0-9ca3-067afe764579",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "9546ea71-a710-430a-9b7a-70d274a0a751",
+          "code": "DEPT-COMP",
+          "name": "Compositing",
+          "description": "Compositing department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.354937Z",
+          "updated_at": "2026-10-29T06:48:48.354951Z"
+        }
+      ]
+    }
+  },
+  "list_search_no_match": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/?search=zzzz",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "12576549-7535-4958-8d4b-7ddcbc3da1bb",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": []
+    }
+  },
+  "list_ordering_name_desc": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/?ordering=-name",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "141efa70-2fa2-44bd-8dcf-550a942457fd",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 6,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "d71dd4af-22a6-4143-870f-9e1110a3c2f0",
+          "code": "DEPT-PIPELINE",
+          "name": "Pipeline TD",
+          "description": "Pipeline TD department (seeded)",
+          "parent": null,
+          "department_type": "technical",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.347473Z",
+          "updated_at": "2026-10-29T06:48:48.347488Z"
+        },
+        {
+          "id": "579cc54d-a803-41e7-8e3c-4bbf2d971412",
+          "code": "DEPT-LOOK",
+          "name": "Lookdev",
+          "description": "Look development",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "#6366f1",
+          "software_stack": [
+            "Katana",
+            "USD"
+          ],
+          "created_at": "2026-10-29T06:48:48.873663Z",
+          "updated_at": "2026-10-29T06:48:48.873671Z"
+        },
+        {
+          "id": "6e0bd365-84d9-4dbc-bd2d-2a127748b6bd",
+          "code": "DEPT-LIGHT",
+          "name": "Lighting",
+          "description": "Lighting department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.369871Z",
+          "updated_at": "2026-10-29T06:48:48.369884Z"
+        },
+        {
+          "id": "c7967f84-4ab7-4d73-b7f5-76407dd72738",
+          "code": "DEPT-FX",
+          "name": "FX",
+          "description": "FX department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.362658Z",
+          "updated_at": "2026-10-29T06:48:48.362671Z"
+        },
+        {
+          "id": "5f95146d-ef20-477a-8910-ac0dcc81e8d7",
+          "code": "DEPT-EDIT",
+          "name": "Editorial",
+          "description": "Editorial department (seeded)",
+          "parent": null,
+          "department_type": "production",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.338816Z",
+          "updated_at": "2026-10-29T06:48:48.338831Z"
+        },
+        {
+          "id": "9546ea71-a710-430a-9b7a-70d274a0a751",
+          "code": "DEPT-COMP",
+          "name": "Compositing",
+          "description": "Compositing department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.354937Z",
+          "updated_at": "2026-10-29T06:48:48.354951Z"
+        }
+      ]
+    }
+  },
+  "list_filter_type": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/?department_type=technical",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5cf9ac80-5708-460e-8733-17081e9ce25d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "d71dd4af-22a6-4143-870f-9e1110a3c2f0",
+          "code": "DEPT-PIPELINE",
+          "name": "Pipeline TD",
+          "description": "Pipeline TD department (seeded)",
+          "parent": null,
+          "department_type": "technical",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.347473Z",
+          "updated_at": "2026-10-29T06:48:48.347488Z"
+        }
+      ]
+    }
+  },
+  "list_page_size_2": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/?page_size=2",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b82414fd-4332-4878-b427-ac0f6316aa78",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 6,
+      "next": "http://testserver/api/v1/departments/?page=2&page_size=2",
+      "previous": null,
+      "results": [
+        {
+          "id": "9546ea71-a710-430a-9b7a-70d274a0a751",
+          "code": "DEPT-COMP",
+          "name": "Compositing",
+          "description": "Compositing department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.354937Z",
+          "updated_at": "2026-10-29T06:48:48.354951Z"
+        },
+        {
+          "id": "5f95146d-ef20-477a-8910-ac0dcc81e8d7",
+          "code": "DEPT-EDIT",
+          "name": "Editorial",
+          "description": "Editorial department (seeded)",
+          "parent": null,
+          "department_type": "production",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.338816Z",
+          "updated_at": "2026-10-29T06:48:48.338831Z"
+        }
+      ]
+    }
+  },
+  "list_page_2_of_size_2": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/?page_size=2&page=2",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a8a4fe02-fb37-450d-9b93-f55862328987",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 6,
+      "next": "http://testserver/api/v1/departments/?page=3&page_size=2",
+      "previous": "http://testserver/api/v1/departments/?page_size=2",
+      "results": [
+        {
+          "id": "c7967f84-4ab7-4d73-b7f5-76407dd72738",
+          "code": "DEPT-FX",
+          "name": "FX",
+          "description": "FX department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.362658Z",
+          "updated_at": "2026-10-29T06:48:48.362671Z"
+        },
+        {
+          "id": "6e0bd365-84d9-4dbc-bd2d-2a127748b6bd",
+          "code": "DEPT-LIGHT",
+          "name": "Lighting",
+          "description": "Lighting department (seeded)",
+          "parent": null,
+          "department_type": "creative",
+          "manager": null,
+          "color": "",
+          "software_stack": [],
+          "created_at": "2026-10-29T06:48:48.369871Z",
+          "updated_at": "2026-10-29T06:48:48.369884Z"
+        }
+      ]
+    }
+  },
+  "list_page_out_of_range": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/?page_size=2&page=99",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "eb650e46-7f18-45e2-bbdb-d1a94e1c8e58",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Invalid page.",
+      "error": {
+        "code": "not_found",
+        "request_id": "eb650e46-7f18-45e2-bbdb-d1a94e1c8e58"
+      }
+    }
+  },
+  "list_invalid_type_filter": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/departments/?department_type=wizard",
+      "body": null
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a4a4e1f6-43af-48a9-8044-9691399e3845",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "department_type": [
+        "Select a valid choice. wizard is not one of the available choices."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "a4a4e1f6-43af-48a9-8044-9691399e3845"
+      }
+    }
+  },
+  "delete_ok": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/departments/579cc54d-a803-41e7-8e3c-4bbf2d971412/",
+      "body": null
+    },
+    "status": 204,
+    "headers": {
+      "X-Request-ID": "224c5237-d8d2-4f3b-a44b-2fd77785ad9a",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "_non_json": null,
+      "_len": 0
+    }
+  },
+  "delete_as_artist_403": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/departments/9546ea71-a710-430a-9b7a-70d274a0a751/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "bfab40a1-a23f-461c-848e-22cf4592709f",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "bfab40a1-a23f-461c-848e-22cf4592709f"
+      }
+    }
+  }
+}

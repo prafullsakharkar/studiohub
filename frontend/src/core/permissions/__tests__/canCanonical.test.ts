@@ -52,12 +52,13 @@ describe('hasElevatedAccess', () => {
     expect(hasElevatedAccess(hostile)).toBe(false);
   });
 
-  it('returns true when the base role template carries an elevated grant', () => {
-    const admin = {
-      ...user,
-      role: 'Platform Admin',
-      permissions: [],
-    } as unknown as User;
+  it('a role label alone grants nothing, even "Platform Admin" (the backend sends codes, not templates)', () => {
+    const admin = { ...user, role: 'Platform Admin', permissions: [] } as unknown as User;
+    expect(hasElevatedAccess(admin)).toBe(false);
+  });
+
+  it('returns true when the user holds an administrator-only backend code', () => {
+    const admin = { ...user, role: 'Artist', permissions: ['identity.role.update'] } as unknown as User;
     expect(hasElevatedAccess(admin)).toBe(true);
   });
 });
@@ -71,16 +72,20 @@ describe('isBreakGlass', () => {
   });
 });
 
-describe('hasElevatedAccess legacy grant parity', () => {
-  it.each([['testing.view'], ['testing.run'], ['permissions.manage']])(
-    'honors legacy elevated grant %s',
+describe('hasElevatedAccess by backend code', () => {
+  it.each([['identity.role.update'], ['identity.permission.update'], ['settings.manage'], ['masterdata.catalog.manage']])(
+    'honors administrator-only code %s',
     (code) => {
-      const u = {
-        ...user,
-        role: 'Tester',
-        permissions: [code],
-      } as unknown as User;
+      const u = { ...user, role: 'Tester', permissions: [code] } as unknown as User;
       expect(hasElevatedAccess(u)).toBe(true);
+    },
+  );
+
+  it.each([['shot.view'], ['project.update'], ['masterdata.directory.manage'], ['testing.view'], ['permissions.manage'], ['platform.admin.view']])(
+    'does not treat %s as elevated (ordinary or invented code)',
+    (code) => {
+      const u = { ...user, role: 'Tester', permissions: [code] } as unknown as User;
+      expect(hasElevatedAccess(u)).toBe(false);
     },
   );
 });

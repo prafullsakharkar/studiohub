@@ -1,0 +1,85 @@
+{
+  "view": "ResendVerificationAPIView",
+  "app": "identity",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/email/resend/",
+      "body": null
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c19af61a-5bd5-4d9d-be5e-19b414f23d2a",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"GET\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "c19af61a-5bd5-4d9d-be5e-19b414f23d2a"
+      }
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/email/resend/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "fbf71d43-f3d9-4369-b79b-097a208096cb",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "fbf71d43-f3d9-4369-b79b-097a208096cb"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/email/resend/",
+      "body": null
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7af0dcdb-c069-4b93-95ac-ad1686b03258",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"GET\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "7af0dcdb-c069-4b93-95ac-ad1686b03258"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/email/resend/",
+      "body": null
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d1cb6287-a4d7-4337-9785-31d95aa99ae9",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"GET\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "d1cb6287-a4d7-4337-9785-31d95aa99ae9"
+      }
+    }
+  }
+}

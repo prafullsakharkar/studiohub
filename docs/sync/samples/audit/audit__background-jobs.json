@@ -1,0 +1,170 @@
+{
+  "view": "BackgroundJobViewSet",
+  "app": "audit",
+  "actions": "{\"get\": \"list\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/background-jobs/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7d8e4e1d-10b0-4f8f-8287-de7a60cfab5c",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "3be50cea-16e7-4c22-bd5b-9121a041978b",
+          "uuid": "3be50cea-16e7-4c22-bd5b-9121a041978b",
+          "job_type": "push",
+          "status": "queued",
+          "progress": 52,
+          "description": "",
+          "job_id": "e23f2c0e-6dbd-4e27-836f-d2c6939e0c83",
+          "queue_name": "",
+          "worker_id": "",
+          "started_at": "2026-07-10T04:27:10.948912Z",
+          "completed_at": "2026-02-15T02:20:31.763654Z",
+          "result_data": "[{\"name\": \"Micheal Wall\", \"residency\": \"77728 Bryant Club Suite 963\\nSouth Taraville, KS 71647\"}, {\"name\": \"Kristen Kelly\", \"residency\": \"9988 Reeves Rest\\nKevi\u2026<truncated>",
+          "error_message": "Usually actually understand author focus. Box evening everything threat along project stand. Exist whom budget do TV.\nStop very ago agree consider. Senior bill \u2026<truncated>",
+          "created_at": "2026-10-29T05:37:41.860361Z",
+          "updated_at": "2026-10-29T05:37:41.860368Z"
+        },
+        {
+          "id": "d1e21665-823a-4237-a024-64a47b9044b2",
+          "uuid": "d1e21665-823a-4237-a024-64a47b9044b2",
+          "job_type": "sync",
+          "status": "queued",
+          "progress": 45,
+          "description": "",
+          "job_id": "a7abc6fd-fc0d-47ce-a405-1749fd13739c",
+          "queue_name": "",
+          "worker_id": "",
+          "started_at": "2026-07-31T13:21:41.322597Z",
+          "completed_at": "2026-01-31T19:02:30.336519Z",
+          "result_data": "[{\"name\": \"Amanda Garcia\", \"residency\": \"83726 Michelle Prairie\\nWest Cameronview, FM 09679\"}, {\"name\": \"Julia Hill\", \"residency\": \"46567 Morrison Islands\\nPort\u2026<truncated>",
+          "error_message": "Site listen project author. Particularly street loss. Argue instead health positive nice cold. You course check day growth.",
+          "created_at": "2026-10-29T05:37:41.854172Z",
+          "updated_at": "2026-10-29T05:37:41.854179Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/background-jobs/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5c9a385c-ed7c-42dc-ab56-bb1fd0847306",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "5c9a385c-ed7c-42dc-ab56-bb1fd0847306"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/background-jobs/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "81b8c142-d56b-4e28-bdf6-2435fa0c4243",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "81b8c142-d56b-4e28-bdf6-2435fa0c4243"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/background-jobs/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3ac1181c-2c6b-4b99-97a0-7dce53d5879d",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "3ac1181c-2c6b-4b99-97a0-7dce53d5879d"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/background-jobs/3be50cea-16e7-4c22-bd5b-9121a041978b/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "63f7ec94-32ed-4f69-9ce2-485c801b1b51",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "3be50cea-16e7-4c22-bd5b-9121a041978b",
+      "uuid": "3be50cea-16e7-4c22-bd5b-9121a041978b",
+      "job_type": "push",
+      "status": "queued",
+      "progress": 52,
+      "description": "",
+      "job_id": "e23f2c0e-6dbd-4e27-836f-d2c6939e0c83",
+      "queue_name": "",
+      "worker_id": "",
+      "started_at": "2026-07-10T04:27:10.948912Z",
+      "completed_at": "2026-02-15T02:20:31.763654Z",
+      "result_data": "[{\"name\": \"Micheal Wall\", \"residency\": \"77728 Bryant Club Suite 963\\nSouth Taraville, KS 71647\"}, {\"name\": \"Kristen Kelly\", \"residency\": \"9988 Reeves Rest\\nKevi\u2026<truncated>",
+      "error_message": "Usually actually understand author focus. Box evening everything threat along project stand. Exist whom budget do TV.\nStop very ago agree consider. Senior bill \u2026<truncated>",
+      "created_at": "2026-10-29T05:37:41.860361Z",
+      "updated_at": "2026-10-29T05:37:41.860368Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/background-jobs/64ba812c-1315-4891-b64f-fdbc63ccd266/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "44e051b8-ec38-4644-9b3e-8f8e5eb3f9cb",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No BackgroundJob matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "44e051b8-ec38-4644-9b3e-8f8e5eb3f9cb"
+      }
+    }
+  }
+}

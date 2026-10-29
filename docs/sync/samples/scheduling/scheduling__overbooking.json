@@ -1,0 +1,81 @@
+{
+  "view": "SchedulingOverbookingView",
+  "app": "scheduling",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/overbooking/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a83e8a3e-3482-4bc9-abeb-ce60dedd11fe",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/overbooking/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "dbeb4584-2404-41a1-82e1-df2705dc4e63",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "dbeb4584-2404-41a1-82e1-df2705dc4e63"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/overbooking/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3b4ad4f4-1649-44bb-88b7-3650294196a9",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "3b4ad4f4-1649-44bb-88b7-3650294196a9"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/overbooking/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d03248a1-a64b-47f5-bf3a-e01513eb28fa",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  }
+}

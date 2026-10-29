@@ -1,0 +1,209 @@
+{
+  "view": "EpisodeViewSet",
+  "app": "production",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/episodes/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ca4550cc-df9b-4e47-b670-6b112624f705",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "1640a578-141b-4361-93d7-22d0e3e5a50d",
+          "uuid": "1640a578-141b-4361-93d7-22d0e3e5a50d",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "show_id": null,
+          "project_code": "PROJ000",
+          "project_name": "Project 0",
+          "code": "EP000",
+          "name": "Episode 0",
+          "season_number": 1,
+          "episode_number": 1,
+          "status": "Not Started",
+          "description": "",
+          "frame_in": 1001,
+          "frame_out": 1100,
+          "duration_frames": null,
+          "air_date": null,
+          "delivery_date": null,
+          "metadata": {},
+          "is_deleted": false,
+          "deleted_at": null,
+          "created_at": "2026-10-29T05:37:41.470045Z",
+          "updated_at": "2026-10-29T05:37:41.470053Z"
+        }
+      ],
+      "_results_total_in_page": 1
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/episodes/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9d8b0ff5-a647-43e7-ad1b-311b23b51419",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "9d8b0ff5-a647-43e7-ad1b-311b23b51419"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/episodes/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9c59aaae-840d-4893-856c-50bb52135f17",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "9c59aaae-840d-4893-856c-50bb52135f17"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/episodes/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1ec87cd1-f61e-400e-80d5-1645b6496d32",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/episodes/1640a578-141b-4361-93d7-22d0e3e5a50d/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d532b045-fc32-478f-b0d1-a2bb6fdd8f29",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "1640a578-141b-4361-93d7-22d0e3e5a50d",
+      "uuid": "1640a578-141b-4361-93d7-22d0e3e5a50d",
+      "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+      "show_id": null,
+      "project_code": "PROJ000",
+      "project_name": "Project 0",
+      "code": "EP000",
+      "name": "Episode 0",
+      "season_number": 1,
+      "episode_number": 1,
+      "status": "Not Started",
+      "description": "",
+      "frame_in": 1001,
+      "frame_out": 1100,
+      "duration_frames": null,
+      "air_date": null,
+      "delivery_date": null,
+      "metadata": {},
+      "is_deleted": false,
+      "deleted_at": null,
+      "created_at": "2026-10-29T05:37:41.470045Z",
+      "updated_at": "2026-10-29T05:37:41.470053Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/episodes/10c77c9f-7bd8-4886-955a-d825783e7c7c/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "bd05b5ad-1f70-4ac5-88d4-e8edcc82f15c",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "bd05b5ad-1f70-4ac5-88d4-e8edcc82f15c"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/episodes/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "69e7154f-7117-4990-8077-410511752b51",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "project": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "69e7154f-7117-4990-8077-410511752b51"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/episodes/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "06d1b1d9-0d5b-4f4c-af3f-c163ed0ba6d6",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "06d1b1d9-0d5b-4f4c-af3f-c163ed0ba6d6"
+      }
+    }
+  }
+}

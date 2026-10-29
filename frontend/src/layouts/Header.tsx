@@ -21,6 +21,7 @@ import {
   HelpCircle,
   Compass,
   Palette,
+  UserCircle,
 } from 'lucide-react';
 import { useCoachMarkStore } from '@/shared/stores/useCoachMarkStore';
 ;
@@ -295,7 +296,7 @@ export const Header: React.FC = () => {
                   {user?.first_name || user?.full_name?.split(' ')[0] || 'User'}
                 </span>
                 <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-mono truncate max-w-[85px] lg:max-w-[110px] leading-tight mt-0.5">
-                  {user?.role || 'Artist'}
+                  {user?.role || 'No role'}
                 </span>
               </div>
             </button>
@@ -306,7 +307,7 @@ export const Header: React.FC = () => {
                   <p className="text-xs font-bold text-white">{user?.full_name || 'User Profile'}</p>
                   <p className="text-[11px] text-slate-400 truncate">{user?.email || 'user@studiohub.vfx'}</p>
                   <div className="mt-2 inline-flex items-center px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 text-[10px] font-mono">
-                    Role: {user?.role || 'Artist'}
+                    Role: {user?.role || 'No role'}
                   </div>
                 </div>
 
@@ -331,6 +332,17 @@ export const Header: React.FC = () => {
                       <Sliders className="w-3.5 h-3.5 text-slate-400" />
                     </Link>
                   )}
+                  <Link
+                    id="user-menu-my-account-btn"
+                    to="/settings/account/profile"
+                    onClick={() => setShowUserMenu(false)}
+                    className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-300 hover:bg-slate-800 flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <UserCircle className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>My account</span>
+                    </div>
+                  </Link>
                   {canViewSettings && (
                   <Link
                     id="user-menu-theme-editor-btn"

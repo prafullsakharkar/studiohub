@@ -1,0 +1,100 @@
+{
+  "view": "TrustedDeviceListAPIView",
+  "app": "identity",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/auth/mfa/devices/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "19e3749e-3470-4aab-a8d3-b9df9e8b609f",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "success": true,
+      "status_code": 200,
+      "message": "Success.",
+      "data": [
+        {
+          "id": "0a66fba1-e968-47b7-93ee-933566d791e4",
+          "uuid": "0a66fba1-e968-47b7-93ee-933566d791e4",
+          "user": "5789d20f-53cd-4a3f-8373-66d38948138c",
+          "fingerprint": "c1d7309e-8e71-499c-aa8a-10400a226552",
+          "browser": "nation",
+          "platform": "three",
+          "ip_address": "127.0.0.1",
+          "is_trusted": true,
+          "last_login_at": "2026-10-10T08:54:15.099715Z"
+        }
+      ],
+      "meta": {},
+      "errors": null
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/auth/mfa/devices/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "67a5a05c-dbff-4345-9804-7ff92bc2cc31",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "67a5a05c-dbff-4345-9804-7ff92bc2cc31"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/auth/mfa/devices/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e173285a-88c2-4d76-8090-a5ed33a47d98",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "success": true,
+      "status_code": 200,
+      "message": "Success.",
+      "data": [],
+      "meta": {},
+      "errors": null
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/auth/mfa/devices/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e31db3da-9a81-49a1-ae2a-22884c91df6d",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "success": true,
+      "status_code": 200,
+      "message": "Success.",
+      "data": [],
+      "meta": {},
+      "errors": null
+    }
+  }
+}

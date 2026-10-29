@@ -9,7 +9,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
-    exclude: ['node_modules/**', 'dist/**'],
+    // *.live.test.* need a running backend: pnpm test:live (vitest.live.config.ts).
+    exclude: ['node_modules/**', 'dist/**', 'src/**/*.live.test.{ts,tsx}'],
     // Persist transforms between runs (vitest docs suggest this; cuts the
     // repeated ~95s transform pass on every run).
     fsModuleCache: true,
@@ -40,6 +41,10 @@ export default defineConfig({
       },
     },
   },
+  // Hermetic API base URL: tests must not depend on a developer's git-ignored .env (without a
+  // base URL, Node's Request rejects the relative /api/... paths). `define` is what populates
+  // import.meta.env; vitest's `test.env` only reaches process.env.
+  define: { 'import.meta.env.VITE_API_URL': JSON.stringify('http://api.test') },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

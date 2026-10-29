@@ -1,0 +1,239 @@
+{
+  "view": "SequenceViewSet",
+  "app": "production",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/sequences/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "bd7f44c0-bc19-4e38-9a57-81c486fe7127",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "0323a2ab-75e8-4b1c-8afb-0f37d3b63295",
+          "uuid": "0323a2ab-75e8-4b1c-8afb-0f37d3b63295",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "show_id": null,
+          "project_code": "PROJ000",
+          "project_name": "Project 0",
+          "episode_id": null,
+          "code": "SEQ000",
+          "name": "Sequence 0",
+          "status": "Not Started",
+          "description": "",
+          "frame_in": 1001,
+          "frame_out": 1100,
+          "department": "",
+          "lead_artist": null,
+          "lead_artist_id": null,
+          "lead_artist_name": "",
+          "tags": [],
+          "metadata": {},
+          "shots_count": 1,
+          "is_deleted": false,
+          "deleted_at": null,
+          "created_at": "2026-10-29T05:37:41.477706Z",
+          "updated_at": "2026-10-29T05:37:41.477714Z"
+        },
+        {
+          "id": "434d94c8-185a-4086-b8d2-a87a362f838a",
+          "uuid": "434d94c8-185a-4086-b8d2-a87a362f838a",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "show_id": null,
+          "project_code": "PROJ000",
+          "project_name": "Project 0",
+          "episode_id": null,
+          "code": "SEQ001",
+          "name": "Sequence 1",
+          "status": "Not Started",
+          "description": "",
+          "frame_in": 1001,
+          "frame_out": 1100,
+          "department": "",
+          "lead_artist": null,
+          "lead_artist_id": null,
+          "lead_artist_name": "",
+          "tags": [],
+          "metadata": {},
+          "shots_count": 1,
+          "is_deleted": false,
+          "deleted_at": null,
+          "created_at": "2026-10-29T05:37:41.613914Z",
+          "updated_at": "2026-10-29T05:37:41.613924Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/sequences/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "236325e1-0ee4-4b37-85f1-4e279d7536c0",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "236325e1-0ee4-4b37-85f1-4e279d7536c0"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/sequences/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "89ba8849-d1bf-44f3-ba3b-dcbe87268aef",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "89ba8849-d1bf-44f3-ba3b-dcbe87268aef"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/sequences/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "df07f0ab-27f8-4576-a7cc-5af8c10e6595",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/sequences/0323a2ab-75e8-4b1c-8afb-0f37d3b63295/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "129601e5-4173-44ce-839c-8f918dd7ae61",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "0323a2ab-75e8-4b1c-8afb-0f37d3b63295",
+      "uuid": "0323a2ab-75e8-4b1c-8afb-0f37d3b63295",
+      "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+      "show_id": null,
+      "project_code": "PROJ000",
+      "project_name": "Project 0",
+      "episode_id": null,
+      "code": "SEQ000",
+      "name": "Sequence 0",
+      "status": "Not Started",
+      "description": "",
+      "frame_in": 1001,
+      "frame_out": 1100,
+      "department": "",
+      "lead_artist": null,
+      "lead_artist_id": null,
+      "lead_artist_name": "",
+      "tags": [],
+      "metadata": {},
+      "shots_count": 1,
+      "is_deleted": false,
+      "deleted_at": null,
+      "created_at": "2026-10-29T05:37:41.477706Z",
+      "updated_at": "2026-10-29T05:37:41.477714Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/sequences/f8faffc2-dc85-40be-9545-28c8ed57b5ed/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c0885c42-5360-482a-bec4-7d50afdc5435",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "c0885c42-5360-482a-bec4-7d50afdc5435"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/sequences/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2983dc6f-aff5-46a2-91e3-30ba2c4899b4",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "2983dc6f-aff5-46a2-91e3-30ba2c4899b4"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/sequences/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ae3d8433-3d3e-46bf-af47-c6f2e21abbcf",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "ae3d8433-3d3e-46bf-af47-c6f2e21abbcf"
+      }
+    }
+  }
+}

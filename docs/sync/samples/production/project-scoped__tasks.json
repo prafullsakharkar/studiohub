@@ -1,0 +1,134 @@
+{
+  "view": "_TaskListView",
+  "app": "production",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/tasks/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d54e1cbf-bc30-4e5a-8b08-d86d9cda5f4e",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "aea9abc9-541b-4b93-9126-adebf2dbea15",
+          "uuid": "aea9abc9-541b-4b93-9126-adebf2dbea15",
+          "title": "Task 3",
+          "code": "TSK003",
+          "project_id": "90864aa9-6ae0-49a3-807e-e5327db92bf0",
+          "project_code": "PROJ002",
+          "project_name": "Project 2",
+          "shot_id": null,
+          "asset_id": null,
+          "sequence_id": null,
+          "entity_type": "Shot",
+          "entity_id": "48599965-479b-4e8e-9364-a96a6bebb306",
+          "entity_code": "ENT003",
+          "entity_name": "",
+          "department": "",
+          "department_id": "",
+          "team_id": null,
+          "team_name": "",
+          "assignee_id": null,
+          "assignee_name": "",
+          "assignee_avatar": null,
+          "assignee_role": "",
+          "reviewer_id": null,
+          "reviewer_name": "",
+          "reviewer_avatar": null,
+          "vendor_id": "",
+          "vendor_name": "",
+          "vendor_code": "",
+          "workflow": {},
+          "status": "Not Started",
+          "priority": "Medium",
+          "schedule": {},
+          "dependencies": {},
+          "description": "",
+          "software": "",
+          "tags": [],
+          "is_archived": false,
+          "due_date": null,
+          "estimated_hours": "0.00",
+          "task_type_id": null,
+          "task_type_code": "",
+          "task_type_name": "",
+          "logged_hours": "0.00",
+          "pending_hours": "0.00",
+          "created_at": "2026-10-29T05:37:41.669027Z",
+          "updated_at": "2026-10-29T05:37:41.669036Z"
+        }
+      ],
+      "_results_total_in_page": 1
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/tasks/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "12a559ee-5318-4e1d-adc2-3d14a09c78e4",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "12a559ee-5318-4e1d-adc2-3d14a09c78e4"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/tasks/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "af372aa8-d597-4a37-8759-1f932c05f770",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "af372aa8-d597-4a37-8759-1f932c05f770"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/tasks/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "fc10932a-0dc5-497c-bedd-b797c4009e12",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Project 90864aa9-6ae0-49a3-807e-e5327db92bf0 not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "fc10932a-0dc5-497c-bedd-b797c4009e12"
+      }
+    }
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "view": "AuditCompatViewSet",
+  "app": "audit",
+  "actions": "{\"get\": \"list\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4d330ee0-0c80-44a4-b189-44bc5131fd1e",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "297869fc-b6ee-4ab1-9602-810214c5afb2",
+          "uuid": "297869fc-b6ee-4ab1-9602-810214c5afb2",
+          "user_id": "e9a7a88c-9125-4e70-a8d9-7a1a8c8d6900",
+          "user_name": "user@example.test",
+          "user_email": "user@example.test",
+          "action": "create",
+          "entity_type": "consumer",
+          "entity_id": "ea80d0c5-b6b1-42f7-9001-6d54f863980e",
+          "entity_code": "wait",
+          "description": "Entire against indicate color many case perhaps. Start career when those dinner reach.\nPerhaps go read able woman. Street artist writer yard region.",
+          "ip_address": "92.129.198.231",
+          "changes_diff": "[{\"name\": \"Richard Williams\", \"residency\": \"4759 Santos Canyon Apt. 790\\nMorseport, SC 95480\"}, {\"name\": \"Benjamin Johnson\", \"residency\": \"4111 Campbell Square\\\u2026<truncated>",
+          "created_at": "2026-10-29T05:37:41.818428Z",
+          "updated_at": "2026-10-29T05:37:41.818435Z"
+        },
+        {
+          "id": "df1825de-576f-42a2-a283-90d4764373bf",
+          "uuid": "df1825de-576f-42a2-a283-90d4764373bf",
+          "user_id": "766dbe1a-d866-4e89-8203-c7ae6c5cb299",
+          "user_name": "user@example.test",
+          "user_email": "user@example.test",
+          "action": "logout",
+          "entity_type": "chair",
+          "entity_id": "337ac966-5bef-4421-87f7-f5b8739662ca",
+          "entity_code": "ok",
+          "description": "These along team. On only onto both.\nClaim wide college garden. Usually long away attention.\nAge pressure several.",
+          "ip_address": "109.37.14.196",
+          "changes_diff": "[{\"name\": \"Cody Gordon\", \"residency\": \"8685 Steven Ridge Apt. 526\\nGrantburgh, MA 55517\"}, {\"name\": \"Cynthia Benson\", \"residency\": \"50017 Freeman Station Suite \u2026<truncated>",
+          "created_at": "2026-10-29T05:37:41.810869Z",
+          "updated_at": "2026-10-29T05:37:41.810878Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d99fba05-84a1-43a8-94e6-69066e6fb32f",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "d99fba05-84a1-43a8-94e6-69066e6fb32f"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "52e7fce3-8bed-4b3f-b7a6-c98dfdd0e4a9",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "52e7fce3-8bed-4b3f-b7a6-c98dfdd0e4a9"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "801b5f12-1dc3-4566-bc7a-00827214e239",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "801b5f12-1dc3-4566-bc7a-00827214e239"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/297869fc-b6ee-4ab1-9602-810214c5afb2/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "440a18db-4aa9-404a-bbeb-b4ff45c1d5db",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "297869fc-b6ee-4ab1-9602-810214c5afb2",
+      "uuid": "297869fc-b6ee-4ab1-9602-810214c5afb2",
+      "user_id": "e9a7a88c-9125-4e70-a8d9-7a1a8c8d6900",
+      "user_name": "user@example.test",
+      "user_email": "user@example.test",
+      "action": "create",
+      "entity_type": "consumer",
+      "entity_id": "ea80d0c5-b6b1-42f7-9001-6d54f863980e",
+      "entity_code": "wait",
+      "description": "Entire against indicate color many case perhaps. Start career when those dinner reach.\nPerhaps go read able woman. Street artist writer yard region.",
+      "ip_address": "92.129.198.231",
+      "changes_diff": "[{\"name\": \"Richard Williams\", \"residency\": \"4759 Santos Canyon Apt. 790\\nMorseport, SC 95480\"}, {\"name\": \"Benjamin Johnson\", \"residency\": \"4111 Campbell Square\\\u2026<truncated>",
+      "created_at": "2026-10-29T05:37:41.818428Z",
+      "updated_at": "2026-10-29T05:37:41.818435Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/2f4166ba-3d79-4117-ab23-710acbb83419/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7284c148-4ba1-48aa-87ab-23bcb704a48d",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No AuditLog matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "7284c148-4ba1-48aa-87ab-23bcb704a48d"
+      }
+    }
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "view": "MFATOTPDisableView",
+  "app": "identity",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/totp/disable/",
+      "body": null
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3b9e0f20-2120-480f-bafe-be8c09dd5b9f",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"GET\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "3b9e0f20-2120-480f-bafe-be8c09dd5b9f"
+      }
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/totp/disable/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6609bb9e-7b10-4b30-9936-6c04ff962092",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "6609bb9e-7b10-4b30-9936-6c04ff962092"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/totp/disable/",
+      "body": null
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9fb5c048-a17c-4515-b87d-e3293f3752ef",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"GET\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "9fb5c048-a17c-4515-b87d-e3293f3752ef"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/totp/disable/",
+      "body": null
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "73734e89-f801-4c7a-a20f-784e3fcbfb0d",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"GET\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "73734e89-f801-4c7a-a20f-784e3fcbfb0d"
+      }
+    }
+  }
+}

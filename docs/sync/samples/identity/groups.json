@@ -1,0 +1,164 @@
+{
+  "view": "GroupViewSet",
+  "app": "identity",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/groups/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9cd71de3-e750-4080-9217-91b179718f70",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/groups/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5398cb7b-cf9e-4d84-8c3e-cf760c217b79",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "5398cb7b-cf9e-4d84-8c3e-cf760c217b79"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/groups/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a7b328b4-edc9-495b-9e59-1d2db82efb85",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/groups/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8c41e77f-5b05-4535-9dd5-5fc94131781f",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/groups/683254ad-dfd3-4b13-b86e-004522eca6ec/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "90a0ffb5-cb10-44c7-bc74-32b8d562cc2f",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Group matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "90a0ffb5-cb10-44c7-bc74-32b8d562cc2f"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/groups/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "39a32b5e-2db6-431d-a871-e42c265334f0",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "This field is required."
+      ],
+      "name": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "39a32b5e-2db6-431d-a871-e42c265334f0"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/groups/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a4f7d022-2eb1-461f-b24e-a7fbfe4948ee",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "a4f7d022-2eb1-461f-b24e-a7fbfe4948ee"
+      }
+    }
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "view": "ActivityCompatViewSet",
+  "app": "audit",
+  "actions": "{\"get\": \"list\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/activity/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e769a6c5-db72-4399-90af-514a6ace43b8",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "e9b6e515-cc42-43b6-b0f6-15f590422c4f",
+          "timestamp": "2026-10-29T05:37:41.830357Z",
+          "actor_name": "user@example.test",
+          "actor_email": "user@example.test",
+          "action": "interaction",
+          "description": "Likely identify bad such raise believe. Throughout model music write tax once while.\nSend account choice official join seven. Protect new task end because hour \u2026<truncated>",
+          "metadata": "[{\"name\": \"Angela Diaz\", \"residency\": \"702 Mark Ports Suite 250\\nLake Cody, CO 97148\"}, {\"name\": \"Michael Lamb\", \"residency\": \"149 Lucas Crest Suite 656\\nNew Ki\u2026<truncated>",
+          "created_at": "2026-10-29T05:37:41.830357Z"
+        },
+        {
+          "id": "9e93d19e-5ba2-46b4-bf06-2a4e3c31b6b7",
+          "timestamp": "2026-10-29T05:37:41.824182Z",
+          "actor_name": "user@example.test",
+          "actor_email": "user@example.test",
+          "action": "page_view",
+          "description": "Both know land way spend event. Require radio scene century everything. Girl which provide agent.",
+          "metadata": "[{\"name\": \"Brendan Lee\", \"residency\": \"644 Turner Key\\nWilsonburgh, MH 27152\"}, {\"name\": \"Michael Williams\", \"residency\": \"90201 Cohen Mountain Suite 797\\nHeste\u2026<truncated>",
+          "created_at": "2026-10-29T05:37:41.824182Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/activity/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "06343045-338e-4d93-a12f-9c00d542a0ae",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "06343045-338e-4d93-a12f-9c00d542a0ae"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/activity/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c89a07da-5dfe-41b6-8e79-4f940a6ae671",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "c89a07da-5dfe-41b6-8e79-4f940a6ae671"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/activity/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "850b89dc-4557-41e4-a2fc-b41c6a5e5149",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "850b89dc-4557-41e4-a2fc-b41c6a5e5149"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/activity/e9b6e515-cc42-43b6-b0f6-15f590422c4f/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7b8f628f-e1b1-4fc3-8992-71689f6ced49"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "7b8f628f-e1b1-4fc3-8992-71689f6ced49"
+      }
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/activity/91d7c606-5708-4b89-bd57-f655acbbd003/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "261b2529-d833-4223-baa5-bebac85e9861"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "261b2529-d833-4223-baa5-bebac85e9861"
+      }
+    }
+  }
+}

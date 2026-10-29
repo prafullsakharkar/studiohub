@@ -1,0 +1,146 @@
+{
+  "view": "ResourceLeaveViewSet",
+  "app": "scheduling",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/leaves/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "edb5e559-1886-4f7e-8b49-75ac8f272689",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/leaves/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6fcd51ba-4204-4946-b717-484cc78282b9",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "6fcd51ba-4204-4946-b717-484cc78282b9"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/leaves/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4f13c17f-7192-4532-8863-709bae89d73f",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "4f13c17f-7192-4532-8863-709bae89d73f"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/leaves/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "fb57870f-6c21-4030-a41d-6ab8a2c1883c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/leaves/4cfe46b4-e6e6-497b-9d15-eb44242ac69b/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3e8f49ce-a9a1-4714-915f-cef38a781ef8",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No ResourceLeave matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "3e8f49ce-a9a1-4714-915f-cef38a781ef8"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/scheduling/leaves/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "48a03a52-fb6a-45ba-a978-b53ae7930804",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "start_date": [
+        "This field is required."
+      ],
+      "end_date": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "48a03a52-fb6a-45ba-a978-b53ae7930804"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/scheduling/leaves/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b0870160-6bc6-4bcb-b0bf-4d56763ccc40",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "b0870160-6bc6-4bcb-b0bf-4d56763ccc40"
+      }
+    }
+  }
+}

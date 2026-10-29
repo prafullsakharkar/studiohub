@@ -1,0 +1,188 @@
+{
+  "view": "APIRequestViewSet",
+  "app": "audit",
+  "actions": "{\"get\": \"list\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/api-requests/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0515f9d0-e291-4016-91e9-ef58e3e3b1ee",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 50,
+      "next": "http://testserver/api/v1/audit/api-requests/?page=2",
+      "previous": null,
+      "results": [
+        {
+          "id": "bfdd9767-ac07-4d1f-a65d-5f549855f8a8",
+          "uuid": "bfdd9767-ac07-4d1f-a65d-5f549855f8a8",
+          "method": "GET",
+          "path": "/api/v1/audit/activity/91d7c606-5708-4b89-bd57-f655acbbd003/",
+          "full_path": "/api/v1/audit/activity/91d7c606-5708-4b89-bd57-f655acbbd003/",
+          "status_code": 404,
+          "status_category": "4xx",
+          "response_time_ms": 0,
+          "request_size_bytes": 0,
+          "response_size_bytes": 0,
+          "user": null,
+          "ip_address": "127.0.0.1",
+          "user_agent": "",
+          "api_version": "v1",
+          "request_headers": {},
+          "request_body": {},
+          "response_headers": {},
+          "response_body": {},
+          "error_message": "",
+          "created_at": "2026-10-29T05:37:43.158011Z",
+          "updated_at": "2026-10-29T05:37:43.158022Z"
+        },
+        {
+          "id": "f979b3c5-b635-449a-bf10-a28055af2047",
+          "uuid": "f979b3c5-b635-449a-bf10-a28055af2047",
+          "method": "GET",
+          "path": "/api/v1/audit/activity/e9b6e515-cc42-43b6-b0f6-15f590422c4f/",
+          "full_path": "/api/v1/audit/activity/e9b6e515-cc42-43b6-b0f6-15f590422c4f/",
+          "status_code": 404,
+          "status_category": "4xx",
+          "response_time_ms": 2,
+          "request_size_bytes": 0,
+          "response_size_bytes": 0,
+          "user": null,
+          "ip_address": "127.0.0.1",
+          "user_agent": "",
+          "api_version": "v1",
+          "request_headers": {},
+          "request_body": {},
+          "response_headers": {},
+          "response_body": {},
+          "error_message": "",
+          "created_at": "2026-10-29T05:37:43.154884Z",
+          "updated_at": "2026-10-29T05:37:43.154896Z"
+        }
+      ],
+      "_results_total_in_page": 25
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/api-requests/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a64329d4-e823-4c1e-b11a-e29a7e219a3b",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "a64329d4-e823-4c1e-b11a-e29a7e219a3b"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/api-requests/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "24d9949c-1b48-4a7e-af5d-2a994cd8e650",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "24d9949c-1b48-4a7e-af5d-2a994cd8e650"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/api-requests/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "995153d3-21ae-49f5-aeb1-fcfc79f20cb6",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "995153d3-21ae-49f5-aeb1-fcfc79f20cb6"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/api-requests/bfdd9767-ac07-4d1f-a65d-5f549855f8a8/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d9b08374-9787-42db-95b6-283c2707dfea",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "bfdd9767-ac07-4d1f-a65d-5f549855f8a8",
+      "uuid": "bfdd9767-ac07-4d1f-a65d-5f549855f8a8",
+      "method": "GET",
+      "path": "/api/v1/audit/activity/91d7c606-5708-4b89-bd57-f655acbbd003/",
+      "full_path": "/api/v1/audit/activity/91d7c606-5708-4b89-bd57-f655acbbd003/",
+      "status_code": 404,
+      "status_category": "4xx",
+      "response_time_ms": 0,
+      "request_size_bytes": 0,
+      "response_size_bytes": 0,
+      "user": null,
+      "ip_address": "127.0.0.1",
+      "user_agent": "",
+      "api_version": "v1",
+      "request_headers": {},
+      "request_body": {},
+      "response_headers": {},
+      "response_body": {},
+      "error_message": "",
+      "created_at": "2026-10-29T05:37:43.158011Z",
+      "updated_at": "2026-10-29T05:37:43.158022Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/api-requests/81285273-97da-41c0-b354-e20992a0cac6/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ef877831-7d10-4dee-8a3e-aa447f4a59bc",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No APIRequest matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "ef877831-7d10-4dee-8a3e-aa447f4a59bc"
+      }
+    }
+  }
+}

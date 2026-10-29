@@ -1,0 +1,267 @@
+{
+  "view": "MasterTaskTypeViewSet",
+  "app": "masterdata",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/task-types",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ee493523-0f8b-4be5-9317-d0d3318172ac",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "382c8146-15a7-433c-a4a2-63f6d38d3185",
+          "name": "Name 0",
+          "code": "code-0",
+          "category": "",
+          "department_code": "",
+          "department_name": "",
+          "description": "",
+          "color": "",
+          "icon": "",
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.754293Z",
+          "updated_at": "2026-10-29T05:37:41.754304Z"
+        },
+        {
+          "id": "3f77b519-fe80-413b-ac6d-511afbf3da01",
+          "name": "Name 1",
+          "code": "code-1",
+          "category": "",
+          "department_code": "",
+          "department_name": "",
+          "description": "",
+          "color": "",
+          "icon": "",
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.756724Z",
+          "updated_at": "2026-10-29T05:37:41.756736Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/task-types",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4c8ee38d-8e59-494e-ae0d-962666684e54",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "4c8ee38d-8e59-494e-ae0d-962666684e54"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/task-types",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "67d7be04-8d6e-4ee5-a9e2-dca0e5f4c7e5",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "382c8146-15a7-433c-a4a2-63f6d38d3185",
+          "name": "Name 0",
+          "code": "code-0",
+          "category": "",
+          "department_code": "",
+          "department_name": "",
+          "description": "",
+          "color": "",
+          "icon": "",
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.754293Z",
+          "updated_at": "2026-10-29T05:37:41.754304Z"
+        },
+        {
+          "id": "3f77b519-fe80-413b-ac6d-511afbf3da01",
+          "name": "Name 1",
+          "code": "code-1",
+          "category": "",
+          "department_code": "",
+          "department_name": "",
+          "description": "",
+          "color": "",
+          "icon": "",
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.756724Z",
+          "updated_at": "2026-10-29T05:37:41.756736Z"
+        }
+      ]
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/task-types",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3db78f45-a7b8-440c-a210-07e945fafc27",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "382c8146-15a7-433c-a4a2-63f6d38d3185",
+          "name": "Name 0",
+          "code": "code-0",
+          "category": "",
+          "department_code": "",
+          "department_name": "",
+          "description": "",
+          "color": "",
+          "icon": "",
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.754293Z",
+          "updated_at": "2026-10-29T05:37:41.754304Z"
+        },
+        {
+          "id": "3f77b519-fe80-413b-ac6d-511afbf3da01",
+          "name": "Name 1",
+          "code": "code-1",
+          "category": "",
+          "department_code": "",
+          "department_name": "",
+          "description": "",
+          "color": "",
+          "icon": "",
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.756724Z",
+          "updated_at": "2026-10-29T05:37:41.756736Z"
+        }
+      ]
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/task-types382c8146-15a7-433c-a4a2-63f6d38d3185/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "47c11b35-2dbf-4bd0-bce4-0a324031a4f1"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "47c11b35-2dbf-4bd0-bce4-0a324031a4f1"
+      }
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/task-typesa1f3a165-b3d7-44ab-86a9-bed34a2f73a0/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "69079f88-0073-4ce0-8073-55db1047f2ae"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "69079f88-0073-4ce0-8073-55db1047f2ae"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/platform/master-data/task-types",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9676931f-36ba-427b-b020-6b83186fb4a7",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "code": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "9676931f-36ba-427b-b020-6b83186fb4a7"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/platform/master-data/task-types",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a65c6776-63ca-4b3a-86e9-ac4f342de947",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "a65c6776-63ca-4b3a-86e9-ac4f342de947"
+      }
+    }
+  }
+}

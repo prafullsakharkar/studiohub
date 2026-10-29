@@ -3,7 +3,6 @@ import { execSync } from 'node:child_process';
 
 const ALLOWLIST = new Set([
   'src/shared/components/PermissionsSimulatorModal.tsx',
-  'src/modules/access/components/PermissionSimulatorSection.tsx',
   'src/core/permissions/index.ts',
 ]);
 

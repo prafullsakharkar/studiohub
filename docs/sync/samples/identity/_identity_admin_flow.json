@@ -1,0 +1,3425 @@
+{
+  "admin_me": {
+    "status": 200,
+    "body": {
+      "role": "",
+      "is_superuser": true,
+      "permissions": [
+        "project.create",
+        "project.view",
+        "project.update",
+        "project.delete",
+        "shot.create",
+        "shot.view",
+        "shot.update",
+        "shot.delete",
+        "shot.approve",
+        "asset.create",
+        "asset.view",
+        "asset.update",
+        "asset.delete",
+        "task.create",
+        "task.view",
+        "task.update",
+        "task.delete",
+        "review.create",
+        "review.view",
+        "review.approve",
+        "audit.view",
+        "settings.update",
+        "user.manage"
+      ],
+      "must_change_password": false
+    }
+  },
+  "permissions_list": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/permissions/?page_size=3",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "104ac2e2-ba93-4785-9411-8d308ae90123",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 145,
+      "next": "http://testserver/api/v1/permissions/?page=2&page_size=3",
+      "previous": null,
+      "results": [
+        {
+          "id": "57837e8c-d027-4650-85dc-5e4359e0107e",
+          "uuid": "57837e8c-d027-4650-85dc-5e4359e0107e",
+          "name": "asset.create",
+          "code": "asset.create",
+          "module": "assets",
+          "action": "create",
+          "category": "general",
+          "description": "",
+          "is_system": true,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T07:57:54.257901Z",
+          "updated_at": "2026-10-29T07:57:54.257914Z"
+        },
+        {
+          "id": "50077d94-635d-411c-87bc-d5ef17faea40",
+          "uuid": "50077d94-635d-411c-87bc-d5ef17faea40",
+          "name": "asset.delete",
+          "code": "asset.delete",
+          "module": "assets",
+          "action": "delete",
+          "category": "general",
+          "description": "",
+          "is_system": true,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T07:57:54.269113Z",
+          "updated_at": "2026-10-29T07:57:54.269126Z"
+        },
+        {
+          "id": "0ab80c7f-12e1-41ef-b954-b8f6bc908c42",
+          "uuid": "0ab80c7f-12e1-41ef-b954-b8f6bc908c42",
+          "name": "asset.update",
+          "code": "asset.update",
+          "module": "assets",
+          "action": "update",
+          "category": "general",
+          "description": "",
+          "is_system": true,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T07:57:54.265583Z",
+          "updated_at": "2026-10-29T07:57:54.265597Z"
+        }
+      ],
+      "_results_total_in_page": 3
+    }
+  },
+  "permissions_filter_module": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/permissions/?module=shots&page_size=50",
+      "body": null
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b8f14aca-5cee-44bd-b894-f0a2a6c3dc0b",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "module": [
+        "Select a valid choice. shots is not one of the available choices."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "b8f14aca-5cee-44bd-b894-f0a2a6c3dc0b"
+      }
+    }
+  },
+  "permissions_search": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/permissions/?search=shot.view",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4e8b4373-a607-4664-9b42-a5f32e85052b",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "2f38eb42-c24c-4d0e-8951-411af501fc61",
+          "uuid": "2f38eb42-c24c-4d0e-8951-411af501fc61",
+          "name": "shot.view",
+          "code": "shot.view",
+          "module": "shots",
+          "action": "read",
+          "category": "general",
+          "description": "",
+          "is_system": true,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T07:57:54.233024Z",
+          "updated_at": "2026-10-29T07:57:54.233037Z"
+        }
+      ],
+      "_results_total_in_page": 1
+    }
+  },
+  "permissions_detail": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/permissions/2f38eb42-c24c-4d0e-8951-411af501fc61/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a665a9e0-e03a-47a4-a622-1e22a1c25245",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "2f38eb42-c24c-4d0e-8951-411af501fc61",
+      "uuid": "2f38eb42-c24c-4d0e-8951-411af501fc61",
+      "name": "shot.view",
+      "code": "shot.view",
+      "module": "shots",
+      "action": "read",
+      "category": "general",
+      "description": "",
+      "is_system": true,
+      "is_active": true,
+      "sort_order": 0,
+      "created_at": "2026-10-29T07:57:54.233024Z",
+      "updated_at": "2026-10-29T07:57:54.233037Z"
+    }
+  },
+  "roles_list": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/roles/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "70946a69-c156-4b6c-ba75-d0f2278a69c6",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 7,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "e31ecd38-578c-4b93-b8f0-227a03932dcb",
+          "uuid": "e31ecd38-578c-4b93-b8f0-227a03932dcb",
+          "name": "Platform Admin",
+          "code": "platform-admin",
+          "description": "Platform role: Platform Admin",
+          "parent": null,
+          "role_type": "organization",
+          "scope": "organization",
+          "priority": 10,
+          "icon": "",
+          "color": "",
+          "is_system": true,
+          "is_default": false,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T07:57:54.754080Z",
+          "updated_at": "2026-10-29T07:57:54.754090Z"
+        },
+        {
+          "id": "79ac4892-6ee6-457d-908f-8093936c74bd",
+          "uuid": "79ac4892-6ee6-457d-908f-8093936c74bd",
+          "name": "Organization Admin",
+          "code": "org-admin",
+          "description": "Platform role: Organization Admin",
+          "parent": null,
+          "role_type": "organization",
+          "scope": "organization",
+          "priority": 20,
+          "icon": "",
+          "color": "",
+          "is_system": true,
+          "is_default": false,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T07:57:56.180535Z",
+          "updated_at": "2026-10-29T07:57:56.180550Z"
+        },
+        {
+          "id": "04df34df-bca4-41c0-ac14-92fe39792f39",
+          "uuid": "04df34df-bca4-41c0-ac14-92fe39792f39",
+          "name": "Production Admin",
+          "code": "production-admin",
+          "description": "Platform role: Production Admin",
+          "parent": null,
+          "role_type": "organization",
+          "scope": "project",
+          "priority": 20,
+          "icon": "",
+          "color": "",
+          "is_system": true,
+          "is_default": false,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T07:57:57.575991Z",
+          "updated_at": "2026-10-29T07:57:57.576008Z"
+        }
+      ],
+      "_results_total_in_page": 7
+    }
+  },
+  "roles_list_ordered": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/roles/?ordering=priority&page_size=2",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4ddbb61a-f443-42c4-8cc9-694f0b90a73d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 7,
+      "next": "http://testserver/api/v1/roles/?ordering=priority&page=2&page_size=2",
+      "previous": null,
+      "results": [
+        {
+          "id": "e31ecd38-578c-4b93-b8f0-227a03932dcb",
+          "uuid": "e31ecd38-578c-4b93-b8f0-227a03932dcb",
+          "name": "Platform Admin",
+          "code": "platform-admin",
+          "description": "Platform role: Platform Admin",
+          "parent": null,
+          "role_type": "organization",
+          "scope": "organization",
+          "priority": 10,
+          "icon": "",
+          "color": "",
+          "is_system": true,
+          "is_default": false,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T07:57:54.754080Z",
+          "updated_at": "2026-10-29T07:57:54.754090Z"
+        },
+        {
+          "id": "79ac4892-6ee6-457d-908f-8093936c74bd",
+          "uuid": "79ac4892-6ee6-457d-908f-8093936c74bd",
+          "name": "Organization Admin",
+          "code": "org-admin",
+          "description": "Platform role: Organization Admin",
+          "parent": null,
+          "role_type": "organization",
+          "scope": "organization",
+          "priority": 20,
+          "icon": "",
+          "color": "",
+          "is_system": true,
+          "is_default": false,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T07:57:56.180535Z",
+          "updated_at": "2026-10-29T07:57:56.180550Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "roles_detail_system": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/roles/4b8dc8e8-5d0b-4ca2-805d-f6df9f75baef/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "748ccd7b-407c-46a6-ab62-129f6752d36e",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "4b8dc8e8-5d0b-4ca2-805d-f6df9f75baef",
+      "uuid": "4b8dc8e8-5d0b-4ca2-805d-f6df9f75baef",
+      "name": "Artist",
+      "code": "artist",
+      "description": "Platform role: Artist",
+      "parent": null,
+      "role_type": "organization",
+      "scope": "project",
+      "priority": 40,
+      "icon": "",
+      "color": "",
+      "is_system": true,
+      "is_default": false,
+      "is_active": true,
+      "sort_order": 0,
+      "created_at": "2026-10-29T07:58:00.296727Z",
+      "updated_at": "2026-10-29T07:58:00.296743Z"
+    }
+  },
+  "roles_create_missing": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/roles/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5469e975-f5bd-45c0-a237-1656022ce11d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "5469e975-f5bd-45c0-a237-1656022ce11d"
+      }
+    }
+  },
+  "roles_create": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/roles/",
+      "body": {
+        "name": "Reviewer",
+        "code": "<redacted>",
+        "description": "Reads and reviews",
+        "priority": 50,
+        "scope": "project"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "931e8b97-99e3-4c6e-b4c8-39a2453e81dc",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": "Reviewer",
+      "code": "reviewer",
+      "description": "Reads and reviews",
+      "parent": null,
+      "scope": "project",
+      "priority": 50
+    }
+  },
+  "roles_create_duplicate_code": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/roles/",
+      "body": {
+        "name": "Reviewer 2",
+        "code": "<redacted>"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "82d42ecb-5761-40c3-846a-782cc4a0209a",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "role with this code already exists."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "82d42ecb-5761-40c3-846a-782cc4a0209a"
+      }
+    }
+  },
+  "roles_create_has_id": {
+    "status": 200,
+    "body": {
+      "id_in_create_response": false
+    }
+  },
+  "roles_patch": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/roles/412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96/",
+      "body": {
+        "description": "Reads, reviews and comments"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "da263e63-075a-45fe-b04c-8d4fed5970c4",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96",
+      "uuid": "412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96",
+      "name": "Reviewer",
+      "code": "reviewer",
+      "description": "Reads and reviews",
+      "parent": null,
+      "role_type": "organization",
+      "scope": "project",
+      "priority": 50,
+      "icon": "",
+      "color": "",
+      "is_system": false,
+      "is_default": false,
+      "is_active": true,
+      "sort_order": 0,
+      "created_at": "2026-10-29T07:58:01.442168Z",
+      "updated_at": "2026-10-29T07:58:01.442174Z"
+    }
+  },
+  "roles_permissions_get_empty": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/roles/412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96/permissions/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3426ff9e-5fa7-4e41-8e59-e2357b695f0d",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "roles_permissions_grant": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/roles/412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96/permissions/",
+      "body": {
+        "permission_id": "2f38eb42-c24c-4d0e-8951-411af501fc61"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f93a135b-eb34-4c5f-9105-7750f4ce4ce1",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Permission granted."
+    }
+  },
+  "roles_permissions_grant_expiring": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/roles/412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96/permissions/",
+      "body": {
+        "permission_id": "1c32d343-9c3f-4292-8d91-4b3ec6318a87",
+        "expires_at": "2030-01-01T00:00:00Z"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6614a46c-4fc2-490d-a5fe-f970b353c4ad",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Permission granted."
+    }
+  },
+  "roles_permissions_grant_again": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/roles/412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96/permissions/",
+      "body": {
+        "permission_id": "2f38eb42-c24c-4d0e-8951-411af501fc61"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "cead88d0-2623-4c39-98f9-b4dfaa4c927b",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Permission granted."
+    }
+  },
+  "roles_permissions_grant_bad_id": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/roles/412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96/permissions/",
+      "body": {
+        "permission_id": "00000000-0000-0000-0000-000000000000"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b29caa94-4a1c-4806-abcb-56587aef6659",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "permission_id": [
+        "Invalid pk \"00000000-0000-0000-0000-000000000000\" - object does not exist."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "b29caa94-4a1c-4806-abcb-56587aef6659"
+      }
+    }
+  },
+  "roles_permissions_get": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/roles/412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96/permissions/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "dfb82ccf-38d7-4708-a048-887a5a812358",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "c462ffa6-959c-4ce8-9565-c1fe18f46a91",
+          "uuid": "c462ffa6-959c-4ce8-9565-c1fe18f46a91",
+          "role": {
+            "id": "412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96",
+            "name": "Reviewer",
+            "code": "reviewer"
+          },
+          "permission": {
+            "id": "1c32d343-9c3f-4292-8d91-4b3ec6318a87",
+            "name": "shot.update",
+            "code": "shot.update",
+            "module": "shots",
+            "action": "update"
+          },
+          "granted": true,
+          "granted_at": "2026-10-29T07:58:01.541529Z",
+          "granted_by": {
+            "id": "d126f08e-3d07-4847-811c-0c992d6b8043",
+            "email": "user@example.test",
+            "is_active": true
+          },
+          "expires_at": "2030-01-01T00:00:00Z"
+        },
+        {
+          "id": "362b44be-f00f-43f7-a5b2-e5f3fda409a3",
+          "uuid": "362b44be-f00f-43f7-a5b2-e5f3fda409a3",
+          "role": {
+            "id": "412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96",
+            "name": "Reviewer",
+            "code": "reviewer"
+          },
+          "permission": {
+            "id": "2f38eb42-c24c-4d0e-8951-411af501fc61",
+            "name": "shot.view",
+            "code": "shot.view",
+            "module": "shots",
+            "action": "read"
+          },
+          "granted": true,
+          "granted_at": "2026-10-29T07:58:01.520529Z",
+          "granted_by": {
+            "id": "d126f08e-3d07-4847-811c-0c992d6b8043",
+            "email": "user@example.test",
+            "is_active": true
+          },
+          "expires_at": null
+        }
+      ]
+    }
+  },
+  "roles_permissions_revoke": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/roles/412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96/permissions/",
+      "body": {
+        "permission_id": "1c32d343-9c3f-4292-8d91-4b3ec6318a87"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2d4e8401-e9b4-4543-8ce6-d5c81705503b",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Permission revoked."
+    }
+  },
+  "roles_users_assign": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/roles/412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96/users/",
+      "body": {
+        "user_id": "f9824344-256e-498a-8b11-c0c4373e040b"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9848a838-56ad-4d3d-b48a-75dba4bc0a98",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Role assigned."
+    }
+  },
+  "roles_users_get": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/roles/412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96/users/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ce802d9c-c5e8-4020-befc-7be55c56270b",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 1,
+      "items": [
+        {
+          "id": "8af7e284-9645-44dc-a9ff-e43d9a87d858",
+          "uuid": "8af7e284-9645-44dc-a9ff-e43d9a87d858",
+          "user": {
+            "id": "f9824344-256e-498a-8b11-c0c4373e040b",
+            "email": "user@example.test",
+            "is_active": true
+          },
+          "role": {
+            "id": "412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96",
+            "name": "Reviewer",
+            "code": "reviewer"
+          },
+          "created_at": "2026-10-29T07:58:01.701741Z",
+          "updated_at": "2026-10-29T07:58:01.701750Z"
+        }
+      ]
+    }
+  },
+  "target_me_after_role": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/auth/me/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "bc2095bf-e35c-4cab-987b-8b8d482623bf",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "f9824344-256e-498a-8b11-c0c4373e040b",
+      "email": "user@example.test",
+      "first_name": "",
+      "last_name": "",
+      "full_name": "user@example.test",
+      "avatar_url": null,
+      "role": "Reviewer",
+      "permissions": [
+        "shot.view"
+      ],
+      "project_memberships": [],
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "must_change_password": false,
+      "created_at": "2026-10-29T07:58:00.907883+00:00",
+      "updated_at": "2026-10-29T07:58:00.908623+00:00"
+    }
+  },
+  "roles_users_unassign": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/roles/412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96/users/",
+      "body": {
+        "user_id": "f9824344-256e-498a-8b11-c0c4373e040b"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "bbf8f7bf-ece4-43c3-bce0-64af9fb8b995",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Role unassigned."
+    }
+  },
+  "roles_delete_system": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/roles/4b8dc8e8-5d0b-4ca2-805d-f6df9f75baef/",
+      "body": null
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d4016759-07af-4c5f-973b-831b81d47dec",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "non_field_errors": [
+        "System records cannot be deleted."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "d4016759-07af-4c5f-973b-831b81d47dec"
+      }
+    }
+  },
+  "roles_patch_system_code": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/roles/4b8dc8e8-5d0b-4ca2-805d-f6df9f75baef/",
+      "body": {
+        "code": "<redacted>"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2d9e923b-9d25-4755-b60c-19ac867daf5d",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "non_field_errors": [
+        "Role code is immutable after creation."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "2d9e923b-9d25-4755-b60c-19ac867daf5d"
+      }
+    }
+  },
+  "groups_list": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/groups/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0c14b585-5140-4e8c-ab0c-a410477b626c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "groups_create": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/groups/",
+      "body": {
+        "name": "Lighting crew",
+        "code": "<redacted>",
+        "description": "All lighters"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "284270ed-6507-4d1a-9d86-63a936c82571",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": "lighting-crew",
+      "name": "Lighting crew",
+      "description": "All lighters"
+    }
+  },
+  "groups_create_has_id": {
+    "status": 200,
+    "body": {
+      "id_in_create_response": false
+    }
+  },
+  "groups_list_with_row": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/groups/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c0767cd5-54e5-42c3-849d-2fb31a7375ea",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "af9e20c8-1ef6-447c-b3f6-31d167924378",
+          "uuid": "af9e20c8-1ef6-447c-b3f6-31d167924378",
+          "code": "lighting-crew",
+          "name": "Lighting crew",
+          "description": "All lighters",
+          "color": "",
+          "is_system": false,
+          "created_at": "2026-10-29T07:58:01.933321Z",
+          "updated_at": "2026-10-29T07:58:01.933327Z"
+        }
+      ],
+      "_results_total_in_page": 1
+    }
+  },
+  "groups_detail": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/groups/af9e20c8-1ef6-447c-b3f6-31d167924378/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "47e2d9a0-d878-4a7c-800c-c8f4192c59ab",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "af9e20c8-1ef6-447c-b3f6-31d167924378",
+      "uuid": "af9e20c8-1ef6-447c-b3f6-31d167924378",
+      "code": "lighting-crew",
+      "name": "Lighting crew",
+      "description": "All lighters",
+      "color": "",
+      "is_system": false,
+      "created_at": "2026-10-29T07:58:01.933321Z",
+      "updated_at": "2026-10-29T07:58:01.933327Z"
+    }
+  },
+  "groups_create_duplicate": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/groups/",
+      "body": {
+        "name": "Lighting crew",
+        "code": "<redacted>"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d4414617-1732-47a4-8ada-b46202305d4c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "group with this code already exists."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "d4414617-1732-47a4-8ada-b46202305d4c"
+      }
+    }
+  },
+  "groups_members_add": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/groups/af9e20c8-1ef6-447c-b3f6-31d167924378/members/",
+      "body": {
+        "user_id": "f9824344-256e-498a-8b11-c0c4373e040b"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "363fa567-d42a-4066-80ee-fca303b84986",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Member added."
+    }
+  },
+  "groups_members_add_owner": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/groups/af9e20c8-1ef6-447c-b3f6-31d167924378/members/",
+      "body": {
+        "user_id": "74e4c34f-03c8-4704-9907-b41e5c9620af",
+        "is_owner": true
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a72ceb59-b144-44f7-92e5-97e9aaf47e3b",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Member added."
+    }
+  },
+  "groups_members_get": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/groups/af9e20c8-1ef6-447c-b3f6-31d167924378/members/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "fd0450ad-4082-4f77-be26-d71948370a3e",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "5e3ba135-2285-44c8-b8c2-be384772b874",
+          "uuid": "5e3ba135-2285-44c8-b8c2-be384772b874",
+          "user": {
+            "id": "74e4c34f-03c8-4704-9907-b41e5c9620af",
+            "email": "user@example.test",
+            "is_active": true
+          },
+          "group": {
+            "id": "af9e20c8-1ef6-447c-b3f6-31d167924378",
+            "name": "Lighting crew",
+            "code": "lighting-crew"
+          },
+          "is_owner": true,
+          "is_manager": false,
+          "joined_at": "2026-10-29T07:58:02.010429Z",
+          "left_at": null,
+          "created_at": "2026-10-29T07:58:02.010403Z",
+          "updated_at": "2026-10-29T07:58:02.010410Z"
+        },
+        {
+          "id": "44e43dfd-5fe4-4907-aff2-469f10c352c7",
+          "uuid": "44e43dfd-5fe4-4907-aff2-469f10c352c7",
+          "user": {
+            "id": "f9824344-256e-498a-8b11-c0c4373e040b",
+            "email": "user@example.test",
+            "is_active": true
+          },
+          "group": {
+            "id": "af9e20c8-1ef6-447c-b3f6-31d167924378",
+            "name": "Lighting crew",
+            "code": "lighting-crew"
+          },
+          "is_owner": false,
+          "is_manager": false,
+          "joined_at": "2026-10-29T07:58:01.987963Z",
+          "left_at": null,
+          "created_at": "2026-10-29T07:58:01.987939Z",
+          "updated_at": "2026-10-29T07:58:01.987946Z"
+        }
+      ]
+    }
+  },
+  "groups_members_remove": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/groups/af9e20c8-1ef6-447c-b3f6-31d167924378/members/",
+      "body": {
+        "user_id": "74e4c34f-03c8-4704-9907-b41e5c9620af"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4c7b6a32-303a-4eea-9db6-375c75bc76e8",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Member removed."
+    }
+  },
+  "groups_roles_attach": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/groups/af9e20c8-1ef6-447c-b3f6-31d167924378/roles/",
+      "body": {
+        "role_id": "412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c22edb75-5705-4e6f-9c7e-3221f8affd9d",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Role granted."
+    }
+  },
+  "groups_roles_get": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/groups/af9e20c8-1ef6-447c-b3f6-31d167924378/roles/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "74cfe8e6-1a7f-493f-88d6-1512f81aeeaa",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 1,
+      "items": [
+        {
+          "id": "9b845903-2e45-48f8-80cd-939d110964c6",
+          "uuid": "9b845903-2e45-48f8-80cd-939d110964c6",
+          "group": {
+            "id": "af9e20c8-1ef6-447c-b3f6-31d167924378",
+            "name": "Lighting crew",
+            "code": "lighting-crew"
+          },
+          "role": {
+            "id": "412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96",
+            "name": "Reviewer",
+            "code": "reviewer"
+          },
+          "created_at": "2026-10-29T07:58:02.108574Z",
+          "updated_at": "2026-10-29T07:58:02.108586Z"
+        }
+      ]
+    }
+  },
+  "groups_roles_detach": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/groups/af9e20c8-1ef6-447c-b3f6-31d167924378/roles/",
+      "body": {
+        "role_id": "412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "dd6e5dbf-787e-4c02-9370-d4160e6c8096",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Role revoked."
+    }
+  },
+  "roles_groups_get": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/roles/412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96/groups/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f0037335-292f-4c88-b7c4-179f3e072090",
+      "Allow": "GET, POST, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "groups_delete": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/groups/af9e20c8-1ef6-447c-b3f6-31d167924378/",
+      "body": null
+    },
+    "status": 204,
+    "headers": {
+      "X-Request-ID": "c58adef2-663a-4e86-ac29-22eb391c20b9",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "_non_json": null,
+      "_len": 0
+    }
+  },
+  "roles_delete_custom": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/roles/412a1c5a-3de4-4f86-aa3c-ef0ac3fa3c96/",
+      "body": null
+    },
+    "status": 204,
+    "headers": {
+      "X-Request-ID": "08b71e7a-5381-42c5-a7db-1bbfa4d3a9ad",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "_non_json": null,
+      "_len": 0
+    }
+  },
+  "users_list": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/users/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "de771d09-3108-4bc3-afe4-7b684edbcd4c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 4,
+      "items": [
+        {
+          "id": "d126f08e-3d07-4847-811c-0c992d6b8043",
+          "uuid": "d126f08e-3d07-4847-811c-0c992d6b8043",
+          "email": "user@example.test",
+          "is_active": true,
+          "is_staff": true,
+          "is_email_verified": true,
+          "last_seen": null,
+          "display_name": "user@example.test",
+          "full_name": "user@example.test",
+          "created_at": "2026-10-29T07:58:00.867676Z",
+          "updated_at": "2026-10-29T07:58:00.867683Z"
+        },
+        {
+          "id": "f9824344-256e-498a-8b11-c0c4373e040b",
+          "uuid": "f9824344-256e-498a-8b11-c0c4373e040b",
+          "email": "user@example.test",
+          "is_active": true,
+          "is_staff": false,
+          "is_email_verified": false,
+          "last_seen": null,
+          "display_name": "user@example.test",
+          "full_name": "user@example.test",
+          "created_at": "2026-10-29T07:58:00.907883Z",
+          "updated_at": "2026-10-29T07:58:00.908623Z"
+        },
+        {
+          "id": "74e4c34f-03c8-4704-9907-b41e5c9620af",
+          "uuid": "74e4c34f-03c8-4704-9907-b41e5c9620af",
+          "email": "user@example.test",
+          "is_active": true,
+          "is_staff": false,
+          "is_email_verified": false,
+          "last_seen": null,
+          "display_name": "user@example.test",
+          "full_name": "user@example.test",
+          "created_at": "2026-10-29T07:58:00.917598Z",
+          "updated_at": "2026-10-29T07:58:00.917607Z"
+        }
+      ]
+    }
+  },
+  "users_list_search": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/users/?email=target",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "52058793-fa4a-4abc-8ffa-247234489998",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 1,
+      "items": [
+        {
+          "id": "f9824344-256e-498a-8b11-c0c4373e040b",
+          "uuid": "f9824344-256e-498a-8b11-c0c4373e040b",
+          "email": "user@example.test",
+          "is_active": true,
+          "is_staff": false,
+          "is_email_verified": false,
+          "last_seen": null,
+          "display_name": "user@example.test",
+          "full_name": "user@example.test",
+          "created_at": "2026-10-29T07:58:00.907883Z",
+          "updated_at": "2026-10-29T07:58:00.908623Z"
+        }
+      ]
+    }
+  },
+  "users_detail": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/users/f9824344-256e-498a-8b11-c0c4373e040b/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "28bad8fd-59c1-4f64-b2f6-29a0f69e2ac8",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "f9824344-256e-498a-8b11-c0c4373e040b",
+      "uuid": "f9824344-256e-498a-8b11-c0c4373e040b",
+      "email": "user@example.test",
+      "is_active": true,
+      "is_staff": false,
+      "is_email_verified": false,
+      "last_seen": null,
+      "display_name": "user@example.test",
+      "full_name": "user@example.test",
+      "created_at": "2026-10-29T07:58:00.907883Z",
+      "updated_at": "2026-10-29T07:58:00.908623Z"
+    }
+  },
+  "users_create_missing": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c04a68a9-9342-48f4-b6e0-6c9cad7c2fc1",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "email": [
+        "This field is required."
+      ],
+      "password": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "c04a68a9-9342-48f4-b6e0-6c9cad7c2fc1"
+      }
+    }
+  },
+  "users_create_weak": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/",
+      "body": {
+        "email": "user@example.test",
+        "password": "<redacted>"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "067cf931-a2d5-4eaa-8ac8-b1095c81cdee",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "password": [
+        "Password must be at least 12 characters long."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "067cf931-a2d5-4eaa-8ac8-b1095c81cdee"
+      }
+    }
+  },
+  "users_create": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/",
+      "body": {
+        "email": "user@example.test",
+        "password": "<redacted>"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "32cd2a6c-35cf-44f8-b49d-d41e3c36355b",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "4976b44e-ec5a-44cc-94df-96df57081a54",
+      "uuid": "4976b44e-ec5a-44cc-94df-96df57081a54",
+      "email": "user@example.test",
+      "is_active": true,
+      "is_staff": false,
+      "is_email_verified": false,
+      "last_seen": null,
+      "display_name": "user@example.test",
+      "full_name": "user@example.test",
+      "created_at": "2026-10-29T07:58:02.351933Z",
+      "updated_at": "2026-10-29T07:58:02.354992Z"
+    }
+  },
+  "users_create_duplicate_exact": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/",
+      "body": {
+        "email": "user@example.test",
+        "password": "<redacted>"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1746a027-2904-46fb-a3e0-bb1eb6d2c5c2",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "email": [
+        "user with this email already exists."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "1746a027-2904-46fb-a3e0-bb1eb6d2c5c2"
+      }
+    }
+  },
+  "users_create_duplicate_case": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/",
+      "body": {
+        "email": "user@example.test",
+        "password": "<redacted>"
+      }
+    },
+    "status": 500,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "70ee9d45-6884-439d-a5bc-ad49fefbf532",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Internal server error.",
+      "error": {
+        "code": "internal_server_error",
+        "request_id": "70ee9d45-6884-439d-a5bc-ad49fefbf532"
+      }
+    }
+  },
+  "users_patch": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/identity/users/4976b44e-ec5a-44cc-94df-96df57081a54/",
+      "body": {
+        "is_staff": false
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b840a442-b734-4571-bf3f-8a0f943efa4e",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "4976b44e-ec5a-44cc-94df-96df57081a54",
+      "uuid": "4976b44e-ec5a-44cc-94df-96df57081a54",
+      "email": "user@example.test",
+      "is_active": true,
+      "is_staff": false,
+      "is_email_verified": false,
+      "last_seen": null,
+      "display_name": "user@example.test",
+      "full_name": "user@example.test",
+      "created_at": "2026-10-29T07:58:02.351933Z",
+      "updated_at": "2026-10-29T07:58:02.400936Z"
+    }
+  },
+  "users_deactivate": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/4976b44e-ec5a-44cc-94df-96df57081a54/deactivate/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e6f5b1e3-d75b-4fe1-80a5-c16765e3ad62",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "User deactivated successfully."
+    }
+  },
+  "users_activate": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/4976b44e-ec5a-44cc-94df-96df57081a54/activate/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5693b59a-4b28-4737-903d-0c8c95ed2f74",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "User activated successfully."
+    }
+  },
+  "users_suspend": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/4976b44e-ec5a-44cc-94df-96df57081a54/suspend/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1eb622a3-defe-4ce5-aa98-0ed59d71a783",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "User suspended successfully."
+    }
+  },
+  "users_unsuspend": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/4976b44e-ec5a-44cc-94df-96df57081a54/unsuspend/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "47084cd1-ada6-470d-8da0-16d57c5bc4d8",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "User unsuspended successfully."
+    }
+  },
+  "users_force_password_change": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/4976b44e-ec5a-44cc-94df-96df57081a54/force-password-change/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9a9de182-3b3a-4720-914d-e21675daeb23",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "User must change password at next login."
+    }
+  },
+  "users_revoke_sessions": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/4976b44e-ec5a-44cc-94df-96df57081a54/revoke-sessions/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1f669873-155c-49c6-b515-abe08017793f",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "sessions": 0
+    }
+  },
+  "users_archive": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/4976b44e-ec5a-44cc-94df-96df57081a54/archive/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3d89b3ff-77bd-406e-8655-4709dbd2472a",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "User archived successfully."
+    }
+  },
+  "users_restore": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/4976b44e-ec5a-44cc-94df-96df57081a54/restore/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "884b32c1-a4f0-4a70-95c8-390203acc6b3",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "User restored successfully."
+    }
+  },
+  "users_reset_password": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/4976b44e-ec5a-44cc-94df-96df57081a54/reset-password/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "424ddf4a-0e97-42fa-a3be-a25ea4828a15",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Password reset. The user must change their password on next sign-in."
+    }
+  },
+  "users_detail_after": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/users/4976b44e-ec5a-44cc-94df-96df57081a54/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0334f6ea-aa6b-4e01-b0d6-79a2fcb10f59",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "4976b44e-ec5a-44cc-94df-96df57081a54",
+      "uuid": "4976b44e-ec5a-44cc-94df-96df57081a54",
+      "email": "user@example.test",
+      "is_active": false,
+      "is_staff": false,
+      "is_email_verified": false,
+      "last_seen": null,
+      "display_name": "",
+      "full_name": "",
+      "created_at": "2026-10-29T07:58:02.351933Z",
+      "updated_at": "2026-10-29T07:58:02.502629Z"
+    }
+  },
+  "users_delete": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/identity/users/4976b44e-ec5a-44cc-94df-96df57081a54/",
+      "body": null
+    },
+    "status": 204,
+    "headers": {
+      "X-Request-ID": "ec1dd001-12fd-46c2-a37d-2b14657ec0f6",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "_non_json": null,
+      "_len": 0
+    }
+  },
+  "users_list_as_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/users/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2ef94b16-68f6-4d70-8392-5478760ef9ad",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 1,
+      "items": [
+        {
+          "id": "74e4c34f-03c8-4704-9907-b41e5c9620af",
+          "uuid": "74e4c34f-03c8-4704-9907-b41e5c9620af",
+          "email": "user@example.test",
+          "is_active": true,
+          "is_staff": false,
+          "is_email_verified": false,
+          "last_seen": null,
+          "display_name": "user@example.test",
+          "full_name": "user@example.test",
+          "created_at": "2026-10-29T07:58:00.917598Z",
+          "updated_at": "2026-10-29T07:58:00.917607Z"
+        }
+      ]
+    }
+  },
+  "users_create_as_artist": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/",
+      "body": {
+        "email": "user@example.test",
+        "password": "<redacted>"
+      }
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d8c6de27-8ee2-46c4-a88f-656e85f01510",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "d8c6de27-8ee2-46c4-a88f-656e85f01510"
+      }
+    }
+  },
+  "roles_create_as_artist": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/roles/",
+      "body": {
+        "name": "X",
+        "code": "<redacted>"
+      }
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8cc195a2-c3e0-4824-88b3-d6972bc99fce",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "8cc195a2-c3e0-4824-88b3-d6972bc99fce"
+      }
+    }
+  },
+  "roles_list_as_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/roles/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9688dc8a-7793-410e-a5ea-1fc18ee3ccfb",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 8,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "e31ecd38-578c-4b93-b8f0-227a03932dcb",
+          "uuid": "e31ecd38-578c-4b93-b8f0-227a03932dcb",
+          "name": "Platform Admin",
+          "code": "platform-admin",
+          "description": "Platform role: Platform Admin",
+          "parent": null,
+          "role_type": "organization",
+          "scope": "organization",
+          "priority": 10,
+          "icon": "",
+          "color": "",
+          "is_system": true,
+          "is_default": false,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T07:57:54.754080Z",
+          "updated_at": "2026-10-29T07:57:54.754090Z"
+        },
+        {
+          "id": "79ac4892-6ee6-457d-908f-8093936c74bd",
+          "uuid": "79ac4892-6ee6-457d-908f-8093936c74bd",
+          "name": "Organization Admin",
+          "code": "org-admin",
+          "description": "Platform role: Organization Admin",
+          "parent": null,
+          "role_type": "organization",
+          "scope": "organization",
+          "priority": 20,
+          "icon": "",
+          "color": "",
+          "is_system": true,
+          "is_default": false,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T07:57:56.180535Z",
+          "updated_at": "2026-10-29T07:57:56.180550Z"
+        },
+        {
+          "id": "04df34df-bca4-41c0-ac14-92fe39792f39",
+          "uuid": "04df34df-bca4-41c0-ac14-92fe39792f39",
+          "name": "Production Admin",
+          "code": "production-admin",
+          "description": "Platform role: Production Admin",
+          "parent": null,
+          "role_type": "organization",
+          "scope": "project",
+          "priority": 20,
+          "icon": "",
+          "color": "",
+          "is_system": true,
+          "is_default": false,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T07:57:57.575991Z",
+          "updated_at": "2026-10-29T07:57:57.576008Z"
+        }
+      ],
+      "_results_total_in_page": 8
+    }
+  },
+  "ledger_security_events_as_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/security-events/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0545b7de-c905-4650-8ebf-caf72beef67c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "0545b7de-c905-4650-8ebf-caf72beef67c"
+      }
+    }
+  },
+  "people_detail": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/people/ea087ae9-cfee-4f5b-95b8-d1a9bb86e9c4/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d43b8b1a-0c62-47af-a3fe-9d00779e543e",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "ea087ae9-cfee-4f5b-95b8-d1a9bb86e9c4",
+      "name": "Linda Linker",
+      "full_name": "Linda Linker",
+      "description": "",
+      "status": "active",
+      "user": null,
+      "role": null,
+      "department": null,
+      "department_name": "",
+      "team": null,
+      "team_name": "",
+      "office": null,
+      "office_name": "",
+      "seniority": "",
+      "skills": [],
+      "timezone": "",
+      "security_clearance": "",
+      "availability_status": "",
+      "email": "",
+      "phone": "",
+      "date_of_birth": null,
+      "nationality": "",
+      "created_at": "2026-10-29T07:58:02.720237Z",
+      "updated_at": "2026-10-29T07:58:02.720244Z"
+    }
+  },
+  "people_link_user": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/people/ea087ae9-cfee-4f5b-95b8-d1a9bb86e9c4/link-user/",
+      "body": {
+        "user": "f9824344-256e-498a-8b11-c0c4373e040b"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "67c10bd6-aa1b-4af5-b947-bf621bda7d1c",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "id": "ea087ae9-cfee-4f5b-95b8-d1a9bb86e9c4",
+      "name": "Linda Linker",
+      "full_name": "Linda Linker",
+      "description": "",
+      "status": "active",
+      "user": "f9824344-256e-498a-8b11-c0c4373e040b",
+      "role": null,
+      "department": null,
+      "department_name": "",
+      "team": null,
+      "team_name": "",
+      "office": null,
+      "office_name": "",
+      "seniority": "",
+      "skills": [],
+      "timezone": "",
+      "security_clearance": "",
+      "availability_status": "",
+      "email": "user@example.test",
+      "phone": "",
+      "date_of_birth": null,
+      "nationality": "",
+      "created_at": "2026-10-29T07:58:02.720237Z",
+      "updated_at": "2026-10-29T07:58:02.772172Z"
+    }
+  },
+  "people_link_user_already_linked": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/people/35609c86-7e51-4cf2-9053-462757cac507/link-user/",
+      "body": {
+        "user": "f9824344-256e-498a-8b11-c0c4373e040b"
+      }
+    },
+    "status": 409,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "fd76bfed-fd80-40f9-989f-bdcbbcc7c45c",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "This user is already linked to another person.",
+      "error": {
+        "code": "conflict",
+        "request_id": "fd76bfed-fd80-40f9-989f-bdcbbcc7c45c"
+      }
+    }
+  },
+  "people_link_user_unknown": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/people/35609c86-7e51-4cf2-9053-462757cac507/link-user/",
+      "body": {
+        "user": "00000000-0000-0000-0000-000000000000"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f10c0467-b8d5-42cc-8e8e-d92b538c2eee",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "user": [
+        "Choose an existing, active user."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "f10c0467-b8d5-42cc-8e8e-d92b538c2eee"
+      }
+    }
+  },
+  "people_link_user_missing": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/people/35609c86-7e51-4cf2-9053-462757cac507/link-user/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ef9e37e1-ca59-4176-b8b9-4f4efe318635",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "user": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "ef9e37e1-ca59-4176-b8b9-4f4efe318635"
+      }
+    }
+  },
+  "people_unlink_user": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/people/ea087ae9-cfee-4f5b-95b8-d1a9bb86e9c4/unlink-user/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4b70be24-4ea9-4c29-92a1-ee2394ad8e73",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "id": "ea087ae9-cfee-4f5b-95b8-d1a9bb86e9c4",
+      "name": "Linda Linker",
+      "full_name": "Linda Linker",
+      "description": "",
+      "status": "active",
+      "user": null,
+      "role": null,
+      "department": null,
+      "department_name": "",
+      "team": null,
+      "team_name": "",
+      "office": null,
+      "office_name": "",
+      "seniority": "",
+      "skills": [],
+      "timezone": "",
+      "security_clearance": "",
+      "availability_status": "",
+      "email": "user@example.test",
+      "phone": "",
+      "date_of_birth": null,
+      "nationality": "",
+      "created_at": "2026-10-29T07:58:02.720237Z",
+      "updated_at": "2026-10-29T07:58:02.881690Z"
+    }
+  },
+  "sessions_list": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/sessions/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "bc6d0215-0054-4294-9731-bd45b08cd622",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 1,
+      "items": [
+        {
+          "id": "f35349dc-c141-4ff0-9f51-5fe8a87a066a",
+          "user_id": "d126f08e-3d07-4847-811c-0c992d6b8043",
+          "user_agent": "",
+          "ip_address": "127.0.0.1",
+          "location": null,
+          "is_current": true,
+          "created_at": "2026-10-29T07:58:01.238298Z",
+          "last_activity": "2026-10-29T07:58:01.288612Z",
+          "expires_at": "2026-11-05T07:58:01Z"
+        }
+      ]
+    }
+  },
+  "sessions_current": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/sessions/current/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5fd45f84-04ca-40d3-80dc-b15db77d88b9",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "f35349dc-c141-4ff0-9f51-5fe8a87a066a",
+      "user_id": "d126f08e-3d07-4847-811c-0c992d6b8043",
+      "user_agent": "",
+      "ip_address": "127.0.0.1",
+      "location": null,
+      "is_current": true,
+      "created_at": "2026-10-29T07:58:01.238298Z",
+      "last_activity": "2026-10-29T07:58:01.288612Z",
+      "expires_at": "2026-11-05T07:58:01Z"
+    }
+  },
+  "sessions_admin_list": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/sessions/admin/f9824344-256e-498a-8b11-c0c4373e040b/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3d22595e-63d4-451f-9e1a-0120c396850e",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "fd07d5e8-5620-4451-a68e-9318d2e56f3c",
+          "user_id": "f9824344-256e-498a-8b11-c0c4373e040b",
+          "user_agent": "",
+          "ip_address": "127.0.0.1",
+          "location": null,
+          "is_current": true,
+          "created_at": "2026-10-29T07:58:02.936792Z",
+          "last_activity": "2026-10-29T07:58:02.936863Z",
+          "expires_at": "2026-11-05T07:58:02Z"
+        },
+        {
+          "id": "ea115028-f721-4ffc-953f-34b44cd743b7",
+          "user_id": "f9824344-256e-498a-8b11-c0c4373e040b",
+          "user_agent": "",
+          "ip_address": "127.0.0.1",
+          "location": null,
+          "is_current": true,
+          "created_at": "2026-10-29T07:58:01.749109Z",
+          "last_activity": "2026-10-29T07:58:01.785362Z",
+          "expires_at": "2026-11-05T07:58:01Z"
+        }
+      ]
+    }
+  },
+  "sessions_target_list": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/sessions/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "20d9209e-7b14-4b21-9cc2-df5a17c6b046",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "ea115028-f721-4ffc-953f-34b44cd743b7",
+          "user_id": "f9824344-256e-498a-8b11-c0c4373e040b",
+          "user_agent": "",
+          "ip_address": "127.0.0.1",
+          "location": null,
+          "is_current": true,
+          "created_at": "2026-10-29T07:58:01.749109Z",
+          "last_activity": "2026-10-29T07:58:01.785362Z",
+          "expires_at": "2026-11-05T07:58:01Z"
+        },
+        {
+          "id": "fd07d5e8-5620-4451-a68e-9318d2e56f3c",
+          "user_id": "f9824344-256e-498a-8b11-c0c4373e040b",
+          "user_agent": "",
+          "ip_address": "127.0.0.1",
+          "location": null,
+          "is_current": true,
+          "created_at": "2026-10-29T07:58:02.936792Z",
+          "last_activity": "2026-10-29T07:58:02.983041Z",
+          "expires_at": "2026-11-05T07:58:02Z"
+        }
+      ]
+    }
+  },
+  "sessions_admin_revoke_all": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/sessions/admin/f9824344-256e-498a-8b11-c0c4373e040b/revoke-all/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "cb72d672-06cb-4300-8ed6-c80cc7f7e686",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "sessions": 2
+    }
+  },
+  "sessions_target_after_admin_revoke": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/auth/me/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "fd5915fa-b90e-485c-b49f-686ba9663586",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Session is no longer active.",
+      "error": {
+        "code": "session_expired",
+        "request_id": "fd5915fa-b90e-485c-b49f-686ba9663586"
+      }
+    }
+  },
+  "sessions_revoke_all_other": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/sessions/revoke-all-other/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8eaedec5-4935-47c7-9d2f-327e7871bd48",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "sessions": 0
+    }
+  },
+  "pat_create_no_scopes": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/personal-access-tokens/",
+      "body": {
+        "name": "ci"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "772adcdf-a4d6-449e-9fd3-17243b83d3e5",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "scopes": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "772adcdf-a4d6-449e-9fd3-17243b83d3e5"
+      }
+    }
+  },
+  "pat_create_empty_scopes": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/personal-access-tokens/",
+      "body": {
+        "name": "ci",
+        "scopes": []
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5523e818-f1ba-4817-9a93-b569bc9dd569",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "scopes": [
+        "This list may not be empty."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "5523e818-f1ba-4817-9a93-b569bc9dd569"
+      }
+    }
+  },
+  "pat_create_bad_scope": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/personal-access-tokens/",
+      "body": {
+        "name": "ci",
+        "scopes": [
+          "not a code"
+        ]
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "78eb8db1-1d63-4b2c-8ef3-cb2c40cf2318",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": [
+        "'not a code' is not a valid permission code."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "78eb8db1-1d63-4b2c-8ef3-cb2c40cf2318"
+      }
+    }
+  },
+  "pat_create_scope_not_held": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/personal-access-tokens/",
+      "body": {
+        "name": "ci",
+        "scopes": [
+          "identity.role.update"
+        ]
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "16ebc3c2-37bc-49b6-bb33-b4c787e0b6f7",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": [
+        "You do not hold 'identity.role.update'."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "16ebc3c2-37bc-49b6-bb33-b4c787e0b6f7"
+      }
+    }
+  },
+  "pat_create": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/personal-access-tokens/",
+      "body": {
+        "name": "CI token",
+        "description": "for CI",
+        "scopes": [
+          "asset.create",
+          "asset.delete"
+        ],
+        "expires_at": "2030-01-01T00:00:00Z"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "19dcc33b-32d0-47c7-9c64-0d25a16d4a83",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "4df5ada7-7bfc-4b99-8ebb-c5d58380aaee",
+      "kind": "personal_access_token",
+      "name": "CI token",
+      "description": "",
+      "prefix": "c0e9f50c",
+      "scopes": [
+        "asset.create",
+        "asset.delete"
+      ],
+      "unrestricted": false,
+      "expires_at": "2030-01-01T00:00:00Z",
+      "last_used_at": null,
+      "last_used_ip": null,
+      "is_active": true,
+      "revoked_at": null,
+      "created_at": "2026-10-29T07:58:03.066809Z",
+      "secret": "<redacted>"
+    }
+  },
+  "pat_list": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/personal-access-tokens/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "972f3731-d94a-4a51-a085-b704f3876a94",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "4df5ada7-7bfc-4b99-8ebb-c5d58380aaee",
+          "kind": "personal_access_token",
+          "name": "CI token",
+          "description": "",
+          "prefix": "c0e9f50c",
+          "scopes": [
+            "asset.create",
+            "asset.delete"
+          ],
+          "unrestricted": false,
+          "expires_at": "2030-01-01T00:00:00Z",
+          "last_used_at": null,
+          "last_used_ip": null,
+          "is_active": true,
+          "revoked_at": null,
+          "created_at": "2026-10-29T07:58:03.066809Z"
+        }
+      ],
+      "_results_total_in_page": 1
+    }
+  },
+  "pat_rotate": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/personal-access-tokens/4df5ada7-7bfc-4b99-8ebb-c5d58380aaee/rotate/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ff48da3a-6f61-4a51-901b-eb1a3663deec",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "id": "e6d1d47c-0c31-4abc-a06c-4242563dcd96",
+      "kind": "personal_access_token",
+      "name": "CI token",
+      "description": "",
+      "prefix": "3f98cf9a",
+      "scopes": [
+        "asset.create",
+        "asset.delete"
+      ],
+      "unrestricted": false,
+      "expires_at": "2030-01-01T00:00:00Z",
+      "last_used_at": null,
+      "last_used_ip": null,
+      "is_active": true,
+      "revoked_at": null,
+      "created_at": "2026-10-29T07:58:03.090157Z",
+      "secret": "<redacted>"
+    }
+  },
+  "pat_list_after_rotate": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/personal-access-tokens/?include_revoked=true",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b68a6237-04b4-41b8-8613-de4d3c13106d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "e6d1d47c-0c31-4abc-a06c-4242563dcd96",
+          "kind": "personal_access_token",
+          "name": "CI token",
+          "description": "",
+          "prefix": "3f98cf9a",
+          "scopes": [
+            "asset.create",
+            "asset.delete"
+          ],
+          "unrestricted": false,
+          "expires_at": "2030-01-01T00:00:00Z",
+          "last_used_at": null,
+          "last_used_ip": null,
+          "is_active": true,
+          "revoked_at": null,
+          "created_at": "2026-10-29T07:58:03.090157Z"
+        },
+        {
+          "id": "4df5ada7-7bfc-4b99-8ebb-c5d58380aaee",
+          "kind": "personal_access_token",
+          "name": "CI token",
+          "description": "",
+          "prefix": "c0e9f50c",
+          "scopes": [
+            "asset.create",
+            "asset.delete"
+          ],
+          "unrestricted": false,
+          "expires_at": "2030-01-01T00:00:00Z",
+          "last_used_at": null,
+          "last_used_ip": null,
+          "is_active": false,
+          "revoked_at": "2026-10-29T07:58:03.093800Z",
+          "created_at": "2026-10-29T07:58:03.066809Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "apikey_create": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/api-keys/",
+      "body": {
+        "name": "Integration",
+        "scopes": [
+          "asset.create",
+          "asset.delete"
+        ]
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "eb98f66e-8b73-4878-912a-eab9410fa985",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "ceea107c-83e6-402d-aa3c-6ce079459686",
+      "kind": "api_key",
+      "name": "Integration",
+      "description": "",
+      "prefix": "71c33bc7",
+      "scopes": [
+        "asset.create",
+        "asset.delete"
+      ],
+      "unrestricted": false,
+      "expires_at": null,
+      "last_used_at": null,
+      "last_used_ip": null,
+      "is_active": true,
+      "revoked_at": null,
+      "created_at": "2026-10-29T07:58:03.118070Z",
+      "secret": "<redacted>"
+    }
+  },
+  "apikey_list": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/api-keys/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "eb7c96a6-2a8f-4154-852c-9716e4e2b064",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "ceea107c-83e6-402d-aa3c-6ce079459686",
+          "kind": "api_key",
+          "name": "Integration",
+          "description": "",
+          "prefix": "71c33bc7",
+          "scopes": [
+            "asset.create",
+            "asset.delete"
+          ],
+          "unrestricted": false,
+          "expires_at": null,
+          "last_used_at": null,
+          "last_used_ip": null,
+          "is_active": true,
+          "revoked_at": null,
+          "created_at": "2026-10-29T07:58:03.118070Z"
+        }
+      ],
+      "_results_total_in_page": 1
+    }
+  },
+  "apikey_delete": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/identity/api-keys/ceea107c-83e6-402d-aa3c-6ce079459686/",
+      "body": null
+    },
+    "status": 204,
+    "headers": {
+      "X-Request-ID": "9354bbc2-5b1e-485f-8842-72874ae198f0",
+      "Allow": "GET, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "_non_json": null,
+      "_len": 0
+    }
+  },
+  "apikey_list_after_delete": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/api-keys/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "de06c058-6be9-4ae1-a380-62263a579c5b",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "mfa_config": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/config/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "efd28532-8b8c-4078-9712-7dd742909a3c",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "enabled": true,
+      "pending": false,
+      "methods": [
+        "totp"
+      ],
+      "totp": {
+        "verified": true
+      },
+      "sms": {
+        "verified": false
+      },
+      "email": {
+        "verified": false
+      }
+    }
+  },
+  "mfa_recovery_get": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/recovery-codes/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "94c82e98-662a-4365-937e-0ad857f1a18c",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "codes": [],
+      "remaining": 10
+    }
+  },
+  "mfa_recovery_regenerate_no_password": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/mfa/recovery-codes/regenerate/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "11635259-d73f-4843-b0d7-7004d1161cfa",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "password": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "11635259-d73f-4843-b0d7-7004d1161cfa"
+      }
+    }
+  },
+  "mfa_recovery_regenerate_wrong_password": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/mfa/recovery-codes/regenerate/",
+      "body": {
+        "password": "<redacted>"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "dc3ac159-dda4-42e0-9ea7-7203f335fdf3",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Invalid verification code.",
+      "error": {
+        "code": "validation_error",
+        "request_id": "dc3ac159-dda4-42e0-9ea7-7203f335fdf3"
+      }
+    }
+  },
+  "mfa_recovery_regenerate_ok": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/mfa/recovery-codes/regenerate/",
+      "body": {
+        "password": "<redacted>"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8187d25e-b2a8-430c-ab17-348a45966b57",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Invalid verification code.",
+      "error": {
+        "code": "validation_error",
+        "request_id": "8187d25e-b2a8-430c-ab17-348a45966b57"
+      }
+    }
+  },
+  "mfa_devices_revoke_unknown": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/auth/mfa/devices/revoke/",
+      "body": {
+        "device_id": "00000000-0000-0000-0000-000000000000"
+      }
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "28cae5e8-ffa1-4a50-ac7d-080b09c8091f",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "28cae5e8-ffa1-4a50-ac7d-080b09c8091f"
+      }
+    }
+  },
+  "mfa_devices": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/auth/mfa/devices/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6bc31047-6482-4f85-825d-01ee0cc3c35e",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "6bc31047-6482-4f85-825d-01ee0cc3c35e"
+      }
+    }
+  },
+  "mfa_trusted_devices": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/trusted-devices/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "076b835f-edc7-4f22-892e-3462fbe244fb",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "mfa_disable_no_password": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/mfa/totp/disable/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4a15c6b6-b72c-4d4a-8e7c-293e6f7d86e5",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "password": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "4a15c6b6-b72c-4d4a-8e7c-293e6f7d86e5"
+      }
+    }
+  },
+  "mfa_disable_wrong_password": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/mfa/totp/disable/",
+      "body": {
+        "password": "<redacted>"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "57836c5c-619c-49b4-9caf-ea97986bcaa9",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Invalid verification code.",
+      "error": {
+        "code": "validation_error",
+        "request_id": "57836c5c-619c-49b4-9caf-ea97986bcaa9"
+      }
+    }
+  },
+  "mfa_admin_reset_other": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/mfa/admin/reset/6a622460-2c6e-448b-a4b3-41afcb12678c/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "94715212-6446-4716-b9ea-4e33c6d5bec1",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "success": true
+    }
+  },
+  "mfa_config_after_admin_reset": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/config/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b39e2507-203d-4354-8003-0a35b1f56016",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "enabled": false,
+      "pending": false,
+      "methods": [],
+      "totp": {
+        "verified": false
+      },
+      "sms": {
+        "verified": false
+      },
+      "email": {
+        "verified": false
+      }
+    }
+  },
+  "me_patch_ok": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/auth/me/",
+      "body": {
+        "first_name": "Root",
+        "last_name": "Admin",
+        "timezone": "Asia/Kolkata",
+        "language": "en"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "724f437a-fbe7-4a1e-8cf3-f8ddd334c2e7",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "d126f08e-3d07-4847-811c-0c992d6b8043",
+      "email": "user@example.test",
+      "first_name": "Root",
+      "last_name": "Admin",
+      "full_name": "Root Admin",
+      "avatar_url": null,
+      "role": "",
+      "permissions": [
+        "project.create",
+        "project.view",
+        "project.update",
+        "project.delete",
+        "shot.create",
+        "shot.view",
+        "shot.update",
+        "shot.delete",
+        "shot.approve",
+        "asset.create",
+        "asset.view",
+        "asset.update",
+        "asset.delete",
+        "task.create",
+        "task.view",
+        "task.update",
+        "task.delete",
+        "review.create",
+        "review.view",
+        "review.approve",
+        "audit.view",
+        "settings.update",
+        "user.manage"
+      ],
+      "project_memberships": [],
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": true,
+      "must_change_password": false,
+      "created_at": "2026-10-29T07:58:00.867676+00:00",
+      "updated_at": "2026-10-29T07:58:00.867683+00:00"
+    }
+  },
+  "me_patch_invalid_url": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/auth/me/",
+      "body": {
+        "avatar_url": "nope"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6aabe46f-45b1-4dcd-929f-d40e1c61fc87",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "avatar_url": [
+        "Enter a valid URL."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "6aabe46f-45b1-4dcd-929f-d40e1c61fc87"
+      }
+    }
+  },
+  "me_patch_ignored_fields": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/auth/me/",
+      "body": {
+        "is_superuser": false,
+        "email": "user@example.test"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "df1a2556-fbca-48f7-a0df-5a6ae3d9ca22",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "d126f08e-3d07-4847-811c-0c992d6b8043",
+      "email": "user@example.test",
+      "first_name": "Root",
+      "last_name": "Admin",
+      "full_name": "Root Admin",
+      "avatar_url": null,
+      "role": "",
+      "permissions": [
+        "project.create",
+        "project.view",
+        "project.update",
+        "project.delete",
+        "shot.create",
+        "shot.view",
+        "shot.update",
+        "shot.delete",
+        "shot.approve",
+        "asset.create",
+        "asset.view",
+        "asset.update",
+        "asset.delete",
+        "task.create",
+        "task.view",
+        "task.update",
+        "task.delete",
+        "review.create",
+        "review.view",
+        "review.approve",
+        "audit.view",
+        "settings.update",
+        "user.manage"
+      ],
+      "project_memberships": [],
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": true,
+      "must_change_password": false,
+      "created_at": "2026-10-29T07:58:00.867676+00:00",
+      "updated_at": "2026-10-29T07:58:00.867683+00:00"
+    }
+  },
+  "me_after_patch": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/auth/me/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "fb877219-2285-4548-a410-8784c86a39ca",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "d126f08e-3d07-4847-811c-0c992d6b8043",
+      "email": "user@example.test",
+      "first_name": "Root",
+      "last_name": "Admin",
+      "full_name": "Root Admin",
+      "avatar_url": null,
+      "role": "",
+      "permissions": [
+        "project.create",
+        "project.view",
+        "project.update",
+        "project.delete",
+        "shot.create",
+        "shot.view",
+        "shot.update",
+        "shot.delete",
+        "shot.approve",
+        "asset.create",
+        "asset.view",
+        "asset.update",
+        "asset.delete",
+        "task.create",
+        "task.view",
+        "task.update",
+        "task.delete",
+        "review.create",
+        "review.view",
+        "review.approve",
+        "audit.view",
+        "settings.update",
+        "user.manage"
+      ],
+      "project_memberships": [],
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": true,
+      "must_change_password": false,
+      "created_at": "2026-10-29T07:58:00.867676+00:00",
+      "updated_at": "2026-10-29T07:58:00.867683+00:00"
+    }
+  },
+  "ledger_security_events": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/security-events/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1da8ed8c-4363-40b4-be71-0b317e1f6aec",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 44,
+      "items": [
+        {
+          "id": "b38f4453-14e7-46c4-950f-880a3011f19e",
+          "uuid": "b38f4453-14e7-46c4-950f-880a3011f19e",
+          "user": "d126f08e-3d07-4847-811c-0c992d6b8043",
+          "event_type": "mfa_verified",
+          "ip_address": null,
+          "occurred_at": "2026-10-29T07:58:00.893080Z"
+        },
+        {
+          "id": "3d46f44d-2d5c-456d-8fc0-2f4de68bedd7",
+          "uuid": "3d46f44d-2d5c-456d-8fc0-2f4de68bedd7",
+          "user": "d126f08e-3d07-4847-811c-0c992d6b8043",
+          "event_type": "mfa_recovery_codes_regenerated",
+          "ip_address": null,
+          "occurred_at": "2026-10-29T07:58:00.901988Z"
+        },
+        {
+          "id": "d758584f-4c3f-45f3-99be-7d8d787d138d",
+          "uuid": "d758584f-4c3f-45f3-99be-7d8d787d138d",
+          "user": "d126f08e-3d07-4847-811c-0c992d6b8043",
+          "event_type": "mfa_enabled",
+          "ip_address": null,
+          "occurred_at": "2026-10-29T07:58:00.903274Z"
+        }
+      ]
+    }
+  },
+  "ledger_login_history": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/login-history/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8fc16aa2-72f2-4850-a4e4-f86bf9daa747",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 5,
+      "items": [
+        {
+          "id": "9ad14050-77cb-4c2a-ad1b-28b0a2e1b0d1",
+          "uuid": "9ad14050-77cb-4c2a-ad1b-28b0a2e1b0d1",
+          "user": "d126f08e-3d07-4847-811c-0c992d6b8043",
+          "login_type": "login",
+          "login_method": "password",
+          "status": "success",
+          "ip_address": "127.0.0.1",
+          "created_at": "2026-10-29T07:58:01.241168Z"
+        },
+        {
+          "id": "72a841cb-1d13-4917-93b7-2a97de3963d8",
+          "uuid": "72a841cb-1d13-4917-93b7-2a97de3963d8",
+          "user": "f9824344-256e-498a-8b11-c0c4373e040b",
+          "login_type": "login",
+          "login_method": "password",
+          "status": "success",
+          "ip_address": "127.0.0.1",
+          "created_at": "2026-10-29T07:58:01.750272Z"
+        },
+        {
+          "id": "3132b959-1ae2-4e7f-8cc8-56893b6c7884",
+          "uuid": "3132b959-1ae2-4e7f-8cc8-56893b6c7884",
+          "user": "74e4c34f-03c8-4704-9907-b41e5c9620af",
+          "login_type": "login",
+          "login_method": "password",
+          "status": "success",
+          "ip_address": "127.0.0.1",
+          "created_at": "2026-10-29T07:58:02.609464Z"
+        }
+      ]
+    }
+  },
+  "ledger_login_history_filtered": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/login-history/?status=success",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "071c1a9d-daa5-4c6d-99dc-4e6784aac806",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 5,
+      "items": [
+        {
+          "id": "9ad14050-77cb-4c2a-ad1b-28b0a2e1b0d1",
+          "uuid": "9ad14050-77cb-4c2a-ad1b-28b0a2e1b0d1",
+          "user": "d126f08e-3d07-4847-811c-0c992d6b8043",
+          "login_type": "login",
+          "login_method": "password",
+          "status": "success",
+          "ip_address": "127.0.0.1",
+          "created_at": "2026-10-29T07:58:01.241168Z"
+        },
+        {
+          "id": "72a841cb-1d13-4917-93b7-2a97de3963d8",
+          "uuid": "72a841cb-1d13-4917-93b7-2a97de3963d8",
+          "user": "f9824344-256e-498a-8b11-c0c4373e040b",
+          "login_type": "login",
+          "login_method": "password",
+          "status": "success",
+          "ip_address": "127.0.0.1",
+          "created_at": "2026-10-29T07:58:01.750272Z"
+        },
+        {
+          "id": "3132b959-1ae2-4e7f-8cc8-56893b6c7884",
+          "uuid": "3132b959-1ae2-4e7f-8cc8-56893b6c7884",
+          "user": "74e4c34f-03c8-4704-9907-b41e5c9620af",
+          "login_type": "login",
+          "login_method": "password",
+          "status": "success",
+          "ip_address": "127.0.0.1",
+          "created_at": "2026-10-29T07:58:02.609464Z"
+        }
+      ]
+    }
+  },
+  "ledger_login_attempts": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/login-attempts/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "952cfea6-cdfd-456e-bb9f-bc443e6b4afc",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 5,
+      "items": [
+        {
+          "id": "16f741e5-5ae4-4d72-b996-f3cabf97789d",
+          "uuid": "16f741e5-5ae4-4d72-b996-f3cabf97789d",
+          "user": "d126f08e-3d07-4847-811c-0c992d6b8043",
+          "username": "user@example.test",
+          "ip_address": "127.0.0.1",
+          "success": true,
+          "reason": "",
+          "attempted_at": "2026-10-29T07:58:01.205610Z"
+        },
+        {
+          "id": "a2ab4690-d1a4-4bc2-9c01-293cd6796366",
+          "uuid": "a2ab4690-d1a4-4bc2-9c01-293cd6796366",
+          "user": "f9824344-256e-498a-8b11-c0c4373e040b",
+          "username": "user@example.test",
+          "ip_address": "127.0.0.1",
+          "success": true,
+          "reason": "",
+          "attempted_at": "2026-10-29T07:58:01.745088Z"
+        },
+        {
+          "id": "df60f0a4-7d7b-475e-b446-749cec4b27bd",
+          "uuid": "df60f0a4-7d7b-475e-b446-749cec4b27bd",
+          "user": "74e4c34f-03c8-4704-9907-b41e5c9620af",
+          "username": "user@example.test",
+          "ip_address": "127.0.0.1",
+          "success": true,
+          "reason": "",
+          "attempted_at": "2026-10-29T07:58:02.603495Z"
+        }
+      ]
+    }
+  },
+  "ledger_ip_blacklist_empty": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/ip-blacklist/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "fc2b9791-468a-42fe-afa8-f86d4216b011",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "ledger_ip_blacklist_create": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/ip-blacklist/",
+      "body": {
+        "ip_address": "203.0.113.7",
+        "description": "scanner"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "29850708-3d5a-43bc-82f8-8285efe81fbf",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "b9ccebb7-b028-4e95-b92e-9b0b5d64cfe3",
+      "uuid": "b9ccebb7-b028-4e95-b92e-9b0b5d64cfe3",
+      "ip_address": "203.0.113.7",
+      "network": "",
+      "description": "scanner",
+      "reason": "",
+      "blocked_by": null,
+      "is_active": true,
+      "expires_at": null,
+      "last_hit_at": null,
+      "hit_count": 0,
+      "metadata": {},
+      "expired": false,
+      "created_at": "2026-10-29T07:58:03.617273Z",
+      "updated_at": "2026-10-29T07:58:03.617280Z"
+    }
+  },
+  "ledger_ip_blacklist_create_invalid": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/ip-blacklist/",
+      "body": {
+        "ip_address": "not-an-ip"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0019583f-9574-4c49-a448-eeeba6262862",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "ip_address": [
+        "Enter a valid IPv4 or IPv6 address."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "0019583f-9574-4c49-a448-eeeba6262862"
+      }
+    }
+  },
+  "ledger_ip_blacklist_deactivate": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/ip-blacklist/b9ccebb7-b028-4e95-b92e-9b0b5d64cfe3/deactivate/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0d528161-fc55-4cbb-848b-cfc859a25d46",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "id": "b9ccebb7-b028-4e95-b92e-9b0b5d64cfe3",
+      "uuid": "b9ccebb7-b028-4e95-b92e-9b0b5d64cfe3",
+      "ip_address": "203.0.113.7",
+      "network": "",
+      "description": "scanner",
+      "reason": "",
+      "blocked_by": null,
+      "is_active": false,
+      "expires_at": null,
+      "last_hit_at": null,
+      "hit_count": 0,
+      "metadata": {},
+      "expired": false,
+      "created_at": "2026-10-29T07:58:03.617273Z",
+      "updated_at": "2026-10-29T07:58:03.636121Z"
+    }
+  },
+  "ledger_ip_blacklist_activate": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/ip-blacklist/b9ccebb7-b028-4e95-b92e-9b0b5d64cfe3/activate/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6ea32744-1b23-497c-bd86-ebc8114da2fb",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "id": "b9ccebb7-b028-4e95-b92e-9b0b5d64cfe3",
+      "uuid": "b9ccebb7-b028-4e95-b92e-9b0b5d64cfe3",
+      "ip_address": "203.0.113.7",
+      "network": "",
+      "description": "scanner",
+      "reason": "",
+      "blocked_by": null,
+      "is_active": true,
+      "expires_at": null,
+      "last_hit_at": null,
+      "hit_count": 0,
+      "metadata": {},
+      "expired": false,
+      "created_at": "2026-10-29T07:58:03.617273Z",
+      "updated_at": "2026-10-29T07:58:03.648126Z"
+    }
+  },
+  "ledger_ip_blacklist_delete": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/identity/ip-blacklist/b9ccebb7-b028-4e95-b92e-9b0b5d64cfe3/",
+      "body": null
+    },
+    "status": 204,
+    "headers": {
+      "X-Request-ID": "f325fcaa-f268-4f19-9c8d-8986c376d239",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "_non_json": null,
+      "_len": 0
+    }
+  },
+  "self_deactivate": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/cedf0e73-db1f-4787-92fa-930d61d1af5a/deactivate/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1c6c8b1f-ae28-4e50-aadf-d3e70d7d7f19",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "User deactivated successfully."
+    }
+  },
+  "self_after_deactivate_me": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/auth/me/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ff27aa4a-05a8-4fd9-b8b7-49d4795e74f2",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "User is inactive",
+      "code": "user_inactive",
+      "error": {
+        "code": "authentication_failed",
+        "request_id": "ff27aa4a-05a8-4fd9-b8b7-49d4795e74f2"
+      }
+    }
+  },
+  "self_delete": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/identity/users/f4c15e5d-dde4-49d2-9d0b-fd655c6c1b38/",
+      "body": null
+    },
+    "status": 204,
+    "headers": {
+      "X-Request-ID": "616c0e84-c242-491c-9242-8bdbed1ad771",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "_non_json": null,
+      "_len": 0
+    }
+  },
+  "self_after_delete_me": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/auth/me/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1b6e2115-72cd-4661-86ef-cc9dc178e283",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "User not found",
+      "code": "user_not_found",
+      "error": {
+        "code": "authentication_failed",
+        "request_id": "1b6e2115-72cd-4661-86ef-cc9dc178e283"
+      }
+    }
+  }
+}

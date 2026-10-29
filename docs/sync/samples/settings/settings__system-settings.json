@@ -1,0 +1,204 @@
+{
+  "view": "SystemSettingViewSet",
+  "app": "settings",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/system-settings/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6b212c39-384b-4083-afd2-05978093c3f3",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "3b88da56-9ab9-45a0-96de-ec9c0609cbfe",
+          "uuid": "3b88da56-9ab9-45a0-96de-ec9c0609cbfe",
+          "setting": "a371cb0d-393c-409d-89b9-6726f223cff6",
+          "setting_code": "setting002",
+          "setting_name": "Setting 2",
+          "setting_data_type": "boolean",
+          "setting_default_value": "Pm eat hand bank hospital maybe Congress get. Find nature should never throughout. Father decide citizen long.\nShoulder board become. Send natural major thing f\u2026<truncated>",
+          "value": "Because letter night turn hotel discuss. Goal throw week. Human pretty open.\nHair reality speech go body. Beat those believe until anyone response.\nAvoid whom y\u2026<truncated>",
+          "is_locked": false,
+          "locked_by": null,
+          "locked_at": null,
+          "created_at": "2026-10-29T05:37:41.958685Z",
+          "updated_at": "2026-10-29T05:37:41.958695Z"
+        },
+        {
+          "id": "20c9eba5-8e7a-4112-b7fd-2c5d7ffc2365",
+          "uuid": "20c9eba5-8e7a-4112-b7fd-2c5d7ffc2365",
+          "setting": "98bd282c-2479-46b9-bda2-95f633eb419e",
+          "setting_code": "setting003",
+          "setting_name": "Setting 3",
+          "setting_data_type": "color",
+          "setting_default_value": "Month image establish radio agreement. Huge professor onto general she.\nFriend attention trial process fast teacher whole risk. Teacher popular space sort thank\u2026<truncated>",
+          "value": "Least own case yard less to. Hold no ago field name. I wind truth lawyer than early number like.\nSea often sell always such. Hope security over laugh manage for\u2026<truncated>",
+          "is_locked": false,
+          "locked_by": null,
+          "locked_at": null,
+          "created_at": "2026-10-29T05:37:41.963623Z",
+          "updated_at": "2026-10-29T05:37:41.963634Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/system-settings/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e3ee78f5-d604-4c66-8f24-a6a88da16982",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "e3ee78f5-d604-4c66-8f24-a6a88da16982"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/system-settings/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c2deb6ea-8b8e-4b8e-b98b-a0dbdf0a6d73",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "c2deb6ea-8b8e-4b8e-b98b-a0dbdf0a6d73"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/system-settings/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d5470a0f-1b3f-4b30-9c5f-acd19b713602",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "d5470a0f-1b3f-4b30-9c5f-acd19b713602"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/system-settings/3b88da56-9ab9-45a0-96de-ec9c0609cbfe/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "34a918e9-a5c8-4888-a2f6-37f3d1aef190",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "3b88da56-9ab9-45a0-96de-ec9c0609cbfe",
+      "uuid": "3b88da56-9ab9-45a0-96de-ec9c0609cbfe",
+      "setting": "a371cb0d-393c-409d-89b9-6726f223cff6",
+      "setting_code": "setting002",
+      "setting_name": "Setting 2",
+      "setting_data_type": "boolean",
+      "setting_default_value": "Pm eat hand bank hospital maybe Congress get. Find nature should never throughout. Father decide citizen long.\nShoulder board become. Send natural major thing f\u2026<truncated>",
+      "value": "Because letter night turn hotel discuss. Goal throw week. Human pretty open.\nHair reality speech go body. Beat those believe until anyone response.\nAvoid whom y\u2026<truncated>",
+      "is_locked": false,
+      "locked_by": null,
+      "locked_at": null,
+      "created_at": "2026-10-29T05:37:41.958685Z",
+      "updated_at": "2026-10-29T05:37:41.958695Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/system-settings/d742aa20-5f60-4e7b-863f-e7c7432c8eab/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c5178176-4888-4710-add0-bc7a624e9386",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No SystemSetting matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "c5178176-4888-4710-add0-bc7a624e9386"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/settings/system-settings/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "80a103c9-1854-457b-b208-f493dcbe2ebe",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "setting": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "80a103c9-1854-457b-b208-f493dcbe2ebe"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/settings/system-settings/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "01f44cc9-43e3-4533-8fef-8b5e7755c040",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "01f44cc9-43e3-4533-8fef-8b5e7755c040"
+      }
+    }
+  }
+}

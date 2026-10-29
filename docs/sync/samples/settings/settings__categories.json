@@ -1,0 +1,198 @@
+{
+  "view": "SettingCategoryViewSet",
+  "app": "settings",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/categories/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d9b4085c-1ad5-4869-9c38-bead56c7b8d5",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 4,
+      "items": [
+        {
+          "id": "32067dd0-5a37-4b63-adc8-1f0eed5ca382",
+          "uuid": "32067dd0-5a37-4b63-adc8-1f0eed5ca382",
+          "code": "general",
+          "name": "Category 0",
+          "description": "Thank never ago not service nation. Short parent service radio. Usually laugh true seek with third rather investment.\nCommunity past knowledge by new tax local.\u2026<truncated>",
+          "icon": "brother",
+          "order": 0,
+          "is_active": true,
+          "created_at": "2026-10-29T05:37:41.940068Z",
+          "updated_at": "2026-10-29T05:37:41.940076Z"
+        },
+        {
+          "id": "2edee5f4-0046-49f5-b637-cc7c7dce037b",
+          "uuid": "2edee5f4-0046-49f5-b637-cc7c7dce037b",
+          "code": "project",
+          "name": "Category 1",
+          "description": "Star there relationship government laugh order person. Voice manager memory during organization energy would. Political what seek better onto ability wish force\u2026<truncated>",
+          "icon": "begin",
+          "order": 1,
+          "is_active": true,
+          "created_at": "2026-10-29T05:37:41.945507Z",
+          "updated_at": "2026-10-29T05:37:41.945515Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/categories/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "430dc8a3-dbc0-4061-b795-fbcf9a56a0f9",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "430dc8a3-dbc0-4061-b795-fbcf9a56a0f9"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/categories/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b84b1b99-3208-4455-b801-acafe6774591",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "b84b1b99-3208-4455-b801-acafe6774591"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/categories/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8090e370-e907-475b-8f08-d3fee79e8408",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "8090e370-e907-475b-8f08-d3fee79e8408"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/categories/32067dd0-5a37-4b63-adc8-1f0eed5ca382/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9134b255-1bdc-4690-8601-07ccabd5596c",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "32067dd0-5a37-4b63-adc8-1f0eed5ca382",
+      "uuid": "32067dd0-5a37-4b63-adc8-1f0eed5ca382",
+      "code": "general",
+      "name": "Category 0",
+      "description": "Thank never ago not service nation. Short parent service radio. Usually laugh true seek with third rather investment.\nCommunity past knowledge by new tax local.\u2026<truncated>",
+      "icon": "brother",
+      "order": 0,
+      "is_active": true,
+      "created_at": "2026-10-29T05:37:41.940068Z",
+      "updated_at": "2026-10-29T05:37:41.940076Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/settings/categories/437fd901-dcb1-4d4f-b657-83c5ef436654/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4e9afa40-08f0-4fae-9b7f-a87fe1c6fc75",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No SettingCategory matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "4e9afa40-08f0-4fae-9b7f-a87fe1c6fc75"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/settings/categories/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1d4ef76b-b380-42bf-ac29-b5b4b55d02a1",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "This field is required."
+      ],
+      "name": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "1d4ef76b-b380-42bf-ac29-b5b4b55d02a1"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/settings/categories/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7a4e6800-cb0b-40e9-bb58-e40715ff3aa1",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "7a4e6800-cb0b-40e9-bb58-e40715ff3aa1"
+      }
+    }
+  }
+}

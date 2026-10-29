@@ -1,0 +1,165 @@
+{
+  "view": "ActivityViewSet",
+  "app": "audit",
+  "actions": "{\"get\": \"list\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/activities/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2405604c-ff90-4868-938a-380a68fec938",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "e9b6e515-cc42-43b6-b0f6-15f590422c4f",
+          "uuid": "e9b6e515-cc42-43b6-b0f6-15f590422c4f",
+          "activity_type": "interaction",
+          "status": "failed",
+          "description": "Likely identify bad such raise believe. Throughout model music write tax once while.\nSend account choice official join seven. Protect new task end because hour \u2026<truncated>",
+          "user": "8af9e0b6-c2d1-45b7-875f-7e7ef1106463",
+          "user_email": "user@example.test",
+          "user_name": "user@example.test",
+          "ip_address": "152.236.112.30",
+          "user_agent": "Mozilla/5.0 (compatible; MSIE 7.0; Windows NT 6.1; Trident/5.1)",
+          "duration_seconds": 524,
+          "metadata": "[{\"name\": \"Angela Diaz\", \"residency\": \"702 Mark Ports Suite 250\\nLake Cody, CO 97148\"}, {\"name\": \"Michael Lamb\", \"residency\": \"149 Lucas Crest Suite 656\\nNew Ki\u2026<truncated>",
+          "created_at": "2026-10-29T05:37:41.830357Z",
+          "updated_at": "2026-10-29T05:37:41.830364Z"
+        },
+        {
+          "id": "9e93d19e-5ba2-46b4-bf06-2a4e3c31b6b7",
+          "uuid": "9e93d19e-5ba2-46b4-bf06-2a4e3c31b6b7",
+          "activity_type": "page_view",
+          "status": "success",
+          "description": "Both know land way spend event. Require radio scene century everything. Girl which provide agent.",
+          "user": "8fc25f3d-942b-4711-83ff-8db1386fe0e8",
+          "user_email": "user@example.test",
+          "user_name": "user@example.test",
+          "ip_address": "28.212.157.147",
+          "user_agent": "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_9_4; rv:1.9.5.20) Gecko/5395-06-03 00:45:19.942017 Firefox/3.8",
+          "duration_seconds": 426,
+          "metadata": "[{\"name\": \"Brendan Lee\", \"residency\": \"644 Turner Key\\nWilsonburgh, MH 27152\"}, {\"name\": \"Michael Williams\", \"residency\": \"90201 Cohen Mountain Suite 797\\nHeste\u2026<truncated>",
+          "created_at": "2026-10-29T05:37:41.824182Z",
+          "updated_at": "2026-10-29T05:37:41.824189Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/activities/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9c539057-c3da-47a3-bce3-471de2d3d46a",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "9c539057-c3da-47a3-bce3-471de2d3d46a"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/activities/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "54dab1fa-6b04-406b-a3a7-79e2ccfef228",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "54dab1fa-6b04-406b-a3a7-79e2ccfef228"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/activities/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d3eb439a-553b-42ac-926f-a85801859ff5",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "d3eb439a-553b-42ac-926f-a85801859ff5"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/activities/e9b6e515-cc42-43b6-b0f6-15f590422c4f/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7b97264e-8d26-4133-9032-6c3afc3138f6",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "e9b6e515-cc42-43b6-b0f6-15f590422c4f",
+      "uuid": "e9b6e515-cc42-43b6-b0f6-15f590422c4f",
+      "activity_type": "interaction",
+      "status": "failed",
+      "description": "Likely identify bad such raise believe. Throughout model music write tax once while.\nSend account choice official join seven. Protect new task end because hour \u2026<truncated>",
+      "user": "8af9e0b6-c2d1-45b7-875f-7e7ef1106463",
+      "user_email": "user@example.test",
+      "user_name": "user@example.test",
+      "ip_address": "152.236.112.30",
+      "user_agent": "Mozilla/5.0 (compatible; MSIE 7.0; Windows NT 6.1; Trident/5.1)",
+      "duration_seconds": 524,
+      "metadata": "[{\"name\": \"Angela Diaz\", \"residency\": \"702 Mark Ports Suite 250\\nLake Cody, CO 97148\"}, {\"name\": \"Michael Lamb\", \"residency\": \"149 Lucas Crest Suite 656\\nNew Ki\u2026<truncated>",
+      "created_at": "2026-10-29T05:37:41.830357Z",
+      "updated_at": "2026-10-29T05:37:41.830364Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/activities/bec5b169-f42b-4b1a-83ec-5adfdb77c7c1/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4888f251-d103-41cf-bc7a-4ac578e8c341",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Activity matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "4888f251-d103-41cf-bc7a-4ac578e8c341"
+      }
+    }
+  }
+}

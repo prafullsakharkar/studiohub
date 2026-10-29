@@ -1,0 +1,93 @@
+{
+  "view": "LogoutAPIView",
+  "app": "identity",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/logout/",
+      "body": null
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4e5c63d0-d444-4929-a66d-e881de465c23",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"GET\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "4e5c63d0-d444-4929-a66d-e881de465c23"
+      }
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/logout/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "be0f68e8-45ce-46d5-894b-efe6142096c9",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "be0f68e8-45ce-46d5-894b-efe6142096c9"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/logout/",
+      "body": null
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5aa8787b-5bf2-47ac-996e-01a510223b10",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"GET\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "5aa8787b-5bf2-47ac-996e-01a510223b10"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/logout/",
+      "body": null
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "86b6a9f9-ff22-4a1b-b9bd-d8e9ee101ef9",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"GET\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "86b6a9f9-ff22-4a1b-b9bd-d8e9ee101ef9"
+      }
+    }
+  }
+}

@@ -1,0 +1,362 @@
+{
+  "view": "OfficeViewSet",
+  "app": "masterdata",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/offices/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3d0e65c2-4152-4933-92f1-e53811618f0c",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "5325d284-3342-475b-a2ea-ab084b6dd944",
+          "code": "OFF-BLR",
+          "name": "Bengaluru Lab",
+          "description": "",
+          "office_type": "branch",
+          "timezone": "Asia/Kolkata",
+          "country": "IN",
+          "state": "",
+          "city": "Bengaluru",
+          "address": "",
+          "postal_code": "",
+          "phone": "",
+          "email": "",
+          "manager": null,
+          "working_hours": "",
+          "headcount": 0,
+          "workstations_count": 0,
+          "render_nodes_count": 0,
+          "is_active": true,
+          "is_headquarters": false,
+          "created_at": "2026-10-29T05:37:41.293586Z",
+          "updated_at": "2026-10-29T05:37:41.293596Z"
+        },
+        {
+          "id": "750c5fe3-afb1-4cba-97ff-c161ffabb3ca",
+          "code": "OFF-MUM",
+          "name": "Mumbai Studio",
+          "description": "",
+          "office_type": "headquarters",
+          "timezone": "Asia/Kolkata",
+          "country": "IN",
+          "state": "",
+          "city": "Mumbai",
+          "address": "",
+          "postal_code": "",
+          "phone": "",
+          "email": "",
+          "manager": null,
+          "working_hours": "",
+          "headcount": 0,
+          "workstations_count": 0,
+          "render_nodes_count": 0,
+          "is_active": true,
+          "is_headquarters": true,
+          "created_at": "2026-10-29T05:37:41.287919Z",
+          "updated_at": "2026-10-29T05:37:41.287929Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/offices/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9ba00ac7-b365-425c-a661-61bc6f2c57f9",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "9ba00ac7-b365-425c-a661-61bc6f2c57f9"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/offices/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2db02de0-5f54-4e00-8288-2c5c63c9a932",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "5325d284-3342-475b-a2ea-ab084b6dd944",
+          "code": "OFF-BLR",
+          "name": "Bengaluru Lab",
+          "description": "",
+          "office_type": "branch",
+          "timezone": "Asia/Kolkata",
+          "country": "IN",
+          "state": "",
+          "city": "Bengaluru",
+          "address": "",
+          "postal_code": "",
+          "phone": "",
+          "email": "",
+          "manager": null,
+          "working_hours": "",
+          "headcount": 0,
+          "workstations_count": 0,
+          "render_nodes_count": 0,
+          "is_active": true,
+          "is_headquarters": false,
+          "created_at": "2026-10-29T05:37:41.293586Z",
+          "updated_at": "2026-10-29T05:37:41.293596Z"
+        },
+        {
+          "id": "750c5fe3-afb1-4cba-97ff-c161ffabb3ca",
+          "code": "OFF-MUM",
+          "name": "Mumbai Studio",
+          "description": "",
+          "office_type": "headquarters",
+          "timezone": "Asia/Kolkata",
+          "country": "IN",
+          "state": "",
+          "city": "Mumbai",
+          "address": "",
+          "postal_code": "",
+          "phone": "",
+          "email": "",
+          "manager": null,
+          "working_hours": "",
+          "headcount": 0,
+          "workstations_count": 0,
+          "render_nodes_count": 0,
+          "is_active": true,
+          "is_headquarters": true,
+          "created_at": "2026-10-29T05:37:41.287919Z",
+          "updated_at": "2026-10-29T05:37:41.287929Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/offices/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b58da844-d800-4a1d-994e-dac717e04174",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "5325d284-3342-475b-a2ea-ab084b6dd944",
+          "code": "OFF-BLR",
+          "name": "Bengaluru Lab",
+          "description": "",
+          "office_type": "branch",
+          "timezone": "Asia/Kolkata",
+          "country": "IN",
+          "state": "",
+          "city": "Bengaluru",
+          "address": "",
+          "postal_code": "",
+          "phone": "",
+          "email": "",
+          "manager": null,
+          "working_hours": "",
+          "headcount": 0,
+          "workstations_count": 0,
+          "render_nodes_count": 0,
+          "is_active": true,
+          "is_headquarters": false,
+          "created_at": "2026-10-29T05:37:41.293586Z",
+          "updated_at": "2026-10-29T05:37:41.293596Z"
+        },
+        {
+          "id": "750c5fe3-afb1-4cba-97ff-c161ffabb3ca",
+          "code": "OFF-MUM",
+          "name": "Mumbai Studio",
+          "description": "",
+          "office_type": "headquarters",
+          "timezone": "Asia/Kolkata",
+          "country": "IN",
+          "state": "",
+          "city": "Mumbai",
+          "address": "",
+          "postal_code": "",
+          "phone": "",
+          "email": "",
+          "manager": null,
+          "working_hours": "",
+          "headcount": 0,
+          "workstations_count": 0,
+          "render_nodes_count": 0,
+          "is_active": true,
+          "is_headquarters": true,
+          "created_at": "2026-10-29T05:37:41.287919Z",
+          "updated_at": "2026-10-29T05:37:41.287929Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/offices/5325d284-3342-475b-a2ea-ab084b6dd944/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "791a35bf-0e22-4509-aae6-4d3112d45ad3",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "5325d284-3342-475b-a2ea-ab084b6dd944",
+      "code": "OFF-BLR",
+      "name": "Bengaluru Lab",
+      "description": "",
+      "office_type": "branch",
+      "timezone": "Asia/Kolkata",
+      "country": "IN",
+      "state": "",
+      "city": "Bengaluru",
+      "address": "",
+      "postal_code": "",
+      "phone": "",
+      "email": "",
+      "manager": null,
+      "working_hours": "",
+      "headcount": 0,
+      "workstations_count": 0,
+      "render_nodes_count": 0,
+      "is_active": true,
+      "is_headquarters": false,
+      "created_at": "2026-10-29T05:37:41.293586Z",
+      "updated_at": "2026-10-29T05:37:41.293596Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/offices/64cc19e7-6eec-49d4-841b-32aad8f40006/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d0be73e4-89f3-4afb-9432-1c58314463e8",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Office matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "d0be73e4-89f3-4afb-9432-1c58314463e8"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/offices/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ee24d40e-c7cc-40ef-b397-9f2688ea0135",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "This field is required."
+      ],
+      "name": [
+        "This field is required."
+      ],
+      "office_type": [
+        "This field is required."
+      ],
+      "timezone": [
+        "This field is required."
+      ],
+      "country": [
+        "This field is required."
+      ],
+      "city": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "ee24d40e-c7cc-40ef-b397-9f2688ea0135"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/offices/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e3209866-567a-46dd-8231-16e7fccb4477",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "e3209866-567a-46dd-8231-16e7fccb4477"
+      }
+    }
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "view": "TrustedDeviceRevokeAPIView",
+  "app": "identity",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/auth/mfa/devices/revoke/",
+      "body": null
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "387a7341-3908-4bd9-8a6d-1be68c8e48cb",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"GET\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "387a7341-3908-4bd9-8a6d-1be68c8e48cb"
+      }
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/auth/mfa/devices/revoke/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3f9dffbd-22d4-4332-9ddf-2a67fbf45dcd",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "3f9dffbd-22d4-4332-9ddf-2a67fbf45dcd"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/auth/mfa/devices/revoke/",
+      "body": null
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4363092a-1027-4b24-9fd1-83efbbc0ff3d",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"GET\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "4363092a-1027-4b24-9fd1-83efbbc0ff3d"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/auth/mfa/devices/revoke/",
+      "body": null
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "76f94560-d8da-4ab3-aed0-da4166b02063",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"GET\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "76f94560-d8da-4ab3-aed0-da4166b02063"
+      }
+    }
+  }
+}

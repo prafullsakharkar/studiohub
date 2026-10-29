@@ -9,7 +9,7 @@ interface AuthenticatedRouteProps {
 }
 
 export const AuthenticatedRoute: React.FC<AuthenticatedRouteProps> = ({ children }) => {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user, restriction } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -24,8 +24,14 @@ export const AuthenticatedRoute: React.FC<AuthenticatedRouteProps> = ({ children
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (shouldForcePasswordChange(user) && location.pathname !== '/auth/change-password') {
+  // A restricted session can reach only the screen that settles what it owes (the backend answers
+  // everything else with 403). Password first, then MFA: the order the backend lists them in.
+  if ((shouldForcePasswordChange(user) || restriction === 'password_change') && location.pathname !== '/auth/change-password') {
     return <Navigate to="/auth/change-password" state={{ from: location }} replace />;
+  }
+
+  if (restriction === 'mfa_enrollment' && location.pathname !== '/auth/mfa-setup') {
+    return <Navigate to="/auth/mfa-setup" state={{ from: location }} replace />;
   }
 
   return children ? <>{children}</> : <Outlet />;

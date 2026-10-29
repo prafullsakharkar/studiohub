@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { masterDataApi } from '@/api/masterDataApi';
-import { trackEntityMutation } from '@/shared/hooks/trackEntityMutation';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import {
   Vendor,
@@ -41,18 +40,6 @@ export const useVendorMutations = () => {
         title: 'Vendor Partner Enrolled',
         message: `${newVendor.name} [${newVendor.code}] added as approved outsourcing partner.`,
       });
-      trackEntityMutation(queryClient, {
-        action: 'created',
-        actionLabel: 'Vendor Created',
-        resourceType: 'vendor',
-        resourceId: newVendor.id,
-        resourceName: newVendor.name,
-        resourceCode: newVendor.code,
-        description: `Created vendor partner ${newVendor.name} [${newVendor.code}].`,
-        tags: ['Vendor', 'Creation'],
-        auditAction: 'CREATE',
-        auditEntityType: 'Vendor',
-      });
     },
   });
 
@@ -67,18 +54,6 @@ export const useVendorMutations = () => {
         title: 'Vendor Updated',
         message: `${updated.name} records saved.`,
       });
-      trackEntityMutation(queryClient, {
-        action: 'updated',
-        actionLabel: 'Vendor Updated',
-        resourceType: 'vendor',
-        resourceId: updated.id,
-        resourceName: updated.name,
-        resourceCode: updated.code,
-        description: `Updated vendor partner ${updated.name} [${updated.code}].`,
-        tags: ['Vendor', 'Update'],
-        auditAction: 'UPDATE',
-        auditEntityType: 'Vendor',
-      });
     },
   });
 
@@ -91,18 +66,6 @@ export const useVendorMutations = () => {
         type: 'info',
         title: 'Vendor Partner Archived',
         message: `${updated.name} has been archived.`,
-      });
-      trackEntityMutation(queryClient, {
-        action: 'archived',
-        actionLabel: 'Vendor Archived',
-        resourceType: 'vendor',
-        resourceId: updated.id,
-        resourceName: updated.name,
-        resourceCode: updated.code,
-        description: `Archived vendor partner ${updated.name} [${updated.code}].`,
-        tags: ['Vendor', 'Archive'],
-        auditAction: 'ARCHIVE',
-        auditEntityType: 'Vendor',
       });
     },
   });
@@ -117,18 +80,6 @@ export const useVendorMutations = () => {
         title: 'Vendor Restored',
         message: `${updated.name} restored to Approved Partner.`,
       });
-      trackEntityMutation(queryClient, {
-        action: 'restored',
-        actionLabel: 'Vendor Restored',
-        resourceType: 'vendor',
-        resourceId: updated.id,
-        resourceName: updated.name,
-        resourceCode: updated.code,
-        description: `Restored vendor partner ${updated.name} [${updated.code}].`,
-        tags: ['Vendor', 'Restore'],
-        auditAction: 'RESTORE',
-        auditEntityType: 'Vendor',
-      });
     },
   });
 
@@ -140,16 +91,6 @@ export const useVendorMutations = () => {
         type: 'info',
         title: 'Vendor Partner Removed',
         message: 'Outsourcing partner facility removed from registry.',
-      });
-      trackEntityMutation(queryClient, {
-        action: 'deleted',
-        actionLabel: 'Vendor Deleted',
-        resourceType: 'vendor',
-        resourceId: id,
-        description: `Deleted vendor partner ${id}.`,
-        tags: ['Vendor', 'Deletion'],
-        auditAction: 'DELETE',
-        auditEntityType: 'Vendor',
       });
     },
   });

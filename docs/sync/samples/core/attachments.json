@@ -1,0 +1,216 @@
+{
+  "view": "CompatAttachmentViewSet",
+  "app": "core",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/attachments/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3e625c7e-5483-49f4-a449-32d2ff2fd9cb",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "be0af135-5c1c-4329-9931-1e693eb7f62c",
+          "uuid": "be0af135-5c1c-4329-9931-1e693eb7f62c",
+          "created_at": "2026-10-29T05:37:41.794310Z",
+          "updated_at": "2026-10-29T05:37:41.794322Z",
+          "file": null,
+          "name": "friend.mov",
+          "description": "Price skill letter until. Environmental situation several every rise man send.",
+          "file_type": "document",
+          "mime_type": "application/pdf",
+          "file_size": 1024,
+          "storage_key": "<redacted>",
+          "is_public": false,
+          "expires_at": null,
+          "created_by": null,
+          "updated_by": null,
+          "deleted_by": null,
+          "download_url": null
+        },
+        {
+          "id": "bd3fcf24-b1ab-45a6-a054-cc715886d889",
+          "uuid": "bd3fcf24-b1ab-45a6-a054-cc715886d889",
+          "created_at": "2026-10-29T05:37:41.790781Z",
+          "updated_at": "2026-10-29T05:37:41.790798Z",
+          "file": null,
+          "name": "director.js",
+          "description": "Than city training right east wind. Indicate including main significant whom. Itself nation say move official.\nOfficer loss second. Here training article receiv\u2026<truncated>",
+          "file_type": "document",
+          "mime_type": "application/pdf",
+          "file_size": 1024,
+          "storage_key": "<redacted>",
+          "is_public": false,
+          "expires_at": null,
+          "created_by": null,
+          "updated_by": null,
+          "deleted_by": null,
+          "download_url": null
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/attachments/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0475adbd-e3cd-477c-b044-d53c07b1da69",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "0475adbd-e3cd-477c-b044-d53c07b1da69"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/attachments/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ff1affef-b3c3-48d7-8e3f-4f55e85c03b1",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/attachments/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d24f21c6-ec7b-4871-bd9c-3efad16e345d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/attachments/be0af135-5c1c-4329-9931-1e693eb7f62c/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "06590c1d-cfcc-4e67-83e2-5d9ca18f67a2",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "be0af135-5c1c-4329-9931-1e693eb7f62c",
+      "uuid": "be0af135-5c1c-4329-9931-1e693eb7f62c",
+      "created_at": "2026-10-29T05:37:41.794310Z",
+      "updated_at": "2026-10-29T05:37:41.794322Z",
+      "file": null,
+      "name": "friend.mov",
+      "description": "Price skill letter until. Environmental situation several every rise man send.",
+      "file_type": "document",
+      "mime_type": "application/pdf",
+      "file_size": 1024,
+      "storage_key": "<redacted>",
+      "is_public": false,
+      "expires_at": null,
+      "created_by": null,
+      "updated_by": null,
+      "deleted_by": null,
+      "download_url": null
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/attachments/00b0bbbf-9dfc-4945-b2f2-e5630512e51f/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7f8abf20-fd85-44d4-8c99-e7aa8426958f",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Attachment matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "7f8abf20-fd85-44d4-8c99-e7aa8426958f"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/attachments/",
+      "body": {}
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e3d2c08d-49bb-47ff-bf0d-45b1e119b4e5",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "file": null,
+      "name": "",
+      "description": "",
+      "file_type": "document",
+      "mime_type": "",
+      "is_public": false,
+      "expires_at": null,
+      "download_url": null
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/attachments/",
+      "body": {}
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "dd47ded2-54da-4dc5-ab81-fe994865e20a",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "file": null,
+      "name": "",
+      "description": "",
+      "file_type": "document",
+      "mime_type": "",
+      "is_public": false,
+      "expires_at": null,
+      "download_url": null
+    }
+  }
+}

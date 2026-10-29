@@ -1,0 +1,155 @@
+{
+  "view": "PersonalAccessTokenViewSet",
+  "app": "identity",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/personal-access-tokens/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d4dbd99a-7bf6-47e5-a9e2-050377f012cc",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/personal-access-tokens/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "799693a8-191c-475a-9abf-635c1cb92f18",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "799693a8-191c-475a-9abf-635c1cb92f18"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/personal-access-tokens/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1695431f-236c-4c6c-a07a-9b0e6c7e4c84",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/personal-access-tokens/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "710e042f-18ce-420e-b7e5-ec0d7feeaf16",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/personal-access-tokens/40b4be76-904a-44d1-a7c6-f446650c0c37/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4ee90ba5-5c2a-4cd5-9b3f-f508ffe724f0",
+      "Allow": "GET, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No PersonalAccessToken matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "4ee90ba5-5c2a-4cd5-9b3f-f508ffe724f0"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/personal-access-tokens/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d6077373-2c1c-4843-bd48-68b3bd62f09b",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "scopes": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "d6077373-2c1c-4843-bd48-68b3bd62f09b"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/personal-access-tokens/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5bf2888e-fc2a-4d05-a530-d52c905ae0f1",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "scopes": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "5bf2888e-fc2a-4d05-a530-d52c905ae0f1"
+      }
+    }
+  }
+}

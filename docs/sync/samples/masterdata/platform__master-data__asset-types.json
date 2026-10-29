@@ -1,0 +1,249 @@
+{
+  "view": "MasterAssetTypeViewSet",
+  "app": "masterdata",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/asset-types",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "fa1ef048-ce86-4155-9c58-0af1339e5f6a",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "8c1c25a3-4ca2-4123-8dab-446da2c9c8c2",
+          "name": "Name 0",
+          "code": "code-0",
+          "description": "",
+          "icon": "",
+          "color": "",
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.758413Z",
+          "updated_at": "2026-10-29T05:37:41.758426Z"
+        },
+        {
+          "id": "41145fac-06c0-4d29-8d4d-df7adf80b340",
+          "name": "Name 1",
+          "code": "code-1",
+          "description": "",
+          "icon": "",
+          "color": "",
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.760847Z",
+          "updated_at": "2026-10-29T05:37:41.760859Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/asset-types",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "250a92c3-ffcc-4e27-a338-b9e8d2786754",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "250a92c3-ffcc-4e27-a338-b9e8d2786754"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/asset-types",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8b96473f-4965-4faa-9356-3617bc027788",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "8c1c25a3-4ca2-4123-8dab-446da2c9c8c2",
+          "name": "Name 0",
+          "code": "code-0",
+          "description": "",
+          "icon": "",
+          "color": "",
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.758413Z",
+          "updated_at": "2026-10-29T05:37:41.758426Z"
+        },
+        {
+          "id": "41145fac-06c0-4d29-8d4d-df7adf80b340",
+          "name": "Name 1",
+          "code": "code-1",
+          "description": "",
+          "icon": "",
+          "color": "",
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.760847Z",
+          "updated_at": "2026-10-29T05:37:41.760859Z"
+        }
+      ]
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/asset-types",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f97bbd34-2113-4c85-985c-587b0e256d5e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "8c1c25a3-4ca2-4123-8dab-446da2c9c8c2",
+          "name": "Name 0",
+          "code": "code-0",
+          "description": "",
+          "icon": "",
+          "color": "",
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.758413Z",
+          "updated_at": "2026-10-29T05:37:41.758426Z"
+        },
+        {
+          "id": "41145fac-06c0-4d29-8d4d-df7adf80b340",
+          "name": "Name 1",
+          "code": "code-1",
+          "description": "",
+          "icon": "",
+          "color": "",
+          "scope": "GLOBAL",
+          "status": "active",
+          "is_system": false,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:41.760847Z",
+          "updated_at": "2026-10-29T05:37:41.760859Z"
+        }
+      ]
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/asset-types8c1c25a3-4ca2-4123-8dab-446da2c9c8c2/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "76a457a4-0569-41a1-8164-483101e041ac"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "76a457a4-0569-41a1-8164-483101e041ac"
+      }
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/asset-types53d475ae-e4be-446d-b061-f84a5948a404/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "607a75da-c9eb-4f51-9e81-bb524d1120ed"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "607a75da-c9eb-4f51-9e81-bb524d1120ed"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/platform/master-data/asset-types",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5be9b141-bb34-48ca-82f2-6e8c659e92fc",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "code": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "5be9b141-bb34-48ca-82f2-6e8c659e92fc"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/platform/master-data/asset-types",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "37d9abfb-4269-431c-911a-7772cbffc23b",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "37d9abfb-4269-431c-911a-7772cbffc23b"
+      }
+    }
+  }
+}

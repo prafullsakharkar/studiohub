@@ -120,6 +120,45 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     ("identity.permission.create", "permission", "create"),
     ("identity.permission.update", "permission", "update"),
     ("identity.permission.delete", "permission", "delete"),
+    # Enforced by views and the settings viewsets but never seeded before (docs/sync CR-02): until
+    # they exist no role can carry them and only superusers pass. Who holds them: the lifecycle and
+    # read-only security-ledger codes below, plus settings.view, go to org-admin
+    # (IDENTITY_ADMIN_PERMISSIONS); the ledger/blacklist writes stay with platform-admin only.
+    ("settings.view", "settings", "view"),
+    ("identity.user.activate", "user", "activate"),
+    ("identity.user.deactivate", "user", "deactivate"),
+    ("identity.user.archive", "user", "archive"),
+    ("identity.user.restore", "user", "restore"),
+    ("identity.user.reset_password", "user", "reset_password"),
+    ("identity.user.change_password", "user", "change_password"),
+    ("identity.security_event.view", "security_event", "view"),
+    ("identity.security_event.create", "security_event", "create"),
+    ("identity.login_history.view", "login_history", "view"),
+    ("identity.login_attempt.view", "login_attempt", "view"),
+    ("identity.login_attempt.create", "login_attempt", "create"),
+    ("identity.ip_blacklist.view", "ip_blacklist", "view"),
+    ("identity.ip_blacklist.create", "ip_blacklist", "create"),
+    ("identity.ip_blacklist.update", "ip_blacklist", "update"),
+    ("identity.ip_blacklist.delete", "ip_blacklist", "delete"),
+    ("identity.profile.delete", "profile", "delete"),
+    ("identity.trusted_device.delete", "trusted_device", "delete"),
+]
+
+# Account lifecycle and read-only security ledgers: an organization administrator can activate,
+# deactivate, archive, restore and reset users and read the login/security history. Writing to the
+# ledgers and the IP blacklist is platform-admin only (it holds the full catalog).
+IDENTITY_ADMIN_PERMISSIONS = [
+    "settings.view",
+    "identity.user.activate",
+    "identity.user.deactivate",
+    "identity.user.archive",
+    "identity.user.restore",
+    "identity.user.reset_password",
+    "identity.user.change_password",
+    "identity.security_event.view",
+    "identity.login_history.view",
+    "identity.login_attempt.view",
+    "identity.ip_blacklist.view",
 ]
 
 # Directory reads granted to production-tier roles (org-free directory is
@@ -253,6 +292,7 @@ WITHDRAWN_GRANTS: dict[str, tuple[str, ...]] = {
 PRODUCTION_ADMIN_PERMISSIONS = PRODUCTION_FULL_PERMISSIONS + [
     "masterdata.client.view_financial",
     "production.code.rename",
+    "settings.view",
 ]
 
 # A lead builds and publishes the team's work and approves its time and shots; no deletes,
@@ -322,6 +362,7 @@ ROLE_SPECS: list[dict[str, Any]] = [
             DIRECTORY_CRUD_PERMISSIONS
             + PRODUCTION_FULL_PERMISSIONS
             + ["settings.manage", "settings.update", "user.manage", "publishing.storage.manage"]
+            + IDENTITY_ADMIN_PERMISSIONS
         ),
     },
     {

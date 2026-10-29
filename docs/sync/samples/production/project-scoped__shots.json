@@ -1,0 +1,85 @@
+{
+  "view": "_ShotListView",
+  "app": "production",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/shots/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5e2c218f-9d01-4e5e-911e-b68679e65bc3",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/shots/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b233721d-4e9d-47c9-9a29-08fc63b80ac3",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "b233721d-4e9d-47c9-9a29-08fc63b80ac3"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/shots/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b5e3d46c-9afd-4bf7-b714-59c9495d4348",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "b5e3d46c-9afd-4bf7-b714-59c9495d4348"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/shots/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2eb32488-8b02-4d26-b49e-5f2c87cf9f6e",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Project 90864aa9-6ae0-49a3-807e-e5327db92bf0 not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "2eb32488-8b02-4d26-b49e-5f2c87cf9f6e"
+      }
+    }
+  }
+}
