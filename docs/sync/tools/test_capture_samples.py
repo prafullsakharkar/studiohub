@@ -35,7 +35,7 @@ def redact(v, key=""):
     if isinstance(v, list):
         return [redact(x, key) for x in v]
     if isinstance(v, str):
-        if key and SECRET_KEYS.search(key) and key not in ("key_prefix", "token_prefix", "prefix") and len(v) > 8:
+        if key and SECRET_KEYS.search(key) and key not in ("key_prefix", "token_prefix", "prefix") and len(v) > 8 and " " not in v:
             return "<redacted>"
         v = EMAIL.sub("user@example.test", v)
         return v if len(v) <= 160 else v[:160] + "…<truncated>"

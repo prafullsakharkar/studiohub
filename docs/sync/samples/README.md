@@ -20,7 +20,13 @@ Bare-array responses are wrapped as `{"_bare_list": true, "_len": N, "items": [.
 Special files:
 - [`identity/_auth_flow.json`](identity/_auth_flow.json) — login, bad password, missing fields, `me` via real JWT, invalid PATCH, refresh, refresh-token reuse (session revoked), garbage tokens, `me` for superuser/artist.
 - [`identity/_auth_logout_flow.json`](identity/_auth_logout_flow.json) — clean logout, `me`/refresh after logout, forgot-password anti-enumeration.
+- [`identity/_auth_mfa_flow.json`](identity/_auth_mfa_flow.json) — MFA login: `mfa_required` response (no tokens), challenge success with TOTP and with a recovery code, wrong code (`401 mfa_code_invalid`), missing code (400), missing/garbage challenge (`401 mfa_challenge_invalid`), reused recovery code, `remember_device`. Captured by [`../tools/test_capture_auth_flows.py`](../tools/test_capture_auth_flows.py) (Phase 1).
+- [`identity/_auth_password_reset_flow.json`](identity/_auth_password_reset_flow.json) — forgot-password (200 / invalid e-mail 400), reset-password with invalid token, mismatched confirmation, missing fields.
 - [`_misc/conflicts_and_pagination.json`](_misc/conflicts_and_pagination.json) — duplicate code (400), PUT with partial payload (400), 405, delete of a referenced department (409 `has_dependants`), page size default/limit alias/max/out-of-range, unknown ordering, invalid filter value.
 - [`INDEX.json`](INDEX.json) — status matrix (admin/anon/norole/artist) per list route.
 
 Frontend tests must build their mocks from these shapes, not from hand-written guesses.
+
+## Known limitation of the Phase 0 captures
+
+The Phase 0 harness redacted any string under a key named like a secret (`password`, `token`, `challenge`, …), which also replaced **validation messages** such as `"password": ["This field is required."]` with `"<redacted>"` in `identity/_auth_flow.json` (`login_missing_fields`), `identity/identity__users.json` and a few `error.code` values. The harness rule is fixed (secrets never contain spaces, messages always do) but those files were not recaptured, to avoid churning every id. The Phase 1 captures (`_auth_mfa_flow.json`, `_auth_password_reset_flow.json`) use the fixed rule. For the standard DRF text see the Phase 1 captures.
