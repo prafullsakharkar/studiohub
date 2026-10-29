@@ -6,6 +6,8 @@ import { useMemo, useState } from 'react';
 import { z } from 'zod';
 import { rolesApi, roleKeys } from '@/api/identity/rbac';
 import type { Role, RoleUserAssignment } from '@/api/identity/rbac';
+import { sessionKeys, sessionsApi } from '@/api/identity/account';
+import { mfaApi } from '@/api/identity/mfa';
 import { USER_ACTIONS, personLinkApi, userKeys, usersApi } from '@/api/identity/users';
 import type { UserAction } from '@/api/identity/users';
 import { ConfirmDialog } from '@/components/system/ConfirmDialog';
@@ -247,6 +249,46 @@ const RolesCard: React.FC<{ userId: string }> = ({ userId }) => {
   );
 };
 
+
+/** Superuser-only (the API refuses anyone else): the login's sessions, and clearing a lost authenticator. */
+const AdminSecurityCard: React.FC<{ userId: string }> = ({ userId }) => {
+  const sessions = useQuery({ queryKey: [...sessionKeys.all, 'admin', userId], queryFn: ({ signal }) => sessionsApi.adminList(userId, signal) });
+  const [resetting, setResetting] = useState(false);
+
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-3">
+      <h4 className="text-xs font-bold text-white">Sessions and two-factor authentication</h4>
+      <QueryBoundary isLoading={sessions.isLoading} error={sessions.error} onRetry={() => void sessions.refetch()} entityName="sessions">
+        <p className="text-xs text-slate-400">
+          {(sessions.data ?? []).length} active session{(sessions.data ?? []).length === 1 ? '' : 's'}
+        </p>
+        <ul aria-label="Active sessions" className="text-[11px] text-slate-400 space-y-1">
+          {(sessions.data ?? []).map((s) => (
+            <li key={s.id}>
+              {s.user_agent || 'Unknown device'} · {s.ip_address ?? 'unknown IP'} · last active {formatDate(s.last_activity)}
+            </li>
+          ))}
+        </ul>
+      </QueryBoundary>
+      <Button size="sm" variant="outline" onClick={() => setResetting(true)}>
+        Reset two-factor authentication
+      </Button>
+      <ConfirmDialog
+        isOpen={resetting}
+        title="Reset two-factor authentication"
+        message="The person's authenticator and recovery codes are forgotten, so they can enrol a new device. Use this when a device is lost."
+        confirmLabel="Reset"
+        destructive
+        onClose={() => setResetting(false)}
+        onConfirm={async () => {
+          await mfaApi.adminReset(userId);
+          notify.success('Two-factor authentication was reset.');
+        }}
+      />
+    </div>
+  );
+};
+
 const Linked: React.FC<{ personId: string; userId: string; onChanged: () => Promise<void> | void }> = ({ personId, userId, onChanged }) => {
   const queryClient = useQueryClient();
   const { user: me } = useAuth();
@@ -318,6 +360,8 @@ const Linked: React.FC<{ personId: string; userId: string; onChanged: () => Prom
       </QueryBoundary>
 
       {canAssignRoles && <RolesCard userId={userId} />}
+
+      {me?.is_superuser && <AdminSecurityCard userId={userId} />}
 
       {canUnlink && (
         <div>

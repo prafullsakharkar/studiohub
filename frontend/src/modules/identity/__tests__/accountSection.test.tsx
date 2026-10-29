@@ -56,6 +56,8 @@ const server = (call: MockCall): MockReply => {
   if (p.endsWith('/activate/')) return reply(flow.users_activate);
   if (p.endsWith('/reset-password/')) return reply(flow.users_reset_password);
   if (p.endsWith('/link-user/')) return reply(flow.people_link_user);
+  if (p.includes('/sessions/admin/')) return bare(flow.sessions_admin_list);
+  if (p.includes('/mfa/admin/reset/')) return reply(flow.mfa_admin_reset_other);
   if (p.endsWith('/unlink-user/')) return reply(flow.people_unlink_user);
   if (p === '/api/v1/roles/') return { body: rolesWithHeld };
   if (/\/api\/v1\/roles\/[^/]+\/users\/$/.test(p)) {
@@ -182,5 +184,23 @@ describe('person account: linked login', () => {
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: 'Unlink' }));
     await waitFor(() => expect(calls.some((c) => path(c) === `/api/v1/people/${PERSON}/unlink-user/`)).toBe(true));
+  });
+
+  it('superuser sees the login’s sessions and can reset its two-factor authentication', async () => {
+    const { calls } = mockFetch(server);
+    renderSection({ ...superuser, is_superuser: true }, { userId: target.id });
+    expect(await screen.findByLabelText('Active sessions')).toBeTruthy();
+    expect(calls.some((c) => path(c) === `/api/v1/identity/sessions/admin/${target.id}/`)).toBe(true);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reset two-factor authentication' }));
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Reset' }));
+    await waitFor(() => expect(calls.some((c) => path(c) === `/api/v1/identity/mfa/admin/reset/${target.id}/`)).toBe(true));
+  });
+
+  it('a non-superuser never sees those controls (the API refuses them)', async () => {
+    mockFetch(server);
+    renderSection({ ...superuser, is_superuser: false, permissions: [...(superuser.permissions ?? [])] } as User, { userId: target.id });
+    await screen.findByText(target.email);
+    expect(screen.queryByRole('button', { name: 'Reset two-factor authentication' })).toBeNull();
   });
 });
