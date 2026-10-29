@@ -15,6 +15,7 @@ It seeds (each exercises a different backend rule):
   pwdue    ordinary user owing a password change
   delegate ordinary user holding `live-delegate` and `live-viewer` (Phase 2: RBAC admin without being a superuser)
   selfmfa  ordinary user without MFA (Phase 2: voluntary enrollment from My account)
+  audit    a queued and a failed background job and an open error log (Phase 4)
   roles    `live-escalation` (grants project.delete, held by nobody), `live-viewer` (grants shot.view) and `live-delegate` (grants identity.role.update/view + identity.user.view)
 Writes the connection details to $SYNC_LIVE_INFO, then keeps serving
 until $SYNC_LIVE_STOP exists (or 20 minutes pass).
@@ -97,6 +98,12 @@ def test_serve(live_server, django_user_model):
     selfmfa = users.create_user(email="selfmfa@example.test", password=PASSWORDS["selfmfa"])
     selfmfa.is_active = True
     selfmfa.save()
+
+    from apps.audit.models import BackgroundJob, ErrorLog
+
+    BackgroundJob.objects.create(job_type="report", status=BackgroundJob.STATUS_QUEUED, job_id="live-job-queued")
+    BackgroundJob.objects.create(job_type="report", status=BackgroundJob.STATUS_FAILED, job_id="live-job-failed")
+    ErrorLog.objects.create(error_type="server", severity=ErrorLog.SEVERITY_ERROR, message="Live open error", user=manager)
 
     INFO.write_text(
         json.dumps(

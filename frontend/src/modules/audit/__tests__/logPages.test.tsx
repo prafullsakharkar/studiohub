@@ -103,8 +103,8 @@ describe('background jobs and error log actions', () => {
     ];
     const { calls } = mockFetch((c) => (c.method === 'POST' ? { body: rows[0] } : { body: { count: 3, next: null, previous: null, results: rows } }));
     renderPage(<LogListPage config={backgroundJobsConfig} />, superuser);
-    await screen.findByRole('button', { name: /^Cancel report job-queued/ });
-    expect(screen.queryByRole('button', { name: /^Cancel report job-failed/ })).toBeNull();
+    await screen.findByRole('button', { name: /^Cancel job report job-queued/ });
+    expect(screen.queryByRole('button', { name: /^Cancel job report job-failed/ })).toBeNull();
     expect(screen.getByRole('button', { name: /^Retry report job-failed/ })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /^Retry report job-done/ })).toBeNull();
     expect(queued).toBeTruthy();

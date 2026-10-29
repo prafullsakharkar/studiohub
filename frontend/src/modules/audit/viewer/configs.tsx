@@ -148,7 +148,7 @@ export const backgroundJobsConfig: LogListConfig<BackgroundJob> = {
   ],
   detail: (r) => json(r),
   actions: [
-    { label: 'Cancel', when: (r) => r.status === 'queued' || r.status === 'running', confirm: (r) => `Cancel job ${r.job_id}?`, run: (r) => auditApi.backgroundJobs.cancel(r.id) },
+    { label: 'Cancel job', when: (r) => r.status === 'queued' || r.status === 'running', confirm: (r) => `Cancel job ${r.job_id}?`, run: (r) => auditApi.backgroundJobs.cancel(r.id) },
     { label: 'Retry', when: (r) => r.status === 'failed', confirm: (r) => `Run job ${r.job_id} again?`, run: (r) => auditApi.backgroundJobs.retry(r.id) },
   ],
 };
