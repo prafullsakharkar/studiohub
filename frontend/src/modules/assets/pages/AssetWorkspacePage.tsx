@@ -124,15 +124,9 @@ import { AssetAttachmentsTab } from '../components/AssetAttachmentsTab';
 import { AssetPublishingTab } from '../components/AssetPublishingTab';
 
 
-import { AssetHistoryTab } from '../components/AssetHistoryTab';
-
 // Modals
 
-import { AssetEditModal } from '../components/AssetEditModal';
-
 import { AssetAssignModal } from '../components/modals/AssetAssignModal';
-
-import { AssetCreateTaskModal } from '../components/modals/AssetCreateTaskModal';
 
 import { AssetSubmitVersionModal } from '../components/modals/AssetSubmitVersionModal';
 
@@ -250,11 +244,7 @@ export const AssetWorkspacePage: React.FC = () => {
 
   // Modals state
 
-  const [isEditOpen, setIsEditOpen] = useState(false);
-
   const [isAssignOpen, setIsAssignOpen] = useState(false);
-
-  const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
 
   const [isSubmitVersionOpen, setIsSubmitVersionOpen] = useState(false);
 
@@ -1028,16 +1018,6 @@ export const AssetWorkspacePage: React.FC = () => {
 
       {/* Modals */}
 
-      <AssetEditModal
-
-        asset={asset}
-
-        isOpen={isEditOpen}
-
-        onClose={() => setIsEditOpen(false)}
-
-      />
-
       <AssetAssignModal
 
         asset={asset}
@@ -1045,16 +1025,6 @@ export const AssetWorkspacePage: React.FC = () => {
         isOpen={isAssignOpen}
 
         onClose={() => setIsAssignOpen(false)}
-
-      />
-
-      <AssetCreateTaskModal
-
-        asset={asset}
-
-        isOpen={isCreateTaskOpen}
-
-        onClose={() => setIsCreateTaskOpen(false)}
 
       />
 

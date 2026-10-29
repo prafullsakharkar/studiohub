@@ -91,21 +91,13 @@ import { ShotReviewsTab } from '../components/workspace/ShotReviewsTab';
 
 import { ShotNotesTab } from '../components/workspace/ShotNotesTab';
 
-import { ShotActivityTab } from '../components/workspace/ShotActivityTab';
-
 import { ShotMediaTab } from '../components/workspace/ShotMediaTab';
 
 import { ShotAssignmentsTab } from '../components/workspace/ShotAssignmentsTab';
 
-import { ShotHistoryTab } from '../components/workspace/ShotHistoryTab';
-
 // Modals
 
-import { ShotEditModal } from '../components/workspace/modals/ShotEditModal';
-
 import { ShotAssignModal } from '../components/workspace/modals/ShotAssignModal';
-
-import { ShotCreateTaskModal } from '../components/workspace/modals/ShotCreateTaskModal';
 
 import { ShotSubmitVersionModal } from '../components/workspace/modals/ShotSubmitVersionModal';
 
@@ -209,11 +201,7 @@ export const ShotWorkspacePage: React.FC = () => {
 
   // Modals state
 
-  const [isEditOpen, setIsEditOpen] = useState(false);
-
   const [isAssignOpen, setIsAssignOpen] = useState(false);
-
-  const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
 
   const [isSubmitVersionOpen, setIsSubmitVersionOpen] = useState(false);
 
@@ -871,20 +859,6 @@ export const ShotWorkspacePage: React.FC = () => {
 
       {/* Workspace Modals */}
 
-      {isEditOpen && (
-
-        <ShotEditModal
-
-          isOpen={isEditOpen}
-
-          onClose={() => setIsEditOpen(false)}
-
-          shot={shot}
-
-        />
-
-      )}
-
       {isAssignOpen && (
 
         <ShotAssignModal
@@ -892,20 +866,6 @@ export const ShotWorkspacePage: React.FC = () => {
           isOpen={isAssignOpen}
 
           onClose={() => setIsAssignOpen(false)}
-
-          shot={shot}
-
-        />
-
-      )}
-
-      {isCreateTaskOpen && (
-
-        <ShotCreateTaskModal
-
-          isOpen={isCreateTaskOpen}
-
-          onClose={() => setIsCreateTaskOpen(false)}
 
           shot={shot}
 
