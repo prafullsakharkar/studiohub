@@ -65,10 +65,12 @@ describe('the rules the screens rely on', () => {
     expect(typeof flow.tasks_detail.body.logged_hours).toBe('string');
   });
 
-  it('CR-14: an ordinary timelog accepts negative hours (the form must not send them)', () => {
-    expect(flow.timelogs_create_future_or_bad.status).toBe(201);
-    expect(flow.timelogs_create_future_or_bad.body.duration_hours).toBe('-1.00');
+  it('CR-14 (applied): an ordinary timelog must be positive; only an adjustment may be negative', () => {
+    expect(flow.timelogs_create_future_or_bad.status).toBe(400);
+    expect(flow.timelogs_create_future_or_bad.body.duration_hours[0]).toMatch(/greater than zero/);
+    expect(flow.timelogs_adjustment.status).toBe(201);
     expect(flow.timelogs_adjustment.body.adjustment_of).toBeTruthy();
+    expect(flow.timelogs_adjustment.body.duration_hours).toBe('-0.50');
   });
 
   it('time flows artist → lead: nobody approves their own, an approved log is final, a rejected one is resubmitted', () => {

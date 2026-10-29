@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import type React from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { apiClient } from '@/api/client/ApiClient';
 import { episodesApi, projectScopedApi, projectsApi, sequencesApi } from '@/api/production/structure';
 import { EntityHistory } from '@/components/history/EntityHistory';
 import { AuthProvider } from '@/core/auth/AuthProvider';
@@ -76,10 +77,13 @@ describe('projects, end to end', () => {
     await waitFor(async () => expect((await projectsApi.get(created.id)).code).toBe(code), { timeout: 15000 });
   }, 90000);
 
-  it('CR-13 on the wire: the archive and check-existence actions are refused even for a superuser', async () => {
+  it('CR-13 on the wire: POST archive/ now archives like DELETE; the existence checks are still refused (not implemented)', async () => {
     await signInManager();
     const project = await projectsApi.create({ code: `C${uid()}`, name: 'CR13' });
-    await expect(projectsApi.act(project.id, 'archive')).rejects.toMatchObject({ status: 403 });
+    await projectsApi.act(project.id, 'archive');
+    await expect(projectsApi.get(project.id)).rejects.toMatchObject({ status: 404 });
+    expect((await projectsApi.archived({ search: project.code })).results.map((p) => p.id)).toEqual([project.id]);
+    await expect(apiClient.post('/api/v1/projects/check-existence/', { codes: [project.code] })).rejects.toMatchObject({ status: 403 });
   }, 30000);
 });
 

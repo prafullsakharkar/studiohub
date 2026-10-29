@@ -18,7 +18,7 @@ import { freshTotp, live } from './liveBackend';
  * tests then sign in as the seeded `artist` and `lead-artist` users and drive the real pages.
  */
 const uid = `${Date.now().toString(36)}`.toUpperCase();
-const fixture = {} as { project: string; artistUser: string; leadUser: string; task1: string; task2: string; task3: string; shotReview: string; shotOther: string };
+const fixture = {} as { project: string; artistUser: string; leadUser: string; task1: string; task2: string; task3: string; shotReview: string; shotOther: string; task4: string };
 
 const tree = (ui: React.ReactElement, initial: string) => (
   <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
@@ -59,7 +59,8 @@ beforeAll(async () => {
   await shotsApi.update(shotA.id, { status: 'Pending Review' });
   const task = (code: string, title: string) => tasksApi.create({ project: project.id, code, title, entity_type: 'Shot', entity_id: shotB.id, assignee: artist.user_id });
   const [t1, t2, t3] = [await task(`T1${uid}`, 'Comp the walk'), await task(`T2${uid}`, 'Roto the turn'), await task(`T3${uid}`, 'Clean plate')];
-  Object.assign(fixture, { project: project.id, artistUser: artist.user_id, leadUser: lead.user_id, task1: t1.id, task2: t2.id, task3: t3.id, shotReview: shotA.id, shotOther: shotB.id });
+  const t4 = await task(`T4${uid}`, 'Board card');
+  Object.assign(fixture, { task4: t4.id, project: project.id, artistUser: artist.user_id, leadUser: lead.user_id, task1: t1.id, task2: t2.id, task3: t3.id, shotReview: shotA.id, shotOther: shotB.id });
   tokenStorage.clearTokens();
 }, 120000);
 
@@ -135,6 +136,15 @@ describe('artist logs time, lead approves', () => {
     expect(history.find((h) => h.to_status === 'Rejected')?.reason).toBe('Wrong plate, use v002');
   }, 150000);
 
+  it('CR-14 on the wire: hours must be positive on an ordinary entry; a correction of an approved entry may be negative', async () => {
+    await signIn('artist');
+    await expect(timelogsApi.create({ task_id: fixture.task3, duration_hours: '-1', date: '2030-03-01' })).rejects.toMatchObject({ status: 400 });
+    await expect(timelogsApi.create({ task_id: fixture.task3, duration_hours: '0', date: '2030-03-01' })).rejects.toMatchObject({ status: 400 });
+    const approved = (await timelogsApi.list({ task: fixture.task1, status: 'Approved' })).results[0]; // approved by the lead in the first tests
+    const correction = await timelogsApi.create({ task_id: fixture.task1, duration_hours: '-0.5', date: '2030-03-02', adjustment_of: approved.id });
+    expect(correction.adjustment_of).toBe(approved.id);
+  }, 60000);
+
   it('nobody approves their own time: the lead is not offered it, and the server refuses it', async () => {
     await signIn('lead');
     const own = await timelogsApi.create({ task_id: fixture.task3, duration_hours: '1', date: '2030-02-02' });
@@ -142,6 +152,24 @@ describe('artist logs time, lead approves', () => {
     render(tree(pages, '/timelogs'));
     await screen.findByText(`T3${uid} · Clean plate`, {}, { timeout: 20000 });
     expect(screen.queryByRole('button', { name: /^Approve T3/ })).toBeNull();
+  }, 90000);
+});
+
+describe('task board', () => {
+  it('dragging a card to the next column changes its status on the server; a column it cannot go to refuses the drop', async () => {
+    await signIn('artist');
+    render(tree(pages, '/tasks?view=board'));
+    const card = await screen.findByRole('article', { name: `T4${uid}` }, { timeout: 20000 });
+    const transfer = { setData: () => undefined, getData: () => '', effectAllowed: '', dropEffect: '' };
+    const dropOn = (column: string) => {
+      fireEvent.dragStart(card, { dataTransfer: transfer });
+      fireEvent.drop(screen.getByRole('region', { name: column }), { dataTransfer: transfer });
+    };
+    dropOn('Approved'); // Not Started → Approved: not a move the server allows, so the board does not even try
+    expect((await tasksApi.get(fixture.task4)).status).toBe('Not Started');
+    dropOn('In Progress');
+    await waitFor(async () => expect((await tasksApi.get(fixture.task4)).status).toBe('In Progress'), { timeout: 15000 });
+    await waitFor(() => expect(within(screen.getByRole('region', { name: 'In Progress' })).getByRole('article', { name: `T4${uid}` })).toBeTruthy(), { timeout: 15000 });
   }, 90000);
 });
 

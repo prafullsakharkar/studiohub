@@ -64,7 +64,7 @@ describe('projects list', () => {
     await waitFor(() => expect(calls.some((c) => q(c).status === 'In Progress')).toBe(true));
   });
 
-  it('"Archive" deletes the project (POST …/archive/ is refused for everyone, CR-13) and the Archived view can restore it', async () => {
+  it('"Archive" deletes the project (DELETE needs no body; POST …/archive/ does the same since CR-13) and the Archived view can restore it', async () => {
     const { calls } = mockFetch((c) => {
       if (c.method === 'DELETE') return { status: 204, body: null };
       if (c.method === 'POST') return reply(flow.projects_restore);

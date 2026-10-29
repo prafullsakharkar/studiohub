@@ -15,8 +15,8 @@ Rule (HARD RULE 1): no backend file is changed without explicit approval. Each e
 | CR-09 | `CONTRACTS.md` states default page size 20; actual 25 | No (doc only) | Low |
 | CR-10 | Server-side CSV/Excel export (`?format=csv` on list views; renderers already exist in `apps/core/api/renderers/`) | No (client-side export works up to ~10k rows) | Low — optional |
 | CR-11 | httpOnly refresh-token cookie for the SPA | No (refresh token in `localStorage` with XSS hygiene) | Low — optional, security hardening |
-| CR-13 | `archive` / `check-existence` on projects and shows are missing from the viewsets' permission_map, so they fail closed (403 even for a superuser) | No (frontend archives with DELETE and checks codes with `?code=`) | Medium — bug (**kept for later by the user, 2026-10-29**) |
-| CR-14 | A timelog that is not an adjustment accepts negative `duration_hours` | No (the form requires > 0 unless correcting an approved entry) | Medium — bug |
+| CR-13 | `archive` on projects and shows was missing from the viewsets' permission_map (403 even for a superuser) | **APPLIED** (`archive` only; see the amended entry): `check-existence` on projects/shows turned out to be unimplemented, so it stays fail-closed | Medium — bug |
+| CR-14 | A timelog that is not an adjustment accepts negative `duration_hours` | **APPLIED**: 400 unless an adjustment (create and update) | Medium — bug |
 | Q-16 | An `artist` can update any task of the project (assignee, status), not only their own | Question for the owner | — |
 | Q-17 | Task Board / Calendar / Timeline views were not rebuilt in Phase 6 | Question for the owner | — |
 | Q-01 | Contacts list 403 for users without directory roles despite an empty `permission_map` entry | Question | — |
@@ -284,7 +284,9 @@ Live (`audit.live.test.tsx`): a department, team or client edit writes a ChangeL
 
 ## Phase 5 findings (production structure) — verified against a running backend
 
-### CR-13 — project/show `archive` and `check-existence` answer 403 to everyone (**bug**, PROPOSED)
+### CR-13 — project/show `archive` and `check-existence` answer 403 to everyone (**bug**, **APPLIED for `archive` only**)
+**Applied (with the Phase 6b backend commit):** `archive` is mapped to `project.delete` / `show.delete`. **Amendment:** the proposal also mapped `check-existence`/`existence-check`; running it showed those viewsets do not implement `_existence_items_from_request`, so a mapped call answers **500**. They stay unmapped (403) and the frontend keeps checking codes with `GET /projects/?code=`; implementing them is a separate, optional change. The frontend keeps using `DELETE` to archive, which now has the same effect as `POST …/archive/`. Original text follows.
+
 `POST /projects/{id}/archive/`, `POST /projects/check-existence/` (and `existence-check/`), `POST /shows/{id}/archive/`, `POST /shows/check-existence/` return `403 "You do not have permission to perform this action."` for an MFA-enrolled **superuser** (`_structure_flow.json`: `projects_archive`, `projects_check_existence`, `shows_archive`, `shows_check_existence`). Cause: `ProjectViewSet.permission_map` (and the show viewset's) has no entry for `archive`, `check_existence`, `existence_check`; `HasPermission` denies an unmapped action, logging `authorization_deny_no_map_entry`, even for superusers. The inventory shows these as `archive: —`. Episodes and sequences do map them and work. **Minimal diff:** add `"archive": (ProjectPermissions.DELETE,), "check_existence": (ProjectPermissions.CREATE,), "existence_check": (ProjectPermissions.CREATE,)` to `ProjectViewSet.permission_map` and the show equivalents (`ShowPermissions`). **Frontend workaround (in use):** `DELETE /projects/{id}/` soft-archives (204; the project then lists under `/projects/archived/` and `POST …/restore/` brings it back; its detail answers 404 meanwhile); codes are checked with `GET /projects/?code=`.
 
 ### Note — behaviours the project screens rely on
@@ -293,7 +295,9 @@ Live (`audit.live.test.tsx`): a department, team or client edit writes a ChangeL
 - Bulk routes answer 200 with per-item results (`processed`, `failed`, `partial_success`, `results[].actionTaken`), including when every item failed.
 - Project notes need `subject` (the sample note came back with an empty `body`; the body field name is not `content`).
 
-### CR-14 — an ordinary timelog accepts negative hours (**bug**, PROPOSED)
+### CR-14 — an ordinary timelog accepts negative hours (**bug**, **APPLIED**)
+**Applied (Phase 6b backend commit):** create rejects zero, negative or omitted hours unless `adjustment_of` is set; update applies the same rule per entry (an adjustment may be negative, never zero). Tests: `apps/production/tests/test_timelog_rules.py::TestOrdinaryHours`. The proposal text follows.
+
 `POST /api/v1/timelogs/` with `{"task_id": …, "duration_hours": "-1", "date": "2030-01-15"}` and no `adjustment_of` answers **201** and stores `duration_hours: "-1.00"`, status Submitted (`_work_flow.json`: `timelogs_create_future_or_bad`). `docs/production/DECISIONS.md` (line 40) and `CONTRACTS.md` C-18b allow negative hours only on an *adjustment* entry (`adjustment_of` set; "non-zero, possibly negative"), and `logged_hours` sums approved entries, so an approved negative ordinary entry silently lowers a task's logged time with no link to what it corrects. `TimelogViewSet.validate_references` checks non-zero only when `adjustment_of` is present; nothing checks the sign otherwise. **Minimal diff:** in `TimelogViewSet.validate_references` (or `TimelogCreateSerializer.validate`) add: when `adjustment_of` is absent and `duration_hours <= 0`, raise `ValidationError({"duration_hours": ["Hours must be greater than zero. Correct an approved entry with an adjustment."]})`; the same check for PATCH of `duration_hours`. **Frontend workaround (in use):** the time form requires hours > 0 unless it is an adjustment, so the UI never sends it; a script still can.
 
 ### Note — behaviours the Phase 6 screens rely on (`samples/production/_work_flow.json`)

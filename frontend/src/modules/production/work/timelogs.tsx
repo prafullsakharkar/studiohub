@@ -83,7 +83,7 @@ export function timelogsFormFields(): ReadonlyArray<FieldDef> {
   return [
     { kind: 'entity', name: 'task_id', label: 'Task', required: true, render: (p) => <TaskPicker label="Task *" value={p.value} onChange={(id) => p.onChange(id ?? '')} error={p.error} /> },
     { kind: 'date', name: 'date', label: 'Date', required: true, initial: todayIso() },
-    // CR-14: the server accepts negative hours on an ordinary entry; this form never sends them.
+    // The server refuses non-positive hours on an ordinary entry (CR-14); the form says so before sending.
     { kind: 'number', name: 'duration_hours', label: 'Hours', required: true, positive: true, hint: 'Greater than zero. Correct an approved entry with an adjustment, not a negative entry.' },
     { kind: 'textarea', name: 'notes', label: 'Notes' },
     { kind: 'checkbox', name: 'billable', label: 'Billable', initial: true },

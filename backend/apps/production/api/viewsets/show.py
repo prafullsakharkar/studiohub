@@ -35,6 +35,8 @@ class ShowViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingType
         "destroy": (ShowPermissions.DELETE,),
         "archived": (ShowPermissions.VIEW,),
         "restore": (ShowPermissions.UPDATE,),
+        "archive": (ShowPermissions.DELETE,),
+        # check_existence / existence_check stay unmapped on purpose (not implemented for shows; see projects).
     }
 
     search_fields = ("name", "code", "description")

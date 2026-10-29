@@ -161,6 +161,11 @@ class TimelogCreateSerializer(BaseWriteSerializer[Any]):
             attrs["project"] = getattr(task, "project", None)
         person = self._resolve_person(attrs)
         original = attrs.get("adjustment_of")
+        # Only an adjustment of an approved entry may be negative (DECISIONS: timelogs); an ordinary entry is time worked.
+        if original is None and not attrs.get("duration_hours", 0) > 0:
+            raise serializers.ValidationError(
+                {"duration_hours": ["Hours must be greater than zero. Correct an approved entry with an adjustment."]}
+            )
         if person is None and original is not None:
             person = original.person  # an adjustment belongs to the person it corrects
         if person is None:
