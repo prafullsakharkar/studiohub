@@ -3,8 +3,9 @@ import crypto from 'node:crypto';
 
 export interface LiveInfo {
   url: string;
-  users: Record<'admin' | 'artist' | 'mfa', { email: string; password: string }>;
+  users: Record<'admin' | 'enroll' | 'manager' | 'artist' | 'mfa' | 'pwdue', { email: string; password: string }>;
   mfa: { secret: string; recovery_codes: string[] };
+  manager: { secret: string };
 }
 
 export const live: LiveInfo = JSON.parse(fs.readFileSync(process.env.SYNC_LIVE_INFO as string, 'utf8'));
@@ -21,6 +22,30 @@ export function totp(secretBase32: string, atMs = Date.now()): string {
   const offset = hmac[hmac.length - 1] & 0xf;
   const code = (hmac.readUInt32BE(offset) & 0x7fffffff) % 1_000_000;
   return String(code).padStart(6, '0');
+}
+
+/**
+ * A TOTP code the backend has not seen yet. The backend accepts each 30 s step once per user
+ * (replay protection), so a code reused in the same step, by another test file or by a re-run
+ * against the same server, is rejected. The last step used per secret is kept next to live.json.
+ */
+export async function freshTotp(secret: string): Promise<string> {
+  const stateFile = `${process.env.SYNC_LIVE_INFO}.totp.json`;
+  const step = () => Math.floor(Date.now() / 30_000);
+  for (;;) {
+    let used: Record<string, number> = {};
+    try {
+      used = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
+    } catch {
+      // first use
+    }
+    if (used[secret] !== step()) {
+      used[secret] = step();
+      fs.writeFileSync(stateFile, JSON.stringify(used));
+      return totp(secret);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
 }
 
 export async function rawPost(path: string, body: unknown, headers: Record<string, string> = {}) {

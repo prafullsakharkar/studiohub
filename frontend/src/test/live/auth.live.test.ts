@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { live, openTab, rawPost, totp } from './liveBackend';
+import { freshTotp, live, openTab, rawPost } from './liveBackend';
 
 const admin = live.users.admin;
 const REFRESH_KEY = 'studiohub_refresh_token';
@@ -204,7 +204,7 @@ describe('MFA login', () => {
     const tab = await openTab();
     const outcome = await tab.authService.login({ email: mfa.email, password: mfa.password });
     if (outcome.status !== 'mfa_required') throw new Error('expected an MFA challenge');
-    const done = await tab.authService.completeMfaLogin({ challenge: outcome.challenge, code: totp(live.mfa.secret) });
+    const done = await tab.authService.completeMfaLogin({ challenge: outcome.challenge, code: await freshTotp(live.mfa.secret) });
 
     expect(done.status).toBe('authenticated');
     expect(tab.tokenStorage.getAccessToken()).toBeTruthy();

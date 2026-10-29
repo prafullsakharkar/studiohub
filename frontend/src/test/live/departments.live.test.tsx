@@ -12,16 +12,31 @@ import { CreateDepartmentPage } from '@/modules/departments/pages/CreateDepartme
 import { DepartmentsListPage } from '@/modules/departments/pages/DepartmentsListPage';
 import type { Department } from '@/api/masterdata/departments';
 import type { User } from '@/types/identity';
-import { live } from './liveBackend';
+import { freshTotp, live } from './liveBackend';
 
 type Page<T> = { count: number; next: string | null; results: T[] };
 const BULK = 27; // 5 seeded + 27 = 32 rows: more than one page of 25
 const created: string[] = [];
 
+/**
+ * "manager" is a superuser with MFA enrolled, so signing in is the real two-step flow with a TOTP
+ * code. A code works once per 30 s step, so each user signs in once and the session is reused.
+ */
+const sessions = new Map<'admin' | 'artist', { access: string; refresh: string; user: User }>();
 async function signIn(who: 'admin' | 'artist'): Promise<User> {
   tokenStorage.clearTokens();
-  const outcome = await authService.login({ email: live.users[who].email, password: live.users[who].password });
-  if (outcome.status !== 'authenticated') throw new Error('expected a plain sign-in');
+  const cached = sessions.get(who);
+  if (cached) {
+    tokenStorage.setTokens({ access: cached.access, refresh: cached.refresh });
+    return cached.user;
+  }
+  const account = who === 'admin' ? live.users.manager : live.users.artist;
+  let outcome = await authService.login({ email: account.email, password: account.password });
+  if (outcome.status === 'mfa_required') {
+    outcome = await authService.completeMfaLogin({ challenge: outcome.challenge, code: await freshTotp(live.manager.secret) });
+  }
+  if (outcome.status !== 'authenticated') throw new Error('sign-in did not complete');
+  sessions.set(who, { access: tokenStorage.getAccessToken()!, refresh: tokenStorage.getRefreshToken()!, user: outcome.user });
   return outcome.user;
 }
 

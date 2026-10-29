@@ -6,8 +6,14 @@ test database (a separate, throwaway database; this module asserts the name is t
 `transaction=True` means pytest-django flushes that test database's tables when the run ends,
 exactly as it does for any transactional test.
 
-It seeds: a superuser, a user with the seeded `artist` role, and a user with TOTP MFA enrolled
-(recovery codes included), writes the connection details to $SYNC_LIVE_INFO, then keeps serving
+It seeds (each exercises a different backend rule):
+  admin    superuser, MFA not enrolled  -> restricted session (only me/logout/MFA setup work)
+  enroll   superuser, MFA not enrolled  -> used up by the enrollment end-to-end test
+  manager  superuser, MFA enrolled      -> signs in with a TOTP code and uses the app
+  artist   seeded `artist` role         -> ordinary user
+  mfa      ordinary user, MFA enrolled  -> MFA login (TOTP + recovery codes)
+  pwdue    ordinary user owing a password change
+Writes the connection details to $SYNC_LIVE_INFO, then keeps serving
 until $SYNC_LIVE_STOP exists (or 20 minutes pass).
 
     cd backend
@@ -27,7 +33,14 @@ import pytest
 
 INFO = Path(os.environ["SYNC_LIVE_INFO"])
 STOP = Path(os.environ["SYNC_LIVE_STOP"])
-PASSWORDS = {"admin": "Live-Admin-Pass!9", "artist": "Live-Artist-Pass!9", "mfa": "Live-Mfa-Pass!9"}
+PASSWORDS = {
+    "admin": "Live-Admin-Pass!9",
+    "enroll": "Live-Enroll-Pass!9",
+    "manager": "Live-Manager-Pass!9",
+    "artist": "Live-Artist-Pass!9",
+    "mfa": "Live-Mfa-Pass!9",
+    "pwdue": "Live-Pwdue-Pass!9",
+}
 
 
 @pytest.mark.django_db(transaction=True)
@@ -42,14 +55,23 @@ def test_serve(live_server, django_user_model):
     from apps.identity.models import Role, UserRole
     from apps.identity.tests.mfa_helpers import enable_mfa, pending_secret
 
+    from apps.identity.models import Profile
+
     users = django_user_model.objects
     users.create_superuser(email="admin@example.test", password=PASSWORDS["admin"])
+    users.create_superuser(email="enroll@example.test", password=PASSWORDS["enroll"])
+    manager = users.create_superuser(email="manager@example.test", password=PASSWORDS["manager"])
+    enable_mfa(manager)
     artist = users.create_user(email="artist@example.test", password=PASSWORDS["artist"])
     UserRole.objects.create(user=artist, role=Role.objects.get(code="artist"))
     mfa = users.create_user(email="mfa@example.test", password=PASSWORDS["mfa"])
     mfa.is_active = True
     mfa.save()
     recovery_codes = enable_mfa(mfa)
+    pwdue = users.create_user(email="pwdue@example.test", password=PASSWORDS["pwdue"])
+    pwdue.is_active = True
+    pwdue.save()
+    Profile.objects.update_or_create(user=pwdue, defaults={"must_change_password": True})
 
     INFO.write_text(
         json.dumps(
@@ -57,6 +79,7 @@ def test_serve(live_server, django_user_model):
                 "url": live_server.url,
                 "users": {k: {"email": f"{k}@example.test", "password": v} for k, v in PASSWORDS.items()},
                 "mfa": {"secret": pending_secret(mfa), "recovery_codes": list(recovery_codes)},
+                "manager": {"secret": pending_secret(manager)},
             },
             indent=1,
         )
