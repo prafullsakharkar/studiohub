@@ -93,7 +93,13 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
   },
   '/access/:section': {
     path: '/access/:section',
-    name: 'Access Management Section (context)',
+    name: 'Access Administration Section',
+    pagePermission: 'page.permissions',
+    permissions: ['roles.view', 'security.view'],
+  },
+  '/access/:section/:id': {
+    path: '/access/:section/:id',
+    name: 'Access Administration Record',
     pagePermission: 'page.permissions',
     permissions: ['roles.view', 'security.view'],
   },

@@ -21,7 +21,12 @@ import { SchedulingPage } from '@/modules/scheduling';
 import { TeamsListPage, TeamWorkspacePage, CreateTeamPage, EditTeamPage } from '@/modules/teams';
 
 import { WorkspacePage } from '@/modules/workspace';
-import { AccessWorkspacePage } from '@/modules/access';
+import { GroupDetailPage } from '@/modules/identity/pages/GroupDetailPage';
+import { GroupsPage } from '@/modules/identity/pages/GroupsPage';
+import { PermissionsPage } from '@/modules/identity/pages/PermissionsPage';
+import { RoleDetailPage } from '@/modules/identity/pages/RoleDetailPage';
+import { RolesPage } from '@/modules/identity/pages/RolesPage';
+import { SecurityLogPage } from '@/modules/identity/pages/SecurityLogPage';
 import { PreserveQueryRedirect } from './PreserveQueryRedirect';
 
 import { WorkflowsPage } from '@/modules/workflows';
@@ -295,9 +300,19 @@ export const AppRoutes: React.FC = () => {
 
             <Route path="/permissions" element={<PreserveQueryRedirect to="/access" />} />
 
-            <Route path="/access" element={<AccessWorkspacePage />} />
+            <Route path="/access" element={<Navigate to="/access/roles" replace />} />
 
-            <Route path="/access/:section" element={<AccessWorkspacePage />} />
+            <Route path="/access/roles" element={<RolesPage />} />
+
+            <Route path="/access/roles/:roleId" element={<RoleDetailPage />} />
+
+            <Route path="/access/groups" element={<GroupsPage />} />
+
+            <Route path="/access/groups/:groupId" element={<GroupDetailPage />} />
+
+            <Route path="/access/permissions" element={<PermissionsPage />} />
+
+            <Route path="/access/security" element={<SecurityLogPage />} />
 
           </Route>
 
