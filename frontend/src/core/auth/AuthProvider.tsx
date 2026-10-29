@@ -9,7 +9,6 @@ import {
 import { logger } from '@/core/logging/logger';
 import { queryClient } from '@/providers/QueryProvider';
 import { centralErrorHandler } from '@/core/api/error-handler';
-import { useActivityStore } from '@/shared/stores/useActivityStore';
 import { tokenStorage } from '@/core/auth/tokenStorage';
 
 interface AuthProviderProps {
@@ -20,7 +19,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [mfaEnrollmentRequired, setMfaEnrollmentRequired] = useState(false);
-  const recordActivity = useActivityStore((state) => state.recordActivity);
 
   // Phase 4 (ADR-0033): permission state derives from the authenticated user
   // only — the removed Zustand permission store / simulation sync is gone.
@@ -87,28 +85,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Invalidate queries so freshly authenticated user queries populate
       queryClient.invalidateQueries();
 
-      const userName = authedUser.full_name || (authedUser as any).name || authedUser.email;
-      const userAvatar = authedUser.avatar_url || (authedUser as any).avatar;
-
-    recordActivity({
-      action: 'login',
-      actionLabel: 'User Signed In',
-      resourceType: 'user',
-      resourceId: authedUser.id,
-      resourceName: userName,
-      actor: {
-        id: authedUser.id,
-        name: userName,
-        email: authedUser.email,
-        role: typeof authedUser.role === 'string' ? authedUser.role : 'User',
-        avatarUrl: userAvatar,
-      },
-      description: `Signed in as ${userName} (${authedUser.role}).`,
-      tags: ['Authentication', 'Session'],
-    });
       return outcome;
     },
-    [recordActivity]
+    []
   );
 
   const login = useCallback(
@@ -123,30 +102,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = useCallback(async () => {
     setIsLoading(true);
-    const prevUser = user;
     try {
       await authService.logout();
-      if (prevUser) {
-        const userName = prevUser.full_name || (prevUser as any).name || prevUser.email;
-        const userAvatar = prevUser.avatar_url || (prevUser as any).avatar;
-
-        recordActivity({
-          action: 'logout',
-          actionLabel: 'User Signed Out',
-          resourceType: 'user',
-          resourceId: prevUser.id,
-          resourceName: userName,
-          actor: {
-            id: prevUser.id,
-            name: userName,
-            email: prevUser.email,
-            role: typeof prevUser.role === 'string' ? prevUser.role : 'User',
-            avatarUrl: userAvatar,
-          },
-          description: `Signed out of session for ${prevUser.email}.`,
-          tags: ['Authentication', 'Session'],
-        });
-      }
     } catch (err) {
       logger.warn('AuthProvider', 'Logout error', err);
     } finally {
@@ -156,7 +113,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       queryClient.clear();
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
 
   const refreshUser = useCallback(async () => {
     const currentUser = await authService.getCurrentUser();
