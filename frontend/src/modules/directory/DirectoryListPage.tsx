@@ -1,9 +1,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowDown, ArrowUp, Download, Plus, Trash2 } from 'lucide-react';
 import type React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { auditKeys } from '@/api/audit/audit';
+import { InputError } from '@/api/errors/serverMessage';
 import { ConfirmDialog } from '@/components/system/ConfirmDialog';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { notify } from '@/core/notifications/notify';
@@ -15,7 +16,7 @@ import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
 import { Pagination } from '@/shared/components/Pagination';
 import { SearchInput } from '@/shared/components/SearchInput';
-import type { DirectoryListConfig, ListFilter, RowAction } from './types';
+import type { BulkAction, DirectoryListConfig, ListFilter, RowAction } from './types';
 
 function FilterSelect({ filter, value, onChange }: { filter: ListFilter; value: string; onChange: (value: string) => void }) {
   const loaded = useQuery({
@@ -45,13 +46,25 @@ function FilterSelect({ filter, value, onChange }: { filter: ListFilter; value: 
 export function DirectoryListPage<T extends { id: string }>({ config }: { config: DirectoryListConfig<T> }): React.ReactElement {
   const queryClient = useQueryClient();
   const canManage = useCan(config.managePermission);
+  const canCreate = useCan(config.createPermission ?? config.managePermission);
+  const canDelete = useCan(config.deletePermission ?? config.managePermission);
   const [view, setView] = useState<'active' | 'archived'>('active');
   const inArchive = view === 'archived' && Boolean(config.archived);
   const fetchPage = inArchive ? (config.archived as NonNullable<typeof config.archived>).fetchPage : config.fetchPage;
   const list = usePaginatedList<T>({ queryKey: [...config.queryKey, view], fetchPage, ordering: config.defaultOrdering });
   const [toDelete, setToDelete] = useState<T | null>(null);
   const [pendingAction, setPendingAction] = useState<(RowAction & { rowName: string }) | null>(null);
+  const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState<BulkAction | null>(null);
+  const [bulkInput, setBulkInput] = useState('');
+  const [actionText, setActionText] = useState('');
+  const [actionDate, setActionDate] = useState('');
   const [exporting, setExporting] = useState<AbortController | null>(null);
+  // Ticks belong to the page they were made on: a new page, search, filter or view starts clean.
+  const paramsKey = JSON.stringify(list.params);
+  useEffect(() => setSelected(new Set()), [paramsKey, view]);
+  const bulkActions = canManage && !inArchive ? (config.bulk?.actions ?? []).filter((a) => !a.available || a.available(list.filters)) : [];
+  const toggle = (id: string) => setSelected((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   const filtered = Boolean(list.search || Object.values(list.filters).some(Boolean));
 
   const runExport = async () => {
@@ -105,7 +118,7 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
               Export
             </Button>
           )}
-          {canManage && (
+          {canCreate && (
             <Link to={`${config.basePath}/new`}>
               <Button size="sm" variant="primary" leftIcon={<Plus className="w-3.5 h-3.5" />}>
                 New {config.noun}
@@ -123,10 +136,28 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
         isEmpty={list.rows.length === 0}
         empty={{ title: `No ${config.title.toLowerCase()} found`, description: filtered ? 'Nothing matches the search or filters.' : `No ${config.title.toLowerCase()} have been created yet.` }}
       >
+        {selected.size > 0 && bulkActions.length > 0 && (
+          <div role="toolbar" aria-label="Actions for the selected rows" className="flex flex-wrap items-center gap-2 rounded-xl border border-cyan-900/60 bg-cyan-950/30 px-3 py-2 text-xs text-slate-200">
+            <span className="font-semibold">{selected.size} selected</span>
+            {bulkActions.map((action) => (
+              <Button key={action.label} size="sm" variant={action.destructive ? 'danger' : 'outline'} onClick={() => { setBulkInput(''); setBulkAction(action); }}>
+                {action.label}
+              </Button>
+            ))}
+            <button type="button" className="ml-auto text-slate-400 hover:text-slate-200" onClick={() => setSelected(new Set())}>
+              Clear
+            </button>
+          </div>
+        )}
         <div className="overflow-x-auto rounded-xl border border-slate-800">
           <table aria-label={config.title} className="w-full text-xs">
             <thead className="bg-slate-900 text-slate-400 text-left">
               <tr>
+                {bulkActions.length > 0 && (
+                  <th scope="col" className="px-3 py-2 w-8">
+                    <input type="checkbox" aria-label="Select all on this page" checked={list.rows.length > 0 && list.rows.every((r) => selected.has(r.id))} onChange={(e) => setSelected(e.target.checked ? new Set(list.rows.map((r) => r.id)) : new Set())} />
+                  </th>
+                )}
                 {config.columns.map((column) => {
                   const active = column.sortField && list.sortState?.field === column.sortField ? list.sortState : null;
                   return (
@@ -148,6 +179,11 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
             <tbody className="divide-y divide-slate-800">
               {list.rows.map((row) => (
                 <tr key={row.id} className="hover:bg-slate-900/60">
+                  {bulkActions.length > 0 && (
+                    <td className="px-3 py-2">
+                      <input type="checkbox" aria-label={`Select ${config.rowName(row)}`} checked={selected.has(row.id)} onChange={() => toggle(row.id)} />
+                    </td>
+                  )}
                   {config.columns.map((column, index) => (
                     <td key={column.header} className="px-4 py-2 text-slate-300">
                       {index === 0 ? (
@@ -167,19 +203,19 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
                         </button>
                       )}
                       {!inArchive && config.rowActions?.(row).map((action) => (
-                        <button key={action.label} type="button" className={action.destructive ? 'text-amber-400 hover:underline' : 'text-cyan-300 hover:underline'} aria-label={`${action.label} ${config.rowName(row)}`} onClick={() => setPendingAction({ ...action, rowName: config.rowName(row) })}>
+                        <button key={action.label} type="button" className={action.destructive ? 'text-amber-400 hover:underline' : 'text-cyan-300 hover:underline'} aria-label={`${action.label} ${config.rowName(row)}`} onClick={() => { setActionText(''); setActionDate(action.askDate?.initial ?? ''); setPendingAction({ ...action, rowName: config.rowName(row) }); }}>
                           {action.label}
                         </button>
                       ))}
-                      {!inArchive && (
-                        <>
-                          <Link to={`${config.basePath}/${row.id}/edit`} className="text-cyan-300 hover:underline" aria-label={`Edit ${config.rowName(row)}`}>
-                            Edit
-                          </Link>
-                          <button type="button" className="text-rose-400 hover:text-rose-300" aria-label={`${config.deleteLabel ?? 'Delete'} ${config.rowName(row)}`} onClick={() => setToDelete(row)}>
-                            {config.deleteLabel ?? <Trash2 className="inline w-3.5 h-3.5" />}
-                          </button>
-                        </>
+                      {!inArchive && (config.canEdit?.(row) ?? true) && (
+                        <Link to={`${config.basePath}/${row.id}/edit`} className="text-cyan-300 hover:underline" aria-label={`Edit ${config.rowName(row)}`}>
+                          Edit
+                        </Link>
+                      )}
+                      {!inArchive && canDelete && (config.canRemove?.(row) ?? true) && (
+                        <button type="button" className="text-rose-400 hover:text-rose-300" aria-label={`${config.deleteLabel ?? 'Delete'} ${config.rowName(row)}`} onClick={() => setToDelete(row)}>
+                          {config.deleteLabel ?? <Trash2 className="inline w-3.5 h-3.5" />}
+                        </button>
                       )}
                     </td>
                   )}
@@ -192,15 +228,55 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
       </QueryBoundary>
 
       <ConfirmDialog
+        isOpen={bulkAction !== null}
+        title={bulkAction ? `${bulkAction.label} ${selected.size} ${selected.size === 1 ? config.noun : config.title.toLowerCase()}` : ''}
+        message={
+          <>
+            {bulkAction?.confirm(selected.size)}
+            {bulkAction?.input && <div className="mt-3">{bulkAction.input.render({ value: bulkInput, onChange: setBulkInput, filters: list.filters })}</div>}
+          </>
+        }
+        confirmLabel={bulkAction?.label ?? 'Confirm'}
+        destructive={bulkAction?.destructive}
+        onClose={() => setBulkAction(null)}
+        onConfirm={async () => {
+          if (!bulkAction) return;
+          if (bulkAction.input?.required && !bulkInput) throw new InputError(`Choose ${bulkAction.input.label.toLowerCase()}.`);
+          const summary = await bulkAction.run([...selected], bulkInput || undefined);
+          setSelected(new Set());
+          await Promise.all([queryClient.invalidateQueries({ queryKey: config.queryKey }), queryClient.invalidateQueries({ queryKey: auditKeys.all })]);
+          if (summary) notify.info(summary);
+        }}
+      />
+
+      <ConfirmDialog
         isOpen={pendingAction !== null}
         title={pendingAction ? `${pendingAction.label} ${pendingAction.rowName}` : ''}
-        message={pendingAction?.confirm ?? ''}
+        message={
+          <>
+            {pendingAction?.confirm}
+            {pendingAction?.askDate && (
+              <label className="mt-3 block text-xs text-slate-400">
+                {pendingAction.askDate.label}
+                <input type="date" aria-label={pendingAction.askDate.label} value={actionDate} onChange={(e) => setActionDate(e.target.value)} className="mt-1 block w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs" />
+              </label>
+            )}
+            {pendingAction?.askText && (
+              <label className="mt-3 block text-xs text-slate-400">
+                {pendingAction.askText.label}
+                <textarea aria-label={pendingAction.askText.label} rows={3} value={actionText} onChange={(e) => setActionText(e.target.value)} className="mt-1 block w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs" />
+              </label>
+            )}
+          </>
+        }
         confirmLabel={pendingAction?.label ?? 'Confirm'}
         destructive={pendingAction?.destructive}
         onClose={() => setPendingAction(null)}
         onConfirm={async () => {
           if (!pendingAction) return;
-          await pendingAction.run();
+          if (pendingAction.askDate && !actionDate) throw new InputError(`Choose ${pendingAction.askDate.label.toLowerCase()}.`);
+          if (pendingAction.askText?.required && !actionText.trim()) throw new InputError(`Enter ${pendingAction.askText.label.toLowerCase()}.`);
+          await pendingAction.run(actionDate || undefined, actionText.trim() || undefined);
           await Promise.all([queryClient.invalidateQueries({ queryKey: config.queryKey }), queryClient.invalidateQueries({ queryKey: auditKeys.all })]); // a write adds a history entry
         }}
       />

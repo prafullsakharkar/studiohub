@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react';
 import type React from 'react';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { auditKeys } from '@/api/audit/audit';
+import { InputError } from '@/api/errors/serverMessage';
 import { ConfirmDialog } from '@/components/system/ConfirmDialog';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { Dialog } from '@/components/ui/Dialog';
@@ -180,7 +181,7 @@ export function RelatedRecords<T extends { id: string }>({ config, parentId }: {
         onClose={() => setAction(null)}
         onConfirm={async () => {
           if (!action) return;
-          if (action.askDate && !date) throw new Error(`Choose ${action.askDate.label.toLowerCase()}.`);
+          if (action.askDate && !date) throw new InputError(`Choose ${action.askDate.label.toLowerCase()}.`);
           await action.run(date || undefined);
           await Promise.all([queryClient.invalidateQueries({ queryKey: config.queryKey }), queryClient.invalidateQueries({ queryKey: auditKeys.all })]); // a write adds a history entry
         }}
