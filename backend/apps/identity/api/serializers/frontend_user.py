@@ -92,8 +92,9 @@ def serialize_frontend_user(user, request=None) -> dict[str, Any]:
                 avatar_url = None
 
     # Platform-global role: highest-priority role from direct assignments,
-    # then group-conferred roles. Fallback matches the previous default.
-    role_name = "Artist"
+    # then group-conferred roles. A user with no role gets an empty label rather than being shown
+    # as an Artist (docs/sync Q-05); authorization never reads this field.
+    role_name = ""
     try:
         from apps.identity.models import GroupMember, GroupRole, Role, UserRole
 

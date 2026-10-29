@@ -465,7 +465,7 @@ export const Sidebar: React.FC = () => {
                   {user?.full_name || 'Crew Member'}
                 </span>
                 <span className="text-[9px] text-cyan-600 dark:text-cyan-400 font-mono truncate">
-                  {user?.role || 'Artist'}
+                  {user?.role || 'No role'}
                 </span>
               </div>
             )}

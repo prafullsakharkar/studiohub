@@ -295,7 +295,7 @@ export const Header: React.FC = () => {
                   {user?.first_name || user?.full_name?.split(' ')[0] || 'User'}
                 </span>
                 <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-mono truncate max-w-[85px] lg:max-w-[110px] leading-tight mt-0.5">
-                  {user?.role || 'Artist'}
+                  {user?.role || 'No role'}
                 </span>
               </div>
             </button>
@@ -306,7 +306,7 @@ export const Header: React.FC = () => {
                   <p className="text-xs font-bold text-white">{user?.full_name || 'User Profile'}</p>
                   <p className="text-[11px] text-slate-400 truncate">{user?.email || 'user@studiohub.vfx'}</p>
                   <div className="mt-2 inline-flex items-center px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 text-[10px] font-mono">
-                    Role: {user?.role || 'Artist'}
+                    Role: {user?.role || 'No role'}
                   </div>
                 </div>
 
