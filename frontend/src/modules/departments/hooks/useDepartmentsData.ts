@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { masterDataApi } from '@/api/masterDataApi';
-import { trackEntityMutation } from '@/shared/hooks/trackEntityMutation';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import { makeBulkDeleteMutation } from '@/shared/hooks/useBulkDelete';
 import {
@@ -43,18 +42,6 @@ export const useDepartmentMutations = () => {
         title: 'Department Created',
         message: `${dept.name} [${dept.code}] initialized in pipeline.`,
       });
-      trackEntityMutation(queryClient, {
-        action: 'created',
-        actionLabel: 'Department Created',
-        resourceType: 'department',
-        resourceId: dept.id,
-        resourceName: dept.name,
-        resourceCode: dept.code,
-        description: `Created department ${dept.name} [${dept.code}].`,
-        tags: ['Department', 'Creation'],
-        auditAction: 'CREATE',
-        auditEntityType: 'Department',
-      });
     },
   });
 
@@ -68,18 +55,6 @@ export const useDepartmentMutations = () => {
         type: 'success',
         title: 'Department Updated',
         message: `${dept.name} settings saved.`,
-      });
-      trackEntityMutation(queryClient, {
-        action: 'updated',
-        actionLabel: 'Department Updated',
-        resourceType: 'department',
-        resourceId: dept.id,
-        resourceName: dept.name,
-        resourceCode: dept.code,
-        description: `Updated department ${dept.name} [${dept.code}].`,
-        tags: ['Department', 'Update'],
-        auditAction: 'UPDATE',
-        auditEntityType: 'Department',
       });
     },
   });
@@ -96,18 +71,6 @@ export const useDepartmentMutations = () => {
         type: 'info',
         title: 'Department Deleted',
         message: 'Department removed from pipeline.',
-      });
-      trackEntityMutation(queryClient, {
-        action: 'deleted',
-        actionLabel: 'Department Deleted',
-        resourceType: 'department',
-        resourceId: id,
-        resourceName: name,
-        resourceCode: code,
-        description: `Deleted department ${name ?? id}${code ? ` [${code}]` : ''}.`,
-        tags: ['Department', 'Deletion'],
-        auditAction: 'DELETE',
-        auditEntityType: 'Department',
       });
     },
   });
