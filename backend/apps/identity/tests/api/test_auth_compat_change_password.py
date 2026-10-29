@@ -51,6 +51,45 @@ class TestAuthCompatChangePassword:
 
         assert response.status_code == 401
 
+    def test_mismatched_confirmation_is_rejected_and_the_password_is_unchanged(self):
+        user = UserFactory.create(is_active=True)
+        user.set_password("Old-pass-1")
+        user.save(update_fields=["password"])
+        client = APIClient()
+        client.force_authenticate(user=user)
+
+        response = client.post(
+            "/api/v1/auth/change-password/",
+            {
+                "old_password": "Old-pass-1",
+                "new_password": "New-passphrase-12",
+                "confirm_password": "New-passphrase-13",
+            },
+            format="json",
+        )
+
+        assert response.status_code == 400
+        assert response.json()["confirm_password"] == ["Passwords do not match."]
+        user.refresh_from_db()
+        assert user.check_password("Old-pass-1")
+
+    def test_confirmation_stays_optional(self):
+        user = UserFactory.create(is_active=True)
+        user.set_password("Old-pass-1")
+        user.save(update_fields=["password"])
+        client = APIClient()
+        client.force_authenticate(user=user)
+
+        response = client.post(
+            "/api/v1/auth/change-password/",
+            {"old_password": "Old-pass-1", "new_password": "New-passphrase-12"},
+            format="json",
+        )
+
+        assert response.status_code == 200
+        user.refresh_from_db()
+        assert user.check_password("New-passphrase-12")
+
     def test_requires_authentication(self):
         client = APIClient()
 
