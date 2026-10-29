@@ -1,4 +1,4 @@
-import React, { useId } from 'react';
+import React from 'react';
 import { cn } from '@/shared/utils/cn';
 import { Modal } from '@/shared/components/Modal';
 
@@ -17,9 +17,9 @@ export interface DialogProps {
  * Canonical StudioHub Dialog.
  *
  * Single authoritative modal implementation for all form and confirmation
- * dialogs. Wraps the shared Modal primitive with consistent a11y semantics
- * (role=dialog, aria-modal, labelledby), Escape handling, focus containment
- * via the underlying Modal, and responsive sizing.
+ * dialogs. Thin wrapper over the shared Modal primitive, which owns the a11y
+ * semantics (role=dialog, aria-modal, labelledby), Escape handling, focus
+ * containment and responsive sizing.
  *
  * Use for: FormDialog, ConfirmDialog, entity create/edit, previews.
  * Do not use for: full-height inspectors (use Drawer), workspace peek (use PeekPanel).
@@ -34,26 +34,13 @@ export const Dialog: React.FC<DialogProps> = ({
   size = 'lg',
   className,
 }) => {
-  const titleId = useId();
-  const descId = useId();
-
   if (!isOpen) return null;
 
+  // Modal already renders the single role="dialog" element (aria-modal, aria-labelledby its own
+  // title, focus containment). Wrapping it in a second role="dialog" announced nested dialogs.
   return (
-    <div role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={subtitle ? descId : undefined}>
-      <Modal isOpen={isOpen} onClose={onClose} title={title} subtitle={subtitle} size={size} footer={footer}>
-        <div className={cn('min-w-0', className)}>
-          <span id={titleId} className="sr-only">
-            {title}
-          </span>
-          {subtitle && (
-            <span id={descId} className="sr-only">
-              {subtitle}
-            </span>
-          )}
-          {children}
-        </div>
-      </Modal>
-    </div>
+    <Modal isOpen={isOpen} onClose={onClose} title={title} subtitle={subtitle} size={size} footer={footer}>
+      <div className={cn('min-w-0', className)}>{children}</div>
+    </Modal>
   );
 };
