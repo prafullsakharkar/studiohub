@@ -1,11 +1,11 @@
 # Backend change requests
 
-Rule (HARD RULE 1): no backend file is changed without explicit approval. Each entry states the problem, evidence, the minimal proposed diff, and whether a frontend workaround exists. **Status of every entry: PROPOSED — awaiting approval.** Nothing below has been applied.
+Rule (HARD RULE 1): no backend file is changed without explicit approval. Each entry states the problem, evidence, the minimal proposed diff, and whether a frontend workaround exists. **Status:** entries are PROPOSED unless marked otherwise below. On 2026-10-29 the user approved CR-02, Q-03 and Q-05; they were applied as three separate backend commits (see the table). Everything else is still unapplied.
 
 | ID | Title | Blocks frontend work? | Severity |
 |---|---|---|---|
 | CR-01 | Stale deprecation registry marks the only directory/RBAC routes as deprecated | No (frontend ignores the headers) | Medium |
-| CR-02 | 18 enforced permission codes are never seeded | **Yes** for non-superuser admins (settings, user lifecycle, security logs) | High |
+| CR-02 | 18 enforced permission codes are never seeded | **APPLIED** (`b728528`): seeded and assigned per Q7 | High |
 | CR-03 | `AuditLog` list has no `target_id` filter | Partly (per-object audit panel for deliveries/publishing/scheduling/masterdata) | Medium |
 | CR-04 | ChangeLog does not track several editable models | Partly (empty History tabs) | Medium — confirm per module phase |
 | CR-05 | Dev seed commands are broken | No (tests use factories) — but blocks a seeded dev backend for e2e/manual verification | Medium |
@@ -16,6 +16,11 @@ Rule (HARD RULE 1): no backend file is changed without explicit approval. Each e
 | CR-10 | Server-side CSV/Excel export (`?format=csv` on list views; renderers already exist in `apps/core/api/renderers/`) | No (client-side export works up to ~10k rows) | Low — optional |
 | CR-11 | httpOnly refresh-token cookie for the SPA | No (refresh token in `localStorage` with XSS hygiene) | Low — optional, security hardening |
 | Q-01 | Contacts list 403 for users without directory roles despite an empty `permission_map` entry | Question | — |
+| Q-02 | Attachments accept an empty body | Open question for the owner | — |
+| Q-03 | `change-password` ignores `confirm_password` | **APPLIED** (`553b481`): validated when present, still optional | Low |
+| Q-04 | `/auth/me/` does not say what the session still owes | Deferred (client handles it) | Low |
+| Q-05 | A user with no roles is labelled "Artist" | **APPLIED** (`ad874da`): empty role; Header/Sidebar show "No role" | Low |
+| Q-06 | Invalid filter values: 400 on departments, empty 200 on tasks | Noted | Low |
 
 ---
 
