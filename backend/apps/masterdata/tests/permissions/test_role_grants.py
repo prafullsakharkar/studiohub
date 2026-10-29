@@ -55,6 +55,19 @@ def test_org_admin_holds_exactly_this_set_overall():
         "settings.manage",
         "settings.update",
         "user.manage",
+        # CR-02 / Q7: an organization administrator runs the account lifecycle and reads the security
+        # ledgers (init_platform.IDENTITY_ADMIN_PERMISSIONS); writing to the ledgers is platform-admin only.
+        "settings.view",
+        "identity.user.activate",
+        "identity.user.deactivate",
+        "identity.user.archive",
+        "identity.user.restore",
+        "identity.user.reset_password",
+        "identity.user.change_password",
+        "identity.security_event.view",
+        "identity.login_history.view",
+        "identity.login_attempt.view",
+        "identity.ip_blacklist.view",
     }
 
 
