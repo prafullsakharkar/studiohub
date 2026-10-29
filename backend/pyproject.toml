@@ -101,8 +101,6 @@ dev = [
     "django-stubs>=5.2",
     # Git
     "pre-commit>=4.2",
-    # HTTP
-    "httpie>=3.2",
     # Shell
     "rich>=14.1",
     "djangorestframework-stubs>=3.17.0",
