@@ -222,3 +222,19 @@ Both answer `201` with only the submitted fields (`{"name", "code", "description
 
 ### Note — MFA re-authentication fields
 `POST /identity/mfa/recovery-codes/regenerate/` and `/identity/mfa/totp/disable/` require `{password, code | recovery_code}` (password **and** a verification code). A request with the right password but no code is answered `400 "Invalid verification code."` Regenerate returns `{"codes": [...]}`.
+
+### Q-11 — profile fields that are writable but never returned
+`PATCH /auth/me/` accepts `timezone`, `language`, `phone`, `bio`, `display_name` (the capture sent `timezone`/`language` and got `200`), but `GET /auth/me/` and the PATCH response contain only `first_name`, `last_name`, `avatar_url` (`me_patch_ok`). The frontend cannot show the current value, so My account edits first/last name only. **Proposal (not requested):** return the profile fields from `/auth/me/`, or document them as write-only.
+
+### Q-12 — what a user's state and roles look like to the UI
+- `GET /identity/users/{id}/` returns `is_active`, `is_email_verified`, `last_seen` and nothing about suspended / archived / locked / must-change-password / MFA, so the Account section cannot show those states; it offers every lifecycle action the caller is permitted and reports the server's answer.
+- There is no user → roles route. The Account section reads each role's members (`GET /roles/{id}/users/`, a handful of requests) to list a user's roles.
+- `GET /identity/users/` answers **403 without `identity.user.view`** (verified live, delegate without it). It is *not* "scoped to self" for such users; the artist sample, which holds the permission, sees only itself. The user pickers show a note instead of an empty list.
+
+### Note — RBAC read/write rules (corrects an earlier reading, verified live)
+`get_permission_required` in `viewsets/rbac.py` overrides the per-action `permission_map` for GET: `roles/{id}/permissions|groups` and `groups/{id}/roles` are open reference data; `roles/{id}/users` and `groups/{id}/members` need `identity.role.view` / `identity.group.view`; every write needs `.update`. The first Phase 2 UI gated all tabs on `.update` (wrong, from reading `permission_map` only) and was corrected in `a630a836`.
+
+### Note — guards the UI relies on (all verified live, no change requested)
+- Assigning a role that grants permissions the actor lacks: `403 "Actor does not hold every permission granted by this role: shot.view"`.
+- Changing your own role assignments: `400 {"non_field_errors": ["You cannot modify your own role assignments."]}`. Combined with Q-08, the role guard exists while the lifecycle guard does not.
+- The harness seeds MFA with a code from its start-up TOTP step; the server then rejects the first code from that same step as a replay (test helper now skips that step).
