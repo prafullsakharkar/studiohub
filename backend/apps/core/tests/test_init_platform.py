@@ -67,3 +67,91 @@ def test_init_platform_grants_role_permissions(db, seeded_platform_module):
         )
     )
     assert {"project.view", "shot.view", "task.view"} <= granted
+
+
+# --- docs/sync CR-02: codes the views enforce must exist and be assignable --------------------
+
+ENFORCED_BUT_FORMERLY_UNSEEDED = {
+    "settings.view",
+    "identity.user.activate",
+    "identity.user.deactivate",
+    "identity.user.archive",
+    "identity.user.restore",
+    "identity.user.reset_password",
+    "identity.user.change_password",
+    "identity.security_event.view",
+    "identity.security_event.create",
+    "identity.login_history.view",
+    "identity.login_attempt.view",
+    "identity.login_attempt.create",
+    "identity.ip_blacklist.view",
+    "identity.ip_blacklist.create",
+    "identity.ip_blacklist.update",
+    "identity.ip_blacklist.delete",
+    "identity.profile.delete",
+    "identity.trusted_device.delete",
+}
+
+# Held by org-admin: account lifecycle, read-only ledgers, settings.view.
+ORG_ADMIN_IDENTITY = {
+    "settings.view",
+    "identity.user.activate",
+    "identity.user.deactivate",
+    "identity.user.archive",
+    "identity.user.restore",
+    "identity.user.reset_password",
+    "identity.user.change_password",
+    "identity.security_event.view",
+    "identity.login_history.view",
+    "identity.login_attempt.view",
+    "identity.ip_blacklist.view",
+}
+
+
+def _codes_of(role_code):
+    from apps.identity.models import Role, RolePermission
+
+    role = Role.objects.get(code=role_code)
+    return set(
+        RolePermission.objects.filter(role=role).values_list("permission__code", flat=True)
+    )
+
+
+def test_every_enforced_identity_and_settings_code_is_seeded(db, seeded_platform_module):
+    from apps.identity.models import Permission
+
+    seeded = set(Permission.objects.values_list("code", flat=True))
+    assert ENFORCED_BUT_FORMERLY_UNSEEDED <= seeded
+
+
+def test_platform_admin_holds_all_of_them(db, seeded_platform_module):
+    assert ENFORCED_BUT_FORMERLY_UNSEEDED <= _codes_of("platform-admin")
+
+
+def test_org_admin_holds_lifecycle_and_read_only_ledgers_but_not_ledger_writes(db, seeded_platform_module):
+    held = _codes_of("org-admin")
+    assert ORG_ADMIN_IDENTITY <= held
+    # Writing to the ledgers and the IP blacklist is platform-admin only.
+    assert not (
+        {
+            "identity.ip_blacklist.create",
+            "identity.ip_blacklist.update",
+            "identity.ip_blacklist.delete",
+            "identity.login_attempt.create",
+            "identity.security_event.create",
+            "identity.profile.delete",
+            "identity.trusted_device.delete",
+        }
+        & held
+    )
+
+
+def test_production_admin_can_view_settings_but_nothing_else_new(db, seeded_platform_module):
+    held = _codes_of("production-admin")
+    assert "settings.view" in held
+    assert not ((ENFORCED_BUT_FORMERLY_UNSEEDED - {"settings.view"}) & held)
+
+
+def test_other_roles_hold_none_of_them(db, seeded_platform_module):
+    for role in ("org-member", "vfx-supervisor", "lead-artist", "artist"):
+        assert not (ENFORCED_BUT_FORMERLY_UNSEEDED & _codes_of(role)), role
