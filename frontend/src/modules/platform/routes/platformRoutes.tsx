@@ -28,6 +28,17 @@ const MasterDataRedirect: React.FC = () => {
 };
 
 /**
+ * The master-data tabs of the legacy Platform Admin page read `is_archived` (the API sends
+ * `status`), so they are served by the catalog admin instead; the other tabs (roles/org structure,
+ * pipeline, theme, layout, DB schema) stay on that page until Phase 11.
+ */
+const AdminTabGate: React.FC = () => {
+  const { tab } = useParams<{ tab?: string }>();
+  const kind = tab ? CATALOG_TABS[tab] : undefined;
+  return kind ? <Navigate to={`/platform/catalog/${kind}`} replace /> : <PlatformAdminPage />;
+};
+
+/**
  * Platform route fragment (NOT a wrapper component: React Router v6 only
  * flattens Fragment children of <Routes>). Embed as {platformRoutes} at the
  * same nesting level the block lived at in AppRoutes.
@@ -42,7 +53,7 @@ export const platformRoutes = (
 
     <Route element={<PermissionRoute permissions={['platform.admin.view', 'platform.master_data.view', 'platform.software.view', 'platform.status.view', 'settings.view', 'page.settings']} requireAny={true} />}>
       <Route path="/platform/admin" element={<PlatformAdminPage />} />
-      <Route path="/platform/admin/:tab" element={<PlatformAdminPage />} />
+      <Route path="/platform/admin/:tab" element={<AdminTabGate />} />
       <Route path="/platform/master-data" element={<MasterDataRedirect />} />
       <Route path="/platform/master-data/:tab" element={<MasterDataRedirect />} />
     </Route>
