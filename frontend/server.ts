@@ -9,7 +9,8 @@ import { createServer as createViteServer } from 'vite';
 
 const PORT = Number(process.env.PORT || 3000);
 const DJANGO_URL = (process.env.VITE_API_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
-const DJANGO_HEALTH_PATH = process.env.DJANGO_HEALTH_PATH || '/api/health';
+// The backend's liveness route is /health/ (config/urls.py), not under /api.
+const DJANGO_HEALTH_PATH = process.env.DJANGO_HEALTH_PATH || '/health/';
 const DJANGO_HEALTH_URL = `${DJANGO_URL}${DJANGO_HEALTH_PATH}`;
 
 let isDjangoRunning = false;

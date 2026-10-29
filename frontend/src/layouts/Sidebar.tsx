@@ -267,11 +267,9 @@ export const Sidebar: React.FC = () => {
         {
           id: 'api-health',
           to: '/platform/health',
-          label: 'API Health — Live Services',
+          label: 'API Health',
           icon: Activity,
           pagePermission: 'page.platform_admin',
-          badge: '99.98%',
-          badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 font-bold',
         },
       ],
     },
