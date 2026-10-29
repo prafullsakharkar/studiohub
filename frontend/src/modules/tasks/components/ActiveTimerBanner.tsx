@@ -1,10 +1,7 @@
-import { useAuth } from '@/modules/auth';
 import React, { useState } from 'react';
 import { useTimerStore } from '@/shared/stores/useTimerStore';
-import { useTimelogMutations } from '../hooks/useTimelogs';
+import { LogTimeDialog } from '@/modules/production/work/LogTimeDialog';
 ;
-import { useNotificationStore } from '@/shared/stores/useNotificationStore';
-import { TimelogCreateModal } from './TimelogCreateModal';
 import {
   Play,
   Pause,
@@ -34,9 +31,6 @@ export const ActiveTimerBanner: React.FC = () => {
     setIsBillable,
   } = useTimerStore();
 
-  const { createTimelog } = useTimelogMutations();
-  const { user } = useAuth();
-  const addNotification = useNotificationStore((state) => state.addNotification);
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
 
   if (!activeTaskId) return null;
@@ -52,11 +46,6 @@ export const ActiveTimerBanner: React.FC = () => {
     setIsLogModalOpen(true);
   };
 
-  const handleModalSubmit = async (data: any) => {
-    await createTimelog.mutateAsync(data);
-    stopTimer();
-    setIsLogModalOpen(false);
-  };
 
   return (
     <>
@@ -123,21 +112,14 @@ export const ActiveTimerBanner: React.FC = () => {
       </div>
 
       {isLogModalOpen && (
-        <TimelogCreateModal
+        <LogTimeDialog
           isOpen={isLogModalOpen}
           onClose={() => setIsLogModalOpen(false)}
-          onSubmit={handleModalSubmit}
-          task={{
-            id: activeTaskId,
-            code: activeTaskCode,
-            title: activeTaskTitle,
-            project_id: activeProjectId,
-            project_code: activeProjectCode,
-            department: department as any,
-          } as any}
-          defaultDurationHours={durationHoursDecimal}
-          initialNotes={notes}
-          isBillableDefault={isBillable}
+          task={{ id: activeTaskId, code: activeTaskCode ?? '', title: activeTaskTitle ?? '' }}
+          hours={durationHoursDecimal}
+          notes={notes}
+          billable={isBillable}
+          onSaved={stopTimer}
         />
       )}
     </>

@@ -47,7 +47,7 @@ import { VersionsListPage, VersionWorkspacePage } from '@/modules/versions';
 
 import { ShotsPage, ShotWorkspacePage } from '@/modules/shots';
 
-import { TasksPage, TaskDetailPage, TimelogsPage } from '@/modules/tasks';
+import { TasksPage, TaskDetailPage, TaskFormPage, TimelogFormPage, TimelogsPage } from '@/modules/tasks';
 
 import { ProjectsPage, ProjectWorkspacePage, ProjectFormPage } from '@/modules/production';
 
@@ -293,9 +293,17 @@ export const AppRoutes: React.FC = () => {
 
           <Route path="/tasks" element={<TasksPage />} />
 
+          <Route path="/tasks/new" element={<TaskFormPage />} />
+
+          <Route path="/tasks/:id/edit" element={<TaskFormPage />} />
+
           <Route path="/tasks/:taskId" element={<TaskDetailPage />} />
 
           <Route path="/timelogs" element={<TimelogsPage />} />
+
+          <Route path="/timelogs/new" element={<TimelogFormPage />} />
+
+          <Route path="/timelogs/:id/edit" element={<TimelogFormPage />} />
 
           <Route path="/versions" element={<VersionsListPage />} />
 

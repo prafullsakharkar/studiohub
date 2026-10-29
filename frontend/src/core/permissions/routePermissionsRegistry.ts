@@ -233,11 +233,31 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
     pagePermission: 'page.project.tasks',
     permissions: ['task.view'],
   },
+  '/tasks/new': {
+    path: '/tasks/new',
+    name: 'Create Task',
+    permissions: ['task.create'],
+  },
+  '/tasks/:id/edit': {
+    path: '/tasks/:id/edit',
+    name: 'Edit Task',
+    permissions: ['task.update'],
+  },
   '/timelogs': {
     path: '/timelogs',
     name: 'Timelogs',
     pagePermission: 'page.project.timelogs',
     permissions: ['timelog.view'],
+  },
+  '/timelogs/new': {
+    path: '/timelogs/new',
+    name: 'Log Time',
+    permissions: ['timelog.create'],
+  },
+  '/timelogs/:id/edit': {
+    path: '/timelogs/:id/edit',
+    name: 'Edit Time Log',
+    permissions: ['timelog.update'],
   },
   '/versions': {
     path: '/versions',
