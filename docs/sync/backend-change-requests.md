@@ -240,3 +240,21 @@ Both answer `201` with only the submitted fields (`{"name", "code", "description
 - Assigning a role that grants permissions the actor lacks: `403 "Actor does not hold every permission granted by this role: shot.view"`.
 - Changing your own role assignments: `400 {"non_field_errors": ["You cannot modify your own role assignments."]}`. Combined with Q-08, the role guard exists while the lifecycle guard does not.
 - The harness seeds MFA with a code from its start-up TOTP step; the server then rejects the first code from that same step as a replay (test helper now skips that step).
+
+---
+
+## Phase 3 findings (masterdata) — all verified against a running backend; none applied
+
+### Q-13 — the catalog answers in three different envelopes
+`/platform/master-data/*`: create, update and reorder return the bare row(s); **archive and restore return `{"success": true, "data": {row}}`**; **delete is a soft delete answering `200 {"success": true, "message": "Task type soft-deleted. It can be restored."}`** and the row then appears in no list (not even `?status=archived`), so "restore" cannot reach it from the UI. System rows answer `409 "System records cannot be changed this way."`. The detail route is slash-less (`…/task-types/{id}`); with a slash it is a 404, so the Phase 0 `detail_admin` captures are 404 bodies. The frontend unwraps the envelopes. **Proposal (not requested):** one envelope; make soft-deleted rows listable (`?status=deleted`) or return 204.
+
+### Q-14 — a contract created without `status` is born Active
+`POST /client-contracts/` without `status` → `status: "Active"` and `activated_at` set, and then requires `effective_date` ("An Active contract needs a start date."). Sending `status: "Draft"` creates a Draft. `PATCH` with `status` → `400 {"status": ["Read-only. Use POST …/activate or …/terminate to change it."]}`; editing a Terminated contract → `409 "A Terminated contract is read-only. Use adjust-end-date to correct its end date."`; terminating clears `activated_at`. The create form asks for Draft or Active explicitly. The OpenAPI schema lists `status` as `"Draft" | "Active"` only, although `Terminated` (and derived `Expired`) occur.
+
+### Q-01 — confirmed
+`GET /client-contacts/?client=…` answers 403 to a signed-in user without directory roles even though the viewset's `list` map entry is empty. The contacts tab shows the API's refusal.
+
+### Note — observations the UI relies on
+- Sensitive fields are omitted (not nulled) for callers without the grant: person `email`, `phone`, `date_of_birth`, `nationality`, `security_clearance`; client `total_billed_usd` (captures + live). Forms render those inputs only for holders of `masterdata.person.view_sensitive` / `masterdata.client.view_financial`.
+- Deleting a department that teams/positions still reference: `409 "Still referenced by: masterdata.Position.department (2), masterdata.Team.department (1)."`.
+- Person `status` ∈ draft/active/inactive/archived; lifecycle through `POST people/{id}/deactivate|reactivate|restore/`.
