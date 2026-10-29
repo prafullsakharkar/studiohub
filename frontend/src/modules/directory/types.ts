@@ -8,11 +8,18 @@ export interface EntityFieldRenderProps {
   error?: string;
 }
 
-export type FieldDef =
-  | { kind: 'text' | 'textarea' | 'email' | 'url' | 'tel' | 'number' | 'date'; name: string; label: string; required?: boolean; hint?: string; maxLength?: number }
-  | { kind: 'select'; name: string; label: string; options: ReadonlyArray<{ value: string; label: string }>; required?: boolean }
-  | { kind: 'checkbox'; name: string; label: string }
-  | { kind: 'entity'; name: string; label: string; required?: boolean; render: (props: EntityFieldRenderProps) => React.ReactNode };
+/** Shared by every field: render it only for callers holding this backend permission (e.g. sensitive person fields). */
+export interface FieldGate {
+  permission?: string;
+}
+
+export type FieldDef = FieldGate &
+  (
+    | { kind: 'text' | 'textarea' | 'email' | 'url' | 'tel' | 'number' | 'date'; name: string; label: string; required?: boolean; hint?: string; maxLength?: number }
+    | { kind: 'select'; name: string; label: string; options: ReadonlyArray<{ value: string; label: string }>; required?: boolean }
+    | { kind: 'checkbox'; name: string; label: string }
+    | { kind: 'entity'; name: string; label: string; required?: boolean; render: (props: EntityFieldRenderProps) => React.ReactNode }
+  );
 
 export interface ListColumn<T> {
   header: string;
@@ -25,7 +32,10 @@ export interface ListFilter {
   /** Backend filter parameter name. */
   key: string;
   label: string;
-  options: ReadonlyArray<{ value: string; label: string }>;
+  /** Fixed choices. */
+  options?: ReadonlyArray<{ value: string; label: string }>;
+  /** Or choices loaded from another list route (all rows, e.g. every department). */
+  optionsFrom?: { queryKey: readonly unknown[]; fetchPage: PageFetcher<{ id: string }>; getLabel: (row: never) => string };
 }
 
 export interface DirectoryListConfig<T extends { id: string }> {
@@ -49,6 +59,15 @@ export interface DirectoryListConfig<T extends { id: string }> {
   /** Permission code that shows the create/edit/delete controls. */
   managePermission: string;
   exportColumns?: ReadonlyArray<{ header: string; value: (row: T) => unknown }>;
+  /** Lifecycle actions on a row (deactivate, restore, …), each behind a confirmation; shown with the manage permission. */
+  rowActions?: (row: T) => ReadonlyArray<RowAction>;
+}
+
+export interface RowAction {
+  label: string;
+  confirm: string;
+  destructive?: boolean;
+  run: () => Promise<unknown>;
 }
 
 export interface DirectoryFormConfig<T extends { id: string }> {

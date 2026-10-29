@@ -1,9 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type React from 'react';
-import { useEffect, useMemo } from 'react';
+import { useContext, useEffect, useMemo } from 'react';
 import { Controller } from 'react-hook-form';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { evaluateAccess } from '@/core/permissions/access';
+import { AuthContext } from '@/core/auth/AuthContext';
 import { z } from 'zod';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { notify } from '@/core/notifications/notify';
@@ -42,7 +44,10 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
   const editing = Boolean(id);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const schema = useMemo(() => buildSchema(config.fields), [config.fields]);
+  const user = useContext(AuthContext)?.user ?? null;
+  // Fields behind a permission (sensitive person data, client financials) are rendered, validated and sent only for callers who hold it.
+  const fields = useMemo(() => config.fields.filter((f) => !f.permission || evaluateAccess(user, f.permission, {})), [config.fields, user]);
+  const schema = useMemo(() => buildSchema(fields), [fields]);
   const row = useQuery({ queryKey: [...config.queryKey, 'detail', id], queryFn: ({ signal }) => config.get(id as string, signal), enabled: editing });
 
   const {
@@ -53,16 +58,16 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
     serverError,
     clearServerError,
     formState: { errors, isSubmitting, dirtyFields },
-  } = useServerForm<Values>({ resolver: zodResolver(schema) as never, defaultValues: Object.fromEntries(config.fields.map((f) => [f.name, blank(f)])) });
+  } = useServerForm<Values>({ resolver: zodResolver(schema) as never, defaultValues: Object.fromEntries(fields.map((f) => [f.name, blank(f)])) });
 
   useEffect(() => {
-    if (row.data) reset(fromRow(config.fields, row.data as unknown as Record<string, unknown>));
-  }, [row.data, config.fields, reset]);
+    if (row.data) reset(fromRow(fields, row.data as unknown as Record<string, unknown>));
+  }, [row.data, fields, reset]);
 
   const onSubmit = submit(async (values) => {
     const touched = (field: FieldDef) => !editing || Boolean((dirtyFields as Record<string, unknown>)[field.name]);
     const payload: Record<string, unknown> = {};
-    for (const field of config.fields) {
+    for (const field of fields) {
       if (!touched(field)) continue;
       if (!editing && values[field.name] === '' && field.kind !== 'checkbox') continue; // leave optional blanks to the server defaults
       if (editing && config.immutableOnEdit?.includes(field.name)) continue;
@@ -84,7 +89,7 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
       <QueryBoundary isLoading={editing && row.isLoading} error={editing ? row.error : null} onRetry={() => void row.refetch()} entityName={config.noun}>
         <form noValidate onSubmit={onSubmit} className="space-y-4">
           <FormBanner error={serverError} />
-          {config.fields.map((field) => {
+          {fields.map((field) => {
             const readOnly = editing && config.immutableOnEdit?.includes(field.name);
             const id = `f-${field.name}`;
             if (field.kind === 'checkbox') {

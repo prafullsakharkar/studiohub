@@ -10,9 +10,9 @@ import { OfficesListPage, OfficeWorkspacePage, CreateOfficePage, EditOfficePage 
 
 import { PeopleListPage, PersonWorkspacePage, CreatePersonPage, EditPersonPage } from '@/modules/people';
 
-import { ClientsPage, ClientCreatePage, ClientWorkspacePage } from '@/modules/clients';
+import { ClientsPage, ClientCreatePage, ClientEditPage, ClientWorkspacePage } from '@/modules/clients';
 
-import { VendorsPage, VendorCreatePage, VendorWorkspacePage } from '@/modules/vendors';
+import { VendorsPage, VendorCreatePage, VendorEditPage, VendorWorkspacePage } from '@/modules/vendors';
 
 import { PublishingPage } from '@/modules/publishing';
 
@@ -217,6 +217,12 @@ export const AppRoutes: React.FC = () => {
 
           </Route>
 
+          <Route element={<PermissionRoute permissions={['client.update']} />}>
+
+            <Route path="/clients/:id/edit" element={<ClientEditPage />} />
+
+          </Route>
+
           <Route path="/vendors" element={<VendorsPage />} />
 
           <Route element={<PermissionRoute permissions={['vendor.create']} />}>
@@ -228,6 +234,12 @@ export const AppRoutes: React.FC = () => {
           <Route element={<PermissionRoute permissions={['vendor.view']} />}>
 
             <Route path="/vendors/:id" element={<VendorWorkspacePage />} />
+
+          </Route>
+
+          <Route element={<PermissionRoute permissions={['vendor.update']} />}>
+
+            <Route path="/vendors/:id/edit" element={<VendorEditPage />} />
 
           </Route>
 

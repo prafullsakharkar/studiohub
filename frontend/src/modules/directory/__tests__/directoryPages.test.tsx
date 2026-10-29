@@ -12,7 +12,10 @@ import type { User } from '@/types/identity';
 import { DirectoryFormPage } from '../DirectoryFormPage';
 import { DirectoryListPage } from '../DirectoryListPage';
 import { officesFormConfig, officesListConfig } from '../entities/offices';
+import { clientsFormConfig } from '../entities/clients';
+import { peopleFormConfig, peopleListConfig } from '../entities/people';
 import { teamsFormConfig, teamsListConfig } from '../entities/teams';
+import { vendorsFormConfig } from '../entities/vendors';
 
 type Captured = { status: number; body: any };
 const teams = loadSample<Record<string, Captured>>('masterdata/teams.json');
@@ -177,5 +180,67 @@ describe('DirectoryFormPage', () => {
 
     await screen.findByText('office page');
     expect(calls.find((c) => c.method === 'PATCH')!.body).toEqual({ city: 'Pune', workstations_count: null });
+  });
+});
+
+describe('clients, vendors and people', () => {
+  it('client create sends the flat payload (only what was filled in)', async () => {
+    const { calls } = mockFetch((c) => (c.method === 'POST' ? { status: 201, body: { id: 'c1' } } : { body: {} }));
+    renderAt(
+      '/clients/new',
+      superuser,
+      <>
+        <Route path="/clients/new" element={<DirectoryFormPage config={clientsFormConfig} />} />
+        <Route path="/clients/:id" element={<div>client page</div>} />
+      </>
+    );
+    fireEvent.change(await screen.findByLabelText(/^Name/), { target: { value: 'Acme Pictures' } });
+    fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: 'ACME' } });
+    fireEvent.click(screen.getByRole('button', { name: /create client/i }));
+    await screen.findByText('client page');
+    expect(calls.find((c) => c.method === 'POST')!.body).toMatchObject({ name: 'Acme Pictures', code: 'ACME', portal_access: false });
+  });
+
+  it('vendor create does not submit while name and code are missing', async () => {
+    const { calls } = mockFetch(() => ({ body: {} }));
+    renderAt('/vendors/new', superuser, <Route path="/vendors/new" element={<DirectoryFormPage config={vendorsFormConfig} />} />);
+    fireEvent.click(await screen.findByRole('button', { name: /create vendor/i }));
+    expect(await screen.findAllByText(/^Enter (name|code)\./)).toHaveLength(2);
+    expect(calls.some((c) => c.method === 'POST')).toBe(false);
+  });
+
+  it('the financial field only exists for callers holding masterdata.client.view_financial', async () => {
+    mockFetch(() => ({ body: {} }));
+    const withGrant = { ...artist, permissions: [...(artist.permissions ?? []), 'masterdata.client.view_financial'] } as User;
+    renderAt('/clients/new', artist, <Route path="/clients/new" element={<DirectoryFormPage config={clientsFormConfig} />} />);
+    await screen.findByLabelText(/^Name/);
+    expect(screen.queryByLabelText(/Total billed/)).toBeNull();
+    cleanup();
+    renderAt('/clients/new', withGrant, <Route path="/clients/new" element={<DirectoryFormPage config={clientsFormConfig} />} />);
+    expect(await screen.findByLabelText(/Total billed/)).toBeTruthy();
+  });
+
+  it('sensitive person fields are hidden without masterdata.person.view_sensitive', async () => {
+    mockFetch(() => ({ body: {} }));
+    renderAt('/people/new', artist, <Route path="/people/new" element={<DirectoryFormPage config={peopleFormConfig} />} />);
+    await screen.findByLabelText(/^Name/);
+    for (const label of ['Email', 'Phone', 'Security clearance', 'Date of birth', 'Nationality']) expect(screen.queryByLabelText(label)).toBeNull();
+    cleanup();
+    renderAt('/people/new', superuser, <Route path="/people/new" element={<DirectoryFormPage config={peopleFormConfig} />} />);
+    for (const label of ['Email', 'Security clearance', 'Nationality']) expect(await screen.findByLabelText(label)).toBeTruthy();
+  });
+
+  it('people list: lifecycle action follows the status (active → Deactivate) and posts to the action route', async () => {
+    const people = loadSample<Record<string, Captured>>('masterdata/people.json');
+    const row = people.list_admin.body.results[0] as { id: string; name: string; full_name: string };
+    const { calls } = mockFetch((c) => (c.method === 'POST' ? { body: row } : reply(people.list_admin)));
+    renderAt('/people', superuser, <Route path="/people" element={<DirectoryListPage config={peopleListConfig} />} />);
+    await screen.findByRole('link', { name: row.full_name });
+
+    fireEvent.click(screen.getByRole('button', { name: `Deactivate ${row.full_name}` }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Deactivate' }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
+    expect(path(calls.find((c) => c.method === 'POST')!)).toBe(`/api/v1/people/${row.id}/deactivate/`);
   });
 });

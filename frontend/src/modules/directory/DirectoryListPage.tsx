@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowDown, ArrowUp, Download, Plus, Trash2 } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
@@ -8,12 +8,33 @@ import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { exportAll } from '@/shared/data/exportAll';
+import { fetchAllRows } from '@/shared/data/listing';
 import { usePaginatedList } from '@/shared/data/usePaginatedList';
 import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
 import { Pagination } from '@/shared/components/Pagination';
 import { SearchInput } from '@/shared/components/SearchInput';
-import type { DirectoryListConfig } from './types';
+import type { DirectoryListConfig, ListFilter, RowAction } from './types';
+
+function FilterSelect({ filter, value, onChange }: { filter: ListFilter; value: string; onChange: (value: string) => void }) {
+  const loaded = useQuery({
+    queryKey: [...(filter.optionsFrom?.queryKey ?? ['none']), 'filter-options'],
+    queryFn: ({ signal }) => fetchAllRows((filter.optionsFrom as NonNullable<ListFilter['optionsFrom']>).fetchPage, {}, { signal }),
+    enabled: Boolean(filter.optionsFrom),
+    staleTime: 60_000,
+  });
+  const options = filter.options ?? (loaded.data ?? []).map((row) => ({ value: row.id, label: (filter.optionsFrom as NonNullable<ListFilter['optionsFrom']>).getLabel(row as never) }));
+  return (
+    <select aria-label={`Filter by ${filter.label.toLowerCase()}`} value={value} onChange={(e) => onChange(e.target.value)} className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200">
+      <option value="">All {filter.label.toLowerCase()}</option>
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </select>
+  );
+}
 
 /**
  * One list screen for every directory entity: server-side search / filters / ordering / paging with the
@@ -25,6 +46,7 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
   const canManage = useCan(config.managePermission);
   const list = usePaginatedList<T>({ queryKey: config.queryKey, fetchPage: config.fetchPage, ordering: config.defaultOrdering });
   const [toDelete, setToDelete] = useState<T | null>(null);
+  const [pendingAction, setPendingAction] = useState<(RowAction & { rowName: string }) | null>(null);
   const [exporting, setExporting] = useState<AbortController | null>(null);
   const filtered = Boolean(list.search || Object.values(list.filters).some(Boolean));
 
@@ -66,20 +88,7 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
         <div className="flex flex-wrap items-center gap-2">
           <SearchInput placeholder={config.searchPlaceholder} value={list.search} onChange={(e) => list.setSearch(e.target.value)} onClear={() => list.setSearch('')} aria-label={`Search ${config.title.toLowerCase()}`} className="w-56" />
           {config.filters?.map((filter) => (
-            <select
-              key={filter.key}
-              aria-label={`Filter by ${filter.label.toLowerCase()}`}
-              value={String(list.filters[filter.key] ?? '')}
-              onChange={(e) => list.setFilter(filter.key, e.target.value)}
-              className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200"
-            >
-              <option value="">All {filter.label.toLowerCase()}</option>
-              {filter.options.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
+            <FilterSelect key={filter.key} filter={filter} value={String(list.filters[filter.key] ?? '')} onChange={(value) => list.setFilter(filter.key, value)} />
           ))}
           {config.exportColumns && (
             <Button size="sm" variant="outline" leftIcon={<Download className="w-3.5 h-3.5" />} isLoading={exporting !== null} onClick={() => void runExport()}>
@@ -142,6 +151,11 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
                   ))}
                   {canManage && (
                     <td className="px-4 py-2 text-right space-x-3 whitespace-nowrap">
+                      {config.rowActions?.(row).map((action) => (
+                        <button key={action.label} type="button" className={action.destructive ? 'text-amber-400 hover:underline' : 'text-cyan-300 hover:underline'} aria-label={`${action.label} ${config.rowName(row)}`} onClick={() => setPendingAction({ ...action, rowName: config.rowName(row) })}>
+                          {action.label}
+                        </button>
+                      ))}
                       <Link to={`${config.basePath}/${row.id}/edit`} className="text-cyan-300 hover:underline" aria-label={`Edit ${config.rowName(row)}`}>
                         Edit
                       </Link>
@@ -157,6 +171,20 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
         </div>
         <Pagination currentPage={list.page} totalCount={list.count} pageSize={list.pageSize} totalPages={list.pageCount} onPageChange={list.setPage} onPageSizeChange={list.setPageSize} itemLabel={config.title.toLowerCase()} />
       </QueryBoundary>
+
+      <ConfirmDialog
+        isOpen={pendingAction !== null}
+        title={pendingAction ? `${pendingAction.label} ${pendingAction.rowName}` : ''}
+        message={pendingAction?.confirm ?? ''}
+        confirmLabel={pendingAction?.label ?? 'Confirm'}
+        destructive={pendingAction?.destructive}
+        onClose={() => setPendingAction(null)}
+        onConfirm={async () => {
+          if (!pendingAction) return;
+          await pendingAction.run();
+          await queryClient.invalidateQueries({ queryKey: config.queryKey });
+        }}
+      />
 
       <ConfirmDialog
         isOpen={toDelete !== null}
