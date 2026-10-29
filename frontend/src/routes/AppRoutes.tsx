@@ -40,7 +40,7 @@ import { TasksPage, TaskDetailPage, TimelogsPage } from '@/modules/tasks';
 
 import { ProjectsPage, ProjectWorkspacePage, ProjectFormPage } from '@/modules/production';
 
-import { LoginPage, ForgotPasswordPage, ChangePasswordPage } from '@/modules/auth';
+import { LoginPage, ForgotPasswordPage, ResetPasswordPage, ChangePasswordPage } from '@/modules/auth';
 
 import React from 'react';
 
@@ -83,6 +83,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/login" element={<LoginPage />} />
 
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       </Route>
 

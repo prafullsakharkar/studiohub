@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { SmartImg } from '@/components/ui/SmartImg';
-import { useForm } from 'react-hook-form';
+import { useServerForm } from '@/shared/forms/useServerForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, LoginFormData } from '../schemas/authSchemas';
 import { useAuth } from '../hooks/useAuth';
 import { useDemoUsers } from '../hooks/useDemoUsers';
 import { DemoUser } from '@/types/identity';
+import { MfaChallengeForm } from '../components/MfaChallengeForm';
+import { mapHttpError } from '@/api/errors/errorMapper';
 import {
   Sparkles,
   Clapperboard,
@@ -79,7 +81,7 @@ const CAPABILITY_TABS: CapabilityTab[] = [
 ];
 
 export const LoginPage: React.FC = () => {
-  const { login } = useAuth();
+  const { login, completeMfaLogin } = useAuth();
   const navigate = useNavigate();
   // REST-only: no backend demo-users endpoint exists, so the instant demo
   // workspaces section is always hidden.
@@ -88,6 +90,8 @@ export const LoginPage: React.FC = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  // Set when the password step succeeded but the account owes a second factor.
+  const [mfa, setMfa] = useState<{ challenge: string; expiresIn: number } | null>(null);
   const [activeCapability, setActiveCapability] = useState<string>('athlete');
   const [fastLoggingInId, setFastLoggingInId] = useState<string | null>(null);
 
@@ -96,38 +100,32 @@ export const LoginPage: React.FC = () => {
 
   const {
     register,
-    handleSubmit,
     setValue,
-    setError,
     clearErrors,
+    submit,
+    serverError,
+    clearServerError,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFormData>({
+  } = useServerForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     mode: 'onTouched',
-    defaultValues: {
-      email: 'supervisor@studiohub.vfx',
-      password: 'password123',
-      rememberMe: true,
-    },
+    defaultValues: { email: '', password: '' },
   });
 
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = submit(async (data) => {
     setApiError(null);
-    try {
-      await login(data);
-      navigate('/dashboard');
-    } catch (err: any) {
-      if (err?.errors?.email?.[0]) {
-        setError('email', { type: 'server', message: err.errors.email[0] });
-      }
-      if (err?.errors?.password?.[0]) {
-        setError('password', { type: 'server', message: err.errors.password[0] });
-      }
-      const errorMsg =
-        err?.message ||
-        (typeof err === 'string' ? err : 'Login failed. Please check your email and password.');
-      setApiError(errorMsg);
+    const outcome = await login(data);
+    if (outcome.status === 'mfa_required') {
+      setMfa({ challenge: outcome.challenge, expiresIn: outcome.expiresIn });
+      return;
     }
+    navigate('/dashboard');
+  });
+
+  const bannerMessage = apiError ?? serverError?.banner ?? null;
+  const clearBanner = () => {
+    if (apiError) setApiError(null);
+    clearServerError();
   };
 
   const handleInstantDemoLogin = async (account: DemoUser) => {
@@ -140,7 +138,6 @@ export const LoginPage: React.FC = () => {
       await login({
         email: account.email,
         password: 'password123',
-        rememberMe: true,
       });
       navigate('/dashboard');
     } catch (err: any) {
@@ -302,7 +299,7 @@ export const LoginPage: React.FC = () => {
             </div>
 
             {/* API Error Alert */}
-            {apiError && (
+            {bannerMessage && (
               <div
                 id="login-api-error"
                 role="alert"
@@ -312,15 +309,41 @@ export const LoginPage: React.FC = () => {
                 <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-rose-300">Sign In Failed</p>
-                  <p className="text-[11px] text-rose-200/90 mt-0.5 leading-normal">{apiError}</p>
+                  <p className="text-[11px] text-rose-200/90 mt-0.5 leading-normal">{bannerMessage}</p>
                 </div>
               </div>
             )}
 
+            {/* Second factor */}
+            {mfa && (
+              <MfaChallengeForm
+                expiresIn={mfa.expiresIn}
+                onBack={() => {
+                  setMfa(null);
+                  clearBanner();
+                }}
+                onSubmit={async (input) => {
+                  try {
+                    await completeMfaLogin({ challenge: mfa.challenge, ...input });
+                  } catch (error) {
+                    // An expired/invalid challenge can never succeed on retry: restart at the password step.
+                    if (mapHttpError(error).code === 'mfa_challenge_invalid') {
+                      setMfa(null);
+                      setApiError('Your sign-in session expired. Please enter your password again.');
+                      return;
+                    }
+                    throw error;
+                  }
+                  navigate('/dashboard');
+                }}
+              />
+            )}
+
             {/* Form */}
+            {!mfa && (
             <form
               noValidate
-              onSubmit={handleSubmit(onSubmit)}
+              onSubmit={onSubmit}
               className="space-y-2.5 shrink-0"
             >
               {/* Email */}
@@ -336,9 +359,7 @@ export const LoginPage: React.FC = () => {
                     id="login-email-input"
                     type="email"
                     {...register('email', {
-                      onChange: () => {
-                        if (apiError) setApiError(null);
-                      },
+                      onChange: clearBanner,
                     })}
                     placeholder="name@studiohub.vfx"
                     aria-invalid={Boolean(errors.email)}
@@ -378,9 +399,7 @@ export const LoginPage: React.FC = () => {
                     id="login-password-input"
                     type={showPassword ? 'text' : 'password'}
                     {...register('password', {
-                      onChange: () => {
-                        if (apiError) setApiError(null);
-                      },
+                      onChange: clearBanner,
                     })}
                     placeholder="••••••••••••"
                     aria-invalid={Boolean(errors.password)}
@@ -406,19 +425,6 @@ export const LoginPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Remember Me */}
-              <div className="flex items-center gap-2 pt-0.5">
-                <input
-                  type="checkbox"
-                  id="rememberMe"
-                  {...register('rememberMe')}
-                  className="w-3.5 h-3.5 rounded border-slate-700 bg-slate-950 text-cyan-500 focus:ring-cyan-500 cursor-pointer"
-                />
-                <label htmlFor="rememberMe" className="text-[11px] text-slate-400 font-medium cursor-pointer">
-                  Keep this session authorized for 30 days
-                </label>
-              </div>
-
               {/* Primary Submit Button */}
               <button
                 type="submit"
@@ -429,9 +435,10 @@ export const LoginPage: React.FC = () => {
                 <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
               </button>
             </form>
+            )}
 
             {/* INSTANT DEMO WORKSPACES (mock mode only) */}
-            {showDemoWorkspaces && (
+            {showDemoWorkspaces && !mfa && (
             <div className="pt-2.5 border-t border-slate-800 space-y-2 min-h-0 flex flex-col flex-1">
               <div className="flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-300 uppercase tracking-wider">
