@@ -1,6 +1,7 @@
 import ky, { KyInstance, Options as KyOptions } from 'ky';
 import { IApiClient, RequestOptions } from './types';
 import { tokenStorage } from '@/core/auth/tokenStorage';
+import { refreshAccessToken } from '@/core/auth/sessionRefresh';
 import { ApiError } from '@/api/errors/ApiError';
 import { mapHttpError } from '@/api/errors/errorMapper';
 import { logger } from '@/core/logging/logger';
@@ -10,10 +11,25 @@ import { getApiBaseUrl } from '@/api/repositories/config';
 import { centralErrorHandler } from '@/core/api/error-handler';
 import { ContractValidator } from '@/core/api/generated/validator';
 
+/**
+ * Auth endpoints that must never carry a Bearer header or trigger a refresh: the caller has
+ * no (valid) session yet, or is the refresh itself.
+ */
+const PUBLIC_AUTH_PATHS = [
+  '/auth/login/',
+  '/auth/refresh/',
+  '/auth/forgot-password/',
+  '/auth/reset-password/',
+  '/auth/mfa/challenge/',
+];
+
+function isPublicAuthPath(url: string): boolean {
+  const path = url.split('?')[0];
+  return PUBLIC_AUTH_PATHS.some((p) => path.endsWith(p));
+}
+
 export class ApiClient implements IApiClient {
   private client: KyInstance;
-  private isRefreshing = false;
-  private refreshSubscribers: ((token: string) => void)[] = [];
 
   constructor(prefix = '') {
     const baseUrl = getApiBaseUrl();
@@ -30,7 +46,7 @@ export class ApiClient implements IApiClient {
       hooks: {
         beforeRequest: [
           ({ request, options }: any) => {
-            const skipAuth = (options as RequestOptions)?.skipAuth;
+            const skipAuth = (options as RequestOptions)?.skipAuth || isPublicAuthPath(request.url);
             if (!skipAuth) {
               const token = tokenStorage.getAccessToken();
               if (token) {
@@ -69,84 +85,44 @@ export class ApiClient implements IApiClient {
     } as any);
   }
 
-  private onTokenRefreshed(token: string) {
-    this.refreshSubscribers.forEach((callback) => callback(token));
-    this.refreshSubscribers = [];
-  }
-
-  private addRefreshSubscriber(callback: (token: string) => void) {
-    this.refreshSubscribers.push(callback);
-  }
-
-  private async handleTokenRefresh(): Promise<string | null> {
-    const refreshToken = tokenStorage.getRefreshToken();
-    if (!refreshToken) {
-      tokenStorage.clearTokens();
-      return null;
-    }
-
-    if (this.isRefreshing) {
-      return new Promise((resolve) => {
-        this.addRefreshSubscriber((newToken) => {
-          resolve(newToken);
-        });
-      });
-    }
-
-    this.isRefreshing = true;
+  /**
+   * Run a request with auth handling:
+   *  - no access token but a refresh token (reload / new tab) -> exchange first, avoiding a 401;
+   *  - 401 -> refresh once (single flight, cross-tab safe) and retry once;
+   *  - refresh failure rejects every waiting request, then the central handler ends the session.
+   */
+  private async executeWithAuthRetry<T>(
+    url: string,
+    options: RequestOptions | undefined,
+    requestFn: () => Promise<T>
+  ): Promise<T> {
+    const authenticated = !options?.skipAuth && !isPublicAuthPath(url);
 
     try {
-      logger.info('ApiClient', 'Attempting automatic JWT token refresh...');
-
-      const response = await this.client
-        .post('/api/v1/auth/refresh/', {
-          json: { refresh: refreshToken },
-          retry: 0,
-        })
-        .json<{ access: string; refresh?: string }>();
-
-      const newAccessToken = response.access;
-      tokenStorage.setAccessToken(newAccessToken);
-      // Persist rotated refresh tokens (backend rotates on every refresh).
-      if (response.refresh) {
-        tokenStorage.setRefreshToken(response.refresh);
+      if (authenticated && !tokenStorage.getAccessToken() && tokenStorage.getRefreshToken()) {
+        await refreshAccessToken(null);
       }
-      this.isRefreshing = false;
-      this.onTokenRefreshed(newAccessToken);
-      logger.info('ApiClient', 'Token refreshed successfully via REST API');
-      return newAccessToken;
-    } catch (err) {
-      this.isRefreshing = false;
-      this.refreshSubscribers = [];
-      logger.warn('ApiClient', 'Token refresh failed. Clearing session.', err);
-      tokenStorage.clearTokens();
-      return null;
-    }
-  }
+      const sentToken = tokenStorage.getAccessToken();
+      try {
+        return await requestFn();
+      } catch (error: unknown) {
+        const normalized = mapHttpError(error);
+        if (!authenticated || !normalized.isAuthError || normalized.isAccountDisabled) throw normalized;
 
-  private async executeWithAuthRetry<T>(requestFn: () => Promise<T>): Promise<T> {
-    try {
-      return await requestFn();
-    } catch (error: unknown) {
-      const normalized = mapHttpError(error);
-
-      // 1. Attempt token refresh on 401
-      if (normalized.isAuthError && !normalized.isAccountDisabled) {
-        const newToken = await this.handleTokenRefresh();
-        if (newToken) {
-          try {
-            return await requestFn();
-          } catch (retryError) {
-            const finalErr = mapHttpError(retryError);
-            centralErrorHandler.handleError(finalErr, { source: 'ApiClient' });
-            throw finalErr;
-          }
+        try {
+          await refreshAccessToken(sentToken);
+        } catch (refreshError) {
+          const refreshFailure = mapHttpError(refreshError);
+          // A rejected refresh means the session is gone: surface the original 401 so the
+          // central handler treats it as an expiry. Network/5xx refresh failures are reported as-is.
+          throw refreshFailure.isAuthError ? normalized : refreshFailure;
         }
+        return await requestFn();
       }
-
-      // 2. Dispatch to central error handler
-      centralErrorHandler.handleError(normalized, { source: 'ApiClient' });
-      throw normalized;
+    } catch (error: unknown) {
+      const finalError = mapHttpError(error);
+      centralErrorHandler.handleError(finalError, { source: 'ApiClient' });
+      throw finalError;
     }
   }
 
@@ -164,7 +140,7 @@ export class ApiClient implements IApiClient {
   private async dispatch<T>(method: string, url: string, body?: unknown, options?: RequestOptions): Promise<T> {
     ContractValidator.validateRequest(method, url, body, options?.params);
 
-    return this.executeWithAuthRetry(async () => {
+    return this.executeWithAuthRetry(url, options, async () => {
       const kyOptions: KyOptions = {
         ...options,
         json: body,
@@ -215,7 +191,7 @@ export class ApiClient implements IApiClient {
   }
 
   public async upload<T>(url: string, formData: FormData, options?: RequestOptions): Promise<T> {
-    return this.executeWithAuthRetry(async () => {
+    return this.executeWithAuthRetry(url, options, async () => {
       const kyOptions: KyOptions = {
         ...options,
         body: formData,
@@ -227,7 +203,7 @@ export class ApiClient implements IApiClient {
   }
 
   public async download(url: string, filename?: string, options?: RequestOptions): Promise<Blob> {
-    return this.executeWithAuthRetry(async () => {
+    return this.executeWithAuthRetry(url, options, async () => {
       const kyOptions: KyOptions = {
         ...options,
         searchParams: this.sanitizeParams(options?.params),

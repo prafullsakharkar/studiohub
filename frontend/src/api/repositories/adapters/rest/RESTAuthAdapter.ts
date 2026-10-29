@@ -45,9 +45,12 @@ export class RESTAuthAdapter extends BaseRESTAdapter<User> implements IAuthRepos
   }
 
   async logout(): Promise<void> {
+    // The backend revokes the session identified by this refresh token.
+    const refresh = tokenStorage.getRefreshToken();
     try {
       await this.request<void>(`${this.basePath}logout/`, {
         method: 'POST',
+        body: JSON.stringify(refresh ? { refresh } : {}),
       });
     } finally {
       tokenStorage.clearTokens();

@@ -3,6 +3,7 @@ import { tokenStorage } from '@/core/auth/tokenStorage';
 import { User, LoginResponse, DemoUser } from '@/types/identity';
 import { LoginFormData } from '../schemas/authSchemas';
 import { logger } from '@/core/logging/logger';
+import { mapHttpError } from '@/api/errors/errorMapper';
 
 export class AuthService {
   private repository: IAuthRepository;
@@ -38,7 +39,9 @@ export class AuthService {
       return await this.repository.getCurrentUser();
     } catch (err) {
       logger.warn('AuthService', 'Failed to retrieve current user', err);
-      tokenStorage.clearTokens();
+      // Only a rejected session ends it. A network error or 5xx at boot must not wipe the
+      // refresh token, or a brief outage would sign the user out of every tab.
+      if (mapHttpError(err).isAuthError) tokenStorage.clearTokens();
       return null;
     }
   }

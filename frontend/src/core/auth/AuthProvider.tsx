@@ -10,6 +10,7 @@ import { logger } from '@/core/logging/logger';
 import { queryClient } from '@/providers/QueryProvider';
 import { centralErrorHandler } from '@/core/api/error-handler';
 import { useActivityStore } from '@/shared/stores/useActivityStore';
+import { tokenStorage } from '@/core/auth/tokenStorage';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -60,9 +61,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       queryClient.clear();
     });
 
+    // Signed out (or session lost) in another tab: follow it here.
+    const unsubTokens = tokenStorage.subscribe((event) => {
+      if (event.type === 'cleared' && event.remote) {
+        logger.info('AuthProvider', 'Session ended in another tab.');
+        setUser(null);
+        queryClient.clear();
+      }
+    });
+
     return () => {
       unsubAuth();
       unsubDisabled();
+      unsubTokens();
     };
   }, []);
 
