@@ -171,6 +171,8 @@ def test_capture_identity_admin(django_user_model):
     g = call(a, "groups_create", "POST", "/api/v1/groups/", {"name": "Lighting crew", "code": "lighting-crew", "description": "All lighters"})
     FLOW["groups_create_has_id"] = {"status": 200, "body": {"id_in_create_response": "id" in g.json()}}
     gid = lookup_id(a, "/api/v1/groups/", "lighting-crew")
+    call(a, "groups_list_with_row", "GET", "/api/v1/groups/")
+    call(a, "groups_detail", "GET", f"/api/v1/groups/{gid}/")
     call(a, "groups_create_duplicate", "POST", "/api/v1/groups/", {"name": "Lighting crew", "code": "lighting-crew"})
     call(a, "groups_members_add", "POST", f"/api/v1/groups/{gid}/members/", {"user_id": str(target.id)})
     call(a, "groups_members_add_owner", "POST", f"/api/v1/groups/{gid}/members/", {"user_id": str(artist.id), "is_owner": True})

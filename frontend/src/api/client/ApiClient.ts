@@ -146,7 +146,9 @@ export class ApiClient implements IApiClient {
     return this.executeWithAuthRetry(url, options, async () => {
       const kyOptions: KyOptions = {
         ...options,
-        json: body,
+        // DELETE has no body argument, but the RBAC sub-resources revoke with one
+        // (`DELETE /roles/{id}/permissions/ {permission_id}`): honour `options.json` then.
+        json: body !== undefined ? body : options?.json,
         searchParams: this.sanitizeParams(options?.params),
         signal: options?.signal,
       };

@@ -137,4 +137,15 @@ describe('ApiClient auth handling', () => {
       '/api/v1/tasks/abc/bulk-assign/',
     ]);
   });
+
+  it('sends a JSON body on DELETE when asked (RBAC revoke endpoints need one)', async () => {
+    const { tokenStorage, client } = await setup();
+    tokenStorage.setTokens({ access: 'a1', refresh: 'r1' });
+    const { calls } = mockFetch(() => ({ body: { detail: 'Permission revoked.' } }));
+
+    await client.delete('/api/v1/roles/r1/permissions/', { json: { permission_id: 'p1' } });
+
+    expect(calls[0].method).toBe('DELETE');
+    expect(calls[0].body).toEqual({ permission_id: 'p1' });
+  });
 });
