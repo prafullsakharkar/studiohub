@@ -171,3 +171,25 @@ and add them to the `org-admin` / `platform-admin` role specs (decision needed: 
 `POST /api/v1/core/attachments/` (and the `/api/v1/attachments/` alias) with an empty JSON body answers `201` and stores a blank record (`{"file": null, "name": "", "file_type": "document", "mime_type": "", ...}`), for any authenticated user. Evidence: [samples/core/core__attachments.json](samples/core/core__attachments.json) `create_empty_400` / `create_norole_403` (both 201; the sample keys were named for the expected 400/403 before the capture). Cause: `AttachmentCreateSerializer.file = FileField(required=False, allow_null=True)` (`apps/core/api/serializers/attachment.py:97`). Access control itself is by design (`IsAuthenticated`, rows scoped to the uploader).
 
 **Question for the owner:** are metadata-only attachments (no file) intended, e.g. for externally stored files addressed by `storage_key`? If not, `file` should be `required=True` on create. **Frontend impact:** none — the upload primitive always sends a file and validates size/type client-side. Not blocking; no change proposed until answered.
+
+## Q-03 — `change-password` does not compare `confirm_password`
+
+`POST /api/v1/auth/change-password/` with `confirm_password` different from `new_password` answers `200 "Password changed. All sessions have been signed out."` and changes the password. Evidence: [samples/identity/_restricted_sessions_flow.json](samples/identity/_restricted_sessions_flow.json) `change_password_confirm_mismatch`. `reset-password` does compare them (`400 {"confirm_password": ["Passwords do not match."]}`, [samples/identity/_auth_password_reset_flow.json](samples/identity/_auth_password_reset_flow.json) `reset_mismatch`).
+
+**Impact / workaround:** none needed for correctness — the frontend compares them before sending (`ChangePasswordPage`). Any other client (or a script) can still mistype a new password and lock itself out. **Proposed change if wanted:** validate the pair in the change-password serializer, as reset-password does. Awaiting a decision; no change made.
+
+## Q-04 — `/auth/me/` does not say what the session still owes
+
+A restricted session (see [restricted sessions](samples/identity/_restricted_sessions_flow.json)) learns it owes MFA enrollment only from the login response (`mfa_enrollment_required`) or from the first `403 {code: mfa_enrollment_required}`. After a page reload there is no flag in `/auth/me/` (`restricted_me` has none), so the client discovers the restriction through one failing request. Handled on the frontend (any restricted 403 routes to the right screen), so nothing is blocked; one wasted request per reload. **Optional improvement:** add `pending_actions: ["mfa_enrollment_required", ...]` to the `/auth/me/` payload.
+
+## Q-05 — a user with no roles is labelled `role: "Artist"`
+
+`serialize_frontend_user` falls back to the display name `"Artist"` when the user has no role (`frontend_user.py`, `role_name = "Artist"`), so a user with **no** roles is shown as an Artist. Display only (authorization uses `permissions[]`), but it is misleading in people/admin lists. Related to CR-07. Proposed: return `""`/`null` and let the UI show "No role".
+
+## Q-06 — inconsistent handling of invalid filter values
+
+`GET /api/v1/departments/?department_type=wizard` → `400 {"department_type": ["Select a valid choice. wizard is not one of the available choices."]}` ([samples/masterdata/_departments_flow.json](samples/masterdata/_departments_flow.json) `list_invalid_type_filter`), while `GET /api/v1/tasks/?project=not-a-uuid` → `200` with an empty list ([samples/_misc/conflicts_and_pagination.json](samples/_misc/conflicts_and_pagination.json) `invalid_filter_value`). The frontend only sends values from controlled selects, so it is not affected; noted for contract consistency.
+
+## Note — `/health/` is liveness only
+
+`GET /health/` returns `{"status": "ok"}` without touching the database (`config/urls.py`). It proves the process is up, not that the database is reachable. If a readiness probe is wanted (the frontend server's `isDjangoRunning` and any load balancer), it needs a separate route. Not requested.
