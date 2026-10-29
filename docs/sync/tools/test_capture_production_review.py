@@ -206,8 +206,13 @@ def test_capture_production_review(django_user_model):
     call(sv, "reviews_three_start", "POST", f"/api/v1/reviews/{rv3}/start-review/", {})
     p3 = sv.get(f"/api/v1/reviews/{rv3}/").json().get("reviewers") or []
     lead_p3 = next((p for p in p3 if str(p.get("user_id")) == str(lead.id)), (p3 or [{}])[0])
+    call(ld, "reviews_three_participant_verdict_bogus", "POST", f"/api/v1/reviews/{rv3}/participant-verdict/", {"participant_id": str(lead_p3.get("id")), "verdict": "Banana"})
+    call(ld, "reviews_three_participant_verdict_changes", "POST", f"/api/v1/reviews/{rv3}/participant-verdict/", {"participant_id": str(lead_p3.get("id")), "verdict": "Changes Requested", "notes": "needs work"})
+    call(ld, "reviews_three_participant_verdict_rejected", "POST", f"/api/v1/reviews/{rv3}/participant-verdict/", {"participant_id": str(lead_p3.get("id")), "verdict": "Rejected"})
+    call(ld, "reviews_three_participant_verdict_empty", "POST", f"/api/v1/reviews/{rv3}/participant-verdict/", {"participant_id": str(lead_p3.get("id"))})
     call(ld, "reviews_three_participant_verdict", "POST", f"/api/v1/reviews/{rv3}/participant-verdict/", {"participant_id": str(lead_p3.get("id")), "verdict": "Approved", "notes": "fine by me"})
     call(sv, "reviews_three_detail_after_participant", "GET", f"/api/v1/reviews/{rv3}/")
+    call(sv, "reviews_three_verdict_bogus", "POST", f"/api/v1/reviews/{rv3}/verdict/", {"verdict": "Banana"})
     call(sv, "reviews_three_retake_verdict", "POST", f"/api/v1/reviews/{rv3}/verdict/", {"verdict": "Retake", "notes": "redo the edge"})
     call(sv, "reviews_three_remove_participant", "DELETE", f"/api/v1/reviews/{rv3}/participants/{lead_p3.get('id')}/")
     call(sv, "reviews_archived", "GET", f"/api/v1/reviews/archived/?project={pid}")

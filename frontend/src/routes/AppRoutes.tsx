@@ -37,13 +37,13 @@ import { PreserveQueryRedirect } from './PreserveQueryRedirect';
 
 import { WorkflowsPage } from '@/modules/workflows';
 
-import { ReviewsPage } from '@/modules/reviews';
+import { ReviewFormPage, ReviewsPage, ReviewWorkspacePage } from '@/modules/reviews';
 
 import { auditRoutes } from '@/modules/audit';
 
 import { AssetFormPage, AssetsPage, AssetWorkspacePage } from '@/modules/assets';
 
-import { VersionsListPage, VersionWorkspacePage } from '@/modules/versions';
+import { VersionFormPage, VersionsListPage, VersionWorkspacePage } from '@/modules/versions';
 
 import { ShotFormPage, ShotsPage, ShotWorkspacePage } from '@/modules/shots';
 
@@ -321,6 +321,10 @@ export const AppRoutes: React.FC = () => {
 
           <Route path="/versions" element={<VersionsListPage />} />
 
+          <Route path="/versions/new" element={<VersionFormPage />} />
+
+          <Route path="/versions/:id/edit" element={<VersionFormPage />} />
+
           <Route path="/versions/:versionId" element={<VersionWorkspacePage />} />
 
           <Route path="/publishing" element={<PublishingPage />} />
@@ -330,6 +334,12 @@ export const AppRoutes: React.FC = () => {
           <Route path="/deliveries/:id" element={<DeliveryWorkspacePage />} />
 
           <Route path="/reviews" element={<ReviewsPage />} />
+
+          <Route path="/reviews/new" element={<ReviewFormPage />} />
+
+          <Route path="/reviews/:id/edit" element={<ReviewFormPage />} />
+
+          <Route path="/reviews/:reviewId" element={<ReviewWorkspacePage />} />
 
           <Route path="/workflows" element={<WorkflowsPage />} />
 

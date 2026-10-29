@@ -294,6 +294,32 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
     name: 'Edit Time Log',
     permissions: ['timelog.update'],
   },
+  '/versions/new': {
+    path: '/versions/new',
+    name: 'Create Version',
+    permissions: ['version.create'],
+  },
+  '/versions/:id/edit': {
+    path: '/versions/:id/edit',
+    name: 'Edit Version',
+    permissions: ['version.update'],
+  },
+  '/reviews/new': {
+    path: '/reviews/new',
+    name: 'Create Review',
+    permissions: ['review.create'],
+  },
+  '/reviews/:id/edit': {
+    path: '/reviews/:id/edit',
+    name: 'Edit Review',
+    permissions: ['review.update'],
+  },
+  '/reviews/:reviewId': {
+    path: '/reviews/:reviewId',
+    name: 'Review',
+    pagePermission: 'page.project.reviews',
+    permissions: ['review.view'],
+  },
   '/versions': {
     path: '/versions',
     name: 'Versions',

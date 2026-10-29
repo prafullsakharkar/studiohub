@@ -133,7 +133,8 @@ export interface ReviewParticipant {
   verdict_date: string | null;
   verdict_notes: string;
 }
-export interface ReviewComment {
+/** A reply: a comment without `replies` (a reply to a reply is a 400, so replies never nest). */
+export interface ReviewReply {
   id: string;
   author: string;
   author_id: string | null;
@@ -146,8 +147,10 @@ export interface ReviewComment {
   resolved_at: string | null;
   resolved_by_id: string | null;
   parent_id: string | null;
-  replies: ReviewComment[];
   created_at: string;
+}
+export interface ReviewComment extends ReviewReply {
+  replies: ReviewReply[];
 }
 export interface ReviewNote {
   id: string;
