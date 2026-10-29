@@ -121,4 +121,20 @@ describe('ApiClient auth handling', () => {
     await expect(client.get('/api/v1/departments/')).rejects.toMatchObject({ status: 403 });
     expect(calls).toHaveLength(1);
   });
+
+  it('requests canonical paths: slash added, slash-less families untouched', async () => {
+    const { tokenStorage, client } = await setup();
+    tokenStorage.setTokens({ access: 'a1', refresh: 'r1' });
+    const { calls } = mockFetch(() => ({ body: {} }));
+
+    await client.get('/api/v1/departments?page=2');
+    await client.get('/api/v1/platform/master-data/software');
+    await client.post('/api/v1/tasks/abc/bulk-assign', {});
+
+    expect(calls.map((c) => new URL(c.url).pathname + new URL(c.url).search)).toEqual([
+      '/api/v1/departments/?page=2',
+      '/api/v1/platform/master-data/software',
+      '/api/v1/tasks/abc/bulk-assign/',
+    ]);
+  });
 });

@@ -2,6 +2,7 @@ import ky, { KyInstance, Options as KyOptions } from 'ky';
 import { IApiClient, RequestOptions } from './types';
 import { tokenStorage } from '@/core/auth/tokenStorage';
 import { refreshAccessToken } from '@/core/auth/sessionRefresh';
+import { normalizeApiPath } from './url';
 import { ApiError } from '@/api/errors/ApiError';
 import { mapHttpError } from '@/api/errors/errorMapper';
 import { logger } from '@/core/logging/logger';
@@ -136,7 +137,8 @@ export class ApiClient implements IApiClient {
     return sanitized;
   }
 
-  private async dispatch<T>(method: string, url: string, body?: unknown, options?: RequestOptions): Promise<T> {
+  private async dispatch<T>(method: string, rawUrl: string, body?: unknown, options?: RequestOptions): Promise<T> {
+    const url = normalizeApiPath(rawUrl);
     return this.executeWithAuthRetry(url, options, async () => {
       const kyOptions: KyOptions = {
         ...options,
@@ -186,7 +188,8 @@ export class ApiClient implements IApiClient {
     return this.dispatch<T>('DELETE', url, undefined, options);
   }
 
-  public async upload<T>(url: string, formData: FormData, options?: RequestOptions): Promise<T> {
+  public async upload<T>(rawUrl: string, formData: FormData, options?: RequestOptions): Promise<T> {
+    const url = normalizeApiPath(rawUrl);
     return this.executeWithAuthRetry(url, options, async () => {
       const kyOptions: KyOptions = {
         ...options,
@@ -198,7 +201,8 @@ export class ApiClient implements IApiClient {
     });
   }
 
-  public async download(url: string, filename?: string, options?: RequestOptions): Promise<Blob> {
+  public async download(rawUrl: string, filename?: string, options?: RequestOptions): Promise<Blob> {
+    const url = normalizeApiPath(rawUrl);
     return this.executeWithAuthRetry(url, options, async () => {
       const kyOptions: KyOptions = {
         ...options,
