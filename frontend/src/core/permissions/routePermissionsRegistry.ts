@@ -547,13 +547,6 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
     permissions: ['activity.view', 'activities.view', 'page.activities', 'page.activity', 'audit.view'],
     requireAny: true,
   },
-  '/testing': {
-    path: '/testing',
-    name: 'API & Test Suite',
-    pagePermission: 'page.testing',
-    permissions: ['testing.view'],
-    requiresAdmin: true,
-  },
 };
 
 /**

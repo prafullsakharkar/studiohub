@@ -28,9 +28,6 @@ export const ApiHealthPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap">
-            <Link to="/testing" className="text-xs font-mono px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 hover:bg-indigo-500/20 transition-colors">
-              Open QA Runner
-            </Link>
             <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               SLA 99.98% Operational

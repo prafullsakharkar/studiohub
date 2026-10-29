@@ -80,7 +80,6 @@ describe('CommandPalette access scoping', () => {
   it('hides admin-only entries from users without an admin grant', async () => {
     await renderPalette();
     expect(screen.queryByText('Access & RBAC Workspace')).toBeNull();
-    expect(screen.queryByText('Open API Diagnostic & Test Suite')).toBeNull();
     expect(screen.queryByText('Database Inspector & Storage')).toBeNull();
   });
 
@@ -89,7 +88,8 @@ describe('CommandPalette access scoping', () => {
     await renderPalette();
     fireEvent.click(screen.getByText(/Commands \(/));
     expect(screen.getByText('Access & RBAC Workspace')).toBeTruthy();
-    expect(screen.getByText('Open API Diagnostic & Test Suite')).toBeTruthy();
+    // The in-app QA runner was removed (docs/sync Phase 1): no one is offered it any more.
+    expect(screen.queryByText('Open API Diagnostic & Test Suite')).toBeNull();
   });
 
   it('refreshes admin entries when the active user changes (no stale closure)', async () => {

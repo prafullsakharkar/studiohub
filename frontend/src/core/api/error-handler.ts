@@ -30,9 +30,6 @@ class CentralErrorHandler {
     logger.warn('CentralErrorHandler', `[${source}] Error detected [${error.type} - ${error.status}]: ${error.message}`);
 
     const isTestOrSimulation =
-      source === 'TestRunner' ||
-      source === 'TestRunnerEngine' ||
-      source === 'TestingSuite' ||
       source === 'ErrorSimulator' ||
       source.includes('Test') ||
       error.message?.includes('Simulated') ||

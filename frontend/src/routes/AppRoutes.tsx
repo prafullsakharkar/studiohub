@@ -68,7 +68,6 @@ import { UnauthorizedPage } from '@/pages/UnauthorizedPage';
 
 import { ServerErrorPage } from '@/pages/ServerErrorPage';
 
-import { TestingPage } from '@/pages/TestingPage';
 
 export const AppRoutes: React.FC = () => {
 
@@ -305,7 +304,6 @@ export const AppRoutes: React.FC = () => {
 
           <Route element={<PermissionRoute requireAdmin={true} pagePermission="page.testing" permissions={['testing.view']} requireAny={true} fallbackPath="/forbidden" />}>
 
-            <Route path="/testing" element={<TestingPage />} />
 
           </Route>
 

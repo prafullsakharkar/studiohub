@@ -31,7 +31,6 @@ import {
   Workflow,
   Command as CommandIcon,
   HelpCircle,
-  Terminal,
   Database,
 } from 'lucide-react';
 import { usePermissions } from '@/core/permissions/usePermissions';
@@ -408,19 +407,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 navigate('/access');
               },
               keywords: ['permissions', 'rbac', 'roles', 'matrix', 'access', 'security'],
-            },
-            {
-              id: 'cmd-nav-testing-suite',
-              title: 'Open API Diagnostic & Test Suite',
-              subtitle: 'Automated DRF contract validation, MSW testing & error simulation lab (Admin Only)',
-              category: 'System' as const,
-              icon: Terminal,
-              shortcut: 'G T S',
-              action: () => {
-                navigate('/testing');
-                onClose();
-              },
-              keywords: ['api', 'validation', 'errors', 'admin'],
             },
           ]
         : []),
