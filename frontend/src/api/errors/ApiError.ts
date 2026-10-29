@@ -1,4 +1,5 @@
 import { DrfErrorResponse } from '@/types/common';
+import { normalizeApiError } from './normalizeApiError';
 import { AppError, IAppError } from './AppError';
 import { ApiErrorType, NormalizedApiError } from '@/core/api/types';
 
@@ -8,6 +9,7 @@ export interface ApiErrorInitOptions {
   userMessage?: string;
   details?: unknown;
   fieldErrors?: Record<string, string[]>;
+  nonFieldErrors?: string[];
   requestId?: string;
   retryable?: boolean;
   requiresAuthentication?: boolean;
@@ -22,6 +24,7 @@ export class ApiError extends AppError implements IAppError, NormalizedApiError 
   public readonly userMessage: string;
   public readonly details?: unknown;
   public readonly fieldErrors: Record<string, string[]>;
+  public readonly nonFieldErrors: string[];
   public readonly requestId?: string;
   public readonly retryable: boolean;
   public readonly requiresAuthentication: boolean;
@@ -43,6 +46,7 @@ export class ApiError extends AppError implements IAppError, NormalizedApiError 
       : {};
 
     this.fieldErrors = opts.fieldErrors || errors || {};
+    this.nonFieldErrors = opts.nonFieldErrors || [];
     this.code = opts.code;
     this.details = opts.details !== undefined ? opts.details : options;
     this.requestId = opts.requestId;
@@ -98,6 +102,7 @@ export class ApiError extends AppError implements IAppError, NormalizedApiError 
     if (status === 403) return 'FORBIDDEN';
     if (status === 404) return 'NOT_FOUND';
     if (status === 409) return 'CONFLICT';
+    if (status === 413) return 'PAYLOAD_TOO_LARGE';
     if (status === 422) return 'VALIDATION';
     if (status === 423) return 'ACCOUNT_LOCKED';
     if (status === 429) return 'RATE_LIMIT';
@@ -155,6 +160,8 @@ export class ApiError extends AppError implements IAppError, NormalizedApiError 
       }
       case 'CONFLICT':
         return 'This record was modified by someone else or already exists. Please refresh and try again.';
+      case 'PAYLOAD_TOO_LARGE':
+        return 'The file or request is too large. Please reduce its size and try again.';
       case 'RATE_LIMIT':
         return 'Too many requests sent to the server. Please wait a moment and try again.';
       case 'BAD_GATEWAY':
@@ -240,72 +247,24 @@ export class ApiError extends AppError implements IAppError, NormalizedApiError 
     data: DrfErrorResponse | string | null | undefined,
     headers?: Headers | Record<string, string | null | undefined>
   ): ApiError {
-    let message = 'An unexpected server error occurred.';
-    let code: string | undefined;
-    const errors: Record<string, string[]> = {};
-
-    let requestId: string | undefined;
-    let retryAfterMs: number | undefined;
-
-    if (headers) {
-      if (typeof (headers as Headers).get === 'function') {
-        const h = headers as Headers;
-        requestId = h.get('x-request-id') || h.get('x-correlation-id') || h.get('request-id') || undefined;
-        const retryAfter = h.get('retry-after');
-        if (retryAfter) {
-          const parsed = parseInt(retryAfter, 10);
-          if (!isNaN(parsed)) retryAfterMs = parsed * 1000;
-        }
-      } else {
-        const h = headers as Record<string, string | null | undefined>;
-        requestId = h['x-request-id'] || h['x-correlation-id'] || h['request-id'] || undefined;
-        const retryAfter = h['retry-after'];
-        if (retryAfter) {
-          const parsed = parseInt(retryAfter, 10);
-          if (!isNaN(parsed)) retryAfterMs = parsed * 1000;
-        }
-      }
-    }
-
-    if (typeof data === 'string') {
-      message = data;
-    } else if (data && typeof data === 'object') {
-      if ((data as any).code) {
-        code = String((data as any).code);
-      }
-      if ((data as any).error_code) {
-        code = String((data as any).error_code);
-      }
-
-      if (data.detail) {
-        message = data.detail;
-      } else if (data.non_field_errors && data.non_field_errors.length > 0) {
-        message = data.non_field_errors.join(' ');
-      } else if ((data as any).message) {
-        message = (data as any).message;
-      }
-
-      for (const [key, val] of Object.entries(data)) {
-        if (key === 'detail' || key === 'non_field_errors' || key === 'code' || key === 'error_code' || key === 'message') continue;
-        if (Array.isArray(val)) {
-          errors[key] = val.map(String);
-        } else if (typeof val === 'string') {
-          errors[key] = [val];
-        }
-      }
-    }
-
-    const type = ApiError.resolveErrorType(status, code);
-    const userMessage = ApiError.generateUserMessage(type, message, status, errors);
-
-    return new ApiError(message, status, errors, {
+    const normalized = normalizeApiError(status, data, headers);
+    const type = ApiError.resolveErrorType(status, normalized.code);
+    const userMessage = ApiError.generateUserMessage(
       type,
-      code,
+      normalized.message,
+      status,
+      normalized.fieldErrors
+    );
+
+    return new ApiError(normalized.message, status, normalized.fieldErrors, {
+      type,
+      code: normalized.code,
       userMessage,
       details: data,
-      fieldErrors: errors,
-      requestId,
-      retryAfterMs,
+      fieldErrors: normalized.fieldErrors,
+      nonFieldErrors: normalized.nonFieldErrors,
+      requestId: normalized.requestId,
+      retryAfterMs: normalized.retryAfter !== undefined ? normalized.retryAfter * 1000 : undefined,
     });
   }
 

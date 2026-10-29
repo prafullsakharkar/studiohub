@@ -13,6 +13,7 @@ export type ApiErrorType =
   | 'NOT_FOUND'
   | 'VALIDATION'
   | 'CONFLICT'
+  | 'PAYLOAD_TOO_LARGE'
   | 'RATE_LIMIT'
   | 'SERVER'
   | 'BAD_GATEWAY'
@@ -27,6 +28,7 @@ export interface NormalizedApiError {
   userMessage: string;
   details?: unknown;
   fieldErrors: Record<string, string[]>;
+  nonFieldErrors: string[];
   requestId?: string;
   retryable: boolean;
   requiresAuthentication: boolean;
