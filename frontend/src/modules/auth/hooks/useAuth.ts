@@ -1,0 +1,26 @@
+import { useContext } from 'react';
+import { AuthContext, AuthContextValue } from '@/core/auth/AuthContext';
+
+const fallbackAuthContext: AuthContextValue = {
+  user: null,
+  isAuthenticated: false,
+  isLoading: false,
+  login: async () => {},
+  logout: async () => {},
+  hasRole: () => false,
+  hasPermission: () => false,
+  can: () => false,
+  refreshUser: async () => {},
+  updateUserProfile: async () => {
+    throw new Error('updateUserProfile called outside AuthProvider');
+  },
+};
+
+export function useAuth(): AuthContextValue {
+  const context = useContext(AuthContext);
+  if (!context) {
+    return fallbackAuthContext;
+  }
+  return context;
+}
+

@@ -1,0 +1,29 @@
+node_modules/
+build/
+dist/
+coverage/
+mock-data/
+.DS_Store
+*.log
+.env*
+!.env.example
+playwright-report/
+test-results/
+blob-report/
+# Added by code-review-graph
+.code-review-graph/
+
+# Playwright MCP screenshots/snapshots
+.playwright-mcp/
+
+# SDD isolated workspaces
+.worktrees/
+
+# Playwright CLI snapshots/scratch
+.playwright-cli/
+.vitest/
+dump.rdb
+
+# Local tool state
+.serena/
+.superpowers/

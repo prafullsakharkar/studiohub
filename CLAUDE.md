@@ -8,9 +8,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository state (differs from what AGENTS.md describes)
 
-`AGENTS.md` describes an organization-aware platform with a `frontend/` and an `apps/organization` reference implementation. **Neither exists in the runtime today:**
+`AGENTS.md` describes an organization-aware platform with a `frontend/` and an `apps/organization` reference implementation. **`apps/organization` does not exist in the runtime today, and `frontend/` is a different codebase from the one `AGENTS.md` describes:**
 
-- The `frontend/` directory was removed (commit `d1bbd7a`). This repo is backend-only; the API contract it must preserve was defined by the former frontend's mock API (see `config/v1_urls.py` "frontend-compatible aliases").
+- `frontend/` was removed in `d1bbd7a` and re-added as the React app synced from the sibling `studiohub-react` repo (React 19, Vite, TypeScript, pnpm; see `frontend/CLAUDE.md` and `frontend/AGENTS.md`). It has its own tooling (`pnpm dev|build|test|typecheck` from `frontend/`) and is not wired into `Makefile`, compose files or CI. The API contract the backend must preserve is still defined by the frontend's API usage (see `config/v1_urls.py` "frontend-compatible aliases"). Keep `frontend/.env` out of Git (ignored).
 - `apps/organization` is gone (no source, not in `INSTALLED_APPS`; the leftover directory was deleted). Treat the "use `apps/organization` as the reference" instruction as unavailable; use `apps/identity`, `apps/settings`, `apps/audit` for layout instead.
 - Identity is **platform-global by decision** (`docs/adr/ADR-0034-identity-platform-global-boundary.md`): do not add organization FKs or org-scoped queries to `apps/identity`. Tenancy/isolation is enforced only where a real tenant dimension exists (e.g. `ProjectMembership` in `apps.production`).
 - The `.cover` files and `__pycache__` dirs scattered under `apps/` are artifacts; ignore them.

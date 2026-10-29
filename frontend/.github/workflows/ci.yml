@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+concurrency:
+  group: ci-react-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend (tsc + vitest + build)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm run lint
+
+      - name: Biome lint
+        run: pnpm run lint:biome
+
+      - name: Unit + contract tests (with coverage floor)
+        # Includes src/__tests__/parity/ApiParity.test.ts, which locks mock
+        # fixtures to the Django contract (docs/api + core/api/generated).
+        # Any intentional breaking API change must update the backend docs and
+        # this suite together. Coverage thresholds act as a regression floor.
+        run: pnpm run test:coverage
+
+      - name: Build
+        run: pnpm build
