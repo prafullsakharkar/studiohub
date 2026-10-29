@@ -360,6 +360,8 @@ storybook-static/
 .openapi/
 .openapi-generated/
 generated/
+# Exception: the frontend's OpenAPI types and schema snapshot are build inputs (docs/sync Phase 1).
+!frontend/src/core/api/generated/
 
 # ============================================================
 
