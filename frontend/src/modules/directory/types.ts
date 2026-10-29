@@ -80,6 +80,12 @@ export interface DirectoryListConfig<T extends { id: string }> {
   archived?: { fetchPage: PageFetcher<T>; restore: (id: string) => Promise<unknown> };
   /** What the delete control is called when "delete" really archives (default "Delete"). */
   deleteLabel?: string;
+  /** Filters fixed by where the list sits (a project's shots tab): sent with every request and not offered as controls. */
+  scope?: Record<string, string>;
+  /** Query string for the New link, e.g. `project=<id>`, so the form opens pre-filled. */
+  createQuery?: string;
+  /** Extra header controls; receives the active filters (e.g. a bulk-add button once a project is chosen). */
+  headerExtra?: (filters: Record<string, unknown>) => React.ReactNode;
   /** Tick rows and act on them all. */
   bulk?: { actions: ReadonlyArray<BulkAction> };
   /** Lifecycle actions on a row (deactivate, restore, …), each behind a confirmation; shown with the manage permission. */

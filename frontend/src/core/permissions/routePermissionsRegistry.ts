@@ -227,11 +227,46 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
     pagePermission: 'page.project.assets',
     permissions: ['asset.view'],
   },
+  '/shots/new': {
+    path: '/shots/new',
+    name: 'Create Shot',
+    permissions: ['shot.create'],
+  },
+  '/shots/:id/edit': {
+    path: '/shots/:id/edit',
+    name: 'Edit Shot',
+    permissions: ['shot.update'],
+  },
+  '/assets/new': {
+    path: '/assets/new',
+    name: 'Create Asset',
+    permissions: ['asset.create'],
+  },
+  '/assets/:id/edit': {
+    path: '/assets/:id/edit',
+    name: 'Edit Asset',
+    permissions: ['asset.update'],
+  },
   '/tasks': {
     path: '/tasks',
     name: 'Tasks',
     pagePermission: 'page.project.tasks',
     permissions: ['task.view'],
+  },
+  '/task-templates': {
+    path: '/task-templates',
+    name: 'Task Templates',
+    permissions: ['tasktemplate.view'],
+  },
+  '/task-templates/new': {
+    path: '/task-templates/new',
+    name: 'Create Task Template',
+    permissions: ['tasktemplate.create'],
+  },
+  '/task-templates/:id/edit': {
+    path: '/task-templates/:id/edit',
+    name: 'Edit Task Template',
+    permissions: ['tasktemplate.update'],
   },
   '/tasks/new': {
     path: '/tasks/new',

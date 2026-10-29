@@ -51,7 +51,7 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
   const [view, setView] = useState<'active' | 'archived'>('active');
   const inArchive = view === 'archived' && Boolean(config.archived);
   const fetchPage = inArchive ? (config.archived as NonNullable<typeof config.archived>).fetchPage : config.fetchPage;
-  const list = usePaginatedList<T>({ queryKey: [...config.queryKey, view], fetchPage, ordering: config.defaultOrdering });
+  const list = usePaginatedList<T>({ queryKey: [...config.queryKey, view, config.scope ?? {}], fetchPage, ordering: config.defaultOrdering, filters: config.scope });
   const [toDelete, setToDelete] = useState<T | null>(null);
   const [pendingAction, setPendingAction] = useState<(RowAction & { rowName: string }) | null>(null);
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
@@ -104,7 +104,7 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <SearchInput placeholder={config.searchPlaceholder} value={list.search} onChange={(e) => list.setSearch(e.target.value)} onClear={() => list.setSearch('')} aria-label={`Search ${config.title.toLowerCase()}`} className="w-56" />
-          {config.filters?.map((filter) => (
+          {config.filters?.filter((filter) => !(config.scope && filter.key in config.scope)).map((filter) => (
             <FilterSelect key={filter.key} filter={filter} value={String(list.filters[filter.key] ?? '')} onChange={(value) => list.setFilter(filter.key, value)} />
           ))}
           {config.archived && (
@@ -118,8 +118,9 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
               Export
             </Button>
           )}
+          {config.headerExtra?.(list.filters)}
           {canCreate && (
-            <Link to={`${config.basePath}/new`}>
+            <Link to={`${config.basePath}/new${config.createQuery ? `?${config.createQuery}` : ''}`}>
               <Button size="sm" variant="primary" leftIcon={<Plus className="w-3.5 h-3.5" />}>
                 New {config.noun}
               </Button>

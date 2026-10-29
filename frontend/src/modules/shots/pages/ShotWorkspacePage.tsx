@@ -17,6 +17,7 @@ import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import {
 
   Clapperboard,
+  Layers,
 
   LayoutGrid,
 
@@ -82,7 +83,7 @@ import { Button } from '@/shared/components/Button';
 
 import { ShotOverviewTab } from '../components/workspace/ShotOverviewTab';
 
-import { ShotTasksTab } from '../components/workspace/ShotTasksTab';
+import { EntityTasksPanel, ShotAssetsPanel, WorkHistoryPanel } from '@/modules/production/work/panels';
 
 import { ShotVersionsTab } from '../components/workspace/ShotVersionsTab';
 
@@ -314,7 +315,7 @@ export const ShotWorkspacePage: React.FC = () => {
 
         shortcut: '⌘E',
 
-        onClick: () => setIsEditOpen(true),
+        onClick: () => navigate(`/shots/${shot.id}/edit`),
 
       },
 
@@ -350,7 +351,7 @@ export const ShotWorkspacePage: React.FC = () => {
 
         permission: 'task.create',
 
-        onClick: () => setIsCreateTaskOpen(true),
+        onClick: () => navigate(`/tasks/new?project=${shot.project_id}&entity_type=Shot&entity_id=${shot.id}`),
 
       },
 
@@ -602,6 +603,8 @@ export const ShotWorkspacePage: React.FC = () => {
 
       { id: 'tasks', label: 'Tasks', icon: CheckSquare, badge: shotTasks.length || undefined },
 
+      { id: 'assets', label: 'Assets', icon: Layers },
+
       { id: 'versions', label: 'Versions', icon: GitBranch, badge: shotVersions.length || undefined },
 
       { id: 'reviews', label: 'Reviews', icon: Film },
@@ -816,11 +819,11 @@ export const ShotWorkspacePage: React.FC = () => {
 
           onNavigateTab={handleTabChange}
 
-          onOpenEdit={() => setIsEditOpen(true)}
+          onOpenEdit={() => navigate(`/shots/${shot.id}/edit`)}
 
           onOpenAssign={() => setIsAssignOpen(true)}
 
-          onOpenCreateTask={() => setIsCreateTaskOpen(true)}
+          onOpenCreateTask={() => navigate(`/tasks/new?project=${shot.project_id}&entity_type=Shot&entity_id=${shot.id}`)}
 
           onOpenSubmitVersion={() => setIsSubmitVersionOpen(true)}
 
@@ -828,19 +831,9 @@ export const ShotWorkspacePage: React.FC = () => {
 
       )}
 
-      {resolvedTab === 'tasks' && (
+      {resolvedTab === 'tasks' && <EntityTasksPanel target={{ type: 'Shot', id: shot.id, code: shot.code, projectId: shot.project_id }} />}
 
-        <ShotTasksTab
-
-          shot={shot}
-
-          tasks={shotTasks}
-
-          onOpenCreateTask={() => setIsCreateTaskOpen(true)}
-
-        />
-
-      )}
+      {resolvedTab === 'assets' && <ShotAssetsPanel shot={shot} />}
 
       {resolvedTab === 'versions' && (
 
@@ -864,7 +857,7 @@ export const ShotWorkspacePage: React.FC = () => {
 
       )}
 
-      {resolvedTab === 'activity' && <ShotActivityTab shot={shot} />}
+      {resolvedTab === 'activity' && <WorkHistoryPanel targetType="Shot" id={shot.id} />}
 
       {resolvedTab === 'media' && <ShotMediaTab shot={shot} />}
 
@@ -874,7 +867,7 @@ export const ShotWorkspacePage: React.FC = () => {
 
       )}
 
-      {resolvedTab === 'history' && <ShotHistoryTab shot={shot} />}
+      {resolvedTab === 'history' && <WorkHistoryPanel targetType="Shot" id={shot.id} />}
 
       {/* Workspace Modals */}
 

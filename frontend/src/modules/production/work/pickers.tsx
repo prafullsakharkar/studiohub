@@ -1,18 +1,22 @@
 import { useQuery } from '@tanstack/react-query';
 import type React from 'react';
-import { projectScopedApi, projectsApi, sequencesApi } from '@/api/production/structure';
-import type { Project, Sequence } from '@/api/production/structure';
+import { episodesApi, projectScopedApi, projectsApi, sequencesApi } from '@/api/production/structure';
+import type { Episode, Project, Sequence } from '@/api/production/structure';
 import { assetsApi, shotsApi, tasksApi } from '@/api/production/work';
 import type { Asset, Shot, Task } from '@/api/production/work';
 import { EntityPicker } from '@/components/forms/EntityPicker';
 import { listFetcher } from '@/shared/data/listing';
 import type { PickerProps } from '@/modules/directory/pickers';
 
-/** Task types come from the catalog (a bare array, no trailing slash). */
+/** Task and asset types come from the catalog (bare arrays, no trailing slash). */
 const taskTypes = listFetcher<{ id: string; code: string; name: string }>('/api/v1/platform/master-data/task-types');
+const assetTypes = listFetcher<{ id: string; code: string; name: string }>('/api/v1/platform/master-data/asset-types');
 
 export const ProjectPicker: React.FC<PickerProps> = ({ label = 'Project', ...p }) => (
   <EntityPicker<Project> label={label} queryKey={projectsApi.keys.all} fetchPage={projectsApi.list} fetchOne={projectsApi.get} getLabel={(x) => `${x.code} · ${x.name}`} {...p} />
+);
+export const EpisodePicker: React.FC<PickerProps> = ({ label = 'Episode', ...p }) => (
+  <EntityPicker<Episode> label={label} queryKey={episodesApi.keys.all} fetchPage={episodesApi.list} fetchOne={episodesApi.get} getLabel={(x) => `${x.code}${x.name ? ` · ${x.name}` : ''}`} {...p} />
 );
 export const SequencePicker: React.FC<PickerProps> = ({ label = 'Sequence', ...p }) => (
   <EntityPicker<Sequence> label={label} queryKey={sequencesApi.keys.all} fetchPage={sequencesApi.list} fetchOne={sequencesApi.get} getLabel={(x) => `${x.code}${x.name ? ` · ${x.name}` : ''}`} {...p} />
@@ -28,6 +32,10 @@ export const TaskPicker: React.FC<PickerProps> = ({ label = 'Task', ...p }) => (
 );
 export const TaskTypePicker: React.FC<PickerProps> = ({ label = 'Task type', ...p }) => (
   <EntityPicker<{ id: string; code: string; name: string }> label={label} queryKey={['catalog', 'task-types']} fetchPage={taskTypes} getLabel={(x) => x.name} {...p} />
+);
+
+export const AssetTypePicker: React.FC<PickerProps> = ({ label = 'Asset type', ...p }) => (
+  <EntityPicker<{ id: string; code: string; name: string }> label={label} queryKey={['catalog', 'asset-types']} fetchPage={assetTypes} getLabel={(x) => x.name} {...p} />
 );
 
 export interface MemberSelectProps {
