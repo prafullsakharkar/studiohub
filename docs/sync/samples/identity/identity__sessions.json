@@ -1,0 +1,175 @@
+{
+  "view": "UserSessionViewSet",
+  "app": "identity",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/sessions/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "68fefab1-33ac-4639-95fc-b1e9dfcb1efa",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 1,
+      "items": [
+        {
+          "id": "9ed715e0-a312-4a12-b599-95d204434ed6",
+          "user_id": "5789d20f-53cd-4a3f-8373-66d38948138c",
+          "user_agent": "Opera/8.94.(X11; Linux x86_64; my-MM) Presto/2.9.188 Version/10.00",
+          "ip_address": "44.237.47.61",
+          "location": null,
+          "is_current": false,
+          "created_at": "2026-10-29T05:37:41.995244Z",
+          "last_activity": "2026-10-29T05:37:41.995339Z",
+          "expires_at": "2026-11-28T05:37:41.994558Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/sessions/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e0eb6992-7a70-4162-ae69-d7c0a18df5a6",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "e0eb6992-7a70-4162-ae69-d7c0a18df5a6"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/sessions/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "513bf31c-676c-439b-a81d-c26dbd3d0e5b",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/sessions/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "cee5a729-4557-4864-a634-d2bca4f47a71",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/sessions/9ed715e0-a312-4a12-b599-95d204434ed6/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e349f398-1a14-4177-891e-6382a56cdfa9",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "9ed715e0-a312-4a12-b599-95d204434ed6",
+      "user_id": "5789d20f-53cd-4a3f-8373-66d38948138c",
+      "user_agent": "Opera/8.94.(X11; Linux x86_64; my-MM) Presto/2.9.188 Version/10.00",
+      "ip_address": "44.237.47.61",
+      "location": null,
+      "is_current": false,
+      "created_at": "2026-10-29T05:37:41.995244Z",
+      "last_activity": "2026-10-29T05:37:41.995339Z",
+      "expires_at": "2026-11-28T05:37:41.994558Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/sessions/682192a2-6fee-4c8c-8874-ed77ddfea22e/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e8de5e95-c403-4aac-9f8f-ab314a7597a8",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No UserSession matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "e8de5e95-c403-4aac-9f8f-ab314a7597a8"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/sessions/",
+      "body": {}
+    },
+    "status": 500,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a0924b78-d02b-4e02-afc5-16d4d39eebc4",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Internal server error.",
+      "error": {
+        "code": "internal_server_error",
+        "request_id": "a0924b78-d02b-4e02-afc5-16d4d39eebc4"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/sessions/",
+      "body": {}
+    },
+    "status": 500,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c15c1eaa-06e2-438b-a270-17e0e795ee26",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Internal server error.",
+      "error": {
+        "code": "internal_server_error",
+        "request_id": "c15c1eaa-06e2-438b-a270-17e0e795ee26"
+      }
+    }
+  }
+}

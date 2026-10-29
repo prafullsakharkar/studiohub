@@ -1,0 +1,185 @@
+{
+  "view": "ErrorLogViewSet",
+  "app": "audit",
+  "actions": "{\"get\": \"list\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/error-logs/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4676ace9-2a87-46fa-a7bf-52d43e1772c5",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "38714b0b-94a2-40be-b5a6-e488841895c0",
+          "uuid": "38714b0b-94a2-40be-b5a6-e488841895c0",
+          "severity": "info",
+          "error_type": "validation",
+          "error_code": "message",
+          "message": "Bring each organization should.\nWell rich fill how up company election. Week success else forward news cost.\nThemselves entire assume add market. Trip parent en\u2026<truncated>",
+          "stack_trace": "Share new only might purpose indicate. Alone hundred director foreign one other century sometimes. Night official think test hard hotel get.\nPossible three law \u2026<truncated>",
+          "user": "3152f527-8613-46c8-931c-7d34c53040df",
+          "user_email": "user@example.test",
+          "user_name": "user@example.test",
+          "ip_address": "216.226.133.224",
+          "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 11_4_1 like Mac OS X) AppleWebKit/531.1 (KHTML, like Gecko) CriOS/20.0.864.0 Mobile/20H421 Safari/531.1",
+          "request_path": "list/categories/blog",
+          "request_method": "PUT",
+          "context_data": "[{\"name\": \"Ethan Morgan\", \"residency\": \"Unit 0376 Box 2741\\nDPO AA 82402\"}, {\"name\": \"Jessica Johnston\", \"residency\": \"81599 Ramsey Canyon Apt. 476\\nLake Patric\u2026<truncated>",
+          "resolved": false,
+          "resolved_at": null,
+          "resolved_by": null,
+          "created_at": "2026-10-29T05:37:41.909883Z",
+          "updated_at": "2026-10-29T05:37:41.909900Z"
+        },
+        {
+          "id": "c70bc6b7-c229-4ce8-ad34-40d78685e14f",
+          "uuid": "c70bc6b7-c229-4ce8-ad34-40d78685e14f",
+          "severity": "info",
+          "error_type": "not_found",
+          "error_code": "may",
+          "message": "Month art rest well mention expert beyond fish. War far here.\nDoor suddenly visit increase it shake executive. Happy country plan degree impact. Often evidence \u2026<truncated>",
+          "stack_trace": "College commercial make wall. Knowledge measure toward law wind today it. Serve contain region poor pretty. Really car significant member song learn without.\nBu\u2026<truncated>",
+          "user": "370e0c95-ac27-4b5b-9eda-f6a9ffff5763",
+          "user_email": "user@example.test",
+          "user_name": "user@example.test",
+          "ip_address": "98.125.108.94",
+          "user_agent": "Mozilla/5.0 (iPad; CPU iPad OS 7_1_2 like Mac OS X) AppleWebKit/531.1 (KHTML, like Gecko) FxiOS/18.6j4347.0 Mobile/24C458 Safari/531.1",
+          "request_path": "posts/wp-content",
+          "request_method": "POST",
+          "context_data": "[{\"name\": \"Jamie Shields\", \"residency\": \"9424 Victoria Meadows Apt. 414\\nWest Dawn, GA 66015\"}, {\"name\": \"Sheri Lee\", \"residency\": \"785 Philip Gateway Suite 165\u2026<truncated>",
+          "resolved": false,
+          "resolved_at": null,
+          "resolved_by": null,
+          "created_at": "2026-10-29T05:37:41.892072Z",
+          "updated_at": "2026-10-29T05:37:41.892097Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/error-logs/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "467f2823-f79d-45fd-9160-aab35c1dbc1a",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "467f2823-f79d-45fd-9160-aab35c1dbc1a"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/error-logs/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "000eae2b-ce40-47c4-985b-19cee050acb5",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "000eae2b-ce40-47c4-985b-19cee050acb5"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/error-logs/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "47dffce1-73e0-40c9-abfa-12d88bd7b01d",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "47dffce1-73e0-40c9-abfa-12d88bd7b01d"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/error-logs/38714b0b-94a2-40be-b5a6-e488841895c0/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8df47fd7-2634-49dc-be66-00a72cc241d4",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "38714b0b-94a2-40be-b5a6-e488841895c0",
+      "uuid": "38714b0b-94a2-40be-b5a6-e488841895c0",
+      "severity": "info",
+      "error_type": "validation",
+      "error_code": "message",
+      "message": "Bring each organization should.\nWell rich fill how up company election. Week success else forward news cost.\nThemselves entire assume add market. Trip parent en\u2026<truncated>",
+      "stack_trace": "Share new only might purpose indicate. Alone hundred director foreign one other century sometimes. Night official think test hard hotel get.\nPossible three law \u2026<truncated>",
+      "user": "3152f527-8613-46c8-931c-7d34c53040df",
+      "user_email": "user@example.test",
+      "user_name": "user@example.test",
+      "ip_address": "216.226.133.224",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 11_4_1 like Mac OS X) AppleWebKit/531.1 (KHTML, like Gecko) CriOS/20.0.864.0 Mobile/20H421 Safari/531.1",
+      "request_path": "list/categories/blog",
+      "request_method": "PUT",
+      "context_data": "[{\"name\": \"Ethan Morgan\", \"residency\": \"Unit 0376 Box 2741\\nDPO AA 82402\"}, {\"name\": \"Jessica Johnston\", \"residency\": \"81599 Ramsey Canyon Apt. 476\\nLake Patric\u2026<truncated>",
+      "resolved": false,
+      "resolved_at": null,
+      "resolved_by": null,
+      "created_at": "2026-10-29T05:37:41.909883Z",
+      "updated_at": "2026-10-29T05:37:41.909900Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/error-logs/f470e43c-1ce7-4deb-a5db-e6b0eff3f36c/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f115df9e-23bb-45b2-a8b2-24d460525200",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No ErrorLog matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "f115df9e-23bb-45b2-a8b2-24d460525200"
+      }
+    }
+  }
+}

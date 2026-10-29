@@ -1,0 +1,84 @@
+{
+  "view": "ProjectScheduleView",
+  "app": "production",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/schedule/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f99f77ef-6a6d-42e6-95b3-451871f64d80",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "project_id": "90864aa9-6ae0-49a3-807e-e5327db92bf0",
+      "start_date": "2026-10-29",
+      "delivery_date": "2027-04-27",
+      "milestones": []
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/schedule/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "899eeefe-42aa-4ffa-a0c4-c2f35b4175cc",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "899eeefe-42aa-4ffa-a0c4-c2f35b4175cc"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/schedule/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6e5fe2fb-43c4-4958-aa21-bb94096683a3",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "6e5fe2fb-43c4-4958-aa21-bb94096683a3"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/90864aa9-6ae0-49a3-807e-e5327db92bf0/schedule/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3153098b-5c9e-4b06-a8ae-b0bc252b9d53",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Project 90864aa9-6ae0-49a3-807e-e5327db92bf0 not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "3153098b-5c9e-4b06-a8ae-b0bc252b9d53"
+      }
+    }
+  }
+}

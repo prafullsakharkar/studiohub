@@ -1,0 +1,189 @@
+{
+  "view": "SecurityEventViewSet",
+  "app": "identity",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/security-events/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "518c7b50-ba2b-4a5a-b262-e4640eced413",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "c760deb1-1cf9-46ba-aea5-bb3982d63d91",
+          "uuid": "c760deb1-1cf9-46ba-aea5-bb3982d63d91",
+          "user": "09154d7d-b56b-46e0-943a-53ab1654f683",
+          "event_type": "login_success",
+          "ip_address": "127.0.0.1",
+          "occurred_at": "2026-10-29T05:37:41.978970Z"
+        },
+        {
+          "id": "7428cc31-0ab2-47c4-9a53-ddb34ba0a886",
+          "uuid": "7428cc31-0ab2-47c4-9a53-ddb34ba0a886",
+          "user": "7fb69b57-1051-4768-844b-9be8dcc5a4d2",
+          "event_type": "login_success",
+          "ip_address": "127.0.0.1",
+          "occurred_at": "2026-10-29T05:37:41.983162Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/security-events/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2760a11d-8c37-42b4-ba41-d28d9bc43bac",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "2760a11d-8c37-42b4-ba41-d28d9bc43bac"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/security-events/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3f1649d0-43ff-4e66-8915-74b6c2dd47b7",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "3f1649d0-43ff-4e66-8915-74b6c2dd47b7"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/security-events/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "209c167d-a22e-4416-97c1-79a784a2ba09",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "209c167d-a22e-4416-97c1-79a784a2ba09"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/security-events/c760deb1-1cf9-46ba-aea5-bb3982d63d91/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a59eeac5-c7d7-4acc-b7c3-8f41f867894d",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "c760deb1-1cf9-46ba-aea5-bb3982d63d91",
+      "uuid": "c760deb1-1cf9-46ba-aea5-bb3982d63d91",
+      "user": "09154d7d-b56b-46e0-943a-53ab1654f683",
+      "event_type": "login_success",
+      "ip_address": "127.0.0.1",
+      "user_agent": "Mozilla/5.0",
+      "description": "Shoulder our maintain six painting. Large live lot.\nThat director morning performance successful add power. Eye eye grow provide.",
+      "metadata": {},
+      "is_critical": false,
+      "occurred_at": "2026-10-29T05:37:41.978970Z",
+      "created_at": "2026-10-29T05:37:41.978909Z",
+      "updated_at": "2026-10-29T05:37:41.978919Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/security-events/cfcf6a6a-ce5d-46bf-b471-83bd7a7d088b/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "bfdea895-580b-460a-a123-9c8c8954cd29",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No SecurityEvent matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "bfdea895-580b-460a-a123-9c8c8954cd29"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/security-events/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e8fb0b5c-0dda-4998-bd1b-d437dfcf5576",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "event_type": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "e8fb0b5c-0dda-4998-bd1b-d437dfcf5576"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/security-events/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f2f9524f-d14c-4a99-8ffc-8eef957a195a",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "f2f9524f-d14c-4a99-8ffc-8eef957a195a"
+      }
+    }
+  }
+}

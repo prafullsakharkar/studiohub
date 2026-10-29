@@ -1,0 +1,106 @@
+{
+  "view": "AnalyticsKpisView",
+  "app": "production",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/analytics/kpis/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "14adb6e3-e456-4894-b787-d1e1c6d93925",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "total_active_projects": 3,
+      "total_shots": 2,
+      "approved_shots": 0,
+      "pending_review_shots": 0,
+      "in_progress_shots": 0,
+      "approval_rate_percentage": 0.0,
+      "active_artists": 0,
+      "storage_usage_tb": 0,
+      "storage_quota_tb": 0,
+      "render_nodes_busy": null,
+      "render_nodes_total": null,
+      "average_render_time_mins": null
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/analytics/kpis/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "fe5932e7-8af0-4b12-bc54-d9e15a469755",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "fe5932e7-8af0-4b12-bc54-d9e15a469755"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/analytics/kpis/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f2ee2978-b780-4936-ab82-f7df99f9dab7",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "total_active_projects": 0,
+      "total_shots": 0,
+      "approved_shots": 0,
+      "pending_review_shots": 0,
+      "in_progress_shots": 0,
+      "approval_rate_percentage": 0.0,
+      "active_artists": 0,
+      "storage_usage_tb": 0,
+      "storage_quota_tb": 0,
+      "render_nodes_busy": null,
+      "render_nodes_total": null,
+      "average_render_time_mins": null
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/analytics/kpis/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d975a7b4-ac8f-4589-801d-ad9cb71707b0",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "total_active_projects": 0,
+      "total_shots": 0,
+      "approved_shots": 0,
+      "pending_review_shots": 0,
+      "in_progress_shots": 0,
+      "approval_rate_percentage": 0.0,
+      "active_artists": 0,
+      "storage_usage_tb": 0,
+      "storage_quota_tb": 0,
+      "render_nodes_busy": null,
+      "render_nodes_total": null,
+      "average_render_time_mins": null
+    }
+  }
+}

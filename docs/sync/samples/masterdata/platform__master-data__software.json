@@ -1,0 +1,267 @@
+{
+  "view": "SoftwareViewSet",
+  "app": "masterdata",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/software",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "aac163d0-ff21-405b-a894-b36832363f8c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "8094f49d-4c7c-481b-9eca-960a9f23ff56",
+          "name": "Software 0",
+          "code": "sw0",
+          "publisher": "",
+          "category": "",
+          "description": "",
+          "website": "",
+          "status": "active",
+          "scope": "GLOBAL",
+          "is_system": false,
+          "sort_order": 0,
+          "metadata": {},
+          "version_count": 1,
+          "created_at": "2026-10-29T05:37:41.745319Z",
+          "updated_at": "2026-10-29T05:37:41.745330Z"
+        },
+        {
+          "id": "d0a4a71d-1b88-4cdd-a147-1c6cc1ea77a0",
+          "name": "Software 1",
+          "code": "sw1",
+          "publisher": "",
+          "category": "",
+          "description": "",
+          "website": "",
+          "status": "active",
+          "scope": "GLOBAL",
+          "is_system": false,
+          "sort_order": 0,
+          "metadata": {},
+          "version_count": 1,
+          "created_at": "2026-10-29T05:37:41.751023Z",
+          "updated_at": "2026-10-29T05:37:41.751039Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/software",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "db5b36df-09a1-41a1-b661-7d54eaf933dc",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "db5b36df-09a1-41a1-b661-7d54eaf933dc"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/software",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5fd8e2c3-ac4e-48f5-841f-97f249da9c57",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "8094f49d-4c7c-481b-9eca-960a9f23ff56",
+          "name": "Software 0",
+          "code": "sw0",
+          "publisher": "",
+          "category": "",
+          "description": "",
+          "website": "",
+          "status": "active",
+          "scope": "GLOBAL",
+          "is_system": false,
+          "sort_order": 0,
+          "metadata": {},
+          "version_count": 1,
+          "created_at": "2026-10-29T05:37:41.745319Z",
+          "updated_at": "2026-10-29T05:37:41.745330Z"
+        },
+        {
+          "id": "d0a4a71d-1b88-4cdd-a147-1c6cc1ea77a0",
+          "name": "Software 1",
+          "code": "sw1",
+          "publisher": "",
+          "category": "",
+          "description": "",
+          "website": "",
+          "status": "active",
+          "scope": "GLOBAL",
+          "is_system": false,
+          "sort_order": 0,
+          "metadata": {},
+          "version_count": 1,
+          "created_at": "2026-10-29T05:37:41.751023Z",
+          "updated_at": "2026-10-29T05:37:41.751039Z"
+        }
+      ]
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/software",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f9ae7363-67ab-42f5-9b5b-8586aff82ce8",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "8094f49d-4c7c-481b-9eca-960a9f23ff56",
+          "name": "Software 0",
+          "code": "sw0",
+          "publisher": "",
+          "category": "",
+          "description": "",
+          "website": "",
+          "status": "active",
+          "scope": "GLOBAL",
+          "is_system": false,
+          "sort_order": 0,
+          "metadata": {},
+          "version_count": 1,
+          "created_at": "2026-10-29T05:37:41.745319Z",
+          "updated_at": "2026-10-29T05:37:41.745330Z"
+        },
+        {
+          "id": "d0a4a71d-1b88-4cdd-a147-1c6cc1ea77a0",
+          "name": "Software 1",
+          "code": "sw1",
+          "publisher": "",
+          "category": "",
+          "description": "",
+          "website": "",
+          "status": "active",
+          "scope": "GLOBAL",
+          "is_system": false,
+          "sort_order": 0,
+          "metadata": {},
+          "version_count": 1,
+          "created_at": "2026-10-29T05:37:41.751023Z",
+          "updated_at": "2026-10-29T05:37:41.751039Z"
+        }
+      ]
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/software8094f49d-4c7c-481b-9eca-960a9f23ff56/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2ace4d9b-e107-40c6-848f-1af964f9f360"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "2ace4d9b-e107-40c6-848f-1af964f9f360"
+      }
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/platform/master-data/software6d214905-7a3f-422a-8fbb-0d1854f97e7f/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "93f2ea0f-f22a-427a-84c7-123d313b68dd"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "93f2ea0f-f22a-427a-84c7-123d313b68dd"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/platform/master-data/software",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "741ee42d-17ae-4ecd-8d44-0c1859d4eb8e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "code": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "741ee42d-17ae-4ecd-8d44-0c1859d4eb8e"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/platform/master-data/software",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1a4b059c-2ddf-4f9c-bec4-60e106243817",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "1a4b059c-2ddf-4f9c-bec4-60e106243817"
+      }
+    }
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "view": "MilestoneViewSet",
+  "app": "scheduling",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/milestones/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2b54dbea-31f3-47bd-894a-7f25220c322e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/milestones/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ffa1c8a4-a72d-4272-9c60-8e21308f84f1",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "ffa1c8a4-a72d-4272-9c60-8e21308f84f1"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/milestones/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5e97b4d4-7d89-47d4-842a-bcdace5f373b",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "5e97b4d4-7d89-47d4-842a-bcdace5f373b"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/milestones/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "063db04e-da31-4c70-8483-19cc0536fab5",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 0,
+      "items": []
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/scheduling/milestones/ae488a48-d710-4948-a1fc-7c64e26f218a/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b27c9f56-3003-4093-9cfe-c67f068545a3",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Milestone matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "b27c9f56-3003-4093-9cfe-c67f068545a3"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/scheduling/milestones/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ddeeb646-3a8b-47a7-91d9-698ad73ed6bd",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "project_id": [
+        "This field is required."
+      ],
+      "name": [
+        "This field is required."
+      ],
+      "due_date": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "ddeeb646-3a8b-47a7-91d9-698ad73ed6bd"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/scheduling/milestones/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a22d3464-ac18-4aba-9516-6a77ca3ef3b6",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "a22d3464-ac18-4aba-9516-6a77ca3ef3b6"
+      }
+    }
+  }
+}

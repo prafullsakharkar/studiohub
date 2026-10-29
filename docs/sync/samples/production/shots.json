@@ -1,0 +1,254 @@
+{
+  "view": "ShotViewSet",
+  "app": "production",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/shots/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e8d42aca-948b-42f0-b9e7-0d522e70ab2e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "1f7f2f8d-1954-4590-bb67-f18efccb0d57",
+          "uuid": "1f7f2f8d-1954-4590-bb67-f18efccb0d57",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "show_id": null,
+          "project_code": "PROJ000",
+          "episode_id": null,
+          "sequence_id": "0323a2ab-75e8-4b1c-8afb-0f37d3b63295",
+          "sequence_code": "SEQ000",
+          "code": "SHOT000",
+          "name": "Shot 0",
+          "description": "",
+          "status": "Not Started",
+          "frame_in": 1001,
+          "frame_out": 1100,
+          "frame_count": 100,
+          "handle_frames": 8,
+          "thumbnail_url": "http://www.woodward.biz/",
+          "video_url": "",
+          "current_version": "",
+          "current_version_id": null,
+          "assigned_artist_id": null,
+          "assigned_artist_name": "",
+          "supervisor_approved": false,
+          "client_approved": false,
+          "pipeline": {
+            "layout": "Not Started"
+          },
+          "created_at": "2026-10-29T05:37:41.486993Z",
+          "updated_at": "2026-10-29T05:37:41.487002Z"
+        },
+        {
+          "id": "44acdf18-986a-44a6-af60-c14e2d715ff9",
+          "uuid": "44acdf18-986a-44a6-af60-c14e2d715ff9",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "show_id": null,
+          "project_code": "PROJ000",
+          "episode_id": null,
+          "sequence_id": "434d94c8-185a-4086-b8d2-a87a362f838a",
+          "sequence_code": "SEQ001",
+          "code": "SHOT001",
+          "name": "Shot 1",
+          "description": "",
+          "status": "Not Started",
+          "frame_in": 1001,
+          "frame_out": 1100,
+          "frame_count": 100,
+          "handle_frames": 8,
+          "thumbnail_url": "https://www.hall.biz/",
+          "video_url": "",
+          "current_version": "",
+          "current_version_id": null,
+          "assigned_artist_id": null,
+          "assigned_artist_name": "",
+          "supervisor_approved": false,
+          "client_approved": false,
+          "pipeline": {
+            "layout": "Not Started"
+          },
+          "created_at": "2026-10-29T05:37:41.620423Z",
+          "updated_at": "2026-10-29T05:37:41.620433Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/shots/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "88f6adb1-b22a-42fa-9385-d6e177c666bc",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "88f6adb1-b22a-42fa-9385-d6e177c666bc"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/shots/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "fec152c4-7f83-4999-8787-d1615d895ebf",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "fec152c4-7f83-4999-8787-d1615d895ebf"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/shots/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0d80d610-5cb5-4a1e-988d-94f028c25a6c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/shots/1f7f2f8d-1954-4590-bb67-f18efccb0d57/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7c586da6-9007-4dbe-a341-b166f675d82b",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "1f7f2f8d-1954-4590-bb67-f18efccb0d57",
+      "uuid": "1f7f2f8d-1954-4590-bb67-f18efccb0d57",
+      "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+      "show_id": null,
+      "project_code": "PROJ000",
+      "episode_id": null,
+      "sequence_id": "0323a2ab-75e8-4b1c-8afb-0f37d3b63295",
+      "sequence_code": "SEQ000",
+      "code": "SHOT000",
+      "name": "Shot 0",
+      "description": "",
+      "status": "Not Started",
+      "frame_in": 1001,
+      "frame_out": 1100,
+      "frame_count": 100,
+      "handle_frames": 8,
+      "thumbnail_url": "http://www.woodward.biz/",
+      "video_url": "",
+      "current_version": "",
+      "current_version_id": null,
+      "assigned_artist_id": null,
+      "assigned_artist_name": "",
+      "supervisor_approved": false,
+      "client_approved": false,
+      "pipeline": {
+        "layout": "Not Started"
+      },
+      "created_at": "2026-10-29T05:37:41.486993Z",
+      "updated_at": "2026-10-29T05:37:41.487002Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/shots/b7158089-216f-451a-92bf-51b0965bbcba/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "638bccec-5793-4d3a-a9b5-94d1a82b183c",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "638bccec-5793-4d3a-a9b5-94d1a82b183c"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/shots/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "60beb86a-8bef-4e7c-8428-fb690bead389",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "code": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "60beb86a-8bef-4e7c-8428-fb690bead389"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/shots/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b9951514-3808-4318-a57e-dcbeb2985e4d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "b9951514-3808-4318-a57e-dcbeb2985e4d"
+      }
+    }
+  }
+}

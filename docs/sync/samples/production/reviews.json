@@ -1,0 +1,239 @@
+{
+  "view": "ReviewViewSet",
+  "app": "production",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/reviews/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "be1d39c8-ee32-40d7-90d1-c67ca85866e1",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "5f6e3d31-2909-49e9-9f85-2c7960c18db7",
+          "uuid": "5f6e3d31-2909-49e9-9f85-2c7960c18db7",
+          "title": "Review 1",
+          "code": "",
+          "description": "",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "entity_type": "Shot",
+          "entity_id": "",
+          "entity_code": "",
+          "status": "Pending Review",
+          "supervisor_verdict": "Pending Review",
+          "lead_reviewer_name": "",
+          "thumbnail_url": "",
+          "video_url": "",
+          "versions": [],
+          "reviewers": [],
+          "comments": [],
+          "notes": [],
+          "annotations": [],
+          "activity": [],
+          "client": {},
+          "vendor": {},
+          "created_at": "2026-10-29T05:37:41.649834Z",
+          "updated_at": "2026-10-29T05:37:41.649843Z"
+        },
+        {
+          "id": "b76460b1-8268-4dfb-979d-79912b69f607",
+          "uuid": "b76460b1-8268-4dfb-979d-79912b69f607",
+          "title": "Review 0",
+          "code": "",
+          "description": "",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "entity_type": "Shot",
+          "entity_id": "",
+          "entity_code": "",
+          "status": "Pending Review",
+          "supervisor_verdict": "Pending Review",
+          "lead_reviewer_name": "",
+          "thumbnail_url": "",
+          "video_url": "",
+          "versions": [],
+          "reviewers": [],
+          "comments": [],
+          "notes": [],
+          "annotations": [],
+          "activity": [],
+          "client": {},
+          "vendor": {},
+          "created_at": "2026-10-29T05:37:41.543219Z",
+          "updated_at": "2026-10-29T05:37:41.543233Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/reviews/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "40036050-dd35-4270-9676-5f58446e2bfe",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "40036050-dd35-4270-9676-5f58446e2bfe"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/reviews/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d2ee9131-9f9d-4dff-8014-722c71cd8d90",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "d2ee9131-9f9d-4dff-8014-722c71cd8d90"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/reviews/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "539a65f2-2efe-48cc-9812-da8b71ef92f4",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/reviews/5f6e3d31-2909-49e9-9f85-2c7960c18db7/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7dd97c4b-2bda-4aca-9601-a485e5fb4c71",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "5f6e3d31-2909-49e9-9f85-2c7960c18db7",
+      "uuid": "5f6e3d31-2909-49e9-9f85-2c7960c18db7",
+      "title": "Review 1",
+      "code": "",
+      "description": "",
+      "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+      "entity_type": "Shot",
+      "entity_id": "",
+      "entity_code": "",
+      "status": "Pending Review",
+      "supervisor_verdict": "Pending Review",
+      "lead_reviewer_name": "",
+      "thumbnail_url": "",
+      "video_url": "",
+      "versions": [],
+      "reviewers": [],
+      "comments": [],
+      "notes": [],
+      "annotations": [],
+      "activity": [],
+      "client": {},
+      "vendor": {},
+      "created_at": "2026-10-29T05:37:41.649834Z",
+      "updated_at": "2026-10-29T05:37:41.649843Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/reviews/fd534e86-12c3-4853-b5c1-7a3a69d503d0/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "99e1a84d-bae0-4fab-a093-0205fe1c3c04",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "99e1a84d-bae0-4fab-a093-0205fe1c3c04"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/reviews/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1f54e23a-22e6-4cd3-a91b-070d8048f626",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "title": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "1f54e23a-22e6-4cd3-a91b-070d8048f626"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/reviews/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "abb091e2-955e-4534-8c8c-75efbdc8329e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "abb091e2-955e-4534-8c8c-75efbdc8329e"
+      }
+    }
+  }
+}

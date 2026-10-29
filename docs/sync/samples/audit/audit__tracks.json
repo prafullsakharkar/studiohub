@@ -1,0 +1,214 @@
+{
+  "view": "TrackViewSet",
+  "app": "audit",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/tracks/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "81d57c41-26b6-41bf-9d86-451d7a477ea4",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "780d7c42-4964-476d-a1dd-52cb7062952e",
+          "uuid": "780d7c42-4964-476d-a1dd-52cb7062952e",
+          "event_type": "click",
+          "event_name": "sometimes",
+          "user": "833aeae5-3778-4866-8bd6-34a76e1e3016",
+          "user_email": "user@example.test",
+          "user_name": "user@example.test",
+          "session_id": "0553eebe-b527-4bf1-a9f5-69b4bde4dee6",
+          "page_url": "http://www.rodriguez.net/tag/category/mainprivacy.htm",
+          "page_title": "forward",
+          "element_id": "142acb3c-7565-4007-956c-a75829de8080",
+          "element_text": "result",
+          "metadata": "[{\"name\": \"James Bell\", \"residency\": \"Unit 5067 Box 3249\\nDPO AE 36501\"}, {\"name\": \"Jesse Wallace\", \"residency\": \"620 Obrien Landing Apt. 873\\nMeyersview, ND 08\u2026<truncated>",
+          "created_at": "2026-10-29T05:37:41.931836Z",
+          "updated_at": "2026-10-29T05:37:41.931851Z"
+        },
+        {
+          "id": "be592628-a483-498a-98e3-81005f138c88",
+          "uuid": "be592628-a483-498a-98e3-81005f138c88",
+          "event_type": "form_submit",
+          "event_name": "receive",
+          "user": "f81dbd5b-2cb9-4dfd-843a-56e225abc0c8",
+          "user_email": "user@example.test",
+          "user_name": "user@example.test",
+          "session_id": "e4421052-b793-408c-8ce3-ab529616423a",
+          "page_url": "http://mason-myers.com/main/postsindex.htm",
+          "page_title": "nation",
+          "element_id": "c25145f1-b59e-41e3-b4d8-3379bd0c1c10",
+          "element_text": "she",
+          "metadata": "[{\"name\": \"Deborah Stephens PhD\", \"residency\": \"66802 Powell Mall Suite 066\\nPort Susanside, PA 09896\"}, {\"name\": \"Yolanda Pitts\", \"residency\": \"55143 Williams \u2026<truncated>",
+          "created_at": "2026-10-29T05:37:41.921322Z",
+          "updated_at": "2026-10-29T05:37:41.921336Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/tracks/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "bf512262-102b-4777-a90c-1a41bca5b35f",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "bf512262-102b-4777-a90c-1a41bca5b35f"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/tracks/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6e8c908a-49ce-4c60-8961-3efc7cbf88e0",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "6e8c908a-49ce-4c60-8961-3efc7cbf88e0"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/tracks/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ed073c62-4180-47c9-961a-22617ed799b1",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "ed073c62-4180-47c9-961a-22617ed799b1"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/tracks/780d7c42-4964-476d-a1dd-52cb7062952e/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6319a574-48d0-4850-bafd-927faf9f0e97",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "780d7c42-4964-476d-a1dd-52cb7062952e",
+      "uuid": "780d7c42-4964-476d-a1dd-52cb7062952e",
+      "event_type": "click",
+      "event_name": "sometimes",
+      "user": "833aeae5-3778-4866-8bd6-34a76e1e3016",
+      "user_email": "user@example.test",
+      "user_name": "user@example.test",
+      "session_id": "0553eebe-b527-4bf1-a9f5-69b4bde4dee6",
+      "page_url": "http://www.rodriguez.net/tag/category/mainprivacy.htm",
+      "page_title": "forward",
+      "element_id": "142acb3c-7565-4007-956c-a75829de8080",
+      "element_text": "result",
+      "metadata": "[{\"name\": \"James Bell\", \"residency\": \"Unit 5067 Box 3249\\nDPO AE 36501\"}, {\"name\": \"Jesse Wallace\", \"residency\": \"620 Obrien Landing Apt. 873\\nMeyersview, ND 08\u2026<truncated>",
+      "created_at": "2026-10-29T05:37:41.931836Z",
+      "updated_at": "2026-10-29T05:37:41.931851Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/tracks/b48cdf0f-c344-4217-a7e6-cc7962856ed1/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1a18acb2-e74f-4017-9897-a1e36bf10278",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Track matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "1a18acb2-e74f-4017-9897-a1e36bf10278"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/audit/tracks/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0608a4df-9365-440c-aeca-8b282b4c9c6e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "event_type": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "0608a4df-9365-440c-aeca-8b282b4c9c6e"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/audit/tracks/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5b5bf277-89e6-46bd-be73-33f145ccce0f",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "event_type": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "5b5bf277-89e6-46bd-be73-33f145ccce0f"
+      }
+    }
+  }
+}

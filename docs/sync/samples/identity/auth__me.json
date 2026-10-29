@@ -1,0 +1,166 @@
+{
+  "view": "AuthMeView",
+  "app": "identity",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/auth/me/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "cc8852e4-61e4-4a53-803c-e96588eab206",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "5789d20f-53cd-4a3f-8373-66d38948138c",
+      "email": "user@example.test",
+      "first_name": "",
+      "last_name": "",
+      "full_name": "user@example.test",
+      "avatar_url": null,
+      "role": "Artist",
+      "permissions": [
+        "project.create",
+        "project.view",
+        "project.update",
+        "project.delete",
+        "shot.create",
+        "shot.view",
+        "shot.update",
+        "shot.delete",
+        "shot.approve",
+        "asset.create",
+        "asset.view",
+        "asset.update",
+        "asset.delete",
+        "task.create",
+        "task.view",
+        "task.update",
+        "task.delete",
+        "review.create",
+        "review.view",
+        "review.approve",
+        "audit.view",
+        "settings.update",
+        "user.manage"
+      ],
+      "project_memberships": [],
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": true,
+      "must_change_password": false,
+      "created_at": "2026-10-29T05:37:41.396302+00:00",
+      "updated_at": "2026-10-29T05:37:41.396312+00:00"
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/auth/me/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6f1ff5ec-2c7b-4d1b-8fd2-342de3ad04b8",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "6f1ff5ec-2c7b-4d1b-8fd2-342de3ad04b8"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/auth/me/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d4f79485-781b-4f81-bb54-41a0a5bdd255",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "1ecbd16b-c169-4973-9ac6-409ab5ab08c8",
+      "email": "user@example.test",
+      "first_name": "",
+      "last_name": "",
+      "full_name": "user@example.test",
+      "avatar_url": null,
+      "role": "Artist",
+      "permissions": [],
+      "project_memberships": [],
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "must_change_password": false,
+      "created_at": "2026-10-29T05:37:41.409509+00:00",
+      "updated_at": "2026-10-29T05:37:41.410132+00:00"
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/auth/me/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "29d2393e-86e6-4bfa-a248-789a28fcf426",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "20eb449d-da6a-4ecc-b493-5e56b50c074b",
+      "email": "user@example.test",
+      "first_name": "Peggy",
+      "last_name": "Tucker",
+      "full_name": "Peggy Tucker",
+      "avatar_url": "/media/avatars/avatar_1191GGu.png",
+      "role": "Artist",
+      "permissions": [
+        "asset.view",
+        "delivery.view",
+        "episode.view",
+        "identity.user.view",
+        "media.create",
+        "media.view",
+        "note.create",
+        "playlist.view",
+        "project.view",
+        "publishing.view",
+        "review.view",
+        "schedule.create",
+        "schedule.view",
+        "sequence.view",
+        "shot.view",
+        "show.view",
+        "task.update",
+        "task.view",
+        "tasktemplate.view",
+        "timelog.create",
+        "timelog.update",
+        "timelog.view",
+        "track.view",
+        "version.create",
+        "version.view",
+        "workflow.view"
+      ],
+      "project_memberships": [],
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "must_change_password": false,
+      "created_at": "2026-10-29T05:37:41.418309+00:00",
+      "updated_at": "2026-10-29T05:37:41.418316+00:00"
+    }
+  }
+}

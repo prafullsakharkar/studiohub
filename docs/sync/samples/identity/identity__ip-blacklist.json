@@ -1,0 +1,210 @@
+{
+  "view": "IPBlacklistViewSet",
+  "app": "identity",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/ip-blacklist/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0f973615-66cd-44c1-99b3-c2628c14a2aa",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "86908d2c-f684-4130-8af9-0110962695b8",
+          "uuid": "86908d2c-f684-4130-8af9-0110962695b8",
+          "ip_address": "192.168.1.1",
+          "network": "",
+          "description": "Stock those personal push indeed bill. Money low conference. Field article why husband production war.",
+          "reason": "If fill could study all partner never.",
+          "blocked_by": "cf942249-2409-4c95-8137-015f5c3a02a7",
+          "is_active": true,
+          "expires_at": null,
+          "last_hit_at": null,
+          "hit_count": 0,
+          "metadata": {},
+          "expired": false,
+          "created_at": "2026-10-29T05:37:41.986678Z",
+          "updated_at": "2026-10-29T05:37:41.986687Z"
+        },
+        {
+          "id": "94252681-23d8-47df-a559-197a1f038e07",
+          "uuid": "94252681-23d8-47df-a559-197a1f038e07",
+          "ip_address": "192.168.1.2",
+          "network": "",
+          "description": "Their environmental finally understand easy production speak. Difference talk skill town white early respond defense. Might police win really.\nDo baby foreign b\u2026<truncated>",
+          "reason": "Dark behavior prove center feeling present move sit.",
+          "blocked_by": "874413ef-8366-4cca-b66a-2ae1764a09b1",
+          "is_active": true,
+          "expires_at": null,
+          "last_hit_at": null,
+          "hit_count": 0,
+          "metadata": {},
+          "expired": false,
+          "created_at": "2026-10-29T05:37:41.990255Z",
+          "updated_at": "2026-10-29T05:37:41.990264Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/ip-blacklist/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d8323b50-5c9f-4fbf-958f-ec878dd0256f",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "d8323b50-5c9f-4fbf-958f-ec878dd0256f"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/ip-blacklist/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "339cc315-d580-4b03-bb2f-e0e2f89d540f",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "339cc315-d580-4b03-bb2f-e0e2f89d540f"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/ip-blacklist/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7f6e63fc-ebab-47ce-a735-0d484422ffea",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "7f6e63fc-ebab-47ce-a735-0d484422ffea"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/ip-blacklist/86908d2c-f684-4130-8af9-0110962695b8/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7d1ffe19-df82-480d-aa77-dbe888947eb4",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "86908d2c-f684-4130-8af9-0110962695b8",
+      "uuid": "86908d2c-f684-4130-8af9-0110962695b8",
+      "ip_address": "192.168.1.1",
+      "network": "",
+      "description": "Stock those personal push indeed bill. Money low conference. Field article why husband production war.",
+      "reason": "If fill could study all partner never.",
+      "blocked_by": "cf942249-2409-4c95-8137-015f5c3a02a7",
+      "is_active": true,
+      "expires_at": null,
+      "last_hit_at": null,
+      "hit_count": 0,
+      "metadata": {},
+      "expired": false,
+      "created_at": "2026-10-29T05:37:41.986678Z",
+      "updated_at": "2026-10-29T05:37:41.986687Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/ip-blacklist/b5bdf9d2-d438-47ee-9d77-1ce77d8c1897/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5b8d0952-db34-4ebb-8f80-b72c4b137de1",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No IPBlacklist matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "5b8d0952-db34-4ebb-8f80-b72c4b137de1"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/ip-blacklist/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "33a4074c-deb4-42b1-ab64-df7af000bedb",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "non_field_errors": [
+        "Either IP address or network must be provided."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "33a4074c-deb4-42b1-ab64-df7af000bedb"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/ip-blacklist/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a87bfad1-0814-4ceb-a6b2-399b8a68674d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "a87bfad1-0814-4ceb-a6b2-399b8a68674d"
+      }
+    }
+  }
+}

@@ -1,0 +1,218 @@
+{
+  "view": "EditorialTrackViewSet",
+  "app": "production",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/editorial/tracks/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "34133e04-0f0b-4b68-86a7-125153b500d8",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "278bce90-2bd2-4af1-ba06-9fc945c0d3ca",
+          "uuid": "278bce90-2bd2-4af1-ba06-9fc945c0d3ca",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "project_code": "PROJ000",
+          "cut_id": "",
+          "cut_name": "",
+          "track_number": 1,
+          "track_type": "Video",
+          "name": "Editorial Track 0",
+          "status": "Active",
+          "clip_count": 0,
+          "start_tc": "",
+          "end_tc": "",
+          "updated_at": "2026-10-29T05:37:41.548071Z"
+        },
+        {
+          "id": "5fe0c7c8-7081-4829-8950-0e055c0a6221",
+          "uuid": "5fe0c7c8-7081-4829-8950-0e055c0a6221",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "project_code": "PROJ000",
+          "cut_id": "",
+          "cut_name": "",
+          "track_number": 1,
+          "track_type": "Video",
+          "name": "Editorial Track 1",
+          "status": "Active",
+          "clip_count": 0,
+          "start_tc": "",
+          "end_tc": "",
+          "updated_at": "2026-10-29T05:37:41.652244Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/editorial/tracks/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "11d94a35-1d09-4a15-93ee-9c8c20f7e2a7",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "11d94a35-1d09-4a15-93ee-9c8c20f7e2a7"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/editorial/tracks/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c23d276c-ef5b-4cf8-ba6a-71af7fd7f18a",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "c23d276c-ef5b-4cf8-ba6a-71af7fd7f18a"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/editorial/tracks/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "fbf2d311-8429-4e63-be42-195c75ccbcb5",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/editorial/tracks/278bce90-2bd2-4af1-ba06-9fc945c0d3ca/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "97064bf2-6ccb-4292-b697-f2281bb63f00",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "278bce90-2bd2-4af1-ba06-9fc945c0d3ca",
+      "uuid": "278bce90-2bd2-4af1-ba06-9fc945c0d3ca",
+      "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+      "project_code": "PROJ000",
+      "cut_id": "",
+      "cut_name": "",
+      "track_number": 1,
+      "track_type": "Video",
+      "name": "Editorial Track 0",
+      "status": "Active",
+      "clip_count": 0,
+      "start_tc": "",
+      "end_tc": "",
+      "updated_at": "2026-10-29T05:37:41.548071Z",
+      "codec_or_format": "",
+      "channels_or_resolution": "",
+      "frame_rate": 24.0,
+      "is_locked": false,
+      "is_muted": false,
+      "is_solo": false,
+      "color_tag": "",
+      "description": "",
+      "created_at": "2026-10-29T05:37:41.548050Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/editorial/tracks/ad717146-e5a7-4092-95ec-ca1171a25262/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "380aae37-76b3-42e1-bb17-1cdffdf5f145",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "380aae37-76b3-42e1-bb17-1cdffdf5f145"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/editorial/tracks/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "da8c12e6-f3ed-4d1b-878b-5a7e1f234b9c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "da8c12e6-f3ed-4d1b-878b-5a7e1f234b9c"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/editorial/tracks/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e63d714c-fd60-49bb-a260-00d0690f998c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "e63d714c-fd60-49bb-a260-00d0690f998c"
+      }
+    }
+  }
+}

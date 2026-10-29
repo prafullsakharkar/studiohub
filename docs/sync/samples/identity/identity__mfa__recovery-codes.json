@@ -1,0 +1,76 @@
+{
+  "view": "MFARecoveryCodesView",
+  "app": "identity",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/recovery-codes/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a49e370b-34fd-4a67-b214-02e1ce4af530",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "codes": [],
+      "remaining": 0
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/recovery-codes/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c780183e-e282-48e1-827a-c5bf8b584744",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "c780183e-e282-48e1-827a-c5bf8b584744"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/recovery-codes/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9884872b-9575-4109-82e4-b58147623449",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "codes": [],
+      "remaining": 0
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/recovery-codes/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "17ebc76c-88dc-477f-a456-44f8865186e7",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "codes": [],
+      "remaining": 0
+    }
+  }
+}

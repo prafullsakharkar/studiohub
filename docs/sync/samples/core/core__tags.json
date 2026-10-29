@@ -1,0 +1,256 @@
+{
+  "view": "TagViewSet",
+  "app": "core",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/core/tags/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "76516831-09fe-4f4c-864f-b22cc7d537eb",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "9ea2f033-5606-4e3f-bebd-c6e4e3662801",
+          "uuid": "9ea2f033-5606-4e3f-bebd-c6e4e3662801",
+          "created_at": "2026-10-29T05:37:41.780817Z",
+          "updated_at": "2026-10-29T05:37:41.780842Z",
+          "name": "tag0",
+          "description": "Kitchen fine billion kind open store thing identify. Employee stock try low party two institution. Suddenly go environment military still country.",
+          "color": "#2f8a99",
+          "is_system": false,
+          "created_by": null,
+          "updated_by": null,
+          "deleted_by": null
+        },
+        {
+          "id": "02263821-5968-4280-a260-c656673f52c6",
+          "uuid": "02263821-5968-4280-a260-c656673f52c6",
+          "created_at": "2026-10-29T05:37:41.785338Z",
+          "updated_at": "2026-10-29T05:37:41.785353Z",
+          "name": "tag1",
+          "description": "Either gun do accept land them. Once outside point that pressure section likely clearly. War media five could particularly.\nA point guy worry. White especially \u2026<truncated>",
+          "color": "#467b73",
+          "is_system": false,
+          "created_by": null,
+          "updated_by": null,
+          "deleted_by": null
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/core/tags/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e26bb547-9aa5-4e25-b42f-d4ef10e82f5d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "e26bb547-9aa5-4e25-b42f-d4ef10e82f5d"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/core/tags/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "963ddab1-1fe8-4189-844d-0bdfa7e58695",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "9ea2f033-5606-4e3f-bebd-c6e4e3662801",
+          "uuid": "9ea2f033-5606-4e3f-bebd-c6e4e3662801",
+          "created_at": "2026-10-29T05:37:41.780817Z",
+          "updated_at": "2026-10-29T05:37:41.780842Z",
+          "name": "tag0",
+          "description": "Kitchen fine billion kind open store thing identify. Employee stock try low party two institution. Suddenly go environment military still country.",
+          "color": "#2f8a99",
+          "is_system": false,
+          "created_by": null,
+          "updated_by": null,
+          "deleted_by": null
+        },
+        {
+          "id": "02263821-5968-4280-a260-c656673f52c6",
+          "uuid": "02263821-5968-4280-a260-c656673f52c6",
+          "created_at": "2026-10-29T05:37:41.785338Z",
+          "updated_at": "2026-10-29T05:37:41.785353Z",
+          "name": "tag1",
+          "description": "Either gun do accept land them. Once outside point that pressure section likely clearly. War media five could particularly.\nA point guy worry. White especially \u2026<truncated>",
+          "color": "#467b73",
+          "is_system": false,
+          "created_by": null,
+          "updated_by": null,
+          "deleted_by": null
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/core/tags/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d4b0f720-b18f-4912-86b4-e92e63a9ef87",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "9ea2f033-5606-4e3f-bebd-c6e4e3662801",
+          "uuid": "9ea2f033-5606-4e3f-bebd-c6e4e3662801",
+          "created_at": "2026-10-29T05:37:41.780817Z",
+          "updated_at": "2026-10-29T05:37:41.780842Z",
+          "name": "tag0",
+          "description": "Kitchen fine billion kind open store thing identify. Employee stock try low party two institution. Suddenly go environment military still country.",
+          "color": "#2f8a99",
+          "is_system": false,
+          "created_by": null,
+          "updated_by": null,
+          "deleted_by": null
+        },
+        {
+          "id": "02263821-5968-4280-a260-c656673f52c6",
+          "uuid": "02263821-5968-4280-a260-c656673f52c6",
+          "created_at": "2026-10-29T05:37:41.785338Z",
+          "updated_at": "2026-10-29T05:37:41.785353Z",
+          "name": "tag1",
+          "description": "Either gun do accept land them. Once outside point that pressure section likely clearly. War media five could particularly.\nA point guy worry. White especially \u2026<truncated>",
+          "color": "#467b73",
+          "is_system": false,
+          "created_by": null,
+          "updated_by": null,
+          "deleted_by": null
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/core/tags/9ea2f033-5606-4e3f-bebd-c6e4e3662801/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e14843e6-69f1-43ae-822b-d9052da18c18",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "9ea2f033-5606-4e3f-bebd-c6e4e3662801",
+      "uuid": "9ea2f033-5606-4e3f-bebd-c6e4e3662801",
+      "created_at": "2026-10-29T05:37:41.780817Z",
+      "updated_at": "2026-10-29T05:37:41.780842Z",
+      "name": "tag0",
+      "description": "Kitchen fine billion kind open store thing identify. Employee stock try low party two institution. Suddenly go environment military still country.",
+      "color": "#2f8a99",
+      "is_system": false,
+      "created_by": null,
+      "updated_by": null,
+      "deleted_by": null
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/core/tags/2f4d9133-0d11-469c-b438-c5c7952b6068/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d5a75eba-a739-4d13-ae80-97b800611ae0",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Tag matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "d5a75eba-a739-4d13-ae80-97b800611ae0"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/core/tags/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b0ce5a0b-3148-447a-b0a5-eafcfa666335",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "b0ce5a0b-3148-447a-b0a5-eafcfa666335"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/core/tags/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "80cc3c05-fa1a-4b5d-884c-b1e2f6ba8b0c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "80cc3c05-fa1a-4b5d-884c-b1e2f6ba8b0c"
+      }
+    }
+  }
+}

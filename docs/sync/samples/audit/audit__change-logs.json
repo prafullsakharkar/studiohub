@@ -1,0 +1,170 @@
+{
+  "view": "ChangeLogViewSet",
+  "app": "audit",
+  "actions": "{\"get\": \"list\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/change-logs/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5c6474fb-684f-4fd5-a398-adeef6dfc55a",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 523,
+      "next": "http://testserver/api/v1/audit/change-logs/?page=2",
+      "previous": null,
+      "results": [
+        {
+          "id": "db765d77-b32d-49dd-b7d3-2f861f6f1dff",
+          "uuid": "db765d77-b32d-49dd-b7d3-2f861f6f1dff",
+          "change_type": "create",
+          "target_type": "myself",
+          "target_id": "bc144c4f-8379-4d79-b613-49515e532f55",
+          "target_name": "eye",
+          "user": "815b5009-c841-42be-9199-e8c35f4bb28f",
+          "user_email": "user@example.test",
+          "user_name": "user@example.test",
+          "before_values": "[{\"name\": \"Anthony Frye\", \"residency\": \"8748 Zimmerman Street Suite 728\\nVaughnborough, MT 81274\"}, {\"name\": \"Ashley Mills\", \"residency\": \"48441 Laura Extension\u2026<truncated>",
+          "after_values": "[{\"name\": \"Rachel Bishop\", \"residency\": \"27569 Joel Well\\nTiffanyland, MI 25481\"}, {\"name\": \"Justin Mitchell\", \"residency\": \"3526 Long Rue\\nEast Mary, MH 69891\"\u2026<truncated>",
+          "changed_fields": "[{\"name\": \"Joshua Smith\", \"residency\": \"05292 Lynn Alley\\nWoodstad, NY 24734\"}, {\"name\": \"Steven Maxwell\", \"residency\": \"927 Elizabeth Bypass Suite 782\\nJosephp\u2026<truncated>",
+          "description": "Occur impact subject second business much address. Begin beat argue point under financial.\nTwo ahead discover. Finish boy financial add wife.",
+          "created_at": "2026-10-29T05:37:41.880976Z",
+          "updated_at": "2026-10-29T05:37:41.880983Z"
+        },
+        {
+          "id": "9703d0c1-b3ea-4505-b987-ff7168220f27",
+          "uuid": "9703d0c1-b3ea-4505-b987-ff7168220f27",
+          "change_type": "update",
+          "target_type": "beautiful",
+          "target_id": "703ebb4d-13c4-436c-a1bc-b67cfca165be",
+          "target_name": "sign",
+          "user": "e5768b6e-947f-4c15-9999-fa5f594e5aa1",
+          "user_email": "user@example.test",
+          "user_name": "user@example.test",
+          "before_values": "[{\"name\": \"Matthew Sanders\", \"residency\": \"USCGC Archer\\nFPO AP 29753\"}, {\"name\": \"Teresa Johnson\", \"residency\": \"900 William Path Apt. 994\\nSouth Michael, AL 1\u2026<truncated>",
+          "after_values": "[{\"name\": \"Brandy Rodriguez\", \"residency\": \"391 White Turnpike\\nMoralesberg, NV 22044\"}, {\"name\": \"David Williams\", \"residency\": \"3397 Anthony Overpass\\nThornto\u2026<truncated>",
+          "changed_fields": "[{\"name\": \"Casey Leach\", \"residency\": \"4594 Lucas Loop Apt. 127\\nJohnfurt, AR 48441\"}, {\"name\": \"David Gomez\", \"residency\": \"7450 Jessica Brooks\\nPort Thomas, W\u2026<truncated>",
+          "description": "Past beautiful help tree wrong job machine buy. Describe which talk.\nTechnology skin black sit world. Party food career challenge use. Candidate understand actu\u2026<truncated>",
+          "created_at": "2026-10-29T05:37:41.870445Z",
+          "updated_at": "2026-10-29T05:37:41.870452Z"
+        }
+      ],
+      "_results_total_in_page": 25
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/change-logs/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ff486c07-61aa-469f-9405-41b5d0e1ea4d",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "ff486c07-61aa-469f-9405-41b5d0e1ea4d"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/change-logs/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "bdc7f202-a97a-4cbd-9b14-9abf9185c28a",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "bdc7f202-a97a-4cbd-9b14-9abf9185c28a"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/change-logs/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b0457523-d423-4b69-a730-fce0ca6f9a80",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "b0457523-d423-4b69-a730-fce0ca6f9a80"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/change-logs/db765d77-b32d-49dd-b7d3-2f861f6f1dff/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b8c9128f-b35b-482f-8df4-e254d5d5321f",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "db765d77-b32d-49dd-b7d3-2f861f6f1dff",
+      "uuid": "db765d77-b32d-49dd-b7d3-2f861f6f1dff",
+      "change_type": "create",
+      "target_type": "myself",
+      "target_id": "bc144c4f-8379-4d79-b613-49515e532f55",
+      "target_name": "eye",
+      "user": "815b5009-c841-42be-9199-e8c35f4bb28f",
+      "user_email": "user@example.test",
+      "user_name": "user@example.test",
+      "before_values": "[{\"name\": \"Anthony Frye\", \"residency\": \"8748 Zimmerman Street Suite 728\\nVaughnborough, MT 81274\"}, {\"name\": \"Ashley Mills\", \"residency\": \"48441 Laura Extension\u2026<truncated>",
+      "after_values": "[{\"name\": \"Rachel Bishop\", \"residency\": \"27569 Joel Well\\nTiffanyland, MI 25481\"}, {\"name\": \"Justin Mitchell\", \"residency\": \"3526 Long Rue\\nEast Mary, MH 69891\"\u2026<truncated>",
+      "changed_fields": "[{\"name\": \"Joshua Smith\", \"residency\": \"05292 Lynn Alley\\nWoodstad, NY 24734\"}, {\"name\": \"Steven Maxwell\", \"residency\": \"927 Elizabeth Bypass Suite 782\\nJosephp\u2026<truncated>",
+      "description": "Occur impact subject second business much address. Begin beat argue point under financial.\nTwo ahead discover. Finish boy financial add wife.",
+      "created_at": "2026-10-29T05:37:41.880976Z",
+      "updated_at": "2026-10-29T05:37:41.880983Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/change-logs/980ab8af-3254-482d-8647-d6ca164b354b/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a529f02a-043f-4b04-9b6d-8226d14d58dd",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No ChangeLog matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "a529f02a-043f-4b04-9b6d-8226d14d58dd"
+      }
+    }
+  }
+}

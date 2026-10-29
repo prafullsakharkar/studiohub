@@ -1,0 +1,200 @@
+{
+  "view": "VendorContactViewSet",
+  "app": "masterdata",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendor-contacts/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "6ccd9ee9-5a21-4406-b1fc-91be5032b821",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "9c1c8467-df5b-416d-97e5-d5f86ef4e5e8",
+          "vendor": "14540475-fcb0-406e-8a66-a5bd7f3dc675",
+          "name": "Vendor contact 0",
+          "role": "",
+          "email": "user@example.test",
+          "phone": "",
+          "timezone": "",
+          "is_primary": false,
+          "created_at": "2026-10-29T05:37:41.699132Z",
+          "updated_at": "2026-10-29T05:37:41.699141Z"
+        },
+        {
+          "id": "b4129387-ecf9-44b9-9244-a1bbb64559a7",
+          "vendor": "761decc3-ec97-45dd-bda3-01d23273154a",
+          "name": "Vendor contact 1",
+          "role": "",
+          "email": "user@example.test",
+          "phone": "",
+          "timezone": "",
+          "is_primary": false,
+          "created_at": "2026-10-29T05:37:41.705304Z",
+          "updated_at": "2026-10-29T05:37:41.705315Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendor-contacts/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "27cbdf3b-b577-4fb5-a53d-646a7c549138",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "27cbdf3b-b577-4fb5-a53d-646a7c549138"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendor-contacts/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f4b6844f-1ff5-4ee5-9347-9d19481ef3af",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "f4b6844f-1ff5-4ee5-9347-9d19481ef3af"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendor-contacts/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c792a6f1-55eb-414f-af57-3a4eb7862a53",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "c792a6f1-55eb-414f-af57-3a4eb7862a53"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendor-contacts/9c1c8467-df5b-416d-97e5-d5f86ef4e5e8/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f7a2d877-4437-48c4-87b2-67b0990a1a51",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "9c1c8467-df5b-416d-97e5-d5f86ef4e5e8",
+      "vendor": "14540475-fcb0-406e-8a66-a5bd7f3dc675",
+      "name": "Vendor contact 0",
+      "role": "",
+      "email": "user@example.test",
+      "phone": "",
+      "timezone": "",
+      "is_primary": false,
+      "created_at": "2026-10-29T05:37:41.699132Z",
+      "updated_at": "2026-10-29T05:37:41.699141Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendor-contacts/6e08430a-0c24-4bc3-864f-74f4dfd15d9f/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b6b1845c-d5bc-4cc1-8152-d75ae9388757",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No VendorContact matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "b6b1845c-d5bc-4cc1-8152-d75ae9388757"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/vendor-contacts/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c2d87e2d-7f87-4a6f-a69b-981bae280149",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "vendor": [
+        "This field is required."
+      ],
+      "name": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "c2d87e2d-7f87-4a6f-a69b-981bae280149"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/vendor-contacts/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "54ad686c-ee06-4929-be27-0566b1eb75ef",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "54ad686c-ee06-4929-be27-0566b1eb75ef"
+      }
+    }
+  }
+}

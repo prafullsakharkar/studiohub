@@ -1,0 +1,312 @@
+{
+  "view": "RoleViewSet",
+  "app": "identity",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/roles/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ad608b21-dd23-4858-96a6-a0b9e7fb64ee",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 7,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "11027a9c-01ab-4b7c-a525-9ed8954a2e47",
+          "uuid": "11027a9c-01ab-4b7c-a525-9ed8954a2e47",
+          "name": "Platform Admin",
+          "code": "platform-admin",
+          "description": "Platform role: Platform Admin",
+          "parent": null,
+          "role_type": "organization",
+          "scope": "organization",
+          "priority": 10,
+          "icon": "",
+          "color": "",
+          "is_system": true,
+          "is_default": false,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:36.964387Z",
+          "updated_at": "2026-10-29T05:37:36.964404Z"
+        },
+        {
+          "id": "d661dd8d-0cae-415b-ada7-39a83f01979c",
+          "uuid": "d661dd8d-0cae-415b-ada7-39a83f01979c",
+          "name": "Organization Admin",
+          "code": "org-admin",
+          "description": "Platform role: Organization Admin",
+          "parent": null,
+          "role_type": "organization",
+          "scope": "organization",
+          "priority": 20,
+          "icon": "",
+          "color": "",
+          "is_system": true,
+          "is_default": false,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:37.912202Z",
+          "updated_at": "2026-10-29T05:37:37.912210Z"
+        }
+      ],
+      "_results_total_in_page": 7
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/roles/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e15e06d2-951b-48be-b081-c1491fa13a72",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "e15e06d2-951b-48be-b081-c1491fa13a72"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/roles/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ca9f13ef-133f-4929-b3e7-d18f43929ef7",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 7,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "11027a9c-01ab-4b7c-a525-9ed8954a2e47",
+          "uuid": "11027a9c-01ab-4b7c-a525-9ed8954a2e47",
+          "name": "Platform Admin",
+          "code": "platform-admin",
+          "description": "Platform role: Platform Admin",
+          "parent": null,
+          "role_type": "organization",
+          "scope": "organization",
+          "priority": 10,
+          "icon": "",
+          "color": "",
+          "is_system": true,
+          "is_default": false,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:36.964387Z",
+          "updated_at": "2026-10-29T05:37:36.964404Z"
+        },
+        {
+          "id": "d661dd8d-0cae-415b-ada7-39a83f01979c",
+          "uuid": "d661dd8d-0cae-415b-ada7-39a83f01979c",
+          "name": "Organization Admin",
+          "code": "org-admin",
+          "description": "Platform role: Organization Admin",
+          "parent": null,
+          "role_type": "organization",
+          "scope": "organization",
+          "priority": 20,
+          "icon": "",
+          "color": "",
+          "is_system": true,
+          "is_default": false,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:37.912202Z",
+          "updated_at": "2026-10-29T05:37:37.912210Z"
+        }
+      ],
+      "_results_total_in_page": 7
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/roles/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "857aa50f-0fa6-4699-8a20-c7223b8ab48e",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 7,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "11027a9c-01ab-4b7c-a525-9ed8954a2e47",
+          "uuid": "11027a9c-01ab-4b7c-a525-9ed8954a2e47",
+          "name": "Platform Admin",
+          "code": "platform-admin",
+          "description": "Platform role: Platform Admin",
+          "parent": null,
+          "role_type": "organization",
+          "scope": "organization",
+          "priority": 10,
+          "icon": "",
+          "color": "",
+          "is_system": true,
+          "is_default": false,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:36.964387Z",
+          "updated_at": "2026-10-29T05:37:36.964404Z"
+        },
+        {
+          "id": "d661dd8d-0cae-415b-ada7-39a83f01979c",
+          "uuid": "d661dd8d-0cae-415b-ada7-39a83f01979c",
+          "name": "Organization Admin",
+          "code": "org-admin",
+          "description": "Platform role: Organization Admin",
+          "parent": null,
+          "role_type": "organization",
+          "scope": "organization",
+          "priority": 20,
+          "icon": "",
+          "color": "",
+          "is_system": true,
+          "is_default": false,
+          "is_active": true,
+          "sort_order": 0,
+          "created_at": "2026-10-29T05:37:37.912202Z",
+          "updated_at": "2026-10-29T05:37:37.912210Z"
+        }
+      ],
+      "_results_total_in_page": 7
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/roles/11027a9c-01ab-4b7c-a525-9ed8954a2e47/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "19264126-c5af-46a7-a37a-9e102604e090",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "11027a9c-01ab-4b7c-a525-9ed8954a2e47",
+      "uuid": "11027a9c-01ab-4b7c-a525-9ed8954a2e47",
+      "name": "Platform Admin",
+      "code": "platform-admin",
+      "description": "Platform role: Platform Admin",
+      "parent": null,
+      "role_type": "organization",
+      "scope": "organization",
+      "priority": 10,
+      "icon": "",
+      "color": "",
+      "is_system": true,
+      "is_default": false,
+      "is_active": true,
+      "sort_order": 0,
+      "created_at": "2026-10-29T05:37:36.964387Z",
+      "updated_at": "2026-10-29T05:37:36.964404Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/roles/de67a55e-6ffc-4dc1-a434-1f115878babf/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5ff26365-3c93-4772-ac1e-5a25d3ad284a",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No Role matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "5ff26365-3c93-4772-ac1e-5a25d3ad284a"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/roles/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7bd89d74-98f3-4ea4-a59a-ea7048609a34",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "7bd89d74-98f3-4ea4-a59a-ea7048609a34"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/roles/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e2955207-e3bf-4e4b-85fd-7e50f59e4fb9",
+      "Deprecation": "true",
+      "Sunset": "Mon, 01 Mar 2027 00:00:00 GMT",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "e2955207-e3bf-4e4b-85fd-7e50f59e4fb9"
+      }
+    }
+  }
+}

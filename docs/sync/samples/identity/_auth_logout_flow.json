@@ -1,0 +1,103 @@
+{
+  "logout_ok": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/logout/",
+      "body": {
+        "refresh": "<redacted>"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "fd6fbd39-2dca-4f12-8dfa-2026afa36e5b",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Logged out successfully."
+    }
+  },
+  "me_after_logout": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/auth/me/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d586e5f1-b1dc-4cfd-b1be-1006f95991dd",
+      "Allow": "GET, PATCH, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Session is no longer active.",
+      "error": {
+        "code": "session_expired",
+        "request_id": "d586e5f1-b1dc-4cfd-b1be-1006f95991dd"
+      }
+    }
+  },
+  "refresh_after_logout": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/refresh/",
+      "body": {
+        "refresh": "<redacted>"
+      }
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "65555a38-199a-4846-b3b9-443829857668",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Session has been revoked.",
+      "error": {
+        "code": "authentication_failed",
+        "request_id": "65555a38-199a-4846-b3b9-443829857668"
+      }
+    }
+  },
+  "change_password_wrong_old": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/change-password/",
+      "body": {
+        "old_password": "x",
+        "new_password": "<redacted>"
+      }
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "137c0df5-5670-453c-b6d9-d64f9ea299c6",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "Session is no longer active.",
+      "error": {
+        "code": "session_expired",
+        "request_id": "137c0df5-5670-453c-b6d9-d64f9ea299c6"
+      }
+    }
+  },
+  "forgot_password_unknown_email": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/auth/forgot-password/",
+      "body": {
+        "email": "user@example.test"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e04de938-a51e-4596-adb0-bb237ceb269c",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "If an account exists, a password reset email has been sent."
+    }
+  }
+}

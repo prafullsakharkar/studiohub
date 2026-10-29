@@ -1,0 +1,159 @@
+{
+  "view": "PublishedFileViewSet",
+  "app": "publishing",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/publishing/files/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "163ac88d-cab0-4be0-8b55-6a760e4006b8",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/publishing/files/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c66232f5-e0ab-41d4-8ea4-61b6a643d944",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "c66232f5-e0ab-41d4-8ea4-61b6a643d944"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/publishing/files/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "97e80222-865c-4348-956c-5c21d6f45368",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "97e80222-865c-4348-956c-5c21d6f45368"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/publishing/files/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "fd94b4a7-f3e4-43bb-a0bd-2b02c3fc7ab0",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/publishing/files/dcbb5990-f53c-4391-92a7-938985090607/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "283d4855-8f9c-49dc-bbe9-0566919d8815",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No PublishedFile matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "283d4855-8f9c-49dc-bbe9-0566919d8815"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/publishing/files/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d2f79eb3-f7d2-429d-ab40-3d81fce91609",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "version_id": [
+        "This field is required."
+      ],
+      "storage_root": [
+        "This field is required."
+      ],
+      "relative_path": [
+        "This field is required."
+      ],
+      "size_bytes": [
+        "This field is required."
+      ],
+      "sha256": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "d2f79eb3-f7d2-429d-ab40-3d81fce91609"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/publishing/files/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "806d0e12-6f4a-47e9-9b59-c594e899bf5c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "806d0e12-6f4a-47e9-9b59-c594e899bf5c"
+      }
+    }
+  }
+}

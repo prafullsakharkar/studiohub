@@ -1,0 +1,171 @@
+{
+  "view": "AuditLogViewSet",
+  "app": "audit",
+  "actions": "{\"get\": \"list\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/audit-logs/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "90f8d141-12fe-4b05-8f63-0dbad4958a84",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 2,
+      "items": [
+        {
+          "id": "297869fc-b6ee-4ab1-9602-810214c5afb2",
+          "uuid": "297869fc-b6ee-4ab1-9602-810214c5afb2",
+          "action": "create",
+          "severity": "info",
+          "target_type": "consumer",
+          "target_id": "ea80d0c5-b6b1-42f7-9001-6d54f863980e",
+          "target_name": "wait",
+          "description": "Entire against indicate color many case perhaps. Start career when those dinner reach.\nPerhaps go read able woman. Street artist writer yard region.",
+          "actor": "e9a7a88c-9125-4e70-a8d9-7a1a8c8d6900",
+          "actor_email": "user@example.test",
+          "actor_name": "user@example.test",
+          "ip_address": "92.129.198.231",
+          "user_agent": "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_6; rv:1.9.5.20) Gecko/6925-10-15 20:04:41.887482 Firefox/3.8",
+          "metadata": "[{\"name\": \"Richard Williams\", \"residency\": \"4759 Santos Canyon Apt. 790\\nMorseport, SC 95480\"}, {\"name\": \"Benjamin Johnson\", \"residency\": \"4111 Campbell Square\\\u2026<truncated>",
+          "created_at": "2026-10-29T05:37:41.818428Z",
+          "updated_at": "2026-10-29T05:37:41.818435Z"
+        },
+        {
+          "id": "df1825de-576f-42a2-a283-90d4764373bf",
+          "uuid": "df1825de-576f-42a2-a283-90d4764373bf",
+          "action": "logout",
+          "severity": "info",
+          "target_type": "chair",
+          "target_id": "337ac966-5bef-4421-87f7-f5b8739662ca",
+          "target_name": "ok",
+          "description": "These along team. On only onto both.\nClaim wide college garden. Usually long away attention.\nAge pressure several.",
+          "actor": "766dbe1a-d866-4e89-8203-c7ae6c5cb299",
+          "actor_email": "user@example.test",
+          "actor_name": "user@example.test",
+          "ip_address": "109.37.14.196",
+          "user_agent": "Mozilla/5.0 (Macintosh; U; PPC Mac OS X 10_10_5 rv:3.0; nds-NL) AppleWebKit/534.24.4 (KHTML, like Gecko) Version/4.0.2 Safari/534.24.4",
+          "metadata": "[{\"name\": \"Cody Gordon\", \"residency\": \"8685 Steven Ridge Apt. 526\\nGrantburgh, MA 55517\"}, {\"name\": \"Cynthia Benson\", \"residency\": \"50017 Freeman Station Suite \u2026<truncated>",
+          "created_at": "2026-10-29T05:37:41.810869Z",
+          "updated_at": "2026-10-29T05:37:41.810878Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/audit-logs/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "217a5c80-a42f-497c-928e-1f6ed3e3f581",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "217a5c80-a42f-497c-928e-1f6ed3e3f581"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/audit-logs/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "bad9fe55-d88f-4d73-8b7d-7c09862fffd9",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "bad9fe55-d88f-4d73-8b7d-7c09862fffd9"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/audit-logs/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b7c66090-ca16-4323-a402-5cacb4095b0e",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "b7c66090-ca16-4323-a402-5cacb4095b0e"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/audit-logs/297869fc-b6ee-4ab1-9602-810214c5afb2/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d6845f44-7427-4057-996e-00191d167678",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "297869fc-b6ee-4ab1-9602-810214c5afb2",
+      "uuid": "297869fc-b6ee-4ab1-9602-810214c5afb2",
+      "action": "create",
+      "severity": "info",
+      "target_type": "consumer",
+      "target_id": "ea80d0c5-b6b1-42f7-9001-6d54f863980e",
+      "target_name": "wait",
+      "description": "Entire against indicate color many case perhaps. Start career when those dinner reach.\nPerhaps go read able woman. Street artist writer yard region.",
+      "actor": "e9a7a88c-9125-4e70-a8d9-7a1a8c8d6900",
+      "actor_email": "user@example.test",
+      "actor_name": "user@example.test",
+      "ip_address": "92.129.198.231",
+      "user_agent": "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_6; rv:1.9.5.20) Gecko/6925-10-15 20:04:41.887482 Firefox/3.8",
+      "metadata": "[{\"name\": \"Richard Williams\", \"residency\": \"4759 Santos Canyon Apt. 790\\nMorseport, SC 95480\"}, {\"name\": \"Benjamin Johnson\", \"residency\": \"4111 Campbell Square\\\u2026<truncated>",
+      "created_at": "2026-10-29T05:37:41.818428Z",
+      "updated_at": "2026-10-29T05:37:41.818435Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/audit/audit-logs/4c8dccd4-7106-4736-866e-3198d13d1914/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "db0f543a-b6e8-443b-bcce-0f8b43521935",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No AuditLog matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "db0f543a-b6e8-443b-bcce-0f8b43521935"
+      }
+    }
+  }
+}

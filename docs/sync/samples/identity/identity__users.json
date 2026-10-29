@@ -1,0 +1,213 @@
+{
+  "view": "UserViewSet",
+  "app": "identity",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/users/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d7b4ad27-2268-4cad-adb7-5359d5850522",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 29,
+      "items": [
+        {
+          "id": "5789d20f-53cd-4a3f-8373-66d38948138c",
+          "uuid": "5789d20f-53cd-4a3f-8373-66d38948138c",
+          "email": "user@example.test",
+          "is_active": true,
+          "is_staff": true,
+          "is_email_verified": true,
+          "last_seen": null,
+          "display_name": "user@example.test",
+          "full_name": "",
+          "created_at": "2026-10-29T05:37:41.396302Z",
+          "updated_at": "2026-10-29T05:37:41.396312Z"
+        },
+        {
+          "id": "1ecbd16b-c169-4973-9ac6-409ab5ab08c8",
+          "uuid": "1ecbd16b-c169-4973-9ac6-409ab5ab08c8",
+          "email": "user@example.test",
+          "is_active": true,
+          "is_staff": false,
+          "is_email_verified": false,
+          "last_seen": null,
+          "display_name": "user@example.test",
+          "full_name": "",
+          "created_at": "2026-10-29T05:37:41.409509Z",
+          "updated_at": "2026-10-29T05:37:41.410132Z"
+        }
+      ]
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/users/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "34cb1fd5-0574-4819-9bad-a2c9f866e2be",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "34cb1fd5-0574-4819-9bad-a2c9f866e2be"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/users/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0ecf6329-290a-4aa5-b815-5337af0e998b",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "0ecf6329-290a-4aa5-b815-5337af0e998b"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/users/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f5cec099-8d27-4dc6-b7ae-db3c12ce9822",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "_bare_list": true,
+      "_len": 1,
+      "items": [
+        {
+          "id": "20eb449d-da6a-4ecc-b493-5e56b50c074b",
+          "uuid": "20eb449d-da6a-4ecc-b493-5e56b50c074b",
+          "email": "user@example.test",
+          "is_active": true,
+          "is_staff": false,
+          "is_email_verified": false,
+          "last_seen": null,
+          "display_name": "Peggy Tucker",
+          "full_name": "Peggy Tucker",
+          "created_at": "2026-10-29T05:37:41.418309Z",
+          "updated_at": "2026-10-29T05:37:41.418316Z"
+        }
+      ]
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/users/5789d20f-53cd-4a3f-8373-66d38948138c/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0ce8a089-eac8-42fb-bd1c-a93b51d19e60",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "5789d20f-53cd-4a3f-8373-66d38948138c",
+      "uuid": "5789d20f-53cd-4a3f-8373-66d38948138c",
+      "email": "user@example.test",
+      "is_active": true,
+      "is_staff": true,
+      "is_email_verified": true,
+      "last_seen": null,
+      "display_name": "user@example.test",
+      "full_name": "",
+      "created_at": "2026-10-29T05:37:41.396302Z",
+      "updated_at": "2026-10-29T05:37:41.396312Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/users/6d776c0b-16f0-41a3-84ad-5087a03df05a/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ecd1eb62-7ce5-4751-b30d-8923e7708421",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No User matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "ecd1eb62-7ce5-4751-b30d-8923e7708421"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f06c5ff5-dc5d-4aaa-bee5-7051f25494e0",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "email": [
+        "This field is required."
+      ],
+      "password": [
+        "<redacted>"
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "f06c5ff5-dc5d-4aaa-bee5-7051f25494e0"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/identity/users/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2679d969-136a-40e2-a452-06c4e5e4e24b",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "2679d969-136a-40e2-a452-06c4e5e4e24b"
+      }
+    }
+  }
+}

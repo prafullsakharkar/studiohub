@@ -1,0 +1,245 @@
+{
+  "view": "TimelogViewSet",
+  "app": "production",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/timelogs/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "149dfcd3-4699-4b15-83b7-dc217155bd7d",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "b4b44fd6-f701-48a7-87dc-425caa9fbaaa",
+          "uuid": "b4b44fd6-f701-48a7-87dc-425caa9fbaaa",
+          "task_id": "aea9abc9-541b-4b93-9126-adebf2dbea15",
+          "task_code": "",
+          "task_title": "",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "project_code": "",
+          "project_name": "Project 0",
+          "person_id": "badeda91-46fa-4306-8a81-ee622997e1b9",
+          "person_name": "user@example.test",
+          "person_avatar": null,
+          "person_role": "",
+          "department": "",
+          "duration_hours": 0.0,
+          "date": "2026-10-29",
+          "billable": true,
+          "notes": "",
+          "status": "Submitted",
+          "approved_by_id": null,
+          "adjustment_of": null,
+          "approved_at": null,
+          "rejection_reason": "",
+          "activity_category": "Direct Work",
+          "hourly_rate_usd": 0.0,
+          "created_at": "2026-10-29T05:37:41.677076Z",
+          "updated_at": "2026-10-29T05:37:41.677089Z"
+        },
+        {
+          "id": "80d7df7c-80dd-4981-ba52-7e2173308a59",
+          "uuid": "80d7df7c-80dd-4981-ba52-7e2173308a59",
+          "task_id": "ee442299-06fb-4756-8503-1f71b1cba34c",
+          "task_code": "",
+          "task_title": "",
+          "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+          "project_code": "",
+          "project_name": "Project 0",
+          "person_id": "9a5c4e77-2424-4b83-84a9-cc566b3815b5",
+          "person_name": "user@example.test",
+          "person_avatar": null,
+          "person_role": "",
+          "department": "",
+          "duration_hours": 0.0,
+          "date": "2026-10-29",
+          "billable": true,
+          "notes": "",
+          "status": "Submitted",
+          "approved_by_id": null,
+          "adjustment_of": null,
+          "approved_at": null,
+          "rejection_reason": "",
+          "activity_category": "Direct Work",
+          "hourly_rate_usd": 0.0,
+          "created_at": "2026-10-29T05:37:41.607699Z",
+          "updated_at": "2026-10-29T05:37:41.607709Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/timelogs/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c0a85b14-9d86-4a8d-b1bd-7e071b4d08b6",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "c0a85b14-9d86-4a8d-b1bd-7e071b4d08b6"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/timelogs/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "926f6be1-514b-49aa-808b-45c3e9ebd4c2",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "926f6be1-514b-49aa-808b-45c3e9ebd4c2"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/timelogs/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "8c1f49fe-21de-4969-93b1-7ded4f5495ca",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": [],
+      "_results_total_in_page": 0
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/timelogs/b4b44fd6-f701-48a7-87dc-425caa9fbaaa/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "22e56497-fd3a-46ba-b8a9-70239ab75238",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "b4b44fd6-f701-48a7-87dc-425caa9fbaaa",
+      "uuid": "b4b44fd6-f701-48a7-87dc-425caa9fbaaa",
+      "task_id": "aea9abc9-541b-4b93-9126-adebf2dbea15",
+      "task_code": "",
+      "task_title": "",
+      "project_id": "99cead2a-b8d0-4aa6-95d6-d144b8256f2d",
+      "project_code": "",
+      "project_name": "Project 0",
+      "person_id": "badeda91-46fa-4306-8a81-ee622997e1b9",
+      "person_name": "user@example.test",
+      "person_avatar": null,
+      "person_role": "",
+      "department": "",
+      "duration_hours": 0.0,
+      "date": "2026-10-29",
+      "billable": true,
+      "notes": "",
+      "status": "Submitted",
+      "approved_by_id": null,
+      "adjustment_of": null,
+      "approved_at": null,
+      "rejection_reason": "",
+      "activity_category": "Direct Work",
+      "hourly_rate_usd": 0.0,
+      "created_at": "2026-10-29T05:37:41.677076Z",
+      "updated_at": "2026-10-29T05:37:41.677089Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/timelogs/4986f655-072b-4ad5-89ae-1a04afab9d42/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "3a8ed088-0ead-46d8-99af-cc00c4b40cb5",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "3a8ed088-0ead-46d8-99af-cc00c4b40cb5"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/timelogs/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7fa6e9a0-feef-4af8-ac24-35cc999255c2",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "date": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "7fa6e9a0-feef-4af8-ac24-35cc999255c2"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/timelogs/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "52a63850-e2d6-4454-b929-d7564df4dfd3",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "52a63850-e2d6-4454-b929-d7564df4dfd3"
+      }
+    }
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "view": "MFATOTPSetupView",
+  "app": "identity",
+  "actions": "",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/totp/setup/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4f1f1c71-e02c-4e62-8873-4523c60c32e5",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "secret": "<redacted>",
+      "uri": "otpauth://totp/Atom%20VFX:admin%40example.test?secret=NARU2B5PQ6QOB4JXSP5A27YM6OSIQIL6&issuer=Atom%20VFX",
+      "qr_code": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAFoAQAAAABSnlx4AAACzUlEQVR4nO2by07sMBBET13l/3+57qIfNgsWSB6wZzyAgOQsSp1WPx2ZH3z+/QS+9KX/nMbl4I5vG9uAcd5swvvoPp\u2026<truncated>",
+      "qr": "<redacted>"
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/totp/setup/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a6ad4c68-1366-4191-8132-42bd17a6d9fe",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "a6ad4c68-1366-4191-8132-42bd17a6d9fe"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/totp/setup/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7ccc6e57-87c3-4e7d-a635-9eb363bad416",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "secret": "<redacted>",
+      "uri": "otpauth://totp/Atom%20VFX:norole%40example.test?secret=RIZVTPKWAJEPQE4I3G3RR2R3TTFG5OOK&issuer=Atom%20VFX",
+      "qr_code": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAFoAQAAAABSnlx4AAAC0ElEQVR4nO2bzWoDMQyEZ4rf/5Wnh5Fkl0Ih1GltVskhye53EIqQRz9L4YXXxytw003/Oz0A+psAgAIoCozfEKEizr\u2026<truncated>",
+      "qr": "<redacted>"
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/identity/mfa/totp/setup/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e374ddc2-d7d6-4c0a-84b3-fecf38ea1c1c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "secret": "<redacted>",
+      "uri": "otpauth://totp/Atom%20VFX:artist%40example.test?secret=3TQV67GZPMDEW2PENFCB2RBNEBCJZALD&issuer=Atom%20VFX",
+      "qr_code": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAFoAQAAAABSnlx4AAAC00lEQVR4nO2b226bMQyDyeF//1fmLiTKLtANKOqs0uK0Fzl8F4Qi0Do4FL7w+PUV+NKX/nH6ARjPBIAQKIAiAMVHWk\u2026<truncated>",
+      "qr": "<redacted>"
+    }
+  }
+}

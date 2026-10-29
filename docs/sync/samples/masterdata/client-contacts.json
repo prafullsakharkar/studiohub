@@ -1,0 +1,203 @@
+{
+  "view": "ClientContactViewSet",
+  "app": "masterdata",
+  "actions": "{\"get\": \"list\", \"post\": \"create\"}",
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/client-contacts/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c293d2a5-4b34-4da3-b1b5-b682cd1a6382",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "b697a978-fff4-4be0-b073-22c674c63e56",
+          "client": "9206f3f1-618a-44a2-8a41-d6217fc6fa00",
+          "name": "Contact 0",
+          "role": "",
+          "email": "user@example.test",
+          "phone": "",
+          "timezone": "",
+          "portal_access": true,
+          "is_primary": false,
+          "created_at": "2026-10-29T05:37:41.686553Z",
+          "updated_at": "2026-10-29T05:37:41.686561Z"
+        },
+        {
+          "id": "e7dff50e-2439-4544-b832-801dacb8a9c6",
+          "client": "2358a752-c7d3-4a54-9d4c-0df46c77c660",
+          "name": "Contact 1",
+          "role": "",
+          "email": "user@example.test",
+          "phone": "",
+          "timezone": "",
+          "portal_access": true,
+          "is_primary": false,
+          "created_at": "2026-10-29T05:37:41.692056Z",
+          "updated_at": "2026-10-29T05:37:41.692063Z"
+        }
+      ],
+      "_results_total_in_page": 2
+    }
+  },
+  "list_anon": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/client-contacts/",
+      "body": null
+    },
+    "status": 401,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c11bcb4f-c992-49ff-be85-8de6d06356d5",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Authentication credentials were not provided.",
+      "error": {
+        "code": "not_authenticated",
+        "request_id": "c11bcb4f-c992-49ff-be85-8de6d06356d5"
+      }
+    }
+  },
+  "list_norole": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/client-contacts/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "43ec664e-6f3d-4a02-83bf-538fd815731e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "43ec664e-6f3d-4a02-83bf-538fd815731e"
+      }
+    }
+  },
+  "list_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/client-contacts/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d2577295-154b-4860-b125-ffed82bd3294",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "d2577295-154b-4860-b125-ffed82bd3294"
+      }
+    }
+  },
+  "detail_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/client-contacts/b697a978-fff4-4be0-b073-22c674c63e56/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "211dc906-377b-4bf9-9fa7-7b34d9c2615d",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "b697a978-fff4-4be0-b073-22c674c63e56",
+      "client": "9206f3f1-618a-44a2-8a41-d6217fc6fa00",
+      "name": "Contact 0",
+      "role": "",
+      "email": "user@example.test",
+      "phone": "",
+      "timezone": "",
+      "portal_access": true,
+      "is_primary": false,
+      "created_at": "2026-10-29T05:37:41.686553Z",
+      "updated_at": "2026-10-29T05:37:41.686561Z"
+    }
+  },
+  "detail_404": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/client-contacts/a156b387-3463-400b-9c55-9b3df63a57a7/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "919815ec-1ef8-47a4-b49e-c715c7e3da2e",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "No ClientContact matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "919815ec-1ef8-47a4-b49e-c715c7e3da2e"
+      }
+    }
+  },
+  "create_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/client-contacts/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b869525c-36b2-410c-a177-93ea9284d2c2",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "client": [
+        "This field is required."
+      ],
+      "name": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "b869525c-36b2-410c-a177-93ea9284d2c2"
+      }
+    }
+  },
+  "create_norole_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/client-contacts/",
+      "body": {}
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "72577eac-c134-43dd-af49-ccbf216ca60b",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "72577eac-c134-43dd-af49-ccbf216ca60b"
+      }
+    }
+  }
+}
