@@ -51,8 +51,6 @@ const DEFINITION_FILES = [
   'core/permissions/systemRoles.ts',
   'core/permissions/permissionMap.ts',
   'core/permissions/backendCodes.ts',
-  'core/access/domainPermissions.ts',
-  'core/access/useAccessManagementStore.ts',
 ];
 
 function sourceFiles(dir: string, out: string[] = []): string[] {

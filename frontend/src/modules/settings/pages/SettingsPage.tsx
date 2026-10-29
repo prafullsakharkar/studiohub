@@ -7,7 +7,6 @@ import { Badge } from '@/shared/components/Badge';
 import { PageLayout } from '@/shared/layouts/PageLayout';
 import { usePermissions } from '@/core/permissions/usePermissions';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
-import { PermissionMatrix } from '@/components/permissions/PermissionMatrix';
 import { LayoutSettingsSection } from '../components/LayoutSettingsSection';
 import { DatabaseSchemaSection } from '../components/DatabaseSchemaSection';
 import { ThemeEditorSection } from '../components/ThemeEditorSection';
@@ -60,7 +59,7 @@ export const SettingsPage: React.FC = () => {
   const canViewRbac = can('roles.manage') || can('security.manage') || can('page.permissions');
   const canViewDatabase = can('platform.admin.view');
 
-  const [activeTab, setActiveTab] = useState<'pipeline' | 'theme' | 'layout' | 'rbac' | 'database'>('pipeline');
+  const [activeTab, setActiveTab] = useState<'pipeline' | 'theme' | 'layout' | 'database'>('pipeline');
   const [settings, setSettings] = useState<PipelineSettings>(defaultPipelineSettings);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -209,21 +208,6 @@ export const SettingsPage: React.FC = () => {
             <span>Default Page Layout</span>
           </button>
 
-          {canViewRbac && (
-            <button
-              onClick={() => setActiveTab('rbac')}
-              className={cn(
-                'flex items-center gap-2 px-3.5 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap text-xs cursor-pointer',
-                activeTab === 'rbac'
-                  ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-              )}
-            >
-              <Lock className="w-3.5 h-3.5" />
-              <span>Roles & Security Matrix</span>
-            </button>
-          )}
-
           {canViewDatabase && (
             <button
               onClick={() => setActiveTab('database')}
@@ -261,8 +245,6 @@ export const SettingsPage: React.FC = () => {
         {activeTab === 'database' && <DatabaseSchemaSection />}
 
         {activeTab === 'layout' && <LayoutSettingsSection />}
-
-        {activeTab === 'rbac' && <PermissionMatrix />}
 
         {activeTab === 'pipeline' && (
           <form onSubmit={handleSave} className="space-y-6">
