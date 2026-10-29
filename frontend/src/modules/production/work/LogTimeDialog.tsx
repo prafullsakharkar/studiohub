@@ -11,7 +11,7 @@ import { Button } from '@/shared/components/Button';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { todayIso } from './format';
 
-// CR-14: the server accepts negative hours on an ordinary entry; the form never sends them.
+// The server refuses non-positive hours on an ordinary entry (CR-14); the form says so before sending.
 const schema = z.object({
   duration_hours: z.string().refine((v) => Number(v) > 0, 'Hours must be greater than zero.'),
   date: z.string().min(1, 'Choose a date.'),

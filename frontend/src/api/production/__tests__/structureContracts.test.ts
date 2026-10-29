@@ -36,14 +36,17 @@ describe('production row types match the captured responses', () => {
     expect(firstRow('shows_list')).not.toHaveProperty('project');
   });
 
-  it('CR-13: archive and check-existence on projects and shows are refused even for a superuser; DELETE archives', () => {
-    expect(flow.projects_archive.status).toBe(403);
-    expect(flow.projects_check_existence.status).toBe(403);
-    expect(flow.shows_archive.status).toBe(403);
-    expect(flow.shows_check_existence.status).toBe(403);
+  it('CR-13 (applied): POST archive/ works for projects and shows, and has the same effect as DELETE; the existence checks stay refused (not implemented)', () => {
+    expect(flow.projects_archive.status).toBe(200);
+    expect(flow.shows_archive.status).toBe(200);
+    expect(flow.projects_archived_list_after_archive.body.count).toBe(1);
+    expect(flow.projects_restore_after_archive.status).toBe(200);
     expect(flow.projects_destroy.status).toBe(204);
     expect(flow.projects_archived_list.body.count).toBe(1);
+    expect(flow.projects_detail_archived.status).toBe(404);
     expect(flow.projects_restore.status).toBe(200);
+    expect(flow.projects_check_existence.status).toBe(403); // mapped, they would answer 500: the viewsets do not implement them
+    expect(flow.shows_check_existence.status).toBe(403);
   });
 
   it('an episodic project starts with its first episode and requires an episode for sequences', () => {

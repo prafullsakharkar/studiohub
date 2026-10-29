@@ -136,6 +136,15 @@ describe('artist logs time, lead approves', () => {
     expect(history.find((h) => h.to_status === 'Rejected')?.reason).toBe('Wrong plate, use v002');
   }, 150000);
 
+  it('CR-14 on the wire: hours must be positive on an ordinary entry; a correction of an approved entry may be negative', async () => {
+    await signIn('artist');
+    await expect(timelogsApi.create({ task_id: fixture.task3, duration_hours: '-1', date: '2030-03-01' })).rejects.toMatchObject({ status: 400 });
+    await expect(timelogsApi.create({ task_id: fixture.task3, duration_hours: '0', date: '2030-03-01' })).rejects.toMatchObject({ status: 400 });
+    const approved = (await timelogsApi.list({ task: fixture.task1, status: 'Approved' })).results[0]; // approved by the lead in the first tests
+    const correction = await timelogsApi.create({ task_id: fixture.task1, duration_hours: '-0.5', date: '2030-03-02', adjustment_of: approved.id });
+    expect(correction.adjustment_of).toBe(approved.id);
+  }, 60000);
+
   it('nobody approves their own time: the lead is not offered it, and the server refuses it', async () => {
     await signIn('lead');
     const own = await timelogsApi.create({ task_id: fixture.task3, duration_hours: '1', date: '2030-02-02' });

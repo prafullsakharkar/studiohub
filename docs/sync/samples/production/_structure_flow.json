@@ -3,36 +3,36 @@
   "body": {
    "air_date": null,
    "code": "EP150",
-   "created_at": "2026-10-29T11:40:29.993297Z",
-   "deleted_at": "2026-10-29T11:40:30.079502Z",
+   "created_at": "2026-10-29T15:19:53.374891Z",
+   "deleted_at": "2026-10-29T15:19:53.459198Z",
    "delivery_date": null,
    "description": "The first one",
    "duration_frames": null,
    "episode_number": 50,
    "frame_in": 1001,
    "frame_out": 1100,
-   "id": "01a0c4d5-5e6e-4bde-803f-ece5b556aa1b",
+   "id": "c1e12166-04f1-4dcd-9af6-d5045c3972d2",
    "is_deleted": true,
    "metadata": {},
    "name": "Fifty",
    "project_code": "ALPHA",
-   "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "project_name": "Alpha",
    "season_number": 1,
    "show_id": null,
    "status": "Archived",
-   "updated_at": "2026-10-29T11:40:30.023191Z",
-   "uuid": "01a0c4d5-5e6e-4bde-803f-ece5b556aa1b"
+   "updated_at": "2026-10-29T15:19:53.404562Z",
+   "uuid": "c1e12166-04f1-4dcd-9af6-d5045c3972d2"
   },
   "headers": {
    "Allow": "POST, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "667b1f56-df54-4bcc-b9bc-5ee2de673b65"
+   "X-Request-ID": "5187c1dc-9aeb-463c-9bee-de854ea0c766"
   },
   "request": {
    "body": {},
    "method": "POST",
-   "path": "/api/v1/episodes/01a0c4d5-5e6e-4bde-803f-ece5b556aa1b/archive/"
+   "path": "/api/v1/episodes/c1e12166-04f1-4dcd-9af6-d5045c3972d2/archive/"
   },
   "status": 200
  },
@@ -46,38 +46,38 @@
     {
      "air_date": null,
      "code": "EP150",
-     "created_at": "2026-10-29T11:40:29.993297Z",
-     "deleted_at": "2026-10-29T11:40:30.079502Z",
+     "created_at": "2026-10-29T15:19:53.374891Z",
+     "deleted_at": "2026-10-29T15:19:53.459198Z",
      "delivery_date": null,
      "description": "The first one",
      "duration_frames": null,
      "episode_number": 50,
      "frame_in": 1001,
      "frame_out": 1100,
-     "id": "01a0c4d5-5e6e-4bde-803f-ece5b556aa1b",
+     "id": "c1e12166-04f1-4dcd-9af6-d5045c3972d2",
      "is_deleted": true,
      "metadata": {},
      "name": "Fifty",
      "project_code": "ALPHA",
-     "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "project_name": "Alpha",
      "season_number": 1,
      "show_id": null,
      "status": "Archived",
-     "updated_at": "2026-10-29T11:40:30.023191Z",
-     "uuid": "01a0c4d5-5e6e-4bde-803f-ece5b556aa1b"
+     "updated_at": "2026-10-29T15:19:53.404562Z",
+     "uuid": "c1e12166-04f1-4dcd-9af6-d5045c3972d2"
     }
    ]
   },
   "headers": {
    "Allow": "GET, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "36f37254-92a5-46e8-a09f-3c98a31722e4"
+   "X-Request-ID": "f7046c53-a463-4904-a4c2-7b808c0bcf63"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/episodes/archived/?project=d66129f0-f287-48d9-b75a-14adb60f0d16"
+   "path": "/api/v1/episodes/archived/?project=2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
   },
   "status": 200
  },
@@ -85,7 +85,7 @@
   "body": {
    "_results_total_in_page": 2,
    "failed": 1,
-   "operation_id": "0e79ad07a9ae4ca98622691c010a6f24",
+   "operation_id": "7201ad99d68042588e8c86647e472a3d",
    "partial_success": true,
    "processed": 2,
    "results": [
@@ -95,7 +95,7 @@
      "entity": {
       "air_date": null,
       "code": "EP102",
-      "created_at": "2026-10-29T11:40:30.058300Z",
+      "created_at": "2026-10-29T15:19:53.438308Z",
       "deleted_at": null,
       "delivery_date": null,
       "description": "",
@@ -103,21 +103,21 @@
       "episode_number": 2,
       "frame_in": 1001,
       "frame_out": 1100,
-      "id": "0fc0ffc0-6669-471a-9d6b-733658e26748",
+      "id": "d90bc88c-11fd-4864-92b2-4c5dd30de17e",
       "is_deleted": false,
       "metadata": {},
       "name": "Second",
       "project_code": "ALPHA",
-      "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+      "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
       "project_name": "Alpha",
       "season_number": 1,
       "show_id": null,
       "status": "Not Started",
-      "updated_at": "2026-10-29T11:40:30.058307Z",
-      "uuid": "0fc0ffc0-6669-471a-9d6b-733658e26748"
+      "updated_at": "2026-10-29T15:19:53.438314Z",
+      "uuid": "d90bc88c-11fd-4864-92b2-4c5dd30de17e"
      },
      "error": null,
-     "id": "0fc0ffc0-6669-471a-9d6b-733658e26748",
+     "id": "d90bc88c-11fd-4864-92b2-4c5dd30de17e",
      "index": 0,
      "status": "created",
      "success": true
@@ -126,7 +126,7 @@
      "actionTaken": "failed",
      "code": "EP101",
      "error": null,
-     "id": "2a2e521f-89e8-4467-86f9-5c34ad388841",
+     "id": "737095a3-edcf-423b-9fad-4638a47ae6e1",
      "index": 1,
      "status": "exists",
      "success": false,
@@ -147,12 +147,12 @@
     "total": 2,
     "updatedCount": 0
    },
-   "timestamp": "2026-10-29T11:40:30.063547+00:00"
+   "timestamp": "2026-10-29T15:19:53.443533+00:00"
   },
   "headers": {
    "Allow": "POST, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "673fae24-ae24-408a-8aa1-46eedd5a4272"
+   "X-Request-ID": "1d6510dc-0d8a-4739-b234-087f42136d6a"
   },
   "request": {
    "body": {
@@ -162,7 +162,7 @@
       "data": {
        "episode_number": 2,
        "name": "Second",
-       "project": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+       "project": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
        "season_number": 1
       }
      },
@@ -170,11 +170,11 @@
       "code": "EP101",
       "data": {
        "name": "dup",
-       "project": "d66129f0-f287-48d9-b75a-14adb60f0d16"
+       "project": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
       }
      }
     ],
-    "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16"
+    "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
    },
    "method": "POST",
    "path": "/api/v1/episodes/bulk-create/"
@@ -190,7 +190,7 @@
      "existing_entity": {
       "air_date": null,
       "code": "EP101",
-      "created_at": "2026-10-29T11:40:29.520664Z",
+      "created_at": "2026-10-29T15:19:52.931886Z",
       "deleted_at": null,
       "delivery_date": null,
       "description": "",
@@ -198,18 +198,18 @@
       "episode_number": 1,
       "frame_in": 1001,
       "frame_out": 1100,
-      "id": "2a2e521f-89e8-4467-86f9-5c34ad388841",
+      "id": "737095a3-edcf-423b-9fad-4638a47ae6e1",
       "is_deleted": false,
       "metadata": {},
       "name": "Episode 1",
       "project_code": "ALPHA",
-      "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+      "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
       "project_name": "Alpha",
       "season_number": 1,
       "show_id": null,
       "status": "Not Started",
-      "updated_at": "2026-10-29T11:40:29.520671Z",
-      "uuid": "2a2e521f-89e8-4467-86f9-5c34ad388841"
+      "updated_at": "2026-10-29T15:19:52.931893Z",
+      "uuid": "737095a3-edcf-423b-9fad-4638a47ae6e1"
      },
      "state": "EXISTS"
     },
@@ -222,7 +222,7 @@
     {
      "deleted_at": null,
      "error": null,
-     "id": "2a2e521f-89e8-4467-86f9-5c34ad388841",
+     "id": "737095a3-edcf-423b-9fad-4638a47ae6e1",
      "index": 0,
      "status": "exists"
     },
@@ -238,7 +238,7 @@
   "headers": {
    "Allow": "POST, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "197a581e-dea7-4304-9d8b-a7c9bb5099a4"
+   "X-Request-ID": "3f43201f-fb6c-41f7-8243-8a1bbf666799"
   },
   "request": {
    "body": {
@@ -246,7 +246,7 @@
      "EP101",
      "EP102"
     ],
-    "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16"
+    "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
    },
    "method": "POST",
    "path": "/api/v1/episodes/check-existence/"
@@ -257,7 +257,7 @@
   "body": {
    "error": {
     "code": "validation_error",
-    "request_id": "62d7d87e-3112-4f3d-9990-3dc0ffff628c"
+    "request_id": "c5b7e0fe-3d7e-4152-8a9c-3ceda9406c2b"
    },
    "non_field_errors": [
     "The fields project, code must make a unique set."
@@ -266,16 +266,16 @@
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "62d7d87e-3112-4f3d-9990-3dc0ffff628c"
+   "X-Request-ID": "c5b7e0fe-3d7e-4152-8a9c-3ceda9406c2b"
   },
   "request": {
    "body": {
     "code": "<redacted>",
     "episode_number": 1,
     "name": "Pilot",
-    "project": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+    "project": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
     "season_number": 1,
-    "show": "2785cef6-d8e8-4728-8334-0316b4f95e63"
+    "show": "dbe967aa-6fe6-4f04-b279-e0cb71af98b6"
    },
    "method": "POST",
    "path": "/api/v1/episodes/"
@@ -286,7 +286,7 @@
   "body": {
    "error": {
     "code": "validation_error",
-    "request_id": "a31a62bf-eb98-4ec3-9b59-8dad19bfb8a2"
+    "request_id": "9bdfd0b4-d302-45e6-9945-8d8221dd381d"
    },
    "project": [
     "This field is required."
@@ -295,7 +295,7 @@
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "a31a62bf-eb98-4ec3-9b59-8dad19bfb8a2"
+   "X-Request-ID": "9bdfd0b4-d302-45e6-9945-8d8221dd381d"
   },
   "request": {
    "body": {},
@@ -314,27 +314,27 @@
    "episode_number": 50,
    "frame_in": 1001,
    "frame_out": 1100,
-   "id": "01a0c4d5-5e6e-4bde-803f-ece5b556aa1b",
+   "id": "c1e12166-04f1-4dcd-9af6-d5045c3972d2",
    "metadata": {},
    "name": "Fifty",
-   "project": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "project": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "season_number": 1,
    "status": "Not Started",
-   "uuid": "01a0c4d5-5e6e-4bde-803f-ece5b556aa1b"
+   "uuid": "c1e12166-04f1-4dcd-9af6-d5045c3972d2"
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "f5eb7f84-b2a6-42e1-b769-3372e7abd189"
+   "X-Request-ID": "037534f8-1d14-4b8b-aa4b-a81558b72f1f"
   },
   "request": {
    "body": {
     "code": "<redacted>",
     "episode_number": 50,
     "name": "Fifty",
-    "project": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+    "project": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
     "season_number": 1,
-    "show": "2785cef6-d8e8-4728-8334-0316b4f95e63"
+    "show": "dbe967aa-6fe6-4f04-b279-e0cb71af98b6"
    },
    "method": "POST",
    "path": "/api/v1/episodes/"
@@ -351,7 +351,7 @@
     {
      "air_date": null,
      "code": "EP101",
-     "created_at": "2026-10-29T11:40:29.520664Z",
+     "created_at": "2026-10-29T15:19:52.931886Z",
      "deleted_at": null,
      "delivery_date": null,
      "description": "",
@@ -359,23 +359,23 @@
      "episode_number": 1,
      "frame_in": 1001,
      "frame_out": 1100,
-     "id": "2a2e521f-89e8-4467-86f9-5c34ad388841",
+     "id": "737095a3-edcf-423b-9fad-4638a47ae6e1",
      "is_deleted": false,
      "metadata": {},
      "name": "Episode 1",
      "project_code": "ALPHA",
-     "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "project_name": "Alpha",
      "season_number": 1,
      "show_id": null,
      "status": "Not Started",
-     "updated_at": "2026-10-29T11:40:29.520671Z",
-     "uuid": "2a2e521f-89e8-4467-86f9-5c34ad388841"
+     "updated_at": "2026-10-29T15:19:52.931893Z",
+     "uuid": "737095a3-edcf-423b-9fad-4638a47ae6e1"
     },
     {
      "air_date": null,
      "code": "EP150",
-     "created_at": "2026-10-29T11:40:29.993297Z",
+     "created_at": "2026-10-29T15:19:53.374891Z",
      "deleted_at": null,
      "delivery_date": null,
      "description": "",
@@ -383,30 +383,30 @@
      "episode_number": 50,
      "frame_in": 1001,
      "frame_out": 1100,
-     "id": "01a0c4d5-5e6e-4bde-803f-ece5b556aa1b",
+     "id": "c1e12166-04f1-4dcd-9af6-d5045c3972d2",
      "is_deleted": false,
      "metadata": {},
      "name": "Fifty",
      "project_code": "ALPHA",
-     "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "project_name": "Alpha",
      "season_number": 1,
      "show_id": null,
      "status": "Not Started",
-     "updated_at": "2026-10-29T11:40:29.993303Z",
-     "uuid": "01a0c4d5-5e6e-4bde-803f-ece5b556aa1b"
+     "updated_at": "2026-10-29T15:19:53.374898Z",
+     "uuid": "c1e12166-04f1-4dcd-9af6-d5045c3972d2"
     }
    ]
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "af55d7b6-91ce-4f88-887f-af9b016250d0"
+   "X-Request-ID": "92d5046e-9407-4d57-bdcf-6b4b2c4653b6"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/episodes/?project=d66129f0-f287-48d9-b75a-14adb60f0d16"
+   "path": "/api/v1/episodes/?project=2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
   },
   "status": 200
  },
@@ -420,7 +420,7 @@
     {
      "air_date": null,
      "code": "EP101",
-     "created_at": "2026-10-29T11:40:29.520664Z",
+     "created_at": "2026-10-29T15:19:52.931886Z",
      "deleted_at": null,
      "delivery_date": null,
      "description": "",
@@ -428,30 +428,30 @@
      "episode_number": 1,
      "frame_in": 1001,
      "frame_out": 1100,
-     "id": "2a2e521f-89e8-4467-86f9-5c34ad388841",
+     "id": "737095a3-edcf-423b-9fad-4638a47ae6e1",
      "is_deleted": false,
      "metadata": {},
      "name": "Episode 1",
      "project_code": "ALPHA",
-     "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "project_name": "Alpha",
      "season_number": 1,
      "show_id": null,
      "status": "Not Started",
-     "updated_at": "2026-10-29T11:40:29.520671Z",
-     "uuid": "2a2e521f-89e8-4467-86f9-5c34ad388841"
+     "updated_at": "2026-10-29T15:19:52.931893Z",
+     "uuid": "737095a3-edcf-423b-9fad-4638a47ae6e1"
     }
    ]
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "dcddd8c7-2518-43e1-b1ab-49ae9b5bceb1"
+   "X-Request-ID": "108f3fdb-cfec-428e-8dc1-36837c326184"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/episodes/?project=d66129f0-f287-48d9-b75a-14adb60f0d16"
+   "path": "/api/v1/episodes/?project=2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
   },
   "status": 200
  },
@@ -473,14 +473,14 @@
   "headers": {
    "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "b86dc49c-d378-4282-8a86-cf41688c85ff"
+   "X-Request-ID": "832bfa81-9133-4741-ab9a-4581219da458"
   },
   "request": {
    "body": {
     "description": "The first one"
    },
    "method": "PATCH",
-   "path": "/api/v1/episodes/01a0c4d5-5e6e-4bde-803f-ece5b556aa1b/"
+   "path": "/api/v1/episodes/c1e12166-04f1-4dcd-9af6-d5045c3972d2/"
   },
   "status": 200
  },
@@ -488,7 +488,7 @@
   "body": {
    "air_date": null,
    "code": "EP150",
-   "created_at": "2026-10-29T11:40:29.993297Z",
+   "created_at": "2026-10-29T15:19:53.374891Z",
    "deleted_at": null,
    "delivery_date": null,
    "description": "The first one",
@@ -496,28 +496,28 @@
    "episode_number": 50,
    "frame_in": 1001,
    "frame_out": 1100,
-   "id": "01a0c4d5-5e6e-4bde-803f-ece5b556aa1b",
+   "id": "c1e12166-04f1-4dcd-9af6-d5045c3972d2",
    "is_deleted": false,
    "metadata": {},
    "name": "Fifty",
    "project_code": "ALPHA",
-   "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "project_name": "Alpha",
    "season_number": 1,
    "show_id": null,
    "status": "Archived",
-   "updated_at": "2026-10-29T11:40:30.023191Z",
-   "uuid": "01a0c4d5-5e6e-4bde-803f-ece5b556aa1b"
+   "updated_at": "2026-10-29T15:19:53.404562Z",
+   "uuid": "c1e12166-04f1-4dcd-9af6-d5045c3972d2"
   },
   "headers": {
    "Allow": "POST, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "50cf2b17-a29e-4396-83fe-7c2553f0fa0b"
+   "X-Request-ID": "c2da6098-aa8c-4906-9eef-82cbc059b8f6"
   },
   "request": {
    "body": {},
    "method": "POST",
-   "path": "/api/v1/episodes/01a0c4d5-5e6e-4bde-803f-ece5b556aa1b/restore/"
+   "path": "/api/v1/episodes/c1e12166-04f1-4dcd-9af6-d5045c3972d2/restore/"
   },
   "status": 200
  },
@@ -526,20 +526,20 @@
    "detail": "You do not have permission to perform this action.",
    "error": {
     "code": "permission_denied",
-    "request_id": "96261207-6a8e-480b-9b60-6f3e45619fde"
+    "request_id": "dced1489-3a68-4674-bba6-caa525c3da4d"
    }
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "96261207-6a8e-480b-9b60-6f3e45619fde"
+   "X-Request-ID": "dced1489-3a68-4674-bba6-caa525c3da4d"
   },
   "request": {
    "body": {
     "email": "user@example.test"
    },
    "method": "POST",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/members/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/members/"
   },
   "status": 403
  },
@@ -548,13 +548,13 @@
    "detail": "You do not have permission to perform this action.",
    "error": {
     "code": "permission_denied",
-    "request_id": "08527eed-ba5e-4307-bdb1-558b57706665"
+    "request_id": "d976173e-4400-4c23-8978-26ed7d31e9bc"
    }
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "08527eed-ba5e-4307-bdb1-558b57706665"
+   "X-Request-ID": "d976173e-4400-4c23-8978-26ed7d31e9bc"
   },
   "request": {
    "body": {
@@ -579,11 +579,11 @@
    "color_space": "ACEScg",
    "coordinator_id": null,
    "coordinator_name": "",
-   "created_at": "2026-10-29T11:40:29.514222Z",
+   "created_at": "2026-10-29T15:19:52.925562Z",
    "delivery_date": "2030-12-31",
    "description": "Renamed in a test",
    "fps": "25.000",
-   "id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "in_progress_shots": 0,
    "name": "Alpha",
    "project_code": "ALPHA",
@@ -596,8 +596,8 @@
    "total_assets": 0,
    "total_shots": 0,
    "type": "Episodic Series",
-   "updated_at": "2026-10-29T11:40:29.609937Z",
-   "uuid": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "updated_at": "2026-10-29T15:19:53.020568Z",
+   "uuid": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "vendor_ids": [],
    "vendor_names": [],
    "vendor_team_ids": [],
@@ -606,12 +606,12 @@
   "headers": {
    "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "a7e87c07-d91e-4a67-be62-0ec450aa7d12"
+   "X-Request-ID": "75a86051-435b-469b-885e-27d3278b1152"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/"
+   "path": "/api/v1/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/"
   },
   "status": 200
  },
@@ -620,20 +620,20 @@
    "detail": "You do not have permission to perform this action.",
    "error": {
     "code": "permission_denied",
-    "request_id": "9cf6f358-144a-4c48-807e-d732052fee4f"
+    "request_id": "e69cb6ff-293c-4bb9-a218-731efd2d8ba0"
    }
   },
   "headers": {
    "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "9cf6f358-144a-4c48-807e-d732052fee4f"
+   "X-Request-ID": "e69cb6ff-293c-4bb9-a218-731efd2d8ba0"
   },
   "request": {
    "body": {
     "description": "nope"
    },
    "method": "PATCH",
-   "path": "/api/v1/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/"
+   "path": "/api/v1/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/"
   },
   "status": 403
  },
@@ -656,11 +656,11 @@
      "color_space": "ACEScg",
      "coordinator_id": null,
      "coordinator_name": "",
-     "created_at": "2026-10-29T11:40:29.514222Z",
+     "created_at": "2026-10-29T15:19:52.925562Z",
      "delivery_date": "2030-12-31",
      "description": "Renamed in a test",
      "fps": "25.000",
-     "id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "in_progress_shots": 0,
      "name": "Alpha",
      "project_code": "ALPHA",
@@ -673,8 +673,8 @@
      "total_assets": 0,
      "total_shots": 0,
      "type": "Episodic Series",
-     "updated_at": "2026-10-29T11:40:29.609937Z",
-     "uuid": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "updated_at": "2026-10-29T15:19:53.020568Z",
+     "uuid": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "vendor_ids": [],
      "vendor_names": [],
      "vendor_team_ids": [],
@@ -685,7 +685,7 @@
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "0a6a2138-fa51-40ae-81e7-25173ccb1e0c"
+   "X-Request-ID": "eddd38d2-2cd9-42f4-83c2-f4e53f4ae1c2"
   },
   "request": {
    "body": null,
@@ -722,11 +722,11 @@
     "color_space": "ACEScg",
     "coordinator_id": null,
     "coordinator_name": "",
-    "created_at": "2026-10-29T11:40:29.514222Z",
+    "created_at": "2026-10-29T15:19:52.925562Z",
     "delivery_date": "2030-12-31",
     "description": "Renamed in a test",
     "fps": "25.000",
-    "id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+    "id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
     "in_progress_shots": 0,
     "name": "Alpha",
     "project_code": "ALPHA",
@@ -739,24 +739,24 @@
     "total_assets": 0,
     "total_shots": 0,
     "type": "Episodic Series",
-    "updated_at": "2026-10-29T11:40:29.609937Z",
-    "uuid": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+    "updated_at": "2026-10-29T15:19:53.020568Z",
+    "uuid": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
     "vendor_ids": [],
     "vendor_names": [],
     "vendor_team_ids": [],
     "workflow_type": "episodic"
    },
-   "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16"
+   "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
   },
   "headers": {
    "Allow": "GET, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "30a993b5-fdc0-4106-8b38-811ee942a1fe"
+   "X-Request-ID": "f417e4d8-7a85-42b9-8e92-93514ddb7a6d"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/summary/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/summary/"
   },
   "status": 200
  },
@@ -765,19 +765,19 @@
    "detail": "You do not have permission to perform this action.",
    "error": {
     "code": "permission_denied",
-    "request_id": "4fdd0dc9-b5e4-4852-abea-45baf5275d2a"
+    "request_id": "2b5ca136-c734-4bca-8e71-0dfbe5442657"
    }
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "4fdd0dc9-b5e4-4852-abea-45baf5275d2a"
+   "X-Request-ID": "2b5ca136-c734-4bca-8e71-0dfbe5442657"
   },
   "request": {
    "body": {
     "code": "<redacted>",
     "name": "x",
-    "project": "d66129f0-f287-48d9-b75a-14adb60f0d16"
+    "project": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
    },
    "method": "POST",
    "path": "/api/v1/sequences/"
@@ -788,15 +788,15 @@
   "body": {
    "avatar_url": null,
    "client_id": "",
-   "created_at": "2026-10-29T11:40:29.817606Z",
+   "created_at": "2026-10-29T15:19:53.214493Z",
    "department": "",
    "department_id": "",
    "email": "user@example.test",
-   "id": "5bf796a0-2df4-42ca-9d36-a28b7ec34ea0",
+   "id": "6af8a44b-c56b-49e6-970f-18967144eac1",
    "name": "user@example.test",
-   "projectId": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "projectId": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "project_code": "ALPHA",
-   "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "project_name": "Alpha",
    "role": "Artist",
    "role_id": null,
@@ -806,23 +806,23 @@
    "scope": "PROJECT",
    "status": "active",
    "team_id": "",
-   "updated_at": "2026-10-29T11:40:29.817613Z",
-   "userId": "867d0d57-5b1e-4b59-b1ee-9ea8da70a7e3",
-   "user_id": "867d0d57-5b1e-4b59-b1ee-9ea8da70a7e3",
+   "updated_at": "2026-10-29T15:19:53.214501Z",
+   "userId": "e8d18dee-21df-4ff3-8880-4c9e65bc2b55",
+   "user_id": "e8d18dee-21df-4ff3-8880-4c9e65bc2b55",
    "vendor_id": ""
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "7276dac2-eab9-4cef-8d39-96fa1dc6b6fb"
+   "X-Request-ID": "56f80b85-ccd3-43df-b1a1-6e36e2d6e5f2"
   },
   "request": {
    "body": {
     "role": "Artist",
-    "user_id": "867d0d57-5b1e-4b59-b1ee-9ea8da70a7e3"
+    "user_id": "e8d18dee-21df-4ff3-8880-4c9e65bc2b55"
    },
    "method": "POST",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/members/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/members/"
   },
   "status": 201
  },
@@ -830,15 +830,15 @@
   "body": {
    "avatar_url": null,
    "client_id": "",
-   "created_at": "2026-10-29T11:40:29.817606Z",
+   "created_at": "2026-10-29T15:19:53.214493Z",
    "department": "",
    "department_id": "",
    "email": "user@example.test",
-   "id": "5bf796a0-2df4-42ca-9d36-a28b7ec34ea0",
+   "id": "6af8a44b-c56b-49e6-970f-18967144eac1",
    "name": "user@example.test",
-   "projectId": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "projectId": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "project_code": "ALPHA",
-   "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "project_name": "Alpha",
    "role": "Artist",
    "role_id": null,
@@ -848,23 +848,23 @@
    "scope": "PROJECT",
    "status": "active",
    "team_id": "",
-   "updated_at": "2026-10-29T11:40:29.834068Z",
-   "userId": "867d0d57-5b1e-4b59-b1ee-9ea8da70a7e3",
-   "user_id": "867d0d57-5b1e-4b59-b1ee-9ea8da70a7e3",
+   "updated_at": "2026-10-29T15:19:53.229480Z",
+   "userId": "e8d18dee-21df-4ff3-8880-4c9e65bc2b55",
+   "user_id": "e8d18dee-21df-4ff3-8880-4c9e65bc2b55",
    "vendor_id": ""
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "3d40f0e8-86f6-4985-a5ba-c0a96b5c95f0"
+   "X-Request-ID": "88a73530-a4d9-426b-a259-ceccd683ae33"
   },
   "request": {
    "body": {
     "role": "Artist",
-    "user_id": "867d0d57-5b1e-4b59-b1ee-9ea8da70a7e3"
+    "user_id": "e8d18dee-21df-4ff3-8880-4c9e65bc2b55"
    },
    "method": "POST",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/members/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/members/"
   },
   "status": 200
  },
@@ -872,15 +872,15 @@
   "body": {
    "avatar_url": null,
    "client_id": "",
-   "created_at": "2026-10-29T11:40:29.852415Z",
+   "created_at": "2026-10-29T15:19:53.245937Z",
    "department": "",
    "department_id": "",
    "email": "user@example.test",
-   "id": "735c631e-0f5b-4153-be0f-139215b30256",
+   "id": "c94c120d-0883-4972-b755-789a239154a0",
    "name": "user@example.test",
-   "projectId": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "projectId": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "project_code": "ALPHA",
-   "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "project_name": "Alpha",
    "role": "Lead",
    "role_id": null,
@@ -890,15 +890,15 @@
    "scope": "PROJECT",
    "status": "active",
    "team_id": "",
-   "updated_at": "2026-10-29T11:40:29.852421Z",
-   "userId": "087b43f4-3e25-402e-ac13-70c6a957a7b3",
-   "user_id": "087b43f4-3e25-402e-ac13-70c6a957a7b3",
+   "updated_at": "2026-10-29T15:19:53.245943Z",
+   "userId": "bcc558fa-d9c3-4514-aa6d-8e6d3e57cb22",
+   "user_id": "bcc558fa-d9c3-4514-aa6d-8e6d3e57cb22",
    "vendor_id": ""
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "565bbcba-475a-46e0-b4d3-f72e98730a1c"
+   "X-Request-ID": "b34cc542-5187-4aaf-b330-fe7bd53f51b8"
   },
   "request": {
    "body": {
@@ -906,7 +906,7 @@
     "role": "Lead"
    },
    "method": "POST",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/members/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/members/"
   },
   "status": 201
  },
@@ -917,7 +917,7 @@
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "f6debd67-c6f3-4c67-b9df-1cccdde89abf"
+   "X-Request-ID": "d02c1cfc-b917-481c-9068-eb6d327df28a"
   },
   "request": {
    "body": {
@@ -925,7 +925,7 @@
     "role": "Artist"
    },
    "method": "POST",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/members/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/members/"
   },
   "status": 404
  },
@@ -937,15 +937,15 @@
     {
      "avatar_url": null,
      "client_id": "",
-     "created_at": "2026-10-29T11:40:29.817606Z",
+     "created_at": "2026-10-29T15:19:53.214493Z",
      "department": "",
      "department_id": "",
      "email": "user@example.test",
-     "id": "5bf796a0-2df4-42ca-9d36-a28b7ec34ea0",
+     "id": "6af8a44b-c56b-49e6-970f-18967144eac1",
      "name": "user@example.test",
-     "projectId": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "projectId": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "project_code": "ALPHA",
-     "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "project_name": "Alpha",
      "role": "Artist",
      "role_id": null,
@@ -955,23 +955,23 @@
      "scope": "PROJECT",
      "status": "active",
      "team_id": "",
-     "updated_at": "2026-10-29T11:40:29.834068Z",
-     "userId": "867d0d57-5b1e-4b59-b1ee-9ea8da70a7e3",
-     "user_id": "867d0d57-5b1e-4b59-b1ee-9ea8da70a7e3",
+     "updated_at": "2026-10-29T15:19:53.229480Z",
+     "userId": "e8d18dee-21df-4ff3-8880-4c9e65bc2b55",
+     "user_id": "e8d18dee-21df-4ff3-8880-4c9e65bc2b55",
      "vendor_id": ""
     },
     {
      "avatar_url": null,
      "client_id": "",
-     "created_at": "2026-10-29T11:40:29.852415Z",
+     "created_at": "2026-10-29T15:19:53.245937Z",
      "department": "",
      "department_id": "",
      "email": "user@example.test",
-     "id": "735c631e-0f5b-4153-be0f-139215b30256",
+     "id": "c94c120d-0883-4972-b755-789a239154a0",
      "name": "user@example.test",
-     "projectId": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "projectId": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "project_code": "ALPHA",
-     "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "project_name": "Alpha",
      "role": "Lead",
      "role_id": null,
@@ -981,9 +981,9 @@
      "scope": "PROJECT",
      "status": "active",
      "team_id": "",
-     "updated_at": "2026-10-29T11:40:29.852421Z",
-     "userId": "087b43f4-3e25-402e-ac13-70c6a957a7b3",
-     "user_id": "087b43f4-3e25-402e-ac13-70c6a957a7b3",
+     "updated_at": "2026-10-29T15:19:53.245943Z",
+     "userId": "bcc558fa-d9c3-4514-aa6d-8e6d3e57cb22",
+     "user_id": "bcc558fa-d9c3-4514-aa6d-8e6d3e57cb22",
      "vendor_id": ""
     }
    ]
@@ -991,12 +991,12 @@
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "932941b4-da33-483f-a69f-72d46739d8ae"
+   "X-Request-ID": "fa16e6ba-a2fb-4cbe-bc51-0c18cd721aed"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/members/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/members/"
   },
   "status": 200
  },
@@ -1009,34 +1009,63 @@
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "371ec8d4-3d55-420f-a324-54583e0ff49e"
+   "X-Request-ID": "e7aa99f1-2ef6-4e6e-a07a-65c81a942ced"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/members/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/members/"
   },
   "status": 200
  },
  "projects_archive": {
   "body": {
-   "detail": "You do not have permission to perform this action.",
-   "error": {
-    "code": "permission_denied",
-    "request_id": "9f55e94f-4161-4291-ade9-8589d5456917"
-   }
+   "approved_shots": 0,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "ALPHA",
+   "color_space": "ACEScg",
+   "coordinator_id": null,
+   "coordinator_name": "",
+   "created_at": "2026-10-29T15:19:52.925562Z",
+   "delivery_date": "2030-12-31",
+   "description": "Renamed in a test",
+   "fps": "25.000",
+   "id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
+   "in_progress_shots": 0,
+   "name": "Alpha",
+   "project_code": "ALPHA",
+   "resolution": "4096x2160",
+   "start_date": "2030-01-01",
+   "status": "In Progress",
+   "supervisor_id": null,
+   "supervisor_name": "",
+   "thumbnail_url": "",
+   "total_assets": 0,
+   "total_shots": 0,
+   "type": "Episodic Series",
+   "updated_at": "2026-10-29T15:19:53.020568Z",
+   "uuid": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": [],
+   "workflow_type": "episodic"
   },
   "headers": {
    "Allow": "POST, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "9f55e94f-4161-4291-ade9-8589d5456917"
+   "X-Request-ID": "495d3eb2-870e-4ee4-a6d5-cdc104f0b686"
   },
   "request": {
    "body": {},
    "method": "POST",
-   "path": "/api/v1/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/archive/"
+   "path": "/api/v1/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/archive/"
   },
-  "status": 403
+  "status": 200
  },
  "projects_archived_list": {
   "body": {
@@ -1057,11 +1086,11 @@
      "color_space": "ACEScg",
      "coordinator_id": null,
      "coordinator_name": "",
-     "created_at": "2026-10-29T11:40:29.514222Z",
+     "created_at": "2026-10-29T15:19:52.925562Z",
      "delivery_date": "2030-12-31",
      "description": "Renamed in a test",
      "fps": "25.000",
-     "id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "in_progress_shots": 0,
      "name": "Alpha",
      "project_code": "ALPHA",
@@ -1074,8 +1103,8 @@
      "total_assets": 0,
      "total_shots": 0,
      "type": "Episodic Series",
-     "updated_at": "2026-10-29T11:40:29.609937Z",
-     "uuid": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "updated_at": "2026-10-29T15:19:53.020568Z",
+     "uuid": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "vendor_ids": [],
      "vendor_names": [],
      "vendor_team_ids": [],
@@ -1086,7 +1115,64 @@
   "headers": {
    "Allow": "GET, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "6d093637-445b-48e2-9ff7-cefb58bdab16"
+   "X-Request-ID": "cc4aa58e-5cbd-422f-abc0-0a3c52211792"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/archived/"
+  },
+  "status": 200
+ },
+ "projects_archived_list_after_archive": {
+  "body": {
+   "_results_total_in_page": 1,
+   "count": 1,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "approved_shots": 0,
+     "aspect_ratio": "2.39:1",
+     "budget_usd": "0.00",
+     "client_contact_id": "",
+     "client_contact_name": "",
+     "client_id": "",
+     "client_name": "",
+     "code": "ALPHA",
+     "color_space": "ACEScg",
+     "coordinator_id": null,
+     "coordinator_name": "",
+     "created_at": "2026-10-29T15:19:52.925562Z",
+     "delivery_date": "2030-12-31",
+     "description": "Renamed in a test",
+     "fps": "25.000",
+     "id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
+     "in_progress_shots": 0,
+     "name": "Alpha",
+     "project_code": "ALPHA",
+     "resolution": "4096x2160",
+     "start_date": "2030-01-01",
+     "status": "In Progress",
+     "supervisor_id": null,
+     "supervisor_name": "",
+     "thumbnail_url": "",
+     "total_assets": 0,
+     "total_shots": 0,
+     "type": "Episodic Series",
+     "updated_at": "2026-10-29T15:19:53.020568Z",
+     "uuid": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
+     "vendor_ids": [],
+     "vendor_names": [],
+     "vendor_team_ids": [],
+     "workflow_type": "episodic"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "123cc165-3b4e-4d0b-a36c-3698a32b1192"
   },
   "request": {
    "body": null,
@@ -1100,13 +1186,13 @@
    "detail": "You do not have permission to perform this action.",
    "error": {
     "code": "permission_denied",
-    "request_id": "82bfc077-26e0-422a-846c-40fbaacc40f3"
+    "request_id": "fb2cc41b-e2b2-4d4e-a3e3-84a6d913c561"
    }
   },
   "headers": {
    "Allow": "POST, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "82bfc077-26e0-422a-846c-40fbaacc40f3"
+   "X-Request-ID": "fb2cc41b-e2b2-4d4e-a3e3-84a6d913c561"
   },
   "request": {
    "body": {
@@ -1134,7 +1220,7 @@
    "delivery_date": "2030-12-31",
    "description": "",
    "fps": "24.000",
-   "id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "name": "Alpha",
    "resolution": "4096x2160",
    "start_date": "2030-01-01",
@@ -1142,7 +1228,7 @@
    "supervisor": null,
    "thumbnail_url": "",
    "type": "Episodic Series",
-   "uuid": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "uuid": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "vendor_ids": [],
    "vendor_names": [],
    "vendor_team_ids": [],
@@ -1151,7 +1237,7 @@
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "ffdfa02d-65bf-48a0-941d-7010643fecc4"
+   "X-Request-ID": "f1b89d0e-1c30-47cf-91bb-4927faec076b"
   },
   "request": {
    "body": {
@@ -1176,13 +1262,13 @@
    ],
    "error": {
     "code": "validation_error",
-    "request_id": "6f0a2b46-4848-43dd-aa57-91dbc305435e"
+    "request_id": "dc547dbc-df4f-4295-82b8-ccd06ab2d36d"
    }
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "6f0a2b46-4848-43dd-aa57-91dbc305435e"
+   "X-Request-ID": "dc547dbc-df4f-4295-82b8-ccd06ab2d36d"
   },
   "request": {
    "body": {
@@ -1201,7 +1287,7 @@
    ],
    "error": {
     "code": "validation_error",
-    "request_id": "4c7761a2-f4af-4d57-821d-7bf100be586c"
+    "request_id": "de37b323-8326-4715-bc29-ef88e59ec56c"
    },
    "name": [
     "This field is required."
@@ -1210,7 +1296,7 @@
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "4c7761a2-f4af-4d57-821d-7bf100be586c"
+   "X-Request-ID": "de37b323-8326-4715-bc29-ef88e59ec56c"
   },
   "request": {
    "body": {},
@@ -1226,20 +1312,20 @@
      "action": "Updated Project",
      "description": "updated Project Alpha",
      "entity_code": "Alpha",
-     "entity_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "entity_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "entity_type": "Project",
-     "id": "1df72191-22c4-4241-9b85-0618b4162b95",
-     "timestamp": "2026-10-29T11:40:29.611943+00:00",
+     "id": "f1a9bd1f-a30b-4b89-bfa0-b0b50f281383",
+     "timestamp": "2026-10-29T15:19:53.022198+00:00",
      "user_name": "user@example.test"
     },
     {
      "action": "Created Project",
      "description": "created Project Alpha",
      "entity_code": "Alpha",
-     "entity_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "entity_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "entity_type": "Project",
-     "id": "80a3464c-a701-4fe8-9bb0-d6a3a0b892c4",
-     "timestamp": "2026-10-29T11:40:29.515992+00:00",
+     "id": "771e3f85-fe1f-449b-a3d6-8704dc4e4077",
+     "timestamp": "2026-10-29T15:19:52.927100+00:00",
      "user_name": "user@example.test"
     }
    ],
@@ -1301,7 +1387,7 @@
     "delivery_date": "2030-12-31",
     "description": "Renamed in a test",
     "fps": 25.0,
-    "id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+    "id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
     "name": "Alpha",
     "resolution": "4096x2160",
     "start_date": "2030-01-01",
@@ -1412,12 +1498,12 @@
   "headers": {
    "Allow": "GET, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "d04a470b-3026-4634-ad65-60f5fe70dd8d"
+   "X-Request-ID": "a894ac4f-a627-476d-afcb-43e777e1ce67"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/dashboard/"
+   "path": "/api/v1/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/dashboard/"
   },
   "status": 200
  },
@@ -1428,12 +1514,12 @@
   },
   "headers": {
    "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
-   "X-Request-ID": "eebc8f9b-68e1-4111-b541-39d5d04411cd"
+   "X-Request-ID": "b8c91d27-51e1-46a5-a9a3-78967b7530f6"
   },
   "request": {
    "body": null,
    "method": "DELETE",
-   "path": "/api/v1/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/"
+   "path": "/api/v1/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/"
   },
   "status": 204
  },
@@ -1450,11 +1536,11 @@
    "color_space": "ACEScg",
    "coordinator_id": null,
    "coordinator_name": "",
-   "created_at": "2026-10-29T11:40:29.514222Z",
+   "created_at": "2026-10-29T15:19:52.925562Z",
    "delivery_date": "2030-12-31",
    "description": "",
    "fps": "24.000",
-   "id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "in_progress_shots": 0,
    "name": "Alpha",
    "project_code": "ALPHA",
@@ -1467,8 +1553,8 @@
    "total_assets": 0,
    "total_shots": 0,
    "type": "Episodic Series",
-   "updated_at": "2026-10-29T11:40:29.514229Z",
-   "uuid": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "updated_at": "2026-10-29T15:19:52.925569Z",
+   "uuid": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "vendor_ids": [],
    "vendor_names": [],
    "vendor_team_ids": [],
@@ -1477,12 +1563,12 @@
   "headers": {
    "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "557d7245-d778-4d8f-baad-2225102cc500"
+   "X-Request-ID": "5bd11cb1-7331-45ec-9ad3-a1be9b5858c8"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/"
+   "path": "/api/v1/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/"
   },
   "status": 200
  },
@@ -1491,18 +1577,18 @@
    "detail": "Not found.",
    "error": {
     "code": "not_found",
-    "request_id": "f57f96b4-0c27-4b5a-9e07-7cc4b5ab2892"
+    "request_id": "e9eeb6ca-7d41-4a4e-aa36-3ba2956fc25a"
    }
   },
   "headers": {
    "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "f57f96b4-0c27-4b5a-9e07-7cc4b5ab2892"
+   "X-Request-ID": "e9eeb6ca-7d41-4a4e-aa36-3ba2956fc25a"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/"
+   "path": "/api/v1/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/"
   },
   "status": 404
  },
@@ -1525,11 +1611,11 @@
      "color_space": "ACEScg",
      "coordinator_id": null,
      "coordinator_name": "",
-     "created_at": "2026-10-29T11:40:29.514222Z",
+     "created_at": "2026-10-29T15:19:52.925562Z",
      "delivery_date": "2030-12-31",
      "description": "",
      "fps": "24.000",
-     "id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "in_progress_shots": 0,
      "name": "Alpha",
      "project_code": "ALPHA",
@@ -1542,8 +1628,8 @@
      "total_assets": 0,
      "total_shots": 0,
      "type": "Episodic Series",
-     "updated_at": "2026-10-29T11:40:29.514229Z",
-     "uuid": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "updated_at": "2026-10-29T15:19:52.925569Z",
+     "uuid": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "vendor_ids": [],
      "vendor_names": [],
      "vendor_team_ids": [],
@@ -1554,7 +1640,7 @@
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "775d1d4b-b2e1-4a4a-a071-c675d27ec30c"
+   "X-Request-ID": "63c97e2b-b180-479a-bdff-9f716a8e4c5e"
   },
   "request": {
    "body": null,
@@ -1582,11 +1668,11 @@
      "color_space": "ACEScg",
      "coordinator_id": null,
      "coordinator_name": "",
-     "created_at": "2026-10-29T11:40:29.514222Z",
+     "created_at": "2026-10-29T15:19:52.925562Z",
      "delivery_date": "2030-12-31",
      "description": "",
      "fps": "24.000",
-     "id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "in_progress_shots": 0,
      "name": "Alpha",
      "project_code": "ALPHA",
@@ -1599,8 +1685,8 @@
      "total_assets": 0,
      "total_shots": 0,
      "type": "Episodic Series",
-     "updated_at": "2026-10-29T11:40:29.514229Z",
-     "uuid": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "updated_at": "2026-10-29T15:19:52.925569Z",
+     "uuid": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "vendor_ids": [],
      "vendor_names": [],
      "vendor_team_ids": [],
@@ -1611,7 +1697,7 @@
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "1a519eb5-5faa-4193-9c32-38affd613492"
+   "X-Request-ID": "5ac979a4-a9f9-4081-87ef-d0f99945ccfe"
   },
   "request": {
    "body": null,
@@ -1639,11 +1725,11 @@
      "color_space": "ACEScg",
      "coordinator_id": null,
      "coordinator_name": "",
-     "created_at": "2026-10-29T11:40:29.514222Z",
+     "created_at": "2026-10-29T15:19:52.925562Z",
      "delivery_date": "2030-12-31",
      "description": "Renamed in a test",
      "fps": "25.000",
-     "id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "in_progress_shots": 0,
      "name": "Alpha",
      "project_code": "ALPHA",
@@ -1656,8 +1742,8 @@
      "total_assets": 0,
      "total_shots": 0,
      "type": "Episodic Series",
-     "updated_at": "2026-10-29T11:40:29.609937Z",
-     "uuid": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "updated_at": "2026-10-29T15:19:53.020568Z",
+     "uuid": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "vendor_ids": [],
      "vendor_names": [],
      "vendor_team_ids": [],
@@ -1668,7 +1754,7 @@
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "7d8427fb-29d6-471c-93f5-f6f52b672adb"
+   "X-Request-ID": "df80a4fa-86fa-4734-91a3-26e64f6b1e57"
   },
   "request": {
    "body": null,
@@ -1696,11 +1782,11 @@
      "color_space": "ACEScg",
      "coordinator_id": null,
      "coordinator_name": "",
-     "created_at": "2026-10-29T11:40:29.514222Z",
+     "created_at": "2026-10-29T15:19:52.925562Z",
      "delivery_date": "2030-12-31",
      "description": "",
      "fps": "24.000",
-     "id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "in_progress_shots": 0,
      "name": "Alpha",
      "project_code": "ALPHA",
@@ -1713,8 +1799,8 @@
      "total_assets": 0,
      "total_shots": 0,
      "type": "Episodic Series",
-     "updated_at": "2026-10-29T11:40:29.514229Z",
-     "uuid": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "updated_at": "2026-10-29T15:19:52.925569Z",
+     "uuid": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "vendor_ids": [],
      "vendor_names": [],
      "vendor_team_ids": [],
@@ -1725,7 +1811,7 @@
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "00fa46b6-95f6-4cc2-b62d-9a92376e74ef"
+   "X-Request-ID": "955ac615-a5fc-418b-8ec0-ddcbc9e3ebe7"
   },
   "request": {
    "body": null,
@@ -1762,7 +1848,7 @@
   "headers": {
    "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "1517e5c3-437d-4560-a2fe-1c226501d052"
+   "X-Request-ID": "837a7434-298f-4503-b45a-e3691fde0676"
   },
   "request": {
    "body": {
@@ -1770,7 +1856,7 @@
     "fps": 25
    },
    "method": "PATCH",
-   "path": "/api/v1/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/"
+   "path": "/api/v1/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/"
   },
   "status": 200
  },
@@ -1778,7 +1864,7 @@
   "body": {
    "error": {
     "code": "validation_error",
-    "request_id": "ffaec6f2-be79-44fc-911d-57efd654c70d"
+    "request_id": "a0e9ff4f-8b31-450f-a2ed-f40c05d373d2"
    },
    "fps": [
     "A valid number is required."
@@ -1787,14 +1873,14 @@
   "headers": {
    "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "ffaec6f2-be79-44fc-911d-57efd654c70d"
+   "X-Request-ID": "a0e9ff4f-8b31-450f-a2ed-f40c05d373d2"
   },
   "request": {
    "body": {
     "fps": "fast"
    },
    "method": "PATCH",
-   "path": "/api/v1/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/"
+   "path": "/api/v1/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/"
   },
   "status": 400
  },
@@ -1811,11 +1897,11 @@
    "color_space": "ACEScg",
    "coordinator_id": null,
    "coordinator_name": "",
-   "created_at": "2026-10-29T11:40:29.514222Z",
+   "created_at": "2026-10-29T15:19:52.925562Z",
    "delivery_date": "2030-12-31",
    "description": "Renamed in a test",
    "fps": "25.000",
-   "id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "in_progress_shots": 0,
    "name": "Alpha",
    "project_code": "ALPHA",
@@ -1828,8 +1914,8 @@
    "total_assets": 0,
    "total_shots": 0,
    "type": "Episodic Series",
-   "updated_at": "2026-10-29T11:40:29.609937Z",
-   "uuid": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "updated_at": "2026-10-29T15:19:53.020568Z",
+   "uuid": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "vendor_ids": [],
    "vendor_names": [],
    "vendor_team_ids": [],
@@ -1838,12 +1924,61 @@
   "headers": {
    "Allow": "POST, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "7818dd3b-eacd-4e8c-afcd-e972925612de"
+   "X-Request-ID": "06fa2f2a-40ba-437b-aa96-d3d16c8c5745"
   },
   "request": {
    "body": {},
    "method": "POST",
-   "path": "/api/v1/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/restore/"
+   "path": "/api/v1/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/restore/"
+  },
+  "status": 200
+ },
+ "projects_restore_after_archive": {
+  "body": {
+   "approved_shots": 0,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "ALPHA",
+   "color_space": "ACEScg",
+   "coordinator_id": null,
+   "coordinator_name": "",
+   "created_at": "2026-10-29T15:19:52.925562Z",
+   "delivery_date": "2030-12-31",
+   "description": "Renamed in a test",
+   "fps": "25.000",
+   "id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
+   "in_progress_shots": 0,
+   "name": "Alpha",
+   "project_code": "ALPHA",
+   "resolution": "4096x2160",
+   "start_date": "2030-01-01",
+   "status": "In Progress",
+   "supervisor_id": null,
+   "supervisor_name": "",
+   "thumbnail_url": "",
+   "total_assets": 0,
+   "total_shots": 0,
+   "type": "Episodic Series",
+   "updated_at": "2026-10-29T15:19:53.020568Z",
+   "uuid": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": [],
+   "workflow_type": "episodic"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "45ab4769-5c68-453e-88d8-9dfbf8535638"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/restore/"
   },
   "status": 200
  },
@@ -1865,12 +2000,12 @@
   "headers": {
    "Allow": "GET, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "84e0d39d-c708-4465-a0cf-ed693c7a6e48"
+   "X-Request-ID": "46ae31ef-c000-4d37-96ee-4f6cda5f3189"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/statistics/"
+   "path": "/api/v1/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/statistics/"
   },
   "status": 200
  },
@@ -1885,12 +2020,12 @@
   "headers": {
    "Allow": "GET, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "038d20d3-8f02-4602-9415-df34810c2770"
+   "X-Request-ID": "0e09c49d-d54e-4da1-9a5e-17a0becf9633"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/activity/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/activity/"
   },
   "status": 200
  },
@@ -1901,50 +2036,50 @@
      "action": "Updated Sequence",
      "description": "updated Sequence Opening",
      "entity_code": "Opening",
-     "entity_id": "475e51fa-b62c-40f9-a266-a229d04a9cf6",
+     "entity_id": "b38743bc-88e1-4422-af37-7bcdc61ed0ec",
      "entity_type": "Sequence",
-     "id": "326e3687-43f5-442d-83ee-35251ccd3e1e",
-     "timestamp": "2026-10-29T11:40:30.299805+00:00",
+     "id": "71a04076-6100-4e72-b8fe-74a1031514d5",
+     "timestamp": "2026-10-29T15:19:53.672648+00:00",
      "user_name": "user@example.test"
     },
     {
      "action": "Updated Sequence",
      "description": "updated Sequence Opening",
      "entity_code": "Opening",
-     "entity_id": "475e51fa-b62c-40f9-a266-a229d04a9cf6",
+     "entity_id": "b38743bc-88e1-4422-af37-7bcdc61ed0ec",
      "entity_type": "Sequence",
-     "id": "b7cc1528-1b00-4a9e-9a29-bdf950f9d6b1",
-     "timestamp": "2026-10-29T11:40:30.177014+00:00",
+     "id": "25cf2c88-1429-4550-833b-50fe205447b9",
+     "timestamp": "2026-10-29T15:19:53.551298+00:00",
      "user_name": "user@example.test"
     },
     {
      "action": "Created Sequence",
      "description": "created Sequence Opening",
      "entity_code": "Opening",
-     "entity_id": "475e51fa-b62c-40f9-a266-a229d04a9cf6",
+     "entity_id": "b38743bc-88e1-4422-af37-7bcdc61ed0ec",
      "entity_type": "Sequence",
-     "id": "4c7b2825-f639-42d8-afc0-889823fa7dfb",
-     "timestamp": "2026-10-29T11:40:30.142381+00:00",
+     "id": "afaa95f9-ec7f-4d58-b21c-2e9fcf7cf9e0",
+     "timestamp": "2026-10-29T15:19:53.518946+00:00",
      "user_name": "user@example.test"
     },
     {
      "action": "Updated Project",
      "description": "updated Project Alpha",
      "entity_code": "Alpha",
-     "entity_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "entity_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "entity_type": "Project",
-     "id": "1df72191-22c4-4241-9b85-0618b4162b95",
-     "timestamp": "2026-10-29T11:40:29.611943+00:00",
+     "id": "f1a9bd1f-a30b-4b89-bfa0-b0b50f281383",
+     "timestamp": "2026-10-29T15:19:53.022198+00:00",
      "user_name": "user@example.test"
     },
     {
      "action": "Created Project",
      "description": "created Project Alpha",
      "entity_code": "Alpha",
-     "entity_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "entity_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "entity_type": "Project",
-     "id": "80a3464c-a701-4fe8-9bb0-d6a3a0b892c4",
-     "timestamp": "2026-10-29T11:40:29.515992+00:00",
+     "id": "771e3f85-fe1f-449b-a3d6-8704dc4e4077",
+     "timestamp": "2026-10-29T15:19:52.927100+00:00",
      "user_name": "user@example.test"
     }
    ],
@@ -2006,7 +2141,7 @@
     "delivery_date": "2030-12-31",
     "description": "Renamed in a test",
     "fps": 25.0,
-    "id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+    "id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
     "name": "Alpha",
     "resolution": "4096x2160",
     "start_date": "2030-01-01",
@@ -2117,12 +2252,12 @@
   "headers": {
    "Allow": "GET, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "81a2cd66-0cd5-45e1-a4ab-5111d2c99422"
+   "X-Request-ID": "54ba2d83-026d-4d2b-a81f-f6def28905c2"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/dashboard/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/dashboard/"
   },
   "status": 200
  },
@@ -2137,12 +2272,12 @@
   "headers": {
    "Allow": "GET, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "bb12aed9-926d-454c-9cde-421cdeb93738"
+   "X-Request-ID": "f6ed3d0c-bb93-4ea0-b176-0d1c034665b1"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/editorial/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/editorial/"
   },
   "status": 200
  },
@@ -2157,12 +2292,12 @@
   "headers": {
    "Allow": "GET, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "61a3e819-5f85-459e-bdee-e3ef1475331f"
+   "X-Request-ID": "29ea8b05-eebd-4718-b7b1-1aa8671b2db1"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/files/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/files/"
   },
   "status": 200
  },
@@ -2177,12 +2312,12 @@
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "863353cf-dd26-4d47-baba-d336641a3f18"
+   "X-Request-ID": "f0ecd942-4e0c-46cf-a8bd-808cbb7c9290"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/notes/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/notes/"
   },
   "status": 200
  },
@@ -2197,38 +2332,38 @@
      "addressed_at": null,
      "addressed_by": "",
      "author_avatar": "",
-     "author_id": "6d01079c-93fc-49c1-9583-22958a7a4935",
+     "author_id": "c425ac8d-c853-4975-98d7-b1a9d30496c5",
      "author_name": "user@example.test",
      "author_role": "",
      "body": "",
      "category": "General",
-     "created_at": "2026-10-29T11:40:30.562363Z",
+     "created_at": "2026-10-29T15:19:53.953297Z",
      "entity_code": "",
      "entity_id": "",
      "entity_name": "",
      "entity_type": "Project",
      "frame_number": null,
-     "id": "2046ae75-9ecc-48fc-adae-2e36c244bf4d",
+     "id": "1bccc9fe-890d-476e-9ac1-59890675bbd7",
      "priority": "Medium",
      "project_code": "ALPHA",
-     "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "status": "Open",
      "subject": "Hello",
      "tags": [],
      "timecode_ref": "",
-     "updated_at": "2026-10-29T11:40:30.562371Z"
+     "updated_at": "2026-10-29T15:19:53.953308Z"
     }
    ]
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "50e0d689-ad79-4b78-a0fa-8c4bd7ea7f03"
+   "X-Request-ID": "82acade0-6b82-4610-969a-47bd55a1e0a7"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/notes/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/notes/"
   },
   "status": 200
  },
@@ -2237,31 +2372,31 @@
    "addressed_at": null,
    "addressed_by": "",
    "author_avatar": "",
-   "author_id": "6d01079c-93fc-49c1-9583-22958a7a4935",
+   "author_id": "c425ac8d-c853-4975-98d7-b1a9d30496c5",
    "author_name": "user@example.test",
    "author_role": "",
    "body": "",
    "category": "General",
-   "created_at": "2026-10-29T11:40:30.562363Z",
+   "created_at": "2026-10-29T15:19:53.953297Z",
    "entity_code": "",
    "entity_id": "",
    "entity_name": "",
    "entity_type": "Project",
    "frame_number": null,
-   "id": "2046ae75-9ecc-48fc-adae-2e36c244bf4d",
+   "id": "1bccc9fe-890d-476e-9ac1-59890675bbd7",
    "priority": "Medium",
    "project_code": "ALPHA",
-   "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "status": "Open",
    "subject": "Hello",
    "tags": [],
    "timecode_ref": "",
-   "updated_at": "2026-10-29T11:40:30.562371Z"
+   "updated_at": "2026-10-29T15:19:53.953308Z"
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "d0451015-f449-4f24-8e72-5a219d8bbe44"
+   "X-Request-ID": "e2d1a0c7-df2c-4889-bc4c-284aaa525a32"
   },
   "request": {
    "body": {
@@ -2269,7 +2404,7 @@
     "subject": "Hello"
    },
    "method": "POST",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/notes/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/notes/"
   },
   "status": 201
  },
@@ -2302,19 +2437,19 @@
    "fps": 25.0,
    "ocio_config": "/studio/configs/aces_1.2/config.ocio",
    "pipeline_steps": [],
-   "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "resolution": "4096x2160",
    "usd_schema_version": "23.11"
   },
   "headers": {
    "Allow": "GET, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "ef827aa4-4f42-495c-9963-ca13f30aacf0"
+   "X-Request-ID": "6a6d3a37-cbbf-483a-b428-fc44492e1da3"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/pipeline/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/pipeline/"
   },
   "status": 200
  },
@@ -2322,18 +2457,18 @@
   "body": {
    "artists": [],
    "departments": [],
-   "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "total_artists": 0
   },
   "headers": {
    "Allow": "GET, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "ea581251-460e-4bcd-89c8-d4ae61d3d81c"
+   "X-Request-ID": "ac41e2fe-5a22-4936-898a-1ff0bcb90184"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/resources/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/resources/"
   },
   "status": 200
  },
@@ -2341,18 +2476,18 @@
   "body": {
    "delivery_date": "2030-12-31",
    "milestones": [],
-   "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "start_date": "2030-01-01"
   },
   "headers": {
    "Allow": "GET, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "337da3fe-849f-4ba0-9f33-f2568ea8f4d1"
+   "X-Request-ID": "31ff24d1-5f2a-444d-a456-0df71d6c16b0"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/schedule/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/schedule/"
   },
   "status": 200
  },
@@ -2365,14 +2500,14 @@
    "results": [
     {
      "code": "SQ010",
-     "created_at": "2026-10-29T11:40:30.139321Z",
+     "created_at": "2026-10-29T15:19:53.517680Z",
      "deleted_at": null,
      "department": "",
      "description": "Cold open",
-     "episode_id": "01a0c4d5-5e6e-4bde-803f-ece5b556aa1b",
+     "episode_id": "c1e12166-04f1-4dcd-9af6-d5045c3972d2",
      "frame_in": 1001,
      "frame_out": 1100,
-     "id": "475e51fa-b62c-40f9-a266-a229d04a9cf6",
+     "id": "b38743bc-88e1-4422-af37-7bcdc61ed0ec",
      "is_deleted": false,
      "lead_artist": null,
      "lead_artist_id": null,
@@ -2380,26 +2515,26 @@
      "metadata": {},
      "name": "Opening",
      "project_code": "ALPHA",
-     "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "project_name": "Alpha",
      "shots_count": 0,
      "show_id": null,
      "status": "Not Started",
      "tags": [],
-     "updated_at": "2026-10-29T11:40:30.258918Z",
-     "uuid": "475e51fa-b62c-40f9-a266-a229d04a9cf6"
+     "updated_at": "2026-10-29T15:19:53.632885Z",
+     "uuid": "b38743bc-88e1-4422-af37-7bcdc61ed0ec"
     }
    ]
   },
   "headers": {
    "Allow": "GET, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "444b28c6-2dde-4bf6-865d-89d49e31e156"
+   "X-Request-ID": "ff6c5d58-7846-49a7-998c-39b734612ac6"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/sequences/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/sequences/"
   },
   "status": 200
  },
@@ -2431,11 +2566,11 @@
     "color_space": "ACEScg",
     "coordinator_id": null,
     "coordinator_name": "",
-    "created_at": "2026-10-29T11:40:29.514222Z",
+    "created_at": "2026-10-29T15:19:52.925562Z",
     "delivery_date": "2030-12-31",
     "description": "Renamed in a test",
     "fps": "25.000",
-    "id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+    "id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
     "in_progress_shots": 0,
     "name": "Alpha",
     "project_code": "ALPHA",
@@ -2448,24 +2583,24 @@
     "total_assets": 0,
     "total_shots": 0,
     "type": "Episodic Series",
-    "updated_at": "2026-10-29T11:40:29.609937Z",
-    "uuid": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+    "updated_at": "2026-10-29T15:19:53.020568Z",
+    "uuid": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
     "vendor_ids": [],
     "vendor_names": [],
     "vendor_team_ids": [],
     "workflow_type": "episodic"
    },
-   "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16"
+   "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
   },
   "headers": {
    "Allow": "GET, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "d68abd5f-f13b-4460-8555-43355680fae5"
+   "X-Request-ID": "da14788c-8a54-4aec-be59-3f146272f006"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/summary/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/summary/"
   },
   "status": 200
  },
@@ -2478,14 +2613,14 @@
    "results": [
     {
      "code": "SQ010",
-     "created_at": "2026-10-29T11:40:30.139321Z",
-     "deleted_at": "2026-10-29T11:40:30.273294Z",
+     "created_at": "2026-10-29T15:19:53.517680Z",
+     "deleted_at": "2026-10-29T15:19:53.646553Z",
      "department": "",
      "description": "Cold open",
-     "episode_id": "01a0c4d5-5e6e-4bde-803f-ece5b556aa1b",
+     "episode_id": "c1e12166-04f1-4dcd-9af6-d5045c3972d2",
      "frame_in": 1001,
      "frame_out": 1100,
-     "id": "475e51fa-b62c-40f9-a266-a229d04a9cf6",
+     "id": "b38743bc-88e1-4422-af37-7bcdc61ed0ec",
      "is_deleted": true,
      "lead_artist": null,
      "lead_artist_id": null,
@@ -2493,26 +2628,26 @@
      "metadata": {},
      "name": "Opening",
      "project_code": "ALPHA",
-     "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "project_name": "Alpha",
      "shots_count": 0,
      "show_id": null,
      "status": "Not Started",
      "tags": [],
-     "updated_at": "2026-10-29T11:40:30.258918Z",
-     "uuid": "475e51fa-b62c-40f9-a266-a229d04a9cf6"
+     "updated_at": "2026-10-29T15:19:53.632885Z",
+     "uuid": "b38743bc-88e1-4422-af37-7bcdc61ed0ec"
     }
    ]
   },
   "headers": {
    "Allow": "GET, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "3d3c1cc9-0e2e-4083-8896-7d198cfd80c7"
+   "X-Request-ID": "aa74a34c-57b0-4dd2-b8f5-d6718d137a04"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/sequences/archived/?project=d66129f0-f287-48d9-b75a-14adb60f0d16"
+   "path": "/api/v1/sequences/archived/?project=2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
   },
   "status": 200
  },
@@ -2520,13 +2655,13 @@
   "body": {
    "_results_total_in_page": 1,
    "failed": 0,
-   "operation_id": "b5aa06ad86c24d20b28dcb4cdf3a7931",
+   "operation_id": "4ee29e278a4a4c3bb638d3a25a445a7b",
    "partial_success": false,
    "processed": 1,
    "results": [
     {
      "actionTaken": "archived",
-     "id": "475e51fa-b62c-40f9-a266-a229d04a9cf6",
+     "id": "b38743bc-88e1-4422-af37-7bcdc61ed0ec",
      "index": 0,
      "status": "archived",
      "success": true
@@ -2539,18 +2674,18 @@
     "failedCount": 0,
     "total": 1
    },
-   "timestamp": "2026-10-29T11:40:30.276762+00:00",
+   "timestamp": "2026-10-29T15:19:53.650058+00:00",
    "updated_count": 1
   },
   "headers": {
    "Allow": "POST, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "bf669e70-3495-4b78-b899-8f509809ba74"
+   "X-Request-ID": "c581de19-2d8c-4b63-92c0-ab687130b7f5"
   },
   "request": {
    "body": {
     "ids": [
-     "475e51fa-b62c-40f9-a266-a229d04a9cf6"
+     "b38743bc-88e1-4422-af37-7bcdc61ed0ec"
     ]
    },
    "method": "POST",
@@ -2562,7 +2697,7 @@
   "body": {
    "_results_total_in_page": 2,
    "failed": 2,
-   "operation_id": "1617651d8b7444bdb7194d317623cb04",
+   "operation_id": "b1087bcdd3234d29a0e56b87c80d46b6",
    "partial_success": false,
    "processed": 2,
    "results": [
@@ -2607,12 +2742,12 @@
     "total": 2,
     "updatedCount": 0
    },
-   "timestamp": "2026-10-29T11:40:30.212958+00:00"
+   "timestamp": "2026-10-29T15:19:53.586854+00:00"
   },
   "headers": {
    "Allow": "POST, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "16d5b4dc-7655-448f-8597-be850698c663"
+   "X-Request-ID": "bc0d07c0-e84b-4873-924d-27c53735addf"
   },
   "request": {
    "body": {
@@ -2621,18 +2756,18 @@
       "code": "SQ020",
       "data": {
        "name": "Chase",
-       "project": "d66129f0-f287-48d9-b75a-14adb60f0d16"
+       "project": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
       }
      },
      {
       "code": "SQ030",
       "data": {
        "name": "Finale",
-       "project": "d66129f0-f287-48d9-b75a-14adb60f0d16"
+       "project": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
       }
      }
     ],
-    "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16"
+    "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
    },
    "method": "POST",
    "path": "/api/v1/sequences/bulk-create/"
@@ -2643,13 +2778,13 @@
   "body": {
    "_results_total_in_page": 1,
    "failed": 0,
-   "operation_id": "78e89de9366746268643b95fa4a8f071",
+   "operation_id": "f04042b3455c447e8d8f9e786ee860f5",
    "partial_success": false,
    "processed": 1,
    "results": [
     {
      "actionTaken": "restored",
-     "id": "475e51fa-b62c-40f9-a266-a229d04a9cf6",
+     "id": "b38743bc-88e1-4422-af37-7bcdc61ed0ec",
      "index": 0,
      "status": "restored",
      "success": true
@@ -2662,18 +2797,18 @@
     "restoredCount": 1,
     "total": 1
    },
-   "timestamp": "2026-10-29T11:40:30.300965+00:00",
+   "timestamp": "2026-10-29T15:19:53.673932+00:00",
    "updated_count": 1
   },
   "headers": {
    "Allow": "POST, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "0eb9cbaf-611d-471c-9175-4ca8b95fd299"
+   "X-Request-ID": "670b4330-7222-4ce2-a527-1eb4979bb06d"
   },
   "request": {
    "body": {
     "ids": [
-     "475e51fa-b62c-40f9-a266-a229d04a9cf6"
+     "b38743bc-88e1-4422-af37-7bcdc61ed0ec"
     ]
    },
    "method": "POST",
@@ -2685,7 +2820,7 @@
   "body": {
    "_results_total_in_page": 1,
    "failed": 0,
-   "operation_id": "539204edd2774c4b86a04606935c12ea",
+   "operation_id": "6c9c2d715c5d4723906d2131af992982",
    "partial_success": false,
    "processed": 1,
    "results": [
@@ -2694,14 +2829,14 @@
      "code": "SQ010",
      "entity": {
       "code": "SQ010",
-      "created_at": "2026-10-29T11:40:30.139321Z",
+      "created_at": "2026-10-29T15:19:53.517680Z",
       "deleted_at": null,
       "department": "",
       "description": "Cold open",
-      "episode_id": "01a0c4d5-5e6e-4bde-803f-ece5b556aa1b",
+      "episode_id": "c1e12166-04f1-4dcd-9af6-d5045c3972d2",
       "frame_in": 1001,
       "frame_out": 1100,
-      "id": "475e51fa-b62c-40f9-a266-a229d04a9cf6",
+      "id": "b38743bc-88e1-4422-af37-7bcdc61ed0ec",
       "is_deleted": false,
       "lead_artist": null,
       "lead_artist_id": null,
@@ -2709,17 +2844,17 @@
       "metadata": {},
       "name": "Opening",
       "project_code": "ALPHA",
-      "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+      "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
       "project_name": "Alpha",
       "shots_count": 0,
       "show_id": null,
       "status": "Not Started",
       "tags": [],
-      "updated_at": "2026-10-29T11:40:30.258918Z",
-      "uuid": "475e51fa-b62c-40f9-a266-a229d04a9cf6"
+      "updated_at": "2026-10-29T15:19:53.632885Z",
+      "uuid": "b38743bc-88e1-4422-af37-7bcdc61ed0ec"
      },
      "error": null,
-     "id": "475e51fa-b62c-40f9-a266-a229d04a9cf6",
+     "id": "b38743bc-88e1-4422-af37-7bcdc61ed0ec",
      "index": 0,
      "status": "updated",
      "success": true
@@ -2739,12 +2874,12 @@
     "total": 1,
     "updatedCount": 1
    },
-   "timestamp": "2026-10-29T11:40:30.261704+00:00"
+   "timestamp": "2026-10-29T15:19:53.635574+00:00"
   },
   "headers": {
    "Allow": "POST, PATCH, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "8089c364-18a6-4580-8d0c-4c92657d1c75"
+   "X-Request-ID": "437479d0-10c6-460c-99e4-c337628b6d5d"
   },
   "request": {
    "body": {
@@ -2753,7 +2888,7 @@
       "data": {
        "description": "bulk"
       },
-      "id": "475e51fa-b62c-40f9-a266-a229d04a9cf6"
+      "id": "b38743bc-88e1-4422-af37-7bcdc61ed0ec"
      }
     ]
    },
@@ -2770,14 +2905,14 @@
      "code": "SQ010",
      "existing_entity": {
       "code": "SQ010",
-      "created_at": "2026-10-29T11:40:30.139321Z",
+      "created_at": "2026-10-29T15:19:53.517680Z",
       "deleted_at": null,
       "department": "",
       "description": "Cold open",
-      "episode_id": "01a0c4d5-5e6e-4bde-803f-ece5b556aa1b",
+      "episode_id": "c1e12166-04f1-4dcd-9af6-d5045c3972d2",
       "frame_in": 1001,
       "frame_out": 1100,
-      "id": "475e51fa-b62c-40f9-a266-a229d04a9cf6",
+      "id": "b38743bc-88e1-4422-af37-7bcdc61ed0ec",
       "is_deleted": false,
       "lead_artist": null,
       "lead_artist_id": null,
@@ -2785,14 +2920,14 @@
       "metadata": {},
       "name": "Opening",
       "project_code": "ALPHA",
-      "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+      "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
       "project_name": "Alpha",
       "shots_count": 0,
       "show_id": null,
       "status": "Not Started",
       "tags": [],
-      "updated_at": "2026-10-29T11:40:30.175487Z",
-      "uuid": "475e51fa-b62c-40f9-a266-a229d04a9cf6"
+      "updated_at": "2026-10-29T15:19:53.549775Z",
+      "uuid": "b38743bc-88e1-4422-af37-7bcdc61ed0ec"
      },
      "state": "EXISTS"
     },
@@ -2805,7 +2940,7 @@
     {
      "deleted_at": null,
      "error": null,
-     "id": "475e51fa-b62c-40f9-a266-a229d04a9cf6",
+     "id": "b38743bc-88e1-4422-af37-7bcdc61ed0ec",
      "index": 0,
      "status": "exists"
     },
@@ -2821,7 +2956,7 @@
   "headers": {
    "Allow": "POST, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "35fb1599-76db-4645-baaa-551e67e7485d"
+   "X-Request-ID": "c3473386-e5c5-41a7-ac3e-99c767385fac"
   },
   "request": {
    "body": {
@@ -2829,7 +2964,7 @@
      "SQ010",
      "SQ020"
     ],
-    "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16"
+    "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
    },
    "method": "POST",
    "path": "/api/v1/sequences/check-existence/"
@@ -2843,25 +2978,25 @@
    "description": "",
    "frame_in": 1001,
    "frame_out": 1100,
-   "id": "475e51fa-b62c-40f9-a266-a229d04a9cf6",
+   "id": "b38743bc-88e1-4422-af37-7bcdc61ed0ec",
    "metadata": {},
    "name": "Opening",
-   "project": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "project": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "status": "Not Started",
    "tags": [],
-   "uuid": "475e51fa-b62c-40f9-a266-a229d04a9cf6"
+   "uuid": "b38743bc-88e1-4422-af37-7bcdc61ed0ec"
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "e2b11ebc-c196-43fb-9a64-9ad6b0ccbe5b"
+   "X-Request-ID": "81b16df8-9b8f-4f5a-a5dc-b8d04af65415"
   },
   "request": {
    "body": {
     "code": "<redacted>",
-    "episode_id": "01a0c4d5-5e6e-4bde-803f-ece5b556aa1b",
+    "episode_id": "c1e12166-04f1-4dcd-9af6-d5045c3972d2",
     "name": "Opening",
-    "project": "d66129f0-f287-48d9-b75a-14adb60f0d16"
+    "project": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
    },
    "method": "POST",
    "path": "/api/v1/sequences/"
@@ -2875,13 +3010,13 @@
    ],
    "error": {
     "code": "validation_error",
-    "request_id": "70b01992-1ab5-432a-9013-23ae7c2641b8"
+    "request_id": "0db8d1cb-b4d6-4815-bbbf-12e5eafa149b"
    }
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "70b01992-1ab5-432a-9013-23ae7c2641b8"
+   "X-Request-ID": "0db8d1cb-b4d6-4815-bbbf-12e5eafa149b"
   },
   "request": {
    "body": {},
@@ -2899,14 +3034,14 @@
    "results": [
     {
      "code": "SQ010",
-     "created_at": "2026-10-29T11:40:30.139321Z",
+     "created_at": "2026-10-29T15:19:53.517680Z",
      "deleted_at": null,
      "department": "",
      "description": "",
-     "episode_id": "01a0c4d5-5e6e-4bde-803f-ece5b556aa1b",
+     "episode_id": "c1e12166-04f1-4dcd-9af6-d5045c3972d2",
      "frame_in": 1001,
      "frame_out": 1100,
-     "id": "475e51fa-b62c-40f9-a266-a229d04a9cf6",
+     "id": "b38743bc-88e1-4422-af37-7bcdc61ed0ec",
      "is_deleted": false,
      "lead_artist": null,
      "lead_artist_id": null,
@@ -2914,26 +3049,26 @@
      "metadata": {},
      "name": "Opening",
      "project_code": "ALPHA",
-     "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "project_name": "Alpha",
      "shots_count": 0,
      "show_id": null,
      "status": "Not Started",
      "tags": [],
-     "updated_at": "2026-10-29T11:40:30.139328Z",
-     "uuid": "475e51fa-b62c-40f9-a266-a229d04a9cf6"
+     "updated_at": "2026-10-29T15:19:53.517686Z",
+     "uuid": "b38743bc-88e1-4422-af37-7bcdc61ed0ec"
     }
    ]
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "b9c58faf-2426-42c3-9158-7c3b312e9d47"
+   "X-Request-ID": "d33f0998-2695-4a01-95bf-95a49510f384"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/sequences/?project=d66129f0-f287-48d9-b75a-14adb60f0d16"
+   "path": "/api/v1/sequences/?project=2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
   },
   "status": 200
  },
@@ -2946,14 +3081,14 @@
    "results": [
     {
      "code": "SQ010",
-     "created_at": "2026-10-29T11:40:30.139321Z",
+     "created_at": "2026-10-29T15:19:53.517680Z",
      "deleted_at": null,
      "department": "",
      "description": "Cold open",
-     "episode_id": "01a0c4d5-5e6e-4bde-803f-ece5b556aa1b",
+     "episode_id": "c1e12166-04f1-4dcd-9af6-d5045c3972d2",
      "frame_in": 1001,
      "frame_out": 1100,
-     "id": "475e51fa-b62c-40f9-a266-a229d04a9cf6",
+     "id": "b38743bc-88e1-4422-af37-7bcdc61ed0ec",
      "is_deleted": false,
      "lead_artist": null,
      "lead_artist_id": null,
@@ -2961,26 +3096,26 @@
      "metadata": {},
      "name": "Opening",
      "project_code": "ALPHA",
-     "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "project_name": "Alpha",
      "shots_count": 0,
      "show_id": null,
      "status": "Not Started",
      "tags": [],
-     "updated_at": "2026-10-29T11:40:30.175487Z",
-     "uuid": "475e51fa-b62c-40f9-a266-a229d04a9cf6"
+     "updated_at": "2026-10-29T15:19:53.549775Z",
+     "uuid": "b38743bc-88e1-4422-af37-7bcdc61ed0ec"
     }
    ]
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "32347dbf-84d9-43cc-ac9e-c0bb163bb010"
+   "X-Request-ID": "e09327c9-d9eb-49ab-acf8-39f367500e5b"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/sequences/?project=d66129f0-f287-48d9-b75a-14adb60f0d16&ordering=code"
+   "path": "/api/v1/sequences/?project=2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca&ordering=code"
   },
   "status": 200
  },
@@ -2999,7 +3134,7 @@
   "headers": {
    "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "9dbbda9a-f41c-4dd6-8f00-5bdea62a190a"
+   "X-Request-ID": "b89de6e5-85c5-4dfe-b725-d8ab3548899b"
   },
   "request": {
    "body": {
@@ -3008,42 +3143,53 @@
     "frame_out": 1100
    },
    "method": "PATCH",
-   "path": "/api/v1/sequences/475e51fa-b62c-40f9-a266-a229d04a9cf6/"
+   "path": "/api/v1/sequences/b38743bc-88e1-4422-af37-7bcdc61ed0ec/"
   },
   "status": 200
  },
  "shows_archive": {
   "body": {
-   "detail": "You do not have permission to perform this action.",
-   "error": {
-    "code": "permission_denied",
-    "request_id": "53f4faf6-7d13-4faf-9fb8-5262ba62069a"
-   }
+   "code": "S1",
+   "created_at": "2026-10-29T15:19:53.298461Z",
+   "delivery_date": null,
+   "description": "First",
+   "id": "dbe967aa-6fe6-4f04-b279-e0cb71af98b6",
+   "is_primary": true,
+   "name": "Season One",
+   "project_code": "ALPHA",
+   "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
+   "season": "",
+   "start_date": null,
+   "status": "",
+   "thumbnail_url": "",
+   "type": "Feature Film",
+   "updated_at": "2026-10-29T15:19:53.324137Z",
+   "uuid": "dbe967aa-6fe6-4f04-b279-e0cb71af98b6"
   },
   "headers": {
    "Allow": "POST, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "53f4faf6-7d13-4faf-9fb8-5262ba62069a"
+   "X-Request-ID": "df469c28-e805-4fc0-b2e2-6b3a16aec761"
   },
   "request": {
    "body": {},
    "method": "POST",
-   "path": "/api/v1/shows/2785cef6-d8e8-4728-8334-0316b4f95e63/archive/"
+   "path": "/api/v1/shows/dbe967aa-6fe6-4f04-b279-e0cb71af98b6/archive/"
   },
-  "status": 403
+  "status": 200
  },
  "shows_check_existence": {
   "body": {
    "detail": "You do not have permission to perform this action.",
    "error": {
     "code": "permission_denied",
-    "request_id": "4224f2bc-40d9-4b9f-8d31-01290a479f3f"
+    "request_id": "3bd4df75-c28c-455c-9bb3-26c6017c8c59"
    }
   },
   "headers": {
    "Allow": "POST, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "4224f2bc-40d9-4b9f-8d31-01290a479f3f"
+   "X-Request-ID": "3bd4df75-c28c-455c-9bb3-26c6017c8c59"
   },
   "request": {
    "body": {
@@ -3051,7 +3197,7 @@
      "S1",
      "S9"
     ],
-    "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16"
+    "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
    },
    "method": "POST",
    "path": "/api/v1/shows/check-existence/"
@@ -3061,33 +3207,33 @@
  "shows_create": {
   "body": {
    "code": "S1",
-   "created_at": "2026-10-29T11:40:29.909321Z",
+   "created_at": "2026-10-29T15:19:53.298461Z",
    "delivery_date": null,
    "description": "",
-   "id": "2785cef6-d8e8-4728-8334-0316b4f95e63",
+   "id": "dbe967aa-6fe6-4f04-b279-e0cb71af98b6",
    "is_primary": true,
    "name": "Season One",
    "project_code": "ALPHA",
-   "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "season": "",
    "start_date": null,
    "status": "",
    "thumbnail_url": "",
    "type": "Feature Film",
-   "updated_at": "2026-10-29T11:40:29.909327Z",
-   "uuid": "2785cef6-d8e8-4728-8334-0316b4f95e63"
+   "updated_at": "2026-10-29T15:19:53.298468Z",
+   "uuid": "dbe967aa-6fe6-4f04-b279-e0cb71af98b6"
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "2e0fa21a-91a2-4f3a-9aa9-d1ee84e399e3"
+   "X-Request-ID": "8158ee61-cba5-4862-807e-83b2264354f7"
   },
   "request": {
    "body": {
     "code": "<redacted>",
     "is_primary": true,
     "name": "Season One",
-    "project": "d66129f0-f287-48d9-b75a-14adb60f0d16"
+    "project": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
    },
    "method": "POST",
    "path": "/api/v1/shows/"
@@ -3101,7 +3247,7 @@
    ],
    "error": {
     "code": "validation_error",
-    "request_id": "1c1f11c5-a857-4681-96c5-9be9cf5e27fd"
+    "request_id": "687e4139-5630-4bcd-8acd-bb6cfb069483"
    },
    "name": [
     "This field is required."
@@ -3113,7 +3259,7 @@
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "1c1f11c5-a857-4681-96c5-9be9cf5e27fd"
+   "X-Request-ID": "687e4139-5630-4bcd-8acd-bb6cfb069483"
   },
   "request": {
    "body": {},
@@ -3131,33 +3277,33 @@
    "results": [
     {
      "code": "S1",
-     "created_at": "2026-10-29T11:40:29.909321Z",
+     "created_at": "2026-10-29T15:19:53.298461Z",
      "delivery_date": null,
      "description": "",
-     "id": "2785cef6-d8e8-4728-8334-0316b4f95e63",
+     "id": "dbe967aa-6fe6-4f04-b279-e0cb71af98b6",
      "is_primary": true,
      "name": "Season One",
      "project_code": "ALPHA",
-     "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "season": "",
      "start_date": null,
      "status": "",
      "thumbnail_url": "",
      "type": "Feature Film",
-     "updated_at": "2026-10-29T11:40:29.909327Z",
-     "uuid": "2785cef6-d8e8-4728-8334-0316b4f95e63"
+     "updated_at": "2026-10-29T15:19:53.298468Z",
+     "uuid": "dbe967aa-6fe6-4f04-b279-e0cb71af98b6"
     }
    ]
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "1d530967-8ef3-4925-a6f0-72bb53d9decd"
+   "X-Request-ID": "92b9b761-052d-4799-9a55-2984c0d39d04"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/shows/?project=d66129f0-f287-48d9-b75a-14adb60f0d16"
+   "path": "/api/v1/shows/?project=2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
   },
   "status": 200
  },
@@ -3166,28 +3312,28 @@
    "code": "S1",
    "delivery_date": null,
    "description": "First",
-   "id": "2785cef6-d8e8-4728-8334-0316b4f95e63",
+   "id": "dbe967aa-6fe6-4f04-b279-e0cb71af98b6",
    "is_primary": true,
    "name": "Season One",
-   "project": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "project": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "season": "",
    "start_date": null,
    "status": "",
    "thumbnail_url": "",
    "type": "Feature Film",
-   "uuid": "2785cef6-d8e8-4728-8334-0316b4f95e63"
+   "uuid": "dbe967aa-6fe6-4f04-b279-e0cb71af98b6"
   },
   "headers": {
    "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "887071c3-fabd-4b25-bfa0-1103378551ca"
+   "X-Request-ID": "9fcc973f-495c-42f1-bdcd-f146463d5ff4"
   },
   "request": {
    "body": {
     "description": "First"
    },
    "method": "PATCH",
-   "path": "/api/v1/shows/2785cef6-d8e8-4728-8334-0316b4f95e63/"
+   "path": "/api/v1/shows/dbe967aa-6fe6-4f04-b279-e0cb71af98b6/"
   },
   "status": 200
  },
@@ -3196,18 +3342,18 @@
    "detail": "You do not have permission to perform this action.",
    "error": {
     "code": "permission_denied",
-    "request_id": "e4027e82-77ae-4789-ad43-a404f934c03c"
+    "request_id": "07935e6f-adf2-431d-889c-cf64b75ed968"
    }
   },
   "headers": {
    "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "e4027e82-77ae-4789-ad43-a404f934c03c"
+   "X-Request-ID": "07935e6f-adf2-431d-889c-cf64b75ed968"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/"
+   "path": "/api/v1/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/"
   },
   "status": 403
  },
@@ -3216,13 +3362,13 @@
    "detail": "You do not have permission to perform this action.",
    "error": {
     "code": "permission_denied",
-    "request_id": "0572b3ae-7fd2-48a7-a9ee-aa14890bd514"
+    "request_id": "2fdb19c9-47e9-4c0c-8bf5-7a558a53d4cf"
    }
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "0572b3ae-7fd2-48a7-a9ee-aa14890bd514"
+   "X-Request-ID": "2fdb19c9-47e9-4c0c-8bf5-7a558a53d4cf"
   },
   "request": {
    "body": null,
@@ -3236,18 +3382,18 @@
    "detail": "You do not have permission to perform this action.",
    "error": {
     "code": "permission_denied",
-    "request_id": "5859b70d-856f-42eb-b533-5c004fde19ec"
+    "request_id": "4bd61879-7fa3-426e-bffe-6a2946424b2d"
    }
   },
   "headers": {
    "Allow": "GET, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "5859b70d-856f-42eb-b533-5c004fde19ec"
+   "X-Request-ID": "4bd61879-7fa3-426e-bffe-6a2946424b2d"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/organizations/projects/d66129f0-f287-48d9-b75a-14adb60f0d16/summary/"
+   "path": "/api/organizations/projects/2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca/summary/"
   },
   "status": 403
  },
@@ -3257,35 +3403,35 @@
    "clip_count": 0,
    "codec_or_format": "",
    "color_tag": "",
-   "created_at": "2026-10-29T11:40:30.321596Z",
+   "created_at": "2026-10-29T15:19:53.694095Z",
    "cut_id": "",
    "cut_name": "",
    "description": "",
    "end_tc": "",
    "frame_rate": 24.0,
-   "id": "1b12fed1-f122-4220-82c1-259ecc37e11a",
+   "id": "86fadc98-3da6-446e-815d-07efa916300d",
    "is_locked": false,
    "is_muted": false,
    "is_solo": false,
    "name": "V1",
    "project_code": "ALPHA",
-   "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "start_tc": "",
    "status": "Active",
    "track_number": 1,
    "track_type": "Video",
-   "updated_at": "2026-10-29T11:40:30.321602Z",
-   "uuid": "1b12fed1-f122-4220-82c1-259ecc37e11a"
+   "updated_at": "2026-10-29T15:19:53.694101Z",
+   "uuid": "86fadc98-3da6-446e-815d-07efa916300d"
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "e594594a-546e-4096-bc72-dff47cdfd72a"
+   "X-Request-ID": "939c1ea1-5fdd-48e8-9ed9-a83cae0ec416"
   },
   "request": {
    "body": {
     "name": "V1",
-    "project": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+    "project": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
     "track_number": 1,
     "track_type": "Video"
    },
@@ -3298,7 +3444,7 @@
   "body": {
    "error": {
     "code": "validation_error",
-    "request_id": "87baacba-4017-4d8d-83fd-d2af11a32a1b"
+    "request_id": "bc8049c6-f164-4d07-a713-478a10a0a9fb"
    },
    "name": [
     "This field is required."
@@ -3307,7 +3453,7 @@
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "87baacba-4017-4d8d-83fd-d2af11a32a1b"
+   "X-Request-ID": "bc8049c6-f164-4d07-a713-478a10a0a9fb"
   },
   "request": {
    "body": {},
@@ -3328,28 +3474,28 @@
      "cut_id": "",
      "cut_name": "",
      "end_tc": "",
-     "id": "1b12fed1-f122-4220-82c1-259ecc37e11a",
+     "id": "86fadc98-3da6-446e-815d-07efa916300d",
      "name": "V1",
      "project_code": "ALPHA",
-     "project_id": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+     "project_id": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
      "start_tc": "",
      "status": "Active",
      "track_number": 1,
      "track_type": "Video",
-     "updated_at": "2026-10-29T11:40:30.321602Z",
-     "uuid": "1b12fed1-f122-4220-82c1-259ecc37e11a"
+     "updated_at": "2026-10-29T15:19:53.694101Z",
+     "uuid": "86fadc98-3da6-446e-815d-07efa916300d"
     }
    ]
   },
   "headers": {
    "Allow": "GET, POST, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "13e453c2-fca6-4b4c-8ba1-f5bfef966b1f"
+   "X-Request-ID": "062bee2f-03c9-4376-a978-9642f44792dc"
   },
   "request": {
    "body": null,
    "method": "GET",
-   "path": "/api/v1/editorial/tracks/?project_id=d66129f0-f287-48d9-b75a-14adb60f0d16"
+   "path": "/api/v1/editorial/tracks/?project_id=2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca"
   },
   "status": 200
  },
@@ -3364,29 +3510,29 @@
    "description": "",
    "end_tc": "",
    "frame_rate": 24.0,
-   "id": "1b12fed1-f122-4220-82c1-259ecc37e11a",
+   "id": "86fadc98-3da6-446e-815d-07efa916300d",
    "is_locked": false,
    "is_muted": false,
    "is_solo": false,
    "name": "V1 (main)",
-   "project": "d66129f0-f287-48d9-b75a-14adb60f0d16",
+   "project": "2cdf7ea8-f4c8-47a7-8826-ba52eac6ccca",
    "start_tc": "",
    "status": "Active",
    "track_number": 1,
    "track_type": "Video",
-   "uuid": "1b12fed1-f122-4220-82c1-259ecc37e11a"
+   "uuid": "86fadc98-3da6-446e-815d-07efa916300d"
   },
   "headers": {
    "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
    "Content-Type": "application/json",
-   "X-Request-ID": "be553025-2db5-40d8-a323-3a0ded2992df"
+   "X-Request-ID": "441dd00b-09eb-4f09-8885-4831f76ffa8c"
   },
   "request": {
    "body": {
     "name": "V1 (main)"
    },
    "method": "PATCH",
-   "path": "/api/v1/editorial/tracks/1b12fed1-f122-4220-82c1-259ecc37e11a/"
+   "path": "/api/v1/editorial/tracks/86fadc98-3da6-446e-815d-07efa916300d/"
   },
   "status": 200
  }

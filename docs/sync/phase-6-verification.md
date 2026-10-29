@@ -90,3 +90,17 @@ Whole files, chosen by an import-graph walk from `main.tsx` compared with the Ph
 - **Q-16** An `artist` can update **any** task of the project (`task.update` is in the seeded artist role), including changing assignee and status, not only their own. Intended?
 - **Q-17** Rebuild the task **Board** (kanban by status) now, or leave the list as the only task view until Phase 10 (scheduling owns calendars)?
 - **CR-14** Approve the one-line server check, so a script cannot post negative hours either?
+
+## 8. Follow-up on branch `sync/phase-6b-task-board` (after the owner's "do it as per suggestion")
+
+Phases 5 and 6 were pushed and merged into `develop` (`6189dfd0`, `477fc943`, pushed); `main` untouched. Then, on a new branch from `develop`:
+
+| Item | Result |
+|---|---|
+| **Task Board** (Q-17) | `?view=board` on Tasks and a Board/List switch on the project's Tasks tab: a column per status, drag and drop or the card's menu, only to columns the backend allows, filters by project / mine / search, a notice when it shows only the first 500. 6 unit tests (3 mutation-checked) and a live test (a real drag changes the server's status; a refused column is not even tried). Calendar and Timeline views stay with Phase 10; the asset gallery is not rebuilt |
+| **CR-13 applied (`archive` only)** | `POST archive/` on projects and shows needs `project.delete` / `show.delete` (backend commit `d539d6e1`). **My proposal was wrong about `check-existence`:** mapping it makes those viewsets answer **500** (`_existence_items_from_request` was never implemented there). It stays unmapped (403) and is pinned by a test. The frontend keeps `DELETE`, which now has the same effect |
+| **CR-14 applied** | an ordinary timelog needs hours > 0 on create and update (omitted hours too); an adjustment may be negative, never zero. `TestOrdinaryHours` (6 cases); live: -1 and 0 answer 400, a negative correction of an approved entry is accepted |
+| Backend verification | 32 new/changed tests, mutation-checked (remove the map entry, either hours check: each fails); **555 related production tests pass** (targeted; the full backend suite was not run); `ruff check` clean; `manage.py check` shows only the existing MFA warning; the new type error is none (one existing `create.py:34` error is not on a line I touched) |
+| Samples re-captured | `_structure_flow.json` (archive 200, existence checks 403) and `_work_flow.json` (negative hours 400); the contract tests and the Phase 5 live test that pinned the old behaviour were updated |
+| Q-16 | left as is, per the suggestion |
+| Gates | typecheck 0; unit 79 files / 598 tests; live `work` 7, `production` 6 (others unchanged); build OK |

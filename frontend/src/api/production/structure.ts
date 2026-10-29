@@ -263,7 +263,7 @@ const V1 = '/api/v1';
 
 export const projectsApi = {
   ...resourceApi<Project, ProjectInput>('projects', `${V1}/projects/`),
-  /** Archive = `DELETE` (204). `POST {id}/archive/` is unusable: it answers 403 to everyone (CR-13). */
+  /** Archive = `DELETE` (204). `POST {id}/archive/` does the same since CR-13 was applied; DELETE needs no body. */
   archive: (id: string) => apiClient.delete<void>(`${V1}/projects/${id}/`),
   restore: (id: string) => apiClient.post<Project>(`${V1}/projects/${id}/restore/`, {}),
   archived: listFetcher<Project>(`${V1}/projects/archived/`),

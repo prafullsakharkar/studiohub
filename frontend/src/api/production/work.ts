@@ -322,7 +322,7 @@ export interface Timelog {
 }
 export interface TimelogInput {
   task_id: string;
-  /** Greater than zero, unless correcting an approved entry with `adjustment_of` (CR-14). */
+  /** Greater than zero (400 otherwise), unless correcting an approved entry with `adjustment_of` (CR-14). */
   duration_hours: string | number;
   date: string;
   notes?: string;

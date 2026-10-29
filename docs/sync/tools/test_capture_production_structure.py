@@ -126,6 +126,8 @@ def test_capture_production_structure(django_user_model):
     # ------------------------------------------------------------ archive / restore the project
     call(a, "shows_archive", "POST", f"/api/v1/shows/{sid}/archive/", {})
     call(a, "projects_archive", "POST", f"/api/v1/projects/{pid}/archive/", {})
+    call(a, "projects_archived_list_after_archive", "GET", "/api/v1/projects/archived/")
+    call(a, "projects_restore_after_archive", "POST", f"/api/v1/projects/{pid}/restore/", {})
     call(a, "projects_destroy", "DELETE", f"/api/v1/projects/{pid}/")
     call(a, "projects_archived_list", "GET", "/api/v1/projects/archived/")
     call(a, "projects_detail_archived", "GET", f"/api/v1/projects/{pid}/")
