@@ -50,11 +50,12 @@ export const PERMISSION_MAP: Readonly<Record<string, PermissionRule>> = {
   'client.view': open(DIRECTORY_READ),
   'vendor.view': open(DIRECTORY_READ),
   'platform.position.view': open(DIRECTORY_READ),
+  'position.view': open(DIRECTORY_READ),
   ...Object.fromEntries(
     [
       'department.create', 'department.update', 'team.create', 'team.update', 'office.create', 'office.update',
       'people.create', 'people.update', 'people.delete', 'person.create', 'person.archive', 'person.restore',
-      'person.delete', 'client.create', 'client.update', 'vendor.create', 'vendor.update',
+      'person.delete', 'client.create', 'client.update', 'vendor.create', 'vendor.update', 'position.create', 'position.update',
     ].map((code) => [code, codes(DIRECTORY_WRITE, 'masterdata.directory.manage')])
   ),
 
@@ -186,6 +187,7 @@ export const PERMISSION_MAP: Readonly<Record<string, PermissionRule>> = {
   'page.vendors': open(DIRECTORY_READ),
   'page.departments': open(DIRECTORY_READ),
   'page.offices': open(DIRECTORY_READ),
+  'page.positions': open(DIRECTORY_READ),
   'page.teams': open(DIRECTORY_READ),
   'page.platform_admin': catalogAdminScreen(),
   'page.platform_master_data': catalogAdminScreen(),

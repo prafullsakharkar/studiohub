@@ -26,6 +26,7 @@ import { ProfilePage } from '@/modules/identity/account/ProfilePage';
 import { SecurityPage } from '@/modules/identity/account/SecurityPage';
 import { SessionsPage } from '@/modules/identity/account/SessionsPage';
 import { TokensPage } from '@/modules/identity/account/TokensPage';
+import { CreatePositionPage, EditPositionPage, PositionsListPage } from '@/modules/directory/positionPages';
 import { GroupDetailPage } from '@/modules/identity/pages/GroupDetailPage';
 import { GroupsPage } from '@/modules/identity/pages/GroupsPage';
 import { PermissionsPage } from '@/modules/identity/pages/PermissionsPage';
@@ -185,6 +186,18 @@ export const AppRoutes: React.FC = () => {
           <Route element={<PermissionRoute permissions={['office.update']} />}>
 
             <Route path="/offices/:id/edit" element={<EditOfficePage />} />
+
+          </Route>
+
+          {/* POSITIONS */}
+
+          <Route path="/positions" element={<PositionsListPage />} />
+
+          <Route path="/positions/new" element={<CreatePositionPage />} />
+
+          <Route element={<PermissionRoute permissions={['position.update']} />}>
+
+            <Route path="/positions/:id/edit" element={<EditPositionPage />} />
 
           </Route>
 

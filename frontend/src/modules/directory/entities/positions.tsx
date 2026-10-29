@@ -15,6 +15,7 @@ export const positionsListConfig: DirectoryListConfig<Position> = {
   defaultOrdering: 'level',
   searchPlaceholder: 'Search name or code…',
   basePath: '/positions',
+  rowLink: (p) => `/positions/${p.id}/edit`,
   managePermission: 'masterdata.directory.manage',
   filters: [{ key: 'is_managerial', label: 'Kind', options: [{ value: 'true', label: 'Managerial' }, { value: 'false', label: 'Individual contributor' }] }],
   columns: [
@@ -34,6 +35,7 @@ export const positionsListConfig: DirectoryListConfig<Position> = {
 export const positionsFormConfig: DirectoryFormConfig<Position> = {
   noun: 'position',
   basePath: '/positions',
+  afterSavePath: () => '/positions',
   queryKey: positionsApi.keys.all,
   get: positionsApi.get,
   create: (input) => positionsApi.create(input as never),

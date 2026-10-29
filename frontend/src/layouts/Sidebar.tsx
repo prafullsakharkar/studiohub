@@ -128,6 +128,14 @@ export const Sidebar: React.FC = () => {
           permissions: ['team.view'],
         },
         {
+          id: 'positions',
+          to: '/positions',
+          label: 'Positions',
+          icon: Users,
+          pagePermission: 'page.positions',
+          permissions: ['position.view'],
+        },
+        {
           id: 'offices',
           to: '/offices',
           label: 'Offices',

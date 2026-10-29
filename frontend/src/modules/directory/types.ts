@@ -44,6 +44,8 @@ export interface DirectoryListConfig<T extends { id: string }> {
   filters?: ReadonlyArray<ListFilter>;
   /** Routes. */
   basePath: string;
+  /** Where the first column links to. Default: the detail page `${basePath}/${id}`. */
+  rowLink?: (row: T) => string;
   /** Permission code that shows the create/edit/delete controls. */
   managePermission: string;
   exportColumns?: ReadonlyArray<{ header: string; value: (row: T) => unknown }>;
@@ -57,6 +59,8 @@ export interface DirectoryFormConfig<T extends { id: string }> {
   get: (id: string, signal?: AbortSignal) => Promise<T>;
   create: (input: Record<string, unknown>) => Promise<T>;
   update: (id: string, patch: Record<string, unknown>) => Promise<T>;
+  /** Where to go after saving. Default: the detail page `${basePath}/${id}`. */
+  afterSavePath?: (saved: T) => string;
   /** Fields that cannot change after creation (the backend rejects them), shown read-only on edit. */
   immutableOnEdit?: ReadonlyArray<string>;
 }

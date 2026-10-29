@@ -72,6 +72,22 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
     name: 'Create Team',
     permissions: ['team.create'],
   },
+  '/positions': {
+    path: '/positions',
+    name: 'Positions',
+    pagePermission: 'page.positions',
+    permissions: ['position.view'],
+  },
+  '/positions/new': {
+    path: '/positions/new',
+    name: 'Create Position',
+    permissions: ['position.create'],
+  },
+  '/positions/:id/edit': {
+    path: '/positions/:id/edit',
+    name: 'Edit Position',
+    permissions: ['position.update'],
+  },
   '/offices': {
     path: '/offices',
     name: 'Offices',

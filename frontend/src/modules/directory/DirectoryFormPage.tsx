@@ -71,7 +71,7 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
     const saved = editing ? await config.update(id as string, payload) : await config.create(payload);
     await queryClient.invalidateQueries({ queryKey: config.queryKey });
     notify.success(`${config.noun[0].toUpperCase()}${config.noun.slice(1)} ${editing ? 'saved' : 'created'}.`);
-    navigate(`${config.basePath}/${saved.id}`, { replace: true });
+    navigate(config.afterSavePath ? config.afterSavePath(saved) : `${config.basePath}/${saved.id}`, { replace: true });
   });
 
   const err = (name: string) => (errors[name]?.message as string | undefined) ?? undefined;
