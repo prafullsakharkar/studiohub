@@ -47,7 +47,7 @@ Mutation check: dropping the `entity_id` match on audit events fails its test.
 ## 5. Findings (details in backend-change-requests.md, Q-15)
 
 - **CR-04 confirmed live:** positions, contracts, contacts and catalog rows leave no change log, and a client edit that only touches `contact_name` leaves none (the tracked client fields are a subset). History is silent for those. A live test pins this so it fails (usefully) when the backend starts tracking them.
-- AuditLog gets no rows for plain masterdata edits; the audit-event half of History is normally empty.
+- ~~AuditLog gets no rows for plain masterdata edits; the audit-event half of History is normally empty.~~ **Wrong, corrected in Phase 6:** the in-process capture saw no rows because AuditLog lines are written on commit, which a rolled-back test transaction never reaches. A real server writes one line per create/update/delete ("update by <user>: masterdata.Department updated"), shown under "Audit events". The Phase 4 live test counted every list item in the panel and passed only because it asserted before the events query returned; it now counts the change-log list only.
 - Cancelling a cancelled job and retrying a non-failed one answer 200 without effect, so only valid actions are offered.
 - **My own errors:** the new `logs` directory is matched by the repo's ignore rules, so the first commit would have been broken on a fresh checkout (caught before pushing, directory renamed `viewer`); the confirm button of the "Cancel" job action was itself labelled "Cancel" (found by the live run).
 
