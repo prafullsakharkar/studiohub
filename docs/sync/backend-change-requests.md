@@ -213,7 +213,9 @@ Fixed in `UserCreateSerializer.validate_email` (case-insensitive check, same 400
 ### Q-07 — `POST /roles/` and `POST /groups/` return no `id`
 Both answer `201` with only the submitted fields (`{"name", "code", "description", "parent", "scope", "priority"}`); `id`, `uuid`, `is_system`, … are missing (`roles_create_has_id`, `groups_create_has_id`: false). `POST /identity/users/`, credentials and IP-blacklist entries do return the full object. The frontend works around it by re-reading the row by `code` (`?search=<code>`), which costs a request and is unambiguous only because `code` is unique. **Proposed fix:** return the serialized instance (the service result is evidently not the instance that is serialized).
 
-### Q-08 — nothing stops an administrator from deactivating or deleting their own account
+### Q-08 — nothing stops an administrator from deactivating or deleting their own account — **DECIDED: leave as designed**
+Decision (project owner, Phase 3 review): self-action stays allowed, as `services/user_admin_guard.py` documents. No backend change. The UI keeps blocking it on the signed-in user's own row.
+
 `POST /identity/users/{self}/deactivate/` → `200`; the very next call is `401 {"code": "user_inactive"}` (`self_deactivate`, `self_after_deactivate_me`). `DELETE /identity/users/{self}/` → `204`, then `401 user_not_found` (`self_delete`). The sole administrator can lock everyone out. **Not applied:** `services/user_admin_guard.py` documents that acting on yourself is allowed on purpose (the last-administrator guard covers *delete* only), so rejecting it reverses a stated decision and needs your call (and an ADR if it changes the trust model). **Frontend:** the lifecycle controls are disabled on the signed-in user's own row. **Proposed:** reject self-deactivate/archive/delete (and ideally "last active superuser") with a 400.
 
 ### Q-09 — the MFA "devices" tree under `/identity/auth/mfa/` is unusable; revoking your own trusted device needs an admin permission
