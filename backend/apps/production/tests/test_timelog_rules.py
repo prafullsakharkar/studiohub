@@ -222,3 +222,100 @@ class TestOwnRecords:
 
         assert resp.status_code == 200
         assert resp.json()["results"] == []
+
+
+class TestOrdinaryHours:
+    """CR-14: only an adjustment of an approved entry may be negative; an ordinary entry is time worked."""
+
+    def body(self, task, hours):
+        return {"task": str(task.id), "duration_hours": hours, "date": "2026-10-26"}
+
+    @pytest.mark.parametrize("hours", ["-1", "-0.50", "0"])
+    def test_an_ordinary_entry_must_be_positive(self, project, task, hours):
+        owner = _user(project, "timelog.view", "timelog.create")
+
+        resp = _client(owner).post("/api/v1/timelogs/", self.body(task, hours), format="json")
+
+        assert resp.status_code == 400
+        assert "greater than zero" in resp.json()["duration_hours"][0]
+        assert Timelog.objects.count() == 0
+
+    def test_hours_are_required_for_an_ordinary_entry(self, project, task):
+        owner = _user(project, "timelog.view", "timelog.create")
+
+        resp = _client(owner).post(
+            "/api/v1/timelogs/", {"task": str(task.id), "date": "2026-10-26"}, format="json"
+        )
+
+        assert resp.status_code == 400
+        assert "duration_hours" in resp.json()
+
+    def test_positive_hours_are_accepted(self, project, task):
+        owner = _user(project, "timelog.view", "timelog.create")
+
+        resp = _client(owner).post("/api/v1/timelogs/", self.body(task, "2.50"), format="json")
+
+        assert resp.status_code == 201, resp.json()
+
+    def test_an_adjustment_may_still_be_negative(self, project, task):
+        owner = _user(project, "timelog.view", "timelog.create")
+        original = TimelogFactory.create(
+            task=task, person=owner, status="Approved", duration_hours=Decimal("4")
+        )
+
+        resp = _client(owner).post(
+            "/api/v1/timelogs/",
+            {**self.body(task, "-1.50"), "adjustment_of": str(original.id)},
+            format="json",
+        )
+
+        assert resp.status_code == 201, resp.json()
+
+    def test_editing_an_ordinary_entry_cannot_make_it_negative(self, project, task):
+        owner = _user(project, "timelog.view", "timelog.update")
+        log = TimelogFactory.create(
+            task=task, person=owner, status="Submitted", duration_hours=Decimal("2")
+        )
+        client = _client(owner)
+
+        assert (
+            client.patch(
+                f"/api/v1/timelogs/{log.id}/", {"duration_hours": "-1"}, format="json"
+            ).status_code
+            == 400
+        )
+        assert (
+            client.patch(
+                f"/api/v1/timelogs/{log.id}/", {"duration_hours": "3"}, format="json"
+            ).status_code
+            == 200
+        )
+        log.refresh_from_db()
+        assert log.duration_hours == Decimal("3")
+
+    def test_editing_an_adjustment_keeps_it_non_zero_but_allows_negative(self, project, task):
+        owner = _user(project, "timelog.view", "timelog.update")
+        original = TimelogFactory.create(
+            task=task, person=owner, status="Approved", duration_hours=Decimal("4")
+        )
+        adjustment = TimelogFactory.create(
+            task=task,
+            person=owner,
+            status="Submitted",
+            duration_hours=Decimal("-1"),
+            adjustment_of=original,
+        )
+        client = _client(owner)
+
+        assert (
+            client.patch(
+                f"/api/v1/timelogs/{adjustment.id}/", {"duration_hours": "0"}, format="json"
+            ).status_code
+            == 400
+        )
+        assert (
+            client.patch(
+                f"/api/v1/timelogs/{adjustment.id}/", {"duration_hours": "-2"}, format="json"
+            ).status_code
+            == 200
+        )

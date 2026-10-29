@@ -46,6 +46,10 @@ class ProjectViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingT
         "dashboard": (ProjectPermissions.VIEW,),
         "archived": (ProjectPermissions.VIEW,),
         "restore": (ProjectPermissions.UPDATE,),
+        # Same as episodes and sequences: DELETE already archives, so archive needs the delete permission.
+        "archive": (ProjectPermissions.DELETE,),
+        # check_existence / existence_check stay unmapped on purpose: this viewset has no
+        # _existence_items_from_request, so mapping them would turn a 403 into a 500.
     }
 
     search_fields = ("name", "code", "description", "client_name")
