@@ -60,6 +60,21 @@ describe('hand-written shapes match the captured keys exactly', () => {
     expect(keysOf(sample)).toEqual(expected);
   });
 
+  // Regression: the sub-resources embed nested refs (`permission: {id, code, ...}`), not ids.
+  // A first draft typed them as strings and only the top-level keys were compared.
+  it.each([
+    ['roles_permissions_get', 'role', ['code', 'id', 'name']],
+    ['roles_permissions_get', 'permission', ['action', 'code', 'id', 'module', 'name']],
+    ['roles_permissions_get', 'granted_by', ['email', 'id', 'is_active']],
+    ['roles_users_get', 'user', ['email', 'id', 'is_active']],
+    ['groups_members_get', 'group', ['code', 'id', 'name']],
+    ['groups_roles_get', 'role', ['code', 'id', 'name']],
+  ])('%s.%s is an embedded ref, not an id', (sample, field, expected) => {
+    const value = rows(sample)[0][field];
+    expect(typeof value).toBe('object');
+    expect(Object.keys(value as object).sort()).toEqual(expected);
+  });
+
   it('credential read shape has no secret; the create response adds exactly `secret`', () => {
     const listed = keysOf('pat_list');
     expect(listed).not.toContain('secret');

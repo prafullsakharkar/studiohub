@@ -24,38 +24,76 @@ export interface GroupInput {
   description?: string;
 }
 
-/** `GET /roles/{id}/permissions/`: ids only; join with the permission catalog for names. */
+/**
+ * The sub-resource routes (`/roles/{id}/permissions|users|groups/`, `/groups/{id}/members|roles/`)
+ * answer bare arrays whose rows embed SMALL NESTED REFS, not ids (verified against the running
+ * backend, docs/sync/samples/identity/_identity_admin_flow.json). The refs carry what a table
+ * needs (name/code/email), so no join with the catalogs is required.
+ */
+export interface RoleRef {
+  id: string;
+  name: string;
+  code: string;
+}
+export interface GroupRef {
+  id: string;
+  name: string;
+  code: string;
+}
+export interface UserRef {
+  id: string;
+  email: string;
+  is_active: boolean;
+}
+export interface PermissionRef {
+  id: string;
+  name: string;
+  code: string;
+  module: string;
+  action: string;
+}
+
+/** `GET /roles/{id}/permissions/` */
 export interface RolePermissionGrant {
   id: string;
-  role: string;
-  permission: string;
+  uuid: string;
+  role: RoleRef;
+  permission: PermissionRef;
   granted: boolean;
   granted_at: string | null;
-  granted_by: string | null;
+  granted_by: UserRef | null;
   expires_at: string | null;
 }
 /** `GET /roles/{id}/users/` */
 export interface RoleUserAssignment {
   id: string;
-  role: string;
-  user: string;
+  uuid: string;
+  user: UserRef;
+  role: RoleRef;
   created_at: string;
+  updated_at: string;
 }
 /** `GET /groups/{id}/members/` */
 export interface GroupMember {
   id: string;
-  group: string;
-  user: string;
+  uuid: string;
+  user: UserRef;
+  group: GroupRef;
   is_owner: boolean;
   is_manager: boolean;
   joined_at: string | null;
   left_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 /** `GET /groups/{id}/roles/` and `GET /roles/{id}/groups/` */
 export interface GroupRoleLink {
   id: string;
-  group: string;
-  role: string;
+  uuid: string;
+  group: GroupRef;
+  role: RoleRef;
+  created_at: string;
+  updated_at: string;
 }
 
 export const roleKeys = createQueryKeys('roles');
