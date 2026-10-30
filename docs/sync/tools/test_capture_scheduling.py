@@ -75,7 +75,7 @@ def test_capture_scheduling(django_user_model):
     pid2 = call(a, "setup_project_two", "POST", "/api/v1/projects/", {"code": "OTH", "name": "Other", "workflow_type": "standard"}).json()["id"]
     for who, role in ((sup, "Supervisor"), (padmin, "Producer"), (lead, "Lead"), (artist, "Artist")):
         call(a, f"setup_member_{who.email.split('@')[0]}", "POST", f"/api/organizations/projects/{pid}/members/", {"user_id": str(who.id), "role": role})
-    dept = call(a, "setup_department", "POST", "/api/v1/departments/", {"code": "COMP", "name": "Compositing"}).json().get("id")
+    dept = call(a, "setup_department", "POST", "/api/v1/departments/", {"code": "SCHCOMP", "name": "Scheduling Comp", "department_type": "creative"}).json().get("id")
 
     # The migration seeds the default "STUDIO" calendar; a flushed test database has none, so make it as the service does.
     from apps.scheduling.services.calendar import WorkCalendarService
@@ -195,6 +195,7 @@ def test_capture_scheduling(django_user_model):
     # ------------------------------------------------------------ leave
     call(ar, "leaves_list_empty", "GET", f"{S}leaves/")
     l1 = call(ar, "leaves_create_own", "POST", f"{S}leaves/", {"resource": r1, "leave_type": "Vacation", "start_date": "2026-12-21", "end_date": "2026-12-31", "reason": "Holiday trip"}).json().get("id")
+    call(ar, "leaves_create_no_resource", "POST", f"{S}leaves/", {"leave_type": "Personal", "start_date": "2027-05-03", "end_date": "2027-05-04"})
     call(ar, "leaves_create_other", "POST", f"{S}leaves/", {"resource": r2, "leave_type": "Vacation", "start_date": "2026-12-21", "end_date": "2026-12-22"})
     call(ar, "leaves_create_overlap", "POST", f"{S}leaves/", {"resource": r1, "leave_type": "Personal", "start_date": "2026-12-28", "end_date": "2026-12-29"})
     call(ar, "leaves_create_end_before_start", "POST", f"{S}leaves/", {"resource": r1, "leave_type": "Personal", "start_date": "2027-02-10", "end_date": "2027-02-01"})
@@ -221,7 +222,15 @@ def test_capture_scheduling(django_user_model):
     call(ar, "leaves_patch_approved", "PATCH", f"{S}leaves/{l1}/", {"end_date": "2026-12-29"})
     call(pa, "leaves_reject", "POST", f"{S}leaves/{l2}/reject/", {"rejection_reason": "Need a doctor's note"})
     call(ar, "leaves_detail_rejected_other", "GET", f"{S}leaves/{l2}/")
-    call(pa, "resources_detail_on_leave", "GET", f"{S}resources/{r1}/")
+    # leave that covers today puts the resource On Leave (the December leave above does not)
+    from datetime import date, timedelta as _td
+
+    today = date.today()
+    l5 = call(pa, "leaves_create_today", "POST", f"{S}leaves/", {"resource": r2, "leave_type": "Personal", "start_date": str(today), "end_date": str(today + _td(days=1))}).json().get("id")
+    call(pa, "resources_detail_before_leave_approved", "GET", f"{S}resources/{r2}/")
+    call(pa, "leaves_approve_today", "POST", f"{S}leaves/{l5}/approve/", {})
+    call(pa, "resources_detail_on_leave", "GET", f"{S}resources/{r2}/")
+    call(pa, "resources_list_on_leave", "GET", f"{S}resources/")
     l3 = call(pa, "leaves_create_for_sup", "POST", f"{S}leaves/", {"resource": r4, "leave_type": "Personal", "start_date": "2027-03-01", "end_date": "2027-03-02"}).json().get("id")
     call(sv, "leaves_approve_sup_own_by_supervisor", "POST", f"{S}leaves/{l3}/approve/", {})
     call(a, "leaves_approve_by_admin", "POST", f"{S}leaves/{l3}/approve/", {})
