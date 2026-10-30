@@ -16,6 +16,7 @@ import { VendorsPage, VendorCreatePage, VendorEditPage, VendorWorkspacePage } fr
 
 import { BulkRegisterPage, PublishDestinationFormPage, PublishDestinationsPage, PublishedFileFormPage, PublishedFilePage, PublishedFilesPage, PublishFormPage, PublishingPage, PublishWorkspacePage, StorageRootFormPage, StorageRootsPage } from '@/modules/publishing';
 
+import { CategoriesPage, CategoryFormPage, DefinitionFormPage, DefinitionsPage, FlagFormPage, FlagsPage, LocalizationFormPage, LocalizationsPage, TagFormPage, TagsPage, ThemeFormPage, ThemesPage, ValueFormPage, ValuesPage } from '@/modules/settings';
 import { BookingFormPage, BookingsPage, EventFormPage, EventsPage, HolidayFormPage, HolidaysPage, LeaveFormPage, LeavesPage, MilestoneFormPage, MilestonesPage, ResourceFormPage, ResourcesPage, ResourceWorkspacePage, SchedulingCalendarPage, SchedulingCapacityPage, WorkCalendarFormPage, WorkCalendarsPage } from '@/modules/scheduling';
 
 import { TeamsListPage, TeamWorkspacePage, CreateTeamPage, EditTeamPage } from '@/modules/teams';
@@ -438,7 +439,7 @@ export const AppRoutes: React.FC = () => {
 
           {platformRoutes}
 
-          {/* My account (personal settings): any signed-in user. System settings arrive under /settings/system in Phase 11. */}
+          {/* My account (personal settings): any signed-in user. System settings: settings.view reads, settings.manage writes. */}
           <Route path="/settings" element={<Navigate to="/settings/account/profile" replace />} />
 
           <Route path="/settings/account" element={<Navigate to="/settings/account/profile" replace />} />
@@ -450,6 +451,31 @@ export const AppRoutes: React.FC = () => {
           <Route path="/settings/account/sessions" element={<AccountLayout><SessionsPage /></AccountLayout>} />
 
           <Route path="/settings/account/tokens" element={<AccountLayout><TokensPage /></AccountLayout>} />
+
+          <Route element={<PermissionRoute permissions={['settings.view']} />}>
+            <Route path="/settings/system" element={<Navigate to="/settings/system/values" replace />} />
+            <Route path="/settings/system/values" element={<ValuesPage />} />
+            <Route path="/settings/system/values/new" element={<ValueFormPage />} />
+            <Route path="/settings/system/values/:id/edit" element={<ValueFormPage />} />
+            <Route path="/settings/system/flags" element={<FlagsPage />} />
+            <Route path="/settings/system/flags/new" element={<FlagFormPage />} />
+            <Route path="/settings/system/flags/:id/edit" element={<FlagFormPage />} />
+            <Route path="/settings/system/themes" element={<ThemesPage />} />
+            <Route path="/settings/system/themes/new" element={<ThemeFormPage />} />
+            <Route path="/settings/system/themes/:id/edit" element={<ThemeFormPage />} />
+            <Route path="/settings/system/localizations" element={<LocalizationsPage />} />
+            <Route path="/settings/system/localizations/new" element={<LocalizationFormPage />} />
+            <Route path="/settings/system/localizations/:id/edit" element={<LocalizationFormPage />} />
+            <Route path="/settings/system/categories" element={<CategoriesPage />} />
+            <Route path="/settings/system/categories/new" element={<CategoryFormPage />} />
+            <Route path="/settings/system/categories/:id/edit" element={<CategoryFormPage />} />
+            <Route path="/settings/system/definitions" element={<DefinitionsPage />} />
+            <Route path="/settings/system/definitions/new" element={<DefinitionFormPage />} />
+            <Route path="/settings/system/definitions/:id/edit" element={<DefinitionFormPage />} />
+            <Route path="/settings/system/tags" element={<TagsPage />} />
+            <Route path="/settings/system/tags/new" element={<TagFormPage />} />
+            <Route path="/settings/system/tags/:id/edit" element={<TagFormPage />} />
+          </Route>
 
           {/* Access & RBAC workspace — the org-free RBAC surface (Task 12
               sections) is reachable at /access[/:section]; /permissions and

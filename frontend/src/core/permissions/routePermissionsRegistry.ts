@@ -487,7 +487,29 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
   },
 
   // Platform Routes
-  // /settings only redirects to My account; system settings get their own guarded routes in Phase 11.
+  // /settings only redirects to My account; system settings have their own guarded routes under /settings/system (settings.view reads, settings.manage writes).
+  '/settings/system': { path: '/settings/system', name: 'System Settings', permissions: ['settings.view'] },
+  '/settings/system/values': { path: '/settings/system/values', name: 'System Settings', permissions: ['settings.view'] },
+  '/settings/system/values/new': { path: '/settings/system/values/new', name: 'Create System Settings', permissions: ['settings.manage'] },
+  '/settings/system/values/:id/edit': { path: '/settings/system/values/:id/edit', name: 'Edit System Settings', permissions: ['settings.manage'] },
+  '/settings/system/flags': { path: '/settings/system/flags', name: 'Feature Flags', permissions: ['settings.view'] },
+  '/settings/system/flags/new': { path: '/settings/system/flags/new', name: 'Create Feature Flags', permissions: ['settings.manage'] },
+  '/settings/system/flags/:id/edit': { path: '/settings/system/flags/:id/edit', name: 'Edit Feature Flags', permissions: ['settings.manage'] },
+  '/settings/system/themes': { path: '/settings/system/themes', name: 'Themes', permissions: ['settings.view'] },
+  '/settings/system/themes/new': { path: '/settings/system/themes/new', name: 'Create Themes', permissions: ['settings.manage'] },
+  '/settings/system/themes/:id/edit': { path: '/settings/system/themes/:id/edit', name: 'Edit Themes', permissions: ['settings.manage'] },
+  '/settings/system/localizations': { path: '/settings/system/localizations', name: 'Localizations', permissions: ['settings.view'] },
+  '/settings/system/localizations/new': { path: '/settings/system/localizations/new', name: 'Create Localizations', permissions: ['settings.manage'] },
+  '/settings/system/localizations/:id/edit': { path: '/settings/system/localizations/:id/edit', name: 'Edit Localizations', permissions: ['settings.manage'] },
+  '/settings/system/categories': { path: '/settings/system/categories', name: 'Setting Categories', permissions: ['settings.view'] },
+  '/settings/system/categories/new': { path: '/settings/system/categories/new', name: 'Create Setting Categories', permissions: ['settings.manage'] },
+  '/settings/system/categories/:id/edit': { path: '/settings/system/categories/:id/edit', name: 'Edit Setting Categories', permissions: ['settings.manage'] },
+  '/settings/system/definitions': { path: '/settings/system/definitions', name: 'Setting Definitions', permissions: ['settings.view'] },
+  '/settings/system/definitions/new': { path: '/settings/system/definitions/new', name: 'Create Setting Definitions', permissions: ['settings.manage'] },
+  '/settings/system/definitions/:id/edit': { path: '/settings/system/definitions/:id/edit', name: 'Edit Setting Definitions', permissions: ['settings.manage'] },
+  '/settings/system/tags': { path: '/settings/system/tags', name: 'Tags', permissions: ['settings.view'] },
+  '/settings/system/tags/new': { path: '/settings/system/tags/new', name: 'Create Tags', permissions: ['settings.manage'] },
+  '/settings/system/tags/:id/edit': { path: '/settings/system/tags/:id/edit', name: 'Edit Tags', permissions: ['settings.manage'] },
   '/settings': {
     path: '/settings',
     name: 'Settings',
