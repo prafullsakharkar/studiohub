@@ -148,6 +148,8 @@ class FeatureFlag(EntityModel, TimeStampedModel):
         
         if self.status == self.STATUS_SCHEDULED:
             from django.utils import timezone
+            if self.start_date is None:
+                return False
             now = timezone.now()
             return self.start_date <= now <= (self.end_date or now)
         
@@ -162,7 +164,8 @@ class FeatureFlag(EntityModel, TimeStampedModel):
             return False
 
         if self.feature_type == self.TYPE_BOOLEAN:
-            return self.is_enabled
+            # Active already means "on" (``status`` is the one source of truth).
+            return True
 
         if self.feature_type == self.TYPE_PERCENTAGE:
             # Stable hash-based percentage check (``hash()`` is salted per

@@ -54,6 +54,7 @@ class FeatureFlagService(SettingsBaseService):
         Enable a feature flag.
         """
         instance.status = FeatureFlag.STATUS_ENABLED
+        instance.is_enabled = True
         instance.save()
         return instance
     
@@ -64,6 +65,7 @@ class FeatureFlagService(SettingsBaseService):
         Disable a feature flag.
         """
         instance.status = FeatureFlag.STATUS_DISABLED
+        instance.is_enabled = False
         instance.save()
         return instance
     
@@ -74,6 +76,7 @@ class FeatureFlagService(SettingsBaseService):
         Schedule a feature flag.
         """
         instance.status = FeatureFlag.STATUS_SCHEDULED
+        instance.is_enabled = False
         instance.start_date = start_date
         instance.end_date = end_date
         instance.save()

@@ -17,7 +17,7 @@ import { ProjectKpiHud } from '../components/ProjectKpiHud';
 import { ScheduleMilestonesWidget } from '../components/ScheduleMilestonesWidget';
 import { UpcomingOverdueWidget } from '../components/UpcomingOverdueWidget';
 import type { ProjectDashboardData } from '../types';
-import { getDeliveryFigures, milestoneState, upcomingDeliveryItems } from '../utils/dashboardMetrics';
+import { milestoneState, upcomingDeliveryItems } from '../utils/dashboardMetrics';
 
 type Captured = { status: number; body: any };
 const flow = loadSample<Record<string, Captured>>('dashboards/_flow.json');
@@ -51,14 +51,8 @@ describe('deliveries', () => {
   // the captured project: a Draft due in the future, a Draft past its date and a Cancelled one past its date
   const deliveries = dash.deliveries;
 
-  it('the server calls a cancelled past-due delivery late; counted here, only the draft past its date is', () => {
-    expect(deliveries).toMatchObject({ total: 3, late: 2, upcoming: 1, delivered: 0 });
-    expect(getDeliveryFigures(deliveries, new Date('2026-10-30T12:00:00Z'))).toEqual({ delivered: 0, upcoming: 1, late: 1, counted: true });
-  });
-  it('a delivered one (any of the finished words) is not upcoming or late, and a cut list falls back to the server’s numbers', () => {
-    const base = { ...deliveries, total: 1, items: [{ ...deliveries.items[0], status: 'Completed', due_date: '2020-01-01' }] };
-    expect(getDeliveryFigures(base, new Date('2026-10-30'))).toEqual({ delivered: 1, upcoming: 0, late: 0, counted: true });
-    expect(getDeliveryFigures({ ...base, total: 9 }, new Date('2026-10-30'))).toMatchObject({ counted: false, late: deliveries.late });
+  it('the server leaves a cancelled past-due delivery out of late (CR-31), so the screens show its figures as they are', () => {
+    expect(deliveries).toMatchObject({ total: 3, late: 1, upcoming: 1, delivered: 0 });
   });
   it('upcoming items leave out cancelled, delivered and past-due ones', () => {
     expect(upcomingDeliveryItems(deliveries, new Date('2026-10-30T12:00:00Z')).map((d) => d.title)).toEqual(['Upcoming delivery']);
@@ -68,16 +62,16 @@ describe('deliveries', () => {
     vi.setSystemTime(new Date('2026-10-30T12:00:00Z'));
     renderWith(<ClientDeliveryHealth deliveries={deliveries} projectId="p" />);
     const late = screen.getByText('Late').parentElement as HTMLElement;
-    expect(within(late).getByText('1')).toBeTruthy(); // the server says 2: one is cancelled
+    expect(within(late).getByText('1')).toBeTruthy(); // the server's figure: the cancelled one is not counted
     cleanup();
-    renderWith(<ProjectKpiHud summary={dash.summary} deliveries={deliveries} projectId="p" />);
+    renderWith(<ProjectKpiHud summary={dash.summary} projectId="p" />);
     expect(screen.getByText('1 Late')).toBeTruthy();
     now.useRealTimers();
   });
 });
 
 describe('the watchlist', () => {
-  it('does not call an Approved task past its date overdue (the server’s per-task flag does)', () => {
+  it('lists the unfinished overdue task and the blocked one, not Approved tasks past their date (the server’s flag agrees with its count, CR-31)', () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2026-10-30T12:00:00Z'));
     renderWith(<UpcomingOverdueWidget tasks={dash.tasks} deliveries={dash.deliveries} />);
@@ -102,12 +96,12 @@ describe('the production widget', () => {
 describe('milestones', () => {
   const real = flow.project_schedule.body.milestones.map((m: any) => ({ id: m.id, name: m.name, due_date: m.date, status: m.status, project_code: 'DSH' }));
 
-  it('lists the project’s own milestones from Scheduling, not the five phases in the payload', async () => {
+  it('lists the project’s own milestones from Scheduling (the payload now carries the same ones, CR-30)', async () => {
     const { calls } = mockFetch((c) => (path(c) === '/api/v1/scheduling/milestones/' ? bare(real) : bare([])));
     renderWith(<ScheduleMilestonesWidget schedule={dash.schedule} projectId="p-1" />, withCodes('schedule.view'));
     expect(await screen.findByText('Turnover')).toBeTruthy();
     expect(screen.getByText('Previs lock')).toBeTruthy();
-    for (const invented of dash.schedule.milestones) expect(screen.queryByText(invented.name)).toBeNull();
+    expect(dash.schedule.milestones.map((m: any) => m.name).sort()).toEqual(real.map((m: any) => m.name).sort());
     expect(new URL(calls.find((c) => path(c) === '/api/v1/scheduling/milestones/')!.url).searchParams.get('project_id')).toBe('p-1');
   });
   it('asks nothing of someone who cannot view the schedule, and says so', async () => {

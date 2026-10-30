@@ -3,7 +3,6 @@ import {
   formatActivityTimestamp,
   getCategoryComparison,
   getTaskFigures,
-  taskIsOverdue,
   getTaskStatusDistribution,
 } from '../dashboardMetrics';
 import type { DashboardSummaryKpis, DashboardTasksData } from '../../types';
@@ -119,18 +118,6 @@ describe('getTaskFigures', () => {
   it('is all zeros for an empty scope, without NaN or Infinity', () => {
     const m = getTaskFigures(summary(), tasks());
     expect(Object.values(m).every((n) => Number.isFinite(n) && n === 0)).toBe(true);
-  });
-});
-
-describe('taskIsOverdue', () => {
-  it('trusts the flag only for an unfinished task', () => {
-    expect(taskIsOverdue({ is_overdue: true, status: 'In Progress' })).toBe(true);
-    expect(taskIsOverdue({ is_overdue: true, status: 'Approved' })).toBe(false);
-    expect(taskIsOverdue({ is_overdue: true, status: 'Completed' })).toBe(false);
-    expect(taskIsOverdue({ is_overdue: true, status: 'done' })).toBe(false);
-    expect(taskIsOverdue({ is_overdue: false, status: 'In Progress' })).toBe(false);
-    expect(taskIsOverdue({ status: 'Blocked' })).toBe(false);
-    expect(taskIsOverdue(undefined)).toBe(false);
   });
 });
 

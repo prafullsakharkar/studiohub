@@ -320,9 +320,9 @@ describe('categories, themes, localizations, tags', () => {
     expect((writes(calls)[0].body as { week_start: unknown }).week_start).toBe(0);
   });
 
-  it('a tag create answers without an id, so the screen finds the tag by name to go on (CR-28), and refuses a colour that is not hex', async () => {
-    const created = flow.tags_create_artist.body;
-    const { calls } = mockFetch((c) => (c.method === 'POST' ? { status: 201, body: created } : { status: 200, body: { count: 1, next: null, previous: null, results: [{ ...flow.tags_detail.body, name: created.name }] } }));
+  it('a tag create goes with the colour checked first, and the answer carries the id (CR-28)', async () => {
+    const created = flow.tags_create.body;
+    const { calls } = mockFetch((c) => (c.method === 'POST' ? { status: 201, body: created } : empty));
     renderAt('/settings/system/tags/new', admin, <Route path="/settings/system/tags/new" element={<DirectoryFormPage config={tagFormConfig} />} />);
     fireEvent.change(await screen.findByLabelText(/^Name/), { target: { value: created.name } });
     fireEvent.change(screen.getByLabelText(/^Colour/), { target: { value: 'red' } });
@@ -332,7 +332,8 @@ describe('categories, themes, localizations, tags', () => {
     fireEvent.change(screen.getByLabelText(/^Colour/), { target: { value: '#f59e0b' } });
     fireEvent.click(screen.getByRole('button', { name: /create tag/i }));
     await waitFor(() => expect(writes(calls)).toHaveLength(1));
-    await waitFor(() => expect(calls.some((c) => c.method === 'GET' && path(c) === '/api/v1/core/tags/' && params(c).get('search') === created.name)).toBe(true));
+    expect(writes(calls)[0].body).toMatchObject({ name: created.name, color: '#f59e0b' });
+    expect(calls.some((c) => c.method === 'GET' && path(c) === '/api/v1/core/tags/' && params(c).get('search') !== null)).toBe(false); // no second look-up by name
   });
 });
 

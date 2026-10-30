@@ -158,7 +158,7 @@ class TestProjectDashboardPrimary:
         assert schedule["days_total"] == 90
         assert schedule["days_elapsed"] == 30
         assert schedule["days_remaining"] == 60
-        assert len(schedule["milestones"]) == 5
+        assert schedule["milestones"] == []  # none were made: the card no longer invents five (CR-30)
         assert schedule["next_deadline"]["type"] == "Task"
         assert schedule["next_deadline"]["date"] == (today + timedelta(days=5)).isoformat()
 

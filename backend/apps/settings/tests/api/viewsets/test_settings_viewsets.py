@@ -14,6 +14,7 @@ from rest_framework import status
 from apps.settings.models.definition import SettingDefinition
 from apps.settings.models.system import SystemSetting
 from apps.settings.models.theme import Theme
+from apps.settings.tests.factories import ThemeFactory
 
 
 class TestThemeViewSet:
@@ -104,7 +105,8 @@ class TestThemeViewSet:
 
     @pytest.mark.django_db
     def test_delete_viewset(self, admin_client, theme: Theme) -> None:
-        """Superusers can delete platform-default themes."""
+        """Superusers can delete a theme while another one stays active."""
+        ThemeFactory(is_active=True)
         url = f"/api/v1/settings/themes/{theme.uuid}/"
         response = admin_client.delete(url)
         assert response.status_code == status.HTTP_204_NO_CONTENT

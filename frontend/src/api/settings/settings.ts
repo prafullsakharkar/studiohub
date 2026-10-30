@@ -10,9 +10,9 @@ import { resourceApi } from '@/api/masterdata/resource';
  *  - ids are uuids (`id` equals `uuid`); every list is a bare array except tags (paginated);
  *  - `settings.view` reads (the platform administrator and the production-admin hold it), `settings.manage` writes
  *    (the platform administrator); feature flags are readable by any signed-in user;
- *  - the lists ignore their filters (CR-26): the screens narrow them in the browser;
+ *  - the lists answer their filters (CR-26, applied); the screens still narrow the small lists in the browser, which is harmless;
  *  - a setting's value is always a string, checked against its definition; a locked value cannot change or go;
- *  - a select definition's `choices` must be `{value, label}` objects (plain strings make a later 500, CR-27);
+ *  - a select definition's `choices` must be `{value, label}` objects (plain strings are a 400, CR-27);
  *  - activating a theme or a localization does not deactivate the others;
  *  - a feature flag's rollout is not computed by the server: `evaluateFlag` (`settingsFlow.ts`) does it;
  *  - every action (lock, enable, archive, activate, …) answers `{status}`, not the row: read the row again.
@@ -77,7 +77,7 @@ export interface SettingDefinition {
   is_active: boolean;
   /** min, max, min_length, max_length. */
   validation_rules: Record<string, unknown>;
-  /** `{value, label}` objects for a select type; anything else is a 500 later (CR-27). */
+  /** `{value, label}` objects for a select type; anything else is a 400 (CR-27). */
   choices: unknown[];
   depends_on: string;
   created_at: string;
@@ -144,7 +144,7 @@ export interface FeatureFlagInput {
   description?: string;
   feature_type?: string;
   is_enabled?: boolean;
-  /** 0 to 100; the server does not check (CR-29). */
+  /** 0 to 100 (CR-29). */
   percentage?: number;
   start_date?: string | null;
   end_date?: string | null;
@@ -247,7 +247,7 @@ export const featureFlagsApi = {
   /** The answers of the three actions are `{status}`, not the row. */
   enable: (id: string) => act<StatusAnswer>('feature-flags', id, 'enable'),
   disable: (id: string) => act<StatusAnswer>('feature-flags', id, 'disable'),
-  /** Both dates with a zone, the end after the start: the server checks none of it (CR-29). */
+  /** Both dates with a zone, the end after the start (CR-29: a 400 otherwise). */
   schedule: (id: string, start_date: string, end_date: string) => act<StatusAnswer>('feature-flags', id, 'schedule', { start_date, end_date }),
 };
 export const themesApi = {
@@ -261,5 +261,5 @@ export const localizationsApi = {
   activate: (id: string) => act<StatusAnswer>('localizations', id, 'activate'),
   deactivate: (id: string) => act<StatusAnswer>('localizations', id, 'deactivate'),
 };
-/** Paginated (the only paginated route here). A create answers without an id (CR-28). */
+/** Paginated (the only paginated route here). A create answers the id (CR-28). */
 export const tagsApi = resourceApi<Tag, TagInput>('core-tags', '/api/v1/core/tags/');

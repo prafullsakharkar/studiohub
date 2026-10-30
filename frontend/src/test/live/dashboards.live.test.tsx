@@ -16,7 +16,7 @@ import { live } from './liveBackend';
 
 /**
  * Phase 12 against a REAL backend, with the roles the studio seeds. A producer opens the project dashboard and sees
- * the project's own milestones from Scheduling (not the five phases the payload carries); an artist opens the home
+ * the project's own milestones from Scheduling (the payload carries the same ones, CR-30); an artist opens the home
  * dashboard with no project chosen and sees the studio overview, the same figures the analytics routes return; the
  * dashboard's own counts reconcile with the statistics route. Run on a fresh live_backend.py seed.
  */
@@ -57,8 +57,9 @@ describe('the project dashboard', () => {
     expect(dashboard.summary.total_reviews).toBe(counts.reviews);
     expect(dashboard.summary.total_assets).toBe(counts.assets);
     expect(dashboard.summary.total_deliveries).toBe(counts.deliveries);
-    // the payload still carries the five fixed phases (CR-30): none of them is the milestone we made
-    expect(dashboard.schedule.milestones.map((m: any) => m.id)).toEqual(['m1', 'm2', 'm3', 'm4', 'm5']);
+    // the payload's milestones are the project's own (CR-30): the one just made is among them, no invented phases
+    expect(dashboard.schedule.milestones).toEqual(expect.arrayContaining([expect.objectContaining({ id: milestone.id, name: `Turnover ${uid}`, date: '2027-06-01', status: 'upcoming' })]));
+    expect(dashboard.schedule.milestones.map((m: any) => m.id)).not.toContain('m1');
 
     useProductionStore.getState().setActiveProject(live.dlv.project);
     render(tree(<DashboardPage />));
@@ -69,7 +70,6 @@ describe('the project dashboard', () => {
       return el;
     }, { timeout: 20000 });
     expect(await within(widget).findByText(`Turnover ${uid}`, {}, { timeout: 20000 })).toBeTruthy();
-    for (const invented of dashboard.schedule.milestones) expect(within(widget).queryByText(invented.name)).toBeNull();
   }, 240000);
 });
 

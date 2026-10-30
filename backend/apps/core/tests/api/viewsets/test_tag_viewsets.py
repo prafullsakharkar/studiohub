@@ -87,7 +87,7 @@ class TestTagViewSet:
         assert response.status_code == 404
 
     @pytest.mark.django_db
-    def test_create_tag(self, authenticated_client):
+    def test_create_tag(self, admin_client):
         """Test creating a tag."""
         url = reverse("api:v1:core:tag-list")
         data = {
@@ -95,7 +95,7 @@ class TestTagViewSet:
             "description": "A new tag",
             "color": "#ff0000",
         }
-        response = authenticated_client.post(url, data)
+        response = admin_client.post(url, data)
 
         assert response.status_code == 201
         assert response["Content-Type"] == "application/json"
@@ -120,7 +120,7 @@ class TestTagViewSet:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_update_tag(self, authenticated_client):
+    def test_update_tag(self, admin_client):
         """Test updating a tag."""
         tag = TagFactory.create()
 
@@ -130,7 +130,7 @@ class TestTagViewSet:
             "description": "An updated tag",
             "color": "#00ff00",
         }
-        response = authenticated_client.put(url, data)
+        response = admin_client.put(url, data)
 
         assert response.status_code == 200
         assert response["Content-Type"] == "application/json"
@@ -142,7 +142,7 @@ class TestTagViewSet:
         assert data["color"] == "#00ff00"
 
     @pytest.mark.django_db
-    def test_partial_update_tag(self, authenticated_client):
+    def test_partial_update_tag(self, admin_client):
         """Test partially updating a tag."""
         tag = TagFactory.create()
 
@@ -150,7 +150,7 @@ class TestTagViewSet:
         data = {
             "description": "A partially updated tag",
         }
-        response = authenticated_client.patch(url, data)
+        response = admin_client.patch(url, data)
 
         assert response.status_code == 200
         assert response["Content-Type"] == "application/json"
@@ -160,12 +160,12 @@ class TestTagViewSet:
         assert data["description"] == "A partially updated tag"
 
     @pytest.mark.django_db
-    def test_delete_tag(self, authenticated_client):
+    def test_delete_tag(self, admin_client):
         """Test deleting a tag."""
         tag = TagFactory.create()
 
         url = reverse("api:v1:core:tag-detail", kwargs={"uuid": tag.uuid})
-        response = authenticated_client.delete(url)
+        response = admin_client.delete(url)
 
         assert response.status_code == 204
 

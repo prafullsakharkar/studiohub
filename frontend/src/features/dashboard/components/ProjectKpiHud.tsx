@@ -10,19 +10,16 @@ import {
   Clock,
   CheckCircle2,
 } from 'lucide-react';
-import { DashboardDeliveriesData, DashboardSummaryKpis } from '../types';
-import { getDeliveryFigures } from '../utils/dashboardMetrics';
+import { DashboardSummaryKpis } from '../types';
 import { Link } from 'react-router-dom';
 
 export interface ProjectKpiHudProps {
   summary: DashboardSummaryKpis;
-  /** When given, the delivery card counts from the listed deliveries (see getDeliveryFigures). */
-  deliveries?: DashboardDeliveriesData;
   projectId: string;
 }
 
-export const ProjectKpiHud: React.FC<ProjectKpiHudProps> = ({ summary, deliveries, projectId }) => {
-  const delivery = deliveries ? getDeliveryFigures(deliveries) : { delivered: summary.delivered_deliveries, upcoming: summary.upcoming_deliveries, late: summary.late_deliveries };
+export const ProjectKpiHud: React.FC<ProjectKpiHudProps> = ({ summary, projectId }) => {
+  const delivery = { delivered: summary.delivered_deliveries, upcoming: summary.upcoming_deliveries, late: summary.late_deliveries };
   return (
     <div id="project-kpi-hud" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
       {/* 1. Sequence Shots Card */}

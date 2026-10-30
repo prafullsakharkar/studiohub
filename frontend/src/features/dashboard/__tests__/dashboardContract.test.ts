@@ -3,7 +3,6 @@ import { DEPARTMENT_KEYS, KPI_KEYS } from '@/api/analytics/analyticsRowKeys';
 import type { ProjectCounts } from '@/api/production/structure';
 import { loadSample } from '@/test/samples';
 import { ProjectDashboardDataSchema } from '../schemas/dashboardSchema';
-import { taskIsOverdue } from '../utils/dashboardMetrics';
 import * as K from '../types/dashboardRowKeys';
 
 type Captured = { status: number; body: any };
@@ -58,7 +57,7 @@ describe('the figures are real aggregates of what was seeded', () => {
     expect(dash.summary).toMatchObject({ total_tasks: 8, completed_tasks: 2, in_progress_tasks: 3, open_tasks: 2, overdue_tasks: 1, tasks_completion_pct: 25 });
     expect(dash.summary).toMatchObject({ total_assets: 4, approved_assets: 1, needs_revision_assets: 1, in_progress_assets: 2 });
     expect(dash.summary).toMatchObject({ total_reviews: 5, pending_reviews: 1, approved_reviews: 2, changes_requested_reviews: 1, rejected_reviews: 1 });
-    expect(dash.summary).toMatchObject({ total_deliveries: 3, upcoming_deliveries: 1, late_deliveries: 2, delivered_deliveries: 0 });
+    expect(dash.summary).toMatchObject({ total_deliveries: 3, upcoming_deliveries: 1, late_deliveries: 1, delivered_deliveries: 0 }); // the cancelled one is neither late nor upcoming
   });
   it('the breakdown of shots by status adds up to the total', () => {
     const total = dash.production.status_breakdown.reduce((n: number, row: any) => n + row.count, 0);
@@ -74,40 +73,42 @@ describe('the figures are real aggregates of what was seeded', () => {
     expect(t.open + t.in_progress + t.blocked + t.review + t.completed).toBe(t.total);
     expect(dash.workload.team_members.some((m: any) => m.overdue_count > 0)).toBe(true);
   });
-  it('the per-task overdue flag marks finished (Approved) tasks past their date, which the count does not (CR-31)', () => {
+  it('the per-task overdue flag agrees with the count: an Approved task past its date is not overdue (CR-31, applied)', () => {
     const t = dash.tasks;
     const flagged = t.recent_tasks.filter((r: any) => r.is_overdue);
     expect(t.overdue).toBe(1); // only the unfinished one is counted
-    expect(flagged).toHaveLength(3);
-    expect(flagged.filter((r: any) => r.status === 'Approved')).toHaveLength(2);
-    expect(taskIsOverdue(flagged.find((r: any) => r.status === 'In Progress'))).toBe(true);
-    expect(flagged.filter(taskIsOverdue)).toHaveLength(t.overdue); // the screen's own rule agrees with the count
+    expect(flagged).toHaveLength(t.overdue);
+    expect(flagged[0].status).toBe('In Progress');
+    const approvedPastDate = t.recent_tasks.filter((r: any) => r.status === 'Approved' && r.due_date < '2026-10-30');
+    expect(approvedPastDate.length).toBeGreaterThan(0); // the capture does hold finished tasks past their date
+    expect(approvedPastDate.every((r: any) => r.is_overdue === false)).toBe(true);
   });
-  it('a cancelled delivery past its date is counted late by the server, and nothing is counted delivered (CR-31)', () => {
+  it('a cancelled delivery past its date is neither late nor upcoming (CR-31, applied)', () => {
     const cancelled = dash.deliveries.items.find((d: any) => d.title === 'Cancelled delivery');
     expect(cancelled.status).toBe('Cancelled');
-    expect(dash.deliveries).toMatchObject({ total: 3, late: 2, upcoming: 1, delivered: 0 }); // the cancelled one is one of the two late
+    expect(dash.deliveries).toMatchObject({ total: 3, late: 1, upcoming: 1, delivered: 0 });
     expect(dash.deliveries.items.filter((d: any) => d.status === 'Draft' && d.due_date < '2026-10-30')).toHaveLength(1);
+    const { delivered, late, upcoming, total } = dash.deliveries;
+    expect(delivered + late + upcoming + 1).toBe(total); // plus the one cancelled
   });
 });
 
-describe('the schedule section: dates are real, the milestones are not (CR-30)', () => {
+describe('the schedule section: the dates and the milestones are the project’s own (CR-30, applied)', () => {
   it('the dates are the project’s own', () => {
     expect(dash.schedule.start_date).toBe(dash.project.start_date);
     expect(dash.schedule.delivery_date).toBe(dash.project.delivery_date);
     expect(dash.schedule.days_total).toBe(105);
     expect(dash.schedule.days_remaining).toBe(dash.schedule.days_total - dash.schedule.days_elapsed);
   });
-  it('the milestones are five fixed phase names at fractions of the span, not the project’s milestones', () => {
-    expect(dash.schedule.milestones.map((m: any) => m.id)).toEqual(['m1', 'm2', 'm3', 'm4', 'm5']);
-    const real = flow.project_schedule.body.milestones.map((m: any) => m.name); // the route the Scheduling phase replaced
-    expect(real).toEqual(expect.arrayContaining(['Turnover', 'Previs lock']));
-    for (const name of real) expect(dash.schedule.milestones.map((m: any) => m.name)).not.toContain(name);
+  it('the milestones are the ones Scheduling holds for the project (same ids, names and dates), with the status as completed, in_progress, overdue or upcoming', () => {
+    const real = flow.project_schedule.body.milestones;
+    expect(dash.schedule.milestones.map((m: any) => [m.id, m.name, m.date]).sort()).toEqual(real.map((m: any) => [m.id, m.name, m.date]).sort());
+    const byName = Object.fromEntries(dash.schedule.milestones.map((m: any) => [m.name, m.status]));
+    expect(byName).toEqual({ 'Previs lock': 'completed', Turnover: 'upcoming' });
   });
-  it('an empty project gets the same five phases, the first marked completed on its first day', () => {
+  it('an empty project has no milestones, and its dates still default', () => {
     const empty = flow.dashboard_empty.body.schedule;
-    expect(empty.milestones).toHaveLength(5);
-    expect(empty.milestones[0]).toMatchObject({ id: 'm1', status: 'completed', date: empty.start_date });
+    expect(empty.milestones).toEqual([]);
     expect(empty.days_total).toBe(180); // dates default when the project has none
   });
   it('"delayed" is a rule (a late delivery or more than two overdue tasks), not a comparison with a plan', () => {

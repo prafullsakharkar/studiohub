@@ -15,7 +15,7 @@ const activeOptions = [
   { value: 'false', label: 'Inactive' },
 ];
 
-/** The server answers these lists without honouring a filter or a search (CR-26): the little lists are narrowed here. */
+/** The server now honours the filters (CR-26) but not a search: the little lists are narrowed here for both. */
 const textSearch =
   <T extends object>(...fields: ReadonlyArray<keyof T>): ClientFilterRule<T> =>
   (row, value) =>
@@ -153,7 +153,7 @@ export const definitionFormConfig: DirectoryFormConfig<SettingDefinition> = {
   fields: definitionFormFields,
   get: definitionsApi.get,
   create: async (input) => {
-    // Plain-string choices are accepted here and then break value creation with a 500 (CR-27).
+    // Plain-string choices are a 400 from the server (CR-27); checked here first.
     failWith('choices', choicesProblem(String(input.data_type), input.choices));
     return definitionsApi.create(input as never);
   },
@@ -286,7 +286,7 @@ export const flagFormConfig: DirectoryFormConfig<FeatureFlag> = {
   fields: flagFormFields,
   get: featureFlagsApi.get,
   create: async (input) => {
-    checkFlag(input); // the server accepts a percentage of 150 and a window that ends before it starts (CR-29)
+    checkFlag(input); // the server refuses these too (CR-29); checking here keeps the message under the field without a round trip
     return featureFlagsApi.create(input as never);
   },
   update: async (id, patch) => {
@@ -357,7 +357,7 @@ export const themeFormFields: ReadonlyArray<FieldDef> = [
   { kind: 'checkbox', name: 'sidebar_collapsed', label: 'Sidebar collapsed' },
   { kind: 'checkbox', name: 'navbar_fixed', label: 'Navbar fixed', initial: true },
 ];
-/** The server only checks a colour's length (CR-29). */
+/** The server checks a colour as hex (CR-29); checked here first. */
 const checkColors = (input: Record<string, unknown>) => {
   for (const [name, label] of COLOR_FIELDS) {
     const value = input[name];
@@ -447,7 +447,7 @@ export function useTagsListConfig(): DirectoryListConfig<Tag> {
   return {
     title: 'Tags',
     noun: 'tag',
-    subtitle: 'Labels used across the studio. The tags route has no permission check of its own (CR-28): this screen is offered to settings administrators.',
+    subtitle: 'Labels used across the studio. Anyone signed in reads them; changing them needs settings.manage, and system tags are a platform administrator’s.',
     queryKey: tagsApi.keys.lists(),
     fetchPage: tagsApi.list,
     remove: tagsApi.remove,
@@ -480,10 +480,7 @@ export const tagFormConfig: DirectoryFormConfig<Tag> = {
   get: tagsApi.get,
   create: async (input) => {
     if (typeof input.color === 'string' && input.color !== '' && !isHexColor(input.color)) refuse('color', 'The colour must be a hex colour such as #f59e0b.');
-    // The create answers without an id (CR-28): find the tag by its name to go on.
-    await tagsApi.create(input as never);
-    const found = (await tagsApi.list({ search: String(input.name) })).results.find((t) => t.name === input.name);
-    return (found ?? ({ id: '' } as Tag)) as Tag;
+    return tagsApi.create(input as never);
   },
   update: async (id, patch) => {
     if (typeof patch.color === 'string' && patch.color !== '' && !isHexColor(patch.color)) refuse('color', 'The colour must be a hex colour such as #f59e0b.');

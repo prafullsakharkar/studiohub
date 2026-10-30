@@ -2,7 +2,6 @@ import React from 'react';
 import { Truck, CheckCircle2, Clock, AlertTriangle, ArrowUpRight, PackageCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DashboardDeliveriesData } from '../types';
-import { getDeliveryFigures } from '../utils/dashboardMetrics';
 
 export interface ClientDeliveryHealthProps {
   deliveries: DashboardDeliveriesData;
@@ -10,7 +9,7 @@ export interface ClientDeliveryHealthProps {
 }
 
 export const ClientDeliveryHealth: React.FC<ClientDeliveryHealthProps> = ({ deliveries, projectId }) => {
-  const figures = getDeliveryFigures(deliveries);
+  const figures = deliveries; // the server's own delivered, upcoming and late (a cancelled delivery is in none of them)
   return (
     <div id="dashboard-client-deliveries" className="p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-4">
       {/* Header */}
