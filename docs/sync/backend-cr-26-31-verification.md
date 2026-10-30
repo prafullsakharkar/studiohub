@@ -40,7 +40,7 @@ New tests: 22 + 9 (settings, tags) and 7 (dashboard). Contract text: `docs/api/d
 | Unit tests | 99 files / 964 | **99 files / 964** (settings +2, dashboards −2) |
 | `pnpm build` | OK | **OK** |
 | Biome (`src`) | 2 errors / 2105 warnings | **2 errors (the same two) / 2106 warnings** |
-| Live tests (one fresh seed per file, against the changed backend) | not comparable (see below) | **14 files / 64, all pass** |
+| Live tests (one fresh seed per file, against the changed backend) | 15 files / 82 | **15 files / 82, all pass** |
 
 ## 5. Not done / for later
 
@@ -48,4 +48,4 @@ New tests: 22 + 9 (settings, tags) and 7 (dashboard). Contract text: `docs/api/d
 - `search` and `ordering` on the settings lists remain unsupported by the server (not part of CR-26).
 - The deliveries migration-count test fails on `develop` too; it is outside this batch.
 - The commit message of `0009a2b9` says "9 new" tests; it is 7 tests and 9 mutation checks.
-- The live count: this directory holds 14 live files and they hold 64 tests. The "15 files / 82" I quoted in the Phase 12 report does not match that listing and I could not reconcile it, so read this run, not that figure. All 14 files passed, each on a fresh seed.
+- The live count: my first run listed `*.live.test.tsx` and so missed `auth.live.test.ts` (18 tests); I reported "14 files / 64" and could not reconcile it with 15 / 82. Run afterwards, `auth.live` passes, so the whole suite is 15 files / 82 tests, all passing against the changed backend.
