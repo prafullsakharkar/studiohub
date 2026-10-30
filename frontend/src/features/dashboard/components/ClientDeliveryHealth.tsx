@@ -2,6 +2,7 @@ import React from 'react';
 import { Truck, CheckCircle2, Clock, AlertTriangle, ArrowUpRight, PackageCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DashboardDeliveriesData } from '../types';
+import { getDeliveryFigures } from '../utils/dashboardMetrics';
 
 export interface ClientDeliveryHealthProps {
   deliveries: DashboardDeliveriesData;
@@ -9,6 +10,7 @@ export interface ClientDeliveryHealthProps {
 }
 
 export const ClientDeliveryHealth: React.FC<ClientDeliveryHealthProps> = ({ deliveries, projectId }) => {
+  const figures = getDeliveryFigures(deliveries);
   return (
     <div id="dashboard-client-deliveries" className="p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-4">
       {/* Header */}
@@ -36,16 +38,16 @@ export const ClientDeliveryHealth: React.FC<ClientDeliveryHealthProps> = ({ deli
       <div className="grid grid-cols-3 gap-2 text-center font-mono">
         <div className="p-2 rounded-lg bg-slate-950 border border-slate-800">
           <div className="text-[10px] text-emerald-400 uppercase">Delivered</div>
-          <div className="text-base font-bold text-emerald-400 mt-0.5">{deliveries.delivered}</div>
+          <div className="text-base font-bold text-emerald-400 mt-0.5">{figures.delivered}</div>
         </div>
         <div className="p-2 rounded-lg bg-slate-950 border border-slate-800">
           <div className="text-[10px] text-indigo-400 uppercase">Queued</div>
-          <div className="text-base font-bold text-indigo-300 mt-0.5">{deliveries.upcoming}</div>
+          <div className="text-base font-bold text-indigo-300 mt-0.5">{figures.upcoming}</div>
         </div>
         <div className="p-2 rounded-lg bg-slate-950 border border-slate-800">
           <div className="text-[10px] text-rose-400 uppercase">Late</div>
-          <div className={`text-base font-bold mt-0.5 ${deliveries.late > 0 ? 'text-rose-400' : 'text-slate-500'}`}>
-            {deliveries.late}
+          <div className={`text-base font-bold mt-0.5 ${figures.late > 0 ? 'text-rose-400' : 'text-slate-500'}`}>
+            {figures.late}
           </div>
         </div>
       </div>

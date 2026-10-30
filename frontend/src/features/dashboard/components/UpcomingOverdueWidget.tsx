@@ -1,6 +1,7 @@
 import React from 'react';
 import { Clock, AlertTriangle, CheckCircle2, Calendar } from 'lucide-react';
 import { DashboardTasksData, DashboardDeliveriesData } from '../types';
+import { taskIsOverdue, upcomingDeliveryItems } from '../utils/dashboardMetrics';
 
 export interface UpcomingOverdueWidgetProps {
   tasks: DashboardTasksData;
@@ -10,9 +11,9 @@ export interface UpcomingOverdueWidgetProps {
 export const UpcomingOverdueWidget: React.FC<UpcomingOverdueWidgetProps> = ({ tasks, deliveries }) => {
   // Listed rows are the most recent critical examples; the header count is
   // the exact backend-computed overdue-or-blocked union for the project.
-  const overdueTasks = tasks.recent_tasks.filter((t) => t.is_overdue || t.status === 'Blocked');
+  const overdueTasks = tasks.recent_tasks.filter((t) => taskIsOverdue(t) || t.status === 'Blocked');
   const criticalTotal = tasks.critical ?? overdueTasks.length;
-  const upcomingDeliveries = deliveries.items.filter((d) => d.status === 'Upcoming' || d.status === 'In Review');
+  const upcomingDeliveries = upcomingDeliveryItems(deliveries);
 
   return (
     <div id="dashboard-upcoming-overdue" className="p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-4">

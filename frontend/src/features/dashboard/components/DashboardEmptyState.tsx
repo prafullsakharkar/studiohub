@@ -1,6 +1,7 @@
 import React from 'react';
 import { Film, FolderPlus, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { StudioOverview } from './StudioOverview';
 
 export interface DashboardEmptyStateProps {
   onSelectProjectPrompt?: () => void;
@@ -10,7 +11,7 @@ export const DashboardEmptyState: React.FC<DashboardEmptyStateProps> = () => {
   return (
     <div
       id="dashboard-empty-state"
-      className="flex-1 flex flex-col items-center justify-center min-h-[65vh] p-6 text-center bg-slate-950 text-slate-100"
+      className="flex-1 flex flex-col items-center justify-center min-h-[65vh] p-6 text-center bg-slate-950 text-slate-100 overflow-y-auto"
     >
       <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-4 shadow-xl shadow-indigo-500/5">
         <Film className="w-8 h-8" />
@@ -46,6 +47,8 @@ export const DashboardEmptyState: React.FC<DashboardEmptyStateProps> = () => {
           <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
         </button>
       </div>
+
+      <StudioOverview />
     </div>
   );
 };

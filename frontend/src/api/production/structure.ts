@@ -268,13 +268,7 @@ export const projectsApi = {
   restore: (id: string) => apiClient.post<Project>(`${V1}/projects/${id}/restore/`, {}),
   archived: listFetcher<Project>(`${V1}/projects/archived/`),
   statistics: (id: string, signal?: AbortSignal) => apiClient.get<ProjectCounts>(`${V1}/projects/${id}/statistics/`, { signal }),
-  dashboard: (id: string, signal?: AbortSignal) => apiClient.get<ProjectDashboard>(`${V1}/projects/${id}/dashboard/`, { signal }),
 };
-
-export interface ProjectDashboard {
-  activity: Array<{ id: string; action: string; description: string; entity_type: string; entity_code: string; entity_id: string; timestamp: string; user_name: string }>;
-  [section: string]: unknown;
-}
 
 export const showsApi = resourceApi<Show, ShowInput>('shows', `${V1}/shows/`);
 export const tracksApi = resourceApi<EditorialTrack, EditorialTrackInput>('editorial-tracks', `${V1}/editorial/tracks/`);
