@@ -14,3 +14,6 @@ export function formatBytes(bytes: number | null | undefined): string {
 
 export const formatWhen = (iso: string | null | undefined): string => (iso ? new Date(iso).toLocaleString() : '—');
 export const formatDay = (iso: string | null | undefined): string => (iso ? new Date(iso).toLocaleDateString() : '—');
+
+/** Who did it: the name the server sent, else "A teammate" if only an id came, else `nobody` (a move the system made). */
+export const personLabel = (name: string | null | undefined, id: string | null | undefined, nobody = 'The system'): string => name || (id ? 'A teammate' : nobody);

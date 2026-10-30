@@ -152,13 +152,15 @@ describe('items and checks', () => {
     expect(flow.add_first.body.versions[0].file_path).not.toBe('ignored'); // snapshot keys in the body are ignored
   });
 
-  it('removing needs item_id (the uid); a checked item cannot be removed any more (CR-20: a generic 409)', () => {
+  it('removing needs item_id (the uid); a checked item can be removed, which clears the checks until they run again (CR-20, applied)', () => {
     expect(flow.remove_empty.status).toBe(400);
     expect(flow.remove_second.status).toBe(200);
     expect(flow.qcremove_validate.status).toBe(200);
-    expect(flow.qcremove_remove.status).toBe(409);
-    expect(flow.qcremove_remove.body.error.code).toBe('conflict');
-    expect(flow.qcremove_detail.body.versions).toHaveLength(1);
+    expect(flow.qcremove_remove.status).toBe(200);
+    expect(flow.qcremove_detail.body.versions).toHaveLength(0);
+    expect(flow.qcremove_qc.body.items).toEqual([]);
+    expect(flow.qcremove_prepare.status).toBe(409); // an empty delivery cannot be prepared
+    expect(flow.qcremove_prepare.body.checks[0].check).toBe('has_items');
   });
 
   it('a failed check on prepare is a 409 qc_failed listing the checks, and the run is kept', () => {
@@ -219,10 +221,23 @@ describe('visibility and the passcode', () => {
 });
 
 describe('lists', () => {
-  it('only search narrows the list: status, client, project and method are ignored (CR-17)', () => {
+  it('the list filters by status (read or stored words), client, project, destination and method (CR-17, applied); search still narrows too', () => {
     const base = flow.fp_deliveries_baseline.body.count;
-    for (const key of ['fp_deliveries_by_status_Completed', 'fp_deliveries_by_status_Cancelled', 'fp_deliveries_by_client_status_Approved', 'fp_deliveries_by_delivery_method_Aspera', 'fp_deliveries_by_nonsense_1']) expect(flow[key].body.count).toBe(base);
-    expect(flow.fp_deliveries_by_project_id_other.body.count).toBe(flow.fp_deliveries_all_projects.body.count);
+    const statusesOf = (key: string) => flow[key].body.results.map((r: any) => r.status);
+    expect(flow.fp_deliveries_by_status_Ready.body.count).toBe(1);
+    expect(statusesOf('fp_deliveries_by_status_Ready')).toEqual(['Ready']);
+    expect(flow.fp_deliveries_by_status_Prepared.body.count).toBe(1); // the stored word
+    expect(flow.fp_deliveries_by_status_ready.body.count).toBe(1); // any case
+    expect(statusesOf('fp_deliveries_by_status_Completed')).toEqual(['Completed']);
+    expect(statusesOf('fp_deliveries_by_status_Cancelled').every((s: string) => s === 'Cancelled')).toBe(true);
+    expect(flow.fp_deliveries_by_status_Bogus.body.count).toBe(0);
+    const clientKey = Object.keys(flow).find((k) => k.startsWith('fp_deliveries_by_client_id_'))!;
+    expect(flow[clientKey].body.count).toBeLessThan(base);
+    expect(flow.fp_deliveries_by_client_status_Approved.body.count).toBe(1);
+    const destinationKey = Object.keys(flow).find((k) => k.startsWith('fp_deliveries_by_destination_id_'))!;
+    expect(flow[destinationKey].body.count).toBeLessThan(base);
+    expect(flow.fp_deliveries_by_project_id_other.body.count).toBeLessThan(flow.fp_deliveries_all_projects.body.count);
+    expect(flow.fp_deliveries_by_nonsense_1.body.count).toBe(base); // an unknown parameter is still ignored
     expect(flow.fp_deliveries_by_search_Reel.body.count).toBeLessThan(base);
   });
 
@@ -231,6 +246,7 @@ describe('lists', () => {
     expect(flow.project_route_slash.body.count).toBe(flow.project_route.body.count);
     expect(flow.project_route_search.body.count).toBeLessThan(flow.project_route.body.count);
     expect(flow.project_route_other.status).toBe(404);
+    expect(flow.project_route_status.body.results.every((r: any) => r.status === 'Cancelled')).toBe(true); // it takes the same filters
   });
 });
 
@@ -243,10 +259,14 @@ describe('bulk cancel and delete', () => {
     expect(flow.bulk_cancel_empty.status).toBe(400);
   });
 
-  it('the server deletes in any state (CR-18), so the screens only offer it for Draft and Cancelled', () => {
+  it('only a Draft or a Cancelled delivery can be deleted (CR-18, applied); the screens offer the same', () => {
     expect(flow.delete_cancelled.status).toBe(204);
-    expect(flow.delete_submitted.status).toBe(204);
-    expect(flow.delete_complete.status).toBe(204);
+    expect(flow.delete_draft.status).toBe(204);
+    for (const key of ['delete_submitted', 'delete_complete']) {
+      expect(flow[key].status).toBe(409);
+      expect(flow[key].body.error.code).toBe('delivery_not_editable');
+    }
+    expect(flow.delete_complete_gone.status).toBe(200); // still there
     expect(flow.delete_supervisor.status).toBe(403);
     expect(isDeletable('Draft') && isDeletable('Cancelled')).toBe(true);
     for (const s of ['Validating', 'Ready', 'Signed Off', 'Submitted', 'Approved', 'Rejected', 'Completed']) expect(isDeletable(s)).toBe(false);
@@ -256,14 +276,26 @@ describe('bulk cancel and delete', () => {
 });
 
 describe('destinations', () => {
-  it('a name is unique in any case, a new default moves the old one, and the type is not checked (CR-19)', () => {
+  it('a name is unique in any case, a new default moves the old one, and the type must be one of the seven (CR-19, applied)', () => {
     expect(flow.destinations_create_duplicate.status).toBe(400);
     expect(flow.destinations_create_duplicate.body.name).toBeTruthy();
     const rows = flow.destinations_list.body.results as any[];
     expect(rows.filter((r) => r.is_default)).toHaveLength(1);
-    expect(flow.destinations_create.body.type).toBe('S3'); // not one of the seven labelled types, and accepted
+    expect(flow.destinations_create_bad_type.status).toBe(400);
+    expect(String(flow.destinations_create_bad_type.body.type)).toContain('Must be one of: Aspera Connect');
+    expect(flow.destinations_create.body.type).toBe('AWS S3 Bucket');
     expect(flow.destinations_artist_create.status).toBe(403);
     expect(flow.destinations_artist_list.status).toBe(200);
     expect(flow.destinations_supervisor_delete.status).toBe(403);
+  });
+});
+
+describe('names beside ids (CR-21, applied)', () => {
+  it('history, checks and the detail say who, and a nobody is an empty name', () => {
+    expect(bareItems(flow.history_complete).every((r) => typeof r.actor_name === 'string' && r.actor_name.length > 0)).toBe(true);
+    expect(bareItems(flow.qc_passed).every((c) => typeof c.checked_by_name === 'string' && c.checked_by_name.length > 0)).toBe(true);
+    expect(flow.detail_complete.body.signed_off_by_name).toMatch(/@/);
+    expect(flow.detail_draft.body.signed_off_by_name).toBe('');
+    expect(flow.detail_draft.body.client_answered_by_name).toBe('');
   });
 });

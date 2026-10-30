@@ -103,6 +103,7 @@ def test_capture_deliveries(django_user_model):
     v3 = published_version(project)
     v4 = published_version(project)
     v5 = published_version(project)
+    v6 = published_version(project)
     v_unpub = published_version(project, files=0, published=False)
     v_nofiles = published_version(project, files=0)
     v_other = published_version(other_project)
@@ -111,17 +112,18 @@ def test_capture_deliveries(django_user_model):
     # ------------------------------------------------------------ destinations
     call(sv, "destinations_empty_list", "GET", "/api/v1/deliveries/destinations/")
     call(pa, "destinations_create_empty", "POST", "/api/v1/deliveries/destinations/", {})
-    d1 = call(pa, "destinations_create", "POST", "/api/v1/deliveries/destinations/", {"name": "Acme S3", "type": "S3", "endpoint": "s3://acme/in", "is_default": True})
+    d1 = call(pa, "destinations_create", "POST", "/api/v1/deliveries/destinations/", {"name": "Acme S3", "type": "AWS S3 Bucket", "endpoint": "s3://acme/in", "is_default": True})
     dst = d1.json().get("id")
-    call(pa, "destinations_create_duplicate", "POST", "/api/v1/deliveries/destinations/", {"name": "ACME s3", "type": "S3", "endpoint": "s3://acme/other"})
-    d2 = call(pa, "destinations_create_second_default", "POST", "/api/v1/deliveries/destinations/", {"name": "Acme Aspera", "type": "Aspera", "endpoint": "aspera.acme.example", "is_default": True})
+    call(pa, "destinations_create_bad_type", "POST", "/api/v1/deliveries/destinations/", {"name": "Bad type", "type": "S3", "endpoint": "s3://x"})
+    call(pa, "destinations_create_duplicate", "POST", "/api/v1/deliveries/destinations/", {"name": "ACME s3", "type": "AWS S3 Bucket", "endpoint": "s3://acme/other"})
+    d2 = call(pa, "destinations_create_second_default", "POST", "/api/v1/deliveries/destinations/", {"name": "Acme Aspera", "type": "Aspera Connect", "endpoint": "aspera.acme.example", "is_default": True})
     dst2 = d2.json().get("id")
     call(pa, "destinations_list", "GET", "/api/v1/deliveries/destinations/")
     call(pa, "destinations_detail", "GET", f"/api/v1/deliveries/destinations/{dst}/")
     call(pa, "destinations_patch", "PATCH", f"/api/v1/deliveries/destinations/{dst}/", {"endpoint": "s3://acme/incoming"})
-    call(sv, "destinations_supervisor_create", "POST", "/api/v1/deliveries/destinations/", {"name": "Sup", "type": "S3", "endpoint": "s3://sup/in"})
+    call(sv, "destinations_supervisor_create", "POST", "/api/v1/deliveries/destinations/", {"name": "Sup", "type": "AWS S3 Bucket", "endpoint": "s3://sup/in"})
     call(ar, "destinations_artist_list", "GET", "/api/v1/deliveries/destinations/")
-    call(ar, "destinations_artist_create", "POST", "/api/v1/deliveries/destinations/", {"name": "Art", "type": "S3", "endpoint": "s3://art/in"})
+    call(ar, "destinations_artist_create", "POST", "/api/v1/deliveries/destinations/", {"name": "Art", "type": "AWS S3 Bucket", "endpoint": "s3://art/in"})
     call(sv, "destinations_supervisor_delete", "DELETE", f"/api/v1/deliveries/destinations/{dst2}/")
 
     # ------------------------------------------------------------ create
@@ -247,6 +249,11 @@ def test_capture_deliveries(django_user_model):
     call(sv, "bulk_cancel_all", "POST", "/api/v1/deliveries/bulk-cancel/", {"ids": [b2], "reason": "Postponed"})
     sent = to_submitted("sent", v4)
 
+    # one delivery left Ready, so the status filter can be shown with the read word
+    rd = call(sv, "ready_create", "POST", "/api/v1/deliveries/", {"name": "left ready", "project_id": pid}).json()["id"]
+    call(sv, "ready_add", "POST", f"/api/v1/deliveries/{rd}/add-version/", {"version_id": str(v6.pk)})
+    call(sv, "ready_prepare", "POST", f"/api/v1/deliveries/{rd}/prepare/", {})
+
     # an item is protected by the QC rows of a run, so it cannot be removed once the delivery was validated
     qr = call(sv, "qcremove_create", "POST", "/api/v1/deliveries/", {"name": "qcremove", "project_id": pid}).json()["id"]
     qadd = call(sv, "qcremove_add", "POST", f"/api/v1/deliveries/{qr}/add-version/", {"version_id": str(v5.pk)}).json()
@@ -254,6 +261,8 @@ def test_capture_deliveries(django_user_model):
     call(sv, "qcremove_validate", "POST", f"/api/v1/deliveries/{qr}/validate/", {})
     call(sv, "qcremove_remove", "POST", f"/api/v1/deliveries/{qr}/remove-version/", {"item_id": quid})
     call(sv, "qcremove_detail", "GET", f"/api/v1/deliveries/{qr}/")
+    call(sv, "qcremove_qc", "GET", f"/api/v1/deliveries/{qr}/qc/")
+    call(sv, "qcremove_prepare", "POST", f"/api/v1/deliveries/{qr}/prepare/", {})
     call(a, "other_project_create", "POST", "/api/v1/deliveries/", {"name": "Other project turnover", "project_id": pid2})
 
     # ------------------------------------------------------------ lists and filter probes (unknown params are silently ignored)
@@ -269,7 +278,7 @@ def test_capture_deliveries(django_user_model):
     probe(
         "fp_deliveries",
         f"/api/v1/deliveries/?project_id={pid}",
-        [("status", "Completed"), ("status", "Cancelled"), ("client_status", "Approved"), ("client_id", cid), ("client", cid), ("delivery_method", "Aspera"), ("destination_id", dst), ("search", "Reel"), ("search", "DLV-DLV-0002"), ("ordering", "name"), ("ordering", "-name"), ("is_archived", "true"), ("nonsense", "1")],
+        [("status", "Ready"), ("status", "Prepared"), ("status", "ready"), ("status", "Completed"), ("status", "Cancelled"), ("status", "Bogus"), ("client_status", "Approved"), ("client_id", cid), ("client", cid), ("delivery_method", "Aspera"), ("destination_id", dst), ("search", "Reel"), ("search", "DLV-DLV-0002"), ("ordering", "name"), ("ordering", "-name"), ("is_archived", "true"), ("nonsense", "1")],
         pa,
     )
     call(a, "fp_deliveries_all_projects", "GET", "/api/v1/deliveries/")
@@ -282,12 +291,15 @@ def test_capture_deliveries(django_user_model):
     call(pa, "project_route_slash", "GET", f"/api/organizations/projects/{pid}/deliveries/")
     call(pa, "project_route_other", "GET", f"/api/organizations/projects/{pid2}/deliveries/")
     call(sg, "project_route_stranger", "GET", f"/api/organizations/projects/{pid}/deliveries/")
+    call(pa, "project_route_status", "GET", f"/api/organizations/projects/{pid}/deliveries/?status=Cancelled")
     call(pa, "project_route_search", "GET", f"/api/organizations/projects/{pid}/deliveries/?search=Reel&page_size=1")
 
     # ------------------------------------------------------------ deleting (after the probes, which need these rows)
     call(sv, "delete_supervisor", "DELETE", f"/api/v1/deliveries/{c1}/")
     call(pa, "delete_cancelled", "DELETE", f"/api/v1/deliveries/{c1}/")
     call(pa, "delete_gone", "GET", f"/api/v1/deliveries/{c1}/")
+    draft_del = call(sv, "delete_draft_create", "POST", "/api/v1/deliveries/", {"name": "To delete", "project_id": pid}).json()["id"]
+    call(pa, "delete_draft", "DELETE", f"/api/v1/deliveries/{draft_del}/")
     call(pa, "delete_submitted", "DELETE", f"/api/v1/deliveries/{sent}/")
     call(pa, "delete_complete", "DELETE", f"/api/v1/deliveries/{did}/")
     call(pa, "delete_complete_gone", "GET", f"/api/v1/deliveries/{did}/")

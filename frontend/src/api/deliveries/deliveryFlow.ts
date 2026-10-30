@@ -47,7 +47,7 @@ export const deliveryActionsFrom = (status: string): DeliveryAction[] => DELIVER
 export const EDITABLE_STATUSES: readonly string[] = ['Draft', 'Validating', 'Ready'];
 export const isEditable = (status: string) => EDITABLE_STATUSES.includes(status);
 
-/** A delivery is a record of what was sent: the screens offer deleting only before it was sent or after it was cancelled (the server accepts more, CR-18). */
+/** A delivery is a record of what was sent: only a Draft or a Cancelled one can be deleted (the server refuses the rest, CR-18). */
 export const isDeletable = (status: string) => status === 'Draft' || status === 'Cancelled';
 
 /** Past the point of sending: the items are a frozen record. */

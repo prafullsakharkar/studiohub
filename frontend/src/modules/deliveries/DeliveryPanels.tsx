@@ -12,9 +12,8 @@ import { useCan } from '@/core/permissions/useCan';
 import { VersionPicker } from '@/modules/production/review/pickers';
 import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
-import { checkLabel, deliveryErrorMessage, removeItemMessage } from './errors';
-import { formatBytes, formatWhen } from './format';
-import { UserName } from './UserName';
+import { checkLabel, deliveryErrorMessage } from './errors';
+import { formatBytes, formatWhen, personLabel } from './format';
 
 /** Refreshes every delivery query and the change history after a write. */
 export function useRefreshDeliveries() {
@@ -41,7 +40,7 @@ const Empty: React.FC<{ children: string }> = ({ children }) => <p className="ro
 
 const deliveryQcKey = (id: string) => [...deliveriesApi.keys.detail(id), 'qc'];
 
-/** The quality-check rows of a delivery. Items with rows can no longer be removed (CR-20), so the Items panel reads the same query. */
+/** The quality-check rows of the delivery's latest run. */
 export const useDeliveryQc = (id: string) => useQuery({ queryKey: deliveryQcKey(id), queryFn: ({ signal }) => deliveriesApi.qc(id, signal) });
 
 // ------------------------------------------------------------------------------------------------ items
@@ -49,9 +48,7 @@ export const useDeliveryQc = (id: string) => useQuery({ queryKey: deliveryQcKey(
 export const DeliveryItemsPanel: React.FC<{ delivery: Delivery }> = ({ delivery }) => {
   const canEdit = useCan('delivery.update') && isEditable(delivery.status);
   const write = useDeliveryWrite();
-  const qc = useDeliveryQc(delivery.id);
   const [versionId, setVersionId] = useState<string | null>(null);
-  const checked = new Set((qc.data ?? []).map((c) => c.item).filter(Boolean));
   const items = delivery.versions;
   const sent = delivery.sent_at !== null;
   return (
@@ -73,7 +70,7 @@ export const DeliveryItemsPanel: React.FC<{ delivery: Delivery }> = ({ delivery 
       ) : (
         <ul aria-label="Delivery items" className="space-y-2">
           {items.map((item) => (
-            <ItemRow key={item.uid} item={item} canRemove={canEdit && !checked.has(item.uid)} checked={checked.has(item.uid)} canEdit={canEdit} onRemove={() => write(() => deliveriesApi.removeVersion(delivery.id, item.uid), removeItemMessage)} />
+            <ItemRow key={item.uid} item={item} canRemove={canEdit} onRemove={() => write(() => deliveriesApi.removeVersion(delivery.id, item.uid))} />
           ))}
         </ul>
       )}
@@ -81,7 +78,7 @@ export const DeliveryItemsPanel: React.FC<{ delivery: Delivery }> = ({ delivery 
   );
 };
 
-const ItemRow: React.FC<{ item: DeliveryItem; canRemove: boolean; checked: boolean; canEdit: boolean; onRemove: () => void }> = ({ item, canRemove, checked, canEdit, onRemove }) => {
+const ItemRow: React.FC<{ item: DeliveryItem; canRemove: boolean; onRemove: () => void }> = ({ item, canRemove, onRemove }) => {
   const label = `${item.entity_code || item.entity_name || 'Version'} ${item.version_number}`.trim();
   return (
     <li className="rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2 text-xs">
@@ -93,16 +90,11 @@ const ItemRow: React.FC<{ item: DeliveryItem; canRemove: boolean; checked: boole
           {item.files.length} file{item.files.length === 1 ? '' : 's'} · {formatBytes(item.file_size_bytes)}
         </span>
         <span className="flex-1" />
-        {canEdit &&
-          (canRemove ? (
-            <button type="button" aria-label={`Remove ${label}`} className="text-rose-400 hover:text-rose-300" onClick={onRemove}>
-              Remove
-            </button>
-          ) : checked ? (
-            <span className="text-[11px] text-slate-500" title="Quality checks have run on this item">
-              Checked: cannot be removed
-            </span>
-          ) : null)}
+        {canRemove && (
+          <button type="button" aria-label={`Remove ${label}`} className="text-rose-400 hover:text-rose-300" onClick={onRemove}>
+            Remove
+          </button>
+        )}
       </div>
       {item.files.length > 0 && (
         <details className="mt-2 text-[11px] text-slate-400">
@@ -139,7 +131,7 @@ export const DeliveryChecksPanel: React.FC<{ delivery: Delivery }> = ({ delivery
             <h3 className="mb-2 flex flex-wrap items-center gap-2 font-semibold text-slate-200">
               {index === 0 ? 'Latest run' : 'Earlier run'}
               <span className="font-normal text-slate-500">
-                {formatWhen(rows[0].checked_at)} · <UserName id={rows[0].checked_by} />
+                {formatWhen(rows[0].checked_at)} · {personLabel(rows[0].checked_by_name, rows[0].checked_by)}
               </span>
               {rows.some((r) => r.outcome === 'fail') && <Badge variant="destructive">Failed</Badge>}
             </h3>
@@ -176,7 +168,7 @@ export const DeliveryHistoryPanel: React.FC<{ delivery: Delivery }> = ({ deliver
               <span className="font-semibold">{deliveryStatusLabel(row.to_status)}</span>
               {row.override_kind && <Badge variant="warning">{row.override_kind.replace(/_/g, ' ')}</Badge>}
               <span className="ml-auto text-[11px] text-slate-500">
-                <UserName id={row.actor} /> · {formatWhen(row.at)}
+                {personLabel(row.actor_name, row.actor)} · {formatWhen(row.at)}
               </span>
             </div>
             {row.reason && <p className="mt-1 text-[11px] text-slate-400">{row.reason}</p>}
@@ -251,9 +243,9 @@ export const DeliveryDetailsPanel: React.FC<{ delivery: Delivery }> = ({ deliver
     <Fact label="Due">{d.expires_at ? new Date(d.expires_at).toLocaleDateString() : '—'}</Fact>
     <Fact label="Size">{formatBytes(d.total_size_bytes)}</Fact>
     <Fact label="Items">{d.versions.length}</Fact>
-    <Fact label="Signed off">{d.signed_off_at ? <>{formatWhen(d.signed_off_at)} · <UserName id={d.signed_off_by} /></> : '—'}</Fact>
+    <Fact label="Signed off">{d.signed_off_at ? <>{formatWhen(d.signed_off_at)} · {personLabel(d.signed_off_by_name, d.signed_off_by)}</> : '—'}</Fact>
     <Fact label="Sent">{d.sent_at ? <>{formatWhen(d.sent_at)}{d.transfer_reference ? ` · ref ${d.transfer_reference}` : ''}</> : '—'}</Fact>
-    <Fact label="Client answered">{d.client_answered_at ? <>{d.client_status} · {formatWhen(d.client_answered_at)} · <UserName id={d.client_answered_by} /></> : d.client_status}</Fact>
+    <Fact label="Client answered">{d.client_answered_at ? <>{d.client_status} · {formatWhen(d.client_answered_at)} · {personLabel(d.client_answered_by_name, d.client_answered_by)}</> : d.client_status}</Fact>
     {d.revision_of && (
       <Fact label="Revision of">
         <Link to={`/deliveries/${d.revision_of}`} className="text-cyan-300 hover:underline">

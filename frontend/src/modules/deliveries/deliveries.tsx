@@ -1,6 +1,8 @@
-import { deliveriesApi, DELIVERY_METHODS, destinationsApi } from '@/api/deliveries/deliveries';
+import { deliveriesApi, DELIVERY_METHODS, DELIVERY_STATUSES, destinationsApi } from '@/api/deliveries/deliveries';
 import type { Delivery, DeliveryDestination, DeliveryRow } from '@/api/deliveries/deliveries';
 import { isDeletable, isEditable } from '@/api/deliveries/deliveryFlow';
+import { clientsApi } from '@/api/masterdata/directory';
+import { projectsApi } from '@/api/production/structure';
 import { EntityPicker } from '@/components/forms/EntityPicker';
 import type { BulkAction, DirectoryFormConfig, DirectoryListConfig, FieldDef } from '@/modules/directory/types';
 import { ClientPicker } from '@/modules/directory/pickers';
@@ -64,14 +66,14 @@ export function useDeliveriesListConfig(scope?: { projectId: string }): Director
     noun: 'delivery',
     subtitle: 'What was sent to the client, when, by whom and after whose sign-off. The transfer itself happens outside StudioHub.',
     queryKey: deliveriesApi.keys.lists(),
-    // The list route ignores a project filter (CR-17); a project's own route is scoped and searchable.
+    // A project's own route is scoped to it and takes the same filters.
     fetchPage: scope ? deliveriesApi.ofProject(scope.projectId) : deliveriesApi.list,
     remove: deliveriesApi.remove,
     deleteLabel: 'Delete',
     deletePermission: 'delivery.delete',
     createPermission: 'delivery.create',
     managePermission: 'delivery.update',
-    // A sent delivery is a record: it is not edited or deleted (the server would let it be deleted, CR-18).
+    // A sent delivery is a record: it is not edited, and only a Draft or a Cancelled one is deleted (the server refuses the rest).
     canEdit: (row) => isEditable(row.status),
     canRemove: (row) => isDeletable(row.status),
     rowName: (row) => row.code,
@@ -80,6 +82,12 @@ export function useDeliveriesListConfig(scope?: { projectId: string }): Director
     basePath: '/deliveries',
     createQuery: scope ? `project_id=${scope.projectId}` : undefined,
     bulk: { actions: [bulkCancel] },
+    filters: [
+      ...(scope ? [] : [{ key: 'project_id', label: 'Project', optionsFrom: { queryKey: projectsApi.keys.all, fetchPage: projectsApi.list as never, getLabel: ((p: { code: string }) => p.code) as never } }]),
+      { key: 'status', label: 'Status', options: options(DELIVERY_STATUSES) },
+      { key: 'client_id', label: 'Client', optionsFrom: { queryKey: clientsApi.keys.all, fetchPage: clientsApi.list as never, getLabel: ((c: { name: string }) => c.name) as never } },
+      { key: 'delivery_method', label: 'Method', options: options(DELIVERY_METHODS) },
+    ],
     columns: [
       { header: 'Delivery', cell: (row) => `${row.code} · ${row.name}`, sortField: 'created_at' },
       ...(scope ? [] : [{ header: 'Project', cell: (row: DeliveryRow) => row.project_name || '—' }]),

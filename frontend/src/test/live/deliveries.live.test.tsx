@@ -142,6 +142,7 @@ describe('a delivery from draft to completed', () => {
     const history = await screen.findByRole('list', { name: 'Status history' }, { timeout: 15000 });
     await waitFor(() => expect(within(history).getAllByRole('listitem').length).toBeGreaterThanOrEqual(7), { timeout: 15000 });
     expect(within(history).getAllByText('Completed').length).toBeGreaterThan(0);
+    expect(within(history).getAllByText(/@example\.test/).length).toBeGreaterThan(0); // names, not ids
   }, 240000);
 
   it('a rejected delivery is revised into a new draft with the same versions', async () => {
@@ -180,6 +181,10 @@ describe('a delivery from draft to completed', () => {
       expect(detail.revision_of).toBe(d.id);
       expect(detail.versions.map((i) => i.version_id)).toEqual([versions[2].id]);
     }, { timeout: 20000 });
+
+    // a delivery that was sent is a record: it cannot be deleted, whatever its status
+    await expect(deliveriesApi.remove(d.id)).rejects.toBeTruthy();
+    expect((await deliveriesApi.get(d.id)).status).toBe('Rejected');
   }, 240000);
 });
 
@@ -201,12 +206,43 @@ describe('cancelling from the list, and who only reads', () => {
       expect(await status(b.id)).toBe('Cancelled');
     }, { timeout: 20000 });
     expect((await deliveriesApi.get(a.id)).cancellation_reason).toBe('Postponed');
+
+    // the list filters on the server, and a cancelled delivery can be deleted
+    const cancelled = await deliveriesApi.list({ status: 'Cancelled', search: `Bulk` });
+    expect(cancelled.results.map((r) => r.id).sort()).toEqual([a.id, b.id].sort());
+    expect((await deliveriesApi.list({ status: 'Draft', search: `Bulk` })).results).toEqual([]);
+    cleanup();
+    await signIn('producer');
+    await deliveriesApi.remove(a.id);
+    expect((await deliveriesApi.list({ status: 'Cancelled', search: `Bulk` })).results.map((r) => r.id)).toEqual([b.id]);
     cleanup();
 
     await signIn('artist');
-    render(tree(pages, `/deliveries/${a.id}`));
-    await heading(a.code);
+    render(tree(pages, `/deliveries/${b.id}`));
+    await heading(b.code);
     expect(actionsNow()).toEqual([]);
     expect(screen.queryByRole('link', { name: 'Edit details' })).toBeNull();
   }, 240000);
+});
+
+describe('items and filters on the real server', () => {
+  it('an item that was checked can be removed; the list filters by client and by the read word for a status', async () => {
+    const { project, versions } = live.dlv;
+    await signIn('supervisor');
+    const d = await deliveriesApi.create({ name: `Checked ${uid}`, project_id: project, client_id: fixture.client });
+    await deliveriesApi.addVersion(d.id, versions[3].id);
+    await deliveriesApi.validate(d.id);
+    expect((await deliveriesApi.qc(d.id)).length).toBeGreaterThan(0);
+    const after = await deliveriesApi.removeVersion(d.id, (await deliveriesApi.get(d.id)).versions[0].uid);
+    expect(after.versions).toEqual([]);
+    expect(await deliveriesApi.qc(d.id)).toEqual([]); // the run was cleared with the item
+
+    await deliveriesApi.addVersion(d.id, versions[3].id);
+    await deliveriesApi.prepare(d.id);
+    const ready = await deliveriesApi.list({ status: 'Ready', client_id: fixture.client, search: `Checked ${uid}` });
+    expect(ready.results.map((r) => r.id)).toEqual([d.id]);
+    expect((await deliveriesApi.list({ status: 'Prepared', search: `Checked ${uid}` })).count).toBe(1); // the stored word too
+    expect((await deliveriesApi.list({ status: 'Draft', search: `Checked ${uid}` })).count).toBe(0);
+    expect((await deliveriesApi.ofProject(project)({ status: 'Ready', search: `Checked ${uid}` })).count).toBe(1);
+  }, 180000);
 });

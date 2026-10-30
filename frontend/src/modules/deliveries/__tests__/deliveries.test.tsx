@@ -235,19 +235,19 @@ describe('delivery workspace: the dialogs send what the server expects and show 
 });
 
 describe('delivery workspace: items, passcode and facts', () => {
-  it('a checked item cannot be removed and says why; an unchecked one can; adding names the version and explains a refusal', async () => {
+  it('any item can be removed while the delivery is being prepared, even after the checks ran (CR-20)', async () => {
     const d = flow.add_second_again.body; // a Draft holding two items
-    const [first, second] = d.versions;
+    const [first] = d.versions;
     const qc = [{ ...flow.qc_after_validate.body.items[0], item: first.uid }];
     const { calls } = open(supervisor, d, (c) => (c.method === 'POST' ? reply(flow.remove_second) : undefined), qc);
     await ready(d.code);
     const list = await screen.findByRole('list', { name: 'Delivery items' });
-    await within(list).findByText('Checked: cannot be removed');
-    const removeSecond = within(list).getByRole('button', { name: new RegExp(`^Remove .*${second.version_number}`) });
-    fireEvent.click(removeSecond);
+    expect(within(list).getAllByRole('button', { name: /^Remove / })).toHaveLength(2);
+    expect(screen.queryByText(/cannot be removed/)).toBeNull();
+    fireEvent.click(within(list).getAllByRole('button', { name: /^Remove / })[0]);
     await waitFor(() => expect(writes(calls)).toHaveLength(1));
     expect(path(writes(calls)[0])).toBe(`/api/v1/deliveries/${d.id}/remove-version/`);
-    expect(writes(calls)[0].body).toEqual({ item_id: second.uid });
+    expect(writes(calls)[0].body).toEqual({ item_id: first.uid });
   });
 
   it('a version that is not deliverable is refused with the reason in words', async () => {
@@ -303,6 +303,7 @@ describe('delivery workspace: items, passcode and facts', () => {
     expect(within(history).getAllByRole('listitem').length).toBe(flow.history_complete.body.items.length);
     expect(within(history).queryByText('Prepared')).toBeNull(); // shown as Ready
     expect(within(history).getAllByText('Ready').length).toBeGreaterThan(0);
+    expect(within(history).getAllByText(/@example\.test/).length).toBe(flow.history_complete.body.items.length); // the names the server sent, not ids
   });
 
   it('revoked content after sending is called out', async () => {
@@ -316,13 +317,15 @@ describe('delivery workspace: items, passcode and facts', () => {
 describe('deliveries list', () => {
   const List = () => <DirectoryListPage config={useDeliveriesListConfig()} />;
   const listRoute = <Route path="/deliveries" element={<List />} />;
-  const rows = [flow.list.body.results.find((r: any) => r.status === 'Submitted'), flow.list.body.results.find((r: any) => r.status === 'Cancelled')].filter(Boolean);
+  const template = flow.list.body.results[0];
+  const sent = { ...template, id: 'row-sent', code: 'DLV-SENT-1', status: 'Submitted' };
+  const cancelled = { ...template, id: 'row-cancelled', code: 'DLV-CANC-1', status: 'Cancelled' };
+  const draft = { ...template, id: 'row-draft', code: 'DLV-DRAF-1', status: 'Draft' };
+  const rows = [sent, cancelled];
 
   it('Delete is offered for a Cancelled delivery and not for a Submitted one, even to a holder of delivery.delete', async () => {
     mockFetch(() => ({ status: 200, body: { count: rows.length, next: null, previous: null, results: rows } }));
     renderAt('/deliveries', producer, listRoute);
-    const sent = rows.find((r: any) => r.status === 'Submitted');
-    const cancelled = rows.find((r: any) => r.status === 'Cancelled');
     await screen.findByRole('link', { name: new RegExp(`^${sent.code}`) });
     expect(screen.queryByRole('button', { name: new RegExp(`^Delete ${sent.code}`) })).toBeNull();
     expect(screen.getByRole('button', { name: new RegExp(`^Delete ${cancelled.code}`) })).toBeTruthy();
@@ -330,7 +333,6 @@ describe('deliveries list', () => {
   });
 
   it('cancelling the ticked deliveries posts their ids and one reason, and reports who was refused', async () => {
-    const draft = flow.list.body.results.find((r: any) => r.status === 'Draft') ?? { ...rows[1], status: 'Draft' };
     const { calls } = mockFetch((c) => (c.method === 'POST' ? reply(flow.bulk_cancel_partial) : { status: 200, body: { count: 1, next: null, previous: null, results: [draft] } }));
     renderAt('/deliveries', supervisor, listRoute);
     fireEvent.click(await screen.findByRole('checkbox', { name: new RegExp(`^Select ${draft.code}`) }));
@@ -344,12 +346,31 @@ describe('deliveries list', () => {
     await waitFor(() => expect(useNotificationStore.getState().notifications.map((n) => n.message).join(' ')).toMatch(/1 cancelled, 2 refused/));
   });
 
-  it('a project’s deliveries are read from the project route, not the list with a filter the server ignores', async () => {
+  it('choosing a status, client or method asks the server; a project’s list has no project filter and uses its own route (CR-17)', async () => {
+    const { calls } = mockFetch(() => ({ status: 200, body: { count: 0, next: null, previous: null, results: [] } }));
+    renderAt('/deliveries', supervisor, listRoute);
+    fireEvent.change(await screen.findByLabelText('Filter by status'), { target: { value: 'Ready' } });
+    await waitFor(() => expect(calls.some((c) => path(c) === '/api/v1/deliveries/' && new URL(c.url).searchParams.get('status') === 'Ready')).toBe(true));
+    expect(screen.getByLabelText('Filter by project')).toBeTruthy();
+    expect(screen.getByLabelText('Filter by client')).toBeTruthy();
+    expect(screen.getByLabelText('Filter by method')).toBeTruthy();
+    cleanup();
+
+    const Scoped = () => <DirectoryListPage config={useDeliveriesListConfig({ projectId: 'p-9' })} />;
+    const scoped = mockFetch(() => ({ status: 200, body: { count: 0, next: null, previous: null, results: [] } }));
+    renderAt('/x', supervisor, <Route path="/x" element={<Scoped />} />);
+    expect(screen.queryByLabelText('Filter by project')).toBeNull();
+    fireEvent.change(await screen.findByLabelText('Filter by status'), { target: { value: 'Cancelled' } });
+    await waitFor(() => expect(scoped.calls.some((c) => path(c) === '/api/organizations/projects/p-9/deliveries/' && new URL(c.url).searchParams.get('status') === 'Cancelled')).toBe(true));
+  });
+
+  it('a project’s deliveries are read from the project route', async () => {
     const { calls } = mockFetch(() => ({ status: 200, body: { count: 0, next: null, previous: null, results: [] } }));
     const Scoped = () => <DirectoryListPage config={useDeliveriesListConfig({ projectId: 'p-123' })} />;
     renderAt('/x', supervisor, <Route path="/x" element={<Scoped />} />);
     await waitFor(() => expect(calls.length).toBeGreaterThan(0));
-    expect(path(calls[0])).toBe('/api/organizations/projects/p-123/deliveries/');
+    expect(calls.some((c) => path(c) === '/api/organizations/projects/p-123/deliveries/')).toBe(true);
+    expect(calls.some((c) => path(c) === '/api/v1/deliveries/')).toBe(false);
   });
 });
 

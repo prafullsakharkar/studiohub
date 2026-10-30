@@ -9,12 +9,13 @@ import { listFetcher } from '@/shared/data/listing';
  * Rules the capture established:
  *  - a delivery moves only through its actions (`status` is read-only); the reads say "Ready" for the backend's
  *    Prepared and "Completed" for Complete, the history rows say Prepared and Complete;
- *  - the list ignores every filter but `search` (and `ordering`): `status`, `client`, `project_id`, `delivery_method`
- *    and `destination_id` all answer the same rows (CR-17); a project's deliveries come from
- *    `/api/organizations/projects/{id}/deliveries/`;
+ *  - the list filters by `status` (the read words or the stored ones), `client_status`, `delivery_method`, `client`,
+ *    `project` and `destination` (also as `*_id`), and searches name, code and client; a project's deliveries come
+ *    from `/api/organizations/projects/{id}/deliveries/`, which takes the same filters (CR-17, applied);
  *  - the person who prepared a delivery cannot sign it off (403 `separation_of_duties`);
  *  - the passcode is never in a response: `has_passcode`, and `GET passcode/` for holders of `delivery.view_secret`;
- *  - DELETE is accepted in any state (CR-18); the screens offer it for Draft and Cancelled only.
+ *  - only a Draft or a Cancelled delivery can be deleted (409 `delivery_not_editable` otherwise, CR-18, applied);
+ *  - people are named beside their ids (`actor_name`, `checked_by_name`, `signed_off_by_name`, CR-21, applied).
  */
 const V1 = '/api/v1';
 const base = `${V1}/deliveries/`;
@@ -23,7 +24,7 @@ const base = `${V1}/deliveries/`;
 export const DELIVERY_STATUSES = ['Draft', 'Validating', 'Ready', 'Signed Off', 'Submitted', 'Approved', 'Rejected', 'Completed', 'Cancelled'] as const;
 export type DeliveryStatus = (typeof DELIVERY_STATUSES)[number];
 export const DELIVERY_METHODS = ['Aspera', 'S3', 'FTP', 'Web Download'] as const;
-/** What a destination `type` is meant to be; the server accepts any text (CR-19). */
+/** The seven destination types; anything else is a 400 (CR-19, applied). */
 export const DESTINATION_TYPES = ['Aspera Connect', 'Signiant Media Shuttle', 'AWS S3 Bucket', 'Frame.io Enterprise', 'LTO Tape Archive', 'Client SFTP', 'Hard Drive Ingest'] as const;
 
 /** The history rows use the backend's words for two statuses. */
@@ -109,10 +110,13 @@ export interface Delivery {
   cancellation_reason: string;
   rejection_reason: string;
   signed_off_by: string | null;
+  /** The person's name, else their email; empty for nobody. */
+  signed_off_by_name: string;
   signed_off_at: string | null;
   sent_at: string | null;
   transfer_reference: string;
   client_answered_by: string | null;
+  client_answered_by_name: string;
   client_answered_at: string | null;
   revision_of: string | null;
   has_revoked_content: boolean;
@@ -147,6 +151,8 @@ export interface DeliveryStatusChange {
   to_status: string;
   /** User id; null for a system move (a revoked file reopened the sign-off). */
   actor: string | null;
+  /** Empty for a system move. */
+  actor_name: string;
   reason: string;
   override_kind: string;
   at: string;
@@ -160,6 +166,7 @@ export interface DeliveryQCCheck {
   /** The item's uid; null for a check of the whole package. */
   item: string | null;
   checked_by: string | null;
+  checked_by_name: string;
   checked_at: string;
 }
 

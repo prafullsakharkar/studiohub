@@ -38,7 +38,3 @@ export function deliveryErrorMessage(error: unknown): string {
   return serverMessage(error);
 }
 
-/** Removing an item that quality checks already ran on is a generic 409 `conflict` (CR-20). */
-export function removeItemMessage(error: unknown): string {
-  return mapHttpError(error).code === 'conflict' ? 'This item has been checked, so it can no longer be removed. Cancel the delivery and start a new one.' : deliveryErrorMessage(error);
-}
