@@ -43,7 +43,6 @@ Domain behavior stays in `src/modules/<module>/` — canonical components are co
 | `Chip` | `components/ui/Chip` | Tag / chip primitive with variant, onRemove, click handlers, and icons |
 | `Avatar` | `components/ui/Avatar` | User / entity avatar with status dot, image fallback, and initials hashing |
 | `Tabs` | `components/ui/Tabs` | Accessible tablist supporting keyboard arrows, badges, and variants |
-| `Menu` / `Dropdown` | `components/ui/Menu` | Accessible popover dropdown menu with divider and danger support |
 | `Badge` | `shared/components/Badge` (re-exported) | |
 | `StatusBadge` / `PriorityBadge` | `shared/components/StatusBadge` (re-exported) | Production status/priority mapping |
 | `Card` | `shared/components/Card` (re-exported) | |
@@ -125,7 +124,6 @@ Domain behavior stays in `src/modules/<module>/` — canonical components are co
 | `NotFoundState` / `AccessDenied` / `AccountLocked` / `AccountDisabled` / `SessionExpired` | `components/system` | Terminal-state screens |
 | `ConfirmDialog` | `components/system` | Destructive-action confirmation |
 | `RetryButton` | `components/system` | Standard retry affordance |
-| `ValidationSummary` | `components/system` | Form error rollup |
 | `FeatureGate` / `PermissionGate` | `components/system` | Feature-flag and RBAC conditional rendering |
 
 ## Import Rules
