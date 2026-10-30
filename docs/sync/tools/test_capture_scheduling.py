@@ -240,6 +240,8 @@ def test_capture_scheduling(django_user_model):
     call(pa, "leaves_baseline", "GET", f"{S}leaves/")
     for name, value in (("status", "Pending"), ("resource", r1), ("resource_id", r1), ("leave_type", "Vacation"), ("start_date", "2026-12-01"), ("nonsense", "1")):
         call(pa, f"leaves_by_{name}", "GET", f"{S}leaves/?{name}={value}")
+    call(pa, "leaves_by_window", "GET", f"{S}leaves/?start=2026-12-25&end=2027-01-31")
+    call(pa, "leaves_by_status_lower", "GET", f"{S}leaves/?status=pending")
     call(pa, "leaves_search_reason", "GET", f"{S}leaves/?search=Flu")
     call(pa, "leaves_search_resource", "GET", f"{S}leaves/?search=alice")
 
@@ -310,6 +312,9 @@ def test_capture_scheduling(django_user_model):
     call(pa, "events_baseline", "GET", f"{S}events/")
     for name, value in (("project_id", pid), ("project", pid), ("event_type", "Meeting"), ("status", "Scheduled"), ("start", "2026-11-05T00:00:00Z"), ("end", "2026-11-05T00:00:00Z"), ("nonsense", "1")):
         call(pa, f"events_by_{name}", "GET", f"{S}events/?{name}={value}")
+    call(pa, "events_by_window", "GET", f"{S}events/?start=2026-11-05T00:00:00Z&end=2026-11-06T00:00:00Z")
+    call(pa, "events_by_window_naive", "GET", f"{S}events/?start=2026-11-05T00:00:00")
+    call(pa, "events_by_type_lower", "GET", f"{S}events/?event_type=review%20session")
     call(pa, "events_search", "GET", f"{S}events/?search=Dailies")
     call(pa, "events_order", "GET", f"{S}events/?ordering=-start_time")
     e3 = call(pa, "events_create_for_delete", "POST", f"{S}events/", {"title": "Delete me", "start_time": "2026-11-30T10:00:00Z", "end_time": "2026-11-30T11:00:00Z"}).json().get("id")
@@ -347,6 +352,8 @@ def test_capture_scheduling(django_user_model):
     r6 = call(pa, "resources_create_for_delete", "POST", f"{S}resources/", {"name": "Delete me", "code": "DEL"}).json().get("id")
     call(ar, "resources_delete_artist", "DELETE", f"{S}resources/{r6}/")
     call(pa, "resources_delete", "DELETE", f"{S}resources/{r6}/")
+    call(pa, "resources_by_status_on_leave", "GET", f"{S}resources/?status=On%20Leave")
+    call(pa, "resources_by_status_unavailable", "GET", f"{S}resources/?status=unavailable")
     call(pa, "resources_baseline", "GET", f"{S}resources/")
     for name, value in (("resource_type", "Equipment"), ("status", "Active"), ("department", dept), ("department_id", dept), ("calendar_id", cal), ("nonsense", "1")):
         call(pa, f"resources_by_{name}", "GET", f"{S}resources/?{name}={value}")
