@@ -286,7 +286,7 @@ describe('the calendar', () => {
     const holiday = rows('holidays_list')[0];
     const [y, m] = holiday.holiday_date.split('-').map(Number);
     await goToMonthOf(holiday.holiday_date);
-    const cell = await screen.findByRole('gridcell', { name: new RegExp(`^${new Date(y, m - 1, Number(holiday.holiday_date.slice(8))).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}, [1-9]`) });
+    const cell = await screen.findByRole('button', { name: new RegExp(`^${new Date(y, m - 1, Number(holiday.holiday_date.slice(8))).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}, [1-9]`) });
     fireEvent.click(cell);
     const panel = within(screen.getByRole('region', { name: 'Selected day' }));
     expect(panel.getByText(holiday.name)).toBeTruthy();
@@ -298,7 +298,7 @@ describe('the calendar', () => {
     const mine = events.find((e) => e.project_name);
     const { calls } = mockFetch(serve);
     renderAt('/cal', manager, <Route path="/cal" element={<CalendarPage embedded projectId="p-1" projectName="Some other project" />} />);
-    await screen.findByRole('grid');
+    await screen.findByRole('table');
     await goToMonthOf(mine.start_time.slice(0, 10));
     await waitFor(() => expect(calls.some((c) => path(c).endsWith('/milestones/') && params(c).get('project_id') === 'p-1')).toBe(true));
     expect(screen.queryByText(mine.title)).toBeNull();
@@ -306,7 +306,7 @@ describe('the calendar', () => {
     // the same month for the project that owns the event does show it
     mockFetch(serve);
     renderAt('/cal', manager, <Route path="/cal" element={<CalendarPage embedded projectId="p-1" projectName={mine.project_name} />} />);
-    await screen.findByRole('grid');
+    await screen.findByRole('table');
     await goToMonthOf(mine.start_time.slice(0, 10));
     expect((await screen.findAllByText(mine.title)).length).toBeGreaterThan(0);
   });
@@ -319,13 +319,13 @@ describe('leave on the calendar', () => {
   it('the studio calendar shows who is off; a project’s calendar does not', async () => {
     mockFetch(serve);
     renderAt('/cal', manager, <Route path="/cal" element={<CalendarPage />} />);
-    await screen.findByRole('grid');
+    await screen.findByRole('table');
     await goToMonthOf(leave().start_date);
     expect((await screen.findAllByText(`${leave().resource_name} off`)).length).toBeGreaterThan(0);
     cleanup();
     mockFetch(serve);
     renderAt('/cal', manager, <Route path="/cal" element={<CalendarPage embedded projectId="p-1" projectName="Scheduling" />} />);
-    await screen.findByRole('grid');
+    await screen.findByRole('table');
     await goToMonthOf(leave().start_date);
     expect(screen.queryByText(`${leave().resource_name} off`)).toBeNull();
   });

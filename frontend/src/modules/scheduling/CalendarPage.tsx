@@ -96,44 +96,42 @@ export const CalendarPage: React.FC<{ projectName?: string; embedded?: boolean; 
       </div>
 
       <QueryBoundary isLoading={loading} error={error} onRetry={() => void Promise.all([events.refetch(), milestones.refetch(), holidays.refetch(), leaves.refetch()])} entityName="calendar">
-        <div role="grid" aria-label={label} className="rounded-lg border border-slate-800 overflow-hidden">
-          <div role="row" className="grid grid-cols-7 bg-slate-900 text-[11px] font-semibold text-slate-400">
-            {WEEKDAYS.map((d) => (
-              <div key={d} role="columnheader" className="px-2 py-1.5">
-                {d}
-              </div>
-            ))}
-          </div>
-          {weeks.map((week) => (
-            <div key={week[0]} role="row" className="grid grid-cols-7">
-              {week.map((key) => {
-                const inMonth = fromKey(key).getMonth() === cursor.month;
-                const items = days.get(key) ?? [];
-                return (
-                  <button
-                    key={key}
-                    role="gridcell"
-                    type="button"
-                    aria-label={`${formatDay(key)}, ${items.length} item${items.length === 1 ? '' : 's'}`}
-                    aria-selected={key === selected}
-                    onClick={() => setSelected(key)}
-                    className={cn('min-h-20 border-t border-l border-slate-800 p-1 text-left align-top', !inMonth && 'opacity-40', key === selected && 'bg-slate-800/60 ring-1 ring-inset ring-cyan-500/50')}
-                  >
-                    <span className={cn('text-[11px]', key === today ? 'font-bold text-cyan-300' : 'text-slate-400')}>{fromKey(key).getDate()}</span>
-                    <span className="mt-1 flex flex-col gap-0.5">
-                      {items.slice(0, 3).map((item) => (
-                        <span key={item.key} className={cn('truncate rounded border px-1 text-[10px]', KIND_STYLE[item.kind], item.muted && 'opacity-60')}>
-                          {item.title}
+        <table aria-label={label} className="w-full table-fixed border-collapse rounded-lg border border-slate-800 overflow-hidden">
+          <thead className="bg-slate-900 text-[11px] font-semibold text-slate-400">
+            <tr>
+              {WEEKDAYS.map((d) => (
+                <th key={d} scope="col" className="px-2 py-1.5 text-left font-semibold">
+                  {d}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {weeks.map((week) => (
+              <tr key={week[0]}>
+                {week.map((key) => {
+                  const inMonth = fromKey(key).getMonth() === cursor.month;
+                  const items = days.get(key) ?? [];
+                  return (
+                    <td key={key} className={cn('border-t border-l border-slate-800 p-0 align-top', !inMonth && 'opacity-40', key === selected && 'bg-slate-800/60 ring-1 ring-inset ring-cyan-500/50')}>
+                      <button type="button" aria-label={`${formatDay(key)}, ${items.length} item${items.length === 1 ? '' : 's'}`} aria-pressed={key === selected} onClick={() => setSelected(key)} className="block min-h-20 w-full p-1 text-left align-top">
+                        <span className={cn('text-[11px]', key === today ? 'font-bold text-cyan-300' : 'text-slate-400')}>{fromKey(key).getDate()}</span>
+                        <span className="mt-1 flex flex-col gap-0.5">
+                          {items.slice(0, 3).map((item) => (
+                            <span key={item.key} className={cn('truncate rounded border px-1 text-[10px]', KIND_STYLE[item.kind], item.muted && 'opacity-60')}>
+                              {item.title}
+                            </span>
+                          ))}
+                          {items.length > 3 && <span className="text-[10px] text-slate-500">+{items.length - 3} more</span>}
                         </span>
-                      ))}
-                      {items.length > 3 && <span className="text-[10px] text-slate-500">+{items.length - 3} more</span>}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          ))}
-        </div>
+                      </button>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
         <section aria-label="Selected day" className="rounded-lg border border-slate-800 bg-slate-900/60 p-3 space-y-2">
           <h2 className="text-sm font-semibold text-white">{formatDay(selected)}</h2>
