@@ -2,7 +2,7 @@ import { platformRoutes } from '@/modules/platform';
 
 import { DashboardPage } from '@/modules/dashboard';
 
-import { DeliveriesPage, DeliveryWorkspacePage } from '@/modules/deliveries';
+import { DeliveriesPage, DeliveryFormPage, DeliveryWorkspacePage, DestinationFormPage, DestinationsPage } from '@/modules/deliveries';
 
 import { DepartmentsListPage, DepartmentWorkspacePage, CreateDepartmentPage, EditDepartmentPage } from '@/modules/departments';
 
@@ -333,7 +333,17 @@ export const AppRoutes: React.FC = () => {
 
           <Route path="/deliveries" element={<DeliveriesPage />} />
 
-          <Route path="/deliveries/:id" element={<DeliveryWorkspacePage />} />
+          <Route path="/deliveries/new" element={<DeliveryFormPage />} />
+
+          <Route path="/deliveries/destinations" element={<DestinationsPage />} />
+
+          <Route path="/deliveries/destinations/new" element={<DestinationFormPage />} />
+
+          <Route path="/deliveries/destinations/:id/edit" element={<DestinationFormPage />} />
+
+          <Route path="/deliveries/:id/edit" element={<DeliveryFormPage />} />
+
+          <Route path="/deliveries/:deliveryId" element={<DeliveryWorkspacePage />} />
 
           <Route path="/reviews" element={<ReviewsPage />} />
 

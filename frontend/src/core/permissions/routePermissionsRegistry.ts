@@ -432,12 +432,17 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
     pagePermission: 'page.project.versions',
     permissions: ['version.view'],
   },
-  '/deliveries/:id': {
-    path: '/deliveries/:id',
+  '/deliveries/:deliveryId': {
+    path: '/deliveries/:deliveryId',
     name: 'Delivery Detail',
     pagePermission: 'page.project.deliveries',
     permissions: ['delivery.view'],
   },
+  '/deliveries/new': { path: '/deliveries/new', name: 'Create Delivery', permissions: ['delivery.create'] },
+  '/deliveries/:id/edit': { path: '/deliveries/:id/edit', name: 'Edit Delivery', permissions: ['delivery.update'] },
+  '/deliveries/destinations': { path: '/deliveries/destinations', name: 'Delivery Destinations', permissions: ['delivery.view'] },
+  '/deliveries/destinations/new': { path: '/deliveries/destinations/new', name: 'Create Destination', permissions: ['delivery.create'] },
+  '/deliveries/destinations/:id/edit': { path: '/deliveries/destinations/:id/edit', name: 'Edit Destination', permissions: ['delivery.update'] },
   '/shows/:showId': {
     path: '/shows/:showId',
     name: 'Show Workspace',
