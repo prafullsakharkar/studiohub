@@ -95,9 +95,9 @@ describe('system settings', () => {
     await signIn('manager');
     await systemSettingsApi.unlock(value.id);
     expect((await systemSettingsApi.update(value.id, { value: '48' })).value).toBe('48');
-    // the listing filters are ignored by the server (CR-26): the screens narrow in the browser
+    // the listing filters are honoured by the server (CR-26)
     const all = (await systemSettingsApi.list({})).results.length;
-    expect((await systemSettingsApi.list({ is_locked: 'true' })).results.length).toBe(all);
+    expect((await systemSettingsApi.list({ is_locked: 'true' })).results.length).toBeLessThan(all);
   }, 240000);
 
   it('a select definition with {value, label} choices accepts a listed value and refuses another with a 400', async () => {
@@ -120,7 +120,7 @@ describe('feature flags', () => {
     fireEvent.click(await screen.findByRole('button', { name: new RegExp(`^Enable new_review_${lc}`) }, { timeout: 20000 }));
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Enable' }));
     await waitFor(async () => expect((await featureFlagsApi.get(flag.id)).status).toBe('enabled'), { timeout: 20000 });
-    expect((await featureFlagsApi.get(flag.id)).is_enabled).toBe(false); // the actions move status only (Q-21)
+    expect((await featureFlagsApi.get(flag.id)).is_enabled).toBe(true); // is_enabled follows status (Q-21)
     cleanup();
 
     // the form: nothing is sent for a percentage the server would have accepted
@@ -147,7 +147,7 @@ describe('feature flags', () => {
 });
 
 describe('themes and tags', () => {
-  it('activating a theme leaves the others active, from the list; tags have no permission model (CR-28)', async () => {
+  it('activating a theme leaves the others active, from the list; tags are written by settings managers only (CR-28)', async () => {
     await signIn('manager');
     const a = await themesApi.create({ code: `night-${lc}`, name: `Night ${uid}`, theme_type: 'dark' });
     const b = await themesApi.create({ code: `day-${lc}`, name: `Day ${uid}`, theme_type: 'light' });
@@ -161,12 +161,16 @@ describe('themes and tags', () => {
     expect((await themesApi.get(a.id)).is_active).toBe(true);
     cleanup();
 
-    // an artist makes and deletes a system tag (the backend finding behind CR-28)
+    // an artist reads tags and writes none (CR-28); the administrator makes one and the create answers its id
+    await signIn('manager');
+    const hero = await tagsApi.create({ name: `hero-${lc}` } as never);
+    expect(hero.id).toBeTruthy();
     await signIn('artist');
-    await tagsApi.create({ name: `hero-${lc}` } as never);
-    const mine = (await tagsApi.list({ search: `hero-${lc}` })).results.find((t) => t.name === `hero-${lc}`);
-    expect(mine).toBeTruthy();
-    await tagsApi.remove(mine!.id);
+    expect((await tagsApi.list({ search: `hero-${lc}` })).results.map((t) => t.id)).toContain(hero.id);
+    await expect(tagsApi.create({ name: `mine-${lc}` } as never)).rejects.toMatchObject({ status: 403 });
+    await expect(tagsApi.remove(hero.id)).rejects.toMatchObject({ status: 403 });
+    await signIn('manager');
+    await tagsApi.remove(hero.id);
     expect((await tagsApi.list({ search: `hero-${lc}` })).results.find((t) => t.name === `hero-${lc}`)).toBeUndefined();
   }, 240000);
 });

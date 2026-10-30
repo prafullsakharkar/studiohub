@@ -3,7 +3,7 @@ import { SELECT_TYPES } from './settings';
 
 /**
  * Rules for the settings records, from docs/sync/samples/settings/_flow.json (Phase 11). The server decides again;
- * what it does not check (CR-29) is checked here before anything is sent.
+ * the server now checks it too (CR-29, applied); it is checked here first so nothing is sent.
  */
 
 // ------------------------------------------------------------------------------------------------ feature flags
@@ -21,7 +21,7 @@ export function rolloutBucket(userId: string, code: string): number {
 /**
  * Whether a flag is on for this user at this moment. The flag's `status` is the truth: `enable`, `disable` and `schedule`
  * move it. `is_enabled` is a second stored boolean that nothing moves (`enable` leaves it false; a flag created with
- * `is_enabled: true` is still `status: disabled`), so it is not read (Q-21).
+ * `is_enabled` was independent of it); the server now derives `is_enabled` from `status` (Q-21), and the client reads `status`.
  *  - enabled: on, unless the type is percentage or rollout, when the user's bucket must be under the percentage
  *    (the server does no bucketing);
  *  - scheduled: on from its start to before its end;
@@ -53,7 +53,7 @@ export const FLAG_ACTIONS: ReadonlyArray<FlagActionRule> = [
 ];
 export const flagActionsFor = (flag: Parameters<FlagActionRule['when']>[0]) => FLAG_ACTIONS.filter((a) => a.when(flag));
 
-/** The sentences the server will not give (CR-29), with the field they belong to. `undefined` is fine. */
+/** The sentences for what the server also refuses (CR-29), with the field they belong to. `undefined` is fine. */
 export function flagProblem(input: { feature_type?: string; percentage?: number | null; start_date?: string | null; end_date?: string | null }): { field: 'percentage' | 'end_date'; message: string } | undefined {
   if ((input.feature_type === 'percentage' || input.feature_type === 'rollout') && input.percentage !== undefined && input.percentage !== null && !(input.percentage >= 0 && input.percentage <= 100)) return { field: 'percentage', message: 'A percentage is between 0 and 100.' };
   if (input.start_date && input.end_date && new Date(input.end_date) <= new Date(input.start_date)) return { field: 'end_date', message: 'The end must be after the start.' };
@@ -64,7 +64,7 @@ export function flagProblem(input: { feature_type?: string; percentage?: number 
 
 export const isSelectType = (dataType: string) => (SELECT_TYPES as readonly string[]).includes(dataType);
 
-/** Why `choices` would later make a 500 (CR-27): a select needs `{value, label}` objects; other types need none. */
+/** Why the server would refuse `choices` (CR-27): a select needs `{value, label}` objects; other types need none. */
 export function choicesProblem(dataType: string, choices: unknown): string | undefined {
   if (!isSelectType(dataType)) return undefined;
   if (!Array.isArray(choices) || choices.length === 0) return 'A select needs at least one choice, as {"value": "...", "label": "..."}.';
@@ -114,7 +114,7 @@ export const isValueDeletable = (value: { is_locked: boolean }) => !value.is_loc
 
 export const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 export const isHexColor = (value: string) => HEX_COLOR.test(value);
-/** The model documents 0 = Sunday and 1 = Monday; the server accepts any number (CR-29). */
+/** The model documents 0 = Sunday and 1 = Monday; the server now refuses anything else (CR-29). */
 export const WEEK_STARTS = [
   { value: 0, label: 'Sunday' },
   { value: 1, label: 'Monday' },
