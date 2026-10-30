@@ -20,7 +20,7 @@ It seeds (each exercises a different backend rule):
   audit    a queued and a failed background job and an open error log (Phase 4)
   roles    `live-escalation` (grants project.delete, held by nobody), `live-viewer` (grants shot.view) and `live-delegate` (grants identity.role.update/view + identity.user.view)
 Writes the connection details to $SYNC_LIVE_INFO, then keeps serving
-until $SYNC_LIVE_STOP exists (or 20 minutes pass).
+until $SYNC_LIVE_STOP exists (or 20 minutes pass; $SYNC_LIVE_MINUTES changes that).
 
     cd backend
     SYNC_LIVE_INFO=/path/live.json SYNC_LIVE_STOP=/path/stop \
@@ -159,6 +159,6 @@ def test_serve(live_server, django_user_model):
     )
     print(f"LIVE_READY {live_server.url}", flush=True)
 
-    deadline = time.time() + 20 * 60
+    deadline = time.time() + float(os.environ.get("SYNC_LIVE_MINUTES", "20")) * 60
     while time.time() < deadline and not STOP.exists():
         time.sleep(0.5)
