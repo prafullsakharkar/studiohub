@@ -8,7 +8,7 @@ import { bookingsApi, leavesApi, milestonesApi, resourcesApi } from '@/api/sched
 import { AuthProvider } from '@/core/auth/AuthProvider';
 import { tokenStorage } from '@/core/auth/tokenStorage';
 import { authService } from '@/modules/auth/services/AuthService';
-import { BookingFormPage, BookingsPage, LeaveFormPage, LeavesPage, MilestonesPage, ResourcesPage, ResourceWorkspacePage, SchedulingCapacityPage } from '@/modules/scheduling_new';
+import { BookingFormPage, BookingsPage, LeaveFormPage, LeavesPage, MilestonesPage, ResourcesPage, ResourceWorkspacePage, SchedulingCapacityPage } from '@/modules/scheduling';
 import { live } from './liveBackend';
 
 /**

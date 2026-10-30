@@ -16,7 +16,7 @@ import { VendorsPage, VendorCreatePage, VendorEditPage, VendorWorkspacePage } fr
 
 import { BulkRegisterPage, PublishDestinationFormPage, PublishDestinationsPage, PublishedFileFormPage, PublishedFilePage, PublishedFilesPage, PublishFormPage, PublishingPage, PublishWorkspacePage, StorageRootFormPage, StorageRootsPage } from '@/modules/publishing';
 
-import { BookingFormPage, BookingsPage, EventFormPage, EventsPage, HolidayFormPage, HolidaysPage, LeaveFormPage, LeavesPage, MilestoneFormPage, MilestonesPage, ResourceFormPage, ResourcesPage, ResourceWorkspacePage, SchedulingCalendarPage, SchedulingCapacityPage, WorkCalendarFormPage, WorkCalendarsPage } from '@/modules/scheduling_new';
+import { BookingFormPage, BookingsPage, EventFormPage, EventsPage, HolidayFormPage, HolidaysPage, LeaveFormPage, LeavesPage, MilestoneFormPage, MilestonesPage, ResourceFormPage, ResourcesPage, ResourceWorkspacePage, SchedulingCalendarPage, SchedulingCapacityPage, WorkCalendarFormPage, WorkCalendarsPage } from '@/modules/scheduling';
 
 import { TeamsListPage, TeamWorkspacePage, CreateTeamPage, EditTeamPage } from '@/modules/teams';
 

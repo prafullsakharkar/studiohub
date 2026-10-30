@@ -1,6 +1,6 @@
 import type React from 'react';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
-import { useMilestonesListConfig } from '@/modules/scheduling_new';
+import { useMilestonesListConfig } from '@/modules/scheduling';
 import { SchedulePanel } from '../../structure/panels';
 
 interface Props {
