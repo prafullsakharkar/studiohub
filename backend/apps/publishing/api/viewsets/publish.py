@@ -12,6 +12,7 @@ from apps.core.api.pagination import StandardPagination
 from apps.core.api.viewsets.platform_crud import PlatformCrudViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
+from apps.publishing.api.filtersets.publish import PublishFilterSet
 from apps.publishing.api.serializers.publish import (
     PublishCreateSerializer,
     PublishDetailSerializer,
@@ -25,6 +26,8 @@ from apps.publishing.api.serializers.publish import (
     frontend_result_status,
 )
 from apps.publishing.constants.permissions import PublishPermissions
+from apps.publishing.exceptions import JobHasFiles, JobNotEditable
+from apps.publishing.models import PublishedFile, PublishItem
 from apps.publishing.selectors.publish import PublishSelector
 from apps.publishing.services.publish import (
     republish,
@@ -33,6 +36,9 @@ from apps.publishing.services.publish import (
     validate_publish,
 )
 from apps.publishing.services.workflow import JobService
+
+#: The only statuses a job can be deleted in (CR-23).
+DELETABLE_JOB_STATUSES = frozenset({PublishItem.STATUS_PENDING, PublishItem.STATUS_CANCELLED})
 
 
 @extend_schema_view(
@@ -70,8 +76,18 @@ class PublishingViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTy
         "fail": (PublishPermissions.UPDATE,),
     }
 
+    filterset_class = PublishFilterSet
     search_fields = ("name", "code", "entity_code", "entity_name")
     ordering_fields = ("name", "created_at", "status")
+
+    def perform_destroy(self, instance):
+        # A job is the record of an export. Only one that never ran or was cancelled goes, and never one that
+        # produced registered files (CR-23).
+        if instance.status not in DELETABLE_JOB_STATUSES:
+            raise JobNotEditable("Only a Pending or a Cancelled export job can be deleted.")
+        if PublishedFile.objects.filter(export_job=instance).exists():
+            raise JobHasFiles()
+        super().perform_destroy(instance)
 
     def update(self, request, *args, **kwargs):
         """Edit a job's details (only while it is Pending or Failed); answers with the detail shape."""
