@@ -7,9 +7,9 @@ import { resourceApi } from '@/api/masterdata/resource';
  * backend-change-requests.md, "Phase 10 findings"; the backend's own contracts are docs/scheduling/CONTRACTS.md).
  *
  * Rules the capture established:
- *  - every list is a bare array (one page), and the server filters almost nothing (CR-25): only `search`,
- *    `ordering`, bookings `start`/`end`, holidays `calendar_id` and milestones `project_id` (a uuid) work, so the
- *    screens narrow the array in the browser (`narrow` in `schedulingFlow.ts`);
+ *  - every list is a bare array (one page); each filters on the parameters named in docs/scheduling/CONTRACTS.md §12
+ *    (API-SCH-15): words in any case, ids under both spellings (`resource` / `resource_id`), windows as `start` / `end`
+ *    (date-times with a zone for bookings and events, days for leave);
  *  - date-times carry a zone (`Z` or an offset), a naive one is a 400; leave, holidays and milestones use plain days;
  *  - a pay rate (`hourly_rate_usd`) and the user's e-mail are `null` / "" unless the caller holds
  *    `schedule.view_rates` or the resource is their own;
@@ -258,12 +258,14 @@ export interface CalendarEventRow {
   is_all_day: boolean;
   location: string;
   meeting_url: string;
-  /** The row has the project's name but not its id (CR-25); the detail has both. */
+  /** Null for an event without a project. */
+  project_id: string | null;
   project_name: string;
   created_at: string;
   updated_at: string;
 }
-export interface CalendarEvent extends CalendarEventRow {
+/** The detail names the project `project`; the row names it `project_id`. */
+export interface CalendarEvent extends Omit<CalendarEventRow, 'project_id'> {
   project: string | null;
   notes: string;
   metadata: Record<string, unknown>;

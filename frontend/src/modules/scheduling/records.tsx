@@ -9,7 +9,6 @@ import { DepartmentPicker, OfficePicker, TeamPicker } from '@/modules/directory/
 import type { DirectoryFormConfig, DirectoryListConfig, FieldDef, RowAction } from '@/modules/directory/types';
 import { ProjectPicker } from '@/modules/production/work/pickers';
 import { Badge } from '@/shared/components/Badge';
-import { withClientFilters } from '@/shared/data/clientFilters';
 import { formatDay, formatMoment, formatRange, formatRate } from './format';
 import { CalendarPicker, ResourcePicker, UserPicker } from './pickers';
 
@@ -34,12 +33,7 @@ export function useResourcesListConfig(): DirectoryListConfig<ResourceRow> {
     noun: 'resource',
     subtitle: 'The people, equipment and rooms that can be booked. A person shows as On Leave while an approved leave covers today.',
     queryKey: resourcesApi.keys.lists(),
-    fetchPage: withClientFilters(resourcesApi.list, {
-      resource_type: (row, value) => row.resource_type === value,
-      status: (row, value) => row.status === value,
-      department_id: (row, value) => row.department === value,
-      calendar_id: (row, value) => row.calendar === value,
-    }),
+    fetchPage: resourcesApi.list,
     remove: resourcesApi.remove,
     deleteLabel: 'Delete',
     deletePermission: 'schedule.delete',
@@ -107,10 +101,7 @@ export function useBookingsListConfig(scope?: { resourceId: string }): Directory
     noun: 'booking',
     subtitle: 'Time slots of resources. Two Booked, Blocked or Overbooked slots of one resource cannot overlap; an Available slot never conflicts.',
     queryKey: bookingsApi.keys.lists(),
-    fetchPage: withClientFilters(bookingsApi.list, {
-      resource_id: (row, value) => row.resource === value,
-      status: (row, value) => row.status === value,
-    }),
+    fetchPage: bookingsApi.list,
     remove: bookingsApi.remove,
     deleteLabel: 'Delete',
     deletePermission: 'schedule.delete',
@@ -188,11 +179,7 @@ export function useLeavesListConfig(): DirectoryListConfig<Leave> {
     noun: 'leave request',
     subtitle: 'Time off. A request starts Pending and is decided by someone with approval rights, never by the person it is for. Days count the working days of the person’s calendar.',
     queryKey: leavesApi.keys.lists(),
-    fetchPage: withClientFilters(leavesApi.list, {
-      status: (row, value) => row.status === value,
-      resource_id: (row, value) => row.resource === value,
-      leave_type: (row, value) => row.leave_type === value,
-    }),
+    fetchPage: leavesApi.list,
     remove: leavesApi.remove,
     deleteLabel: 'Delete',
     deletePermission: 'schedule.delete',
@@ -357,11 +344,7 @@ export function useMilestonesListConfig(scope?: { projectId: string }): Director
     noun: 'milestone',
     subtitle: 'Dates a project is held to. Completing and reopening are their own actions; a delivery milestone points at a delivery.',
     queryKey: milestonesApi.keys.lists(),
-    // The project filter by id is the one the server honours; status and kind are narrowed here (CR-25).
-    fetchPage: withClientFilters(milestonesApi.list, {
-      status: (row, value) => row.status === value,
-      kind: (row, value) => row.kind === value,
-    }),
+    fetchPage: milestonesApi.list,
     remove: milestonesApi.remove,
     deleteLabel: 'Delete',
     deletePermission: 'schedule.delete',
@@ -410,7 +393,7 @@ export const milestoneFormConfig: DirectoryFormConfig<Milestone> = {
 
 // -------------------------------------------------------------------------------------------- events
 
-export function useEventsListConfig(scope?: { projectName: string }): DirectoryListConfig<CalendarEventRow> {
+export function useEventsListConfig(scope?: { projectId: string }): DirectoryListConfig<CalendarEventRow> {
   const canUpdate = useCan('schedule.update');
   const rowActions = (row: CalendarEventRow): RowAction[] =>
     canUpdate
@@ -421,13 +404,7 @@ export function useEventsListConfig(scope?: { projectName: string }): DirectoryL
     noun: 'event',
     subtitle: 'Meetings, deadlines, reviews and work blocks. Private events are seen by their owner only.',
     queryKey: eventsApi.keys.lists(),
-    fetchPage: withClientFilters(eventsApi.list, {
-      event_type: (row, value) => row.event_type === value,
-      status: (row, value) => row.status === value,
-      visibility: (row, value) => row.visibility === value,
-      // The row has the project's name but not its id (CR-25).
-      project_name: (row, value) => row.project_name === value,
-    }),
+    fetchPage: eventsApi.list,
     remove: eventsApi.remove,
     deleteLabel: 'Delete',
     deletePermission: 'schedule.delete',
@@ -440,8 +417,10 @@ export function useEventsListConfig(scope?: { projectName: string }): DirectoryL
     searchPlaceholder: 'Search title, description, location',
     basePath: '/scheduling/events',
     rowLink: () => null,
-    scope: scope ? { project_name: scope.projectName } : undefined,
+    scope: scope ? { project_id: scope.projectId } : undefined,
+    createQuery: scope ? `project_id=${scope.projectId}` : undefined,
     filters: [
+      ...(scope ? [] : [projectFilter]),
       { key: 'event_type', label: 'Type', options: options(EVENT_TYPES) },
       { key: 'status', label: 'Status', options: options(EVENT_STATUSES) },
       { key: 'visibility', label: 'Visibility', options: options(EVENT_VISIBILITIES) },

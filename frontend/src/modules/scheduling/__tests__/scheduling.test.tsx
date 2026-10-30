@@ -75,14 +75,14 @@ describe('resources', () => {
     expect(screen.queryByRole('columnheader', { name: 'Rate' })).toBeNull();
   });
 
-  it('narrows by type in the browser and does not send the filter (the server ignores it, CR-25)', async () => {
+  it('asks the server for the chosen type and status (CR-25)', async () => {
     const { calls } = mockFetch(() => bare(list()));
     renderAt('/r', manager, route);
     await screen.findByText(/RN1 · Render node 1/);
     fireEvent.change(screen.getByLabelText('Filter by type'), { target: { value: 'Equipment' } });
-    await waitFor(() => expect(screen.queryByText(/ALICE · Alice Artist/)).toBeNull());
-    expect(screen.getByText(/RN1 · Render node 1/)).toBeTruthy();
-    expect(calls.some((c) => params(c).has('resource_type'))).toBe(false);
+    await waitFor(() => expect(calls.some((c) => params(c).get('resource_type') === 'Equipment')).toBe(true));
+    fireEvent.change(screen.getByLabelText('Filter by status'), { target: { value: 'On Leave' } });
+    await waitFor(() => expect(calls.some((c) => params(c).get('status') === 'On Leave')).toBe(true));
   });
 
   it('New needs schedule.manage; delete needs schedule.delete', async () => {
@@ -270,6 +270,18 @@ async function goToMonthOf(day: string) {
   for (let i = 0; i < Math.abs(steps); i++) fireEvent.click(await screen.findByRole('button', { name: steps > 0 ? 'Next month' : 'Previous month' }));
 }
 
+describe('a project’s events', () => {
+  it('are asked for by project id, with no project filter of their own, and a new event opens pre-filled', async () => {
+    const { calls } = mockFetch(() => bare(rows('events_list')));
+    const Scoped = () => <DirectoryListPage config={useEventsListConfig({ projectId: 'p-9' })} />;
+    renderAt('/e', manager, <Route path="/e" element={<Scoped />} />);
+    await screen.findByText('Dailies');
+    expect(calls.some((c) => path(c) === '/api/v1/scheduling/events/' && params(c).get('project_id') === 'p-9')).toBe(true);
+    expect(screen.queryByLabelText('Filter by project')).toBeNull();
+    expect(screen.getByRole('link', { name: /new event/i }).getAttribute('href')).toContain('project_id=p-9');
+  });
+});
+
 describe('the calendar', () => {
   const serve = (c: MockCall): MockReply => {
     const p = path(c);
@@ -293,22 +305,28 @@ describe('the calendar', () => {
     expect(panel.getByText('Holiday')).toBeTruthy();
   });
 
-  it('a project’s calendar leaves out other projects’ events and all leave', async () => {
-    const events = rows('events_list');
-    const mine = events.find((e) => e.project_name);
+  it('asks the server for the grid’s window; a project’s calendar also asks for its project, and shows no leave', async () => {
+    const mine = rows('events_list')[0];
     const { calls } = mockFetch(serve);
-    renderAt('/cal', manager, <Route path="/cal" element={<CalendarPage embedded projectId="p-1" projectName="Some other project" />} />);
+    renderAt('/cal', manager, <Route path="/cal" element={<CalendarPage embedded projectId="p-1" />} />);
     await screen.findByRole('table');
     await goToMonthOf(mine.start_time.slice(0, 10));
-    await waitFor(() => expect(calls.some((c) => path(c).endsWith('/milestones/') && params(c).get('project_id') === 'p-1')).toBe(true));
-    expect(screen.queryByText(mine.title)).toBeNull();
+    await waitFor(() => expect(calls.some((c) => path(c).endsWith('/events/') && params(c).get('project_id') === 'p-1')).toBe(true));
+    const asked = calls.filter((c) => path(c).endsWith('/events/')).pop()!;
+    const start = new Date(params(asked).get('start')!);
+    const end = new Date(params(asked).get('end')!);
+    const at = new Date(mine.start_time);
+    expect(start <= at && at < end).toBe(true); // the window the grid shows holds the month asked for
+    expect(end >= new Date(at.getFullYear(), at.getMonth() + 1, 1)).toBe(true); // all of it, up to the Sunday after the month
+    expect(params(asked).get('start')).toMatch(/Z$/); // a zone, or the server answers 400
+    expect(calls.some((c) => path(c).endsWith('/milestones/') && params(c).get('project_id') === 'p-1')).toBe(true);
     cleanup();
-    // the same month for the project that owns the event does show it
-    mockFetch(serve);
-    renderAt('/cal', manager, <Route path="/cal" element={<CalendarPage embedded projectId="p-1" projectName={mine.project_name} />} />);
+    // the studio calendar asks for no project
+    const studio = mockFetch(serve);
+    renderAt('/cal', manager, <Route path="/cal" element={<CalendarPage />} />);
     await screen.findByRole('table');
-    await goToMonthOf(mine.start_time.slice(0, 10));
-    expect((await screen.findAllByText(mine.title)).length).toBeGreaterThan(0);
+    await waitFor(() => expect(studio.calls.some((c) => path(c).endsWith('/events/'))).toBe(true));
+    expect(studio.calls.filter((c) => path(c).endsWith('/events/')).every((c) => !params(c).has('project_id'))).toBe(true);
   });
 });
 
@@ -324,9 +342,12 @@ describe('leave on the calendar', () => {
     expect((await screen.findAllByText(`${leave().resource_name} off`)).length).toBeGreaterThan(0);
     cleanup();
     mockFetch(serve);
-    renderAt('/cal', manager, <Route path="/cal" element={<CalendarPage embedded projectId="p-1" projectName="Scheduling" />} />);
+    const project = mockFetch(serve);
+    renderAt('/cal', manager, <Route path="/cal" element={<CalendarPage embedded projectId="p-1" />} />);
     await screen.findByRole('table');
     await goToMonthOf(leave().start_date);
+    await waitFor(() => expect(project.calls.some((c) => path(c).endsWith('/leaves/'))).toBe(true));
+    await new Promise((resolve) => setTimeout(resolve, 50)); // let the answer land: a negative needs it
     expect(screen.queryByText(`${leave().resource_name} off`)).toBeNull();
   });
 });
@@ -377,11 +398,12 @@ describe('resource workspace', () => {
     expect(screen.queryByRole('link', { name: 'Book time' })).toBeNull();
   });
 
-  it('the Bookings tab asks for this resource’s bookings only', async () => {
+  it('the Bookings and Leave tabs ask the server for this resource only', async () => {
     const { calls } = open(manager);
     await screen.findByRole('heading', { name: new RegExp(resource().code) });
     fireEvent.click(screen.getByRole('tab', { name: 'Bookings' }));
-    await waitFor(() => expect(calls.some((c) => path(c) === '/api/v1/scheduling/schedules/')).toBe(true));
-    expect(calls.filter((c) => path(c) === '/api/v1/scheduling/schedules/').every((c) => !params(c).has('resource_id'))).toBe(true); // narrowed here, not by the server
+    await waitFor(() => expect(calls.some((c) => path(c) === '/api/v1/scheduling/schedules/' && params(c).get('resource_id') === resource().id)).toBe(true));
+    fireEvent.click(screen.getByRole('tab', { name: 'Leave' }));
+    await waitFor(() => expect(calls.some((c) => path(c) === '/api/v1/scheduling/leaves/' && params(c).get('resource_id') === resource().id)).toBe(true));
   });
 });

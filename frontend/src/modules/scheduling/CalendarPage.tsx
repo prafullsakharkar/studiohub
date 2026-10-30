@@ -23,9 +23,10 @@ const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 /**
  * The studio calendar for a month: events, project milestones, holidays and leave that is approved or pending.
- * Every list is a bare array, so a month is drawn from the full lists (the server cannot filter them by date, CR-25).
+ * Events are asked for by the window the grid shows (and by project on a project's calendar); milestones by project;
+ * holidays and leave are the full (small) lists.
  */
-export const CalendarPage: React.FC<{ projectName?: string; embedded?: boolean; projectId?: string }> = ({ projectName, projectId, embedded }) => {
+export const CalendarPage: React.FC<{ embedded?: boolean; projectId?: string }> = ({ projectId, embedded }) => {
   const canCreateEvent = useCan('schedule.create');
   const today = dayKey(new Date());
   const [cursor, setCursor] = useState(() => {
@@ -34,7 +35,16 @@ export const CalendarPage: React.FC<{ projectName?: string; embedded?: boolean; 
   });
   const [selected, setSelected] = useState(today);
 
-  const events = useQuery({ queryKey: [...eventsApi.keys.lists(), 'calendar'], queryFn: () => eventsApi.list({}).then((p) => p.results) });
+  const weeks = monthGrid(cursor.year, cursor.month);
+  // The grid starts on a Monday of the previous month and runs to the Sunday after: ask for exactly that window.
+  const windowStart = fromKey(weeks[0][0]);
+  const windowEnd = fromKey(weeks[weeks.length - 1][6]);
+  const from = new Date(windowStart.getFullYear(), windowStart.getMonth(), windowStart.getDate()).toISOString();
+  const to = new Date(windowEnd.getFullYear(), windowEnd.getMonth(), windowEnd.getDate() + 1).toISOString();
+  const events = useQuery({
+    queryKey: [...eventsApi.keys.lists(), 'calendar', projectId ?? '', from, to],
+    queryFn: () => eventsApi.list({ start: from, end: to, ...(projectId ? { project_id: projectId } : {}) }).then((p) => p.results),
+  });
   const milestones = useQuery({ queryKey: [...milestonesApi.keys.lists(), 'calendar', projectId ?? ''], queryFn: () => milestonesApi.list(projectId ? { project_id: projectId } : {}).then((p) => p.results) });
   const holidays = useQuery({ queryKey: [...holidaysApi.keys.lists(), 'calendar'], queryFn: () => holidaysApi.list({}).then((p) => p.results) });
   const leaves = useQuery({ queryKey: [...leavesApi.keys.lists(), 'calendar'], queryFn: () => leavesApi.list({}).then((p) => p.results) });
@@ -42,15 +52,13 @@ export const CalendarPage: React.FC<{ projectName?: string; embedded?: boolean; 
   const days = useMemo(
     () =>
       itemsByDay({
-        // A project's calendar shows its events only; the row has the name, not the id (CR-25).
-        events: (events.data ?? []).filter((e) => !projectName || e.project_name === projectName),
+        events: events.data ?? [],
         milestones: milestones.data ?? [],
         holidays: holidays.data ?? [],
-        leaves: projectName ? [] : (leaves.data ?? []),
+        leaves: projectId ? [] : (leaves.data ?? []),
       }),
-    [events.data, milestones.data, holidays.data, leaves.data, projectName]
+    [events.data, milestones.data, holidays.data, leaves.data, projectId]
   );
-  const weeks = monthGrid(cursor.year, cursor.month);
   const label = new Date(cursor.year, cursor.month, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
   const move = (delta: number) => setCursor((c) => ({ year: new Date(c.year, c.month + delta, 1).getFullYear(), month: new Date(c.year, c.month + delta, 1).getMonth() }));
   const loading = events.isLoading || milestones.isLoading || holidays.isLoading || leaves.isLoading;
@@ -62,7 +70,7 @@ export const CalendarPage: React.FC<{ projectName?: string; embedded?: boolean; 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           {!embedded && <h1 className="text-xl font-bold text-white tracking-tight">Calendar</h1>}
-          <p className="text-xs text-slate-400">{projectName ? `${projectName}: its events and milestones.` : 'Events, milestones, holidays and leave. Times are shown in your time zone.'}</p>
+          <p className="text-xs text-slate-400">{projectId ? 'This project’s events and milestones.' : 'Events, milestones, holidays and leave. Times are shown in your time zone.'}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" aria-label="Previous month" onClick={() => move(-1)}>

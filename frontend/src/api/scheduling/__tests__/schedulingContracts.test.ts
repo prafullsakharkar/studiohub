@@ -80,6 +80,14 @@ describe('resources', () => {
     expect(items('resources_order_rate_admin').slice(0, 2).map((r) => r.code)).toEqual(['BOB', 'ALICE']);
     expect(items('resources_order_rate_artist').slice(0, 2).map((r) => r.code)).not.toEqual(['BOB', 'ALICE']);
   });
+  it('the list filters by type, status (as shown, so On Leave follows approved leave), calendar and department (CR-25)', () => {
+    const all = count('resources_baseline');
+    expect(count('resources_by_resource_type')).toBeLessThan(all);
+    expect(count('resources_by_status_on_leave')).toBe(1);
+    expect(count('resources_by_status_unavailable')).toBe(1);
+    expect(count('resources_by_calendar_id')).toBeLessThan(all);
+    expect(count('resources_by_nonsense')).toBe(all);
+  });
   it('is created by schedule.manage only, and the create answers with the fields that were sent', () => {
     expect(flow.resources_create.status).toBe(201);
     expect(flow.resources_create_artist.status).toBe(403);
@@ -124,11 +132,15 @@ describe('bookings', () => {
     expect(flow.resources_block.body.status).toBe('Blocked');
     expect(flow.resources_block.body.notes).toBe('Maintenance');
   });
-  it('the list takes a start/end window, answers a bad one with a bare list, and ignores every other filter (CR-25)', () => {
+  it('the list filters by resource (both spellings), status and a start/end window; a bad window names its parameter (CR-25)', () => {
     expect(count('schedules_window')).toBeLessThan(count('schedules_baseline'));
     expect(flow.schedules_window_bad.status).toBe(400);
-    expect(Array.isArray(flow.schedules_window_bad.body) || flow.schedules_window_bad.body._bare_list).toBeTruthy();
-    for (const key of ['schedules_by_resource', 'schedules_by_resource_id', 'schedules_by_status', 'schedules_by_nonsense']) expect(count(key)).toBe(count('schedules_baseline'));
+    expect(flow.schedules_window_bad.body.start[0]).toMatch(/ISO 8601/);
+    expect(flow.schedules_window_naive.body.start[0]).toMatch(/Send the time zone too/);
+    expect(count('schedules_by_resource')).toBe(count('schedules_by_resource_id'));
+    expect(count('schedules_by_resource')).toBeLessThan(count('schedules_baseline'));
+    expect(count('schedules_by_status')).toBeLessThan(count('schedules_baseline'));
+    expect(count('schedules_by_nonsense')).toBe(count('schedules_baseline')); // an unknown parameter is still ignored
   });
   it('searching finds the resource, not the notes', () => {
     expect(count('schedules_search_resource')).toBeGreaterThan(0);
@@ -195,8 +207,11 @@ describe('leave', () => {
     expect(reasons('leaves_list_manager')).toMatchObject({ ALICE: 'Holiday trip', BOB: 'Flu' });
     expect(count('leaves_search_reason')).toBe(0);
   });
-  it('the list filters nothing (CR-25)', () => {
-    for (const key of ['leaves_by_status', 'leaves_by_resource', 'leaves_by_resource_id', 'leaves_by_leave_type', 'leaves_by_start_date', 'leaves_by_nonsense']) expect(count(key)).toBe(count('leaves_baseline'));
+  it('the list filters by status (any case), type, resource and a day window (CR-25)', () => {
+    for (const key of ['leaves_by_status', 'leaves_by_resource', 'leaves_by_resource_id', 'leaves_by_leave_type', 'leaves_by_window']) expect(count(key)).toBeLessThan(count('leaves_baseline'));
+    expect(count('leaves_by_status_lower')).toBe(count('leaves_by_status'));
+    expect(count('leaves_by_nonsense')).toBe(count('leaves_baseline'));
+    expect(count('leaves_by_start_date')).toBe(count('leaves_baseline')); // `start_date` is not a filter: `start` is
   });
 });
 
@@ -260,12 +275,13 @@ describe('milestones', () => {
   it('a status sent on create is ignored (it is always Pending)', () => {
     expect(flow.milestones_create_completed.body.status).toBe('Pending');
   });
-  it('a stranger sees none and 404s on one; only the project filter by id works (CR-25)', () => {
+  it('a stranger sees none and 404s on one; the list filters by status, kind and project, by id or by code (CR-25)', () => {
     expect(count('milestones_list_stranger')).toBe(0);
     expect(flow.milestones_detail_stranger.status).toBe(404);
-    expect(count('milestones_by_project_id')).toBe(count('milestones_baseline'));
-    expect(count('milestones_by_project_code')).toBe(0); // the code spelling answers nothing
-    for (const key of ['milestones_by_status', 'milestones_by_kind', 'milestones_by_project', 'milestones_by_nonsense']) expect(count(key)).toBe(count('milestones_baseline'));
+    for (const key of ['milestones_by_project_id', 'milestones_by_project', 'milestones_by_project_code']) expect(count(key)).toBe(count('milestones_baseline'));
+    expect(count('milestones_by_status')).toBeLessThan(count('milestones_baseline'));
+    expect(count('milestones_by_kind')).toBe(0); // no delivery milestone was made
+    expect(count('milestones_by_nonsense')).toBe(count('milestones_baseline'));
   });
   it('the project schedule route lists the milestones', () => {
     expect(flow.projects_schedule_route.body.milestones.length).toBeGreaterThan(0);
@@ -296,10 +312,14 @@ describe('events', () => {
     expect(items('events_list_stranger').map((e) => e.visibility)).toEqual(['Organization']);
     expect(flow.events_detail_private_stranger.status).toBe(404);
   });
-  it('the row carries the project name but no id; the detail has both; the list filters nothing (CR-25)', () => {
-    expect(items('events_list')[0]).not.toHaveProperty('project');
-    expect(flow.events_detail.body.project).toBeTruthy();
-    for (const key of ['events_by_project_id', 'events_by_event_type', 'events_by_status', 'events_by_start', 'events_by_end', 'events_by_nonsense']) expect(count(key)).toBe(count('events_baseline'));
+  it('the row carries the project id and name; the list filters by project, type, status and a window (CR-25)', () => {
+    expect(items('events_list')[0].project_id).toBe(flow.events_detail.body.project);
+    for (const key of ['events_by_project_id', 'events_by_project', 'events_by_event_type', 'events_by_status', 'events_by_start', 'events_by_end']) expect(count(key)).toBeLessThan(count('events_baseline'));
+    expect(count('events_by_window')).toBe(0);
+    expect(count('events_by_type_lower')).toBe(count('events_by_event_type'));
+    expect(flow.events_by_window_naive.status).toBe(400);
+    expect(flow.events_by_window_naive.body.start[0]).toMatch(/Send the time zone too/);
+    expect(count('events_by_nonsense')).toBe(count('events_baseline'));
     expect(count('events_search')).toBeLessThan(count('events_baseline'));
   });
 });
@@ -327,7 +347,7 @@ describe('capacity and overbooking', () => {
     expect(flow.resolve_artist.status).toBe(403);
     expect(flow.resolve_empty.body.alert_id).toEqual(['This field is required.']);
     expect(flow.resolve_unknown_key.body.nope).toEqual(['Unknown field.']);
-    expect(flow.resolve_unknown_alert.status).toBe(400);
+    expect(flow.resolve_unknown_alert.body.detail).toBe('Unknown overbooking alert.');
     expect(flow.resolve_get.status).toBe(403);
   });
 });

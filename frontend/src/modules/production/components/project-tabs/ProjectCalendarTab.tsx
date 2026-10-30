@@ -7,8 +7,5 @@ interface ProjectCalendarTabProps {
   onNavigateTab?: (tabId: string) => void;
 }
 
-/**
- * The project's month: its milestones (filtered by the server) and its events. An event row carries the project's name
- * but not its id (CR-25), so events are matched by name until the row has the id.
- */
-export const ProjectCalendarTab: React.FC<ProjectCalendarTabProps> = ({ project }) => <CalendarPage embedded projectId={project.id} projectName={project.name} />;
+/** The project's month: its milestones and its events, both filtered by the server (leave is studio-wide and is not shown). */
+export const ProjectCalendarTab: React.FC<ProjectCalendarTabProps> = ({ project }) => <CalendarPage embedded projectId={project.id} />;
