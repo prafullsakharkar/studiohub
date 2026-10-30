@@ -188,9 +188,13 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
                   {config.columns.map((column, index) => (
                     <td key={column.header} className="px-4 py-2 text-slate-300">
                       {index === 0 ? (
-                        <Link to={config.rowLink ? config.rowLink(row) : `${config.basePath}/${row.id}`} className="font-semibold text-cyan-300 hover:underline">
-                          {column.cell(row)}
-                        </Link>
+                        (config.rowLink ? config.rowLink(row) : `${config.basePath}/${row.id}`) === null ? (
+                          <span className="font-semibold text-slate-100">{column.cell(row)}</span>
+                        ) : (
+                          <Link to={(config.rowLink ? config.rowLink(row) : `${config.basePath}/${row.id}`) as string} className="font-semibold text-cyan-300 hover:underline">
+                            {column.cell(row)}
+                          </Link>
+                        )
                       ) : (
                         column.cell(row)
                       )}
