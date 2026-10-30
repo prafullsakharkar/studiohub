@@ -26,6 +26,14 @@ STATUS_OUTPUT_MAP = {
 }
 
 
+def person_name(user) -> str:
+    """The person's display name, else their email; empty when there is nobody (a system move)."""
+    if user is None:
+        return ""
+    profile = getattr(user, "profile", None)
+    return (getattr(profile, "display_name", "") if profile else "") or getattr(user, "email", "")
+
+
 def derived_totals(package) -> tuple[int, int]:
     """Total bytes and frames, summed from the items' snapshots (the stored columns are deprecated)."""
     refs = list(package.versions.all())
@@ -145,6 +153,8 @@ class DeliveryDetailSerializer(serializers.ModelSerializer[DeliveryPackage]):
     total_frames = serializers.SerializerMethodField()
     # The passcode is never returned (DLV-01). Whether one is set is.
     has_passcode = serializers.SerializerMethodField()
+    signed_off_by_name = serializers.SerializerMethodField()
+    client_answered_by_name = serializers.SerializerMethodField()
 
     def get_status(self, obj):
         return STATUS_OUTPUT_MAP.get(obj.status, obj.status)
@@ -154,6 +164,12 @@ class DeliveryDetailSerializer(serializers.ModelSerializer[DeliveryPackage]):
 
     def get_total_frames(self, obj) -> int:
         return derived_totals(obj)[1]
+
+    def get_signed_off_by_name(self, obj) -> str:
+        return person_name(obj.signed_off_by)
+
+    def get_client_answered_by_name(self, obj) -> str:
+        return person_name(obj.client_answered_by)
 
     def get_has_passcode(self, obj) -> bool:
         return bool(obj.passcode)
@@ -203,8 +219,10 @@ class DeliveryDetailSerializer(serializers.ModelSerializer[DeliveryPackage]):
             "sent_at",
             "transfer_reference",
             "signed_off_by",
+            "signed_off_by_name",
             "signed_off_at",
             "client_answered_by",
+            "client_answered_by_name",
             "client_answered_at",
             "cancellation_reason",
             "rejection_reason",
@@ -478,9 +496,14 @@ class DeliveryReviseSerializer(serializers.Serializer[Any]):
 class DeliveryStatusChangeSerializer(serializers.ModelSerializer[DeliveryStatusChange]):
     """One row of a delivery's status history."""
 
+    actor_name = serializers.SerializerMethodField()
+
+    def get_actor_name(self, obj) -> str:
+        return person_name(obj.actor)
+
     class Meta:
         model = DeliveryStatusChange
-        fields = ("id", "from_status", "to_status", "actor", "reason", "override_kind", "at")
+        fields = ("id", "from_status", "to_status", "actor", "actor_name", "reason", "override_kind", "at")
         read_only_fields = fields
 
 
@@ -488,8 +511,12 @@ class DeliveryQCCheckSerializer(serializers.ModelSerializer[DeliveryQCCheck]):
     """One check of a QC run."""
 
     item = serializers.UUIDField(source="item.uid", read_only=True, default=None)
+    checked_by_name = serializers.SerializerMethodField()
+
+    def get_checked_by_name(self, obj) -> str:
+        return person_name(obj.checked_by)
 
     class Meta:
         model = DeliveryQCCheck
-        fields = ("run_id", "item", "check_name", "outcome", "detail", "checked_by", "checked_at")
+        fields = ("run_id", "item", "check_name", "outcome", "detail", "checked_by", "checked_by_name", "checked_at")
         read_only_fields = fields

@@ -17,6 +17,7 @@ from apps.audit.services.background_job import BackgroundJobService
 from apps.core.api.pagination import StandardPagination
 from apps.core.api.viewsets.platform_crud import PlatformCrudViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
+from apps.deliveries.api.filtersets.delivery import DeliveryFilterSet
 from apps.deliveries.api.serializers.delivery import (
     STATUS_OUTPUT_MAP,
     DeliveryAddVersionSerializer,
@@ -42,7 +43,12 @@ from apps.deliveries.api.serializers.delivery import (
     DeliveryValidateSerializer,
 )
 from apps.deliveries.constants.permissions import DeliveryPermissions
-from apps.deliveries.exceptions import InvalidTransition, TransitionNotPermitted
+from apps.deliveries.constants.workflow import DELETABLE_STATUSES
+from apps.deliveries.exceptions import (
+    DeliveryNotEditable,
+    InvalidTransition,
+    TransitionNotPermitted,
+)
 from apps.deliveries.models import DeliveryQCCheck
 from apps.deliveries.selectors.delivery import DeliverySelector
 from apps.deliveries.services.delivery import (
@@ -95,8 +101,16 @@ class DeliveryViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingType
         "passcode": (DeliveryPermissions.VIEW_SECRET,),
     }
 
+    filterset_class = DeliveryFilterSet
     search_fields = ("name", "code", "client__name")
     ordering_fields = ("name", "created_at", "status")
+
+    def perform_destroy(self, instance):
+        # A delivery that was sent is the record of what the client received (SEC-DLV-04): only a draft that
+        # never left, or one that was cancelled, can be deleted (CR-18).
+        if instance.status not in DELETABLE_STATUSES:
+            raise DeliveryNotEditable("Only a Draft or a Cancelled delivery can be deleted.")
+        super().perform_destroy(instance)
 
     @staticmethod
     def _frontend_result(result):
@@ -399,7 +413,7 @@ class DeliveryViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingType
     def history(self, request, *args, **kwargs):
         """Every status change of the delivery, oldest first."""
         delivery = self.get_object()
-        rows = delivery.status_changes.all()
+        rows = delivery.status_changes.select_related("actor__profile")
         return Response(DeliveryStatusChangeSerializer(rows, many=True).data)
 
     @extend_schema(request=None, responses={200: DeliveryQCCheckSerializer(many=True)})
@@ -410,7 +424,7 @@ class DeliveryViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingType
         rows = (
             DeliveryQCCheck.objects.filter(
                 delivery=delivery, run_id=delivery.qc_run_id
-            ).select_related("item")
+            ).select_related("item", "checked_by__profile")
             if delivery.qc_run_id
             else DeliveryQCCheck.objects.none()
         )

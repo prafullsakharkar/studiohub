@@ -347,3 +347,17 @@ one-live-default constraint (it replaces the case-sensitive name constraint); st
 * Sign-off, send and the passcode need the new codes: re-run `manage.py init_platform` so the seeded
   roles hold them.
 
+
+## 11. Frontend sync, Phase 8 (CR-17 to CR-21)
+
+Found while wiring the screens to the running backend (`docs/sync/backend-change-requests.md`, "Phase 8 findings"); changes to sections 3 and 4 above:
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| API-DLV-20 (CR-17) | `GET /deliveries/`, `GET /projects/{id}/deliveries/` | every filter but `search` and `ordering` was ignored | `DeliveryFilterSet`: `status` (the read words `Ready` and `Completed` or the stored `Prepared` and `Complete`, any case; an unknown status answers an empty list), `client_status`, `delivery_method`, and by id `client` / `client_id`, `project` / `project_id`, `destination` / `destination_id`. A value that is not an id is a 400. `search` and `ordering` are unchanged |
+| API-DLV-21 (CR-18) | `DELETE /deliveries/{id}/` | accepted in any status | only **Draft** and **Cancelled**; any other status is 409 `delivery_not_editable` ("Only a Draft or a Cancelled delivery can be deleted."). The delivery is the record of what was sent (SEC-DLV-04) |
+| API-DLV-22 (CR-19) | `POST/PATCH /deliveries/destinations/` | `type` accepted any text | one of the seven types (400 listing them). A row saved earlier keeps its old type when it is sent back unchanged |
+| API-DLV-23 (CR-20) | `POST /{id}/remove-version/` | 409 `conflict` once the delivery had been validated or prepared (QC rows protected the item) | works in the working states at any point. `DeliveryQCCheck.item` is `SET_NULL` (migration `0003_qc_item_set_null`): the rows of the runs the item took part in stay as history; `remove_version` already cleared the current run, so `GET qc/` is empty until the checks are run again |
+| API-DLV-24 (CR-21) | detail, `history/`, `qc/` | people by id only | additive read fields beside the ids: `signed_off_by_name`, `client_answered_by_name`, `actor_name`, `checked_by_name` (profile display name, else email; empty for nobody, e.g. a system move) |
+
+Tests: `apps/deliveries/tests/test_list_delete_names.py`. Frontend change list: the list offers the filters, delete follows the rule, destinations offer the seven types, Remove is offered for a checked item, names replace the lookup of ids.
