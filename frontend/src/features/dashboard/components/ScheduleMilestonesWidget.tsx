@@ -1,12 +1,23 @@
 import React from 'react';
 import { Calendar, Clock, AlertCircle, CheckCircle2, ArrowRight, Flag } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { milestonesApi } from '@/api/scheduling/scheduling';
+import { useCan } from '@/core/permissions/useCan';
 import { DashboardScheduleData } from '../types';
+import { milestoneState } from '../utils/dashboardMetrics';
 
 export interface ScheduleMilestonesWidgetProps {
   schedule: DashboardScheduleData;
+  /** The project whose own milestones are listed (the schedule's built-in phases are not real, CR-30). */
+  projectId: string;
 }
 
-export const ScheduleMilestonesWidget: React.FC<ScheduleMilestonesWidgetProps> = ({ schedule }) => {
+export const ScheduleMilestonesWidget: React.FC<ScheduleMilestonesWidgetProps> = ({ schedule, projectId }) => {
+  // The dashboard payload's `schedule.milestones` are five fixed phase names at fractions of the span; the project's
+  // real milestones come from Scheduling. Reading them needs schedule.view.
+  const canView = useCan('schedule.view');
+  const milestones = useQuery({ queryKey: ['dashboard', 'milestones', projectId], queryFn: ({ signal }) => milestonesApi.list({ project_id: projectId, ordering: 'due_date' }, signal).then((p) => p.results), enabled: canView && Boolean(projectId) });
   const percentElapsed = schedule.days_total > 0
     ? Math.min(100, Math.round((schedule.days_elapsed / schedule.days_total) * 100))
     : 0;
@@ -77,29 +88,46 @@ export const ScheduleMilestonesWidget: React.FC<ScheduleMilestonesWidgetProps> =
       {/* Milestones List */}
       <div className="space-y-2 pt-1">
         <h3 className="text-xs font-semibold text-slate-300 font-mono uppercase tracking-wider">
-          Turnover &amp; Cut Milestones
+          Project Milestones
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
-          {schedule.milestones.map((milestone) => (
-            <div
-              key={milestone.id}
-              className="p-2.5 rounded-lg bg-slate-950 border border-slate-800/80 flex items-center justify-between gap-2"
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                {milestone.status === 'completed' ? (
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                ) : milestone.status === 'in_progress' ? (
-                  <Clock className="w-3.5 h-3.5 text-sky-400 shrink-0 animate-pulse" />
-                ) : (
-                  <div className="w-3.5 h-3.5 rounded-full border border-slate-600 shrink-0" />
-                )}
-                <span className="text-slate-200 truncate font-sans text-xs">{milestone.name}</span>
-              </div>
-              <span className="text-[10px] text-slate-400 shrink-0">{milestone.date}</span>
-            </div>
-          ))}
-        </div>
+        {!canView ? (
+          <p className="text-xs text-slate-400">Milestones are visible to people who can view the schedule.</p>
+        ) : milestones.isLoading ? (
+          <p className="text-xs text-slate-400">Loading milestones…</p>
+        ) : milestones.error ? (
+          <p role="alert" className="text-xs text-rose-300">The milestones could not be loaded.</p>
+        ) : (milestones.data ?? []).length === 0 ? (
+          <p className="text-xs text-slate-400">
+            This project has no milestones yet.{' '}
+            <Link to={`/scheduling/milestones/new?project_id=${projectId}`} className="text-indigo-400 hover:underline">
+              Add one
+            </Link>
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
+            {(milestones.data ?? []).map((milestone) => {
+              const state = milestoneState(milestone);
+              return (
+                <div key={milestone.id} className="p-2.5 rounded-lg bg-slate-950 border border-slate-800/80 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {state === 'completed' ? (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    ) : state === 'in_progress' ? (
+                      <Clock className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                    ) : state === 'overdue' ? (
+                      <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                    ) : (
+                      <div className="w-3.5 h-3.5 rounded-full border border-slate-600 shrink-0" />
+                    )}
+                    <span className="text-slate-200 truncate font-sans text-xs">{milestone.name}</span>
+                  </div>
+                  <span className={`text-[10px] shrink-0 ${state === 'overdue' ? 'text-rose-300' : 'text-slate-400'}`}>{milestone.due_date}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

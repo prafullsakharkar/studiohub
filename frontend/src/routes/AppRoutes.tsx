@@ -2,7 +2,7 @@ import { platformRoutes } from '@/modules/platform';
 
 import { DashboardPage } from '@/modules/dashboard';
 
-import { DeliveriesPage, DeliveryWorkspacePage } from '@/modules/deliveries';
+import { DeliveriesPage, DeliveryFormPage, DeliveryWorkspacePage, DestinationFormPage, DestinationsPage } from '@/modules/deliveries';
 
 import { DepartmentsListPage, DepartmentWorkspacePage, CreateDepartmentPage, EditDepartmentPage } from '@/modules/departments';
 
@@ -14,9 +14,10 @@ import { ClientsPage, ClientCreatePage, ClientEditPage, ClientWorkspacePage } fr
 
 import { VendorsPage, VendorCreatePage, VendorEditPage, VendorWorkspacePage } from '@/modules/vendors';
 
-import { PublishingPage } from '@/modules/publishing';
+import { BulkRegisterPage, PublishDestinationFormPage, PublishDestinationsPage, PublishedFileFormPage, PublishedFilePage, PublishedFilesPage, PublishFormPage, PublishingPage, PublishWorkspacePage, StorageRootFormPage, StorageRootsPage } from '@/modules/publishing';
 
-import { SchedulingPage } from '@/modules/scheduling';
+import { CategoriesPage, CategoryFormPage, DefinitionFormPage, DefinitionsPage, FlagFormPage, FlagsPage, LocalizationFormPage, LocalizationsPage, TagFormPage, TagsPage, ThemeFormPage, ThemesPage, ValueFormPage, ValuesPage } from '@/modules/settings';
+import { BookingFormPage, BookingsPage, EventFormPage, EventsPage, HolidayFormPage, HolidaysPage, LeaveFormPage, LeavesPage, MilestoneFormPage, MilestonesPage, ResourceFormPage, ResourcesPage, ResourceWorkspacePage, SchedulingCalendarPage, SchedulingCapacityPage, WorkCalendarFormPage, WorkCalendarsPage } from '@/modules/scheduling';
 
 import { TeamsListPage, TeamWorkspacePage, CreateTeamPage, EditTeamPage } from '@/modules/teams';
 
@@ -35,15 +36,17 @@ import { RolesPage } from '@/modules/identity/pages/RolesPage';
 import { SecurityLogPage } from '@/modules/identity/pages/SecurityLogPage';
 import { PreserveQueryRedirect } from './PreserveQueryRedirect';
 
-import { WorkflowsPage } from '@/modules/workflows';
+import { AutomationFormPage, AutomationsPage, WorkflowFormPage, WorkflowsPage, WorkflowWorkspacePage } from '@/modules/workflows';
+import { MediaFormPage, MediaPage } from '@/modules/media';
 
-import { ReviewsPage } from '@/modules/reviews';
+import { PlaylistFormPage, PlaylistsPage, PlaylistWorkspacePage } from '@/modules/playlists';
+import { ReviewFormPage, ReviewsPage, ReviewWorkspacePage } from '@/modules/reviews';
 
 import { auditRoutes } from '@/modules/audit';
 
 import { AssetFormPage, AssetsPage, AssetWorkspacePage } from '@/modules/assets';
 
-import { VersionsListPage, VersionWorkspacePage } from '@/modules/versions';
+import { VersionFormPage, VersionsListPage, VersionWorkspacePage } from '@/modules/versions';
 
 import { ShotFormPage, ShotsPage, ShotWorkspacePage } from '@/modules/shots';
 
@@ -321,19 +324,114 @@ export const AppRoutes: React.FC = () => {
 
           <Route path="/versions" element={<VersionsListPage />} />
 
+          <Route path="/versions/new" element={<VersionFormPage />} />
+
+          <Route path="/versions/:id/edit" element={<VersionFormPage />} />
+
           <Route path="/versions/:versionId" element={<VersionWorkspacePage />} />
 
           <Route path="/publishing" element={<PublishingPage />} />
 
+          <Route path="/publishing/new" element={<PublishFormPage />} />
+
+          <Route path="/publishing/files" element={<PublishedFilesPage />} />
+
+          <Route path="/publishing/files/new" element={<PublishedFileFormPage />} />
+
+          <Route path="/publishing/files/bulk" element={<BulkRegisterPage />} />
+
+          <Route path="/publishing/files/:fileId" element={<PublishedFilePage />} />
+
+          <Route path="/publishing/storage-roots" element={<StorageRootsPage />} />
+
+          <Route path="/publishing/storage-roots/new" element={<StorageRootFormPage />} />
+
+          <Route path="/publishing/storage-roots/:id/edit" element={<StorageRootFormPage />} />
+
+          <Route path="/publishing/destinations" element={<PublishDestinationsPage />} />
+
+          <Route path="/publishing/destinations/new" element={<PublishDestinationFormPage />} />
+
+          <Route path="/publishing/destinations/:id/edit" element={<PublishDestinationFormPage />} />
+
+          <Route path="/publishing/:id/edit" element={<PublishFormPage />} />
+
+          <Route path="/publishing/:publishId" element={<PublishWorkspacePage />} />
+
           <Route path="/deliveries" element={<DeliveriesPage />} />
 
-          <Route path="/deliveries/:id" element={<DeliveryWorkspacePage />} />
+          <Route path="/deliveries/new" element={<DeliveryFormPage />} />
+
+          <Route path="/deliveries/destinations" element={<DestinationsPage />} />
+
+          <Route path="/deliveries/destinations/new" element={<DestinationFormPage />} />
+
+          <Route path="/deliveries/destinations/:id/edit" element={<DestinationFormPage />} />
+
+          <Route path="/deliveries/:id/edit" element={<DeliveryFormPage />} />
+
+          <Route path="/deliveries/:deliveryId" element={<DeliveryWorkspacePage />} />
 
           <Route path="/reviews" element={<ReviewsPage />} />
 
+          <Route path="/reviews/new" element={<ReviewFormPage />} />
+
+          <Route path="/reviews/:id/edit" element={<ReviewFormPage />} />
+
+          <Route path="/reviews/:reviewId" element={<ReviewWorkspacePage />} />
+
+          <Route path="/playlists" element={<PlaylistsPage />} />
+
+          <Route path="/playlists/new" element={<PlaylistFormPage />} />
+
+          <Route path="/playlists/:id/edit" element={<PlaylistFormPage />} />
+
+          <Route path="/playlists/:playlistId" element={<PlaylistWorkspacePage />} />
+
           <Route path="/workflows" element={<WorkflowsPage />} />
 
-          <Route path="/scheduling" element={<SchedulingPage />} />
+          <Route path="/workflows/new" element={<WorkflowFormPage />} />
+
+          <Route path="/workflows/:id/edit" element={<WorkflowFormPage />} />
+
+          <Route path="/workflows/:workflowId" element={<WorkflowWorkspacePage />} />
+
+          <Route path="/automations" element={<AutomationsPage />} />
+
+          <Route path="/automations/new" element={<AutomationFormPage />} />
+
+          <Route path="/automations/:id/edit" element={<AutomationFormPage />} />
+
+          <Route path="/media" element={<MediaPage />} />
+
+          <Route path="/media/new" element={<MediaFormPage />} />
+
+          <Route path="/media/:id/edit" element={<MediaFormPage />} />
+
+          <Route path="/scheduling" element={<SchedulingCalendarPage />} />
+          <Route path="/scheduling/capacity" element={<SchedulingCapacityPage />} />
+          <Route path="/scheduling/resources" element={<ResourcesPage />} />
+          <Route path="/scheduling/resources/new" element={<ResourceFormPage />} />
+          <Route path="/scheduling/resources/:id/edit" element={<ResourceFormPage />} />
+          <Route path="/scheduling/resources/:resourceId" element={<ResourceWorkspacePage />} />
+          <Route path="/scheduling/bookings" element={<BookingsPage />} />
+          <Route path="/scheduling/bookings/new" element={<BookingFormPage />} />
+          <Route path="/scheduling/bookings/:id/edit" element={<BookingFormPage />} />
+          <Route path="/scheduling/leaves" element={<LeavesPage />} />
+          <Route path="/scheduling/leaves/new" element={<LeaveFormPage />} />
+          <Route path="/scheduling/leaves/:id/edit" element={<LeaveFormPage />} />
+          <Route path="/scheduling/events" element={<EventsPage />} />
+          <Route path="/scheduling/events/new" element={<EventFormPage />} />
+          <Route path="/scheduling/events/:id/edit" element={<EventFormPage />} />
+          <Route path="/scheduling/milestones" element={<MilestonesPage />} />
+          <Route path="/scheduling/milestones/new" element={<MilestoneFormPage />} />
+          <Route path="/scheduling/milestones/:id/edit" element={<MilestoneFormPage />} />
+          <Route path="/scheduling/holidays" element={<HolidaysPage />} />
+          <Route path="/scheduling/holidays/new" element={<HolidayFormPage />} />
+          <Route path="/scheduling/holidays/:id/edit" element={<HolidayFormPage />} />
+          <Route path="/scheduling/calendars" element={<WorkCalendarsPage />} />
+          <Route path="/scheduling/calendars/new" element={<WorkCalendarFormPage />} />
+          <Route path="/scheduling/calendars/:id/edit" element={<WorkCalendarFormPage />} />
 
           <Route path="/calendar" element={<PreserveQueryRedirect to="/scheduling" />} />
 
@@ -341,7 +439,7 @@ export const AppRoutes: React.FC = () => {
 
           {platformRoutes}
 
-          {/* My account (personal settings): any signed-in user. System settings arrive under /settings/system in Phase 11. */}
+          {/* My account (personal settings): any signed-in user. System settings: settings.view reads, settings.manage writes. */}
           <Route path="/settings" element={<Navigate to="/settings/account/profile" replace />} />
 
           <Route path="/settings/account" element={<Navigate to="/settings/account/profile" replace />} />
@@ -353,6 +451,31 @@ export const AppRoutes: React.FC = () => {
           <Route path="/settings/account/sessions" element={<AccountLayout><SessionsPage /></AccountLayout>} />
 
           <Route path="/settings/account/tokens" element={<AccountLayout><TokensPage /></AccountLayout>} />
+
+          <Route element={<PermissionRoute permissions={['settings.view']} />}>
+            <Route path="/settings/system" element={<Navigate to="/settings/system/values" replace />} />
+            <Route path="/settings/system/values" element={<ValuesPage />} />
+            <Route path="/settings/system/values/new" element={<ValueFormPage />} />
+            <Route path="/settings/system/values/:id/edit" element={<ValueFormPage />} />
+            <Route path="/settings/system/flags" element={<FlagsPage />} />
+            <Route path="/settings/system/flags/new" element={<FlagFormPage />} />
+            <Route path="/settings/system/flags/:id/edit" element={<FlagFormPage />} />
+            <Route path="/settings/system/themes" element={<ThemesPage />} />
+            <Route path="/settings/system/themes/new" element={<ThemeFormPage />} />
+            <Route path="/settings/system/themes/:id/edit" element={<ThemeFormPage />} />
+            <Route path="/settings/system/localizations" element={<LocalizationsPage />} />
+            <Route path="/settings/system/localizations/new" element={<LocalizationFormPage />} />
+            <Route path="/settings/system/localizations/:id/edit" element={<LocalizationFormPage />} />
+            <Route path="/settings/system/categories" element={<CategoriesPage />} />
+            <Route path="/settings/system/categories/new" element={<CategoryFormPage />} />
+            <Route path="/settings/system/categories/:id/edit" element={<CategoryFormPage />} />
+            <Route path="/settings/system/definitions" element={<DefinitionsPage />} />
+            <Route path="/settings/system/definitions/new" element={<DefinitionFormPage />} />
+            <Route path="/settings/system/definitions/:id/edit" element={<DefinitionFormPage />} />
+            <Route path="/settings/system/tags" element={<TagsPage />} />
+            <Route path="/settings/system/tags/new" element={<TagFormPage />} />
+            <Route path="/settings/system/tags/:id/edit" element={<TagFormPage />} />
+          </Route>
 
           {/* Access & RBAC workspace — the org-free RBAC surface (Task 12
               sections) is reachable at /access[/:section]; /permissions and

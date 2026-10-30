@@ -14,6 +14,13 @@ from apps.core.api.viewsets.platform_crud import PlatformCrudViewSet
 from apps.core.permissions.base import IsAuthenticatedPermission
 from apps.identity.permissions import HasPermission
 from apps.scheduling.api.filters import RatesOrderingFilter
+from apps.scheduling.api.filtersets import (
+    BookingFilterSet,
+    EventFilterSet,
+    LeaveFilterSet,
+    MilestoneFilterSet,
+    ResourceFilterSet,
+)
 from apps.scheduling.api.serializers import (
     BlockResourceSerializer,
     BookingBulkDeleteResponseSerializer,
@@ -83,6 +90,7 @@ class CalendarEventViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissin
         "update_status": (SchedulingPermissions.UPDATE,),
     }
 
+    filterset_class = EventFilterSet
     search_fields = ("title", "description", "location")
     ordering_fields = ("start_time", "end_time", "created_at")
 
@@ -131,6 +139,7 @@ class ResourceViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingType
         "block": (SchedulingPermissions.MANAGE,),
     }
 
+    filterset_class = ResourceFilterSet
     search_fields = ("name", "code", "location")
     ordering_fields = ("name", "capacity_hours_per_week", "hourly_rate_usd")
     # Ordering by pay rate is honoured only for holders of schedule.view_rates (SEC-SCH-01)
@@ -214,6 +223,7 @@ class ResourceScheduleViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMis
     # Notes of a booking can be hidden from the caller (D-21), so they are not searchable
     # (SEC-SCH-01): search matches the resource's name or code. The list takes ``start`` and
     # ``end`` (ISO 8601 with a time zone) to narrow to the bookings overlapping that window.
+    filterset_class = BookingFilterSet
     search_fields = ("resource__name", "resource__code")
     ordering_fields = ("start_time", "end_time", "created_at")
 
@@ -310,6 +320,7 @@ class ResourceLeaveViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissin
 
     # The reason of a leave is hidden from most callers (D-20), so it is not searchable
     # (SEC-SCH-01): search matches the resource's name or code.
+    filterset_class = LeaveFilterSet
     search_fields = ("resource__name", "resource__code")
     ordering_fields = ("start_date", "created_at")
 
@@ -474,6 +485,7 @@ class MilestoneViewSet(PlatformCrudViewSet):  # pyright: ignore[reportMissingTyp
         "reopen": (SchedulingPermissions.MANAGE,),
     }
 
+    filterset_class = MilestoneFilterSet
     search_fields = ("name",)
     ordering_fields = ("due_date", "order", "name", "created_at")
 

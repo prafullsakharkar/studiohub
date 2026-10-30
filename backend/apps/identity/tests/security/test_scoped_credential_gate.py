@@ -30,13 +30,13 @@ OPEN_BUT_ACCOUNT_LEVEL = (
     "/api/v1/groups/",
     "/api/v1/permissions/",
     "/api/v1/people/",
+    "/api/v1/core/tags/",  # CR-28: tags are permission-mapped now, their reads open to a signed-in user
 )
 
 # Views that check no permission code
 NO_CODE_VIEWS = (
     "/api/v1/core/attachments/",
     "/api/v1/attachments/",
-    "/api/v1/core/tags/",
     "/api/v1/analytics/kpis/",
 )
 

@@ -5,7 +5,6 @@
 
 export interface DashboardProjectMetadata {
   id: string;
-  organization_id: string;
   name: string;
   code: string;
   type: string;

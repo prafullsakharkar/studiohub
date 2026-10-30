@@ -1,5 +1,4 @@
-// Public boundary for the settings module.
+// Public boundary for the settings module (system settings; "My account" lives in modules/identity/account).
 // External code imports from '@/modules/settings', never deep paths.
-export { ThemeEditorSection } from './components/ThemeEditorSection';
-export { LayoutSettingsSection } from './components/LayoutSettingsSection';
-export { DatabaseSchemaSection } from './components/DatabaseSchemaSection';
+export { useFeatureFlag } from './useFeatureFlag';
+export { CategoriesPage, CategoryFormPage, DefinitionFormPage, DefinitionsPage, FlagFormPage, FlagsPage, LocalizationFormPage, LocalizationsPage, TagFormPage, TagsPage, ThemeFormPage, ThemesPage, ValueFormPage, ValuesPage } from './pages/SystemPages';

@@ -81,7 +81,7 @@ export const ProjectDashboardPage: React.FC = () => {
             <TaskHealthWidget tasksData={data.tasks} projectId={data.project.id} />
 
             {/* Schedule & Milestones Tracker */}
-            <ScheduleMilestonesWidget schedule={data.schedule} />
+            <ScheduleMilestonesWidget schedule={data.schedule} projectId={data.project.id} />
           </div>
 
           {/* Side Telemetry Deck (1 Column on Large Screens) */}

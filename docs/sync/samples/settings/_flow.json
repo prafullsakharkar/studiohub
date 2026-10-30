@@ -1,0 +1,6531 @@
+{
+ "categories_archive": {
+  "body": {
+   "status": "archived"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "7d0bffcf-a11e-456b-a900-7be7603db177"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/categories/e9fd7df6-3f8d-4689-b225-394f29f36153/archive/"
+  },
+  "status": 200
+ },
+ "categories_baseline": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "code": "workflow",
+     "created_at": "2026-10-30T15:47:33.229926Z",
+     "description": "Pipeline defaults v2",
+     "icon": "layers",
+     "id": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "is_active": true,
+     "name": "Pipeline",
+     "order": 1,
+     "updated_at": "2026-10-30T15:47:33.405679Z",
+     "uuid": "31f3a917-5ec8-4379-a087-ca731c4d80f8"
+    },
+    {
+     "code": "general",
+     "created_at": "2026-10-30T15:47:33.264478Z",
+     "description": "",
+     "icon": "",
+     "id": "e9fd7df6-3f8d-4689-b225-394f29f36153",
+     "is_active": true,
+     "name": "Studio",
+     "order": 2,
+     "updated_at": "2026-10-30T15:47:33.436696Z",
+     "uuid": "e9fd7df6-3f8d-4689-b225-394f29f36153"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "c2c9c8a1-48c7-4169-a384-4f8a04763238"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/categories/"
+  },
+  "status": 200
+ },
+ "categories_by_code": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "code": "general",
+     "created_at": "2026-10-30T15:47:33.264478Z",
+     "description": "",
+     "icon": "",
+     "id": "e9fd7df6-3f8d-4689-b225-394f29f36153",
+     "is_active": true,
+     "name": "Studio",
+     "order": 2,
+     "updated_at": "2026-10-30T15:47:33.436696Z",
+     "uuid": "e9fd7df6-3f8d-4689-b225-394f29f36153"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "e04f123a-82fc-4db0-b910-a7c52de7282d"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/categories/?code=general"
+  },
+  "status": 200
+ },
+ "categories_by_code__icontains": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "code": "workflow",
+     "created_at": "2026-10-30T15:47:33.229926Z",
+     "description": "Pipeline defaults v2",
+     "icon": "layers",
+     "id": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "is_active": true,
+     "name": "Pipeline",
+     "order": 1,
+     "updated_at": "2026-10-30T15:47:33.405679Z",
+     "uuid": "31f3a917-5ec8-4379-a087-ca731c4d80f8"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "c7500eb2-16a9-495c-921d-8a69153122d7"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/categories/?code__icontains=work"
+  },
+  "status": 200
+ },
+ "categories_by_is_active": {
+  "body": {
+   "_bare_list": true,
+   "_len": 0,
+   "items": []
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "5c2e72a5-2411-48eb-be18-3b3aa37cba08"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/categories/?is_active=false"
+  },
+  "status": 200
+ },
+ "categories_by_nonsense": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "code": "workflow",
+     "created_at": "2026-10-30T15:47:33.229926Z",
+     "description": "Pipeline defaults v2",
+     "icon": "layers",
+     "id": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "is_active": true,
+     "name": "Pipeline",
+     "order": 1,
+     "updated_at": "2026-10-30T15:47:33.405679Z",
+     "uuid": "31f3a917-5ec8-4379-a087-ca731c4d80f8"
+    },
+    {
+     "code": "general",
+     "created_at": "2026-10-30T15:47:33.264478Z",
+     "description": "",
+     "icon": "",
+     "id": "e9fd7df6-3f8d-4689-b225-394f29f36153",
+     "is_active": true,
+     "name": "Studio",
+     "order": 2,
+     "updated_at": "2026-10-30T15:47:33.436696Z",
+     "uuid": "e9fd7df6-3f8d-4689-b225-394f29f36153"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "4c038f1e-c045-418a-8aed-d5cb181db630"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/categories/?nonsense=1"
+  },
+  "status": 200
+ },
+ "categories_by_search": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "code": "workflow",
+     "created_at": "2026-10-30T15:47:33.229926Z",
+     "description": "Pipeline defaults v2",
+     "icon": "layers",
+     "id": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "is_active": true,
+     "name": "Pipeline",
+     "order": 1,
+     "updated_at": "2026-10-30T15:47:33.405679Z",
+     "uuid": "31f3a917-5ec8-4379-a087-ca731c4d80f8"
+    },
+    {
+     "code": "general",
+     "created_at": "2026-10-30T15:47:33.264478Z",
+     "description": "",
+     "icon": "",
+     "id": "e9fd7df6-3f8d-4689-b225-394f29f36153",
+     "is_active": true,
+     "name": "Studio",
+     "order": 2,
+     "updated_at": "2026-10-30T15:47:33.436696Z",
+     "uuid": "e9fd7df6-3f8d-4689-b225-394f29f36153"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "a5ca088d-99c9-4e1c-9481-dd131e82d76e"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/categories/?search=pipe"
+  },
+  "status": 200
+ },
+ "categories_create": {
+  "body": {
+   "code": "workflow",
+   "created_at": "2026-10-30T15:47:33.229926Z",
+   "description": "Pipeline defaults",
+   "icon": "layers",
+   "id": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+   "is_active": true,
+   "name": "Pipeline",
+   "order": 1,
+   "updated_at": "2026-10-30T15:47:33.229933Z",
+   "uuid": "31f3a917-5ec8-4379-a087-ca731c4d80f8"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "f194b408-25db-4458-90fc-72debae9a82a"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "description": "Pipeline defaults",
+    "icon": "layers",
+    "name": "Pipeline",
+    "order": 1
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/categories/"
+  },
+  "status": 201
+ },
+ "categories_create_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "72eefd8a-cb65-4843-95b7-f404a7e759be"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "72eefd8a-cb65-4843-95b7-f404a7e759be"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "name": "By artist"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/categories/"
+  },
+  "status": 403
+ },
+ "categories_create_bad_code": {
+  "body": {
+   "code": [
+    "\"pipeline\" is not a valid choice."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "110f8736-7765-45df-9a16-7e4e75989bf3"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "110f8736-7765-45df-9a16-7e4e75989bf3"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "name": "Not on the list"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/categories/"
+  },
+  "status": 400
+ },
+ "categories_create_duplicate": {
+  "body": {
+   "code": [
+    "Setting Category with this code already exists."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "2b2efd4f-cc98-468c-be99-1a39d04e6a99"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "2b2efd4f-cc98-468c-be99-1a39d04e6a99"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "name": "Again"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/categories/"
+  },
+  "status": 400
+ },
+ "categories_create_empty": {
+  "body": {
+   "code": [
+    "This field is required."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "874e4ce3-b829-401c-ba87-2deb504190b8"
+   },
+   "name": [
+    "This field is required."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "874e4ce3-b829-401c-ba87-2deb504190b8"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/categories/"
+  },
+  "status": 400
+ },
+ "categories_create_padmin": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "2aa513a8-5fd6-45c0-98cd-c8f6ad3e14c9"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "2aa513a8-5fd6-45c0-98cd-c8f6ad3e14c9"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "name": "By padmin"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/categories/"
+  },
+  "status": 403
+ },
+ "categories_create_second": {
+  "body": {
+   "code": "general",
+   "created_at": "2026-10-30T15:47:33.264478Z",
+   "description": "",
+   "icon": "",
+   "id": "e9fd7df6-3f8d-4689-b225-394f29f36153",
+   "is_active": true,
+   "name": "Studio",
+   "order": 2,
+   "updated_at": "2026-10-30T15:47:33.264485Z",
+   "uuid": "e9fd7df6-3f8d-4689-b225-394f29f36153"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "a9fe7384-0061-454f-9b0f-075d38ed962c"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "name": "Studio",
+    "order": 2
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/categories/"
+  },
+  "status": 201
+ },
+ "categories_create_supervisor": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "3457415c-8d39-4192-b31f-e79276b13e0e"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "3457415c-8d39-4192-b31f-e79276b13e0e"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "name": "By supervisor"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/categories/"
+  },
+  "status": 403
+ },
+ "categories_detail": {
+  "body": {
+   "code": "workflow",
+   "created_at": "2026-10-30T15:47:33.229926Z",
+   "description": "Pipeline defaults",
+   "icon": "layers",
+   "id": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+   "is_active": true,
+   "name": "Pipeline",
+   "order": 1,
+   "updated_at": "2026-10-30T15:47:33.229933Z",
+   "uuid": "31f3a917-5ec8-4379-a087-ca731c4d80f8"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "5465f001-60fa-4615-a3b3-9b24a183f16c"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/categories/31f3a917-5ec8-4379-a087-ca731c4d80f8/"
+  },
+  "status": 200
+ },
+ "categories_list": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "code": "workflow",
+     "created_at": "2026-10-30T15:47:33.229926Z",
+     "description": "Pipeline defaults",
+     "icon": "layers",
+     "id": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "is_active": true,
+     "name": "Pipeline",
+     "order": 1,
+     "updated_at": "2026-10-30T15:47:33.229933Z",
+     "uuid": "31f3a917-5ec8-4379-a087-ca731c4d80f8"
+    },
+    {
+     "code": "general",
+     "created_at": "2026-10-30T15:47:33.264478Z",
+     "description": "",
+     "icon": "",
+     "id": "e9fd7df6-3f8d-4689-b225-394f29f36153",
+     "is_active": true,
+     "name": "Studio",
+     "order": 2,
+     "updated_at": "2026-10-30T15:47:33.264485Z",
+     "uuid": "e9fd7df6-3f8d-4689-b225-394f29f36153"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "3be8fc1a-d93d-409f-848e-ffc2bd481b48"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/categories/"
+  },
+  "status": 200
+ },
+ "categories_list_after_archive": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "code": "workflow",
+     "created_at": "2026-10-30T15:47:33.229926Z",
+     "description": "Pipeline defaults v2",
+     "icon": "layers",
+     "id": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "is_active": true,
+     "name": "Pipeline",
+     "order": 1,
+     "updated_at": "2026-10-30T15:47:33.405679Z",
+     "uuid": "31f3a917-5ec8-4379-a087-ca731c4d80f8"
+    },
+    {
+     "code": "general",
+     "created_at": "2026-10-30T15:47:33.264478Z",
+     "description": "",
+     "icon": "",
+     "id": "e9fd7df6-3f8d-4689-b225-394f29f36153",
+     "is_active": false,
+     "name": "Studio",
+     "order": 2,
+     "updated_at": "2026-10-30T15:47:33.416686Z",
+     "uuid": "e9fd7df6-3f8d-4689-b225-394f29f36153"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "442a9292-5ec8-4f9d-ab08-518686cc83b3"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/categories/"
+  },
+  "status": 200
+ },
+ "categories_list_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "c37046b8-39e8-45a8-8c70-d862722bd861"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "c37046b8-39e8-45a8-8c70-d862722bd861"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/categories/"
+  },
+  "status": 403
+ },
+ "categories_list_empty": {
+  "body": {
+   "_bare_list": true,
+   "_len": 0,
+   "items": []
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "60ea6ebc-339e-43fd-aee4-7a7ca4016653"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/categories/"
+  },
+  "status": 200
+ },
+ "categories_list_norole": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "4e893e79-1f85-4e27-8673-3bba064da524"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "4e893e79-1f85-4e27-8673-3bba064da524"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/categories/"
+  },
+  "status": 403
+ },
+ "categories_list_padmin": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "code": "workflow",
+     "created_at": "2026-10-30T15:47:33.229926Z",
+     "description": "Pipeline defaults",
+     "icon": "layers",
+     "id": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "is_active": true,
+     "name": "Pipeline",
+     "order": 1,
+     "updated_at": "2026-10-30T15:47:33.229933Z",
+     "uuid": "31f3a917-5ec8-4379-a087-ca731c4d80f8"
+    },
+    {
+     "code": "general",
+     "created_at": "2026-10-30T15:47:33.264478Z",
+     "description": "",
+     "icon": "",
+     "id": "e9fd7df6-3f8d-4689-b225-394f29f36153",
+     "is_active": true,
+     "name": "Studio",
+     "order": 2,
+     "updated_at": "2026-10-30T15:47:33.264485Z",
+     "uuid": "e9fd7df6-3f8d-4689-b225-394f29f36153"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "d84d691e-def0-4470-aa6f-afc6d0315c95"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/categories/"
+  },
+  "status": 200
+ },
+ "categories_list_supervisor": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "221a8591-b8f7-48a6-9bd3-58ba289cc65a"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "221a8591-b8f7-48a6-9bd3-58ba289cc65a"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/categories/"
+  },
+  "status": 403
+ },
+ "categories_patch": {
+  "body": {
+   "code": "workflow",
+   "created_at": "2026-10-30T15:47:33.229926Z",
+   "description": "Pipeline defaults v2",
+   "icon": "layers",
+   "id": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+   "is_active": true,
+   "name": "Pipeline",
+   "order": 1,
+   "updated_at": "2026-10-30T15:47:33.405679Z",
+   "uuid": "31f3a917-5ec8-4379-a087-ca731c4d80f8"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "18eaf47f-6c5c-4cd0-a3f7-d6f882b2c7c7"
+  },
+  "request": {
+   "body": {
+    "description": "Pipeline defaults v2"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/settings/categories/31f3a917-5ec8-4379-a087-ca731c4d80f8/"
+  },
+  "status": 200
+ },
+ "categories_restore": {
+  "body": {
+   "status": "restored"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "e3a05b4d-692f-447d-b23c-386d73332784"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/categories/e9fd7df6-3f8d-4689-b225-394f29f36153/restore/"
+  },
+  "status": 200
+ },
+ "definitions_archive": {
+  "body": {
+   "status": "archived"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "cafe9346-f342-4600-85bd-683648742730"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/definitions/db33cbcd-2af5-4fdf-b936-c43f0897aea7/archive/"
+  },
+  "status": 200
+ },
+ "definitions_baseline": {
+  "body": {
+   "_bare_list": true,
+   "_len": 4,
+   "items": [
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [],
+     "code": "ai_denoise",
+     "created_at": "2026-10-30T15:47:33.530184Z",
+     "data_type": "boolean",
+     "default_value": "false",
+     "depends_on": "",
+     "description": "",
+     "help_text": "",
+     "id": "db33cbcd-2af5-4fdf-b936-c43f0897aea7",
+     "is_active": true,
+     "is_required": false,
+     "name": "AI denoising",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.693335Z",
+     "uuid": "db33cbcd-2af5-4fdf-b936-c43f0897aea7",
+     "validation_rules": {}
+    },
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [],
+     "code": "renamed",
+     "created_at": "2026-10-30T15:47:33.508364Z",
+     "data_type": "integer",
+     "default_value": "24",
+     "depends_on": "",
+     "description": "",
+     "help_text": "Frames per second",
+     "id": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "is_active": true,
+     "is_required": true,
+     "name": "Default FPS",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.670292Z",
+     "uuid": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "validation_rules": {
+      "max": 120,
+      "min": 1
+     }
+    },
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [
+      {
+       "label": "Deadline",
+       "value": "Deadline"
+      },
+      {
+       "label": "Tractor",
+       "value": "Tractor"
+      }
+     ],
+     "code": "farm_engine",
+     "created_at": "2026-10-30T15:47:33.550787Z",
+     "data_type": "select",
+     "default_value": "Deadline",
+     "depends_on": "",
+     "description": "",
+     "help_text": "",
+     "id": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+     "is_active": true,
+     "is_required": false,
+     "name": "Farm engine",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.550793Z",
+     "uuid": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+     "validation_rules": {}
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "f1039c73-f973-4f68-b034-50df229f5e48"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/definitions/"
+  },
+  "status": 200
+ },
+ "definitions_by_category": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "category": "e9fd7df6-3f8d-4689-b225-394f29f36153",
+     "category_code": "general",
+     "category_name": "Studio",
+     "choices": [],
+     "code": "studio_name",
+     "created_at": "2026-10-30T15:47:33.519586Z",
+     "data_type": "string",
+     "default_value": "Apex",
+     "depends_on": "",
+     "description": "",
+     "help_text": "",
+     "id": "49024351-9ef2-4bee-ba27-f0b65816c9f6",
+     "is_active": true,
+     "is_required": false,
+     "name": "Studio name",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.519593Z",
+     "uuid": "49024351-9ef2-4bee-ba27-f0b65816c9f6",
+     "validation_rules": {
+      "min_length": 2
+     }
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "572177cc-5c65-4bdf-97d2-638cd628c207"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/definitions/?category=e9fd7df6-3f8d-4689-b225-394f29f36153"
+  },
+  "status": 200
+ },
+ "definitions_by_category_id": {
+  "body": {
+   "_bare_list": true,
+   "_len": 4,
+   "items": [
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [],
+     "code": "ai_denoise",
+     "created_at": "2026-10-30T15:47:33.530184Z",
+     "data_type": "boolean",
+     "default_value": "false",
+     "depends_on": "",
+     "description": "",
+     "help_text": "",
+     "id": "db33cbcd-2af5-4fdf-b936-c43f0897aea7",
+     "is_active": true,
+     "is_required": false,
+     "name": "AI denoising",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.693335Z",
+     "uuid": "db33cbcd-2af5-4fdf-b936-c43f0897aea7",
+     "validation_rules": {}
+    },
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [],
+     "code": "renamed",
+     "created_at": "2026-10-30T15:47:33.508364Z",
+     "data_type": "integer",
+     "default_value": "24",
+     "depends_on": "",
+     "description": "",
+     "help_text": "Frames per second",
+     "id": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "is_active": true,
+     "is_required": true,
+     "name": "Default FPS",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.670292Z",
+     "uuid": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "validation_rules": {
+      "max": 120,
+      "min": 1
+     }
+    },
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [
+      {
+       "label": "Deadline",
+       "value": "Deadline"
+      },
+      {
+       "label": "Tractor",
+       "value": "Tractor"
+      }
+     ],
+     "code": "farm_engine",
+     "created_at": "2026-10-30T15:47:33.550787Z",
+     "data_type": "select",
+     "default_value": "Deadline",
+     "depends_on": "",
+     "description": "",
+     "help_text": "",
+     "id": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+     "is_active": true,
+     "is_required": false,
+     "name": "Farm engine",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.550793Z",
+     "uuid": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+     "validation_rules": {}
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "73f22d3a-2881-49a4-8405-7b0d7e179b5e"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/definitions/?category_id=e9fd7df6-3f8d-4689-b225-394f29f36153"
+  },
+  "status": 200
+ },
+ "definitions_by_data_type": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [],
+     "code": "renamed",
+     "created_at": "2026-10-30T15:47:33.508364Z",
+     "data_type": "integer",
+     "default_value": "24",
+     "depends_on": "",
+     "description": "",
+     "help_text": "Frames per second",
+     "id": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "is_active": true,
+     "is_required": true,
+     "name": "Default FPS",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.670292Z",
+     "uuid": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "validation_rules": {
+      "max": 120,
+      "min": 1
+     }
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "0ff9cf98-af53-456f-9e6e-6a3a995abe3d"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/definitions/?data_type=integer"
+  },
+  "status": 200
+ },
+ "definitions_by_is_active": {
+  "body": {
+   "_bare_list": true,
+   "_len": 0,
+   "items": []
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "299360b9-b8ba-45ad-9f4c-32e978c1b4e9"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/definitions/?is_active=false"
+  },
+  "status": 200
+ },
+ "definitions_by_is_required": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [],
+     "code": "renamed",
+     "created_at": "2026-10-30T15:47:33.508364Z",
+     "data_type": "integer",
+     "default_value": "24",
+     "depends_on": "",
+     "description": "",
+     "help_text": "Frames per second",
+     "id": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "is_active": true,
+     "is_required": true,
+     "name": "Default FPS",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.670292Z",
+     "uuid": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "validation_rules": {
+      "max": 120,
+      "min": 1
+     }
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "a6d446f0-7a52-4724-b70c-b22697781b78"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/definitions/?is_required=true"
+  },
+  "status": 200
+ },
+ "definitions_by_nonsense": {
+  "body": {
+   "_bare_list": true,
+   "_len": 4,
+   "items": [
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [],
+     "code": "ai_denoise",
+     "created_at": "2026-10-30T15:47:33.530184Z",
+     "data_type": "boolean",
+     "default_value": "false",
+     "depends_on": "",
+     "description": "",
+     "help_text": "",
+     "id": "db33cbcd-2af5-4fdf-b936-c43f0897aea7",
+     "is_active": true,
+     "is_required": false,
+     "name": "AI denoising",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.693335Z",
+     "uuid": "db33cbcd-2af5-4fdf-b936-c43f0897aea7",
+     "validation_rules": {}
+    },
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [],
+     "code": "renamed",
+     "created_at": "2026-10-30T15:47:33.508364Z",
+     "data_type": "integer",
+     "default_value": "24",
+     "depends_on": "",
+     "description": "",
+     "help_text": "Frames per second",
+     "id": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "is_active": true,
+     "is_required": true,
+     "name": "Default FPS",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.670292Z",
+     "uuid": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "validation_rules": {
+      "max": 120,
+      "min": 1
+     }
+    },
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [
+      {
+       "label": "Deadline",
+       "value": "Deadline"
+      },
+      {
+       "label": "Tractor",
+       "value": "Tractor"
+      }
+     ],
+     "code": "farm_engine",
+     "created_at": "2026-10-30T15:47:33.550787Z",
+     "data_type": "select",
+     "default_value": "Deadline",
+     "depends_on": "",
+     "description": "",
+     "help_text": "",
+     "id": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+     "is_active": true,
+     "is_required": false,
+     "name": "Farm engine",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.550793Z",
+     "uuid": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+     "validation_rules": {}
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "aed3f6c1-03ca-4397-a589-9c731a81f732"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/definitions/?nonsense=1"
+  },
+  "status": 200
+ },
+ "definitions_by_search": {
+  "body": {
+   "_bare_list": true,
+   "_len": 4,
+   "items": [
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [],
+     "code": "ai_denoise",
+     "created_at": "2026-10-30T15:47:33.530184Z",
+     "data_type": "boolean",
+     "default_value": "false",
+     "depends_on": "",
+     "description": "",
+     "help_text": "",
+     "id": "db33cbcd-2af5-4fdf-b936-c43f0897aea7",
+     "is_active": true,
+     "is_required": false,
+     "name": "AI denoising",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.693335Z",
+     "uuid": "db33cbcd-2af5-4fdf-b936-c43f0897aea7",
+     "validation_rules": {}
+    },
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [],
+     "code": "renamed",
+     "created_at": "2026-10-30T15:47:33.508364Z",
+     "data_type": "integer",
+     "default_value": "24",
+     "depends_on": "",
+     "description": "",
+     "help_text": "Frames per second",
+     "id": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "is_active": true,
+     "is_required": true,
+     "name": "Default FPS",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.670292Z",
+     "uuid": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "validation_rules": {
+      "max": 120,
+      "min": 1
+     }
+    },
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [
+      {
+       "label": "Deadline",
+       "value": "Deadline"
+      },
+      {
+       "label": "Tractor",
+       "value": "Tractor"
+      }
+     ],
+     "code": "farm_engine",
+     "created_at": "2026-10-30T15:47:33.550787Z",
+     "data_type": "select",
+     "default_value": "Deadline",
+     "depends_on": "",
+     "description": "",
+     "help_text": "",
+     "id": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+     "is_active": true,
+     "is_required": false,
+     "name": "Farm engine",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.550793Z",
+     "uuid": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+     "validation_rules": {}
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "072a8182-642b-4e35-8dd7-441f0f9a8348"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/definitions/?search=fps"
+  },
+  "status": 200
+ },
+ "definitions_create_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "dffdf501-005f-4877-bab6-6f4dedebf097"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "dffdf501-005f-4877-bab6-6f4dedebf097"
+  },
+  "request": {
+   "body": {
+    "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+    "code": "<redacted>",
+    "data_type": "string",
+    "name": "Art"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/definitions/"
+  },
+  "status": 403
+ },
+ "definitions_create_bad_type": {
+  "body": {
+   "data_type": [
+    "\"banana\" is not a valid choice."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "41da4614-7232-4cbc-b4ff-e987e8fe37d4"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "41da4614-7232-4cbc-b4ff-e987e8fe37d4"
+  },
+  "request": {
+   "body": {
+    "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+    "code": "<redacted>",
+    "data_type": "banana",
+    "name": "Bad"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/definitions/"
+  },
+  "status": 400
+ },
+ "definitions_create_boolean": {
+  "body": {
+   "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+   "category_code": "workflow",
+   "category_name": "Pipeline",
+   "choices": [],
+   "code": "ai_denoise",
+   "created_at": "2026-10-30T15:47:33.530184Z",
+   "data_type": "boolean",
+   "default_value": "false",
+   "depends_on": "",
+   "description": "",
+   "help_text": "",
+   "id": "db33cbcd-2af5-4fdf-b936-c43f0897aea7",
+   "is_active": true,
+   "is_required": false,
+   "name": "AI denoising",
+   "order": 0,
+   "scope": "system",
+   "updated_at": "2026-10-30T15:47:33.530191Z",
+   "uuid": "db33cbcd-2af5-4fdf-b936-c43f0897aea7",
+   "validation_rules": {}
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "aced2f83-7ef4-4bbb-a52e-86152c5d1670"
+  },
+  "request": {
+   "body": {
+    "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+    "code": "<redacted>",
+    "data_type": "boolean",
+    "default_value": "false",
+    "name": "AI denoising"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/definitions/"
+  },
+  "status": 201
+ },
+ "definitions_create_duplicate": {
+  "body": {
+   "code": [
+    "Setting Definition with this code already exists."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "79de666e-37b2-43cd-9fd5-e00d424eb6a8"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "79de666e-37b2-43cd-9fd5-e00d424eb6a8"
+  },
+  "request": {
+   "body": {
+    "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+    "code": "<redacted>",
+    "data_type": "integer",
+    "name": "Again"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/definitions/"
+  },
+  "status": 400
+ },
+ "definitions_create_empty": {
+  "body": {
+   "category": [
+    "This field is required."
+   ],
+   "code": [
+    "This field is required."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "63ba5e86-2bfa-4c41-bad6-db839e21550b"
+   },
+   "name": [
+    "This field is required."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "63ba5e86-2bfa-4c41-bad6-db839e21550b"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/definitions/"
+  },
+  "status": 400
+ },
+ "definitions_create_integer": {
+  "body": {
+   "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+   "category_code": "workflow",
+   "category_name": "Pipeline",
+   "choices": [],
+   "code": "default_fps",
+   "created_at": "2026-10-30T15:47:33.508364Z",
+   "data_type": "integer",
+   "default_value": "24",
+   "depends_on": "",
+   "description": "",
+   "help_text": "",
+   "id": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+   "is_active": true,
+   "is_required": true,
+   "name": "Default FPS",
+   "order": 0,
+   "scope": "system",
+   "updated_at": "2026-10-30T15:47:33.508371Z",
+   "uuid": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+   "validation_rules": {
+    "max": 120,
+    "min": 1
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "3313d0d3-6967-4b99-a440-ecd9058f9f3c"
+  },
+  "request": {
+   "body": {
+    "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+    "code": "<redacted>",
+    "data_type": "integer",
+    "default_value": "24",
+    "is_required": true,
+    "name": "Default FPS",
+    "validation_rules": {
+     "max": 120,
+     "min": 1
+    }
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/definitions/"
+  },
+  "status": 201
+ },
+ "definitions_create_no_category": {
+  "body": {
+   "category": [
+    "This field is required."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "8b39413f-bbe8-42a0-b9bc-2709ecd6ed2f"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "8b39413f-bbe8-42a0-b9bc-2709ecd6ed2f"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "data_type": "string",
+    "name": "No category"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/definitions/"
+  },
+  "status": 400
+ },
+ "definitions_create_select": {
+  "body": {
+   "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+   "category_code": "workflow",
+   "category_name": "Pipeline",
+   "choices": [
+    {
+     "label": "Deadline",
+     "value": "Deadline"
+    },
+    {
+     "label": "Tractor",
+     "value": "Tractor"
+    }
+   ],
+   "code": "farm_engine",
+   "created_at": "2026-10-30T15:47:33.550787Z",
+   "data_type": "select",
+   "default_value": "Deadline",
+   "depends_on": "",
+   "description": "",
+   "help_text": "",
+   "id": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+   "is_active": true,
+   "is_required": false,
+   "name": "Farm engine",
+   "order": 0,
+   "scope": "system",
+   "updated_at": "2026-10-30T15:47:33.550793Z",
+   "uuid": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+   "validation_rules": {}
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "02d467c3-6da5-41f1-abaf-6c5794984483"
+  },
+  "request": {
+   "body": {
+    "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+    "choices": [
+     {
+      "label": "Deadline",
+      "value": "Deadline"
+     },
+     {
+      "label": "Tractor",
+      "value": "Tractor"
+     }
+    ],
+    "code": "<redacted>",
+    "data_type": "select",
+    "default_value": "Deadline",
+    "name": "Farm engine"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/definitions/"
+  },
+  "status": 201
+ },
+ "definitions_create_select_strings": {
+  "body": {
+   "choices": [
+    "Choice 1 must be an object with a \"value\" and a \"label\", not 'Deadline'."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "57e8fdca-9a8f-4c44-8691-73b83b29162b"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "57e8fdca-9a8f-4c44-8691-73b83b29162b"
+  },
+  "request": {
+   "body": {
+    "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+    "choices": [
+     "Deadline",
+     "Tractor"
+    ],
+    "code": "<redacted>",
+    "data_type": "select",
+    "default_value": "Deadline",
+    "name": "Farm (plain strings)"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/definitions/"
+  },
+  "status": 400
+ },
+ "definitions_create_string": {
+  "body": {
+   "category": "e9fd7df6-3f8d-4689-b225-394f29f36153",
+   "category_code": "general",
+   "category_name": "Studio",
+   "choices": [],
+   "code": "studio_name",
+   "created_at": "2026-10-30T15:47:33.519586Z",
+   "data_type": "string",
+   "default_value": "Apex",
+   "depends_on": "",
+   "description": "",
+   "help_text": "",
+   "id": "49024351-9ef2-4bee-ba27-f0b65816c9f6",
+   "is_active": true,
+   "is_required": false,
+   "name": "Studio name",
+   "order": 0,
+   "scope": "system",
+   "updated_at": "2026-10-30T15:47:33.519593Z",
+   "uuid": "49024351-9ef2-4bee-ba27-f0b65816c9f6",
+   "validation_rules": {
+    "min_length": 2
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "06c3f2f6-d189-4a56-9a9c-1fee78292855"
+  },
+  "request": {
+   "body": {
+    "category": "e9fd7df6-3f8d-4689-b225-394f29f36153",
+    "code": "<redacted>",
+    "data_type": "string",
+    "default_value": "Apex",
+    "name": "Studio name",
+    "validation_rules": {
+     "min_length": 2
+    }
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/definitions/"
+  },
+  "status": 201
+ },
+ "definitions_detail": {
+  "body": {
+   "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+   "category_code": "workflow",
+   "category_name": "Pipeline",
+   "choices": [],
+   "code": "default_fps",
+   "created_at": "2026-10-30T15:47:33.508364Z",
+   "data_type": "integer",
+   "default_value": "24",
+   "depends_on": "",
+   "description": "",
+   "help_text": "",
+   "id": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+   "is_active": true,
+   "is_required": true,
+   "name": "Default FPS",
+   "order": 0,
+   "scope": "system",
+   "updated_at": "2026-10-30T15:47:33.508371Z",
+   "uuid": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+   "validation_rules": {
+    "max": 120,
+    "min": 1
+   }
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "932778b5-1104-45fb-99f7-a3773f190484"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/definitions/2ef6565a-7f01-46f5-9140-226650c9fa63/"
+  },
+  "status": 200
+ },
+ "definitions_list": {
+  "body": {
+   "_bare_list": true,
+   "_len": 4,
+   "items": [
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [],
+     "code": "ai_denoise",
+     "created_at": "2026-10-30T15:47:33.530184Z",
+     "data_type": "boolean",
+     "default_value": "false",
+     "depends_on": "",
+     "description": "",
+     "help_text": "",
+     "id": "db33cbcd-2af5-4fdf-b936-c43f0897aea7",
+     "is_active": true,
+     "is_required": false,
+     "name": "AI denoising",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.530191Z",
+     "uuid": "db33cbcd-2af5-4fdf-b936-c43f0897aea7",
+     "validation_rules": {}
+    },
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [],
+     "code": "default_fps",
+     "created_at": "2026-10-30T15:47:33.508364Z",
+     "data_type": "integer",
+     "default_value": "24",
+     "depends_on": "",
+     "description": "",
+     "help_text": "",
+     "id": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "is_active": true,
+     "is_required": true,
+     "name": "Default FPS",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.508371Z",
+     "uuid": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "validation_rules": {
+      "max": 120,
+      "min": 1
+     }
+    },
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [
+      {
+       "label": "Deadline",
+       "value": "Deadline"
+      },
+      {
+       "label": "Tractor",
+       "value": "Tractor"
+      }
+     ],
+     "code": "farm_engine",
+     "created_at": "2026-10-30T15:47:33.550787Z",
+     "data_type": "select",
+     "default_value": "Deadline",
+     "depends_on": "",
+     "description": "",
+     "help_text": "",
+     "id": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+     "is_active": true,
+     "is_required": false,
+     "name": "Farm engine",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.550793Z",
+     "uuid": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+     "validation_rules": {}
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "3328459b-4498-4b86-b6f3-2f5e3c3ea0ae"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/definitions/"
+  },
+  "status": 200
+ },
+ "definitions_list_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "f1a2f6b9-3f08-417e-9f9b-95228fa10649"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "f1a2f6b9-3f08-417e-9f9b-95228fa10649"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/definitions/"
+  },
+  "status": 403
+ },
+ "definitions_list_ids": {
+  "body": {
+   "_bare_list": true,
+   "_len": 4,
+   "items": [
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [],
+     "code": "ai_denoise",
+     "created_at": "2026-10-30T15:47:33.530184Z",
+     "data_type": "boolean",
+     "default_value": "false",
+     "depends_on": "",
+     "description": "",
+     "help_text": "",
+     "id": "db33cbcd-2af5-4fdf-b936-c43f0897aea7",
+     "is_active": true,
+     "is_required": false,
+     "name": "AI denoising",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.693335Z",
+     "uuid": "db33cbcd-2af5-4fdf-b936-c43f0897aea7",
+     "validation_rules": {}
+    },
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [],
+     "code": "renamed",
+     "created_at": "2026-10-30T15:47:33.508364Z",
+     "data_type": "integer",
+     "default_value": "24",
+     "depends_on": "",
+     "description": "",
+     "help_text": "Frames per second",
+     "id": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "is_active": true,
+     "is_required": true,
+     "name": "Default FPS",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.670292Z",
+     "uuid": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "validation_rules": {
+      "max": 120,
+      "min": 1
+     }
+    },
+    {
+     "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+     "category_code": "workflow",
+     "category_name": "Pipeline",
+     "choices": [
+      {
+       "label": "Deadline",
+       "value": "Deadline"
+      },
+      {
+       "label": "Tractor",
+       "value": "Tractor"
+      }
+     ],
+     "code": "farm_engine",
+     "created_at": "2026-10-30T15:47:33.550787Z",
+     "data_type": "select",
+     "default_value": "Deadline",
+     "depends_on": "",
+     "description": "",
+     "help_text": "",
+     "id": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+     "is_active": true,
+     "is_required": false,
+     "name": "Farm engine",
+     "order": 0,
+     "scope": "system",
+     "updated_at": "2026-10-30T15:47:33.550793Z",
+     "uuid": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+     "validation_rules": {}
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "c80be4f3-a424-43dc-8c76-9ee63cb975d3"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/definitions/"
+  },
+  "status": 200
+ },
+ "definitions_patch": {
+  "body": {
+   "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+   "category_code": "workflow",
+   "category_name": "Pipeline",
+   "choices": [],
+   "code": "default_fps",
+   "created_at": "2026-10-30T15:47:33.508364Z",
+   "data_type": "integer",
+   "default_value": "24",
+   "depends_on": "",
+   "description": "",
+   "help_text": "Frames per second",
+   "id": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+   "is_active": true,
+   "is_required": true,
+   "name": "Default FPS",
+   "order": 0,
+   "scope": "system",
+   "updated_at": "2026-10-30T15:47:33.655874Z",
+   "uuid": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+   "validation_rules": {
+    "max": 120,
+    "min": 1
+   }
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "13f35b99-bf9d-417e-93e0-c05a5391a902"
+  },
+  "request": {
+   "body": {
+    "help_text": "Frames per second"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/settings/definitions/2ef6565a-7f01-46f5-9140-226650c9fa63/"
+  },
+  "status": 200
+ },
+ "definitions_patch_code": {
+  "body": {
+   "category": "31f3a917-5ec8-4379-a087-ca731c4d80f8",
+   "category_code": "workflow",
+   "category_name": "Pipeline",
+   "choices": [],
+   "code": "renamed",
+   "created_at": "2026-10-30T15:47:33.508364Z",
+   "data_type": "integer",
+   "default_value": "24",
+   "depends_on": "",
+   "description": "",
+   "help_text": "Frames per second",
+   "id": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+   "is_active": true,
+   "is_required": true,
+   "name": "Default FPS",
+   "order": 0,
+   "scope": "system",
+   "updated_at": "2026-10-30T15:47:33.670292Z",
+   "uuid": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+   "validation_rules": {
+    "max": 120,
+    "min": 1
+   }
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "eaa2568b-b114-4a62-9e54-4b3197640a5e"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/settings/definitions/2ef6565a-7f01-46f5-9140-226650c9fa63/"
+  },
+  "status": 200
+ },
+ "definitions_restore": {
+  "body": {
+   "status": "restored"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "216deec4-5493-4eb1-92d0-70800fe8b8ca"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/definitions/db33cbcd-2af5-4fdf-b936-c43f0897aea7/restore/"
+  },
+  "status": 200
+ },
+ "flags_baseline": {
+  "body": {
+   "_bare_list": true,
+   "_len": 3,
+   "items": [
+    {
+     "code": "born_on",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.215972Z",
+     "created_by": null,
+     "description": "",
+     "end_date": null,
+     "feature_type": "boolean",
+     "id": "941ee6ed-79b5-4c17-8736-f9bc6239ed64",
+     "is_enabled": true,
+     "name": "Born on",
+     "percentage": 0,
+     "start_date": null,
+     "status": "enabled",
+     "updated_at": "2026-10-30T15:47:34.238250Z",
+     "updated_by": null,
+     "uuid": "941ee6ed-79b5-4c17-8736-f9bc6239ed64"
+    },
+    {
+     "code": "fast_search",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.197384Z",
+     "created_by": null,
+     "description": "",
+     "end_date": "2026-12-31T00:00:00Z",
+     "feature_type": "percentage",
+     "id": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c",
+     "is_enabled": false,
+     "name": "Fast search",
+     "percentage": 25,
+     "start_date": "2026-12-01T00:00:00Z",
+     "status": "scheduled",
+     "updated_at": "2026-10-30T15:47:34.548934Z",
+     "updated_by": null,
+     "uuid": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c"
+    },
+    {
+     "code": "new_review_ui",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.187829Z",
+     "created_by": null,
+     "description": "Redesigned review page v2",
+     "end_date": null,
+     "feature_type": "boolean",
+     "id": "c6675e9b-3383-440c-bdda-5a7f53a90107",
+     "is_enabled": false,
+     "name": "New review UI",
+     "percentage": 0,
+     "start_date": null,
+     "status": "disabled",
+     "updated_at": "2026-10-30T15:47:34.392828Z",
+     "updated_by": null,
+     "uuid": "c6675e9b-3383-440c-bdda-5a7f53a90107"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "dc2a769c-e19b-4f27-a9aa-4773c7d7c91e"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/feature-flags/"
+  },
+  "status": 200
+ },
+ "flags_by_code": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "code": "fast_search",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.197384Z",
+     "created_by": null,
+     "description": "",
+     "end_date": "2026-12-31T00:00:00Z",
+     "feature_type": "percentage",
+     "id": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c",
+     "is_enabled": false,
+     "name": "Fast search",
+     "percentage": 25,
+     "start_date": "2026-12-01T00:00:00Z",
+     "status": "scheduled",
+     "updated_at": "2026-10-30T15:47:34.548934Z",
+     "updated_by": null,
+     "uuid": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "28eeba9d-6119-40f1-a851-e09f076a94d8"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/feature-flags/?code=fast_search"
+  },
+  "status": 200
+ },
+ "flags_by_code__icontains": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "code": "new_review_ui",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.187829Z",
+     "created_by": null,
+     "description": "Redesigned review page v2",
+     "end_date": null,
+     "feature_type": "boolean",
+     "id": "c6675e9b-3383-440c-bdda-5a7f53a90107",
+     "is_enabled": false,
+     "name": "New review UI",
+     "percentage": 0,
+     "start_date": null,
+     "status": "disabled",
+     "updated_at": "2026-10-30T15:47:34.392828Z",
+     "updated_by": null,
+     "uuid": "c6675e9b-3383-440c-bdda-5a7f53a90107"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "9769f014-97f3-46c4-bca8-ab83d3dc861e"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/feature-flags/?code__icontains=review"
+  },
+  "status": 200
+ },
+ "flags_by_feature_type": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "code": "fast_search",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.197384Z",
+     "created_by": null,
+     "description": "",
+     "end_date": "2026-12-31T00:00:00Z",
+     "feature_type": "percentage",
+     "id": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c",
+     "is_enabled": false,
+     "name": "Fast search",
+     "percentage": 25,
+     "start_date": "2026-12-01T00:00:00Z",
+     "status": "scheduled",
+     "updated_at": "2026-10-30T15:47:34.548934Z",
+     "updated_by": null,
+     "uuid": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "7ac44f50-7c88-4119-8900-98c1b05f0ad9"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/feature-flags/?feature_type=percentage"
+  },
+  "status": 200
+ },
+ "flags_by_is_enabled": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "code": "born_on",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.215972Z",
+     "created_by": null,
+     "description": "",
+     "end_date": null,
+     "feature_type": "boolean",
+     "id": "941ee6ed-79b5-4c17-8736-f9bc6239ed64",
+     "is_enabled": true,
+     "name": "Born on",
+     "percentage": 0,
+     "start_date": null,
+     "status": "enabled",
+     "updated_at": "2026-10-30T15:47:34.238250Z",
+     "updated_by": null,
+     "uuid": "941ee6ed-79b5-4c17-8736-f9bc6239ed64"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "dfd608d9-aa4c-4bd4-a3cf-61f3063c9769"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/feature-flags/?is_enabled=true"
+  },
+  "status": 200
+ },
+ "flags_by_nonsense": {
+  "body": {
+   "_bare_list": true,
+   "_len": 3,
+   "items": [
+    {
+     "code": "born_on",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.215972Z",
+     "created_by": null,
+     "description": "",
+     "end_date": null,
+     "feature_type": "boolean",
+     "id": "941ee6ed-79b5-4c17-8736-f9bc6239ed64",
+     "is_enabled": true,
+     "name": "Born on",
+     "percentage": 0,
+     "start_date": null,
+     "status": "enabled",
+     "updated_at": "2026-10-30T15:47:34.238250Z",
+     "updated_by": null,
+     "uuid": "941ee6ed-79b5-4c17-8736-f9bc6239ed64"
+    },
+    {
+     "code": "fast_search",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.197384Z",
+     "created_by": null,
+     "description": "",
+     "end_date": "2026-12-31T00:00:00Z",
+     "feature_type": "percentage",
+     "id": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c",
+     "is_enabled": false,
+     "name": "Fast search",
+     "percentage": 25,
+     "start_date": "2026-12-01T00:00:00Z",
+     "status": "scheduled",
+     "updated_at": "2026-10-30T15:47:34.548934Z",
+     "updated_by": null,
+     "uuid": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c"
+    },
+    {
+     "code": "new_review_ui",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.187829Z",
+     "created_by": null,
+     "description": "Redesigned review page v2",
+     "end_date": null,
+     "feature_type": "boolean",
+     "id": "c6675e9b-3383-440c-bdda-5a7f53a90107",
+     "is_enabled": false,
+     "name": "New review UI",
+     "percentage": 0,
+     "start_date": null,
+     "status": "disabled",
+     "updated_at": "2026-10-30T15:47:34.392828Z",
+     "updated_by": null,
+     "uuid": "c6675e9b-3383-440c-bdda-5a7f53a90107"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "2f76e951-dfc5-4fba-b168-40c47021d037"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/feature-flags/?nonsense=1"
+  },
+  "status": 200
+ },
+ "flags_by_search": {
+  "body": {
+   "_bare_list": true,
+   "_len": 3,
+   "items": [
+    {
+     "code": "born_on",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.215972Z",
+     "created_by": null,
+     "description": "",
+     "end_date": null,
+     "feature_type": "boolean",
+     "id": "941ee6ed-79b5-4c17-8736-f9bc6239ed64",
+     "is_enabled": true,
+     "name": "Born on",
+     "percentage": 0,
+     "start_date": null,
+     "status": "enabled",
+     "updated_at": "2026-10-30T15:47:34.238250Z",
+     "updated_by": null,
+     "uuid": "941ee6ed-79b5-4c17-8736-f9bc6239ed64"
+    },
+    {
+     "code": "fast_search",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.197384Z",
+     "created_by": null,
+     "description": "",
+     "end_date": "2026-12-31T00:00:00Z",
+     "feature_type": "percentage",
+     "id": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c",
+     "is_enabled": false,
+     "name": "Fast search",
+     "percentage": 25,
+     "start_date": "2026-12-01T00:00:00Z",
+     "status": "scheduled",
+     "updated_at": "2026-10-30T15:47:34.548934Z",
+     "updated_by": null,
+     "uuid": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c"
+    },
+    {
+     "code": "new_review_ui",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.187829Z",
+     "created_by": null,
+     "description": "Redesigned review page v2",
+     "end_date": null,
+     "feature_type": "boolean",
+     "id": "c6675e9b-3383-440c-bdda-5a7f53a90107",
+     "is_enabled": false,
+     "name": "New review UI",
+     "percentage": 0,
+     "start_date": null,
+     "status": "disabled",
+     "updated_at": "2026-10-30T15:47:34.392828Z",
+     "updated_by": null,
+     "uuid": "c6675e9b-3383-440c-bdda-5a7f53a90107"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "a15bfbf5-211a-4812-a991-dad3c76d8c63"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/feature-flags/?search=search"
+  },
+  "status": 200
+ },
+ "flags_by_status": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "code": "fast_search",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.197384Z",
+     "created_by": null,
+     "description": "",
+     "end_date": "2026-12-31T00:00:00Z",
+     "feature_type": "percentage",
+     "id": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c",
+     "is_enabled": false,
+     "name": "Fast search",
+     "percentage": 25,
+     "start_date": "2026-12-01T00:00:00Z",
+     "status": "scheduled",
+     "updated_at": "2026-10-30T15:47:34.548934Z",
+     "updated_by": null,
+     "uuid": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "0b90fa3f-2500-4b28-8bfa-441330bd9e55"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/feature-flags/?status=scheduled"
+  },
+  "status": 200
+ },
+ "flags_create": {
+  "body": {
+   "code": "new_review_ui",
+   "config": {},
+   "created_at": "2026-10-30T15:47:34.187829Z",
+   "created_by": null,
+   "description": "Redesigned review page",
+   "end_date": null,
+   "feature_type": "boolean",
+   "id": "c6675e9b-3383-440c-bdda-5a7f53a90107",
+   "is_enabled": false,
+   "name": "New review UI",
+   "percentage": 0,
+   "start_date": null,
+   "status": "disabled",
+   "updated_at": "2026-10-30T15:47:34.187836Z",
+   "updated_by": null,
+   "uuid": "c6675e9b-3383-440c-bdda-5a7f53a90107"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "b2f91236-3db5-434a-b518-8612f9c4ef20"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "description": "Redesigned review page",
+    "feature_type": "boolean",
+    "is_enabled": false,
+    "name": "New review UI"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/feature-flags/"
+  },
+  "status": 201
+ },
+ "flags_create_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "d745ffd2-43fa-484a-8883-2c9d94fe10e9"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "d745ffd2-43fa-484a-8883-2c9d94fe10e9"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "name": "Art"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/feature-flags/"
+  },
+  "status": 403
+ },
+ "flags_create_bad_percentage": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "07e27dbe-79a6-45f5-bfed-f70a97dd14c0"
+   },
+   "percentage": [
+    "Percentage must be between 0 and 100."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "07e27dbe-79a6-45f5-bfed-f70a97dd14c0"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "feature_type": "percentage",
+    "name": "Bad",
+    "percentage": 150
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/feature-flags/"
+  },
+  "status": 400
+ },
+ "flags_create_bad_type": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "d89595d0-21a8-4899-9801-f8fc942aca1e"
+   },
+   "feature_type": [
+    "\"banana\" is not a valid choice."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "d89595d0-21a8-4899-9801-f8fc942aca1e"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "feature_type": "banana",
+    "name": "Bad"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/feature-flags/"
+  },
+  "status": 400
+ },
+ "flags_create_duplicate": {
+  "body": {
+   "code": [
+    "Feature Flag with this code already exists."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "397b4684-1886-48af-b025-7ee692b046a1"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "397b4684-1886-48af-b025-7ee692b046a1"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "name": "Again"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/feature-flags/"
+  },
+  "status": 400
+ },
+ "flags_create_empty": {
+  "body": {
+   "code": [
+    "This field is required."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "13f37655-fa01-4206-9f59-774dde8c91a6"
+   },
+   "name": [
+    "This field is required."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "13f37655-fa01-4206-9f59-774dde8c91a6"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/feature-flags/"
+  },
+  "status": 400
+ },
+ "flags_create_for_delete": {
+  "body": {
+   "code": "throwaway",
+   "config": {},
+   "created_at": "2026-10-30T15:47:34.610679Z",
+   "created_by": null,
+   "description": "",
+   "end_date": null,
+   "feature_type": "boolean",
+   "id": "98f3a820-65d4-42e0-81d2-229f5cfc466a",
+   "is_enabled": false,
+   "name": "Throwaway",
+   "percentage": 0,
+   "start_date": null,
+   "status": "disabled",
+   "updated_at": "2026-10-30T15:47:34.610685Z",
+   "updated_by": null,
+   "uuid": "98f3a820-65d4-42e0-81d2-229f5cfc466a"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "d9d7195a-8a00-44bf-a08e-e21d4f0fe726"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "name": "Throwaway"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/feature-flags/"
+  },
+  "status": 201
+ },
+ "flags_create_is_enabled_true": {
+  "body": {
+   "code": "born_on",
+   "config": {},
+   "created_at": "2026-10-30T15:47:34.215972Z",
+   "created_by": null,
+   "description": "",
+   "end_date": null,
+   "feature_type": "boolean",
+   "id": "941ee6ed-79b5-4c17-8736-f9bc6239ed64",
+   "is_enabled": false,
+   "name": "Born on",
+   "percentage": 0,
+   "start_date": null,
+   "status": "disabled",
+   "updated_at": "2026-10-30T15:47:34.215979Z",
+   "updated_by": null,
+   "uuid": "941ee6ed-79b5-4c17-8736-f9bc6239ed64"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "cdd6db2d-753c-4a81-b646-ee5762d5c06c"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "is_enabled": true,
+    "name": "Born on"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/feature-flags/"
+  },
+  "status": 201
+ },
+ "flags_create_percentage": {
+  "body": {
+   "code": "fast_search",
+   "config": {},
+   "created_at": "2026-10-30T15:47:34.197384Z",
+   "created_by": null,
+   "description": "",
+   "end_date": null,
+   "feature_type": "percentage",
+   "id": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c",
+   "is_enabled": false,
+   "name": "Fast search",
+   "percentage": 25,
+   "start_date": null,
+   "status": "disabled",
+   "updated_at": "2026-10-30T15:47:34.197391Z",
+   "updated_by": null,
+   "uuid": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "24328af9-971f-4f94-a297-3ab813cbd966"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "feature_type": "percentage",
+    "name": "Fast search",
+    "percentage": 25
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/feature-flags/"
+  },
+  "status": 201
+ },
+ "flags_delete": {
+  "body": {
+   "_len": 0,
+   "_non_json": null
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "X-Request-ID": "a97f77a2-5c67-4688-879b-9227082a28f7"
+  },
+  "request": {
+   "body": null,
+   "method": "DELETE",
+   "path": "/api/v1/settings/feature-flags/98f3a820-65d4-42e0-81d2-229f5cfc466a/"
+  },
+  "status": 204
+ },
+ "flags_delete_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "040ba585-43c7-4bef-aede-4972bd8ed08c"
+   }
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "040ba585-43c7-4bef-aede-4972bd8ed08c"
+  },
+  "request": {
+   "body": null,
+   "method": "DELETE",
+   "path": "/api/v1/settings/feature-flags/98f3a820-65d4-42e0-81d2-229f5cfc466a/"
+  },
+  "status": 403
+ },
+ "flags_detail_artist": {
+  "body": {
+   "code": "new_review_ui",
+   "config": {},
+   "created_at": "2026-10-30T15:47:34.187829Z",
+   "created_by": null,
+   "description": "Redesigned review page",
+   "end_date": null,
+   "feature_type": "boolean",
+   "id": "c6675e9b-3383-440c-bdda-5a7f53a90107",
+   "is_enabled": false,
+   "name": "New review UI",
+   "percentage": 0,
+   "start_date": null,
+   "status": "disabled",
+   "updated_at": "2026-10-30T15:47:34.187836Z",
+   "updated_by": null,
+   "uuid": "c6675e9b-3383-440c-bdda-5a7f53a90107"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "136f6f74-4b79-46bc-be52-ff2e387d67ea"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/feature-flags/c6675e9b-3383-440c-bdda-5a7f53a90107/"
+  },
+  "status": 200
+ },
+ "flags_detail_born_on": {
+  "body": {
+   "code": "born_on",
+   "config": {},
+   "created_at": "2026-10-30T15:47:34.215972Z",
+   "created_by": null,
+   "description": "",
+   "end_date": null,
+   "feature_type": "boolean",
+   "id": "941ee6ed-79b5-4c17-8736-f9bc6239ed64",
+   "is_enabled": true,
+   "name": "Born on",
+   "percentage": 0,
+   "start_date": null,
+   "status": "enabled",
+   "updated_at": "2026-10-30T15:47:34.238250Z",
+   "updated_by": null,
+   "uuid": "941ee6ed-79b5-4c17-8736-f9bc6239ed64"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "0053c6bc-e5ce-4004-b226-6f2e1f0e82e7"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/feature-flags/941ee6ed-79b5-4c17-8736-f9bc6239ed64/"
+  },
+  "status": 200
+ },
+ "flags_detail_disabled": {
+  "body": {
+   "code": "new_review_ui",
+   "config": {},
+   "created_at": "2026-10-30T15:47:34.187829Z",
+   "created_by": null,
+   "description": "Redesigned review page v2",
+   "end_date": null,
+   "feature_type": "boolean",
+   "id": "c6675e9b-3383-440c-bdda-5a7f53a90107",
+   "is_enabled": false,
+   "name": "New review UI",
+   "percentage": 0,
+   "start_date": null,
+   "status": "disabled",
+   "updated_at": "2026-10-30T15:47:34.392828Z",
+   "updated_by": null,
+   "uuid": "c6675e9b-3383-440c-bdda-5a7f53a90107"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "c067ed3c-c0a1-4ca4-853e-a91460697657"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/feature-flags/c6675e9b-3383-440c-bdda-5a7f53a90107/"
+  },
+  "status": 200
+ },
+ "flags_detail_enabled": {
+  "body": {
+   "code": "new_review_ui",
+   "config": {},
+   "created_at": "2026-10-30T15:47:34.187829Z",
+   "created_by": null,
+   "description": "Redesigned review page v2",
+   "end_date": null,
+   "feature_type": "boolean",
+   "id": "c6675e9b-3383-440c-bdda-5a7f53a90107",
+   "is_enabled": true,
+   "name": "New review UI",
+   "percentage": 0,
+   "start_date": null,
+   "status": "enabled",
+   "updated_at": "2026-10-30T15:47:34.370954Z",
+   "updated_by": null,
+   "uuid": "c6675e9b-3383-440c-bdda-5a7f53a90107"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "87818f50-1321-4727-b602-e6ca0f29033f"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/feature-flags/c6675e9b-3383-440c-bdda-5a7f53a90107/"
+  },
+  "status": 200
+ },
+ "flags_detail_scheduled": {
+  "body": {
+   "code": "fast_search",
+   "config": {},
+   "created_at": "2026-10-30T15:47:34.197384Z",
+   "created_by": null,
+   "description": "",
+   "end_date": "2026-12-31T00:00:00Z",
+   "feature_type": "percentage",
+   "id": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c",
+   "is_enabled": false,
+   "name": "Fast search",
+   "percentage": 25,
+   "start_date": "2026-12-01T00:00:00Z",
+   "status": "scheduled",
+   "updated_at": "2026-10-30T15:47:34.548934Z",
+   "updated_by": null,
+   "uuid": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "edfe5645-f3f5-46f7-b7f5-e9ed239b5867"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/feature-flags/b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c/"
+  },
+  "status": 200
+ },
+ "flags_disable": {
+  "body": {
+   "status": "disabled"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "0bd16a39-dcb2-4275-834d-5c7cd170c3f3"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/feature-flags/c6675e9b-3383-440c-bdda-5a7f53a90107/disable/"
+  },
+  "status": 200
+ },
+ "flags_enable": {
+  "body": {
+   "status": "enabled"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "5a666a45-8faf-4b80-9f23-0831d0cf22d9"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/feature-flags/c6675e9b-3383-440c-bdda-5a7f53a90107/enable/"
+  },
+  "status": 200
+ },
+ "flags_enable_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "44453b81-2d1d-4d9d-9eab-d4df4b96aedf"
+   }
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "44453b81-2d1d-4d9d-9eab-d4df4b96aedf"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/feature-flags/c6675e9b-3383-440c-bdda-5a7f53a90107/enable/"
+  },
+  "status": 403
+ },
+ "flags_list": {
+  "body": {
+   "_bare_list": true,
+   "_len": 3,
+   "items": [
+    {
+     "code": "born_on",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.215972Z",
+     "created_by": null,
+     "description": "",
+     "end_date": null,
+     "feature_type": "boolean",
+     "id": "941ee6ed-79b5-4c17-8736-f9bc6239ed64",
+     "is_enabled": true,
+     "name": "Born on",
+     "percentage": 0,
+     "start_date": null,
+     "status": "enabled",
+     "updated_at": "2026-10-30T15:47:34.238250Z",
+     "updated_by": null,
+     "uuid": "941ee6ed-79b5-4c17-8736-f9bc6239ed64"
+    },
+    {
+     "code": "fast_search",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.197384Z",
+     "created_by": null,
+     "description": "",
+     "end_date": null,
+     "feature_type": "percentage",
+     "id": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c",
+     "is_enabled": false,
+     "name": "Fast search",
+     "percentage": 25,
+     "start_date": null,
+     "status": "disabled",
+     "updated_at": "2026-10-30T15:47:34.197391Z",
+     "updated_by": null,
+     "uuid": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c"
+    },
+    {
+     "code": "new_review_ui",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.187829Z",
+     "created_by": null,
+     "description": "Redesigned review page",
+     "end_date": null,
+     "feature_type": "boolean",
+     "id": "c6675e9b-3383-440c-bdda-5a7f53a90107",
+     "is_enabled": false,
+     "name": "New review UI",
+     "percentage": 0,
+     "start_date": null,
+     "status": "disabled",
+     "updated_at": "2026-10-30T15:47:34.187836Z",
+     "updated_by": null,
+     "uuid": "c6675e9b-3383-440c-bdda-5a7f53a90107"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "980083c8-35eb-4d4b-aae6-fc55f8a57ce5"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/feature-flags/"
+  },
+  "status": 200
+ },
+ "flags_list_artist": {
+  "body": {
+   "_bare_list": true,
+   "_len": 3,
+   "items": [
+    {
+     "code": "born_on",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.215972Z",
+     "created_by": null,
+     "description": "",
+     "end_date": null,
+     "feature_type": "boolean",
+     "id": "941ee6ed-79b5-4c17-8736-f9bc6239ed64",
+     "is_enabled": true,
+     "name": "Born on",
+     "percentage": 0,
+     "start_date": null,
+     "status": "enabled",
+     "updated_at": "2026-10-30T15:47:34.238250Z",
+     "updated_by": null,
+     "uuid": "941ee6ed-79b5-4c17-8736-f9bc6239ed64"
+    },
+    {
+     "code": "fast_search",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.197384Z",
+     "created_by": null,
+     "description": "",
+     "end_date": null,
+     "feature_type": "percentage",
+     "id": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c",
+     "is_enabled": false,
+     "name": "Fast search",
+     "percentage": 25,
+     "start_date": null,
+     "status": "disabled",
+     "updated_at": "2026-10-30T15:47:34.197391Z",
+     "updated_by": null,
+     "uuid": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c"
+    },
+    {
+     "code": "new_review_ui",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.187829Z",
+     "created_by": null,
+     "description": "Redesigned review page",
+     "end_date": null,
+     "feature_type": "boolean",
+     "id": "c6675e9b-3383-440c-bdda-5a7f53a90107",
+     "is_enabled": false,
+     "name": "New review UI",
+     "percentage": 0,
+     "start_date": null,
+     "status": "disabled",
+     "updated_at": "2026-10-30T15:47:34.187836Z",
+     "updated_by": null,
+     "uuid": "c6675e9b-3383-440c-bdda-5a7f53a90107"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "291c96a5-aa06-4d45-afa6-35e0dd18545c"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/feature-flags/"
+  },
+  "status": 200
+ },
+ "flags_list_norole": {
+  "body": {
+   "_bare_list": true,
+   "_len": 3,
+   "items": [
+    {
+     "code": "born_on",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.215972Z",
+     "created_by": null,
+     "description": "",
+     "end_date": null,
+     "feature_type": "boolean",
+     "id": "941ee6ed-79b5-4c17-8736-f9bc6239ed64",
+     "is_enabled": true,
+     "name": "Born on",
+     "percentage": 0,
+     "start_date": null,
+     "status": "enabled",
+     "updated_at": "2026-10-30T15:47:34.238250Z",
+     "updated_by": null,
+     "uuid": "941ee6ed-79b5-4c17-8736-f9bc6239ed64"
+    },
+    {
+     "code": "fast_search",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.197384Z",
+     "created_by": null,
+     "description": "",
+     "end_date": null,
+     "feature_type": "percentage",
+     "id": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c",
+     "is_enabled": false,
+     "name": "Fast search",
+     "percentage": 25,
+     "start_date": null,
+     "status": "disabled",
+     "updated_at": "2026-10-30T15:47:34.197391Z",
+     "updated_by": null,
+     "uuid": "b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c"
+    },
+    {
+     "code": "new_review_ui",
+     "config": {},
+     "created_at": "2026-10-30T15:47:34.187829Z",
+     "created_by": null,
+     "description": "Redesigned review page",
+     "end_date": null,
+     "feature_type": "boolean",
+     "id": "c6675e9b-3383-440c-bdda-5a7f53a90107",
+     "is_enabled": false,
+     "name": "New review UI",
+     "percentage": 0,
+     "start_date": null,
+     "status": "disabled",
+     "updated_at": "2026-10-30T15:47:34.187836Z",
+     "updated_by": null,
+     "uuid": "c6675e9b-3383-440c-bdda-5a7f53a90107"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "d680aeb0-f3c6-4e44-8620-f8407d168edf"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/feature-flags/"
+  },
+  "status": 200
+ },
+ "flags_list_norole_empty": {
+  "body": {
+   "_bare_list": true,
+   "_len": 0,
+   "items": []
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "ddb1927c-17a0-467e-98bc-b3f80e069807"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/feature-flags/"
+  },
+  "status": 200
+ },
+ "flags_patch": {
+  "body": {
+   "code": "new_review_ui",
+   "config": {},
+   "created_at": "2026-10-30T15:47:34.187829Z",
+   "created_by": null,
+   "description": "Redesigned review page v2",
+   "end_date": null,
+   "feature_type": "boolean",
+   "id": "c6675e9b-3383-440c-bdda-5a7f53a90107",
+   "is_enabled": false,
+   "name": "New review UI",
+   "percentage": 0,
+   "start_date": null,
+   "status": "disabled",
+   "updated_at": "2026-10-30T15:47:34.352174Z",
+   "updated_by": null,
+   "uuid": "c6675e9b-3383-440c-bdda-5a7f53a90107"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "94477527-2b9f-4b31-9ad8-bcc1cf062e91"
+  },
+  "request": {
+   "body": {
+    "description": "Redesigned review page v2"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/settings/feature-flags/c6675e9b-3383-440c-bdda-5a7f53a90107/"
+  },
+  "status": 200
+ },
+ "flags_patch_is_enabled": {
+  "body": {
+   "code": "born_on",
+   "config": {},
+   "created_at": "2026-10-30T15:47:34.215972Z",
+   "created_by": null,
+   "description": "",
+   "end_date": null,
+   "feature_type": "boolean",
+   "id": "941ee6ed-79b5-4c17-8736-f9bc6239ed64",
+   "is_enabled": false,
+   "name": "Born on",
+   "percentage": 0,
+   "start_date": null,
+   "status": "disabled",
+   "updated_at": "2026-10-30T15:47:34.226650Z",
+   "updated_by": null,
+   "uuid": "941ee6ed-79b5-4c17-8736-f9bc6239ed64"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "bd00be49-ad75-4936-b7a5-03171494cc43"
+  },
+  "request": {
+   "body": {
+    "is_enabled": false
+   },
+   "method": "PATCH",
+   "path": "/api/v1/settings/feature-flags/941ee6ed-79b5-4c17-8736-f9bc6239ed64/"
+  },
+  "status": 200
+ },
+ "flags_patch_status": {
+  "body": {
+   "code": "born_on",
+   "config": {},
+   "created_at": "2026-10-30T15:47:34.215972Z",
+   "created_by": null,
+   "description": "",
+   "end_date": null,
+   "feature_type": "boolean",
+   "id": "941ee6ed-79b5-4c17-8736-f9bc6239ed64",
+   "is_enabled": true,
+   "name": "Born on",
+   "percentage": 0,
+   "start_date": null,
+   "status": "enabled",
+   "updated_at": "2026-10-30T15:47:34.238250Z",
+   "updated_by": null,
+   "uuid": "941ee6ed-79b5-4c17-8736-f9bc6239ed64"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "62256da6-7702-4ffe-b84e-cf159c96035e"
+  },
+  "request": {
+   "body": {
+    "status": "enabled"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/settings/feature-flags/941ee6ed-79b5-4c17-8736-f9bc6239ed64/"
+  },
+  "status": 200
+ },
+ "flags_schedule": {
+  "body": {
+   "status": "scheduled"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "1da6ec82-98fc-4bf5-8852-35791163c7e3"
+  },
+  "request": {
+   "body": {
+    "end_date": "2026-12-31T00:00:00Z",
+    "start_date": "2026-12-01T00:00:00Z"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/feature-flags/b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c/schedule/"
+  },
+  "status": 200
+ },
+ "flags_schedule_backwards": {
+  "body": {
+   "end_date": [
+    "End must be after the start."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "8226bfdf-4de6-4605-abf1-f38752e0fda6"
+   }
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "8226bfdf-4de6-4605-abf1-f38752e0fda6"
+  },
+  "request": {
+   "body": {
+    "end_date": "2027-01-01T00:00:00Z",
+    "start_date": "2027-01-10T00:00:00Z"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/feature-flags/b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c/schedule/"
+  },
+  "status": 400
+ },
+ "flags_schedule_bad_date": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "11e014c8-a2b8-4061-95fe-51c84f4fe4a1"
+   },
+   "start_date": [
+    "Enter a valid date and time."
+   ]
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "11e014c8-a2b8-4061-95fe-51c84f4fe4a1"
+  },
+  "request": {
+   "body": {
+    "end_date": "later",
+    "start_date": "soon"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/feature-flags/b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c/schedule/"
+  },
+  "status": 400
+ },
+ "flags_schedule_empty": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "19cb7517-f134-449e-968d-24e8fe000d83"
+   },
+   "start_date": [
+    "This field is required."
+   ]
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "19cb7517-f134-449e-968d-24e8fe000d83"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/feature-flags/b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c/schedule/"
+  },
+  "status": 400
+ },
+ "flags_schedule_naive": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "b0e87c69-e40e-419b-b281-a6e062310ca5"
+   },
+   "start_date": [
+    "Include a time zone, for example 2026-12-01T09:00:00Z."
+   ]
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "b0e87c69-e40e-419b-b281-a6e062310ca5"
+  },
+  "request": {
+   "body": {
+    "end_date": "2026-12-31T00:00:00",
+    "start_date": "2026-12-01T00:00:00"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/feature-flags/b6cbcdf5-4a1c-4ae6-aea3-218a7f4b592c/schedule/"
+  },
+  "status": 400
+ },
+ "locales_activate": {
+  "body": {
+   "status": "activated"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "67f166a1-7556-4139-b4a0-c7285425bcf5"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/localizations/57ab7791-ff04-4179-97be-c5077ea08d0a/activate/"
+  },
+  "status": 200
+ },
+ "locales_activate_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "694cd912-5f43-4f63-9574-bd54b252c37b"
+   }
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "694cd912-5f43-4f63-9574-bd54b252c37b"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/localizations/57ab7791-ff04-4179-97be-c5077ea08d0a/activate/"
+  },
+  "status": 403
+ },
+ "locales_activate_second": {
+  "body": {
+   "status": "activated"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "7936a82c-403d-4243-94c5-b4ceb82a80de"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/localizations/c8a3d333-cfa3-4e19-8d46-9be66a90aaa9/activate/"
+  },
+  "status": 200
+ },
+ "locales_baseline": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "code": "en-in",
+     "created_at": "2026-10-30T15:47:35.060629Z",
+     "currency_code": "INR",
+     "currency_symbol": "\u20b9",
+     "date_format": "DD-MM-YYYY",
+     "fiscal_year_start": null,
+     "id": "c8a3d333-cfa3-4e19-8d46-9be66a90aaa9",
+     "is_active": false,
+     "language": "en",
+     "name": "English (India)",
+     "number_format": "dot",
+     "time_format": "24H",
+     "timezone": "Asia/Kolkata",
+     "updated_at": "2026-10-30T15:47:35.197635Z",
+     "uuid": "c8a3d333-cfa3-4e19-8d46-9be66a90aaa9",
+     "week_start": 1
+    },
+    {
+     "code": "en-gb",
+     "created_at": "2026-10-30T15:47:35.051318Z",
+     "currency_code": "GBP",
+     "currency_symbol": "\u00a3",
+     "date_format": "DD/MM/YYYY",
+     "fiscal_year_start": null,
+     "id": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+     "is_active": true,
+     "language": "en",
+     "name": "English (UK)",
+     "number_format": "dot",
+     "time_format": "12H",
+     "timezone": "Europe/London",
+     "updated_at": "2026-10-30T15:47:35.165680Z",
+     "uuid": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+     "week_start": 1
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "6ce3b742-e8f5-4b82-9659-bf51a434c428"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/localizations/"
+  },
+  "status": 200
+ },
+ "locales_by_code__icontains": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "code": "en-gb",
+     "created_at": "2026-10-30T15:47:35.051318Z",
+     "currency_code": "GBP",
+     "currency_symbol": "\u00a3",
+     "date_format": "DD/MM/YYYY",
+     "fiscal_year_start": null,
+     "id": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+     "is_active": true,
+     "language": "en",
+     "name": "English (UK)",
+     "number_format": "dot",
+     "time_format": "12H",
+     "timezone": "Europe/London",
+     "updated_at": "2026-10-30T15:47:35.165680Z",
+     "uuid": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+     "week_start": 1
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "a2d6d67a-fb6b-4f97-989b-c50e98061e09"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/localizations/?code__icontains=gb"
+  },
+  "status": 200
+ },
+ "locales_by_is_active": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "code": "en-in",
+     "created_at": "2026-10-30T15:47:35.060629Z",
+     "currency_code": "INR",
+     "currency_symbol": "\u20b9",
+     "date_format": "DD-MM-YYYY",
+     "fiscal_year_start": null,
+     "id": "c8a3d333-cfa3-4e19-8d46-9be66a90aaa9",
+     "is_active": false,
+     "language": "en",
+     "name": "English (India)",
+     "number_format": "dot",
+     "time_format": "24H",
+     "timezone": "Asia/Kolkata",
+     "updated_at": "2026-10-30T15:47:35.197635Z",
+     "uuid": "c8a3d333-cfa3-4e19-8d46-9be66a90aaa9",
+     "week_start": 1
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "4c556f28-cfec-441c-aeec-384947887618"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/localizations/?is_active=false"
+  },
+  "status": 200
+ },
+ "locales_by_language": {
+  "body": {
+   "_bare_list": true,
+   "_len": 0,
+   "items": []
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "b6c26461-28d3-4929-bc0d-527c85a9c9c4"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/localizations/?language=fr"
+  },
+  "status": 200
+ },
+ "locales_by_nonsense": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "code": "en-in",
+     "created_at": "2026-10-30T15:47:35.060629Z",
+     "currency_code": "INR",
+     "currency_symbol": "\u20b9",
+     "date_format": "DD-MM-YYYY",
+     "fiscal_year_start": null,
+     "id": "c8a3d333-cfa3-4e19-8d46-9be66a90aaa9",
+     "is_active": false,
+     "language": "en",
+     "name": "English (India)",
+     "number_format": "dot",
+     "time_format": "24H",
+     "timezone": "Asia/Kolkata",
+     "updated_at": "2026-10-30T15:47:35.197635Z",
+     "uuid": "c8a3d333-cfa3-4e19-8d46-9be66a90aaa9",
+     "week_start": 1
+    },
+    {
+     "code": "en-gb",
+     "created_at": "2026-10-30T15:47:35.051318Z",
+     "currency_code": "GBP",
+     "currency_symbol": "\u00a3",
+     "date_format": "DD/MM/YYYY",
+     "fiscal_year_start": null,
+     "id": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+     "is_active": true,
+     "language": "en",
+     "name": "English (UK)",
+     "number_format": "dot",
+     "time_format": "12H",
+     "timezone": "Europe/London",
+     "updated_at": "2026-10-30T15:47:35.165680Z",
+     "uuid": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+     "week_start": 1
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "468b3b2e-5e39-480f-aadb-0cdd71e746d4"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/localizations/?nonsense=1"
+  },
+  "status": 200
+ },
+ "locales_by_search": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "code": "en-in",
+     "created_at": "2026-10-30T15:47:35.060629Z",
+     "currency_code": "INR",
+     "currency_symbol": "\u20b9",
+     "date_format": "DD-MM-YYYY",
+     "fiscal_year_start": null,
+     "id": "c8a3d333-cfa3-4e19-8d46-9be66a90aaa9",
+     "is_active": false,
+     "language": "en",
+     "name": "English (India)",
+     "number_format": "dot",
+     "time_format": "24H",
+     "timezone": "Asia/Kolkata",
+     "updated_at": "2026-10-30T15:47:35.197635Z",
+     "uuid": "c8a3d333-cfa3-4e19-8d46-9be66a90aaa9",
+     "week_start": 1
+    },
+    {
+     "code": "en-gb",
+     "created_at": "2026-10-30T15:47:35.051318Z",
+     "currency_code": "GBP",
+     "currency_symbol": "\u00a3",
+     "date_format": "DD/MM/YYYY",
+     "fiscal_year_start": null,
+     "id": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+     "is_active": true,
+     "language": "en",
+     "name": "English (UK)",
+     "number_format": "dot",
+     "time_format": "12H",
+     "timezone": "Europe/London",
+     "updated_at": "2026-10-30T15:47:35.165680Z",
+     "uuid": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+     "week_start": 1
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "74a0d242-7afc-4282-9518-047e2a442119"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/localizations/?search=uk"
+  },
+  "status": 200
+ },
+ "locales_by_timezone": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "code": "en-in",
+     "created_at": "2026-10-30T15:47:35.060629Z",
+     "currency_code": "INR",
+     "currency_symbol": "\u20b9",
+     "date_format": "DD-MM-YYYY",
+     "fiscal_year_start": null,
+     "id": "c8a3d333-cfa3-4e19-8d46-9be66a90aaa9",
+     "is_active": false,
+     "language": "en",
+     "name": "English (India)",
+     "number_format": "dot",
+     "time_format": "24H",
+     "timezone": "Asia/Kolkata",
+     "updated_at": "2026-10-30T15:47:35.197635Z",
+     "uuid": "c8a3d333-cfa3-4e19-8d46-9be66a90aaa9",
+     "week_start": 1
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "b58184f1-c2f1-41cb-83ec-3819ff279312"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/localizations/?timezone=Asia/Kolkata"
+  },
+  "status": 200
+ },
+ "locales_create": {
+  "body": {
+   "code": "en-gb",
+   "created_at": "2026-10-30T15:47:35.051318Z",
+   "currency_code": "GBP",
+   "currency_symbol": "\u00a3",
+   "date_format": "DD/MM/YYYY",
+   "fiscal_year_start": null,
+   "id": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+   "is_active": true,
+   "language": "en",
+   "name": "English (UK)",
+   "number_format": "dot",
+   "time_format": "24H",
+   "timezone": "Europe/London",
+   "updated_at": "2026-10-30T15:47:35.051325Z",
+   "uuid": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+   "week_start": 1
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "001df556-fee1-41bd-aaa3-707ca832deec"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "currency_code": "GBP",
+    "currency_symbol": "\u00a3",
+    "date_format": "DD/MM/YYYY",
+    "language": "en",
+    "name": "English (UK)",
+    "time_format": "24H",
+    "timezone": "Europe/London",
+    "week_start": 1
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/localizations/"
+  },
+  "status": 201
+ },
+ "locales_create_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "5b899cbe-ab34-4b31-ba99-5d9178a5ac84"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "5b899cbe-ab34-4b31-ba99-5d9178a5ac84"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "language": "en",
+    "name": "Art"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/localizations/"
+  },
+  "status": 403
+ },
+ "locales_create_bad_language": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "cc6ec1da-c33f-47e4-a119-cc7152606ba5"
+   },
+   "language": [
+    "\"klingon\" is not a valid choice."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "cc6ec1da-c33f-47e4-a119-cc7152606ba5"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "language": "klingon",
+    "name": "X"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/localizations/"
+  },
+  "status": 400
+ },
+ "locales_create_bad_week": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "5097a557-2062-4182-80bb-7cb6c1c1725d"
+   },
+   "week_start": [
+    "Week start is 0 (Sunday) or 1 (Monday)."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "5097a557-2062-4182-80bb-7cb6c1c1725d"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "language": "en",
+    "name": "X",
+    "week_start": 9
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/localizations/"
+  },
+  "status": 400
+ },
+ "locales_create_bad_zone": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "d7bb1698-0ea7-429e-b83d-279d772aae45"
+   },
+   "timezone": [
+    "\"Mars/Olympus\" is not a valid choice."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "d7bb1698-0ea7-429e-b83d-279d772aae45"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "language": "en",
+    "name": "X",
+    "timezone": "Mars/Olympus"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/localizations/"
+  },
+  "status": 400
+ },
+ "locales_create_duplicate": {
+  "body": {
+   "code": [
+    "Localization with this code already exists."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "15ab950e-4c25-44d3-bbfb-9c0c1b817940"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "15ab950e-4c25-44d3-bbfb-9c0c1b817940"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "language": "en",
+    "name": "Again"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/localizations/"
+  },
+  "status": 400
+ },
+ "locales_create_empty": {
+  "body": {
+   "code": [
+    "This field is required."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "72c98e1f-a159-4086-baa8-d68da57e75e2"
+   },
+   "name": [
+    "This field is required."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "72c98e1f-a159-4086-baa8-d68da57e75e2"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/localizations/"
+  },
+  "status": 400
+ },
+ "locales_create_second": {
+  "body": {
+   "code": "en-in",
+   "created_at": "2026-10-30T15:47:35.060629Z",
+   "currency_code": "INR",
+   "currency_symbol": "\u20b9",
+   "date_format": "DD-MM-YYYY",
+   "fiscal_year_start": null,
+   "id": "c8a3d333-cfa3-4e19-8d46-9be66a90aaa9",
+   "is_active": true,
+   "language": "en",
+   "name": "English (India)",
+   "number_format": "dot",
+   "time_format": "24H",
+   "timezone": "Asia/Kolkata",
+   "updated_at": "2026-10-30T15:47:35.060635Z",
+   "uuid": "c8a3d333-cfa3-4e19-8d46-9be66a90aaa9",
+   "week_start": 1
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "f53dd640-93b1-47bb-8678-922aacaebde1"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "currency_code": "INR",
+    "currency_symbol": "\u20b9",
+    "date_format": "DD-MM-YYYY",
+    "language": "en",
+    "name": "English (India)",
+    "timezone": "Asia/Kolkata"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/localizations/"
+  },
+  "status": 201
+ },
+ "locales_deactivate": {
+  "body": {
+   "status": "deactivated"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "bc6b76ba-5eef-4f61-a2ce-3f521436b3a3"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/localizations/c8a3d333-cfa3-4e19-8d46-9be66a90aaa9/deactivate/"
+  },
+  "status": 200
+ },
+ "locales_delete": {
+  "body": {
+   "_len": 0,
+   "_non_json": null
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "X-Request-ID": "0dd7c122-4cd6-4f3f-b0b1-d04662255047"
+  },
+  "request": {
+   "body": null,
+   "method": "DELETE",
+   "path": "/api/v1/settings/localizations/c8a3d333-cfa3-4e19-8d46-9be66a90aaa9/"
+  },
+  "status": 204
+ },
+ "locales_detail": {
+  "body": {
+   "code": "en-gb",
+   "created_at": "2026-10-30T15:47:35.051318Z",
+   "currency_code": "GBP",
+   "currency_symbol": "\u00a3",
+   "date_format": "DD/MM/YYYY",
+   "fiscal_year_start": null,
+   "id": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+   "is_active": true,
+   "language": "en",
+   "name": "English (UK)",
+   "number_format": "dot",
+   "time_format": "24H",
+   "timezone": "Europe/London",
+   "updated_at": "2026-10-30T15:47:35.051325Z",
+   "uuid": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+   "week_start": 1
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "4e3c584d-ce4b-4f85-9a52-bf0791916de4"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/localizations/57ab7791-ff04-4179-97be-c5077ea08d0a/"
+  },
+  "status": 200
+ },
+ "locales_list": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "code": "en-in",
+     "created_at": "2026-10-30T15:47:35.060629Z",
+     "currency_code": "INR",
+     "currency_symbol": "\u20b9",
+     "date_format": "DD-MM-YYYY",
+     "fiscal_year_start": null,
+     "id": "c8a3d333-cfa3-4e19-8d46-9be66a90aaa9",
+     "is_active": true,
+     "language": "en",
+     "name": "English (India)",
+     "number_format": "dot",
+     "time_format": "24H",
+     "timezone": "Asia/Kolkata",
+     "updated_at": "2026-10-30T15:47:35.060635Z",
+     "uuid": "c8a3d333-cfa3-4e19-8d46-9be66a90aaa9",
+     "week_start": 1
+    },
+    {
+     "code": "en-gb",
+     "created_at": "2026-10-30T15:47:35.051318Z",
+     "currency_code": "GBP",
+     "currency_symbol": "\u00a3",
+     "date_format": "DD/MM/YYYY",
+     "fiscal_year_start": null,
+     "id": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+     "is_active": true,
+     "language": "en",
+     "name": "English (UK)",
+     "number_format": "dot",
+     "time_format": "24H",
+     "timezone": "Europe/London",
+     "updated_at": "2026-10-30T15:47:35.051325Z",
+     "uuid": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+     "week_start": 1
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "4e411aa4-261a-4760-82fb-a4afbf7e0818"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/localizations/"
+  },
+  "status": 200
+ },
+ "locales_list_after_activate": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "code": "en-in",
+     "created_at": "2026-10-30T15:47:35.060629Z",
+     "currency_code": "INR",
+     "currency_symbol": "\u20b9",
+     "date_format": "DD-MM-YYYY",
+     "fiscal_year_start": null,
+     "id": "c8a3d333-cfa3-4e19-8d46-9be66a90aaa9",
+     "is_active": true,
+     "language": "en",
+     "name": "English (India)",
+     "number_format": "dot",
+     "time_format": "24H",
+     "timezone": "Asia/Kolkata",
+     "updated_at": "2026-10-30T15:47:35.176629Z",
+     "uuid": "c8a3d333-cfa3-4e19-8d46-9be66a90aaa9",
+     "week_start": 1
+    },
+    {
+     "code": "en-gb",
+     "created_at": "2026-10-30T15:47:35.051318Z",
+     "currency_code": "GBP",
+     "currency_symbol": "\u00a3",
+     "date_format": "DD/MM/YYYY",
+     "fiscal_year_start": null,
+     "id": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+     "is_active": true,
+     "language": "en",
+     "name": "English (UK)",
+     "number_format": "dot",
+     "time_format": "12H",
+     "timezone": "Europe/London",
+     "updated_at": "2026-10-30T15:47:35.165680Z",
+     "uuid": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+     "week_start": 1
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "b6b49db0-3d9d-43c4-9334-64b0600451bb"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/localizations/"
+  },
+  "status": 200
+ },
+ "locales_list_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "e0fd29c7-9367-4dbc-ad94-a1ba962e7e28"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "e0fd29c7-9367-4dbc-ad94-a1ba962e7e28"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/localizations/"
+  },
+  "status": 403
+ },
+ "locales_patch": {
+  "body": {
+   "code": "en-gb",
+   "created_at": "2026-10-30T15:47:35.051318Z",
+   "currency_code": "GBP",
+   "currency_symbol": "\u00a3",
+   "date_format": "DD/MM/YYYY",
+   "fiscal_year_start": null,
+   "id": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+   "is_active": true,
+   "language": "en",
+   "name": "English (UK)",
+   "number_format": "dot",
+   "time_format": "12H",
+   "timezone": "Europe/London",
+   "updated_at": "2026-10-30T15:47:35.154879Z",
+   "uuid": "57ab7791-ff04-4179-97be-c5077ea08d0a",
+   "week_start": 1
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "4e136ecb-59d6-413c-ac37-82118d8ee85f"
+  },
+  "request": {
+   "body": {
+    "time_format": "12H"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/settings/localizations/57ab7791-ff04-4179-97be-c5077ea08d0a/"
+  },
+  "status": 200
+ },
+ "tags_by_is_system": {
+  "body": {
+   "_results_total_in_page": 1,
+   "count": 1,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "color": "#22c55e",
+     "created_at": "2026-10-30T15:47:35.345472Z",
+     "created_by": null,
+     "deleted_by": null,
+     "description": "",
+     "id": "90c89c21-2c9b-4b87-af60-55254aaf286f",
+     "is_system": true,
+     "name": "client-facing",
+     "updated_at": "2026-10-30T15:47:35.345478Z",
+     "updated_by": null,
+     "uuid": "90c89c21-2c9b-4b87-af60-55254aaf286f"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "f4e733d0-736d-41bb-9279-25ee4d45a972"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/core/tags/?is_system=true"
+  },
+  "status": 200
+ },
+ "tags_by_nonsense": {
+  "body": {
+   "_results_total_in_page": 1,
+   "count": 1,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "color": "#22c55e",
+     "created_at": "2026-10-30T15:47:35.345472Z",
+     "created_by": null,
+     "deleted_by": null,
+     "description": "",
+     "id": "90c89c21-2c9b-4b87-af60-55254aaf286f",
+     "is_system": true,
+     "name": "client-facing",
+     "updated_at": "2026-10-30T15:47:35.345478Z",
+     "updated_by": null,
+     "uuid": "90c89c21-2c9b-4b87-af60-55254aaf286f"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "53f2342e-deed-417f-b15a-4d8172eb81b5"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/core/tags/?nonsense=1"
+  },
+  "status": 200
+ },
+ "tags_by_search": {
+  "body": {
+   "_results_total_in_page": 1,
+   "count": 1,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "color": "#22c55e",
+     "created_at": "2026-10-30T15:47:35.345472Z",
+     "created_by": null,
+     "deleted_by": null,
+     "description": "",
+     "id": "90c89c21-2c9b-4b87-af60-55254aaf286f",
+     "is_system": true,
+     "name": "client-facing",
+     "updated_at": "2026-10-30T15:47:35.345478Z",
+     "updated_by": null,
+     "uuid": "90c89c21-2c9b-4b87-af60-55254aaf286f"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "b958b228-5a25-4608-86e2-8089c0086572"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/core/tags/?search=client"
+  },
+  "status": 200
+ },
+ "tags_create": {
+  "body": {
+   "color": "#f59e0b",
+   "description": "Hero shots",
+   "id": "0264ea26-0373-46c9-b653-2d4647a7a774",
+   "is_system": false,
+   "name": "hero",
+   "uuid": "0264ea26-0373-46c9-b653-2d4647a7a774"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "dcbf01a8-c6a6-4a69-8d74-307832378d47"
+  },
+  "request": {
+   "body": {
+    "color": "#f59e0b",
+    "description": "Hero shots",
+    "name": "hero"
+   },
+   "method": "POST",
+   "path": "/api/v1/core/tags/"
+  },
+  "status": 201
+ },
+ "tags_create_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "fc6c57ed-0564-421a-8e1a-4f44b84b05ee"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "fc6c57ed-0564-421a-8e1a-4f44b84b05ee"
+  },
+  "request": {
+   "body": {
+    "color": "#f59e0b",
+    "description": "Hero shots",
+    "name": "hero"
+   },
+   "method": "POST",
+   "path": "/api/v1/core/tags/"
+  },
+  "status": 403
+ },
+ "tags_create_bad_color": {
+  "body": {
+   "color": [
+    "Enter a hex colour such as #3366ff."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "6b58a244-e82c-4a5f-ac7b-1e13b1151b7f"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "6b58a244-e82c-4a5f-ac7b-1e13b1151b7f"
+  },
+  "request": {
+   "body": {
+    "color": "red",
+    "name": "bad"
+   },
+   "method": "POST",
+   "path": "/api/v1/core/tags/"
+  },
+  "status": 400
+ },
+ "tags_create_duplicate": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "2c768553-973f-4e1c-8fab-0f4fdd3751e8"
+   },
+   "name": [
+    "Tag with this name already exists."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "2c768553-973f-4e1c-8fab-0f4fdd3751e8"
+  },
+  "request": {
+   "body": {
+    "name": "hero"
+   },
+   "method": "POST",
+   "path": "/api/v1/core/tags/"
+  },
+  "status": 400
+ },
+ "tags_create_empty": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "a6a090e4-c0ed-4e85-b262-c6c37e5391fc"
+   },
+   "name": [
+    "This field is required."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "a6a090e4-c0ed-4e85-b262-c6c37e5391fc"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/core/tags/"
+  },
+  "status": 400
+ },
+ "tags_create_norole": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "2cfdbdec-eeb0-422a-84c4-cbeb83cbebfa"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "2cfdbdec-eeb0-422a-84c4-cbeb83cbebfa"
+  },
+  "request": {
+   "body": {
+    "name": "norole-tag"
+   },
+   "method": "POST",
+   "path": "/api/v1/core/tags/"
+  },
+  "status": 403
+ },
+ "tags_create_system": {
+  "body": {
+   "color": "#22c55e",
+   "description": "",
+   "id": "90c89c21-2c9b-4b87-af60-55254aaf286f",
+   "is_system": true,
+   "name": "client-facing",
+   "uuid": "90c89c21-2c9b-4b87-af60-55254aaf286f"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "9e14fbe6-0aef-4446-a3bd-cfd113a74673"
+  },
+  "request": {
+   "body": {
+    "color": "#22c55e",
+    "is_system": true,
+    "name": "client-facing"
+   },
+   "method": "POST",
+   "path": "/api/v1/core/tags/"
+  },
+  "status": 201
+ },
+ "tags_create_system_by_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "b1d85ce7-c925-45f2-8d9d-ca67580b1dc2"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "b1d85ce7-c925-45f2-8d9d-ca67580b1dc2"
+  },
+  "request": {
+   "body": {
+    "is_system": true,
+    "name": "sneaky-system"
+   },
+   "method": "POST",
+   "path": "/api/v1/core/tags/"
+  },
+  "status": 403
+ },
+ "tags_delete": {
+  "body": {
+   "_len": 0,
+   "_non_json": null
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "X-Request-ID": "38e45001-dc22-420e-8efa-543ad462d2a5"
+  },
+  "request": {
+   "body": null,
+   "method": "DELETE",
+   "path": "/api/v1/core/tags/0264ea26-0373-46c9-b653-2d4647a7a774/"
+  },
+  "status": 204
+ },
+ "tags_delete_system_by_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "5b9bcb42-183a-4b4f-9961-50640529d29c"
+   }
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "5b9bcb42-183a-4b4f-9961-50640529d29c"
+  },
+  "request": {
+   "body": null,
+   "method": "DELETE",
+   "path": "/api/v1/core/tags/90c89c21-2c9b-4b87-af60-55254aaf286f/"
+  },
+  "status": 403
+ },
+ "tags_detail": {
+  "body": {
+   "color": "#f59e0b",
+   "created_at": "2026-10-30T15:47:35.336997Z",
+   "created_by": null,
+   "deleted_by": null,
+   "description": "Hero shots",
+   "id": "0264ea26-0373-46c9-b653-2d4647a7a774",
+   "is_system": false,
+   "name": "hero",
+   "updated_at": "2026-10-30T15:47:35.337003Z",
+   "updated_by": null,
+   "uuid": "0264ea26-0373-46c9-b653-2d4647a7a774"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "006c540e-8e8b-497e-87ce-17535b8b5f51"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/core/tags/0264ea26-0373-46c9-b653-2d4647a7a774/"
+  },
+  "status": 200
+ },
+ "tags_detail_deleted": {
+  "body": {
+   "detail": "No Tag matches the given query.",
+   "error": {
+    "code": "not_found",
+    "request_id": "68186a31-b5a2-4bf1-8bf0-360da286c61b"
+   }
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "68186a31-b5a2-4bf1-8bf0-360da286c61b"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/core/tags/0264ea26-0373-46c9-b653-2d4647a7a774/"
+  },
+  "status": 404
+ },
+ "tags_list": {
+  "body": {
+   "_results_total_in_page": 2,
+   "count": 2,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "color": "#22c55e",
+     "created_at": "2026-10-30T15:47:35.345472Z",
+     "created_by": null,
+     "deleted_by": null,
+     "description": "",
+     "id": "90c89c21-2c9b-4b87-af60-55254aaf286f",
+     "is_system": true,
+     "name": "client-facing",
+     "updated_at": "2026-10-30T15:47:35.345478Z",
+     "updated_by": null,
+     "uuid": "90c89c21-2c9b-4b87-af60-55254aaf286f"
+    },
+    {
+     "color": "#f59e0b",
+     "created_at": "2026-10-30T15:47:35.336997Z",
+     "created_by": null,
+     "deleted_by": null,
+     "description": "Hero shots",
+     "id": "0264ea26-0373-46c9-b653-2d4647a7a774",
+     "is_system": false,
+     "name": "hero",
+     "updated_at": "2026-10-30T15:47:35.337003Z",
+     "updated_by": null,
+     "uuid": "0264ea26-0373-46c9-b653-2d4647a7a774"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "d1451ac2-452a-41fd-b20d-e83a42673d36"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/core/tags/"
+  },
+  "status": 200
+ },
+ "tags_list_empty": {
+  "body": {
+   "_results_total_in_page": 0,
+   "count": 0,
+   "next": null,
+   "previous": null,
+   "results": []
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "deb8a2e3-9b5b-49c7-8a23-34ef011ca94a"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/core/tags/"
+  },
+  "status": 200
+ },
+ "tags_patch": {
+  "body": {
+   "color": "#f59e0b",
+   "description": "Hero shots v2",
+   "id": "0264ea26-0373-46c9-b653-2d4647a7a774",
+   "is_system": false,
+   "name": "hero",
+   "uuid": "0264ea26-0373-46c9-b653-2d4647a7a774"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "d1db7b53-7727-4965-8b56-17af5aa40e4c"
+  },
+  "request": {
+   "body": {
+    "description": "Hero shots v2"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/core/tags/0264ea26-0373-46c9-b653-2d4647a7a774/"
+  },
+  "status": 200
+ },
+ "tags_patch_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "e2754204-779c-4611-bd6d-4b4319975d70"
+   }
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "e2754204-779c-4611-bd6d-4b4319975d70"
+  },
+  "request": {
+   "body": {
+    "description": "mine now"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/core/tags/0264ea26-0373-46c9-b653-2d4647a7a774/"
+  },
+  "status": 403
+ },
+ "tags_patch_is_system": {
+  "body": {
+   "color": "#f59e0b",
+   "description": "Hero shots v2",
+   "id": "0264ea26-0373-46c9-b653-2d4647a7a774",
+   "is_system": true,
+   "name": "hero",
+   "uuid": "0264ea26-0373-46c9-b653-2d4647a7a774"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "62ec2ead-2741-411b-86ea-823c97401473"
+  },
+  "request": {
+   "body": {
+    "is_system": true
+   },
+   "method": "PATCH",
+   "path": "/api/v1/core/tags/0264ea26-0373-46c9-b653-2d4647a7a774/"
+  },
+  "status": 200
+ },
+ "tags_patch_system_by_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "26bd40da-6380-43be-8060-4cf385056b16"
+   }
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "26bd40da-6380-43be-8060-4cf385056b16"
+  },
+  "request": {
+   "body": {
+    "name": "hijacked"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/core/tags/90c89c21-2c9b-4b87-af60-55254aaf286f/"
+  },
+  "status": 403
+ },
+ "themes_activate": {
+  "body": {
+   "status": "activated"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "92dcc28e-c2f1-427e-9957-84e7cb9c4b3a"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/themes/c0eb093d-e5ef-4ef2-aa66-7c4a439045b2/activate/"
+  },
+  "status": 200
+ },
+ "themes_activate_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "3654399e-3430-4882-8993-6e1e3587d740"
+   }
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "3654399e-3430-4882-8993-6e1e3587d740"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/themes/c0eb093d-e5ef-4ef2-aa66-7c4a439045b2/activate/"
+  },
+  "status": 403
+ },
+ "themes_activate_back": {
+  "body": {
+   "status": "activated"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "4baebcb3-2a1e-4d2a-b660-d34609908207"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/themes/c0eb093d-e5ef-4ef2-aa66-7c4a439045b2/activate/"
+  },
+  "status": 200
+ },
+ "themes_activate_second": {
+  "body": {
+   "status": "activated"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "4d42d0f5-13b5-47fd-b804-3bb9970cd131"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/themes/93f3ff61-ed75-4ce9-be95-12c275346e98/activate/"
+  },
+  "status": 200
+ },
+ "themes_baseline": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "accent_color": "#f59e0b",
+     "background_color": "#020617",
+     "border_color": "#E5E7EB",
+     "border_radius": 8,
+     "code": "studio-dark",
+     "created_at": "2026-10-30T15:47:34.744430Z",
+     "description": "",
+     "font_family": "sans",
+     "font_size": 14,
+     "id": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2",
+     "is_active": true,
+     "name": "Studio dark",
+     "navbar_fixed": true,
+     "primary_color": "#06b6d4",
+     "secondary_color": "#10B981",
+     "sidebar_collapsed": false,
+     "spacing_unit": 8,
+     "surface_color": "#FFFFFF",
+     "text_primary": "#111827",
+     "text_secondary": "#6B7280",
+     "theme_type": "dark",
+     "updated_at": "2026-10-30T15:47:34.944627Z",
+     "uuid": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2"
+    },
+    {
+     "accent_color": "#F59E0B",
+     "background_color": "#F9FAFB",
+     "border_color": "#E5E7EB",
+     "border_radius": 8,
+     "code": "studio-light",
+     "created_at": "2026-10-30T15:47:34.756163Z",
+     "description": "",
+     "font_family": "sans",
+     "font_size": 14,
+     "id": "93f3ff61-ed75-4ce9-be95-12c275346e98",
+     "is_active": false,
+     "name": "Studio light",
+     "navbar_fixed": true,
+     "primary_color": "#0e7490",
+     "secondary_color": "#10B981",
+     "sidebar_collapsed": false,
+     "spacing_unit": 8,
+     "surface_color": "#FFFFFF",
+     "text_primary": "#111827",
+     "text_secondary": "#6B7280",
+     "theme_type": "light",
+     "updated_at": "2026-10-30T15:47:34.914851Z",
+     "uuid": "93f3ff61-ed75-4ce9-be95-12c275346e98"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "5225137f-35dd-44d1-ab71-351951839d13"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/themes/"
+  },
+  "status": 200
+ },
+ "themes_by_code": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "accent_color": "#f59e0b",
+     "background_color": "#020617",
+     "border_color": "#E5E7EB",
+     "border_radius": 8,
+     "code": "studio-dark",
+     "created_at": "2026-10-30T15:47:34.744430Z",
+     "description": "",
+     "font_family": "sans",
+     "font_size": 14,
+     "id": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2",
+     "is_active": true,
+     "name": "Studio dark",
+     "navbar_fixed": true,
+     "primary_color": "#06b6d4",
+     "secondary_color": "#10B981",
+     "sidebar_collapsed": false,
+     "spacing_unit": 8,
+     "surface_color": "#FFFFFF",
+     "text_primary": "#111827",
+     "text_secondary": "#6B7280",
+     "theme_type": "dark",
+     "updated_at": "2026-10-30T15:47:34.944627Z",
+     "uuid": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "a949b410-acd1-4bac-931b-e5e0b2e62127"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/themes/?code=studio-dark"
+  },
+  "status": 200
+ },
+ "themes_by_code__icontains": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "accent_color": "#F59E0B",
+     "background_color": "#F9FAFB",
+     "border_color": "#E5E7EB",
+     "border_radius": 8,
+     "code": "studio-light",
+     "created_at": "2026-10-30T15:47:34.756163Z",
+     "description": "",
+     "font_family": "sans",
+     "font_size": 14,
+     "id": "93f3ff61-ed75-4ce9-be95-12c275346e98",
+     "is_active": false,
+     "name": "Studio light",
+     "navbar_fixed": true,
+     "primary_color": "#0e7490",
+     "secondary_color": "#10B981",
+     "sidebar_collapsed": false,
+     "spacing_unit": 8,
+     "surface_color": "#FFFFFF",
+     "text_primary": "#111827",
+     "text_secondary": "#6B7280",
+     "theme_type": "light",
+     "updated_at": "2026-10-30T15:47:34.914851Z",
+     "uuid": "93f3ff61-ed75-4ce9-be95-12c275346e98"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "a8ee082d-8c7b-41ee-a599-f2bf0c8939cb"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/themes/?code__icontains=light"
+  },
+  "status": 200
+ },
+ "themes_by_is_active": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "accent_color": "#F59E0B",
+     "background_color": "#F9FAFB",
+     "border_color": "#E5E7EB",
+     "border_radius": 8,
+     "code": "studio-light",
+     "created_at": "2026-10-30T15:47:34.756163Z",
+     "description": "",
+     "font_family": "sans",
+     "font_size": 14,
+     "id": "93f3ff61-ed75-4ce9-be95-12c275346e98",
+     "is_active": false,
+     "name": "Studio light",
+     "navbar_fixed": true,
+     "primary_color": "#0e7490",
+     "secondary_color": "#10B981",
+     "sidebar_collapsed": false,
+     "spacing_unit": 8,
+     "surface_color": "#FFFFFF",
+     "text_primary": "#111827",
+     "text_secondary": "#6B7280",
+     "theme_type": "light",
+     "updated_at": "2026-10-30T15:47:34.914851Z",
+     "uuid": "93f3ff61-ed75-4ce9-be95-12c275346e98"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "28668be8-971c-4477-8aff-f78099987fc1"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/themes/?is_active=false"
+  },
+  "status": 200
+ },
+ "themes_by_nonsense": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "accent_color": "#f59e0b",
+     "background_color": "#020617",
+     "border_color": "#E5E7EB",
+     "border_radius": 8,
+     "code": "studio-dark",
+     "created_at": "2026-10-30T15:47:34.744430Z",
+     "description": "",
+     "font_family": "sans",
+     "font_size": 14,
+     "id": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2",
+     "is_active": true,
+     "name": "Studio dark",
+     "navbar_fixed": true,
+     "primary_color": "#06b6d4",
+     "secondary_color": "#10B981",
+     "sidebar_collapsed": false,
+     "spacing_unit": 8,
+     "surface_color": "#FFFFFF",
+     "text_primary": "#111827",
+     "text_secondary": "#6B7280",
+     "theme_type": "dark",
+     "updated_at": "2026-10-30T15:47:34.944627Z",
+     "uuid": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2"
+    },
+    {
+     "accent_color": "#F59E0B",
+     "background_color": "#F9FAFB",
+     "border_color": "#E5E7EB",
+     "border_radius": 8,
+     "code": "studio-light",
+     "created_at": "2026-10-30T15:47:34.756163Z",
+     "description": "",
+     "font_family": "sans",
+     "font_size": 14,
+     "id": "93f3ff61-ed75-4ce9-be95-12c275346e98",
+     "is_active": false,
+     "name": "Studio light",
+     "navbar_fixed": true,
+     "primary_color": "#0e7490",
+     "secondary_color": "#10B981",
+     "sidebar_collapsed": false,
+     "spacing_unit": 8,
+     "surface_color": "#FFFFFF",
+     "text_primary": "#111827",
+     "text_secondary": "#6B7280",
+     "theme_type": "light",
+     "updated_at": "2026-10-30T15:47:34.914851Z",
+     "uuid": "93f3ff61-ed75-4ce9-be95-12c275346e98"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "e859d028-2533-4054-8324-9df004477f9e"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/themes/?nonsense=1"
+  },
+  "status": 200
+ },
+ "themes_by_search": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "accent_color": "#f59e0b",
+     "background_color": "#020617",
+     "border_color": "#E5E7EB",
+     "border_radius": 8,
+     "code": "studio-dark",
+     "created_at": "2026-10-30T15:47:34.744430Z",
+     "description": "",
+     "font_family": "sans",
+     "font_size": 14,
+     "id": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2",
+     "is_active": true,
+     "name": "Studio dark",
+     "navbar_fixed": true,
+     "primary_color": "#06b6d4",
+     "secondary_color": "#10B981",
+     "sidebar_collapsed": false,
+     "spacing_unit": 8,
+     "surface_color": "#FFFFFF",
+     "text_primary": "#111827",
+     "text_secondary": "#6B7280",
+     "theme_type": "dark",
+     "updated_at": "2026-10-30T15:47:34.944627Z",
+     "uuid": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2"
+    },
+    {
+     "accent_color": "#F59E0B",
+     "background_color": "#F9FAFB",
+     "border_color": "#E5E7EB",
+     "border_radius": 8,
+     "code": "studio-light",
+     "created_at": "2026-10-30T15:47:34.756163Z",
+     "description": "",
+     "font_family": "sans",
+     "font_size": 14,
+     "id": "93f3ff61-ed75-4ce9-be95-12c275346e98",
+     "is_active": false,
+     "name": "Studio light",
+     "navbar_fixed": true,
+     "primary_color": "#0e7490",
+     "secondary_color": "#10B981",
+     "sidebar_collapsed": false,
+     "spacing_unit": 8,
+     "surface_color": "#FFFFFF",
+     "text_primary": "#111827",
+     "text_secondary": "#6B7280",
+     "theme_type": "light",
+     "updated_at": "2026-10-30T15:47:34.914851Z",
+     "uuid": "93f3ff61-ed75-4ce9-be95-12c275346e98"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "27bc6121-f4ac-4ac9-8235-9d3077a5a40c"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/themes/?search=light"
+  },
+  "status": 200
+ },
+ "themes_by_theme_type": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "accent_color": "#F59E0B",
+     "background_color": "#F9FAFB",
+     "border_color": "#E5E7EB",
+     "border_radius": 8,
+     "code": "studio-light",
+     "created_at": "2026-10-30T15:47:34.756163Z",
+     "description": "",
+     "font_family": "sans",
+     "font_size": 14,
+     "id": "93f3ff61-ed75-4ce9-be95-12c275346e98",
+     "is_active": false,
+     "name": "Studio light",
+     "navbar_fixed": true,
+     "primary_color": "#0e7490",
+     "secondary_color": "#10B981",
+     "sidebar_collapsed": false,
+     "spacing_unit": 8,
+     "surface_color": "#FFFFFF",
+     "text_primary": "#111827",
+     "text_secondary": "#6B7280",
+     "theme_type": "light",
+     "updated_at": "2026-10-30T15:47:34.914851Z",
+     "uuid": "93f3ff61-ed75-4ce9-be95-12c275346e98"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "5ad060b5-25ed-4454-b050-246bf9d983da"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/themes/?theme_type=light"
+  },
+  "status": 200
+ },
+ "themes_create": {
+  "body": {
+   "accent_color": "#F59E0B",
+   "background_color": "#020617",
+   "border_color": "#E5E7EB",
+   "border_radius": 8,
+   "code": "studio-dark",
+   "created_at": "2026-10-30T15:47:34.744430Z",
+   "description": "",
+   "font_family": "sans",
+   "font_size": 14,
+   "id": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2",
+   "is_active": true,
+   "name": "Studio dark",
+   "navbar_fixed": true,
+   "primary_color": "#06b6d4",
+   "secondary_color": "#10B981",
+   "sidebar_collapsed": false,
+   "spacing_unit": 8,
+   "surface_color": "#FFFFFF",
+   "text_primary": "#111827",
+   "text_secondary": "#6B7280",
+   "theme_type": "dark",
+   "updated_at": "2026-10-30T15:47:34.744439Z",
+   "uuid": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "aa918407-a47b-4186-b257-4c6d4245fb49"
+  },
+  "request": {
+   "body": {
+    "background_color": "#020617",
+    "border_radius": 8,
+    "code": "<redacted>",
+    "font_family": "sans",
+    "font_size": 14,
+    "name": "Studio dark",
+    "primary_color": "#06b6d4",
+    "theme_type": "dark"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/themes/"
+  },
+  "status": 201
+ },
+ "themes_create_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "9f727c2b-9d8c-4656-9308-4f3cb29b004f"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "9f727c2b-9d8c-4656-9308-4f3cb29b004f"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "name": "Art"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/themes/"
+  },
+  "status": 403
+ },
+ "themes_create_bad_color": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "c175db21-04a6-479a-b422-3aca6bdca1ae"
+   },
+   "primary_color": [
+    "Ensure this field has no more than 7 characters."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "c175db21-04a6-479a-b422-3aca6bdca1ae"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "name": "Bad",
+    "primary_color": "not-a-color"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/themes/"
+  },
+  "status": 400
+ },
+ "themes_create_bad_type": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "5873ebff-2984-46f5-a70d-075471dee20f"
+   },
+   "theme_type": [
+    "\"banana\" is not a valid choice."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "5873ebff-2984-46f5-a70d-075471dee20f"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "name": "Bad",
+    "theme_type": "banana"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/themes/"
+  },
+  "status": 400
+ },
+ "themes_create_duplicate": {
+  "body": {
+   "code": [
+    "Theme with this code already exists."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "983a4d4a-e186-42fe-a2b8-06fbdf5ff455"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "983a4d4a-e186-42fe-a2b8-06fbdf5ff455"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "name": "Again"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/themes/"
+  },
+  "status": 400
+ },
+ "themes_create_empty": {
+  "body": {
+   "code": [
+    "This field is required."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "59a8e131-b661-4eff-bf9b-495132e771ef"
+   },
+   "name": [
+    "This field is required."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "59a8e131-b661-4eff-bf9b-495132e771ef"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/themes/"
+  },
+  "status": 400
+ },
+ "themes_create_second": {
+  "body": {
+   "accent_color": "#F59E0B",
+   "background_color": "#F9FAFB",
+   "border_color": "#E5E7EB",
+   "border_radius": 8,
+   "code": "studio-light",
+   "created_at": "2026-10-30T15:47:34.756163Z",
+   "description": "",
+   "font_family": "sans",
+   "font_size": 14,
+   "id": "93f3ff61-ed75-4ce9-be95-12c275346e98",
+   "is_active": true,
+   "name": "Studio light",
+   "navbar_fixed": true,
+   "primary_color": "#0e7490",
+   "secondary_color": "#10B981",
+   "sidebar_collapsed": false,
+   "spacing_unit": 8,
+   "surface_color": "#FFFFFF",
+   "text_primary": "#111827",
+   "text_secondary": "#6B7280",
+   "theme_type": "light",
+   "updated_at": "2026-10-30T15:47:34.756170Z",
+   "uuid": "93f3ff61-ed75-4ce9-be95-12c275346e98"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "c2f2458f-479e-48ec-8019-4705df1a017d"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "name": "Studio light",
+    "primary_color": "#0e7490",
+    "theme_type": "light"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/themes/"
+  },
+  "status": 201
+ },
+ "themes_deactivate": {
+  "body": {
+   "status": "deactivated"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "f14713d1-c82a-4886-856a-9a5eb3641d8e"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/themes/93f3ff61-ed75-4ce9-be95-12c275346e98/deactivate/"
+  },
+  "status": 200
+ },
+ "themes_deactivate_again": {
+  "body": {
+   "status": "deactivated"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "20e8cbb2-fd4e-4608-afc1-0a9516656798"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/themes/93f3ff61-ed75-4ce9-be95-12c275346e98/deactivate/"
+  },
+  "status": 200
+ },
+ "themes_delete": {
+  "body": {
+   "_len": 0,
+   "_non_json": null
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "X-Request-ID": "720ab770-1624-47c2-91df-faa1df745bee"
+  },
+  "request": {
+   "body": null,
+   "method": "DELETE",
+   "path": "/api/v1/settings/themes/93f3ff61-ed75-4ce9-be95-12c275346e98/"
+  },
+  "status": 204
+ },
+ "themes_delete_active": {
+  "body": {
+   "detail": "The last active theme cannot be deleted. Activate another first.",
+   "error": {
+    "code": "validation_error",
+    "request_id": "07095ac1-2e7b-4b5d-912d-a44d1c60e876"
+   }
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "07095ac1-2e7b-4b5d-912d-a44d1c60e876"
+  },
+  "request": {
+   "body": null,
+   "method": "DELETE",
+   "path": "/api/v1/settings/themes/c0eb093d-e5ef-4ef2-aa66-7c4a439045b2/"
+  },
+  "status": 400
+ },
+ "themes_detail": {
+  "body": {
+   "accent_color": "#F59E0B",
+   "background_color": "#020617",
+   "border_color": "#E5E7EB",
+   "border_radius": 8,
+   "code": "studio-dark",
+   "created_at": "2026-10-30T15:47:34.744430Z",
+   "description": "",
+   "font_family": "sans",
+   "font_size": 14,
+   "id": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2",
+   "is_active": true,
+   "name": "Studio dark",
+   "navbar_fixed": true,
+   "primary_color": "#06b6d4",
+   "secondary_color": "#10B981",
+   "sidebar_collapsed": false,
+   "spacing_unit": 8,
+   "surface_color": "#FFFFFF",
+   "text_primary": "#111827",
+   "text_secondary": "#6B7280",
+   "theme_type": "dark",
+   "updated_at": "2026-10-30T15:47:34.744439Z",
+   "uuid": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "54c99b87-3a92-45ba-9228-452903828b6e"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/themes/c0eb093d-e5ef-4ef2-aa66-7c4a439045b2/"
+  },
+  "status": 200
+ },
+ "themes_list": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "accent_color": "#F59E0B",
+     "background_color": "#020617",
+     "border_color": "#E5E7EB",
+     "border_radius": 8,
+     "code": "studio-dark",
+     "created_at": "2026-10-30T15:47:34.744430Z",
+     "description": "",
+     "font_family": "sans",
+     "font_size": 14,
+     "id": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2",
+     "is_active": true,
+     "name": "Studio dark",
+     "navbar_fixed": true,
+     "primary_color": "#06b6d4",
+     "secondary_color": "#10B981",
+     "sidebar_collapsed": false,
+     "spacing_unit": 8,
+     "surface_color": "#FFFFFF",
+     "text_primary": "#111827",
+     "text_secondary": "#6B7280",
+     "theme_type": "dark",
+     "updated_at": "2026-10-30T15:47:34.744439Z",
+     "uuid": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2"
+    },
+    {
+     "accent_color": "#F59E0B",
+     "background_color": "#F9FAFB",
+     "border_color": "#E5E7EB",
+     "border_radius": 8,
+     "code": "studio-light",
+     "created_at": "2026-10-30T15:47:34.756163Z",
+     "description": "",
+     "font_family": "sans",
+     "font_size": 14,
+     "id": "93f3ff61-ed75-4ce9-be95-12c275346e98",
+     "is_active": true,
+     "name": "Studio light",
+     "navbar_fixed": true,
+     "primary_color": "#0e7490",
+     "secondary_color": "#10B981",
+     "sidebar_collapsed": false,
+     "spacing_unit": 8,
+     "surface_color": "#FFFFFF",
+     "text_primary": "#111827",
+     "text_secondary": "#6B7280",
+     "theme_type": "light",
+     "updated_at": "2026-10-30T15:47:34.756170Z",
+     "uuid": "93f3ff61-ed75-4ce9-be95-12c275346e98"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "addb35f1-a5f6-47c0-9ae3-40832540c4f4"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/themes/"
+  },
+  "status": 200
+ },
+ "themes_list_after_activate": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "accent_color": "#f59e0b",
+     "background_color": "#020617",
+     "border_color": "#E5E7EB",
+     "border_radius": 8,
+     "code": "studio-dark",
+     "created_at": "2026-10-30T15:47:34.744430Z",
+     "description": "",
+     "font_family": "sans",
+     "font_size": 14,
+     "id": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2",
+     "is_active": true,
+     "name": "Studio dark",
+     "navbar_fixed": true,
+     "primary_color": "#06b6d4",
+     "secondary_color": "#10B981",
+     "sidebar_collapsed": false,
+     "spacing_unit": 8,
+     "surface_color": "#FFFFFF",
+     "text_primary": "#111827",
+     "text_secondary": "#6B7280",
+     "theme_type": "dark",
+     "updated_at": "2026-10-30T15:47:34.872316Z",
+     "uuid": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2"
+    },
+    {
+     "accent_color": "#F59E0B",
+     "background_color": "#F9FAFB",
+     "border_color": "#E5E7EB",
+     "border_radius": 8,
+     "code": "studio-light",
+     "created_at": "2026-10-30T15:47:34.756163Z",
+     "description": "",
+     "font_family": "sans",
+     "font_size": 14,
+     "id": "93f3ff61-ed75-4ce9-be95-12c275346e98",
+     "is_active": true,
+     "name": "Studio light",
+     "navbar_fixed": true,
+     "primary_color": "#0e7490",
+     "secondary_color": "#10B981",
+     "sidebar_collapsed": false,
+     "spacing_unit": 8,
+     "surface_color": "#FFFFFF",
+     "text_primary": "#111827",
+     "text_secondary": "#6B7280",
+     "theme_type": "light",
+     "updated_at": "2026-10-30T15:47:34.882699Z",
+     "uuid": "93f3ff61-ed75-4ce9-be95-12c275346e98"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "4eac75f4-295d-4210-8d9b-1c2479abc1ac"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/themes/"
+  },
+  "status": 200
+ },
+ "themes_list_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "9ac42369-ae3b-457d-b248-d71da231cc36"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "9ac42369-ae3b-457d-b248-d71da231cc36"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/themes/"
+  },
+  "status": 403
+ },
+ "themes_patch": {
+  "body": {
+   "accent_color": "#f59e0b",
+   "background_color": "#020617",
+   "border_color": "#E5E7EB",
+   "border_radius": 8,
+   "code": "studio-dark",
+   "created_at": "2026-10-30T15:47:34.744430Z",
+   "description": "",
+   "font_family": "sans",
+   "font_size": 14,
+   "id": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2",
+   "is_active": true,
+   "name": "Studio dark",
+   "navbar_fixed": true,
+   "primary_color": "#06b6d4",
+   "secondary_color": "#10B981",
+   "sidebar_collapsed": false,
+   "spacing_unit": 8,
+   "surface_color": "#FFFFFF",
+   "text_primary": "#111827",
+   "text_secondary": "#6B7280",
+   "theme_type": "dark",
+   "updated_at": "2026-10-30T15:47:34.861055Z",
+   "uuid": "c0eb093d-e5ef-4ef2-aa66-7c4a439045b2"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "ad6e4383-a15f-4c64-8481-19ed6b9e47bc"
+  },
+  "request": {
+   "body": {
+    "accent_color": "#f59e0b"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/settings/themes/c0eb093d-e5ef-4ef2-aa66-7c4a439045b2/"
+  },
+  "status": 200
+ },
+ "values_baseline": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "created_at": "2026-10-30T15:47:33.810684Z",
+     "id": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+     "is_locked": false,
+     "locked_at": null,
+     "locked_by": null,
+     "setting": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "setting_code": "renamed",
+     "setting_data_type": "integer",
+     "setting_default_value": "24",
+     "setting_name": "Default FPS",
+     "updated_at": "2026-10-30T15:47:34.080678Z",
+     "uuid": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+     "value": "48"
+    },
+    {
+     "created_at": "2026-10-30T15:47:33.855964Z",
+     "id": "b5548030-85b2-48cb-a02f-e8c7c4592c56",
+     "is_locked": false,
+     "locked_at": null,
+     "locked_by": null,
+     "setting": "49024351-9ef2-4bee-ba27-f0b65816c9f6",
+     "setting_code": "studio_name",
+     "setting_data_type": "string",
+     "setting_default_value": "Apex",
+     "setting_name": "Studio name",
+     "updated_at": "2026-10-30T15:47:33.855977Z",
+     "uuid": "b5548030-85b2-48cb-a02f-e8c7c4592c56",
+     "value": "Apex VFX"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "0ba1e55e-b5ef-4cf3-946b-9595992b8091"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/system-settings/"
+  },
+  "status": 200
+ },
+ "values_by_category": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "created_at": "2026-10-30T15:47:33.810684Z",
+     "id": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+     "is_locked": false,
+     "locked_at": null,
+     "locked_by": null,
+     "setting": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "setting_code": "renamed",
+     "setting_data_type": "integer",
+     "setting_default_value": "24",
+     "setting_name": "Default FPS",
+     "updated_at": "2026-10-30T15:47:34.080678Z",
+     "uuid": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+     "value": "48"
+    },
+    {
+     "created_at": "2026-10-30T15:47:33.855964Z",
+     "id": "b5548030-85b2-48cb-a02f-e8c7c4592c56",
+     "is_locked": false,
+     "locked_at": null,
+     "locked_by": null,
+     "setting": "49024351-9ef2-4bee-ba27-f0b65816c9f6",
+     "setting_code": "studio_name",
+     "setting_data_type": "string",
+     "setting_default_value": "Apex",
+     "setting_name": "Studio name",
+     "updated_at": "2026-10-30T15:47:33.855977Z",
+     "uuid": "b5548030-85b2-48cb-a02f-e8c7c4592c56",
+     "value": "Apex VFX"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "e86987de-efd8-4532-93cb-e47fcc3ad744"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/system-settings/?category=31f3a917-5ec8-4379-a087-ca731c4d80f8"
+  },
+  "status": 200
+ },
+ "values_by_is_locked": {
+  "body": {
+   "_bare_list": true,
+   "_len": 0,
+   "items": []
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "6f7f9aff-8a10-4503-958f-de1a7bbd19c3"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/system-settings/?is_locked=true"
+  },
+  "status": 200
+ },
+ "values_by_nonsense": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "created_at": "2026-10-30T15:47:33.810684Z",
+     "id": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+     "is_locked": false,
+     "locked_at": null,
+     "locked_by": null,
+     "setting": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "setting_code": "renamed",
+     "setting_data_type": "integer",
+     "setting_default_value": "24",
+     "setting_name": "Default FPS",
+     "updated_at": "2026-10-30T15:47:34.080678Z",
+     "uuid": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+     "value": "48"
+    },
+    {
+     "created_at": "2026-10-30T15:47:33.855964Z",
+     "id": "b5548030-85b2-48cb-a02f-e8c7c4592c56",
+     "is_locked": false,
+     "locked_at": null,
+     "locked_by": null,
+     "setting": "49024351-9ef2-4bee-ba27-f0b65816c9f6",
+     "setting_code": "studio_name",
+     "setting_data_type": "string",
+     "setting_default_value": "Apex",
+     "setting_name": "Studio name",
+     "updated_at": "2026-10-30T15:47:33.855977Z",
+     "uuid": "b5548030-85b2-48cb-a02f-e8c7c4592c56",
+     "value": "Apex VFX"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "8111308f-b1aa-4354-b816-8e24d41e3d1b"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/system-settings/?nonsense=1"
+  },
+  "status": 200
+ },
+ "values_by_search": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "created_at": "2026-10-30T15:47:33.810684Z",
+     "id": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+     "is_locked": false,
+     "locked_at": null,
+     "locked_by": null,
+     "setting": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "setting_code": "renamed",
+     "setting_data_type": "integer",
+     "setting_default_value": "24",
+     "setting_name": "Default FPS",
+     "updated_at": "2026-10-30T15:47:34.080678Z",
+     "uuid": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+     "value": "48"
+    },
+    {
+     "created_at": "2026-10-30T15:47:33.855964Z",
+     "id": "b5548030-85b2-48cb-a02f-e8c7c4592c56",
+     "is_locked": false,
+     "locked_at": null,
+     "locked_by": null,
+     "setting": "49024351-9ef2-4bee-ba27-f0b65816c9f6",
+     "setting_code": "studio_name",
+     "setting_data_type": "string",
+     "setting_default_value": "Apex",
+     "setting_name": "Studio name",
+     "updated_at": "2026-10-30T15:47:33.855977Z",
+     "uuid": "b5548030-85b2-48cb-a02f-e8c7c4592c56",
+     "value": "Apex VFX"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "f7713a23-ebad-46b1-8baf-d2063a63cd3d"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/system-settings/?search=fps"
+  },
+  "status": 200
+ },
+ "values_by_setting": {
+  "body": {
+   "_bare_list": true,
+   "_len": 1,
+   "items": [
+    {
+     "created_at": "2026-10-30T15:47:33.855964Z",
+     "id": "b5548030-85b2-48cb-a02f-e8c7c4592c56",
+     "is_locked": false,
+     "locked_at": null,
+     "locked_by": null,
+     "setting": "49024351-9ef2-4bee-ba27-f0b65816c9f6",
+     "setting_code": "studio_name",
+     "setting_data_type": "string",
+     "setting_default_value": "Apex",
+     "setting_name": "Studio name",
+     "updated_at": "2026-10-30T15:47:33.855977Z",
+     "uuid": "b5548030-85b2-48cb-a02f-e8c7c4592c56",
+     "value": "Apex VFX"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "6d75e539-dda3-48cc-b278-f3049d2242a3"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/system-settings/?setting=49024351-9ef2-4bee-ba27-f0b65816c9f6"
+  },
+  "status": 200
+ },
+ "values_create_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "7616e93e-e3ba-45d6-81b5-c525cc757fcb"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "7616e93e-e3ba-45d6-81b5-c525cc757fcb"
+  },
+  "request": {
+   "body": {
+    "setting": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+    "value": "Tractor"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/system-settings/"
+  },
+  "status": 403
+ },
+ "values_create_bad_integer": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "338a0a34-2cb9-4873-9907-4c801d044867"
+   },
+   "value": [
+    "Must be at least 2 characters"
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "338a0a34-2cb9-4873-9907-4c801d044867"
+  },
+  "request": {
+   "body": {
+    "setting": "49024351-9ef2-4bee-ba27-f0b65816c9f6",
+    "value": "x"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/system-settings/"
+  },
+  "status": 400
+ },
+ "values_create_duplicate": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "09e91ae5-47a2-4313-a118-cdef14501dfa"
+   },
+   "non_field_errors": [
+    "The fields setting must make a unique set."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "09e91ae5-47a2-4313-a118-cdef14501dfa"
+  },
+  "request": {
+   "body": {
+    "setting": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+    "value": "25"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/system-settings/"
+  },
+  "status": 400
+ },
+ "values_create_empty": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "ad5279f2-963f-42dd-8a57-34148392489a"
+   },
+   "setting": [
+    "This field is required."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "ad5279f2-963f-42dd-8a57-34148392489a"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/system-settings/"
+  },
+  "status": 400
+ },
+ "values_create_integer": {
+  "body": {
+   "created_at": "2026-10-30T15:47:33.810684Z",
+   "id": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+   "is_locked": false,
+   "locked_at": null,
+   "locked_by": null,
+   "setting": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+   "setting_code": "renamed",
+   "setting_data_type": "integer",
+   "setting_default_value": "24",
+   "setting_name": "Default FPS",
+   "updated_at": "2026-10-30T15:47:33.810690Z",
+   "uuid": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+   "value": "30"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "f362c1c3-9a20-4cf3-9019-b7d1235d14ee"
+  },
+  "request": {
+   "body": {
+    "setting": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+    "value": "30"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/system-settings/"
+  },
+  "status": 201
+ },
+ "values_create_select": {
+  "body": {
+   "created_at": "2026-10-30T15:47:33.906722Z",
+   "id": "f6864d71-76b2-4293-be11-bac9efc0f608",
+   "is_locked": false,
+   "locked_at": null,
+   "locked_by": null,
+   "setting": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+   "setting_code": "farm_engine",
+   "setting_data_type": "select",
+   "setting_default_value": "Deadline",
+   "setting_name": "Farm engine",
+   "updated_at": "2026-10-30T15:47:33.906728Z",
+   "uuid": "f6864d71-76b2-4293-be11-bac9efc0f608",
+   "value": "Tractor"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "e640406b-e2b7-461d-a05d-57460155850d"
+  },
+  "request": {
+   "body": {
+    "setting": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+    "value": "Tractor"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/system-settings/"
+  },
+  "status": 201
+ },
+ "values_create_select_bad_choice": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "ea847c4a-f3e5-44be-b90b-ba79beb13e1c"
+   },
+   "value": [
+    "Invalid choice: Banana"
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "ea847c4a-f3e5-44be-b90b-ba79beb13e1c"
+  },
+  "request": {
+   "body": {
+    "setting": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+    "value": "Banana"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/system-settings/"
+  },
+  "status": 400
+ },
+ "values_create_string": {
+  "body": {
+   "created_at": "2026-10-30T15:47:33.855964Z",
+   "id": "b5548030-85b2-48cb-a02f-e8c7c4592c56",
+   "is_locked": false,
+   "locked_at": null,
+   "locked_by": null,
+   "setting": "49024351-9ef2-4bee-ba27-f0b65816c9f6",
+   "setting_code": "studio_name",
+   "setting_data_type": "string",
+   "setting_default_value": "Apex",
+   "setting_name": "Studio name",
+   "updated_at": "2026-10-30T15:47:33.855977Z",
+   "uuid": "b5548030-85b2-48cb-a02f-e8c7c4592c56",
+   "value": "Apex VFX"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "41bafeac-8ea5-472f-927f-647c66190029"
+  },
+  "request": {
+   "body": {
+    "setting": "49024351-9ef2-4bee-ba27-f0b65816c9f6",
+    "value": "Apex VFX"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/system-settings/"
+  },
+  "status": 201
+ },
+ "values_create_unknown_setting": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "2d1ebfca-c249-4f25-9dd5-dbdd9ec6e0ca"
+   },
+   "setting": [
+    "Invalid pk \"999999\" - object does not exist."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "2d1ebfca-c249-4f25-9dd5-dbdd9ec6e0ca"
+  },
+  "request": {
+   "body": {
+    "setting": 999999,
+    "value": "1"
+   },
+   "method": "POST",
+   "path": "/api/v1/settings/system-settings/"
+  },
+  "status": 400
+ },
+ "values_delete": {
+  "body": {
+   "_len": 0,
+   "_non_json": null
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "X-Request-ID": "b1ba34ae-1589-476b-a1fe-876d1150785e"
+  },
+  "request": {
+   "body": null,
+   "method": "DELETE",
+   "path": "/api/v1/settings/system-settings/f6864d71-76b2-4293-be11-bac9efc0f608/"
+  },
+  "status": 204
+ },
+ "values_delete_locked": {
+  "body": {
+   "detail": "Setting 'renamed' is locked.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "f251328c-e728-42f4-b7c4-dd691eef5b71"
+   }
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "f251328c-e728-42f4-b7c4-dd691eef5b71"
+  },
+  "request": {
+   "body": null,
+   "method": "DELETE",
+   "path": "/api/v1/settings/system-settings/2cb6d871-51fb-46a6-a148-2f50eb331bfd/"
+  },
+  "status": 403
+ },
+ "values_detail": {
+  "body": {
+   "created_at": "2026-10-30T15:47:33.810684Z",
+   "id": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+   "is_locked": false,
+   "locked_at": null,
+   "locked_by": null,
+   "setting": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+   "setting_code": "renamed",
+   "setting_data_type": "integer",
+   "setting_default_value": "24",
+   "setting_name": "Default FPS",
+   "updated_at": "2026-10-30T15:47:33.810690Z",
+   "uuid": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+   "value": "30"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "31c0a478-b50b-44cd-a180-c0c255688724"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/system-settings/2cb6d871-51fb-46a6-a148-2f50eb331bfd/"
+  },
+  "status": 200
+ },
+ "values_detail_deleted": {
+  "body": {
+   "detail": "No SystemSetting matches the given query.",
+   "error": {
+    "code": "not_found",
+    "request_id": "affdc6fd-ab2e-4df1-8510-8bb03caf9238"
+   }
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "affdc6fd-ab2e-4df1-8510-8bb03caf9238"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/system-settings/f6864d71-76b2-4293-be11-bac9efc0f608/"
+  },
+  "status": 404
+ },
+ "values_detail_locked": {
+  "body": {
+   "created_at": "2026-10-30T15:47:33.810684Z",
+   "id": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+   "is_locked": true,
+   "locked_at": "2026-10-30T15:47:34.027228Z",
+   "locked_by": "12773966-dc80-4458-94d6-91dc45f4307b",
+   "setting": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+   "setting_code": "renamed",
+   "setting_data_type": "integer",
+   "setting_default_value": "24",
+   "setting_name": "Default FPS",
+   "updated_at": "2026-10-30T15:47:34.027315Z",
+   "uuid": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+   "value": "48"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "efe5d1d0-bd11-4214-8d9f-648f53f98150"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/system-settings/2cb6d871-51fb-46a6-a148-2f50eb331bfd/"
+  },
+  "status": 200
+ },
+ "values_list": {
+  "body": {
+   "_bare_list": true,
+   "_len": 3,
+   "items": [
+    {
+     "created_at": "2026-10-30T15:47:33.810684Z",
+     "id": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+     "is_locked": false,
+     "locked_at": null,
+     "locked_by": null,
+     "setting": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+     "setting_code": "renamed",
+     "setting_data_type": "integer",
+     "setting_default_value": "24",
+     "setting_name": "Default FPS",
+     "updated_at": "2026-10-30T15:47:33.810690Z",
+     "uuid": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+     "value": "30"
+    },
+    {
+     "created_at": "2026-10-30T15:47:33.906722Z",
+     "id": "f6864d71-76b2-4293-be11-bac9efc0f608",
+     "is_locked": false,
+     "locked_at": null,
+     "locked_by": null,
+     "setting": "c24df27c-5aea-43ea-8639-529ce2c5ef51",
+     "setting_code": "farm_engine",
+     "setting_data_type": "select",
+     "setting_default_value": "Deadline",
+     "setting_name": "Farm engine",
+     "updated_at": "2026-10-30T15:47:33.906728Z",
+     "uuid": "f6864d71-76b2-4293-be11-bac9efc0f608",
+     "value": "Tractor"
+    },
+    {
+     "created_at": "2026-10-30T15:47:33.855964Z",
+     "id": "b5548030-85b2-48cb-a02f-e8c7c4592c56",
+     "is_locked": false,
+     "locked_at": null,
+     "locked_by": null,
+     "setting": "49024351-9ef2-4bee-ba27-f0b65816c9f6",
+     "setting_code": "studio_name",
+     "setting_data_type": "string",
+     "setting_default_value": "Apex",
+     "setting_name": "Studio name",
+     "updated_at": "2026-10-30T15:47:33.855977Z",
+     "uuid": "b5548030-85b2-48cb-a02f-e8c7c4592c56",
+     "value": "Apex VFX"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "c8db5f57-ec87-46c7-8420-6c28cfd78a38"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/system-settings/"
+  },
+  "status": 200
+ },
+ "values_list_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "cab7224b-09d4-4a6c-8d85-583d69758020"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "cab7224b-09d4-4a6c-8d85-583d69758020"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/system-settings/"
+  },
+  "status": 403
+ },
+ "values_list_norole": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "c7e39111-731e-4114-868c-5950012c24c8"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "c7e39111-731e-4114-868c-5950012c24c8"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/settings/system-settings/"
+  },
+  "status": 403
+ },
+ "values_lock": {
+  "body": {
+   "status": "locked"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "bbdad910-fd96-4715-a3d1-34f6f98554b2"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/system-settings/2cb6d871-51fb-46a6-a148-2f50eb331bfd/lock/"
+  },
+  "status": 200
+ },
+ "values_lock_again": {
+  "body": {
+   "status": "locked"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "7ff3f579-bcb6-455d-8c34-71a6938fde0a"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/system-settings/2cb6d871-51fb-46a6-a148-2f50eb331bfd/lock/"
+  },
+  "status": 200
+ },
+ "values_lock_padmin": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "fb28c07c-39ec-4d8b-b7e0-b1d976d5c958"
+   }
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "fb28c07c-39ec-4d8b-b7e0-b1d976d5c958"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/system-settings/2cb6d871-51fb-46a6-a148-2f50eb331bfd/lock/"
+  },
+  "status": 403
+ },
+ "values_patch": {
+  "body": {
+   "created_at": "2026-10-30T15:47:33.810684Z",
+   "id": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+   "is_locked": false,
+   "locked_at": null,
+   "locked_by": null,
+   "setting": "2ef6565a-7f01-46f5-9140-226650c9fa63",
+   "setting_code": "renamed",
+   "setting_data_type": "integer",
+   "setting_default_value": "24",
+   "setting_name": "Default FPS",
+   "updated_at": "2026-10-30T15:47:33.976748Z",
+   "uuid": "2cb6d871-51fb-46a6-a148-2f50eb331bfd",
+   "value": "48"
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "6dc43473-6431-4521-8da1-78afea36fa79"
+  },
+  "request": {
+   "body": {
+    "value": "48"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/settings/system-settings/2cb6d871-51fb-46a6-a148-2f50eb331bfd/"
+  },
+  "status": 200
+ },
+ "values_patch_empty_value": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "faba43b0-2ee1-432e-9393-9faa7a716335"
+   },
+   "value": [
+    "Must be an integer"
+   ]
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "faba43b0-2ee1-432e-9393-9faa7a716335"
+  },
+  "request": {
+   "body": {
+    "value": ""
+   },
+   "method": "PATCH",
+   "path": "/api/v1/settings/system-settings/2cb6d871-51fb-46a6-a148-2f50eb331bfd/"
+  },
+  "status": 400
+ },
+ "values_patch_invalid": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "070199a5-e622-4be8-8535-ba31fbf63af2"
+   },
+   "value": [
+    "Must be an integer"
+   ]
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "070199a5-e622-4be8-8535-ba31fbf63af2"
+  },
+  "request": {
+   "body": {
+    "value": "forty"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/settings/system-settings/2cb6d871-51fb-46a6-a148-2f50eb331bfd/"
+  },
+  "status": 400
+ },
+ "values_patch_locked": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "4434fb61-ebf6-4b55-a8ff-71106d271eab"
+   },
+   "value": [
+    "This setting is locked and cannot be changed."
+   ]
+  },
+  "headers": {
+   "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "4434fb61-ebf6-4b55-a8ff-71106d271eab"
+  },
+  "request": {
+   "body": {
+    "value": "50"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/settings/system-settings/2cb6d871-51fb-46a6-a148-2f50eb331bfd/"
+  },
+  "status": 400
+ },
+ "values_unlock": {
+  "body": {
+   "status": "unlocked"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "fbd59e93-3274-4c33-8483-37e0661f65c5"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/system-settings/2cb6d871-51fb-46a6-a148-2f50eb331bfd/unlock/"
+  },
+  "status": 200
+ },
+ "values_unlock_again": {
+  "body": {
+   "status": "unlocked"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "a1327c0a-37fe-42d5-afd2-a3359f830d6f"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/settings/system-settings/2cb6d871-51fb-46a6-a148-2f50eb331bfd/unlock/"
+  },
+  "status": 200
+ }
+}

@@ -1,4 +1,5 @@
 import { useVersions } from '@/modules/versions';
+import { EntityMediaTab, EntityReviewsTab, EntityVersionsTab } from '@/modules/production/review/EntityRecords';
 
 import { useTasks } from '@/modules/tasks';
 
@@ -85,13 +86,10 @@ import { ShotOverviewTab } from '../components/workspace/ShotOverviewTab';
 
 import { EntityTasksPanel, ShotAssetsPanel, WorkHistoryPanel } from '@/modules/production/work/panels';
 
-import { ShotVersionsTab } from '../components/workspace/ShotVersionsTab';
 
-import { ShotReviewsTab } from '../components/workspace/ShotReviewsTab';
 
 import { ShotNotesTab } from '../components/workspace/ShotNotesTab';
 
-import { ShotMediaTab } from '../components/workspace/ShotMediaTab';
 
 import { ShotAssignmentsTab } from '../components/workspace/ShotAssignmentsTab';
 
@@ -99,7 +97,6 @@ import { ShotAssignmentsTab } from '../components/workspace/ShotAssignmentsTab';
 
 import { ShotAssignModal } from '../components/workspace/modals/ShotAssignModal';
 
-import { ShotSubmitVersionModal } from '../components/workspace/modals/ShotSubmitVersionModal';
 
 import { ShotAddNoteModal } from '../components/workspace/modals/ShotAddNoteModal';
 
@@ -203,7 +200,6 @@ export const ShotWorkspacePage: React.FC = () => {
 
   const [isAssignOpen, setIsAssignOpen] = useState(false);
 
-  const [isSubmitVersionOpen, setIsSubmitVersionOpen] = useState(false);
 
   const [isAddNoteOpen, setIsAddNoteOpen] = useState(false);
 
@@ -355,7 +351,7 @@ export const ShotWorkspacePage: React.FC = () => {
 
         permission: 'version.create',
 
-        onClick: () => setIsSubmitVersionOpen(true),
+        onClick: () => navigate(`/versions/new?project=${shot.project_id}&shot=${shot.id}`),
 
       },
 
@@ -813,7 +809,7 @@ export const ShotWorkspacePage: React.FC = () => {
 
           onOpenCreateTask={() => navigate(`/tasks/new?project=${shot.project_id}&entity_type=Shot&entity_id=${shot.id}`)}
 
-          onOpenSubmitVersion={() => setIsSubmitVersionOpen(true)}
+          onOpenSubmitVersion={() => navigate(`/versions/new?project=${shot.project_id}&shot=${shot.id}`)}
 
         />
 
@@ -823,21 +819,9 @@ export const ShotWorkspacePage: React.FC = () => {
 
       {resolvedTab === 'assets' && <ShotAssetsPanel shot={shot} />}
 
-      {resolvedTab === 'versions' && (
+      {resolvedTab === 'versions' && <EntityVersionsTab entity={{ type: 'Shot', id: shot.id, projectId: shot.project_id }} />}
 
-        <ShotVersionsTab
-
-          shot={shot}
-
-          versions={shotVersions}
-
-          onOpenSubmitVersion={() => setIsSubmitVersionOpen(true)}
-
-        />
-
-      )}
-
-      {resolvedTab === 'reviews' && <ShotReviewsTab shot={shot} />}
+      {resolvedTab === 'reviews' && <EntityReviewsTab entity={{ type: 'Shot', id: shot.id, projectId: shot.project_id }} />}
 
       {resolvedTab === 'notes' && (
 
@@ -847,7 +831,7 @@ export const ShotWorkspacePage: React.FC = () => {
 
       {resolvedTab === 'activity' && <WorkHistoryPanel targetType="Shot" id={shot.id} />}
 
-      {resolvedTab === 'media' && <ShotMediaTab shot={shot} />}
+      {resolvedTab === 'media' && <EntityMediaTab entity={{ type: 'Shot', id: shot.id, projectId: shot.project_id }} />}
 
       {resolvedTab === 'assignments' && (
 
@@ -873,19 +857,7 @@ export const ShotWorkspacePage: React.FC = () => {
 
       )}
 
-      {isSubmitVersionOpen && (
-
-        <ShotSubmitVersionModal
-
-          isOpen={isSubmitVersionOpen}
-
-          onClose={() => setIsSubmitVersionOpen(false)}
-
-          shot={shot}
-
-        />
-
-      )}
+      
 
       {isAddNoteOpen && (
 

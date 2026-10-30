@@ -37,6 +37,9 @@ STATUSES = frozenset(
 #: Items and details can change only here.
 WORKING_STATES = frozenset({DRAFT, VALIDATING, PREPARED})
 
+#: Only these can be deleted (CR-18): a sent delivery is the record of what the client received.
+DELETABLE_STATUSES = frozenset({DRAFT, CANCELLED})
+
 #: The delivery has been sent: nothing about what it contains can change any more.
 SENT_STATES = frozenset({SUBMITTED, APPROVED, REJECTED, COMPLETE})
 

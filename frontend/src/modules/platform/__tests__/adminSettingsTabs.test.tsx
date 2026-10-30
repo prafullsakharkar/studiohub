@@ -1,31 +1,26 @@
 import { describe, it, expect } from 'vitest';
-import { resolveAdminTab, VALID_ADMIN_TABS } from '@/modules/platform/pages/PlatformAdminPage';
+import { filterAdminTabsForViewer, resolveAdminTab, VALID_ADMIN_TABS } from '@/modules/platform/pages/PlatformAdminPage';
 
-describe('platform admin tabs absorb settings', () => {
-  it('resolves pipeline tab', () => {
-    expect(VALID_ADMIN_TABS).toContain('pipeline');
-    expect(resolveAdminTab('pipeline')).toBe('pipeline');
-  });
-  it('resolves theme, layout, database tabs', () => {
-    for (const tab of ['theme', 'layout', 'database']) {
-      expect(VALID_ADMIN_TABS).toContain(tab);
-      expect(resolveAdminTab(tab)).toBe(tab);
+describe('platform admin tabs are master data only', () => {
+  it('no longer has the mock pipeline, theme, layout and database tabs: system settings are real screens under /settings/system', () => {
+    for (const tab of ['pipeline', 'theme', 'layout', 'database']) {
+      expect(VALID_ADMIN_TABS).not.toContain(tab);
+      expect(resolveAdminTab(tab)).toBe('overview');
     }
   });
-  it('falls back to overview for unknown slugs', () => {
+  it('resolves a master-data tab and falls back to overview for unknown slugs', () => {
+    expect(resolveAdminTab('software')).toBe('software');
     expect(resolveAdminTab('nope')).toBe('overview');
+    expect(resolveAdminTab(undefined)).toBe('overview');
   });
 });
 
-describe('settings-scoped viewer tab filtering', () => {
-  it('shows only pipeline/theme/layout without platform perms', async () => {
-    const { filterAdminTabsForViewer } = await import('@/modules/platform/pages/PlatformAdminPage');
-    const all = ['overview', 'software', 'roles', 'pipeline', 'theme', 'layout', 'database'];
-    expect(filterAdminTabsForViewer(all, false)).toEqual(['pipeline', 'theme', 'layout']);
-  });
-  it('shows all tabs with platform perms', async () => {
-    const { filterAdminTabsForViewer } = await import('@/modules/platform/pages/PlatformAdminPage');
-    const all = ['overview', 'software', 'pipeline', 'database'];
+describe('viewer tab filtering', () => {
+  const all = ['overview', 'software', 'roles'];
+  it('shows every tab with platform permissions', () => {
     expect(filterAdminTabsForViewer(all, true)).toEqual(all);
+  });
+  it('shows none without them (the page then sends the viewer to /settings/system)', () => {
+    expect(filterAdminTabsForViewer(all, false)).toEqual([]);
   });
 });

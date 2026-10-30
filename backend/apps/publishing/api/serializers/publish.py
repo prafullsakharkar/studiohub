@@ -47,6 +47,8 @@ class PublishListSerializer(serializers.ModelSerializer[PublishItem]):
     status = serializers.SerializerMethodField()
     # The stored status, unmapped: the label in ``status`` is kept for the frontend (decision Q15).
     job_status = serializers.CharField(source="status", read_only=True)
+    # The project the job belongs to, so a list can link to it and be filtered by it (CR-22).
+    project_id = serializers.UUIDField(read_only=True)
 
     def get_status(self, obj):
         return frontend_status(obj)
@@ -57,6 +59,7 @@ class PublishListSerializer(serializers.ModelSerializer[PublishItem]):
             "id",
             "name",
             "code",
+            "project_id",
             "entity_type",
             "entity_type_display",
             "entity_code",
@@ -99,6 +102,8 @@ class PublishDetailSerializer(serializers.ModelSerializer[PublishItem]):
     dcc_tool_display = serializers.CharField(source="get_dcc_tool_display", read_only=True)
     status = serializers.SerializerMethodField()
     job_status = serializers.CharField(source="status", read_only=True)
+    # The version the job exports, when it has one (CR-22).
+    version_id = serializers.UUIDField(read_only=True, allow_null=True)
 
     def get_status(self, obj):
         return frontend_status(obj)
@@ -109,6 +114,7 @@ class PublishDetailSerializer(serializers.ModelSerializer[PublishItem]):
             "id",
             "name",
             "code",
+            "version_id",
             "entity_type",
             "entity_type_display",
             "entity_id",

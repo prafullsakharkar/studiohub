@@ -248,3 +248,15 @@ Everything in sections 4 to 7 is now built except what the last row lists.
 
 Changes a client can see: approving or rejecting leave now needs `schedule.approve` (was `schedule.update`); booking, creating resources, calendars, holidays and milestones need `schedule.manage`; an artist can file and edit their own leave and creates events; filing leave for another person without `manage` is a 400; overlapping leave is a 400; the `reason` query filters and note and reason search no longer match; `?ordering=hourly_rate_usd` has no effect without `schedule.view_rates`.
 
+## 12. Frontend sync, Phase 10 (CR-25)
+
+Found while wiring the screens to the running backend (`docs/sync/backend-change-requests.md`, "Phase 10 findings"); changes to sections 4 and 8:
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| API-SCH-15 | `GET /resources/`, `/schedules/`, `/leaves/`, `/events/`, `/milestones/` | every filter but `search`, `ordering` (and bookings `start`/`end`, holidays `calendar_id`, milestones `project_id` as an id) was ignored | one filter set per list. **Resources:** `resource_type`, `status` (the status the list shows, so `On Leave` follows approved leave covering today), `department`/`department_id`, `team`/`team_id`, `calendar`/`calendar_id`. **Bookings:** `resource`/`resource_id`, `status`, `event`, `task`, and the existing `start`/`end`. **Leave:** `status`, `leave_type`, `resource`/`resource_id`, `start`/`end` as days (overlap, touching the edge counts). **Events:** `project`/`project_id`, `event_type`, `status`, `visibility`, `start`/`end` as date-times with a zone (overlap, touching the edge does not). **Milestones:** `status`, `kind`, `project`/`project_id` as an id **or a code**. Words match in any case, an unknown word answers an empty list, a value that is not an id or a date is a 400. No filter reads a booking note, a leave reason or a rate (SEC-SCH-01) |
+| API-SCH-16 | `GET /events/` | rows had `project_name` only | rows also carry `project_id` (null for an event without a project) |
+| API-SCH-17 | `GET /schedules/`, `/events/` with a bad `start`/`end` | 400 whose body was a bare list | 400 `{"start": ["..."]}` naming the parameter |
+| API-SCH-18 | `POST /resolve-overbooking/` with an unknown alert | 400 `{"detail": "['Unknown overbooking alert.']"}` (a Python list printed) | 400 `{"detail": "Unknown overbooking alert."}` |
+
+Tests: `apps/scheduling/tests/api/test_list_filters.py`.

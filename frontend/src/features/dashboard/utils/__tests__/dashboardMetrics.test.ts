@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   formatActivityTimestamp,
   getCategoryComparison,
-  getHealthMetrics,
+  getTaskFigures,
   getTaskStatusDistribution,
 } from '../dashboardMetrics';
 import type { DashboardSummaryKpis, DashboardTasksData } from '../../types';
@@ -102,33 +102,22 @@ describe('getCategoryComparison', () => {
   });
 });
 
-describe('getHealthMetrics', () => {
-  it('computes the documented 50/50 rate blend minus penalties', () => {
-    const m = getHealthMetrics(
+describe('getTaskFigures', () => {
+  it('reads the rates and counts from the payload, with no blended score', () => {
+    const m = getTaskFigures(
       summary({ total_shots: 4, approved_shots: 2 }),
       tasks({ total: 4, completed: 1, overdue: 1, blocked: 0, open: 2, in_progress: 1, review: 0 }),
     );
     expect(m.shotCompletionRate).toBe(50);
     expect(m.taskCompletionRate).toBe(25);
-    // 50*0.5 + 25*0.5 - 1*4 - 0 = round(33.5) = 34
-    expect(m.healthScore).toBe(34);
     expect(m.activeTasks).toBe(3);
+    expect(m.overdueCount).toBe(1);
+    expect(m).not.toHaveProperty('healthScore');
   });
 
-  it('scores an empty scope as 0 without NaN or Infinity', () => {
-    const m = getHealthMetrics(summary(), tasks());
-    expect(m.healthScore).toBe(0);
-    expect(m.shotCompletionRate).toBe(0);
-    expect(m.taskCompletionRate).toBe(0);
-    expect(Number.isFinite(m.healthScore)).toBe(true);
-  });
-
-  it('clamps deep-negative scopes at 0, never below', () => {
-    const m = getHealthMetrics(
-      summary({ total_shots: 2, approved_shots: 0 }),
-      tasks({ total: 10, completed: 0, overdue: 9, blocked: 2 }),
-    );
-    expect(m.healthScore).toBe(0);
+  it('is all zeros for an empty scope, without NaN or Infinity', () => {
+    const m = getTaskFigures(summary(), tasks());
+    expect(Object.values(m).every((n) => Number.isFinite(n) && n === 0)).toBe(true);
   });
 });
 

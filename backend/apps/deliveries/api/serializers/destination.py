@@ -47,6 +47,13 @@ class DestinationListSerializer(serializers.ModelSerializer[DeliveryDestination]
             "updated_at",
         )
 
+    def validate_type(self, value):
+        # One of the seven types (CR-19). A row saved before the check keeps its old value when it is sent back unchanged.
+        allowed = [choice for choice, _label in DeliveryDestination.TYPE_CHOICES]
+        if value in allowed or (self.instance is not None and value == self.instance.destination_type):
+            return value
+        raise serializers.ValidationError(f"Must be one of: {', '.join(allowed)}.")
+
     def _apply_aliases(self, validated_data):
         if "rate" in validated_data:
             rate = validated_data.pop("rate")

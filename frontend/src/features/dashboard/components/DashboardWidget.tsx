@@ -22,7 +22,6 @@ import {
   ShieldAlert,
   BarChart3,
   PieChart as PieChartIcon,
-  Sparkles,
   ArrowUpRight,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -34,7 +33,7 @@ import {
 } from '../types';
 import {
   getCategoryComparison,
-  getHealthMetrics,
+  getTaskFigures,
   getTaskStatusDistribution,
 } from '../utils/dashboardMetrics';
 
@@ -74,11 +73,11 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<WidgetTab>('health');
 
-  // Project health, task partition, and domain comparison are derived
+  // Task figures, task partition, and domain comparison are derived
   // centrally (see ../utils/dashboardMetrics) from the project-scoped
-  // payload only — no sample literals, no fabricated history.
+  // payload only — no sample literals, no fabricated history, no invented score.
   const healthMetrics = useMemo(
-    () => getHealthMetrics(summary, tasksData),
+    () => getTaskFigures(summary, tasksData),
     [summary, tasksData],
   );
 
@@ -184,10 +183,9 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
           <div>
-            <div className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Health Index</div>
-            <div className="text-lg font-bold text-emerald-400 font-mono flex items-center gap-1 mt-0.5">
-              {healthMetrics.healthScore}%
-              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Overall Progress</div>
+            <div className="text-lg font-bold text-emerald-400 font-mono flex items-center gap-1 mt-0.5" title={production?.methodology_note}>
+              {production ? `${production.overall_progress_pct}%` : '—'}
             </div>
           </div>
           <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">

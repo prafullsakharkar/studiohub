@@ -22,7 +22,7 @@ export const FieldInputs: React.FC<FieldInputsProps> = ({ fields, parentId, edit
   const values = useWatch({ control }) as Values;
   return (
     <>
-          {fields.filter((field) => isVisible(field, values)).map((field) => {
+          {fields.filter((field) => isVisible(field, values) && !(editing && field.onlyOnCreate)).map((field) => {
             const readOnly = editing && immutableOnEdit?.includes(field.name);
             const id = `f-${field.name}`;
             if (field.kind === 'checkbox') {
@@ -44,7 +44,9 @@ export const FieldInputs: React.FC<FieldInputsProps> = ({ fields, parentId, edit
             }
             return (
               <Field key={field.name} id={id} label={`${field.label}${field.required ? ' *' : ''}`} error={err(field.name)} hint={readOnly ? 'Cannot be changed after creation.' : field.hint}>
-                {field.kind === 'textarea' ? (
+                {field.kind === 'json' ? (
+                  <textarea id={id} rows={10} spellCheck={false} disabled={readOnly} className={`${inputClass(Boolean(err(field.name)))} font-mono`} {...register(field.name, { onChange: clearServerError })} />
+                ) : field.kind === 'textarea' ? (
                   <textarea id={id} rows={3} disabled={readOnly} className={inputClass(Boolean(err(field.name)))} {...register(field.name, { onChange: clearServerError })} />
                 ) : field.kind === 'select' ? (
                   <select id={id} disabled={readOnly} className={inputClass(Boolean(err(field.name)))} {...register(field.name, { onChange: clearServerError })}>
@@ -56,7 +58,7 @@ export const FieldInputs: React.FC<FieldInputsProps> = ({ fields, parentId, edit
                     ))}
                   </select>
                 ) : (
-                  <input id={id} type={field.kind === 'text' ? 'text' : field.kind} disabled={readOnly} maxLength={field.maxLength} className={inputClass(Boolean(err(field.name)))} {...register(field.name, { onChange: clearServerError })} />
+                  <input id={id} type={field.kind === 'text' ? 'text' : field.kind === 'datetime' ? 'datetime-local' : field.kind} disabled={readOnly} maxLength={field.maxLength} className={inputClass(Boolean(err(field.name)))} {...register(field.name, { onChange: clearServerError })} />
                 )}
               </Field>
             );

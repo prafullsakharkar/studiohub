@@ -16,6 +16,7 @@ It seeds (each exercises a different backend rule):
   delegate ordinary user holding `live-delegate` and `live-viewer` (Phase 2: RBAC admin without being a superuser)
   selfmfa  ordinary user without MFA (Phase 2: voluntary enrollment from My account)
   lead     holds the seeded `lead-artist` role, no MFA (Phase 6: approves time and shots)
+  supervisor holds the seeded `vfx-supervisor` role, no MFA (Phase 7: decides reviews)
   audit    a queued and a failed background job and an open error log (Phase 4)
   roles    `live-escalation` (grants project.delete, held by nobody), `live-viewer` (grants shot.view) and `live-delegate` (grants identity.role.update/view + identity.user.view)
 Writes the connection details to $SYNC_LIVE_INFO, then keeps serving
@@ -48,6 +49,8 @@ PASSWORDS = {
     "delegate": "Live-Delegate-Pass!9",
     "selfmfa": "Live-Selfmfa-Pass!9",
     "lead": "Live-Lead-Pass!9",
+    "supervisor": "Live-Supervisor-Pass!9",
+    "producer": "Live-Producer-Pass!9",
 }
 
 
@@ -104,6 +107,37 @@ def test_serve(live_server, django_user_model):
     lead.is_active = True
     lead.save()
     UserRole.objects.create(user=lead, role=Role.objects.get(code="lead-artist"))
+    supervisor = users.create_user(email="supervisor@example.test", password=PASSWORDS["supervisor"])
+    supervisor.is_active = True
+    supervisor.save()
+    UserRole.objects.create(user=supervisor, role=Role.objects.get(code="vfx-supervisor"))
+
+    producer = users.create_user(email="producer@example.test", password=PASSWORDS["producer"])
+    producer.is_active = True
+    producer.save()
+    UserRole.objects.create(user=producer, role=Role.objects.get(code="production-admin"))
+
+    # Deliveries (Phase 8): a project the supervisor, producer, lead and artist belong to, and published
+    # versions with registered files (the registry has no UI before Phase 9, so they are built here).
+    from apps.deliveries.tests.helpers import _Request, storage_root
+    from apps.production.models import ProjectMembership
+    from apps.production.tests.factories import ProjectFactory, ShotFactory, VersionFactory
+    from apps.publishing.services.files import PublishedFileService
+
+    dlv_project = ProjectFactory.create(code="LIVEDLV", name="Live deliveries")
+    for member in (supervisor, producer, lead, artist):
+        ProjectMembership.objects.create(user=member, project=dlv_project, status="active", role="Artist")
+    dlv_versions = []
+    for n in range(1, 5):
+        shot = ShotFactory.create(project=dlv_project, code=f"LSH{n:03d}", name=f"Live shot {n}")
+        version = VersionFactory.create(project=dlv_project, code=f"LDV{n:03d}", status="Approved", is_published=True, shot=shot)
+        PublishedFileService.register(
+            actor=manager,
+            request=_Request(manager),
+            version_id=version.pk,
+            data={"version_id": str(version.pk), "storage_root": storage_root().code, "relative_path": f"live/{version.code}/plate.exr", "size_bytes": 2048 * n, "sha256": f"{n:x}" * 64, "role": "main"},
+        )
+        dlv_versions.append({"id": str(version.pk), "code": version.code, "version_number": version.version_number})
 
     from apps.audit.models import BackgroundJob, ErrorLog
 
@@ -118,6 +152,7 @@ def test_serve(live_server, django_user_model):
                 "users": {k: {"email": f"{k}@example.test", "password": v} for k, v in PASSWORDS.items()},
                 "mfa": {"secret": pending_secret(mfa), "recovery_codes": list(recovery_codes)},
                 "manager": {"secret": pending_secret(manager)},
+                "dlv": {"project": str(dlv_project.pk), "versions": dlv_versions},
             },
             indent=1,
         )

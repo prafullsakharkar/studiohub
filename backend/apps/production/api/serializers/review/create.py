@@ -18,6 +18,12 @@ class ReviewCreateSerializer(BaseWriteSerializer[Any]):
             "code": {"required": False, "allow_blank": True},
         }
 
+    def validate_status(self, value):
+        # A review starts Pending Review and moves by the actions; anything else would skip the workflow.
+        if value and value != "Pending Review":
+            raise serializers.ValidationError("A new review starts as Pending Review.")
+        return value
+
     def validate(self, attrs):
         # The frontend review form omits ``code``: auto-generate it from
         # the title (same pattern as identity roles) so creates do

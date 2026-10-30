@@ -50,6 +50,7 @@ class ReviewViewSet(StatusHistoryMixin, ProductionEntityViewSet):  # pyright: ig
         "update": (ReviewPermissions.UPDATE,),
         "partial_update": (ReviewPermissions.UPDATE,),
         "destroy": (ReviewPermissions.DELETE,),
+        "archive": (ReviewPermissions.DELETE,),
         "submit": (ReviewPermissions.UPDATE,),
         "start_review": (ReviewPermissions.UPDATE,),
         "approve": (ReviewPermissions.APPROVE,),
