@@ -1,4 +1,5 @@
-import { DCC_TOOLS, publishApi } from '@/api/publishing/publishing';
+import { projectsApi } from '@/api/production/structure';
+import { DCC_TOOLS, JOB_STATUSES, publishApi } from '@/api/publishing/publishing';
 import type { Publish, PublishRow } from '@/api/publishing/publishing';
 import { isJobDeletable, isJobEditable } from '@/api/publishing/publishingFlow';
 import type { DirectoryFormConfig, DirectoryListConfig, FieldDef } from '@/modules/directory/types';
@@ -27,7 +28,8 @@ export const jobStatusVariant = (status: string) => {
 };
 export const JobStatusBadge = ({ status }: { status: string }) => <Badge variant={jobStatusVariant(status)}>{status}</Badge>;
 
-export function usePublishListConfig(): DirectoryListConfig<PublishRow> {
+/** `scope`: the list of one project (its tab); the project is then fixed, not a column or a filter. */
+export function usePublishListConfig(scope?: { projectId: string }): DirectoryListConfig<PublishRow> {
   return {
     title: 'Publishing',
     noun: 'export job',
@@ -39,7 +41,13 @@ export function usePublishListConfig(): DirectoryListConfig<PublishRow> {
     deletePermission: 'publishing.delete',
     createPermission: 'publishing.create',
     managePermission: 'publishing.update',
-    // The list route filters nothing (CR-22): search and sorting only.
+    scope: scope ? { project_id: scope.projectId } : undefined,
+    createQuery: scope ? `project_id=${scope.projectId}` : undefined,
+    filters: [
+      { key: 'project_id', label: 'Project', optionsFrom: { queryKey: projectsApi.keys.all, fetchPage: projectsApi.list as never, getLabel: ((p: { code: string }) => p.code) as never } },
+      { key: 'job_status', label: 'Status', options: options(JOB_STATUSES) },
+      { key: 'dcc_tool', label: 'Tool', options: options(DCC_TOOLS) },
+    ],
     canEdit: (row) => isJobEditable(row.job_status),
     canRemove: (row) => isJobDeletable(row.job_status),
     rowName: (row) => row.code,
@@ -48,7 +56,7 @@ export function usePublishListConfig(): DirectoryListConfig<PublishRow> {
     basePath: '/publishing',
     columns: [
       { header: 'Job', cell: (row) => `${row.code} · ${row.name}`, sortField: 'created_at' },
-      { header: 'Project', cell: (row) => row.client_name || '—' },
+      ...(scope ? [] : [{ header: 'Project', cell: (row: PublishRow) => row.client_name || '—' }]),
       { header: 'For', cell: (row) => `${row.entity_type_display || row.entity_type} ${row.entity_code}`.trim() || '—' },
       { header: 'Tool', cell: (row) => `${row.dcc_tool_display}${row.dcc_version ? ` ${row.dcc_version}` : ''}` },
       { header: 'Format', cell: (row) => row.export_format || '—' },

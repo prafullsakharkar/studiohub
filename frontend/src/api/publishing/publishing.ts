@@ -35,6 +35,8 @@ export interface PublishRow {
   id: string;
   code: string;
   name: string;
+  /** The project the job belongs to (a list can link to it and filter by it). */
+  project_id: string;
   /** The legacy word. Use `job_status`. */
   status: string;
   job_status: string;
@@ -66,6 +68,8 @@ export interface Publish {
   job_status: string;
   project: string | null;
   project_name: string;
+  /** The version the job exports; null for a job made without one. */
+  version_id: string | null;
   dcc_tool: string;
   dcc_tool_display: string;
   dcc_version: string;

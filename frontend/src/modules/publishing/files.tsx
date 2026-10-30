@@ -33,7 +33,8 @@ export function fileRowActions(row: PublishedFile, can: { deprecate: boolean; re
     }));
 }
 
-export function useFilesListConfig(scope?: { projectId: string }): DirectoryListConfig<PublishedFile> {
+/** `scope`: the files of one project (its tab) or of one version (a job's tab). */
+export function useFilesListConfig(scope?: { projectId?: string; versionId?: string }): DirectoryListConfig<PublishedFile> {
   const canDeprecate = useCan('publishing.deprecate');
   const canRevoke = useCan('publishing.revoke');
   return {
@@ -53,9 +54,10 @@ export function useFilesListConfig(scope?: { projectId: string }): DirectoryList
     searchPlaceholder: 'Search',
     searchable: false, // the files route has no search (use the filters)
     basePath: '/publishing/files',
-    scope: scope ? { project_id: scope.projectId } : undefined,
+    scope: scope?.projectId ? { project_id: scope.projectId } : scope?.versionId ? { version_id: scope.versionId } : undefined,
     filters: [
-      { key: 'project_id', label: 'Project', optionsFrom: { queryKey: projectsApi.keys.all, fetchPage: projectsApi.list as never, getLabel: ((p: { code: string }) => p.code) as never } },
+      // A scoped list (a project's tab, a job's files) is already narrower than any project.
+      ...(scope ? [] : [{ key: 'project_id', label: 'Project', optionsFrom: { queryKey: projectsApi.keys.all, fetchPage: projectsApi.list as never, getLabel: ((p: { code: string }) => p.code) as never } }]),
       { key: 'status', label: 'Status', options: options(FILE_STATUSES) },
       { key: 'role', label: 'Role', options: options(FILE_ROLES) },
       { key: 'latest', label: 'Show', options: [{ value: 'true', label: 'Latest of each role' }] },

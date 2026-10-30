@@ -99,6 +99,22 @@ describe('export job workspace', () => {
     expect(screen.queryByRole('link', { name: 'Edit details' })).toBeNull();
   });
 
+  it('the Files tab lists the registered files of the job’s version, or says there is none (CR-22)', async () => {
+    const job = flow.jobs4_detail.body;
+    expect(job.version_id).toBeTruthy();
+    const { calls } = open(producer, job, (c) => (path(c) === '/api/v1/publishing/files/' ? emptyPage : undefined));
+    await ready(job.code);
+    fireEvent.click(screen.getByRole('tab', { name: 'Files' }));
+    await waitFor(() => expect(calls.some((c) => path(c) === '/api/v1/publishing/files/' && new URL(c.url).searchParams.get('version_id') === job.version_id)).toBe(true));
+    expect(screen.queryByLabelText('Filter by project')).toBeNull();
+    cleanup();
+
+    open(producer, { ...job, version_id: null });
+    await ready(job.code);
+    fireEvent.click(screen.getByRole('tab', { name: 'Files' }));
+    expect(await screen.findByText(/made without a version/)).toBeTruthy();
+  });
+
   it('only a job that has not run, or that failed, can be edited', async () => {
     open(producer, flow.jobs_detail_pending.body);
     await ready(flow.jobs_detail_pending.body.code);
@@ -182,7 +198,25 @@ describe('export job list and form', () => {
     expect(screen.getByRole('button', { name: /^Delete PUB-X-1/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Delete PUB-X-3/ })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /^Delete PUB-X-2/ })).toBeNull();
-    expect(screen.queryByLabelText(/Filter by/)).toBeNull(); // the server filters nothing (CR-22)
+  });
+
+  it('choosing a status or a tool asks the server (CR-22); a project’s list has no project filter, column or link of its own', async () => {
+    const { calls } = mockFetch(() => emptyPage);
+    renderAt('/publishing', producer, <Route path="/publishing" element={<List />} />);
+    fireEvent.change(await screen.findByLabelText('Filter by status'), { target: { value: 'Failed' } });
+    await waitFor(() => expect(calls.some((c) => path(c) === '/api/v1/publishing/' && new URL(c.url).searchParams.get('job_status') === 'Failed')).toBe(true));
+    fireEvent.change(screen.getByLabelText('Filter by tool'), { target: { value: 'Nuke' } });
+    await waitFor(() => expect(calls.some((c) => new URL(c.url).searchParams.get('dcc_tool') === 'Nuke')).toBe(true));
+    expect(screen.getByLabelText('Filter by project')).toBeTruthy();
+    cleanup();
+
+    const Scoped = () => <DirectoryListPage config={usePublishListConfig({ projectId: 'p-9' })} />;
+    const scoped = mockFetch(() => emptyPage);
+    renderAt('/x', producer, <Route path="/x" element={<Scoped />} />);
+    await screen.findByLabelText('Filter by status');
+    expect(screen.queryByLabelText('Filter by project')).toBeNull();
+    expect(screen.queryByRole('columnheader', { name: 'Project' })).toBeNull();
+    await waitFor(() => expect(scoped.calls.some((c) => path(c) === '/api/v1/publishing/' && new URL(c.url).searchParams.get('project_id') === 'p-9')).toBe(true));
   });
 
   it('a new job names a project and a tool; the version is optional; without one the shot or asset is asked for', async () => {
@@ -346,13 +380,15 @@ describe('storage roots and the project tab', () => {
     expect(screen.queryByLabelText(/^Code/)).toBeNull();
   });
 
-  it('the project tab lists the project’s published files from the server, filtered by project', async () => {
+  it('the project tab lists the project’s export jobs and published files from the server, both filtered by project (CR-22)', async () => {
     const { calls } = mockFetch(() => emptyPage);
     renderAt('/x', artist, <Route path="/x" element={<ProjectPublishingTab project={{ id: 'p-77', code: 'PRJ' } as unknown as Project} />} />);
-    await waitFor(() => expect(calls.some((c) => path(c) === '/api/v1/publishing/files/')).toBe(true));
-    const call = calls.find((c) => path(c) === '/api/v1/publishing/files/')!;
-    expect(new URL(call.url).searchParams.get('project_id')).toBe('p-77');
+    for (const url of ['/api/v1/publishing/', '/api/v1/publishing/files/']) {
+      await waitFor(() => expect(calls.some((c) => path(c) === url)).toBe(true));
+      expect(new URL(calls.find((c) => path(c) === url)!.url).searchParams.get('project_id')).toBe('p-77');
+    }
     expect(screen.queryByLabelText('Filter by project')).toBeNull();
-    expect(screen.getByRole('link', { name: 'Export jobs' }).getAttribute('href')).toBe('/publishing');
+    expect(screen.getByRole('heading', { name: 'Publishing' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Published files' })).toBeTruthy();
   });
 });

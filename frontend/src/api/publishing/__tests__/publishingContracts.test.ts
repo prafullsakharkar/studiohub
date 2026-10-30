@@ -98,21 +98,38 @@ describe('export jobs', () => {
     for (const key of ['jobs_patch_artist', 'jobs_validate_artist']) expect(flow[key].status).toBe(403);
   });
 
-  it('the job list filters nothing but search and ordering, and has no project route (CR-22)', () => {
+  it('the job list filters by status, tool, entity type, project and version; rows carry the project id, the detail the version id (CR-22)', () => {
     const base = flow.fp_jobs_baseline.body.count;
-    for (const key of ['fp_jobs_by_status_Exported', 'fp_jobs_by_status_Failed', 'fp_jobs_by_job_status_Exported', 'fp_jobs_by_dcc_tool_Nuke', 'fp_jobs_by_entity_type_Shot', 'fp_jobs_by_nonsense_1']) expect(flow[key].body.count).toBe(base);
-    expect(flow.fp_jobs_by_project_id_other.body.count).toBe(flow.fp_jobs_all.body.count);
-    expect(flow.fp_jobs_by_search_Comp.body.count).toBeLessThan(base);
-    expect(flow.jobs_project_route.status).toBe(404);
-    expect(flow.jobs_list.body.results[0]).not.toHaveProperty('project');
-    expect(flow.jobs_detail_pending.body).not.toHaveProperty('version_id');
+    const count = (key: string) => flow[key].body.count as number;
+    // The read words and the stored words both work, in any case.
+    expect(count('fp_jobs_by_status_Exported')).toBeLessThan(base);
+    expect(count('fp_jobs_by_status_Queued')).toBe(count('fp_jobs_by_job_status_pending'));
+    expect(count('fp_jobs_by_status_Published')).toBeGreaterThan(0);
+    expect(count('fp_jobs_by_status_Unpublishe')).toBeGreaterThan(0);
+    expect(count('fp_jobs_by_status_Banana')).toBe(0);
+    expect(count('fp_jobs_by_dcc_tool_nuke')).toBe(count('fp_jobs_by_dcc_tool_Nuke'));
+    expect(count('fp_jobs_by_dcc_tool_Nuke')).toBeLessThan(base);
+    expect(count('fp_jobs_by_version_id_real')).toBeGreaterThan(0);
+    expect(count('fp_jobs_by_version_real')).toBe(count('fp_jobs_by_version_id_real'));
+    expect(count('fp_jobs_by_version_id_real')).toBeLessThan(base);
+    expect(count('fp_jobs_by_project_real')).toBe(count('fp_jobs_all'));
+    expect(count('fp_jobs_by_project_other')).toBe(0);
+    expect(count('fp_jobs_by_project_id_other')).toBe(0);
+    expect(count('fp_jobs_by_nonsense_1')).toBe(base); // an unknown parameter is still ignored
+    expect(flow.fp_jobs_by_version_id_nope.status).toBe(400);
+    expect(flow.jobs_project_route.status).toBe(404); // there is still no per-project route: filter with project_id
+    expect(flow.jobs_list.body.results[0]).toHaveProperty('project_id');
+    expect(flow.jobs_detail_pending.body).toHaveProperty('version_id');
   });
 
-  it('delete: refused to a supervisor; the server deletes a job that has files, and in any status (CR-23)', () => {
+  it('delete: refused to a supervisor; only a Pending or Cancelled job goes, never one with files (CR-23)', () => {
     expect(flow.jobs3_delete_supervisor.status).toBe(403);
     expect(flow.jobs3_delete.status).toBe(204);
-    expect(flow.jobs4_delete_with_file.status).toBe(204);
-    expect(flow.jobs4_detail.status).toBe(404);
+    expect(flow.jobs2_delete_validated.status).toBe(409);
+    expect(flow.jobs2_delete_validated.body.error.code).toBe('job_not_editable');
+    expect(flow.jobs4_delete_with_file.status).toBe(409);
+    expect(flow.jobs4_delete_with_file.body.error.code).toBe('job_has_files');
+    expect(flow.jobs4_detail.status).toBe(200);
     expect(isJobDeletable('Pending') && isJobDeletable('Cancelled')).toBe(true);
     for (const s of ['Validating', 'Validated', 'Exporting', 'Exported', 'Failed']) expect(isJobDeletable(s)).toBe(false);
   });
@@ -242,11 +259,12 @@ describe('storage roots and destinations', () => {
     expect(flow.roots_delete_empty.status).toBe(204);
   });
 
-  it('destinations: a name is unique in any case, a new default moves the old one, a protocol is required, the type is not checked (CR-24)', () => {
+  it('destinations: a name is unique in any case, a new default moves the old one, a protocol is required, the type is one of the seven (CR-24)', () => {
     expect(flow.destinations_create_empty.body.protocol).toBeTruthy();
     expect(flow.destinations_create_duplicate.body.name[0]).toMatch(/already exists/);
     expect((flow.destinations_list.body.results as any[]).filter((r) => r.is_default)).toHaveLength(1);
-    expect(flow.destinations_create_bad_type.status).toBe(201); // "S3" is not one of the seven types
+    expect(flow.destinations_create_bad_type.status).toBe(400); // "S3" is not one of the seven types (CR-24)
+    expect(flow.destinations_create_bad_type.body.type[0]).toMatch(/^Must be one of: Storage Cluster/);
     expect(flow.destinations_artist_create.status).toBe(403);
     expect(flow.destinations_supervisor_create.status).toBe(201);
     expect(flow.destinations_supervisor_delete.status).toBe(403);

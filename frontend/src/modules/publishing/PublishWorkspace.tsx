@@ -11,13 +11,16 @@ import { EntityHistory } from '@/components/history/EntityHistory';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { useCan } from '@/core/permissions/useCan';
 import { formatWhen } from '@/modules/deliveries/format';
+import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
 import { ActionBar } from './ActionBar';
+import { useFilesListConfig } from './files';
 import { JobStatusBadge } from './jobs';
 
-type TabId = 'details' | 'validation' | 'changes';
+type TabId = 'details' | 'validation' | 'files' | 'changes';
 const TABS: ReadonlyArray<{ id: TabId; label: string }> = [
   { id: 'details', label: 'Details' },
   { id: 'validation', label: 'Validation' },
+  { id: 'files', label: 'Files' },
   { id: 'changes', label: 'Changes' },
 ];
 
@@ -89,6 +92,18 @@ export const ValidationPanel: React.FC<{ job: Publish }> = ({ job }) => {
   );
 };
 
+/** The registered files of the version the job exports (the registry has no filter by job). */
+const JobFilesPanel: React.FC<{ versionId: string | null }> = ({ versionId }) => {
+  const config = useFilesListConfig({ versionId: versionId ?? '' });
+  if (!versionId) return <p className="text-xs text-slate-400">This job was made without a version, so no registered files can be tied to it.</p>;
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-slate-400">Files registered for this job’s version, whichever job produced them.</p>
+      <DirectoryListPage config={config} />
+    </div>
+  );
+};
+
 export const PublishWorkspace: React.FC = () => {
   const { publishId = '' } = useParams();
   const navigate = useNavigate();
@@ -145,6 +160,7 @@ export const PublishWorkspace: React.FC = () => {
             </div>
             {tab === 'details' && <DetailsPanel job={job} />}
             {tab === 'validation' && <ValidationPanel job={job} />}
+            {tab === 'files' && <JobFilesPanel versionId={job.version_id} />}
             {tab === 'changes' && <EntityHistory targetType="PublishItem" targetId={job.id} />}
           </>
         )}
