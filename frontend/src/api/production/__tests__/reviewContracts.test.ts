@@ -24,7 +24,7 @@ describe('review row types match the captured responses', () => {
     ['Review', firstRow('reviews_list'), K.REVIEW_KEYS],
     ['ReviewVersion', review.versions[0], K.REVIEWVERSION_KEYS],
     ['ReviewParticipant', review.reviewers[0], K.REVIEWPARTICIPANT_KEYS],
-    ['ReviewComment', review.comments.find((c: any) => c.replies.length === 0), K.REVIEWCOMMENT_KEYS],
+    ['ReviewComment', flow.reviews_comments_add.body, K.REVIEWCOMMENT_KEYS],
     ['ReviewReply (a comment without replies: replies never nest)', review.comments.find((c: any) => c.replies.length > 0).replies[0], K.REVIEWREPLY_KEYS],
     ['ReviewNote', review.notes[0], K.REVIEWNOTE_KEYS],
     ['ReviewAnnotation', review.annotations[0], K.REVIEWANNOTATION_KEYS],
@@ -166,14 +166,19 @@ describe('reviews', () => {
     expect(commentOf('reviews_comments_reopen').is_resolved).toBe(false);
   });
 
-  it('the server does not check what the form should: an empty comment, any status on create and a comment on a closed review are all accepted', () => {
-    expect(flow.reviews_comments_empty.status).toBe(201);
-    expect(flow.reviews_create_bad_status.body.status).toBe('Bogus');
-    expect(flow.reviews_comment_on_closed.status).toBe(201);
+  it('CR-16: the server refuses an empty comment, any status but Pending Review on create and any verdict it does not know; a comment on a closed review is still accepted', () => {
+    expect(flow.reviews_comments_empty.status).toBe(400);
+    expect(flow.reviews_comments_empty.body.text).toEqual(['A comment needs some text.']);
+    expect(flow.reviews_create_bad_status.status).toBe(400);
+    expect(flow.reviews_create_second.body.status).toBe('Pending Review');
+    expect(flow.reviews_three_verdict_bogus.status).toBe(400);
+    expect(flow.reviews_three_participant_verdict_bogus.status).toBe(400);
+    expect(flow.reviews_comment_on_closed.status).toBe(201); // D-30: not asked for
   });
 
-  it('archive is unmapped on reviews (403); DELETE archives and restore brings it back', () => {
-    expect(flow.reviews_two_archive.status).toBe(403);
+  it('CR-15: archive on reviews needs review.delete (a supervisor) and restore brings it back; DELETE archives too', () => {
+    expect(flow.reviews_two_archive.status).toBe(200);
+    expect(flow.reviews_two_archive_restore.status).toBe(200);
     expect(flow.reviews_two_delete.status).toBe(204);
     expect(flow.reviews_two_restore.status).toBe(200);
   });
@@ -224,11 +229,12 @@ describe('playlists', () => {
 });
 
 describe('media, workflows, automations', () => {
-  it('media: any media_type is accepted (free text); an artist creates but cannot edit; archive is unmapped; a lead cannot delete', () => {
+  it('media: any media_type is accepted (free text); an artist creates but cannot edit; a lead archives (media.update) but cannot delete', () => {
     expect(flow.media_create_bad_type.status).toBe(201);
     expect(flow.media_artist_patch.status).toBe(403);
     expect(flow.media_lead_patch.status).toBe(200);
-    expect(flow.media_archive.status).toBe(403);
+    expect(flow.media_archive.status).toBe(200); // CR-15
+    expect(flow.media_archive_restore.status).toBe(200);
     expect(flow.media_delete.status).toBe(403);
   });
 

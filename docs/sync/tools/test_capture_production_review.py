@@ -144,7 +144,8 @@ def test_capture_production_review(django_user_model):
     call(sv, "reviews_create_empty", "POST", "/api/v1/reviews/", {})
     rv = call(sv, "reviews_create", "POST", "/api/v1/reviews/", {"project": pid, "title": "Walk review", "code": "RV001", "entity_type": "Shot", "entity_id": sid, "description": "Dailies review"})
     rid = rv.json().get("id")
-    call(sv, "reviews_create_bad_status", "POST", "/api/v1/reviews/", {"project": pid, "title": "Bad", "code": "RV999", "status": "Bogus"})
+    call(sv, "reviews_create_bad_status", "POST", "/api/v1/reviews/", {"project": pid, "title": "Bad", "code": "RV998", "status": "Bogus"})
+    call(sv, "reviews_create_second", "POST", "/api/v1/reviews/", {"project": pid, "title": "Second review", "code": "RV999"})
     call(sv, "reviews_detail", "GET", f"/api/v1/reviews/{rid}/")
     call(sv, "reviews_add_version_empty", "POST", f"/api/v1/reviews/{rid}/versions/", {})
     call(sv, "reviews_add_version", "POST", f"/api/v1/reviews/{rid}/versions/", {"version_id": vid})
@@ -197,6 +198,7 @@ def test_capture_production_review(django_user_model):
     call(sv, "reviews_two_reject", "POST", f"/api/v1/reviews/{rv2}/reject/", {"notes": "no"})
     call(sv, "reviews_two_verdict", "POST", f"/api/v1/reviews/{rv2}/verdict/", {"verdict": "Retake", "notes": "redo"})
     call(sv, "reviews_two_archive", "POST", f"/api/v1/reviews/{rv2}/archive/", {})
+    call(sv, "reviews_two_archive_restore", "POST", f"/api/v1/reviews/{rv2}/restore/", {})
     call(sv, "reviews_two_delete", "DELETE", f"/api/v1/reviews/{rv2}/")
     # a third review: the supervisor submits, a participant who did not submit gives a verdict, and the supervisor decides Retake
     rv3 = call(sv, "reviews_three_create", "POST", "/api/v1/reviews/", {"project": pid, "title": "Third", "code": "RV003", "entity_type": "Shot", "entity_id": sid2}).json()["id"]
@@ -228,6 +230,7 @@ def test_capture_production_review(django_user_model):
     call(ar, "media_artist_patch", "PATCH", f"/api/v1/media/{mid}/", {"category": "Plate"})
     call(ld, "media_lead_patch", "PATCH", f"/api/v1/media/{mid}/", {"category": "Plate"})
     call(ld, "media_archive", "POST", f"/api/v1/media/{mid}/archive/", {})
+    call(ld, "media_archive_restore", "POST", f"/api/v1/media/{mid}/restore/", {})
     call(ld, "media_delete", "DELETE", f"/api/v1/media/{mid}/")
     call(ld, "media_archived", "GET", f"/api/v1/media/archived/?project={pid}")
     call(ld, "media_restore", "POST", f"/api/v1/media/{mid}/restore/", {})

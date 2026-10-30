@@ -1,6 +1,6 @@
 # Phase 7 — Production C: versions, reviews, playlists, media, workflows: verification
 
-Branch `sync/phase-7-production-review` (from `develop` after the Phase 6 / Board merge), **not pushed, not merged**. No backend file changed. Open backend requests added: **CR-15**, **CR-16** (extended), questions **Q-18**, **Q-19**.
+Branch `sync/phase-7-production-review` (from `develop` after the Phase 6 / Board merge), **not pushed, not merged**. No backend file changed. Backend requests **CR-15** and **CR-16** were approved and **applied** in one backend commit with tests (see §8); questions **Q-18** (no engine planned) and **Q-19** (no public page planned) were answered no.
 
 ## 1. Exit criteria
 
@@ -65,8 +65,8 @@ Left alone on purpose: `core/permissions/Can.tsx` (shared, still exported by the
 
 ## 5. Findings (details in `backend-change-requests.md`)
 
-1. **CR-15** — `archive` on media and reviews is unmapped (403 for everyone); the screens use `DELETE`, so archiving media needs `media.delete` (supervisor and above).
-2. **CR-16** — missing validation: any review status on create, empty comments, free-text verdicts (`Banana` is stored; on a review it sets `supervisor_verdict` without moving the status), free-text `media_type`, non-unique workflow codes (a second clone repeats `<code>-COPY`).
+1. **CR-15** — `archive` on media and reviews was unmapped (403 for everyone). **Applied** (§8): the screens first used `DELETE` as a workaround, now they use `archive`.
+2. **CR-16** — missing validation: any review status on create, empty comments, free-text verdicts (`Banana` was stored; on a review it set `supervisor_verdict` without moving the status). **Applied** (§8). Left as they are, by decision: free-text `media_type` and non-unique workflow codes (a second clone repeats `<code>-COPY`).
 3. **Q-18** — automation rules are never fired (`execution_count` stays 0), and workflow `simulate` reports every node a success. The screens say what is stored, not what runs.
 4. **Q-19** — playlist sharing is a record only. The dialog is worded "Mark as …", sends three booleans and has no expiry field.
 5. The server ignores `entity_id`, `shot_id`, `asset_id` on versions and reviews, and every entity filter on media, so entity tabs read the narrower list in full and filter.
@@ -82,7 +82,18 @@ Left alone on purpose: `core/permissions/Can.tsx` (shared, still exported by the
 
 ## 7. Questions for the owner
 
-1. **Q-18**: is an automation engine planned? Until then the rules screen is configuration only.
-2. **Q-19**: is a public review page planned? If so, what are the token, passcode and expiry contracts?
-3. **CR-15 / CR-16**: approve, defer or drop? They are small; none blocks a screen.
-4. Should a lead be able to archive media (`media.update`) as with playlists, or stay supervisor-only?
+Answered: **Q-18** no automation engine is planned; **Q-19** no public review page is planned; **CR-15 / CR-16 / media archive** "do it as per suggestion". Nothing is open from this phase.
+
+## 8. Follow-up: CR-15 and CR-16 applied (backend commit, targeted tests only)
+
+| Change | Where | Contract |
+|---|---|---|
+| `archive` on media needs `media.update`; on reviews `review.delete` | `api/viewsets/media.py`, `api/viewsets/review.py` (`permission_map`) | C-47 |
+| a new review's `status` must be `Pending Review` (or omitted) | `api/serializers/review/create.py` | C-48 |
+| a comment needs text (`text` or `comment`) | `api/serializers/actions.py` (`ReviewCommentSerializer.validate`) | C-49 |
+| `verdict` is one of `Pending Review`, `Approved`, `Rejected`, `Changes Requested`, `Retake` (supervisor and participant verdicts) | `api/serializers/actions.py` (`REVIEW_VERDICTS`) | C-50 |
+
+- **Tests:** `apps/production/tests/test_review_media_validation.py`, 18 tests; each of the five source changes was reverted in turn and the file failed (1, 1, 3, 2 and 5 failures). The whole production app: **1,298 passed**; `ruff check apps/production` clean. The full backend suite was **not** run (the owner asked for targeted runs in this phase).
+- **Samples:** `_review_flow.json` was captured again (the old one recorded the pre-fix behaviour). The capture gained `reviews_create_second` (a valid review where the bogus-status one used to be created), and a `restore` after each `archive` that now succeeds, so the data the other samples describe is unchanged.
+- **Frontend:** `mediaApi.archive` and `reviewsApi.archive` replace the `DELETE` workaround; the media list archives with `media.update` (a lead can now archive media). Contract tests rewritten to the new behaviour; two new tests pin the archive wiring (each mutation-checked). Unit tests **684 / 86 files**, typecheck 0, build OK. `review.live` re-run against the changed backend: 3/3 pass.
+- **Not applied, by decision:** free-text `media_type`, workflow `code` uniqueness.

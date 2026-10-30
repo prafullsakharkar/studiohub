@@ -221,7 +221,7 @@ export const ReviewCommentsPanel: React.FC<{ review: Review }> = ({ review }) =>
   const write = useReviewWrite();
   const [text, setText] = useState('');
   const [frame, setFrame] = useState('');
-  // The server still accepts comments on a closed review and empty ones (CR-16); the screen does neither.
+  // The server refuses an empty comment (CR-16) but still accepts comments on a closed review; the screen takes neither.
   const closed = review.status === 'Closed';
   return (
     <div className="space-y-3">

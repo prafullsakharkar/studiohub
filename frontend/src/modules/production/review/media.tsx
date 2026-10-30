@@ -16,10 +16,9 @@ export function useMediaListConfig(scope?: { projectId: string }): DirectoryList
     subtitle: 'Links to reference, previews and deliverables attached to shots and assets. The studio records the links; it does not store the files.',
     queryKey: mediaApi.keys.lists(),
     fetchPage: mediaApi.list,
-    // `archive` is unmapped on media (CR-15): DELETE archives.
-    remove: mediaApi.remove,
+    remove: mediaApi.archive,
     deleteLabel: 'Archive',
-    deletePermission: 'media.delete',
+    deletePermission: 'media.update',
     createPermission: 'media.create',
     managePermission: 'media.update',
     archived: { fetchPage: mediaApi.archived, restore: mediaApi.restoreOne },

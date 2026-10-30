@@ -224,7 +224,8 @@ const reviewPost = (id: string, action: string, body: Record<string, unknown> = 
 export const reviewsApi = {
   ...resourceApi<Review, ReviewInput>('reviews', reviewBase),
   archived: listFetcher<Review>(`${reviewBase}archived/`),
-  /** `archive` is unmapped on reviews (403 for everyone, CR-15): `remove` (DELETE, `review.delete`) archives. */
+  /** Needs `review.delete` (CR-15), like DELETE. */
+  archive: (id: string) => reviewPost(id, 'archive'),
   restoreOne: (id: string) => reviewPost(id, 'restore'),
   // status machine (see statusFlow.ts); the decisions need `review.approve`, the rest `review.update`
   submit: (id: string) => reviewPost(id, 'submit'),
@@ -353,8 +354,9 @@ export interface MediaInput {
 
 const mediaBase = `${V1}/media/`;
 export const mediaApi = {
-  /** The list is a bare array. `archive` is unmapped (403 for everyone, CR-15): DELETE (`media.delete`) archives. */
+  /** The list is a bare array. `archive` needs `media.update` (CR-15); DELETE (`media.delete`) archives too. */
   ...resourceApi<Media, MediaInput>('media', mediaBase),
+  archive: (id: string) => apiClient.post<Media>(`${mediaBase}${id}/archive/`, {}),
   archived: listFetcher<Media>(`${mediaBase}archived/`),
   restoreOne: (id: string) => apiClient.post<Media>(`${mediaBase}${id}/restore/`, {}),
 };

@@ -16,6 +16,7 @@ import { WorkflowWorkspace } from '../WorkflowWorkspace';
 import { automationsFormConfig, useAutomationsListConfig } from '../automations';
 import { mediaFormConfig, useMediaListConfig } from '../media';
 import { useWorkflowsListConfig, workflowsFormConfig } from '../workflows';
+import { useReviewsListConfig } from '../reviews';
 
 type Captured = { status: number; body: any };
 const flow = loadSample<Record<string, Captured>>('production/_review_flow.json');
@@ -206,6 +207,16 @@ describe('media', () => {
     expect(item).toBeTruthy();
   });
 
+  it('CR-15: media is archived with the archive action by a holder of media.update (no media.delete needed)', async () => {
+    const { calls } = mockFetch((c) => (c.method === 'POST' ? reply(flow.media_archive) : bare(flow.media_list)));
+    renderAt('/media', lead, <Route path="/media" element={<MediaList />} />);
+    fireEvent.click((await screen.findAllByRole('button', { name: /^Archive / }))[0]);
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /^Archive/ }));
+    await waitFor(() => expect(posts(calls)).toHaveLength(1));
+    expect(posts(calls)[0].method).toBe('POST');
+    expect(path(posts(calls)[0])).toMatch(/^\/api\/v1\/media\/[^/]+\/archive\/$/);
+  });
+
   it('a new media item sends the project and the shot or asset it is attached to', async () => {
     const { calls } = mockFetch((c) => (c.method === 'POST' ? reply(flow.media_create) : projects));
     renderAt('/media/new', artist, <Route path="/media/new" element={<DirectoryFormPage config={mediaFormConfig} />} />);
@@ -216,5 +227,26 @@ describe('media', () => {
     fireEvent.click(screen.getByRole('button', { name: /create media item/i }));
     await waitFor(() => expect(posts(calls)).toHaveLength(1));
     expect(posts(calls)[0].body).toMatchObject({ project: project.id, entity_type: 'Shot', media_type: 'Video', preview_url: 'https://example.test/ref.mp4' });
+  });
+});
+
+describe('reviews list', () => {
+  const ReviewsList = () => <DirectoryListPage config={useReviewsListConfig()} />;
+  const review = flow.reviews_list.body.results[0];
+  const reviewsPage = { status: 200, body: { count: 1, next: null, previous: null, results: [review] } };
+
+  it('CR-15: a holder of review.delete archives with the archive action; review.update alone is offered no Archive', async () => {
+    const { calls } = mockFetch((c) => (c.method === 'POST' ? reply(flow.reviews_two_archive) : reviewsPage));
+    renderAt('/reviews', withCodes('review.update', 'review.delete'), <Route path="/reviews" element={<ReviewsList />} />);
+    fireEvent.click(await screen.findByRole('button', { name: new RegExp(`^Archive ${review.code}`) }));
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /^Archive/ }));
+    await waitFor(() => expect(posts(calls)).toHaveLength(1));
+    expect(path(posts(calls)[0])).toBe(`/api/v1/reviews/${review.id}/archive/`);
+    cleanup();
+
+    mockFetch(() => reviewsPage);
+    renderAt('/reviews', withCodes('review.update'), <Route path="/reviews" element={<ReviewsList />} />);
+    await screen.findByRole('link', { name: new RegExp(`^${review.code}`) });
+    expect(screen.queryByRole('button', { name: /^Archive / })).toBeNull();
   });
 });

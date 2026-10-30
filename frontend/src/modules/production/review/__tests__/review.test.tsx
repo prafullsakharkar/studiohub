@@ -193,7 +193,7 @@ describe('review workspace', () => {
     const { calls } = await open(lead, flow.reviews_three_start.body, (c) => (c.method === 'POST' ? { status: 201, body: flow.reviews_comments_add.body } : undefined));
     fireEvent.click(await screen.findByRole('tab', { name: 'Comments' }));
     const add = await screen.findByRole('button', { name: 'Add comment' });
-    expect((add as HTMLButtonElement).disabled).toBe(true); // an empty comment is accepted by the server (CR-16) but never sent from here
+    expect((add as HTMLButtonElement).disabled).toBe(true); // the server refuses an empty comment too (CR-16); it is never sent from here
     fireEvent.change(screen.getByLabelText('Comment'), { target: { value: 'Edge flicker' } });
     fireEvent.change(screen.getByLabelText('Frame'), { target: { value: '1040' } });
     fireEvent.click(add);

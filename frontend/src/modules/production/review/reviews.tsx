@@ -18,8 +18,7 @@ export function useReviewsListConfig(scope?: { projectId: string }): DirectoryLi
     subtitle: 'Review sessions on shots and assets. A supervisor decides; whoever submitted a review cannot approve it.',
     queryKey: reviewsApi.keys.lists(),
     fetchPage: reviewsApi.list,
-    // `archive` is unmapped on reviews (CR-15): DELETE archives.
-    remove: reviewsApi.remove,
+    remove: reviewsApi.archive,
     deleteLabel: 'Archive',
     deletePermission: 'review.delete',
     createPermission: 'review.create',
@@ -68,7 +67,7 @@ export const reviewsFormFields: ReadonlyArray<FieldDef> = [
   { kind: 'textarea', name: 'description', label: 'Description' },
 ];
 
-// The form never sends `status`: a new review starts Pending Review and moves by the actions (the server accepts any text on create, CR-16).
+// The form never sends `status`: a new review starts Pending Review and moves by the actions (the server now refuses anything else on create, CR-16).
 export const reviewsFormConfig: DirectoryFormConfig<Review> = {
   noun: 'review',
   basePath: '/reviews',
