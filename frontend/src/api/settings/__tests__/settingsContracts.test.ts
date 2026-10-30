@@ -153,6 +153,8 @@ describe('feature flags', () => {
     expect(flow.flags_schedule_backwards.status).toBe(200);
     expect(flow.flags_schedule_naive.status).toBe(200);
     expect(flowProblemCases()).toEqual([true, true, true, false]);
+    expect(flagProblem({ feature_type: 'percentage', percentage: 150 })?.field).toBe('percentage');
+    expect(flagProblem({ start_date: '2027-01-10T00:00:00Z', end_date: '2027-01-01T00:00:00Z' })?.field).toBe('end_date');
   });
   it('the actions offered follow the flag', () => {
     const names = (flag: Parameters<typeof flagActionsFor>[0]) => flagActionsFor(flag).map((a) => a.action);

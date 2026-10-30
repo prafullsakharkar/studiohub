@@ -53,10 +53,10 @@ export const FLAG_ACTIONS: ReadonlyArray<FlagActionRule> = [
 ];
 export const flagActionsFor = (flag: Parameters<FlagActionRule['when']>[0]) => FLAG_ACTIONS.filter((a) => a.when(flag));
 
-/** The sentences the server will not give (CR-29). `undefined` is fine. */
-export function flagProblem(input: { feature_type?: string; percentage?: number | null; start_date?: string | null; end_date?: string | null }): string | undefined {
-  if ((input.feature_type === 'percentage' || input.feature_type === 'rollout') && input.percentage !== undefined && input.percentage !== null && !(input.percentage >= 0 && input.percentage <= 100)) return 'A percentage is between 0 and 100.';
-  if (input.start_date && input.end_date && new Date(input.end_date) <= new Date(input.start_date)) return 'The end must be after the start.';
+/** The sentences the server will not give (CR-29), with the field they belong to. `undefined` is fine. */
+export function flagProblem(input: { feature_type?: string; percentage?: number | null; start_date?: string | null; end_date?: string | null }): { field: 'percentage' | 'end_date'; message: string } | undefined {
+  if ((input.feature_type === 'percentage' || input.feature_type === 'rollout') && input.percentage !== undefined && input.percentage !== null && !(input.percentage >= 0 && input.percentage <= 100)) return { field: 'percentage', message: 'A percentage is between 0 and 100.' };
+  if (input.start_date && input.end_date && new Date(input.end_date) <= new Date(input.start_date)) return { field: 'end_date', message: 'The end must be after the start.' };
   return undefined;
 }
 
