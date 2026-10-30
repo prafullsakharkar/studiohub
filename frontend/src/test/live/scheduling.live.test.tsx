@@ -86,6 +86,17 @@ describe('bookings', () => {
     await book('2027-03-01T13:00', '2027-03-01T17:00');
     await heading('Bookings');
     expect((await bookingsApi.list({ search: `RN${uid}` })).results).toHaveLength(2);
+
+    // the server filters (CR-25): by resource under both spellings, by status and by a time window
+    expect((await bookingsApi.list({ resource: created.id })).results).toHaveLength(2);
+    expect((await bookingsApi.list({ resource_id: created.id, status: 'blocked' })).results).toHaveLength(0);
+    // a window opening where the first booking ends holds the second only (touching the edge is not overlapping); times are the
+    // ones the server stored, whatever zone the typed local times were read in
+    const both = (await bookingsApi.list({ resource_id: created.id, ordering: 'start_time' })).results;
+    expect((await bookingsApi.list({ resource_id: created.id, start: both[0].end_time, end: both[1].end_time })).results.map((b) => b.id)).toEqual([both[1].id]);
+    await expect(bookingsApi.list({ start: '2027-03-01T13:00:00' })).rejects.toMatchObject({ status: 400, fieldErrors: { start: [expect.stringMatching(/time zone/)] } });
+    expect((await resourcesApi.list({ resource_type: 'equipment', search: uid })).results.map((r) => r.id)).toContain(created.id);
+    expect((await resourcesApi.list({ resource_type: 'Room', search: uid })).results).toHaveLength(0);
   }, 240000);
 });
 
@@ -125,6 +136,10 @@ describe('leave', () => {
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Approve' }));
     await waitFor(async () => expect((await leavesApi.get(filed[0].id)).status).toBe('Approved'), { timeout: 20000 });
     expect((await resourcesApi.get(own.id)).status).toBe('On Leave');
+    expect((await resourcesApi.list({ status: 'On Leave', search: uid })).results.map((r) => r.id)).toEqual([own.id]);
+    expect((await resourcesApi.list({ status: 'Active', search: `BO${uid}` })).results.map((r) => r.id)).toEqual([other.id]);
+    expect((await leavesApi.list({ status: 'approved', resource_id: own.id })).results.map((l) => l.id)).toEqual([filed[0].id]);
+    expect((await leavesApi.list({ start: isoDay(5) })).results.map((l) => l.id)).not.toContain(filed[0].id); // it ended before that
     cleanup();
     render(tree(pages, '/scheduling/resources'));
     expect(await screen.findByText(new RegExp(`AL${uid} · Alice ${uid}`), {}, { timeout: 20000 })).toBeTruthy();
@@ -157,6 +172,9 @@ describe('milestones', () => {
     await signIn('producer');
     const milestone = await milestonesApi.create({ project_id: live.dlv.project, name: `Turnover ${uid}`, due_date: '2027-03-15' });
     expect(milestone).toMatchObject({ name: `Turnover ${uid}` });
+    expect((await milestonesApi.list({ project_id: live.dlv.project, status: 'pending' })).results.map((m) => m.id)).toContain(milestone.id);
+    expect((await milestonesApi.list({ project_id: live.dlv.project, status: 'completed' })).results.map((m) => m.id)).not.toContain(milestone.id);
+    expect((await milestonesApi.list({ project_id: milestone.project_code })).results.map((m) => m.id)).toContain(milestone.id); // by code
     const id = milestone.id;
     await expect(milestonesApi.update(id, { status: 'Completed' } as never)).rejects.toMatchObject({ status: 400 });
 
