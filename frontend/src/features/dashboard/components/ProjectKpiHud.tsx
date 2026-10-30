@@ -10,15 +10,19 @@ import {
   Clock,
   CheckCircle2,
 } from 'lucide-react';
-import { DashboardSummaryKpis } from '../types';
+import { DashboardDeliveriesData, DashboardSummaryKpis } from '../types';
+import { getDeliveryFigures } from '../utils/dashboardMetrics';
 import { Link } from 'react-router-dom';
 
 export interface ProjectKpiHudProps {
   summary: DashboardSummaryKpis;
+  /** When given, the delivery card counts from the listed deliveries (see getDeliveryFigures). */
+  deliveries?: DashboardDeliveriesData;
   projectId: string;
 }
 
-export const ProjectKpiHud: React.FC<ProjectKpiHudProps> = ({ summary, projectId }) => {
+export const ProjectKpiHud: React.FC<ProjectKpiHudProps> = ({ summary, deliveries, projectId }) => {
+  const delivery = deliveries ? getDeliveryFigures(deliveries) : { delivered: summary.delivered_deliveries, upcoming: summary.upcoming_deliveries, late: summary.late_deliveries };
   return (
     <div id="project-kpi-hud" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
       {/* 1. Sequence Shots Card */}
@@ -138,15 +142,15 @@ export const ProjectKpiHud: React.FC<ProjectKpiHudProps> = ({ summary, projectId
           </span>
           <span
             className={`text-[11px] font-mono ${
-              summary.late_deliveries > 0 ? 'text-rose-400 font-semibold' : 'text-emerald-400'
+              delivery.late > 0 ? 'text-rose-400 font-semibold' : 'text-emerald-400'
             }`}
           >
-            {summary.late_deliveries > 0 ? `${summary.late_deliveries} Late` : `${summary.upcoming_deliveries} Upcoming`}
+            {delivery.late > 0 ? `${delivery.late} Late` : `${delivery.upcoming} Upcoming`}
           </span>
         </div>
         <div className="text-[10px] text-slate-400 flex justify-between font-mono pt-1.5 border-t border-slate-800/80">
-          <span className="text-slate-300">Pushed: {summary.delivered_deliveries}</span>
-          <span className="text-indigo-300">Queued: {summary.upcoming_deliveries}</span>
+          <span className="text-slate-300">Pushed: {delivery.delivered}</span>
+          <span className="text-indigo-300">Queued: {delivery.upcoming}</span>
         </div>
       </Link>
     </div>

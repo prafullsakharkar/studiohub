@@ -1,0 +1,4695 @@
+{
+ "analytics_departments": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "completed_tasks": 1,
+     "department": "Compositing",
+     "percentage": 25,
+     "total_tasks": 4
+    },
+    {
+     "completed_tasks": 1,
+     "department": "Lighting",
+     "percentage": 33,
+     "total_tasks": 3
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "1ce57c9c-24c7-483d-9550-86607ff910ad"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/analytics/departments/"
+  },
+  "status": 200
+ },
+ "analytics_departments_artist": {
+  "body": {
+   "_bare_list": true,
+   "_len": 2,
+   "items": [
+    {
+     "completed_tasks": 1,
+     "department": "Compositing",
+     "percentage": 25,
+     "total_tasks": 4
+    },
+    {
+     "completed_tasks": 1,
+     "department": "Lighting",
+     "percentage": 33,
+     "total_tasks": 3
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "b8c16d8d-7f48-4611-8ef9-3268c6c0627a"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/analytics/departments/"
+  },
+  "status": 200
+ },
+ "analytics_departments_empty": {
+  "body": {
+   "_bare_list": true,
+   "_len": 0,
+   "items": []
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "bc3d989f-6d2e-4cd5-920c-964ed8f32c91"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/analytics/departments/"
+  },
+  "status": 200
+ },
+ "analytics_departments_norole": {
+  "body": {
+   "_bare_list": true,
+   "_len": 0,
+   "items": []
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "aaf1d5bb-fc4b-448b-a0d3-e53b510f2e67"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/analytics/departments/"
+  },
+  "status": 200
+ },
+ "analytics_departments_stranger": {
+  "body": {
+   "_bare_list": true,
+   "_len": 0,
+   "items": []
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "fb1b57ea-22ce-4497-af37-6b12dc544146"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/analytics/departments/"
+  },
+  "status": 200
+ },
+ "analytics_kpis": {
+  "body": {
+   "active_artists": 2,
+   "approval_rate_percentage": 20.0,
+   "approved_shots": 2,
+   "average_render_time_mins": null,
+   "in_progress_shots": 3,
+   "pending_review_shots": 1,
+   "render_nodes_busy": null,
+   "render_nodes_total": null,
+   "storage_quota_tb": 0,
+   "storage_usage_tb": 0,
+   "total_active_projects": 2,
+   "total_shots": 10
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "89239c09-6bec-441c-b369-f8990f4cc43a"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/analytics/kpis/"
+  },
+  "status": 200
+ },
+ "analytics_kpis_artist": {
+  "body": {
+   "active_artists": 2,
+   "approval_rate_percentage": 20.0,
+   "approved_shots": 2,
+   "average_render_time_mins": null,
+   "in_progress_shots": 3,
+   "pending_review_shots": 1,
+   "render_nodes_busy": null,
+   "render_nodes_total": null,
+   "storage_quota_tb": 0,
+   "storage_usage_tb": 0,
+   "total_active_projects": 1,
+   "total_shots": 10
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "eef68325-38e3-41a0-9763-3ac0cc295faf"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/analytics/kpis/"
+  },
+  "status": 200
+ },
+ "analytics_kpis_empty": {
+  "body": {
+   "active_artists": 0,
+   "approval_rate_percentage": 0.0,
+   "approved_shots": 0,
+   "average_render_time_mins": null,
+   "in_progress_shots": 0,
+   "pending_review_shots": 0,
+   "render_nodes_busy": null,
+   "render_nodes_total": null,
+   "storage_quota_tb": 0,
+   "storage_usage_tb": 0,
+   "total_active_projects": 1,
+   "total_shots": 0
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "8377a972-e5d1-460c-8b0c-d0c8e4658308"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/analytics/kpis/"
+  },
+  "status": 200
+ },
+ "analytics_kpis_norole": {
+  "body": {
+   "active_artists": 0,
+   "approval_rate_percentage": 0.0,
+   "approved_shots": 0,
+   "average_render_time_mins": null,
+   "in_progress_shots": 0,
+   "pending_review_shots": 0,
+   "render_nodes_busy": null,
+   "render_nodes_total": null,
+   "storage_quota_tb": 0,
+   "storage_usage_tb": 0,
+   "total_active_projects": 0,
+   "total_shots": 0
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "b0df0bd6-c88e-4f94-be89-4ad890ec5734"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/analytics/kpis/"
+  },
+  "status": 200
+ },
+ "analytics_kpis_post": {
+  "body": {
+   "detail": "Method \"POST\" not allowed.",
+   "error": {
+    "code": "method_not_allowed",
+    "request_id": "4455ade7-a6cc-49fc-a47c-687122a1ee62"
+   }
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "4455ade7-a6cc-49fc-a47c-687122a1ee62"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/analytics/kpis/"
+  },
+  "status": 405
+ },
+ "analytics_kpis_stranger": {
+  "body": {
+   "active_artists": 0,
+   "approval_rate_percentage": 0.0,
+   "approved_shots": 0,
+   "average_render_time_mins": null,
+   "in_progress_shots": 0,
+   "pending_review_shots": 0,
+   "render_nodes_busy": null,
+   "render_nodes_total": null,
+   "storage_quota_tb": 0,
+   "storage_usage_tb": 0,
+   "total_active_projects": 0,
+   "total_shots": 0
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "8a3ed323-1af4-4548-9c1b-3e2fa7cdcf91"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/analytics/kpis/"
+  },
+  "status": 200
+ },
+ "dashboard": {
+  "body": {
+   "activity": [
+    {
+     "action": "Updated DeliveryPackage",
+     "description": "updated DeliveryPackage Cancelled delivery",
+     "entity_code": "Cancelled delivery",
+     "entity_id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+     "entity_type": "DeliveryPackage",
+     "id": "83ada032-e729-4b81-99ed-3e5d7a7f4650",
+     "timestamp": "2026-10-30T13:02:22.617657+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Cancelled delivery",
+     "entity_code": "Cancelled delivery",
+     "entity_id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+     "entity_type": "DeliveryPackage",
+     "id": "364acb57-1901-46ac-8af3-21909534f7ad",
+     "timestamp": "2026-10-30T13:02:22.591849+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Late delivery",
+     "entity_code": "Late delivery",
+     "entity_id": "9a2fc2e9-4db3-491d-a7ac-19bf5afe0829",
+     "entity_type": "DeliveryPackage",
+     "id": "982cfc46-3670-4b09-a590-37258da21716",
+     "timestamp": "2026-10-30T13:02:22.572648+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Upcoming delivery",
+     "entity_code": "Upcoming delivery",
+     "entity_id": "c19ed781-b430-42a1-9337-f736ed54c6f4",
+     "entity_type": "DeliveryPackage",
+     "id": "9e4550c6-0769-43ac-aa8d-3cfb29c8d9d4",
+     "timestamp": "2026-10-30T13:02:22.549989+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 5",
+     "entity_code": "Review 5",
+     "entity_id": "8479deb6-d396-4caf-92d1-d93a67f675d3",
+     "entity_type": "Review",
+     "id": "4c2ce51b-8a44-45aa-866d-411048d7c631",
+     "timestamp": "2026-10-30T13:02:22.528940+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 4",
+     "entity_code": "Review 4",
+     "entity_id": "fda2af20-c742-4928-ad80-27453d2e16da",
+     "entity_type": "Review",
+     "id": "075eef82-97aa-49ac-a3f8-70a089a6f1a4",
+     "timestamp": "2026-10-30T13:02:22.525271+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 3",
+     "entity_code": "Review 3",
+     "entity_id": "d850a0c7-7848-4266-97ae-1be9f7435d4b",
+     "entity_type": "Review",
+     "id": "84d58101-4c28-4adb-840a-e039d72b8e64",
+     "timestamp": "2026-10-30T13:02:22.521599+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 2",
+     "entity_code": "Review 2",
+     "entity_id": "2cd4b0fa-568b-4224-8ad0-52c1333f4c69",
+     "entity_type": "Review",
+     "id": "6913c34a-21bb-4ccb-b56f-ff80afe5cabf",
+     "timestamp": "2026-10-30T13:02:22.517820+00:00",
+     "user_name": "System"
+    }
+   ],
+   "deliveries": {
+    "delivered": 0,
+    "items": [
+     {
+      "due_date": "2026-10-28",
+      "id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+      "package_name": "DLV-DSH-0003",
+      "recipient": "",
+      "status": "Cancelled",
+      "title": "Cancelled delivery"
+     },
+     {
+      "due_date": "2026-10-25",
+      "id": "9a2fc2e9-4db3-491d-a7ac-19bf5afe0829",
+      "package_name": "DLV-DSH-0002",
+      "recipient": "",
+      "status": "Draft",
+      "title": "Late delivery"
+     },
+     {
+      "due_date": "2026-11-13",
+      "id": "c19ed781-b430-42a1-9337-f736ed54c6f4",
+      "package_name": "DLV-DSH-0001",
+      "recipient": "",
+      "status": "Draft",
+      "title": "Upcoming delivery"
+     }
+    ],
+    "late": 2,
+    "total": 3,
+    "upcoming": 1
+   },
+   "production": {
+    "completed_shots": 2,
+    "in_progress_shots": 3,
+    "methodology_note": "Weighted aggregate: 60% Approved Shots + 40% Completed Tasks",
+    "not_started_shots": 3,
+    "overall_progress_pct": 22,
+    "status_breakdown": [
+     {
+      "count": 2,
+      "percentage": 20,
+      "status": "Approved"
+     },
+     {
+      "count": 3,
+      "percentage": 30,
+      "status": "In Progress"
+     },
+     {
+      "count": 3,
+      "percentage": 30,
+      "status": "Not Started"
+     },
+     {
+      "count": 1,
+      "percentage": 10,
+      "status": "On Hold"
+     },
+     {
+      "count": 1,
+      "percentage": 10,
+      "status": "Pending Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Internal Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Client Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Final"
+     }
+    ]
+   },
+   "project": {
+    "aspect_ratio": "2.39:1",
+    "code": "DSH",
+    "color_space": "ACEScg",
+    "delivery_date": "2026-12-14",
+    "description": "",
+    "fps": 24.0,
+    "id": "81b440c0-25d6-4790-b678-5acbaaae794c",
+    "name": "Dashboard show",
+    "resolution": "4096x2160 (4K DCI)",
+    "start_date": "2026-08-31",
+    "status": "In Progress",
+    "type": "Feature Film"
+   },
+   "reviews": {
+    "approved": 2,
+    "changes_requested": 1,
+    "pending": 1,
+    "recent_reviews": [
+     {
+      "id": "8479deb6-d396-4caf-92d1-d93a67f675d3",
+      "reviewers_count": 0,
+      "status": "Rejected",
+      "title": "Review 5",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.527834+00:00"
+     },
+     {
+      "id": "fda2af20-c742-4928-ad80-27453d2e16da",
+      "reviewers_count": 0,
+      "status": "Changes Requested",
+      "title": "Review 4",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.524141+00:00"
+     },
+     {
+      "id": "d850a0c7-7848-4266-97ae-1be9f7435d4b",
+      "reviewers_count": 0,
+      "status": "Approved",
+      "title": "Review 3",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.520483+00:00"
+     },
+     {
+      "id": "2cd4b0fa-568b-4224-8ad0-52c1333f4c69",
+      "reviewers_count": 0,
+      "status": "Approved",
+      "title": "Review 2",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.516677+00:00"
+     },
+     {
+      "id": "a90d4f7f-aa3e-4453-b8b4-d7f5d01412eb",
+      "reviewers_count": 0,
+      "status": "Pending Review",
+      "title": "Review 1",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.512638+00:00"
+     }
+    ],
+    "rejected": 1
+   },
+   "schedule": {
+    "days_elapsed": 60,
+    "days_remaining": 45,
+    "days_total": 105,
+    "delivery_date": "2026-12-14",
+    "is_delayed": true,
+    "milestones": [
+     {
+      "date": "2026-08-31",
+      "id": "m1",
+      "name": "Plate Turnover & Ingest",
+      "status": "completed"
+     },
+     {
+      "date": "2026-09-26",
+      "id": "m2",
+      "name": "Rough Layout & Asset Conform",
+      "status": "in_progress"
+     },
+     {
+      "date": "2026-10-22",
+      "id": "m3",
+      "name": "Mid-Point Client Temp Screening",
+      "status": "upcoming"
+     },
+     {
+      "date": "2026-11-23",
+      "id": "m4",
+      "name": "90% Final Lighting & Comp Review",
+      "status": "upcoming"
+     },
+     {
+      "date": "2026-12-14",
+      "id": "m5",
+      "name": "Final 4K ACES Master Delivery",
+      "status": "upcoming"
+     }
+    ],
+    "next_deadline": {
+     "date": "2026-10-31",
+     "days_away": 1,
+     "title": "Task 3",
+     "type": "Task"
+    },
+    "start_date": "2026-08-31"
+   },
+   "shots": {
+    "by_status": {
+     "Approved": 2,
+     "Client Review": 0,
+     "Final": 0,
+     "In Progress": 3,
+     "Internal Review": 0,
+     "Not Started": 3,
+     "On Hold": 1,
+     "Pending Review": 1
+    },
+    "recent_shots": [
+     {
+      "code": "SH010",
+      "frame_count": 100,
+      "id": "ba6ffc3d-4d44-4f17-be73-0d6e5522db10",
+      "name": "Shot 10",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "https://www.warner-scott.net/"
+     },
+     {
+      "code": "SH009",
+      "frame_count": 100,
+      "id": "4263fc74-96b3-45f8-b937-601d86ee7003",
+      "name": "Shot 9",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "http://www.cunningham-bauer.biz/"
+     },
+     {
+      "code": "SH008",
+      "frame_count": 100,
+      "id": "87271ed7-4c66-47af-89e9-dbf51e0af489",
+      "name": "Shot 8",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "http://king.info/"
+     },
+     {
+      "code": "SH007",
+      "frame_count": 100,
+      "id": "7170808a-fe3e-40c8-af78-c94758c83411",
+      "name": "Shot 7",
+      "sequence_code": "SQ010",
+      "status": "On Hold",
+      "thumbnail_url": "http://jordan.org/"
+     },
+     {
+      "code": "SH006",
+      "frame_count": 100,
+      "id": "65e8f963-5755-41a2-8bdc-b6b1e2ee11e2",
+      "name": "Shot 6",
+      "sequence_code": "SQ010",
+      "status": "Pending Review",
+      "thumbnail_url": "http://www.levy.biz/"
+     },
+     {
+      "code": "SH005",
+      "frame_count": 100,
+      "id": "3df3aec9-8f41-45fc-8351-7baa9d71e493",
+      "name": "Shot 5",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "https://www.martinez-walters.com/"
+     },
+     {
+      "code": "SH004",
+      "frame_count": 100,
+      "id": "09ff6da0-394a-45ad-a987-6ba700efd74d",
+      "name": "Shot 4",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "https://www.shelton-robbins.com/"
+     },
+     {
+      "code": "SH003",
+      "frame_count": 100,
+      "id": "9e1abc30-5461-43f1-9a7a-8dd02aeada44",
+      "name": "Shot 3",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "http://moore-williams.org/"
+     }
+    ],
+    "total": 10
+   },
+   "summary": {
+    "approved_assets": 1,
+    "approved_reviews": 2,
+    "approved_shots": 2,
+    "changes_requested_reviews": 1,
+    "completed_tasks": 2,
+    "delivered_deliveries": 0,
+    "in_progress_assets": 2,
+    "in_progress_shots": 3,
+    "in_progress_tasks": 3,
+    "late_deliveries": 2,
+    "needs_revision_assets": 1,
+    "open_tasks": 2,
+    "overdue_tasks": 1,
+    "pending_reviews": 1,
+    "rejected_reviews": 1,
+    "shots_at_risk": 1,
+    "shots_completion_pct": 20,
+    "tasks_completion_pct": 25,
+    "total_assets": 4,
+    "total_deliveries": 3,
+    "total_reviews": 5,
+    "total_shots": 10,
+    "total_tasks": 8,
+    "upcoming_deliveries": 1
+   },
+   "tasks": {
+    "blocked": 1,
+    "completed": 2,
+    "critical": 2,
+    "in_progress": 3,
+    "open": 2,
+    "overdue": 1,
+    "recent_tasks": [
+     {
+      "code": "T008",
+      "department": "",
+      "id": "47eeb0af-7436-440c-96f3-09010fcc6d08",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "In Progress",
+      "title": "Task 8"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T007",
+      "department": "Lighting",
+      "due_date": "2026-10-10",
+      "id": "4d545828-fdf7-4d03-8b10-7a7cf1aab39c",
+      "is_overdue": true,
+      "priority": "Medium",
+      "status": "Approved",
+      "title": "Task 7"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T006",
+      "department": "Compositing",
+      "due_date": "2026-10-20",
+      "id": "694ec82b-2f05-4760-a4a9-ece1add4ce85",
+      "is_overdue": true,
+      "priority": "Low",
+      "status": "Approved",
+      "title": "Task 6"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T005",
+      "department": "Compositing",
+      "due_date": "2026-11-01",
+      "id": "4d4ccb83-f12c-4078-a8c9-9fc6da729c95",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "Pending Review",
+      "title": "Task 5"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T004",
+      "department": "Lighting",
+      "due_date": "2026-11-08",
+      "id": "7b060c08-870e-4eb2-ac5f-001687d3aded",
+      "is_overdue": false,
+      "priority": "High",
+      "status": "Blocked",
+      "title": "Task 4"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T003",
+      "department": "Lighting",
+      "due_date": "2026-10-31",
+      "id": "57e12b16-4405-4eec-a27b-4439147d45fe",
+      "is_overdue": false,
+      "priority": "Critical",
+      "status": "In Progress",
+      "title": "Task 3"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T002",
+      "department": "Compositing",
+      "due_date": "2026-10-27",
+      "id": "d96a8714-28e1-4dec-af96-8b15c03133d1",
+      "is_overdue": true,
+      "priority": "High",
+      "status": "In Progress",
+      "title": "Task 2"
+     },
+     {
+      "code": "T001",
+      "department": "Compositing",
+      "due_date": "2026-11-04",
+      "id": "710eadb2-0839-4d53-9c59-2314579ba748",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "Not Started",
+      "title": "Task 1"
+     }
+    ],
+    "review": 0,
+    "total": 8
+   },
+   "workload": {
+    "team_members": [
+     {
+      "assigned_count": 4,
+      "department": "Compositing",
+      "id": "user-4baeea1b-1312-4573-a1e3-79fc442846b7",
+      "in_progress_count": 2,
+      "name": "user@example.test",
+      "overdue_count": 2,
+      "role": "",
+      "workload_level": "overloaded"
+     },
+     {
+      "assigned_count": 2,
+      "department": "Lighting",
+      "id": "user-5351c718-86d6-40a1-9121-79fcdbf058c4",
+      "in_progress_count": 0,
+      "name": "user@example.test",
+      "overdue_count": 1,
+      "role": "",
+      "workload_level": "normal"
+     },
+     {
+      "assigned_count": 2,
+      "department": "Compositing",
+      "id": "unassigned",
+      "in_progress_count": 1,
+      "name": "Unassigned",
+      "overdue_count": 0,
+      "role": "",
+      "workload_level": "normal"
+     }
+    ]
+   }
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "de6418df-2992-4a65-ad4e-229ca3ba2e43"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/81b440c0-25d6-4790-b678-5acbaaae794c/dashboard/"
+  },
+  "status": 200
+ },
+ "dashboard_artist": {
+  "body": {
+   "activity": [
+    {
+     "action": "Updated DeliveryPackage",
+     "description": "updated DeliveryPackage Cancelled delivery",
+     "entity_code": "Cancelled delivery",
+     "entity_id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+     "entity_type": "DeliveryPackage",
+     "id": "83ada032-e729-4b81-99ed-3e5d7a7f4650",
+     "timestamp": "2026-10-30T13:02:22.617657+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Cancelled delivery",
+     "entity_code": "Cancelled delivery",
+     "entity_id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+     "entity_type": "DeliveryPackage",
+     "id": "364acb57-1901-46ac-8af3-21909534f7ad",
+     "timestamp": "2026-10-30T13:02:22.591849+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Late delivery",
+     "entity_code": "Late delivery",
+     "entity_id": "9a2fc2e9-4db3-491d-a7ac-19bf5afe0829",
+     "entity_type": "DeliveryPackage",
+     "id": "982cfc46-3670-4b09-a590-37258da21716",
+     "timestamp": "2026-10-30T13:02:22.572648+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Upcoming delivery",
+     "entity_code": "Upcoming delivery",
+     "entity_id": "c19ed781-b430-42a1-9337-f736ed54c6f4",
+     "entity_type": "DeliveryPackage",
+     "id": "9e4550c6-0769-43ac-aa8d-3cfb29c8d9d4",
+     "timestamp": "2026-10-30T13:02:22.549989+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 5",
+     "entity_code": "Review 5",
+     "entity_id": "8479deb6-d396-4caf-92d1-d93a67f675d3",
+     "entity_type": "Review",
+     "id": "4c2ce51b-8a44-45aa-866d-411048d7c631",
+     "timestamp": "2026-10-30T13:02:22.528940+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 4",
+     "entity_code": "Review 4",
+     "entity_id": "fda2af20-c742-4928-ad80-27453d2e16da",
+     "entity_type": "Review",
+     "id": "075eef82-97aa-49ac-a3f8-70a089a6f1a4",
+     "timestamp": "2026-10-30T13:02:22.525271+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 3",
+     "entity_code": "Review 3",
+     "entity_id": "d850a0c7-7848-4266-97ae-1be9f7435d4b",
+     "entity_type": "Review",
+     "id": "84d58101-4c28-4adb-840a-e039d72b8e64",
+     "timestamp": "2026-10-30T13:02:22.521599+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 2",
+     "entity_code": "Review 2",
+     "entity_id": "2cd4b0fa-568b-4224-8ad0-52c1333f4c69",
+     "entity_type": "Review",
+     "id": "6913c34a-21bb-4ccb-b56f-ff80afe5cabf",
+     "timestamp": "2026-10-30T13:02:22.517820+00:00",
+     "user_name": "System"
+    }
+   ],
+   "deliveries": {
+    "delivered": 0,
+    "items": [
+     {
+      "due_date": "2026-10-28",
+      "id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+      "package_name": "DLV-DSH-0003",
+      "recipient": "",
+      "status": "Cancelled",
+      "title": "Cancelled delivery"
+     },
+     {
+      "due_date": "2026-10-25",
+      "id": "9a2fc2e9-4db3-491d-a7ac-19bf5afe0829",
+      "package_name": "DLV-DSH-0002",
+      "recipient": "",
+      "status": "Draft",
+      "title": "Late delivery"
+     },
+     {
+      "due_date": "2026-11-13",
+      "id": "c19ed781-b430-42a1-9337-f736ed54c6f4",
+      "package_name": "DLV-DSH-0001",
+      "recipient": "",
+      "status": "Draft",
+      "title": "Upcoming delivery"
+     }
+    ],
+    "late": 2,
+    "total": 3,
+    "upcoming": 1
+   },
+   "production": {
+    "completed_shots": 2,
+    "in_progress_shots": 3,
+    "methodology_note": "Weighted aggregate: 60% Approved Shots + 40% Completed Tasks",
+    "not_started_shots": 3,
+    "overall_progress_pct": 22,
+    "status_breakdown": [
+     {
+      "count": 2,
+      "percentage": 20,
+      "status": "Approved"
+     },
+     {
+      "count": 3,
+      "percentage": 30,
+      "status": "In Progress"
+     },
+     {
+      "count": 3,
+      "percentage": 30,
+      "status": "Not Started"
+     },
+     {
+      "count": 1,
+      "percentage": 10,
+      "status": "On Hold"
+     },
+     {
+      "count": 1,
+      "percentage": 10,
+      "status": "Pending Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Internal Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Client Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Final"
+     }
+    ]
+   },
+   "project": {
+    "aspect_ratio": "2.39:1",
+    "code": "DSH",
+    "color_space": "ACEScg",
+    "delivery_date": "2026-12-14",
+    "description": "",
+    "fps": 24.0,
+    "id": "81b440c0-25d6-4790-b678-5acbaaae794c",
+    "name": "Dashboard show",
+    "resolution": "4096x2160 (4K DCI)",
+    "start_date": "2026-08-31",
+    "status": "In Progress",
+    "type": "Feature Film"
+   },
+   "reviews": {
+    "approved": 2,
+    "changes_requested": 1,
+    "pending": 1,
+    "recent_reviews": [
+     {
+      "id": "8479deb6-d396-4caf-92d1-d93a67f675d3",
+      "reviewers_count": 0,
+      "status": "Rejected",
+      "title": "Review 5",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.527834+00:00"
+     },
+     {
+      "id": "fda2af20-c742-4928-ad80-27453d2e16da",
+      "reviewers_count": 0,
+      "status": "Changes Requested",
+      "title": "Review 4",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.524141+00:00"
+     },
+     {
+      "id": "d850a0c7-7848-4266-97ae-1be9f7435d4b",
+      "reviewers_count": 0,
+      "status": "Approved",
+      "title": "Review 3",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.520483+00:00"
+     },
+     {
+      "id": "2cd4b0fa-568b-4224-8ad0-52c1333f4c69",
+      "reviewers_count": 0,
+      "status": "Approved",
+      "title": "Review 2",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.516677+00:00"
+     },
+     {
+      "id": "a90d4f7f-aa3e-4453-b8b4-d7f5d01412eb",
+      "reviewers_count": 0,
+      "status": "Pending Review",
+      "title": "Review 1",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.512638+00:00"
+     }
+    ],
+    "rejected": 1
+   },
+   "schedule": {
+    "days_elapsed": 60,
+    "days_remaining": 45,
+    "days_total": 105,
+    "delivery_date": "2026-12-14",
+    "is_delayed": true,
+    "milestones": [
+     {
+      "date": "2026-08-31",
+      "id": "m1",
+      "name": "Plate Turnover & Ingest",
+      "status": "completed"
+     },
+     {
+      "date": "2026-09-26",
+      "id": "m2",
+      "name": "Rough Layout & Asset Conform",
+      "status": "in_progress"
+     },
+     {
+      "date": "2026-10-22",
+      "id": "m3",
+      "name": "Mid-Point Client Temp Screening",
+      "status": "upcoming"
+     },
+     {
+      "date": "2026-11-23",
+      "id": "m4",
+      "name": "90% Final Lighting & Comp Review",
+      "status": "upcoming"
+     },
+     {
+      "date": "2026-12-14",
+      "id": "m5",
+      "name": "Final 4K ACES Master Delivery",
+      "status": "upcoming"
+     }
+    ],
+    "next_deadline": {
+     "date": "2026-10-31",
+     "days_away": 1,
+     "title": "Task 3",
+     "type": "Task"
+    },
+    "start_date": "2026-08-31"
+   },
+   "shots": {
+    "by_status": {
+     "Approved": 2,
+     "Client Review": 0,
+     "Final": 0,
+     "In Progress": 3,
+     "Internal Review": 0,
+     "Not Started": 3,
+     "On Hold": 1,
+     "Pending Review": 1
+    },
+    "recent_shots": [
+     {
+      "code": "SH010",
+      "frame_count": 100,
+      "id": "ba6ffc3d-4d44-4f17-be73-0d6e5522db10",
+      "name": "Shot 10",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "https://www.warner-scott.net/"
+     },
+     {
+      "code": "SH009",
+      "frame_count": 100,
+      "id": "4263fc74-96b3-45f8-b937-601d86ee7003",
+      "name": "Shot 9",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "http://www.cunningham-bauer.biz/"
+     },
+     {
+      "code": "SH008",
+      "frame_count": 100,
+      "id": "87271ed7-4c66-47af-89e9-dbf51e0af489",
+      "name": "Shot 8",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "http://king.info/"
+     },
+     {
+      "code": "SH007",
+      "frame_count": 100,
+      "id": "7170808a-fe3e-40c8-af78-c94758c83411",
+      "name": "Shot 7",
+      "sequence_code": "SQ010",
+      "status": "On Hold",
+      "thumbnail_url": "http://jordan.org/"
+     },
+     {
+      "code": "SH006",
+      "frame_count": 100,
+      "id": "65e8f963-5755-41a2-8bdc-b6b1e2ee11e2",
+      "name": "Shot 6",
+      "sequence_code": "SQ010",
+      "status": "Pending Review",
+      "thumbnail_url": "http://www.levy.biz/"
+     },
+     {
+      "code": "SH005",
+      "frame_count": 100,
+      "id": "3df3aec9-8f41-45fc-8351-7baa9d71e493",
+      "name": "Shot 5",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "https://www.martinez-walters.com/"
+     },
+     {
+      "code": "SH004",
+      "frame_count": 100,
+      "id": "09ff6da0-394a-45ad-a987-6ba700efd74d",
+      "name": "Shot 4",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "https://www.shelton-robbins.com/"
+     },
+     {
+      "code": "SH003",
+      "frame_count": 100,
+      "id": "9e1abc30-5461-43f1-9a7a-8dd02aeada44",
+      "name": "Shot 3",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "http://moore-williams.org/"
+     }
+    ],
+    "total": 10
+   },
+   "summary": {
+    "approved_assets": 1,
+    "approved_reviews": 2,
+    "approved_shots": 2,
+    "changes_requested_reviews": 1,
+    "completed_tasks": 2,
+    "delivered_deliveries": 0,
+    "in_progress_assets": 2,
+    "in_progress_shots": 3,
+    "in_progress_tasks": 3,
+    "late_deliveries": 2,
+    "needs_revision_assets": 1,
+    "open_tasks": 2,
+    "overdue_tasks": 1,
+    "pending_reviews": 1,
+    "rejected_reviews": 1,
+    "shots_at_risk": 1,
+    "shots_completion_pct": 20,
+    "tasks_completion_pct": 25,
+    "total_assets": 4,
+    "total_deliveries": 3,
+    "total_reviews": 5,
+    "total_shots": 10,
+    "total_tasks": 8,
+    "upcoming_deliveries": 1
+   },
+   "tasks": {
+    "blocked": 1,
+    "completed": 2,
+    "critical": 2,
+    "in_progress": 3,
+    "open": 2,
+    "overdue": 1,
+    "recent_tasks": [
+     {
+      "code": "T008",
+      "department": "",
+      "id": "47eeb0af-7436-440c-96f3-09010fcc6d08",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "In Progress",
+      "title": "Task 8"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T007",
+      "department": "Lighting",
+      "due_date": "2026-10-10",
+      "id": "4d545828-fdf7-4d03-8b10-7a7cf1aab39c",
+      "is_overdue": true,
+      "priority": "Medium",
+      "status": "Approved",
+      "title": "Task 7"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T006",
+      "department": "Compositing",
+      "due_date": "2026-10-20",
+      "id": "694ec82b-2f05-4760-a4a9-ece1add4ce85",
+      "is_overdue": true,
+      "priority": "Low",
+      "status": "Approved",
+      "title": "Task 6"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T005",
+      "department": "Compositing",
+      "due_date": "2026-11-01",
+      "id": "4d4ccb83-f12c-4078-a8c9-9fc6da729c95",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "Pending Review",
+      "title": "Task 5"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T004",
+      "department": "Lighting",
+      "due_date": "2026-11-08",
+      "id": "7b060c08-870e-4eb2-ac5f-001687d3aded",
+      "is_overdue": false,
+      "priority": "High",
+      "status": "Blocked",
+      "title": "Task 4"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T003",
+      "department": "Lighting",
+      "due_date": "2026-10-31",
+      "id": "57e12b16-4405-4eec-a27b-4439147d45fe",
+      "is_overdue": false,
+      "priority": "Critical",
+      "status": "In Progress",
+      "title": "Task 3"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T002",
+      "department": "Compositing",
+      "due_date": "2026-10-27",
+      "id": "d96a8714-28e1-4dec-af96-8b15c03133d1",
+      "is_overdue": true,
+      "priority": "High",
+      "status": "In Progress",
+      "title": "Task 2"
+     },
+     {
+      "code": "T001",
+      "department": "Compositing",
+      "due_date": "2026-11-04",
+      "id": "710eadb2-0839-4d53-9c59-2314579ba748",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "Not Started",
+      "title": "Task 1"
+     }
+    ],
+    "review": 0,
+    "total": 8
+   },
+   "workload": {
+    "team_members": [
+     {
+      "assigned_count": 4,
+      "department": "Compositing",
+      "id": "user-4baeea1b-1312-4573-a1e3-79fc442846b7",
+      "in_progress_count": 2,
+      "name": "user@example.test",
+      "overdue_count": 2,
+      "role": "",
+      "workload_level": "overloaded"
+     },
+     {
+      "assigned_count": 2,
+      "department": "Lighting",
+      "id": "user-5351c718-86d6-40a1-9121-79fcdbf058c4",
+      "in_progress_count": 0,
+      "name": "user@example.test",
+      "overdue_count": 1,
+      "role": "",
+      "workload_level": "normal"
+     },
+     {
+      "assigned_count": 2,
+      "department": "Compositing",
+      "id": "unassigned",
+      "in_progress_count": 1,
+      "name": "Unassigned",
+      "overdue_count": 0,
+      "role": "",
+      "workload_level": "normal"
+     }
+    ]
+   }
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "c88cb041-e0f8-42ff-b649-86533eeab349"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/81b440c0-25d6-4790-b678-5acbaaae794c/dashboard/"
+  },
+  "status": 200
+ },
+ "dashboard_by_code": {
+  "body": {
+   "activity": [
+    {
+     "action": "Updated DeliveryPackage",
+     "description": "updated DeliveryPackage Cancelled delivery",
+     "entity_code": "Cancelled delivery",
+     "entity_id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+     "entity_type": "DeliveryPackage",
+     "id": "83ada032-e729-4b81-99ed-3e5d7a7f4650",
+     "timestamp": "2026-10-30T13:02:22.617657+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Cancelled delivery",
+     "entity_code": "Cancelled delivery",
+     "entity_id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+     "entity_type": "DeliveryPackage",
+     "id": "364acb57-1901-46ac-8af3-21909534f7ad",
+     "timestamp": "2026-10-30T13:02:22.591849+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Late delivery",
+     "entity_code": "Late delivery",
+     "entity_id": "9a2fc2e9-4db3-491d-a7ac-19bf5afe0829",
+     "entity_type": "DeliveryPackage",
+     "id": "982cfc46-3670-4b09-a590-37258da21716",
+     "timestamp": "2026-10-30T13:02:22.572648+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Upcoming delivery",
+     "entity_code": "Upcoming delivery",
+     "entity_id": "c19ed781-b430-42a1-9337-f736ed54c6f4",
+     "entity_type": "DeliveryPackage",
+     "id": "9e4550c6-0769-43ac-aa8d-3cfb29c8d9d4",
+     "timestamp": "2026-10-30T13:02:22.549989+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 5",
+     "entity_code": "Review 5",
+     "entity_id": "8479deb6-d396-4caf-92d1-d93a67f675d3",
+     "entity_type": "Review",
+     "id": "4c2ce51b-8a44-45aa-866d-411048d7c631",
+     "timestamp": "2026-10-30T13:02:22.528940+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 4",
+     "entity_code": "Review 4",
+     "entity_id": "fda2af20-c742-4928-ad80-27453d2e16da",
+     "entity_type": "Review",
+     "id": "075eef82-97aa-49ac-a3f8-70a089a6f1a4",
+     "timestamp": "2026-10-30T13:02:22.525271+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 3",
+     "entity_code": "Review 3",
+     "entity_id": "d850a0c7-7848-4266-97ae-1be9f7435d4b",
+     "entity_type": "Review",
+     "id": "84d58101-4c28-4adb-840a-e039d72b8e64",
+     "timestamp": "2026-10-30T13:02:22.521599+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 2",
+     "entity_code": "Review 2",
+     "entity_id": "2cd4b0fa-568b-4224-8ad0-52c1333f4c69",
+     "entity_type": "Review",
+     "id": "6913c34a-21bb-4ccb-b56f-ff80afe5cabf",
+     "timestamp": "2026-10-30T13:02:22.517820+00:00",
+     "user_name": "System"
+    }
+   ],
+   "deliveries": {
+    "delivered": 0,
+    "items": [
+     {
+      "due_date": "2026-10-28",
+      "id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+      "package_name": "DLV-DSH-0003",
+      "recipient": "",
+      "status": "Cancelled",
+      "title": "Cancelled delivery"
+     },
+     {
+      "due_date": "2026-10-25",
+      "id": "9a2fc2e9-4db3-491d-a7ac-19bf5afe0829",
+      "package_name": "DLV-DSH-0002",
+      "recipient": "",
+      "status": "Draft",
+      "title": "Late delivery"
+     },
+     {
+      "due_date": "2026-11-13",
+      "id": "c19ed781-b430-42a1-9337-f736ed54c6f4",
+      "package_name": "DLV-DSH-0001",
+      "recipient": "",
+      "status": "Draft",
+      "title": "Upcoming delivery"
+     }
+    ],
+    "late": 2,
+    "total": 3,
+    "upcoming": 1
+   },
+   "production": {
+    "completed_shots": 2,
+    "in_progress_shots": 3,
+    "methodology_note": "Weighted aggregate: 60% Approved Shots + 40% Completed Tasks",
+    "not_started_shots": 3,
+    "overall_progress_pct": 22,
+    "status_breakdown": [
+     {
+      "count": 2,
+      "percentage": 20,
+      "status": "Approved"
+     },
+     {
+      "count": 3,
+      "percentage": 30,
+      "status": "In Progress"
+     },
+     {
+      "count": 3,
+      "percentage": 30,
+      "status": "Not Started"
+     },
+     {
+      "count": 1,
+      "percentage": 10,
+      "status": "On Hold"
+     },
+     {
+      "count": 1,
+      "percentage": 10,
+      "status": "Pending Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Internal Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Client Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Final"
+     }
+    ]
+   },
+   "project": {
+    "aspect_ratio": "2.39:1",
+    "code": "DSH",
+    "color_space": "ACEScg",
+    "delivery_date": "2026-12-14",
+    "description": "",
+    "fps": 24.0,
+    "id": "81b440c0-25d6-4790-b678-5acbaaae794c",
+    "name": "Dashboard show",
+    "resolution": "4096x2160 (4K DCI)",
+    "start_date": "2026-08-31",
+    "status": "In Progress",
+    "type": "Feature Film"
+   },
+   "reviews": {
+    "approved": 2,
+    "changes_requested": 1,
+    "pending": 1,
+    "recent_reviews": [
+     {
+      "id": "8479deb6-d396-4caf-92d1-d93a67f675d3",
+      "reviewers_count": 0,
+      "status": "Rejected",
+      "title": "Review 5",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.527834+00:00"
+     },
+     {
+      "id": "fda2af20-c742-4928-ad80-27453d2e16da",
+      "reviewers_count": 0,
+      "status": "Changes Requested",
+      "title": "Review 4",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.524141+00:00"
+     },
+     {
+      "id": "d850a0c7-7848-4266-97ae-1be9f7435d4b",
+      "reviewers_count": 0,
+      "status": "Approved",
+      "title": "Review 3",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.520483+00:00"
+     },
+     {
+      "id": "2cd4b0fa-568b-4224-8ad0-52c1333f4c69",
+      "reviewers_count": 0,
+      "status": "Approved",
+      "title": "Review 2",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.516677+00:00"
+     },
+     {
+      "id": "a90d4f7f-aa3e-4453-b8b4-d7f5d01412eb",
+      "reviewers_count": 0,
+      "status": "Pending Review",
+      "title": "Review 1",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.512638+00:00"
+     }
+    ],
+    "rejected": 1
+   },
+   "schedule": {
+    "days_elapsed": 60,
+    "days_remaining": 45,
+    "days_total": 105,
+    "delivery_date": "2026-12-14",
+    "is_delayed": true,
+    "milestones": [
+     {
+      "date": "2026-08-31",
+      "id": "m1",
+      "name": "Plate Turnover & Ingest",
+      "status": "completed"
+     },
+     {
+      "date": "2026-09-26",
+      "id": "m2",
+      "name": "Rough Layout & Asset Conform",
+      "status": "in_progress"
+     },
+     {
+      "date": "2026-10-22",
+      "id": "m3",
+      "name": "Mid-Point Client Temp Screening",
+      "status": "upcoming"
+     },
+     {
+      "date": "2026-11-23",
+      "id": "m4",
+      "name": "90% Final Lighting & Comp Review",
+      "status": "upcoming"
+     },
+     {
+      "date": "2026-12-14",
+      "id": "m5",
+      "name": "Final 4K ACES Master Delivery",
+      "status": "upcoming"
+     }
+    ],
+    "next_deadline": {
+     "date": "2026-10-31",
+     "days_away": 1,
+     "title": "Task 3",
+     "type": "Task"
+    },
+    "start_date": "2026-08-31"
+   },
+   "shots": {
+    "by_status": {
+     "Approved": 2,
+     "Client Review": 0,
+     "Final": 0,
+     "In Progress": 3,
+     "Internal Review": 0,
+     "Not Started": 3,
+     "On Hold": 1,
+     "Pending Review": 1
+    },
+    "recent_shots": [
+     {
+      "code": "SH010",
+      "frame_count": 100,
+      "id": "ba6ffc3d-4d44-4f17-be73-0d6e5522db10",
+      "name": "Shot 10",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "https://www.warner-scott.net/"
+     },
+     {
+      "code": "SH009",
+      "frame_count": 100,
+      "id": "4263fc74-96b3-45f8-b937-601d86ee7003",
+      "name": "Shot 9",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "http://www.cunningham-bauer.biz/"
+     },
+     {
+      "code": "SH008",
+      "frame_count": 100,
+      "id": "87271ed7-4c66-47af-89e9-dbf51e0af489",
+      "name": "Shot 8",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "http://king.info/"
+     },
+     {
+      "code": "SH007",
+      "frame_count": 100,
+      "id": "7170808a-fe3e-40c8-af78-c94758c83411",
+      "name": "Shot 7",
+      "sequence_code": "SQ010",
+      "status": "On Hold",
+      "thumbnail_url": "http://jordan.org/"
+     },
+     {
+      "code": "SH006",
+      "frame_count": 100,
+      "id": "65e8f963-5755-41a2-8bdc-b6b1e2ee11e2",
+      "name": "Shot 6",
+      "sequence_code": "SQ010",
+      "status": "Pending Review",
+      "thumbnail_url": "http://www.levy.biz/"
+     },
+     {
+      "code": "SH005",
+      "frame_count": 100,
+      "id": "3df3aec9-8f41-45fc-8351-7baa9d71e493",
+      "name": "Shot 5",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "https://www.martinez-walters.com/"
+     },
+     {
+      "code": "SH004",
+      "frame_count": 100,
+      "id": "09ff6da0-394a-45ad-a987-6ba700efd74d",
+      "name": "Shot 4",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "https://www.shelton-robbins.com/"
+     },
+     {
+      "code": "SH003",
+      "frame_count": 100,
+      "id": "9e1abc30-5461-43f1-9a7a-8dd02aeada44",
+      "name": "Shot 3",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "http://moore-williams.org/"
+     }
+    ],
+    "total": 10
+   },
+   "summary": {
+    "approved_assets": 1,
+    "approved_reviews": 2,
+    "approved_shots": 2,
+    "changes_requested_reviews": 1,
+    "completed_tasks": 2,
+    "delivered_deliveries": 0,
+    "in_progress_assets": 2,
+    "in_progress_shots": 3,
+    "in_progress_tasks": 3,
+    "late_deliveries": 2,
+    "needs_revision_assets": 1,
+    "open_tasks": 2,
+    "overdue_tasks": 1,
+    "pending_reviews": 1,
+    "rejected_reviews": 1,
+    "shots_at_risk": 1,
+    "shots_completion_pct": 20,
+    "tasks_completion_pct": 25,
+    "total_assets": 4,
+    "total_deliveries": 3,
+    "total_reviews": 5,
+    "total_shots": 10,
+    "total_tasks": 8,
+    "upcoming_deliveries": 1
+   },
+   "tasks": {
+    "blocked": 1,
+    "completed": 2,
+    "critical": 2,
+    "in_progress": 3,
+    "open": 2,
+    "overdue": 1,
+    "recent_tasks": [
+     {
+      "code": "T008",
+      "department": "",
+      "id": "47eeb0af-7436-440c-96f3-09010fcc6d08",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "In Progress",
+      "title": "Task 8"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T007",
+      "department": "Lighting",
+      "due_date": "2026-10-10",
+      "id": "4d545828-fdf7-4d03-8b10-7a7cf1aab39c",
+      "is_overdue": true,
+      "priority": "Medium",
+      "status": "Approved",
+      "title": "Task 7"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T006",
+      "department": "Compositing",
+      "due_date": "2026-10-20",
+      "id": "694ec82b-2f05-4760-a4a9-ece1add4ce85",
+      "is_overdue": true,
+      "priority": "Low",
+      "status": "Approved",
+      "title": "Task 6"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T005",
+      "department": "Compositing",
+      "due_date": "2026-11-01",
+      "id": "4d4ccb83-f12c-4078-a8c9-9fc6da729c95",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "Pending Review",
+      "title": "Task 5"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T004",
+      "department": "Lighting",
+      "due_date": "2026-11-08",
+      "id": "7b060c08-870e-4eb2-ac5f-001687d3aded",
+      "is_overdue": false,
+      "priority": "High",
+      "status": "Blocked",
+      "title": "Task 4"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T003",
+      "department": "Lighting",
+      "due_date": "2026-10-31",
+      "id": "57e12b16-4405-4eec-a27b-4439147d45fe",
+      "is_overdue": false,
+      "priority": "Critical",
+      "status": "In Progress",
+      "title": "Task 3"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T002",
+      "department": "Compositing",
+      "due_date": "2026-10-27",
+      "id": "d96a8714-28e1-4dec-af96-8b15c03133d1",
+      "is_overdue": true,
+      "priority": "High",
+      "status": "In Progress",
+      "title": "Task 2"
+     },
+     {
+      "code": "T001",
+      "department": "Compositing",
+      "due_date": "2026-11-04",
+      "id": "710eadb2-0839-4d53-9c59-2314579ba748",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "Not Started",
+      "title": "Task 1"
+     }
+    ],
+    "review": 0,
+    "total": 8
+   },
+   "workload": {
+    "team_members": [
+     {
+      "assigned_count": 4,
+      "department": "Compositing",
+      "id": "user-4baeea1b-1312-4573-a1e3-79fc442846b7",
+      "in_progress_count": 2,
+      "name": "user@example.test",
+      "overdue_count": 2,
+      "role": "",
+      "workload_level": "overloaded"
+     },
+     {
+      "assigned_count": 2,
+      "department": "Lighting",
+      "id": "user-5351c718-86d6-40a1-9121-79fcdbf058c4",
+      "in_progress_count": 0,
+      "name": "user@example.test",
+      "overdue_count": 1,
+      "role": "",
+      "workload_level": "normal"
+     },
+     {
+      "assigned_count": 2,
+      "department": "Compositing",
+      "id": "unassigned",
+      "in_progress_count": 1,
+      "name": "Unassigned",
+      "overdue_count": 0,
+      "role": "",
+      "workload_level": "normal"
+     }
+    ]
+   }
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "caef098d-cdd0-4868-8953-2a550f44d8ad"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/dsh/dashboard/"
+  },
+  "status": 200
+ },
+ "dashboard_empty": {
+  "body": {
+   "activity": [
+    {
+     "action": "Created Project",
+     "description": "created Project Empty",
+     "entity_code": "Empty",
+     "entity_id": "886fc543-b6f9-488c-a05c-1caf241e9cd3",
+     "entity_type": "Project",
+     "id": "3d6f3381-eab8-4789-ae6b-d5beb64f8972",
+     "timestamp": "2026-10-30T13:02:22.087728+00:00",
+     "user_name": "user@example.test"
+    }
+   ],
+   "deliveries": {
+    "delivered": 0,
+    "items": [],
+    "late": 0,
+    "total": 0,
+    "upcoming": 0
+   },
+   "production": {
+    "completed_shots": 0,
+    "in_progress_shots": 0,
+    "methodology_note": "Weighted aggregate: 60% Approved Shots + 40% Completed Tasks",
+    "not_started_shots": 0,
+    "overall_progress_pct": 0,
+    "status_breakdown": [
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Not Started"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "In Progress"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Internal Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Client Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Approved"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Final"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "On Hold"
+     }
+    ]
+   },
+   "project": {
+    "aspect_ratio": "2.39:1",
+    "code": "EMP",
+    "color_space": "ACEScg",
+    "delivery_date": "",
+    "description": "",
+    "fps": 24.0,
+    "id": "886fc543-b6f9-488c-a05c-1caf241e9cd3",
+    "name": "Empty",
+    "resolution": "4096x2160 (4K DCI)",
+    "start_date": "",
+    "status": "In Progress",
+    "type": "Feature Film"
+   },
+   "reviews": {
+    "approved": 0,
+    "changes_requested": 0,
+    "pending": 0,
+    "recent_reviews": [],
+    "rejected": 0
+   },
+   "schedule": {
+    "days_elapsed": 0,
+    "days_remaining": 180,
+    "days_total": 180,
+    "delivery_date": "2027-04-28",
+    "is_delayed": false,
+    "milestones": [
+     {
+      "date": "2026-10-30",
+      "id": "m1",
+      "name": "Plate Turnover & Ingest",
+      "status": "completed"
+     },
+     {
+      "date": "2026-12-14",
+      "id": "m2",
+      "name": "Rough Layout & Asset Conform",
+      "status": "in_progress"
+     },
+     {
+      "date": "2027-01-28",
+      "id": "m3",
+      "name": "Mid-Point Client Temp Screening",
+      "status": "upcoming"
+     },
+     {
+      "date": "2027-03-23",
+      "id": "m4",
+      "name": "90% Final Lighting & Comp Review",
+      "status": "upcoming"
+     },
+     {
+      "date": "2027-04-28",
+      "id": "m5",
+      "name": "Final 4K ACES Master Delivery",
+      "status": "upcoming"
+     }
+    ],
+    "start_date": "2026-10-30"
+   },
+   "shots": {
+    "by_status": {
+     "Approved": 0,
+     "Client Review": 0,
+     "Final": 0,
+     "In Progress": 0,
+     "Internal Review": 0,
+     "Not Started": 0,
+     "On Hold": 0
+    },
+    "recent_shots": [],
+    "total": 0
+   },
+   "summary": {
+    "approved_assets": 0,
+    "approved_reviews": 0,
+    "approved_shots": 0,
+    "changes_requested_reviews": 0,
+    "completed_tasks": 0,
+    "delivered_deliveries": 0,
+    "in_progress_assets": 0,
+    "in_progress_shots": 0,
+    "in_progress_tasks": 0,
+    "late_deliveries": 0,
+    "needs_revision_assets": 0,
+    "open_tasks": 0,
+    "overdue_tasks": 0,
+    "pending_reviews": 0,
+    "rejected_reviews": 0,
+    "shots_at_risk": 0,
+    "shots_completion_pct": 0,
+    "tasks_completion_pct": 0,
+    "total_assets": 0,
+    "total_deliveries": 0,
+    "total_reviews": 0,
+    "total_shots": 0,
+    "total_tasks": 0,
+    "upcoming_deliveries": 0
+   },
+   "tasks": {
+    "blocked": 0,
+    "completed": 0,
+    "critical": 0,
+    "in_progress": 0,
+    "open": 0,
+    "overdue": 0,
+    "recent_tasks": [],
+    "review": 0,
+    "total": 0
+   },
+   "workload": {
+    "team_members": []
+   }
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "01e45224-d577-45bf-b891-2e9bcaade910"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/886fc543-b6f9-488c-a05c-1caf241e9cd3/dashboard/"
+  },
+  "status": 200
+ },
+ "dashboard_fallback_route": {
+  "body": {
+   "activity": [
+    {
+     "action": "Updated DeliveryPackage",
+     "description": "updated DeliveryPackage Cancelled delivery",
+     "entity_code": "Cancelled delivery",
+     "entity_id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+     "entity_type": "DeliveryPackage",
+     "id": "83ada032-e729-4b81-99ed-3e5d7a7f4650",
+     "timestamp": "2026-10-30T13:02:22.617657+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Cancelled delivery",
+     "entity_code": "Cancelled delivery",
+     "entity_id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+     "entity_type": "DeliveryPackage",
+     "id": "364acb57-1901-46ac-8af3-21909534f7ad",
+     "timestamp": "2026-10-30T13:02:22.591849+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Late delivery",
+     "entity_code": "Late delivery",
+     "entity_id": "9a2fc2e9-4db3-491d-a7ac-19bf5afe0829",
+     "entity_type": "DeliveryPackage",
+     "id": "982cfc46-3670-4b09-a590-37258da21716",
+     "timestamp": "2026-10-30T13:02:22.572648+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Upcoming delivery",
+     "entity_code": "Upcoming delivery",
+     "entity_id": "c19ed781-b430-42a1-9337-f736ed54c6f4",
+     "entity_type": "DeliveryPackage",
+     "id": "9e4550c6-0769-43ac-aa8d-3cfb29c8d9d4",
+     "timestamp": "2026-10-30T13:02:22.549989+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 5",
+     "entity_code": "Review 5",
+     "entity_id": "8479deb6-d396-4caf-92d1-d93a67f675d3",
+     "entity_type": "Review",
+     "id": "4c2ce51b-8a44-45aa-866d-411048d7c631",
+     "timestamp": "2026-10-30T13:02:22.528940+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 4",
+     "entity_code": "Review 4",
+     "entity_id": "fda2af20-c742-4928-ad80-27453d2e16da",
+     "entity_type": "Review",
+     "id": "075eef82-97aa-49ac-a3f8-70a089a6f1a4",
+     "timestamp": "2026-10-30T13:02:22.525271+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 3",
+     "entity_code": "Review 3",
+     "entity_id": "d850a0c7-7848-4266-97ae-1be9f7435d4b",
+     "entity_type": "Review",
+     "id": "84d58101-4c28-4adb-840a-e039d72b8e64",
+     "timestamp": "2026-10-30T13:02:22.521599+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 2",
+     "entity_code": "Review 2",
+     "entity_id": "2cd4b0fa-568b-4224-8ad0-52c1333f4c69",
+     "entity_type": "Review",
+     "id": "6913c34a-21bb-4ccb-b56f-ff80afe5cabf",
+     "timestamp": "2026-10-30T13:02:22.517820+00:00",
+     "user_name": "System"
+    }
+   ],
+   "deliveries": {
+    "delivered": 0,
+    "items": [
+     {
+      "due_date": "2026-10-28",
+      "id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+      "package_name": "DLV-DSH-0003",
+      "recipient": "",
+      "status": "Cancelled",
+      "title": "Cancelled delivery"
+     },
+     {
+      "due_date": "2026-10-25",
+      "id": "9a2fc2e9-4db3-491d-a7ac-19bf5afe0829",
+      "package_name": "DLV-DSH-0002",
+      "recipient": "",
+      "status": "Draft",
+      "title": "Late delivery"
+     },
+     {
+      "due_date": "2026-11-13",
+      "id": "c19ed781-b430-42a1-9337-f736ed54c6f4",
+      "package_name": "DLV-DSH-0001",
+      "recipient": "",
+      "status": "Draft",
+      "title": "Upcoming delivery"
+     }
+    ],
+    "late": 2,
+    "total": 3,
+    "upcoming": 1
+   },
+   "production": {
+    "completed_shots": 2,
+    "in_progress_shots": 3,
+    "methodology_note": "Weighted aggregate: 60% Approved Shots + 40% Completed Tasks",
+    "not_started_shots": 3,
+    "overall_progress_pct": 22,
+    "status_breakdown": [
+     {
+      "count": 2,
+      "percentage": 20,
+      "status": "Approved"
+     },
+     {
+      "count": 3,
+      "percentage": 30,
+      "status": "In Progress"
+     },
+     {
+      "count": 3,
+      "percentage": 30,
+      "status": "Not Started"
+     },
+     {
+      "count": 1,
+      "percentage": 10,
+      "status": "On Hold"
+     },
+     {
+      "count": 1,
+      "percentage": 10,
+      "status": "Pending Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Internal Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Client Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Final"
+     }
+    ]
+   },
+   "project": {
+    "aspect_ratio": "2.39:1",
+    "code": "DSH",
+    "color_space": "ACEScg",
+    "delivery_date": "2026-12-14",
+    "description": "",
+    "fps": 24.0,
+    "id": "81b440c0-25d6-4790-b678-5acbaaae794c",
+    "name": "Dashboard show",
+    "resolution": "4096x2160 (4K DCI)",
+    "start_date": "2026-08-31",
+    "status": "In Progress",
+    "type": "Feature Film"
+   },
+   "reviews": {
+    "approved": 2,
+    "changes_requested": 1,
+    "pending": 1,
+    "recent_reviews": [
+     {
+      "id": "8479deb6-d396-4caf-92d1-d93a67f675d3",
+      "reviewers_count": 0,
+      "status": "Rejected",
+      "title": "Review 5",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.527834+00:00"
+     },
+     {
+      "id": "fda2af20-c742-4928-ad80-27453d2e16da",
+      "reviewers_count": 0,
+      "status": "Changes Requested",
+      "title": "Review 4",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.524141+00:00"
+     },
+     {
+      "id": "d850a0c7-7848-4266-97ae-1be9f7435d4b",
+      "reviewers_count": 0,
+      "status": "Approved",
+      "title": "Review 3",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.520483+00:00"
+     },
+     {
+      "id": "2cd4b0fa-568b-4224-8ad0-52c1333f4c69",
+      "reviewers_count": 0,
+      "status": "Approved",
+      "title": "Review 2",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.516677+00:00"
+     },
+     {
+      "id": "a90d4f7f-aa3e-4453-b8b4-d7f5d01412eb",
+      "reviewers_count": 0,
+      "status": "Pending Review",
+      "title": "Review 1",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.512638+00:00"
+     }
+    ],
+    "rejected": 1
+   },
+   "schedule": {
+    "days_elapsed": 60,
+    "days_remaining": 45,
+    "days_total": 105,
+    "delivery_date": "2026-12-14",
+    "is_delayed": true,
+    "milestones": [
+     {
+      "date": "2026-08-31",
+      "id": "m1",
+      "name": "Plate Turnover & Ingest",
+      "status": "completed"
+     },
+     {
+      "date": "2026-09-26",
+      "id": "m2",
+      "name": "Rough Layout & Asset Conform",
+      "status": "in_progress"
+     },
+     {
+      "date": "2026-10-22",
+      "id": "m3",
+      "name": "Mid-Point Client Temp Screening",
+      "status": "upcoming"
+     },
+     {
+      "date": "2026-11-23",
+      "id": "m4",
+      "name": "90% Final Lighting & Comp Review",
+      "status": "upcoming"
+     },
+     {
+      "date": "2026-12-14",
+      "id": "m5",
+      "name": "Final 4K ACES Master Delivery",
+      "status": "upcoming"
+     }
+    ],
+    "next_deadline": {
+     "date": "2026-10-31",
+     "days_away": 1,
+     "title": "Task 3",
+     "type": "Task"
+    },
+    "start_date": "2026-08-31"
+   },
+   "shots": {
+    "by_status": {
+     "Approved": 2,
+     "Client Review": 0,
+     "Final": 0,
+     "In Progress": 3,
+     "Internal Review": 0,
+     "Not Started": 3,
+     "On Hold": 1,
+     "Pending Review": 1
+    },
+    "recent_shots": [
+     {
+      "code": "SH010",
+      "frame_count": 100,
+      "id": "ba6ffc3d-4d44-4f17-be73-0d6e5522db10",
+      "name": "Shot 10",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "https://www.warner-scott.net/"
+     },
+     {
+      "code": "SH009",
+      "frame_count": 100,
+      "id": "4263fc74-96b3-45f8-b937-601d86ee7003",
+      "name": "Shot 9",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "http://www.cunningham-bauer.biz/"
+     },
+     {
+      "code": "SH008",
+      "frame_count": 100,
+      "id": "87271ed7-4c66-47af-89e9-dbf51e0af489",
+      "name": "Shot 8",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "http://king.info/"
+     },
+     {
+      "code": "SH007",
+      "frame_count": 100,
+      "id": "7170808a-fe3e-40c8-af78-c94758c83411",
+      "name": "Shot 7",
+      "sequence_code": "SQ010",
+      "status": "On Hold",
+      "thumbnail_url": "http://jordan.org/"
+     },
+     {
+      "code": "SH006",
+      "frame_count": 100,
+      "id": "65e8f963-5755-41a2-8bdc-b6b1e2ee11e2",
+      "name": "Shot 6",
+      "sequence_code": "SQ010",
+      "status": "Pending Review",
+      "thumbnail_url": "http://www.levy.biz/"
+     },
+     {
+      "code": "SH005",
+      "frame_count": 100,
+      "id": "3df3aec9-8f41-45fc-8351-7baa9d71e493",
+      "name": "Shot 5",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "https://www.martinez-walters.com/"
+     },
+     {
+      "code": "SH004",
+      "frame_count": 100,
+      "id": "09ff6da0-394a-45ad-a987-6ba700efd74d",
+      "name": "Shot 4",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "https://www.shelton-robbins.com/"
+     },
+     {
+      "code": "SH003",
+      "frame_count": 100,
+      "id": "9e1abc30-5461-43f1-9a7a-8dd02aeada44",
+      "name": "Shot 3",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "http://moore-williams.org/"
+     }
+    ],
+    "total": 10
+   },
+   "summary": {
+    "approved_assets": 1,
+    "approved_reviews": 2,
+    "approved_shots": 2,
+    "changes_requested_reviews": 1,
+    "completed_tasks": 2,
+    "delivered_deliveries": 0,
+    "in_progress_assets": 2,
+    "in_progress_shots": 3,
+    "in_progress_tasks": 3,
+    "late_deliveries": 2,
+    "needs_revision_assets": 1,
+    "open_tasks": 2,
+    "overdue_tasks": 1,
+    "pending_reviews": 1,
+    "rejected_reviews": 1,
+    "shots_at_risk": 1,
+    "shots_completion_pct": 20,
+    "tasks_completion_pct": 25,
+    "total_assets": 4,
+    "total_deliveries": 3,
+    "total_reviews": 5,
+    "total_shots": 10,
+    "total_tasks": 8,
+    "upcoming_deliveries": 1
+   },
+   "tasks": {
+    "blocked": 1,
+    "completed": 2,
+    "critical": 2,
+    "in_progress": 3,
+    "open": 2,
+    "overdue": 1,
+    "recent_tasks": [
+     {
+      "code": "T008",
+      "department": "",
+      "id": "47eeb0af-7436-440c-96f3-09010fcc6d08",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "In Progress",
+      "title": "Task 8"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T007",
+      "department": "Lighting",
+      "due_date": "2026-10-10",
+      "id": "4d545828-fdf7-4d03-8b10-7a7cf1aab39c",
+      "is_overdue": true,
+      "priority": "Medium",
+      "status": "Approved",
+      "title": "Task 7"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T006",
+      "department": "Compositing",
+      "due_date": "2026-10-20",
+      "id": "694ec82b-2f05-4760-a4a9-ece1add4ce85",
+      "is_overdue": true,
+      "priority": "Low",
+      "status": "Approved",
+      "title": "Task 6"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T005",
+      "department": "Compositing",
+      "due_date": "2026-11-01",
+      "id": "4d4ccb83-f12c-4078-a8c9-9fc6da729c95",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "Pending Review",
+      "title": "Task 5"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T004",
+      "department": "Lighting",
+      "due_date": "2026-11-08",
+      "id": "7b060c08-870e-4eb2-ac5f-001687d3aded",
+      "is_overdue": false,
+      "priority": "High",
+      "status": "Blocked",
+      "title": "Task 4"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T003",
+      "department": "Lighting",
+      "due_date": "2026-10-31",
+      "id": "57e12b16-4405-4eec-a27b-4439147d45fe",
+      "is_overdue": false,
+      "priority": "Critical",
+      "status": "In Progress",
+      "title": "Task 3"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T002",
+      "department": "Compositing",
+      "due_date": "2026-10-27",
+      "id": "d96a8714-28e1-4dec-af96-8b15c03133d1",
+      "is_overdue": true,
+      "priority": "High",
+      "status": "In Progress",
+      "title": "Task 2"
+     },
+     {
+      "code": "T001",
+      "department": "Compositing",
+      "due_date": "2026-11-04",
+      "id": "710eadb2-0839-4d53-9c59-2314579ba748",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "Not Started",
+      "title": "Task 1"
+     }
+    ],
+    "review": 0,
+    "total": 8
+   },
+   "workload": {
+    "team_members": [
+     {
+      "assigned_count": 4,
+      "department": "Compositing",
+      "id": "user-4baeea1b-1312-4573-a1e3-79fc442846b7",
+      "in_progress_count": 2,
+      "name": "user@example.test",
+      "overdue_count": 2,
+      "role": "",
+      "workload_level": "overloaded"
+     },
+     {
+      "assigned_count": 2,
+      "department": "Lighting",
+      "id": "user-5351c718-86d6-40a1-9121-79fcdbf058c4",
+      "in_progress_count": 0,
+      "name": "user@example.test",
+      "overdue_count": 1,
+      "role": "",
+      "workload_level": "normal"
+     },
+     {
+      "assigned_count": 2,
+      "department": "Compositing",
+      "id": "unassigned",
+      "in_progress_count": 1,
+      "name": "Unassigned",
+      "overdue_count": 0,
+      "role": "",
+      "workload_level": "normal"
+     }
+    ]
+   }
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "840767bb-7e7a-4a7e-b3f3-d01ecb0cfdcf"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/81b440c0-25d6-4790-b678-5acbaaae794c/dashboard"
+  },
+  "status": 200
+ },
+ "dashboard_fallback_route_artist": {
+  "body": {
+   "activity": [
+    {
+     "action": "Updated DeliveryPackage",
+     "description": "updated DeliveryPackage Cancelled delivery",
+     "entity_code": "Cancelled delivery",
+     "entity_id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+     "entity_type": "DeliveryPackage",
+     "id": "83ada032-e729-4b81-99ed-3e5d7a7f4650",
+     "timestamp": "2026-10-30T13:02:22.617657+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Cancelled delivery",
+     "entity_code": "Cancelled delivery",
+     "entity_id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+     "entity_type": "DeliveryPackage",
+     "id": "364acb57-1901-46ac-8af3-21909534f7ad",
+     "timestamp": "2026-10-30T13:02:22.591849+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Late delivery",
+     "entity_code": "Late delivery",
+     "entity_id": "9a2fc2e9-4db3-491d-a7ac-19bf5afe0829",
+     "entity_type": "DeliveryPackage",
+     "id": "982cfc46-3670-4b09-a590-37258da21716",
+     "timestamp": "2026-10-30T13:02:22.572648+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Upcoming delivery",
+     "entity_code": "Upcoming delivery",
+     "entity_id": "c19ed781-b430-42a1-9337-f736ed54c6f4",
+     "entity_type": "DeliveryPackage",
+     "id": "9e4550c6-0769-43ac-aa8d-3cfb29c8d9d4",
+     "timestamp": "2026-10-30T13:02:22.549989+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 5",
+     "entity_code": "Review 5",
+     "entity_id": "8479deb6-d396-4caf-92d1-d93a67f675d3",
+     "entity_type": "Review",
+     "id": "4c2ce51b-8a44-45aa-866d-411048d7c631",
+     "timestamp": "2026-10-30T13:02:22.528940+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 4",
+     "entity_code": "Review 4",
+     "entity_id": "fda2af20-c742-4928-ad80-27453d2e16da",
+     "entity_type": "Review",
+     "id": "075eef82-97aa-49ac-a3f8-70a089a6f1a4",
+     "timestamp": "2026-10-30T13:02:22.525271+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 3",
+     "entity_code": "Review 3",
+     "entity_id": "d850a0c7-7848-4266-97ae-1be9f7435d4b",
+     "entity_type": "Review",
+     "id": "84d58101-4c28-4adb-840a-e039d72b8e64",
+     "timestamp": "2026-10-30T13:02:22.521599+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 2",
+     "entity_code": "Review 2",
+     "entity_id": "2cd4b0fa-568b-4224-8ad0-52c1333f4c69",
+     "entity_type": "Review",
+     "id": "6913c34a-21bb-4ccb-b56f-ff80afe5cabf",
+     "timestamp": "2026-10-30T13:02:22.517820+00:00",
+     "user_name": "System"
+    }
+   ],
+   "deliveries": {
+    "delivered": 0,
+    "items": [
+     {
+      "due_date": "2026-10-28",
+      "id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+      "package_name": "DLV-DSH-0003",
+      "recipient": "",
+      "status": "Cancelled",
+      "title": "Cancelled delivery"
+     },
+     {
+      "due_date": "2026-10-25",
+      "id": "9a2fc2e9-4db3-491d-a7ac-19bf5afe0829",
+      "package_name": "DLV-DSH-0002",
+      "recipient": "",
+      "status": "Draft",
+      "title": "Late delivery"
+     },
+     {
+      "due_date": "2026-11-13",
+      "id": "c19ed781-b430-42a1-9337-f736ed54c6f4",
+      "package_name": "DLV-DSH-0001",
+      "recipient": "",
+      "status": "Draft",
+      "title": "Upcoming delivery"
+     }
+    ],
+    "late": 2,
+    "total": 3,
+    "upcoming": 1
+   },
+   "production": {
+    "completed_shots": 2,
+    "in_progress_shots": 3,
+    "methodology_note": "Weighted aggregate: 60% Approved Shots + 40% Completed Tasks",
+    "not_started_shots": 3,
+    "overall_progress_pct": 22,
+    "status_breakdown": [
+     {
+      "count": 2,
+      "percentage": 20,
+      "status": "Approved"
+     },
+     {
+      "count": 3,
+      "percentage": 30,
+      "status": "In Progress"
+     },
+     {
+      "count": 3,
+      "percentage": 30,
+      "status": "Not Started"
+     },
+     {
+      "count": 1,
+      "percentage": 10,
+      "status": "On Hold"
+     },
+     {
+      "count": 1,
+      "percentage": 10,
+      "status": "Pending Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Internal Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Client Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Final"
+     }
+    ]
+   },
+   "project": {
+    "aspect_ratio": "2.39:1",
+    "code": "DSH",
+    "color_space": "ACEScg",
+    "delivery_date": "2026-12-14",
+    "description": "",
+    "fps": 24.0,
+    "id": "81b440c0-25d6-4790-b678-5acbaaae794c",
+    "name": "Dashboard show",
+    "resolution": "4096x2160 (4K DCI)",
+    "start_date": "2026-08-31",
+    "status": "In Progress",
+    "type": "Feature Film"
+   },
+   "reviews": {
+    "approved": 2,
+    "changes_requested": 1,
+    "pending": 1,
+    "recent_reviews": [
+     {
+      "id": "8479deb6-d396-4caf-92d1-d93a67f675d3",
+      "reviewers_count": 0,
+      "status": "Rejected",
+      "title": "Review 5",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.527834+00:00"
+     },
+     {
+      "id": "fda2af20-c742-4928-ad80-27453d2e16da",
+      "reviewers_count": 0,
+      "status": "Changes Requested",
+      "title": "Review 4",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.524141+00:00"
+     },
+     {
+      "id": "d850a0c7-7848-4266-97ae-1be9f7435d4b",
+      "reviewers_count": 0,
+      "status": "Approved",
+      "title": "Review 3",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.520483+00:00"
+     },
+     {
+      "id": "2cd4b0fa-568b-4224-8ad0-52c1333f4c69",
+      "reviewers_count": 0,
+      "status": "Approved",
+      "title": "Review 2",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.516677+00:00"
+     },
+     {
+      "id": "a90d4f7f-aa3e-4453-b8b4-d7f5d01412eb",
+      "reviewers_count": 0,
+      "status": "Pending Review",
+      "title": "Review 1",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.512638+00:00"
+     }
+    ],
+    "rejected": 1
+   },
+   "schedule": {
+    "days_elapsed": 60,
+    "days_remaining": 45,
+    "days_total": 105,
+    "delivery_date": "2026-12-14",
+    "is_delayed": true,
+    "milestones": [
+     {
+      "date": "2026-08-31",
+      "id": "m1",
+      "name": "Plate Turnover & Ingest",
+      "status": "completed"
+     },
+     {
+      "date": "2026-09-26",
+      "id": "m2",
+      "name": "Rough Layout & Asset Conform",
+      "status": "in_progress"
+     },
+     {
+      "date": "2026-10-22",
+      "id": "m3",
+      "name": "Mid-Point Client Temp Screening",
+      "status": "upcoming"
+     },
+     {
+      "date": "2026-11-23",
+      "id": "m4",
+      "name": "90% Final Lighting & Comp Review",
+      "status": "upcoming"
+     },
+     {
+      "date": "2026-12-14",
+      "id": "m5",
+      "name": "Final 4K ACES Master Delivery",
+      "status": "upcoming"
+     }
+    ],
+    "next_deadline": {
+     "date": "2026-10-31",
+     "days_away": 1,
+     "title": "Task 3",
+     "type": "Task"
+    },
+    "start_date": "2026-08-31"
+   },
+   "shots": {
+    "by_status": {
+     "Approved": 2,
+     "Client Review": 0,
+     "Final": 0,
+     "In Progress": 3,
+     "Internal Review": 0,
+     "Not Started": 3,
+     "On Hold": 1,
+     "Pending Review": 1
+    },
+    "recent_shots": [
+     {
+      "code": "SH010",
+      "frame_count": 100,
+      "id": "ba6ffc3d-4d44-4f17-be73-0d6e5522db10",
+      "name": "Shot 10",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "https://www.warner-scott.net/"
+     },
+     {
+      "code": "SH009",
+      "frame_count": 100,
+      "id": "4263fc74-96b3-45f8-b937-601d86ee7003",
+      "name": "Shot 9",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "http://www.cunningham-bauer.biz/"
+     },
+     {
+      "code": "SH008",
+      "frame_count": 100,
+      "id": "87271ed7-4c66-47af-89e9-dbf51e0af489",
+      "name": "Shot 8",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "http://king.info/"
+     },
+     {
+      "code": "SH007",
+      "frame_count": 100,
+      "id": "7170808a-fe3e-40c8-af78-c94758c83411",
+      "name": "Shot 7",
+      "sequence_code": "SQ010",
+      "status": "On Hold",
+      "thumbnail_url": "http://jordan.org/"
+     },
+     {
+      "code": "SH006",
+      "frame_count": 100,
+      "id": "65e8f963-5755-41a2-8bdc-b6b1e2ee11e2",
+      "name": "Shot 6",
+      "sequence_code": "SQ010",
+      "status": "Pending Review",
+      "thumbnail_url": "http://www.levy.biz/"
+     },
+     {
+      "code": "SH005",
+      "frame_count": 100,
+      "id": "3df3aec9-8f41-45fc-8351-7baa9d71e493",
+      "name": "Shot 5",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "https://www.martinez-walters.com/"
+     },
+     {
+      "code": "SH004",
+      "frame_count": 100,
+      "id": "09ff6da0-394a-45ad-a987-6ba700efd74d",
+      "name": "Shot 4",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "https://www.shelton-robbins.com/"
+     },
+     {
+      "code": "SH003",
+      "frame_count": 100,
+      "id": "9e1abc30-5461-43f1-9a7a-8dd02aeada44",
+      "name": "Shot 3",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "http://moore-williams.org/"
+     }
+    ],
+    "total": 10
+   },
+   "summary": {
+    "approved_assets": 1,
+    "approved_reviews": 2,
+    "approved_shots": 2,
+    "changes_requested_reviews": 1,
+    "completed_tasks": 2,
+    "delivered_deliveries": 0,
+    "in_progress_assets": 2,
+    "in_progress_shots": 3,
+    "in_progress_tasks": 3,
+    "late_deliveries": 2,
+    "needs_revision_assets": 1,
+    "open_tasks": 2,
+    "overdue_tasks": 1,
+    "pending_reviews": 1,
+    "rejected_reviews": 1,
+    "shots_at_risk": 1,
+    "shots_completion_pct": 20,
+    "tasks_completion_pct": 25,
+    "total_assets": 4,
+    "total_deliveries": 3,
+    "total_reviews": 5,
+    "total_shots": 10,
+    "total_tasks": 8,
+    "upcoming_deliveries": 1
+   },
+   "tasks": {
+    "blocked": 1,
+    "completed": 2,
+    "critical": 2,
+    "in_progress": 3,
+    "open": 2,
+    "overdue": 1,
+    "recent_tasks": [
+     {
+      "code": "T008",
+      "department": "",
+      "id": "47eeb0af-7436-440c-96f3-09010fcc6d08",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "In Progress",
+      "title": "Task 8"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T007",
+      "department": "Lighting",
+      "due_date": "2026-10-10",
+      "id": "4d545828-fdf7-4d03-8b10-7a7cf1aab39c",
+      "is_overdue": true,
+      "priority": "Medium",
+      "status": "Approved",
+      "title": "Task 7"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T006",
+      "department": "Compositing",
+      "due_date": "2026-10-20",
+      "id": "694ec82b-2f05-4760-a4a9-ece1add4ce85",
+      "is_overdue": true,
+      "priority": "Low",
+      "status": "Approved",
+      "title": "Task 6"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T005",
+      "department": "Compositing",
+      "due_date": "2026-11-01",
+      "id": "4d4ccb83-f12c-4078-a8c9-9fc6da729c95",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "Pending Review",
+      "title": "Task 5"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T004",
+      "department": "Lighting",
+      "due_date": "2026-11-08",
+      "id": "7b060c08-870e-4eb2-ac5f-001687d3aded",
+      "is_overdue": false,
+      "priority": "High",
+      "status": "Blocked",
+      "title": "Task 4"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T003",
+      "department": "Lighting",
+      "due_date": "2026-10-31",
+      "id": "57e12b16-4405-4eec-a27b-4439147d45fe",
+      "is_overdue": false,
+      "priority": "Critical",
+      "status": "In Progress",
+      "title": "Task 3"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T002",
+      "department": "Compositing",
+      "due_date": "2026-10-27",
+      "id": "d96a8714-28e1-4dec-af96-8b15c03133d1",
+      "is_overdue": true,
+      "priority": "High",
+      "status": "In Progress",
+      "title": "Task 2"
+     },
+     {
+      "code": "T001",
+      "department": "Compositing",
+      "due_date": "2026-11-04",
+      "id": "710eadb2-0839-4d53-9c59-2314579ba748",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "Not Started",
+      "title": "Task 1"
+     }
+    ],
+    "review": 0,
+    "total": 8
+   },
+   "workload": {
+    "team_members": [
+     {
+      "assigned_count": 4,
+      "department": "Compositing",
+      "id": "user-4baeea1b-1312-4573-a1e3-79fc442846b7",
+      "in_progress_count": 2,
+      "name": "user@example.test",
+      "overdue_count": 2,
+      "role": "",
+      "workload_level": "overloaded"
+     },
+     {
+      "assigned_count": 2,
+      "department": "Lighting",
+      "id": "user-5351c718-86d6-40a1-9121-79fcdbf058c4",
+      "in_progress_count": 0,
+      "name": "user@example.test",
+      "overdue_count": 1,
+      "role": "",
+      "workload_level": "normal"
+     },
+     {
+      "assigned_count": 2,
+      "department": "Compositing",
+      "id": "unassigned",
+      "in_progress_count": 1,
+      "name": "Unassigned",
+      "overdue_count": 0,
+      "role": "",
+      "workload_level": "normal"
+     }
+    ]
+   }
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "67abbd8f-7eef-4e6e-afbd-e497cdfe560d"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/81b440c0-25d6-4790-b678-5acbaaae794c/dashboard"
+  },
+  "status": 200
+ },
+ "dashboard_fallback_route_stranger": {
+  "body": {
+   "detail": "Project 81b440c0-25d6-4790-b678-5acbaaae794c not found.",
+   "error": {
+    "code": "not_found",
+    "request_id": "07d1491d-ed70-4ebc-9332-e946000e8935"
+   }
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "07d1491d-ed70-4ebc-9332-e946000e8935"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/81b440c0-25d6-4790-b678-5acbaaae794c/dashboard"
+  },
+  "status": 404
+ },
+ "dashboard_norole": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "2df9b230-d647-4a1d-9e6d-172fec5d2417"
+   }
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "2df9b230-d647-4a1d-9e6d-172fec5d2417"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/81b440c0-25d6-4790-b678-5acbaaae794c/dashboard/"
+  },
+  "status": 403
+ },
+ "dashboard_stranger": {
+  "body": {
+   "detail": "Not found.",
+   "error": {
+    "code": "not_found",
+    "request_id": "675382d0-3e79-4ab5-8017-b7115364a6af"
+   }
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "675382d0-3e79-4ab5-8017-b7115364a6af"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/81b440c0-25d6-4790-b678-5acbaaae794c/dashboard/"
+  },
+  "status": 404
+ },
+ "dashboard_supervisor": {
+  "body": {
+   "activity": [
+    {
+     "action": "Updated DeliveryPackage",
+     "description": "updated DeliveryPackage Cancelled delivery",
+     "entity_code": "Cancelled delivery",
+     "entity_id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+     "entity_type": "DeliveryPackage",
+     "id": "83ada032-e729-4b81-99ed-3e5d7a7f4650",
+     "timestamp": "2026-10-30T13:02:22.617657+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Cancelled delivery",
+     "entity_code": "Cancelled delivery",
+     "entity_id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+     "entity_type": "DeliveryPackage",
+     "id": "364acb57-1901-46ac-8af3-21909534f7ad",
+     "timestamp": "2026-10-30T13:02:22.591849+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Late delivery",
+     "entity_code": "Late delivery",
+     "entity_id": "9a2fc2e9-4db3-491d-a7ac-19bf5afe0829",
+     "entity_type": "DeliveryPackage",
+     "id": "982cfc46-3670-4b09-a590-37258da21716",
+     "timestamp": "2026-10-30T13:02:22.572648+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created DeliveryPackage",
+     "description": "created DeliveryPackage Upcoming delivery",
+     "entity_code": "Upcoming delivery",
+     "entity_id": "c19ed781-b430-42a1-9337-f736ed54c6f4",
+     "entity_type": "DeliveryPackage",
+     "id": "9e4550c6-0769-43ac-aa8d-3cfb29c8d9d4",
+     "timestamp": "2026-10-30T13:02:22.549989+00:00",
+     "user_name": "user@example.test"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 5",
+     "entity_code": "Review 5",
+     "entity_id": "8479deb6-d396-4caf-92d1-d93a67f675d3",
+     "entity_type": "Review",
+     "id": "4c2ce51b-8a44-45aa-866d-411048d7c631",
+     "timestamp": "2026-10-30T13:02:22.528940+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 4",
+     "entity_code": "Review 4",
+     "entity_id": "fda2af20-c742-4928-ad80-27453d2e16da",
+     "entity_type": "Review",
+     "id": "075eef82-97aa-49ac-a3f8-70a089a6f1a4",
+     "timestamp": "2026-10-30T13:02:22.525271+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 3",
+     "entity_code": "Review 3",
+     "entity_id": "d850a0c7-7848-4266-97ae-1be9f7435d4b",
+     "entity_type": "Review",
+     "id": "84d58101-4c28-4adb-840a-e039d72b8e64",
+     "timestamp": "2026-10-30T13:02:22.521599+00:00",
+     "user_name": "System"
+    },
+    {
+     "action": "Created Review",
+     "description": "created Review Review 2",
+     "entity_code": "Review 2",
+     "entity_id": "2cd4b0fa-568b-4224-8ad0-52c1333f4c69",
+     "entity_type": "Review",
+     "id": "6913c34a-21bb-4ccb-b56f-ff80afe5cabf",
+     "timestamp": "2026-10-30T13:02:22.517820+00:00",
+     "user_name": "System"
+    }
+   ],
+   "deliveries": {
+    "delivered": 0,
+    "items": [
+     {
+      "due_date": "2026-10-28",
+      "id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+      "package_name": "DLV-DSH-0003",
+      "recipient": "",
+      "status": "Cancelled",
+      "title": "Cancelled delivery"
+     },
+     {
+      "due_date": "2026-10-25",
+      "id": "9a2fc2e9-4db3-491d-a7ac-19bf5afe0829",
+      "package_name": "DLV-DSH-0002",
+      "recipient": "",
+      "status": "Draft",
+      "title": "Late delivery"
+     },
+     {
+      "due_date": "2026-11-13",
+      "id": "c19ed781-b430-42a1-9337-f736ed54c6f4",
+      "package_name": "DLV-DSH-0001",
+      "recipient": "",
+      "status": "Draft",
+      "title": "Upcoming delivery"
+     }
+    ],
+    "late": 2,
+    "total": 3,
+    "upcoming": 1
+   },
+   "production": {
+    "completed_shots": 2,
+    "in_progress_shots": 3,
+    "methodology_note": "Weighted aggregate: 60% Approved Shots + 40% Completed Tasks",
+    "not_started_shots": 3,
+    "overall_progress_pct": 22,
+    "status_breakdown": [
+     {
+      "count": 2,
+      "percentage": 20,
+      "status": "Approved"
+     },
+     {
+      "count": 3,
+      "percentage": 30,
+      "status": "In Progress"
+     },
+     {
+      "count": 3,
+      "percentage": 30,
+      "status": "Not Started"
+     },
+     {
+      "count": 1,
+      "percentage": 10,
+      "status": "On Hold"
+     },
+     {
+      "count": 1,
+      "percentage": 10,
+      "status": "Pending Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Internal Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Client Review"
+     },
+     {
+      "count": 0,
+      "percentage": 0,
+      "status": "Final"
+     }
+    ]
+   },
+   "project": {
+    "aspect_ratio": "2.39:1",
+    "code": "DSH",
+    "color_space": "ACEScg",
+    "delivery_date": "2026-12-14",
+    "description": "",
+    "fps": 24.0,
+    "id": "81b440c0-25d6-4790-b678-5acbaaae794c",
+    "name": "Dashboard show",
+    "resolution": "4096x2160 (4K DCI)",
+    "start_date": "2026-08-31",
+    "status": "In Progress",
+    "type": "Feature Film"
+   },
+   "reviews": {
+    "approved": 2,
+    "changes_requested": 1,
+    "pending": 1,
+    "recent_reviews": [
+     {
+      "id": "8479deb6-d396-4caf-92d1-d93a67f675d3",
+      "reviewers_count": 0,
+      "status": "Rejected",
+      "title": "Review 5",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.527834+00:00"
+     },
+     {
+      "id": "fda2af20-c742-4928-ad80-27453d2e16da",
+      "reviewers_count": 0,
+      "status": "Changes Requested",
+      "title": "Review 4",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.524141+00:00"
+     },
+     {
+      "id": "d850a0c7-7848-4266-97ae-1be9f7435d4b",
+      "reviewers_count": 0,
+      "status": "Approved",
+      "title": "Review 3",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.520483+00:00"
+     },
+     {
+      "id": "2cd4b0fa-568b-4224-8ad0-52c1333f4c69",
+      "reviewers_count": 0,
+      "status": "Approved",
+      "title": "Review 2",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.516677+00:00"
+     },
+     {
+      "id": "a90d4f7f-aa3e-4453-b8b4-d7f5d01412eb",
+      "reviewers_count": 0,
+      "status": "Pending Review",
+      "title": "Review 1",
+      "type": "Shot Review",
+      "updated_at": "2026-10-30T13:02:22.512638+00:00"
+     }
+    ],
+    "rejected": 1
+   },
+   "schedule": {
+    "days_elapsed": 60,
+    "days_remaining": 45,
+    "days_total": 105,
+    "delivery_date": "2026-12-14",
+    "is_delayed": true,
+    "milestones": [
+     {
+      "date": "2026-08-31",
+      "id": "m1",
+      "name": "Plate Turnover & Ingest",
+      "status": "completed"
+     },
+     {
+      "date": "2026-09-26",
+      "id": "m2",
+      "name": "Rough Layout & Asset Conform",
+      "status": "in_progress"
+     },
+     {
+      "date": "2026-10-22",
+      "id": "m3",
+      "name": "Mid-Point Client Temp Screening",
+      "status": "upcoming"
+     },
+     {
+      "date": "2026-11-23",
+      "id": "m4",
+      "name": "90% Final Lighting & Comp Review",
+      "status": "upcoming"
+     },
+     {
+      "date": "2026-12-14",
+      "id": "m5",
+      "name": "Final 4K ACES Master Delivery",
+      "status": "upcoming"
+     }
+    ],
+    "next_deadline": {
+     "date": "2026-10-31",
+     "days_away": 1,
+     "title": "Task 3",
+     "type": "Task"
+    },
+    "start_date": "2026-08-31"
+   },
+   "shots": {
+    "by_status": {
+     "Approved": 2,
+     "Client Review": 0,
+     "Final": 0,
+     "In Progress": 3,
+     "Internal Review": 0,
+     "Not Started": 3,
+     "On Hold": 1,
+     "Pending Review": 1
+    },
+    "recent_shots": [
+     {
+      "code": "SH010",
+      "frame_count": 100,
+      "id": "ba6ffc3d-4d44-4f17-be73-0d6e5522db10",
+      "name": "Shot 10",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "https://www.warner-scott.net/"
+     },
+     {
+      "code": "SH009",
+      "frame_count": 100,
+      "id": "4263fc74-96b3-45f8-b937-601d86ee7003",
+      "name": "Shot 9",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "http://www.cunningham-bauer.biz/"
+     },
+     {
+      "code": "SH008",
+      "frame_count": 100,
+      "id": "87271ed7-4c66-47af-89e9-dbf51e0af489",
+      "name": "Shot 8",
+      "sequence_code": "SQ010",
+      "status": "Not Started",
+      "thumbnail_url": "http://king.info/"
+     },
+     {
+      "code": "SH007",
+      "frame_count": 100,
+      "id": "7170808a-fe3e-40c8-af78-c94758c83411",
+      "name": "Shot 7",
+      "sequence_code": "SQ010",
+      "status": "On Hold",
+      "thumbnail_url": "http://jordan.org/"
+     },
+     {
+      "code": "SH006",
+      "frame_count": 100,
+      "id": "65e8f963-5755-41a2-8bdc-b6b1e2ee11e2",
+      "name": "Shot 6",
+      "sequence_code": "SQ010",
+      "status": "Pending Review",
+      "thumbnail_url": "http://www.levy.biz/"
+     },
+     {
+      "code": "SH005",
+      "frame_count": 100,
+      "id": "3df3aec9-8f41-45fc-8351-7baa9d71e493",
+      "name": "Shot 5",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "https://www.martinez-walters.com/"
+     },
+     {
+      "code": "SH004",
+      "frame_count": 100,
+      "id": "09ff6da0-394a-45ad-a987-6ba700efd74d",
+      "name": "Shot 4",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "https://www.shelton-robbins.com/"
+     },
+     {
+      "code": "SH003",
+      "frame_count": 100,
+      "id": "9e1abc30-5461-43f1-9a7a-8dd02aeada44",
+      "name": "Shot 3",
+      "sequence_code": "SQ010",
+      "status": "In Progress",
+      "thumbnail_url": "http://moore-williams.org/"
+     }
+    ],
+    "total": 10
+   },
+   "summary": {
+    "approved_assets": 1,
+    "approved_reviews": 2,
+    "approved_shots": 2,
+    "changes_requested_reviews": 1,
+    "completed_tasks": 2,
+    "delivered_deliveries": 0,
+    "in_progress_assets": 2,
+    "in_progress_shots": 3,
+    "in_progress_tasks": 3,
+    "late_deliveries": 2,
+    "needs_revision_assets": 1,
+    "open_tasks": 2,
+    "overdue_tasks": 1,
+    "pending_reviews": 1,
+    "rejected_reviews": 1,
+    "shots_at_risk": 1,
+    "shots_completion_pct": 20,
+    "tasks_completion_pct": 25,
+    "total_assets": 4,
+    "total_deliveries": 3,
+    "total_reviews": 5,
+    "total_shots": 10,
+    "total_tasks": 8,
+    "upcoming_deliveries": 1
+   },
+   "tasks": {
+    "blocked": 1,
+    "completed": 2,
+    "critical": 2,
+    "in_progress": 3,
+    "open": 2,
+    "overdue": 1,
+    "recent_tasks": [
+     {
+      "code": "T008",
+      "department": "",
+      "id": "47eeb0af-7436-440c-96f3-09010fcc6d08",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "In Progress",
+      "title": "Task 8"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T007",
+      "department": "Lighting",
+      "due_date": "2026-10-10",
+      "id": "4d545828-fdf7-4d03-8b10-7a7cf1aab39c",
+      "is_overdue": true,
+      "priority": "Medium",
+      "status": "Approved",
+      "title": "Task 7"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T006",
+      "department": "Compositing",
+      "due_date": "2026-10-20",
+      "id": "694ec82b-2f05-4760-a4a9-ece1add4ce85",
+      "is_overdue": true,
+      "priority": "Low",
+      "status": "Approved",
+      "title": "Task 6"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T005",
+      "department": "Compositing",
+      "due_date": "2026-11-01",
+      "id": "4d4ccb83-f12c-4078-a8c9-9fc6da729c95",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "Pending Review",
+      "title": "Task 5"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T004",
+      "department": "Lighting",
+      "due_date": "2026-11-08",
+      "id": "7b060c08-870e-4eb2-ac5f-001687d3aded",
+      "is_overdue": false,
+      "priority": "High",
+      "status": "Blocked",
+      "title": "Task 4"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T003",
+      "department": "Lighting",
+      "due_date": "2026-10-31",
+      "id": "57e12b16-4405-4eec-a27b-4439147d45fe",
+      "is_overdue": false,
+      "priority": "Critical",
+      "status": "In Progress",
+      "title": "Task 3"
+     },
+     {
+      "assignee_name": "user@example.test",
+      "code": "T002",
+      "department": "Compositing",
+      "due_date": "2026-10-27",
+      "id": "d96a8714-28e1-4dec-af96-8b15c03133d1",
+      "is_overdue": true,
+      "priority": "High",
+      "status": "In Progress",
+      "title": "Task 2"
+     },
+     {
+      "code": "T001",
+      "department": "Compositing",
+      "due_date": "2026-11-04",
+      "id": "710eadb2-0839-4d53-9c59-2314579ba748",
+      "is_overdue": false,
+      "priority": "Medium",
+      "status": "Not Started",
+      "title": "Task 1"
+     }
+    ],
+    "review": 0,
+    "total": 8
+   },
+   "workload": {
+    "team_members": [
+     {
+      "assigned_count": 4,
+      "department": "Compositing",
+      "id": "user-4baeea1b-1312-4573-a1e3-79fc442846b7",
+      "in_progress_count": 2,
+      "name": "user@example.test",
+      "overdue_count": 2,
+      "role": "",
+      "workload_level": "overloaded"
+     },
+     {
+      "assigned_count": 2,
+      "department": "Lighting",
+      "id": "user-5351c718-86d6-40a1-9121-79fcdbf058c4",
+      "in_progress_count": 0,
+      "name": "user@example.test",
+      "overdue_count": 1,
+      "role": "",
+      "workload_level": "normal"
+     },
+     {
+      "assigned_count": 2,
+      "department": "Compositing",
+      "id": "unassigned",
+      "in_progress_count": 1,
+      "name": "Unassigned",
+      "overdue_count": 0,
+      "role": "",
+      "workload_level": "normal"
+     }
+    ]
+   }
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "75b250a8-5fc5-4ecf-861d-3128a52097fb"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/81b440c0-25d6-4790-b678-5acbaaae794c/dashboard/"
+  },
+  "status": 200
+ },
+ "dashboard_unknown": {
+  "body": {
+   "detail": "Not found.",
+   "error": {
+    "code": "not_found",
+    "request_id": "e3c8fbbe-f995-484f-b9e5-98e2e5e3332f"
+   }
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "e3c8fbbe-f995-484f-b9e5-98e2e5e3332f"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/00000000-0000-0000-0000-000000000000/dashboard/"
+  },
+  "status": 404
+ },
+ "project_activity": {
+  "body": {
+   "_results_total_in_page": 0,
+   "count": 0,
+   "next": null,
+   "previous": null,
+   "results": []
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "d5f889be-a7c5-41bc-8ba2-9640200a78f0"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/81b440c0-25d6-4790-b678-5acbaaae794c/activity"
+  },
+  "status": 200
+ },
+ "project_members": {
+  "body": {
+   "_results_total_in_page": 2,
+   "count": 2,
+   "results": [
+    {
+     "avatar_url": null,
+     "client_id": "",
+     "created_at": "2026-10-30T13:02:22.343657Z",
+     "department": "",
+     "department_id": "",
+     "email": "user@example.test",
+     "id": "d51dac87-8317-4792-bacb-26a62deb1b41",
+     "name": "user@example.test",
+     "projectId": "81b440c0-25d6-4790-b678-5acbaaae794c",
+     "project_code": "DSH",
+     "project_id": "81b440c0-25d6-4790-b678-5acbaaae794c",
+     "project_name": "Dashboard show",
+     "role": "Artist",
+     "role_id": null,
+     "roles": [
+      "Artist"
+     ],
+     "scope": "PROJECT",
+     "status": "active",
+     "team_id": "",
+     "updated_at": "2026-10-30T13:02:22.343663Z",
+     "userId": "4baeea1b-1312-4573-a1e3-79fc442846b7",
+     "user_id": "4baeea1b-1312-4573-a1e3-79fc442846b7",
+     "vendor_id": ""
+    },
+    {
+     "avatar_url": null,
+     "client_id": "",
+     "created_at": "2026-10-30T13:02:22.326829Z",
+     "department": "",
+     "department_id": "",
+     "email": "user@example.test",
+     "id": "a4f4e965-30f9-4ba5-8854-1e1f17453cd0",
+     "name": "user@example.test",
+     "projectId": "81b440c0-25d6-4790-b678-5acbaaae794c",
+     "project_code": "DSH",
+     "project_id": "81b440c0-25d6-4790-b678-5acbaaae794c",
+     "project_name": "Dashboard show",
+     "role": "Supervisor",
+     "role_id": null,
+     "roles": [
+      "Supervisor"
+     ],
+     "scope": "PROJECT",
+     "status": "active",
+     "team_id": "",
+     "updated_at": "2026-10-30T13:02:22.326836Z",
+     "userId": "5351c718-86d6-40a1-9121-79fcdbf058c4",
+     "user_id": "5351c718-86d6-40a1-9121-79fcdbf058c4",
+     "vendor_id": ""
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "67f5977f-adb8-4e9d-b07f-6421c8c84f0a"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/81b440c0-25d6-4790-b678-5acbaaae794c/members"
+  },
+  "status": 200
+ },
+ "project_pipeline": {
+  "body": {
+   "aspect_ratio": "2.39:1",
+   "color_space": "ACEScg",
+   "dcc_integrations": [
+    {
+     "name": "Foundry Nuke Studio",
+     "plugin": "StudioHub NukeBridge 2.4",
+     "version": "15.1v2"
+    },
+    {
+     "name": "SideFX Houdini",
+     "plugin": "StudioHub SolarisUSD 3.1",
+     "version": "20.5"
+    },
+    {
+     "name": "Autodesk Maya",
+     "plugin": "StudioHub MayaSync 2.0",
+     "version": "2025"
+    },
+    {
+     "name": "Epic Unreal Engine",
+     "plugin": "StudioHub LiveLink 1.8",
+     "version": "5.4.3"
+    }
+   ],
+   "fps": 24.0,
+   "ocio_config": "/studio/configs/aces_1.2/config.ocio",
+   "pipeline_steps": [],
+   "project_id": "81b440c0-25d6-4790-b678-5acbaaae794c",
+   "resolution": "4096x2160 (4K DCI)",
+   "usd_schema_version": "23.11"
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "fadfdf68-5beb-4ec8-aa5c-a0b37b23b583"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/81b440c0-25d6-4790-b678-5acbaaae794c/pipeline"
+  },
+  "status": 200
+ },
+ "project_resources": {
+  "body": {
+   "artists": [
+    {
+     "avatar": null,
+     "hours_logged": 0.0,
+     "id": "5351c718-86d6-40a1-9121-79fcdbf058c4",
+     "name": "user@example.test",
+     "role": "Lighting",
+     "task_count": 2
+    },
+    {
+     "avatar": null,
+     "hours_logged": 0.0,
+     "id": "4baeea1b-1312-4573-a1e3-79fc442846b7",
+     "name": "user@example.test",
+     "role": "Compositing",
+     "task_count": 4
+    }
+   ],
+   "departments": [
+    "Compositing",
+    "Lighting"
+   ],
+   "project_id": "81b440c0-25d6-4790-b678-5acbaaae794c",
+   "total_artists": 2
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "7b69cd84-3ac1-4e30-a108-14677b73de72"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/81b440c0-25d6-4790-b678-5acbaaae794c/resources"
+  },
+  "status": 200
+ },
+ "project_schedule": {
+  "body": {
+   "delivery_date": "2026-12-14",
+   "milestones": [
+    {
+     "date": "2026-10-18",
+     "id": "d7e9a23b-7de0-4a15-9b49-c0445f348e09",
+     "name": "Previs lock",
+     "status": "Completed"
+    },
+    {
+     "date": "2026-11-09",
+     "id": "108fa459-e906-44d3-9fc4-c187318e5911",
+     "name": "Turnover",
+     "status": "Pending"
+    }
+   ],
+   "project_id": "81b440c0-25d6-4790-b678-5acbaaae794c",
+   "start_date": "2026-08-31"
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "77c474c1-854d-45fe-a911-a0c38a19f735"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/81b440c0-25d6-4790-b678-5acbaaae794c/schedule"
+  },
+  "status": 200
+ },
+ "setup_delivery_cancel": {
+  "body": {
+   "cancellation_reason": "Not needed",
+   "checksums": {},
+   "client_answered_at": null,
+   "client_answered_by": null,
+   "client_answered_by_name": "",
+   "client_notes": "",
+   "client_status": "Pending",
+   "code": "DLV-DSH-0003",
+   "created_at": "2026-10-30T13:02:22.590621Z",
+   "delivery_destination": "",
+   "delivery_method": "S3",
+   "destination": null,
+   "destination_name": "",
+   "expires_at": "2026-10-28T00:00:00Z",
+   "has_passcode": false,
+   "has_revoked_content": false,
+   "id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+   "is_archived": false,
+   "manifest_data": {},
+   "name": "Cancelled delivery",
+   "notes": "",
+   "project": "81b440c0-25d6-4790-b678-5acbaaae794c",
+   "project_name": "Dashboard show",
+   "rejection_reason": "",
+   "revision_of": null,
+   "sent_at": null,
+   "signed_off_at": null,
+   "signed_off_by": null,
+   "signed_off_by_name": "",
+   "status": "Cancelled",
+   "total_frames": 0,
+   "total_size_bytes": 0,
+   "transfer_reference": "",
+   "updated_at": "2026-10-30T13:02:22.616118Z",
+   "versions": []
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "c8ec0f61-a3dc-43f7-bad9-97c9bf2ae031"
+  },
+  "request": {
+   "body": {
+    "reason": "Not needed"
+   },
+   "method": "POST",
+   "path": "/api/v1/deliveries/1139f282-ff06-4d87-97b0-599d2ab31d67/cancel/"
+  },
+  "status": 200
+ },
+ "setup_delivery_cancelled": {
+  "body": {
+   "client_id": null,
+   "client_notes": "",
+   "code": "DLV-DSH-0003",
+   "delivery_destination": "",
+   "delivery_method": "S3",
+   "destination_id": null,
+   "expires_at": "2026-10-28T00:00:00Z",
+   "id": "1139f282-ff06-4d87-97b0-599d2ab31d67",
+   "name": "Cancelled delivery",
+   "notes": "",
+   "project_id": "81b440c0-25d6-4790-b678-5acbaaae794c"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "19c64f40-fe84-49d9-b30b-40e216c9ae19"
+  },
+  "request": {
+   "body": {
+    "expires_at": "2026-10-28T00:00:00Z",
+    "name": "Cancelled delivery",
+    "project_id": "81b440c0-25d6-4790-b678-5acbaaae794c"
+   },
+   "method": "POST",
+   "path": "/api/v1/deliveries/"
+  },
+  "status": 201
+ },
+ "setup_delivery_late": {
+  "body": {
+   "client_id": null,
+   "client_notes": "",
+   "code": "DLV-DSH-0002",
+   "delivery_destination": "",
+   "delivery_method": "S3",
+   "destination_id": null,
+   "expires_at": "2026-10-25T00:00:00Z",
+   "id": "9a2fc2e9-4db3-491d-a7ac-19bf5afe0829",
+   "name": "Late delivery",
+   "notes": "",
+   "project_id": "81b440c0-25d6-4790-b678-5acbaaae794c"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "919ac2b2-3b93-479f-9f82-985de74e79e2"
+  },
+  "request": {
+   "body": {
+    "expires_at": "2026-10-25T00:00:00Z",
+    "name": "Late delivery",
+    "project_id": "81b440c0-25d6-4790-b678-5acbaaae794c"
+   },
+   "method": "POST",
+   "path": "/api/v1/deliveries/"
+  },
+  "status": 201
+ },
+ "setup_delivery_upcoming": {
+  "body": {
+   "client_id": null,
+   "client_notes": "",
+   "code": "DLV-DSH-0001",
+   "delivery_destination": "",
+   "delivery_method": "S3",
+   "destination_id": null,
+   "expires_at": "2026-11-13T00:00:00Z",
+   "id": "c19ed781-b430-42a1-9337-f736ed54c6f4",
+   "name": "Upcoming delivery",
+   "notes": "",
+   "project_id": "81b440c0-25d6-4790-b678-5acbaaae794c"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "e91ef42c-e722-4b40-880f-ea5790ec28e1"
+  },
+  "request": {
+   "body": {
+    "expires_at": "2026-11-13T00:00:00Z",
+    "name": "Upcoming delivery",
+    "project_id": "81b440c0-25d6-4790-b678-5acbaaae794c"
+   },
+   "method": "POST",
+   "path": "/api/v1/deliveries/"
+  },
+  "status": 201
+ },
+ "setup_member_artist": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-10-30T13:02:22.343657Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "d51dac87-8317-4792-bacb-26a62deb1b41",
+   "name": "user@example.test",
+   "projectId": "81b440c0-25d6-4790-b678-5acbaaae794c",
+   "project_code": "DSH",
+   "project_id": "81b440c0-25d6-4790-b678-5acbaaae794c",
+   "project_name": "Dashboard show",
+   "role": "Artist",
+   "role_id": null,
+   "roles": [
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-10-30T13:02:22.343663Z",
+   "userId": "4baeea1b-1312-4573-a1e3-79fc442846b7",
+   "user_id": "4baeea1b-1312-4573-a1e3-79fc442846b7",
+   "vendor_id": ""
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "90ce7381-b08e-42cb-87fa-eb1508bd22de"
+  },
+  "request": {
+   "body": {
+    "role": "Artist",
+    "user_id": "4baeea1b-1312-4573-a1e3-79fc442846b7"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/81b440c0-25d6-4790-b678-5acbaaae794c/members/"
+  },
+  "status": 201
+ },
+ "setup_member_sup": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-10-30T13:02:22.326829Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "a4f4e965-30f9-4ba5-8854-1e1f17453cd0",
+   "name": "user@example.test",
+   "projectId": "81b440c0-25d6-4790-b678-5acbaaae794c",
+   "project_code": "DSH",
+   "project_id": "81b440c0-25d6-4790-b678-5acbaaae794c",
+   "project_name": "Dashboard show",
+   "role": "Supervisor",
+   "role_id": null,
+   "roles": [
+    "Supervisor"
+   ],
+   "scope": "PROJECT",
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-10-30T13:02:22.326836Z",
+   "userId": "5351c718-86d6-40a1-9121-79fcdbf058c4",
+   "user_id": "5351c718-86d6-40a1-9121-79fcdbf058c4",
+   "vendor_id": ""
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "eb0b1cc0-a0c4-49e9-9d07-d4c00763e42f"
+  },
+  "request": {
+   "body": {
+    "role": "Supervisor",
+    "user_id": "5351c718-86d6-40a1-9121-79fcdbf058c4"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/81b440c0-25d6-4790-b678-5acbaaae794c/members/"
+  },
+  "status": 201
+ },
+ "setup_milestone_one": {
+  "body": {
+   "completed_at": null,
+   "completed_by": null,
+   "created_at": "2026-10-30T13:02:22.644777Z",
+   "delivery_package_id": null,
+   "due_date": "2026-11-09",
+   "id": "108fa459-e906-44d3-9fc4-c187318e5911",
+   "kind": "general",
+   "name": "Turnover",
+   "notes": "",
+   "order": 1,
+   "project": "81b440c0-25d6-4790-b678-5acbaaae794c",
+   "project_code": "DSH",
+   "project_name": "Dashboard show",
+   "status": "Pending",
+   "updated_at": "2026-10-30T13:02:22.644784Z"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "796dc451-d150-43b4-98bc-0e6f40d57927"
+  },
+  "request": {
+   "body": {
+    "due_date": "2026-11-09",
+    "name": "Turnover",
+    "order": 1,
+    "project_id": "81b440c0-25d6-4790-b678-5acbaaae794c"
+   },
+   "method": "POST",
+   "path": "/api/v1/scheduling/milestones/"
+  },
+  "status": 201
+ },
+ "setup_milestone_two": {
+  "body": {
+   "completed_at": null,
+   "completed_by": null,
+   "created_at": "2026-10-30T13:02:22.662163Z",
+   "delivery_package_id": null,
+   "due_date": "2026-10-18",
+   "id": "d7e9a23b-7de0-4a15-9b49-c0445f348e09",
+   "kind": "general",
+   "name": "Previs lock",
+   "notes": "",
+   "order": 0,
+   "project": "81b440c0-25d6-4790-b678-5acbaaae794c",
+   "project_code": "DSH",
+   "project_name": "Dashboard show",
+   "status": "Pending",
+   "updated_at": "2026-10-30T13:02:22.662169Z"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "959bc602-0c09-43af-9e66-961b696d2cd7"
+  },
+  "request": {
+   "body": {
+    "due_date": "2026-10-18",
+    "name": "Previs lock",
+    "order": 0,
+    "project_id": "81b440c0-25d6-4790-b678-5acbaaae794c"
+   },
+   "method": "POST",
+   "path": "/api/v1/scheduling/milestones/"
+  },
+  "status": 201
+ },
+ "setup_milestone_two_complete": {
+  "body": {
+   "completed_at": "2026-10-30T13:02:22.678119Z",
+   "completed_by": "1a5f5bb6-6904-40fb-8b5f-1951ed8eed32",
+   "created_at": "2026-10-30T13:02:22.662163Z",
+   "delivery_package_id": null,
+   "due_date": "2026-10-18",
+   "id": "d7e9a23b-7de0-4a15-9b49-c0445f348e09",
+   "kind": "general",
+   "name": "Previs lock",
+   "notes": "",
+   "order": 0,
+   "project": "81b440c0-25d6-4790-b678-5acbaaae794c",
+   "project_code": "DSH",
+   "project_name": "Dashboard show",
+   "status": "Completed",
+   "updated_at": "2026-10-30T13:02:22.680022Z"
+  },
+  "headers": {
+   "Allow": "POST, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "4fc1a1a8-6020-4076-8c7c-d9e8bdcfbdde"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/scheduling/milestones/d7e9a23b-7de0-4a15-9b49-c0445f348e09/complete/"
+  },
+  "status": 200
+ },
+ "setup_project": {
+  "body": {
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "DSH",
+   "color_space": "ACEScg",
+   "coordinator": null,
+   "delivery_date": "2026-12-14",
+   "description": "",
+   "fps": "24.000",
+   "id": "81b440c0-25d6-4790-b678-5acbaaae794c",
+   "name": "Dashboard show",
+   "resolution": "4096x2160 (4K DCI)",
+   "start_date": "2026-08-31",
+   "status": "In Progress",
+   "supervisor": null,
+   "thumbnail_url": "",
+   "type": "Feature Film",
+   "uuid": "81b440c0-25d6-4790-b678-5acbaaae794c",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": [],
+   "workflow_type": "standard"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "220a13c2-dcbd-44c9-bd38-68053cc7aedf"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "delivery_date": "2026-12-14",
+    "name": "Dashboard show",
+    "start_date": "2026-08-31",
+    "workflow_type": "standard"
+   },
+   "method": "POST",
+   "path": "/api/v1/projects/"
+  },
+  "status": 201
+ },
+ "setup_project_empty": {
+  "body": {
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "EMP",
+   "color_space": "ACEScg",
+   "coordinator": null,
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "id": "886fc543-b6f9-488c-a05c-1caf241e9cd3",
+   "name": "Empty",
+   "resolution": "4096x2160 (4K DCI)",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor": null,
+   "thumbnail_url": "",
+   "type": "Feature Film",
+   "uuid": "886fc543-b6f9-488c-a05c-1caf241e9cd3",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": [],
+   "workflow_type": "standard"
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "75803d12-8d2a-4401-8cff-426b7130f022"
+  },
+  "request": {
+   "body": {
+    "code": "<redacted>",
+    "name": "Empty",
+    "workflow_type": "standard"
+   },
+   "method": "POST",
+   "path": "/api/v1/projects/"
+  },
+  "status": 201
+ },
+ "setup_task_activity": {
+  "body": {
+   "code": [
+    "This field is required."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "3cd040ff-e498-4c56-863b-c3e8bcdabc45"
+   }
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "3cd040ff-e498-4c56-863b-c3e8bcdabc45"
+  },
+  "request": {
+   "body": {
+    "entity_code": "SH001",
+    "entity_id": "SH001",
+    "entity_type": "Shot",
+    "project": "81b440c0-25d6-4790-b678-5acbaaae794c",
+    "title": "Created through the API"
+   },
+   "method": "POST",
+   "path": "/api/v1/tasks/"
+  },
+  "status": 400
+ },
+ "statistics": {
+  "body": {
+   "approved_shots": 2,
+   "assets": 4,
+   "completed_tasks": 2,
+   "deliveries": 3,
+   "editorial": 0,
+   "in_progress_shots": 3,
+   "notes": 0,
+   "reviews": 5,
+   "sequences": 1,
+   "shots": 10,
+   "tasks": 8,
+   "versions": 0
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "b54cc34a-c1e1-449b-8bac-e04ac376852b"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/81b440c0-25d6-4790-b678-5acbaaae794c/statistics/"
+  },
+  "status": 200
+ },
+ "statistics_artist": {
+  "body": {
+   "approved_shots": 2,
+   "assets": 4,
+   "completed_tasks": 2,
+   "deliveries": 3,
+   "editorial": 0,
+   "in_progress_shots": 3,
+   "notes": 0,
+   "reviews": 5,
+   "sequences": 1,
+   "shots": 10,
+   "tasks": 8,
+   "versions": 0
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "6a6ce214-1647-4471-89bf-f8cb05919628"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/81b440c0-25d6-4790-b678-5acbaaae794c/statistics/"
+  },
+  "status": 200
+ },
+ "statistics_empty": {
+  "body": {
+   "approved_shots": 0,
+   "assets": 0,
+   "completed_tasks": 0,
+   "deliveries": 0,
+   "editorial": 0,
+   "in_progress_shots": 0,
+   "notes": 0,
+   "reviews": 0,
+   "sequences": 0,
+   "shots": 0,
+   "tasks": 0,
+   "versions": 0
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "bd32516d-6d04-4711-9aee-af451285f6a2"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/886fc543-b6f9-488c-a05c-1caf241e9cd3/statistics/"
+  },
+  "status": 200
+ },
+ "statistics_stranger": {
+  "body": {
+   "detail": "Not found.",
+   "error": {
+    "code": "not_found",
+    "request_id": "a49a040f-5594-4fd3-913b-5d6240b598b9"
+   }
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "a49a040f-5594-4fd3-913b-5d6240b598b9"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/81b440c0-25d6-4790-b678-5acbaaae794c/statistics/"
+  },
+  "status": 404
+ },
+ "summary": {
+  "body": {
+   "counts": {
+    "approved_shots": 2,
+    "assets": 4,
+    "completed_tasks": 2,
+    "deliveries": 3,
+    "editorial": 0,
+    "in_progress_shots": 3,
+    "notes": 0,
+    "reviews": 5,
+    "sequences": 1,
+    "shots": 10,
+    "tasks": 8,
+    "versions": 0
+   },
+   "project": {
+    "approved_shots": 0,
+    "aspect_ratio": "2.39:1",
+    "budget_usd": "0.00",
+    "client_contact_id": "",
+    "client_contact_name": "",
+    "client_id": "",
+    "client_name": "",
+    "code": "DSH",
+    "color_space": "ACEScg",
+    "coordinator_id": null,
+    "coordinator_name": "",
+    "created_at": "2026-10-30T13:02:22.309196Z",
+    "delivery_date": "2026-12-14",
+    "description": "",
+    "fps": "24.000",
+    "id": "81b440c0-25d6-4790-b678-5acbaaae794c",
+    "in_progress_shots": 0,
+    "name": "Dashboard show",
+    "project_code": "DSH",
+    "resolution": "4096x2160 (4K DCI)",
+    "start_date": "2026-08-31",
+    "status": "In Progress",
+    "supervisor_id": null,
+    "supervisor_name": "",
+    "thumbnail_url": "",
+    "total_assets": 0,
+    "total_shots": 0,
+    "type": "Feature Film",
+    "updated_at": "2026-10-30T13:02:22.309203Z",
+    "uuid": "81b440c0-25d6-4790-b678-5acbaaae794c",
+    "vendor_ids": [],
+    "vendor_names": [],
+    "vendor_team_ids": [],
+    "workflow_type": "standard"
+   },
+   "project_id": "81b440c0-25d6-4790-b678-5acbaaae794c"
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "d5dd84bf-e279-47a8-8a3b-f96df92b9de0"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/81b440c0-25d6-4790-b678-5acbaaae794c/summary"
+  },
+  "status": 200
+ },
+ "summary_artist": {
+  "body": {
+   "counts": {
+    "approved_shots": 2,
+    "assets": 4,
+    "completed_tasks": 2,
+    "deliveries": 3,
+    "editorial": 0,
+    "in_progress_shots": 3,
+    "notes": 0,
+    "reviews": 5,
+    "sequences": 1,
+    "shots": 10,
+    "tasks": 8,
+    "versions": 0
+   },
+   "project": {
+    "approved_shots": 0,
+    "aspect_ratio": "2.39:1",
+    "budget_usd": "0.00",
+    "client_contact_id": "",
+    "client_contact_name": "",
+    "client_id": "",
+    "client_name": "",
+    "code": "DSH",
+    "color_space": "ACEScg",
+    "coordinator_id": null,
+    "coordinator_name": "",
+    "created_at": "2026-10-30T13:02:22.309196Z",
+    "delivery_date": "2026-12-14",
+    "description": "",
+    "fps": "24.000",
+    "id": "81b440c0-25d6-4790-b678-5acbaaae794c",
+    "in_progress_shots": 0,
+    "name": "Dashboard show",
+    "project_code": "DSH",
+    "resolution": "4096x2160 (4K DCI)",
+    "start_date": "2026-08-31",
+    "status": "In Progress",
+    "supervisor_id": null,
+    "supervisor_name": "",
+    "thumbnail_url": "",
+    "total_assets": 0,
+    "total_shots": 0,
+    "type": "Feature Film",
+    "updated_at": "2026-10-30T13:02:22.309203Z",
+    "uuid": "81b440c0-25d6-4790-b678-5acbaaae794c",
+    "vendor_ids": [],
+    "vendor_names": [],
+    "vendor_team_ids": [],
+    "workflow_type": "standard"
+   },
+   "project_id": "81b440c0-25d6-4790-b678-5acbaaae794c"
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "17b2f10d-a992-4ee0-a472-b1d7d4fa49f5"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/81b440c0-25d6-4790-b678-5acbaaae794c/summary"
+  },
+  "status": 200
+ },
+ "summary_empty": {
+  "body": {
+   "counts": {
+    "approved_shots": 0,
+    "assets": 0,
+    "completed_tasks": 0,
+    "deliveries": 0,
+    "editorial": 0,
+    "in_progress_shots": 0,
+    "notes": 0,
+    "reviews": 0,
+    "sequences": 0,
+    "shots": 0,
+    "tasks": 0,
+    "versions": 0
+   },
+   "project": {
+    "approved_shots": 0,
+    "aspect_ratio": "2.39:1",
+    "budget_usd": "0.00",
+    "client_contact_id": "",
+    "client_contact_name": "",
+    "client_id": "",
+    "client_name": "",
+    "code": "EMP",
+    "color_space": "ACEScg",
+    "coordinator_id": null,
+    "coordinator_name": "",
+    "created_at": "2026-10-30T13:02:22.086101Z",
+    "delivery_date": null,
+    "description": "",
+    "fps": "24.000",
+    "id": "886fc543-b6f9-488c-a05c-1caf241e9cd3",
+    "in_progress_shots": 0,
+    "name": "Empty",
+    "project_code": "EMP",
+    "resolution": "4096x2160 (4K DCI)",
+    "start_date": null,
+    "status": "In Progress",
+    "supervisor_id": null,
+    "supervisor_name": "",
+    "thumbnail_url": "",
+    "total_assets": 0,
+    "total_shots": 0,
+    "type": "Feature Film",
+    "updated_at": "2026-10-30T13:02:22.086109Z",
+    "uuid": "886fc543-b6f9-488c-a05c-1caf241e9cd3",
+    "vendor_ids": [],
+    "vendor_names": [],
+    "vendor_team_ids": [],
+    "workflow_type": "standard"
+   },
+   "project_id": "886fc543-b6f9-488c-a05c-1caf241e9cd3"
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "64362213-fa96-40e2-b208-db71859eede6"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/886fc543-b6f9-488c-a05c-1caf241e9cd3/summary"
+  },
+  "status": 200
+ },
+ "summary_stranger": {
+  "body": {
+   "detail": "Project 81b440c0-25d6-4790-b678-5acbaaae794c not found.",
+   "error": {
+    "code": "not_found",
+    "request_id": "f688e1eb-ff02-4d03-990e-44fa3f5aea0c"
+   }
+  },
+  "headers": {
+   "Allow": "GET, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "f688e1eb-ff02-4d03-990e-44fa3f5aea0c"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/81b440c0-25d6-4790-b678-5acbaaae794c/summary"
+  },
+  "status": 404
+ }
+}
