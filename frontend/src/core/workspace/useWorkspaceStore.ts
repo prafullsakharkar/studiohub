@@ -32,6 +32,8 @@ interface WorkspaceStoreState {
 
   openTab: (entity: EntityReference, title?: string) => string;
   closeTab: (tabId: string) => void;
+  /** Forget every open tab and the stored copy (a different person may sign in on this browser next). */
+  reset: () => void;
   setActiveTabId: (tabId: string) => void;
   updateTabTitle: (tabId: string, title: string) => void;
   duplicateTab: (tabId: string) => void;
@@ -246,6 +248,16 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set, get) => ({
     pushToContextStack(entity, 'New Workspace Tab');
     workspacePersistence.save({ tabs: updatedTabs, activeTabId: newTabId, drawer: get().drawer });
     return newTabId;
+  },
+
+  reset: () => {
+    workspacePersistence.clear();
+    set({
+      tabs: [initialDefaultTab],
+      activeTabId: initialDefaultTab.id,
+      drawer: { isOpen: false, entity: null, activeTab: 'details', width: 480 },
+      peek: { isOpen: false, entity: null },
+    });
   },
 
   closeTab: (tabId) => {
