@@ -3,10 +3,13 @@ import { Navigate, Route, useParams } from 'react-router-dom';
 import { PermissionRoute } from '@/routes/PermissionRoute';
 ;
 ;
-import { PlatformAdminPage } from '@/modules/platform/pages/PlatformAdminPage';
-import { ApiHealthPage } from '@/modules/platform/pages/ApiHealthPage';
 import { PreserveQueryRedirect } from '@/routes/PreserveQueryRedirect';
-import { CatalogAdminPage } from '@/modules/catalog/CatalogAdminPage';
+import { lazyNamed } from '@/routes/lazyNamed';
+
+// Loaded on first use, one chunk each (see lazyNamed).
+const PlatformAdminPage = lazyNamed(() => import('@/modules/platform/pages/PlatformAdminPage'), 'PlatformAdminPage');
+const ApiHealthPage = lazyNamed(() => import('@/modules/platform/pages/ApiHealthPage'), 'ApiHealthPage');
+const CatalogAdminPage = lazyNamed(() => import('@/modules/catalog/CatalogAdminPage'), 'CatalogAdminPage');
 
 const CATALOG_TABS: Record<string, string> = {
   software: 'software',

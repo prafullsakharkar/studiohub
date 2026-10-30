@@ -1,9 +1,12 @@
 import React from 'react';
 import { Navigate, Route, useLocation } from 'react-router-dom';
 import { PermissionRoute } from '@/routes/PermissionRoute';
-import { AuditWorkspacePage } from '@/modules/audit/pages/AuditWorkspacePage';
-import { SystemLogsWorkspacePage } from '@/modules/audit/pages/SystemLogsWorkspacePage';
-import { JobsWorkspacePage } from '@/modules/audit/pages/JobsWorkspacePage';
+import { lazyNamed } from '@/routes/lazyNamed';
+
+// Loaded on first use, one chunk each (see lazyNamed).
+const AuditWorkspacePage = lazyNamed(() => import('@/modules/audit/pages/AuditWorkspacePage'), 'AuditWorkspacePage');
+const SystemLogsWorkspacePage = lazyNamed(() => import('@/modules/audit/pages/SystemLogsWorkspacePage'), 'SystemLogsWorkspacePage');
+const JobsWorkspacePage = lazyNamed(() => import('@/modules/audit/pages/JobsWorkspacePage'), 'JobsWorkspacePage');
 
 export const auditRoutePaths = [
   'audit',

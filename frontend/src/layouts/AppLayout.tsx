@@ -1,6 +1,6 @@
 import { ActiveTimerBanner } from '@/modules/tasks';
 import { useAuth } from '@/modules/auth';
-import React, { useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
@@ -106,7 +106,9 @@ const AppLayoutInner: React.FC = () => {
               containerWidth === 'contained' && "max-w-7xl mx-auto px-2 sm:px-4 lg:px-6"
             )}
           >
-            <Outlet />
+            <Suspense fallback={<div role="status" aria-live="polite" className="p-6 text-sm text-slate-400">Loading…</div>}>
+              <Outlet />
+            </Suspense>
           </div>
         </main>
       </div>
