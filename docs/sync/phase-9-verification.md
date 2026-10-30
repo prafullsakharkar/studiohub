@@ -1,6 +1,6 @@
 # Phase 9 — Publishing: verification
 
-Branch `sync/phase-9-publishing` (from `develop` after the Phase 8 merge, `ba5c1c33`), **not pushed, not merged**. No backend file changed. Backend requests added, proposed and unapplied: **CR-22**, **CR-23**, **CR-24**.
+Branch `sync/phase-9-publishing` (from `develop` after the Phase 8 merge, `ba5c1c33`), **not pushed, not merged**. Backend requests **CR-22**, **CR-23** and **CR-24** were approved and **applied** in one backend commit (`f20dc00e`, see §8); nothing is open from this phase.
 
 ## 1. Exit criteria
 
@@ -26,11 +26,11 @@ Live: `publishing` 3 tests on a fresh seed. Re-run on fresh seeds because the ha
 | Gate | Phase 8 | Now |
 |---|---|---|
 | `tsc --noEmit` | 0 | **0** |
-| Unit tests | 88 files / 744 | **90 files / 796** |
+| Unit tests | 88 files / 744 | **90 files / 798** |
 | Live tests | 11 files / 69 | **12 files / 72** |
 | `pnpm build` | OK | **OK** |
 | Biome (`src`) | 2 errors / 2316 warnings | **2 errors (the same two) / 2272 warnings** |
-| Clean `git worktree` | typecheck 0, 744/744 | **typecheck 0, 796/796** |
+| Clean `git worktree` | typecheck 0, 744/744 | **typecheck 0, 798/798** |
 | Net size (frontend) | | 35 files, +10,000 / −2,032 against `develop` (mostly the captured sample, the tests and the screens) |
 
 Mutation checks (break the code, expect a failure): the permission filter on the action bar, the required reason, a status in the action table, delete visibility by status, showing the legacy status word instead of `job_status`, sending the root's id instead of its code, showing a search box the route does not have, and an invented interface field.
@@ -64,8 +64,6 @@ Separate commit `67d78cd6` (9 files, −1,723 lines), unreachable from `main.tsx
 
 ## 6. Deferred / not done
 
-- **A project's export jobs, and a job's files** until CR-22: the project tab shows registered files and links to the jobs page; the job page has no Files tab.
-- **List filters on jobs** (status, tool, version, project) until CR-22.
 - **Checksum verification** (`verify_published_files`) runs on the server by hand or cron; there is no screen for it, and files show the checksum state they have.
 - **A file's history** (who deprecated or revoked it, when): the registry keeps it in a table the API does not expose; the file page shows when the status last changed.
 - **Validation rules** are managed in the admin only, by design (no API).
@@ -74,5 +72,17 @@ Separate commit `67d78cd6` (9 files, −1,723 lines), unreachable from `main.tsx
 
 ## 7. Questions for the owner
 
-1. **CR-22** is the one that matters: without it a project's tab cannot show its jobs and the jobs list cannot be filtered. Approve (the same shape as CR-17 and its delivery fix), defer or drop?
-2. **CR-23**: refuse deleting a job that has files or that ran (as for deliveries)? **CR-24**: validate the destination type?
+Answered: **CR-22 / CR-23 / CR-24** approved ("go") and applied (§8). Nothing is open from this phase.
+
+## 8. Follow-up: CR-22, CR-23 and CR-24 applied (one backend commit, targeted tests only)
+
+| Change | Where | Contract |
+|---|---|---|
+| the job list filters: `status` (stored or read words, any case), `job_status`, `dcc_tool`, `entity_type`, `project`/`project_id`, `version`/`version_id` (a non-id is a 400); rows carry `project_id`, the detail `version_id` | `api/filtersets/publish.py` (`PublishFilterSet`), `api/viewsets/publish.py`, `api/serializers/publish.py` | API-PUB-15 |
+| `DELETE` only for Pending and Cancelled jobs (409 `job_not_editable`), and never for a job that registered files refer to (409 `job_has_files`) | `api/viewsets/publish.py` (`perform_destroy`), `exceptions.py` | API-PUB-16 |
+| a destination's `type` is one of the seven (a saved row keeps its old value when sent back unchanged) | `api/serializers/destination.py` | API-PUB-17 |
+
+- **Tests:** `apps/publishing/tests/api/test_job_list_delete_type.py`, 18 tests; eight source changes were reverted in turn (status guard, files guard, `filterset_class`, list `project_id`, detail `version_id`, destination type, archived in Unpublished, tool case) and the file failed each time. The whole publishing app: **586 passed**; `ruff check apps/publishing` clean; `makemigrations --check` reports no changes. The full backend suite was **not** run.
+- **Samples:** `_flow.json` was captured again with new probes (`status` Queued/Published/Unpublished/Banana, `job_status`, tool in two cases, version and project under both spellings, a non-id version, delete of a Validated job). The destination `S3` probe now records the 400.
+- **Frontend:** the job list offers Status (stored words), Tool and Project filters; a project's tab shows **its export jobs and then its files**, both filtered on the server (the project is no column and no filter there); the job workspace has a **Files** tab (the files of the job's version, since the registry cannot filter by job; a job without a version says so). Contract tests rewritten to the new behaviour, two new unit tests (filters and scoped list; Files tab), each change mutation-checked (status key, tool key, project scope, version scope, project-tab jobs, and the `project_id` / `version_id` interface fields). Unit tests **798 / 90 files**, typecheck 0, build OK, Biome 0 errors in the files changed. `publishing.live` re-run against the changed backend (3/3) now also checks the filters, the ids and the delete rule.
+- **Still true:** there is no per-project route for jobs (`/api/organizations/projects/{id}/publishing/` is 404); the screens use `?project_id=`. The files registry cannot be filtered by export job (`export_job_id` is returned but not a filter), so the Files tab shows the version's files.
