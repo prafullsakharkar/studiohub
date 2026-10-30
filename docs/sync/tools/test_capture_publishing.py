@@ -243,6 +243,7 @@ def test_capture_publishing(django_user_model):
     # a second job that fails, is retried, and is unpublished
     j2 = call(pa, "jobs2_create", "POST", jobs, {"name": "Failing export", "project_id": pid, "version_id": str(v2.pk), "dcc_tool": "Maya"}).json().get("id")
     call(pa, "jobs2_validate", "POST", f"{jobs}{j2}/validate/", {})
+    call(pa, "jobs2_delete_validated", "DELETE", f"{jobs}{j2}/")  # refused since CR-23: only Pending and Cancelled
     call(pa, "jobs2_start", "POST", f"{jobs}{j2}/start-export/", {})
     call(pa, "jobs2_fail", "POST", f"{jobs}{j2}/fail/", {"reason": "Render node went away"})
     call(pa, "jobs2_detail_failed", "GET", f"{jobs}{j2}/")
@@ -259,7 +260,7 @@ def test_capture_publishing(django_user_model):
     call(pa, "jobs3_delete", "DELETE", f"{jobs}{j3}/")
     call(pa, "jobs3_gone", "GET", f"{jobs}{j3}/")
 
-    # ------------------------------------------------------------ lists and filter probes (unknown params are silently ignored)
+    # ------------------------------------------------------------ lists and filter probes (jobs filter since CR-22; unknown params are still silently ignored)
     call(pa, "jobs_list", "GET", jobs)
     call(ar, "jobs_list_artist", "GET", jobs)
     call(a, "jobs_list_admin", "GET", jobs)
@@ -273,7 +274,11 @@ def test_capture_publishing(django_user_model):
         for name, value in params:
             call(client, f"{prefix}_by_{name}_{re.sub('[^A-Za-z0-9]+', '', str(value))[:10]}", "GET", f"{base_url}{'&' if '?' in base_url else '?'}{name}={value}")
 
-    probe("fp_jobs", f"{jobs}?project_id={pid}", [("status", "Exported"), ("status", "Failed"), ("job_status", "Exported"), ("dcc_tool", "Nuke"), ("version_id", str(v1.pk)), ("entity_type", "Shot"), ("search", "Comp"), ("ordering", "name"), ("nonsense", "1")], pa)
+    probe("fp_jobs", f"{jobs}?project_id={pid}", [("status", "Exported"), ("status", "Failed"), ("status", "Queued"), ("status", "Published"), ("status", "Unpublished"), ("status", "Banana"), ("job_status", "Exported"), ("job_status", "pending"), ("dcc_tool", "Nuke"), ("dcc_tool", "nuke"), ("version_id", "nope"), ("entity_type", "Shot"), ("search", "Comp"), ("ordering", "name"), ("nonsense", "1")], pa)
+    call(pa, "fp_jobs_by_version_id_real", "GET", f"{jobs}?version_id={v1.pk}")
+    call(pa, "fp_jobs_by_version_real", "GET", f"{jobs}?version={v1.pk}")
+    call(a, "fp_jobs_by_project_real", "GET", f"{jobs}?project={pid}")
+    call(a, "fp_jobs_by_project_other", "GET", f"{jobs}?project={pid2}")
     call(a, "fp_jobs_all", "GET", jobs)
     call(a, "fp_jobs_by_project_id_other", "GET", f"{jobs}?project_id={pid2}")
     probe("fp_files", f"{reg}?project_id={pid}", [("version_id", str(v1.pk)), ("status", "Deprecated"), ("status", "Revoked"), ("role", "proxy"), ("storage_root", "PROJECTS"), ("latest", "true"), ("search", "plate"), ("ordering", "relative_path"), ("nonsense", "1")], pa)
