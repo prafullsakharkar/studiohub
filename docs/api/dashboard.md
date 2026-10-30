@@ -46,12 +46,12 @@ Sections and backend sources:
 | `shots` | `by_status` (7 canonical keys seeded at 0, unknown statuses pass through), 8 most-recent shots |
 | `tasks` | open/in_progress/blocked/review/completed/overdue buckets (case-insensitive mapping), 8 most-recent tasks |
 | `reviews` | pending/approved/changes_requested/rejected; `type` is derived as `"<entity_type> Review"` (the model has no screening-type column); `reviewers_count` = length of `reviewers` JSON |
-| `schedule` | project dates (same defaulting rule as the project-scoped schedule view: missing dates fall back to today/+180d); 5 milestones interpolated from real dates with statuses derived from real progress; `next_deadline` = nearest upcoming task due date, else nearest delivery expiry, else omitted |
+| `schedule` | project dates (same defaulting rule as the project-scoped schedule view: missing dates fall back to today/+180d); `milestones` = the project's own (Scheduling's `scheduling.project_milestones` provider, the same rows as `/organizations/projects/{id}/schedule`): `id`, `name`, `date`, and a `status` of `completed`, `in_progress`, `overdue` (open and past its date) or `upcoming`; empty when there are none (CR-30); `next_deadline` = nearest upcoming task due date, else nearest delivery expiry, else omitted |
 | `workload` | tasks grouped by assignee (unassigned bucketed as `Unassigned`); `overloaded` ≥5 assigned or ≥2 overdue, `high` ≥3 assigned |
-| `deliveries` | `DeliveryPackage`; `due_date` = `expires_at` date (`""` when unscheduled); delivered = delivered/approved/sent/accepted/complete |
+| `deliveries` | `DeliveryPackage`; `due_date` = `expires_at` date (`""` when unscheduled); delivered = delivered/approved/sent/accepted/complete/completed/signed off, whatever its date; late = not delivered and past its date; a Cancelled delivery is neither late nor upcoming, so `delivered + late + upcoming + cancelled = total` (CR-31) |
 | `activity` | latest 8 `audit.ChangeLog` rows attributed to the project by `(target_type, target_id)` match (bounded scan, `ACTIVITY_SCAN_LIMIT = 500`); falls back to recently-touched shots/tasks when nothing is recorded yet |
 
-Overdue = `due_date` past and status not completed/approved/done.
+Overdue = `due_date` past and status not completed/approved/done. The per-task `is_overdue` flag and the `overdue` count use this one rule (CR-31).
 
 ### Honest unknowns (never fabricated)
 

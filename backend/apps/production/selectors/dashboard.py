@@ -25,12 +25,18 @@ from django.utils import timezone
 from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.delivery_figures import delivery_figures
 from apps.production.selectors.rollups import ShotCurrentVersionSelector
+from apps.production.selectors.schedule_milestones import project_milestones
 
 
 class ProjectDashboardSelector(ProductionBaseSelector):
     """Read-only project dashboard aggregation."""
 
     METHODOLOGY_NOTE = "Weighted aggregate: 60% Approved Shots + 40% Completed Tasks"
+
+    # A delivery in one of these states is done, whatever its date (the stored word and the read word).
+    DELIVERED_STATUSES = frozenset(
+        {"delivered", "approved", "sent", "accepted", "complete", "completed", "signed off"}
+    )
 
     # Canonical shot-status keys, seeded with zeros so the shape is stable
     # even for projects that have no shots in a given bucket. Unknown
@@ -50,18 +56,6 @@ class ProjectDashboardSelector(ProductionBaseSelector):
     # done by matching (target_type, target_id) against the project's entity
     # ids). Bounded so a busy org cannot make the dashboard scan unbounded.
     ACTIVITY_SCAN_LIMIT = 500
-
-    # Milestone scaffolding: names mirror the frontend mock; dates
-    # interpolate the project's real start/delivery dates and statuses derive
-    # from the real overall progress. (The project-scoped schedule view now reads real
-    # milestones through the scheduling provider; this dashboard card still derives its own.)
-    MILESTONES = (
-        "Plate Turnover & Ingest",
-        "Rough Layout & Asset Conform",
-        "Mid-Point Client Temp Screening",
-        "90% Final Lighting & Comp Review",
-        "Final 4K ACES Master Delivery",
-    )
 
     # -- entry point ----------------------------------------------------
 
@@ -162,7 +156,6 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         )
         schedule = cls._schedule(
             project,
-            overall,
             task_stats["overdue"],
             delivery_stats["late"],
             today,
@@ -349,11 +342,11 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         return "open"
 
     @classmethod
-    def _is_task_overdue(cls, task, today: date, *, completed_only: bool = False) -> bool:
+    def _is_task_overdue(cls, task, today: date) -> bool:
+        """Past its date and not finished: the same rule as the ``overdue`` count (finished = completed, approved, done)."""
         if not task.due_date or task.due_date >= today:
             return False
-        done = {"completed"} if completed_only else {"completed", "approved", "done"}
-        return (task.status or "").lower() not in done
+        return (task.status or "").lower() not in {"completed", "approved", "done"}
 
     @classmethod
     def _task_stats(cls, status_rows, *, overdue: int, critical: int) -> dict[str, Any]:
@@ -380,7 +373,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
             "department": task.department or "",
             "status": task.status or "",
             "priority": task.priority or "",
-            "is_overdue": cls._is_task_overdue(task, today, completed_only=True),
+            "is_overdue": cls._is_task_overdue(task, today),
         }
         if task.code:
             item["code"] = task.code
@@ -448,25 +441,27 @@ class ProjectDashboardSelector(ProductionBaseSelector):
 
     @classmethod
     def _delivery_stats(cls, rows: list[dict[str, Any]], now) -> dict[str, Any]:
-        delivered = late = 0
+        """
+        ``delivered`` + ``late`` + ``upcoming`` + the cancelled ones = ``total``. A cancelled delivery
+        is neither late nor upcoming; a finished one (the stored word or the read word) is
+        delivered whatever its date.
+        """
+        delivered = late = cancelled = 0
         for delivery in rows:
             normalized = (delivery["status"] or "").lower()
             expires_at = delivery["expires_at"]
-            is_late = (
-                expires_at is not None
-                and expires_at < now
-                and normalized not in ("delivered", "approved", "sent", "complete")
-            )
-            if is_late:
-                late += 1
-            elif normalized in ("delivered", "approved", "sent", "accepted", "complete"):
+            if normalized == "cancelled":
+                cancelled += 1
+            elif normalized in cls.DELIVERED_STATUSES:
                 delivered += 1
+            elif expires_at is not None and expires_at < now:
+                late += 1
         total = len(rows)
         return {
             "total": total,
             "delivered": delivered,
             "late": late,
-            "upcoming": total - delivered - late,
+            "upcoming": total - delivered - late - cancelled,
         }
 
     # -- progress / schedule / workload -----------------------------------
@@ -484,8 +479,29 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         return 0
 
     @classmethod
+    def _milestones(cls, project, today: date) -> list[dict[str, Any]]:
+        """
+        The project's real milestones, read through the scheduling provider (API-SCH-11), empty when
+        there are none. ``status`` is ``completed``, ``in_progress``, ``overdue`` (open and past its
+        date) or ``upcoming``.
+        """
+        rows = []
+        for row in project_milestones(project):
+            word = (row["status"] or "").lower()
+            if word == "completed":
+                status = "completed"
+            elif row["date"] < today.isoformat():
+                status = "overdue"
+            elif word == "in progress":
+                status = "in_progress"
+            else:
+                status = "upcoming"
+            rows.append({"id": row["id"], "name": row["name"], "date": row["date"], "status": status})
+        return rows
+
+    @classmethod
     def _schedule(
-        cls, project, overall: int, overdue_tasks: int, late_deliveries: int,
+        cls, project, overdue_tasks: int, late_deliveries: int,
         today: date,
     ) -> dict[str, Any]:
         # Same defaulting rule as the project-scoped schedule view: a project
@@ -498,36 +514,7 @@ class ProjectDashboardSelector(ProductionBaseSelector):
         days_total = max(1, round(span_days))
         days_elapsed = max(0, round((today - start).days))
         days_remaining = max(0, days_total - days_elapsed)
-        total_seconds = span_days * 86400
-
-        def _point(fraction: float) -> str:
-            return (start + timedelta(seconds=round(total_seconds * fraction))).isoformat()
-
-        m2 = "completed" if overall >= 25 else "in_progress"
-        if overall >= 50:
-            m3 = "completed"
-        elif overall >= 30:
-            m3 = "in_progress"
-        else:
-            m3 = "upcoming"
-        names = cls.MILESTONES
-        milestones = [
-            {"id": "m1", "name": names[0], "date": start.isoformat(), "status": "completed"},
-            {"id": "m2", "name": names[1], "date": _point(0.25), "status": m2},
-            {"id": "m3", "name": names[2], "date": _point(0.5), "status": m3},
-            {
-                "id": "m4",
-                "name": names[3],
-                "date": _point(0.8),
-                "status": "completed" if overall >= 90 else "upcoming",
-            },
-            {
-                "id": "m5",
-                "name": names[4],
-                "date": end.isoformat(),
-                "status": "completed" if overall >= 100 else "upcoming",
-            },
-        ]
+        milestones = cls._milestones(project, today)
         payload: dict[str, Any] = {
             "start_date": start.isoformat(),
             "delivery_date": end.isoformat(),
