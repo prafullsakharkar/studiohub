@@ -100,7 +100,7 @@ class SchedulingResolveOverbookingView(MethodPermissionMixin, APIView):
                 visible_project_ids=ProductionBaseSelector.visible_project_ids(request),
             )
         except DjangoValidationError as exc:
-            return Response({"detail": str(exc)}, status=400)
+            return Response({"detail": " ".join(exc.messages)}, status=400)
         if result is None:
             return Response({"detail": "Not found."}, status=404)
         return Response(result)

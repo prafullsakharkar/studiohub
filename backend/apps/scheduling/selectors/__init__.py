@@ -94,7 +94,7 @@ class ResourceScheduleSelector(BaseSelector):
         )
         params = getattr(request, "query_params", None)
         if params is not None:
-            start, end = cls._window(params.get("start")), cls._window(params.get("end"))
+            start, end = cls._window(params.get("start"), "start"), cls._window(params.get("end"), "end")
             if start is not None:
                 queryset = queryset.filter(
                     end_time__gt=start
@@ -104,8 +104,8 @@ class ResourceScheduleSelector(BaseSelector):
         return queryset
 
     @staticmethod
-    def _window(raw: Any):
-        """An optional ``start`` / ``end`` query value: ISO 8601 with a time zone, else a 400."""
+    def _window(raw: Any, name: str = "start"):
+        """An optional ``start`` / ``end`` query value: ISO 8601 with a time zone, else a 400 naming the parameter."""
         if raw in (None, ""):
             return None
         from django.utils.dateparse import parse_datetime
@@ -118,11 +118,11 @@ class ResourceScheduleSelector(BaseSelector):
             parsed = None
         if parsed is None:
             raise ValidationError(
-                "Send start and end as ISO 8601 date-times, e.g. 2026-11-02T00:00:00Z."
+                {name: ["Send start and end as ISO 8601 date-times, e.g. 2026-11-02T00:00:00Z."]}
             )
         if is_naive(parsed):
             raise ValidationError(
-                "Send the time zone too: end the date-time with Z or add an offset such as +02:00."
+                {name: ["Send the time zone too: end the date-time with Z or add an offset such as +02:00."]}
             )
         return parsed
 
@@ -208,11 +208,4 @@ class MilestoneSelector(BaseSelector):
         visible = ProductionBaseSelector.visible_project_ids(request) if request is not None else []
         if visible is not None:  # None: platform admin, nothing narrows
             queryset = queryset.filter(project_id__in=visible)
-        params = getattr(request, "query_params", None)
-        project = params.get("project_id") if params is not None else None
-        if project:
-            try:
-                queryset = queryset.filter(project_id=UUID(project))
-            except ValueError:
-                return queryset.none()
         return queryset
