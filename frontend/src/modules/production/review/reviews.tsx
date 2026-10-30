@@ -47,7 +47,7 @@ export function useReviewsListConfig(scope?: { projectId: string }): DirectoryLi
 }
 
 /** The shot or asset a review is about; the id is cleared when the type changes. */
-const ReviewTargetField: React.FC<{ type: string; project: string; value: string; onChange: (id: string) => void; error?: string }> = ({ type, project, value, onChange, error }) => {
+export const ReviewTargetField: React.FC<{ type: string; project: string; value: string; onChange: (id: string) => void; error?: string }> = ({ type, project, value, onChange, error }) => {
   const previous = useRef(type);
   useEffect(() => {
     if (previous.current !== type) {

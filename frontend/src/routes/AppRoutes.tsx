@@ -35,7 +35,8 @@ import { RolesPage } from '@/modules/identity/pages/RolesPage';
 import { SecurityLogPage } from '@/modules/identity/pages/SecurityLogPage';
 import { PreserveQueryRedirect } from './PreserveQueryRedirect';
 
-import { WorkflowsPage } from '@/modules/workflows';
+import { AutomationFormPage, AutomationsPage, WorkflowFormPage, WorkflowsPage, WorkflowWorkspacePage } from '@/modules/workflows';
+import { MediaFormPage, MediaPage } from '@/modules/media';
 
 import { PlaylistFormPage, PlaylistsPage, PlaylistWorkspacePage } from '@/modules/playlists';
 import { ReviewFormPage, ReviewsPage, ReviewWorkspacePage } from '@/modules/reviews';
@@ -351,6 +352,24 @@ export const AppRoutes: React.FC = () => {
           <Route path="/playlists/:playlistId" element={<PlaylistWorkspacePage />} />
 
           <Route path="/workflows" element={<WorkflowsPage />} />
+
+          <Route path="/workflows/new" element={<WorkflowFormPage />} />
+
+          <Route path="/workflows/:id/edit" element={<WorkflowFormPage />} />
+
+          <Route path="/workflows/:workflowId" element={<WorkflowWorkspacePage />} />
+
+          <Route path="/automations" element={<AutomationsPage />} />
+
+          <Route path="/automations/new" element={<AutomationFormPage />} />
+
+          <Route path="/automations/:id/edit" element={<AutomationFormPage />} />
+
+          <Route path="/media" element={<MediaPage />} />
+
+          <Route path="/media/new" element={<MediaFormPage />} />
+
+          <Route path="/media/:id/edit" element={<MediaFormPage />} />
 
           <Route path="/scheduling" element={<SchedulingPage />} />
 
