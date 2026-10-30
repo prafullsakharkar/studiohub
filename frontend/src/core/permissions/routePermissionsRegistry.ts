@@ -314,6 +314,28 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
     name: 'Edit Review',
     permissions: ['review.update'],
   },
+  '/playlists/new': {
+    path: '/playlists/new',
+    name: 'Create Playlist',
+    permissions: ['playlist.create'],
+  },
+  '/playlists/:id/edit': {
+    path: '/playlists/:id/edit',
+    name: 'Edit Playlist',
+    permissions: ['playlist.update'],
+  },
+  '/playlists/:playlistId': {
+    path: '/playlists/:playlistId',
+    name: 'Playlist',
+    pagePermission: 'page.project.playlists',
+    permissions: ['playlist.view'],
+  },
+  '/playlists': {
+    path: '/playlists',
+    name: 'Playlists',
+    pagePermission: 'page.project.playlists',
+    permissions: ['playlist.view'],
+  },
   '/reviews/:reviewId': {
     path: '/reviews/:reviewId',
     name: 'Review',

@@ -37,6 +37,7 @@ import { PreserveQueryRedirect } from './PreserveQueryRedirect';
 
 import { WorkflowsPage } from '@/modules/workflows';
 
+import { PlaylistFormPage, PlaylistsPage, PlaylistWorkspacePage } from '@/modules/playlists';
 import { ReviewFormPage, ReviewsPage, ReviewWorkspacePage } from '@/modules/reviews';
 
 import { auditRoutes } from '@/modules/audit';
@@ -340,6 +341,14 @@ export const AppRoutes: React.FC = () => {
           <Route path="/reviews/:id/edit" element={<ReviewFormPage />} />
 
           <Route path="/reviews/:reviewId" element={<ReviewWorkspacePage />} />
+
+          <Route path="/playlists" element={<PlaylistsPage />} />
+
+          <Route path="/playlists/new" element={<PlaylistFormPage />} />
+
+          <Route path="/playlists/:id/edit" element={<PlaylistFormPage />} />
+
+          <Route path="/playlists/:playlistId" element={<PlaylistWorkspacePage />} />
 
           <Route path="/workflows" element={<WorkflowsPage />} />
 
