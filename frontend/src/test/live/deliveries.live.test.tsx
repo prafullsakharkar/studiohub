@@ -196,6 +196,8 @@ describe('cancelling from the list, and who only reads', () => {
     const b = await deliveriesApi.create({ name: `Bulk B ${uid}`, project_id: project });
     render(tree(pages, '/deliveries'));
     fireEvent.change(await screen.findByPlaceholderText(/Search name, code, client/, {}, { timeout: 20000 }), { target: { value: `Bulk` } });
+    // wait for the search to replace the list, or ticking a row races with the re-render that drops the selection
+    await waitFor(() => expect(screen.getAllByRole('checkbox', { name: /^Select DLV-/ })).toHaveLength(2), { timeout: 20000 });
     for (const d of [a, b]) fireEvent.click(await screen.findByRole('checkbox', { name: new RegExp(`^Select ${d.code}`) }, { timeout: 20000 }));
     fireEvent.click(screen.getByRole('button', { name: 'Cancel deliveries' }));
     const dialog = within(await screen.findByRole('dialog'));

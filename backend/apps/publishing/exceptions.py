@@ -31,3 +31,10 @@ class JobNotEditable(ConflictException):
 
     default_detail = "This export job can no longer be edited."
     default_code = "job_not_editable"
+
+
+class JobHasFiles(ConflictException):
+    """Registered files refer to this export job, so it is part of their record and stays (409, CR-23)."""
+
+    default_detail = "Registered files were produced by this export job, so it cannot be deleted."
+    default_code = "job_has_files"

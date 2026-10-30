@@ -220,3 +220,15 @@ Roles (*Q34*, **built**): `PLAN.md` §6; pinned by `tests/test_permission_matrix
 | Inactive storage root or file type | 400 |
 | Transition not in the map, or lost race | *Q27*: 409 `invalid_transition` |
 | Verification task cannot reach the mount | `checksum_state` unchanged, warning logged with root code only |
+
+## 8. Frontend sync, Phase 9 (CR-22 to CR-24)
+
+Found while wiring the screens to the running backend (`docs/sync/backend-change-requests.md`, "Phase 9 findings"); changes to sections 3 and 7 above:
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| API-PUB-15 (CR-22) | `GET /publishing/` | every filter but `search` and `ordering` was ignored; rows had no project id; the detail had no `version_id` | `PublishFilterSet`: `status` (stored words `Pending`, `Validated`, `Exported`, … or the read words `Queued`, `Publishing`, `Published`, `Unpublished`, any case; `Published` is Validated and Exported, `Unpublished` also takes archived jobs; an unknown status answers an empty list), `job_status` (stored words only), `dcc_tool`, `entity_type` (any case), and by id `version` / `version_id`, `project` / `project_id` (a value that is not an id is a 400). Rows carry `project_id`, the detail `version_id` |
+| API-PUB-16 (CR-23) | `DELETE /publishing/{id}/` | accepted in any status and for a job with registered files | only **Pending** and **Cancelled**; any other status is 409 `job_not_editable`; a job that registered files refer to (`export_job`) is 409 `job_has_files`. The job is the record of an export |
+| API-PUB-17 (CR-24) | `POST/PATCH /publishing/destinations/` | `type` accepted any text | one of the seven types (400 listing them). A row saved earlier keeps its old type when it is sent back unchanged |
+
+Tests: `apps/publishing/tests/api/test_job_list_delete_type.py`.

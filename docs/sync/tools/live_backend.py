@@ -121,7 +121,7 @@ def test_serve(live_server, django_user_model):
     # versions with registered files (the registry has no UI before Phase 9, so they are built here).
     from apps.deliveries.tests.helpers import _Request, storage_root
     from apps.production.models import ProjectMembership
-    from apps.production.tests.factories import ProjectFactory, VersionFactory
+    from apps.production.tests.factories import ProjectFactory, ShotFactory, VersionFactory
     from apps.publishing.services.files import PublishedFileService
 
     dlv_project = ProjectFactory.create(code="LIVEDLV", name="Live deliveries")
@@ -129,7 +129,8 @@ def test_serve(live_server, django_user_model):
         ProjectMembership.objects.create(user=member, project=dlv_project, status="active", role="Artist")
     dlv_versions = []
     for n in range(1, 5):
-        version = VersionFactory.create(project=dlv_project, code=f"LDV{n:03d}", status="Approved", is_published=True)
+        shot = ShotFactory.create(project=dlv_project, code=f"LSH{n:03d}", name=f"Live shot {n}")
+        version = VersionFactory.create(project=dlv_project, code=f"LDV{n:03d}", status="Approved", is_published=True, shot=shot)
         PublishedFileService.register(
             actor=manager,
             request=_Request(manager),

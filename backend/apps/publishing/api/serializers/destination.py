@@ -50,6 +50,13 @@ class DestinationListSerializer(serializers.ModelSerializer[PublishDestination])
             raise serializers.ValidationError("A destination with this name already exists.")
         return value
 
+    def validate_type(self, value):
+        # One of the seven types (CR-24). A row saved before the check keeps its old value when it is sent back unchanged.
+        allowed = [choice for choice, _label in PublishDestination.TYPE_CHOICES]
+        if value in allowed or (self.instance is not None and value == self.instance.destination_type):
+            return value
+        raise serializers.ValidationError(f"Must be one of: {', '.join(allowed)}.")
+
     @staticmethod
     def _clear_other_defaults(validated_data, *, keep=None):
         """One destination is the default: making one the default clears the previous one."""

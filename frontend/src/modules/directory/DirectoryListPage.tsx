@@ -103,7 +103,9 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
           <p className="text-xs text-slate-400 mt-1">{config.subtitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <SearchInput placeholder={config.searchPlaceholder} value={list.search} onChange={(e) => list.setSearch(e.target.value)} onClear={() => list.setSearch('')} aria-label={`Search ${config.title.toLowerCase()}`} className="w-56" />
+          {config.searchable !== false && (
+            <SearchInput placeholder={config.searchPlaceholder} value={list.search} onChange={(e) => list.setSearch(e.target.value)} onClear={() => list.setSearch('')} aria-label={`Search ${config.title.toLowerCase()}`} className="w-56" />
+          )}
           {config.filters?.filter((filter) => !(config.scope && filter.key in config.scope)).map((filter) => (
             <FilterSelect key={filter.key} filter={filter} value={String(list.filters[filter.key] ?? '')} onChange={(value) => list.setFilter(filter.key, value)} />
           ))}
