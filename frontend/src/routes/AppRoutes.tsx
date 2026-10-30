@@ -14,7 +14,7 @@ import { ClientsPage, ClientCreatePage, ClientEditPage, ClientWorkspacePage } fr
 
 import { VendorsPage, VendorCreatePage, VendorEditPage, VendorWorkspacePage } from '@/modules/vendors';
 
-import { PublishingPage } from '@/modules/publishing';
+import { BulkRegisterPage, PublishDestinationFormPage, PublishDestinationsPage, PublishedFileFormPage, PublishedFilePage, PublishedFilesPage, PublishFormPage, PublishingPage, PublishWorkspacePage, StorageRootFormPage, StorageRootsPage } from '@/modules/publishing';
 
 import { SchedulingPage } from '@/modules/scheduling';
 
@@ -330,6 +330,32 @@ export const AppRoutes: React.FC = () => {
           <Route path="/versions/:versionId" element={<VersionWorkspacePage />} />
 
           <Route path="/publishing" element={<PublishingPage />} />
+
+          <Route path="/publishing/new" element={<PublishFormPage />} />
+
+          <Route path="/publishing/files" element={<PublishedFilesPage />} />
+
+          <Route path="/publishing/files/new" element={<PublishedFileFormPage />} />
+
+          <Route path="/publishing/files/bulk" element={<BulkRegisterPage />} />
+
+          <Route path="/publishing/files/:fileId" element={<PublishedFilePage />} />
+
+          <Route path="/publishing/storage-roots" element={<StorageRootsPage />} />
+
+          <Route path="/publishing/storage-roots/new" element={<StorageRootFormPage />} />
+
+          <Route path="/publishing/storage-roots/:id/edit" element={<StorageRootFormPage />} />
+
+          <Route path="/publishing/destinations" element={<PublishDestinationsPage />} />
+
+          <Route path="/publishing/destinations/new" element={<PublishDestinationFormPage />} />
+
+          <Route path="/publishing/destinations/:id/edit" element={<PublishDestinationFormPage />} />
+
+          <Route path="/publishing/:id/edit" element={<PublishFormPage />} />
+
+          <Route path="/publishing/:publishId" element={<PublishWorkspacePage />} />
 
           <Route path="/deliveries" element={<DeliveriesPage />} />
 

@@ -65,6 +65,8 @@ export interface DirectoryListConfig<T extends { id: string }> {
   rowName: (row: T) => string;
   defaultOrdering: string;
   searchPlaceholder: string;
+  /** False when the route has no search (the box would do nothing). Default true. */
+  searchable?: boolean;
   filters?: ReadonlyArray<ListFilter>;
   /** Routes. */
   basePath: string;
