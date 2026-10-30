@@ -27,7 +27,7 @@ export interface FieldGate {
 
 export type FieldDef = FieldGate &
   (
-    | { kind: 'text' | 'textarea' | 'email' | 'url' | 'tel' | 'number' | 'date'; name: string; label: string; required?: boolean; hint?: string; maxLength?: number; /** Numbers: must be greater than zero. */ positive?: boolean }
+    | { kind: 'text' | 'textarea' | 'email' | 'url' | 'tel' | 'number' | 'date' | 'datetime'; name: string; label: string; required?: boolean; hint?: string; maxLength?: number; /** Numbers: must be greater than zero. */ positive?: boolean }
     | { kind: 'select'; name: string; label: string; options: ReadonlyArray<{ value: string; label: string }>; required?: boolean; hint?: string }
     | { kind: 'checkbox'; name: string; label: string }
     /** A JSON document typed as text: validated on the form, sent parsed, shown pretty-printed. Blank sends an empty array or object. */

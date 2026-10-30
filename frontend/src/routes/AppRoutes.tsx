@@ -16,7 +16,7 @@ import { VendorsPage, VendorCreatePage, VendorEditPage, VendorWorkspacePage } fr
 
 import { BulkRegisterPage, PublishDestinationFormPage, PublishDestinationsPage, PublishedFileFormPage, PublishedFilePage, PublishedFilesPage, PublishFormPage, PublishingPage, PublishWorkspacePage, StorageRootFormPage, StorageRootsPage } from '@/modules/publishing';
 
-import { SchedulingPage } from '@/modules/scheduling';
+import { BookingFormPage, BookingsPage, EventFormPage, EventsPage, HolidayFormPage, HolidaysPage, LeaveFormPage, LeavesPage, MilestoneFormPage, MilestonesPage, ResourceFormPage, ResourcesPage, ResourceWorkspacePage, SchedulingCalendarPage, SchedulingCapacityPage, WorkCalendarFormPage, WorkCalendarsPage } from '@/modules/scheduling_new';
 
 import { TeamsListPage, TeamWorkspacePage, CreateTeamPage, EditTeamPage } from '@/modules/teams';
 
@@ -407,7 +407,30 @@ export const AppRoutes: React.FC = () => {
 
           <Route path="/media/:id/edit" element={<MediaFormPage />} />
 
-          <Route path="/scheduling" element={<SchedulingPage />} />
+          <Route path="/scheduling" element={<SchedulingCalendarPage />} />
+          <Route path="/scheduling/capacity" element={<SchedulingCapacityPage />} />
+          <Route path="/scheduling/resources" element={<ResourcesPage />} />
+          <Route path="/scheduling/resources/new" element={<ResourceFormPage />} />
+          <Route path="/scheduling/resources/:id/edit" element={<ResourceFormPage />} />
+          <Route path="/scheduling/resources/:resourceId" element={<ResourceWorkspacePage />} />
+          <Route path="/scheduling/bookings" element={<BookingsPage />} />
+          <Route path="/scheduling/bookings/new" element={<BookingFormPage />} />
+          <Route path="/scheduling/bookings/:id/edit" element={<BookingFormPage />} />
+          <Route path="/scheduling/leaves" element={<LeavesPage />} />
+          <Route path="/scheduling/leaves/new" element={<LeaveFormPage />} />
+          <Route path="/scheduling/leaves/:id/edit" element={<LeaveFormPage />} />
+          <Route path="/scheduling/events" element={<EventsPage />} />
+          <Route path="/scheduling/events/new" element={<EventFormPage />} />
+          <Route path="/scheduling/events/:id/edit" element={<EventFormPage />} />
+          <Route path="/scheduling/milestones" element={<MilestonesPage />} />
+          <Route path="/scheduling/milestones/new" element={<MilestoneFormPage />} />
+          <Route path="/scheduling/milestones/:id/edit" element={<MilestoneFormPage />} />
+          <Route path="/scheduling/holidays" element={<HolidaysPage />} />
+          <Route path="/scheduling/holidays/new" element={<HolidayFormPage />} />
+          <Route path="/scheduling/holidays/:id/edit" element={<HolidayFormPage />} />
+          <Route path="/scheduling/calendars" element={<WorkCalendarsPage />} />
+          <Route path="/scheduling/calendars/new" element={<WorkCalendarFormPage />} />
+          <Route path="/scheduling/calendars/:id/edit" element={<WorkCalendarFormPage />} />
 
           <Route path="/calendar" element={<PreserveQueryRedirect to="/scheduling" />} />
 

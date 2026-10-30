@@ -3,6 +3,21 @@ import type { FieldDef } from './types';
 
 export type Values = Record<string, string | boolean>;
 
+const pad = (n: number) => String(n).padStart(2, '0');
+
+/** A moment from the API (UTC, `Z`) as the browser's local `datetime-local` text; '' when it is not a date. */
+export function toLocalInput(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** The local `datetime-local` text as a UTC instant with a zone, which is what the scheduling API demands (a naive date-time is a 400). */
+export function fromLocalInput(text: string): string {
+  const d = new Date(text);
+  return Number.isNaN(d.getTime()) ? text : d.toISOString();
+}
+
 export const blank = (field: FieldDef): string | boolean => field.initial ?? (field.kind === 'checkbox' ? false : '');
 
 /** Whether a field takes part in the form right now (see `visibleWhen`). */
@@ -44,7 +59,8 @@ export function buildSchema(fields: ReadonlyArray<FieldDef>) {
 export function wireValue(field: FieldDef, value: string | boolean): unknown {
   if (field.kind === 'checkbox') return value;
   if (field.kind === 'json') return value === '' ? (field.shape === 'array' ? [] : {}) : JSON.parse(String(value));
-  if (value === '') return field.kind === 'number' || field.kind === 'date' || field.kind === 'entity' ? null : '';
+  if (value === '') return field.kind === 'number' || field.kind === 'date' || field.kind === 'datetime' || field.kind === 'entity' ? null : '';
+  if (field.kind === 'datetime') return fromLocalInput(String(value));
   return field.kind === 'number' ? Number(value) : value;
 }
 
@@ -53,6 +69,7 @@ export const fromRow = (fields: ReadonlyArray<FieldDef>, row: Record<string, unk
     fields.map((f) => {
       const value = row[f.rowKey ?? f.name];
       if (f.kind === 'json') return [f.name, value === null || value === undefined ? '' : JSON.stringify(value, null, 2)];
+      if (f.kind === 'datetime') return [f.name, typeof value === 'string' ? toLocalInput(value) : ''];
       return [f.name, f.kind === 'checkbox' ? Boolean(value) : value === null || value === undefined ? '' : String(value)];
     })
   );
