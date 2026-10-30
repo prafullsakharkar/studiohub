@@ -2,8 +2,10 @@
 Feature Flag ViewSet.
 """
 
+from django.utils.dateparse import parse_datetime
 from rest_framework import mixins
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from apps.core.permissions.base import IsAuthenticatedPermission
@@ -58,7 +60,7 @@ class FeatureFlagViewSet(
             request=self.request,
             view=self,
         )
-        return self.filter_class(queryset, data=self.request.query_params).queryset
+        return self.filter_class(queryset, data=self.request.query_params).qs
 
     @action(detail=True, methods=["post"])
     def enable(self, request, pk=None):
@@ -84,7 +86,27 @@ class FeatureFlagViewSet(
         Schedule a feature flag.
         """
         instance = self.get_object()
-        start_date = request.data.get("start_date")
-        end_date = request.data.get("end_date")
+        start_date = self._schedule_date(request.data, "start_date")
+        end_date = self._schedule_date(request.data, "end_date")
+        if end_date <= start_date:
+            raise ValidationError({"end_date": ["End must be after the start."]})
         self.service_class.schedule_flag(instance, start_date, end_date)
         return Response({"status": "scheduled"})
+
+    @staticmethod
+    def _schedule_date(data, name):
+        """A date-time with a zone: a missing, unparseable or zone-less value is a 400 naming the field."""
+        raw = data.get(name)
+        if raw in (None, ""):
+            raise ValidationError({name: ["This field is required."]})
+        try:
+            value = parse_datetime(str(raw))
+        except ValueError:
+            value = None
+        if value is None:
+            raise ValidationError({name: ["Enter a valid date and time."]})
+        if value.tzinfo is None:
+            raise ValidationError(
+                {name: ["Include a time zone, for example 2026-12-01T09:00:00Z."]}
+            )
+        return value

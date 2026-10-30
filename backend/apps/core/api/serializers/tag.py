@@ -2,9 +2,13 @@
 Tag API serializers.
 """
 
+import re
+
 from rest_framework import serializers
 
 from apps.core.models.tag import Tag
+
+HEX_COLOR = re.compile(r"^#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$")
 
 
 class TagSerializer(serializers.ModelSerializer[Tag]):
@@ -38,6 +42,22 @@ class TagSerializer(serializers.ModelSerializer[Tag]):
         )
 
 
+class TagWriteSerializer(TagSerializer):
+    """Checks shared by the create and update bodies."""
+
+    def validate_color(self, value):
+        if value and not HEX_COLOR.match(value):
+            raise serializers.ValidationError("Enter a hex colour such as #3366ff.")
+        return value
+
+    def validate(self, attrs):
+        # Whether a tag is a system tag is for a platform administrator to say; anyone else's value is ignored.
+        request = self.context.get("request")
+        if not getattr(getattr(request, "user", None), "is_superuser", False):
+            attrs.pop("is_system", None)
+        return super().validate(attrs)
+
+
 class TagListSerializer(TagSerializer):
     """
     Serializer for Tag list.
@@ -56,7 +76,7 @@ class TagDetailSerializer(TagSerializer):
         pass
 
 
-class TagCreateSerializer(TagSerializer):
+class TagCreateSerializer(TagWriteSerializer):
     """
     Serializer for Tag creation.
     """
@@ -67,8 +87,6 @@ class TagCreateSerializer(TagSerializer):
             for f in TagSerializer.Meta.fields
             if f
             not in (
-                "id",
-                "uuid",
                 "created_at",
                 "updated_at",
                 "created_by",
@@ -78,13 +96,15 @@ class TagCreateSerializer(TagSerializer):
         )
 
 
-class TagUpdateSerializer(TagSerializer):
+class TagUpdateSerializer(TagWriteSerializer):
     """
     Serializer for Tag update.
     """
 
     class Meta(TagSerializer.Meta):
         fields = (
+            "id",
+            "uuid",
             "name",
             "description",
             "color",

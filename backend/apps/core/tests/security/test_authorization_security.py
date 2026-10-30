@@ -31,8 +31,8 @@ class TestAuthorizationSecurity:
         assert response.status_code in [401, 403]
 
     @pytest.mark.django_db
-    def test_authenticated_user_can_create_tag(self):
-        """Test that any authenticated user can create a tag."""
+    def test_authenticated_user_cannot_create_tag(self):
+        """Creating a tag is platform settings administration (CR-28): a signed-in user without it is refused."""
         from rest_framework.test import APIClient
 
         client = APIClient()
@@ -46,8 +46,7 @@ class TestAuthorizationSecurity:
         }
         response = client.post(url, data)
 
-        # TagViewSet only requires authentication, not staff membership
-        assert response.status_code == 201
+        assert response.status_code == 403
 
     @pytest.mark.django_db
     def test_staff_user_can_create_tag(self):

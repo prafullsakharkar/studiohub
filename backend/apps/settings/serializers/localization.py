@@ -37,3 +37,8 @@ class LocalizationSerializer(serializers.ModelSerializer[Localization]):
             "created_at",
             "updated_at",
         )
+
+    def validate_week_start(self, value):
+        if value not in (0, 1):
+            raise serializers.ValidationError("Week start is 0 (Sunday) or 1 (Monday).")
+        return value

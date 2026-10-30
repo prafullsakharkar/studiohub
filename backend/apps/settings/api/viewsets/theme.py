@@ -4,6 +4,7 @@ Theme ViewSet.
 
 from rest_framework import mixins
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from apps.core.permissions.base import IsAuthenticatedPermission
@@ -56,7 +57,18 @@ class ThemeViewSet(
             request=self.request,
             view=self,
         )
-        return self.filter_class(queryset, data=self.request.query_params).queryset
+        return self.filter_class(queryset, data=self.request.query_params).qs
+
+    def perform_destroy(self, instance):
+        """The last active theme stays: the studio is never left without one."""
+        if (
+            instance.is_active
+            and not self.get_queryset().filter(is_active=True).exclude(pk=instance.pk).exists()
+        ):
+            raise ValidationError(
+                {"detail": "The last active theme cannot be deleted. Activate another first."}
+            )
+        super().perform_destroy(instance)
 
     @action(detail=True, methods=["post"])
     def activate(self, request, pk=None):
