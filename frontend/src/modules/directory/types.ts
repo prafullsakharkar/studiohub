@@ -17,6 +17,8 @@ export interface FieldGate {
   permission?: string;
   /** Show (and send) the field only while this holds, e.g. the shot picker only when the entity type is Shot. */
   visibleWhen?: (values: Record<string, string | boolean>) => boolean;
+  /** Show the field only while creating (a value the server never reports back, so an edit form could not show it). */
+  onlyOnCreate?: boolean;
   /** Value of the field on a NEW record (a form can also be pre-filled from the query string). */
   initial?: string | boolean;
   /** The row property that holds the saved value when it is not the write name (a write takes `project`, a read has `project_id`). */
@@ -28,6 +30,8 @@ export type FieldDef = FieldGate &
     | { kind: 'text' | 'textarea' | 'email' | 'url' | 'tel' | 'number' | 'date'; name: string; label: string; required?: boolean; hint?: string; maxLength?: number; /** Numbers: must be greater than zero. */ positive?: boolean }
     | { kind: 'select'; name: string; label: string; options: ReadonlyArray<{ value: string; label: string }>; required?: boolean; hint?: string }
     | { kind: 'checkbox'; name: string; label: string }
+    /** A JSON document typed as text: validated on the form, sent parsed, shown pretty-printed. Blank sends an empty array or object. */
+    | { kind: 'json'; name: string; label: string; shape: 'array' | 'object'; required?: boolean; hint?: string }
     | { kind: 'entity'; name: string; label: string; required?: boolean; render: (props: EntityFieldRenderProps) => React.ReactNode }
   );
 
@@ -64,8 +68,8 @@ export interface DirectoryListConfig<T extends { id: string }> {
   filters?: ReadonlyArray<ListFilter>;
   /** Routes. */
   basePath: string;
-  /** Where the first column links to. Default: the detail page `${basePath}/${id}`. */
-  rowLink?: (row: T) => string;
+  /** Where the first column links to. Default: the detail page `${basePath}/${id}`; null for a list with no detail page (it shows as text). */
+  rowLink?: (row: T) => string | null;
   /** Permission code that shows the create/edit/delete controls. */
   managePermission: string;
   /** Creating is its own permission when it differs (an artist updates tasks but cannot create them). */

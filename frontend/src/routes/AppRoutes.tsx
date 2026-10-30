@@ -35,15 +35,17 @@ import { RolesPage } from '@/modules/identity/pages/RolesPage';
 import { SecurityLogPage } from '@/modules/identity/pages/SecurityLogPage';
 import { PreserveQueryRedirect } from './PreserveQueryRedirect';
 
-import { WorkflowsPage } from '@/modules/workflows';
+import { AutomationFormPage, AutomationsPage, WorkflowFormPage, WorkflowsPage, WorkflowWorkspacePage } from '@/modules/workflows';
+import { MediaFormPage, MediaPage } from '@/modules/media';
 
-import { ReviewsPage } from '@/modules/reviews';
+import { PlaylistFormPage, PlaylistsPage, PlaylistWorkspacePage } from '@/modules/playlists';
+import { ReviewFormPage, ReviewsPage, ReviewWorkspacePage } from '@/modules/reviews';
 
 import { auditRoutes } from '@/modules/audit';
 
 import { AssetFormPage, AssetsPage, AssetWorkspacePage } from '@/modules/assets';
 
-import { VersionsListPage, VersionWorkspacePage } from '@/modules/versions';
+import { VersionFormPage, VersionsListPage, VersionWorkspacePage } from '@/modules/versions';
 
 import { ShotFormPage, ShotsPage, ShotWorkspacePage } from '@/modules/shots';
 
@@ -321,6 +323,10 @@ export const AppRoutes: React.FC = () => {
 
           <Route path="/versions" element={<VersionsListPage />} />
 
+          <Route path="/versions/new" element={<VersionFormPage />} />
+
+          <Route path="/versions/:id/edit" element={<VersionFormPage />} />
+
           <Route path="/versions/:versionId" element={<VersionWorkspacePage />} />
 
           <Route path="/publishing" element={<PublishingPage />} />
@@ -331,7 +337,39 @@ export const AppRoutes: React.FC = () => {
 
           <Route path="/reviews" element={<ReviewsPage />} />
 
+          <Route path="/reviews/new" element={<ReviewFormPage />} />
+
+          <Route path="/reviews/:id/edit" element={<ReviewFormPage />} />
+
+          <Route path="/reviews/:reviewId" element={<ReviewWorkspacePage />} />
+
+          <Route path="/playlists" element={<PlaylistsPage />} />
+
+          <Route path="/playlists/new" element={<PlaylistFormPage />} />
+
+          <Route path="/playlists/:id/edit" element={<PlaylistFormPage />} />
+
+          <Route path="/playlists/:playlistId" element={<PlaylistWorkspacePage />} />
+
           <Route path="/workflows" element={<WorkflowsPage />} />
+
+          <Route path="/workflows/new" element={<WorkflowFormPage />} />
+
+          <Route path="/workflows/:id/edit" element={<WorkflowFormPage />} />
+
+          <Route path="/workflows/:workflowId" element={<WorkflowWorkspacePage />} />
+
+          <Route path="/automations" element={<AutomationsPage />} />
+
+          <Route path="/automations/new" element={<AutomationFormPage />} />
+
+          <Route path="/automations/:id/edit" element={<AutomationFormPage />} />
+
+          <Route path="/media" element={<MediaPage />} />
+
+          <Route path="/media/new" element={<MediaFormPage />} />
+
+          <Route path="/media/:id/edit" element={<MediaFormPage />} />
 
           <Route path="/scheduling" element={<SchedulingPage />} />
 

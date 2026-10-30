@@ -164,8 +164,17 @@ class ReviewNotesSerializer(OverrideReasonSerializer):
     notes = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
 
+#: what a verdict can be: a decision, or ``Pending Review`` (the default, nothing decided yet)
+REVIEW_VERDICTS = ("Pending Review", "Approved", "Rejected", "Changes Requested", "Retake")
+
+
 class ReviewVerdictSerializer(ReviewNotesSerializer):
     verdict = serializers.CharField(required=False, max_length=30, default="Pending Review")
+
+    def validate_verdict(self, value):
+        if value not in REVIEW_VERDICTS:
+            raise serializers.ValidationError(f"Must be one of: {', '.join(REVIEW_VERDICTS)}.")
+        return value
 
 
 class ParticipantVerdictSerializer(ReviewVerdictSerializer):
@@ -190,6 +199,12 @@ class ReviewCommentSerializer(StrictSerializer):
     is_client_visible = serializers.BooleanField(required=False, default=True)
     tags = serializers.ListField(child=serializers.CharField(), required=False, default=list)
     parent_id = serializers.UUIDField(required=False, allow_null=True)
+
+    def validate(self, attrs):
+        # ``text`` and ``comment`` are the same thing (the old clients said ``comment``): one of them must say something.
+        if not (attrs.get("text") or attrs.get("comment") or "").strip():
+            raise serializers.ValidationError({"text": ["A comment needs some text."]})
+        return attrs
 
 
 class ReviewNoteSerializer(StrictSerializer):

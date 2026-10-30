@@ -1,7 +1,7 @@
-import { DrfErrorResponse } from '@/types/common';
+import type { DrfErrorResponse } from '@/types/common';
 import { normalizeApiError } from './normalizeApiError';
-import { AppError, IAppError } from './AppError';
-import { ApiErrorType, NormalizedApiError } from '@/core/api/types';
+import { AppError, type IAppError } from './AppError';
+import type { ApiErrorType, NormalizedApiError } from '@/core/api/types';
 
 export interface ApiErrorInitOptions {
   type?: ApiErrorType;

@@ -1,4 +1,5 @@
 import { useVersions } from '@/modules/versions';
+import { EntityMediaTab, EntityReviewsTab, EntityVersionsTab } from '@/modules/production/review/EntityRecords';
 
 import { useTasks } from '@/modules/tasks';
 
@@ -106,9 +107,7 @@ import { AssetOverviewTab } from '../components/AssetOverviewTab';
 
 import { AssetShotsPanel, EntityTasksPanel, WorkHistoryPanel } from '@/modules/production/work/panels';
 
-import { AssetVersionsTab } from '../components/AssetVersionsTab';
 
-import { AssetReviewsTab } from '../components/AssetReviewsTab';
 
 import { AssetAssignmentsTab } from '../components/AssetAssignmentsTab';
 
@@ -117,7 +116,6 @@ import { AssetDependenciesTab } from '../components/AssetDependenciesTab';
 
 import { AssetNotesTab } from '../components/AssetNotesTab';
 
-import { AssetMediaTab } from '../components/AssetMediaTab';
 
 import { AssetAttachmentsTab } from '../components/AssetAttachmentsTab';
 
@@ -128,7 +126,6 @@ import { AssetPublishingTab } from '../components/AssetPublishingTab';
 
 import { AssetAssignModal } from '../components/modals/AssetAssignModal';
 
-import { AssetSubmitVersionModal } from '../components/modals/AssetSubmitVersionModal';
 
 import { AssetAddNoteModal } from '../components/modals/AssetAddNoteModal';
 
@@ -246,7 +243,6 @@ export const AssetWorkspacePage: React.FC = () => {
 
   const [isAssignOpen, setIsAssignOpen] = useState(false);
 
-  const [isSubmitVersionOpen, setIsSubmitVersionOpen] = useState(false);
 
   const [isAddNoteOpen, setIsAddNoteOpen] = useState(false);
 
@@ -392,13 +388,13 @@ export const AssetWorkspacePage: React.FC = () => {
 
         id: 'submit-version',
 
-        label: 'Publish OpenUSD Version',
+        label: 'Submit New Version',
 
         icon: <GitBranch className="w-3.5 h-3.5" />,
 
         permission: 'version.create',
 
-        onClick: () => setIsSubmitVersionOpen(true),
+        onClick: () => navigate(`/versions/new?project=${asset.project_id}&asset=${asset.id}`),
 
       },
 
@@ -962,9 +958,9 @@ export const AssetWorkspacePage: React.FC = () => {
 
         {resolvedTab === 'tasks' && <EntityTasksPanel target={{ type: 'Asset', id: asset.id, code: asset.code, projectId: asset.project_id }} />}
 
-        {resolvedTab === 'versions' && <AssetVersionsTab asset={asset} />}
+        {resolvedTab === 'versions' && <EntityVersionsTab entity={{ type: 'Asset', id: asset.id, projectId: asset.project_id }} />}
 
-        {resolvedTab === 'reviews' && <AssetReviewsTab asset={asset} />}
+        {resolvedTab === 'reviews' && <EntityReviewsTab entity={{ type: 'Asset', id: asset.id, projectId: asset.project_id }} />}
 
         {resolvedTab === 'assignments' && (
 
@@ -1004,7 +1000,7 @@ export const AssetWorkspacePage: React.FC = () => {
 
         )}
 
-        {resolvedTab === 'media' && <AssetMediaTab asset={asset} />}
+        {resolvedTab === 'media' && <EntityMediaTab entity={{ type: 'Asset', id: asset.id, projectId: asset.project_id }} />}
 
         {resolvedTab === 'attachments' && <AssetAttachmentsTab asset={asset} />}
 
@@ -1025,16 +1021,6 @@ export const AssetWorkspacePage: React.FC = () => {
         isOpen={isAssignOpen}
 
         onClose={() => setIsAssignOpen(false)}
-
-      />
-
-      <AssetSubmitVersionModal
-
-        asset={asset}
-
-        isOpen={isSubmitVersionOpen}
-
-        onClose={() => setIsSubmitVersionOpen(false)}
 
       />
 

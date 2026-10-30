@@ -333,6 +333,10 @@ Frontend change list: handle the new 400 when archiving an asset that shots use 
 |---|---|---|---|
 | C-45 | `POST /projects/{id}/archive/`, `POST /shows/{id}/archive/` | **403 for everyone**, superusers included: `archive` was missing from the viewsets' `permission_map`, so `HasPermission` failed closed. `DELETE` already archived. | Needs `project.delete` / `show.delete`, the same as `DELETE` and as episodes and sequences. `check-existence` / `existence-check` on projects and shows stay unmapped (403): the viewsets do not implement them, and mapping them would answer 500. |
 | C-46 | `POST /timelogs/`, `PATCH /timelogs/{id}/` (`duration_hours`) | An ordinary entry accepted zero or negative hours. | **400** unless the entry is an adjustment (`adjustment_of` set): an ordinary entry's hours must be greater than zero (also when omitted on create); an adjustment may be negative but never zero (also on update). |
+| C-47 | `POST /media/{id}/archive/`, `POST /reviews/{id}/archive/` | **403 for everyone** (CR-15): `archive` was missing from both viewsets' `permission_map`. `DELETE` already archived. | Media needs `media.update` (as versions and playlists); reviews need `review.delete` (as `DELETE`). |
+| C-48 | `POST /reviews/` (`status`) | Any text was stored as the status of a new review. | **400** unless `Pending Review` (or omitted): a review moves through the workflow by its actions. |
+| C-49 | `POST /reviews/{id}/comments/` | An empty comment was stored. | **400** `{"text": ["A comment needs some text."]}` when neither `text` nor `comment` (blank counts as empty) says anything. Comments on a Closed review are still accepted (D-30). |
+| C-50 | `POST /reviews/{id}/verdict/`, `POST /reviews/{id}/participant-verdict/` (`verdict`) | Any text was stored as a verdict. | **400** unless one of `Pending Review`, `Approved`, `Rejected`, `Changes Requested`, `Retake`. |
 
 Frontend change list: none required by this phase. (Earlier phases' lists still apply.)
 
