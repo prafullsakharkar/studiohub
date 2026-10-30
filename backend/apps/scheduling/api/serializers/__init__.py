@@ -116,6 +116,8 @@ def _ensure_known(source, value, noun):
 class CalendarEventListSerializer(serializers.ModelSerializer[Any]):
     """Serializer for calendar event list view."""
 
+    # The project's id beside its name, so a list can be filtered and linked by it (CR-25).
+    project_id = serializers.UUIDField(read_only=True, allow_null=True)
     project_name = serializers.CharField(source="project.name", read_only=True)
     event_type_display = serializers.CharField(source="get_event_type_display", read_only=True)
     status_display = serializers.CharField(source="get_status_display", read_only=True)
@@ -138,6 +140,7 @@ class CalendarEventListSerializer(serializers.ModelSerializer[Any]):
             "is_all_day",
             "location",
             "meeting_url",
+            "project_id",
             "project_name",
             "created_at",
             "updated_at",

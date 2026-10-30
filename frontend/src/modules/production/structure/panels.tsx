@@ -252,7 +252,8 @@ export const ResourcesPanel: React.FC<{ projectId: string }> = ({ projectId }) =
   );
 };
 
-export const SchedulePanel: React.FC<{ projectId: string }> = ({ projectId }) => {
+/** The project's dates and, unless `milestones` is false, the read-only list the production route returns. */
+export const SchedulePanel: React.FC<{ projectId: string; milestones?: boolean }> = ({ projectId, milestones = true }) => {
   const schedule = useQuery({ queryKey: key(projectId, 'schedule'), queryFn: ({ signal }) => projectScopedApi.schedule(projectId, signal) });
   const s = schedule.data;
   return (
@@ -271,9 +272,9 @@ export const SchedulePanel: React.FC<{ projectId: string }> = ({ projectId }) =>
               </div>
             </dl>
           </Card>
-          <Card title="Milestones">
+          {milestones && <Card title="Milestones">
             {s.milestones.length === 0 ? <p className="text-xs text-slate-500">No milestones.</p> : <ul className="text-xs text-slate-300 space-y-1">{s.milestones.map((m, i) => <li key={`${i}-${labelOf(m)}`}>{labelOf(m)}</li>)}</ul>}
-          </Card>
+          </Card>}
         </div>
       )}
     </QueryBoundary>

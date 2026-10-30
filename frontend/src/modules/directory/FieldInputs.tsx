@@ -58,7 +58,7 @@ export const FieldInputs: React.FC<FieldInputsProps> = ({ fields, parentId, edit
                     ))}
                   </select>
                 ) : (
-                  <input id={id} type={field.kind === 'text' ? 'text' : field.kind} disabled={readOnly} maxLength={field.maxLength} className={inputClass(Boolean(err(field.name)))} {...register(field.name, { onChange: clearServerError })} />
+                  <input id={id} type={field.kind === 'text' ? 'text' : field.kind === 'datetime' ? 'datetime-local' : field.kind} disabled={readOnly} maxLength={field.maxLength} className={inputClass(Boolean(err(field.name)))} {...register(field.name, { onChange: clearServerError })} />
                 )}
               </Field>
             );
