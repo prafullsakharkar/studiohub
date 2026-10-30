@@ -1,3 +1,4 @@
+import { safeWebUrl } from '@/shared/utils/safeUrl';
 import { mediaApi } from '@/api/production/review';
 import type { Media } from '@/api/production/review';
 import { projectsApi } from '@/api/production/structure';
@@ -44,8 +45,8 @@ export function useMediaListConfig(scope?: { projectId: string }): DirectoryList
       {
         header: 'Link',
         cell: (row) =>
-          row.preview_url || row.source_url ? (
-            <a href={row.preview_url || row.source_url} target="_blank" rel="noreferrer noopener" className="text-cyan-300 hover:underline">
+          safeWebUrl(row.preview_url) || safeWebUrl(row.source_url) ? (
+            <a href={safeWebUrl(row.preview_url) || safeWebUrl(row.source_url)} target="_blank" rel="noreferrer noopener" className="text-cyan-300 hover:underline">
               Open
             </a>
           ) : (

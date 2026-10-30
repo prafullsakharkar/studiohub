@@ -1,3 +1,4 @@
+import { safeWebUrl } from '@/shared/utils/safeUrl';
 import { useQuery } from '@tanstack/react-query';
 import type React from 'react';
 import { Link } from 'react-router-dom';
@@ -149,8 +150,8 @@ export const EntityMediaTab: React.FC<{ entity: EntityRef }> = ({ entity }) => (
       {
         header: 'Link',
         cell: (m) =>
-          m.preview_url || m.source_url ? (
-            <a href={m.preview_url || m.source_url} target="_blank" rel="noreferrer noopener" className="text-cyan-300 hover:underline">
+          safeWebUrl(m.preview_url) || safeWebUrl(m.source_url) ? (
+            <a href={safeWebUrl(m.preview_url) || safeWebUrl(m.source_url)} target="_blank" rel="noreferrer noopener" className="text-cyan-300 hover:underline">
               Open
             </a>
           ) : (

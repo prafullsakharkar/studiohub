@@ -207,6 +207,17 @@ describe('media', () => {
     expect(item).toBeTruthy();
   });
 
+  it('offers a link only for a web address: a stored javascript: or data: link shows a dash, not an href', async () => {
+    const rows = [
+      { ...item, id: 'hostile', title: 'Hostile', preview_url: 'javascript:alert(1)', source_url: 'data:text/html,x' },
+      { ...item, id: 'fine', title: 'Fine', preview_url: 'https://cdn.example.test/p.mp4', source_url: '' },
+    ];
+    mockFetch(() => ({ status: 200, body: rows }));
+    renderAt('/media', lead, <Route path="/media" element={<MediaList />} />);
+    const links = await screen.findAllByRole('link', { name: 'Open' });
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(['https://cdn.example.test/p.mp4']);
+  });
+
   it('CR-15: media is archived with the archive action by a holder of media.update (no media.delete needed)', async () => {
     const { calls } = mockFetch((c) => (c.method === 'POST' ? reply(flow.media_archive) : bare(flow.media_list)));
     renderAt('/media', lead, <Route path="/media" element={<MediaList />} />);
