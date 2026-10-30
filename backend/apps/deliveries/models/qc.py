@@ -30,10 +30,12 @@ class DeliveryQCCheck(models.Model):
     delivery = models.ForeignKey(
         "deliveries.DeliveryPackage", on_delete=models.PROTECT, related_name="qc_checks"
     )
-    #: None for a check about the whole package.
+    #: None for a check about the whole package. SET_NULL (CR-20): removing an item keeps the rows of the
+    #: runs it took part in as history; ``remove_version`` clears the package's current run, so they are
+    #: no longer served as its checks.
     item = models.ForeignKey(
         "deliveries.DeliveryVersionRef",
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="qc_checks",

@@ -24,6 +24,7 @@ class _NoDeliveries:
     view_permission = DELIVERY_VIEW
     selector_class = None
     list_serializer_class = None
+    filterset_class = None
 
     def count(self, project: Any) -> int:
         return 0

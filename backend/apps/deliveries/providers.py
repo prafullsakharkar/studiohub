@@ -28,6 +28,12 @@ class ProjectDeliveryFigures:
         return DeliverySelector
 
     @property
+    def filterset_class(self):
+        from apps.deliveries.api.filtersets.delivery import DeliveryFilterSet
+
+        return DeliveryFilterSet
+
+    @property
     def list_serializer_class(self):
         from apps.deliveries.api.serializers.delivery import DeliveryListSerializer
 

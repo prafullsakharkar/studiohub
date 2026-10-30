@@ -515,6 +515,7 @@ class ProjectDeliveriesView(ProjectScopedAPIView):
         return self._entity_list(
             selector_cls=figures.selector_class,
             serializer_cls=figures.list_serializer_class,
+            filterset_cls=figures.filterset_class,
             search_fields=("name", "code"),
             ordering_fields=("name", "created_at", "status"),
         )
