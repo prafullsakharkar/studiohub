@@ -27,6 +27,7 @@ Rule (HARD RULE 1): no backend file is changed without explicit approval. Each e
 | CR-18 | `DELETE /deliveries/{id}/` succeeds in any state, including Submitted and Completed (the contract says Draft or Cancelled only) | No (the screens offer delete for Draft and Cancelled only) | Medium — bug |
 | CR-19 | A destination's `type` accepts any text (the model has seven choices and the serializer does not check them) | No (the form offers the seven) | Low |
 | CR-20 | `remove-version` after the delivery was validated or prepared is a generic 409 `conflict`: the append-only QC rows protect the item | No (the screen hides Remove for a checked item and says why) | Medium — bug |
+| CR-21 | Delivery history, QC rows, `signed_off_by` and `client_answered_by` name people by user id only (production status histories carry `actor_name`) | No (the screens look the name up for callers who may read users, others see "a teammate") | Low |
 | Q-01 | Contacts list 403 for users without directory roles despite an empty `permission_map` entry | Question | — |
 | Q-02 | Attachments accept an empty body | Open question for the owner | — |
 | Q-03 | `change-password` ignores `confirm_password` | **APPLIED** (`553b481`): validated when present, still optional | Low |
@@ -357,6 +358,9 @@ Same class as CR-13. `POST /media/{id}/archive/` and `POST /reviews/{id}/archive
 
 ### CR-20 — an item cannot be removed once the delivery was checked (**bug**, PROPOSED)
 `remove-version` works on a Draft that was never validated, but after `validate` or `prepare` it answers `409 {"error": {"code": "conflict"}}` "Resource conflict: the request conflicts with existing data." (`qcremove_remove`; the item has `DeliveryQCCheck` rows and `DeliveryQCCheck.item` is `PROTECT`, the rows being append-only). CONTRACTS §3 API-DLV-05 says items can be removed in Draft, Validating and Prepared. A mistaken item therefore forces cancelling the delivery. **Minimal diff:** let the item go with its checks marked superseded (or `on_delete=SET_NULL` on the check's item and keep the row), or say in the contract that checked items stay. **Frontend workaround:** Remove is hidden for an item that has check rows, with the reason.
+
+### CR-21 — deliveries name people by id only (**low**, PROPOSED)
+`GET /deliveries/{id}/history/` (`actor`), `GET /deliveries/{id}/qc/` (`checked_by`) and the detail (`signed_off_by`, `client_answered_by`) carry user ids; the production histories (`/shots/{id}/status-history/` and the others) carry `actor_name`. A reader without `identity.user.view` cannot tell who signed off or sent a delivery, which is the point of the record. **Minimal diff:** add `actor_name`, `checked_by_name`, `signed_off_by_name`, `client_answered_by_name` (the user's display name or email). **Frontend workaround:** `UserName` looks the id up for callers who hold `identity.user.view` and says "A teammate" otherwise.
 
 ### Note — behaviours the Phase 8 screens rely on
 - **Status words:** reads say `Ready` and `Completed` for the backend's Prepared and Complete; history rows use the backend words. `client_status` is Pending, Approved or Rejected. `client_name` is absent (not empty) when there is no client.
