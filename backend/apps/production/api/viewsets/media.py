@@ -27,6 +27,7 @@ class MediaViewSet(ProductionEntityViewSet):  # pyright: ignore[reportMissingTyp
         "update": (MediaPermissions.UPDATE,),
         "partial_update": (MediaPermissions.UPDATE,),
         "destroy": (MediaPermissions.DELETE,),
+        "archive": (MediaPermissions.UPDATE,),
         "archived": (MediaPermissions.VIEW,),
         "restore": (MediaPermissions.UPDATE,),
     }
