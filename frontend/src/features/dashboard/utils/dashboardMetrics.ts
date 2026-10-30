@@ -156,17 +156,6 @@ export function milestoneState(milestone: { status: string; due_date: string }, 
   return milestone.status === 'In Progress' ? 'in_progress' : 'upcoming';
 }
 
-const FINISHED_TASK_STATUSES = ['completed', 'approved', 'done'];
-
-/**
- * Whether a listed task is overdue. The server's per-task `is_overdue` also flags Approved tasks past their date
- * (only "Completed" counts as finished there), which its own `overdue` count does not (CR-31): a finished task is not
- * overdue, so the flag is trusted only for unfinished ones.
- */
-export function taskIsOverdue(task: { is_overdue?: boolean; status: string } | undefined | null): boolean {
-  return Boolean(task?.is_overdue) && !FINISHED_TASK_STATUSES.includes((task?.status ?? '').toLowerCase());
-}
-
 /**
  * Safe activity timestamp rendering. The backend always sends ISO strings;
  * unparseable values render as an em dash rather than "Invalid Date".
@@ -180,38 +169,8 @@ export function formatActivityTimestamp(timestamp: string | undefined | null): s
 
 // ------------------------------------------------------------------------------------------------ deliveries
 
+/** The statuses of a delivery that has gone (the server counts the same words, CR-31). */
 const DELIVERED_STATUSES = ['delivered', 'approved', 'sent', 'accepted', 'complete', 'completed', 'signed off'];
-
-export interface DeliveryFigures {
-  delivered: number;
-  upcoming: number;
-  late: number;
-  /** True when the three numbers were counted from the listed deliveries instead of taken from the server. */
-  counted: boolean;
-}
-
-/**
- * Delivered, upcoming and late deliveries. The server counts every delivery that is not delivered as upcoming, and
- * a past-due one as late whatever it is: a Cancelled delivery is "late" there, and a Completed one is neither done
- * nor on time because "completed" is not in its list of delivered words (CR-31). When the payload lists every
- * delivery (`items.length >= total`) the figures are counted here with Cancelled left out; otherwise (a long list
- * is cut) the server's numbers are used as they are.
- */
-export function getDeliveryFigures(deliveries: DashboardDeliveriesData, now: Date = new Date()): DeliveryFigures {
-  const { items, total } = deliveries;
-  if (items.length < total) return { delivered: deliveries.delivered, upcoming: deliveries.upcoming, late: deliveries.late, counted: false };
-  let delivered = 0;
-  let late = 0;
-  let upcoming = 0;
-  for (const item of items) {
-    const status = item.status.toLowerCase();
-    if (status === 'cancelled') continue;
-    if (DELIVERED_STATUSES.includes(status)) delivered += 1;
-    else if (item.due_date && new Date(item.due_date) < now) late += 1;
-    else upcoming += 1;
-  }
-  return { delivered, upcoming, late, counted: true };
-}
 
 /** Deliveries still to go out: not delivered, not cancelled, and not past their date. */
 export function upcomingDeliveryItems(deliveries: DashboardDeliveriesData, now: Date = new Date()) {

@@ -3,7 +3,6 @@ import { DEPARTMENT_KEYS, KPI_KEYS } from '@/api/analytics/analyticsRowKeys';
 import type { ProjectCounts } from '@/api/production/structure';
 import { loadSample } from '@/test/samples';
 import { ProjectDashboardDataSchema } from '../schemas/dashboardSchema';
-import { taskIsOverdue } from '../utils/dashboardMetrics';
 import * as K from '../types/dashboardRowKeys';
 
 type Captured = { status: number; body: any };
@@ -83,7 +82,6 @@ describe('the figures are real aggregates of what was seeded', () => {
     const approvedPastDate = t.recent_tasks.filter((r: any) => r.status === 'Approved' && r.due_date < '2026-10-30');
     expect(approvedPastDate.length).toBeGreaterThan(0); // the capture does hold finished tasks past their date
     expect(approvedPastDate.every((r: any) => r.is_overdue === false)).toBe(true);
-    expect(flagged.filter(taskIsOverdue)).toHaveLength(t.overdue);
   });
   it('a cancelled delivery past its date is neither late nor upcoming (CR-31, applied)', () => {
     const cancelled = dash.deliveries.items.find((d: any) => d.title === 'Cancelled delivery');

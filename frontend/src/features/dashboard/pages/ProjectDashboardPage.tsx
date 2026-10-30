@@ -53,7 +53,7 @@ export const ProjectDashboardPage: React.FC = () => {
       {/* 2. Scrollable VFX Command Center Layout */}
       <div className="flex-1 p-4 sm:p-6 space-y-6 overflow-y-auto custom-scrollbar">
         {/* KPI Telemetry HUD Cards */}
-        <ProjectKpiHud summary={data.summary} deliveries={data.deliveries} projectId={data.project.id} />
+        <ProjectKpiHud summary={data.summary} projectId={data.project.id} />
 
         {/* Two Column Command Deck */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

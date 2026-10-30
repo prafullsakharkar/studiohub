@@ -17,7 +17,7 @@ import { ProjectKpiHud } from '../components/ProjectKpiHud';
 import { ScheduleMilestonesWidget } from '../components/ScheduleMilestonesWidget';
 import { UpcomingOverdueWidget } from '../components/UpcomingOverdueWidget';
 import type { ProjectDashboardData } from '../types';
-import { getDeliveryFigures, milestoneState, upcomingDeliveryItems } from '../utils/dashboardMetrics';
+import { milestoneState, upcomingDeliveryItems } from '../utils/dashboardMetrics';
 
 type Captured = { status: number; body: any };
 const flow = loadSample<Record<string, Captured>>('dashboards/_flow.json');
@@ -51,14 +51,8 @@ describe('deliveries', () => {
   // the captured project: a Draft due in the future, a Draft past its date and a Cancelled one past its date
   const deliveries = dash.deliveries;
 
-  it('the server leaves a cancelled past-due delivery out of late (CR-31), and counting the listed ones here gives the same figures', () => {
+  it('the server leaves a cancelled past-due delivery out of late (CR-31), so the screens show its figures as they are', () => {
     expect(deliveries).toMatchObject({ total: 3, late: 1, upcoming: 1, delivered: 0 });
-    expect(getDeliveryFigures(deliveries, new Date('2026-10-30T12:00:00Z'))).toEqual({ delivered: 0, upcoming: 1, late: 1, counted: true });
-  });
-  it('a delivered one (any of the finished words) is not upcoming or late, and a cut list falls back to the server’s numbers', () => {
-    const base = { ...deliveries, total: 1, items: [{ ...deliveries.items[0], status: 'Completed', due_date: '2020-01-01' }] };
-    expect(getDeliveryFigures(base, new Date('2026-10-30'))).toEqual({ delivered: 1, upcoming: 0, late: 0, counted: true });
-    expect(getDeliveryFigures({ ...base, total: 9 }, new Date('2026-10-30'))).toMatchObject({ counted: false, late: deliveries.late });
   });
   it('upcoming items leave out cancelled, delivered and past-due ones', () => {
     expect(upcomingDeliveryItems(deliveries, new Date('2026-10-30T12:00:00Z')).map((d) => d.title)).toEqual(['Upcoming delivery']);
@@ -68,16 +62,16 @@ describe('deliveries', () => {
     vi.setSystemTime(new Date('2026-10-30T12:00:00Z'));
     renderWith(<ClientDeliveryHealth deliveries={deliveries} projectId="p" />);
     const late = screen.getByText('Late').parentElement as HTMLElement;
-    expect(within(late).getByText('1')).toBeTruthy(); // the cancelled one is no longer counted by the server
+    expect(within(late).getByText('1')).toBeTruthy(); // the server's figure: the cancelled one is not counted
     cleanup();
-    renderWith(<ProjectKpiHud summary={dash.summary} deliveries={deliveries} projectId="p" />);
+    renderWith(<ProjectKpiHud summary={dash.summary} projectId="p" />);
     expect(screen.getByText('1 Late')).toBeTruthy();
     now.useRealTimers();
   });
 });
 
 describe('the watchlist', () => {
-  it('does not call an Approved task past its date overdue (the server’s per-task flag does)', () => {
+  it('lists the unfinished overdue task and the blocked one, not Approved tasks past their date (the server’s flag agrees with its count, CR-31)', () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2026-10-30T12:00:00Z'));
     renderWith(<UpcomingOverdueWidget tasks={dash.tasks} deliveries={dash.deliveries} />);
