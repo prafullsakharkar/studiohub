@@ -111,6 +111,21 @@ describe('an export job', () => {
     await act('Job actions', 'Cancel job', (d) => fireEvent.change(d.getByLabelText('Reason'), { target: { value: 'Not needed' } }));
     await waitFor(async () => expect(await jobStatus(second.id)).toBe('Cancelled'), { timeout: 15000 });
     await waitFor(() => expect(barNow('Job actions')).toEqual(['Republish']), { timeout: 15000 });
+    cleanup();
+
+    // the list filters (CR-22): by the stored status, the read word and the project; rows and detail carry the ids
+    const cancelled = await publishApi.list({ project_id: project, job_status: 'Cancelled', search: `Failing export ${uid}` });
+    expect(cancelled.results.map((r) => r.id)).toEqual([second.id]);
+    expect(cancelled.results[0].project_id).toBe(project);
+    expect((await publishApi.list({ project_id: project, status: 'Unpublished', search: `Failing export ${uid}` })).results.map((r) => r.id)).toEqual([second.id]);
+    expect((await publishApi.list({ project_id: project, job_status: 'Exported', search: `Failing export ${uid}` })).results).toHaveLength(0);
+    expect((await publishApi.get(job.id)).version_id).toBe(versions[0].id);
+
+    // delete (CR-23): an exported job stays; a cancelled one goes
+    await expect(publishApi.remove(job.id)).rejects.toMatchObject({ status: 409 });
+    expect(await jobStatus(job.id)).toBe('Exported');
+    await publishApi.remove(second.id);
+    await expect(publishApi.get(second.id)).rejects.toMatchObject({ status: 404 });
   }, 240000);
 });
 
