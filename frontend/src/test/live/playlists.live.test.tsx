@@ -97,7 +97,8 @@ describe('playlist built and shared', () => {
       { timeout: 15000 }
     );
 
-    // remove the placeholder (now entry 3)
+    // remove the placeholder (now entry 3); wait until the page shows it last, or the click can land on the old order
+    await waitFor(async () => expect(within(await entriesList()).getAllByRole('listitem')[2].textContent).toContain('Placeholder'), { timeout: 15000 });
     fireEvent.click(await screen.findByRole('button', { name: 'Remove entry 3' }));
     await waitFor(async () => expect((await playlistsApi.get(playlist.id)).entries.map((e) => e.version_id).sort()).toEqual([v1.id, v2.id].sort()), { timeout: 15000 });
 
