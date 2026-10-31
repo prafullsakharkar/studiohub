@@ -293,8 +293,8 @@ export function archivable<Row, Input>(name: string, base: string) {
     archived: listFetcher<Row>(`${base}archived/`),
     bulkCreate: (projectId: string, items: Array<{ code: string; data: Record<string, unknown> }>) => apiClient.post<BulkResult>(`${base}bulk-create/`, { project_id: projectId, items }),
     /**
-     * The route applies the fields written BESIDE the id; an item that wraps them in `data` is answered "updated" and
-     * changes nothing (CR-35, `_workspaces_flow.json`). The callers keep the `{id, data}` shape; the fields are spread here.
+     * The fields go beside the id. The route applies both that shape and `{id, data: {...}}` since CR-35; before it, the
+     * wrapped shape was answered "updated" and changed nothing. The callers keep the `{id, data}` shape.
      */
     bulkUpdate: (items: Array<{ id: string; data: Record<string, unknown> }>) => apiClient.post<BulkResult>(`${base}bulk-update/`, { items: items.map(({ id, data }) => ({ ...data, id })) }),
     bulkArchive: (ids: string[]) => apiClient.post<BulkResult>(`${base}bulk-archive/`, { ids }),

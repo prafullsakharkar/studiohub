@@ -42,15 +42,17 @@ describe('what the shot and asset workspaces rely on (captured from the running 
     expect(flow.note_empty_400.body.subject).toEqual(['This field is required.']);
   });
 
-  it('bulk-update applies fields written beside the id; the wrapped shape answers "updated" and changes nothing (CR-35)', () => {
-    expect(flow.bulk_update_wrapped.body.results[0].actionTaken).toBe('updated');
-    expect(flow.shot_after_bulk_wrapped.body.description).toBe('');
+  it('bulk-update applies fields wrapped in data and fields beside the id, and refuses an item with nothing to update (CR-35)', () => {
+    expect(flow.shot_after_bulk_wrapped.body.description).toBe('Wrapped');
     expect(flow.shot_after_bulk_flat.body.description).toBe('Flat');
+    const nothing = flow.bulk_update_nothing_to_update.body;
+    expect(nothing.failed).toBe(1);
+    expect(nothing.results[0].error.non_field_errors).toEqual(['The item has no field that can be updated.']);
   });
 });
 
 describe('the typed bulkUpdate', () => {
-  it('sends the fields beside the id, the only shape the route applies', async () => {
+  it('sends the fields beside the id, the shape every version of the route applies', async () => {
     const { calls } = mockFetch(() => ({ body: { successful: 1, failed: 0, results: [] } }));
     await shotsApi.bulkUpdate([{ id: 'a', data: { description: 'x' } }, { id: 'b', data: { status: 'In Progress' } }]);
     expect(calls[0].body).toEqual({ items: [{ id: 'a', description: 'x' }, { id: 'b', status: 'In Progress' }] });

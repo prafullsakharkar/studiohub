@@ -348,3 +348,11 @@ Frontend change list: none required by this phase. (Earlier phases' lists still 
 
 Frontend change list: none required (the screens already offer project members only).
 
+## Frontend sync follow-up (CR-35)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-52 | `POST` / `PATCH /shots/bulk-update/`, and the assets, episodes and sequences routes (each item) | An item `{"id": X, "data": {...}}` was answered `updated` and **changed nothing** (only fields written beside the id were read). An item with no field the entity could change was also answered `updated`. | The fields are read from beside the id **and** from `data` (the wrapped ones win). An item with nothing to change is `invalid`: `{"non_field_errors": ["The item has no field that can be updated."]}`. |
+
+Frontend change list: none required (the typed `bulkUpdate` already sends fields beside the id).
+

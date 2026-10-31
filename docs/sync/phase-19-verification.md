@@ -40,3 +40,8 @@ A shot's or asset's `assigned_artist` must now be an **active member of the reco
 
 1. **Merge** `sync/phase-19-artist-rule` into `develop` and push?
 2. **Approve CR-35** (bulk-update reads `data`, and refuses an item with nothing to update)?
+
+## 6. CR-35 applied (approved by the owner after this report)
+
+Branch `sync/backend-cr-35` (from `develop` at `8afa61fa`, which holds this phase). `bulk-update` now reads the fields of a wrapped item (`{id, data: {...}}`) as well as flat ones, and an item with nothing to update is reported `invalid` instead of "updated" (contract C-52, decision D-34). 22 new tests, 4 of 5 mutations caught (the fifth is equivalent), production, masterdata and bootstrap suites 2,580 pass plus the known deliveries failure, ruff clean, basedpyright 0 errors. The frontend contract test now pins the fixed behaviour; the typed `bulkUpdate` keeps sending fields beside the id, which works before and after.
+
