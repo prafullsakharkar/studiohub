@@ -491,3 +491,22 @@ Each of the six settings viewsets (`categories`, `definitions`, `system-settings
 - **`recent_*` lists** are the latest rows (tasks, shots, reviews, deliveries, activity); a `workload` row names the person by e-mail when there is no display name, and its `id` is prefixed `user-`.
 - **Analytics:** `GET /analytics/kpis/` and `/analytics/departments/` need only a signed-in user and are narrowed to the caller's projects (a platform administrator sees every project, a user in none gets zeros and `[]`). `render_nodes_busy`, `render_nodes_total` and `average_render_time_mins` are `null` (no source); `storage_usage_tb` and `storage_quota_tb` are `0` (no telemetry, not "empty"). `active_artists` counts people with at least one assigned task. Departments with no name on their tasks are left out. Both routes are read-only (POST is 405).
 - **The statistics route and the summary's `counts`** are the same twelve counts (`shots`, `tasks`, `assets`, `reviews`, `deliveries`, `sequences`, `versions`, `notes`, `editorial`, `approved_shots`, `in_progress_shots`, `completed_tasks`).
+
+## Phase 14 findings (workspaces): owner requirement, 2026-10-31
+
+### CR-32: a person can be in only one team (**missing feature**, **OPEN, needs approval**)
+**Requirement (owner, in answer to the Phase 14 question):** "multiple team can have same person", a person may belong to several teams at once.
+
+**Evidence (code):** `Person.team` is a single nullable `ForeignKey("masterdata.Team")` (`apps/masterdata/models/person.py`); `Team` has `lead` and no member list; `PersonSerializer` exposes `team` and `team_name`; `GET /people/?team=<id>` filters on that one column; and `PersonService` enforces DOM-MD-PER-06 ("a team belongs to one department, so the pair must agree"). Phase 14 therefore implements membership as `PATCH /people/{id}/ {team}`: adding a person to a second team **moves** them out of the first (the dialog says so). Nothing in the API can express two teams.
+
+**Why a frontend workaround is not possible:** the only stored relation is the one column. A client-side list of extra teams would live in the browser and be wrong for everyone else.
+
+**Minimal proposed change (backend, not made):**
+1. New model `masterdata.TeamMembership(team FK PROTECT, person FK CASCADE, joined_at date null, role CharField blank, + the platform base fields)` with a partial unique constraint on `(team, person)` among non-deleted rows; one migration (`0002`), whose data step creates a membership for every existing `Person.team`.
+2. New viewset `GET/POST /api/v1/team-memberships/`, `GET/PATCH/DELETE …/{id}/` with filters `team` and `person`, permission `masterdata.directory.manage` for writes (as the other directory routes); contract and sample added.
+3. `Person.team` stays as the person's **primary team** so no existing client breaks; the DOM-MD-PER-06 department rule applies to the primary team only (extra teams may belong to other departments, which is the point). Setting `Person.team` also ensures a membership row exists.
+4. Deleting a team with memberships is refused as `has_dependants` (like departments with teams); deleting a person removes their memberships.
+
+**Open design questions for the owner:** (a) should a member carry a role or join date, or is membership a plain link? (b) must every membership's team match the person's department, or may a person sit in teams of other departments? (c) should `Person.team` remain as the primary team, or be removed?
+
+**Frontend after approval:** the Team Members tab and the Person Teams tab read and write `team-memberships`; the people-with-`?team=` list is replaced. Until then both use `Person.team` (one team).
