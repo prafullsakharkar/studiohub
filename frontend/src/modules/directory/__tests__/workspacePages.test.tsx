@@ -118,6 +118,15 @@ describe('team workspace: members are team memberships', () => {
     return { body: page([]) };
   };
 
+  it('shows the number of members on the overview, as the API reports it', async () => {
+    // The captured team has one member and capacity 1: use a count no other field can equal.
+    const detail = { ...memberships.team_detail.body, member_count: 7 };
+    mockFetch((c) => (path(c) === `/api/v1/teams/${detail.id}/` ? { body: detail } : { body: page([]) }));
+    mount(<TeamWorkspacePage />, `/teams/${detail.id}`, '/teams/:id');
+    const label = await screen.findByText('Members', { selector: 'dt' });
+    expect(label.parentElement?.querySelector('dd')?.textContent).toBe('7');
+  });
+
   it('lists the members of the team, found with the team filter on team-memberships', async () => {
     const { calls } = mockFetch(server);
     mount(<TeamWorkspacePage />, `/teams/${team.id}`, '/teams/:id');

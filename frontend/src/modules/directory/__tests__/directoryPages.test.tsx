@@ -19,6 +19,7 @@ import { vendorsFormConfig } from '../entities/vendors';
 
 type Captured = { status: number; body: any };
 const teams = loadSample<Record<string, Captured>>('masterdata/teams.json');
+const teamFlow = loadSample<Record<string, Captured>>('masterdata/_team_memberships_flow.json');
 const offices = loadSample<Record<string, Captured>>('masterdata/offices.json');
 const departments = loadSample<Record<string, Captured>>('masterdata/_departments_flow.json');
 const conflicts = loadSample<Record<string, Captured>>('_misc/conflicts_and_pagination.json');
@@ -65,6 +66,16 @@ describe('DirectoryListPage (teams)', () => {
     expect(path(calls[0])).toBe('/api/v1/teams/');
     expect(q(calls[0])).toEqual({ page: '1', page_size: '25', ordering: 'name' });
     expect(screen.getByText(`${teams.list_admin.body.count} Registered`)).toBeTruthy();
+  });
+
+  it('shows each team’s member count, as the API reports it', async () => {
+    mockFetch(() => reply(teamFlow.teams_list));
+    renderAt('/teams', superuser, listRoute);
+    const row = teamFlow.teams_list.body.results[0];
+    const cells = (await screen.findByRole('link', { name: row.name })).closest('tr') as HTMLElement;
+    const header = screen.getByRole('columnheader', { name: 'Members' });
+    const column = within(header.closest('tr') as HTMLElement).getAllByRole('columnheader').indexOf(header);
+    expect(within(cells).getAllByRole('cell')[column].textContent).toBe(String(row.member_count));
   });
 
   it('searches and sorts on the server', async () => {

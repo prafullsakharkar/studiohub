@@ -18,6 +18,7 @@ export const teamsListConfig: DirectoryListConfig<Team> = {
   columns: [
     { header: 'Name', cell: (t) => t.name, sortField: 'name' },
     { header: 'Code', cell: (t) => <span className="font-mono">{t.code}</span>, sortField: 'code' },
+    { header: 'Members', cell: (t) => t.member_count },
     { header: 'Capacity', cell: (t) => t.capacity ?? '—' },
     { header: 'Created', cell: (t) => new Date(t.created_at).toLocaleDateString(), sortField: 'created_at' },
   ],
@@ -25,6 +26,7 @@ export const teamsListConfig: DirectoryListConfig<Team> = {
     { header: 'Code', value: (t) => t.code },
     { header: 'Name', value: (t) => t.name },
     { header: 'Department', value: (t) => t.department },
+    { header: 'Members', value: (t) => t.member_count },
     { header: 'Capacity', value: (t) => t.capacity },
     { header: 'Created', value: (t) => t.created_at },
   ],

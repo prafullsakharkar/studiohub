@@ -92,6 +92,7 @@ describe('team membership on the wire', () => {
     await waitFor(async () => expect((await teamMembershipsApi.list({ person: person.id })).results.map((m) => m.team).sort()).toEqual([team.id, other.id].sort()), T);
     expect((await peopleApi.get(person.id)).team).toBeNull();
     expect((await peopleApi.list({ team: team.id })).count).toBe(0); // ?team= is the primary team only
+    expect((await teamsApi.get(team.id)).member_count).toBe(1); // the team reports its live members
 
     // Make this their primary team through the API, then remove the membership in the screen: the primary team goes with it.
     await peopleApi.update(person.id, { team: team.id });
@@ -100,6 +101,8 @@ describe('team membership on the wire', () => {
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Remove' }));
     await waitFor(async () => expect((await peopleApi.get(person.id)).team).toBeNull(), T);
     expect((await teamMembershipsApi.list({ person: person.id })).results.map((m) => m.team)).toEqual([other.id]);
+    expect((await teamsApi.get(team.id)).member_count).toBe(0);
+    expect((await teamsApi.get(other.id)).member_count).toBe(1);
   });
 });
 
