@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import './index.css';
-import { getApiConfig } from './api/repositories/config';
+import { getApiConfig } from './api/client/config';
 import { logger } from './core/logging/logger';
 
 async function bootstrap() {

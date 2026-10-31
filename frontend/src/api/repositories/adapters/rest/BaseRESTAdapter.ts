@@ -1,7 +1,7 @@
 import { IRepository } from '../../interfaces/IRepository';
 import { PaginatedResponse, QueryParams } from '@/types/common';
 import { AppError } from '@/api/errors/AppError';
-import { getApiBaseUrl } from '../../config';
+import { getApiBaseUrl } from '@/api/client/config';
 import { tokenStorage } from '@/core/auth/tokenStorage';
 
 /**

@@ -11,7 +11,7 @@ import {
 export * from './interfaces';
 
 // Re-export config utilities
-export * from './config';
+export * from '@/api/client/config';
 
 // Re-export factory
 export * from './factory';

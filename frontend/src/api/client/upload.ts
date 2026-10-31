@@ -1,5 +1,5 @@
 import { ApiError } from '@/api/errors/ApiError';
-import { getApiBaseUrl } from '@/api/repositories/config';
+import { getApiBaseUrl } from '@/api/client/config';
 import { refreshAccessToken } from '@/core/auth/sessionRefresh';
 import { tokenStorage } from '@/core/auth/tokenStorage';
 import { centralErrorHandler } from '@/core/api/error-handler';
