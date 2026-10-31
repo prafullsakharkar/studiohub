@@ -54,7 +54,7 @@ export const PersonWorkspacePage: React.FC = () => {
                   { label: 'Position', value: <Named id={person.role} queryKey={positionsApi.keys.detail(person.role ?? '')} load={positionsApi.get} /> },
                   { label: 'Seniority', value: person.seniority },
                   { label: 'Department', value: <Named id={person.department} to="/departments" queryKey={departmentKeys.detail(person.department ?? '')} load={departmentsApi.get} /> },
-                  { label: 'Team', value: <Named id={person.team} to="/teams" queryKey={teamsApi.keys.detail(person.team ?? '')} load={teamsApi.get} /> },
+                  { label: 'Primary team', value: <Named id={person.team} to="/teams" queryKey={teamsApi.keys.detail(person.team ?? '')} load={teamsApi.get} /> },
                   { label: 'Office', value: <Named id={person.office} to="/offices" queryKey={officesApi.keys.detail(person.office ?? '')} load={officesApi.get} /> },
                   { label: 'Timezone', value: person.timezone },
                   { label: 'Availability', value: person.availability_status },
@@ -70,7 +70,7 @@ export const PersonWorkspacePage: React.FC = () => {
             );
           },
         },
-        { id: 'teams', label: 'Teams', render: () => <PersonTeamsTab currentTeamId={person.team} onAssignTeam={assign('team')} /> },
+        { id: 'teams', label: 'Teams', render: () => <PersonTeamsTab personId={person.id} personName={person.full_name} primaryTeamId={person.team} onSetPrimary={assign('team')} /> },
         { id: 'departments', label: 'Departments', render: () => <PersonDepartmentsTab currentDepartmentId={person.department} onAssignDepartment={assign('department')} /> },
         { id: 'skills', label: 'Skills', render: () => <PersonSkillsTab person={person} /> },
         { id: 'assignments', label: 'Assignments', render: () => <PersonAssignmentsTab userId={person.user} personName={person.full_name} /> },

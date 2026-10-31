@@ -106,60 +106,105 @@ describe('client workspace', () => {
   });
 });
 
-describe('team workspace: membership is the person’s team', () => {
-  const state = { members: [{ ...firstPerson, team: team.id, team_name: team.name }] as Array<Record<string, unknown>> };
+describe('team workspace: members are team memberships', () => {
+  const memberships = loadSample<Record<string, Captured>>('masterdata/_team_memberships_flow.json');
+  const members = memberships.list_of_team.body.results as Array<{ id: string; team: string; team_name: string; person: string; person_name: string }>;
   const server = (c: MockCall): MockReply => {
     if (path(c) === `/api/v1/teams/${team.id}/`) return { body: teams.detail_admin.body };
-    if (path(c) === '/api/v1/people/' && c.method === 'GET') {
-      // Only a request filtered by this team is answered with its members.
-      return { body: page(params(c).team === team.id ? state.members : people.list_admin.body.results) };
-    }
-    if (path(c).startsWith('/api/v1/people/') && c.method === 'PATCH') return { body: { ...secondPerson, ...(c.body as object) } };
+    if (path(c) === '/api/v1/team-memberships/' && c.method === 'GET') return { body: params(c).team === team.id ? page(members) : page([]) };
+    if (path(c) === '/api/v1/team-memberships/' && c.method === 'POST') return { status: 201, body: memberships.add_grace_to_comp.body };
+    if (path(c).startsWith('/api/v1/team-memberships/') && c.method === 'DELETE') return { status: 204 };
+    if (path(c) === '/api/v1/people/' && c.method === 'GET') return { body: people.list_admin.body };
     return { body: page([]) };
   };
 
-  it('lists the people of the team, found with the team filter', async () => {
+  it('lists the members of the team, found with the team filter on team-memberships', async () => {
     const { calls } = mockFetch(server);
     mount(<TeamWorkspacePage />, `/teams/${team.id}`, '/teams/:id');
     fireEvent.click(await screen.findByRole('tab', { name: 'Members' }));
-    expect(await screen.findByRole('link', { name: firstPerson.full_name })).toBeTruthy();
-    expect(calls.some((c) => path(c) === '/api/v1/people/' && params(c).team === team.id)).toBe(true);
+    expect(await screen.findByRole('link', { name: members[0].person_name })).toBeTruthy();
+    expect(calls.some((c) => path(c) === '/api/v1/team-memberships/' && params(c).team === team.id)).toBe(true);
+    expect(calls.some((c) => path(c) === '/api/v1/people/' && params(c).team !== undefined)).toBe(false);
   });
 
-  it('removes a member by clearing the person’s team, and adds one by setting it', async () => {
+  it('removes a member by deleting the membership, and adds one by creating it, without touching the person', async () => {
     const { calls } = mockFetch(server);
     mount(<TeamWorkspacePage />, `/teams/${team.id}`, '/teams/:id');
     fireEvent.click(await screen.findByRole('tab', { name: 'Members' }));
-    fireEvent.click(await screen.findByRole('button', { name: `Remove ${firstPerson.full_name} from ${team.name}` }));
+    fireEvent.click(await screen.findByRole('button', { name: `Remove ${members[0].person_name} from ${team.name}` }));
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Remove' }));
-    await waitFor(() => expect(calls.some((c) => c.method === 'PATCH')).toBe(true));
-    const removal = calls.find((c) => c.method === 'PATCH') as MockCall;
-    expect(path(removal)).toBe(`/api/v1/people/${firstPerson.id}/`);
-    expect(removal.body).toEqual({ team: null });
+    await waitFor(() => expect(calls.some((c) => c.method === 'DELETE')).toBe(true));
+    expect(path(calls.find((c) => c.method === 'DELETE') as MockCall)).toBe(`/api/v1/team-memberships/${members[0].id}/`);
 
     fireEvent.click(await screen.findByRole('button', { name: 'Add member' }));
     await screen.findByRole('option', { name: secondPerson.full_name });
     fireEvent.change(screen.getByLabelText(/^Person/), { target: { value: secondPerson.id } });
     fireEvent.click(screen.getByRole('button', { name: 'Add to team' }));
-    await waitFor(() => expect(calls.filter((c) => c.method === 'PATCH')).toHaveLength(2));
-    const addition = calls.filter((c) => c.method === 'PATCH')[1];
-    expect(path(addition)).toBe(`/api/v1/people/${secondPerson.id}/`);
-    expect(addition.body).toEqual({ team: team.id });
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
+    expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ team: team.id, person: secondPerson.id });
+    expect(calls.some((c) => c.method === 'PATCH')).toBe(false);
+  });
+
+  it('shows the server’s reason when the person is already a member', async () => {
+    mockFetch((c) => (path(c) === '/api/v1/team-memberships/' && c.method === 'POST' ? { status: 400, body: memberships.add_duplicate_400.body } : server(c)));
+    mount(<TeamWorkspacePage />, `/teams/${team.id}`, '/teams/:id');
+    fireEvent.click(await screen.findByRole('tab', { name: 'Members' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Add member' }));
+    await screen.findByRole('option', { name: secondPerson.full_name });
+    fireEvent.change(screen.getByLabelText(/^Person/), { target: { value: secondPerson.id } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add to team' }));
+    expect(await screen.findByText(/already a member/)).toBeTruthy();
   });
 });
 
-describe('a person’s team tab', () => {
-  it('marks the current team and saves a choice as the id of the team', async () => {
-    const rows = teams.list_admin.body.results as Array<{ id: string; name: string }>;
-    mockFetch((c) => (path(c) === '/api/v1/teams/' ? { body: teams.list_admin.body } : { body: page([]) }));
-    const onAssign = vi.fn(async () => undefined);
-    mount(<PersonTeamsTab currentTeamId={rows[0].id} onAssignTeam={onAssign} />, '/x', '/x');
-    const current = await screen.findByRole('button', { name: new RegExp(rows[0].name) });
-    expect(current.getAttribute('aria-pressed')).toBe('true');
-    fireEvent.click(await screen.findByRole('button', { name: new RegExp(rows[1].name) }));
-    expect(onAssign).toHaveBeenCalledWith(rows[1].id);
-    fireEvent.click(screen.getByRole('button', { name: 'Remove from team' }));
-    expect(onAssign).toHaveBeenLastCalledWith(null);
+describe('a person’s teams tab: several teams', () => {
+  const memberships = loadSample<Record<string, Captured>>('masterdata/_team_memberships_flow.json');
+  const rows = teams.list_admin.body.results as Array<{ id: string; name: string }>;
+  const mine = [{ ...memberships.add_ada_to_comp.body, team: rows[0].id, team_name: rows[0].name, person: 'p1' }];
+  const server = (c: MockCall): MockReply => {
+    if (path(c) === '/api/v1/teams/') return { body: teams.list_admin.body };
+    if (path(c) === '/api/v1/team-memberships/' && c.method === 'GET') return { body: page(mine) };
+    if (path(c) === '/api/v1/team-memberships/' && c.method === 'POST') return { status: 201, body: memberships.add_ada_to_lighting.body };
+    if (path(c).startsWith('/api/v1/team-memberships/') && c.method === 'DELETE') return { status: 204 };
+    return { body: page([]) };
+  };
+  const mountTab = (primaryTeamId: string | null = rows[0].id) => {
+    const onSetPrimary = vi.fn(async () => undefined);
+    mount(<PersonTeamsTab personId="p1" personName="Ada" primaryTeamId={primaryTeamId} onSetPrimary={onSetPrimary} />, '/x', '/x');
+    return onSetPrimary;
+  };
+
+  it('marks the teams the person is in and the primary one, and asks only for this person’s memberships', async () => {
+    const { calls } = mockFetch(server);
+    mountTab();
+    expect(await screen.findByRole('button', { name: `Leave ${rows[0].name}` })).toBeTruthy();
+    expect(screen.getByRole('button', { name: `Join ${rows[1].name}` })).toBeTruthy();
+    expect(screen.getAllByText('Primary')).toHaveLength(1);
+    expect(calls.find((c) => path(c) === '/api/v1/team-memberships/' && c.method === 'GET')).toBeTruthy();
+    expect(params(calls.find((c) => path(c) === '/api/v1/team-memberships/') as MockCall).person).toBe('p1');
+  });
+
+  it('joins another team without leaving the first (a POST of the pair), and leaves one with a DELETE', async () => {
+    const { calls } = mockFetch(server);
+    mountTab();
+    fireEvent.click(await screen.findByRole('button', { name: `Join ${rows[1].name}` }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
+    expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ team: rows[1].id, person: 'p1' });
+    expect(calls.some((c) => c.method === 'DELETE')).toBe(false);
+
+    fireEvent.click(await screen.findByRole('button', { name: `Leave ${rows[0].name}` }));
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Leave' }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'DELETE')).toBe(true));
+    expect(path(calls.find((c) => c.method === 'DELETE') as MockCall)).toBe(`/api/v1/team-memberships/${mine[0].id}/`);
+  });
+
+  it('chooses another team as the primary one through onSetPrimary, and clears it', async () => {
+    mockFetch(server);
+    const onSetPrimary = mountTab(rows[1].id);
+    fireEvent.click(await screen.findByRole('button', { name: `Make ${rows[0].name} primary` }));
+    await waitFor(() => expect(onSetPrimary).toHaveBeenLastCalledWith(rows[0].id));
+    fireEvent.click(screen.getByRole('button', { name: 'Clear primary team' }));
+    await waitFor(() => expect(onSetPrimary).toHaveBeenLastCalledWith(null));
   });
 });
 
