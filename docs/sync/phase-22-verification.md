@@ -69,3 +69,5 @@ I could not explain the first failure, and I want that on the record rather than
 
 1. **Merge** `sync/phase-22-legacy-production-types` into `develop` and push?
 2. **Next:** the three items above are the whole of what I know is left that is legacy. Do you want (a) the `activeShowId` clean-up, (b) a pass to correct `frontend/CLAUDE.md` and `docs/frontend`, or (c) a new area (say which)? I would do (a) and (b) together as a small Phase 23.
+
+**Addendum (Phase 23):** the failure in run 1 is very probably the host's network changing while the page loaded. Phase 23 caught the same signature with evidence: a blank page (`text=""`, the guard never ran) with `net::ERR_NETWORK_CHANGED` in the console. See `phase-23-verification.md` §5. I could not prove it for this run, whose evidence was not captured.
