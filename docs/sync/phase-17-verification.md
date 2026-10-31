@@ -17,6 +17,7 @@ Branch `sync/phase-17-team-member-count` (from `develop` at `b8412eec`, which ho
 | Frontend unit tests | 98 files / 1,000 | **98 files / 1,004** |
 | `pnpm build` | OK | **OK** |
 | Biome (`src`) | 1 error / 1301 warnings | **1 error / 1301 warnings** |
+| Playwright role smoke (6 roles + phone width) | 7 of 7 | **7 of 7 pass** (20.4 minutes) |
 | Live vitest, fresh seed | | `workspaces.live` (3 tests) **pass**: a team reports 1 member after one is added from the screen and 0 after the removal, and the other team keeps 1 |
 
 Mutation checks, 6 of 6 caught: backend (a removed membership counted; the count taken from `persons`; the field left out of the response) and frontend (the list showing capacity as members; the overview showing the wrong number, first missed because the sample's capacity and count were both 1, now uses a distinct count; `member_count` missing from the pinned keys).
