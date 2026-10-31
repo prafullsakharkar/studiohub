@@ -15,7 +15,7 @@ export const AppLayout: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
   const { syncWithUserPreferences } = useThemeMode();
-  const { setActiveProject, setActiveShow, activeProjectId } = useProductionStore();
+  const { setActiveProject } = useProductionStore();
   const { density, containerWidth, headerSticky } = usePageLayoutStore();
 
   // Keep theme accent colors synced with user's saved profile preferences
@@ -25,17 +25,9 @@ export const AppLayout: React.FC = () => {
     }
   }, [user?.theme_preferences, syncWithUserPreferences]);
 
-  // Keep toolbar active project and show context synchronized with current route
+  // Keep the toolbar's active project synchronized with the current route
   useEffect(() => {
     const pathname = location.pathname;
-
-    // Match /shows/:showId
-    const directShowMatch = pathname.match(/^\/shows\/([^/]+)/);
-    if (directShowMatch) {
-      const showId = directShowMatch[1];
-      setActiveShow(showId);
-      return;
-    }
 
     // Match /projects/:id or /projects/:id/:tab
     const projectMatch = pathname.match(/^\/projects\/([^/]+)/);
@@ -43,7 +35,7 @@ export const AppLayout: React.FC = () => {
       setActiveProject(projectMatch[1]);
       return;
     }
-  }, [location.pathname, setActiveProject, setActiveShow]);
+  }, [location.pathname, setActiveProject]);
 
   return (
     <div 

@@ -19,5 +19,5 @@ export function clearUserScopedState(): void {
   } catch {
     // storage unavailable: nothing was kept
   }
-  useProductionStore.setState({ activeProjectId: null, activeShowId: null, recentProjectIds: [], favoriteProjectIds: [], activeSubTab: 'overview' });
+  useProductionStore.setState({ activeProjectId: null, recentProjectIds: [], favoriteProjectIds: [], activeSubTab: 'overview' });
 }

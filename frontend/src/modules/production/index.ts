@@ -4,3 +4,4 @@ export { PROJECT_QUERY_KEYS, useProjects } from './hooks/useProjects';
 export { ProjectFormPage } from './pages/ProjectFormPage';
 export { ProjectWorkspacePage } from './pages/ProjectWorkspacePage';
 export { ProjectsPage } from './pages/ProjectsPage';
+export { ShowRedirectPage } from './pages/ShowRedirectPage';

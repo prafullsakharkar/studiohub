@@ -66,7 +66,6 @@ async function resetProductionStore() {
   const { useProductionStore } = await import('@/core/production/useProductionStore');
   useProductionStore.setState({
     activeProjectId: null,
-    activeShowId: null,
     recentProjectIds: [],
     favoriteProjectIds: [],
   });

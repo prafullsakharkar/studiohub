@@ -481,7 +481,7 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
   '/deliveries/destinations/:id/edit': { path: '/deliveries/destinations/:id/edit', name: 'Edit Destination', permissions: ['delivery.update'] },
   '/shows/:showId': {
     path: '/shows/:showId',
-    name: 'Show Workspace',
+    name: 'Show (opens its project)',
     pagePermission: 'page.project.overview',
     permissions: ['show.view'],
   },

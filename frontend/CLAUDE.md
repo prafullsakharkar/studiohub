@@ -11,6 +11,7 @@ StudioHub is a comprehensive React-based studio management platform built with V
 - **Build Tool:** Vite 6
 - **Package Manager:** pnpm
 - **Styling:** Tailwind CSS 4, Emotion (MUI)
+- **Lint/format:** Biome (`pnpm exec biome check src`)
 - **State Management:** Zustand, React Query
 - **Forms:** React Hook Form, Zod validation
 - **Routing:** React Router v7
@@ -56,84 +57,60 @@ Tests must not depend on a developer's git-ignored `.env`: the API base URL is p
 
 ```
 src/
-├── api/                    # API client and error handling
-│   ├── client/            # HTTP client (Ky-based)
-│   └── errors/            # Error mapping and handling
+├── api/                    # The typed API client: one folder per backend app
+│   ├── client/            # ApiClient (Ky-based), URL and config helpers
+│   ├── errors/            # normalizeApiError and the error classes
+│   └── <app>/             # identity, masterdata, production, publishing, deliveries, scheduling, settings, audit, analytics
+│                          #   <thing>.ts typed routes + query keys; *RowKeys.ts compile-time key lists pinned to captured responses
 ├── core/                   # Application core services
-│   ├── auth/              # Authentication context and provider
-│   ├── permissions/       # RBAC system with role/permission checks
-│   ├── workspace/         # Workspace state (Zustand store)
-│   ├── production/        # Production store
-│   ├── repository/        # BaseRepository abstract class
-│   ├── logging/           # Logger utility
-│   └── errors/            # Error boundary component
-├── components/            # Canonical components (single authoritative implementations)
-│   ├── ui/                # Button, Dialog, Drawer, Badge, Card, Input... (barrel re-exports shared primitives)
-│   ├── data/              # DataTable, FilterBar
-│   ├── workspace/         # Workspace chrome
-│   ├── entity/            # Configuration-driven entity presentation
-│   ├── forms/             # FormDialog, FormDrawer, FormSection
-│   ├── navigation/        # Global/context navigation
-│   └── system/            # Loading/Error states, ConfirmDialog, Feature/Permission gates
+│   ├── auth/              # AuthProvider, tokenStorage, session cleanup
+│   ├── permissions/       # useCan / evaluateAccess over backend permission codes, the route registry
+│   ├── production/        # useProductionStore: the chosen, recent and favourite projects
+│   ├── api/generated/     # openapi.ts, generated from the backend schema
+│   ├── layout/ notifications/ logging/ errors/
+├── components/            # Cross-module pieces: forms/EntityPicker, history/EntityHistory, system/ (QueryBoundary, ConfirmDialog, ApiErrorState), ui/ (Dialog, SmartImg)
 ├── modules/               # Feature modules (see below)
-├── routes/                # Route definitions (AppRoutes.tsx)
-├── layouts/               # Layout components (AppLayout)
-├── shared/                # Shared utilities
-│   ├── components/        # Reusable UI components
-│   ├── crud/              # CRUD table component
-│   ├── hooks/             # Shared hooks
-│   ├── stores/            # Shared Zustand stores
-│   ├── utils/             # Utility functions
-│   └── views/             # View helpers
-├── providers/             # Context providers (Query, Theme)
-├── types/                 # Global type definitions
-└── pages/                 # Error/system pages (404, 403, 500)
+├── features/dashboard/    # The dashboard (the one feature that is not under modules/)
+├── routes/                # AppRoutes.tsx, route guards, lazyNamed
+├── layouts/               # AppLayout, Sidebar, Header, Breadcrumbs, ProjectSwitcher
+├── shared/
+│   ├── components/        # Button, Modal, Badge, Card, Pagination, EmptyState, tabs/, bulk/ …
+│   ├── workspace/canonical/  # WorkspaceShell, WorkspaceHeader, WorkspaceActionBar, WorkspaceOverflowMenu
+│   ├── data/              # listFetcher, usePaginatedList, fetchAllRows, query keys
+│   ├── forms/             # useServerForm, server error mapping
+│   ├── hooks/ stores/ utils/ layouts/
+├── providers/             # QueryProvider, ThemeProvider
+├── test/                  # fetchMock, samples loader, live/ (tests against a real backend)
+├── types/                 # common.ts, identity.ts
+└── pages/                 # 401/403/404/500 and no-project-access pages
 ```
 
 ### Module Structure
 
-Each module follows this pattern:
+Each module holds what its screens need; there is no per-module data layer (the typed API lives in `src/api/<app>/`):
 ```
 modules/<module-name>/
 ├── pages/           # Page components (route endpoints)
 ├── components/      # Module-specific components
-├── hooks/           # Module-specific hooks
-├── services/        # Business logic (API calls)
-├── repositories/    # Data access layer (extends BaseRepository)
-├── schemas/         # Zod validation schemas (auth module)
-└── utils/           # Module utilities (scheduling module)
+├── hooks/           # Module-specific hooks (React Query over the typed API)
+└── index.ts         # Public boundary: other code imports '@/modules/<name>', never deep paths
 ```
+Directory-style records (clients, vendors, people, departments, teams, offices, positions, catalog, versions, …) are *configs*, not pages: `modules/directory/{DirectoryListPage,DirectoryFormPage}` take a config, and `modules/directory/workspace/` holds the shared record-workspace pieces.
 
-**Major Modules:**
-- `auth` – Login, authentication, token management
-- `production` – Projects, shots, assets, versions
-- `tasks` – Task management, time logging
-- `reviews` – Review sessions, playlists
-- `publishing` – Content publishing
-- `deliveries` – Delivery management
-- `workflows` – Workflow builder and automation
-- `scheduling` – Calendar and event scheduling
-- `intelligence` – Search, knowledge base, AI/copilot, analytics, integrations, automations
-- `audit` – Activity and audit logging
-- `dashboard` – Dashboard views
-- `settings` – User settings
-- `platform` – Notifications, billing, reports, data platform
+**Modules:** `assets`, `audit`, `auth`, `catalog`, `clients`, `dashboard`, `deliveries`, `departments`, `directory`, `identity` (account, access/RBAC), `media`, `offices`, `people`, `platform` (health), `playlists`, `production` (projects, structure, work, review), `publishing`, `reviews`, `scheduling`, `settings`, `shots`, `tasks`, `teams`, `vendors`, `versions`, `workflows`.
 
 ### Core Services & Patterns
 
 #### Authentication & Permissions
-- **AuthProvider** (`src/core/auth/AuthProvider.tsx`) – Manages user state, login/logout
-- **RBAC System** (`src/core/permissions/rbac.ts`) – Role and permission checking
-- **Protected Routes** – `ProtectedRoute` and `GuestRoute` wrappers enforce authorization
-- **Permission Components** – `<Can>`, `<HasRole>`, `<ProtectedComponent>` for conditional rendering
+- **AuthProvider** (`src/core/auth/AuthProvider.tsx`) – the signed-in user comes from `/auth/me`; no cached fallback
+- **Permissions** (`src/core/permissions/`) – `useCan(code)` / `evaluateAccess` over backend permission codes; `routePermissionsRegistry.ts` guards routes; role names are display labels only
+- **Route guards** – `ProtectedRoute`, `GuestRoute`, `RoutePermissionGuard`, `ProjectRoute` (project membership)
+- **Gating components** – `PermissionGate`, `PermissionButton`, `PermissionMenuItem` (`core/permissions/PermissionComponents.tsx`) and the `permission` field of workspace actions
 
 #### Data Layer
-- **BaseRepository** (`src/core/repository/BaseRepository.ts`) – Abstract class extending all repositories
-  - Provides CRUD, search, bulk operations, restore
-  - Expects DRF (Django REST Framework) API format with trailing slashes
-  - PaginatedResponse wrapper for list endpoints
-- **ApiClient** (`src/api/client/ApiClient.ts`) – HTTP client wrapper (Ky-based)
-- **Error Handling** (`src/api/errors/errorMapper.ts`) – Maps API errors to user-friendly messages
+- **ApiClient** (`src/api/client/ApiClient.ts`) – HTTP client wrapper (Ky-based); tokens are added and refreshed here
+- **Typed API modules** (`src/api/<app>/`) – one typed function per backend route, query-key factories, `resourceApi` for plain CRUD, `listFetcher` for lists
+- **Errors** (`src/api/errors/normalizeApiError.ts`) – every error body becomes `{status, message, fieldErrors, nonFieldErrors, code, requestId}`
 
 #### State Management
 - **Zustand Stores** (`src/core/production/useProductionStore.ts`: the chosen, recent and favourite projects)
@@ -162,28 +139,18 @@ Routes are centralized in `src/routes/AppRoutes.tsx`:
 
 ### Canonical Component Rule
 
-All common UI/UX patterns have ONE implementation, imported via the canonical barrel:
-
-```typescript
-import { Button, Dialog, DataTable, LoadingState } from '@/components';
-```
-
-Do not import these from `@/shared/components/*` in feature code, and never create module-local duplicates. Full registry and ownership rules: [`docs/frontend/CANONICAL_COMPONENTS.md`](docs/frontend/CANONICAL_COMPONENTS.md).
+One implementation per pattern; reuse it, do not write a module-local copy. The registry of what exists and where it lives (checked against the file tree) is [`docs/frontend/CANONICAL_COMPONENTS.md`](docs/frontend/CANONICAL_COMPONENTS.md). There is no `@/components` barrel: import from the file that owns the component.
 
 ### Type System
 
-Global types in `src/types/`:
-- `auth.ts` – User, Role, Permission
-- `drf.ts` – DRF pagination (PaginatedResponse, QueryParams)
-- `common.ts` – Base types (timestamps, IDs)
-- `crud.ts` – Standard CRUD response shape
-- `<module>.ts` – Domain-specific types
+- API types live beside the call that uses them, in `src/api/<app>/` (shapes from `openapi.ts` and captured responses). Do not add a hand-written shape for a backend record.
+- `src/types/common.ts` – pagination and shared base types; `src/types/identity.ts` – User, membership and permission types.
 
 **Type Path Alias:**
 ```typescript
 // Available: @/* maps to src/*
-import { User } from '@/types/auth';
-import { ProjectService } from '@/modules/production/services/ProjectService';
+import type { User } from '@/types/identity';
+import { projectsApi } from '@/api/production/structure';
 ```
 
 ### Backend contract
@@ -199,13 +166,11 @@ The frontend talks only to the live DRF backend; there is no mock mode. The cont
 ## Common Development Tasks
 
 ### Adding a New Module
-1. Create module directory: `src/modules/<name>/`
-2. Add subdirectories: `pages/`, `components/`, `hooks/`, `services/`, `repositories/`
-3. Create repository extending `BaseRepository<T>`
-4. Create service layer calling repository methods
-5. Create page component (hook into the service)
-6. Add routes to `AppRoutes.tsx`
-7. Add navigation link to sidebar/menu
+1. Create `src/modules/<name>/` with `pages/`, `components/`, `hooks/` and an `index.ts` boundary.
+2. If it is a record with a list and a form, write a config for `DirectoryListPage` / `DirectoryFormPage` (see `modules/directory/entities`) instead of new pages.
+3. Add the typed API first (next section); the module only uses it.
+4. Add the route to `AppRoutes.tsx` (load the page with `lazyNamed`) and an entry in `core/permissions/routePermissionsRegistry.ts`.
+5. Add the navigation link to the sidebar.
 
 ### Adding an API Endpoint
 1. Verify the route and its response in `docs/sync/00-backend-inventory.md` or the OpenAPI schema; never invent one.
@@ -214,7 +179,7 @@ The frontend talks only to the live DRF backend; there is no mock mode. The cont
 4. Add a test that serves a captured sample (`loadSample` + `mockFetch`); capture a new one with the tools in `docs/sync/tools/` if none exists.
 
 ### Adding Form Validation
-1. Define Zod schema in `src/modules/<module>/schemas/`
+1. Define a Zod schema in `src/modules/<module>/schemas/` (directory records use `modules/directory/formModel.ts` instead)
 2. Use `useServerForm` (`src/shared/forms/`, a `useForm` that also maps backend errors) with `zodResolver`
 3. Submit with `submit(async (values) => { await mutation.mutateAsync(...) })`: field errors from a 400 land on the inputs, the rest in `serverError`
 4. Display client errors from `formState.errors` and `serverError.banner` / `.details`
