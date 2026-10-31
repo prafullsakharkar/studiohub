@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthContext } from '@/core/auth/AuthContext';
 import type { AuthContextValue } from '@/core/auth/AuthContext';
@@ -25,6 +25,11 @@ const params = (c: MockCall) => Object.fromEntries(new URL(c.url).searchParams);
 const page = (results: unknown[]) => ({ count: results.length, next: null, previous: null, results });
 const noteRows = flow.notes_search_shot.body.results as Array<{ id: string; subject: string; entity_id: string; entity_type: string }>;
 
+const Where: React.FC = () => {
+  const location = useLocation();
+  return <p>{`at ${location.pathname}${location.search}`}</p>;
+};
+
 function mount(route = `/shots/${shot.id}`) {
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } })}>
@@ -33,6 +38,8 @@ function mount(route = `/shots/${shot.id}`) {
           <Routes>
             <Route path="/shots/:shotId" element={<ShotWorkspacePage />} />
             <Route path="/shots" element={<p>Shots list</p>} />
+            <Route path="/tasks/new" element={<Where />} />
+            <Route path="/versions/new" element={<Where />} />
           </Routes>
         </MemoryRouter>
       </AuthContext.Provider>
@@ -131,6 +138,19 @@ describe('shot workspace', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'PATCH')).toBe(true));
     expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ assigned_artist: null });
+  });
+
+  it('opens the task and version forms already naming this shot', async () => {
+    mockFetch(server);
+    mount();
+    fireEvent.click(await screen.findByRole('button', { name: 'Add Task' }));
+    expect(await screen.findByText(`at /tasks/new?project=${shot.project_id}&entity_type=Shot&entity_id=${shot.id}`)).toBeTruthy();
+    cleanup();
+    mockFetch(server);
+    mount();
+    await openMore();
+    fireEvent.click(await screen.findByRole('menuitem', { name: /Submit New Version/ }));
+    expect(await screen.findByText(`at /versions/new?project=${shot.project_id}&shot=${shot.id}`)).toBeTruthy();
   });
 
   it('lists only the notes that name this shot, found by searching its code', async () => {

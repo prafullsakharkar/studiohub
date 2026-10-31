@@ -7,6 +7,7 @@ import { auditKeys } from '@/api/audit/audit';
 import { shotsApi } from '@/api/production/work';
 import { SmartImg } from '@/components/ui/SmartImg';
 import { notify } from '@/core/notifications/notify';
+import { AssignArtistDialog } from '@/modules/production/work/AssignArtistDialog';
 import { EntityNotesTab } from '@/modules/production/work/EntityNotes';
 import { EntityTasksPanel, ShotAssetsPanel, WorkHistoryPanel } from '@/modules/production/work/panels';
 import { EntityMediaTab, EntityReviewsTab, EntityVersionsTab } from '@/modules/production/review/EntityRecords';
@@ -14,7 +15,6 @@ import { Button } from '@/shared/components/Button';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { ScrollableTabs, type TabItem } from '@/shared/components/tabs/ScrollableTabs';
 import { type BreadcrumbItem, CanonicalWorkspaceHeader, WorkspaceShell, type WorkspaceAction } from '@/shared/workspace/canonical';
-import { ShotAssignDialog } from '../components/workspace/ShotAssignDialog';
 import { ShotOverview } from '../components/workspace/ShotOverview';
 
 const TABS: TabItem[] = [
@@ -168,7 +168,7 @@ export const ShotWorkspacePage: React.FC = () => {
       {tab === 'notes' && <EntityNotesTab target={{ ...entity, code: shot.code, name: shot.name }} />}
       {tab === 'media' && <EntityMediaTab entity={entity} />}
       {tab === 'history' && <WorkHistoryPanel targetType="Shot" id={shot.id} />}
-      {assigning && <ShotAssignDialog shot={shot} onClose={() => setAssigning(false)} />}
+      {assigning && <AssignArtistDialog target={{ id: shot.id, code: shot.code, projectId: shot.project_id, assignedArtistId: shot.assigned_artist_id }} save={(userId) => shotsApi.update(shot.id, { assigned_artist: userId })} queryKey={shotsApi.keys.all} onClose={() => setAssigning(false)} />}
     </WorkspaceShell>
   );
 };
