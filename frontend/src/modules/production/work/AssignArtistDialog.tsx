@@ -18,8 +18,8 @@ export interface AssignTarget {
 
 /**
  * Choose a shot's or an asset's artist from the project's members: the value is the member's user id, saved as
- * `assigned_artist`. Leaving it empty unassigns. (The server does not check that the user is a member of the project,
- * so the picker offers members only.)
+ * `assigned_artist`. Leaving it empty unassigns. The server refuses a user who is not an active member of the project
+ * (CR-34, 400 "Unknown user."); the picker offers members only, and a refusal is shown under the field.
  */
 export const AssignArtistDialog: React.FC<{
   target: AssignTarget;
