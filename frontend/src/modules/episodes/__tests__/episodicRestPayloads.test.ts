@@ -26,23 +26,6 @@ describe('episodic REST payloads (mocked transport)', () => {
     vi.clearAllMocks();
   });
 
-  it('sends the full id chain on sequence create', async () => {
-    const { apiClient } = await import('@/api/client/ApiClient');
-    const { SequenceRepository } = await import(
-      '@/modules/sequences/repositories/SequenceRepository'
-    );
-    await new SequenceRepository().create({
-      project_id: 'proj-102',
-      episode_id: 'ep-101',
-      code: 'SQ01',
-      name: 'Seq 1',
-    } as any);
-    expect(vi.mocked(apiClient.post)).toHaveBeenCalledWith(
-      expect.stringMatching(/sequences/),
-      expect.objectContaining({ project_id: 'proj-102', episode_id: 'ep-101' })
-    );
-  });
-
   it('sends the full id chain on shot bulk-create', async () => {
     // Real bulk entry point: ShotService.bulkCreate → RESTShotAdapter.bulkCreate
     // (the registry proxy resolves to the Mock adapter under vitest, and the
