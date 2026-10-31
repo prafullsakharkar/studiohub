@@ -1,6 +1,20 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { type ActiveTimerState, Task } from '@/types/production';
+
+export interface ActiveTimerState {
+  isRunning: boolean;
+  activeTaskId: string | null;
+  activeTaskCode: string | null;
+  activeTaskTitle: string | null;
+  activeProjectId: string | null;
+  activeProjectCode: string | null;
+  activeProjectName: string | null;
+  department?: string;
+  startTime: number | null;
+  elapsedSeconds: number;
+  isBillable: boolean;
+  notes: string;
+}
 
 interface TimerStoreState extends ActiveTimerState {
   startTimer: (task: {

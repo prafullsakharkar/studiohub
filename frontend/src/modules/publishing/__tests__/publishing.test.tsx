@@ -13,7 +13,7 @@ import { mockFetch } from '@/test/fetchMock';
 import type { MockCall, MockReply } from '@/test/fetchMock';
 import { loadSample } from '@/test/samples';
 import type { User } from '@/types/identity';
-import type { Project } from '@/types/production';
+import type { Project } from '@/api/production/structure';
 import { BulkRegisterPage, PublishedFilePage } from '../FilePages';
 import { filesFormConfig, useFilesListConfig } from '../files';
 import { publishFormConfig, usePublishListConfig } from '../jobs';

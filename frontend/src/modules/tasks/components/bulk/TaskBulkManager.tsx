@@ -9,7 +9,7 @@ import {
   Layers,
   FileSpreadsheet,
 } from 'lucide-react';
-import { Task } from '@/types/production';
+import type { Task } from '@/api/production/work';
 import { Department, PriorityLevel } from '@/types/common';
 import { EntityResolutionItem, BulkOperationSummary, BulkOperationResponse, ResolutionUserAction, EntityResolutionState } from '@/shared/components/bulk/types';
 import { useBulkTasks } from '../../hooks/useBulkTasks';

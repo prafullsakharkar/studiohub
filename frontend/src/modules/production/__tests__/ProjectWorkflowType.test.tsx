@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isEpisodicProject } from '@/types/production';
+import { isEpisodicProject } from '../projectWorkflow';
 
 describe('project workflow configuration', () => {
   it('treats an explicit workflow_type Episodic project as episodic', () => {

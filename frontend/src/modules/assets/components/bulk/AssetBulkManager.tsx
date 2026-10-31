@@ -9,7 +9,7 @@ import {
   Layers,
   FileSpreadsheet,
 } from 'lucide-react';
-import type { Asset } from '@/types/production';
+import type { Asset } from '@/api/production/work';
 import type { BulkOperationResponse, BulkOperationSummary, EntityResolutionItem, EntityResolutionState, ResolutionUserAction } from '@/shared/components/bulk/types';
 import { useBulkAssets } from '../../hooks/useBulkAssets';
 import { BulkImportGrid, GridColumn } from '@/shared/components/bulk/BulkImportGrid';
