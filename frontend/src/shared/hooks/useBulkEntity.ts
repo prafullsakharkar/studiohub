@@ -8,27 +8,16 @@ import type {
   BulkOperationResponse,
 } from '@/types/production';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
-import { useActivityStore } from '@/shared/stores/useActivityStore';
 
 export interface BulkEntityLabels {
   singular: string;
   plural: string;
-  entityType: string;
-  bulkId: string;
-  bulkName: string;
-  bulkCode: string;
-  /** Extra activity tag after Label + 'Bulk Operations' (e.g. 'USD'). */
-  extraTag?: string;
-  /** Verb for the staging action label (default 'Staged'). */
-  stagingVerb?: string;
   /** Destination phrase for restore messages (default 'active library'). */
   restoreDestination?: string;
   /** When false, titles omit the entity label (legacy shots style). */
   titledOps?: boolean;
   /** Noun for creation titles: `Bulk {Label} {creationNoun} Complete` (default 'Staging'). */
   creationNoun?: string;
-  /** Custom one-line summary for the creation activity entry. */
-  describeCreateResults?: (created: number, recovered: number, failed: number) => string;
 }
 
 export interface BulkEntityService<T> {
@@ -49,8 +38,6 @@ export interface UseBulkEntityOptions<T> {
   labels: BulkEntityLabels;
 }
 
-const ACTOR = { id: 'usr-current', name: 'Alex Chen', email: 'alex.chen@nexusvfx.com', role: 'VFX Supervisor' };
-
 /**
  * Canonical generic bulk-operations hook. Per-entity hooks are thin wrappers
  * supplying their service, query keys, and labels — no behavior lives there.
@@ -59,27 +46,10 @@ export function useBulkEntity<T>(options: UseBulkEntityOptions<T>) {
   const { service, queryKeyAll, projectQueryKeyAll, extraQueryKeys, labels } = options;
   const queryClient = useQueryClient();
   const addNotification = useNotificationStore((state) => state.addNotification);
-  const addActivity = useActivityStore((state) => state.addActivity);
 
-  const {
-    singular: Label,
-    plural,
-    entityType,
-    bulkId,
-    bulkName,
-    bulkCode,
-    extraTag,
-    stagingVerb = 'Staged',
-    restoreDestination = 'active library',
-    titledOps = true,
-    creationNoun = 'Staging',
-    describeCreateResults,
-  } = labels;
+  const { singular: Label, plural, restoreDestination = 'active library', titledOps = true, creationNoun = 'Staging' } = labels;
 
-  const tags = extraTag ? [Label, 'Bulk Operations', extraTag] : [Label, 'Bulk Operations'];
-  const pluralLabel = plural[0].toUpperCase() + plural.slice(1);
   const title = (op: string) => (titledOps ? `Bulk ${Label} ${op} Complete` : `Bulk ${op} Complete`);
-  const entity = { type: entityType, id: bulkId, name: bulkName, code: bulkCode };
 
   const invalidate = (op: 'create' | 'update' | 'archive' | 'restore') => {
     queryClient.invalidateQueries({ queryKey: [...queryKeyAll] });
@@ -113,16 +83,6 @@ export function useBulkEntity<T>(options: UseBulkEntityOptions<T>) {
           message: `${createdCount} created, ${recoveredCount} recovered, ${failedCount} failed.`,
         });
       }
-      addActivity({
-        action: 'bulk_create' as never,
-        actionLabel: `Bulk ${stagingVerb} ${pluralLabel}`,
-        actor: ACTOR,
-        entity,
-        description:
-          describeCreateResults?.(createdCount, recoveredCount, failedCount) ??
-          `Bulk ${plural} operation: ${createdCount} created, ${recoveredCount} recovered, ${failedCount} failed`,
-        tags,
-      });
     },
   });
 
@@ -136,14 +96,6 @@ export function useBulkEntity<T>(options: UseBulkEntityOptions<T>) {
         title: title('Update'),
         message: `Updated ${resp.summary.updatedCount} ${plural} successfully.`,
       });
-      addActivity({
-        action: 'bulk_update' as never,
-        actionLabel: `Bulk Updated ${pluralLabel}`,
-        actor: ACTOR,
-        entity,
-        description: `Bulk updated ${resp.summary.updatedCount} ${plural}`,
-        tags: [Label, 'Bulk Operations'],
-      });
     },
   });
 
@@ -156,14 +108,6 @@ export function useBulkEntity<T>(options: UseBulkEntityOptions<T>) {
         title: title('Archive'),
         message: `Archived ${resp.summary?.archivedCount || 0} ${plural}.`,
       });
-      addActivity({
-        action: 'bulk_archive' as never,
-        actionLabel: `Bulk Archived ${pluralLabel}`,
-        actor: ACTOR,
-        entity,
-        description: `Archived ${resp.summary?.archivedCount || 0} ${plural}`,
-        tags: [Label, 'Bulk Operations'],
-      });
     },
   });
 
@@ -175,14 +119,6 @@ export function useBulkEntity<T>(options: UseBulkEntityOptions<T>) {
         type: 'success',
         title: title('Restore'),
         message: `Restored ${resp.summary?.restoredCount || 0} ${plural} to ${restoreDestination}.`,
-      });
-      addActivity({
-        action: 'bulk_restore' as never,
-        actionLabel: `Bulk Restored ${pluralLabel}`,
-        actor: ACTOR,
-        entity,
-        description: `Restored ${resp.summary?.restoredCount || 0} ${plural}`,
-        tags: [Label, 'Bulk Operations'],
       });
     },
   });

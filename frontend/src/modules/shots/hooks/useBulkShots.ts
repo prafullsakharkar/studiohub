@@ -18,16 +18,9 @@ export function useBulkShots() {
     labels: {
       singular: 'Shot',
       plural: 'shots',
-      entityType: 'shot',
-      bulkId: 'bulk-shots',
-      bulkName: 'Bulk Shots',
-      bulkCode: 'BULK_SHOT',
-      stagingVerb: 'Created',
       restoreDestination: 'active production',
       titledOps: false,
       creationNoun: 'Creation',
-      describeCreateResults: (createdCount, recoveredCount, failedCount) =>
-        `Bulk operation: ${createdCount} created, ${recoveredCount} recovered, ${failedCount} failed`,
     },
   });
 }

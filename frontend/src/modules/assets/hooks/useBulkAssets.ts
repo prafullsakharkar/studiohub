@@ -12,11 +12,6 @@ export function useBulkAssets() {
     labels: {
       singular: 'Asset',
       plural: 'assets',
-      entityType: 'asset',
-      bulkId: 'bulk-assets',
-      bulkName: 'Bulk Assets',
-      bulkCode: 'BULK_AST',
-      extraTag: 'USD',
     },
   });
 }
