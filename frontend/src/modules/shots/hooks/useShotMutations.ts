@@ -5,11 +5,9 @@ import { Shot } from '@/types/production';
 import { SHOT_QUERY_KEYS } from './useShots';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 ;
-import { useActivityStore } from '@/shared/stores/useActivityStore';
 
 export function useShotMutations() {
   const queryClient = useQueryClient();
-  const recordActivity = useActivityStore((state) => state.recordActivity);
   const addNotification = useNotificationStore((state) => state.addNotification);
 
   const createMutation = useMutation({
@@ -21,19 +19,6 @@ export function useShotMutations() {
         type: 'success',
         title: 'Shot Created',
         message: `Shot ${newShot.code} registered to sequence.`,
-      });
-
-      recordActivity({
-        action: 'created',
-        actionLabel: 'Shot Created',
-        resourceType: 'shot',
-        resourceId: newShot.id,
-        resourceName: newShot.name || newShot.code,
-        resourceCode: newShot.code,
-        projectId: newShot.project_id,
-        context: newShot.sequence_code || newShot.project_code,
-        description: `Registered shot ${newShot.code} to sequence ${newShot.sequence_code || 'pipeline'}.`,
-        tags: ['Shot', 'Creation'],
       });
     },
   });
@@ -48,19 +33,6 @@ export function useShotMutations() {
         title: 'Shot Updated',
         message: `Shot ${updated.code} status updated.`,
       });
-
-      recordActivity({
-        action: 'updated',
-        actionLabel: 'Shot Updated',
-        resourceType: 'shot',
-        resourceId: updated.id,
-        resourceName: updated.name || updated.code,
-        resourceCode: updated.code,
-        projectId: updated.project_id,
-        context: updated.sequence_code || updated.project_code,
-        description: `Updated shot ${updated.code} (Status: ${updated.status || 'Active'}).`,
-        tags: ['Shot', 'Update'],
-      });
     },
   });
 
@@ -73,20 +45,6 @@ export function useShotMutations() {
         type: 'success',
         title: 'Shot Approved',
         message: `Supervisor approved shot ${approvedShot.code}. Final delivery package unlocked.`,
-      });
-
-      recordActivity({
-        action: 'approved',
-        actionLabel: 'Shot Approved',
-        resourceType: 'shot',
-        resourceId: approvedShot.id,
-        resourceName: approvedShot.name || approvedShot.code,
-        resourceCode: approvedShot.code,
-        projectId: approvedShot.project_id,
-        context: approvedShot.sequence_code || approvedShot.project_code,
-        description: `Supervisor approved shot ${approvedShot.code}. Final turnover package validated.`,
-        diffs: [{ field: 'status', label: 'Status', before: 'Review', after: 'Approved' }],
-        tags: ['Shot', 'Approval'],
       });
     },
   });
@@ -101,19 +59,6 @@ export function useShotMutations() {
         title: 'Shot Archived',
         message: `Shot ${archivedShot.code} moved to archive.`,
       });
-
-      recordActivity({
-        action: 'archived',
-        actionLabel: 'Shot Archived',
-        resourceType: 'shot',
-        resourceId: archivedShot.id,
-        resourceName: archivedShot.name || archivedShot.code,
-        resourceCode: archivedShot.code,
-        projectId: archivedShot.project_id,
-        context: archivedShot.sequence_code || archivedShot.project_code,
-        description: `Archived shot ${archivedShot.code}.`,
-        tags: ['Shot', 'Archive'],
-      });
     },
   });
 
@@ -126,19 +71,6 @@ export function useShotMutations() {
         type: 'success',
         title: 'Shot Restored',
         message: `Shot ${restoredShot.code} restored to active pipeline.`,
-      });
-
-      recordActivity({
-        action: 'restored',
-        actionLabel: 'Shot Restored',
-        resourceType: 'shot',
-        resourceId: restoredShot.id,
-        resourceName: restoredShot.name || restoredShot.code,
-        resourceCode: restoredShot.code,
-        projectId: restoredShot.project_id,
-        context: restoredShot.sequence_code || restoredShot.project_code,
-        description: `Restored shot ${restoredShot.code}.`,
-        tags: ['Shot', 'Restore'],
       });
     },
   });

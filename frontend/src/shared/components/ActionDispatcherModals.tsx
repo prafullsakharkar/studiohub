@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Modal } from './Modal';
 import { Button } from './Button';
 import type { EntityType, EntityId } from '@/types/common';
-import { useActivityStore } from '@/shared/stores/useActivityStore';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import { usePermissions } from '@/core/permissions/usePermissions';
 import {
@@ -55,7 +54,6 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { addActivity } = useActivityStore();
   const addNotification = useNotificationStore((s) => s.addNotification);
   const { currentRole } = usePermissions();
   const roleName = currentRole?.name || 'Administrator';
@@ -76,27 +74,6 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
     const proj = fixtureProjects.find((p) => p.id === selectedProject) || fixtureProjects[0];
     const person = fixturePeople.find((u) => u.id === selectedPerson) || fixturePeople[0];
 
-    addActivity({
-      actor: {
-        id: 'usr-001',
-        name: 'Alex Chen',
-        email: 'supervisor@studiohub.vfx',
-        role: roleName,
-      },
-      action: 'assign',
-      actionLabel: 'Project assigned',
-      entity: {
-        type: 'project',
-        id: proj.id,
-        code: proj.code,
-        name: proj.name,
-        context: `Assignee: ${person.full_name} • Status: Active`,
-        deepLink: '/projects',
-      },
-      description: `Assigned project ${proj.name} [${proj.code}] to lead artist ${person.full_name}.`,
-      diffs: [{ field: 'lead_assignee', label: 'Show Lead', before: 'Unassigned', after: person.full_name }],
-    });
-
     addNotification({
       title: 'Project Assigned',
       message: `Successfully linked ${proj.name} to ${person.full_name}`,
@@ -110,27 +87,6 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
     const team = fixtureTeams.find((t) => t.id === selectedTeam) || fixtureTeams[0];
     const proj = fixtureProjects.find((p) => p.id === selectedProject) || fixtureProjects[0];
 
-    addActivity({
-      actor: {
-        id: 'usr-002',
-        name: 'Marcus Vance',
-        email: 'admin@studiohub.vfx',
-        role: roleName,
-      },
-      action: 'assign',
-      actionLabel: 'Team assigned',
-      entity: {
-        type: 'team',
-        id: team.id,
-        code: team.code,
-        name: team.name,
-        context: `Deployed to Project: ${proj.name} [${proj.code}]`,
-        deepLink: '/teams',
-      },
-      description: `Deployed specialized production squad ${team.name} to show ${proj.name}.`,
-      diffs: [{ field: 'assigned_project', label: 'Target Show', before: 'Bench / Idle', after: proj.name }],
-    });
-
     addNotification({
       title: 'Team Assigned',
       message: `Deployed ${team.name} to show ${proj.name}`,
@@ -141,24 +97,6 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
 
   // Handle Archive Entity
   const handleArchive = () => {
-    addActivity({
-      actor: {
-        id: 'usr-001',
-        name: 'Alex Chen',
-        email: 'supervisor@studiohub.vfx',
-        role: roleName,
-      },
-      action: 'archive',
-      actionLabel: `${entityType.toUpperCase()} archived`,
-      entity: {
-        type: entityType,
-        id: entityId,
-        name: `${entityType} #${entityId}`,
-        context: 'State: Archived / Cold Storage',
-      },
-      description: `Safely archived ${entityType} record ${entityId} to enterprise cold storage.`,
-      diffs: [{ field: 'is_active', label: 'Active State', before: 'true', after: 'false (Archived)' }],
-    });
 
     addNotification({
       title: 'Entity Archived',
@@ -170,24 +108,6 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
 
   // Handle Restore Entity
   const handleRestore = () => {
-    addActivity({
-      actor: {
-        id: 'usr-001',
-        name: 'Alex Chen',
-        email: 'supervisor@studiohub.vfx',
-        role: roleName,
-      },
-      action: 'restore',
-      actionLabel: `${entityType.toUpperCase()} restored`,
-      entity: {
-        type: entityType,
-        id: entityId,
-        name: `${entityType} #${entityId}`,
-        context: 'State: Active / Restored',
-      },
-      description: `Restored ${entityType} ${entityId} back to active production roster.`,
-      diffs: [{ field: 'is_active', label: 'Active State', before: 'false (Archived)', after: 'true (Active)' }],
-    });
 
     addNotification({
       title: 'Entity Restored',
@@ -199,24 +119,6 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
 
   // Handle Change Status
   const handleChangeStatus = () => {
-    addActivity({
-      actor: {
-        id: 'usr-001',
-        name: 'Alex Chen',
-        email: 'supervisor@studiohub.vfx',
-        role: roleName,
-      },
-      action: 'status_change',
-      actionLabel: 'Status changed',
-      entity: {
-        type: entityType,
-        id: entityId,
-        name: `${entityType} #${entityId}`,
-        context: `New Status: ${selectedStatus}`,
-      },
-      description: `Changed lifecycle status of ${entityType} to ${selectedStatus}.`,
-      diffs: [{ field: 'status', label: 'Production Status', before: 'In Progress', after: selectedStatus }],
-    });
 
     addNotification({
       title: 'Status Updated',
@@ -230,27 +132,6 @@ export const ActionDispatcherModal: React.FC<ActionModalProps> = ({
   const handleCreateEntity = () => {
     const name = targetEntityName.trim() || `New ${createCategory}`;
     const code = targetEntityCode.trim() || `${createCategory.slice(0, 3).toUpperCase()}-99`;
-
-    addActivity({
-      actor: {
-        id: 'usr-001',
-        name: 'Alex Chen',
-        email: 'supervisor@studiohub.vfx',
-        role: roleName,
-      },
-      action: 'create',
-      actionLabel: `${createCategory.charAt(0).toUpperCase() + createCategory.slice(1)} created`,
-      entity: {
-        type: createCategory,
-        id: `${createCategory}-new-${Date.now().toString(36)}`,
-        code,
-        name,
-        context: 'Status: Active / Initialized',
-        deepLink: `/${createCategory}s`,
-      },
-      description: `Created new ${createCategory} entity: ${name} [${code}] with default studio templates.`,
-      diffs: [{ field: 'state', label: 'Entity Creation', before: 'None', after: 'Active' }],
-    });
 
     addNotification({
       title: 'Entity Created',

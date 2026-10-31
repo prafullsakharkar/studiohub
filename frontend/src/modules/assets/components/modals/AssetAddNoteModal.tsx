@@ -5,7 +5,6 @@ import { Button } from '@/shared/components/Button';
 import { useAssetMutations } from '@/modules/assets/hooks/useAssetMutations';
 import { useCurrentUser } from '@/core/auth/useCurrentUser';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
-import { useActivityStore } from '@/shared/stores/useActivityStore';
 
 export interface AssetAddNoteModalProps {
   isOpen: boolean;
@@ -20,7 +19,6 @@ export const AssetAddNoteModal: React.FC<AssetAddNoteModalProps> = ({
   asset,
   onNoteAdded,
 }) => {
-  const recordActivity = useActivityStore((state) => state.recordActivity);
   const { user } = useCurrentUser();
   const { updateAsset, isUpdating } = useAssetMutations();
   const { addNotification } = useNotificationStore();
@@ -50,19 +48,6 @@ export const AssetAddNoteModal: React.FC<AssetAddNoteModalProps> = ({
       data: {
         description: existingDesc,
       },
-    });
-
-    recordActivity({
-      action: 'commented',
-      actionLabel: 'Asset Note Logged',
-      resourceType: 'asset',
-      resourceId: asset.id,
-      resourceName: asset.name,
-      resourceCode: asset.code,
-      projectId: asset.project_id,
-      context: asset.code,
-      description: `Added ${category} note to ${asset.name} (${asset.code}): "${content.slice(0, 60)}${content.length > 60 ? '...' : ''}"`,
-      tags: ['Asset', 'Note', category],
     });
 
     if (onNoteAdded) {
