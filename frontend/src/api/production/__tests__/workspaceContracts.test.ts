@@ -58,3 +58,32 @@ describe('the typed bulkUpdate', () => {
     expect(calls[0].body).toEqual({ items: [{ id: 'a', description: 'x' }, { id: 'b', status: 'In Progress' }] });
   });
 });
+
+describe('what the project workspace relies on (captured from the running backend)', () => {
+  it('"Completed" is not a project status, and a PATCH to "Archived" does not archive: the project stays live and listed', () => {
+    expect(flow.project_patch_completed.status).toBe(400);
+    expect(flow.project_patch_completed.body.status).toEqual(['"Completed" is not a valid choice.']);
+    for (const status of ['project_patch_on_hold', 'project_patch_approved']) expect(flow[status].status).toBe(200);
+    expect(flow.project_patch_archived.status).toBe(200);
+    expect(flow.project_detail_after_status_archived.status).toBe(200);
+    expect(flow.projects_archived_after_status_archived.body.results.map((p: any) => p.id)).not.toContain(flow.project_detail.body.id);
+  });
+
+  it('archiving soft-deletes: the project can no longer be opened, is listed as archived, and DELETE is the same soft delete', () => {
+    expect(flow.project_archive.status).toBe(200);
+    expect(flow.project_detail_after_archive.status).toBe(404);
+    expect(flow.projects_archived.body.results.map((p: any) => p.id)).toContain(flow.project_detail.body.id);
+    expect(flow.project_restore.status).toBe(200);
+    expect(flow.project_delete.status).toBe(204);
+    expect(flow.projects_archived_after_delete.body.results.map((p: any) => p.id)).toContain(flow.project_detail.body.id);
+  });
+
+  it('a duplicate is created from the settings alone; the server ignores the other fields of a whole project it is sent', () => {
+    const settings = flow.project_clone_settings;
+    expect(settings.status).toBe(201);
+    expect(Object.keys((settings as any).request.body).sort()).toEqual(['aspect_ratio', 'code', 'color_space', 'description', 'fps', 'name', 'resolution', 'type', 'workflow_type']);
+    expect(settings.body.id).not.toBe(flow.project_detail.body.id);
+    expect(flow.project_clone_whole_object.status).toBe(201);
+    expect(flow.project_clone_whole_object.body.id).not.toBe(flow.project_detail.body.id);
+  });
+});

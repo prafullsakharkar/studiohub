@@ -15,9 +15,7 @@ import {
   Edit,
   Copy,
   Archive,
-  RotateCcw,
   CheckCircle2,
-  Trash2,
   Download,
   ExternalLink,
   ChevronDown,
@@ -27,7 +25,6 @@ import {
   GitFork,
   Clock,
   HardDrive,
-  FileText,
   Upload,
   Scissors,
   MessageSquare,
@@ -37,14 +34,17 @@ import {
   RefreshCw,
   Tv,
 } from 'lucide-react';
-import { Project, isEpisodicProject } from '@/types/production';
+import { isEpisodicProject } from '@/types/production';
+import { projectsApi, type Project, type ProjectInput } from '@/api/production/structure';
+import { auditKeys } from '@/api/audit/audit';
+import { notify } from '@/core/notifications/notify';
+import { useQueryClient } from '@tanstack/react-query';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { Modal } from '@/shared/components/Modal';
 import { SmartImg } from '@/components/ui/SmartImg';
 import { WorkspaceActionBar } from '@/shared/workspace/canonical/WorkspaceActionBar';
 import { WorkspaceAction } from '@/shared/workspace/canonical/types';
-import { useProjectMutations } from '../hooks/useProjectMutations';
 import { useProjects } from '../hooks/useProjects';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -81,7 +81,6 @@ import { ProjectPlaylistsTab } from './project-tabs/ProjectPlaylistsTab';
 import { ProjectWorkflowTab } from './project-tabs/ProjectWorkflowTab';
 import { ProjectTimelogsTab } from './project-tabs/ProjectTimelogsTab';
 import { ProjectCalendarTab } from './project-tabs/ProjectCalendarTab';
-import { ProjectAttachmentsTab } from './project-tabs/ProjectAttachmentsTab';
 
 export type ProjectTabId =
   | 'overview'
@@ -106,8 +105,7 @@ export type ProjectTabId =
   | 'playlists'
   | 'workflow'
   | 'timelogs'
-  | 'calendar'
-  | 'attachments';
+  | 'calendar';
 
 export interface ProjectWorkspaceSectionDef {
   id: string;
@@ -170,7 +168,6 @@ export const PROJECT_WORKSPACE_SECTIONS: ProjectWorkspaceSectionDef[] = [
     tabs: [
       { id: 'pipeline', label: 'Pipeline', icon: Terminal },
       { id: 'files', label: 'Files / Media', icon: HardDrive },
-      { id: 'attachments', label: 'Attachments', icon: FileText },
       { id: 'activity', label: 'Activity', icon: Activity },
     ],
   },
@@ -207,7 +204,6 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
   const switcherRef = useRef<HTMLDivElement>(null);
 
   const [isCloneOpen, setIsCloneOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [cloneData, setCloneData] = useState({
     name: `${project.name} (Copy)`,
     code: `${project.code}_CLONE`,
@@ -215,7 +211,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
 
   const navigate = useNavigate();
   const addNotification = useNotificationStore((state) => state.addNotification);
-  const { updateProject, deleteProject, createProject } = useProjectMutations();
+  const queryClient = useQueryClient();
 
   const { user } = useCurrentUser();
   const { data: orgProjectsData } = useProjects();
@@ -335,50 +331,46 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
   });
 
   // Actions
-  const handleToggleArchive = async () => {
-    const nextStatus = project.status === 'Archived' ? 'In Progress' : 'Archived';
-    await updateProject({
-      id: project.id,
-      data: { status: nextStatus as any },
-    });
-    addNotification({
-      type: nextStatus === 'Archived' ? 'warning' : 'success',
-      title: nextStatus === 'Archived' ? 'Project Archived' : 'Project Restored',
-      message: `${project.name} is now ${nextStatus.toLowerCase()}.`,
-    });
+  const refresh = () => Promise.all([queryClient.invalidateQueries({ queryKey: projectsApi.keys.all }), queryClient.invalidateQueries({ queryKey: auditKeys.all })]);
+
+  // The server's DELETE and its archive route are the same soft delete: the project leaves the lists and can no longer
+  // be opened, and is restored from the archived view of the project list. (A status "Archived" set by a PATCH keeps the
+  // project live and listed, and "Completed" is not a status the server accepts: neither is offered.)
+  const handleArchive = async () => {
+    try {
+      await projectsApi.archive(project.id);
+      await refresh();
+      notify.success(`${project.name} was archived.`);
+      navigate('/projects');
+    } catch (error) {
+      notify.fromError(error);
+    }
   };
 
-  const handleToggleClose = async () => {
-    const nextStatus = project.status === 'Completed' ? 'In Progress' : 'Completed';
-    await updateProject({
-      id: project.id,
-      data: { status: nextStatus as any },
-    });
-    addNotification({
-      type: nextStatus === 'Completed' ? 'info' : 'success',
-      title: nextStatus === 'Completed' ? 'Project Closed' : 'Project Reopened',
-      message: `${project.name} marked as ${nextStatus.toLowerCase()}.`,
-    });
-  };
-
+  /** A new project with this one's settings. Its shots, assets, members and files are not copied. */
   const handleClone = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cloned = await createProject({
-      ...project,
-      name: cloneData.name,
+    const settings: ProjectInput = {
       code: cloneData.code,
-      approved_shots: 0,
-      status: 'In Progress',
-      created_at: new Date().toISOString(),
-    });
-    setIsCloneOpen(false);
-    navigate(`/projects/${cloned.id}`);
-  };
-
-  const handleDelete = async () => {
-    await deleteProject(project.id);
-    setIsDeleteOpen(false);
-    navigate('/projects');
+      name: cloneData.name,
+      type: project.type,
+      workflow_type: project.workflow_type,
+      description: project.description,
+      fps: Number(project.fps),
+      resolution: project.resolution,
+      aspect_ratio: project.aspect_ratio,
+      color_space: project.color_space,
+      ...(project.client_id ? { client_id: project.client_id } : {}),
+    };
+    try {
+      const cloned = await projectsApi.create(settings);
+      await refresh();
+      setIsCloneOpen(false);
+      notify.success(`${cloned.name} was created from ${project.code}.`);
+      navigate(`/projects/${cloned.id}`);
+    } catch (error) {
+      notify.fromError(error);
+    }
   };
 
   const handleExportJSON = () => {
@@ -400,60 +392,22 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
 
   const projectActions: WorkspaceAction[] = React.useMemo(() => {
     return [
+      { id: 'edit-project', label: 'Edit', icon: <Edit className="w-3.5 h-3.5" />, variant: 'secondary', permission: 'project.update', onClick: () => navigate(`/projects/${project.id}/edit`) },
+      { id: 'clone-project', label: 'Duplicate', icon: <Copy className="w-3.5 h-3.5" />, variant: 'secondary', permission: 'project.create', onClick: () => setIsCloneOpen(true) },
+      { id: 'export-manifest', label: 'Export', icon: <Download className="w-3.5 h-3.5" />, onClick: handleExportJSON },
       {
-        id: 'edit-project',
-        label: 'Edit',
-        icon: <Edit className="w-3.5 h-3.5" />,
-        variant: 'secondary',
-        permission: 'project.update',
-        onClick: () => navigate(`/projects/${project.id}/edit`),
-      },
-      {
-        id: 'clone-project',
-        label: 'Clone',
-        icon: <Copy className="w-3.5 h-3.5" />,
-        variant: 'secondary',
-        permission: 'project.create',
-        onClick: () => setIsCloneOpen(true),
-      },
-      {
-        id: 'toggle-close',
-        label: project.status === 'Completed' ? 'Reopen' : 'Close',
-        icon: <CheckCircle2 className="w-3.5 h-3.5" />,
-        variant: 'outline',
-        permission: 'project.update',
-        onClick: handleToggleClose,
-      },
-      {
-        id: 'toggle-archive',
-        label: project.status === 'Archived' ? 'Restore' : 'Archive',
-        icon:
-          project.status === 'Archived' ? (
-            <RotateCcw className="w-3.5 h-3.5" />
-          ) : (
-            <Archive className="w-3.5 h-3.5" />
-          ),
-        variant: 'outline',
-        permission: 'project.archive',
-        onClick: handleToggleArchive,
-      },
-      {
-        id: 'export-manifest',
-        label: 'Export',
-        icon: <Download className="w-3.5 h-3.5" />,
-        onClick: handleExportJSON,
-      },
-      {
-        id: 'delete-project',
-        label: 'Delete',
-        icon: <Trash2 className="w-3.5 h-3.5 text-rose-400" />,
+        id: 'archive-project',
+        label: 'Archive',
+        icon: <Archive className="w-3.5 h-3.5 text-amber-400" />,
         danger: true,
-        permission: 'project.delete',
-        onClick: () => setIsDeleteOpen(true),
+        dividerBefore: true,
+        permission: 'project.archive',
+        confirm: { title: `Archive ${project.code}?`, message: `${project.name} is hidden from the project lists and can be restored from the archived view.`, confirmText: 'Archive Project', variant: 'warning' },
+        onClick: handleArchive,
       },
     ];
-  }, [project.id, project.status, navigate, handleToggleClose, handleToggleArchive, handleExportJSON]);
-
+    // biome-ignore lint/correctness/useExhaustiveDependencies: the handlers close over stable helpers
+  }, [project.id, project.code, project.name, navigate]);
   // REST-only: backend list is the sole source of truth (no mock fallback).
   const allOrgProjects: Project[] = React.useMemo(() => {
     return orgProjectsData?.results ?? [];
@@ -625,9 +579,9 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
       <div className="rounded-2xl border border-slate-800 bg-slate-900/90 overflow-hidden shadow-md">
         {/* Banner Image */}
         <div className="h-32 w-full relative bg-slate-950 overflow-hidden">
-          {project.banner_url || project.thumbnail_url ? (
+          {project.thumbnail_url ? (
             <SmartImg
-              src={project.banner_url || project.thumbnail_url}
+              src={project.thumbnail_url}
               alt=""
               className="w-full h-full object-cover opacity-40"
             />
@@ -652,9 +606,9 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
         {/* Identity & Actions Bar */}
         <div className="p-5 relative -mt-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div className="flex items-end gap-4 min-w-0">
-            {project.thumbnail_url || project.logo_url ? (
+            {project.thumbnail_url ? (
               <SmartImg
-                src={project.thumbnail_url || project.logo_url}
+                src={project.thumbnail_url}
                 alt={project.name}
                 className="w-20 h-20 rounded-2xl object-cover ring-4 ring-slate-900 bg-slate-950 shadow-2xl shrink-0"
               />
@@ -861,9 +815,6 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
             {activeTab === 'calendar' && (
               <ProjectCalendarTab project={project} onNavigateTab={handleNavigateTabWithContext} />
             )}
-            {activeTab === 'attachments' && (
-              <ProjectAttachmentsTab project={project} onNavigateTab={handleNavigateTabWithContext} />
-            )}
           </div>
         )}
       </div>
@@ -872,8 +823,8 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
       <Modal
         isOpen={isCloneOpen}
         onClose={() => setIsCloneOpen(false)}
-        title="Clone Show Specification"
-        subtitle={`Duplicate environment, specifications, and pipeline settings from ${project.code}`}
+        title="Duplicate project"
+        subtitle={`Create a project with the settings of ${project.code}`}
       >
         <form onSubmit={handleClone} className="space-y-3">
           <div className="space-y-1">
@@ -899,7 +850,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
           </div>
 
           <p className="text-[11px] text-slate-400">
-            This will duplicate color space, resolution, framerate, client relationship, and pipeline paths for the new show.
+            The new project gets this one's type, workflow, color space, resolution, frame rate and client. Its shots, assets, members and files are not copied.
           </p>
 
           <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
@@ -913,27 +864,6 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
         </form>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={isDeleteOpen}
-        onClose={() => setIsDeleteOpen(false)}
-        title="Delete Project Container"
-        subtitle={`Are you sure you want to remove ${project.name} (${project.code})?`}
-      >
-        <div className="space-y-4">
-          <p className="text-xs text-slate-300">
-            This action will permanently delete this show container and disconnect all associated shot references. This action cannot be undone.
-          </p>
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
-            <Button variant="ghost" size="sm" onClick={() => setIsDeleteOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="danger" size="sm" onClick={handleDelete}>
-              Confirm Delete
-            </Button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 };
