@@ -27,6 +27,7 @@ Branch `sync/phase-16-team-memberships` = `sync/phase-15-person-workspace` + `sy
 | Frontend unit tests | 97 files / 983 | **98 files / 1,000** (+17: 12 contract, 5 screens) |
 | `pnpm build` | OK | **OK** |
 | Biome (`src`) | 1 error / 1297 warnings | **1 error / 1301 warnings** |
+| Playwright role smoke | 7 of 7 (24 min) | **6 role tests pass in the full run; the phone-width test failed there and passes on its own re-run** (3.0 min). The failure was the harness, not the app: the throwaway backend stops after `SYNC_LIVE_MINUTES` (default 45) and the full run took 48 minutes, so the last routes of the phone-width test were redirected to the sign-in page (its password-reveal button has no name, which the test then reported on 18 routes; the final screenshot is the sign-in page and `backend.log` ends at 45:08). `run_role_smoke.sh` now defaults to 90 minutes |
 | Live vitest, fresh seed each | 1 file | `workspaces.live` (4 tests) and `personWorkspace.live` (1): **all pass** |
 
 Mutation checks: backend, 14 tried, 13 caught, 1 equivalent (see the CR note). Frontend, 9 of 9 caught: no leave warning, join sending the wrong person, memberships not narrowed to the person, leave and remove deleting nothing, add changing `person.team` instead, the server's reason hidden, members of every team listed, a typed field missing from the key list.
@@ -35,7 +36,6 @@ Live (real backend): a person added to a team from the screen is in both teams a
 
 ## 3. Not done
 
-- The role smoke (Playwright) was **not re-run on this branch** (see the report message; routes did not change).
 - Team lists and cards show no member count: the API does not return one for a team. A `member_count` on `Team` (like `contact_count` on clients) would be a small backend request if wanted.
 - The Office and Department "People" tabs still follow the person's single department and office, as the API defines them.
 
