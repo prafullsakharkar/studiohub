@@ -86,19 +86,9 @@ export const PersonWorkspacePage: React.FC = () => {
   ];
 
   // Actions handlers
-  const handleAssignDepartment = (deptId: string, deptName: string) => {
-    updatePerson.mutate({
-      id: person.id,
-      data: { department_id: deptId, department_name: deptName },
-    });
-  };
-
-  const handleAssignTeam = (teamId: string, teamName: string) => {
-    updatePerson.mutate({
-      id: person.id,
-      data: { team_id: teamId, team_name: teamName },
-    });
-  };
+  // Membership lives on the person: `department` and `team` are ids (the API ignores department_id / team_id).
+  const handleAssignDepartment = (departmentId: string | null) => updatePerson.mutateAsync({ id: person.id, data: { department: departmentId } });
+  const handleAssignTeam = (teamId: string | null) => updatePerson.mutateAsync({ id: person.id, data: { team: teamId } });
 
   const handleAssignProject = (projectCode: string) => {
     const current = person.assigned_projects || ['NK99'];
@@ -187,10 +177,10 @@ export const PersonWorkspacePage: React.FC = () => {
       <TabContentTransition tabKey={activeTab}>
         {activeTab === 'overview' && <PersonOverviewTab person={person} />}
         {activeTab === 'departments' && (
-          <PersonDepartmentsTab person={person} onAssignDepartment={handleAssignDepartment} />
+          <PersonDepartmentsTab currentDepartmentId={person.department} onAssignDepartment={handleAssignDepartment} />
         )}
         {activeTab === 'teams' && (
-          <PersonTeamsTab person={person} onAssignTeam={handleAssignTeam} />
+          <PersonTeamsTab currentTeamId={person.team} onAssignTeam={handleAssignTeam} />
         )}
         {activeTab === 'projects' && (
           <PersonProjectsTab
