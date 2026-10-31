@@ -21,11 +21,12 @@ from django.utils import timezone
 from apps.core.choices.lifecycle import LifecycleStatus
 from apps.masterdata.events import records
 from apps.masterdata.exceptions import MasterdataConflict
-from apps.masterdata.models import Department, Office, Person, Position, Team
+from apps.masterdata.models import Department, Office, Person, Position, Team, TeamMembership
 from apps.masterdata.services.catalog import actor_or_none
 from apps.masterdata.services.directory import DirectoryService
 from apps.masterdata.services.identity_link import identity_values
 from apps.masterdata.services.organization import live_ref
+from apps.masterdata.services.team_membership import TeamMembershipService
 from apps.masterdata.validators import catalog as v
 from apps.masterdata.validators import directory as d
 
@@ -125,7 +126,28 @@ class PersonService(DirectoryService[Person]):
 
     @classmethod
     def cascade_soft_delete(cls, instance: Person, deleted_at: Any, who: Any) -> list[str]:
-        return [w["id"] for w in cls._clear_links(instance)]
+        ids = [w["id"] for w in cls._clear_links(instance)]
+        # The person's memberships go with them (CR-32); restoring the person brings them back.
+        rows = TeamMembership.objects.filter(person=instance)  # the default manager: live rows only
+        ids += [str(pk) for pk in rows.values_list("pk", flat=True)]
+        rows.update(is_deleted=True, deleted_at=deleted_at, deleted_by=who)
+        return ids
+
+    @classmethod
+    def after_undelete(cls, instance: Person, deleted_at: Any) -> list[str]:
+        together = TeamMembership.all_objects.filter(
+            person=instance, is_deleted=True, deleted_at=deleted_at, team__is_deleted=False
+        )
+        ids = [str(pk) for pk in together.values_list("pk", flat=True)]
+        together.update(is_deleted=False, deleted_at=None, deleted_by=None)
+        return ids
+
+    @classmethod
+    def hard_delete(cls, *, actor: Any, instance: Person) -> None:
+        # Memberships removed earlier are soft-deleted rows that would block the dependants check.
+        with transaction.atomic():
+            TeamMembership.all_objects.filter(person=instance, is_deleted=True).delete()
+            super().hard_delete(actor=actor, instance=instance)
 
     @classmethod
     def before_restore(cls, instance: Person) -> None:
@@ -145,6 +167,20 @@ class PersonService(DirectoryService[Person]):
     # ---- operations ----------------------------------------------------
 
     @classmethod
+    def _join_primary_team(cls, actor: Any, person: Person) -> None:
+        """``Person.team`` is the primary team: the person is a member of it (CR-32)."""
+        team = person.team
+        if team is not None and not team.is_deleted:
+            TeamMembershipService.ensure(actor=actor, team=team, person=person)
+
+    @classmethod
+    def create(cls, *, actor: Any, data: Mapping[str, Any], parent: Any = None) -> Person:
+        with transaction.atomic():
+            person = super().create(actor=actor, data=data, parent=parent)
+            cls._join_primary_team(actor, person)
+        return person
+
+    @classmethod
     def update(cls, *, actor: Any, instance: Person, data: Mapping[str, Any]) -> Person:
         """Update; if this takes the person out of service, report the links it cleared.
 
@@ -162,6 +198,8 @@ class PersonService(DirectoryService[Person]):
                         )
             was_in_service = current.status not in _OUT_OF_SERVICE
             person = super().update(actor=actor, instance=instance, data=data)
+            if "team" in data:
+                cls._join_primary_team(actor, person)
             warnings: list[dict[str, str]] = []
             if was_in_service and person.status in _OUT_OF_SERVICE:
                 warnings = cls._clear_links(person)
