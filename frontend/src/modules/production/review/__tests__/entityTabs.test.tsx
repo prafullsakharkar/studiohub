@@ -27,12 +27,12 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function show(ui: React.ReactElement, user = artist) {
+function show(ui: React.ReactElement, user = artist, mediaRows: unknown[] = flow.media_list.body.items) {
   const mocked = mockFetch((c) => {
     const p = new URL(c.url).pathname;
     if (p === '/api/v1/versions/') return { status: 200, body: flow.versions_list.body };
     if (p === '/api/v1/reviews/') return { status: 200, body: flow.reviews_list.body };
-    return { status: 200, body: flow.media_list.body.items };
+    return { status: 200, body: mediaRows };
   });
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}>
@@ -83,5 +83,13 @@ describe('shot and asset tabs', () => {
     cleanup();
     show(<EntityMediaTab entity={{ type: 'Asset', id: media.entity_id, projectId: media.project_id }} />); // same id, other type
     await screen.findByText('No media on this asset yet.');
+  });
+
+  it('media: a stored link that is not a web address is not offered (an href that runs script)', async () => {
+    const media = flow.media_list.body.items[0];
+    const rows = [{ ...media, id: 'hostile', title: 'Hostile', preview_url: 'javascript:alert(1)', source_url: 'data:text/html,<b>x</b>' }, { ...media, id: 'fine', title: 'Fine', preview_url: 'https://cdn.example.test/p.mp4', source_url: '' }];
+    show(<EntityMediaTab entity={{ type: 'Shot', id: media.entity_id, projectId: media.project_id }} />, artist, rows);
+    const links = await screen.findAllByRole('link', { name: 'Open' });
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(['https://cdn.example.test/p.mp4']);
   });
 });

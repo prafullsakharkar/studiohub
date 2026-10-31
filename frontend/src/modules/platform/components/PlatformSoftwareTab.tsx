@@ -1,3 +1,4 @@
+import { safeWebUrl } from '@/shared/utils/safeUrl';
 import React, { useState } from 'react';
 import {
   Terminal,
@@ -317,9 +318,9 @@ export const PlatformSoftwareTab: React.FC<PlatformSoftwareTabProps> = ({
                         <div>
                           <div className="font-semibold text-white flex items-center gap-1.5">
                             {software.name}
-                            {software.website && (
+                            {safeWebUrl(software.website) && (
                               <a
-                                href={software.website}
+                                href={safeWebUrl(software.website)}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="text-slate-500 hover:text-cyan-400 transition"

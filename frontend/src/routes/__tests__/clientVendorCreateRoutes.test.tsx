@@ -2,10 +2,10 @@ import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { Route } from 'react-router-dom';
 import { AppRoutes } from '@/routes/AppRoutes';
-import { ClientCreatePage } from '@/modules/clients';
-import { ClientWorkspacePage } from '@/modules/clients';
-import { VendorCreatePage } from '@/modules/vendors';
-import { VendorWorkspacePage } from '@/modules/vendors';
+
+/** The page a route mounts: pages load lazily, and `lazyNamed` gives each wrapper the name of its component. */
+const pageOf = (route: { element?: React.ReactNode } | undefined) =>
+  ((route?.element as React.ReactElement | undefined)?.type as { displayName?: string } | undefined)?.displayName;
 
 function collectRoutes(node: React.ReactNode, out: { path?: string; element?: React.ReactNode }[] = []) {
   React.Children.forEach(node, (child) => {
@@ -26,8 +26,8 @@ describe('client/vendor create routes (Task 12 fix)', () => {
     const createRoute = routes.find((r) => r.path === '/clients/new');
     const detailRoute = routes.find((r) => r.path === '/clients/:id');
     expect(createRoute).toBeTruthy();
-    expect((createRoute!.element as React.ReactElement).type).toBe(ClientCreatePage);
-    expect((detailRoute!.element as React.ReactElement).type).toBe(ClientWorkspacePage);
+    expect(pageOf(createRoute)).toBe('ClientCreatePage');
+    expect(pageOf(detailRoute)).toBe('ClientWorkspacePage');
   });
 
   it('/vendors/new maps to VendorCreatePage, never the :id workspace', () => {
@@ -36,7 +36,7 @@ describe('client/vendor create routes (Task 12 fix)', () => {
     const createRoute = routes.find((r) => r.path === '/vendors/new');
     const detailRoute = routes.find((r) => r.path === '/vendors/:id');
     expect(createRoute).toBeTruthy();
-    expect((createRoute!.element as React.ReactElement).type).toBe(VendorCreatePage);
-    expect((detailRoute!.element as React.ReactElement).type).toBe(VendorWorkspacePage);
+    expect(pageOf(createRoute)).toBe('VendorCreatePage');
+    expect(pageOf(detailRoute)).toBe('VendorWorkspacePage');
   });
 });

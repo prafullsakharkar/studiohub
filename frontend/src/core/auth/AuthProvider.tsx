@@ -8,6 +8,7 @@ import {
 } from '@/core/permissions/rbac';
 import { logger } from '@/core/logging/logger';
 import { queryClient } from '@/providers/QueryProvider';
+import { clearUserScopedState } from './sessionCleanup';
 import { centralErrorHandler } from '@/core/api/error-handler';
 import { tokenStorage } from '@/core/auth/tokenStorage';
 
@@ -52,6 +53,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       logger.warn('AuthProvider', 'Auth expired event received. Clearing local user state.');
       setUser(null);
       queryClient.clear();
+      clearUserScopedState();
     });
 
     // 403 `mfa_enrollment_required` / `password_change_required`: the route guard sends the user
@@ -65,6 +67,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       logger.error('AuthProvider', 'Account disabled event received. Clearing local user state.');
       setUser(null);
       queryClient.clear();
+      clearUserScopedState();
     });
 
     // The session ended, here or in another tab (sign-out, rejected refresh, password changed):
@@ -74,6 +77,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         logger.info('AuthProvider', event.remote ? 'Session ended in another tab.' : 'Session ended.');
         setUser(null);
         queryClient.clear();
+        clearUserScopedState();
       }
     });
 
@@ -120,6 +124,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setRestriction(null);
       // Cleanse TanStack query cache to prevent any user data leakage
       queryClient.clear();
+      clearUserScopedState();
       setIsLoading(false);
     }
   }, []);
