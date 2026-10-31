@@ -111,11 +111,11 @@ def test_capture_workspaces(django_user_model):
     flow["asset_restore"] = call(a, "POST", f"/api/v1/assets/{aid}/restore/")
     flow["asset_shots"] = call(a, "GET", f"/api/v1/assets/{aid}/shots/")
 
-    # bulk-update: the wrapped shape the typed module sent answers "updated" and changes nothing; the flat shape applies.
+    # bulk-update (CR-35): fields wrapped in `data` and fields beside the id both apply; an item with nothing to update is refused.
     flow["bulk_update_wrapped"] = call(a, "POST", "/api/v1/shots/bulk-update/", {"items": [{"id": bulk_shot, "data": {"description": "Wrapped"}}]})
     flow["shot_after_bulk_wrapped"] = call(a, "GET", f"/api/v1/shots/{bulk_shot}/")
     flow["bulk_update_flat"] = call(a, "POST", "/api/v1/shots/bulk-update/", {"items": [{"id": bulk_shot, "description": "Flat"}]})
     flow["shot_after_bulk_flat"] = call(a, "GET", f"/api/v1/shots/{bulk_shot}/")
-
+    flow["bulk_update_nothing_to_update"] = call(a, "POST", "/api/v1/shots/bulk-update/", {"items": [{"id": bulk_shot, "data": {"colour": "red"}}]})
     (OUT / "production").mkdir(parents=True, exist_ok=True)
     (OUT / "production" / "_workspaces_flow.json").write_text(json.dumps(flow, indent=2, default=str) + "\n")
