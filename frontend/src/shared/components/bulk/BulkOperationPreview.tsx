@@ -8,7 +8,7 @@ import {
   ArrowRight,
   ShieldCheck,
 } from 'lucide-react';
-import type { EntityResolutionItem } from '@/types/production';
+import type { EntityResolutionItem } from '@/shared/components/bulk/types';
 import { Button } from '@/shared/components/Button';
 
 interface BulkOperationPreviewProps<T = any> {

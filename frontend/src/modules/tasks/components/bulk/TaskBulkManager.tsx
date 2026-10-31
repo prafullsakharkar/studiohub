@@ -11,13 +11,7 @@ import {
 } from 'lucide-react';
 import { Task } from '@/types/production';
 import { Department, PriorityLevel } from '@/types/common';
-import {
-  EntityResolutionItem,
-  BulkOperationSummary,
-  BulkOperationResponse,
-  ResolutionUserAction,
-  EntityResolutionState,
-} from '@/types/production';
+import { EntityResolutionItem, BulkOperationSummary, BulkOperationResponse, ResolutionUserAction, EntityResolutionState } from '@/shared/components/bulk/types';
 import { useBulkTasks } from '../../hooks/useBulkTasks';
 import { BulkImportGrid, GridColumn } from '@/shared/components/bulk/BulkImportGrid';
 import { BulkValidationSummary } from '@/shared/components/bulk/BulkValidationSummary';

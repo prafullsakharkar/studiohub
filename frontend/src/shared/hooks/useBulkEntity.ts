@@ -1,12 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type {
-  BulkCreateRequest,
-  BulkUpdateRequest,
-  BulkArchiveRestoreRequest,
-  CheckExistencePayload,
-  CheckExistenceResponse,
-  BulkOperationResponse,
-} from '@/types/production';
+import type { BulkCreateRequest, BulkUpdateRequest, BulkArchiveRestoreRequest, CheckExistencePayload, CheckExistenceResponse, BulkOperationResponse } from '@/shared/components/bulk/types';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 
 export interface BulkEntityLabels {

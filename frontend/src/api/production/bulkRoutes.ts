@@ -1,6 +1,6 @@
 import { apiClient } from '@/api/client/ApiClient';
 import type { BulkEntityService } from '@/shared/hooks/useBulkEntity';
-import type { Asset, Shot, Task } from '@/types/production';
+import type { Asset, Shot, Task } from './work';
 
 /**
  * The bulk routes of a production entity as the bulk managers use them: the manager's own request is posted as it is

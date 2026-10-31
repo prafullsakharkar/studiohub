@@ -10,13 +10,7 @@ import {
   FileSpreadsheet,
 } from 'lucide-react';
 import { Shot } from '@/types/production';
-import {
-  EntityResolutionItem,
-  BulkOperationSummary,
-  BulkOperationResponse,
-  ResolutionUserAction,
-  EntityResolutionState,
-} from '@/types/production';
+import { EntityResolutionItem, BulkOperationSummary, BulkOperationResponse, ResolutionUserAction, EntityResolutionState } from '@/shared/components/bulk/types';
 import { useBulkShots } from '../../hooks/useBulkShots';
 import { BulkImportGrid, GridColumn } from '@/shared/components/bulk/BulkImportGrid';
 import { BulkValidationSummary } from '@/shared/components/bulk/BulkValidationSummary';

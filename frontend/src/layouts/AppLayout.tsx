@@ -7,13 +7,12 @@ import { Header } from './Header';
 import { Breadcrumbs } from './Breadcrumbs';
 import { useProductionStore } from '@/core/production/useProductionStore';
 import { useWorkspaceStore } from '@/core/workspace/useWorkspaceStore';
-import { ProductionContextProvider } from '@/core/production/ProductionContext';
 import { usePageLayoutStore } from '@/core/layout/usePageLayoutStore';
 import { cn } from '@/shared/utils/cn';
 import { CoachMarkOverlay, GettingStartedBanner } from '@/shared/components/CoachMarkOverlay';
 import { useThemeMode } from '@/providers/ThemeProvider';
 
-const AppLayoutInner: React.FC = () => {
+export const AppLayout: React.FC = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -122,12 +121,3 @@ const AppLayoutInner: React.FC = () => {
     </div>
   );
 };
-
-export const AppLayout: React.FC = () => {
-  return (
-    <ProductionContextProvider>
-      <AppLayoutInner />
-    </ProductionContextProvider>
-  );
-};
-
