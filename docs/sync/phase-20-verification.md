@@ -29,6 +29,7 @@ Net: 51 files, +267 / −2,285 lines.
 | `pnpm build` | OK | **OK** |
 | Biome (`src`) | 1 error / 1197 warnings | **1 error (the same) / 1083 warnings** |
 | Live vitest, fresh seed each | | `auth.live` **18 pass**, `restricted.live` **4 pass**, `bulkRoutes.live` **3 pass** (shots: check, create with a duplicate beside a good row, archive, restore; assets: create, check, archive, restore; tasks: create, check) |
+| Playwright role smoke (6 roles + phone width) | 7 of 7 | **7 of 7 pass** (46.1 minutes; the machine was slow, the backend limit is now 90 minutes) |
 | Mutation checks | | **13 of 13 caught**: nine on `authApi` (the login, MFA, logout, forgot, reset and profile routes; the logout body; the change-password route; login sending extra fields) and four on the bulk routes (archive posting to restore; check-existence dropping its payload; tasks posting to shots; update posting to create). Four auth routes had no assertion at first, so the contract test was added before the mutations were re-run |
 
 ## 4. Findings, and what was not done
