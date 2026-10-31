@@ -31,6 +31,14 @@ describe('canonical redirects (real route fragments)', () => {
     expect(isNavigateTo(alias!.element, '/platform/health')).toBe(true);
   });
 
+  it('redirects /workspace (the removed open-tabs screen, which could show no record) to the dashboard', () => {
+    const tree = (AppRoutes as React.FC)({});
+    const routes = collectRoutes((tree as React.ReactElement).props.children);
+    const alias = routes.find((r) => r.path === '/workspace');
+    expect(alias).toBeTruthy();
+    expect(isNavigateTo(alias!.element, '/dashboard')).toBe(true);
+  });
+
   it('redirects /calendar to /scheduling', () => {
     const tree = (AppRoutes as React.FC)({});
     const routes = collectRoutes((tree as React.ReactElement).props.children);
