@@ -161,6 +161,23 @@ describe('themes and tags', () => {
     expect((await themesApi.get(a.id)).is_active).toBe(true);
     cleanup();
 
+    // Q-22: the first one made is the default, and it moves only through Make default
+    expect((await themesApi.get(a.id)).is_default).toBe(true);
+    expect((await themesApi.get(b.id)).is_default).toBe(false);
+    await expect(themesApi.deactivate(a.id)).rejects.toMatchObject({ status: 400 });
+    await expect(themesApi.remove(a.id)).rejects.toMatchObject({ status: 400 });
+    render(tree(pages, '/settings/system/themes'));
+    fireEvent.click(await screen.findByRole('button', { name: new RegExp(`^Make default day-${lc}`) }, { timeout: 20000 }));
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /^Make default/ }));
+    await waitFor(async () => expect((await themesApi.get(b.id)).is_default).toBe(true), { timeout: 20000 });
+    expect((await themesApi.get(a.id)).is_default).toBe(false);
+    expect((await themesApi.get(a.id)).is_active).toBe(true);
+    cleanup();
+    await signIn('artist');
+    expect((await themesApi.default()).id).toBe(b.id); // anyone signed in reads the one the app uses
+    await expect(themesApi.setDefault(a.id)).rejects.toMatchObject({ status: 403 });
+    await signIn('manager');
+
     // an artist reads tags and writes none (CR-28); the administrator makes one and the create answers its id
     await signIn('manager');
     const hero = await tagsApi.create({ name: `hero-${lc}` } as never);

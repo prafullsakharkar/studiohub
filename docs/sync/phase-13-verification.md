@@ -76,5 +76,5 @@ Each group is its own commit, so it can be reverted alone. The finder is `docs/s
 
 1. **Merge this phase** into `develop` (and later `main`)? It changes only the frontend, tests, and `docs/sync`.
 2. **Remove the legacy data access and the client-side activity feed (§6) in a follow-up?** I would do the activity feed first (it shows data the server does not have) and the five directory workspaces after.
-3. **Q-22** is still open: say so if the studio wants "the active theme" and I will write the request with the new field.
+3. **Q-22** was open here; the owner said yes afterwards and it was applied (`is_default`, see `backend-change-requests.md`).
 4. **CR-05** (broken dev seed commands) is no longer needed by the browser tests, which use the factory harness; the request stays open only for people who want a seeded development backend.

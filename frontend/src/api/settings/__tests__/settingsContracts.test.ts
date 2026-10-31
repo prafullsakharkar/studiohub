@@ -216,10 +216,32 @@ describe('themes and localizations', () => {
     expect(items('locales_list_after_activate').filter((l) => l.is_active).length).toBeGreaterThan(1);
     expect(flow.themes_deactivate_again.status).toBe(200);
   });
-  it('a week start is 0 or 1, and the last active theme cannot be deleted (CR-29)', () => {
+  it('a week start is 0 or 1 (CR-29)', () => {
     expect(flow.locales_create_bad_week.body.week_start).toEqual(['Week start is 0 (Sunday) or 1 (Monday).']);
+  });
+  it.each([
+    ['theme', 'themes'],
+    ['localization', 'locales'],
+  ])('Q-22: exactly one %s is the default, always active, moved only by set-default', (_noun, pre) => {
+    expect(flow[`${pre}_default_none`].status).toBe(404); // before any was made
+    const rows = items(pre === 'themes' ? 'themes_list_after_default' : 'locales_baseline');
+    expect(rows.filter((r) => r.is_default)).toHaveLength(1);
+    expect(flow[`${pre}_default`].body).toMatchObject({ is_default: true, is_active: true }); // the first one made
+    expect(flow[`${pre}_default_artist`].status).toBe(200); // any signed-in user reads it
+    expect(flow[`${pre}_set_default_artist`].status).toBe(403);
+    expect(flow[`${pre}_set_default_inactive`].status).toBe(400);
+    expect(flow[`${pre}_deactivate_default`].status).toBe(400);
+    expect(flow[`${pre}_deactivate_default`].body.detail).toMatch(/is the default and cannot be deactivated/);
+    expect(flow[`${pre}_set_default`].body).toEqual({ status: 'default' });
+    expect(flow[`${pre}_default_after`].body.id).not.toBe(flow[`${pre}_default`].body.id); // it moved
+    expect(items(`${pre}_by_is_default`)).toHaveLength(1);
+    expect(flow[`${pre}_delete_new_default`].status).toBe(400);
+    expect(flow[`${pre}_delete_new_default`].body.detail).toMatch(/is the default and cannot be deleted/);
+  });
+  it('the default theme cannot be deactivated by a patch either, and deleting it is refused (CR-29 became Q-22)', () => {
+    expect(flow.themes_patch_deactivate_default.body.is_active[0]).toMatch(/default and stays active/);
     expect(flow.themes_delete_active.status).toBe(400);
-    expect(flow.themes_delete_active.body.detail).toMatch(/last active theme/);
+    expect(flow.themes_delete_active.body.detail).toMatch(/is the default and cannot be deleted/);
   });
   it('a colour is checked for length here, and as hex by the form (the capture sends a long word)', () => {
     expect(flow.themes_create_bad_color.body.primary_color[0]).toMatch(/no more than 7 characters/);

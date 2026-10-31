@@ -23,7 +23,7 @@ The React app in `frontend/` was synced from the sibling `studiohub-react` repos
 - Phases 0 to 12 and backend requests CR-13 to CR-31 are merged into `develop` and `main`. Phase 13 (hardening) is described in [`phase-13-verification.md`](phase-13-verification.md).
 - Every screen reads and writes through typed modules in `frontend/src/api/<app>/` that are pinned to captured responses by contract tests (compile-time key lists in `*RowKeys.ts`, mutation-checked).
 - Authorization uses backend permission codes (`useCan`); role names are labels only. The access token lives in memory, the refresh token in `localStorage` with a cross-tab lock, and a session that ends (here or in another tab) clears the workspace tabs and chosen projects the browser kept.
-- The 22 backend change requests that were applied are listed in the table in `backend-change-requests.md` (CR-02, 13 to 31, Q-03, Q-05). **Not applied, by decision or priority:** CR-01, 03 to 11 (the frontend works around each), Q-22 (exclusive theme or localization activation: it needs a new field, see `backend-cr-26-31-verification.md` §2), and the open owner questions Q-01, Q-02, Q-04, Q-06.
+- The 22 backend change requests that were applied are listed in the table in `backend-change-requests.md` (CR-02, 13 to 31, Q-03, Q-05). **Not applied, by decision or priority:** CR-01, 03 to 11 (the frontend works around each) and the open owner questions Q-01, Q-02, Q-04, Q-06. Q-22 (one default theme and one default localization) was applied afterwards as a new `is_default` field.
 
 ## How to check that it still holds
 

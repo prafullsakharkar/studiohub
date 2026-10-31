@@ -183,6 +183,7 @@ def test_capture_settings(django_user_model):
         call(a, f"flags_by_{name}", "GET", f"{S}feature-flags/?{name}={value}")
 
     # ------------------------------------------------------------ themes
+    call(ar, "themes_default_none", "GET", f"{S}themes/default/")
     t1 = call(a, "themes_create", "POST", f"{S}themes/", {"code": "studio-dark", "name": "Studio dark", "theme_type": "dark", "primary_color": "#06b6d4", "background_color": "#020617", "font_family": "sans", "font_size": 14, "border_radius": 8}).json().get("id")
     t2 = call(a, "themes_create_second", "POST", f"{S}themes/", {"code": "studio-light", "name": "Studio light", "theme_type": "light", "primary_color": "#0e7490"}).json().get("id")
     call(a, "themes_create_duplicate", "POST", f"{S}themes/", {"code": "studio-dark", "name": "Again"})
@@ -201,6 +202,20 @@ def test_capture_settings(django_user_model):
     call(a, "themes_deactivate_again", "POST", f"{S}themes/{t2}/deactivate/", {})
     call(ar, "themes_activate_artist", "POST", f"{S}themes/{t1}/activate/", {})
     call(a, "themes_activate_back", "POST", f"{S}themes/{t1}/activate/", {})
+    # Q-22: exactly one default (the one the app uses); the first active one made becomes it
+    call(a, "themes_default", "GET", f"{S}themes/default/")
+    call(ar, "themes_default_artist", "GET", f"{S}themes/default/")
+    call(ar, "themes_set_default_artist", "POST", f"{S}themes/{t2}/set-default/", {})
+    call(a, "themes_set_default_inactive", "POST", f"{S}themes/{t2}/set-default/", {})
+    call(a, "themes_deactivate_default", "POST", f"{S}themes/{t1}/deactivate/", {})
+    call(a, "themes_patch_deactivate_default", "PATCH", f"{S}themes/{t1}/", {"is_active": False})
+    call(a, "themes_activate_second_again", "POST", f"{S}themes/{t2}/activate/", {})
+    call(a, "themes_set_default", "POST", f"{S}themes/{t2}/set-default/", {})
+    call(a, "themes_default_after", "GET", f"{S}themes/default/")
+    call(a, "themes_list_after_default", "GET", f"{S}themes/")
+    call(a, "themes_by_is_default", "GET", f"{S}themes/?is_default=true")
+    call(a, "themes_delete_new_default", "DELETE", f"{S}themes/{t2}/")
+    call(a, "themes_set_default_back", "POST", f"{S}themes/{t1}/set-default/", {})
     call(a, "themes_baseline", "GET", f"{S}themes/")
     for name, value in (("is_active", "false"), ("theme_type", "light"), ("code", "studio-dark"), ("code__icontains", "light"), ("search", "light"), ("nonsense", "1")):
         call(a, f"themes_by_{name}", "GET", f"{S}themes/?{name}={value}")
@@ -208,6 +223,7 @@ def test_capture_settings(django_user_model):
     call(a, "themes_delete", "DELETE", f"{S}themes/{t2}/")
 
     # ------------------------------------------------------------ localizations
+    call(ar, "locales_default_none", "GET", f"{S}localizations/default/")
     l1 = call(a, "locales_create", "POST", f"{S}localizations/", {"code": "en-gb", "name": "English (UK)", "language": "en", "timezone": "Europe/London", "date_format": "DD/MM/YYYY", "time_format": "24H", "currency_code": "GBP", "currency_symbol": "£", "week_start": 1}).json().get("id")
     l2 = call(a, "locales_create_second", "POST", f"{S}localizations/", {"code": "en-in", "name": "English (India)", "language": "en", "timezone": "Asia/Kolkata", "date_format": "DD-MM-YYYY", "currency_code": "INR", "currency_symbol": "₹"}).json().get("id")
     call(a, "locales_create_duplicate", "POST", f"{S}localizations/", {"code": "en-gb", "name": "Again", "language": "en"})
@@ -225,6 +241,18 @@ def test_capture_settings(django_user_model):
     call(a, "locales_list_after_activate", "GET", f"{S}localizations/")
     call(a, "locales_deactivate", "POST", f"{S}localizations/{l2}/deactivate/", {})
     call(ar, "locales_activate_artist", "POST", f"{S}localizations/{l1}/activate/", {})
+    # Q-22: exactly one default localization
+    call(a, "locales_default", "GET", f"{S}localizations/default/")
+    call(ar, "locales_default_artist", "GET", f"{S}localizations/default/")
+    call(ar, "locales_set_default_artist", "POST", f"{S}localizations/{l2}/set-default/", {})
+    call(a, "locales_set_default_inactive", "POST", f"{S}localizations/{l2}/set-default/", {})
+    call(a, "locales_deactivate_default", "POST", f"{S}localizations/{l1}/deactivate/", {})
+    call(a, "locales_activate_second_again", "POST", f"{S}localizations/{l2}/activate/", {})
+    call(a, "locales_set_default", "POST", f"{S}localizations/{l2}/set-default/", {})
+    call(a, "locales_default_after", "GET", f"{S}localizations/default/")
+    call(a, "locales_by_is_default", "GET", f"{S}localizations/?is_default=true")
+    call(a, "locales_delete_new_default", "DELETE", f"{S}localizations/{l2}/")
+    call(a, "locales_set_default_back", "POST", f"{S}localizations/{l1}/set-default/", {})
     call(a, "locales_baseline", "GET", f"{S}localizations/")
     for name, value in (("is_active", "false"), ("language", "fr"), ("timezone", "Asia/Kolkata"), ("code__icontains", "gb"), ("search", "uk"), ("nonsense", "1")):
         call(a, f"locales_by_{name}", "GET", f"{S}localizations/?{name}={value}")

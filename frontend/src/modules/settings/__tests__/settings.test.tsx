@@ -12,7 +12,7 @@ import { mockFetch } from '@/test/fetchMock';
 import type { MockCall, MockReply } from '@/test/fetchMock';
 import { loadSample } from '@/test/samples';
 import type { User } from '@/types/identity';
-import { categoryFormConfig, definitionFormConfig, flagFormConfig, localizationFormConfig, tagFormConfig, themeFormConfig, useCategoriesListConfig, useFlagsListConfig, useThemesListConfig, useValuesListConfig, valueFormConfig } from '../records';
+import { categoryFormConfig, definitionFormConfig, flagFormConfig, localizationFormConfig, tagFormConfig, themeFormConfig, useCategoriesListConfig, useFlagsListConfig, useLocalizationsListConfig, useThemesListConfig, useValuesListConfig, valueFormConfig } from '../records';
 import { SystemNav } from '../SystemNav';
 import { useFeatureFlag } from '../useFeatureFlag';
 
@@ -283,15 +283,52 @@ describe('categories, themes, localizations, tags', () => {
     expect(screen.queryByRole('button', { name: /^Archive media/ })).toBeNull();
   });
 
-  it('themes: Activate for an inactive one, Deactivate for an active one, and a hint that others stay active', async () => {
+  it('themes: Activate for an inactive one, Deactivate and Make default for an active one; the default has neither and cannot be deleted (Q-22)', async () => {
     const [theme] = rows('themes_list');
-    mockFetch(() => bare([{ ...theme, id: 't-on', code: 'on', name: 'On theme', is_active: true }, { ...theme, id: 't-off', code: 'off', name: 'Off theme', is_active: false }]));
+    mockFetch(() => bare([
+      { ...theme, id: 't-def', code: 'def', name: 'Default theme', is_active: true, is_default: true },
+      { ...theme, id: 't-on', code: 'on', name: 'On theme', is_active: true, is_default: false },
+      { ...theme, id: 't-off', code: 'off', name: 'Off theme', is_active: false, is_default: false },
+    ]));
     const List = () => <DirectoryListPage config={useThemesListConfig()} />;
     renderAt('/t', admin, <Route path="/t" element={<List />} />);
     await screen.findByText(/on · On theme/);
     expect(screen.getByRole('button', { name: /^Deactivate on/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Make default on/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Activate off/ })).toBeTruthy();
-    expect(screen.getByText(/several can be active at once/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /^Make default off/ })).toBeNull(); // an inactive one cannot be the default
+    expect(screen.queryByRole('button', { name: /^(Deactivate|Make default|Delete) def/ })).toBeNull();
+    expect(screen.getByText('Default')).toBeTruthy();
+    expect(screen.getByText(/exactly one is the default/)).toBeTruthy();
+  });
+
+  it('localizations: the same rules (Q-22): the default has no Deactivate, Make default, or Delete; an inactive one cannot be made the default', async () => {
+    const [locale] = rows('locales_baseline');
+    mockFetch(() => bare([
+      { ...locale, id: 'l-def', code: 'def', name: 'Default locale', is_active: true, is_default: true },
+      { ...locale, id: 'l-on', code: 'on', name: 'On locale', is_active: true, is_default: false },
+      { ...locale, id: 'l-off', code: 'off', name: 'Off locale', is_active: false, is_default: false },
+    ]));
+    const List = () => <DirectoryListPage config={useLocalizationsListConfig()} />;
+    renderAt('/l', admin, <Route path="/l" element={<List />} />);
+    await screen.findByText(/on · On locale/);
+    expect(screen.getByRole('button', { name: /^Make default on/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Deactivate on/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Activate off/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /^Make default off/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^(Deactivate|Make default|Delete) def/ })).toBeNull();
+    expect(screen.getByText('Default')).toBeTruthy();
+  });
+
+  it('Make default asks, then sends set-default for that row only', async () => {
+    const [theme] = rows('themes_list');
+    const { calls } = mockFetch((c) => (c.method === 'POST' ? { status: 200, body: { status: 'default' } } : bare([{ ...theme, id: 't-def', code: 'def', is_active: true, is_default: true }, { ...theme, id: 't-on', code: 'on', name: 'On theme', is_active: true, is_default: false }])));
+    const List = () => <DirectoryListPage config={useThemesListConfig()} />;
+    renderAt('/t', admin, <Route path="/t" element={<List />} />);
+    fireEvent.click(await screen.findByRole('button', { name: /^Make default on/ }));
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /^Make default/ }));
+    await waitFor(() => expect(writes(calls)).toHaveLength(1));
+    expect(path(writes(calls)[0])).toBe('/api/v1/settings/themes/t-on/set-default/');
   });
 
   it('a theme colour must be a hex colour (the server only checks its length, CR-29)', async () => {
