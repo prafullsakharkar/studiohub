@@ -46,8 +46,6 @@ export const ProjectSwitcher: React.FC<{ compact?: boolean }> = ({ compact = fal
   const {
     activeProjectId,
     setActiveProject,
-    activeShowId,
-    setActiveShow,
     recentProjectIds,
     favoriteProjectIds,
     toggleFavoriteProject,
@@ -58,26 +56,22 @@ export const ProjectSwitcher: React.FC<{ compact?: boolean }> = ({ compact = fal
     return availableProjects.find((p) => p.id === activeProjectId) || availableProjects[0] || null;
   }, [availableProjects, activeProjectId]);
 
-  // Keep activeProjectId & activeShowId synchronized with available projects
+  // Keep activeProjectId synchronized with available projects
   useEffect(() => {
     if (!isLoading) {
       if (availableProjects.length === 0) {
         if (activeProjectId) {
           setActiveProject('');
-          setActiveShow('');
         }
       } else {
         const isCurrentInAvailable = availableProjects.some((p) => p.id === activeProjectId);
         if (!isCurrentInAvailable) {
           const firstProj = availableProjects[0];
           setActiveProject(firstProj.id);
-          setActiveShow(`show-${firstProj.id}-main`);
-        } else if (activeProjectId && !activeShowId) {
-          setActiveShow(`show-${activeProjectId}-main`);
         }
       }
     }
-  }, [availableProjects, activeProjectId, activeShowId, isLoading, setActiveProject, setActiveShow]);
+  }, [availableProjects, activeProjectId, isLoading, setActiveProject]);
 
   // Close dropdown on outside click or Escape key
   useEffect(() => {
@@ -127,7 +121,6 @@ export const ProjectSwitcher: React.FC<{ compact?: boolean }> = ({ compact = fal
 
   const handleSelectProject = (project: Project) => {
     setActiveProject(project.id);
-    setActiveShow(`show-${project.id}-main`);
     setIsOpen(false);
 
     // If currently inside a project workspace, navigate to new project

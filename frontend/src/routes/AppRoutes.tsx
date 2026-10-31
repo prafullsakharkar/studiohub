@@ -135,6 +135,7 @@ const TimelogFormPage = lazyNamed(() => import('@/modules/tasks'), 'TimelogFormP
 const TimelogsPage = lazyNamed(() => import('@/modules/tasks'), 'TimelogsPage');
 const ProjectsPage = lazyNamed(() => import('@/modules/production'), 'ProjectsPage');
 const ProjectWorkspacePage = lazyNamed(() => import('@/modules/production'), 'ProjectWorkspacePage');
+const ShowRedirectPage = lazyNamed(() => import('@/modules/production'), 'ShowRedirectPage');
 const ProjectFormPage = lazyNamed(() => import('@/modules/production'), 'ProjectFormPage');
 
 /** Shown while the first page of a section downloads. */
@@ -311,7 +312,7 @@ export const AppRoutes: React.FC = () => {
 
           <Route element={<ProjectRoute />}>
 
-            <Route path="/shows/:showId" element={<ProjectWorkspacePage />} />
+            <Route path="/shows/:showId" element={<ShowRedirectPage />} />
 
             <Route path="/projects/:id" element={<ProjectWorkspacePage />} />
 
