@@ -1,170 +1,65 @@
-import { useDepartment, useDepartmentMutations } from '@/modules/departments';
-import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import {
-  Layers,
-  ChevronLeft,
-  Edit,
-  Users2,
-  Users,
-  Film,
-  CheckSquare,
-  Clock,
-  BarChart3,
-  Activity,
-  AlertCircle,
-} from 'lucide-react';
-;
-import { Button } from '@/shared/components/Button';
+import { useQuery } from '@tanstack/react-query';
+import { Layers } from 'lucide-react';
+import type React from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { departmentKeys, departmentsApi } from '@/api/masterdata/departments';
+import { EntityHistory } from '@/components/history/EntityHistory';
 import { Badge } from '@/shared/components/Badge';
-import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
-import { ScrollableTabs } from '@/shared/components/tabs/ScrollableTabs';
-import { TabContentTransition } from '@/shared/components/tabs/TabContentTransition';
-
-// Sub Tabs
-import { DeptOverviewTab } from '../components/DeptOverviewTab';
-import { DeptTeamsTab } from '../components/DeptTeamsTab';
-import { DeptPeopleTab } from '../components/DeptPeopleTab';
-import { DeptProjectsTab } from '../components/DeptProjectsTab';
-import { DeptTasksTab } from '../components/DeptTasksTab';
-import { DeptCapacityTab } from '../components/DeptCapacityTab';
-import { DeptUtilizationTab } from '../components/DeptUtilizationTab';
-import { DeptActivityTab } from '../components/DeptActivityTab';
+import { DetailGrid } from '@/modules/directory/workspace/DetailGrid';
+import { PeopleTab } from '@/modules/directory/workspace/PeopleTab';
+import { PersonLabel } from '@/modules/directory/workspace/PersonLabel';
+import { RecordActions } from '@/modules/directory/workspace/RecordActions';
+import { TeamsOfDepartment } from '@/modules/directory/workspace/TeamsOfDepartment';
+import { WorkspaceShell, type WorkspaceTab } from '@/modules/directory/workspace/WorkspaceShell';
 
 export const DepartmentWorkspacePage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
+  const { id = '' } = useParams<{ id: string }>();
+  const query = useQuery({ queryKey: departmentKeys.detail(id), queryFn: ({ signal }) => departmentsApi.get(id, signal), enabled: id !== '' });
+  const dept = query.data;
 
-  const { data: dept, isLoading, error } = useDepartment(id || '');
-  const { updateDepartment } = useDepartmentMutations();
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <LoadingSpinner size="lg" />
-        <span className="text-xs text-slate-400 mt-3 font-mono">Loading department craft workspace...</span>
-      </div>
-    );
-  }
-
-  if (error || !dept) {
-    return (
-      <div className="p-8 text-center space-y-4">
-        <div className="w-12 h-12 rounded-full bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto">
-          <AlertCircle className="w-6 h-6" />
-        </div>
-        <h2 className="text-lg font-bold text-white">Department Not Found</h2>
-        <p className="text-xs text-slate-400">
-          The requested department craft identifier could not be resolved.
-        </p>
-        <Link to="/departments">
-          <Button variant="outline" size="sm" leftIcon={<ChevronLeft className="w-4 h-4" />}>
-            Back to Departments
-          </Button>
-        </Link>
-      </div>
-    );
-  }
-
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: Layers },
-    { id: 'teams', label: 'Teams', icon: Users2 },
-    { id: 'people', label: 'People', icon: Users },
-    { id: 'projects', label: 'Projects', icon: Film },
-    { id: 'tasks', label: 'Tasks', icon: CheckSquare },
-    { id: 'capacity', label: 'Capacity', icon: Clock },
-    { id: 'utilization', label: 'Utilization', icon: BarChart3 },
-    { id: 'activity', label: 'Activity', icon: Activity },
-  ];
-
-  const handleAssignProject = (projectCode: string) => {
-    const current = dept.assigned_projects || ['NK99'];
-    if (!current.includes(projectCode)) {
-      updateDepartment.mutate({
-        id: dept.id,
-        data: { assigned_projects: [...current, projectCode] },
-      });
-    }
-  };
-
-  const handleRemoveProject = (projectCode: string) => {
-    const current = dept.assigned_projects || ['NK99'];
-    updateDepartment.mutate({
-      id: dept.id,
-      data: { assigned_projects: current.filter((c) => c !== projectCode) },
-    });
-  };
+  const tabs: WorkspaceTab[] = dept
+    ? [
+        {
+          id: 'overview',
+          label: 'Overview',
+          render: () => (
+            <DetailGrid
+              title="Department"
+              description={dept.description}
+              items={[
+                { label: 'Code', value: dept.code },
+                { label: 'Type', value: dept.department_type },
+                { label: 'Manager', value: <PersonLabel id={dept.manager} /> },
+                { label: 'Parent department', value: dept.parent ? <ParentDepartment id={dept.parent} /> : null },
+                { label: 'Color', value: dept.color },
+                { label: 'Software stack', value: dept.software_stack?.length ? dept.software_stack.join(', ') : null },
+              ]}
+            />
+          ),
+        },
+        { id: 'teams', label: 'Teams', render: () => <TeamsOfDepartment departmentId={dept.id} departmentName={dept.name} /> },
+        { id: 'people', label: 'People', render: () => <PeopleTab field="department" parentId={dept.id} parentName={dept.name} /> },
+        { id: 'history', label: 'History', render: () => <EntityHistory targetType="Department" targetId={dept.id} title="Department history" /> },
+      ]
+    : [];
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 flex-1 min-h-0">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-800">
-        <div className="flex items-center gap-3">
-          <Link to="/departments">
-            <Button size="xs" variant="outline" leftIcon={<ChevronLeft className="w-3.5 h-3.5" />}>
-              Departments
-            </Button>
-          </Link>
-          <div
-            className="w-9 h-9 rounded-lg flex items-center justify-center font-mono font-bold text-white text-sm shrink-0"
-            style={{ backgroundColor: dept.color || '#6366f1' }}
-          >
-            {dept.code}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-white">{dept.name}</h1>
-              <Badge variant="outline" className="text-[10px] font-mono text-indigo-300">
-                {dept.code}
-              </Badge>
-            </div>
-            <span className="text-xs text-slate-400 font-mono">Head: {dept.head_name} • {dept.member_count} artists</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Link to={`/departments/${dept.id}/edit`}>
-            <Button size="sm" variant="outline" leftIcon={<Edit className="w-3.5 h-3.5" />}>
-              Edit Department
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="border-b border-slate-800 pb-1">
-        <ScrollableTabs
-          tabs={tabs.map((tab) => ({
-            id: tab.id,
-            label: tab.label,
-            icon: tab.icon,
-          }))}
-          activeTab={activeTab}
-          onTabChange={(tabId) => setActiveTab(tabId)}
-          variant="pills"
-          size="sm"
-          ariaLabel="Department workspace tabs"
-        />
-      </div>
-
-      {/* Tab Content Display */}
-      <TabContentTransition tabKey={activeTab}>
-        {activeTab === 'overview' && <DeptOverviewTab dept={dept} />}
-        {activeTab === 'teams' && <DeptTeamsTab dept={dept} />}
-        {activeTab === 'people' && <DeptPeopleTab dept={dept} />}
-        {activeTab === 'projects' && (
-          <DeptProjectsTab
-            dept={dept}
-            onAssignProject={handleAssignProject}
-            onRemoveProject={handleRemoveProject}
-          />
-        )}
-        {activeTab === 'tasks' && <DeptTasksTab dept={dept} />}
-        {activeTab === 'capacity' && <DeptCapacityTab dept={dept} />}
-        {activeTab === 'utilization' && <DeptUtilizationTab dept={dept} />}
-        {activeTab === 'activity' && <DeptActivityTab dept={dept} />}
-      </TabContentTransition>
-    </div>
+    <WorkspaceShell
+      noun="department"
+      backPath="/departments"
+      backLabel="Departments"
+      isLoading={query.isLoading}
+      error={query.error}
+      onRetry={() => void query.refetch()}
+      record={dept ? { title: dept.name, code: dept.code, icon: <Layers className="w-6 h-6" />, badges: <Badge variant="info">{dept.department_type}</Badge> } : null}
+      actions={dept && <RecordActions noun="department" name={dept.name} id={dept.id} basePath="/departments" queryKey={departmentKeys.all} managePermission="masterdata.directory.manage" remove={departmentsApi.remove} />}
+      tabs={tabs}
+    />
   );
+};
+
+/** The parent department, by name and linked. */
+const ParentDepartment: React.FC<{ id: string }> = ({ id }) => {
+  const parent = useQuery({ queryKey: departmentKeys.detail(id), queryFn: ({ signal }) => departmentsApi.get(id, signal), staleTime: 60_000 });
+  return parent.data ? <Link to={`/departments/${id}`} className="text-indigo-300 hover:underline">{parent.data.name}</Link> : <>{parent.isError ? 'Unavailable' : '…'}</>;
 };
