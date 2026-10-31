@@ -51,6 +51,9 @@ class DepartmentSerializer(serializers.ModelSerializer[Department]):
 
 
 class TeamSerializer(serializers.ModelSerializer[Team]):
+    # Annotated by the selector: the live memberships of the team (CR-33).
+    member_count = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Team
         fields = (
@@ -64,10 +67,11 @@ class TeamSerializer(serializers.ModelSerializer[Team]):
             "current_project_code",
             "color",
             "capacity",
+            "member_count",
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at", "member_count")
         validators = []
 
 

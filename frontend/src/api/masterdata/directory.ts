@@ -7,7 +7,8 @@ type Schemas = components['schemas'];
 // masterdata section); the viewsets ignore anything else, so the UI offers nothing else.
 
 // ---------------------------------------------------------------- teams
-export type Team = Schemas['Team'];
+/** `member_count` is the live memberships of the team (CR-33); it is newer than the generated schema snapshot, so it is added here and pinned in `directoryRowKeys.ts`. */
+export type Team = Schemas['Team'] & { readonly member_count: number };
 export type TeamInput = Pick<Team, 'code' | 'name' | 'department'> & Partial<Pick<Team, 'description' | 'lead' | 'focus_discipline' | 'current_project_code' | 'color' | 'capacity'>>;
 export const teamsApi = resourceApi<Team, TeamInput>('teams', '/api/v1/teams/');
 export const TEAM_ORDERING = ['name', 'code', 'created_at'] as const;

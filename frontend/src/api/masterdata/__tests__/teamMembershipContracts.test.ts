@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { loadSample } from '@/test/samples';
-import { TEAM_MEMBERSHIP_KEYS } from '../directoryRowKeys';
+import { TEAM_KEYS, TEAM_MEMBERSHIP_KEYS } from '../directoryRowKeys';
 
 type Captured = { status: number; body: any };
 const flow = loadSample<Record<string, Captured>>('masterdata/_team_memberships_flow.json');
@@ -51,5 +51,17 @@ describe('the rules the screens rely on', () => {
   it('the primary team keeps a membership, and the people filter by team is the primary team only', () => {
     expect(flow.list_of_grace.body.results.map((r: any) => r.team_name).sort()).toEqual(['Comp A', 'Lighting A']);
     expect(flow.people_filter_by_team_is_primary_only.body.count).toBe(0);
+  });
+});
+
+describe('a team carries its member count (CR-33)', () => {
+  it('every team row has exactly the typed fields, member_count included', () => {
+    expect(keys(flow.team_detail.body)).toEqual(keys(TEAM_KEYS));
+    for (const row of flow.teams_list.body.results) expect(keys(row)).toEqual(keys(TEAM_KEYS));
+  });
+
+  it('counts the live memberships: two for Comp A, one for Lighting A (its primary-team membership was removed)', () => {
+    expect(flow.teams_list.body.results[0].member_count).toBe(2);
+    expect(flow.team_detail.body.member_count).toBe(1);
   });
 });

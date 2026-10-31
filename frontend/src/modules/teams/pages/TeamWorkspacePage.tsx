@@ -34,6 +34,7 @@ export const TeamWorkspacePage: React.FC = () => {
                 { label: 'Code', value: team.code },
                 { label: 'Department', value: <DepartmentLink id={team.department} /> },
                 { label: 'Lead', value: <PersonLabel id={team.lead} /> },
+                { label: 'Members', value: team.member_count },
                 { label: 'Focus discipline', value: team.focus_discipline },
                 { label: 'Current project code', value: team.current_project_code },
                 { label: 'Capacity', value: team.capacity },

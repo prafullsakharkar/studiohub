@@ -58,7 +58,12 @@ class TeamSelector(_DirectorySelector):
 
     @classmethod
     def _build(cls, manager) -> QuerySet[Any]:
-        return manager.select_related("department", "lead")
+        # ``member_count`` counts live memberships in the same query (CR-33), as ``contact_count`` does.
+        return manager.select_related("department", "lead").annotate(
+            member_count=Count(
+                "memberships", filter=Q(memberships__is_deleted=False), distinct=True
+            )
+        )
 
 
 class TeamMembershipSelector(_DirectorySelector):

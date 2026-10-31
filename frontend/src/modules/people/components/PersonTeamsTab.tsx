@@ -67,7 +67,7 @@ export const PersonTeamsTab: React.FC<PersonTeamsTabProps> = ({ personId, person
                       <span className="font-bold text-sm text-white">{team.name}</span>
                       <span className="text-[10px] font-mono bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">{team.code}</span>
                     </div>
-                    {team.focus_discipline && <span className="block text-xs text-slate-400 mt-1">{team.focus_discipline}</span>}
+                    <span className="block text-xs text-slate-400 mt-1">{[team.focus_discipline, `${team.member_count} ${team.member_count === 1 ? 'member' : 'members'}`].filter(Boolean).join(' · ')}</span>
                   </div>
                   <div className="flex gap-1">
                     {membershipId && <Badge variant="info">Member</Badge>}

@@ -4,27 +4,27 @@
       "method": "POST",
       "path": "/api/v1/team-memberships/",
       "body": {
-        "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
-        "person": "c791ce84-d41c-4a97-868e-226aa1215b6c"
+        "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
+        "person": "821d967b-5f6b-4ed2-a5fd-0c35f86c2107"
       }
     },
     "status": 201,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "32675c18-7416-4b90-97f6-61de003ab692",
+      "X-Request-ID": "c44afd6a-b292-44d7-96c9-dff218052906",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
-      "id": "6793ebe1-a7c8-405a-9a06-b2ca659c3273",
-      "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
+      "id": "8b4300cf-2e0f-40df-889e-f91970591843",
+      "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
       "team_name": "Comp A",
-      "person": "c791ce84-d41c-4a97-868e-226aa1215b6c",
+      "person": "821d967b-5f6b-4ed2-a5fd-0c35f86c2107",
       "person_name": "Ada Lovelace",
       "person_status": "active",
       "person_department_name": "Membership Compositing",
       "person_office_name": "",
-      "created_at": "2026-10-31T09:02:57.851988Z",
-      "updated_at": "2026-10-31T09:02:57.851996Z"
+      "created_at": "2026-10-31T10:08:52.746037Z",
+      "updated_at": "2026-10-31T10:08:52.746047Z"
     }
   },
   "add_ada_to_lighting": {
@@ -32,27 +32,27 @@
       "method": "POST",
       "path": "/api/v1/team-memberships/",
       "body": {
-        "team": "c9131d1a-0ed0-4054-af96-a190977fc890",
-        "person": "c791ce84-d41c-4a97-868e-226aa1215b6c"
+        "team": "a239a51f-fbf0-42f1-a5ee-cd78ca2cd4e1",
+        "person": "821d967b-5f6b-4ed2-a5fd-0c35f86c2107"
       }
     },
     "status": 201,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "7d1cb494-ab4b-4cb2-ba17-d8d16fba633a",
+      "X-Request-ID": "72dbfecd-860d-41b4-bf38-7d4dc2336a5f",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
-      "id": "623b81fe-d985-4c9c-a816-6c4292d876da",
-      "team": "c9131d1a-0ed0-4054-af96-a190977fc890",
+      "id": "9e4612b4-5616-4075-b473-79067f7ceda7",
+      "team": "a239a51f-fbf0-42f1-a5ee-cd78ca2cd4e1",
       "team_name": "Lighting A",
-      "person": "c791ce84-d41c-4a97-868e-226aa1215b6c",
+      "person": "821d967b-5f6b-4ed2-a5fd-0c35f86c2107",
       "person_name": "Ada Lovelace",
       "person_status": "active",
       "person_department_name": "Membership Compositing",
       "person_office_name": "",
-      "created_at": "2026-10-31T09:02:57.869540Z",
-      "updated_at": "2026-10-31T09:02:57.869548Z"
+      "created_at": "2026-10-31T10:08:52.764175Z",
+      "updated_at": "2026-10-31T10:08:52.764183Z"
     }
   },
   "add_grace_to_comp": {
@@ -60,27 +60,27 @@
       "method": "POST",
       "path": "/api/v1/team-memberships/",
       "body": {
-        "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
-        "person": "f15ed603-0b4d-4756-a69a-8909846078d5"
+        "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
+        "person": "55271053-abc2-47cf-a864-09309cdd51fb"
       }
     },
     "status": 201,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "1243ed41-6a49-4681-a05d-a475ffa528d3",
+      "X-Request-ID": "dcd2cc97-2f2c-4e1a-aa2c-669afee0960e",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
-      "id": "4a464b55-980d-4172-b106-60068973e4b1",
-      "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
+      "id": "8ab25ac2-b950-495e-b290-d2b561d3c039",
+      "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
       "team_name": "Comp A",
-      "person": "f15ed603-0b4d-4756-a69a-8909846078d5",
+      "person": "55271053-abc2-47cf-a864-09309cdd51fb",
       "person_name": "Grace Hopper",
       "person_status": "active",
       "person_department_name": "",
       "person_office_name": "",
-      "created_at": "2026-10-31T09:02:57.887430Z",
-      "updated_at": "2026-10-31T09:02:57.887438Z"
+      "created_at": "2026-10-31T10:08:52.781994Z",
+      "updated_at": "2026-10-31T10:08:52.782001Z"
     }
   },
   "add_duplicate_400": {
@@ -88,14 +88,14 @@
       "method": "POST",
       "path": "/api/v1/team-memberships/",
       "body": {
-        "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
-        "person": "c791ce84-d41c-4a97-868e-226aa1215b6c"
+        "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
+        "person": "821d967b-5f6b-4ed2-a5fd-0c35f86c2107"
       }
     },
     "status": 400,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "224ddfbd-6ab5-424b-a0ad-e61b9ae34eac",
+      "X-Request-ID": "668acfde-647f-4912-9067-482f764d3973",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
@@ -104,7 +104,7 @@
       ],
       "error": {
         "code": "validation_error",
-        "request_id": "224ddfbd-6ab5-424b-a0ad-e61b9ae34eac"
+        "request_id": "668acfde-647f-4912-9067-482f764d3973"
       }
     }
   },
@@ -117,7 +117,7 @@
     "status": 400,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "57ec1e92-5d9c-4dec-aa66-d763fa89a903",
+      "X-Request-ID": "eba2da9c-85a6-491a-92de-88f3cbf74dd7",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
@@ -129,7 +129,7 @@
       ],
       "error": {
         "code": "validation_error",
-        "request_id": "57ec1e92-5d9c-4dec-aa66-d763fa89a903"
+        "request_id": "eba2da9c-85a6-491a-92de-88f3cbf74dd7"
       }
     }
   },
@@ -138,14 +138,14 @@
       "method": "POST",
       "path": "/api/v1/team-memberships/",
       "body": {
-        "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
+        "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
         "person": "00000000-0000-0000-0000-000000000000"
       }
     },
     "status": 400,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "b2618658-db05-4653-a963-54cb6ef125da",
+      "X-Request-ID": "0b2456d7-bbbe-4597-b651-f55829ff47fd",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
@@ -154,7 +154,7 @@
       ],
       "error": {
         "code": "validation_error",
-        "request_id": "b2618658-db05-4653-a963-54cb6ef125da"
+        "request_id": "0b2456d7-bbbe-4597-b651-f55829ff47fd"
       }
     }
   },
@@ -163,21 +163,21 @@
       "method": "POST",
       "path": "/api/v1/team-memberships/",
       "body": {
-        "team": "c9131d1a-0ed0-4054-af96-a190977fc890",
-        "person": "f15ed603-0b4d-4756-a69a-8909846078d5"
+        "team": "a239a51f-fbf0-42f1-a5ee-cd78ca2cd4e1",
+        "person": "55271053-abc2-47cf-a864-09309cdd51fb"
       }
     },
     "status": 403,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "e5cbb6dc-8455-485b-b79b-5ef3f4a18525",
+      "X-Request-ID": "9509262f-000d-418e-a8dd-519662c4417f",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
       "detail": "You do not have permission to perform this action.",
       "error": {
         "code": "permission_denied",
-        "request_id": "e5cbb6dc-8455-485b-b79b-5ef3f4a18525"
+        "request_id": "9509262f-000d-418e-a8dd-519662c4417f"
       }
     }
   },
@@ -190,7 +190,7 @@
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "f7afecf5-c04a-4d49-b249-40cb6f150b7a",
+      "X-Request-ID": "672fef08-0075-4566-8295-8a380f349141",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
@@ -199,40 +199,40 @@
       "previous": null,
       "results": [
         {
-          "id": "6793ebe1-a7c8-405a-9a06-b2ca659c3273",
-          "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
+          "id": "8b4300cf-2e0f-40df-889e-f91970591843",
+          "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
           "team_name": "Comp A",
-          "person": "c791ce84-d41c-4a97-868e-226aa1215b6c",
+          "person": "821d967b-5f6b-4ed2-a5fd-0c35f86c2107",
           "person_name": "Ada Lovelace",
           "person_status": "active",
           "person_department_name": "Membership Compositing",
           "person_office_name": "",
-          "created_at": "2026-10-31T09:02:57.851988Z",
-          "updated_at": "2026-10-31T09:02:57.851996Z"
+          "created_at": "2026-10-31T10:08:52.746037Z",
+          "updated_at": "2026-10-31T10:08:52.746047Z"
         },
         {
-          "id": "623b81fe-d985-4c9c-a816-6c4292d876da",
-          "team": "c9131d1a-0ed0-4054-af96-a190977fc890",
+          "id": "9e4612b4-5616-4075-b473-79067f7ceda7",
+          "team": "a239a51f-fbf0-42f1-a5ee-cd78ca2cd4e1",
           "team_name": "Lighting A",
-          "person": "c791ce84-d41c-4a97-868e-226aa1215b6c",
+          "person": "821d967b-5f6b-4ed2-a5fd-0c35f86c2107",
           "person_name": "Ada Lovelace",
           "person_status": "active",
           "person_department_name": "Membership Compositing",
           "person_office_name": "",
-          "created_at": "2026-10-31T09:02:57.869540Z",
-          "updated_at": "2026-10-31T09:02:57.869548Z"
+          "created_at": "2026-10-31T10:08:52.764175Z",
+          "updated_at": "2026-10-31T10:08:52.764183Z"
         },
         {
-          "id": "4a464b55-980d-4172-b106-60068973e4b1",
-          "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
+          "id": "8ab25ac2-b950-495e-b290-d2b561d3c039",
+          "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
           "team_name": "Comp A",
-          "person": "f15ed603-0b4d-4756-a69a-8909846078d5",
+          "person": "55271053-abc2-47cf-a864-09309cdd51fb",
           "person_name": "Grace Hopper",
           "person_status": "active",
           "person_department_name": "",
           "person_office_name": "",
-          "created_at": "2026-10-31T09:02:57.887430Z",
-          "updated_at": "2026-10-31T09:02:57.887438Z"
+          "created_at": "2026-10-31T10:08:52.781994Z",
+          "updated_at": "2026-10-31T10:08:52.782001Z"
         }
       ]
     }
@@ -246,7 +246,7 @@
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "de38101c-4a4e-4498-8858-145dbdd22018",
+      "X-Request-ID": "0152a854-aaad-43e9-a26f-ecc6c45a6e65",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
@@ -255,40 +255,40 @@
       "previous": null,
       "results": [
         {
-          "id": "6793ebe1-a7c8-405a-9a06-b2ca659c3273",
-          "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
+          "id": "8b4300cf-2e0f-40df-889e-f91970591843",
+          "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
           "team_name": "Comp A",
-          "person": "c791ce84-d41c-4a97-868e-226aa1215b6c",
+          "person": "821d967b-5f6b-4ed2-a5fd-0c35f86c2107",
           "person_name": "Ada Lovelace",
           "person_status": "active",
           "person_department_name": "Membership Compositing",
           "person_office_name": "",
-          "created_at": "2026-10-31T09:02:57.851988Z",
-          "updated_at": "2026-10-31T09:02:57.851996Z"
+          "created_at": "2026-10-31T10:08:52.746037Z",
+          "updated_at": "2026-10-31T10:08:52.746047Z"
         },
         {
-          "id": "623b81fe-d985-4c9c-a816-6c4292d876da",
-          "team": "c9131d1a-0ed0-4054-af96-a190977fc890",
+          "id": "9e4612b4-5616-4075-b473-79067f7ceda7",
+          "team": "a239a51f-fbf0-42f1-a5ee-cd78ca2cd4e1",
           "team_name": "Lighting A",
-          "person": "c791ce84-d41c-4a97-868e-226aa1215b6c",
+          "person": "821d967b-5f6b-4ed2-a5fd-0c35f86c2107",
           "person_name": "Ada Lovelace",
           "person_status": "active",
           "person_department_name": "Membership Compositing",
           "person_office_name": "",
-          "created_at": "2026-10-31T09:02:57.869540Z",
-          "updated_at": "2026-10-31T09:02:57.869548Z"
+          "created_at": "2026-10-31T10:08:52.764175Z",
+          "updated_at": "2026-10-31T10:08:52.764183Z"
         },
         {
-          "id": "4a464b55-980d-4172-b106-60068973e4b1",
-          "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
+          "id": "8ab25ac2-b950-495e-b290-d2b561d3c039",
+          "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
           "team_name": "Comp A",
-          "person": "f15ed603-0b4d-4756-a69a-8909846078d5",
+          "person": "55271053-abc2-47cf-a864-09309cdd51fb",
           "person_name": "Grace Hopper",
           "person_status": "active",
           "person_department_name": "",
           "person_office_name": "",
-          "created_at": "2026-10-31T09:02:57.887430Z",
-          "updated_at": "2026-10-31T09:02:57.887438Z"
+          "created_at": "2026-10-31T10:08:52.781994Z",
+          "updated_at": "2026-10-31T10:08:52.782001Z"
         }
       ]
     }
@@ -296,13 +296,13 @@
   "list_of_team": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/team-memberships/?team=5e5afdf5-5fc5-4744-adf9-113b7d735303",
+      "path": "/api/v1/team-memberships/?team=fe4378b5-f942-4896-8980-eac13ec768dd",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "970e3390-dee7-4e7b-9427-fed1eb9f4cec",
+      "X-Request-ID": "456767ee-375b-40b8-9835-878ee076ddaf",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
@@ -311,28 +311,28 @@
       "previous": null,
       "results": [
         {
-          "id": "6793ebe1-a7c8-405a-9a06-b2ca659c3273",
-          "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
+          "id": "8b4300cf-2e0f-40df-889e-f91970591843",
+          "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
           "team_name": "Comp A",
-          "person": "c791ce84-d41c-4a97-868e-226aa1215b6c",
+          "person": "821d967b-5f6b-4ed2-a5fd-0c35f86c2107",
           "person_name": "Ada Lovelace",
           "person_status": "active",
           "person_department_name": "Membership Compositing",
           "person_office_name": "",
-          "created_at": "2026-10-31T09:02:57.851988Z",
-          "updated_at": "2026-10-31T09:02:57.851996Z"
+          "created_at": "2026-10-31T10:08:52.746037Z",
+          "updated_at": "2026-10-31T10:08:52.746047Z"
         },
         {
-          "id": "4a464b55-980d-4172-b106-60068973e4b1",
-          "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
+          "id": "8ab25ac2-b950-495e-b290-d2b561d3c039",
+          "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
           "team_name": "Comp A",
-          "person": "f15ed603-0b4d-4756-a69a-8909846078d5",
+          "person": "55271053-abc2-47cf-a864-09309cdd51fb",
           "person_name": "Grace Hopper",
           "person_status": "active",
           "person_department_name": "",
           "person_office_name": "",
-          "created_at": "2026-10-31T09:02:57.887430Z",
-          "updated_at": "2026-10-31T09:02:57.887438Z"
+          "created_at": "2026-10-31T10:08:52.781994Z",
+          "updated_at": "2026-10-31T10:08:52.782001Z"
         }
       ]
     }
@@ -340,13 +340,13 @@
   "list_of_person": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/team-memberships/?person=c791ce84-d41c-4a97-868e-226aa1215b6c",
+      "path": "/api/v1/team-memberships/?person=821d967b-5f6b-4ed2-a5fd-0c35f86c2107",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "5e59b7ad-2381-4513-9a82-2eccc0b77b11",
+      "X-Request-ID": "eba37422-3d7f-40ef-801c-5367f9fe737c",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
@@ -355,28 +355,28 @@
       "previous": null,
       "results": [
         {
-          "id": "6793ebe1-a7c8-405a-9a06-b2ca659c3273",
-          "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
+          "id": "8b4300cf-2e0f-40df-889e-f91970591843",
+          "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
           "team_name": "Comp A",
-          "person": "c791ce84-d41c-4a97-868e-226aa1215b6c",
+          "person": "821d967b-5f6b-4ed2-a5fd-0c35f86c2107",
           "person_name": "Ada Lovelace",
           "person_status": "active",
           "person_department_name": "Membership Compositing",
           "person_office_name": "",
-          "created_at": "2026-10-31T09:02:57.851988Z",
-          "updated_at": "2026-10-31T09:02:57.851996Z"
+          "created_at": "2026-10-31T10:08:52.746037Z",
+          "updated_at": "2026-10-31T10:08:52.746047Z"
         },
         {
-          "id": "623b81fe-d985-4c9c-a816-6c4292d876da",
-          "team": "c9131d1a-0ed0-4054-af96-a190977fc890",
+          "id": "9e4612b4-5616-4075-b473-79067f7ceda7",
+          "team": "a239a51f-fbf0-42f1-a5ee-cd78ca2cd4e1",
           "team_name": "Lighting A",
-          "person": "c791ce84-d41c-4a97-868e-226aa1215b6c",
+          "person": "821d967b-5f6b-4ed2-a5fd-0c35f86c2107",
           "person_name": "Ada Lovelace",
           "person_status": "active",
           "person_department_name": "Membership Compositing",
           "person_office_name": "",
-          "created_at": "2026-10-31T09:02:57.869540Z",
-          "updated_at": "2026-10-31T09:02:57.869548Z"
+          "created_at": "2026-10-31T10:08:52.764175Z",
+          "updated_at": "2026-10-31T10:08:52.764183Z"
         }
       ]
     }
@@ -390,7 +390,7 @@
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "20b76cf9-4a59-4169-8ac8-57e00b061e9d",
+      "X-Request-ID": "61f42c03-f023-481f-b0c2-ea04c6707142",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
@@ -399,28 +399,28 @@
       "previous": null,
       "results": [
         {
-          "id": "6793ebe1-a7c8-405a-9a06-b2ca659c3273",
-          "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
+          "id": "8b4300cf-2e0f-40df-889e-f91970591843",
+          "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
           "team_name": "Comp A",
-          "person": "c791ce84-d41c-4a97-868e-226aa1215b6c",
+          "person": "821d967b-5f6b-4ed2-a5fd-0c35f86c2107",
           "person_name": "Ada Lovelace",
           "person_status": "active",
           "person_department_name": "Membership Compositing",
           "person_office_name": "",
-          "created_at": "2026-10-31T09:02:57.851988Z",
-          "updated_at": "2026-10-31T09:02:57.851996Z"
+          "created_at": "2026-10-31T10:08:52.746037Z",
+          "updated_at": "2026-10-31T10:08:52.746047Z"
         },
         {
-          "id": "623b81fe-d985-4c9c-a816-6c4292d876da",
-          "team": "c9131d1a-0ed0-4054-af96-a190977fc890",
+          "id": "9e4612b4-5616-4075-b473-79067f7ceda7",
+          "team": "a239a51f-fbf0-42f1-a5ee-cd78ca2cd4e1",
           "team_name": "Lighting A",
-          "person": "c791ce84-d41c-4a97-868e-226aa1215b6c",
+          "person": "821d967b-5f6b-4ed2-a5fd-0c35f86c2107",
           "person_name": "Ada Lovelace",
           "person_status": "active",
           "person_department_name": "Membership Compositing",
           "person_office_name": "",
-          "created_at": "2026-10-31T09:02:57.869540Z",
-          "updated_at": "2026-10-31T09:02:57.869548Z"
+          "created_at": "2026-10-31T10:08:52.764175Z",
+          "updated_at": "2026-10-31T10:08:52.764183Z"
         }
       ]
     }
@@ -428,99 +428,99 @@
   "detail": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/team-memberships/6793ebe1-a7c8-405a-9a06-b2ca659c3273/",
+      "path": "/api/v1/team-memberships/8b4300cf-2e0f-40df-889e-f91970591843/",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "b3fc4037-abb3-4dd4-9270-7cbbafa4406a",
+      "X-Request-ID": "4448c731-63b3-4278-8fe1-3e4edb28eb65",
       "Allow": "GET, DELETE, HEAD, OPTIONS"
     },
     "body": {
-      "id": "6793ebe1-a7c8-405a-9a06-b2ca659c3273",
-      "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
+      "id": "8b4300cf-2e0f-40df-889e-f91970591843",
+      "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
       "team_name": "Comp A",
-      "person": "c791ce84-d41c-4a97-868e-226aa1215b6c",
+      "person": "821d967b-5f6b-4ed2-a5fd-0c35f86c2107",
       "person_name": "Ada Lovelace",
       "person_status": "active",
       "person_department_name": "Membership Compositing",
       "person_office_name": "",
-      "created_at": "2026-10-31T09:02:57.851988Z",
-      "updated_at": "2026-10-31T09:02:57.851996Z"
+      "created_at": "2026-10-31T10:08:52.746037Z",
+      "updated_at": "2026-10-31T10:08:52.746047Z"
     }
   },
   "patch_405": {
     "request": {
       "method": "PATCH",
-      "path": "/api/v1/team-memberships/6793ebe1-a7c8-405a-9a06-b2ca659c3273/",
+      "path": "/api/v1/team-memberships/8b4300cf-2e0f-40df-889e-f91970591843/",
       "body": {
-        "person": "f15ed603-0b4d-4756-a69a-8909846078d5"
+        "person": "55271053-abc2-47cf-a864-09309cdd51fb"
       }
     },
     "status": 405,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "0a920354-ae77-459d-a7fd-acd48c1a8fce",
+      "X-Request-ID": "1d62add6-f152-4eb2-9958-6908dcd32b89",
       "Allow": "GET, DELETE, HEAD, OPTIONS"
     },
     "body": {
       "detail": "Method \"PATCH\" not allowed.",
       "error": {
         "code": "method_not_allowed",
-        "request_id": "0a920354-ae77-459d-a7fd-acd48c1a8fce"
+        "request_id": "1d62add6-f152-4eb2-9958-6908dcd32b89"
       }
     }
   },
   "delete_team_with_members_409": {
     "request": {
       "method": "DELETE",
-      "path": "/api/v1/teams/5e5afdf5-5fc5-4744-adf9-113b7d735303/",
+      "path": "/api/v1/teams/fe4378b5-f942-4896-8980-eac13ec768dd/",
       "body": null
     },
     "status": 409,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "d734ca1f-09e3-4b94-a180-0176a059fb6d",
+      "X-Request-ID": "ed1d0df3-0f01-4523-9cbd-0c81178540b1",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
       "detail": "Still referenced by: masterdata.TeamMembership.team (2).",
       "error": {
         "code": "has_dependants",
-        "request_id": "d734ca1f-09e3-4b94-a180-0176a059fb6d"
+        "request_id": "ed1d0df3-0f01-4523-9cbd-0c81178540b1"
       }
     }
   },
   "remove_as_artist_403": {
     "request": {
       "method": "DELETE",
-      "path": "/api/v1/team-memberships/6793ebe1-a7c8-405a-9a06-b2ca659c3273/",
+      "path": "/api/v1/team-memberships/8b4300cf-2e0f-40df-889e-f91970591843/",
       "body": null
     },
     "status": 403,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "f97c3a4a-d278-463f-8d0e-91dd21095d52",
+      "X-Request-ID": "147953ec-4ef7-493d-89a7-653141f43e1d",
       "Allow": "GET, DELETE, HEAD, OPTIONS"
     },
     "body": {
       "detail": "You do not have permission to perform this action.",
       "error": {
         "code": "permission_denied",
-        "request_id": "f97c3a4a-d278-463f-8d0e-91dd21095d52"
+        "request_id": "147953ec-4ef7-493d-89a7-653141f43e1d"
       }
     }
   },
   "remove_ok": {
     "request": {
       "method": "DELETE",
-      "path": "/api/v1/team-memberships/6793ebe1-a7c8-405a-9a06-b2ca659c3273/",
+      "path": "/api/v1/team-memberships/8b4300cf-2e0f-40df-889e-f91970591843/",
       "body": null
     },
     "status": 204,
     "headers": {
-      "X-Request-ID": "646c9593-864d-448a-bfec-451f9d331528",
+      "X-Request-ID": "d66dadd7-0562-4765-b4ad-99306ee5e3d3",
       "Allow": "GET, DELETE, HEAD, OPTIONS"
     },
     "body": {
@@ -531,13 +531,13 @@
   "list_of_team_after_removal": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/team-memberships/?team=5e5afdf5-5fc5-4744-adf9-113b7d735303",
+      "path": "/api/v1/team-memberships/?team=fe4378b5-f942-4896-8980-eac13ec768dd",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "42092855-6410-4dc4-9475-d430db916dff",
+      "X-Request-ID": "c1677dfe-3dff-42a5-bd77-ff0bd975ff51",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
@@ -546,16 +546,16 @@
       "previous": null,
       "results": [
         {
-          "id": "4a464b55-980d-4172-b106-60068973e4b1",
-          "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
+          "id": "8ab25ac2-b950-495e-b290-d2b561d3c039",
+          "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
           "team_name": "Comp A",
-          "person": "f15ed603-0b4d-4756-a69a-8909846078d5",
+          "person": "55271053-abc2-47cf-a864-09309cdd51fb",
           "person_name": "Grace Hopper",
           "person_status": "active",
           "person_department_name": "",
           "person_office_name": "",
-          "created_at": "2026-10-31T09:02:57.887430Z",
-          "updated_at": "2026-10-31T09:02:57.887438Z"
+          "created_at": "2026-10-31T10:08:52.781994Z",
+          "updated_at": "2026-10-31T10:08:52.782001Z"
         }
       ]
     }
@@ -565,65 +565,65 @@
       "method": "POST",
       "path": "/api/v1/team-memberships/",
       "body": {
-        "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
-        "person": "c791ce84-d41c-4a97-868e-226aa1215b6c"
+        "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
+        "person": "821d967b-5f6b-4ed2-a5fd-0c35f86c2107"
       }
     },
     "status": 201,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "96cb3003-29bb-4778-b65d-93699a5b56db",
+      "X-Request-ID": "c59c64bf-e850-4d8b-847f-42fda3616777",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
-      "id": "3795938f-2706-40b3-8135-c0eb88483a1b",
-      "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
+      "id": "a099056c-ef4f-4886-a000-f0d1c473c5e7",
+      "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
       "team_name": "Comp A",
-      "person": "c791ce84-d41c-4a97-868e-226aa1215b6c",
+      "person": "821d967b-5f6b-4ed2-a5fd-0c35f86c2107",
       "person_name": "Ada Lovelace",
       "person_status": "active",
       "person_department_name": "Membership Compositing",
       "person_office_name": "",
-      "created_at": "2026-10-31T09:02:58.071907Z",
-      "updated_at": "2026-10-31T09:02:58.071914Z"
+      "created_at": "2026-10-31T10:08:52.968579Z",
+      "updated_at": "2026-10-31T10:08:52.968586Z"
     }
   },
   "restore_refused_409": {
     "request": {
       "method": "POST",
-      "path": "/api/v1/team-memberships/6793ebe1-a7c8-405a-9a06-b2ca659c3273/restore/",
+      "path": "/api/v1/team-memberships/8b4300cf-2e0f-40df-889e-f91970591843/restore/",
       "body": null
     },
     "status": 409,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "4c1785be-e240-4036-945e-1f84740f4277",
+      "X-Request-ID": "78aaa18e-90be-43a8-91b8-71b2c364caa8",
       "Allow": "POST, OPTIONS"
     },
     "body": {
       "detail": "This person is already a member of the team.",
       "error": {
         "code": "conflict",
-        "request_id": "4c1785be-e240-4036-945e-1f84740f4277"
+        "request_id": "78aaa18e-90be-43a8-91b8-71b2c364caa8"
       }
     }
   },
   "set_primary_team": {
     "request": {
       "method": "PATCH",
-      "path": "/api/v1/people/f15ed603-0b4d-4756-a69a-8909846078d5/",
+      "path": "/api/v1/people/55271053-abc2-47cf-a864-09309cdd51fb/",
       "body": {
-        "team": "c9131d1a-0ed0-4054-af96-a190977fc890"
+        "team": "a239a51f-fbf0-42f1-a5ee-cd78ca2cd4e1"
       }
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "7bf736df-28c3-44c3-ab92-72e5245a8080",
+      "X-Request-ID": "14dfe824-fb70-405b-975a-034928fca110",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
-      "id": "f15ed603-0b4d-4756-a69a-8909846078d5",
+      "id": "55271053-abc2-47cf-a864-09309cdd51fb",
       "name": "Grace Hopper",
       "full_name": "Grace Hopper",
       "description": "",
@@ -631,7 +631,7 @@
       "user": null,
       "role": null,
       "department": null,
-      "team": "c9131d1a-0ed0-4054-af96-a190977fc890",
+      "team": "a239a51f-fbf0-42f1-a5ee-cd78ca2cd4e1",
       "team_name": "Lighting A",
       "office": null,
       "seniority": "",
@@ -643,20 +643,20 @@
       "phone": "",
       "date_of_birth": null,
       "nationality": "",
-      "created_at": "2026-10-31T09:02:57.830828Z",
-      "updated_at": "2026-10-31T09:02:58.113807Z"
+      "created_at": "2026-10-31T10:08:52.720023Z",
+      "updated_at": "2026-10-31T10:08:53.013470Z"
     }
   },
   "list_of_grace": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/team-memberships/?person=f15ed603-0b4d-4756-a69a-8909846078d5",
+      "path": "/api/v1/team-memberships/?person=55271053-abc2-47cf-a864-09309cdd51fb",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "50ad08bb-4135-4e3a-8955-7ca8ca759ec7",
+      "X-Request-ID": "16667611-e92a-4f3e-87aa-97fa21c724d0",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
@@ -665,28 +665,28 @@
       "previous": null,
       "results": [
         {
-          "id": "4a464b55-980d-4172-b106-60068973e4b1",
-          "team": "5e5afdf5-5fc5-4744-adf9-113b7d735303",
+          "id": "8ab25ac2-b950-495e-b290-d2b561d3c039",
+          "team": "fe4378b5-f942-4896-8980-eac13ec768dd",
           "team_name": "Comp A",
-          "person": "f15ed603-0b4d-4756-a69a-8909846078d5",
+          "person": "55271053-abc2-47cf-a864-09309cdd51fb",
           "person_name": "Grace Hopper",
           "person_status": "active",
           "person_department_name": "",
           "person_office_name": "",
-          "created_at": "2026-10-31T09:02:57.887430Z",
-          "updated_at": "2026-10-31T09:02:57.887438Z"
+          "created_at": "2026-10-31T10:08:52.781994Z",
+          "updated_at": "2026-10-31T10:08:52.782001Z"
         },
         {
-          "id": "ed4b4cf7-a437-4b50-9e60-6e430a6c93f2",
-          "team": "c9131d1a-0ed0-4054-af96-a190977fc890",
+          "id": "35e93b62-780e-4ed8-a218-53dd8a3d9c6c",
+          "team": "a239a51f-fbf0-42f1-a5ee-cd78ca2cd4e1",
           "team_name": "Lighting A",
-          "person": "f15ed603-0b4d-4756-a69a-8909846078d5",
+          "person": "55271053-abc2-47cf-a864-09309cdd51fb",
           "person_name": "Grace Hopper",
           "person_status": "active",
           "person_department_name": "",
           "person_office_name": "",
-          "created_at": "2026-10-31T09:02:58.122462Z",
-          "updated_at": "2026-10-31T09:02:58.122470Z"
+          "created_at": "2026-10-31T10:08:53.021775Z",
+          "updated_at": "2026-10-31T10:08:53.021783Z"
         }
       ]
     }
@@ -694,12 +694,12 @@
   "remove_primary_membership": {
     "request": {
       "method": "DELETE",
-      "path": "/api/v1/team-memberships/ed4b4cf7-a437-4b50-9e60-6e430a6c93f2/",
+      "path": "/api/v1/team-memberships/35e93b62-780e-4ed8-a218-53dd8a3d9c6c/",
       "body": null
     },
     "status": 204,
     "headers": {
-      "X-Request-ID": "54f37045-5035-4d6c-a0a1-8eccb241d44d",
+      "X-Request-ID": "f6f9498e-83e1-45f0-b619-47b5c73ae43f",
       "Allow": "GET, DELETE, HEAD, OPTIONS"
     },
     "body": {
@@ -710,17 +710,17 @@
   "person_after_leaving_primary": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/people/f15ed603-0b4d-4756-a69a-8909846078d5/",
+      "path": "/api/v1/people/55271053-abc2-47cf-a864-09309cdd51fb/",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "859f65e4-16fe-48f4-9cba-586976d3bac3",
+      "X-Request-ID": "c3de5e4f-6468-4ac9-9938-3537e5006fda",
       "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
     },
     "body": {
-      "id": "f15ed603-0b4d-4756-a69a-8909846078d5",
+      "id": "55271053-abc2-47cf-a864-09309cdd51fb",
       "name": "Grace Hopper",
       "full_name": "Grace Hopper",
       "description": "",
@@ -742,20 +742,83 @@
       "phone": "",
       "date_of_birth": null,
       "nationality": "",
-      "created_at": "2026-10-31T09:02:57.830828Z",
-      "updated_at": "2026-10-31T09:02:58.165569Z"
+      "created_at": "2026-10-31T10:08:52.720023Z",
+      "updated_at": "2026-10-31T10:08:53.066293Z"
     }
   },
-  "people_filter_by_team_is_primary_only": {
+  "teams_list": {
     "request": {
       "method": "GET",
-      "path": "/api/v1/people/?team=5e5afdf5-5fc5-4744-adf9-113b7d735303",
+      "path": "/api/v1/teams/?search=TEAM-COMP-A",
       "body": null
     },
     "status": 200,
     "headers": {
       "Content-Type": "application/json",
-      "X-Request-ID": "69e0204c-1c68-4484-b631-503b268c6973",
+      "X-Request-ID": "4fcba9eb-b00a-442b-8852-e6db1533d641",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "fe4378b5-f942-4896-8980-eac13ec768dd",
+          "code": "TEAM-COMP-A",
+          "name": "Comp A",
+          "description": "",
+          "department": "7a27db70-a7e2-4656-a033-4e9beaf482bf",
+          "lead": null,
+          "focus_discipline": "",
+          "current_project_code": "",
+          "color": "",
+          "capacity": 1,
+          "member_count": 2,
+          "created_at": "2026-10-31T10:08:52.665233Z",
+          "updated_at": "2026-10-31T10:08:52.665240Z"
+        }
+      ]
+    }
+  },
+  "team_detail": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/teams/a239a51f-fbf0-42f1-a5ee-cd78ca2cd4e1/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7d923e9a-9d4d-441d-aefb-bc0cef94f29f",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "a239a51f-fbf0-42f1-a5ee-cd78ca2cd4e1",
+      "code": "TEAM-LGT-A",
+      "name": "Lighting A",
+      "description": "",
+      "department": "e96c68b4-f08e-4a21-8c20-c786bf422b02",
+      "lead": null,
+      "focus_discipline": "",
+      "current_project_code": "",
+      "color": "",
+      "capacity": 1,
+      "member_count": 1,
+      "created_at": "2026-10-31T10:08:52.683360Z",
+      "updated_at": "2026-10-31T10:08:52.683367Z"
+    }
+  },
+  "people_filter_by_team_is_primary_only": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/people/?team=fe4378b5-f942-4896-8980-eac13ec768dd",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f8a6e369-bd41-4d3a-97bb-dd6bcc366105",
       "Allow": "GET, POST, HEAD, OPTIONS"
     },
     "body": {
