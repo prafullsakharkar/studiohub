@@ -1,7 +1,7 @@
 import type React from 'react';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
 import { useReviewsListConfig } from '@/modules/production/review/reviews';
-import type { Project } from '@/types/production';
+import type { Project } from '@/api/production/structure';
 
 interface ProjectReviewsTabProps {
   project: Project;

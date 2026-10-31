@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { projectService } from '../services/ProjectService';
-import { QueryParams } from '@/types/common';
+import { projectsApi } from '@/api/production/structure';
+import type { QueryParams } from '@/types/common';
 import { useAuth } from '@/modules/auth';
 import { useCan } from '@/core/permissions/useCan';
 
@@ -21,7 +21,7 @@ export function useProjects(params?: QueryParams) {
 
   return useQuery({
     queryKey: PROJECT_QUERY_KEYS.list(params, user?.id),
-    queryFn: () => projectService.getProjects(params),
+    queryFn: ({ signal }) => projectsApi.list({ page_size: 100, ...(params as Record<string, string | number | boolean | undefined>) }, signal),
     enabled: Boolean(user) && canView,
     staleTime: 1000 * 30,
   });
@@ -30,7 +30,7 @@ export function useProjects(params?: QueryParams) {
 export function useProject(id?: string) {
   return useQuery({
     queryKey: PROJECT_QUERY_KEYS.detail(id || ''),
-    queryFn: () => projectService.getProjectById(id || ''),
+    queryFn: ({ signal }) => projectsApi.get(id || '', signal),
     enabled: !!id,
   });
 }

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
 import { useWorkflowsListConfig } from '@/modules/production/review/workflows';
 import { Button } from '@/shared/components/Button';
-import type { Project } from '@/types/production';
+import type { Project } from '@/api/production/structure';
 
 interface ProjectWorkflowTabProps {
   project: Project;

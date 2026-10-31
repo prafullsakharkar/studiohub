@@ -117,5 +117,27 @@ def test_capture_workspaces(django_user_model):
     flow["bulk_update_flat"] = call(a, "POST", "/api/v1/shots/bulk-update/", {"items": [{"id": bulk_shot, "description": "Flat"}]})
     flow["shot_after_bulk_flat"] = call(a, "GET", f"/api/v1/shots/{bulk_shot}/")
     flow["bulk_update_nothing_to_update"] = call(a, "POST", "/api/v1/shots/bulk-update/", {"items": [{"id": bulk_shot, "data": {"colour": "red"}}]})
+    # The project workspace's actions: the statuses a project can take, archive and restore, and a clone.
+    proj = make("/api/v1/projects/", {"code": "WS18-P", "name": "Project actions", "workflow_type": "standard", "type": "Feature Film"})
+    qid = proj["id"]
+    flow["project_detail"] = call(a, "GET", f"/api/v1/projects/{qid}/")
+    flow["project_patch_completed"] = call(a, "PATCH", f"/api/v1/projects/{qid}/", {"status": "Completed"})
+    flow["project_patch_on_hold"] = call(a, "PATCH", f"/api/v1/projects/{qid}/", {"status": "On Hold"})
+    flow["project_patch_approved"] = call(a, "PATCH", f"/api/v1/projects/{qid}/", {"status": "Approved"})
+    flow["project_patch_archived"] = call(a, "PATCH", f"/api/v1/projects/{qid}/", {"status": "Archived"})
+    flow["project_detail_after_status_archived"] = call(a, "GET", f"/api/v1/projects/{qid}/")
+    flow["projects_archived_after_status_archived"] = call(a, "GET", "/api/v1/projects/archived/")
+    call(a, "PATCH", f"/api/v1/projects/{qid}/", {"status": "In Progress"})
+    detail = flow["project_detail"]["body"]
+    flow["project_clone_whole_object"] = call(a, "POST", "/api/v1/projects/", {**detail, "name": "Clone of all", "code": "WS18-C1", "approved_shots": 0, "status": "In Progress"})
+    settings = {k: detail[k] for k in ("type", "workflow_type", "fps", "resolution", "aspect_ratio", "color_space", "description") if k in detail}
+    flow["project_clone_settings"] = call(a, "POST", "/api/v1/projects/", {**settings, "name": "Clone of settings", "code": "WS18-C2"})
+    flow["project_archive"] = call(a, "POST", f"/api/v1/projects/{qid}/archive/")
+    flow["project_detail_after_archive"] = call(a, "GET", f"/api/v1/projects/{qid}/")
+    flow["projects_archived"] = call(a, "GET", "/api/v1/projects/archived/")
+    flow["project_restore"] = call(a, "POST", f"/api/v1/projects/{qid}/restore/")
+    flow["project_delete"] = call(a, "DELETE", f"/api/v1/projects/{qid}/")
+    flow["projects_archived_after_delete"] = call(a, "GET", "/api/v1/projects/archived/")
+
     (OUT / "production").mkdir(parents=True, exist_ok=True)
     (OUT / "production" / "_workspaces_flow.json").write_text(json.dumps(flow, indent=2, default=str) + "\n")

@@ -65,7 +65,16 @@ export interface Project extends BaseEntity {
   description?: string;
   [key: string]: any;
 }
-export function isEpisodicProject(project?: Partial<Project> | null): boolean {
+/** What `isEpisodicProject` reads: the API's `workflow_type` and `type`, and the older spellings still seen in stored data. */
+export interface EpisodicLike {
+  workflow_type?: string | null;
+  type?: string | null;
+  is_episodic?: boolean;
+  isEpisodic?: boolean;
+  project_type?: string;
+  settings?: { workflow_type?: string } | null;
+}
+export function isEpisodicProject(project?: EpisodicLike | null): boolean {
   if (!project) return false;
   return Boolean(
     project.is_episodic === true ||
