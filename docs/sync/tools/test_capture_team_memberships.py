@@ -99,6 +99,9 @@ def test_capture_team_memberships(django_user_model):
     # The primary team (Person.team) keeps a membership in step.
     flow["set_primary_team"] = call(a, "PATCH", f"/api/v1/people/{grace['id']}/", {"team": team_b["id"]})
     flow["list_of_grace"] = call(a, "GET", f"/api/v1/team-memberships/?person={grace['id']}")
+    primary_row = next(r for r in flow["list_of_grace"]["body"]["results"] if r["team"] == team_b["id"])
+    flow["remove_primary_membership"] = call(a, "DELETE", f"/api/v1/team-memberships/{primary_row['id']}/")
+    flow["person_after_leaving_primary"] = call(a, "GET", f"/api/v1/people/{grace['id']}/")
     flow["people_filter_by_team_is_primary_only"] = call(a, "GET", f"/api/v1/people/?team={team_a['id']}")
 
     (OUT / "masterdata").mkdir(parents=True, exist_ok=True)

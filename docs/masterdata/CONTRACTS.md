@@ -340,6 +340,7 @@ A person can be in several teams. Membership is a plain link between a team and 
 | DOM-MD-TM-02 | `team` and `person` must be live rows. A membership is created and removed, never edited (`PUT`/`PATCH` → 405). `DELETE` is a soft delete (204); the person can join again (a new row). `POST …/restore/` is refused (409 `conflict`) while a live membership of the same pair exists or the team or person is deleted. | **IMPLEMENTED** |
 | DOM-MD-TM-03 | Teams of any department may hold the same person. `Person.team` is the person's **primary team**; DOM-MD-PER-06 (team and department agree) applies to it only. | **IMPLEMENTED** |
 | DOM-MD-TM-04 | Setting `Person.team` (create or update) makes the person a member of that team if they are not. Changing or clearing it removes no membership. | **IMPLEMENTED** |
+| DOM-MD-TM-07 | Removing the membership of a person's primary team clears `Person.team` in the same transaction (through `PersonService.update`), so `Person.team` never names a team the person is not a member of. Removing any other membership leaves it. | **IMPLEMENTED** |
 | DOM-MD-TM-05 | A team with live memberships cannot be soft-deleted (409 `has_dependants`, as TEAM-03). Soft-deleting a person soft-deletes their memberships with the same timestamp; restoring the person restores only those. A hard delete of a person removes their memberships. | **IMPLEMENTED** |
 | DOM-MD-TM-06 | The migration `0002_team_membership` makes every live person with a live `team` a member of it. | **IMPLEMENTED** |
 
