@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-vi.mock('@/api/repositories/config', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('@/api/repositories/config')>();
+vi.mock('@/api/client/config', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('@/api/client/config')>();
   return { ...mod, isMockMode: () => false, getApiMode: () => 'rest' as const };
 });
 

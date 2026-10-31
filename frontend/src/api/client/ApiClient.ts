@@ -8,7 +8,7 @@ import { mapHttpError } from '@/api/errors/errorMapper';
 import { logger } from '@/core/logging/logger';
 import { DrfErrorResponse } from '@/types/common';
 
-import { getApiBaseUrl } from '@/api/repositories/config';
+import { getApiBaseUrl } from '@/api/client/config';
 import { centralErrorHandler } from '@/core/api/error-handler';
 
 /**
