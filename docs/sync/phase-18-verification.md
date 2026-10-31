@@ -45,6 +45,7 @@ The routed `/shots/:id` and `/assets/:id` pages were the last legacy workspaces.
 | Unit tests | 98 files / 1,004 | **101 files / 1,023** (+19: 8 shots, 8 assets, 3 action bar) |
 | `pnpm build` | OK | **OK** |
 | Biome (`src`) | 1 error / 1301 warnings | **1 error (the same) / 1194 warnings** |
+| Playwright role smoke (6 roles + phone width) | 7 of 7 | **7 of 7 pass** (20.5 minutes) |
 | Live vitest, fresh seed | | `entityWorkspaces.live` (2 tests) **pass**: assign and unassign, a linked note found again by its code, Approve from Pending Review (the API reports Approved), Archive (the record then answers 404 and appears in the archived list), the child asset on the parent's page |
 | Frontend diff vs develop | | 34 files, +974 / −5,363 |
 
