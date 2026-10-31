@@ -198,6 +198,21 @@ describe('a person’s teams tab: several teams', () => {
     expect(path(calls.find((c) => c.method === 'DELETE') as MockCall)).toBe(`/api/v1/team-memberships/${mine[0].id}/`);
   });
 
+  it('warns that leaving the primary team leaves the person without one, and says nothing of it for another team', async () => {
+    mockFetch(server);
+    mountTab(rows[0].id);
+    fireEvent.click(await screen.findByRole('button', { name: `Leave ${rows[0].name}` }));
+    expect(await within(await screen.findByRole('dialog')).findByText(/no primary team afterwards/)).toBeTruthy();
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }));
+    cleanup();
+
+    mockFetch(server);
+    mountTab(rows[1].id);
+    fireEvent.click(await screen.findByRole('button', { name: `Leave ${rows[0].name}` }));
+    await within(await screen.findByRole('dialog')).findByText(/stay in their other teams/);
+    expect(within(screen.getByRole('dialog')).queryByText(/no primary team afterwards/)).toBeNull();
+  });
+
   it('chooses another team as the primary one through onSetPrimary, and clears it', async () => {
     mockFetch(server);
     const onSetPrimary = mountTab(rows[1].id);

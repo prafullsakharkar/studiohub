@@ -4,7 +4,7 @@ import type React from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { departmentsApi } from '@/api/masterdata/departments';
-import { clientsApi, officesApi, peopleApi, teamsApi } from '@/api/masterdata/directory';
+import { clientsApi, officesApi, peopleApi, teamMembershipsApi, teamsApi } from '@/api/masterdata/directory';
 import { AuthProvider } from '@/core/auth/AuthProvider';
 import { tokenStorage } from '@/core/auth/tokenStorage';
 import { ClientWorkspacePage } from '@/modules/clients/pages/ClientWorkspacePage';
@@ -72,13 +72,14 @@ describe('client workspace on the wire', () => {
 });
 
 describe('team membership on the wire', () => {
-  it('adds a person to a team, then removes them, through the person’s team field', async () => {
+  it('adds a person to a team without moving them, removes them, and clears the primary team they leave', async () => {
     await signInManager();
     const tag = uid();
     const department = await departmentsApi.create({ code: `D${tag}`.toUpperCase(), name: `Dept ${tag}`, department_type: 'creative' });
     const team = await teamsApi.create({ code: `T${tag}`.toUpperCase(), name: `Team ${tag}`, department: department.id });
+    const other = await teamsApi.create({ code: `U${tag}`.toUpperCase(), name: `Other ${tag}`, department: department.id });
     const person = await peopleApi.create({ name: `Member ${tag}` });
-    expect(person.team).toBeNull();
+    await teamMembershipsApi.create({ team: other.id, person: person.id });
 
     render(tree(<Routes><Route path="/teams/:id" element={<TeamWorkspacePage />} /></Routes>, `/teams/${team.id}`));
     fireEvent.click(await screen.findByRole('tab', { name: 'Members' }, T));
@@ -87,12 +88,18 @@ describe('team membership on the wire', () => {
     fireEvent.change(screen.getByLabelText(/^Person/), { target: { value: person.id } });
     fireEvent.click(screen.getByRole('button', { name: 'Add to team' }));
 
-    await waitFor(async () => expect((await peopleApi.get(person.id)).team).toBe(team.id), T);
-    expect((await peopleApi.get(person.id)).team_name).toBe(team.name);
-    expect((await peopleApi.list({ team: team.id })).results.map((p) => p.id)).toEqual([person.id]);
+    // In both teams: nobody was moved, and the person's own team field was not touched.
+    await waitFor(async () => expect((await teamMembershipsApi.list({ person: person.id })).results.map((m) => m.team).sort()).toEqual([team.id, other.id].sort()), T);
+    expect((await peopleApi.get(person.id)).team).toBeNull();
+    expect((await peopleApi.list({ team: team.id })).count).toBe(0); // ?team= is the primary team only
+
+    // Make this their primary team through the API, then remove the membership in the screen: the primary team goes with it.
+    await peopleApi.update(person.id, { team: team.id });
+    expect((await teamMembershipsApi.list({ person: person.id, team: team.id })).count).toBe(1); // already a member: still one row
     fireEvent.click(await screen.findByRole('button', { name: `Remove ${person.full_name} from ${team.name}` }, T));
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Remove' }));
     await waitFor(async () => expect((await peopleApi.get(person.id)).team).toBeNull(), T);
+    expect((await teamMembershipsApi.list({ person: person.id })).results.map((m) => m.team)).toEqual([other.id]);
   });
 });
 

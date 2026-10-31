@@ -115,7 +115,7 @@ export const TeamMembersTab: React.FC<{ teamId: string; teamName: string }> = ({
       <ConfirmDialog
         isOpen={removing !== null}
         title="Remove from team"
-        message={`Remove ${removing?.person_name ?? ''} from ${teamName}? They stay in the directory and in their other teams.`}
+        message={`Remove ${removing?.person_name ?? ''} from ${teamName}? They stay in the directory and in their other teams. If this is their primary team, they will have none afterwards.`}
         confirmLabel="Remove"
         destructive
         onClose={() => setRemoving(null)}

@@ -4,7 +4,7 @@ import type React from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { departmentsApi } from '@/api/masterdata/departments';
-import { peopleApi, teamsApi } from '@/api/masterdata/directory';
+import { peopleApi, teamMembershipsApi, teamsApi } from '@/api/masterdata/directory';
 import { AuthProvider } from '@/core/auth/AuthProvider';
 import { tokenStorage } from '@/core/auth/tokenStorage';
 import { authService } from '@/modules/auth/services/AuthService';
@@ -36,11 +36,12 @@ const uid = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}
 const T = { timeout: 15000 };
 
 describe('person workspace on the wire', () => {
-  it('adds a skill, chooses a team, and deactivates then reactivates the person', async () => {
+  it('adds a skill, joins two teams and chooses one as primary, and deactivates then reactivates the person', async () => {
     await signInManager();
     const tag = uid();
     const department = await departmentsApi.create({ code: `D${tag}`.toUpperCase(), name: `Dept ${tag}`, department_type: 'creative' });
     const team = await teamsApi.create({ code: `T${tag}`.toUpperCase(), name: `Team ${tag}`, department: department.id });
+    const second = await teamsApi.create({ code: `V${tag}`.toUpperCase(), name: `Second ${tag}`, department: department.id });
     const person = await peopleApi.create({ name: `Artist ${tag}` });
 
     render(tree(<Routes><Route path="/people/:id" element={<PersonWorkspacePage />} /></Routes>, `/people/${person.id}`));
@@ -52,9 +53,20 @@ describe('person workspace on the wire', () => {
     await waitFor(async () => expect((await peopleApi.get(person.id)).skills).toEqual(['Houdini']), T);
 
     fireEvent.click(screen.getByRole('tab', { name: 'Teams' }));
-    fireEvent.click(await screen.findByRole('button', { name: new RegExp(team.name) }, T));
+    fireEvent.click(await screen.findByRole('button', { name: `Join ${team.name}` }, T));
+    await waitFor(async () => expect((await teamMembershipsApi.list({ person: person.id })).results.map((m) => m.team)).toEqual([team.id]), T);
+    fireEvent.click(await screen.findByRole('button', { name: `Join ${second.name}` }, T));
+    await waitFor(async () => expect((await teamMembershipsApi.list({ person: person.id })).count).toBe(2), T);
+    expect((await peopleApi.get(person.id)).team).toBeNull(); // joining chooses no primary team
+
+    fireEvent.click(await screen.findByRole('button', { name: `Make ${team.name} primary` }, T));
     await waitFor(async () => expect((await peopleApi.get(person.id)).team).toBe(team.id), T);
     expect((await peopleApi.get(person.id)).team_name).toBe(team.name);
+
+    fireEvent.click(await screen.findByRole('button', { name: `Leave ${team.name}` }, T));
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Leave' }));
+    await waitFor(async () => expect((await peopleApi.get(person.id)).team).toBeNull(), T); // leaving the primary team clears it
+    expect((await teamMembershipsApi.list({ person: person.id })).results.map((m) => m.team)).toEqual([second.id]);
 
     fireEvent.click(screen.getByRole('button', { name: 'Deactivate' }));
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Deactivate' }));

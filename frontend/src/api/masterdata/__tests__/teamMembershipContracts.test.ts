@@ -43,6 +43,11 @@ describe('the rules the screens rely on', () => {
     expect(flow.restore_refused_409.status).toBe(409);
   });
 
+  it('removing the membership of the primary team clears the person’s team', () => {
+    expect(flow.remove_primary_membership.status).toBe(204);
+    expect(flow.person_after_leaving_primary.body.team).toBeNull();
+  });
+
   it('the primary team keeps a membership, and the people filter by team is the primary team only', () => {
     expect(flow.list_of_grace.body.results.map((r: any) => r.team_name).sort()).toEqual(['Comp A', 'Lighting A']);
     expect(flow.people_filter_by_team_is_primary_only.body.count).toBe(0);

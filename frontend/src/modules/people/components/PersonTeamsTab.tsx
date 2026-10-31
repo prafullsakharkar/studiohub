@@ -29,7 +29,7 @@ export const PersonTeamsTab: React.FC<PersonTeamsTabProps> = ({ personId, person
   const queryClient = useQueryClient();
   const teams = useQuery({ queryKey: [...teamsApi.keys.all, 'all'], queryFn: ({ signal }) => fetchAllRows(teamsApi.list, { ordering: 'name' }, { signal }) });
   const memberships = useQuery({ queryKey: [...teamMembershipsApi.keys.all, 'of-person', personId], queryFn: ({ signal }) => fetchAllRows(teamMembershipsApi.list, { person: personId }, { signal }) });
-  const [leaving, setLeaving] = useState<{ membershipId: string; teamName: string } | null>(null);
+  const [leaving, setLeaving] = useState<{ membershipId: string; teamName: string; primary: boolean } | null>(null);
 
   const membershipOf = new Map((memberships.data ?? []).map((m) => [m.team, m.id]));
   const refresh = () => Promise.all([teamMembershipsApi.keys.all, peopleApi.keys.all, auditKeys.all].map((queryKey) => queryClient.invalidateQueries({ queryKey })));
@@ -83,7 +83,7 @@ export const PersonTeamsTab: React.FC<PersonTeamsTabProps> = ({ personId, person
                             Make primary
                           </Button>
                         )}
-                        <Button size="xs" variant="outline" aria-label={`Leave ${team.name}`} onClick={() => setLeaving({ membershipId, teamName: team.name })}>
+                        <Button size="xs" variant="outline" aria-label={`Leave ${team.name}`} onClick={() => setLeaving({ membershipId, teamName: team.name, primary: isPrimary })}>
                           Leave
                         </Button>
                       </>
@@ -103,7 +103,7 @@ export const PersonTeamsTab: React.FC<PersonTeamsTabProps> = ({ personId, person
       <ConfirmDialog
         isOpen={leaving !== null}
         title="Leave team"
-        message={`Remove ${personName} from ${leaving?.teamName ?? ''}? They stay in their other teams.${leaving && leaving.membershipId === membershipOf.get(primaryTeamId ?? '') ? ' This is their primary team; it stays set until you clear it.' : ''}`}
+        message={`Remove ${personName} from ${leaving?.teamName ?? ''}? They stay in their other teams.${leaving?.primary ? ' This is their primary team, so they will have no primary team afterwards.' : ''}`}
         confirmLabel="Leave"
         destructive
         onClose={() => setLeaving(null)}
