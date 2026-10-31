@@ -224,6 +224,34 @@ class TestThePrimaryTeamStaysInStep:
         assert TeamMembership.objects.filter(person=person).count() == 1
 
 
+class TestLeavingThePrimaryTeam:
+    def test_removing_the_membership_of_the_primary_team_clears_it(self, manager):
+        team = TeamFactory()
+        person = PersonFactory(team=team)
+        membership = TeamMembershipFactory(team=team, person=person)
+        assert manager.delete(f"{URL}{membership.pk}/").status_code == 204
+        person.refresh_from_db()
+        assert person.team_id is None
+
+    def test_removing_another_membership_leaves_the_primary_team(self, manager):
+        primary, other = TeamFactory(), TeamFactory()
+        person = PersonFactory(team=primary)
+        TeamMembershipFactory(team=primary, person=person)
+        extra = TeamMembershipFactory(team=other, person=person)
+        assert manager.delete(f"{URL}{extra.pk}/").status_code == 204
+        person.refresh_from_db()
+        assert person.team_id == primary.pk
+
+    def test_it_clears_only_the_person_who_left(self, manager):
+        team = TeamFactory()
+        leaver, stayer = PersonFactory(team=team), PersonFactory(team=team)
+        membership = TeamMembershipFactory(team=team, person=leaver)
+        TeamMembershipFactory(team=team, person=stayer)
+        manager.delete(f"{URL}{membership.pk}/")
+        stayer.refresh_from_db()
+        assert stayer.team_id == team.pk
+
+
 class TestDeletingTeamsAndPeople:
     def test_a_team_with_members_cannot_be_deleted_until_they_are_removed(self, manager):
         membership = TeamMembershipFactory()
