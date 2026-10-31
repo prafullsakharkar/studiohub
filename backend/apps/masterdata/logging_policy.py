@@ -17,6 +17,7 @@ API_PREFIX = "/api/v1"
 DIRECTORY_PATHS = (
     "departments",
     "teams",
+    "team-memberships",
     "offices",
     "positions",
     "people",

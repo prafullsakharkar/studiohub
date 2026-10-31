@@ -23,6 +23,7 @@ from apps.masterdata.models import (
     Person,
     Position,
     Team,
+    TeamMembership,
     Vendor,
     VendorContact,
     VendorContract,
@@ -260,6 +261,39 @@ class _ParentImmutableMixin:
                 )
             attrs.pop(self.parent_field)
         return attrs
+
+
+class TeamMembershipSerializer(_ParentImmutableMixin, serializers.ModelSerializer[TeamMembership]):
+    """A person's membership of a team. The names are read-only conveniences (no second request)."""
+
+    parent_field = "team"
+    team_name = serializers.CharField(source="team.name", read_only=True)
+    person_name = serializers.CharField(source="person.name", read_only=True)
+    person_status = serializers.CharField(source="person.status", read_only=True)
+    person_department_name = serializers.CharField(
+        source="person.department.name", read_only=True, default=""
+    )
+    person_office_name = serializers.CharField(
+        source="person.office.name", read_only=True, default=""
+    )
+
+    class Meta:
+        model = TeamMembership
+        fields = (
+            "id",
+            "team",
+            "team_name",
+            "person",
+            "person_name",
+            "person_status",
+            "person_department_name",
+            "person_office_name",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at")
+        validators = []
+        extra_kwargs = {"team": {"validators": []}, "person": {"validators": []}}
 
 
 class ClientContactSerializer(_ParentImmutableMixin, serializers.ModelSerializer[ClientContact]):

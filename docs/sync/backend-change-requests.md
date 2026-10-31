@@ -494,7 +494,7 @@ Each of the six settings viewsets (`categories`, `definitions`, `system-settings
 
 ## Phase 14 findings (workspaces): owner requirement, 2026-10-31
 
-### CR-32: a person can be in only one team (**missing feature**, **OPEN, needs approval**)
+### CR-32: a person can be in only one team (**missing feature**, **APPLIED**)
 **Requirement (owner, in answer to the Phase 14 question):** "multiple team can have same person", a person may belong to several teams at once.
 
 **Evidence (code):** `Person.team` is a single nullable `ForeignKey("masterdata.Team")` (`apps/masterdata/models/person.py`); `Team` has `lead` and no member list; `PersonSerializer` exposes `team` and `team_name`; `GET /people/?team=<id>` filters on that one column; and `PersonService` enforces DOM-MD-PER-06 ("a team belongs to one department, so the pair must agree"). Phase 14 therefore implements membership as `PATCH /people/{id}/ {team}`: adding a person to a second team **moves** them out of the first (the dialog says so). Nothing in the API can express two teams.
@@ -507,6 +507,14 @@ Each of the six settings viewsets (`categories`, `definitions`, `system-settings
 3. `Person.team` stays as the person's **primary team** so no existing client breaks; the DOM-MD-PER-06 department rule applies to the primary team only (extra teams may belong to other departments, which is the point). Setting `Person.team` also ensures a membership row exists.
 4. Deleting a team with memberships is refused as `has_dependants` (like departments with teams); deleting a person removes their memberships.
 
-**Open design questions for the owner:** (a) should a member carry a role or join date, or is membership a plain link? (b) must every membership's team match the person's department, or may a person sit in teams of other departments? (c) should `Person.team` remain as the primary team, or be removed?
+**Design questions, answered by the owner's approval of my recommendation (2026-10-31):** (a) a plain link, no role or join date; (b) teams of any department (the department rule applies to the primary team only); (c) `Person.team` stays as the primary team.
 
 **Frontend after approval:** the Team Members tab and the Person Teams tab read and write `team-memberships`; the people-with-`?team=` list is replaced. Until then both use `Person.team` (one team).
+
+### Applied: CR-32 (branch `sync/backend-cr-32`, approved 2026-10-31)
+- **Model and migration:** `masterdata.TeamMembership(team PROTECT, person CASCADE)` with a partial unique constraint on live `(team, person)`; `0002_team_membership` also makes every live person with a live `team` a member of it (idempotent).
+- **API:** `/api/v1/team-memberships/` (list, retrieve, create, delete, `restore`; PUT/PATCH → 405), filters `team` and `person`, rows carry `team_name, person_name, person_status, person_department_name, person_office_name`. Reads open to any signed-in user; writes need `masterdata.directory.manage`.
+- **Rules:** a duplicate add is a 400 naming `person`; a team with members cannot be deleted (409 `has_dependants`); `Person.team` stays as the primary team and setting it creates the membership; deleting a person soft-deletes their memberships and restoring brings back the ones removed with them; a hard delete removes them.
+- **Evidence:** 20 new tests (`test_team_membership_api.py`), 12 source mutations tried: 11 caught (two were first missed, by a test that ignored status codes and one that the database constraint backed up, and were strengthened); the twelfth, dropping the `is_deleted=False` in the migration filter, is equivalent because the default manager already hides deleted rows; `apps/masterdata`, bootstrap and audit suites 1,451 pass and 1 fails that is not mine (the deliveries migration-count test); `makemigrations --check` clean; ruff clean; basedpyright 0 errors; schema snapshot gained only the three new paths. `masterdata` now has two migrations, the most the bootstrap test allows.
+- **Frontend:** the Team Members tab and the Person Teams tab move to `team-memberships` (next commit series); `GET /people/?team=` is not used for membership any more.
+

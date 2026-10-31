@@ -1,0 +1,713 @@
+{
+  "add_ada_to_comp": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/team-memberships/",
+      "body": {
+        "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+        "person": "87eb9e3a-dcb6-4625-a912-3d6f7331ce2f"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1a0dfcf4-f88a-4f3c-986b-d79236385871",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "ad1d9c06-ab75-4cd6-8c0a-d23d6d1c4dab",
+      "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+      "team_name": "Comp A",
+      "person": "87eb9e3a-dcb6-4625-a912-3d6f7331ce2f",
+      "person_name": "Ada Lovelace",
+      "person_status": "active",
+      "person_department_name": "Membership Compositing",
+      "person_office_name": "",
+      "created_at": "2026-10-31T08:58:49.936989Z",
+      "updated_at": "2026-10-31T08:58:49.936998Z"
+    }
+  },
+  "add_ada_to_lighting": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/team-memberships/",
+      "body": {
+        "team": "7a25af38-f6fb-4783-a622-674c41742f97",
+        "person": "87eb9e3a-dcb6-4625-a912-3d6f7331ce2f"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ceea7736-d51d-43b1-a6ce-90dd0a434f2e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "fc5a877b-4218-427e-947f-e14db2bc4e2d",
+      "team": "7a25af38-f6fb-4783-a622-674c41742f97",
+      "team_name": "Lighting A",
+      "person": "87eb9e3a-dcb6-4625-a912-3d6f7331ce2f",
+      "person_name": "Ada Lovelace",
+      "person_status": "active",
+      "person_department_name": "Membership Compositing",
+      "person_office_name": "",
+      "created_at": "2026-10-31T08:58:49.957944Z",
+      "updated_at": "2026-10-31T08:58:49.957952Z"
+    }
+  },
+  "add_grace_to_comp": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/team-memberships/",
+      "body": {
+        "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+        "person": "bb8f1bee-c523-419b-a2a8-057d60efb0ad"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e19af87b-98f7-4940-b946-eb4255769377",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "3d21af3b-da4f-450a-ab7b-8597fa79f5ae",
+      "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+      "team_name": "Comp A",
+      "person": "bb8f1bee-c523-419b-a2a8-057d60efb0ad",
+      "person_name": "Grace Hopper",
+      "person_status": "active",
+      "person_department_name": "",
+      "person_office_name": "",
+      "created_at": "2026-10-31T08:58:49.976449Z",
+      "updated_at": "2026-10-31T08:58:49.976456Z"
+    }
+  },
+  "add_duplicate_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/team-memberships/",
+      "body": {
+        "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+        "person": "87eb9e3a-dcb6-4625-a912-3d6f7331ce2f"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "4c13e258-3973-4273-992b-eb5962446533",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "person": [
+        "This person is already a member of the team."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "4c13e258-3973-4273-992b-eb5962446533"
+      }
+    }
+  },
+  "add_missing_fields_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/team-memberships/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "859cba90-c054-4ae9-9876-59e08e1157b1",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "team": [
+        "This field is required."
+      ],
+      "person": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "859cba90-c054-4ae9-9876-59e08e1157b1"
+      }
+    }
+  },
+  "add_unknown_person_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/team-memberships/",
+      "body": {
+        "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+        "person": "00000000-0000-0000-0000-000000000000"
+      }
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a852bcce-9614-45cb-8ea5-2a83ab8bba27",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "person": [
+        "Invalid pk \"00000000-0000-0000-0000-000000000000\" - object does not exist."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "a852bcce-9614-45cb-8ea5-2a83ab8bba27"
+      }
+    }
+  },
+  "add_as_artist_403": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/team-memberships/",
+      "body": {
+        "team": "7a25af38-f6fb-4783-a622-674c41742f97",
+        "person": "bb8f1bee-c523-419b-a2a8-057d60efb0ad"
+      }
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d228b4bd-532e-42f0-b5b6-d9a189bddeca",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "d228b4bd-532e-42f0-b5b6-d9a189bddeca"
+      }
+    }
+  },
+  "list_admin": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/team-memberships/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e0a0fc0d-bf47-4d17-bbb7-0464632c4a17",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 3,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "ad1d9c06-ab75-4cd6-8c0a-d23d6d1c4dab",
+          "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+          "team_name": "Comp A",
+          "person": "87eb9e3a-dcb6-4625-a912-3d6f7331ce2f",
+          "person_name": "Ada Lovelace",
+          "person_status": "active",
+          "person_department_name": "Membership Compositing",
+          "person_office_name": "",
+          "created_at": "2026-10-31T08:58:49.936989Z",
+          "updated_at": "2026-10-31T08:58:49.936998Z"
+        },
+        {
+          "id": "fc5a877b-4218-427e-947f-e14db2bc4e2d",
+          "team": "7a25af38-f6fb-4783-a622-674c41742f97",
+          "team_name": "Lighting A",
+          "person": "87eb9e3a-dcb6-4625-a912-3d6f7331ce2f",
+          "person_name": "Ada Lovelace",
+          "person_status": "active",
+          "person_department_name": "Membership Compositing",
+          "person_office_name": "",
+          "created_at": "2026-10-31T08:58:49.957944Z",
+          "updated_at": "2026-10-31T08:58:49.957952Z"
+        },
+        {
+          "id": "3d21af3b-da4f-450a-ab7b-8597fa79f5ae",
+          "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+          "team_name": "Comp A",
+          "person": "bb8f1bee-c523-419b-a2a8-057d60efb0ad",
+          "person_name": "Grace Hopper",
+          "person_status": "active",
+          "person_department_name": "",
+          "person_office_name": "",
+          "created_at": "2026-10-31T08:58:49.976449Z",
+          "updated_at": "2026-10-31T08:58:49.976456Z"
+        }
+      ]
+    }
+  },
+  "list_as_artist": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/team-memberships/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "bef1017b-c613-4ad5-9a67-09c2eb53a77e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 3,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "ad1d9c06-ab75-4cd6-8c0a-d23d6d1c4dab",
+          "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+          "team_name": "Comp A",
+          "person": "87eb9e3a-dcb6-4625-a912-3d6f7331ce2f",
+          "person_name": "Ada Lovelace",
+          "person_status": "active",
+          "person_department_name": "Membership Compositing",
+          "person_office_name": "",
+          "created_at": "2026-10-31T08:58:49.936989Z",
+          "updated_at": "2026-10-31T08:58:49.936998Z"
+        },
+        {
+          "id": "fc5a877b-4218-427e-947f-e14db2bc4e2d",
+          "team": "7a25af38-f6fb-4783-a622-674c41742f97",
+          "team_name": "Lighting A",
+          "person": "87eb9e3a-dcb6-4625-a912-3d6f7331ce2f",
+          "person_name": "Ada Lovelace",
+          "person_status": "active",
+          "person_department_name": "Membership Compositing",
+          "person_office_name": "",
+          "created_at": "2026-10-31T08:58:49.957944Z",
+          "updated_at": "2026-10-31T08:58:49.957952Z"
+        },
+        {
+          "id": "3d21af3b-da4f-450a-ab7b-8597fa79f5ae",
+          "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+          "team_name": "Comp A",
+          "person": "bb8f1bee-c523-419b-a2a8-057d60efb0ad",
+          "person_name": "Grace Hopper",
+          "person_status": "active",
+          "person_department_name": "",
+          "person_office_name": "",
+          "created_at": "2026-10-31T08:58:49.976449Z",
+          "updated_at": "2026-10-31T08:58:49.976456Z"
+        }
+      ]
+    }
+  },
+  "list_of_team": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/team-memberships/?team=069debf4-192a-4fc7-af5e-f751a9104e73",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b7e9ea98-5692-494b-b04c-245e541cfa39",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "ad1d9c06-ab75-4cd6-8c0a-d23d6d1c4dab",
+          "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+          "team_name": "Comp A",
+          "person": "87eb9e3a-dcb6-4625-a912-3d6f7331ce2f",
+          "person_name": "Ada Lovelace",
+          "person_status": "active",
+          "person_department_name": "Membership Compositing",
+          "person_office_name": "",
+          "created_at": "2026-10-31T08:58:49.936989Z",
+          "updated_at": "2026-10-31T08:58:49.936998Z"
+        },
+        {
+          "id": "3d21af3b-da4f-450a-ab7b-8597fa79f5ae",
+          "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+          "team_name": "Comp A",
+          "person": "bb8f1bee-c523-419b-a2a8-057d60efb0ad",
+          "person_name": "Grace Hopper",
+          "person_status": "active",
+          "person_department_name": "",
+          "person_office_name": "",
+          "created_at": "2026-10-31T08:58:49.976449Z",
+          "updated_at": "2026-10-31T08:58:49.976456Z"
+        }
+      ]
+    }
+  },
+  "list_of_person": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/team-memberships/?person=87eb9e3a-dcb6-4625-a912-3d6f7331ce2f",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c9799fb4-a173-4e13-a003-24ab5395cc9a",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "ad1d9c06-ab75-4cd6-8c0a-d23d6d1c4dab",
+          "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+          "team_name": "Comp A",
+          "person": "87eb9e3a-dcb6-4625-a912-3d6f7331ce2f",
+          "person_name": "Ada Lovelace",
+          "person_status": "active",
+          "person_department_name": "Membership Compositing",
+          "person_office_name": "",
+          "created_at": "2026-10-31T08:58:49.936989Z",
+          "updated_at": "2026-10-31T08:58:49.936998Z"
+        },
+        {
+          "id": "fc5a877b-4218-427e-947f-e14db2bc4e2d",
+          "team": "7a25af38-f6fb-4783-a622-674c41742f97",
+          "team_name": "Lighting A",
+          "person": "87eb9e3a-dcb6-4625-a912-3d6f7331ce2f",
+          "person_name": "Ada Lovelace",
+          "person_status": "active",
+          "person_department_name": "Membership Compositing",
+          "person_office_name": "",
+          "created_at": "2026-10-31T08:58:49.957944Z",
+          "updated_at": "2026-10-31T08:58:49.957952Z"
+        }
+      ]
+    }
+  },
+  "list_search_ada": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/team-memberships/?search=ada",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f10f9313-1938-4f29-9639-a272ebcfbab9",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "ad1d9c06-ab75-4cd6-8c0a-d23d6d1c4dab",
+          "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+          "team_name": "Comp A",
+          "person": "87eb9e3a-dcb6-4625-a912-3d6f7331ce2f",
+          "person_name": "Ada Lovelace",
+          "person_status": "active",
+          "person_department_name": "Membership Compositing",
+          "person_office_name": "",
+          "created_at": "2026-10-31T08:58:49.936989Z",
+          "updated_at": "2026-10-31T08:58:49.936998Z"
+        },
+        {
+          "id": "fc5a877b-4218-427e-947f-e14db2bc4e2d",
+          "team": "7a25af38-f6fb-4783-a622-674c41742f97",
+          "team_name": "Lighting A",
+          "person": "87eb9e3a-dcb6-4625-a912-3d6f7331ce2f",
+          "person_name": "Ada Lovelace",
+          "person_status": "active",
+          "person_department_name": "Membership Compositing",
+          "person_office_name": "",
+          "created_at": "2026-10-31T08:58:49.957944Z",
+          "updated_at": "2026-10-31T08:58:49.957952Z"
+        }
+      ]
+    }
+  },
+  "detail": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/team-memberships/ad1d9c06-ab75-4cd6-8c0a-d23d6d1c4dab/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b83b5f04-13bd-41b6-93ec-452adcc1d669",
+      "Allow": "GET, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "ad1d9c06-ab75-4cd6-8c0a-d23d6d1c4dab",
+      "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+      "team_name": "Comp A",
+      "person": "87eb9e3a-dcb6-4625-a912-3d6f7331ce2f",
+      "person_name": "Ada Lovelace",
+      "person_status": "active",
+      "person_department_name": "Membership Compositing",
+      "person_office_name": "",
+      "created_at": "2026-10-31T08:58:49.936989Z",
+      "updated_at": "2026-10-31T08:58:49.936998Z"
+    }
+  },
+  "patch_405": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/team-memberships/ad1d9c06-ab75-4cd6-8c0a-d23d6d1c4dab/",
+      "body": {
+        "person": "bb8f1bee-c523-419b-a2a8-057d60efb0ad"
+      }
+    },
+    "status": 405,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e7a2728e-80e2-4cc8-844b-43111de2485b",
+      "Allow": "GET, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Method \"PATCH\" not allowed.",
+      "error": {
+        "code": "method_not_allowed",
+        "request_id": "e7a2728e-80e2-4cc8-844b-43111de2485b"
+      }
+    }
+  },
+  "delete_team_with_members_409": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/teams/069debf4-192a-4fc7-af5e-f751a9104e73/",
+      "body": null
+    },
+    "status": 409,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "65cf480c-29ac-4958-9774-279021102fd0",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Still referenced by: masterdata.TeamMembership.team (2).",
+      "error": {
+        "code": "has_dependants",
+        "request_id": "65cf480c-29ac-4958-9774-279021102fd0"
+      }
+    }
+  },
+  "remove_as_artist_403": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/team-memberships/ad1d9c06-ab75-4cd6-8c0a-d23d6d1c4dab/",
+      "body": null
+    },
+    "status": 403,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "1c745dab-e7e2-4f7d-8d8f-381e93fedcec",
+      "Allow": "GET, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "You do not have permission to perform this action.",
+      "error": {
+        "code": "permission_denied",
+        "request_id": "1c745dab-e7e2-4f7d-8d8f-381e93fedcec"
+      }
+    }
+  },
+  "remove_ok": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/team-memberships/ad1d9c06-ab75-4cd6-8c0a-d23d6d1c4dab/",
+      "body": null
+    },
+    "status": 204,
+    "headers": {
+      "X-Request-ID": "1dc5a0ac-3bf1-4687-bc01-185ed43db860",
+      "Allow": "GET, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "_non_json": null,
+      "_len": 0
+    }
+  },
+  "list_of_team_after_removal": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/team-memberships/?team=069debf4-192a-4fc7-af5e-f751a9104e73",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e40b2f0d-2d76-4af9-955c-a607f51f2974",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "3d21af3b-da4f-450a-ab7b-8597fa79f5ae",
+          "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+          "team_name": "Comp A",
+          "person": "bb8f1bee-c523-419b-a2a8-057d60efb0ad",
+          "person_name": "Grace Hopper",
+          "person_status": "active",
+          "person_department_name": "",
+          "person_office_name": "",
+          "created_at": "2026-10-31T08:58:49.976449Z",
+          "updated_at": "2026-10-31T08:58:49.976456Z"
+        }
+      ]
+    }
+  },
+  "add_again_ok": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/team-memberships/",
+      "body": {
+        "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+        "person": "87eb9e3a-dcb6-4625-a912-3d6f7331ce2f"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a45fa59c-7864-466f-bf26-aa6cdd99ae17",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "5c0a662d-c127-4fe0-9abc-f9883afb0a11",
+      "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+      "team_name": "Comp A",
+      "person": "87eb9e3a-dcb6-4625-a912-3d6f7331ce2f",
+      "person_name": "Ada Lovelace",
+      "person_status": "active",
+      "person_department_name": "Membership Compositing",
+      "person_office_name": "",
+      "created_at": "2026-10-31T08:58:50.165200Z",
+      "updated_at": "2026-10-31T08:58:50.165208Z"
+    }
+  },
+  "restore_refused_409": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/team-memberships/ad1d9c06-ab75-4cd6-8c0a-d23d6d1c4dab/restore/",
+      "body": null
+    },
+    "status": 409,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "2082ac47-706b-4a45-8984-25bef2fba2d6",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "detail": "This person is already a member of the team.",
+      "error": {
+        "code": "conflict",
+        "request_id": "2082ac47-706b-4a45-8984-25bef2fba2d6"
+      }
+    }
+  },
+  "set_primary_team": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/people/bb8f1bee-c523-419b-a2a8-057d60efb0ad/",
+      "body": {
+        "team": "7a25af38-f6fb-4783-a622-674c41742f97"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "9bb6a49b-eb9c-49ad-a9b4-20abbaa3eea7",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "bb8f1bee-c523-419b-a2a8-057d60efb0ad",
+      "name": "Grace Hopper",
+      "full_name": "Grace Hopper",
+      "description": "",
+      "status": "active",
+      "user": null,
+      "role": null,
+      "department": null,
+      "team": "7a25af38-f6fb-4783-a622-674c41742f97",
+      "team_name": "Lighting A",
+      "office": null,
+      "seniority": "",
+      "skills": [],
+      "timezone": "",
+      "security_clearance": "",
+      "availability_status": "",
+      "email": "",
+      "phone": "",
+      "date_of_birth": null,
+      "nationality": "",
+      "created_at": "2026-10-31T08:58:49.912760Z",
+      "updated_at": "2026-10-31T08:58:50.206099Z"
+    }
+  },
+  "list_of_grace": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/team-memberships/?person=bb8f1bee-c523-419b-a2a8-057d60efb0ad",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b8f2b5de-53be-4a0f-ac2a-db0b73ddf07a",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "3d21af3b-da4f-450a-ab7b-8597fa79f5ae",
+          "team": "069debf4-192a-4fc7-af5e-f751a9104e73",
+          "team_name": "Comp A",
+          "person": "bb8f1bee-c523-419b-a2a8-057d60efb0ad",
+          "person_name": "Grace Hopper",
+          "person_status": "active",
+          "person_department_name": "",
+          "person_office_name": "",
+          "created_at": "2026-10-31T08:58:49.976449Z",
+          "updated_at": "2026-10-31T08:58:49.976456Z"
+        },
+        {
+          "id": "13ed7fe9-c16d-4f0b-ad5d-4e048b8b8635",
+          "team": "7a25af38-f6fb-4783-a622-674c41742f97",
+          "team_name": "Lighting A",
+          "person": "bb8f1bee-c523-419b-a2a8-057d60efb0ad",
+          "person_name": "Grace Hopper",
+          "person_status": "active",
+          "person_department_name": "",
+          "person_office_name": "",
+          "created_at": "2026-10-31T08:58:50.214382Z",
+          "updated_at": "2026-10-31T08:58:50.214390Z"
+        }
+      ]
+    }
+  },
+  "people_filter_by_team_is_primary_only": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/people/?team=069debf4-192a-4fc7-af5e-f751a9104e73",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "30b432f9-a135-4c16-8282-ff5915df1f26",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 0,
+      "next": null,
+      "previous": null,
+      "results": []
+    }
+  }
+}

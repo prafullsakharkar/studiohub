@@ -22,6 +22,7 @@ from apps.masterdata.models import (
     Person,
     Position,
     Team,
+    TeamMembership,
     Vendor,
     VendorContact,
     VendorContract,
@@ -58,6 +59,14 @@ class TeamSelector(_DirectorySelector):
     @classmethod
     def _build(cls, manager) -> QuerySet[Any]:
         return manager.select_related("department", "lead")
+
+
+class TeamMembershipSelector(_DirectorySelector):
+    model = TeamMembership
+
+    @classmethod
+    def _build(cls, manager) -> QuerySet[Any]:
+        return manager.select_related("team", "person", "person__department", "person__office")
 
 
 class OfficeSelector(_DirectorySelector):
