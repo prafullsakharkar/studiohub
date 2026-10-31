@@ -1,6 +1,6 @@
 # Frontend ↔ backend sync (docs/sync)
 
-The React app in `frontend/` was synced from the sibling `studiohub-react` repository with its mock layer removed, and it was badly out of contract with the Django REST backend. This folder is the record of making it a faithful client, phase by phase (Phases 0 to 14), and the tools that keep it one.
+The React app in `frontend/` was synced from the sibling `studiohub-react` repository with its mock layer removed, and it was badly out of contract with the Django REST backend. This folder is the record of making it a faithful client, phase by phase (Phases 0 to 16), and the tools that keep it one.
 
 **The rule that held throughout:** the backend is the contract. No endpoint, field or error shape is used unless it was read from the backend code or captured from a real response (`samples/`). Backend code changed only for the change requests in [`backend-change-requests.md`](backend-change-requests.md), each approved by the owner first.
 
@@ -12,7 +12,7 @@ The React app in `frontend/` was synced from the sibling `studiohub-react` repos
 | [`01-frontend-inventory.md`](01-frontend-inventory.md) | Every API call the frontend made at the start, and what it was missing |
 | [`02-gap-analysis.md`](02-gap-analysis.md) | The differences between the two, ranked |
 | [`03-phase-plan.md`](03-phase-plan.md) | The plan: 14 phases, scope and dependencies of each |
-| [`phase-N-verification.md`](.) (1 to 14) | What each phase built, removed and found, the gates it passed, the questions it left |
+| [`phase-N-verification.md`](.) (1 to 16) | What each phase built, removed and found, the gates it passed, the questions it left |
 | [`backend-cr-26-31-verification.md`](backend-cr-26-31-verification.md) | The last batch of backend changes (settings, tags, dashboard) |
 | [`backend-change-requests.md`](backend-change-requests.md) | Every backend finding (CR-n), with evidence, the proposed diff and its status; owner questions (Q-n) |
 | [`samples/`](samples/README.md) | Real responses captured from the backend; frontend tests build their mocks from these |

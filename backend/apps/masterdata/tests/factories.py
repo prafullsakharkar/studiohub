@@ -22,6 +22,7 @@ from apps.masterdata.models import (
     Software,
     SoftwareVersion,
     Team,
+    TeamMembership,
     Vendor,
     VendorContact,
     VendorContract,
@@ -189,3 +190,11 @@ class PersonFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArg
         model = Person
 
     name = factory.Sequence(lambda n: f"Person {n}")
+
+
+class TeamMembershipFactory(DjangoModelFactory):  # pyright: ignore[reportMissingTypeArgument]
+    class Meta:
+        model = TeamMembership
+
+    team = factory.SubFactory(TeamFactory)
+    person = factory.SubFactory(PersonFactory)

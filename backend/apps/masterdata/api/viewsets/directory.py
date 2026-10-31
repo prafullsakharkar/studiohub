@@ -21,6 +21,7 @@ from apps.masterdata.api.serializers.directory import (
     OfficeSerializer,
     PersonSerializer,
     PositionSerializer,
+    TeamMembershipSerializer,
     TeamSerializer,
 )
 from apps.masterdata.api.viewsets.records import ServiceRecordViewSet
@@ -30,6 +31,7 @@ from apps.masterdata.selectors.directory import (
     OfficeSelector,
     PersonSelector,
     PositionSelector,
+    TeamMembershipSelector,
     TeamSelector,
 )
 from apps.masterdata.services.organization import (
@@ -39,6 +41,7 @@ from apps.masterdata.services.organization import (
     TeamService,
 )
 from apps.masterdata.services.person import PersonService
+from apps.masterdata.services.team_membership import TeamMembershipService
 
 
 class DepartmentViewSet(ServiceRecordViewSet):
@@ -57,6 +60,20 @@ class TeamViewSet(ServiceRecordViewSet):
     filterset_fields = ["department"]
     search_fields = ["name", "code"]
     ordering_fields = ["name", "code", "created_at"]
+
+
+class TeamMembershipViewSet(ServiceRecordViewSet):
+    """Who is in which team. Add (POST), remove (DELETE, a soft delete) and restore; never edited."""
+
+    serializer_class = TeamMembershipSerializer
+    selector_class = TeamMembershipSelector
+    service_class = TeamMembershipService
+    parent_field = "team"
+    http_method_names = ["get", "post", "delete", "head", "options"]
+    filterset_fields = ["team", "person"]
+    search_fields = ["person__name", "team__name"]
+    ordering_fields = ["created_at"]
+    ordering = ["created_at"]
 
 
 class OfficeViewSet(ServiceRecordViewSet):

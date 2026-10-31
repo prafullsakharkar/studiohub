@@ -286,7 +286,7 @@ API: CURRENT `departments/` (+ `restore`, `?hard=true`). Filters `department_typ
 
 - **DOM-MD-TEAM-01:** `department` is required and must be live. **IMPLEMENTED (Phase 6)**, as are TEAM-02 and TEAM-03.
 - **DOM-MD-TEAM-02:** `lead` must be a live Person.
-- **DOM-MD-TEAM-03:** soft delete is refused while persons, `production.Asset/Task.team` or `scheduling.Resource.team` reference the team (409 `has_dependants`).
+- **DOM-MD-TEAM-03:** soft delete is refused while persons, memberships (§5.6), `production.Asset/Task.team` or `scheduling.Resource.team` reference the team (409 `has_dependants`).
 - **DOM-MD-TEAM-04:** `utilization_percentage` is **omitted from the API** (same decision as DEP-05). `capacity` and `current_project_code` stay inputs unless D11-OPEN decides otherwise.
 
 API: CURRENT `teams/`.
@@ -329,6 +329,22 @@ API: CURRENT `positions/`.
 
 API: `people/` (+ `link-user`, `unlink-user`, `deactivate`, `reactivate`, `restore`, `?hard=true`). Filters `status, department, team, office`. Service: `PersonService.create/update/link_user/unlink_user/deactivate/reactivate/soft_delete/restore/hard_delete`.
 Extra tests: link integrity (one person per user; a second link gets 409); email follows the User; a client cannot set `user` through PATCH; deactivating a person who is a department manager; IDOR (a write without the grant gets 403; reads open per the D4 deferral).
+
+### 5.6 Team membership (`TeamMembership`; DOM-MD-TM, CR-32, 2026-10-31)
+
+A person can be in several teams. Membership is a plain link between a team and a person (no role, no dates).
+
+| ID | Contract | Status |
+|---|---|---|
+| DOM-MD-TM-01 | One live membership per `(team, person)` (partial unique `masterdata_teammembership_uq_team_person`). Adding a person who is already a member → 400 `{"person": ["This person is already a member of the team."]}`; two simultaneous adds are serialized by a lock on the team. | **IMPLEMENTED** |
+| DOM-MD-TM-02 | `team` and `person` must be live rows. A membership is created and removed, never edited (`PUT`/`PATCH` → 405). `DELETE` is a soft delete (204); the person can join again (a new row). `POST …/restore/` is refused (409 `conflict`) while a live membership of the same pair exists or the team or person is deleted. | **IMPLEMENTED** |
+| DOM-MD-TM-03 | Teams of any department may hold the same person. `Person.team` is the person's **primary team**; DOM-MD-PER-06 (team and department agree) applies to it only. | **IMPLEMENTED** |
+| DOM-MD-TM-04 | Setting `Person.team` (create or update) makes the person a member of that team if they are not. Changing or clearing it removes no membership. | **IMPLEMENTED** |
+| DOM-MD-TM-07 | Removing the membership of a person's primary team clears `Person.team` in the same transaction (through `PersonService.update`), so `Person.team` never names a team the person is not a member of. Removing any other membership leaves it. | **IMPLEMENTED** |
+| DOM-MD-TM-05 | A team with live memberships cannot be soft-deleted (409 `has_dependants`, as TEAM-03). Soft-deleting a person soft-deletes their memberships with the same timestamp; restoring the person restores only those. A hard delete of a person removes their memberships. | **IMPLEMENTED** |
+| DOM-MD-TM-06 | The migration `0002_team_membership` makes every live person with a live `team` a member of it. | **IMPLEMENTED** |
+
+API: `team-memberships/` (`GET`/`POST`, `GET`/`DELETE …/{id}/`, `POST …/{id}/restore/`, `?hard=true`). Filters `team`, `person`; search `person__name`, `team__name`; ordering `created_at`. Reads: any signed-in user. Writes: `masterdata.directory.manage` (`masterdata.hard_delete` for `?hard=true`). A row carries `id, team, team_name, person, person_name, person_status, person_department_name, person_office_name, created_at, updated_at`; the names are read-only. `GET /people/?team=<id>` still filters on the **primary** team only: list a team's members with `team-memberships/?team=<id>`. Service: `TeamMembershipService.create/ensure/soft_delete/restore/hard_delete`.
 
 ---
 

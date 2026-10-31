@@ -6,9 +6,9 @@ import { departmentKeys, departmentsApi } from '@/api/masterdata/departments';
 import { teamsApi } from '@/api/masterdata/directory';
 import { EntityHistory } from '@/components/history/EntityHistory';
 import { DetailGrid } from '@/modules/directory/workspace/DetailGrid';
-import { PeopleTab } from '@/modules/directory/workspace/PeopleTab';
 import { PersonLabel } from '@/modules/directory/workspace/PersonLabel';
 import { RecordActions } from '@/modules/directory/workspace/RecordActions';
+import { TeamMembersTab } from '@/modules/directory/workspace/TeamMembersTab';
 import { WorkspaceShell, type WorkspaceTab } from '@/modules/directory/workspace/WorkspaceShell';
 
 const DepartmentLink: React.FC<{ id: string }> = ({ id }) => {
@@ -42,7 +42,7 @@ export const TeamWorkspacePage: React.FC = () => {
             />
           ),
         },
-        { id: 'members', label: 'Members', render: () => <PeopleTab field="team" parentId={team.id} parentName={team.name} manageMembers /> },
+        { id: 'members', label: 'Members', render: () => <TeamMembersTab teamId={team.id} teamName={team.name} /> },
         { id: 'history', label: 'History', render: () => <EntityHistory targetType="Team" targetId={team.id} title="Team history" /> },
       ]
     : [];
