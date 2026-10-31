@@ -287,6 +287,7 @@ API: CURRENT `departments/` (+ `restore`, `?hard=true`). Filters `department_typ
 - **DOM-MD-TEAM-01:** `department` is required and must be live. **IMPLEMENTED (Phase 6)**, as are TEAM-02 and TEAM-03.
 - **DOM-MD-TEAM-02:** `lead` must be a live Person.
 - **DOM-MD-TEAM-03:** soft delete is refused while persons, memberships (§5.6), `production.Asset/Task.team` or `scheduling.Resource.team` reference the team (409 `has_dependants`).
+- **DOM-MD-TEAM-05 (CR-33):** a team carries a read-only `member_count`: its live memberships (§5.6), counted in the same query as the list (a person in two teams counts once in each; a removed membership does not count).
 - **DOM-MD-TEAM-04:** `utilization_percentage` is **omitted from the API** (same decision as DEP-05). `capacity` and `current_project_code` stay inputs unless D11-OPEN decides otherwise.
 
 API: CURRENT `teams/`.
