@@ -69,6 +69,21 @@ class TeamMembershipService(DirectoryService[TeamMembership]):
         return rows.exclude(pk=instance.pk) if instance.pk else rows
 
     @classmethod
+    def soft_delete(cls, *, actor: Any, instance: TeamMembership) -> None:
+        with transaction.atomic():
+            super().soft_delete(actor=actor, instance=instance)
+            # The primary team is one of the person's teams (DOM-MD-TM-07): leaving it clears it, so
+            # ``Person.team`` never names a team the person is not a member of.
+            from apps.masterdata.services.person import PersonService
+
+            person = Person.objects.filter(
+                pk=instance.person_id,  # pyright: ignore[reportAttributeAccessIssue]
+                team_id=instance.team_id,  # pyright: ignore[reportAttributeAccessIssue]
+            ).first()
+            if person is not None:
+                PersonService.update(actor=actor, instance=person, data={"team": None})
+
+    @classmethod
     def ensure(cls, *, actor: Any, team: Team, person: Person) -> TeamMembership:
         """The live membership of ``person`` in ``team``; made if missing (the primary team rule)."""
         with transaction.atomic():
