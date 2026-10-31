@@ -278,15 +278,15 @@ class TestLocalizationAndThemeRules:
         )
         assert Theme.objects.get(pk=theme.pk).primary_color == "#112233"
 
-    def test_the_last_active_theme_cannot_be_deleted(self, admin_client):
-        only = ThemeFactory(is_active=True)
-        ThemeFactory(is_active=False)
+    def test_the_default_theme_cannot_be_deleted(self, admin_client):
+        """CR-29 asked that "the active theme" stay; with one default theme (Q-22) that is the default."""
+        only = ThemeFactory(is_active=True, is_default=True)
+        ThemeFactory(is_active=True)
         response = admin_client.delete(f"{S}themes/{only.id}/")
         assert response.status_code == 400
         assert Theme.objects.filter(pk=only.pk).exists()
-        other = ThemeFactory(is_active=True)
+        assert admin_client.post(f"{S}themes/{ThemeFactory(is_active=True).id}/set-default/").status_code == 200
         assert admin_client.delete(f"{S}themes/{only.id}/").status_code == 204
-        assert Theme.objects.filter(pk=other.pk).exists()
 
     def test_an_inactive_theme_can_always_be_deleted(self, admin_client):
         ThemeFactory(is_active=True)

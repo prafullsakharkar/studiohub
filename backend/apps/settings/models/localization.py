@@ -182,7 +182,13 @@ class Localization(EntityModel, TimeStampedModel):
     is_active = models.BooleanField(
         default=True,
         db_index=True,
-        help_text="Whether this localization is active",
+        help_text="Whether this localization is available (several may be)",
+    )
+
+    is_default = models.BooleanField(
+        default=False,
+        help_text="The one localization the app uses. At most one row is the default, it is always active, and only "
+        "the set-default action moves it.",
     )
     
     class Meta:
@@ -190,6 +196,13 @@ class Localization(EntityModel, TimeStampedModel):
         ordering = ("name",)
         verbose_name = "Localization"
         verbose_name_plural = "Localizations"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["is_default"],
+                condition=models.Q(is_default=True, is_deleted=False),
+                name="uq_localization_single_default",
+            ),
+        ]
     
     def __str__(self):
         return self.name

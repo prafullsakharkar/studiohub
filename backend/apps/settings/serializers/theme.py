@@ -6,6 +6,7 @@ import re
 from rest_framework import serializers
 
 from apps.settings.models.theme import Theme
+from apps.settings.services.default_selection import adopt_if_first
 
 HEX_COLOR = re.compile(r"^#[0-9A-Fa-f]{6}$")
 COLOR_FIELDS = (
@@ -49,12 +50,14 @@ class ThemeSerializer(serializers.ModelSerializer[Theme]):
             "sidebar_collapsed",
             "navbar_fixed",
             "is_active",
+            "is_default",
             "created_at",
             "updated_at",
         )
         read_only_fields = (
             "id",
             "uuid",
+            "is_default",
             "created_at",
             "updated_at",
         )
@@ -68,3 +71,14 @@ class ThemeSerializer(serializers.ModelSerializer[Theme]):
         if errors:
             raise serializers.ValidationError(errors)
         return attrs
+
+    def create(self, validated_data):
+        # The first active one becomes the default, so there is one whenever there is any to choose from.
+        return adopt_if_first(Theme, super().create(validated_data))
+
+    def update(self, instance, validated_data):
+        if validated_data.get("is_active") is False and instance.is_default:
+            raise serializers.ValidationError(
+                {"is_active": ["This is the default and stays active. Make another one the default first."]}
+            )
+        return super().update(instance, validated_data)

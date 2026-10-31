@@ -173,10 +173,12 @@ export interface Theme {
   sidebar_collapsed: boolean;
   navbar_fixed: boolean;
   is_active: boolean;
+  /** The one the app uses: at most one row, always active; only `set-default` moves it (Q-22). */
+  is_default: boolean;
   created_at: string;
   updated_at: string;
 }
-export type ThemeInput = Partial<Omit<Theme, 'id' | 'uuid' | 'created_at' | 'updated_at' | 'is_active'>> & { code: string; name: string };
+export type ThemeInput = Partial<Omit<Theme, 'id' | 'uuid' | 'created_at' | 'updated_at' | 'is_active' | 'is_default'>> & { code: string; name: string };
 
 export interface Localization {
   id: string;
@@ -193,10 +195,12 @@ export interface Localization {
   week_start: number;
   fiscal_year_start: string | null;
   is_active: boolean;
+  /** The one the app uses: at most one row, always active; only `set-default` moves it (Q-22). */
+  is_default: boolean;
   created_at: string;
   updated_at: string;
 }
-export type LocalizationInput = Partial<Omit<Localization, 'id' | 'uuid' | 'created_at' | 'updated_at' | 'is_active'>> & { code: string; name: string; language: string };
+export type LocalizationInput = Partial<Omit<Localization, 'id' | 'uuid' | 'created_at' | 'updated_at' | 'is_active' | 'is_default'>> & { code: string; name: string; language: string };
 
 export interface Tag {
   id: string;
@@ -254,12 +258,22 @@ export const themesApi = {
   ...resourceApi<Theme, ThemeInput>('settings-themes', `${V1}/themes/`),
   /** Answers `{status}`; the others stay active as they were. */
   activate: (id: string) => act<StatusAnswer>('themes', id, 'activate'),
+  /** Refused (400) for the default theme: make another the default first. */
   deactivate: (id: string) => act<StatusAnswer>('themes', id, 'deactivate'),
+  /** The theme the app uses; 404 while none was made. Any signed-in user may read it. */
+  default: (signal?: AbortSignal) => apiClient.get<Theme>(`${V1}/themes/default/`, { signal }),
+  /** Needs an active theme; the previous default stops being it. Answers `{status: 'default'}`. */
+  setDefault: (id: string) => act<StatusAnswer>('themes', id, 'set-default'),
 };
 export const localizationsApi = {
   ...resourceApi<Localization, LocalizationInput>('settings-localizations', `${V1}/localizations/`),
   activate: (id: string) => act<StatusAnswer>('localizations', id, 'activate'),
+  /** Refused (400) for the default localization: make another the default first. */
   deactivate: (id: string) => act<StatusAnswer>('localizations', id, 'deactivate'),
+  /** The localization the app uses; 404 while none was made. Any signed-in user may read it. */
+  default: (signal?: AbortSignal) => apiClient.get<Localization>(`${V1}/localizations/default/`, { signal }),
+  /** Needs an active localization; the previous default stops being it. Answers `{status: 'default'}`. */
+  setDefault: (id: string) => act<StatusAnswer>('localizations', id, 'set-default'),
 };
 /** Paginated (the only paginated route here). A create answers the id (CR-28). */
 export const tagsApi = resourceApi<Tag, TagInput>('core-tags', '/api/v1/core/tags/');

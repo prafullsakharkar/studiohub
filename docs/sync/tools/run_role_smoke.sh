@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Starts the throwaway factory-seeded backend (live_backend.py), runs the Playwright role smoke tests against it,
-# and stops the backend. Extra arguments go to Playwright, e.g. `--grep "no role"`.
+# Starts the throwaway factory-seeded backend (live_backend.py), runs the Playwright role smoke tests (or, with
+# --vitest, the live vitest files) against it, and stops the backend. Extra arguments go to the runner.
 #
-#   docs/sync/tools/run_role_smoke.sh                    # all six roles, about 20 minutes
+#   docs/sync/tools/run_role_smoke.sh                    # all six roles and the phone-width pass, about 35 minutes
 #   docs/sync/tools/run_role_smoke.sh --grep "no role"   # one role
+#   docs/sync/tools/run_role_smoke.sh --vitest src/test/live/settings.live.test.tsx   # a live vitest file, fresh seed
 #
 # State (backend log, connection details) is kept in frontend/test-results/live, which Git ignores.
 set -u
@@ -23,7 +24,12 @@ grep -q LIVE_READY "$OUT/backend.log" || { echo "the backend did not start; see 
 sleep 32
 
 cd "$ROOT/frontend" || exit 1
-SYNC_LIVE_INFO="$OUT/live.json" pnpm exec playwright test -c playwright.live.config.ts "$@"
+if [ "${1:-}" = "--vitest" ]; then
+  shift
+  SYNC_LIVE_INFO="$OUT/live.json" pnpm exec vitest run --config vitest.live.config.ts "$@"
+else
+  SYNC_LIVE_INFO="$OUT/live.json" pnpm exec playwright test -c playwright.live.config.ts "$@"
+fi
 status=$?
 touch "$OUT/live.stop"
 exit $status
