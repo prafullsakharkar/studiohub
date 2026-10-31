@@ -11,7 +11,7 @@ import {
   Sparkles,
   Info,
 } from 'lucide-react';
-import type { EntityResolutionItem } from '@/types/production';
+import type { EntityResolutionItem } from '@/shared/components/bulk/types';
 import { Button } from '@/shared/components/Button';
 import { Badge } from '@/shared/components/Badge';
 

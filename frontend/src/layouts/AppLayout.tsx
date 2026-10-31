@@ -1,25 +1,21 @@
 import { ActiveTimerBanner } from '@/modules/tasks';
 import { useAuth } from '@/modules/auth';
 import React, { Suspense, useEffect } from 'react';
-import { Outlet, useLocation, useSearchParams } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { Breadcrumbs } from './Breadcrumbs';
 import { useProductionStore } from '@/core/production/useProductionStore';
-import { useWorkspaceStore } from '@/core/workspace/useWorkspaceStore';
-import { ProductionContextProvider } from '@/core/production/ProductionContext';
 import { usePageLayoutStore } from '@/core/layout/usePageLayoutStore';
 import { cn } from '@/shared/utils/cn';
 import { CoachMarkOverlay, GettingStartedBanner } from '@/shared/components/CoachMarkOverlay';
 import { useThemeMode } from '@/providers/ThemeProvider';
 
-const AppLayoutInner: React.FC = () => {
+export const AppLayout: React.FC = () => {
   const location = useLocation();
-  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { syncWithUserPreferences } = useThemeMode();
   const { setActiveProject, setActiveShow, activeProjectId } = useProductionStore();
-  const { tabs, activeTabId } = useWorkspaceStore();
   const { density, containerWidth, headerSticky } = usePageLayoutStore();
 
   // Keep theme accent colors synced with user's saved profile preferences
@@ -47,30 +43,7 @@ const AppLayoutInner: React.FC = () => {
       setActiveProject(projectMatch[1]);
       return;
     }
-
-    // Match /workspace with primaryType=project
-    if (pathname.startsWith('/workspace')) {
-      const primaryType = searchParams.get('primaryType');
-      const primaryId = searchParams.get('primaryId');
-      if (primaryType === 'project' && primaryId) {
-        setActiveProject(primaryId);
-        return;
-      }
-
-      // Check current active workspace tab
-      const currentTab = tabs.find((t) => t.id === activeTabId) || tabs[0];
-      if (currentTab?.primary?.type === 'project' && currentTab.primary.id) {
-        setActiveProject(currentTab.primary.id);
-      }
-    }
-  }, [
-    location.pathname,
-    searchParams.get('primaryType'),
-    searchParams.get('primaryId'),
-    activeTabId,
-    setActiveProject,
-    setActiveShow,
-  ]);
+  }, [location.pathname, setActiveProject, setActiveShow]);
 
   return (
     <div 
@@ -122,12 +95,3 @@ const AppLayoutInner: React.FC = () => {
     </div>
   );
 };
-
-export const AppLayout: React.FC = () => {
-  return (
-    <ProductionContextProvider>
-      <AppLayoutInner />
-    </ProductionContextProvider>
-  );
-};
-

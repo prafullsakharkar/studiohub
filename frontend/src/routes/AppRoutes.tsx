@@ -103,7 +103,7 @@ const TeamsListPage = lazyNamed(() => import('@/modules/teams'), 'TeamsListPage'
 const TeamWorkspacePage = lazyNamed(() => import('@/modules/teams'), 'TeamWorkspacePage');
 const CreateTeamPage = lazyNamed(() => import('@/modules/teams'), 'CreateTeamPage');
 const EditTeamPage = lazyNamed(() => import('@/modules/teams'), 'EditTeamPage');
-const WorkspacePage = lazyNamed(() => import('@/modules/workspace'), 'WorkspacePage');const AccountLayout = lazyNamed(() => import('@/modules/identity/account/AccountLayout'), 'AccountLayout');const ProfilePage = lazyNamed(() => import('@/modules/identity/account/ProfilePage'), 'ProfilePage');const SecurityPage = lazyNamed(() => import('@/modules/identity/account/SecurityPage'), 'SecurityPage');const SessionsPage = lazyNamed(() => import('@/modules/identity/account/SessionsPage'), 'SessionsPage');const TokensPage = lazyNamed(() => import('@/modules/identity/account/TokensPage'), 'TokensPage');const CreatePositionPage = lazyNamed(() => import('@/modules/directory/positionPages'), 'CreatePositionPage');
+const AccountLayout = lazyNamed(() => import('@/modules/identity/account/AccountLayout'), 'AccountLayout');const ProfilePage = lazyNamed(() => import('@/modules/identity/account/ProfilePage'), 'ProfilePage');const SecurityPage = lazyNamed(() => import('@/modules/identity/account/SecurityPage'), 'SecurityPage');const SessionsPage = lazyNamed(() => import('@/modules/identity/account/SessionsPage'), 'SessionsPage');const TokensPage = lazyNamed(() => import('@/modules/identity/account/TokensPage'), 'TokensPage');const CreatePositionPage = lazyNamed(() => import('@/modules/directory/positionPages'), 'CreatePositionPage');
 const EditPositionPage = lazyNamed(() => import('@/modules/directory/positionPages'), 'EditPositionPage');
 const PositionsListPage = lazyNamed(() => import('@/modules/directory/positionPages'), 'PositionsListPage');const GroupDetailPage = lazyNamed(() => import('@/modules/identity/pages/GroupDetailPage'), 'GroupDetailPage');const GroupsPage = lazyNamed(() => import('@/modules/identity/pages/GroupsPage'), 'GroupsPage');const PermissionsPage = lazyNamed(() => import('@/modules/identity/pages/PermissionsPage'), 'PermissionsPage');const RoleDetailPage = lazyNamed(() => import('@/modules/identity/pages/RoleDetailPage'), 'RoleDetailPage');const RolesPage = lazyNamed(() => import('@/modules/identity/pages/RolesPage'), 'RolesPage');const SecurityLogPage = lazyNamed(() => import('@/modules/identity/pages/SecurityLogPage'), 'SecurityLogPage');import { PreserveQueryRedirect } from './PreserveQueryRedirect';
 const AutomationFormPage = lazyNamed(() => import('@/modules/workflows'), 'AutomationFormPage');
@@ -179,7 +179,7 @@ export const AppRoutes: React.FC = () => {
 
           <Route path="/dashboard" element={<DashboardPage />} />
 
-          <Route path="/workspace" element={<WorkspacePage />} />
+          <Route path="/workspace" element={<Navigate to="/dashboard" replace />} />
 
           {/* PEOPLE */}
 

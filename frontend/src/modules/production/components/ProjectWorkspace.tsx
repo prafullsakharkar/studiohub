@@ -34,7 +34,7 @@ import {
   RefreshCw,
   Tv,
 } from 'lucide-react';
-import { isEpisodicProject } from '@/types/production';
+import { isEpisodicProject } from '../projectWorkflow';
 import { projectsApi, type Project, type ProjectInput } from '@/api/production/structure';
 import { auditKeys } from '@/api/audit/audit';
 import { notify } from '@/core/notifications/notify';

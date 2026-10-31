@@ -136,9 +136,8 @@ modules/<module-name>/
 - **Error Handling** (`src/api/errors/errorMapper.ts`) – Maps API errors to user-friendly messages
 
 #### State Management
-- **Zustand Stores** (`src/core/workspace/useWorkspaceStore.ts`, `src/core/production/useProductionStore.ts`)
-  - Persistence layer for workspace and production data
-  - Accessed via custom hooks (e.g., `useWorkspaceStore()`)
+- **Zustand Stores** (`src/core/production/useProductionStore.ts`: the chosen, recent and favourite projects)
+  - Persisted in localStorage; `clearUserScopedState()` (`src/core/auth/sessionCleanup.ts`) empties it whenever a session ends
 - **React Query** – Caching and syncing remote data
 - **Context API** – Auth, Theme providers
 
@@ -228,13 +227,6 @@ const canManageDirectory = useCan('masterdata.directory.manage');   // a backend
 const canEditShots = useCan(['shot.update', 'shot.view'], { projectId });
 ```
 `is_superuser` passes every check except controls with no backend (`unbacked` rules). Role names are display labels, never used for authorization. This only hides UI; the API checks every request again.
-
-### Using Workspace Store
-```typescript
-import { useWorkspaceStore } from '@/core/workspace/useWorkspaceStore';
-
-const { workspace, setWorkspace } = useWorkspaceStore();
-```
 
 ## Configuration Files
 

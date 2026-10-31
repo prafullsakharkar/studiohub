@@ -1,4 +1,4 @@
-import { type EntityResolutionItem, EntityResolutionState, type BulkUpdateFieldConfig } from '@/types/production';
+import { type EntityResolutionItem, EntityResolutionState, type BulkUpdateFieldConfig } from '@/shared/components/bulk/types';
 
 export interface ParsedRow {
   [key: string]: any;
