@@ -1,0 +1,1225 @@
+{
+  "ids": {
+    "project": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+    "shot": "30f879d8-cac4-48da-8b90-a076a7143319",
+    "asset": "93a27acc-f9f7-4923-8937-eeb3831d1684",
+    "artist": "db0a4d7e-9472-4805-9807-31161a4f0df7",
+    "stranger": "795bd407-7488-40db-865f-423a2c3095a8"
+  },
+  "note_on_shot": {
+    "request": {
+      "method": "POST",
+      "path": "/api/organizations/projects/09f67ff7-b3ff-4be0-b65d-cba8f6705053/notes/",
+      "body": {
+        "subject": "Match the plate",
+        "body": "Grade to the ref.",
+        "category": "Supervisor Note",
+        "entity_type": "Shot",
+        "entity_id": "30f879d8-cac4-48da-8b90-a076a7143319",
+        "entity_code": "SH0010",
+        "entity_name": "Hero walk"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "02b1aaaf-33bb-4eff-8576-2175d386415c",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "e0ab8e28-94c6-47d2-90cc-c45bb723a379",
+      "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+      "project_code": "WS18",
+      "entity_type": "Shot",
+      "entity_id": "30f879d8-cac4-48da-8b90-a076a7143319",
+      "entity_code": "SH0010",
+      "entity_name": "Hero walk",
+      "author_id": "0bfee3a8-ff15-4586-bc94-0f0283ce868a",
+      "author_name": "user@example.test",
+      "author_avatar": "",
+      "author_role": "",
+      "subject": "Match the plate",
+      "body": "Grade to the ref.",
+      "category": "Supervisor Note",
+      "priority": "Medium",
+      "tags": [],
+      "status": "Open",
+      "addressed_by": "",
+      "addressed_at": null,
+      "timecode_ref": "",
+      "frame_number": null,
+      "created_at": "2026-10-31T10:55:47.461761Z",
+      "updated_at": "2026-10-31T10:55:47.461768Z"
+    }
+  },
+  "note_on_asset": {
+    "request": {
+      "method": "POST",
+      "path": "/api/organizations/projects/09f67ff7-b3ff-4be0-b65d-cba8f6705053/notes/",
+      "body": {
+        "subject": "Fix the rig",
+        "category": "Pipeline Notice",
+        "entity_type": "Asset",
+        "entity_id": "93a27acc-f9f7-4923-8937-eeb3831d1684",
+        "entity_code": "CHR-HERO",
+        "entity_name": "Hero"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "96af2a7f-00f5-400f-bd28-c6170503aa5e",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "87809eea-5759-434d-914c-4a64f04e950e",
+      "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+      "project_code": "WS18",
+      "entity_type": "Asset",
+      "entity_id": "93a27acc-f9f7-4923-8937-eeb3831d1684",
+      "entity_code": "CHR-HERO",
+      "entity_name": "Hero",
+      "author_id": "0bfee3a8-ff15-4586-bc94-0f0283ce868a",
+      "author_name": "user@example.test",
+      "author_avatar": "",
+      "author_role": "",
+      "subject": "Fix the rig",
+      "body": "",
+      "category": "Pipeline Notice",
+      "priority": "Medium",
+      "tags": [],
+      "status": "Open",
+      "addressed_by": "",
+      "addressed_at": null,
+      "timecode_ref": "",
+      "frame_number": null,
+      "created_at": "2026-10-31T10:55:47.473399Z",
+      "updated_at": "2026-10-31T10:55:47.473405Z"
+    }
+  },
+  "note_on_project": {
+    "request": {
+      "method": "POST",
+      "path": "/api/organizations/projects/09f67ff7-b3ff-4be0-b65d-cba8f6705053/notes/",
+      "body": {
+        "subject": "Delivery spec"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "e682ef16-cacf-4824-9755-1dae2ff3c6d8",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "48cc3456-7044-40c2-b7a4-ebf540b326c1",
+      "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+      "project_code": "WS18",
+      "entity_type": "Project",
+      "entity_id": "",
+      "entity_code": "",
+      "entity_name": "",
+      "author_id": "0bfee3a8-ff15-4586-bc94-0f0283ce868a",
+      "author_name": "user@example.test",
+      "author_avatar": "",
+      "author_role": "",
+      "subject": "Delivery spec",
+      "body": "",
+      "category": "General",
+      "priority": "Medium",
+      "tags": [],
+      "status": "Open",
+      "addressed_by": "",
+      "addressed_at": null,
+      "timecode_ref": "",
+      "frame_number": null,
+      "created_at": "2026-10-31T10:55:47.481746Z",
+      "updated_at": "2026-10-31T10:55:47.481753Z"
+    }
+  },
+  "note_mentions_code": {
+    "request": {
+      "method": "POST",
+      "path": "/api/organizations/projects/09f67ff7-b3ff-4be0-b65d-cba8f6705053/notes/",
+      "body": {
+        "subject": "Remember SH0010 later",
+        "entity_type": "Project"
+      }
+    },
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "19e4e29a-2ef3-47a9-a5bf-9423abf4f502",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "0b4f84b8-79f4-4342-aa25-608a10d84c70",
+      "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+      "project_code": "WS18",
+      "entity_type": "Project",
+      "entity_id": "",
+      "entity_code": "",
+      "entity_name": "",
+      "author_id": "0bfee3a8-ff15-4586-bc94-0f0283ce868a",
+      "author_name": "user@example.test",
+      "author_avatar": "",
+      "author_role": "",
+      "subject": "Remember SH0010 later",
+      "body": "",
+      "category": "General",
+      "priority": "Medium",
+      "tags": [],
+      "status": "Open",
+      "addressed_by": "",
+      "addressed_at": null,
+      "timecode_ref": "",
+      "frame_number": null,
+      "created_at": "2026-10-31T10:55:47.490297Z",
+      "updated_at": "2026-10-31T10:55:47.490304Z"
+    }
+  },
+  "note_empty_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/organizations/projects/09f67ff7-b3ff-4be0-b65d-cba8f6705053/notes/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ac28f984-cd5e-49f9-b3e3-7e65ad14bcc1",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "subject": [
+        "This field is required."
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "ac28f984-cd5e-49f9-b3e3-7e65ad14bcc1"
+      }
+    }
+  },
+  "notes_all": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/09f67ff7-b3ff-4be0-b65d-cba8f6705053/notes/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a3cc60ba-1837-4858-9181-1e306c8f7ae3",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 4,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "0b4f84b8-79f4-4342-aa25-608a10d84c70",
+          "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+          "project_code": "WS18",
+          "entity_type": "Project",
+          "entity_id": "",
+          "entity_code": "",
+          "entity_name": "",
+          "author_id": "0bfee3a8-ff15-4586-bc94-0f0283ce868a",
+          "author_name": "user@example.test",
+          "author_avatar": "",
+          "author_role": "",
+          "subject": "Remember SH0010 later",
+          "body": "",
+          "category": "General",
+          "priority": "Medium",
+          "tags": [],
+          "status": "Open",
+          "addressed_by": "",
+          "addressed_at": null,
+          "timecode_ref": "",
+          "frame_number": null,
+          "created_at": "2026-10-31T10:55:47.490297Z",
+          "updated_at": "2026-10-31T10:55:47.490304Z"
+        },
+        {
+          "id": "48cc3456-7044-40c2-b7a4-ebf540b326c1",
+          "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+          "project_code": "WS18",
+          "entity_type": "Project",
+          "entity_id": "",
+          "entity_code": "",
+          "entity_name": "",
+          "author_id": "0bfee3a8-ff15-4586-bc94-0f0283ce868a",
+          "author_name": "user@example.test",
+          "author_avatar": "",
+          "author_role": "",
+          "subject": "Delivery spec",
+          "body": "",
+          "category": "General",
+          "priority": "Medium",
+          "tags": [],
+          "status": "Open",
+          "addressed_by": "",
+          "addressed_at": null,
+          "timecode_ref": "",
+          "frame_number": null,
+          "created_at": "2026-10-31T10:55:47.481746Z",
+          "updated_at": "2026-10-31T10:55:47.481753Z"
+        },
+        {
+          "id": "87809eea-5759-434d-914c-4a64f04e950e",
+          "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+          "project_code": "WS18",
+          "entity_type": "Asset",
+          "entity_id": "93a27acc-f9f7-4923-8937-eeb3831d1684",
+          "entity_code": "CHR-HERO",
+          "entity_name": "Hero",
+          "author_id": "0bfee3a8-ff15-4586-bc94-0f0283ce868a",
+          "author_name": "user@example.test",
+          "author_avatar": "",
+          "author_role": "",
+          "subject": "Fix the rig",
+          "body": "",
+          "category": "Pipeline Notice",
+          "priority": "Medium",
+          "tags": [],
+          "status": "Open",
+          "addressed_by": "",
+          "addressed_at": null,
+          "timecode_ref": "",
+          "frame_number": null,
+          "created_at": "2026-10-31T10:55:47.473399Z",
+          "updated_at": "2026-10-31T10:55:47.473405Z"
+        },
+        {
+          "id": "e0ab8e28-94c6-47d2-90cc-c45bb723a379",
+          "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+          "project_code": "WS18",
+          "entity_type": "Shot",
+          "entity_id": "30f879d8-cac4-48da-8b90-a076a7143319",
+          "entity_code": "SH0010",
+          "entity_name": "Hero walk",
+          "author_id": "0bfee3a8-ff15-4586-bc94-0f0283ce868a",
+          "author_name": "user@example.test",
+          "author_avatar": "",
+          "author_role": "",
+          "subject": "Match the plate",
+          "body": "Grade to the ref.",
+          "category": "Supervisor Note",
+          "priority": "Medium",
+          "tags": [],
+          "status": "Open",
+          "addressed_by": "",
+          "addressed_at": null,
+          "timecode_ref": "",
+          "frame_number": null,
+          "created_at": "2026-10-31T10:55:47.461761Z",
+          "updated_at": "2026-10-31T10:55:47.461768Z"
+        }
+      ]
+    }
+  },
+  "notes_search_shot": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/09f67ff7-b3ff-4be0-b65d-cba8f6705053/notes/?search=SH0010",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ff53433d-b222-48a3-a428-4c655d7d7040",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "0b4f84b8-79f4-4342-aa25-608a10d84c70",
+          "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+          "project_code": "WS18",
+          "entity_type": "Project",
+          "entity_id": "",
+          "entity_code": "",
+          "entity_name": "",
+          "author_id": "0bfee3a8-ff15-4586-bc94-0f0283ce868a",
+          "author_name": "user@example.test",
+          "author_avatar": "",
+          "author_role": "",
+          "subject": "Remember SH0010 later",
+          "body": "",
+          "category": "General",
+          "priority": "Medium",
+          "tags": [],
+          "status": "Open",
+          "addressed_by": "",
+          "addressed_at": null,
+          "timecode_ref": "",
+          "frame_number": null,
+          "created_at": "2026-10-31T10:55:47.490297Z",
+          "updated_at": "2026-10-31T10:55:47.490304Z"
+        },
+        {
+          "id": "e0ab8e28-94c6-47d2-90cc-c45bb723a379",
+          "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+          "project_code": "WS18",
+          "entity_type": "Shot",
+          "entity_id": "30f879d8-cac4-48da-8b90-a076a7143319",
+          "entity_code": "SH0010",
+          "entity_name": "Hero walk",
+          "author_id": "0bfee3a8-ff15-4586-bc94-0f0283ce868a",
+          "author_name": "user@example.test",
+          "author_avatar": "",
+          "author_role": "",
+          "subject": "Match the plate",
+          "body": "Grade to the ref.",
+          "category": "Supervisor Note",
+          "priority": "Medium",
+          "tags": [],
+          "status": "Open",
+          "addressed_by": "",
+          "addressed_at": null,
+          "timecode_ref": "",
+          "frame_number": null,
+          "created_at": "2026-10-31T10:55:47.461761Z",
+          "updated_at": "2026-10-31T10:55:47.461768Z"
+        }
+      ]
+    }
+  },
+  "notes_search_asset": {
+    "request": {
+      "method": "GET",
+      "path": "/api/organizations/projects/09f67ff7-b3ff-4be0-b65d-cba8f6705053/notes/?search=CHR-HERO",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7ac251e6-9261-48ea-955d-2f0f5b515072",
+      "Allow": "GET, POST, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "87809eea-5759-434d-914c-4a64f04e950e",
+          "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+          "project_code": "WS18",
+          "entity_type": "Asset",
+          "entity_id": "93a27acc-f9f7-4923-8937-eeb3831d1684",
+          "entity_code": "CHR-HERO",
+          "entity_name": "Hero",
+          "author_id": "0bfee3a8-ff15-4586-bc94-0f0283ce868a",
+          "author_name": "user@example.test",
+          "author_avatar": "",
+          "author_role": "",
+          "subject": "Fix the rig",
+          "body": "",
+          "category": "Pipeline Notice",
+          "priority": "Medium",
+          "tags": [],
+          "status": "Open",
+          "addressed_by": "",
+          "addressed_at": null,
+          "timecode_ref": "",
+          "frame_number": null,
+          "created_at": "2026-10-31T10:55:47.473399Z",
+          "updated_at": "2026-10-31T10:55:47.473405Z"
+        }
+      ]
+    }
+  },
+  "shot_detail": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/shots/30f879d8-cac4-48da-8b90-a076a7143319/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "d8f06ec0-8440-4b3c-b541-6939e8ff8fed",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "30f879d8-cac4-48da-8b90-a076a7143319",
+      "uuid": "30f879d8-cac4-48da-8b90-a076a7143319",
+      "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+      "show_id": null,
+      "project_code": "WS18",
+      "episode_id": null,
+      "sequence_id": "a306dd78-7944-4e20-92e1-2ef7646cfd78",
+      "sequence_code": "SQ010",
+      "code": "SH0010",
+      "name": "Hero walk",
+      "description": "",
+      "status": "Not Started",
+      "frame_in": 1001,
+      "frame_out": 1096,
+      "frame_count": 96,
+      "handle_frames": 8,
+      "thumbnail_url": "",
+      "video_url": "",
+      "current_version": "",
+      "current_version_id": null,
+      "assigned_artist_id": null,
+      "assigned_artist_name": "",
+      "supervisor_approved": false,
+      "client_approved": false,
+      "pipeline": {
+        "fx": "Not Started",
+        "comp": "Not Started",
+        "layout": "Not Started",
+        "lighting": "Not Started",
+        "animation": "Not Started"
+      },
+      "created_at": "2026-10-31T10:55:47.424834Z",
+      "updated_at": "2026-10-31T10:55:47.424840Z"
+    }
+  },
+  "shot_assign": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/shots/30f879d8-cac4-48da-8b90-a076a7143319/",
+      "body": {
+        "assigned_artist": "db0a4d7e-9472-4805-9807-31161a4f0df7"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "ceba14cd-0e88-42ae-a359-3cf3e4df29b7",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "sequence_code": "SQ010",
+      "code": "SH0010",
+      "name": "Hero walk",
+      "description": "",
+      "status": "Not Started",
+      "frame_in": 1001,
+      "frame_out": 1096,
+      "handle_frames": 8,
+      "thumbnail_url": "",
+      "video_url": "",
+      "current_version": "",
+      "current_version_id": null,
+      "assigned_artist": "db0a4d7e-9472-4805-9807-31161a4f0df7",
+      "supervisor_approved": false,
+      "client_approved": false,
+      "pipeline": {
+        "fx": "Not Started",
+        "comp": "Not Started",
+        "layout": "Not Started",
+        "lighting": "Not Started",
+        "animation": "Not Started"
+      }
+    }
+  },
+  "shot_assign_non_member_400": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/shots/30f879d8-cac4-48da-8b90-a076a7143319/",
+      "body": {
+        "assigned_artist": "795bd407-7488-40db-865f-423a2c3095a8"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "bb712e9d-aaf9-43e8-815c-5957645815d5",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "sequence_code": "SQ010",
+      "code": "SH0010",
+      "name": "Hero walk",
+      "description": "",
+      "status": "Not Started",
+      "frame_in": 1001,
+      "frame_out": 1096,
+      "handle_frames": 8,
+      "thumbnail_url": "",
+      "video_url": "",
+      "current_version": "",
+      "current_version_id": null,
+      "assigned_artist": "795bd407-7488-40db-865f-423a2c3095a8",
+      "supervisor_approved": false,
+      "client_approved": false,
+      "pipeline": {
+        "fx": "Not Started",
+        "comp": "Not Started",
+        "layout": "Not Started",
+        "lighting": "Not Started",
+        "animation": "Not Started"
+      }
+    }
+  },
+  "shot_unassign": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/shots/30f879d8-cac4-48da-8b90-a076a7143319/",
+      "body": {
+        "assigned_artist": null
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "225de037-12d9-4a62-a361-c1335deeefc6",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "sequence_code": "SQ010",
+      "code": "SH0010",
+      "name": "Hero walk",
+      "description": "",
+      "status": "Not Started",
+      "frame_in": 1001,
+      "frame_out": 1096,
+      "handle_frames": 8,
+      "thumbnail_url": "",
+      "video_url": "",
+      "current_version": "",
+      "current_version_id": null,
+      "assigned_artist": null,
+      "supervisor_approved": false,
+      "client_approved": false,
+      "pipeline": {
+        "fx": "Not Started",
+        "comp": "Not Started",
+        "layout": "Not Started",
+        "lighting": "Not Started",
+        "animation": "Not Started"
+      }
+    }
+  },
+  "shot_approve_from_not_started_400": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/shots/30f879d8-cac4-48da-8b90-a076a7143319/approve/",
+      "body": {}
+    },
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "71da4d9f-0953-4e7e-854a-d8a50420c54e",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "status": [
+        "A shot cannot move from 'Not Started' to 'Approved'."
+      ],
+      "error": {
+        "code": "invalid_transition",
+        "request_id": "71da4d9f-0953-4e7e-854a-d8a50420c54e"
+      }
+    }
+  },
+  "shot_to_review": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/shots/30f879d8-cac4-48da-8b90-a076a7143319/",
+      "body": {
+        "status": "Pending Review"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "5145d746-eb69-452c-ba8b-06b920af72fb",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "sequence_code": "SQ010",
+      "code": "SH0010",
+      "name": "Hero walk",
+      "description": "",
+      "status": "Pending Review",
+      "frame_in": 1001,
+      "frame_out": 1096,
+      "handle_frames": 8,
+      "thumbnail_url": "",
+      "video_url": "",
+      "current_version": "",
+      "current_version_id": null,
+      "assigned_artist": null,
+      "supervisor_approved": false,
+      "client_approved": false,
+      "pipeline": {
+        "fx": "Not Started",
+        "comp": "Not Started",
+        "layout": "Not Started",
+        "lighting": "Not Started",
+        "animation": "Not Started"
+      }
+    }
+  },
+  "shot_approve": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/shots/30f879d8-cac4-48da-8b90-a076a7143319/approve/",
+      "body": {}
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "b2167b3d-55e9-4ae9-b093-6de180786319",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "id": "30f879d8-cac4-48da-8b90-a076a7143319",
+      "uuid": "30f879d8-cac4-48da-8b90-a076a7143319",
+      "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+      "show_id": null,
+      "project_code": "WS18",
+      "episode_id": null,
+      "sequence_id": "a306dd78-7944-4e20-92e1-2ef7646cfd78",
+      "sequence_code": "SQ010",
+      "code": "SH0010",
+      "name": "Hero walk",
+      "description": "",
+      "status": "Approved",
+      "frame_in": 1001,
+      "frame_out": 1096,
+      "frame_count": 96,
+      "handle_frames": 8,
+      "thumbnail_url": "",
+      "video_url": "",
+      "current_version": "",
+      "current_version_id": null,
+      "assigned_artist_id": null,
+      "assigned_artist_name": "",
+      "supervisor_approved": true,
+      "client_approved": false,
+      "pipeline": {
+        "fx": "Approved",
+        "comp": "Approved",
+        "layout": "Approved",
+        "lighting": "Approved",
+        "animation": "Approved"
+      },
+      "created_at": "2026-10-31T10:55:47.424834Z",
+      "updated_at": "2026-10-31T10:55:47.729265Z"
+    }
+  },
+  "shot_archive": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/shots/30f879d8-cac4-48da-8b90-a076a7143319/archive/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "0a071e1f-2676-41d5-bbc7-cbc9203502c4",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "id": "30f879d8-cac4-48da-8b90-a076a7143319",
+      "uuid": "30f879d8-cac4-48da-8b90-a076a7143319",
+      "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+      "show_id": null,
+      "project_code": "WS18",
+      "episode_id": null,
+      "sequence_id": "a306dd78-7944-4e20-92e1-2ef7646cfd78",
+      "sequence_code": "SQ010",
+      "code": "SH0010",
+      "name": "Hero walk",
+      "description": "",
+      "status": "Archived",
+      "frame_in": 1001,
+      "frame_out": 1096,
+      "frame_count": 96,
+      "handle_frames": 8,
+      "thumbnail_url": "",
+      "video_url": "",
+      "current_version": "",
+      "current_version_id": null,
+      "assigned_artist_id": null,
+      "assigned_artist_name": "",
+      "supervisor_approved": true,
+      "client_approved": false,
+      "pipeline": {
+        "fx": "Approved",
+        "comp": "Approved",
+        "layout": "Approved",
+        "lighting": "Approved",
+        "animation": "Approved"
+      },
+      "created_at": "2026-10-31T10:55:47.424834Z",
+      "updated_at": "2026-10-31T10:55:47.742317Z"
+    }
+  },
+  "shot_detail_after_archive": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/shots/30f879d8-cac4-48da-8b90-a076a7143319/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "07071793-4f8c-4204-9fd5-afbffb24ad76",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "07071793-4f8c-4204-9fd5-afbffb24ad76"
+      }
+    }
+  },
+  "shots_archived": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/shots/archived/?project=09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "76485c23-3dc2-4c19-9f0a-f273fb0b8bd0",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "30f879d8-cac4-48da-8b90-a076a7143319",
+          "uuid": "30f879d8-cac4-48da-8b90-a076a7143319",
+          "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+          "show_id": null,
+          "project_code": "WS18",
+          "episode_id": null,
+          "sequence_id": "a306dd78-7944-4e20-92e1-2ef7646cfd78",
+          "sequence_code": "SQ010",
+          "code": "SH0010",
+          "name": "Hero walk",
+          "description": "",
+          "status": "Archived",
+          "frame_in": 1001,
+          "frame_out": 1096,
+          "frame_count": 96,
+          "handle_frames": 8,
+          "thumbnail_url": "",
+          "video_url": "",
+          "current_version": "",
+          "current_version_id": null,
+          "assigned_artist_id": null,
+          "assigned_artist_name": "",
+          "supervisor_approved": true,
+          "client_approved": false,
+          "pipeline": {
+            "fx": "Approved",
+            "comp": "Approved",
+            "layout": "Approved",
+            "lighting": "Approved",
+            "animation": "Approved"
+          },
+          "created_at": "2026-10-31T10:55:47.424834Z",
+          "updated_at": "2026-10-31T10:55:47.742317Z"
+        }
+      ]
+    }
+  },
+  "shot_restore": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/shots/30f879d8-cac4-48da-8b90-a076a7143319/restore/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f17a02f4-f693-4d78-a68b-fb529b841492",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "id": "30f879d8-cac4-48da-8b90-a076a7143319",
+      "uuid": "30f879d8-cac4-48da-8b90-a076a7143319",
+      "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+      "show_id": null,
+      "project_code": "WS18",
+      "episode_id": null,
+      "sequence_id": "a306dd78-7944-4e20-92e1-2ef7646cfd78",
+      "sequence_code": "SQ010",
+      "code": "SH0010",
+      "name": "Hero walk",
+      "description": "",
+      "status": "Approved",
+      "frame_in": 1001,
+      "frame_out": 1096,
+      "frame_count": 96,
+      "handle_frames": 8,
+      "thumbnail_url": "",
+      "video_url": "",
+      "current_version": "",
+      "current_version_id": null,
+      "assigned_artist_id": null,
+      "assigned_artist_name": "",
+      "supervisor_approved": true,
+      "client_approved": false,
+      "pipeline": {
+        "fx": "Approved",
+        "comp": "Approved",
+        "layout": "Approved",
+        "lighting": "Approved",
+        "animation": "Approved"
+      },
+      "created_at": "2026-10-31T10:55:47.424834Z",
+      "updated_at": "2026-10-31T10:55:47.801585Z"
+    }
+  },
+  "shot_delete": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/shots/30f879d8-cac4-48da-8b90-a076a7143319/",
+      "body": null
+    },
+    "status": 204,
+    "headers": {
+      "X-Request-ID": "a3a3cd47-c7b6-475a-ab57-e3cc5a2b5b84",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "_non_json": null,
+      "_len": 0
+    }
+  },
+  "shot_detail_after_delete": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/shots/30f879d8-cac4-48da-8b90-a076a7143319/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f05a400d-e3ef-4146-8ede-94cbec122117",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "f05a400d-e3ef-4146-8ede-94cbec122117"
+      }
+    }
+  },
+  "shots_archived_after_delete": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/shots/archived/?project=09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "a28c043e-ef44-4d27-b60a-1a1c24cf81f5",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "30f879d8-cac4-48da-8b90-a076a7143319",
+          "uuid": "30f879d8-cac4-48da-8b90-a076a7143319",
+          "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+          "show_id": null,
+          "project_code": "WS18",
+          "episode_id": null,
+          "sequence_id": "a306dd78-7944-4e20-92e1-2ef7646cfd78",
+          "sequence_code": "SQ010",
+          "code": "SH0010",
+          "name": "Hero walk",
+          "description": "",
+          "status": "Approved",
+          "frame_in": 1001,
+          "frame_out": 1096,
+          "frame_count": 96,
+          "handle_frames": 8,
+          "thumbnail_url": "",
+          "video_url": "",
+          "current_version": "",
+          "current_version_id": null,
+          "assigned_artist_id": null,
+          "assigned_artist_name": "",
+          "supervisor_approved": true,
+          "client_approved": false,
+          "pipeline": {
+            "fx": "Approved",
+            "comp": "Approved",
+            "layout": "Approved",
+            "lighting": "Approved",
+            "animation": "Approved"
+          },
+          "created_at": "2026-10-31T10:55:47.424834Z",
+          "updated_at": "2026-10-31T10:55:47.801585Z"
+        }
+      ]
+    }
+  },
+  "asset_detail": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/assets/93a27acc-f9f7-4923-8937-eeb3831d1684/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "506cf3c6-ea43-4c7a-86c0-03debc05e605",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "id": "93a27acc-f9f7-4923-8937-eeb3831d1684",
+      "uuid": "93a27acc-f9f7-4923-8937-eeb3831d1684",
+      "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+      "show_id": null,
+      "project_code": "WS18",
+      "project_name": "Workspaces",
+      "name": "Hero",
+      "code": "CHR-HERO",
+      "category": "Character",
+      "description": "",
+      "status": "Not Started",
+      "version": "v001",
+      "thumbnail_url": "",
+      "turntable_video_url": "",
+      "file_format": "OpenUSD (.usda)",
+      "poly_count": 0,
+      "lod_levels": 1,
+      "software": "Maya",
+      "department_id": null,
+      "department_name": "",
+      "team_id": null,
+      "team_name": "",
+      "assigned_artist_id": null,
+      "assigned_artist_name": "",
+      "assigned_artist_avatar": null,
+      "parent_asset_id": null,
+      "asset_type_id": null,
+      "asset_type_code": "",
+      "asset_type_name": "",
+      "tags": [],
+      "usd_prim_path": "",
+      "is_archived": false,
+      "created_at": "2026-10-31T10:55:47.447741Z",
+      "updated_at": "2026-10-31T10:55:47.447747Z"
+    }
+  },
+  "asset_assign": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/assets/93a27acc-f9f7-4923-8937-eeb3831d1684/",
+      "body": {
+        "assigned_artist": "db0a4d7e-9472-4805-9807-31161a4f0df7"
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f59412bd-1848-4eb8-aa91-9c5186f20321",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": "Hero",
+      "code": "CHR-HERO",
+      "category": "Character",
+      "description": "",
+      "status": "Not Started",
+      "version": "v001",
+      "file_format": "OpenUSD (.usda)",
+      "poly_count": 0,
+      "lod_levels": 1,
+      "software": "Maya",
+      "thumbnail_url": "",
+      "department": null,
+      "team": null,
+      "assigned_artist": "db0a4d7e-9472-4805-9807-31161a4f0df7",
+      "parent_asset": null,
+      "tags": [],
+      "usd_prim_path": "",
+      "is_archived": false
+    }
+  },
+  "asset_unassign": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/assets/93a27acc-f9f7-4923-8937-eeb3831d1684/",
+      "body": {
+        "assigned_artist": null
+      }
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7b18bbf6-c5e6-4440-90e4-10aa12529b24",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "name": "Hero",
+      "code": "CHR-HERO",
+      "category": "Character",
+      "description": "",
+      "status": "Not Started",
+      "version": "v001",
+      "file_format": "OpenUSD (.usda)",
+      "poly_count": 0,
+      "lod_levels": 1,
+      "software": "Maya",
+      "thumbnail_url": "",
+      "department": null,
+      "team": null,
+      "assigned_artist": null,
+      "parent_asset": null,
+      "tags": [],
+      "usd_prim_path": "",
+      "is_archived": false
+    }
+  },
+  "asset_archive": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/assets/93a27acc-f9f7-4923-8937-eeb3831d1684/archive/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "af9fe907-dc28-491d-b510-18dbecf24918",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "id": "93a27acc-f9f7-4923-8937-eeb3831d1684",
+      "uuid": "93a27acc-f9f7-4923-8937-eeb3831d1684",
+      "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+      "show_id": null,
+      "project_code": "WS18",
+      "project_name": "Workspaces",
+      "name": "Hero",
+      "code": "CHR-HERO",
+      "category": "Character",
+      "description": "",
+      "status": "Archived",
+      "version": "v001",
+      "thumbnail_url": "",
+      "turntable_video_url": "",
+      "file_format": "OpenUSD (.usda)",
+      "poly_count": 0,
+      "lod_levels": 1,
+      "software": "Maya",
+      "department_id": null,
+      "department_name": "",
+      "team_id": null,
+      "team_name": "",
+      "assigned_artist_id": null,
+      "assigned_artist_name": "",
+      "assigned_artist_avatar": null,
+      "parent_asset_id": null,
+      "asset_type_id": null,
+      "asset_type_code": "",
+      "asset_type_name": "",
+      "tags": [],
+      "usd_prim_path": "",
+      "is_archived": true,
+      "created_at": "2026-10-31T10:55:47.447741Z",
+      "updated_at": "2026-10-31T10:55:47.903154Z"
+    }
+  },
+  "asset_detail_after_archive": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/assets/93a27acc-f9f7-4923-8937-eeb3831d1684/",
+      "body": null
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "f0f43b96-c45f-43eb-a439-b27335c708dc",
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    "body": {
+      "detail": "Not found.",
+      "error": {
+        "code": "not_found",
+        "request_id": "f0f43b96-c45f-43eb-a439-b27335c708dc"
+      }
+    }
+  },
+  "asset_restore": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/assets/93a27acc-f9f7-4923-8937-eeb3831d1684/restore/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "c1ea6364-0950-417c-a55a-7bc3ddf85033",
+      "Allow": "POST, OPTIONS"
+    },
+    "body": {
+      "id": "93a27acc-f9f7-4923-8937-eeb3831d1684",
+      "uuid": "93a27acc-f9f7-4923-8937-eeb3831d1684",
+      "project_id": "09f67ff7-b3ff-4be0-b65d-cba8f6705053",
+      "show_id": null,
+      "project_code": "WS18",
+      "project_name": "Workspaces",
+      "name": "Hero",
+      "code": "CHR-HERO",
+      "category": "Character",
+      "description": "",
+      "status": "Archived",
+      "version": "v001",
+      "thumbnail_url": "",
+      "turntable_video_url": "",
+      "file_format": "OpenUSD (.usda)",
+      "poly_count": 0,
+      "lod_levels": 1,
+      "software": "Maya",
+      "department_id": null,
+      "department_name": "",
+      "team_id": null,
+      "team_name": "",
+      "assigned_artist_id": null,
+      "assigned_artist_name": "",
+      "assigned_artist_avatar": null,
+      "parent_asset_id": null,
+      "asset_type_id": null,
+      "asset_type_code": "",
+      "asset_type_name": "",
+      "tags": [],
+      "usd_prim_path": "",
+      "is_archived": false,
+      "created_at": "2026-10-31T10:55:47.447741Z",
+      "updated_at": "2026-10-31T10:55:47.903154Z"
+    }
+  },
+  "asset_shots": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/assets/93a27acc-f9f7-4923-8937-eeb3831d1684/shots/",
+      "body": null
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Request-ID": "7693fd55-98a9-49ca-b3b7-9cade8c94d23",
+      "Allow": "GET, HEAD, OPTIONS"
+    },
+    "body": []
+  }
+}

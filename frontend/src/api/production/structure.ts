@@ -218,6 +218,17 @@ export interface ProjectMember {
   updated_at: string;
 }
 
+export const NOTE_CATEGORIES = ['Director Feedback', 'Supervisor Note', 'Client Note', 'Pipeline Notice', 'Turnover Requirement', 'General'] as const;
+export interface ProjectNoteInput {
+  subject: string;
+  body?: string;
+  category?: (typeof NOTE_CATEGORIES)[number];
+  priority?: string;
+  entity_type?: string;
+  entity_id?: string;
+  entity_code?: string;
+  entity_name?: string;
+}
 export interface ProjectNote {
   id: string;
   subject: string;
@@ -314,7 +325,10 @@ export const projectScopedApi = {
   /** 201 when new, 200 when already a member, 404 "User not found." for an unknown e-mail. */
   addMember: (projectId: string, input: { user_id?: string; email?: string; role: string }) => apiClient.post<ProjectMember>(`${scoped(projectId)}/members/`, input),
   notes: (projectId: string, signal?: AbortSignal) => apiClient.get<Page<ProjectNote>>(`${scoped(projectId)}/notes/`, { signal }),
-  addNote: (projectId: string, input: { subject: string; body?: string; category?: string }) => apiClient.post<ProjectNote>(`${scoped(projectId)}/notes/`, input),
+  /** The list route only searches (subject, body, entity code and name): narrow with `search`, then match `entity_id`. */
+  notesPage: (projectId: string) => listFetcher<ProjectNote>(`${scoped(projectId)}/notes/`),
+  /** A note may name the record it is about: `entity_type` + `entity_id` (+ code and name for display). */
+  addNote: (projectId: string, input: ProjectNoteInput) => apiClient.post<ProjectNote>(`${scoped(projectId)}/notes/`, input),
   activity: (projectId: string, signal?: AbortSignal) => apiClient.get<Page<Record<string, unknown>>>(`${scoped(projectId)}/activity/`, { signal }),
   pipeline: (projectId: string, signal?: AbortSignal) => apiClient.get<ProjectPipeline>(`${scoped(projectId)}/pipeline/`, { signal }),
   resources: (projectId: string, signal?: AbortSignal) => apiClient.get<ProjectResources>(`${scoped(projectId)}/resources/`, { signal }),
