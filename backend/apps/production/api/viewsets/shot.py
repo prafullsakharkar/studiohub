@@ -30,6 +30,7 @@ from apps.production.selectors.shot import ShotSelector
 from apps.production.selectors.shot_asset import ShotAssetSelector
 from apps.production.services.shot import ShotService
 from apps.production.services.shot_asset import ShotAssetService
+from apps.production.validators.references import require_assignable_artist
 
 
 class ShotViewSet(
@@ -95,6 +96,10 @@ class ShotViewSet(
     def bulk_restore(self, request, *args, **kwargs):
         """Bulk restore with per-item ``not_found`` reporting."""
         return self._bulk_lifecycle_results(ids=self._ids_list(), action="restore")
+
+    def validate_references(self, project, data, instance=None):
+        """The assigned artist must be an active member of the shot's project (CR-34)."""
+        require_assignable_artist(project, data, instance)
 
     def prepare_create(self, serializer, project):
         self._enforce_episode_sequence_chain(serializer, project=project, instance=None)

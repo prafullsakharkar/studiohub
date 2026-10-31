@@ -72,6 +72,7 @@ def test_capture_workspaces(django_user_model):
     shot = make("/api/v1/shots/", {"project": pid, "sequence_id": seq["id"], "code": "SH0010", "name": "Hero walk", "frame_in": 1001, "frame_out": 1096, "handle_frames": 8})
     asset = make("/api/v1/assets/", {"project": pid, "code": "CHR-HERO", "name": "Hero", "category": "Character"})
     sid, aid = shot["id"], asset["id"]
+    bulk_shot = make("/api/v1/shots/", {"project": pid, "sequence_id": seq["id"], "code": "SH0020", "name": "Bulk target"})["id"]
 
     flow: dict[str, dict] = {"ids": {"project": pid, "shot": sid, "asset": aid, "artist": str(artist.id), "stranger": str(stranger.id)}}  # type: ignore[dict-item]
     notes = f"/api/organizations/projects/{pid}/notes/"
@@ -87,6 +88,7 @@ def test_capture_workspaces(django_user_model):
     flow["shot_detail"] = call(a, "GET", f"/api/v1/shots/{sid}/")
     flow["shot_assign"] = call(a, "PATCH", f"/api/v1/shots/{sid}/", {"assigned_artist": str(artist.id)})
     flow["shot_assign_non_member_400"] = call(a, "PATCH", f"/api/v1/shots/{sid}/", {"assigned_artist": str(stranger.id)})
+    flow["shot_assign_member_again"] = call(a, "PATCH", f"/api/v1/shots/{sid}/", {"assigned_artist": str(artist.id)})
     flow["shot_unassign"] = call(a, "PATCH", f"/api/v1/shots/{sid}/", {"assigned_artist": None})
     flow["shot_approve_from_not_started_400"] = call(a, "POST", f"/api/v1/shots/{sid}/approve/", {})
     call(a, "PATCH", f"/api/v1/shots/{sid}/", {"status": "In Progress"})
@@ -101,12 +103,19 @@ def test_capture_workspaces(django_user_model):
     flow["shots_archived_after_delete"] = call(a, "GET", f"/api/v1/shots/archived/?project={pid}")
 
     flow["asset_detail"] = call(a, "GET", f"/api/v1/assets/{aid}/")
+    flow["asset_assign_non_member_400"] = call(a, "PATCH", f"/api/v1/assets/{aid}/", {"assigned_artist": str(stranger.id)})
     flow["asset_assign"] = call(a, "PATCH", f"/api/v1/assets/{aid}/", {"assigned_artist": str(artist.id)})
     flow["asset_unassign"] = call(a, "PATCH", f"/api/v1/assets/{aid}/", {"assigned_artist": None})
     flow["asset_archive"] = call(a, "POST", f"/api/v1/assets/{aid}/archive/")
     flow["asset_detail_after_archive"] = call(a, "GET", f"/api/v1/assets/{aid}/")
     flow["asset_restore"] = call(a, "POST", f"/api/v1/assets/{aid}/restore/")
     flow["asset_shots"] = call(a, "GET", f"/api/v1/assets/{aid}/shots/")
+
+    # bulk-update: the wrapped shape the typed module sent answers "updated" and changes nothing; the flat shape applies.
+    flow["bulk_update_wrapped"] = call(a, "POST", "/api/v1/shots/bulk-update/", {"items": [{"id": bulk_shot, "data": {"description": "Wrapped"}}]})
+    flow["shot_after_bulk_wrapped"] = call(a, "GET", f"/api/v1/shots/{bulk_shot}/")
+    flow["bulk_update_flat"] = call(a, "POST", "/api/v1/shots/bulk-update/", {"items": [{"id": bulk_shot, "description": "Flat"}]})
+    flow["shot_after_bulk_flat"] = call(a, "GET", f"/api/v1/shots/{bulk_shot}/")
 
     (OUT / "production").mkdir(parents=True, exist_ok=True)
     (OUT / "production" / "_workspaces_flow.json").write_text(json.dumps(flow, indent=2, default=str) + "\n")

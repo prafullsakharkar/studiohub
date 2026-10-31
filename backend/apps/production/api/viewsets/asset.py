@@ -19,7 +19,7 @@ from apps.production.selectors.asset import AssetSelector
 from apps.production.selectors.base import ProductionBaseSelector
 from apps.production.selectors.shot_asset import ShotAssetSelector
 from apps.production.services.asset import AssetService
-from apps.production.validators.references import resolve_in_project
+from apps.production.validators.references import require_assignable_artist, resolve_in_project
 
 
 class AssetViewSet(RenameCodeMixin, ProductionEntityViewSet, ProductionBulkMixin):  # pyright: ignore[reportMissingTypeArgument]
@@ -86,8 +86,9 @@ class AssetViewSet(RenameCodeMixin, ProductionEntityViewSet, ProductionBulkMixin
     MAX_PARENT_DEPTH = 50
 
     def validate_references(self, project, data, instance=None):
-        """Asset type from the catalog; the parent asset in the same project and no loop."""
+        """Asset type from the catalog; the artist a project member; the parent asset in the same project and no loop."""
         self._resolve_asset_type(data)
+        require_assignable_artist(project, data, instance)
         parent = data.get("parent_asset")
         if parent is None or project is None:
             return

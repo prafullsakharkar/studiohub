@@ -292,7 +292,11 @@ export function archivable<Row, Input>(name: string, base: string) {
     restoreOne: (id: string) => apiClient.post<Row>(`${base}${id}/restore/`, {}),
     archived: listFetcher<Row>(`${base}archived/`),
     bulkCreate: (projectId: string, items: Array<{ code: string; data: Record<string, unknown> }>) => apiClient.post<BulkResult>(`${base}bulk-create/`, { project_id: projectId, items }),
-    bulkUpdate: (items: Array<{ id: string; data: Record<string, unknown> }>) => apiClient.post<BulkResult>(`${base}bulk-update/`, { items }),
+    /**
+     * The route applies the fields written BESIDE the id; an item that wraps them in `data` is answered "updated" and
+     * changes nothing (CR-35, `_workspaces_flow.json`). The callers keep the `{id, data}` shape; the fields are spread here.
+     */
+    bulkUpdate: (items: Array<{ id: string; data: Record<string, unknown> }>) => apiClient.post<BulkResult>(`${base}bulk-update/`, { items: items.map(({ id, data }) => ({ ...data, id })) }),
     bulkArchive: (ids: string[]) => apiClient.post<BulkResult>(`${base}bulk-archive/`, { ids }),
     bulkRestore: (ids: string[]) => apiClient.post<BulkResult>(`${base}bulk-restore/`, { ids }),
     checkExistence: (projectId: string, codes: string[]) => apiClient.post<ExistenceResult>(`${base}check-existence/`, { project_id: projectId, codes }),

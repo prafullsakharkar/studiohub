@@ -19,7 +19,7 @@ import { freshTotp, live } from './liveBackend';
  */
 const T = { timeout: 15000 };
 const uid = `${Date.now().toString(36)}`.toUpperCase();
-const fixture = {} as { project: string; artistUser: string; shot: string; shotCode: string; asset: string; assetCode: string; child: string; childCode: string };
+const fixture = {} as { project: string; outsider: string; artistUser: string; shot: string; shotCode: string; asset: string; assetCode: string; child: string; childCode: string };
 
 const tree = (ui: React.ReactElement, initial: string) => (
   <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
@@ -46,10 +46,13 @@ beforeAll(async () => {
   await authService.completeMfaLogin({ challenge: outcome.challenge, code: await freshTotp(live.manager.secret) });
   const project = await projectsApi.create({ code: `E${uid}`, name: 'Entity workspaces', workflow_type: 'standard' });
   const artist = await projectScopedApi.addMember(project.id, { email: live.users.artist.email, role: 'Artist' });
+  // A user who belongs to another project only: the server must refuse them as this project's artist (CR-34).
+  const elsewhere = await projectsApi.create({ code: `X${uid}`, name: 'Another project', workflow_type: 'standard' });
+  const outsider = await projectScopedApi.addMember(elsewhere.id, { email: live.users.lead.email, role: 'Lead' });
   const shot = await shotsApi.create({ project: project.id, code: `SH${uid}`, name: 'Hero walk' });
   const asset = await assetsApi.create({ project: project.id, code: `CH${uid}`, name: 'Hero', category: 'Character' });
   const child = await assetsApi.create({ project: project.id, code: `HT${uid}`, name: 'Hat', category: 'Prop', parent_asset: asset.id });
-  Object.assign(fixture, { project: project.id, artistUser: artist.user_id, shot: shot.id, shotCode: shot.code, asset: asset.id, assetCode: asset.code, child: child.id, childCode: child.code });
+  Object.assign(fixture, { project: project.id, outsider: outsider.user_id, artistUser: artist.user_id, shot: shot.id, shotCode: shot.code, asset: asset.id, assetCode: asset.code, child: child.id, childCode: child.code });
 }, 60000);
 
 const noteCount = async (type: string, id: string, code: string) =>
@@ -72,6 +75,11 @@ describe('shot workspace on the wire', () => {
     fireEvent.change(again, { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(async () => expect((await shotsApi.get(fixture.shot)).assigned_artist_id).toBeNull(), T);
+
+    // The server refuses an artist who is not a member of the project, for a shot and for an asset (CR-34).
+    await expect(shotsApi.update(fixture.shot, { assigned_artist: fixture.outsider })).rejects.toMatchObject({ status: 400 });
+    await expect(assetsApi.update(fixture.asset, { assigned_artist: fixture.outsider })).rejects.toMatchObject({ status: 400 });
+    expect((await shotsApi.get(fixture.shot)).assigned_artist_id).toBeNull();
 
     fireEvent.click(screen.getByRole('tab', { name: 'Notes' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Add note' }, T));

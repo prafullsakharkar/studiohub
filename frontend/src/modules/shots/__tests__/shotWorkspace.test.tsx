@@ -127,6 +127,18 @@ describe('shot workspace', () => {
     expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ assigned_artist: members[0].user_id });
   });
 
+  it('shows the server’s reason when it refuses the artist, and keeps the dialog open', async () => {
+    mockFetch((c) => (c.method === 'PATCH' ? { status: 400, body: flow.shot_assign_non_member_400.body } : server(c)));
+    mount();
+    fireEvent.click(await screen.findByRole('button', { name: 'Assign Artist' }));
+    const select = (await screen.findByLabelText('Artist')) as HTMLSelectElement;
+    await waitFor(() => expect(select.querySelectorAll('option').length).toBeGreaterThan(1));
+    fireEvent.change(select, { target: { value: members[0].user_id } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(await screen.findByText(/Unknown user/)).toBeTruthy();
+    expect(screen.getByLabelText('Artist')).toBeTruthy();
+  });
+
   it('unassigns the artist by sending null', async () => {
     detail = { ...flow.shot_detail.body, assigned_artist_id: members[0].user_id, assigned_artist_name: members[0].name };
     const { calls } = mockFetch(server);
