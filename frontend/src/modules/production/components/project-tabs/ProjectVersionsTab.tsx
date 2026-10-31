@@ -1,7 +1,7 @@
 import type React from 'react';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
 import { useVersionsListConfig } from '@/modules/production/review/versions';
-import type { Project } from '@/types/production';
+import type { Project } from '@/api/production/structure';
 
 interface ProjectVersionsTabProps {
   project: Project;

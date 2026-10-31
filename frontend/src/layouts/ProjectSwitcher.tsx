@@ -17,7 +17,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useProductionStore } from '@/core/production/useProductionStore';
-import type { Project } from '@/types/production';
+import type { Project } from '@/api/production/structure';
 import { useAuth } from '@/modules/auth';
 import { filterAccessibleProjects, isSuperAdminUser } from '@/core/permissions/accessControl';
 import { cn } from '@/shared/utils/cn';
