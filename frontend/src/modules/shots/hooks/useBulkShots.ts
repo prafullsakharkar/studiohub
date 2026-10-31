@@ -1,5 +1,5 @@
 import { PROJECT_QUERY_KEYS } from '@/modules/production';
-import { SEQUENCE_QUERY_KEYS } from '@/modules/sequences';
+import { sequencesApi } from '@/api/production/structure';
 import { useBulkEntity } from '@/shared/hooks/useBulkEntity';
 import { shotService } from '../services/ShotService';
 import { SHOT_QUERY_KEYS } from './useShots';
@@ -11,23 +11,16 @@ export function useBulkShots() {
     queryKeyAll: SHOT_QUERY_KEYS.all,
     projectQueryKeyAll: PROJECT_QUERY_KEYS.all,
     extraQueryKeys: {
-      create: [SEQUENCE_QUERY_KEYS.all],
-      archive: [SEQUENCE_QUERY_KEYS.all],
-      restore: [SEQUENCE_QUERY_KEYS.all],
+      create: [sequencesApi.keys.all],
+      archive: [sequencesApi.keys.all],
+      restore: [sequencesApi.keys.all],
     },
     labels: {
       singular: 'Shot',
       plural: 'shots',
-      entityType: 'shot',
-      bulkId: 'bulk-shots',
-      bulkName: 'Bulk Shots',
-      bulkCode: 'BULK_SHOT',
-      stagingVerb: 'Created',
       restoreDestination: 'active production',
       titledOps: false,
       creationNoun: 'Creation',
-      describeCreateResults: (createdCount, recoveredCount, failedCount) =>
-        `Bulk operation: ${createdCount} created, ${recoveredCount} recovered, ${failedCount} failed`,
     },
   });
 }

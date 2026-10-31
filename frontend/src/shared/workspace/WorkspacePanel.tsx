@@ -18,7 +18,6 @@ import {
   Maximize2,
   Layers,
   FileCode,
-  History,
   MessageSquare,
   Activity,
   CheckCircle2,
@@ -42,7 +41,6 @@ import { EntityRef, getEntityIcon, getEntityColorClass } from './EntityRef';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { useNotificationStore } from '../stores/useNotificationStore';
 import { cn } from '@/shared/utils/cn';
-import { ActivityTimeline } from '@/shared/activity/ActivityTimeline';
 import { TabContentTransition } from '@/shared/components/tabs/TabContentTransition';
 
 interface WorkspacePanelProps {
@@ -58,7 +56,7 @@ export const WorkspacePanel: React.FC<WorkspacePanelProps> = ({
   onCloseSecondary,
   onReplaceEntity,
 }) => {
-  const [activeSection, setActiveSection] = useState<'overview' | 'relations' | 'tasks' | 'versions' | 'directives' | 'activity'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'relations' | 'tasks' | 'versions' | 'directives'>('overview');
   const [copied, setCopied] = useState(false);
   const [newNote, setNewNote] = useState('');
   const [notes, setNotes] = useState<Array<{ id: string; author: string; role: string; text: string; time: string }>>([
@@ -125,7 +123,6 @@ export const WorkspacePanel: React.FC<WorkspacePanelProps> = ({
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, count: resolved.relations.tasks?.length },
     { id: 'versions', label: 'Published Versions', icon: FileCode, count: resolved.relations.versions?.length },
     { id: 'directives', label: 'Directives', icon: MessageSquare, count: notes.length },
-    { id: 'activity', label: 'Activity Trail', icon: History },
   ];
 
   return (
@@ -507,18 +504,6 @@ export const WorkspacePanel: React.FC<WorkspacePanelProps> = ({
           </div>
         )}
 
-        {/* ACTIVITY TRAIL SECTION */}
-        {activeSection === 'activity' && (
-          <div className="space-y-4">
-            <ActivityTimeline
-              entityType={resolved.type as any}
-              entityId={resolved.id}
-              title={`${resolved.title} Audit Trail`}
-              compact
-              showExport
-            />
-          </div>
-        )}
         </TabContentTransition>
       </div>
     </div>

@@ -38,7 +38,6 @@ import { useCurrentUser } from '@/core/auth/useCurrentUser';
 import { evaluateUserPermission, hasElevatedAccess } from '@/core/permissions/rbac';
 import { useThemeMode } from '@/providers/ThemeProvider';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
-import { useActivityStore } from '@/shared/stores/useActivityStore';
 import { type CommandItem, type EntityType } from '@/types/common';
 import type { PermissionKey } from '@/types/identity';
 import { ActionDispatcherModal, type ActionModalType } from './ActionDispatcherModals';
@@ -47,7 +46,7 @@ import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
-  initialMode?: 'all' | 'commands' | 'activity';
+  initialMode?: 'all' | 'commands';
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({
@@ -66,7 +65,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   // Never compare raw role strings here; hasElevatedAccess owns that logic.
   const isAdmin = hasElevatedAccess(user);
   const addNotification = useNotificationStore((state) => state.addNotification);
-  const { activities } = useActivityStore();
 
   // Single canonical evaluation (ADR-0033): the engine owns the superuser /
   // platform / org-owner rules — no duplicated role-name branches here.
@@ -79,7 +77,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   );
 
   const [query, setQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'all' | 'commands' | 'activity'>(initialMode);
+  const [activeTab, setActiveTab] = useState<'all' | 'commands'>(initialMode);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   // Sub-dialog triggers
@@ -522,8 +520,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   }, [query, commandsList, canRunCommand]);
 
   // Combined selectable items based on activeTab
-  // Recent Activity surfaces the full platform activity store.
-  const orgActivities = useMemo(() => activities, [activities]);
   const visibleItems = useMemo(() => {
     if (activeTab === 'commands') {
       return filteredCommands.map((c) => ({
@@ -532,19 +528,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       }));
     }
 
-    if (activeTab === 'activity') {
-      return orgActivities.slice(0, 15).map((a) => ({
-        type: 'activity' as const,
-        item: a,
-      }));
-    }
-
     // Tab: 'all'
     return filteredCommands.slice(0, 8).map((c) => ({
       type: 'command' as const,
       item: c,
     }));
-  }, [activeTab, filteredCommands, orgActivities]);
+  }, [activeTab, filteredCommands]);
 
   // Reset selected index when visible items change
   useEffect(() => {
@@ -570,9 +559,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       if (cmd.category !== 'System') {
         onClose();
       }
-    } else if (item.type === 'activity') {
-      onClose();
-      navigate('/audit?tab=activity');
     }
   };
 
@@ -591,7 +577,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       }
     } else if (e.key === 'Tab') {
       e.preventDefault();
-      const tabs: ('all' | 'commands' | 'activity')[] = ['all', 'commands', 'activity'];
+      const tabs: ('all' | 'commands')[] = ['all', 'commands'];
       const nextTab = tabs[(tabs.indexOf(activeTab) + 1) % tabs.length];
       setActiveTab(nextTab);
     } else if (e.key === 'Escape') {
@@ -674,18 +660,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               >
                 <CommandIcon className="w-3 h-3" />
                 <span>Commands ({filteredCommands.length})</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('activity')}
-                className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors flex items-center gap-1 ${
-                  activeTab === 'activity'
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-2xs'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-                }`}
-              >
-                <Activity className="w-3 h-3" />
-                <span>Recent Activity</span>
               </button>
             </div>
 
@@ -788,50 +762,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                         )}
                         <ArrowRight className="w-4 h-4 text-slate-500" />
                       </div>
-                    </div>
-                  );
-                }
-
-                // 3. Render Activity Result
-                if (entry.type === 'activity') {
-                  const act = entry.item as (typeof activities)[0];
-
-                  return (
-                    <div
-                      key={`act-${act.id}-${index}`}
-                      onClick={() => executeItem(entry)}
-                      onMouseEnter={() => setSelectedIndex(index)}
-                      className={`p-3 rounded-xl cursor-pointer transition-all flex items-center justify-between gap-3 ${
-                        isSelected
-                          ? 'bg-indigo-600/20 border border-indigo-500/40 text-slate-100 shadow-sm'
-                          : 'hover:bg-slate-800/40 text-slate-300 border border-transparent'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-9 h-9 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
-                          <Activity className="w-4 h-4" />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-xs text-slate-100">
-                              {act.actionLabel}
-                            </span>
-                            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-800 text-indigo-300 border border-slate-700">
-                              {act.entity.code || act.entity.name}
-                            </span>
-                            <span className="text-[10px] text-slate-400">
-                              by {act.actor.name}
-                            </span>
-                          </div>
-                          <p className="text-xs text-slate-400 truncate mt-0.5">
-                            {act.description}
-                          </p>
-                        </div>
-                      </div>
-
-                      <span className="text-[10px] font-mono text-slate-500 shrink-0">
-                        {new Date(act.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
                     </div>
                   );
                 }

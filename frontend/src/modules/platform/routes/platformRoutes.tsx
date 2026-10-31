@@ -3,10 +3,12 @@ import { Navigate, Route, useParams } from 'react-router-dom';
 import { PermissionRoute } from '@/routes/PermissionRoute';
 ;
 ;
-import { PlatformAdminPage } from '@/modules/platform/pages/PlatformAdminPage';
-import { ApiHealthPage } from '@/modules/platform/pages/ApiHealthPage';
 import { PreserveQueryRedirect } from '@/routes/PreserveQueryRedirect';
-import { CatalogAdminPage } from '@/modules/catalog/CatalogAdminPage';
+import { lazyNamed } from '@/routes/lazyNamed';
+
+// Loaded on first use, one chunk each (see lazyNamed).
+const ApiHealthPage = lazyNamed(() => import('@/modules/platform/pages/ApiHealthPage'), 'ApiHealthPage');
+const CatalogAdminPage = lazyNamed(() => import('@/modules/catalog/CatalogAdminPage'), 'CatalogAdminPage');
 
 const CATALOG_TABS: Record<string, string> = {
   software: 'software',
@@ -20,22 +22,30 @@ const CATALOG_TABS: Record<string, string> = {
   'review-file-types': 'review-types',
 };
 
-/** The old master-data tabs (`/platform/master-data/:tab`, `/platform/admin/:tab`) now live under /platform/catalog. */
-const MasterDataRedirect: React.FC = () => {
-  const { tab } = useParams<{ tab?: string }>();
-  const kind = tab ? CATALOG_TABS[tab] : undefined;
-  return <Navigate to={kind ? `/platform/catalog/${kind}` : '/platform/catalog'} replace />;
+/**
+ * Where each slug of the old Platform Administration page lives now. The page had a tab per catalog kind
+ * (software, statuses, the types), one for roles and the org structure, and an overview; every one is a screen
+ * of its own, so the old URLs only redirect. An unknown slug lands on the catalog.
+ */
+const ADMIN_PAGE_TARGETS: Record<string, string> = {
+  roles: '/access/roles',
+  groups: '/access/groups',
+  departments: '/departments',
+  positions: '/positions',
+  'api-health': '/platform/health',
 };
 
-/**
- * The master-data tabs of the legacy Platform Admin page read `is_archived` (the API sends
- * `status`), so they are served by the catalog admin instead; the other tabs (roles/org structure,
- * pipeline, theme, layout, DB schema) stay on that page until Phase 11.
- */
-const AdminTabGate: React.FC = () => {
+export function adminTabTarget(tab?: string): string {
+  if (!tab) return '/platform/catalog';
+  const kind = CATALOG_TABS[tab];
+  if (kind) return `/platform/catalog/${kind}`;
+  return ADMIN_PAGE_TARGETS[tab] ?? '/platform/catalog';
+}
+
+/** `/platform/admin[/:tab]` and `/platform/master-data[/:tab]`: sent to the screen that replaced the tab. */
+const AdminRedirect: React.FC = () => {
   const { tab } = useParams<{ tab?: string }>();
-  const kind = tab ? CATALOG_TABS[tab] : undefined;
-  return kind ? <Navigate to={`/platform/catalog/${kind}`} replace /> : <PlatformAdminPage />;
+  return <Navigate to={adminTabTarget(tab)} replace />;
 };
 
 /**
@@ -52,10 +62,10 @@ export const platformRoutes = (
     <Route path="/api-health" element={<PreserveQueryRedirect to="/platform/health" />} />
 
     <Route element={<PermissionRoute permissions={['platform.admin.view', 'platform.master_data.view', 'platform.software.view', 'platform.status.view', 'settings.view', 'page.settings']} requireAny={true} />}>
-      <Route path="/platform/admin" element={<PlatformAdminPage />} />
-      <Route path="/platform/admin/:tab" element={<AdminTabGate />} />
-      <Route path="/platform/master-data" element={<MasterDataRedirect />} />
-      <Route path="/platform/master-data/:tab" element={<MasterDataRedirect />} />
+      <Route path="/platform/admin" element={<AdminRedirect />} />
+      <Route path="/platform/admin/:tab" element={<AdminRedirect />} />
+      <Route path="/platform/master-data" element={<AdminRedirect />} />
+      <Route path="/platform/master-data/:tab" element={<AdminRedirect />} />
     </Route>
 
   </>

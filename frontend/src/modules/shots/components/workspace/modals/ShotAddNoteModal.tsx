@@ -6,7 +6,6 @@ import { Input } from '@/shared/components/Input';
 import { useShotMutations } from '@/modules/shots/hooks/useShotMutations';
 import { useCurrentUser } from '@/core/auth/useCurrentUser';
 import { useNotificationStore } from '@/shared/stores/useNotificationStore';
-import { useActivityStore } from '@/shared/stores/useActivityStore';
 
 export interface ShotAddNoteModalProps {
   isOpen: boolean;
@@ -21,7 +20,6 @@ export const ShotAddNoteModal: React.FC<ShotAddNoteModalProps> = ({
   shot,
   onNoteAdded,
 }) => {
-  const recordActivity = useActivityStore((state) => state.recordActivity);
   const { user } = useCurrentUser();
   const { updateShot, isUpdating } = useShotMutations();
   const { addNotification } = useNotificationStore();
@@ -51,19 +49,6 @@ export const ShotAddNoteModal: React.FC<ShotAddNoteModalProps> = ({
       data: {
         notes: existingNotes,
       },
-    });
-
-    recordActivity({
-      action: 'commented',
-      actionLabel: 'Note Added',
-      resourceType: 'shot',
-      resourceId: shot.id,
-      resourceName: shot.code,
-      resourceCode: shot.code,
-      projectId: shot.project_id,
-      context: shot.code,
-      description: `Added ${category} note to ${shot.code}: "${content.slice(0, 60)}${content.length > 60 ? '...' : ''}"`,
-      tags: ['Shot', 'Note', category],
     });
 
     if (onNoteAdded) {

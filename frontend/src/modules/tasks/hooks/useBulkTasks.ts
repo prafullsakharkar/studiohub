@@ -12,12 +12,6 @@ export function useBulkTasks() {
     labels: {
       singular: 'Task',
       plural: 'tasks',
-      entityType: 'task',
-      bulkId: 'bulk-tasks',
-      bulkName: 'Bulk Tasks',
-      bulkCode: 'BULK_TSK',
-      extraTag: 'Workflow',
-      stagingVerb: 'Created',
       restoreDestination: 'active schedule',
     },
   });

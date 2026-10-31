@@ -1,11 +1,5 @@
 // Public boundary for the production module.
 // External code imports from '@/modules/production', never deep paths.
-export {
-  useCreateEditorialTrack,
-  useDeleteEditorialTrack,
-  useEditorialTracks,
-  useUpdateEditorialTrack,
-} from './hooks/useEditorialTracks';
 export { PROJECT_SCOPED_QUERY_KEYS } from './hooks/useProjectScopedData';
 export { PROJECT_QUERY_KEYS, useProjects } from './hooks/useProjects';
 export { ProjectFormPage } from './pages/ProjectFormPage';

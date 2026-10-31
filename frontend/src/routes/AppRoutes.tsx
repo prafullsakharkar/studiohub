@@ -1,62 +1,11 @@
 import { platformRoutes } from '@/modules/platform';
 
-import { DashboardPage } from '@/modules/dashboard';
-
-import { DeliveriesPage, DeliveryFormPage, DeliveryWorkspacePage, DestinationFormPage, DestinationsPage } from '@/modules/deliveries';
-
-import { DepartmentsListPage, DepartmentWorkspacePage, CreateDepartmentPage, EditDepartmentPage } from '@/modules/departments';
-
-import { OfficesListPage, OfficeWorkspacePage, CreateOfficePage, EditOfficePage } from '@/modules/offices';
-
-import { PeopleListPage, PersonWorkspacePage, CreatePersonPage, EditPersonPage } from '@/modules/people';
-
-import { ClientsPage, ClientCreatePage, ClientEditPage, ClientWorkspacePage } from '@/modules/clients';
-
-import { VendorsPage, VendorCreatePage, VendorEditPage, VendorWorkspacePage } from '@/modules/vendors';
-
-import { BulkRegisterPage, PublishDestinationFormPage, PublishDestinationsPage, PublishedFileFormPage, PublishedFilePage, PublishedFilesPage, PublishFormPage, PublishingPage, PublishWorkspacePage, StorageRootFormPage, StorageRootsPage } from '@/modules/publishing';
-
-import { CategoriesPage, CategoryFormPage, DefinitionFormPage, DefinitionsPage, FlagFormPage, FlagsPage, LocalizationFormPage, LocalizationsPage, TagFormPage, TagsPage, ThemeFormPage, ThemesPage, ValueFormPage, ValuesPage } from '@/modules/settings';
-import { BookingFormPage, BookingsPage, EventFormPage, EventsPage, HolidayFormPage, HolidaysPage, LeaveFormPage, LeavesPage, MilestoneFormPage, MilestonesPage, ResourceFormPage, ResourcesPage, ResourceWorkspacePage, SchedulingCalendarPage, SchedulingCapacityPage, WorkCalendarFormPage, WorkCalendarsPage } from '@/modules/scheduling';
-
-import { TeamsListPage, TeamWorkspacePage, CreateTeamPage, EditTeamPage } from '@/modules/teams';
-
-import { WorkspacePage } from '@/modules/workspace';
-import { AccountLayout } from '@/modules/identity/account/AccountLayout';
-import { ProfilePage } from '@/modules/identity/account/ProfilePage';
-import { SecurityPage } from '@/modules/identity/account/SecurityPage';
-import { SessionsPage } from '@/modules/identity/account/SessionsPage';
-import { TokensPage } from '@/modules/identity/account/TokensPage';
-import { CreatePositionPage, EditPositionPage, PositionsListPage } from '@/modules/directory/positionPages';
-import { GroupDetailPage } from '@/modules/identity/pages/GroupDetailPage';
-import { GroupsPage } from '@/modules/identity/pages/GroupsPage';
-import { PermissionsPage } from '@/modules/identity/pages/PermissionsPage';
-import { RoleDetailPage } from '@/modules/identity/pages/RoleDetailPage';
-import { RolesPage } from '@/modules/identity/pages/RolesPage';
-import { SecurityLogPage } from '@/modules/identity/pages/SecurityLogPage';
-import { PreserveQueryRedirect } from './PreserveQueryRedirect';
-
-import { AutomationFormPage, AutomationsPage, WorkflowFormPage, WorkflowsPage, WorkflowWorkspacePage } from '@/modules/workflows';
-import { MediaFormPage, MediaPage } from '@/modules/media';
-
-import { PlaylistFormPage, PlaylistsPage, PlaylistWorkspacePage } from '@/modules/playlists';
-import { ReviewFormPage, ReviewsPage, ReviewWorkspacePage } from '@/modules/reviews';
-
 import { auditRoutes } from '@/modules/audit';
-
-import { AssetFormPage, AssetsPage, AssetWorkspacePage } from '@/modules/assets';
-
-import { VersionFormPage, VersionsListPage, VersionWorkspacePage } from '@/modules/versions';
-
-import { ShotFormPage, ShotsPage, ShotWorkspacePage } from '@/modules/shots';
-
-import { TasksPage, TaskDetailPage, TaskFormPage, TaskTemplateFormPage, TaskTemplatesPage, TimelogFormPage, TimelogsPage } from '@/modules/tasks';
-
-import { ProjectsPage, ProjectWorkspacePage, ProjectFormPage } from '@/modules/production';
 
 import { LoginPage, ForgotPasswordPage, ResetPasswordPage, ChangePasswordPage, MfaSetupPage } from '@/modules/auth';
 
-import React from 'react';
+import React, { Suspense } from 'react';
+import { lazyNamed } from './lazyNamed';
 
 import { Routes, Route, Navigate } from 'react-router-dom';
 
@@ -82,11 +31,123 @@ import { UnauthorizedPage } from '@/pages/UnauthorizedPage';
 
 import { ServerErrorPage } from '@/pages/ServerErrorPage';
 
+// Pages load on first use, one chunk per module (see lazyNamed).
+const DashboardPage = lazyNamed(() => import('@/modules/dashboard'), 'DashboardPage');
+const DeliveriesPage = lazyNamed(() => import('@/modules/deliveries'), 'DeliveriesPage');
+const DeliveryFormPage = lazyNamed(() => import('@/modules/deliveries'), 'DeliveryFormPage');
+const DeliveryWorkspacePage = lazyNamed(() => import('@/modules/deliveries'), 'DeliveryWorkspacePage');
+const DestinationFormPage = lazyNamed(() => import('@/modules/deliveries'), 'DestinationFormPage');
+const DestinationsPage = lazyNamed(() => import('@/modules/deliveries'), 'DestinationsPage');
+const DepartmentsListPage = lazyNamed(() => import('@/modules/departments'), 'DepartmentsListPage');
+const DepartmentWorkspacePage = lazyNamed(() => import('@/modules/departments'), 'DepartmentWorkspacePage');
+const CreateDepartmentPage = lazyNamed(() => import('@/modules/departments'), 'CreateDepartmentPage');
+const EditDepartmentPage = lazyNamed(() => import('@/modules/departments'), 'EditDepartmentPage');
+const OfficesListPage = lazyNamed(() => import('@/modules/offices'), 'OfficesListPage');
+const OfficeWorkspacePage = lazyNamed(() => import('@/modules/offices'), 'OfficeWorkspacePage');
+const CreateOfficePage = lazyNamed(() => import('@/modules/offices'), 'CreateOfficePage');
+const EditOfficePage = lazyNamed(() => import('@/modules/offices'), 'EditOfficePage');
+const PeopleListPage = lazyNamed(() => import('@/modules/people'), 'PeopleListPage');
+const PersonWorkspacePage = lazyNamed(() => import('@/modules/people'), 'PersonWorkspacePage');
+const CreatePersonPage = lazyNamed(() => import('@/modules/people'), 'CreatePersonPage');
+const EditPersonPage = lazyNamed(() => import('@/modules/people'), 'EditPersonPage');
+const ClientsPage = lazyNamed(() => import('@/modules/clients'), 'ClientsPage');
+const ClientCreatePage = lazyNamed(() => import('@/modules/clients'), 'ClientCreatePage');
+const ClientEditPage = lazyNamed(() => import('@/modules/clients'), 'ClientEditPage');
+const ClientWorkspacePage = lazyNamed(() => import('@/modules/clients'), 'ClientWorkspacePage');
+const VendorsPage = lazyNamed(() => import('@/modules/vendors'), 'VendorsPage');
+const VendorCreatePage = lazyNamed(() => import('@/modules/vendors'), 'VendorCreatePage');
+const VendorEditPage = lazyNamed(() => import('@/modules/vendors'), 'VendorEditPage');
+const VendorWorkspacePage = lazyNamed(() => import('@/modules/vendors'), 'VendorWorkspacePage');
+const BulkRegisterPage = lazyNamed(() => import('@/modules/publishing'), 'BulkRegisterPage');
+const PublishDestinationFormPage = lazyNamed(() => import('@/modules/publishing'), 'PublishDestinationFormPage');
+const PublishDestinationsPage = lazyNamed(() => import('@/modules/publishing'), 'PublishDestinationsPage');
+const PublishedFileFormPage = lazyNamed(() => import('@/modules/publishing'), 'PublishedFileFormPage');
+const PublishedFilePage = lazyNamed(() => import('@/modules/publishing'), 'PublishedFilePage');
+const PublishedFilesPage = lazyNamed(() => import('@/modules/publishing'), 'PublishedFilesPage');
+const PublishFormPage = lazyNamed(() => import('@/modules/publishing'), 'PublishFormPage');
+const PublishingPage = lazyNamed(() => import('@/modules/publishing'), 'PublishingPage');
+const PublishWorkspacePage = lazyNamed(() => import('@/modules/publishing'), 'PublishWorkspacePage');
+const StorageRootFormPage = lazyNamed(() => import('@/modules/publishing'), 'StorageRootFormPage');
+const StorageRootsPage = lazyNamed(() => import('@/modules/publishing'), 'StorageRootsPage');
+const CategoriesPage = lazyNamed(() => import('@/modules/settings'), 'CategoriesPage');
+const CategoryFormPage = lazyNamed(() => import('@/modules/settings'), 'CategoryFormPage');
+const DefinitionFormPage = lazyNamed(() => import('@/modules/settings'), 'DefinitionFormPage');
+const DefinitionsPage = lazyNamed(() => import('@/modules/settings'), 'DefinitionsPage');
+const FlagFormPage = lazyNamed(() => import('@/modules/settings'), 'FlagFormPage');
+const FlagsPage = lazyNamed(() => import('@/modules/settings'), 'FlagsPage');
+const LocalizationFormPage = lazyNamed(() => import('@/modules/settings'), 'LocalizationFormPage');
+const LocalizationsPage = lazyNamed(() => import('@/modules/settings'), 'LocalizationsPage');
+const TagFormPage = lazyNamed(() => import('@/modules/settings'), 'TagFormPage');
+const TagsPage = lazyNamed(() => import('@/modules/settings'), 'TagsPage');
+const ThemeFormPage = lazyNamed(() => import('@/modules/settings'), 'ThemeFormPage');
+const ThemesPage = lazyNamed(() => import('@/modules/settings'), 'ThemesPage');
+const ValueFormPage = lazyNamed(() => import('@/modules/settings'), 'ValueFormPage');
+const ValuesPage = lazyNamed(() => import('@/modules/settings'), 'ValuesPage');const BookingFormPage = lazyNamed(() => import('@/modules/scheduling'), 'BookingFormPage');
+const BookingsPage = lazyNamed(() => import('@/modules/scheduling'), 'BookingsPage');
+const EventFormPage = lazyNamed(() => import('@/modules/scheduling'), 'EventFormPage');
+const EventsPage = lazyNamed(() => import('@/modules/scheduling'), 'EventsPage');
+const HolidayFormPage = lazyNamed(() => import('@/modules/scheduling'), 'HolidayFormPage');
+const HolidaysPage = lazyNamed(() => import('@/modules/scheduling'), 'HolidaysPage');
+const LeaveFormPage = lazyNamed(() => import('@/modules/scheduling'), 'LeaveFormPage');
+const LeavesPage = lazyNamed(() => import('@/modules/scheduling'), 'LeavesPage');
+const MilestoneFormPage = lazyNamed(() => import('@/modules/scheduling'), 'MilestoneFormPage');
+const MilestonesPage = lazyNamed(() => import('@/modules/scheduling'), 'MilestonesPage');
+const ResourceFormPage = lazyNamed(() => import('@/modules/scheduling'), 'ResourceFormPage');
+const ResourcesPage = lazyNamed(() => import('@/modules/scheduling'), 'ResourcesPage');
+const ResourceWorkspacePage = lazyNamed(() => import('@/modules/scheduling'), 'ResourceWorkspacePage');
+const SchedulingCalendarPage = lazyNamed(() => import('@/modules/scheduling'), 'SchedulingCalendarPage');
+const SchedulingCapacityPage = lazyNamed(() => import('@/modules/scheduling'), 'SchedulingCapacityPage');
+const WorkCalendarFormPage = lazyNamed(() => import('@/modules/scheduling'), 'WorkCalendarFormPage');
+const WorkCalendarsPage = lazyNamed(() => import('@/modules/scheduling'), 'WorkCalendarsPage');
+const TeamsListPage = lazyNamed(() => import('@/modules/teams'), 'TeamsListPage');
+const TeamWorkspacePage = lazyNamed(() => import('@/modules/teams'), 'TeamWorkspacePage');
+const CreateTeamPage = lazyNamed(() => import('@/modules/teams'), 'CreateTeamPage');
+const EditTeamPage = lazyNamed(() => import('@/modules/teams'), 'EditTeamPage');
+const WorkspacePage = lazyNamed(() => import('@/modules/workspace'), 'WorkspacePage');const AccountLayout = lazyNamed(() => import('@/modules/identity/account/AccountLayout'), 'AccountLayout');const ProfilePage = lazyNamed(() => import('@/modules/identity/account/ProfilePage'), 'ProfilePage');const SecurityPage = lazyNamed(() => import('@/modules/identity/account/SecurityPage'), 'SecurityPage');const SessionsPage = lazyNamed(() => import('@/modules/identity/account/SessionsPage'), 'SessionsPage');const TokensPage = lazyNamed(() => import('@/modules/identity/account/TokensPage'), 'TokensPage');const CreatePositionPage = lazyNamed(() => import('@/modules/directory/positionPages'), 'CreatePositionPage');
+const EditPositionPage = lazyNamed(() => import('@/modules/directory/positionPages'), 'EditPositionPage');
+const PositionsListPage = lazyNamed(() => import('@/modules/directory/positionPages'), 'PositionsListPage');const GroupDetailPage = lazyNamed(() => import('@/modules/identity/pages/GroupDetailPage'), 'GroupDetailPage');const GroupsPage = lazyNamed(() => import('@/modules/identity/pages/GroupsPage'), 'GroupsPage');const PermissionsPage = lazyNamed(() => import('@/modules/identity/pages/PermissionsPage'), 'PermissionsPage');const RoleDetailPage = lazyNamed(() => import('@/modules/identity/pages/RoleDetailPage'), 'RoleDetailPage');const RolesPage = lazyNamed(() => import('@/modules/identity/pages/RolesPage'), 'RolesPage');const SecurityLogPage = lazyNamed(() => import('@/modules/identity/pages/SecurityLogPage'), 'SecurityLogPage');import { PreserveQueryRedirect } from './PreserveQueryRedirect';
+const AutomationFormPage = lazyNamed(() => import('@/modules/workflows'), 'AutomationFormPage');
+const AutomationsPage = lazyNamed(() => import('@/modules/workflows'), 'AutomationsPage');
+const WorkflowFormPage = lazyNamed(() => import('@/modules/workflows'), 'WorkflowFormPage');
+const WorkflowsPage = lazyNamed(() => import('@/modules/workflows'), 'WorkflowsPage');
+const WorkflowWorkspacePage = lazyNamed(() => import('@/modules/workflows'), 'WorkflowWorkspacePage');const MediaFormPage = lazyNamed(() => import('@/modules/media'), 'MediaFormPage');
+const MediaPage = lazyNamed(() => import('@/modules/media'), 'MediaPage');
+const PlaylistFormPage = lazyNamed(() => import('@/modules/playlists'), 'PlaylistFormPage');
+const PlaylistsPage = lazyNamed(() => import('@/modules/playlists'), 'PlaylistsPage');
+const PlaylistWorkspacePage = lazyNamed(() => import('@/modules/playlists'), 'PlaylistWorkspacePage');const ReviewFormPage = lazyNamed(() => import('@/modules/reviews'), 'ReviewFormPage');
+const ReviewsPage = lazyNamed(() => import('@/modules/reviews'), 'ReviewsPage');
+const ReviewWorkspacePage = lazyNamed(() => import('@/modules/reviews'), 'ReviewWorkspacePage');
+const AssetFormPage = lazyNamed(() => import('@/modules/assets'), 'AssetFormPage');
+const AssetsPage = lazyNamed(() => import('@/modules/assets'), 'AssetsPage');
+const AssetWorkspacePage = lazyNamed(() => import('@/modules/assets'), 'AssetWorkspacePage');
+const VersionFormPage = lazyNamed(() => import('@/modules/versions'), 'VersionFormPage');
+const VersionsListPage = lazyNamed(() => import('@/modules/versions'), 'VersionsListPage');
+const VersionWorkspacePage = lazyNamed(() => import('@/modules/versions'), 'VersionWorkspacePage');
+const ShotFormPage = lazyNamed(() => import('@/modules/shots'), 'ShotFormPage');
+const ShotsPage = lazyNamed(() => import('@/modules/shots'), 'ShotsPage');
+const ShotWorkspacePage = lazyNamed(() => import('@/modules/shots'), 'ShotWorkspacePage');
+const TasksPage = lazyNamed(() => import('@/modules/tasks'), 'TasksPage');
+const TaskDetailPage = lazyNamed(() => import('@/modules/tasks'), 'TaskDetailPage');
+const TaskFormPage = lazyNamed(() => import('@/modules/tasks'), 'TaskFormPage');
+const TaskTemplateFormPage = lazyNamed(() => import('@/modules/tasks'), 'TaskTemplateFormPage');
+const TaskTemplatesPage = lazyNamed(() => import('@/modules/tasks'), 'TaskTemplatesPage');
+const TimelogFormPage = lazyNamed(() => import('@/modules/tasks'), 'TimelogFormPage');
+const TimelogsPage = lazyNamed(() => import('@/modules/tasks'), 'TimelogsPage');
+const ProjectsPage = lazyNamed(() => import('@/modules/production'), 'ProjectsPage');
+const ProjectWorkspacePage = lazyNamed(() => import('@/modules/production'), 'ProjectWorkspacePage');
+const ProjectFormPage = lazyNamed(() => import('@/modules/production'), 'ProjectFormPage');
+
+/** Shown while the first page of a section downloads. */
+const RouteFallback: React.FC = () => (
+  <div role="status" aria-live="polite" className="flex h-screen w-screen items-center justify-center bg-slate-950 text-sm text-slate-300">
+    Loading…
+  </div>
+);
 
 export const AppRoutes: React.FC = () => {
 
   return (
-
+    <Suspense fallback={<RouteFallback />}>
     <Routes>
 
       {/* Guest Only Routes */}
@@ -506,7 +567,6 @@ export const AppRoutes: React.FC = () => {
 
           <Route element={<PermissionRoute requireAdmin={true} pagePermission="page.testing" permissions={['testing.view']} requireAny={true} fallbackPath="/forbidden" />}>
 
-
           </Route>
 
         </Route>
@@ -524,7 +584,6 @@ export const AppRoutes: React.FC = () => {
       <Route path="*" element={<NotFoundPage />} />
 
     </Routes>
-
+    </Suspense>
   );
-
 };

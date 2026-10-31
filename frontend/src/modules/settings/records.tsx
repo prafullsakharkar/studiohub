@@ -306,7 +306,7 @@ export function useThemesListConfig(): DirectoryListConfig<Theme> {
   return {
     title: 'Themes',
     noun: 'theme',
-    subtitle: 'Colours and type for the app. Activating a theme does not deactivate the others: several can be active at once.',
+    subtitle: 'Colours and type for the app. Several themes can be active (available); exactly one is the default, the one the app uses.',
     queryKey: themesApi.keys.lists(),
     fetchPage: withClientFilters(themesApi.list, { theme_type: sameRule<Theme>('theme_type'), is_active: boolRule<Theme>('is_active'), search: textSearch<Theme>('code', 'name', 'description') }),
     remove: themesApi.remove,
@@ -314,7 +314,11 @@ export function useThemesListConfig(): DirectoryListConfig<Theme> {
     createPermission: 'settings.manage',
     deletePermission: 'settings.manage',
     managePermission: 'settings.manage',
-    rowActions: (row) => [row.is_active ? { label: 'Deactivate', confirm: `Deactivate ${row.name}?`, run: () => themesApi.deactivate(row.id) } : { label: 'Activate', confirm: `Activate ${row.name}? Other active themes stay active.`, run: () => themesApi.activate(row.id) }],
+    canRemove: (row) => !row.is_default,
+    rowActions: (row) => [
+      ...(row.is_default ? [] : [row.is_active ? { label: 'Deactivate', confirm: `Deactivate ${row.name}?`, run: () => themesApi.deactivate(row.id) } : { label: 'Activate', confirm: `Activate ${row.name}? Other active themes stay active.`, run: () => themesApi.activate(row.id) }]),
+      ...(row.is_active && !row.is_default ? [{ label: 'Make default', confirm: `Make ${row.name} the default theme? The app uses it; the current default stays active.`, run: () => themesApi.setDefault(row.id) }] : []),
+    ],
     rowName: (row) => row.code,
     defaultOrdering: 'name',
     searchPlaceholder: 'Search code, name',
@@ -330,7 +334,7 @@ export function useThemesListConfig(): DirectoryListConfig<Theme> {
       { header: 'Primary', cell: (row) => swatch(row.primary_color) },
       { header: 'Background', cell: (row) => swatch(row.background_color) },
       { header: 'Font', cell: (row) => `${row.font_family} ${row.font_size}px` },
-      { header: 'State', cell: (row) => (row.is_active ? <Badge variant="success">Active</Badge> : <Badge variant="neutral">Inactive</Badge>) },
+      { header: 'State', cell: (row) => (row.is_default ? <Badge variant="info">Default</Badge> : row.is_active ? <Badge variant="success">Active</Badge> : <Badge variant="neutral">Inactive</Badge>) },
     ],
   };
 }
@@ -387,7 +391,7 @@ export function useLocalizationsListConfig(): DirectoryListConfig<Localization> 
   return {
     title: 'Localizations',
     noun: 'localization',
-    subtitle: 'Language, time zone and formats. Activating one does not deactivate the others.',
+    subtitle: 'Language, time zone and formats. Several can be active (available); exactly one is the default, the one the app uses.',
     queryKey: localizationsApi.keys.lists(),
     fetchPage: withClientFilters(localizationsApi.list, { language: sameRule<Localization>('language'), timezone: sameRule<Localization>('timezone'), is_active: boolRule<Localization>('is_active'), search: textSearch<Localization>('code', 'name') }),
     remove: localizationsApi.remove,
@@ -395,7 +399,11 @@ export function useLocalizationsListConfig(): DirectoryListConfig<Localization> 
     createPermission: 'settings.manage',
     deletePermission: 'settings.manage',
     managePermission: 'settings.manage',
-    rowActions: (row) => [row.is_active ? { label: 'Deactivate', confirm: `Deactivate ${row.name}?`, run: () => localizationsApi.deactivate(row.id) } : { label: 'Activate', confirm: `Activate ${row.name}? Other active localizations stay active.`, run: () => localizationsApi.activate(row.id) }],
+    canRemove: (row) => !row.is_default,
+    rowActions: (row) => [
+      ...(row.is_default ? [] : [row.is_active ? { label: 'Deactivate', confirm: `Deactivate ${row.name}?`, run: () => localizationsApi.deactivate(row.id) } : { label: 'Activate', confirm: `Activate ${row.name}? Other active localizations stay active.`, run: () => localizationsApi.activate(row.id) }]),
+      ...(row.is_active && !row.is_default ? [{ label: 'Make default', confirm: `Make ${row.name} the default localization? The app uses it; the current default stays active.`, run: () => localizationsApi.setDefault(row.id) }] : []),
+    ],
     rowName: (row) => row.code,
     defaultOrdering: 'name',
     searchPlaceholder: 'Search code, name',
@@ -412,7 +420,7 @@ export function useLocalizationsListConfig(): DirectoryListConfig<Localization> 
       { header: 'Time zone', cell: (row) => row.timezone },
       { header: 'Dates', cell: (row) => `${row.date_format} · ${row.time_format}` },
       { header: 'Currency', cell: (row) => `${row.currency_symbol} ${row.currency_code}`.trim() || '—' },
-      { header: 'State', cell: (row) => (row.is_active ? <Badge variant="success">Active</Badge> : <Badge variant="neutral">Inactive</Badge>) },
+      { header: 'State', cell: (row) => (row.is_default ? <Badge variant="info">Default</Badge> : row.is_active ? <Badge variant="success">Active</Badge> : <Badge variant="neutral">Inactive</Badge>) },
     ],
   };
 }

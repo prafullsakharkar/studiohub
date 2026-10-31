@@ -1,12 +1,11 @@
 /**
  * Task 6: command palette must offer only accessible targets —
  * admin-only entries hidden without a grant, permission-denied commands
- * filtered, and Recent Activity surfaced platform-wide.
+ * filtered, and no client-side "Recent Activity" feed (the audit hub is the real one).
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import React from 'react';
 
 const state = {
   user: null as any,
@@ -48,22 +47,8 @@ const PLAIN_MEMBER = {
   memberships: [] as any[],
 };
 
-function activityFixture(id: string, label: string) {
-  return {
-    id,
-    action: 'update',
-    actionLabel: label,
-    description: `${label} happened`,
-    entity: { type: 'project', id: 'proj-1', name: 'One', code: 'P1' },
-    actor: { id: 'u-1', name: 'Someone' },
-    timestamp: new Date().toISOString(),
-  };
-}
-
 async function renderPalette() {
   const { CommandPalette } = await import('../CommandPalette');
-  const { useActivityStore } = await import('@/shared/stores/useActivityStore');
-  useActivityStore.setState({ activities: [] as any });
   const view = render(
     <MemoryRouter>
       <CommandPalette isOpen onClose={() => undefined} />
@@ -106,17 +91,11 @@ describe('CommandPalette access scoping', () => {
     expect(screen.getByText('Access & RBAC Workspace')).toBeTruthy();
   });
 
-  it('surfaces Recent Activity across the platform (not org-scoped)', async () => {
+  it('has no Recent Activity tab: the real feed is the audit hub, offered as a command', async () => {
+    state.user = SUPERUSER;
     await renderPalette();
-    const { useActivityStore } = await import('@/shared/stores/useActivityStore');
-    useActivityStore.setState({
-      activities: [
-        activityFixture('act-a', 'Apex deploy'),
-        activityFixture('act-b', 'Nova deploy'),
-      ] as any,
-    });
-    fireEvent.click(screen.getByText('Recent Activity'));
-    expect(screen.getByText('Apex deploy')).toBeTruthy();
-    expect(screen.getByText('Nova deploy')).toBeTruthy();
+    expect(screen.queryByText('Recent Activity')).toBeNull();
+    fireEvent.click(screen.getByText(/Commands \(/));
+    expect(screen.getByText('Open Activity & Audit Hub')).toBeTruthy();
   });
 });
