@@ -105,7 +105,7 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({ field, parentId, parentNam
                     setAdding(false);
                     setPicked(null);
                   } catch (error) {
-                    notify.error(error instanceof Error ? error.message : 'The person could not be added.');
+                    notify.fromError(error);
                   }
                 }}
               >
