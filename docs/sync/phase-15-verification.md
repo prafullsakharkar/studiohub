@@ -37,6 +37,7 @@ Header actions: Edit, and the one lifecycle step the status allows (`deactivate`
 | `pnpm build` | OK | **OK** |
 | Biome (`src`) | 2 errors / 1360 warnings | **1 error / 1297 warnings** (the removed `useBulkDelete` held one of the two known `useHookAtTopLevel` errors) |
 | Live vitest, fresh seed | n/a | `personWorkspace.live.test.tsx`: **1 of 1** (add a skill, choose a team, deactivate, reactivate; each read back from the API) |
+| Playwright role smoke (6 roles + phone width) | n/a | **7 of 7 pass** (24.2 minutes) |
 | Frontend diff vs develop | | 14 files, +242 / −1,197 |
 
 Mutation checks, 6 of 6 caught: skills not saved, wrong assignee filter, tasks requested for a person with no login, lifecycle doing nothing, email and phone shown when the API omits them.
