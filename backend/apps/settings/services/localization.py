@@ -9,6 +9,7 @@ from apps.settings.models.localization import Localization
 from apps.settings.validators.localization import LocalizationValidator
 
 from .base import SettingsBaseService
+from .default_selection import make_default, refuse_if_default
 
 
 class LocalizationService(SettingsBaseService):
@@ -45,6 +46,7 @@ class LocalizationService(SettingsBaseService):
         """
         Delete a localization.
         """
+        refuse_if_default(instance, "localization", "deleted")
         instance.delete()
     
     @classmethod
@@ -63,6 +65,15 @@ class LocalizationService(SettingsBaseService):
         """
         Deactivate a localization.
         """
+        refuse_if_default(instance, "localization", "deactivated")
         instance.is_active = False
         instance.save()
         return instance
+
+    @classmethod
+    @transaction.atomic
+    def set_default(cls, instance: Localization) -> Localization:
+        """
+        Make this localization the one the app uses; the previous default stops being it.
+        """
+        return make_default(cls.model, instance)

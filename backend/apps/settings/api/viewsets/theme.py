@@ -4,7 +4,7 @@ Theme ViewSet.
 
 from rest_framework import mixins
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 from apps.core.permissions.base import IsAuthenticatedPermission
@@ -41,11 +41,16 @@ class ThemeViewSet(
         "update": (SettingsPermissions.MANAGE,),
         "partial_update": (SettingsPermissions.MANAGE,),
         "destroy": (SettingsPermissions.MANAGE,),
+        "default": (),
+        "set_default": (SettingsPermissions.MANAGE,),
         "activate": (SettingsPermissions.MANAGE,),
         "deactivate": (SettingsPermissions.MANAGE,),
         "lock": (SettingsPermissions.MANAGE,),
         "unlock": (SettingsPermissions.MANAGE,),
     }
+
+    # Which theme the app uses is not sensitive and every screen adapts to it.
+    credential_open_actions = ("default",)
 
     serializer_class = ThemeSerializer
     service_class = ThemeService
@@ -60,15 +65,23 @@ class ThemeViewSet(
         return self.filter_class(queryset, data=self.request.query_params).qs
 
     def perform_destroy(self, instance):
-        """The last active theme stays: the studio is never left without one."""
-        if (
-            instance.is_active
-            and not self.get_queryset().filter(is_active=True).exclude(pk=instance.pk).exists()
-        ):
-            raise ValidationError(
-                {"detail": "The last active theme cannot be deleted. Activate another first."}
-            )
-        super().perform_destroy(instance)
+        """The default theme stays until another one is made the default."""
+        self.service_class.delete_theme(instance)
+
+    @action(detail=False, methods=["get"], url_path="default")
+    def default(self, request):
+        """The theme the app uses (404 when none was made). Open to anyone signed in, like the feature flags."""
+        instance = self.get_queryset().filter(is_default=True).first()
+        if instance is None:
+            raise NotFound("No theme is the default yet.")
+        return Response(self.get_serializer(instance).data)
+
+    @action(detail=True, methods=["post"], url_path="set-default")
+    def set_default(self, request, pk=None):
+        """Make this theme the one the app uses."""
+        instance = self.get_object()
+        self.service_class.set_default(instance)
+        return Response({"status": "default"})
 
     @action(detail=True, methods=["post"])
     def activate(self, request, pk=None):

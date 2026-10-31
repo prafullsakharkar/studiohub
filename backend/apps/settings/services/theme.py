@@ -9,6 +9,7 @@ from apps.settings.models.theme import Theme
 from apps.settings.validators.theme import ThemeValidator
 
 from .base import SettingsBaseService
+from .default_selection import make_default, refuse_if_default
 
 
 class ThemeService(SettingsBaseService):
@@ -45,6 +46,7 @@ class ThemeService(SettingsBaseService):
         """
         Delete a theme.
         """
+        refuse_if_default(instance, "theme", "deleted")
         instance.delete()
     
     @classmethod
@@ -63,6 +65,15 @@ class ThemeService(SettingsBaseService):
         """
         Deactivate a theme.
         """
+        refuse_if_default(instance, "theme", "deactivated")
         instance.is_active = False
         instance.save()
         return instance
+
+    @classmethod
+    @transaction.atomic
+    def set_default(cls, instance: Theme) -> Theme:
+        """
+        Make this theme the one the app uses; the previous default stops being it.
+        """
+        return make_default(cls.model, instance)

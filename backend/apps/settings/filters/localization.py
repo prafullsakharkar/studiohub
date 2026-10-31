@@ -20,4 +20,5 @@ class LocalizationFilter(SettingsBaseFilter):
             "language": ["exact"],
             "timezone": ["exact"],
             "is_active": ["exact"],
+            "is_default": ["exact"],
         }
