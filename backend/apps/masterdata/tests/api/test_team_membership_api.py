@@ -297,6 +297,62 @@ class TestDeletingTeamsAndPeople:
         assert not TeamMembership.all_objects.filter(pk__in=[live.pk, removed.pk]).exists()
 
 
+class TestMemberCount:
+    def test_a_team_reports_its_live_members_on_the_list_and_the_detail(self, reader):
+        team, empty = TeamFactory(), TeamFactory()
+        for _ in range(3):
+            TeamMembershipFactory(team=team)
+        by_id = {r["id"]: r for r in rows(reader.get(f"{API}/teams/"))}
+        assert by_id[str(team.pk)]["member_count"] == 3
+        assert by_id[str(empty.pk)]["member_count"] == 0
+        assert reader.get(f"{API}/teams/{team.pk}/").json()["member_count"] == 3
+
+    def test_removed_members_and_other_teams_do_not_count(self, manager):
+        team = TeamFactory()
+        keep, gone = TeamMembershipFactory(team=team), TeamMembershipFactory(team=team)
+        TeamMembershipFactory()  # another team
+        manager.delete(f"{URL}{gone.pk}/")
+        assert manager.get(f"{API}/teams/{team.pk}/").json()["member_count"] == 1
+        assert keep.team_id == team.pk
+
+    def test_a_person_in_two_teams_counts_once_in_each(self, manager):
+        person = PersonFactory()
+        first, second = TeamFactory(), TeamFactory()
+        TeamMembershipFactory(team=first, person=person)
+        TeamMembershipFactory(team=second, person=person)
+        counts = {r["id"]: r["member_count"] for r in rows(manager.get(f"{API}/teams/"))}
+        assert counts[str(first.pk)] == counts[str(second.pk)] == 1
+
+    def test_the_count_is_read_only_and_a_created_or_updated_team_shows_it(self, manager):
+        department = DepartmentFactory()
+        created = manager.post(
+            f"{API}/teams/",
+            {
+                "code": "CNT-1",
+                "name": "Counting",
+                "department": str(department.pk),
+                "member_count": 9,
+            },
+            format="json",
+        )
+        assert created.status_code == 201 and created.json()["member_count"] == 0
+        TeamMembershipFactory(team_id=created.json()["id"])
+        updated = manager.patch(
+            f"{API}/teams/{created.json()['id']}/",
+            {"capacity": 4, "member_count": 9},
+            format="json",
+        )
+        assert updated.status_code == 200 and updated.json()["member_count"] == 1
+
+    def test_the_team_list_still_costs_a_fixed_number_of_queries(
+        self, reader, django_assert_max_num_queries
+    ):
+        for _ in range(6):
+            TeamMembershipFactory()
+        with django_assert_max_num_queries(6):
+            assert reader.get(f"{API}/teams/").status_code == 200
+
+
 class TestTheMigrationStep:
     def test_every_live_person_with_a_live_primary_team_becomes_a_member(self):
         migration = importlib.import_module("apps.masterdata.migrations.0002_team_membership")
