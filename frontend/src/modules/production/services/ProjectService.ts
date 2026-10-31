@@ -1,32 +1,36 @@
-import { IProjectRepository, projectRepository } from '@/api/repositories';
+import { apiClient } from '@/api/client/ApiClient';
 import { Project } from '@/types/production';
 import { PaginatedResponse, QueryParams } from '@/types/common';
 
+const BASE = '/api/v1/projects/';
+const idPath = (id: string) => `${BASE}${encodeURIComponent(id.trim())}/`;
+
+/** A query without the empty values (DRF treats `?search=` and a missing parameter differently from the screens' intent). */
+const clean = (params?: QueryParams) => Object.fromEntries(Object.entries(params ?? {}).filter(([, v]) => v !== undefined && v !== null && v !== ''));
+
+/**
+ * The project routes for the project workspace page, which still uses the older `Project` shape (docs/sync Phase 20 §
+ * "Not done"): rebuilding that page on the typed `projectsApi` is a phase of its own.
+ */
 export class ProjectService {
-  private repository: IProjectRepository;
-
-  constructor(repository: IProjectRepository = projectRepository) {
-    this.repository = repository;
-  }
-
   async getProjects(params?: QueryParams): Promise<PaginatedResponse<Project>> {
-    return this.repository.findAll(params);
+    return apiClient.get<PaginatedResponse<Project>>(BASE, { params: clean(params) as never });
   }
 
   async getProjectById(id: string): Promise<Project> {
-    return this.repository.findById(id);
+    return apiClient.get<Project>(idPath(id));
   }
 
   async createProject(data: Partial<Project>): Promise<Project> {
-    return this.repository.create(data);
+    return apiClient.post<Project>(BASE, data);
   }
 
   async updateProject(id: string, data: Partial<Project>): Promise<Project> {
-    return this.repository.patch(id, data);
+    return apiClient.patch<Project>(idPath(id), data);
   }
 
   async deleteProject(id: string): Promise<void> {
-    return this.repository.delete(id);
+    await apiClient.delete<void>(idPath(id));
   }
 }
 
