@@ -61,3 +61,19 @@ def require_project_member(project, user, *, field: str, label: str = "user"):
     if not is_member:
         raise unknown(field, label)
     return user
+
+
+def require_assignable_artist(project, data, instance=None):
+    """
+    A shot's or asset's ``assigned_artist`` must be an active member of its project, like a task's assignee (CR-34).
+
+    Only a *new* artist is checked: a write that leaves the stored artist alone, or sends them back, still goes
+    through, so an older record whose artist has since left the project can be edited. Platform admins pass.
+    """
+    artist = data.get("assigned_artist")
+    if artist is None or project is None:
+        return
+    if instance is not None and getattr(instance, "assigned_artist_id", None) == artist.pk:
+        return
+    require_project_member(project, artist, field="assigned_artist", label="user")
+

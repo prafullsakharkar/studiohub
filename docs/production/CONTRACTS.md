@@ -340,3 +340,11 @@ Frontend change list: handle the new 400 when archiving an asset that shots use 
 
 Frontend change list: none required by this phase. (Earlier phases' lists still apply.)
 
+## Frontend sync follow-up (CR-34)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-51 | `POST` / `PATCH` / `PUT /shots/`, `/assets/` and their `bulk-create` and `bulk-update` items (`assigned_artist`) | Any existing user was accepted as the assigned artist, a member of the project or not. A task's assignee already had to be a member. | **400** `{"assigned_artist": ["Unknown user."]}` unless the user is an active member of the record's project (platform administrators pass, as for tasks). Only a **new** artist is checked: a write that leaves the stored artist alone, or sends them back, still goes through, so a record whose artist has left the project can still be edited; `null` unassigns. |
+
+Frontend change list: none required (the screens already offer project members only).
+

@@ -303,3 +303,7 @@ Migrations **0044** (check) and **0045** (drop). No API response changes: every 
   * The JSON caches on Version (`reviews`, `playlists`, `notes_list`, `activity`, `media_items`, `attachments`; D-18), `Asset.version` / `versions` / `hierarchy` (D-31), `Review.client` / `vendor`, the playlist `activity`.
   * `EditorialCut.sequence_code`, `ProjectNote`'s entity text, and `is_archived` on `deliveries` and the core lifecycle mixin (other apps).
 
+## D-33 The assigned artist of a shot or asset is a project member (CR-34)
+
+Same rule as a task's assignee, through the same validator. Only a new artist is checked, so an older record whose artist has left the project stays editable; clearing the artist is always allowed. Platform administrators pass the check as they do for tasks.
+
