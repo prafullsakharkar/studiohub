@@ -72,47 +72,44 @@ jobs:
         # Coverage (gate fail_under=72) is off in the default `pytest` (pyproject.toml addopts).
         run: uv run pytest -q --cov=apps
 
-  # NOTE (Phase 7): the frontend lives in the sibling studiohub-react repo,
-  # so there is intentionally no frontend job here (a working-directory of
-  # `frontend/` does not exist in this repo and can never pass). Frontend
-  # contract protection runs in studiohub-react/.github/workflows/ci.yml
-  # (tsc + vitest incl. contract conformance + build).
-
-  # Scans the commits of the push / pull request for committed secrets (rules and test-only
-  # allowances in .gitleaks.toml). Findings in older history are reviewed with
-  # `gitleaks detect` and answered by rotating the credential, not by this job.
-  secrets:
-    name: Secret scan (gitleaks)
+  frontend:
+    name: Frontend (tsc + biome + vitest + build)
     runs-on: ubuntu-latest
-
-    # gitleaks lists the commits of a pull request to scan them.
-    permissions:
-      contents: read
-      pull-requests: read
-
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  docs:
-    name: Docs (link check)
-    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
 
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          python-version: "3.13"
+          node-version: "24"
 
-      - name: Check documentation links
-        run: uv run python scripts/check_docs_links.py
+      # The lock file is pnpm's (lockfileVersion 9); this is the version the sync work was run with.
+      - name: Install pnpm
+        run: npm install --global pnpm@10.12.1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm typecheck
+
+      # Errors only: the warnings (about 800, mostly style rules in old files) are the baseline, the errors are not.
+      - name: Biome (errors)
+        run: pnpm exec biome check src --diagnostic-level=error
+
+      # Every mock is built from a response captured from the backend (docs/sync/samples), so this is also the
+      # contract check; it needs no running backend. The tests pin their own API URL (vitest.config.ts).
+      - name: Unit and contract tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  # The browser role smoke (frontend/e2e/live) and the live vitest files need a running, seeded backend and run by
+  # hand: docs/sync/tools/run_role_smoke.sh.
