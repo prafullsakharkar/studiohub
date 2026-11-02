@@ -48,7 +48,7 @@ The old form hid the delivery field when the kind was not "delivery" and, like e
 
 ## 6. Smoke
 
-**7 of 7 pass** (36.3 minutes). One route reload, the self-MFA user's `/dashboard`, blank with `net::ERR_NETWORK_CHANGED` and recovered at the first reload; no sign-in reload was needed. The smoke visits static routes, so it does not open the milestone form: the form's behaviour is proven by the unit and live tests in §4, the smoke shows that nothing else broke.
+**7 of 7 pass** (36.3 minutes). Two route reloads, the artist's `/settings/system/flags` and the self-MFA user's `/dashboard`, each blank with `net::ERR_NETWORK_CHANGED` and recovered at the first reload; no sign-in reload was needed. The smoke visits static routes, so it does not open the milestone form: the form's behaviour is proven by the unit and live tests in §4, the smoke shows that nothing else broke.
 
 ## 7. Questions for the owner
 
