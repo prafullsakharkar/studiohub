@@ -1,5 +1,5 @@
 /**
- * Canonical usePermissions hook (ADR-0033 / docs/access-control/RBAC.md §9).
+ * Canonical usePermissions hook (ADR-0033).
  *
  * Backed by the authenticated user and active context ONLY:
  *   AuthContext (user) + production store (active project/show). There is no
