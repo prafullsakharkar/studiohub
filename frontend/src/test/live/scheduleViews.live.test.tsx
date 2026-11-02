@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { bookingsApi, eventsApi, resourcesApi } from '@/api/scheduling/scheduling';
 import { AuthProvider } from '@/core/auth/AuthProvider';
 import { tokenStorage } from '@/core/auth/tokenStorage';
@@ -37,7 +37,10 @@ const tree = (view: string, date: string) => (
 );
 
 beforeEach(() => localStorage.clear());
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 afterAll(() => tokenStorage.clearTokens());
 
 beforeAll(async () => {
@@ -65,6 +68,13 @@ describe('the server narrows to the window a view asks for', () => {
 
 describe('the views, on real data', () => {
   it('the timeline draws a bar for the booking in the two weeks and none for the one two months away', async () => {
+    // What the page really asks the server: the two weeks, as instants with a zone (the server refuses a bare date-time).
+    const asked: string[] = [];
+    const real = globalThis.fetch;
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
+      asked.push(String(input instanceof Request ? input.url : input));
+      return real(input, init);
+    });
     render(tree('timeline', today));
     const bars = await screen.findByRole('list', { name: `Bookings of Timeline ${uid}` }, T);
     await waitFor(() => expect(within(bars).getAllByRole('link')).toHaveLength(1), T);
@@ -73,6 +83,11 @@ describe('the views, on real data', () => {
     // the filter keeps this resource and drops the others (the seed has some)
     fireEvent.change(screen.getByLabelText('Filter resources'), { target: { value: `TL${uid}` } });
     expect(screen.getAllByRole('list', { name: /^Bookings of / })).toHaveLength(1);
+    const monday = weekOf(today)[0];
+    const expected = windowOf(monday, addDays(monday, 13));
+    const booking = asked.map((u) => new URL(u, 'http://x')).filter((u) => u.pathname.endsWith('/schedules/') && u.searchParams.has('start'));
+    expect(booking.length).toBeGreaterThan(0);
+    expect([booking[0].searchParams.get('start'), booking[0].searchParams.get('end')]).toEqual([expected.start, expected.end]);
   });
 
   it('the week puts the event on its day, and the event two months away is not in it', async () => {
