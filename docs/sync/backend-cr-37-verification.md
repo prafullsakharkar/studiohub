@@ -36,7 +36,7 @@ The server's refusals (for instance the own-membership rule) reach the person as
 | Frontend mutations | **12 of 13 caught** on the panel and the API module (update and remove routes, a missing status, extra fields on a patch, the own-row guards, removal without a confirmation, confirming that removes nothing, an unchanged or untrimmed department, the Remove column for non-managers). The one not caught, "a refusal is swallowed", is **equivalent**: the central error handler already reports it, so the toast is the same; the test counts it and asserts it is said exactly once |
 | Live (real backend, fresh seed) | `memberShow.live` **2 of 2**: bind from the panel and the artist sees only that show; release; **suspend and the artist gets 404 on the project, active again and 200**; a department set and cleared; **Remove with a confirmation, then the artist is gone from the list and gets 404; adding them again restores them**. One live mutation caught (a status change that sends nothing). Two failures on the way were mine: a race (the test used the department field before the table re-rendered it) |
 | `tsc` / build / Biome / dead-file finder | 0 / OK / **0 errors, 801 warnings** (unchanged) / nothing new |
-| Role smoke | see §5 |
+| Role smoke | **7 of 7** on the third run (§5) |
 
 ## 4. Decisions you made, and one I did not
 
@@ -44,7 +44,13 @@ You approved CR-37 as written: the self-protection guard, `POST` unchanged, dele
 
 ## 5. Smoke
 
-See the result appended below.
+**7 of 7 pass** (21.6 minutes), on the third run. The history, in full:
+
+1. **First run: 6 of 7 (40.5 minutes).** The platform administrator's test: `/workspace: the error boundary caught a render error`. `/workspace` is a redirect to the dashboard; the trace shows two of the dashboard's module requests (`DashboardErrorState.tsx`, `DashboardWidget.tsx`) with no response, and `net::ERR_NETWORK_CHANGED` plus request timeouts in the console at that moment: the host's network changed, a lazy module failed to load and the error boundary caught the rejected import. The earlier handling reloaded **blank** pages only, not this form of the same failure. (The second test of that run was the supervisor, whose `/error-logs` recovered by a reload; the other four passed.)
+2. **Fix (`e2e/live/roles.smoke.spec.ts`):** a page that lands on the error boundary is reloaded up to three times as a blank page is, each reload logged with its kind and the last console error. A real render error returns on every load and still fails.
+3. **Second run: 7 of 7**, with five route reloads, each `(blank)` with `ERR_NETWORK_CHANGED` and each recovered on the first reload (`/settings/account/security`, `/platform/admin` twice, `/publishing/files`, `/settings/system/localizations`); no sign-in reload needed.
+
+This smoke visits static routes, so it does not exercise the members panel: CR-37's behaviour is proven by the backend tests, the unit tests and the live test in §3.
 
 ## 6. Frontend CI (branch `sync/ci-frontend`, commit `bfd16e5d`, from `develop`)
 
@@ -52,6 +58,6 @@ A `frontend` job in `.github/workflows/ci.yml`: Node 24, pnpm 10.12.1 (the lock 
 
 ## 7. Questions for the owner
 
-1. **Merge** `sync/cr-37-member-detail` into `develop` and push? And **`sync/ci-frontend`** too? (The CI branch is independent of CR-37; merge order does not matter.)
-2. **Dependabot for `frontend/` (npm)**: the repo already has it for Python packages, GitHub Actions and Docker. Want it? It would open weekly pull requests for the frontend's dependencies.
+1. ~~Merge `sync/cr-37-member-detail` and `sync/ci-frontend` into `develop` and push~~ (done at the owner's request, once green).
+2. ~~Dependabot for `frontend/` (npm)~~ (added on the CI branch at the owner's request: weekly, minor and patch updates grouped).
 3. **What next?** Of the deferred features: applying the chosen theme and locale (the settings exist and change nothing), scheduling week/day/timeline views, the delivery milestone picker, cancelling a leave (needs a backend change), the checksum screen.
