@@ -1,5 +1,6 @@
-# Weekly update PRs for the three things that carry known-vulnerability risk: Python packages (the
-# lock file), the GitHub Actions the workflows use, and the base images in the Dockerfiles.
+# Weekly update PRs for the four things that carry known-vulnerability risk: Python packages (the
+# lock file), the frontend's npm packages (pnpm-lock.yaml), the GitHub Actions the workflows use, and the
+# base images in the Dockerfiles.
 # Security updates are raised as soon as an advisory is published, regardless of this schedule.
 
 version: 2
@@ -12,6 +13,17 @@ updates:
     open-pull-requests-limit: 10
     groups:
       python-minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  # The frontend (React, Vite, vitest, Biome ...): one grouped pull request a week for minor and patch updates, so the
+  # CI `frontend` job (typecheck, Biome, tests, build) judges each batch; a major update is its own pull request.
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      frontend-minor-and-patch:
         update-types: ["minor", "patch"]
 
   - package-ecosystem: "github-actions"
