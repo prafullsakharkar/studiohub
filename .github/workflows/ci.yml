@@ -113,3 +113,42 @@ jobs:
 
   # The browser role smoke (frontend/e2e/live) and the live vitest files need a running, seeded backend and run by
   # hand: docs/sync/tools/run_role_smoke.sh.
+
+  # Scans the commits of the push / pull request for committed secrets (rules and test-only
+  # allowances in .gitleaks.toml). Findings in older history are reviewed with
+  # `gitleaks detect` and answered by rotating the credential, not by this job.
+  secrets:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+
+    # gitleaks lists the commits of a pull request to scan them.
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docs:
+    name: Docs (link check)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
+        with:
+          python-version: "3.13"
+
+      - name: Check documentation links
+        run: uv run python scripts/check_docs_links.py
