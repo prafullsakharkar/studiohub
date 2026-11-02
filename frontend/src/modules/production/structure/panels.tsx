@@ -3,9 +3,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type React from 'react';
 import { useState } from 'react';
 import { z } from 'zod';
-import { projectScopedApi, showsApi } from '@/api/production/structure';
-import type { ProjectMember } from '@/api/production/structure';
+import { MEMBER_STATUSES, projectScopedApi, showsApi } from '@/api/production/structure';
+import type { MemberStatus, ProjectMember, ProjectMemberPatch } from '@/api/production/structure';
+import { ConfirmDialog } from '@/components/system/ConfirmDialog';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
+import { useCurrentUser } from '@/core/auth/useCurrentUser';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { Field, FormBanner, Table, formatDate, inputClass } from '@/modules/identity/components/ui';
@@ -64,6 +66,8 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
   const shows = useQuery({ queryKey: key(projectId, 'shows'), queryFn: ({ signal }) => fetchAllRows(showsApi.list, { project: projectId }, { signal }) });
   const showList = shows.data ?? [];
   const [changing, setChanging] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<ProjectMember | null>(null);
+  const { user } = useCurrentUser();
   const {
     register,
     submit,
@@ -83,18 +87,30 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
     notify.success(`${values.email} is on the project.`);
   });
 
-  const changeShow = async (member: ProjectMember, show: string) => {
+  /** One change to an existing member (CR-37): only what is sent changes; the server says why when it refuses. */
+  const change = async (member: ProjectMember, patch: ProjectMemberPatch, done: string) => {
     setChanging(member.id);
     try {
-      await projectScopedApi.setMemberShow(projectId, member, show === WHOLE_PROJECT ? null : show);
-      await queryClient.invalidateQueries({ queryKey: key(projectId, 'members') });
-      notify.success(show === WHOLE_PROJECT ? `${member.name} is back on the whole project.` : `${member.name} is bound to that show.`);
+      await projectScopedApi.updateMember(projectId, member.id, patch);
+      notify.success(done);
     } catch (error) {
       notify.fromError(error);
     } finally {
+      await queryClient.invalidateQueries({ queryKey: key(projectId, 'members') });
       setChanging(null);
     }
   };
+  const changeShow = (member: ProjectMember, show: string) =>
+    change(member, { show: show === WHOLE_PROJECT ? null : show }, show === WHOLE_PROJECT ? `${member.name} is back on the whole project.` : `${member.name} is bound to that show.`);
+  const changeStatus = (member: ProjectMember, status: MemberStatus) => change(member, { status }, `${member.name} is now ${MEMBER_STATUSES.find((s) => s.value === status)?.label.toLowerCase()}.`);
+  const changeDepartment = (member: ProjectMember, department: string) =>
+    change(member, { department }, department ? `${member.name} is limited to ${department}.` : `${member.name} is no longer limited to a department.`);
+  const remove = async (member: ProjectMember) => {
+    await projectScopedApi.removeMember(projectId, member.id);
+    await queryClient.invalidateQueries({ queryKey: key(projectId, 'members') });
+    notify.success(`${member.name} was removed from the project.`);
+  };
+  const isMe = (member: ProjectMember) => Boolean(user) && member.user_id === user?.id;
 
   return (
     <div className="space-y-4">
@@ -141,7 +157,7 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
         isEmpty={(members.data?.results ?? []).length === 0}
         empty={{ title: 'No members yet', description: 'Only members can see the project.' }}
       >
-        <Table label="Project members" columns={['Name', 'Email', 'Role', 'Show', 'Status', 'Added']}>
+        <Table label="Project members" columns={canAdd ? ['Name', 'Email', 'Role', 'Show', 'Department', 'Status', 'Added', ''] : ['Name', 'Email', 'Role', 'Show', 'Department', 'Status', 'Added']}>
           {(members.data?.results ?? []).map((m) => (
             <tr key={m.id}>
               <td className="px-4 py-2 text-slate-200">{m.name}</td>
@@ -167,14 +183,67 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
                   (m.show_code || 'Whole project')
                 )}
               </td>
+              <td className="px-4 py-2 text-slate-300">
+                {canAdd ? (
+                  <input
+                    key={`${m.id}:${m.department}`}
+                    aria-label={`Department for ${m.name}`}
+                    className={inputClass(false)}
+                    defaultValue={m.department}
+                    placeholder="Whole project"
+                    disabled={changing === m.id}
+                    onBlur={(event) => {
+                      const next = event.target.value.trim();
+                      if (next !== m.department) void changeDepartment(m, next);
+                    }}
+                  />
+                ) : (
+                  m.department || 'Whole project'
+                )}
+              </td>
               <td className="px-4 py-2">
-                <Badge variant={m.status === 'active' ? 'success' : 'neutral'}>{m.status}</Badge>
+                {canAdd ? (
+                  <select
+                    aria-label={`Status for ${m.name}`}
+                    className={inputClass(false)}
+                    disabled={changing === m.id || isMe(m)}
+                    title={isMe(m) ? 'You cannot take your own membership off the project.' : undefined}
+                    value={m.status}
+                    onChange={(event) => void changeStatus(m, event.target.value as MemberStatus)}
+                  >
+                    {MEMBER_STATUSES.map((s) => (
+                      <option key={s.value} value={s.value}>
+                        {s.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <Badge variant={m.status === 'active' ? 'success' : 'neutral'}>{m.status}</Badge>
+                )}
               </td>
               <td className="px-4 py-2 text-slate-400">{formatDate(m.created_at)}</td>
+              {canAdd && (
+                <td className="px-4 py-2 text-right">
+                  {!isMe(m) && (
+                    <Button type="button" size="sm" variant="ghost" aria-label={`Remove ${m.name}`} onClick={() => setRemoving(m)}>
+                      Remove
+                    </Button>
+                  )}
+                </td>
+              )}
             </tr>
           ))}
         </Table>
       </QueryBoundary>
+      <ConfirmDialog
+        isOpen={removing !== null}
+        title="Remove from the project?"
+        message={removing ? `${removing.name} will lose access to the project at once. What they were assigned stays as it is, and adding them again restores them.` : ''}
+        confirmLabel="Remove"
+        destructive
+        onConfirm={() => (removing ? remove(removing) : undefined)}
+        onClose={() => setRemoving(null)}
+      />
     </div>
   );
 };

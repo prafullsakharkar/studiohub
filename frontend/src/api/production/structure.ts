@@ -221,6 +221,27 @@ export interface ProjectMember {
   updated_at: string;
 }
 
+/** What a member can be set to (the server's `status` values). */
+export const MEMBER_STATUSES = [
+  { value: 'active', label: 'Active' },
+  { value: 'on_leave', label: 'On leave' },
+  { value: 'suspended', label: 'Suspended' },
+  { value: 'terminated', label: 'Terminated' },
+] as const;
+export type MemberStatus = (typeof MEMBER_STATUSES)[number]['value'];
+
+/** CR-37: every field optional, only what is sent changes. `show` null releases to the whole project. */
+export interface ProjectMemberPatch {
+  role?: string;
+  roles?: string[];
+  role_id?: string;
+  status?: MemberStatus;
+  show?: string | null;
+  /** The text a task's department is matched against (case-insensitive); '' clears. */
+  department?: string;
+  department_id?: string;
+}
+
 export const NOTE_CATEGORIES = ['Director Feedback', 'Supervisor Note', 'Client Note', 'Pipeline Notice', 'Turnover Requirement', 'General'] as const;
 export interface ProjectNoteInput {
   subject: string;
@@ -330,18 +351,12 @@ export const projectScopedApi = {
   summary: (projectId: string, signal?: AbortSignal) => apiClient.get<{ counts: ProjectCounts; project: Project; [k: string]: unknown }>(`${scoped(projectId)}/summary/`, { signal }),
   members: (projectId: string, signal?: AbortSignal) => apiClient.get<{ count: number; results: ProjectMember[] }>(`${scoped(projectId)}/members/`, { signal }),
   /** 201 when new, 200 when already a member, 404 "User not found." for an unknown e-mail. */
-  /**
-   * `show` (CR-36): omitted leaves a member's binding as it is, `null` releases them to the whole project, an id binds
-   * them to that show. Adding someone who is already a member updates them (there is no update or remove route).
-   */
-  addMember: (projectId: string, input: { user_id?: string; email?: string; role: string; roles?: string[]; status?: string; scope?: string; show?: string | null }) => apiClient.post<ProjectMember>(`${scoped(projectId)}/members/`, input),
-  /**
-   * Move a member to a show (`null`: the whole project). The only way is to add them again, and an add also writes
-   * `status` (default "active"), `scope` (default "PROJECT") and replaces `roles` with the one `role`; so the member's
-   * own values are sent back, or a suspended member would be reactivated and a multi-role member would lose roles.
-   */
-  setMemberShow: (projectId: string, member: ProjectMember, show: string | null) =>
-    projectScopedApi.addMember(projectId, { user_id: member.user_id, role: member.role, roles: member.roles, status: member.status, scope: member.scope, show }),
+  /** Add someone (or add them again: an existing member is updated with the add's defaults, so edit with `updateMember`). `show` (CR-36): omitted keeps, null releases, an id binds. */
+  addMember: (projectId: string, input: { user_id?: string; email?: string; role: string; show?: string | null }) => apiClient.post<ProjectMember>(`${scoped(projectId)}/members/`, input),
+  /** CR-37: change what is sent of a member that is already on the project (`memberId` is the row's `id`). */
+  updateMember: (projectId: string, memberId: string, patch: ProjectMemberPatch) => apiClient.patch<ProjectMember>(`${scoped(projectId)}/members/${memberId}/`, patch),
+  /** CR-37: take a member off the project (a soft delete; adding them again restores them). */
+  removeMember: (projectId: string, memberId: string) => apiClient.delete<void>(`${scoped(projectId)}/members/${memberId}/`),
   notes: (projectId: string, signal?: AbortSignal) => apiClient.get<Page<ProjectNote>>(`${scoped(projectId)}/notes/`, { signal }),
   /** The list route only searches (subject, body, entity code and name): narrow with `search`, then match `entity_id`. */
   notesPage: (projectId: string) => listFetcher<ProjectNote>(`${scoped(projectId)}/notes/`),
