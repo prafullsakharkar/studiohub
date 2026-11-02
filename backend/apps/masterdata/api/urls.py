@@ -14,6 +14,7 @@ from apps.masterdata.api.viewsets.directory import (
     OfficeViewSet,
     PersonViewSet,
     PositionViewSet,
+    TeamMembershipViewSet,
     TeamViewSet,
 )
 from apps.masterdata.api.viewsets.lookup import (
@@ -40,6 +41,7 @@ app_name = "masterdata"
 directory_router = DefaultRouter()
 directory_router.register(r"departments", DepartmentViewSet, basename="department")
 directory_router.register(r"teams", TeamViewSet, basename="team")
+directory_router.register(r"team-memberships", TeamMembershipViewSet, basename="team-membership")
 directory_router.register(r"offices", OfficeViewSet, basename="office")
 directory_router.register(r"positions", PositionViewSet, basename="position")
 directory_router.register(r"people", PersonViewSet, basename="person")

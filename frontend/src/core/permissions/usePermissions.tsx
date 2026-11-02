@@ -36,12 +36,10 @@ export function usePermissions() {
   const auth = useContext(AuthContext);
   const user = auth?.user ?? null;
   const activeProjectId = useProductionStore((s) => s.activeProjectId);
-  const activeShowId = useProductionStore((s) => s.activeShowId);
 
   return useMemo(() => {
     const withDefaults = (query: CanQuery): CanQuery => ({
       projectId: activeProjectId || undefined,
-      showId: activeShowId || undefined,
       ...query,
     });
 
@@ -70,7 +68,6 @@ export function usePermissions() {
         ? { id: user.role, name: user.role }
         : null,
       activeProjectId: activeProjectId || undefined,
-      activeShowId: activeShowId || undefined,
       can,
       hasPermission,
       hasAnyPermission,
@@ -79,7 +76,7 @@ export function usePermissions() {
       hasRole,
       resolvePermissionCode,
     };
-  }, [user, activeProjectId, activeShowId]);
+  }, [user, activeProjectId]);
 }
 
 export type { CanQuery };

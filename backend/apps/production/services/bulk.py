@@ -335,6 +335,20 @@ class BulkOperationService(BusinessService):
     # Bulk update
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _item_fields(item: dict[str, Any]) -> dict[str, Any]:
+        """
+        The fields an update item carries: written beside the id (``{"id": X, "status": "Approved"}``) or wrapped in a
+        ``data`` object (``{"id": X, "data": {"status": "Approved"}}``, the shape the frontend contract documents).
+        When both are given the wrapped fields win. A ``data`` that is not an object is not a wrapper: it is dropped
+        like any field the entity does not have.
+        """
+        fields = {k: v for k, v in item.items() if k != "id"}
+        nested = fields.pop("data", None)
+        if isinstance(nested, dict):
+            fields.update(nested)
+        return fields
+
     @classmethod
     def bulk_update(cls, items, *, validate, update=None, user=None, organization=None):
         """
@@ -366,8 +380,11 @@ class BulkOperationService(BusinessService):
                     {"index": index, "status": cls.NOT_FOUND, "error": f"{cls.model.__name__} not found."}
                 )
                 continue
-            data = {k: v for k, v in item.items() if k != "id"}
+            data = cls._item_fields(item)
             validated, errors = validate(instance, data)
+            if errors is None and not validated:
+                # Nothing the entity can change (a misspelled field, an empty `data`): saying "updated" would be false.
+                errors = {"non_field_errors": ["The item has no field that can be updated."]}
             if errors is not None:
                 results.append({"index": index, "status": cls.INVALID, "error": errors})
                 continue

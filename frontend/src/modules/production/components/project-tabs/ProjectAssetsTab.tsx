@@ -3,7 +3,7 @@ import { AssetBulkManager } from '@/modules/assets';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
 import { useAssetsListConfig } from '@/modules/production/work/assets';
 import { BulkAddButton } from '@/modules/production/work/BulkAddButton';
-import type { Project } from '@/types/production';
+import type { Project } from '@/api/production/structure';
 
 interface ProjectAssetsTabProps {
   project: Project;

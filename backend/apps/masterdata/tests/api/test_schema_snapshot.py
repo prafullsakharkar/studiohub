@@ -26,6 +26,7 @@ PREFIXES = (
         for name in (
             "departments",
             "teams",
+            "team-memberships",
             "offices",
             "positions",
             "people",

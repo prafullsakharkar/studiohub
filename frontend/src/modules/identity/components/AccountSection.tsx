@@ -8,6 +8,7 @@ import { rolesApi, roleKeys } from '@/api/identity/rbac';
 import type { Role, RoleUserAssignment } from '@/api/identity/rbac';
 import { sessionKeys, sessionsApi } from '@/api/identity/account';
 import { mfaApi } from '@/api/identity/mfa';
+import { peopleApi } from '@/api/masterdata/directory';
 import { USER_ACTIONS, personLinkApi, userKeys, usersApi } from '@/api/identity/users';
 import type { UserAction } from '@/api/identity/users';
 import { ConfirmDialog } from '@/components/system/ConfirmDialog';
@@ -15,7 +16,6 @@ import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { useAuth } from '@/modules/auth';
-import { PEOPLE_QUERY_KEYS } from '@/modules/people/hooks/usePeopleData';
 import { fetchAllRows } from '@/shared/data/listing';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { Badge } from '@/shared/components/Badge';
@@ -317,7 +317,7 @@ const Linked: React.FC<{ personId: string; userId: string; onChanged: () => Prom
   const SELF_LOCKED = new Set<UserAction>(['deactivate', 'suspend', 'archive']);
 
   const refresh = async () => {
-    await Promise.all([queryClient.invalidateQueries({ queryKey: userKeys.all }), queryClient.invalidateQueries({ queryKey: PEOPLE_QUERY_KEYS.all })]);
+    await Promise.all([queryClient.invalidateQueries({ queryKey: userKeys.all }), queryClient.invalidateQueries({ queryKey: peopleApi.keys.all })]);
   };
 
   return (
@@ -404,7 +404,7 @@ const Linked: React.FC<{ personId: string; userId: string; onChanged: () => Prom
 export const AccountSection: React.FC<AccountSectionProps> = ({ personId, personName, personEmail, userId }) => {
   const queryClient = useQueryClient();
   const onChanged = async () => {
-    await Promise.all([queryClient.invalidateQueries({ queryKey: PEOPLE_QUERY_KEYS.all }), queryClient.invalidateQueries({ queryKey: userKeys.all })]);
+    await Promise.all([queryClient.invalidateQueries({ queryKey: peopleApi.keys.all }), queryClient.invalidateQueries({ queryKey: userKeys.all })]);
   };
 
   return (

@@ -2,7 +2,7 @@ import type React from 'react';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
 import { useFilesListConfig } from '@/modules/publishing/files';
 import { usePublishListConfig } from '@/modules/publishing/jobs';
-import type { Project } from '@/types/production';
+import type { Project } from '@/api/production/structure';
 
 interface ProjectPublishingTabProps {
   project: Project;

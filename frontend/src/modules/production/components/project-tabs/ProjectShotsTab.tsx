@@ -2,7 +2,7 @@ import type React from 'react';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
 import { useShotsListConfig } from '@/modules/production/work/shots';
 import { ShotBulkAdd } from '@/modules/shots/components/ShotBulkAdd';
-import type { Project } from '@/types/production';
+import type { Project } from '@/api/production/structure';
 
 interface ProjectShotsTabProps {
   project: Project;

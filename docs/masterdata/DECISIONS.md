@@ -492,3 +492,12 @@ Values of `search`, `email`, `phone`, `contact_name`, `date_of_birth`, `national
 - **The legacy permission codes `platform.master_data.configure` / `create` no longer exist** in the permission catalog or in any role. A UI that gates buttons on them will hide them for everyone (you said the frontend already switched to the new codes).
 - Error responses are now documented in the OpenAPI schema; regenerate the generated client.
 - `Person.__str__` no longer carries the name (affects only server-side text such as admin and exception messages; no API field changed).
+
+## CR-32 decisions (2026-10-31, owner: "multiple team can have same person", approved)
+
+- **D12:** a person may belong to several teams, through a `TeamMembership` link (CONTRACTS §5.6). Chosen over a many-to-many on `Person` because the link is soft-deletable and audited like every other directory row.
+- **Plain link:** no role or join date. A role in the team can be added later with one migration.
+- **Teams of any department:** the DOM-MD-PER-06 rule (team and department agree) applies to `Person.team`, the primary team, only.
+- **`Person.team` stays** as the primary team, so no existing client breaks (`GET /people/?team=`, `team_name`). Setting it creates the membership; nothing removes a membership except `DELETE team-memberships/{id}/` or deleting the person.
+- **Frontend-facing changes:** a new resource `team-memberships/`; no existing field or route changed. `GET /people/?team=` still means the primary team.
+

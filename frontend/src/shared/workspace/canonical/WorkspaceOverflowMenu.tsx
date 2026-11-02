@@ -10,6 +10,11 @@ export interface WorkspaceOverflowMenuProps {
   align?: 'left' | 'right';
   className?: string;
   size?: 'xs' | 'sm' | 'md';
+  /**
+   * Called instead of `action.onClick`, so the owner can ask for the action's `confirm` first (the action bar does).
+   * Without it the action runs at once, whatever its `confirm`.
+   */
+  onSelect?: (action: WorkspaceAction, event: React.MouseEvent) => void;
 }
 
 export const WorkspaceOverflowMenu: React.FC<WorkspaceOverflowMenuProps> = ({
@@ -19,6 +24,7 @@ export const WorkspaceOverflowMenu: React.FC<WorkspaceOverflowMenuProps> = ({
   align = 'right',
   className = '',
   size = 'sm',
+  onSelect,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -43,7 +49,8 @@ export const WorkspaceOverflowMenu: React.FC<WorkspaceOverflowMenuProps> = ({
   const handleActionClick = (action: WorkspaceAction, e: React.MouseEvent) => {
     if (action.disabled || action.loading) return;
     setIsOpen(false);
-    action.onClick(e);
+    if (onSelect) onSelect(action, e);
+    else action.onClick(e);
   };
 
   return (

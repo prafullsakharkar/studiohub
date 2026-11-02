@@ -3,13 +3,10 @@ import { persist } from 'zustand/middleware';
 
 export interface ProductionState {
   activeProjectId: string | null;
-  activeShowId: string | null;
   recentProjectIds: string[];
   favoriteProjectIds: string[];
   activeSubTab: string;
   setActiveProject: (projectId: string | null) => void;
-  setActiveShow: (showId: string | null) => void;
-  clearShow: () => void;
   setActiveSubTab: (tabId: string) => void;
   addRecentProject: (projectId: string) => void;
   toggleFavoriteProject: (projectId: string) => void;
@@ -20,14 +17,13 @@ export const useProductionStore = create<ProductionState>()(
     (set, get) => ({
       // REST-only: start empty so no stale fixture id is treated as active.
       activeProjectId: null,
-      activeShowId: null,
       recentProjectIds: [],
       favoriteProjectIds: [],
       activeSubTab: 'overview',
 
       setActiveProject: (projectId: string | null) => {
         if (!projectId) {
-          set({ activeProjectId: null, activeShowId: null });
+          set({ activeProjectId: null });
           return;
         }
         const state = get();
@@ -37,17 +33,8 @@ export const useProductionStore = create<ProductionState>()(
         const updatedRecent = [projectId, ...recents.filter((id) => id !== projectId)].slice(0, 8);
         set({
           activeProjectId: projectId,
-          activeShowId: null,
           recentProjectIds: updatedRecent,
         });
-      },
-
-      setActiveShow: (showId: string | null) => {
-        set({ activeShowId: showId });
-      },
-
-      clearShow: () => {
-        set({ activeShowId: null });
       },
 
       setActiveSubTab: (tabId: string) => {
@@ -71,6 +58,13 @@ export const useProductionStore = create<ProductionState>()(
     }),
     {
       name: 'studiohub_production_context_v2',
+      // v1 dropped `activeShowId`: it only ever held a made-up `show-<project>-main`, which a real show-bound
+      // membership never matches. Browsers that stored it would otherwise keep it in the state for good.
+      version: 1,
+      migrate: (persisted) => {
+        const { activeShowId: _dropped, ...kept } = (persisted ?? {}) as Record<string, unknown>;
+        return kept as unknown as ProductionState;
+      },
     }
   )
 );

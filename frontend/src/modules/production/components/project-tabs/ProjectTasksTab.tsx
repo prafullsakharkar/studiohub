@@ -6,7 +6,7 @@ import { TaskBoard } from '@/modules/production/work/TaskBoard';
 import { useTasksListConfig } from '@/modules/production/work/tasks';
 import { TaskBulkManager } from '@/modules/tasks';
 import { Button } from '@/shared/components/Button';
-import type { Project } from '@/types/production';
+import type { Project } from '@/api/production/structure';
 
 interface ProjectTasksTabProps {
   project: Project;

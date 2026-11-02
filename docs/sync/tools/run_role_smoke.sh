@@ -2,7 +2,7 @@
 # Starts the throwaway factory-seeded backend (live_backend.py), runs the Playwright role smoke tests (or, with
 # --vitest, the live vitest files) against it, and stops the backend. Extra arguments go to the runner.
 #
-#   docs/sync/tools/run_role_smoke.sh                    # all six roles and the phone-width pass, about 35 minutes
+#   docs/sync/tools/run_role_smoke.sh                    # all six roles and the phone-width pass, 35 to 50 minutes
 #   docs/sync/tools/run_role_smoke.sh --grep "no role"   # one role
 #   docs/sync/tools/run_role_smoke.sh --vitest src/test/live/settings.live.test.tsx   # a live vitest file, fresh seed
 #
@@ -14,7 +14,7 @@ mkdir -p "$OUT"
 rm -f "$OUT/live.json" "$OUT/live.json.totp.json" "$OUT/live.stop"
 
 cd "$ROOT/backend" || exit 1
-SYNC_LIVE_MINUTES="${SYNC_LIVE_MINUTES:-45}" SYNC_LIVE_INFO="$OUT/live.json" SYNC_LIVE_STOP="$OUT/live.stop" \
+SYNC_LIVE_MINUTES="${SYNC_LIVE_MINUTES:-90}" SYNC_LIVE_INFO="$OUT/live.json" SYNC_LIVE_STOP="$OUT/live.stop" \
   nohup uv run pytest -c pyproject.toml --rootdir . -p no:cacheprovider --no-cov -q -s ../docs/sync/tools/live_backend.py \
   > "$OUT/backend.log" 2>&1 &
 

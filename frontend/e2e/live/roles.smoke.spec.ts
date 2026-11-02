@@ -37,23 +37,75 @@ const ROLES: Array<{ role: RoleKey; label: string; shown: string[]; refused: str
 for (const { role, label, shown, refused: mustRefuse } of ROLES) {
   test(`${label}: every route renders or is refused, with no server error and no dropped session`, async ({ page }, testInfo) => {
     const seen = watch(page);
+    const guardLines: string[] = [];
+    page.on('console', (message) => {
+      const text = message.text();
+      if (text.includes('route_guard') || text.includes('[permissions]')) guardLines.push(text.replace(/^%c/, '').slice(0, 160));
+    });
+    const pending = new Map<string, string>();
+    const consoleErrors: string[] = [];
+    page.on('request', (request) => pending.set(request.url() + request.method(), request.url()));
+    page.on('requestfinished', (request) => pending.delete(request.url() + request.method()));
+    page.on('requestfailed', (request) => pending.delete(request.url() + request.method()));
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text().slice(0, 200));
+    });
     await signIn(page, role);
     const outcome: Record<string, string> = {};
     const problems: string[] = [];
     const deniedCalls: Record<string, string[]> = {};
+    const premount: string[] = [];
+    const evidence: Record<string, string> = {};
 
-    for (const route of ROUTES) {
-      const before = { server: seen.serverErrors.length, unauthorized: seen.unauthorized.length, pageErrors: seen.pageErrors.length, forbidden: seen.forbidden.length };
-      await page.goto(route, { waitUntil: 'domcontentloaded' });
+    const reloads: string[] = [];
+    const isBlank = async () => {
+      const path = new URL(page.url()).pathname;
+      if (path === '/forbidden' || path === '/unauthorized') return false;
+      return page.evaluate(() => document.body.innerText.trim().length === 0);
+    };
+    // The guard shows a spinner until the signed-in user is known, then redirects or renders; a lazy page shows
+    // "Loading…" while its chunk downloads. Read the outcome only when neither is on screen, and only once the app has
+    // put something in #root: the dev server serves modules one after another, so the page can be quiet (network idle)
+    // before React has mounted, and the spinner wait passes on an empty body.
+    const settle = async (route: string) => {
       await page.waitForLoadState('networkidle', { timeout: 8_000 }).catch(() => undefined);
-      // The guard shows a spinner until the signed-in user is known, then redirects or renders; a lazy page shows
-      // "Loading…" while its chunk downloads. Read the outcome only when neither is on screen.
       await page.waitForFunction(() => !/Checking route permissions|^Loading…$/m.test(document.body.innerText), undefined, { timeout: 20_000 }).catch(() => undefined);
       await page.waitForTimeout(300);
+      const mounted = await page.evaluate(() => (document.getElementById('root')?.innerText ?? '').trim().length > 0);
+      if (!mounted) {
+        premount.push(route);
+        await page.waitForFunction(() => (document.getElementById('root')?.innerText ?? '').trim().length > 0 && !/Checking route permissions|^Loading…$/m.test(document.body.innerText), undefined, { timeout: 20_000 }).catch(() => undefined);
+        await page.waitForTimeout(300);
+      }
+    };
+
+    for (const route of ROUTES) {
+      const guardBefore = guardLines.length;
+      const before = { server: seen.serverErrors.length, unauthorized: seen.unauthorized.length, pageErrors: seen.pageErrors.length, forbidden: seen.forbidden.length };
+      await page.goto(route, { waitUntil: 'domcontentloaded' });
+      await settle(route);
+      // Chrome aborts a page's in-flight requests when the host's network changes (ERR_NETWORK_CHANGED), and the app
+      // then never mounts. That says nothing about the route, so a blank page is reloaded a few times before it is
+      // judged, and every reload is listed in the log so a flapping network stays visible.
+      for (let attempt = 1; attempt <= 3 && (await isBlank()); attempt++) {
+        reloads.push(`${route} #${attempt}: ${JSON.stringify(consoleErrors.slice(-1))}`);
+        await page.reload({ waitUntil: 'domcontentloaded' });
+        await settle(route);
+      }
       const path = new URL(page.url()).pathname;
       const crashed = await page.getByRole('heading', { name: 'Something went wrong' }).count();
       const refused = path === '/forbidden' || path === '/unauthorized';
-      outcome[route] = refused ? 'refused' : path === route ? 'shown' : `-> ${path}`;
+      const blank = !refused && path === route && (await page.evaluate(() => document.body.innerText.trim().length === 0));
+      outcome[route] = refused ? 'refused' : blank ? 'blank' : path === route ? 'shown' : `-> ${path}`;
+      if (blank) {
+        const waiting = [...pending.values()].map((u) => u.replace(/^https?:\/\/[^/]+/, '')).slice(0, 6);
+        problems.push(`${route}: the page stayed blank (the app did not render) | waiting for ${JSON.stringify(waiting)} | console errors ${JSON.stringify(consoleErrors.slice(-3))}`);
+      }
+      // What the page said when it was read, so a route read as shown can be told apart from one that really rendered.
+      if (path === route) {
+        const text = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').trim().slice(0, 140));
+        evidence[route] = `url=${page.url()} guard=${JSON.stringify(guardLines.slice(guardBefore))} text="${text}"`;
+      }
       if (path === '/login') problems.push(`${route}: the session was lost (back at the login page)`);
       if (crashed) problems.push(`${route}: the error boundary caught a render error`);
       for (const line of seen.serverErrors.slice(before.server)) problems.push(`${route}: ${line}`);
@@ -69,12 +121,14 @@ for (const { role, label, shown, refused: mustRefuse } of ROLES) {
     }
 
     for (const route of shown) if (outcome[route] === undefined || !outcome[route].startsWith('shown')) problems.push(`${route}: expected to be shown, was ${outcome[route]}`);
-    for (const route of mustRefuse) if (outcome[route] !== 'refused') problems.push(`${route}: expected to be refused, was ${outcome[route]}`);
+    for (const route of mustRefuse) if (outcome[route] !== 'refused') problems.push(`${route}: expected to be refused, was ${outcome[route]}${evidence[route] ? ` | ${evidence[route]}` : ''}`);
 
     await testInfo.attach('route outcomes', { body: JSON.stringify(outcome, null, 1), contentType: 'application/json' });
     console.log(`\n[${role}] ${JSON.stringify(outcome)}`);
     console.log(`[${role}:403] ${JSON.stringify(deniedCalls)}`);
     console.log(`[${role}:slow] ${JSON.stringify(seen.slow)}`);
+    console.log(`[${role}:premount] ${JSON.stringify(premount)}`);
+    console.log(`[${role}:reloads] ${JSON.stringify(reloads)}`);
     expect(problems, problems.join('\n')).toEqual([]);
   });
 }

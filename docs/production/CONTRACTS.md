@@ -340,3 +340,19 @@ Frontend change list: handle the new 400 when archiving an asset that shots use 
 
 Frontend change list: none required by this phase. (Earlier phases' lists still apply.)
 
+## Frontend sync follow-up (CR-34)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-51 | `POST` / `PATCH` / `PUT /shots/`, `/assets/` and their `bulk-create` and `bulk-update` items (`assigned_artist`) | Any existing user was accepted as the assigned artist, a member of the project or not. A task's assignee already had to be a member. | **400** `{"assigned_artist": ["Unknown user."]}` unless the user is an active member of the record's project (platform administrators pass, as for tasks). Only a **new** artist is checked: a write that leaves the stored artist alone, or sends them back, still goes through, so a record whose artist has left the project can still be edited; `null` unassigns. |
+
+Frontend change list: none required (the screens already offer project members only).
+
+## Frontend sync follow-up (CR-35)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-52 | `POST` / `PATCH /shots/bulk-update/`, and the assets, episodes and sequences routes (each item) | An item `{"id": X, "data": {...}}` was answered `updated` and **changed nothing** (only fields written beside the id were read). An item with no field the entity could change was also answered `updated`. | The fields are read from beside the id **and** from `data` (the wrapped ones win). An item with nothing to change is `invalid`: `{"non_field_errors": ["The item has no field that can be updated."]}`. |
+
+Frontend change list: none required (the typed `bulkUpdate` already sends fields beside the id).
+

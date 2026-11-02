@@ -7,10 +7,36 @@ type Schemas = components['schemas'];
 // masterdata section); the viewsets ignore anything else, so the UI offers nothing else.
 
 // ---------------------------------------------------------------- teams
-export type Team = Schemas['Team'];
+/** `member_count` is the live memberships of the team (CR-33); it is newer than the generated schema snapshot, so it is added here and pinned in `directoryRowKeys.ts`. */
+export type Team = Schemas['Team'] & { readonly member_count: number };
 export type TeamInput = Pick<Team, 'code' | 'name' | 'department'> & Partial<Pick<Team, 'description' | 'lead' | 'focus_discipline' | 'current_project_code' | 'color' | 'capacity'>>;
 export const teamsApi = resourceApi<Team, TeamInput>('teams', '/api/v1/teams/');
 export const TEAM_ORDERING = ['name', 'code', 'created_at'] as const;
+
+// ---------------------------------------------------------------- team memberships (CR-32)
+/**
+ * A person's membership of a team: a person can be in several teams. Hand-written from the captured responses
+ * (`samples/masterdata/_team_memberships_flow.json`); the keys are pinned in `directoryRowKeys.ts`. The names are
+ * read-only conveniences; a membership is added and removed, never edited. `Person.team` is the primary team.
+ */
+export interface TeamMembership {
+  id: string;
+  team: string;
+  team_name: string;
+  person: string;
+  person_name: string;
+  person_status: string;
+  person_department_name: string;
+  person_office_name: string;
+  created_at: string;
+  updated_at: string;
+}
+export interface TeamMembershipInput {
+  team: string;
+  person: string;
+}
+export const teamMembershipsApi = resourceApi<TeamMembership, TeamMembershipInput>('team-memberships', '/api/v1/team-memberships/');
+export const TEAM_MEMBERSHIP_ORDERING = ['created_at'] as const;
 
 // ---------------------------------------------------------------- offices
 export type Office = Schemas['Office'];

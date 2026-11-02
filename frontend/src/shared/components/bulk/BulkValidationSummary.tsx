@@ -8,7 +8,7 @@ import {
   PlusCircle,
   Filter,
 } from 'lucide-react';
-import type { BulkOperationSummary, EntityResolutionState } from '@/types/production';
+import type { BulkOperationSummary, EntityResolutionState } from '@/shared/components/bulk/types';
 
 interface BulkValidationSummaryProps {
   summary: BulkOperationSummary;

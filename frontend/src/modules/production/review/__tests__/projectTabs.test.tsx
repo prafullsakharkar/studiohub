@@ -13,7 +13,7 @@ import { ProjectWorkflowTab } from '@/modules/production/components/project-tabs
 import { mockFetch } from '@/test/fetchMock';
 import { loadSample } from '@/test/samples';
 import type { User } from '@/types/identity';
-import type { Project } from '@/types/production';
+import type { Project } from '@/api/production/structure';
 
 const auth = loadSample('identity/_auth_flow.json');
 const artist = auth.me_artist.body as unknown as User;

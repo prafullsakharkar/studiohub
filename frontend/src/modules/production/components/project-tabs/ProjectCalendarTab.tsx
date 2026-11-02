@@ -1,6 +1,6 @@
 import type React from 'react';
 import { CalendarPage } from '@/modules/scheduling';
-import type { Project } from '@/types/production';
+import type { Project } from '@/api/production/structure';
 
 interface ProjectCalendarTabProps {
   project: Project;

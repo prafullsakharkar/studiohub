@@ -1,14 +1,14 @@
-import { PROJECT_QUERY_KEYS } from '@/modules/production';
 import { sequencesApi } from '@/api/production/structure';
+import { shotBulk } from '@/api/production/bulkRoutes';
+import { shotsApi } from '@/api/production/work';
+import { PROJECT_QUERY_KEYS } from '@/modules/production';
 import { useBulkEntity } from '@/shared/hooks/useBulkEntity';
-import { shotService } from '../services/ShotService';
-import { SHOT_QUERY_KEYS } from './useShots';
 
-/** Thin wrapper over the canonical generic bulk hook — no behavior lives here. */
+/** Thin wrapper over the canonical generic bulk hook: no behavior lives here. */
 export function useBulkShots() {
   return useBulkEntity({
-    service: shotService,
-    queryKeyAll: SHOT_QUERY_KEYS.all,
+    service: shotBulk,
+    queryKeyAll: shotsApi.keys.all,
     projectQueryKeyAll: PROJECT_QUERY_KEYS.all,
     extraQueryKeys: {
       create: [sequencesApi.keys.all],

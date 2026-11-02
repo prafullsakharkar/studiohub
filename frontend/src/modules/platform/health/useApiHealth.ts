@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getApiBaseUrl } from '@/api/repositories/config';
+import { getApiBaseUrl } from '@/api/client/config';
 import { tokenStorage } from '@/core/auth/tokenStorage';
 
 /**

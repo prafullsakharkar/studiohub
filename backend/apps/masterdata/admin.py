@@ -33,6 +33,7 @@ from apps.masterdata.models import (
     Software,
     SoftwareVersion,
     Team,
+    TeamMembership,
     Vendor,
     VendorContact,
     VendorContract,
@@ -106,6 +107,13 @@ class DepartmentAdmin(ReadOnlyAdmin):
 class TeamAdmin(ReadOnlyAdmin):
     list_display = ("name", "code", "department")
     search_fields = ("name", "code")
+
+
+@admin.register(TeamMembership)
+class TeamMembershipAdmin(ReadOnlyAdmin):
+    # The person is identified by id only: the name is personal data.
+    list_display = ("id", "team", "person", "created_at")
+    search_fields = ("team__name", "team__code")
 
 
 @admin.register(Office)

@@ -10,7 +10,8 @@ import { useServerForm } from '@/shared/forms/useServerForm';
 import { fetchAllRows, listFetcher } from '@/shared/data/listing';
 import { Button } from '@/shared/components/Button';
 import { Card, CardBody } from '@/shared/components/Card';
-import { useCreateDepartment } from '../hooks/useDepartmentList';
+import type { Department } from '@/api/masterdata/departments';
+import { useCreateDepartment, useUpdateDepartment } from '../hooks/useDepartmentList';
 
 // Limits mirror the model: code max_length=30, color max_length=20 (apps/masterdata/models/department.py).
 const schema = z.object({
@@ -32,9 +33,11 @@ const inputClass = (invalid: boolean) =>
 
 const peopleFetcher = listFetcher<{ id: string; full_name: string }>('/api/v1/people/');
 
-export const CreateDepartmentPage: React.FC = () => {
+/** The department form: empty to create, or filled from `department` to edit it. */
+export const DepartmentForm: React.FC<{ department?: Department }> = ({ department }) => {
   const navigate = useNavigate();
   const createDepartment = useCreateDepartment();
+  const updateDepartment = useUpdateDepartment(department?.id ?? '');
 
   // Pickers need every row, not the first page of 25.
   const departments = useQuery({
@@ -56,7 +59,9 @@ export const CreateDepartmentPage: React.FC = () => {
     formState: { errors, isSubmitting },
   } = useServerForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', code: '', department_type: 'creative', description: '', parent: '', manager: '', color: '#6366f1', software_stack: '' },
+    defaultValues: department
+      ? { name: department.name, code: department.code, department_type: department.department_type, description: department.description ?? '', parent: department.parent ?? '', manager: department.manager ?? '', color: department.color ?? '', software_stack: (department.software_stack ?? []).join(', ') }
+      : { name: '', code: '', department_type: 'creative', description: '', parent: '', manager: '', color: '#6366f1', software_stack: '' },
   });
 
   const onSubmit = submit(async (values) => {
@@ -70,8 +75,8 @@ export const CreateDepartmentPage: React.FC = () => {
       manager: values.manager || null,
       software_stack: values.software_stack.split(',').map((s) => s.trim()).filter(Boolean),
     };
-    const created = await createDepartment.mutateAsync(input);
-    navigate(`/departments/${created.id}`);
+    const saved = department ? await updateDepartment.mutateAsync(input) : await createDepartment.mutateAsync(input);
+    navigate(`/departments/${saved.id}`);
   });
 
   const field = (name: keyof FormValues) => ({ ...register(name, { onChange: clearServerError }), 'aria-invalid': Boolean(errors[name]) });
@@ -85,7 +90,7 @@ export const CreateDepartmentPage: React.FC = () => {
   return (
     <div className="p-4 sm:p-6 space-y-6 flex-1 min-h-0 animate-in fade-in duration-200">
       <div className="flex items-center gap-3 pb-4 border-b border-slate-800">
-        <Link to="/departments">
+        <Link to={department ? `/departments/${department.id}` : '/departments'}>
           <Button size="xs" variant="outline" leftIcon={<ChevronLeft className="w-3.5 h-3.5" />}>
             Departments
           </Button>
@@ -93,7 +98,7 @@ export const CreateDepartmentPage: React.FC = () => {
         <div>
           <h1 className="text-lg font-bold text-white flex items-center gap-2">
             <Layers className="w-5 h-5 text-indigo-400" />
-            New department
+            {department ? `Edit ${department.name}` : 'New department'}
           </h1>
           <p className="text-xs text-slate-400">A functional division of the studio, its manager and its toolchain.</p>
         </div>
@@ -185,7 +190,7 @@ export const CreateDepartmentPage: React.FC = () => {
                 </Button>
               </Link>
               <Button variant="primary" size="sm" type="submit" isLoading={isSubmitting} leftIcon={<Save className="w-4 h-4" />}>
-                Create department
+                {department ? 'Save changes' : 'Create department'}
               </Button>
             </div>
           </form>
@@ -194,3 +199,5 @@ export const CreateDepartmentPage: React.FC = () => {
     </div>
   );
 };
+
+export const CreateDepartmentPage: React.FC = () => <DepartmentForm />;

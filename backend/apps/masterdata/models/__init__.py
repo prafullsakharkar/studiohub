@@ -26,6 +26,7 @@ from apps.masterdata.models.office import Office
 from apps.masterdata.models.person import Person
 from apps.masterdata.models.position import Position
 from apps.masterdata.models.team import Team
+from apps.masterdata.models.team_membership import TeamMembership
 from apps.masterdata.models.vendor import Vendor
 from apps.masterdata.models.vendor_contact import VendorContact
 from apps.masterdata.models.vendor_contract import VendorContract
@@ -59,6 +60,7 @@ __all__ = [
     "StatusCategory",
     "StatusEntityType",
     "Team",
+    "TeamMembership",
     "Vendor",
     "VendorContact",
     "VendorContract",

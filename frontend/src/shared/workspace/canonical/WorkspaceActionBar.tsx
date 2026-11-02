@@ -114,7 +114,7 @@ export const WorkspaceActionBar: React.FC<WorkspaceActionBarProps> = ({
         })}
 
         {overflowActions.length > 0 && (
-          <WorkspaceOverflowMenu actions={overflowActions} size={size} />
+          <WorkspaceOverflowMenu actions={overflowActions} size={size} onSelect={handleActionClick} />
         )}
       </div>
 

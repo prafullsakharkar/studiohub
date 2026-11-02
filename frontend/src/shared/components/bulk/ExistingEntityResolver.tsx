@@ -9,7 +9,7 @@ import {
   Trash2,
   RotateCcw,
 } from 'lucide-react';
-import type { EntityResolutionItem, EntityResolutionState, ResolutionUserAction } from '@/types/production';
+import type { EntityResolutionItem, EntityResolutionState, ResolutionUserAction } from '@/shared/components/bulk/types';
 import { Badge } from '@/shared/components/Badge';
 
 interface ExistingEntityResolverProps<T = any> {

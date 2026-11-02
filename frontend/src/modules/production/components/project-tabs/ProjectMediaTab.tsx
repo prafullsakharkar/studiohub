@@ -1,7 +1,7 @@
 import type React from 'react';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
 import { useMediaListConfig } from '@/modules/production/review/media';
-import type { Project } from '@/types/production';
+import type { Project } from '@/api/production/structure';
 
 interface ProjectMediaTabProps {
   project: Project;

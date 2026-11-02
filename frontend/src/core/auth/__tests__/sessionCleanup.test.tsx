@@ -3,7 +3,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthProvider } from '@/core/auth/AuthProvider';
 import { tokenStorage } from '@/core/auth/tokenStorage';
 import { useProductionStore } from '@/core/production/useProductionStore';
-import { useWorkspaceStore } from '@/core/workspace/useWorkspaceStore';
 import { mockFetch } from '@/test/fetchMock';
 import { loadSample } from '@/test/samples';
 import { clearUserScopedState } from '../sessionCleanup';
@@ -14,12 +13,12 @@ const PRODUCTION_KEY = 'studiohub_production_context_v2';
 
 /** What a signed-in person leaves behind in this browser. */
 function leaveTraces() {
-  useWorkspaceStore.getState().openTab({ id: 'shot-1', type: 'shot', title: 'SH0010 (secret show)' }, 'SH0010 (secret show)');
+  // The copy the removed workspace-tabs screen kept: a browser that used it still holds it.
+  localStorage.setItem(WORKSPACE_KEY, JSON.stringify({ tabs: [{ id: 'shot-1', type: 'shot', title: 'SH0010 (secret show)' }] }));
   useProductionStore.getState().setActiveProject('project-1');
   useProductionStore.getState().toggleFavoriteProject('project-2');
 }
 const traces = () => ({
-  tabTitles: useWorkspaceStore.getState().tabs.map((t) => t.title),
   stored: localStorage.getItem(WORKSPACE_KEY) ?? '',
   production: useProductionStore.getState(),
   storedProduction: localStorage.getItem(PRODUCTION_KEY) ?? '',
@@ -33,16 +32,14 @@ afterEach(() => {
 });
 
 describe('what a session leaves in the browser', () => {
-  it('is gone after clearUserScopedState: the tabs, their stored copy, and the chosen, recent and favourite projects', () => {
+  it('is gone after clearUserScopedState: the retired tabs copy, and the chosen, recent and favourite projects', () => {
     leaveTraces();
-    expect(traces().tabTitles).toContain('SH0010 (secret show)');
     expect(traces().stored).toContain('secret show');
     expect(traces().production.activeProjectId).toBe('project-1');
 
     clearUserScopedState();
 
     const after = traces();
-    expect(after.tabTitles).toEqual(['Workspace']);
     expect(after.stored).not.toContain('secret show');
     expect(after.production).toMatchObject({ activeProjectId: null, recentProjectIds: [], favoriteProjectIds: [] });
     expect(after.storedProduction).not.toContain('project-1');
@@ -58,8 +55,7 @@ describe('what a session leaves in the browser', () => {
 
     tokenStorage.clearTokens(); // a sign-out, a rejected refresh, a password change, or another tab signing out
 
-    await waitFor(() => expect(traces().tabTitles).toEqual(['Workspace']));
-    expect(traces().stored).not.toContain('secret show');
+    await waitFor(() => expect(traces().stored).not.toContain('secret show'));
     expect(traces().production.activeProjectId).toBeNull();
   });
 });

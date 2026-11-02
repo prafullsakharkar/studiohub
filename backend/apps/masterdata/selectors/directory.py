@@ -22,6 +22,7 @@ from apps.masterdata.models import (
     Person,
     Position,
     Team,
+    TeamMembership,
     Vendor,
     VendorContact,
     VendorContract,
@@ -57,7 +58,20 @@ class TeamSelector(_DirectorySelector):
 
     @classmethod
     def _build(cls, manager) -> QuerySet[Any]:
-        return manager.select_related("department", "lead")
+        # ``member_count`` counts live memberships in the same query (CR-33), as ``contact_count`` does.
+        return manager.select_related("department", "lead").annotate(
+            member_count=Count(
+                "memberships", filter=Q(memberships__is_deleted=False), distinct=True
+            )
+        )
+
+
+class TeamMembershipSelector(_DirectorySelector):
+    model = TeamMembership
+
+    @classmethod
+    def _build(cls, manager) -> QuerySet[Any]:
+        return manager.select_related("team", "person", "person__department", "person__office")
 
 
 class OfficeSelector(_DirectorySelector):

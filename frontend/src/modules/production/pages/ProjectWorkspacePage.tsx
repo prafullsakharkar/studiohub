@@ -9,20 +9,17 @@ import { Button } from '@/shared/components/Button';
 import { useProductionStore } from '@/core/production/useProductionStore';
 
 export const ProjectWorkspacePage: React.FC = () => {
-  const { id, projectId, showId, tab } = useParams<{
+  const { id, projectId, tab } = useParams<{
     id?: string;
     projectId?: string;
-    showId?: string;
     tab?: string;
   }>();
 
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { setActiveProject, setActiveShow } = useProductionStore();
+  const { setActiveProject } = useProductionStore();
 
-  const effectiveParam = projectId || id || showId;
-  const effectiveProjectId = effectiveParam;
-  const routeShowId = showId;
+  const effectiveProjectId = projectId || id;
 
   // Fetch project details
   const { data: project, isLoading } = useProject(effectiveProjectId);
@@ -41,12 +38,10 @@ export const ProjectWorkspacePage: React.FC = () => {
   useEffect(() => {
     if (resolvedProject?.id) {
       setActiveProject(resolvedProject.id);
-      setActiveShow(routeShowId ?? `show-${resolvedProject.id}-main`);
     } else if (effectiveProjectId) {
       setActiveProject(effectiveProjectId);
-      if (routeShowId) setActiveShow(routeShowId);
     }
-  }, [resolvedProject?.id, effectiveProjectId, routeShowId, setActiveProject, setActiveShow]);
+  }, [resolvedProject?.id, effectiveProjectId, setActiveProject]);
 
   const activeTabFromParam = (tab || searchParams.get('tab') || 'overview') as ProjectTabId;
 

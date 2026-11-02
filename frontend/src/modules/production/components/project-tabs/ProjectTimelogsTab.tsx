@@ -1,7 +1,7 @@
 import type React from 'react';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
 import { useTimelogsListConfig } from '@/modules/production/work/timelogs';
-import type { Project } from '@/types/production';
+import type { Project } from '@/api/production/structure';
 
 interface ProjectTimelogsTabProps {
   project: Project;

@@ -21,6 +21,7 @@ Phase 0 discovery scripts. They read the code; none of them changes backend or f
 |---|---|---|
 | `test_capture_auth_flows.py` | `samples/identity/_auth_mfa_flow.json`, `_auth_password_reset_flow.json` | real MFA login (TOTP, recovery code, wrong/garbage challenge) and password reset; same pytest-test-database rules as below |
 | `test_capture_departments_flow.py` | `samples/masterdata/_departments_flow.json` | the departments list/create flow: search, ordering, filter, paging, duplicate errors, 403 for a non-manager |
+| `test_capture_team_memberships.py` | `samples/masterdata/_team_memberships_flow.json` | CR-32: a person in two teams, the duplicate and unknown-person errors, 403 for a non-manager, PATCH 405, the team delete refused while it has members, remove and add again, the restore refused, and the primary team keeping a membership |
 | `test_capture_restricted_flow.py` | `samples/identity/_restricted_sessions_flow.json` | restricted sessions (MFA enrollment owed, password change owed) captured through the **real JWT auth chain**; `force_authenticate` skips this check |
 | `live_backend.py` | a running Django for `pnpm test:live` | pytest-django `live_server` on the pytest test database; seeds users that each exercise a backend rule; see `phase-1-verification.md` §6 |
 | `run_role_smoke.sh` | the Playwright role smoke (`frontend/e2e/live`) | starts `live_backend.py` (`SYNC_LIVE_MINUTES`, default 45, sets how long it serves), waits for the MFA seed step, runs the specs against it, stops it; state is kept in `frontend/test-results/live` |

@@ -9,7 +9,7 @@ import {
   Sparkles,
   ArrowRight,
 } from 'lucide-react';
-import type { BulkOperationResponse } from '@/types/production';
+import type { BulkOperationResponse } from '@/shared/components/bulk/types';
 import { Button } from '@/shared/components/Button';
 
 interface BulkOperationResultProps<T = any> {

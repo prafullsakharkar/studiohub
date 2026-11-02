@@ -1,5 +1,5 @@
 import { ApiError } from '@/api/errors/ApiError';
-import { getApiBaseUrl } from '@/api/repositories/config';
+import { getApiBaseUrl } from '@/api/client/config';
 import { logger } from '@/core/logging/logger';
 import { tokenStorage } from './tokenStorage';
 import { withRefreshLock } from './refreshLock';
