@@ -33,7 +33,7 @@ There is no update route, so a change is an add, and the server's add has side e
 | Frontend mutations | **9 caught** on the panel and the payload (drops status / roles / scope, release sends no show, the form always sends a show, plain text never names the show, selects shown to non-managers, picker with no shows, row select ignoring the binding), re-checked after a refactor |
 | Live (real backend, fresh seed) | `memberShow.live` **1 of 1**: bind the artist to one of two shows from the real panel; the artist, signed in separately, sees only that show's shot; release from the row picker; status and roles unchanged; the artist sees all three shots. One live mutation caught (the panel never sends the show) |
 | `tsc` / build / Biome / dead-file finder | 0 / OK / 0 errors, **801** warnings (the new files add none) / nothing new |
-| Role smoke | see §6 |
+| Role smoke | **7 of 7** on the second run (§6) |
 
 Fixture mistakes I made on the way, for the record: the live fixture first created shots with `show` instead of `show_id` (the shot input's name), so nothing was in a show and the bound artist rightly saw nothing; the first token read used the wrong response field.
 
@@ -43,10 +43,16 @@ Adding someone who is already a member writes `status` (the serializer default i
 
 ## 6. Smoke
 
-See the result appended below.
+**7 of 7 pass** (31.7 minutes), on the second run.
+
+1. **First run: 6 of 7 (50.6 minutes).** The seeded artist's test never left sign-in: `#login-email-input` did not appear for the whole 10-minute test timeout. The failed test's trace shows three module requests of the login page (`schedulingFlow.ts`, `pickers.tsx`, `WorkspaceHeader.tsx`) with no response, and three `net::ERR_NETWORK_CHANGED` console errors: the host's network changed while the page loaded, the app never mounted, and `signIn` had no recovery. The same cause as the blank pages found in Phase 23, in a step that handling did not cover. The six other tests passed (one recovered by a route reload, `/assets`).
+2. **Fix (`e2e/live/fixtures.ts`):** `signIn` loads the login page again, up to three times, when the email field does not appear within 30 s, logs `[role:signin-reload]`, and then fails with a clear message. No route check was relaxed.
+3. **Second run: 7 of 7.** Four route reloads, each `ERR_NETWORK_CHANGED` and each recovered at the first reload (producer `/platform/health`, lead `/dashboard`, no-role `/media` and `/settings/system/values`); no sign-in reload was needed. The host's network is changing under the browser in most full runs, which is why the reload log is kept.
+
+Nothing in this smoke touches the members panel (it visits static routes), so the CR-36 behaviour is proven by the unit tests, the backend tests and the live test in §4, not by this run.
 
 ## 7. Questions for the owner
 
-1. **Merge** `sync/backend-cr-36` (which includes Phase 24) into `develop` and push? It changes the backend (three source files, no migration).
+1. ~~Merge into `develop` and push~~ (done at the owner's request, once green).
 2. **The re-add behaviour in §5:** leave as is, or a change request?
 3. **Department narrowing** (the same missing write path) and **removing a member** (no route) were left out of CR-36 as proposed. Want either?
