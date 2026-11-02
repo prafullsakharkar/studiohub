@@ -47,6 +47,7 @@ from apps.production.api.serializers.media.list import MediaListSerializer
 from apps.production.api.serializers.membership import (
     ProjectMembershipCreateSerializer,
     ProjectMembershipSerializer,
+    ProjectMembershipUpdateSerializer,
 )
 from apps.production.api.serializers.project.detail import ProjectDetailSerializer
 from apps.production.api.serializers.project_note import (
@@ -80,6 +81,7 @@ from apps.production.constants.permissions import (
 )
 from apps.production.models import (
     Project,
+    ProjectMembership,
     Task,
     Workflow,
 )
@@ -325,6 +327,65 @@ class ProjectMembersView(ProjectScopedAPIView):
             data,
             status=http_status.HTTP_201_CREATED if created else http_status.HTTP_200_OK,
         )
+
+
+class ProjectMemberDetailView(ProjectScopedAPIView):
+    """
+    ``PATCH`` / ``DELETE`` a member that is already on the project (CR-37). Managing members is as privileged as
+    adding them. Nobody may take their OWN membership off the project through here (a creator could lock themselves
+    out); a member bound to a show or a department never reaches this route (full project access is required).
+    """
+
+    permission_map = {"patch": (ProjectPermissions.UPDATE,), "delete": (ProjectPermissions.UPDATE,)}
+
+    def _membership(self, member_id):
+        membership = (
+            ProjectMembership.objects.filter(project=self.project, pk=member_id)
+            .select_related("user", "project", "show")
+            .first()
+        )
+        if membership is None:
+            raise Http404("Member not found.")
+        return membership
+
+    @staticmethod
+    def _refuse_own(request, membership):
+        from rest_framework import status as http_status
+
+        if membership.user_id == getattr(request.user, "pk", None):
+            return Response(
+                {"detail": "You cannot take your own membership off the project."},
+                status=http_status.HTTP_400_BAD_REQUEST,
+            )
+        return None
+
+    def patch(self, request, *args, member_id=None, **kwargs):
+        self._require_member_management(request)
+        membership = self._membership(member_id)
+        serializer = ProjectMembershipUpdateSerializer(
+            data=request.data or {},
+            partial=True,
+            context={"request": request, "project": self.project},
+        )
+        serializer.is_valid(raise_exception=True)
+        fields = cast(dict[str, Any], serializer.validated_data)
+        if fields.get("status", "active") != "active":
+            refused = self._refuse_own(request, membership)
+            if refused is not None:
+                return refused
+        membership = ProjectMembershipService.update_member(membership, **fields)
+        return Response(ProjectMembershipSerializer(membership, context={"request": request}).data)
+
+    def delete(self, request, *args, member_id=None, **kwargs):
+        from rest_framework import status as http_status
+
+        self._require_member_management(request)
+        membership = self._membership(member_id)
+        refused = self._refuse_own(request, membership)
+        if refused is not None:
+            return refused
+        ProjectMembershipService.remove_member(membership, user=request.user)
+        return Response(status=http_status.HTTP_204_NO_CONTENT)
 
 
 # ----------------------------------------------------------------------

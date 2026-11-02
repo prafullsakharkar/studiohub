@@ -1,11 +1,13 @@
 """
-CR-37 evidence: what the project members API can and cannot do to a member that already exists (real responses).
+CR-37 evidence: what the project members API does to a member that already exists (real responses).
 
-There is `GET` and `POST` on `projects/{id}/members/` and nothing else: no way to change a member except adding them
-again, and no way to remove one. Captured here: `PATCH`/`DELETE` on a member (404), `department` sent on an add (ignored,
-although a department-narrowed membership is enforced), what a status change or a removal does to the member's access
-(it is gone at once: access needs `status = active` and `is_deleted = False`), and what a plain re-add does to a
-suspended two-role member (reactivates them, drops a role). Pytest test database only, inside a rolled-back transaction.
+Before CR-37 there was `GET` and `POST` on `projects/{id}/members/` and nothing else: `PATCH`/`DELETE` on a member were
+404, `department` sent on an add was ignored (although a department-narrowed membership is enforced), and a plain re-add
+of a suspended two-role member reactivated them and dropped a role. Access needs `status = active` and `is_deleted = False`
+(captured: active 200, suspended 404, deleted 404). The first part of this file keeps those observations (now `patch` and
+`delete` answer 200/204 and `add_with_department` still ignores a department: it is the add's behaviour, unchanged); the
+second part (`cr37_*`) is the new route: change a member, refuse an empty body, the self-protection rule, remove.
+Pytest test database only, inside a rolled-back transaction.
 
     cd backend
     SYNC_SAMPLES_OUT=../docs/sync/samples \
@@ -105,6 +107,40 @@ def test_capture_member_detail(django_user_model):
     row.save()
     flow["member_sees_project_when_deleted"] = call(m, "GET", f"/api/v1/projects/{pid}/")
     flow["members_list_after_delete"] = call(a, "GET", base)
+
+    # ---- CR-37: the new route, on a second member (the first was removed above).
+    second = django_user_model.objects.create_user(email="second@example.test", password="Cr37-Second-Pass!9")
+    grant_all_known_codes(second)
+    s = APIClient()
+    s.force_authenticate(user=second)
+    show = make("/api/v1/shows/", {"project": pid, "code": "S1", "name": "Season One"})
+    added = make(base, {"user_id": str(second.id), "role": "Artist", "roles": ["Artist", "Lead"]})
+    sid = added["id"]
+    detail = f"{base}{sid}/"
+    flow["cr37_show"] = show
+    flow["cr37_added"] = added
+    flow["cr37_patch_role"] = call(a, "PATCH", detail, {"role": "Supervisor"})
+    flow["cr37_patch_status"] = call(a, "PATCH", detail, {"status": "Suspended"})
+    flow["cr37_sees_project_suspended"] = call(s, "GET", f"/api/v1/projects/{pid}/")
+    flow["cr37_patch_back"] = call(a, "PATCH", detail, {"status": "active"})
+    flow["cr37_sees_project_active"] = call(s, "GET", f"/api/v1/projects/{pid}/")
+    flow["cr37_patch_department"] = call(a, "PATCH", detail, {"department": "Comp"})
+    flow["cr37_patch_show"] = call(a, "PATCH", detail, {"show": show["id"]})
+    flow["cr37_patch_release_show"] = call(a, "PATCH", detail, {"show": None})
+    flow["cr37_patch_unknown_show"] = call(a, "PATCH", detail, {"show": "00000000-0000-4000-8000-000000000000"})
+    flow["cr37_patch_empty"] = call(a, "PATCH", detail, {})
+    flow["cr37_patch_bad_status"] = call(a, "PATCH", detail, {"status": "retired"})
+    flow["cr37_get_detail"] = call(a, "GET", detail)
+    # Self-protection: a platform administrator with a membership of their own.
+    mine = ProjectMembership.objects.create(user=admin, project_id=pid, status="active", role="Lead")
+    flow["cr37_self_delete"] = call(a, "DELETE", f"{base}{mine.pk}/")
+    flow["cr37_self_suspend"] = call(a, "PATCH", f"{base}{mine.pk}/", {"status": "suspended"})
+    flow["cr37_self_role"] = call(a, "PATCH", f"{base}{mine.pk}/", {"role": "Producer"})
+    flow["cr37_delete"] = call(a, "DELETE", detail)
+    flow["cr37_sees_project_removed"] = call(s, "GET", f"/api/v1/projects/{pid}/")
+    flow["cr37_patch_removed"] = call(a, "PATCH", detail, {"role": "Lead"})
+    flow["cr37_members_after"] = call(a, "GET", base)
+    flow["cr37_readd"] = call(a, "POST", base, {"user_id": str(second.id), "role": "Artist"})
 
     (OUT / "production").mkdir(parents=True, exist_ok=True)
     (OUT / "production" / "_member_detail_flow.json").write_text(json.dumps(flow, indent=1, sort_keys=True, default=str))

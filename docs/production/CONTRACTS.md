@@ -367,3 +367,15 @@ Frontend change list: none required (the typed `bulkUpdate` already sends fields
 Unchanged and relied on: the members routes need **full** project access (`ProjectScopedAPIView._has_access`), so a member bound to a show (or a department) gets 404 on them: they can neither list members nor widen anyone's binding or their own. Managing members is still limited to superusers, global admins and the project's creator.
 
 Frontend change list: `ProjectMember` type gains `show_id` and `show_code`; `addMember` accepts `show`; the members panel gets a Show picker and column.
+
+## Phase 26 — a member by id (CR-37)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-54 | `PATCH /api/organizations/projects/{id}/members/{member_id}/` | No such route (404). A member could only be changed by adding them again, which also wrote `status` (default `active`) and replaced `roles` with the one `role`. | **New.** Body, every field optional and only what is sent changes: `role`, `roles`, `role_id`, `status` (`active`, `on_leave`, `terminated`, `suspended`; case-insensitive), `show` (`null` releases to the whole project, an id binds; another project's or a deleted show is `400 {"show": ["Unknown show."]}`), `department` and `department_id` (text a task's department is matched against, case-insensitively; blank clears). A `role` without `roles` also sets `roles` to `[role]`, so the change shows; an unknown `role_id` is `400 {"role_id": ["Unknown role."]}`. An empty body, or only fields that are not editable (`user`, `project`, `vendor_id`, `client_id`), is `400 {"non_field_errors": ["Nothing to update."]}`. Answers `200` with the member row. |
+| C-54 | `DELETE /api/organizations/projects/{id}/members/{member_id}/` | No such route (404). A member could not be removed. | **New.** `204`, a soft delete: the member loses the project at once (access needs `status = active` and not deleted) and is no longer listed; adding the user again restores the same row. What they were assigned (shots, assets, tasks) is left as it was. |
+| C-54 | both | | `{member_id}` is the membership `id` that the member rows carry. A member of another project, an unknown id and a removed member are `404`. Same privilege as adding: superuser, global admin, or the project's creator (`403` otherwise). A member narrowed to a show or a department gets `404` (full project access is required), as on every members route. Any other method is refused by the permission layer (`403`, CR-06). |
+| C-54 | both (own membership) | | Nobody may take **their own** membership off the project: `DELETE`, or a `PATCH` setting `status` to anything but `active`, is `400 {"detail": "You cannot take your own membership off the project."}` (for a platform administrator too). Their other fields, and `status: "active"`, are allowed. |
+| C-54 | `POST …/members/` | (unchanged) | Unchanged: it still adds, or re-adds with the side effects above. Use `PATCH` to edit. |
+
+Frontend change list: the members panel gets a status select, a Remove action and a Department field; the show picker moves from "add again with the member's own values" to `PATCH`, which deletes `setMemberShow`'s workaround.
