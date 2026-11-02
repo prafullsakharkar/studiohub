@@ -49,8 +49,20 @@ export function watch(page: Page): Observed {
 /** Sign in through the login page (and the MFA step for a user that has one). */
 export async function signIn(page: Page, role: RoleKey) {
   const user = live.users[role];
-  await page.goto('/login');
-  await page.locator('#login-email-input').fill(user.email);
+  // Chrome aborts a page's in-flight requests when the host's network changes (net::ERR_NETWORK_CHANGED): some of the
+  // app's modules then never load and the login page never appears. Load it again, up to three times, and say so.
+  const emailField = page.locator('#login-email-input');
+  for (let attempt = 1; ; attempt++) {
+    await page.goto('/login');
+    try {
+      await emailField.waitFor({ timeout: 30_000 });
+      break;
+    } catch (error) {
+      if (attempt === 3) throw new Error(`the login page did not render after ${attempt} loads`, { cause: error });
+      console.log(`[${role}:signin-reload] the login page did not render (attempt ${attempt}); loading it again`);
+    }
+  }
+  await emailField.fill(user.email);
   await page.locator('#login-password-input').fill(user.password);
   await page.getByRole('button', { name: /sign in to workspace/i }).click();
   const secret = role === 'manager' ? live.manager.secret : role === 'mfa' ? live.mfa.secret : null;

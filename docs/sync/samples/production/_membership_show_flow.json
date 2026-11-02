@@ -1,0 +1,424 @@
+{
+ "database_after": {
+  "scope": "SHOW",
+  "show_id": "caf079af-a0ea-44b2-9953-20e93c0afcc2"
+ },
+ "database_bound": {
+  "scope": "SHOW",
+  "show_id": "caf079af-a0ea-44b2-9953-20e93c0afcc2"
+ },
+ "ids": {
+  "project": "caa7259a-da9a-47c1-b906-6119f83c532e",
+  "show": "caf079af-a0ea-44b2-9953-20e93c0afcc2"
+ },
+ "me_bound_member": {
+  "body": {
+   "avatar_url": null,
+   "created_at": "2026-11-02T08:32:17.765063+00:00",
+   "email": "user@example.test",
+   "first_name": "",
+   "full_name": "user@example.test",
+   "id": "d5175cde-6edd-4fc2-b6e6-53d8c956ed82",
+   "is_active": true,
+   "is_staff": false,
+   "is_superuser": false,
+   "last_name": "",
+   "must_change_password": false,
+   "permissions": [],
+   "project_memberships": [
+    {
+     "client_id": "",
+     "department": "",
+     "department_id": "",
+     "id": "3540f22a-4639-4f3c-a5ec-20813dc0d914",
+     "project_code": "CR36",
+     "project_id": "caa7259a-da9a-47c1-b906-6119f83c532e",
+     "role": "Artist",
+     "roles": [
+      "Artist"
+     ],
+     "scope": "SHOW",
+     "show_id": "caf079af-a0ea-44b2-9953-20e93c0afcc2",
+     "status": "active",
+     "team_id": "",
+     "user_id": "d5175cde-6edd-4fc2-b6e6-53d8c956ed82",
+     "vendor_id": ""
+    }
+   ],
+   "role": "",
+   "updated_at": "2026-11-02T08:32:17.765084+00:00"
+  },
+  "headers": {
+   "Allow": "GET, PATCH, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "5b206b84-b7cb-4e2d-a9d4-0fc8bdd49b69"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/auth/me/"
+  },
+  "status": 200
+ },
+ "member_add_with_show": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-02T08:32:18.132124Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "3540f22a-4639-4f3c-a5ec-20813dc0d914",
+   "name": "user@example.test",
+   "projectId": "caa7259a-da9a-47c1-b906-6119f83c532e",
+   "project_code": "CR36",
+   "project_id": "caa7259a-da9a-47c1-b906-6119f83c532e",
+   "project_name": "Show members",
+   "role": "Artist",
+   "role_id": null,
+   "roles": [
+    "Artist"
+   ],
+   "scope": "SHOW",
+   "show_code": "S1",
+   "show_id": "caf079af-a0ea-44b2-9953-20e93c0afcc2",
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-02T08:32:18.132131Z",
+   "userId": "d5175cde-6edd-4fc2-b6e6-53d8c956ed82",
+   "user_id": "d5175cde-6edd-4fc2-b6e6-53d8c956ed82",
+   "vendor_id": ""
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "45bb5638-42a7-40d2-83f6-e8129e66f794"
+  },
+  "request": {
+   "body": {
+    "role": "Artist",
+    "show": "caf079af-a0ea-44b2-9953-20e93c0afcc2",
+    "user_id": "d5175cde-6edd-4fc2-b6e6-53d8c956ed82"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/caa7259a-da9a-47c1-b906-6119f83c532e/members/"
+  },
+  "status": 201
+ },
+ "member_add_with_show_id": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-02T08:32:18.132124Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "3540f22a-4639-4f3c-a5ec-20813dc0d914",
+   "name": "user@example.test",
+   "projectId": "caa7259a-da9a-47c1-b906-6119f83c532e",
+   "project_code": "CR36",
+   "project_id": "caa7259a-da9a-47c1-b906-6119f83c532e",
+   "project_name": "Show members",
+   "role": "Artist",
+   "role_id": null,
+   "roles": [
+    "Artist"
+   ],
+   "scope": "SHOW",
+   "show_code": "S1",
+   "show_id": "caf079af-a0ea-44b2-9953-20e93c0afcc2",
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-02T08:32:18.149748Z",
+   "userId": "d5175cde-6edd-4fc2-b6e6-53d8c956ed82",
+   "user_id": "d5175cde-6edd-4fc2-b6e6-53d8c956ed82",
+   "vendor_id": ""
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "93677d69-a444-42eb-b414-6d2b71feb1b8"
+  },
+  "request": {
+   "body": {
+    "role": "Artist",
+    "show_id": "caf079af-a0ea-44b2-9953-20e93c0afcc2",
+    "user_id": "d5175cde-6edd-4fc2-b6e6-53d8c956ed82"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/caa7259a-da9a-47c1-b906-6119f83c532e/members/"
+  },
+  "status": 200
+ },
+ "member_delete": {
+  "body": {
+   "detail": "Not found.",
+   "error": {
+    "code": "not_found",
+    "request_id": "e86ca52b-535d-4f64-b976-f3f0b5a57ff1"
+   }
+  },
+  "headers": {
+   "Content-Type": "application/json",
+   "X-Request-ID": "e86ca52b-535d-4f64-b976-f3f0b5a57ff1"
+  },
+  "request": {
+   "body": null,
+   "method": "DELETE",
+   "path": "/api/organizations/projects/caa7259a-da9a-47c1-b906-6119f83c532e/members/3540f22a-4639-4f3c-a5ec-20813dc0d914/"
+  },
+  "status": 404
+ },
+ "member_patch": {
+  "body": {
+   "detail": "Not found.",
+   "error": {
+    "code": "not_found",
+    "request_id": "4892a03c-1235-4385-a986-de6562d9dc46"
+   }
+  },
+  "headers": {
+   "Content-Type": "application/json",
+   "X-Request-ID": "4892a03c-1235-4385-a986-de6562d9dc46"
+  },
+  "request": {
+   "body": {
+    "role": "Lead"
+   },
+   "method": "PATCH",
+   "path": "/api/organizations/projects/caa7259a-da9a-47c1-b906-6119f83c532e/members/3540f22a-4639-4f3c-a5ec-20813dc0d914/"
+  },
+  "status": 404
+ },
+ "members_list": {
+  "body": {
+   "count": 1,
+   "results": [
+    {
+     "avatar_url": null,
+     "client_id": "",
+     "created_at": "2026-11-02T08:32:18.132124Z",
+     "department": "",
+     "department_id": "",
+     "email": "user@example.test",
+     "id": "3540f22a-4639-4f3c-a5ec-20813dc0d914",
+     "name": "user@example.test",
+     "projectId": "caa7259a-da9a-47c1-b906-6119f83c532e",
+     "project_code": "CR36",
+     "project_id": "caa7259a-da9a-47c1-b906-6119f83c532e",
+     "project_name": "Show members",
+     "role": "Artist",
+     "role_id": null,
+     "roles": [
+      "Artist"
+     ],
+     "scope": "SHOW",
+     "show_code": "S1",
+     "show_id": "caf079af-a0ea-44b2-9953-20e93c0afcc2",
+     "status": "active",
+     "team_id": "",
+     "updated_at": "2026-11-02T08:32:18.149748Z",
+     "userId": "d5175cde-6edd-4fc2-b6e6-53d8c956ed82",
+     "user_id": "d5175cde-6edd-4fc2-b6e6-53d8c956ed82",
+     "vendor_id": ""
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "ae0aad96-73a2-4916-9a80-0fc6f116e02d"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/caa7259a-da9a-47c1-b906-6119f83c532e/members/"
+  },
+  "status": 200
+ },
+ "other_add": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-02T08:32:18.196408Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "2b8000d1-0353-4067-9dc5-f8137de88112",
+   "name": "user@example.test",
+   "projectId": "caa7259a-da9a-47c1-b906-6119f83c532e",
+   "project_code": "CR36",
+   "project_id": "caa7259a-da9a-47c1-b906-6119f83c532e",
+   "project_name": "Show members",
+   "role": "Artist",
+   "role_id": null,
+   "roles": [
+    "Artist",
+    "Lead"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "suspended",
+   "team_id": "",
+   "updated_at": "2026-11-02T08:32:18.196415Z",
+   "userId": "7730e146-f2c7-405d-9c9f-a557bb0f2721",
+   "user_id": "7730e146-f2c7-405d-9c9f-a557bb0f2721",
+   "vendor_id": ""
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "bb1a4d89-df97-463e-b430-b0122ecffe06"
+  },
+  "request": {
+   "body": {
+    "role": "Artist",
+    "roles": [
+     "Artist",
+     "Lead"
+    ],
+    "status": "suspended",
+    "user_id": "7730e146-f2c7-405d-9c9f-a557bb0f2721"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/caa7259a-da9a-47c1-b906-6119f83c532e/members/"
+  },
+  "status": 201
+ },
+ "other_readd_naive": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-02T08:32:18.196408Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "2b8000d1-0353-4067-9dc5-f8137de88112",
+   "name": "user@example.test",
+   "projectId": "caa7259a-da9a-47c1-b906-6119f83c532e",
+   "project_code": "CR36",
+   "project_id": "caa7259a-da9a-47c1-b906-6119f83c532e",
+   "project_name": "Show members",
+   "role": "Artist",
+   "role_id": null,
+   "roles": [
+    "Artist"
+   ],
+   "scope": "SHOW",
+   "show_code": "S1",
+   "show_id": "caf079af-a0ea-44b2-9953-20e93c0afcc2",
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-02T08:32:18.213578Z",
+   "userId": "7730e146-f2c7-405d-9c9f-a557bb0f2721",
+   "user_id": "7730e146-f2c7-405d-9c9f-a557bb0f2721",
+   "vendor_id": ""
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "0016015d-3d95-406c-ba39-dd11580a774b"
+  },
+  "request": {
+   "body": {
+    "role": "Artist",
+    "show": "caf079af-a0ea-44b2-9953-20e93c0afcc2",
+    "user_id": "7730e146-f2c7-405d-9c9f-a557bb0f2721"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/caa7259a-da9a-47c1-b906-6119f83c532e/members/"
+  },
+  "status": 200
+ },
+ "other_readd_preserving": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-02T08:32:18.196408Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "2b8000d1-0353-4067-9dc5-f8137de88112",
+   "name": "user@example.test",
+   "projectId": "caa7259a-da9a-47c1-b906-6119f83c532e",
+   "project_code": "CR36",
+   "project_id": "caa7259a-da9a-47c1-b906-6119f83c532e",
+   "project_name": "Show members",
+   "role": "Artist",
+   "role_id": null,
+   "roles": [
+    "Artist",
+    "Lead"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "suspended",
+   "team_id": "",
+   "updated_at": "2026-11-02T08:32:18.231085Z",
+   "userId": "7730e146-f2c7-405d-9c9f-a557bb0f2721",
+   "user_id": "7730e146-f2c7-405d-9c9f-a557bb0f2721",
+   "vendor_id": ""
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "6c0bb399-69e1-4aea-ad5c-aac8d529d434"
+  },
+  "request": {
+   "body": {
+    "role": "Artist",
+    "roles": [
+     "Artist",
+     "Lead"
+    ],
+    "scope": "PROJECT",
+    "show": null,
+    "status": "suspended",
+    "user_id": "7730e146-f2c7-405d-9c9f-a557bb0f2721"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/caa7259a-da9a-47c1-b906-6119f83c532e/members/"
+  },
+  "status": 200
+ },
+ "shows_list": {
+  "body": {
+   "count": 1,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "code": "S1",
+     "created_at": "2026-11-02T08:32:18.113529Z",
+     "delivery_date": null,
+     "description": "",
+     "id": "caf079af-a0ea-44b2-9953-20e93c0afcc2",
+     "is_primary": false,
+     "name": "Season One",
+     "project_code": "CR36",
+     "project_id": "caa7259a-da9a-47c1-b906-6119f83c532e",
+     "season": "",
+     "start_date": null,
+     "status": "",
+     "thumbnail_url": "",
+     "type": "Feature Film",
+     "updated_at": "2026-11-02T08:32:18.113536Z",
+     "uuid": "caf079af-a0ea-44b2-9953-20e93c0afcc2"
+    }
+   ]
+  },
+  "headers": {
+   "Allow": "GET, POST, HEAD, OPTIONS",
+   "Content-Type": "application/json",
+   "X-Request-ID": "914dc06a-428d-455d-bf8a-e2524a60ae34"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/shows/?project=caa7259a-da9a-47c1-b906-6119f83c532e"
+  },
+  "status": 200
+ }
+}

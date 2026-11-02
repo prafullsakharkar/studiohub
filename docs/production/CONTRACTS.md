@@ -356,3 +356,14 @@ Frontend change list: none required (the screens already offer project members o
 
 Frontend change list: none required (the typed `bulkUpdate` already sends fields beside the id).
 
+
+## Phase 25 — a member bound to a show (CR-36)
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-53 | `POST /api/organizations/projects/{id}/members/` (`show`) | A `show` or `show_id` in the body was **ignored without an error**: the membership could not be bound to a show through the API (only the `assign_shows` command could). | `show` is accepted. Omitted: the member's binding is left as it is (a new member belongs to the whole project). `null`: released to the whole project (`scope` back to `PROJECT`). A show id: bound to that show (`scope: "SHOW"`). An id that is not a live show **of this project** (unknown, deleted, or another project's, or not an id) is **400** `{"show": ["Unknown show."]}` and nothing changes. Applies on create, on re-adding an existing member and on restoring a deleted one (a restored member without a `show` comes back to the whole project). |
+| C-53 | `GET` / `POST /api/organizations/projects/{id}/members/` (rows) | The rows carried `scope` but not the show. | Rows add read-only `show_id` (null for the whole project) and `show_code` (`""` for the whole project). `/auth/me` already returned `show_id` and `scope`. |
+
+Unchanged and relied on: the members routes need **full** project access (`ProjectScopedAPIView._has_access`), so a member bound to a show (or a department) gets 404 on them: they can neither list members nor widen anyone's binding or their own. Managing members is still limited to superusers, global admins and the project's creator.
+
+Frontend change list: `ProjectMember` type gains `show_id` and `show_code`; `addMember` accepts `show`; the members panel gets a Show picker and column.
