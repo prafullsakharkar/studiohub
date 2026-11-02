@@ -15,6 +15,7 @@ from apps.production.api.views.project_scoped import (
     ProjectDeliveriesView,
     ProjectEditorialView,
     ProjectFilesView,
+    ProjectMemberDetailView,
     ProjectMembersView,
     ProjectNotesView,
     ProjectPipelineView,
@@ -59,3 +60,9 @@ for _subpath, _view in _ROUTES:
         path(f"{_base}", _view.as_view(), name=f"project-{_subpath}"),
         path(f"{_base}/", _view.as_view(), name=f"project-{_subpath}-slash"),
     ]
+
+# CR-37: a member by id (the membership `id` the member rows carry).
+for _suffix, _name in (("", "project-member-detail"), ("/", "project-member-detail-slash")):
+    urlpatterns.append(
+        path(f"projects/{PROJECT}/members/<uuid:member_id>{_suffix}", ProjectMemberDetailView.as_view(), name=_name)
+    )

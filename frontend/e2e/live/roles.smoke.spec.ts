@@ -58,10 +58,12 @@ for (const { role, label, shown, refused: mustRefuse } of ROLES) {
     const evidence: Record<string, string> = {};
 
     const reloads: string[] = [];
-    const isBlank = async () => {
+    /** Why the page did not render: nothing on it, or the error boundary (a lazy module that failed to load lands there). */
+    const notRendered = async (): Promise<'blank' | 'error boundary' | null> => {
       const path = new URL(page.url()).pathname;
-      if (path === '/forbidden' || path === '/unauthorized') return false;
-      return page.evaluate(() => document.body.innerText.trim().length === 0);
+      if (path === '/forbidden' || path === '/unauthorized') return null;
+      if ((await page.getByRole('heading', { name: 'Something went wrong' }).count()) > 0) return 'error boundary';
+      return (await page.evaluate(() => document.body.innerText.trim().length === 0)) ? 'blank' : null;
     };
     // The guard shows a spinner until the signed-in user is known, then redirects or renders; a lazy page shows
     // "Loading…" while its chunk downloads. Read the outcome only when neither is on screen, and only once the app has
@@ -84,11 +86,15 @@ for (const { role, label, shown, refused: mustRefuse } of ROLES) {
       const before = { server: seen.serverErrors.length, unauthorized: seen.unauthorized.length, pageErrors: seen.pageErrors.length, forbidden: seen.forbidden.length };
       await page.goto(route, { waitUntil: 'domcontentloaded' });
       await settle(route);
-      // Chrome aborts a page's in-flight requests when the host's network changes (ERR_NETWORK_CHANGED), and the app
-      // then never mounts. That says nothing about the route, so a blank page is reloaded a few times before it is
-      // judged, and every reload is listed in the log so a flapping network stays visible.
-      for (let attempt = 1; attempt <= 3 && (await isBlank()); attempt++) {
-        reloads.push(`${route} #${attempt}: ${JSON.stringify(consoleErrors.slice(-1))}`);
+      // Chrome aborts a page's in-flight requests when the host's network changes (ERR_NETWORK_CHANGED): the app then
+      // never mounts (a blank page), or a lazy module fails to load and the error boundary catches it. That says nothing
+      // about the route, so such a page is reloaded a few times before it is judged; every reload is listed in the log
+      // with its kind and the last console error, so a flapping network stays visible. A render error that is real
+      // comes back every time and still fails.
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        const why = await notRendered();
+        if (!why) break;
+        reloads.push(`${route} #${attempt} (${why}): ${JSON.stringify(consoleErrors.slice(-1))}`);
         await page.reload({ waitUntil: 'domcontentloaded' });
         await settle(route);
       }

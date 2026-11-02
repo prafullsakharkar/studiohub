@@ -94,6 +94,8 @@ class ProjectMembershipService(BusinessService):
             membership.client_id = client_id or ""
             membership.team_id = team_id or ""
             membership.department_id = department_id or ""
+            # A restored membership starts fresh, so a department it carried (settable since CR-37) does not come back.
+            membership.department = ""
             membership.show = None if show is UNSET else show
             membership.save()
             return membership, False
@@ -112,6 +114,20 @@ class ProjectMembershipService(BusinessService):
             show=None if show is UNSET else show,
         )
         return membership, True
+
+
+    @classmethod
+    def update_member(cls, membership, **fields):
+        """Change only the given fields of an existing membership (CR-37). ``scope`` follows ``show`` in ``save()``."""
+        for name, value in fields.items():
+            setattr(membership, name, value)
+        membership.save()
+        return membership
+
+    @classmethod
+    def remove_member(cls, membership, *, user=None):
+        """Soft-delete the membership; re-adding the user restores it (CR-37)."""
+        membership.delete(user=user)
 
 
 class ProjectNoteService(BusinessService):

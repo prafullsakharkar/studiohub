@@ -104,7 +104,33 @@ class ProjectMembershipSerializer(BaseReadSerializer[Any]):
         return obj.show.code if obj.show_id else ""
 
 
-class ProjectMembershipCreateSerializer(BaseWriteSerializer[Any]):
+class _MemberRefsMixin:
+    """What the add and the edit serializers both resolve: a show of the project, and a global role."""
+
+    def _resolve_show(self, show_id):
+        """The show, when it is a live show of this project; anything else is unknown (fail closed)."""
+        project = self.context.get("project")
+        show = Show.objects.filter(pk=show_id, project=project).first() if project is not None else None
+        if show is None:
+            raise serializers.ValidationError({"show": ["Unknown show."]})
+        return show
+
+    def _resolve_role_ref(self, role_ref):
+        """Resolve a role id against the global identity roles.
+
+        Unknown ids are rejected — fail closed.
+        """
+        from apps.identity.models import Role
+
+        role = Role.objects.filter(id=role_ref, is_deleted=False).first()
+        if role is None:
+            raise serializers.ValidationError(
+                {"role_id": "Unknown role."}
+            )
+        return role
+
+
+class ProjectMembershipCreateSerializer(_MemberRefsMixin, BaseWriteSerializer[Any]):
     """Accept frontend member payload: {userId|user_id|email, role, roles?, scope?}."""
 
     userId = serializers.CharField(required=False, allow_blank=True, default="")
@@ -153,24 +179,34 @@ class ProjectMembershipCreateSerializer(BaseWriteSerializer[Any]):
             attrs["show"] = self._resolve_show(attrs["show"])
         return attrs
 
-    def _resolve_show(self, show_id):
-        """The show, when it is a live show of this project; anything else is unknown (fail closed)."""
-        project = self.context.get("project")
-        show = Show.objects.filter(pk=show_id, project=project).first() if project is not None else None
-        if show is None:
-            raise serializers.ValidationError({"show": ["Unknown show."]})
-        return show
 
-    def _resolve_role_ref(self, role_ref):
-        """Resolve a role id against the global identity roles.
+class ProjectMembershipUpdateSerializer(_MemberRefsMixin, BaseWriteSerializer[Any]):
+    """
+    CR-37: change a member that is already on the project. Every field is optional and only what is sent changes;
+    an empty body is refused. ``show`` is as on the add (null releases, an id binds); ``department`` and
+    ``department_id`` are the text a task's department is matched against (blank clears).
+    """
 
-        Unknown ids are rejected — fail closed.
-        """
-        from apps.identity.models import Role
+    role = serializers.CharField(required=False, max_length=100)
+    roles = serializers.ListField(child=serializers.CharField(), required=False)
+    role_id = serializers.UUIDField(required=False, write_only=True)
+    status = CaseInsensitiveChoiceField(choices=ProjectMembership.STATUS_CHOICES, required=False)
+    show = serializers.UUIDField(required=False, allow_null=True)
+    department = serializers.CharField(required=False, allow_blank=True, max_length=100)
+    department_id = serializers.CharField(required=False, allow_blank=True, max_length=50)
 
-        role = Role.objects.filter(id=role_ref, is_deleted=False).first()
-        if role is None:
-            raise serializers.ValidationError(
-                {"role_id": "Unknown role."}
-            )
-        return role
+    class Meta:
+        model = ProjectMembership
+        fields = ("role", "roles", "role_id", "status", "show", "department", "department_id")
+
+    def validate(self, attrs):
+        if not attrs:
+            raise serializers.ValidationError({"non_field_errors": ["Nothing to update."]})
+        if "role_id" in attrs:
+            attrs["role_ref"] = self._resolve_role_ref(attrs.pop("role_id"))
+        if attrs.get("show") is not None:
+            attrs["show"] = self._resolve_show(attrs["show"])
+        # The display role and the role list must agree, or a role change would not show: a role alone is the list.
+        if "role" in attrs and "roles" not in attrs:
+            attrs["roles"] = [attrs["role"]]
+        return attrs

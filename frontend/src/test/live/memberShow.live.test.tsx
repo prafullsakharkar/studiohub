@@ -10,7 +10,8 @@ import { MembersPanel } from '@/modules/production/structure/panels';
 import { freshTotp, live, rawPost } from './liveBackend';
 
 /**
- * CR-36 against a REAL backend: a member bound to a show through the members panel sees only that show's records.
+ * CR-36 and CR-37 against a REAL backend: a member bound to a show through the members panel sees only that show's records;
+ * a status change takes their access away and gives it back; a department is set and cleared; Remove takes them off the project.
  * Run on a fresh live_backend.py seed.
  */
 const T = { timeout: 15000 };
@@ -51,6 +52,14 @@ const mount = () =>
     </QueryClientProvider>
   );
 
+/** What the artist gets for the project itself: 200 while they are an active member, 404 when they are not. */
+async function artistProjectStatus() {
+  const login = await rawPost('/api/v1/auth/login/', { email: live.users.artist.email, password: live.users.artist.password });
+  expect(login.status).toBe(200);
+  const response = await fetch(`${live.url}/api/v1/projects/${fixture.project}/`, { headers: { Authorization: `Bearer ${login.body.tokens?.access ?? login.body.access}` } });
+  return response.status;
+}
+
 /** The shots the artist sees: signed in separately, over HTTP, as that user. */
 async function shotsSeenByArtist() {
   const login = await rawPost('/api/v1/auth/login/', { email: live.users.artist.email, password: live.users.artist.password });
@@ -88,5 +97,58 @@ describe('member bound to a show, on the wire', () => {
     expect(released.status).toBe(row.status);
     expect(released.roles).toEqual(row.roles);
     expect(await shotsSeenByArtist()).toEqual(new Set([fixture.shotA, fixture.shotB, fixture.shotLoose]));
+  });
+
+  it('takes a member off active and back, sets and clears a department, removes them and restores them', async () => {
+    await projectScopedApi.addMember(fixture.project, { email: live.users.artist.email, role: 'Artist' });
+    mount();
+    const rowOf = async () => artistRow();
+    const select = async (name: RegExp) => {
+      const all = (await screen.findAllByRole('combobox', { name }, T)) as HTMLSelectElement[];
+      const index = (await projectScopedApi.members(fixture.project)).results.findIndex((m) => m.email === live.users.artist.email);
+      return all[index];
+    };
+    expect(await artistProjectStatus()).toBe(200);
+
+    // A status other than active: the artist loses the project at once; active again: they get it back.
+    fireEvent.change(await select(/^Status for/), { target: { value: 'suspended' } });
+    await waitFor(async () => expect((await rowOf()).status).toBe('suspended'), T);
+    expect(await artistProjectStatus()).toBe(404);
+    fireEvent.change(await select(/^Status for/), { target: { value: 'active' } });
+    await waitFor(async () => expect((await rowOf()).status).toBe('active'), T);
+    expect(await artistProjectStatus()).toBe(200);
+
+    // A department, by name, left by leaving the field; and cleared.
+    const field = async () => {
+      const all = (await screen.findAllByRole('textbox', { name: /^Department for/ }, T)) as HTMLInputElement[];
+      const index = (await projectScopedApi.members(fixture.project)).results.findIndex((m) => m.email === live.users.artist.email);
+      return all[index];
+    };
+    const input = await field();
+    fireEvent.change(input, { target: { value: 'Comp' } });
+    fireEvent.blur(input);
+    await waitFor(async () => expect((await rowOf()).department).toBe('Comp'), T);
+    // The table re-renders the field with the saved value (a new element): act on that one, once it is enabled.
+    await waitFor(async () => {
+      const saved = await field();
+      expect(saved.defaultValue).toBe('Comp');
+      expect(saved.disabled).toBe(false);
+    }, T);
+    const again = await field();
+    fireEvent.change(again, { target: { value: '' } });
+    fireEvent.blur(again);
+    await waitFor(async () => expect((await rowOf()).department).toBe(''), T);
+
+    // Removed from the project, after a confirmation: gone from the list, no access; adding them again restores them.
+    const rows = (await projectScopedApi.members(fixture.project)).results;
+    const index = rows.findIndex((m) => m.email === live.users.artist.email);
+    fireEvent.click((await screen.findAllByRole('button', { name: /^Remove / }, T))[index]);
+    fireEvent.click(await screen.findByRole('button', { name: 'Remove' }, T));
+    await waitFor(async () => expect((await projectScopedApi.members(fixture.project)).results.some((m) => m.email === live.users.artist.email)).toBe(false), T);
+    expect(await artistProjectStatus()).toBe(404);
+
+    await projectScopedApi.addMember(fixture.project, { email: live.users.artist.email, role: 'Artist' });
+    expect((await rowOf()).status).toBe('active');
+    expect(await artistProjectStatus()).toBe(200);
   });
 });
