@@ -77,6 +77,12 @@ def test_capture_membership_show(django_user_model):
     flow["member_add_with_show"] = call(a, "POST", base, {"user_id": str(member.id), "role": "Artist", "show": show["id"]})
     flow["member_add_with_show_id"] = call(a, "POST", base, {"user_id": str(member.id), "role": "Artist", "show_id": show["id"]})
     flow["members_list"] = call(a, "GET", base)
+    flow["shows_list"] = call(a, "GET", f"/api/v1/shows/?project={pid}")
+    # A second, suspended member with two roles: what re-adding someone must not overwrite (status, roles, scope).
+    other = django_user_model.objects.create_user(email="other@example.test", password="Cr36-Other-Pass!9")
+    flow["other_add"] = call(a, "POST", base, {"user_id": str(other.id), "role": "Artist", "roles": ["Artist", "Lead"], "status": "suspended"})
+    flow["other_readd_naive"] = call(a, "POST", base, {"user_id": str(other.id), "role": "Artist", "show": show["id"]})
+    flow["other_readd_preserving"] = call(a, "POST", base, {"user_id": str(other.id), "role": "Artist", "roles": ["Artist", "Lead"], "status": "suspended", "scope": "PROJECT", "show": None})
     row = ProjectMembership.objects.get(project_id=pid, user=member)
     flow["database_after"] = {"show_id": str(row.show_id) if row.show_id else None, "scope": row.scope}
 

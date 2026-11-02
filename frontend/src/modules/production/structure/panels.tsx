@@ -1,14 +1,17 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type React from 'react';
+import { useState } from 'react';
 import { z } from 'zod';
-import { projectScopedApi } from '@/api/production/structure';
+import { projectScopedApi, showsApi } from '@/api/production/structure';
+import type { ProjectMember } from '@/api/production/structure';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { Field, FormBanner, Table, formatDate, inputClass } from '@/modules/identity/components/ui';
 import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
+import { fetchAllRows } from '@/shared/data/listing';
 import { useServerForm } from '@/shared/forms/useServerForm';
 
 const key = (projectId: string, name: string) => ['production', 'scoped', projectId, name] as const;
@@ -50,12 +53,17 @@ export const OverviewPanel: React.FC<{ projectId: string }> = ({ projectId }) =>
 };
 
 // ---------------------------------------------------------------- members
-const memberSchema = z.object({ email: z.string().trim().min(1, 'Enter an email address').email('Enter a valid email address'), role: z.string().trim().min(1, 'Enter a role') });
+const memberSchema = z.object({ email: z.string().trim().min(1, 'Enter an email address').email('Enter a valid email address'), role: z.string().trim().min(1, 'Enter a role'), show: z.string() });
+const WHOLE_PROJECT = '';
 
 export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => {
   const queryClient = useQueryClient();
   const canAdd = useCan('project.update');
   const members = useQuery({ queryKey: key(projectId, 'members'), queryFn: ({ signal }) => projectScopedApi.members(projectId, signal) });
+  // A member can be bound to one show of the project (CR-36): they then see only that show's records.
+  const shows = useQuery({ queryKey: key(projectId, 'shows'), queryFn: ({ signal }) => fetchAllRows(showsApi.list, { project: projectId }, { signal }) });
+  const showList = shows.data ?? [];
+  const [changing, setChanging] = useState<string | null>(null);
   const {
     register,
     submit,
@@ -63,15 +71,30 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
     serverError,
     clearServerError,
     formState: { errors, isSubmitting },
-  } = useServerForm<z.infer<typeof memberSchema>>({ resolver: zodResolver(memberSchema), defaultValues: { email: '', role: 'Artist' } });
+  } = useServerForm<z.infer<typeof memberSchema>>({ resolver: zodResolver(memberSchema), defaultValues: { email: '', role: 'Artist', show: WHOLE_PROJECT } });
 
   const onAdd = submit(async (values) => {
     // 404 "User not found." (unknown e-mail) is shown by the form; 200 means they were already a member.
-    await projectScopedApi.addMember(projectId, values);
-    reset({ email: '', role: values.role });
+    // The whole project sends no show: a new member belongs to it, and someone already on the project keeps their show.
+    const { show, ...member } = values;
+    await projectScopedApi.addMember(projectId, show === WHOLE_PROJECT ? member : { ...member, show });
+    reset({ email: '', role: values.role, show: values.show });
     await queryClient.invalidateQueries({ queryKey: key(projectId, 'members') });
     notify.success(`${values.email} is on the project.`);
   });
+
+  const changeShow = async (member: ProjectMember, show: string) => {
+    setChanging(member.id);
+    try {
+      await projectScopedApi.setMemberShow(projectId, member, show === WHOLE_PROJECT ? null : show);
+      await queryClient.invalidateQueries({ queryKey: key(projectId, 'members') });
+      notify.success(show === WHOLE_PROJECT ? `${member.name} is back on the whole project.` : `${member.name} is bound to that show.`);
+    } catch (error) {
+      notify.fromError(error);
+    } finally {
+      setChanging(null);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -89,10 +112,25 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
                 <input id="member-role" className={inputClass(Boolean(errors.role))} {...register('role')} />
               </Field>
             </div>
+            {showList.length > 0 && (
+              <div className="sm:w-56">
+                <Field id="member-show" label="Show" error={errors.show?.message}>
+                  <select id="member-show" className={inputClass(Boolean(errors.show))} {...register('show')}>
+                    <option value={WHOLE_PROJECT}>Whole project</option>
+                    {showList.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.code} — {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+            )}
             <Button type="submit" size="sm" variant="primary" isLoading={isSubmitting}>
               Add member
             </Button>
           </div>
+          {showList.length > 0 && <p className="text-xs text-slate-500">A member bound to a show sees only that show's records. Someone already on the project keeps their show unless you pick one.</p>}
         </form>
       )}
       <QueryBoundary
@@ -103,12 +141,32 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
         isEmpty={(members.data?.results ?? []).length === 0}
         empty={{ title: 'No members yet', description: 'Only members can see the project.' }}
       >
-        <Table label="Project members" columns={['Name', 'Email', 'Role', 'Status', 'Added']}>
+        <Table label="Project members" columns={['Name', 'Email', 'Role', 'Show', 'Status', 'Added']}>
           {(members.data?.results ?? []).map((m) => (
             <tr key={m.id}>
               <td className="px-4 py-2 text-slate-200">{m.name}</td>
               <td className="px-4 py-2 text-slate-400">{m.email}</td>
               <td className="px-4 py-2 text-slate-300">{m.roles.join(', ') || m.role}</td>
+              <td className="px-4 py-2 text-slate-300">
+                {canAdd && showList.length > 0 ? (
+                  <select
+                    aria-label={`Show for ${m.name}`}
+                    className={inputClass(false)}
+                    disabled={changing === m.id}
+                    value={m.show_id ?? WHOLE_PROJECT}
+                    onChange={(event) => void changeShow(m, event.target.value)}
+                  >
+                    <option value={WHOLE_PROJECT}>Whole project</option>
+                    {showList.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.code} — {s.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  (m.show_code || 'Whole project')
+                )}
+              </td>
               <td className="px-4 py-2">
                 <Badge variant={m.status === 'active' ? 'success' : 'neutral'}>{m.status}</Badge>
               </td>

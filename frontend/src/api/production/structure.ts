@@ -209,6 +209,9 @@ export interface ProjectMember {
   role_id: string | null;
   scope: string;
   status: string;
+  /** The show this member is bound to (CR-36); null: the whole project. `show_code` is "" then. */
+  show_id: string | null;
+  show_code: string;
   department: string;
   department_id: string;
   team_id: string;
@@ -327,7 +330,18 @@ export const projectScopedApi = {
   summary: (projectId: string, signal?: AbortSignal) => apiClient.get<{ counts: ProjectCounts; project: Project; [k: string]: unknown }>(`${scoped(projectId)}/summary/`, { signal }),
   members: (projectId: string, signal?: AbortSignal) => apiClient.get<{ count: number; results: ProjectMember[] }>(`${scoped(projectId)}/members/`, { signal }),
   /** 201 when new, 200 when already a member, 404 "User not found." for an unknown e-mail. */
-  addMember: (projectId: string, input: { user_id?: string; email?: string; role: string }) => apiClient.post<ProjectMember>(`${scoped(projectId)}/members/`, input),
+  /**
+   * `show` (CR-36): omitted leaves a member's binding as it is, `null` releases them to the whole project, an id binds
+   * them to that show. Adding someone who is already a member updates them (there is no update or remove route).
+   */
+  addMember: (projectId: string, input: { user_id?: string; email?: string; role: string; roles?: string[]; status?: string; scope?: string; show?: string | null }) => apiClient.post<ProjectMember>(`${scoped(projectId)}/members/`, input),
+  /**
+   * Move a member to a show (`null`: the whole project). The only way is to add them again, and an add also writes
+   * `status` (default "active"), `scope` (default "PROJECT") and replaces `roles` with the one `role`; so the member's
+   * own values are sent back, or a suspended member would be reactivated and a multi-role member would lose roles.
+   */
+  setMemberShow: (projectId: string, member: ProjectMember, show: string | null) =>
+    projectScopedApi.addMember(projectId, { user_id: member.user_id, role: member.role, roles: member.roles, status: member.status, scope: member.scope, show }),
   notes: (projectId: string, signal?: AbortSignal) => apiClient.get<Page<ProjectNote>>(`${scoped(projectId)}/notes/`, { signal }),
   /** The list route only searches (subject, body, entity code and name): narrow with `search`, then match `entity_id`. */
   notesPage: (projectId: string) => listFetcher<ProjectNote>(`${scoped(projectId)}/notes/`),
