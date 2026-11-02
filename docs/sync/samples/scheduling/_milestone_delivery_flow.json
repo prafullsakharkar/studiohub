@@ -1,0 +1,586 @@
+{
+ "after_kind_general_alone": {
+  "body": {
+   "completed_at": null,
+   "completed_by": null,
+   "created_at": "2026-11-02T14:03:46.879964Z",
+   "delivery_package_id": "c36bc4ca-52fd-41aa-8d28-38507ece04f7",
+   "due_date": "2027-03-01",
+   "id": "93f48cff-3dfd-4189-afd1-9b68c082e85a",
+   "kind": "delivery",
+   "name": "Reel 1 due",
+   "notes": "",
+   "order": 0,
+   "project": "3828fa84-b9fe-4cb5-a52d-ea04e073e7e9",
+   "project_code": "P27",
+   "project_name": "Milestone picker",
+   "status": "Pending",
+   "updated_at": "2026-11-02T14:03:46.932610Z"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/scheduling/milestones/93f48cff-3dfd-4189-afd1-9b68c082e85a/"
+  },
+  "status": 200
+ },
+ "after_kind_general_and_null": {
+  "body": {
+   "completed_at": null,
+   "completed_by": null,
+   "created_at": "2026-11-02T14:03:46.879964Z",
+   "delivery_package_id": null,
+   "due_date": "2027-03-01",
+   "id": "93f48cff-3dfd-4189-afd1-9b68c082e85a",
+   "kind": "general",
+   "name": "Reel 1 due",
+   "notes": "",
+   "order": 0,
+   "project": "3828fa84-b9fe-4cb5-a52d-ea04e073e7e9",
+   "project_code": "P27",
+   "project_name": "Milestone picker",
+   "status": "Pending",
+   "updated_at": "2026-11-02T14:03:46.981388Z"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/scheduling/milestones/93f48cff-3dfd-4189-afd1-9b68c082e85a/"
+  },
+  "status": 200
+ },
+ "create_empty_string": {
+  "body": {
+   "delivery_package_id": [
+    "Must be a valid UUID."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "2a1bbaca-ba60-4286-8004-9c95addf451d"
+   }
+  },
+  "request": {
+   "body": {
+    "delivery_package_id": "",
+    "due_date": "2027-03-02",
+    "kind": "delivery",
+    "name": "Blank id",
+    "project_id": "3828fa84-b9fe-4cb5-a52d-ea04e073e7e9"
+   },
+   "method": "POST",
+   "path": "/api/v1/scheduling/milestones/"
+  },
+  "status": 400
+ },
+ "create_foreign_delivery": {
+  "body": {
+   "delivery_package_id": [
+    "Unknown delivery."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "fe5fb737-5b61-40f6-84bb-e4b024217f60"
+   }
+  },
+  "request": {
+   "body": {
+    "delivery_package_id": "c40358db-22ea-4d62-9728-a5bc40b8d9fe",
+    "due_date": "2027-03-02",
+    "kind": "delivery",
+    "name": "Wrong project",
+    "project_id": "3828fa84-b9fe-4cb5-a52d-ea04e073e7e9"
+   },
+   "method": "POST",
+   "path": "/api/v1/scheduling/milestones/"
+  },
+  "status": 400
+ },
+ "create_general_with_delivery": {
+  "body": {
+   "delivery_package_id": [
+    "Only a delivery milestone names a delivery."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "54c00514-af60-42f6-ae2f-d42ca848d8f1"
+   }
+  },
+  "request": {
+   "body": {
+    "delivery_package_id": "f72f4da9-8db8-4979-98f7-b3822dda1d3c",
+    "due_date": "2027-03-02",
+    "kind": "general",
+    "name": "General with id",
+    "project_id": "3828fa84-b9fe-4cb5-a52d-ea04e073e7e9"
+   },
+   "method": "POST",
+   "path": "/api/v1/scheduling/milestones/"
+  },
+  "status": 400
+ },
+ "create_null": {
+  "body": {
+   "delivery_package_id": [
+    "A delivery milestone needs a delivery."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "ef929196-d3e3-4b2a-a233-e3d0ad9bcc30"
+   }
+  },
+  "request": {
+   "body": {
+    "delivery_package_id": null,
+    "due_date": "2027-03-02",
+    "kind": "delivery",
+    "name": "Null id",
+    "project_id": "3828fa84-b9fe-4cb5-a52d-ea04e073e7e9"
+   },
+   "method": "POST",
+   "path": "/api/v1/scheduling/milestones/"
+  },
+  "status": 400
+ },
+ "create_with_delivery": {
+  "body": {
+   "completed_at": null,
+   "completed_by": null,
+   "created_at": "2026-11-02T14:03:46.879964Z",
+   "delivery_package_id": "f72f4da9-8db8-4979-98f7-b3822dda1d3c",
+   "due_date": "2027-03-01",
+   "id": "93f48cff-3dfd-4189-afd1-9b68c082e85a",
+   "kind": "delivery",
+   "name": "Reel 1 due",
+   "notes": "",
+   "order": 0,
+   "project": "3828fa84-b9fe-4cb5-a52d-ea04e073e7e9",
+   "project_code": "P27",
+   "project_name": "Milestone picker",
+   "status": "Pending",
+   "updated_at": "2026-11-02T14:03:46.879971Z"
+  },
+  "request": {
+   "body": {
+    "delivery_package_id": "f72f4da9-8db8-4979-98f7-b3822dda1d3c",
+    "due_date": "2027-03-01",
+    "kind": "delivery",
+    "name": "Reel 1 due",
+    "project_id": "3828fa84-b9fe-4cb5-a52d-ea04e073e7e9"
+   },
+   "method": "POST",
+   "path": "/api/v1/scheduling/milestones/"
+  },
+  "status": 201
+ },
+ "delivery_detail": {
+  "body": {
+   "cancellation_reason": "",
+   "checksums": {},
+   "client_answered_at": null,
+   "client_answered_by": null,
+   "client_answered_by_name": "",
+   "client_notes": "",
+   "client_status": "Pending",
+   "code": "DLV-P27-0001",
+   "created_at": "2026-11-02T14:03:46.747564Z",
+   "delivery_destination": "",
+   "delivery_method": "S3",
+   "destination": null,
+   "destination_name": "",
+   "expires_at": null,
+   "has_passcode": false,
+   "has_revoked_content": false,
+   "id": "f72f4da9-8db8-4979-98f7-b3822dda1d3c",
+   "is_archived": false,
+   "manifest_data": {},
+   "name": "Reel 1 turnover",
+   "notes": "",
+   "project": "3828fa84-b9fe-4cb5-a52d-ea04e073e7e9",
+   "project_name": "Milestone picker",
+   "rejection_reason": "",
+   "revision_of": null,
+   "sent_at": null,
+   "signed_off_at": null,
+   "signed_off_by": null,
+   "signed_off_by_name": "",
+   "status": "Draft",
+   "total_frames": 0,
+   "total_size_bytes": 0,
+   "transfer_reference": "",
+   "updated_at": "2026-11-02T14:03:46.747571Z",
+   "versions": []
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/deliveries/f72f4da9-8db8-4979-98f7-b3822dda1d3c/"
+  },
+  "status": 200
+ },
+ "detail": {
+  "body": {
+   "completed_at": null,
+   "completed_by": null,
+   "created_at": "2026-11-02T14:03:46.879964Z",
+   "delivery_package_id": "f72f4da9-8db8-4979-98f7-b3822dda1d3c",
+   "due_date": "2027-03-01",
+   "id": "93f48cff-3dfd-4189-afd1-9b68c082e85a",
+   "kind": "delivery",
+   "name": "Reel 1 due",
+   "notes": "",
+   "order": 0,
+   "project": "3828fa84-b9fe-4cb5-a52d-ea04e073e7e9",
+   "project_code": "P27",
+   "project_name": "Milestone picker",
+   "status": "Pending",
+   "updated_at": "2026-11-02T14:03:46.879971Z"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/scheduling/milestones/93f48cff-3dfd-4189-afd1-9b68c082e85a/"
+  },
+  "status": 200
+ },
+ "ids": {
+  "delivery": "f72f4da9-8db8-4979-98f7-b3822dda1d3c",
+  "delivery_two": "c36bc4ca-52fd-41aa-8d28-38507ece04f7",
+  "foreign": "c40358db-22ea-4d62-9728-a5bc40b8d9fe",
+  "project": "3828fa84-b9fe-4cb5-a52d-ea04e073e7e9"
+ },
+ "patch_back_to_delivery": {
+  "body": {
+   "completed_at": null,
+   "completed_by": null,
+   "created_at": "2026-11-02T14:03:46.879964Z",
+   "delivery_package_id": "c36bc4ca-52fd-41aa-8d28-38507ece04f7",
+   "due_date": "2027-03-01",
+   "id": "93f48cff-3dfd-4189-afd1-9b68c082e85a",
+   "kind": "delivery",
+   "name": "Reel 1 due",
+   "notes": "",
+   "order": 0,
+   "project": "3828fa84-b9fe-4cb5-a52d-ea04e073e7e9",
+   "project_code": "P27",
+   "project_name": "Milestone picker",
+   "status": "Pending",
+   "updated_at": "2026-11-02T14:03:47.012297Z"
+  },
+  "request": {
+   "body": {
+    "delivery_package_id": "c36bc4ca-52fd-41aa-8d28-38507ece04f7",
+    "kind": "delivery"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/scheduling/milestones/93f48cff-3dfd-4189-afd1-9b68c082e85a/"
+  },
+  "status": 200
+ },
+ "patch_back_to_delivery_alone": {
+  "body": {
+   "delivery_package_id": [
+    "A delivery milestone needs a delivery."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "5320bc18-f586-4649-8fca-2fe8c573bdd8"
+   }
+  },
+  "request": {
+   "body": {
+    "kind": "delivery"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/scheduling/milestones/93f48cff-3dfd-4189-afd1-9b68c082e85a/"
+  },
+  "status": 400
+ },
+ "patch_delivery_empty_string": {
+  "body": {
+   "delivery_package_id": [
+    "Must be a valid UUID."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "7611819b-8e26-4bca-b4d2-ed77b9128cef"
+   }
+  },
+  "request": {
+   "body": {
+    "delivery_package_id": ""
+   },
+   "method": "PATCH",
+   "path": "/api/v1/scheduling/milestones/93f48cff-3dfd-4189-afd1-9b68c082e85a/"
+  },
+  "status": 400
+ },
+ "patch_delivery_null_alone": {
+  "body": {
+   "delivery_package_id": [
+    "A delivery milestone needs a delivery."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "ab2cdb70-6488-4ac3-98d4-c96f85279391"
+   }
+  },
+  "request": {
+   "body": {
+    "delivery_package_id": null
+   },
+   "method": "PATCH",
+   "path": "/api/v1/scheduling/milestones/93f48cff-3dfd-4189-afd1-9b68c082e85a/"
+  },
+  "status": 400
+ },
+ "patch_kind_general_alone": {
+  "body": {
+   "delivery_package_id": [
+    "Only a delivery milestone names a delivery."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "51383fe4-88b3-4c70-a466-ceaf1664fc78"
+   }
+  },
+  "request": {
+   "body": {
+    "kind": "general"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/scheduling/milestones/93f48cff-3dfd-4189-afd1-9b68c082e85a/"
+  },
+  "status": 400
+ },
+ "patch_kind_general_and_null": {
+  "body": {
+   "completed_at": null,
+   "completed_by": null,
+   "created_at": "2026-11-02T14:03:46.879964Z",
+   "delivery_package_id": null,
+   "due_date": "2027-03-01",
+   "id": "93f48cff-3dfd-4189-afd1-9b68c082e85a",
+   "kind": "general",
+   "name": "Reel 1 due",
+   "notes": "",
+   "order": 0,
+   "project": "3828fa84-b9fe-4cb5-a52d-ea04e073e7e9",
+   "project_code": "P27",
+   "project_name": "Milestone picker",
+   "status": "Pending",
+   "updated_at": "2026-11-02T14:03:46.981388Z"
+  },
+  "request": {
+   "body": {
+    "delivery_package_id": null,
+    "kind": "general"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/scheduling/milestones/93f48cff-3dfd-4189-afd1-9b68c082e85a/"
+  },
+  "status": 200
+ },
+ "patch_other_delivery": {
+  "body": {
+   "completed_at": null,
+   "completed_by": null,
+   "created_at": "2026-11-02T14:03:46.879964Z",
+   "delivery_package_id": "c36bc4ca-52fd-41aa-8d28-38507ece04f7",
+   "due_date": "2027-03-01",
+   "id": "93f48cff-3dfd-4189-afd1-9b68c082e85a",
+   "kind": "delivery",
+   "name": "Reel 1 due",
+   "notes": "",
+   "order": 0,
+   "project": "3828fa84-b9fe-4cb5-a52d-ea04e073e7e9",
+   "project_code": "P27",
+   "project_name": "Milestone picker",
+   "status": "Pending",
+   "updated_at": "2026-11-02T14:03:46.932610Z"
+  },
+  "request": {
+   "body": {
+    "delivery_package_id": "c36bc4ca-52fd-41aa-8d28-38507ece04f7"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/scheduling/milestones/93f48cff-3dfd-4189-afd1-9b68c082e85a/"
+  },
+  "status": 200
+ },
+ "project_deliveries": {
+  "body": {
+   "count": 2,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "client_status": "Pending",
+     "code": "DLV-P27-0002",
+     "created_at": "2026-11-02T14:03:46.765987Z",
+     "delivery_method": "S3",
+     "expires_at": null,
+     "id": "c36bc4ca-52fd-41aa-8d28-38507ece04f7",
+     "is_archived": false,
+     "is_expired": false,
+     "name": "Reel 2 turnover",
+     "project_name": "Milestone picker",
+     "status": "Draft",
+     "total_frames": 0,
+     "total_size_bytes": 0,
+     "updated_at": "2026-11-02T14:03:46.765994Z",
+     "version_count": 0
+    },
+    {
+     "client_status": "Pending",
+     "code": "DLV-P27-0001",
+     "created_at": "2026-11-02T14:03:46.747564Z",
+     "delivery_method": "S3",
+     "expires_at": null,
+     "id": "f72f4da9-8db8-4979-98f7-b3822dda1d3c",
+     "is_archived": false,
+     "is_expired": false,
+     "name": "Reel 1 turnover",
+     "project_name": "Milestone picker",
+     "status": "Draft",
+     "total_frames": 0,
+     "total_size_bytes": 0,
+     "updated_at": "2026-11-02T14:03:46.747571Z",
+     "version_count": 0
+    }
+   ]
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/3828fa84-b9fe-4cb5-a52d-ea04e073e7e9/deliveries/"
+  },
+  "status": 200
+ },
+ "project_deliveries_page_size": {
+  "body": {
+   "count": 2,
+   "next": "http://testserver/api/organizations/projects/3828fa84-b9fe-4cb5-a52d-ea04e073e7e9/deliveries/?page=2&page_size=1",
+   "previous": null,
+   "results": [
+    {
+     "client_status": "Pending",
+     "code": "DLV-P27-0002",
+     "created_at": "2026-11-02T14:03:46.765987Z",
+     "delivery_method": "S3",
+     "expires_at": null,
+     "id": "c36bc4ca-52fd-41aa-8d28-38507ece04f7",
+     "is_archived": false,
+     "is_expired": false,
+     "name": "Reel 2 turnover",
+     "project_name": "Milestone picker",
+     "status": "Draft",
+     "total_frames": 0,
+     "total_size_bytes": 0,
+     "updated_at": "2026-11-02T14:03:46.765994Z",
+     "version_count": 0
+    }
+   ]
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/3828fa84-b9fe-4cb5-a52d-ea04e073e7e9/deliveries/?page_size=1"
+  },
+  "status": 200
+ },
+ "project_deliveries_search": {
+  "body": {
+   "count": 2,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "client_status": "Pending",
+     "code": "DLV-P27-0002",
+     "created_at": "2026-11-02T14:03:46.765987Z",
+     "delivery_method": "S3",
+     "expires_at": null,
+     "id": "c36bc4ca-52fd-41aa-8d28-38507ece04f7",
+     "is_archived": false,
+     "is_expired": false,
+     "name": "Reel 2 turnover",
+     "project_name": "Milestone picker",
+     "status": "Draft",
+     "total_frames": 0,
+     "total_size_bytes": 0,
+     "updated_at": "2026-11-02T14:03:46.765994Z",
+     "version_count": 0
+    },
+    {
+     "client_status": "Pending",
+     "code": "DLV-P27-0001",
+     "created_at": "2026-11-02T14:03:46.747564Z",
+     "delivery_method": "S3",
+     "expires_at": null,
+     "id": "f72f4da9-8db8-4979-98f7-b3822dda1d3c",
+     "is_archived": false,
+     "is_expired": false,
+     "name": "Reel 1 turnover",
+     "project_name": "Milestone picker",
+     "status": "Draft",
+     "total_frames": 0,
+     "total_size_bytes": 0,
+     "updated_at": "2026-11-02T14:03:46.747571Z",
+     "version_count": 0
+    }
+   ]
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/3828fa84-b9fe-4cb5-a52d-ea04e073e7e9/deliveries/?search=Reel+2"
+  },
+  "status": 200
+ },
+ "project_deliveries_search_code": {
+  "body": {
+   "count": 1,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "client_status": "Pending",
+     "code": "DLV-P27-0001",
+     "created_at": "2026-11-02T14:03:46.747564Z",
+     "delivery_method": "S3",
+     "expires_at": null,
+     "id": "f72f4da9-8db8-4979-98f7-b3822dda1d3c",
+     "is_archived": false,
+     "is_expired": false,
+     "name": "Reel 1 turnover",
+     "project_name": "Milestone picker",
+     "status": "Draft",
+     "total_frames": 0,
+     "total_size_bytes": 0,
+     "updated_at": "2026-11-02T14:03:46.747571Z",
+     "version_count": 0
+    }
+   ]
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/3828fa84-b9fe-4cb5-a52d-ea04e073e7e9/deliveries/?search=0001"
+  },
+  "status": 200
+ },
+ "project_deliveries_search_nothing": {
+  "body": {
+   "count": 0,
+   "next": null,
+   "previous": null,
+   "results": []
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/organizations/projects/3828fa84-b9fe-4cb5-a52d-ea04e073e7e9/deliveries/?search=Zzzz"
+  },
+  "status": 200
+ }
+}

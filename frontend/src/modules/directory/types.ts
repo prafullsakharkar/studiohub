@@ -17,6 +17,12 @@ export interface FieldGate {
   permission?: string;
   /** Show (and send) the field only while this holds, e.g. the shot picker only when the entity type is Shot. */
   visibleWhen?: (values: Record<string, string | boolean>) => boolean;
+  /**
+   * While editing, send a blank (null for an entity, '' for text) when the field has become hidden and the saved record still
+   * holds a value, because the server refuses the rest of the change otherwise (a milestone moved from the delivery kind to the
+   * general one has to give up its delivery in the same request).
+   */
+  clearWhenHidden?: boolean;
   /** Show the field only while creating (a value the server never reports back, so an edit form could not show it). */
   onlyOnCreate?: boolean;
   /** Value of the field on a NEW record (a form can also be pre-filled from the query string). */
