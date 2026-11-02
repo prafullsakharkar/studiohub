@@ -52,7 +52,12 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
   const onSubmit = submit(async (values) => {
     const touched = (field: FieldDef) => !editing || Boolean((dirtyFields as Record<string, unknown>)[field.name]);
     const payload: Record<string, unknown> = {};
+    const held: Values = editing && row.data ? fromRow(fields, row.data as unknown as Record<string, unknown>) : {};
     for (const field of fields) {
+      if (editing && field.clearWhenHidden && !isVisible(field, values) && held[field.name]) {
+        payload[field.name] = wireValue(field, '');
+        continue;
+      }
       if (!touched(field) && !(!editing && searchParams.get(field.name) !== null)) continue;
       if (!isVisible(field, values)) continue;
       if (!editing && values[field.name] === '' && field.kind !== 'checkbox') continue; // leave optional blanks to the server defaults

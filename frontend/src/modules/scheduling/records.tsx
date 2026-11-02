@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useCan } from '@/core/permissions/useCan';
 import { projectsApi } from '@/api/production/structure';
 import { departmentsApi, departmentKeys } from '@/api/masterdata/departments';
@@ -10,7 +11,7 @@ import type { DirectoryFormConfig, DirectoryListConfig, FieldDef, RowAction } fr
 import { ProjectPicker } from '@/modules/production/work/pickers';
 import { Badge } from '@/shared/components/Badge';
 import { formatDay, formatMoment, formatRange, formatRate } from './format';
-import { CalendarPicker, ResourcePicker, UserPicker } from './pickers';
+import { CalendarPicker, ProjectDeliveryPicker, ResourcePicker, UserPicker } from './pickers';
 
 const options = (values: ReadonlyArray<string>) => values.map((value) => ({ value, label: value }));
 const projectFilter = { key: 'project_id', label: 'Project', optionsFrom: { queryKey: projectsApi.keys.all, fetchPage: projectsApi.list as never, getLabel: ((p: { code: string }) => p.code) as never } } as const;
@@ -370,13 +371,41 @@ export function useMilestonesListConfig(scope?: { projectId: string }): Director
   };
 }
 
+/** One of the project's deliveries; the choice is cleared when the project changes, and needs `delivery.view` to be offered. */
+export const MilestoneDeliveryField: React.FC<{ project: string; value: string; onChange: (id: string) => void; error?: string }> = ({ project, value, onChange, error }) => {
+  const canSeeDeliveries = useCan('delivery.view');
+  const previous = useRef(project);
+  useEffect(() => {
+    if (previous.current !== project) {
+      previous.current = project;
+      onChange('');
+    }
+  }, [project, onChange]);
+  if (!canSeeDeliveries) {
+    return (
+      <p role="note" className="text-xs text-slate-400">
+        Choosing a delivery needs permission to view deliveries.
+      </p>
+    );
+  }
+  return <ProjectDeliveryPicker label="Delivery *" projectId={project} value={value} onChange={(id) => onChange(id ?? '')} error={error} />;
+};
+
 export const milestoneFormFields: ReadonlyArray<FieldDef> = [
   { kind: 'entity', name: 'project_id', rowKey: 'project', label: 'Project', required: true, onlyOnCreate: true, render: (p) => <ProjectPicker label="Project *" value={p.value} onChange={(id) => p.onChange(id ?? '')} error={p.error} /> },
   { kind: 'text', name: 'name', label: 'Name', required: true, maxLength: 255, hint: 'Unique within the project, in any case.' },
   { kind: 'date', name: 'due_date', label: 'Due', required: true },
   { kind: 'number', name: 'order', label: 'Order', hint: 'Where it shows among the project’s milestones.' },
   { kind: 'select', name: 'kind', label: 'Kind', options: options(MILESTONE_KINDS), initial: 'general' },
-  { kind: 'text', name: 'delivery_package_id', label: 'Delivery id', visibleWhen: (v) => v.kind === 'delivery', hint: 'A delivery milestone needs the id of one of the project’s deliveries.' },
+  {
+    kind: 'entity',
+    name: 'delivery_package_id',
+    label: 'Delivery',
+    required: true,
+    visibleWhen: (v) => v.kind === 'delivery',
+    clearWhenHidden: true,
+    render: (p) => <MilestoneDeliveryField project={String(p.values.project_id ?? '')} value={p.value} onChange={p.onChange} error={p.error} />,
+  },
   { kind: 'textarea', name: 'notes', label: 'Notes' },
 ];
 
