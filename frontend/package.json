@@ -62,7 +62,7 @@
     "rollup-plugin-visualizer": "^7.1.1",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
-    "typescript": "~5.8.2",
+    "typescript": "~5.9.3",
     "vitest": "^5.0.0"
   },
   "description": "StudioHub frontend — VFX & Animation production management platform"
