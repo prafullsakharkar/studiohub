@@ -148,6 +148,7 @@ describe('project children and panels', () => {
   it('members: adds by e-mail and shows the API’s "User not found." for an unknown address', async () => {
     const { calls } = mockFetch((c) => {
       if (c.method === 'POST') return reply(flow.members_add_unknown);
+      if (path(c) === '/api/v1/shows/') return reply(flow.shows_list);
       return reply(flow.members_get);
     });
     renderAt('/x', superuser, <Route path="/x" element={<MembersPanel projectId={PID} />} />);
@@ -161,7 +162,7 @@ describe('project children and panels', () => {
   });
 
   it('members: the add form is only for users who may update the project', async () => {
-    mockFetch(() => reply(flow.members_get));
+    mockFetch((c) => reply(path(c) === '/api/v1/shows/' ? flow.shows_list : flow.members_get));
     renderAt('/x', artist, <Route path="/x" element={<MembersPanel projectId={PID} />} />);
     await screen.findByRole('table', { name: 'Project members' });
     expect(screen.queryByLabelText('Add a member by email')).toBeNull();

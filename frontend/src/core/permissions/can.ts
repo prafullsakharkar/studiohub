@@ -1,5 +1,5 @@
 /**
- * Canonical frontend authorization entry point (ADR-0033 / docs/access-control/RBAC.md).
+ * Canonical frontend authorization entry point (ADR-0033).
  *
  * Single public shape:
  *

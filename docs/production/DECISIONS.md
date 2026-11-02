@@ -311,3 +311,7 @@ Same rule as a task's assignee, through the same validator. Only a new artist is
 
 Both documented shapes mean the same thing, so both are read; saying "updated" for a call that changed nothing was the defect. An item with nothing to update is reported invalid per item (the batch carries on), not as a request error.
 
+
+## D-35 A member is bound to a show through the existing add-member call (CR-36)
+
+The binding already existed in the model, was enforced by the selectors and was tested; only the way to set it was missing, so the add-member call (which is already idempotent and already updates an existing member) takes `show`. Three states, because "leave it" and "release it" are different: omitted leaves it, `null` releases it, an id binds it. A bound member is refused by the whole members route (404, full project access is required), so a separate "a bound manager cannot widen" rule was not needed and was not added; a test pins the 404. Department narrowing has the same missing write path and is **not** part of this decision, nor is removing a member (there is no such route).

@@ -15,6 +15,9 @@ from django.contrib.auth import get_user_model
 from apps.core.services.business import BusinessService
 from apps.production.models import ProjectMembership, ProjectNote
 
+# `add_member(show=...)`: not given (leave the binding alone), None (the whole project) or a show (bind to it).
+UNSET: Any = object()
+
 
 class ProjectMembershipService(BusinessService):
     model = ProjectMembership
@@ -51,6 +54,7 @@ class ProjectMembershipService(BusinessService):
         client_id="",
         team_id="",
         department_id="",
+        show=UNSET,
     ):
         """Idempotent add: returns (membership, created).
 
@@ -73,6 +77,8 @@ class ProjectMembershipService(BusinessService):
             membership.client_id = client_id or membership.client_id
             membership.team_id = team_id or membership.team_id
             membership.department_id = department_id or membership.department_id
+            if show is not UNSET:
+                membership.show = show
             membership.save()
             return membership, False
         if membership is not None:
@@ -88,6 +94,7 @@ class ProjectMembershipService(BusinessService):
             membership.client_id = client_id or ""
             membership.team_id = team_id or ""
             membership.department_id = department_id or ""
+            membership.show = None if show is UNSET else show
             membership.save()
             return membership, False
         membership = ProjectMembership.objects.create(
@@ -102,6 +109,7 @@ class ProjectMembershipService(BusinessService):
             client_id=client_id or "",
             team_id=team_id or "",
             department_id=department_id or "",
+            show=None if show is UNSET else show,
         )
         return membership, True
 

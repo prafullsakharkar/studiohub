@@ -101,6 +101,7 @@ from apps.production.selectors.shot import ShotSelector
 from apps.production.selectors.task import TaskSelector
 from apps.production.selectors.version import VersionSelector
 from apps.production.services.project_scoped import (
+    UNSET,
     ProjectMembershipService,
     ProjectNoteService,
 )
@@ -277,7 +278,7 @@ class ProjectMembersView(ProjectScopedAPIView):
         qs = (
             ProjectMembershipSelector.get_queryset(request=request, view=self)
             .filter(project=self.project)
-            .select_related("user", "project")
+            .select_related("user", "project", "show")
             .order_by("user__email")
         )
         members = list(qs)
@@ -291,7 +292,7 @@ class ProjectMembersView(ProjectScopedAPIView):
 
         self._require_member_management(request)
         serializer = ProjectMembershipCreateSerializer(
-            data=request.data or {}, context={"request": request}
+            data=request.data or {}, context={"request": request, "project": self.project}
         )
         serializer.is_valid(raise_exception=True)
         payload = cast(dict[str, Any], serializer.validated_data)
@@ -315,6 +316,7 @@ class ProjectMembersView(ProjectScopedAPIView):
             status=payload.get("status") or "active",
             vendor_id=payload.get("vendor_id") or "",
             client_id=payload.get("client_id") or "",
+            show=payload.get("show", UNSET),
         )
         data = ProjectMembershipSerializer(
             membership, context={"request": request}
