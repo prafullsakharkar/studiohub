@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from apps.core.api.serializers.base import BaseReadSerializer, BaseWriteSerializer
 from apps.core.api.serializers.fields import CaseInsensitiveChoiceField
-from apps.production.models import ProjectMembership
+from apps.production.models import ProjectMembership, Show
 
 
 def _user_display_name(user) -> str:
@@ -41,6 +41,9 @@ class ProjectMembershipSerializer(BaseReadSerializer[Any]):
     name = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
     avatar_url = serializers.SerializerMethodField()
+    # The show this membership is bound to (null: the whole project). CR-36.
+    show_id = serializers.UUIDField(read_only=True, allow_null=True)
+    show_code = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectMembership
@@ -60,6 +63,8 @@ class ProjectMembershipSerializer(BaseReadSerializer[Any]):
             "roles",
             "scope",
             "status",
+            "show_id",
+            "show_code",
             "department",
             "department_id",
             "team_id",
@@ -95,6 +100,9 @@ class ProjectMembershipSerializer(BaseReadSerializer[Any]):
     def get_avatar_url(self, obj):
         return _user_avatar(obj.user)
 
+    def get_show_code(self, obj):
+        return obj.show.code if obj.show_id else ""
+
 
 class ProjectMembershipCreateSerializer(BaseWriteSerializer[Any]):
     """Accept frontend member payload: {userId|user_id|email, role, roles?, scope?}."""
@@ -113,6 +121,9 @@ class ProjectMembershipCreateSerializer(BaseWriteSerializer[Any]):
     client_id = serializers.CharField(required=False, allow_blank=True, default="", max_length=50)
     # Canonical RBAC role (N7); resolved platform-wide in validate, fail closed.
     role_id = serializers.UUIDField(required=False, allow_null=True, write_only=True)
+    # CR-36: bind the member to one show of this project. Omitted leaves the binding as it is; null clears it
+    # (the whole project); an id binds it. A show of another project, or a deleted one, is refused.
+    show = serializers.UUIDField(required=False, allow_null=True)
     # Frontend contract sends Title Case ("Active"); DB stores lowercase.
     status = CaseInsensitiveChoiceField(
         choices=ProjectMembership.STATUS_CHOICES, required=False, default="active"
@@ -131,13 +142,24 @@ class ProjectMembershipCreateSerializer(BaseWriteSerializer[Any]):
             "role_id",
             "vendor_id",
             "client_id",
+            "show",
         )
 
     def validate(self, attrs):
         role_ref = attrs.pop("role_id", None)
         if role_ref is not None:
             attrs["role_ref"] = self._resolve_role_ref(role_ref)
+        if attrs.get("show") is not None:
+            attrs["show"] = self._resolve_show(attrs["show"])
         return attrs
+
+    def _resolve_show(self, show_id):
+        """The show, when it is a live show of this project; anything else is unknown (fail closed)."""
+        project = self.context.get("project")
+        show = Show.objects.filter(pk=show_id, project=project).first() if project is not None else None
+        if show is None:
+            raise serializers.ValidationError({"show": ["Unknown show."]})
+        return show
 
     def _resolve_role_ref(self, role_ref):
         """Resolve a role id against the global identity roles.

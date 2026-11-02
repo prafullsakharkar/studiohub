@@ -1,9 +1,11 @@
 """
 CR-36 evidence: what the project member API does about a show (real responses).
 
-A membership can be bound to one show in the database (`ProjectMembership.show`) and the backend narrows what such a
-member sees; this captures that the API cannot set or show it. Pytest test database only, inside a rolled-back
-transaction.
+A membership can be bound to one show (`ProjectMembership.show`) and the backend narrows what such a member sees.
+Before CR-36 the API ignored `show` and did not return it (POST answered 201 with `show_id: null`; PATCH and DELETE on a
+member are 404 because the routes do not exist). After it, `show` binds and the rows carry `show_id` and `show_code`.
+`member_add_with_show_id` sends the unknown key `show_id`: it is ignored and the binding from the call before stays.
+Pytest test database only, inside a rolled-back transaction.
 
     cd backend
     SYNC_SAMPLES_OUT=../docs/sync/samples \
