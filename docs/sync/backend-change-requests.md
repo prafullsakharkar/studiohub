@@ -597,7 +597,7 @@ Each of the six settings viewsets (`categories`, `definitions`, `system-settings
 
 **Applied (approved by the owner, 2026-11-02, "Approved CR-37", as written, including the self-protection guard, `POST` unchanged and the soft delete):** `PATCH` and `DELETE` on `projects/{id}/members/{member_id}/`, the update serializer, `ProjectMembershipService.update_member` / `remove_member`, contract C-54 and decision D-36 (`docs/production/`). Evidence, the one addition (a restored member no longer keeps the department it had) and the frontend are in `docs/sync/backend-cr-37-verification.md`: 25 backend tests, 16 of 16 source mutations caught, production/masterdata/audit/identity API tests 3,111 pass, a live test against the real backend.
 
-### CR-38: adding a person who is already a member reinstates them and demotes them (**bug**, **PROPOSED, awaiting approval**)
+### CR-38: adding a person who is already a member reinstates them and demotes them (**bug**, **APPROVED 2026-11-03, being built**)
 
 Found in Phase 24 (§5 of `backend-cr-36-verification.md`), left alone in CR-36 and CR-37 ("`POST` unchanged"), and now written up with its own capture: `samples/production/_readd_flow.json`, `tools/test_capture_readd.py`.
 
@@ -632,4 +632,4 @@ Nothing in the request asks for either. Anyone who may manage members can do the
 
 **Risk.** Low: three small defaults and a view line, no migration, no new route. The behaviour change is the point of the request; a caller that relied on "add again reactivates them" must now send `"status": "active"` (or use `PATCH`, CR-37).
 
-**Decision asked of the owner:** approve CR-38 as written, change it, or leave it. Nothing in the backend has been changed for it.
+**Approved by the owner, 2026-11-03 ("Approved CR-38"), as written.** It is built on its own branch (`sync/backend-cr-38`); this entry gets its "Applied" note when that is merged.
