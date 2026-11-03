@@ -78,8 +78,17 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
   } = useServerForm<z.infer<typeof memberSchema>>({ resolver: zodResolver(memberSchema), defaultValues: { email: '', role: 'Artist', show: WHOLE_PROJECT } });
 
   const onAdd = submit(async (values) => {
-    // 404 "User not found." (unknown e-mail) is shown by the form; 200 means they were already a member.
-    // The whole project sends no show: a new member belongs to it, and someone already on the project keeps their show.
+    // 404 "User not found." (unknown e-mail) is shown by the form.
+    // Someone already on the project is not added again (CR-38): the add would still replace their role with the one in this
+    // form, and their status stays as it is, so say so and point to the table, where each field is edited on its own.
+    const email = values.email.toLowerCase(); // the schema has trimmed it
+    const already = (members.data?.results ?? []).find((m) => m.email.toLowerCase() === email);
+    if (already) {
+      reset({ email: '', role: values.role, show: values.show });
+      notify.info(`${already.name} is already on this project (${already.status}). Change their role, status, show or department in the table below.`);
+      return;
+    }
+    // The whole project sends no show: a new member belongs to it.
     const { show, ...member } = values;
     await projectScopedApi.addMember(projectId, show === WHOLE_PROJECT ? member : { ...member, show });
     reset({ email: '', role: values.role, show: values.show });
