@@ -136,11 +136,13 @@ class ProjectMembershipCreateSerializer(_MemberRefsMixin, BaseWriteSerializer[An
     userId = serializers.CharField(required=False, allow_blank=True, default="")
     user_id = serializers.CharField(required=False, allow_blank=True, default="")
     email = serializers.EmailField(required=False, allow_blank=True, default="")
-    role = serializers.CharField(required=False, allow_blank=True, default="Artist")
+    # CR-38: role, scope and status have no default here. This is also the "add again" of a person who is already a member,
+    # and a default would overwrite what is stored; a new member gets Artist / PROJECT / active in the service.
+    role = serializers.CharField(required=False, allow_blank=True)
     roles = serializers.ListField(
         child=serializers.CharField(), required=False, default=list
     )
-    scope = serializers.CharField(required=False, allow_blank=True, default="PROJECT")
+    scope = serializers.CharField(required=False, allow_blank=True)
     # Making the member external: with either set they see only what that vendor/client was
     # given (``selectors/external_scope.py``), not the whole project.
     vendor_id = serializers.CharField(required=False, allow_blank=True, default="", max_length=50)
@@ -151,9 +153,7 @@ class ProjectMembershipCreateSerializer(_MemberRefsMixin, BaseWriteSerializer[An
     # (the whole project); an id binds it. A show of another project, or a deleted one, is refused.
     show = serializers.UUIDField(required=False, allow_null=True)
     # Frontend contract sends Title Case ("Active"); DB stores lowercase.
-    status = CaseInsensitiveChoiceField(
-        choices=ProjectMembership.STATUS_CHOICES, required=False, default="active"
-    )
+    status = CaseInsensitiveChoiceField(choices=ProjectMembership.STATUS_CHOICES, required=False)
 
     class Meta:
         model = ProjectMembership

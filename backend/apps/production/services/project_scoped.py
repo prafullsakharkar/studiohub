@@ -45,11 +45,11 @@ class ProjectMembershipService(BusinessService):
         *,
         project,
         user,
-        role="Artist",
-        roles=None,
+        role: str | None = None,
+        roles: list[str] | None = None,
         role_ref=None,
-        scope="PROJECT",
-        status="active",
+        scope: str | None = None,
+        status: str | None = None,
         vendor_id="",
         client_id="",
         team_id="",
@@ -58,6 +58,8 @@ class ProjectMembershipService(BusinessService):
     ):
         """Idempotent add: returns (membership, created).
 
+        For a person who is already a member only what is named changes (CR-38): an add that names nobody's role or
+        status leaves them as they are. A new member, and a restored one, get Artist / PROJECT / active for what is not named.
         Reuses soft-deleted rows (§12) instead of duplicating them.
         """
         membership = (
