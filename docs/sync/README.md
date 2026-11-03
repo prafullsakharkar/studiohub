@@ -1,6 +1,6 @@
 # Frontend ↔ backend sync (docs/sync)
 
-The React app in `frontend/` was synced from the sibling `studiohub-react` repository with its mock layer removed, and it was badly out of contract with the Django REST backend. This folder is the record of making it a faithful client, phase by phase (Phases 0 to 23), and the tools that keep it one.
+The React app in `frontend/` was synced from the sibling `studiohub-react` repository with its mock layer removed, and it was badly out of contract with the Django REST backend. This folder is the record of making it a faithful client, phase by phase (Phases 0 to 28), and the tools that keep it one.
 
 **The rule that held throughout:** the backend is the contract. No endpoint, field or error shape is used unless it was read from the backend code or captured from a real response (`samples/`). Backend code changed only for the change requests in [`backend-change-requests.md`](backend-change-requests.md), each approved by the owner first.
 
@@ -12,11 +12,19 @@ The React app in `frontend/` was synced from the sibling `studiohub-react` repos
 | [`01-frontend-inventory.md`](01-frontend-inventory.md) | Every API call the frontend made at the start, and what it was missing |
 | [`02-gap-analysis.md`](02-gap-analysis.md) | The differences between the two, ranked |
 | [`03-phase-plan.md`](03-phase-plan.md) | The plan: 14 phases, scope and dependencies of each |
-| [`phase-N-verification.md`](.) (1 to 23, plus `legacy-cleanup-verification.md`, `backend-cr-36-verification.md` and `backend-cr-37-verification.md`) | What each phase built, removed and found, the gates it passed, the questions it left |
+| [`phase-N-verification.md`](.) (1 to 28, plus `legacy-cleanup-verification.md`, `backend-cr-36-verification.md` and `backend-cr-37-verification.md`) | What each phase built, removed and found, the gates it passed, the questions it left |
 | [`backend-cr-26-31-verification.md`](backend-cr-26-31-verification.md) | The last batch of backend changes (settings, tags, dashboard) |
 | [`backend-change-requests.md`](backend-change-requests.md) | Every backend finding (CR-n), with evidence, the proposed diff and its status; owner questions (Q-n) |
 | [`samples/`](samples/README.md) | Real responses captured from the backend; frontend tests build their mocks from these |
 | [`tools/`](tools/README.md) | The capture scripts, the live backend harness, the role smoke runner, the dead-code finder |
+
+## State after Phase 28 (the current one; the section below is the Phase 13 record)
+
+- Phases 0 to 28 are merged into `develop` and `main` (identical trees). The backend changes that came after Phase 13 are CR-32, 33, 36 and 37 (team membership, a member bound to a show, a member edited and removed by id); CR-38 (a plain re-add must not reactivate a member) is **written and waiting for the owner's approval** in `backend-change-requests.md`.
+- CI (`.github/workflows/ci.yml`) has four jobs: backend (ruff, pytest on Postgres 17), frontend (typecheck, Biome errors, vitest, build), secret scan, docs link check. `main`'s branch protection requires only backend, secret scan and docs; the frontend job is not yet a required check.
+- Dependabot (`.github/dependabot.yml`) opens weekly grouped updates for the backend (uv), the frontend (npm), the Actions, Docker and compose. The npm entry ignores Express 5 (its bare `*` route breaks `frontend/server.ts`) and `@types/node` 25 and newer (CI runs Node 24). Its pull requests that change workflow files cannot be merged with the `gh` token in use (a fine-grained token); they were merged by merging the pull request's head with git.
+- The backend runs on Django 6.1.2: mail is configured through `MAILERS` (built from the same environment variables), and `django-celery-beat`, which capped Django below 6.1, was removed because nothing used it.
+- The signed-in app applies the studio's default localization (date, time and number formats, first weekday) and default theme (starting mode, accents, font): Phase 28. The studio time zone and the theme's radius, surfaces and text colours are not applied (`phase-28-verification.md` §3).
 
 ## State at the end of Phase 13
 
