@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import http from 'node:http';
 import path from 'path';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { createServer as createViteServer } from 'vite';
@@ -34,6 +35,10 @@ async function checkDjangoServer(): Promise<boolean> {
 
 async function startServer() {
   const app = express();
+  // One HTTP server for the app and for Vite's hot-reload WebSocket. In middleware mode Vite otherwise opens the socket on
+  // a fixed second port (24678), so two dev servers on one machine (a smoke run next to `pnpm dev`) answer each other's
+  // sockets with a 400 and every page throws "WebSocket closed without opened".
+  const httpServer = http.createServer(app);
 
   app.get('/api/health', async (_req, res) => {
     isDjangoRunning = await checkDjangoServer();
@@ -109,7 +114,7 @@ async function startServer() {
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
-        hmr: false,
+        hmr: { server: httpServer },
       },
       appType: 'spa',
     });
@@ -125,7 +130,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', async () => {
+  httpServer.listen(PORT, '0.0.0.0', async () => {
     isDjangoRunning = await checkDjangoServer();
 
     console.log(
