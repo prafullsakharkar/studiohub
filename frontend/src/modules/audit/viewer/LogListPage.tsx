@@ -14,6 +14,7 @@ import { usePaginatedList } from '@/shared/data/usePaginatedList';
 import { Button } from '@/shared/components/Button';
 import { Pagination } from '@/shared/components/Pagination';
 import { SearchInput } from '@/shared/components/SearchInput';
+import { formatNumber } from '@/core/locale/studioLocale';
 
 export interface LogFilter {
   /** Backend filter parameter. */
@@ -83,10 +84,10 @@ export function LogListPage<T extends { id: string }>({ config }: { config: LogL
         fetchPage: config.fetchPage,
         params: list.params,
         filename: `${config.title.toLowerCase().replace(/\s+/g, '-')}.csv`,
-        confirmLarge: async (count) => window.confirm(`This export has ${count.toLocaleString()} rows. Continue?`),
+        confirmLarge: async (count) => window.confirm(`This export has ${formatNumber(count)} rows. Continue?`),
         columns: [...config.exportColumns],
       });
-      if (!result.cancelled) notify.success(`Exported ${result.rows.toLocaleString()} rows.`, { title: 'Export ready' });
+      if (!result.cancelled) notify.success(`Exported ${formatNumber(result.rows)} rows.`, { title: 'Export ready' });
     } catch (error) {
       notify.error(error instanceof Error ? error.message : 'Export failed.');
     } finally {

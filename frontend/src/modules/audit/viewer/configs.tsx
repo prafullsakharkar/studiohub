@@ -3,8 +3,9 @@ import type { ActivityEntry, ApiRequestLog, AuditLogEntry, BackgroundJob, Change
 import { ChangeDiff } from '@/components/history/EntityHistory';
 import { Badge } from '@/shared/components/Badge';
 import type { LogListConfig } from './LogListPage';
+import { formatDateTime } from '@/core/locale/studioLocale';
 
-const when = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleString() : '—');
+const when = (iso: string | null | undefined) => formatDateTime(iso);
 const who = (r: { user_name?: string; user_email?: string }) => r.user_name || r.user_email || '—';
 const json = (value: unknown) => (
   <pre className="max-h-96 overflow-auto rounded-lg border border-slate-800 bg-slate-950 p-3 text-[11px] text-slate-300 whitespace-pre-wrap break-all">{JSON.stringify(value, null, 2)}</pre>

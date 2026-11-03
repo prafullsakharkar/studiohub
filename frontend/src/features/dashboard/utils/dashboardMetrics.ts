@@ -1,3 +1,4 @@
+import { formatTime } from '@/core/locale/studioLocale';
 import {
   DashboardDeliveriesData,
   DashboardSummaryKpis,
@@ -164,7 +165,7 @@ export function formatActivityTimestamp(timestamp: string | undefined | null): s
   if (!timestamp) return '—';
   const parsed = new Date(timestamp);
   if (Number.isNaN(parsed.getTime())) return '—';
-  return parsed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return formatTime(parsed);
 }
 
 // ------------------------------------------------------------------------------------------------ deliveries

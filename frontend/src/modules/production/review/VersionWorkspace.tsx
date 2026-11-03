@@ -17,6 +17,7 @@ import { StatusMenu } from '@/modules/production/work/StatusMenu';
 import { PlaylistPicker } from './pickers';
 import { reviewStatusVariant } from './reviews';
 import { versionActions, versionBadges } from './versions';
+import { formatDateTime } from '@/core/locale/studioLocale';
 
 type TabId = 'overview' | 'reviews' | 'status' | 'changes';
 const TABS: ReadonlyArray<{ id: TabId; label: string }> = [
@@ -187,8 +188,8 @@ export const VersionWorkspace: React.FC = () => {
                   <Fact label="Resolution">{v.resolution}</Fact>
                   <Fact label="Frame rate">{v.fps}</Fact>
                   <Fact label="Colour space">{v.color_space}</Fact>
-                  <Fact label="Published">{v.published_at ? new Date(v.published_at).toLocaleString() : ''}</Fact>
-                  <Fact label="Created">{new Date(v.created_at).toLocaleString()}</Fact>
+                  <Fact label="Published">{formatDateTime(v.published_at, '')}</Fact>
+                  <Fact label="Created">{formatDateTime(v.created_at, '')}</Fact>
                 </dl>
                 {v.notes && <p className="text-sm text-slate-300 whitespace-pre-wrap">{v.notes}</p>}
                 {v.changelog && <p className="text-xs text-slate-400 whitespace-pre-wrap">{v.changelog}</p>}

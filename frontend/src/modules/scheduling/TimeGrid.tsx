@@ -6,11 +6,12 @@ import { dayAgenda, fromKey } from './calendarModel';
 import type { CalendarData } from './calendarModel';
 import { formatDay } from './format';
 import { KIND_LABEL, KIND_STYLE } from './kinds';
+import { formatTime } from '@/core/locale/studioLocale';
 
 /** One hour is this tall, in pixels. */
 export const HOUR_PX = 48;
 const hours = Array.from({ length: 24 }, (_, h) => `${String(h).padStart(2, '0')}:00`);
-const clock = (iso: string) => new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+const clock = (iso: string) => formatTime(iso);
 const minutesText = (m: number) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 
 interface Props {
