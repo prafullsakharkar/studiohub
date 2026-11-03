@@ -26,7 +26,6 @@ dependencies = [
     "celery[redis]>=5.5",
     "flower>=2.0",
     "django-celery-results>=2.6",
-    "django-celery-beat>=2.9",
     # Images
     "pillow>=13.0.0",
     # JSON
