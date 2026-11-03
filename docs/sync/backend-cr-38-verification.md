@@ -2,7 +2,7 @@
 
 Branch `sync/backend-cr-38` (from `develop` at `02eb9107`), **not pushed, not merged**. This branch **changes the backend** (CR-38, approved by the owner: "Approved CR-38"). The change request and its evidence are in `backend-change-requests.md`.
 
-## 1. What changed (3 source files, +19 / -13)
+## 1. What changed (3 source files, +18 / -14)
 
 - `apps/production/api/serializers/membership.py`: `ProjectMembershipCreateSerializer` no longer defaults `status`, `role` and `scope`; an omitted one is absent from the validated data.
 - `apps/production/api/views/project_scoped.py` (`ProjectMembersView.post`): passes `None` for what was not sent; `roles` is the sent `roles`, else `[role]` only when a role was sent, else `None`. This view also carried defaults of its own (`or "Artist"`, `or "PROJECT"`, `or "active"`), which is why removing only the serializer's would not have been enough.
