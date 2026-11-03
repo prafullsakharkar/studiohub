@@ -131,7 +131,12 @@ Authentication secrets should be rotated periodically.
 | `EMAIL_HOST_USER` | SMTP username |
 | `EMAIL_HOST_PASSWORD` | SMTP password |
 | `EMAIL_USE_TLS` | Enable TLS |
+| `EMAIL_USE_SSL` | Implicit TLS (port 465); not together with `EMAIL_USE_TLS` |
 | `DEFAULT_FROM_EMAIL` | Sender address |
+
+These are environment variables only. Django 6.1 replaced its own `EMAIL_*` settings with `MAILERS`, so
+`backend/config/settings/components/email.py` builds `MAILERS["default"]` from them and the project no longer sets any
+`EMAIL_*` Django setting (Django refuses both together).
 
 Production credentials should be stored securely.
 
