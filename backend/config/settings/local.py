@@ -6,7 +6,7 @@ from .base import *
 
 DEBUG = True  # pyright: ignore[reportConstantRedefinition]
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+MAILERS = {"default": {"BACKEND": "django.core.mail.backends.console.EmailBackend"}}  # pyright: ignore[reportConstantRedefinition]
 
 INTERNAL_IPS = [
     "127.0.0.1",
