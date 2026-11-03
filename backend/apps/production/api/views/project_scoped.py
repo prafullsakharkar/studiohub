@@ -307,15 +307,17 @@ class ProjectMembersView(ProjectScopedAPIView):
                 {"detail": "User not found."},
                 status=http_status.HTTP_404_NOT_FOUND,
             )
-        roles = payload.get("roles") or [payload.get("role") or "Artist"]
+        # CR-38: what the request does not name stays as it is for a person who is already a member (and takes the
+        # service's defaults for a new one).
+        role = payload.get("role") or None
         membership, created = ProjectMembershipService.add_member(
             project=self.project,
             user=user,
-            role=payload.get("role") or "Artist",
-            roles=roles,
+            role=role,
+            roles=payload.get("roles") or ([role] if role else None),
             role_ref=payload.get("role_ref"),
-            scope=payload.get("scope") or "PROJECT",
-            status=payload.get("status") or "active",
+            scope=payload.get("scope") or None,
+            status=payload.get("status") or None,
             vendor_id=payload.get("vendor_id") or "",
             client_id=payload.get("client_id") or "",
             show=payload.get("show", UNSET),
