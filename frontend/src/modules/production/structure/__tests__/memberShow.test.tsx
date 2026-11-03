@@ -12,7 +12,7 @@ import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import type { User } from '@/types/identity';
 import { MembersPanel } from '../panels';
 
-type Member = { id: string; user_id: string; name: string; show_id: string | null; show_code: string; role: string; roles: string[]; status: string; scope: string; department: string };
+type Member = { id: string; user_id: string; name: string; email: string; show_id: string | null; show_code: string; role: string; roles: string[]; status: string; scope: string; department: string };
 type Captured = { status: number; body: unknown };
 const showFlow = loadSample<Record<string, Captured>>('production/_membership_show_flow.json');
 const detail = loadSample<Record<string, Captured>>('production/_member_detail_flow.json');
@@ -31,6 +31,7 @@ const mine: Member = { ...loose, id: 'own-membership', user_id: superuser.id, na
 const members = { count: 3, results: [bound, loose, mine] };
 
 const path = (c: MockCall) => new URL(c.url).pathname;
+const membersUrl = `/api/organizations/projects/${PID}/members/`;
 const memberUrl = (m: Member) => `/api/organizations/projects/${PID}/members/${m.id}/`;
 let shows: unknown;
 let reply: (c: MockCall) => MockReply | undefined;
@@ -111,6 +112,29 @@ describe('members and their show (CR-36)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
     await waitFor(() => expect(calls.filter((c) => c.method === 'POST')).toHaveLength(2));
     expect(calls.filter((c) => c.method === 'POST')[1].body).toEqual({ email: 'again@example.test', role: 'Artist' });
+  });
+
+  it('does not add someone who is already listed: no request, and a message that gives their status (CR-38)', async () => {
+    // The server may store an e-mail with capitals; the match ignores case on both sides (the form trims the spaces).
+    const mixed = { ...loose, email: 'Mixed.Case@Example.test' };
+    reply = (c) => (c.method === 'GET' && path(c) === membersUrl ? { body: { count: 1, results: [mixed] } } : undefined);
+    const { calls } = mockFetch(server);
+    mount(superuser);
+    await showSelect(0);
+    fireEvent.change(screen.getByLabelText('Add a member by email'), { target: { value: '  mixed.case@EXAMPLE.test ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
+    await waitFor(() => expect(useNotificationStore.getState().notifications.map((n) => n.message).join(' ')).toContain('already on this project (suspended)'));
+    expect(calls.filter((c) => c.method === 'POST')).toHaveLength(0);
+    expect((screen.getByLabelText('Add a member by email') as HTMLInputElement).value).toBe('');
+  });
+
+  it('still adds someone who is not listed', async () => {
+    const { calls } = mockFetch(server);
+    mount(superuser);
+    await showSelect(0);
+    fireEvent.change(screen.getByLabelText('Add a member by email'), { target: { value: 'someone.else@example.test' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add member' }));
+    await waitFor(() => expect(calls.filter((c) => c.method === 'POST')).toHaveLength(1));
   });
 
   it('offers no show picker for a project that has no shows', async () => {
