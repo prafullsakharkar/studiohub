@@ -11,6 +11,7 @@ import type { MockCall, MockReply } from '@/test/fetchMock';
 import { loadSample } from '@/test/samples';
 import type { User } from '@/types/identity';
 import { CalendarPage, TIMELINE_DAYS } from '../CalendarPage';
+import { setStudioLocale, toStudioLocale } from '@/core/locale/studioLocale';
 import { addDays, dayKey, weekOf, windowOf } from '../calendarModel';
 
 type Row = Record<string, string>;
@@ -85,6 +86,7 @@ beforeEach(() => {
   tokenStorage.setTokens({ access: 'a', refresh: 'r' });
 });
 afterEach(() => {
+  setStudioLocale(null);
   cleanup();
   tokenStorage.clearTokens();
   vi.unstubAllGlobals();
@@ -285,5 +287,32 @@ describe('inside a project', () => {
     await screen.findByRole('region', { name: 'Week' });
     await waitFor(() => expect(calls.some((c) => path(c).endsWith('/events/') && param(c, 'project_id') === 'p-1' && param(c, 'end')?.endsWith('Z'))).toBe(true));
     expect(screen.queryByText(/ off$/)).toBeNull();
+  });
+});
+
+describe('the studio’s first day of the week', () => {
+  const sunday = { date_format: 'DD/MM/YYYY', time_format: '24H', number_format: 'dot', week_start: 0 };
+
+  it('puts Sunday first in the month headings, and Monday first without a studio default', async () => {
+    mockFetch(serve);
+    open('/cal', manager);
+    const monthHeadings = async () => (await screen.findAllByRole('columnheader')).map((h) => h.textContent);
+    expect((await monthHeadings()).slice(0, 7)).toEqual(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
+    cleanup();
+    setStudioLocale(toStudioLocale(sunday));
+    mockFetch(serve);
+    open('/cal', manager);
+    expect((await monthHeadings()).slice(0, 7)).toEqual(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']);
+  });
+
+  it('asks the server for the Sunday-to-Saturday week in the week view', async () => {
+    setStudioLocale(toStudioLocale(sunday));
+    const { calls } = mockFetch(serve);
+    open(`/cal?view=week&date=${DAILIES_DAY}`, manager);
+    await waitFor(() => expect(calls.some((c) => path(c).endsWith('/events/'))).toBe(true));
+    const days = weekOf(DAILIES_DAY, 0);
+    const span = windowOf(days[0], days[6]);
+    expect(param(lastCall(calls, '/events/'), 'start')).toBe(span.start);
+    expect(new Date(days[0] + 'T12:00:00').getDay()).toBe(0);
   });
 });

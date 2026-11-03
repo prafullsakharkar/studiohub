@@ -6,6 +6,25 @@ type Captured = { status: number; body: any };
 const flow = loadSample<Record<string, Captured>>('scheduling/_flow.json');
 const items = (key: string): any[] => flow[key].body.items ?? flow[key].body;
 
+describe('a week that starts on Sunday (the studio localization’s week_start 0)', () => {
+  it('moves the month grid’s first column to Sunday and keeps 7 days a row', () => {
+    const weeks = monthGrid(2026, 9, 0); // October 2026 starts on a Thursday
+    expect(weeks[0][0]).toBe('2026-09-27');
+    expect(weeks[0][6]).toBe('2026-10-03');
+    expect(weeks.every((w) => w.length === 7)).toBe(true);
+    expect(weeks.flat().filter((k) => k.startsWith('2026-10-'))).toHaveLength(31);
+    expect(monthGrid(2026, 9, 1)[0][0]).toBe('2026-09-28'); // Monday-first, the default
+    expect(monthGrid(2026, 9)[0][0]).toBe('2026-09-28');
+  });
+  it('starts the week on the Sunday on or before the day', () => {
+    expect(weekOf('2026-11-04', 0)[0]).toBe('2026-11-01'); // a Wednesday
+    expect(weekOf('2026-11-04', 0)[6]).toBe('2026-11-07');
+    expect(weekOf('2026-11-01', 0)[0]).toBe('2026-11-01'); // a Sunday starts its own week
+    expect(weekOf('2026-11-01', 1)[0]).toBe('2026-10-26'); // ... and ends the Monday-first one
+    expect(weekOf('2026-11-04')[0]).toBe('2026-11-02');
+  });
+});
+
 describe('month grid', () => {
   it('starts on a Monday, has 7 days a row and covers the whole month', () => {
     const weeks = monthGrid(2026, 10); // November 2026 starts on a Sunday

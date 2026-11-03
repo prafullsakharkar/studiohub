@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import type React from 'react';
 import type { StatusHistoryRow } from '@/api/production/work';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
+import { formatDateTime } from '@/core/locale/studioLocale';
 
 export interface StatusHistoryProps {
   /** Distinct per record, e.g. `[...tasksApi.keys.detail(id), 'status-history']`. */
@@ -30,7 +31,7 @@ export const StatusHistory: React.FC<StatusHistoryProps> = ({ queryKey, fetch })
               <ArrowRight className="h-3 w-3 text-slate-500" aria-label="to" />
               <span className="font-semibold">{row.to_status}</span>
               <span className="ml-auto text-[11px] text-slate-500">
-                {row.actor_name || 'Someone'} · {new Date(row.changed_at).toLocaleString()}
+                {row.actor_name || 'Someone'} · {formatDateTime(row.changed_at, '')}
               </span>
             </div>
             {row.reason && <p className="mt-1 text-[11px] text-slate-400">{row.reason}</p>}

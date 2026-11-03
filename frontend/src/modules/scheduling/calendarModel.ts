@@ -1,4 +1,5 @@
 import type { CalendarEventRow, Holiday, Leave, Milestone } from '@/api/scheduling/scheduling';
+import { formatTime } from '@/core/locale/studioLocale';
 
 export type DayItemKind = 'event' | 'milestone' | 'holiday' | 'leave';
 
@@ -34,10 +35,13 @@ export function daysBetween(from: string, to: string): string[] {
   return keys;
 }
 
-/** The weeks (Monday first) that show `month` (0-11) of `year`: 5 or 6 rows of 7 keys. */
-export function monthGrid(year: number, month: number): string[][] {
+/** The first day of the week: the studio's localization says 0 (Sunday) or 1 (Monday); Monday when it says nothing. */
+export type WeekStart = 0 | 1;
+
+/** The weeks (Monday first unless `weekStart` says Sunday) that show `month` (0-11) of `year`: 5 or 6 rows of 7 keys. */
+export function monthGrid(year: number, month: number, weekStart: WeekStart = 1): string[][] {
   const first = new Date(year, month, 1, 12);
-  const offset = (first.getDay() + 6) % 7; // Monday is 0
+  const offset = (first.getDay() + 7 - weekStart) % 7; // the first column is 0
   const start = new Date(year, month, 1 - offset, 12);
   const weeks: string[][] = [];
   for (let w = 0; w < 6; w++) {
@@ -48,7 +52,7 @@ export function monthGrid(year: number, month: number): string[][] {
   return weeks;
 }
 
-const time = (iso: string) => new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+const time = (iso: string) => formatTime(iso);
 
 /** The local days an event covers; an event that ends exactly at midnight does not touch the day it ends on. */
 export function eventDays(event: Pick<CalendarEventRow, 'start_time' | 'end_time'>): string[] {
@@ -91,10 +95,10 @@ export const addDays = (key: string, n: number): string => {
   return dayKey(new Date(d.getFullYear(), d.getMonth(), d.getDate() + n, 12));
 };
 
-/** The seven days (Monday first) of the week that holds `key`. */
-export function weekOf(key: string): string[] {
-  const monday = addDays(key, -((fromKey(key).getDay() + 6) % 7));
-  return Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+/** The seven days (Monday first unless `weekStart` says Sunday) of the week that holds `key`. */
+export function weekOf(key: string, weekStart: WeekStart = 1): string[] {
+  const first = addDays(key, -((fromKey(key).getDay() + 7 - weekStart) % 7));
+  return Array.from({ length: 7 }, (_, i) => addDays(first, i));
 }
 
 const midnight = (key: string) => {

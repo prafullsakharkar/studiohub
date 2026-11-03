@@ -10,6 +10,7 @@ import { usePageLayoutStore } from '@/core/layout/usePageLayoutStore';
 import { cn } from '@/shared/utils/cn';
 import { CoachMarkOverlay, GettingStartedBanner } from '@/shared/components/CoachMarkOverlay';
 import { useThemeMode } from '@/providers/ThemeProvider';
+import { useStudioDefaults } from '@/core/locale/StudioDefaults';
 
 export const AppLayout: React.FC = () => {
   const location = useLocation();
@@ -17,6 +18,8 @@ export const AppLayout: React.FC = () => {
   const { syncWithUserPreferences } = useThemeMode();
   const { setActiveProject } = useProductionStore();
   const { density, containerWidth, headerSticky } = usePageLayoutStore();
+  // The studio's default localization and theme (Phase 28); pages render once both are known.
+  const { settled } = useStudioDefaults();
 
   // Keep theme accent colors synced with user's saved profile preferences
   useEffect(() => {
@@ -72,7 +75,7 @@ export const AppLayout: React.FC = () => {
             )}
           >
             <Suspense fallback={<div role="status" aria-live="polite" className="p-6 text-sm text-slate-400">Loading…</div>}>
-              <Outlet />
+              {settled ? <Outlet /> : null}
             </Suspense>
           </div>
         </main>

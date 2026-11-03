@@ -853,3 +853,9 @@ html.light .timeline-connector {
 
 
 
+
+/* The studio's default theme chooses the font family (--studio-font-family, set by ThemeProvider.applyStudioTheme); without it
+   the application keeps Tailwind's own sans stack. */
+#studio-app-root {
+  font-family: var(--studio-font-family, var(--font-sans, ui-sans-serif, system-ui, sans-serif));
+}
