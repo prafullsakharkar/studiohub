@@ -10,7 +10,7 @@ license = { text = "Proprietary" }
 
 dependencies = [
     # Django
-    "django>=6.0.9",
+    "django>=6.1.2",
     "djangorestframework>=3.18.3",
     "django-filter>=25.1",
     "drf-spectacular>=0.28",

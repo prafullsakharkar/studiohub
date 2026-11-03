@@ -12,6 +12,7 @@ from typing import Any
 
 from django.conf import settings
 from django.db import models
+from django.db.models.fetch_modes import FetchMode
 from django.utils import timezone
 
 from apps.core.models.bases.entity import EntityModel
@@ -192,8 +193,8 @@ class PublishedFile(EntityModel):
         }
 
     @classmethod
-    def from_db(cls, db, field_names, values):
-        instance = super().from_db(db, field_names, values)
+    def from_db(cls, db, field_names, values, *, fetch_mode: FetchMode | None = None):
+        instance = super().from_db(db, field_names, values, fetch_mode=fetch_mode)
         instance._remember_identity()
         return instance
 

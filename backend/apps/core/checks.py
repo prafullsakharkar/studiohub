@@ -107,11 +107,13 @@ def mail_is_sent_over_tls(app_configs, **kwargs):
     """
 
     findings = []
-    backend = getattr(settings, "EMAIL_BACKEND", "")
+    mailer = getattr(settings, "MAILERS", {}).get("default", {})
+    backend = mailer.get("BACKEND", "")
 
     if backend.endswith("smtp.EmailBackend"):
-        use_tls = bool(getattr(settings, "EMAIL_USE_TLS", False))
-        use_ssl = bool(getattr(settings, "EMAIL_USE_SSL", False))
+        options = mailer.get("OPTIONS", {})
+        use_tls = bool(options.get("use_tls", False))
+        use_ssl = bool(options.get("use_ssl", False))
 
         if use_tls and use_ssl:
             findings.append(

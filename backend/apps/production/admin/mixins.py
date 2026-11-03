@@ -10,12 +10,16 @@ from __future__ import annotations
 
 from typing import Any
 
+from django.contrib.admin import ActionLocation
+
 
 class NoHardDeleteMixin:
     def has_delete_permission(self, request: Any, obj: Any = None) -> bool:
         return False
 
-    def get_actions(self, request: Any):
-        actions = super().get_actions(request)  # pyright: ignore[reportAttributeAccessIssue]
+    def get_actions(
+        self, request: Any, action_location: ActionLocation = ActionLocation.CHANGE_LIST
+    ):
+        actions = super().get_actions(request, action_location=action_location)  # pyright: ignore[reportAttributeAccessIssue]
         actions.pop("delete_selected", None)
         return actions

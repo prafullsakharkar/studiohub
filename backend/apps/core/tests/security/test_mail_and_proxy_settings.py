@@ -7,13 +7,18 @@ local relay without TLS. The deploy checks refuse the unsafe combinations.
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 from django.core import mail
+from django.core.mail.backends.smtp import EmailBackend as SmtpBackend
 from django.test import override_settings
+from pydantic import SecretStr
 
 from apps.core import checks
 from apps.identity.services.password_reset import PasswordResetService
 from apps.identity.tests.factories import UserFactory
+from config.settings.components.email import build_mailers
 
 SMTP = "django.core.mail.backends.smtp.EmailBackend"
 
@@ -28,21 +33,102 @@ class TestEnvironmentReachesDjango:
 
         from config.env import settings as env
 
-        assert env.email_host == settings.EMAIL_HOST
-        assert env.email_port == settings.EMAIL_PORT
-        assert settings.EMAIL_USE_TLS is env.email_use_tls
-        assert env.email_host_user == settings.EMAIL_HOST_USER
+        options = build_mailers(env)["default"]["OPTIONS"]
+
+        assert options["host"] == env.email_host
+        assert options["port"] == env.email_port
+        assert options["use_tls"] is env.email_use_tls
+        assert options["use_ssl"] is env.email_use_ssl
+        assert options["timeout"] == 10
         assert env.default_from_email == settings.DEFAULT_FROM_EMAIL
-        assert settings.EMAIL_TIMEOUT == 10
         assert not settings.FRONTEND_BASE_URL.endswith("/")
+        # The deprecated EMAIL_* settings must not come back: Django 6.1 refuses them next to MAILERS.
+        assert not any(
+            hasattr(settings, name) for name in ("EMAIL_HOST", "EMAIL_PORT", "EMAIL_USE_TLS")
+        )
+
+
+def _env(**values: object):
+    base: dict[str, object] = {
+        "email_host": "mail.example.net",
+        "email_port": 587,
+        "email_use_tls": True,
+        "email_use_ssl": False,
+        "email_host_user": "",
+        "email_host_password": SecretStr(""),
+        "email_backend": SMTP,
+    }
+    base.update(values)
+    return SimpleNamespace(**base)
+
+
+class TestMailersFromTheEnvironment:
+    def test_every_value_reaches_the_mailer(self):
+        env = _env(
+            email_host_user="mailer",
+            email_host_password=SecretStr("s3cret"),
+            email_port=465,
+            email_use_tls=False,
+            email_use_ssl=True,
+        )
+
+        assert build_mailers(env) == {
+            "default": {
+                "BACKEND": SMTP,
+                "OPTIONS": {
+                    "host": "mail.example.net",
+                    "port": 465,
+                    "use_tls": False,
+                    "use_ssl": True,
+                    "timeout": 10,
+                    "username": "mailer",
+                    "password": "s3cret",
+                },
+            }
+        }
+
+    def test_blank_credentials_are_left_out(self):
+        options = build_mailers(_env())["default"]["OPTIONS"]
+
+        assert "username" not in options
+        assert "password" not in options
+
+    def test_django_builds_an_smtp_connection_from_it(self):
+        env = _env(email_host_user="mailer", email_host_password=SecretStr("s3cret"))
+
+        with override_settings(MAILERS=build_mailers(env)):
+            connection = mail.mailers["default"]
+
+        assert isinstance(connection, SmtpBackend)
+        assert (connection.host, connection.port, connection.use_tls, connection.use_ssl) == (
+            "mail.example.net",
+            587,
+            True,
+            False,
+        )
+        assert (connection.username, connection.password, connection.timeout) == (
+            "mailer",
+            "s3cret",
+            10,
+        )
 
 
 class TestMailChecks:
-    def _run(self, **overrides):
-        base = {
-            "EMAIL_BACKEND": SMTP,
-            "EMAIL_USE_TLS": True,
-            "EMAIL_USE_SSL": False,
+    def _run(
+        self,
+        *,
+        backend: str = SMTP,
+        use_tls: bool = True,
+        use_ssl: bool = False,
+        **overrides: object,
+    ):
+        base: dict[str, object] = {
+            "MAILERS": {
+                "default": {
+                    "BACKEND": backend,
+                    "OPTIONS": {"host": "mail.example.net", "use_tls": use_tls, "use_ssl": use_ssl},
+                }
+            },
             "FRONTEND_BASE_URL": "https://studio.example.com",
             "DEFAULT_FROM_EMAIL": "noreply@studio.example.com",
         }
@@ -54,17 +140,17 @@ class TestMailChecks:
         assert self._run() == []
 
     def test_implicit_tls_is_accepted_too(self):
-        assert self._run(EMAIL_USE_TLS=False, EMAIL_USE_SSL=True) == []
+        assert self._run(use_tls=False, use_ssl=True) == []
 
     def test_smtp_without_tls_is_an_error(self):
-        assert _ids(self._run(EMAIL_USE_TLS=False)) == ["core.E003"]
+        assert _ids(self._run(use_tls=False)) == ["core.E003"]
 
     def test_both_tls_modes_at_once_is_an_error(self):
-        assert _ids(self._run(EMAIL_USE_SSL=True)) == ["core.E003"]
+        assert _ids(self._run(use_ssl=True)) == ["core.E003"]
 
     def test_another_backend_is_not_judged_on_tls(self):
         backend = "django.core.mail.backends.console.EmailBackend"
-        assert self._run(EMAIL_BACKEND=backend, EMAIL_USE_TLS=False) == []
+        assert self._run(backend=backend, use_tls=False) == []
 
     @pytest.mark.parametrize("url", ["", "http://studio.example.com", "studio.example.com"])
     def test_the_reset_link_needs_an_https_base_address(self, url):
