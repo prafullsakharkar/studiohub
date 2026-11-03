@@ -9,6 +9,23 @@ import {
 
 export type ThemeMode = 'dark' | 'light' | 'system';
 
+/** What the studio's default theme (`GET /themes/default/`, Q-22) contributes. See `applyStudioTheme`. */
+export interface StudioTheme {
+  theme_type: string;
+  primary_color: string;
+  secondary_color: string;
+  font_family: string;
+}
+
+/** The theme's font keyword (sans, serif, mono) as a CSS font stack; sans is the application's own stack, left alone. */
+export const FONT_STACKS: Record<string, string | null> = {
+  sans: null,
+  serif: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
+  mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+};
+
+const HEX = /^#[0-9a-fA-F]{6}$/;
+
 export interface ThemeContextType {
   mode: ThemeMode;
   resolvedMode: 'dark' | 'light';
@@ -23,6 +40,13 @@ export interface ThemeContextType {
   resetToDefaults: () => void;
   presets: AccentColorPreset[];
   syncWithUserPreferences: (prefs?: UserThemePreferences) => void;
+  /**
+   * The studio's default theme sets the STARTING point: light or dark, and the two accent colours, only for someone who has
+   * not chosen their own (what a person picks is kept in this browser and always wins). The font follows the theme for
+   * everyone. The theme's surface colours, text colours, radius, spacing and font size are not applied: the application's
+   * screens are built on a fixed utility-class palette and scale, not on variables.
+   */
+  applyStudioTheme: (theme: StudioTheme | null) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -208,6 +232,32 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     [setAccentColors]
   );
 
+  const applyStudioTheme = useCallback(
+    (theme: StudioTheme | null) => {
+      if (typeof document === 'undefined') return;
+      const stack = theme ? (FONT_STACKS[theme.font_family] ?? null) : null;
+      if (stack) document.documentElement.style.setProperty('--studio-font-family', stack);
+      else document.documentElement.style.removeProperty('--studio-font-family');
+      if (!theme) return;
+
+      let chosenMode = false;
+      let chosenAccent = false;
+      try {
+        chosenMode = localStorage.getItem(storageKey) !== null;
+        chosenAccent = localStorage.getItem(accentStorageKey) !== null;
+      } catch {
+        // storage unavailable: nobody has chosen anything we can see
+      }
+      if (!chosenMode && (theme.theme_type === 'light' || theme.theme_type === 'dark')) setModeState(theme.theme_type);
+      if (!chosenAccent && HEX.test(theme.primary_color) && HEX.test(theme.secondary_color)) {
+        setAccentCyan(theme.primary_color);
+        setAccentBlue(theme.secondary_color);
+        setActivePresetId(undefined);
+      }
+    },
+    [storageKey, accentStorageKey]
+  );
+
   return (
     <ThemeContext.Provider
       value={{
@@ -223,6 +273,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
         resetToDefaults,
         presets: ACCENT_PRESETS,
         syncWithUserPreferences,
+        applyStudioTheme,
       }}
     >
       {children}

@@ -13,6 +13,7 @@ import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
 import { MemberSelect } from '@/modules/production/work/pickers';
 import { VersionPicker } from './pickers';
+import { formatDateTime } from '@/core/locale/studioLocale';
 
 /** Runs a write on a review, refreshes the review and its history afterwards, and shows the server's own refusal. */
 export function useReviewWrite() {
@@ -181,7 +182,7 @@ const CommentThread: React.FC<{ review: Review; comment: ReviewComment | ReviewR
         {comment.frame_number !== null && <Badge variant="outline">frame {comment.frame_number}</Badge>}
         {comment.is_resolved && <Badge variant="success">Resolved</Badge>}
         <time className="ml-auto text-[10px] font-mono" dateTime={comment.created_at}>
-          {new Date(comment.created_at).toLocaleString()}
+          {formatDateTime(comment.created_at, '')}
         </time>
       </div>
       <p className="mt-1 whitespace-pre-wrap text-slate-200">{comment.text}</p>
@@ -343,7 +344,7 @@ export const ReviewActivityPanel: React.FC<{ review: Review }> = ({ review }) =>
         <li key={a.id} className="rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2 text-xs">
           <span className="font-mono text-slate-200">{a.action}</span> <span className="text-slate-400">by {a.user}</span>
           <time className="float-right text-[10px] font-mono text-slate-500" dateTime={a.timestamp}>
-            {new Date(a.timestamp).toLocaleString()}
+            {formatDateTime(a.timestamp, '')}
           </time>
           {a.notes && <p className="mt-1 text-slate-300">{a.notes}</p>}
         </li>

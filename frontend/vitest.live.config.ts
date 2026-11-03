@@ -26,6 +26,9 @@ export default defineConfig({
     testTimeout: 30000,
     // One backend, shared state: run files one after another.
     fileParallelism: false,
+    // The backend's port is baked into the transformed modules (the `define` above) and changes with every run: a persisted
+    // transform from an earlier run would keep calling a backend that is gone (vitest 5.0.5 reuses it).
+    fsModuleCache: false,
   },
   resolve: { alias: { '@': path.resolve(__dirname, './src') } },
 });

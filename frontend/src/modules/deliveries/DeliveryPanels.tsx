@@ -14,6 +14,7 @@ import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
 import { checkLabel, deliveryErrorMessage } from './errors';
 import { formatBytes, formatWhen, personLabel } from './format';
+import { formatDate } from '@/core/locale/studioLocale';
 
 /** Refreshes every delivery query and the change history after a write. */
 export function useRefreshDeliveries() {
@@ -240,7 +241,7 @@ export const DeliveryDetailsPanel: React.FC<{ delivery: Delivery }> = ({ deliver
     <Fact label="Passcode">
       <PasscodeBox delivery={d} />
     </Fact>
-    <Fact label="Due">{d.expires_at ? new Date(d.expires_at).toLocaleDateString() : '—'}</Fact>
+    <Fact label="Due">{formatDate(d.expires_at)}</Fact>
     <Fact label="Size">{formatBytes(d.total_size_bytes)}</Fact>
     <Fact label="Items">{d.versions.length}</Fact>
     <Fact label="Signed off">{d.signed_off_at ? <>{formatWhen(d.signed_off_at)} · {personLabel(d.signed_off_by_name, d.signed_off_by)}</> : '—'}</Fact>

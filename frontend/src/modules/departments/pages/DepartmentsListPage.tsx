@@ -13,6 +13,7 @@ import { Button } from '@/shared/components/Button';
 import { Pagination } from '@/shared/components/Pagination';
 import { SearchInput } from '@/shared/components/SearchInput';
 import { useDeleteDepartment, useDepartmentList } from '../hooks/useDepartmentList';
+import { formatNumber } from '@/core/locale/studioLocale';
 
 const SORT_LABELS: Record<(typeof DEPARTMENT_ORDERING)[number], string> = { name: 'Name', code: 'Code', created_at: 'Newest' };
 
@@ -32,7 +33,7 @@ export const DepartmentsListPage: React.FC = () => {
         params: list.params,
         filename: 'departments.csv',
         signal: controller.signal,
-        confirmLarge: async (count) => window.confirm(`This export has ${count.toLocaleString()} rows. Continue?`),
+        confirmLarge: async (count) => window.confirm(`This export has ${formatNumber(count)} rows. Continue?`),
         columns: [
           { header: 'Code', value: (d) => d.code },
           { header: 'Name', value: (d) => d.name },
@@ -41,7 +42,7 @@ export const DepartmentsListPage: React.FC = () => {
           { header: 'Created', value: (d) => d.created_at },
         ],
       });
-      if (!result.cancelled) notify.success(`Exported ${result.rows.toLocaleString()} departments.`, { title: 'Export ready' });
+      if (!result.cancelled) notify.success(`Exported ${formatNumber(result.rows)} departments.`, { title: 'Export ready' });
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) throw error;
     } finally {

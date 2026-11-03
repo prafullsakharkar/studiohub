@@ -1,3 +1,5 @@
+import { formatDate, formatDateTime } from '@/core/locale/studioLocale';
+
 const UNITS = ['B', 'KB', 'MB', 'GB', 'TB'] as const;
 
 /** 1,536 → "1.5 KB". The delivery totals are bytes. */
@@ -12,8 +14,8 @@ export function formatBytes(bytes: number | null | undefined): string {
   return `${unit === 0 ? value : value.toFixed(value >= 10 ? 0 : 1)} ${UNITS[unit]}`;
 }
 
-export const formatWhen = (iso: string | null | undefined): string => (iso ? new Date(iso).toLocaleString() : '—');
-export const formatDay = (iso: string | null | undefined): string => (iso ? new Date(iso).toLocaleDateString() : '—');
+export const formatWhen = (iso: string | null | undefined): string => formatDateTime(iso);
+export const formatDay = (iso: string | null | undefined): string => formatDate(iso);
 
 /** Who did it: the name the server sent, else "A teammate" if only an id came, else `nobody` (a move the system made). */
 export const personLabel = (name: string | null | undefined, id: string | null | undefined, nobody = 'The system'): string => name || (id ? 'A teammate' : nobody);

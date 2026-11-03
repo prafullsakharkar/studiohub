@@ -14,6 +14,7 @@ import {
 import type { EntityResolutionItem } from '@/shared/components/bulk/types';
 import { Button } from '@/shared/components/Button';
 import { Badge } from '@/shared/components/Badge';
+import { formatDate } from '@/core/locale/studioLocale';
 
 interface SoftDeletedEntityRecoveryProps<T = any> {
   entityType: 'Sequence' | 'Shot' | 'Asset' | 'Task' | string;
@@ -100,7 +101,7 @@ export const SoftDeletedEntityRecovery: React.FC<SoftDeletedEntityRecoveryProps>
             const isChecked = selectedCodes.includes(item.code);
             const entity = item.existingEntity as any;
             const deletedDate = entity?.deleted_at
-              ? new Date(entity.deleted_at).toLocaleDateString()
+              ? formatDate(entity.deleted_at)
               : 'Previous Turnover';
 
             return (

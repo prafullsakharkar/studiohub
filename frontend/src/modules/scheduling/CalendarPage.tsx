@@ -9,10 +9,12 @@ import { useCan } from '@/core/permissions/useCan';
 import { fetchAllRows } from '@/shared/data/listing';
 import { Button } from '@/shared/components/Button';
 import { cn } from '@/shared/utils/cn';
+import { useStudioLocale } from '@/core/locale/studioLocale';
 import { addDays, dayKey, fromKey, itemsByDay, monthGrid, weekOf, windowOf } from './calendarModel';
+import type { WeekStart } from './calendarModel';
 import type { DayItem } from './calendarModel';
 import { formatDay } from './format';
-import { KIND_LABEL, KIND_STYLE, WEEKDAYS } from './kinds';
+import { KIND_LABEL, KIND_STYLE, weekdayNames } from './kinds';
 import { TimeGrid } from './TimeGrid';
 import { TimelineView } from './TimelineView';
 
@@ -78,13 +80,14 @@ export const CalendarPage: React.FC<{ embedded?: boolean; projectId?: string }> 
   const cursor = { year: chosenMonth.getFullYear(), month: chosenMonth.getMonth() };
 
   // The days each view shows, and the window the server is asked for.
-  const weeks = monthGrid(cursor.year, cursor.month);
+  const weekStart: WeekStart = useStudioLocale()?.week_start === 0 ? 0 : 1;
+  const weeks = monthGrid(cursor.year, cursor.month, weekStart);
   const days = useMemo(() => {
     if (view === 'day') return [date];
-    if (view === 'week') return weekOf(date);
-    if (view === 'timeline') return Array.from({ length: TIMELINE_DAYS }, (_, i) => addDays(weekOf(date)[0], i));
+    if (view === 'week') return weekOf(date, weekStart);
+    if (view === 'timeline') return Array.from({ length: TIMELINE_DAYS }, (_, i) => addDays(weekOf(date, weekStart)[0], i));
     return weeks.flat();
-  }, [view, date, weeks]);
+  }, [view, date, weeks, weekStart]);
   const span = windowOf(days[0], days[days.length - 1]);
   const calendarView = view !== 'timeline';
 
@@ -167,7 +170,7 @@ export const CalendarPage: React.FC<{ embedded?: boolean; projectId?: string }> 
         <table aria-label={label} className="w-full table-fixed border-collapse rounded-lg border border-slate-800 overflow-hidden">
           <thead className="bg-slate-900 text-[11px] font-semibold text-slate-400">
             <tr>
-              {WEEKDAYS.map((d) => (
+              {weekdayNames(weekStart).map((d) => (
                 <th key={d} scope="col" className="px-2 py-1.5 text-left font-semibold">
                   {d}
                 </th>

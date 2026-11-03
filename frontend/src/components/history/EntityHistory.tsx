@@ -7,6 +7,7 @@ import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { useCan } from '@/core/permissions/useCan';
 import { Badge } from '@/shared/components/Badge';
 import { cn } from '@/shared/utils/cn';
+import { formatDateTime } from '@/core/locale/studioLocale';
 
 const PAGE_SIZE = 20;
 
@@ -108,7 +109,7 @@ export const EntityHistory: React.FC<EntityHistoryProps> = ({ targetType, target
                   {log.change_type === 'update' && <span className="text-[11px] text-slate-500">changed {log.changed_fields.join(', ')}</span>}
                 </span>
                 <time dateTime={log.created_at} className="text-[10px] font-mono text-slate-500">
-                  {new Date(log.created_at).toLocaleString()}
+                  {formatDateTime(log.created_at)}
                 </time>
               </button>
               {open === log.id && (

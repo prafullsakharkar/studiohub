@@ -3,6 +3,7 @@ import { AlertCircle } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import type { ServerFormError } from '@/shared/forms/serverErrors';
 import { cn } from '@/shared/utils/cn';
+import { formatDateTime } from '@/core/locale/studioLocale';
 
 /** Page chrome shared by the identity screens. */
 export const PageShell: React.FC<{
@@ -99,4 +100,4 @@ export const Table: React.FC<{ columns: ReadonlyArray<string>; children: React.R
   </div>
 );
 
-export const formatDate = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleString() : '—');
+export const formatDate = (iso: string | null | undefined) => formatDateTime(iso);

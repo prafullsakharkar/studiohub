@@ -2,6 +2,7 @@ import { teamsApi } from '@/api/masterdata/directory';
 import type { Team } from '@/api/masterdata/directory';
 import type { DirectoryFormConfig, DirectoryListConfig } from '../types';
 import { DepartmentPicker } from '../pickers';
+import { formatDate } from '@/core/locale/studioLocale';
 
 export const teamsListConfig: DirectoryListConfig<Team> = {
   title: 'Teams',
@@ -20,7 +21,7 @@ export const teamsListConfig: DirectoryListConfig<Team> = {
     { header: 'Code', cell: (t) => <span className="font-mono">{t.code}</span>, sortField: 'code' },
     { header: 'Members', cell: (t) => t.member_count },
     { header: 'Capacity', cell: (t) => t.capacity ?? '—' },
-    { header: 'Created', cell: (t) => new Date(t.created_at).toLocaleDateString(), sortField: 'created_at' },
+    { header: 'Created', cell: (t) => formatDate(t.created_at, ''), sortField: 'created_at' },
   ],
   exportColumns: [
     { header: 'Code', value: (t) => t.code },

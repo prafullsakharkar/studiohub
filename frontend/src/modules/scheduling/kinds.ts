@@ -8,3 +8,6 @@ export const KIND_STYLE: Record<DayItemKind, string> = {
 };
 export const KIND_LABEL: Record<DayItemKind, string> = { event: 'Event', milestone: 'Milestone', holiday: 'Holiday', leave: 'Leave' };
 export const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+/** The column headings of a week that starts on Monday (1) or Sunday (0). */
+export const weekdayNames = (weekStart: 0 | 1): string[] => (weekStart === 0 ? ['Sun', ...WEEKDAYS.slice(0, 6)] : WEEKDAYS);

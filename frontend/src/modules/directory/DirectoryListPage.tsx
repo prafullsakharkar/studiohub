@@ -17,6 +17,7 @@ import { Button } from '@/shared/components/Button';
 import { Pagination } from '@/shared/components/Pagination';
 import { SearchInput } from '@/shared/components/SearchInput';
 import type { BulkAction, DirectoryListConfig, ListFilter, RowAction } from './types';
+import { formatNumber } from '@/core/locale/studioLocale';
 
 function FilterSelect({ filter, value, onChange }: { filter: ListFilter; value: string; onChange: (value: string) => void }) {
   const loaded = useQuery({
@@ -77,10 +78,10 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
         params: list.params,
         filename: `${config.title.toLowerCase().replace(/\s+/g, '-')}.csv`,
         signal: controller.signal,
-        confirmLarge: async (count) => window.confirm(`This export has ${count.toLocaleString()} rows. Continue?`),
+        confirmLarge: async (count) => window.confirm(`This export has ${formatNumber(count)} rows. Continue?`),
         columns: [...config.exportColumns],
       });
-      if (!result.cancelled) notify.success(`Exported ${result.rows.toLocaleString()} ${config.title.toLowerCase()}.`, { title: 'Export ready' });
+      if (!result.cancelled) notify.success(`Exported ${formatNumber(result.rows)} ${config.title.toLowerCase()}.`, { title: 'Export ready' });
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) notify.error(error instanceof Error ? error.message : 'Export failed.');
     } finally {

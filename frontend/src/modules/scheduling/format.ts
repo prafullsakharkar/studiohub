@@ -1,3 +1,5 @@
+import { formatTime, getStudioLocale } from '@/core/locale/studioLocale';
+
 /** A plain day (`2026-12-25`) as people write it. It has no time, so it is read as that day in any zone. */
 export function formatDay(day: string | null | undefined): string {
   if (!day) return '—';
@@ -11,6 +13,8 @@ export function formatMoment(iso: string | null | undefined): string {
   if (!iso) return '—';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
+  // The day is written the way this browser writes it (weekday and month names); the clock follows the studio's 12/24-hour choice.
+  if (getStudioLocale()) return `${d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}, ${formatTime(d)}`;
   return d.toLocaleString(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
@@ -20,8 +24,7 @@ export function formatRange(start: string, end: string): string {
   const e = new Date(end);
   if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) return `${start} – ${end}`;
   const sameDay = s.toDateString() === e.toDateString();
-  const time = (d: Date) => d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-  return sameDay ? `${formatMoment(start)} – ${time(e)}` : `${formatMoment(start)} – ${formatMoment(end)}`;
+  return sameDay ? `${formatMoment(start)} – ${formatTime(e)}` : `${formatMoment(start)} – ${formatMoment(end)}`;
 }
 
 /** Hours with at most one decimal: 12 → "12 h", 6.5 → "6.5 h". */
