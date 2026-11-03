@@ -75,7 +75,7 @@ class CredentialService:
         qs = kind.model.objects.all()
 
         if include_all and cls.can_manage_all(user):
-            return qs.select_related()
+            return qs.select_related(kind.owner_field)
 
         if kind is API_KEY:
             return ApiKey.objects.for_principal(user)

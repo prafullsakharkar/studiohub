@@ -14,6 +14,7 @@ from __future__ import annotations
 from typing import Any
 
 from django.contrib import admin
+from django.contrib.admin import ActionLocation
 
 from apps.core.admin.base import PlatformScopedModelAdmin
 from apps.masterdata.models import (
@@ -57,7 +58,9 @@ class ReadOnlyAdmin(PlatformScopedModelAdmin):
     def has_delete_permission(self, request: Any, obj: Any = None) -> bool:
         return False
 
-    def get_actions(self, request: Any) -> dict[str, Any]:
+    def get_actions(
+        self, request: Any, action_location: ActionLocation = ActionLocation.CHANGE_LIST
+    ) -> dict[str, Any]:
         return {}
 
     def get_exclude(self, request: Any, obj: Any = None) -> tuple[str, ...]:
