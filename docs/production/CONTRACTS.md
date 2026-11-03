@@ -379,3 +379,14 @@ Frontend change list: `ProjectMember` type gains `show_id` and `show_code`; `add
 | C-54 | `POST …/members/` | (unchanged) | Unchanged: it still adds, or re-adds with the side effects above. Use `PATCH` to edit. |
 
 Frontend change list: the members panel gets a status select, a Remove action and a Department field; the show picker moves from "add again with the member's own values" to `PATCH`, which deletes `setMemberShow`'s workaround.
+
+## CR-38 — adding a member who is already one
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-55 | `POST /api/organizations/projects/{id}/members/` (person already a member) | What the request left out was overwritten by a default: `status` became `active` (a suspended, on-leave or terminated member could open the project again), `role` became `Artist` and `roles` became `[role]` (a Lead was demoted), `scope` became `PROJECT`. | Only what the request names changes. A body with only the person (`user_id`, `userId` or `email`) changes nothing and answers `200` with the member as they are. A `role` replaces the role and the roles (as before); `roles` replace the roles; a `status` sets the status; a `scope` sets the scope; a `show` is as in C-53. |
+| C-55 | the same (new person) | `active`, `Artist`, `["Artist"]`, `PROJECT` by default. | Unchanged: the defaults are applied when the row is made (`201`). |
+| C-55 | the same (removed person added again) | The row was restored fresh. | Unchanged: restored as an active `Artist` unless the request names more. |
+| C-55 | the same (a blank `role`, `status` or `scope`) | Counted as the default. | Counts as not named. |
+
+A caller that relied on "add again reactivates them" must send `"status": "active"`, or use `PATCH …/members/{member_id}/` (C-54).

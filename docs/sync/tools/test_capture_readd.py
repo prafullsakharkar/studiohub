@@ -7,6 +7,7 @@ Captured here for a suspended Lead with two roles, for the other non-active stat
 status. Pytest test database only, inside a rolled-back transaction.
 
     cd backend
+    # before CR-38: _readd_flow.json (the default name); after it: READD_OUT_NAME=_readd_after_cr38_flow.json
     SYNC_SAMPLES_OUT=../docs/sync/samples \
       uv run pytest -c pyproject.toml --rootdir . -p no:cacheprovider --no-cov -q \
       ../docs/sync/tools/test_capture_readd.py
@@ -91,4 +92,4 @@ def test_capture_readd(django_user_model):
     flow["readd_lead_with_role"] = call(a, "POST", base, {"user_id": str(people["lead"].id), "role": "Artist"})
 
     (OUT / "production").mkdir(parents=True, exist_ok=True)
-    (OUT / "production" / "_readd_flow.json").write_text(json.dumps(flow, indent=1, sort_keys=True, default=str))
+    (OUT / "production" / os.environ.get("READD_OUT_NAME", "_readd_flow.json")).write_text(json.dumps(flow, indent=1, sort_keys=True, default=str))

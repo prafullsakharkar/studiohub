@@ -1,0 +1,557 @@
+{
+ "add_active_lead": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T17:14:54.908694Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "d2a60af4-68c8-4676-860f-a80284ac6e53",
+   "name": "user@example.test",
+   "projectId": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_code": "CR38",
+   "project_id": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_name": "Re-add",
+   "role": "Lead",
+   "role_id": null,
+   "roles": [
+    "Lead",
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-03T17:14:54.908701Z",
+   "userId": "731ef4a1-c700-4042-af08-94a5db40a071",
+   "user_id": "731ef4a1-c700-4042-af08-94a5db40a071",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "role": "Lead",
+    "roles": [
+     "Lead",
+     "Artist"
+    ],
+    "user_id": "731ef4a1-c700-4042-af08-94a5db40a071"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/289f4038-66cd-4269-91eb-20743e9ec4b2/members/"
+  },
+  "status": 201
+ },
+ "add_on_leave": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T17:14:54.868460Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "1209962a-015a-4ba8-99cd-aa2a62f33edb",
+   "name": "user@example.test",
+   "projectId": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_code": "CR38",
+   "project_id": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_name": "Re-add",
+   "role": "Lead",
+   "role_id": null,
+   "roles": [
+    "Lead",
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "on_leave",
+   "team_id": "",
+   "updated_at": "2026-11-03T17:14:54.868476Z",
+   "userId": "1b058d58-d4e4-42d1-9ef0-8d8ce180c741",
+   "user_id": "1b058d58-d4e4-42d1-9ef0-8d8ce180c741",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "role": "Lead",
+    "roles": [
+     "Lead",
+     "Artist"
+    ],
+    "status": "on_leave",
+    "user_id": "1b058d58-d4e4-42d1-9ef0-8d8ce180c741"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/289f4038-66cd-4269-91eb-20743e9ec4b2/members/"
+  },
+  "status": 201
+ },
+ "add_suspended_lead": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T17:14:54.845435Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "6d14640a-28ad-4651-9a3f-304884589d63",
+   "name": "user@example.test",
+   "projectId": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_code": "CR38",
+   "project_id": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_name": "Re-add",
+   "role": "Lead",
+   "role_id": null,
+   "roles": [
+    "Lead",
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "suspended",
+   "team_id": "",
+   "updated_at": "2026-11-03T17:14:54.845444Z",
+   "userId": "f9d7ef9f-72e9-455c-80d1-96864c8bc466",
+   "user_id": "f9d7ef9f-72e9-455c-80d1-96864c8bc466",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "role": "Lead",
+    "roles": [
+     "Lead",
+     "Artist"
+    ],
+    "status": "suspended",
+    "user_id": "f9d7ef9f-72e9-455c-80d1-96864c8bc466"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/289f4038-66cd-4269-91eb-20743e9ec4b2/members/"
+  },
+  "status": 201
+ },
+ "add_terminated": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T17:14:54.893748Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "e7143bb5-1d02-4ead-a590-dadc9cfd2733",
+   "name": "user@example.test",
+   "projectId": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_code": "CR38",
+   "project_id": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_name": "Re-add",
+   "role": "Lead",
+   "role_id": null,
+   "roles": [
+    "Lead",
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "terminated",
+   "team_id": "",
+   "updated_at": "2026-11-03T17:14:54.893756Z",
+   "userId": "a02f0436-b72f-46c8-a761-ca0d502ef4c5",
+   "user_id": "a02f0436-b72f-46c8-a761-ca0d502ef4c5",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "role": "Lead",
+    "roles": [
+     "Lead",
+     "Artist"
+    ],
+    "status": "terminated",
+    "user_id": "a02f0436-b72f-46c8-a761-ca0d502ef4c5"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/289f4038-66cd-4269-91eb-20743e9ec4b2/members/"
+  },
+  "status": 201
+ },
+ "ids": {
+  "project": "289f4038-66cd-4269-91eb-20743e9ec4b2"
+ },
+ "lead_sees_project_after": {
+  "body": {
+   "approved_shots": 0,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "CR38",
+   "color_space": "ACEScg",
+   "coordinator_id": null,
+   "coordinator_name": "",
+   "created_at": "2026-11-03T17:14:54.819572Z",
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "id": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "in_progress_shots": 0,
+   "name": "Re-add",
+   "project_code": "CR38",
+   "resolution": "4096x2160 (4K DCI)",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor_id": null,
+   "supervisor_name": "",
+   "thumbnail_url": "",
+   "total_assets": 0,
+   "total_shots": 0,
+   "type": "Feature Film",
+   "updated_at": "2026-11-03T17:14:54.819581Z",
+   "uuid": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": [],
+   "workflow_type": "standard"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/289f4038-66cd-4269-91eb-20743e9ec4b2/"
+  },
+  "status": 200
+ },
+ "lead_sees_project_before": {
+  "body": {
+   "approved_shots": 0,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "CR38",
+   "color_space": "ACEScg",
+   "coordinator_id": null,
+   "coordinator_name": "",
+   "created_at": "2026-11-03T17:14:54.819572Z",
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "id": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "in_progress_shots": 0,
+   "name": "Re-add",
+   "project_code": "CR38",
+   "resolution": "4096x2160 (4K DCI)",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor_id": null,
+   "supervisor_name": "",
+   "thumbnail_url": "",
+   "total_assets": 0,
+   "total_shots": 0,
+   "type": "Feature Film",
+   "updated_at": "2026-11-03T17:14:54.819581Z",
+   "uuid": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": [],
+   "workflow_type": "standard"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/289f4038-66cd-4269-91eb-20743e9ec4b2/"
+  },
+  "status": 200
+ },
+ "leave_sees_project_after": {
+  "body": {
+   "detail": "Not found.",
+   "error": {
+    "code": "not_found",
+    "request_id": "52de0259-12b0-4d13-97ef-850a8cb33675"
+   }
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/289f4038-66cd-4269-91eb-20743e9ec4b2/"
+  },
+  "status": 404
+ },
+ "leave_sees_project_before": {
+  "body": {
+   "detail": "Not found.",
+   "error": {
+    "code": "not_found",
+    "request_id": "6531b3c8-0979-4876-80e2-a2079770c7ac"
+   }
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/289f4038-66cd-4269-91eb-20743e9ec4b2/"
+  },
+  "status": 404
+ },
+ "readd_lead_user_only": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T17:14:54.908694Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "d2a60af4-68c8-4676-860f-a80284ac6e53",
+   "name": "user@example.test",
+   "projectId": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_code": "CR38",
+   "project_id": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_name": "Re-add",
+   "role": "Lead",
+   "role_id": null,
+   "roles": [
+    "Lead",
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-03T17:14:55.250183Z",
+   "userId": "731ef4a1-c700-4042-af08-94a5db40a071",
+   "user_id": "731ef4a1-c700-4042-af08-94a5db40a071",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "user_id": "731ef4a1-c700-4042-af08-94a5db40a071"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/289f4038-66cd-4269-91eb-20743e9ec4b2/members/"
+  },
+  "status": 200
+ },
+ "readd_lead_with_role": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T17:14:54.908694Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "d2a60af4-68c8-4676-860f-a80284ac6e53",
+   "name": "user@example.test",
+   "projectId": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_code": "CR38",
+   "project_id": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_name": "Re-add",
+   "role": "Artist",
+   "role_id": null,
+   "roles": [
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-03T17:14:55.282919Z",
+   "userId": "731ef4a1-c700-4042-af08-94a5db40a071",
+   "user_id": "731ef4a1-c700-4042-af08-94a5db40a071",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "role": "Artist",
+    "user_id": "731ef4a1-c700-4042-af08-94a5db40a071"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/289f4038-66cd-4269-91eb-20743e9ec4b2/members/"
+  },
+  "status": 200
+ },
+ "readd_leave_user_only": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T17:14:54.868460Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "1209962a-015a-4ba8-99cd-aa2a62f33edb",
+   "name": "user@example.test",
+   "projectId": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_code": "CR38",
+   "project_id": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_name": "Re-add",
+   "role": "Lead",
+   "role_id": null,
+   "roles": [
+    "Lead",
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "on_leave",
+   "team_id": "",
+   "updated_at": "2026-11-03T17:14:55.143803Z",
+   "userId": "1b058d58-d4e4-42d1-9ef0-8d8ce180c741",
+   "user_id": "1b058d58-d4e4-42d1-9ef0-8d8ce180c741",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "user_id": "1b058d58-d4e4-42d1-9ef0-8d8ce180c741"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/289f4038-66cd-4269-91eb-20743e9ec4b2/members/"
+  },
+  "status": 200
+ },
+ "readd_suspended_user_only": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T17:14:54.845435Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "6d14640a-28ad-4651-9a3f-304884589d63",
+   "name": "user@example.test",
+   "projectId": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_code": "CR38",
+   "project_id": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_name": "Re-add",
+   "role": "Lead",
+   "role_id": null,
+   "roles": [
+    "Lead",
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "suspended",
+   "team_id": "",
+   "updated_at": "2026-11-03T17:14:55.088887Z",
+   "userId": "f9d7ef9f-72e9-455c-80d1-96864c8bc466",
+   "user_id": "f9d7ef9f-72e9-455c-80d1-96864c8bc466",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "user_id": "f9d7ef9f-72e9-455c-80d1-96864c8bc466"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/289f4038-66cd-4269-91eb-20743e9ec4b2/members/"
+  },
+  "status": 200
+ },
+ "readd_terminated_user_only": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T17:14:54.893748Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "e7143bb5-1d02-4ead-a590-dadc9cfd2733",
+   "name": "user@example.test",
+   "projectId": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_code": "CR38",
+   "project_id": "289f4038-66cd-4269-91eb-20743e9ec4b2",
+   "project_name": "Re-add",
+   "role": "Lead",
+   "role_id": null,
+   "roles": [
+    "Lead",
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "terminated",
+   "team_id": "",
+   "updated_at": "2026-11-03T17:14:55.206470Z",
+   "userId": "a02f0436-b72f-46c8-a761-ca0d502ef4c5",
+   "user_id": "a02f0436-b72f-46c8-a761-ca0d502ef4c5",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "user_id": "a02f0436-b72f-46c8-a761-ca0d502ef4c5"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/289f4038-66cd-4269-91eb-20743e9ec4b2/members/"
+  },
+  "status": 200
+ },
+ "suspended_sees_project_after": {
+  "body": {
+   "detail": "Not found.",
+   "error": {
+    "code": "not_found",
+    "request_id": "0a34ff71-b4c7-4777-93eb-14b9be3baea6"
+   }
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/289f4038-66cd-4269-91eb-20743e9ec4b2/"
+  },
+  "status": 404
+ },
+ "suspended_sees_project_before": {
+  "body": {
+   "detail": "Not found.",
+   "error": {
+    "code": "not_found",
+    "request_id": "78da6521-61d2-4f6d-9d21-c528d3fd6ba8"
+   }
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/289f4038-66cd-4269-91eb-20743e9ec4b2/"
+  },
+  "status": 404
+ },
+ "terminated_sees_project_after": {
+  "body": {
+   "detail": "Not found.",
+   "error": {
+    "code": "not_found",
+    "request_id": "07f3e2b8-9c60-4415-b918-d4de0ddc7d0a"
+   }
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/289f4038-66cd-4269-91eb-20743e9ec4b2/"
+  },
+  "status": 404
+ },
+ "terminated_sees_project_before": {
+  "body": {
+   "detail": "Not found.",
+   "error": {
+    "code": "not_found",
+    "request_id": "0bb8d03c-d9ca-48fb-b46b-307ec150a021"
+   }
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/289f4038-66cd-4269-91eb-20743e9ec4b2/"
+  },
+  "status": 404
+ }
+}
