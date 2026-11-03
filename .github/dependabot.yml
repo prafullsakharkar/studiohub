@@ -25,6 +25,16 @@ updates:
     groups:
       frontend-minor-and-patch:
         update-types: ["minor", "patch"]
+    ignore:
+      # Express 5 rejects the bare `*` route in frontend/server.ts at startup, and no test starts the server. Move to it
+      # on purpose (the route, then the dev and production start-up), not by merging a bump.
+      - dependency-name: "express"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/express"
+        update-types: ["version-update:semver-major"]
+      # CI and the Docker image run Node 24; types for a newer Node describe APIs the runtime does not have.
+      - dependency-name: "@types/node"
+        versions: [">=25"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
