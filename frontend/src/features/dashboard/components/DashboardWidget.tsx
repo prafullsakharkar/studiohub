@@ -62,6 +62,27 @@ const STATUS_COLORS: Record<string, string> = {
 
 const PIE_COLORS = ['#38bdf8', '#818cf8', '#10b981', '#f59e0b', '#f43f5e', '#a855f7'];
 
+// Custom chart tooltip. Defined at module level: a component created inside the widget is a new component type on every render.
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-900 border border-slate-700/80 px-3 py-2 rounded-lg shadow-xl text-xs font-mono">
+        <p className="font-semibold text-slate-200 mb-1">{label || payload[0].name}</p>
+        {payload.map((entry: any, index: number) => (
+          <div key={`item-${index}`} className="flex items-center justify-between gap-3 text-slate-300">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color || entry.fill }} />
+              <span>{entry.name}:</span>
+            </span>
+            <span className="font-bold text-white">{entry.value}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
 export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
   summary,
   tasksData,
@@ -92,27 +113,6 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
     () => getCategoryComparison(summary, tasksData),
     [summary, tasksData],
   );
-
-  // Custom Chart Tooltip
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-slate-900 border border-slate-700/80 px-3 py-2 rounded-lg shadow-xl text-xs font-mono">
-          <p className="font-semibold text-slate-200 mb-1">{label || payload[0].name}</p>
-          {payload.map((entry: any, index: number) => (
-            <div key={`item-${index}`} className="flex items-center justify-between gap-3 text-slate-300">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color || entry.fill }} />
-                <span>{entry.name}:</span>
-              </span>
-              <span className="font-bold text-white">{entry.value}</span>
-            </div>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <div

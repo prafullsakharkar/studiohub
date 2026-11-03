@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.4/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -38,6 +38,7 @@
         "noNonNullAssertion": "warn"
       },
       "correctness": {
+        "usePlaywrightValidDescribeCallback": "off",
         "noUnusedImports": "warn",
         "noUnusedVariables": "warn",
         "useExhaustiveDependencies": "warn"
@@ -47,6 +48,18 @@
       }
     }
   },
+  "overrides": [
+    {
+      "includes": ["**/__tests__/**", "src/test/**", "**/*.test.ts", "**/*.test.tsx"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noComponentHookFactories": "off"
+          }
+        }
+      }
+    }
+  ],
   "assist": {
     "enabled": false
   }
