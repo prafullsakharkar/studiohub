@@ -1,0 +1,640 @@
+{
+ "add_active_lead": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T16:35:55.176551Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "b5bbf7cc-6549-4fca-b4ab-b2c7de613336",
+   "name": "user@example.test",
+   "projectId": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_code": "CR38",
+   "project_id": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_name": "Re-add",
+   "role": "Lead",
+   "role_id": null,
+   "roles": [
+    "Lead",
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-03T16:35:55.176558Z",
+   "userId": "6da8c555-8515-439e-9a75-9959c2bfab64",
+   "user_id": "6da8c555-8515-439e-9a75-9959c2bfab64",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "role": "Lead",
+    "roles": [
+     "Lead",
+     "Artist"
+    ],
+    "user_id": "6da8c555-8515-439e-9a75-9959c2bfab64"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/4e638b90-c935-4d1c-914e-f61b48b86d59/members/"
+  },
+  "status": 201
+ },
+ "add_on_leave": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T16:35:55.137701Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "4310c88c-ddfc-40c7-8bca-4fd11dda3347",
+   "name": "user@example.test",
+   "projectId": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_code": "CR38",
+   "project_id": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_name": "Re-add",
+   "role": "Lead",
+   "role_id": null,
+   "roles": [
+    "Lead",
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "on_leave",
+   "team_id": "",
+   "updated_at": "2026-11-03T16:35:55.137712Z",
+   "userId": "50a51342-979c-46d1-9a23-2ded09e673a4",
+   "user_id": "50a51342-979c-46d1-9a23-2ded09e673a4",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "role": "Lead",
+    "roles": [
+     "Lead",
+     "Artist"
+    ],
+    "status": "on_leave",
+    "user_id": "50a51342-979c-46d1-9a23-2ded09e673a4"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/4e638b90-c935-4d1c-914e-f61b48b86d59/members/"
+  },
+  "status": 201
+ },
+ "add_suspended_lead": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T16:35:55.113040Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "89671596-7d45-4a05-a259-388920113f3a",
+   "name": "user@example.test",
+   "projectId": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_code": "CR38",
+   "project_id": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_name": "Re-add",
+   "role": "Lead",
+   "role_id": null,
+   "roles": [
+    "Lead",
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "suspended",
+   "team_id": "",
+   "updated_at": "2026-11-03T16:35:55.113053Z",
+   "userId": "5dca1f5d-ff51-4ced-95cb-55ca5261622d",
+   "user_id": "5dca1f5d-ff51-4ced-95cb-55ca5261622d",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "role": "Lead",
+    "roles": [
+     "Lead",
+     "Artist"
+    ],
+    "status": "suspended",
+    "user_id": "5dca1f5d-ff51-4ced-95cb-55ca5261622d"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/4e638b90-c935-4d1c-914e-f61b48b86d59/members/"
+  },
+  "status": 201
+ },
+ "add_terminated": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T16:35:55.161965Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "56b40a1e-6a63-47a9-90a3-2162a626696a",
+   "name": "user@example.test",
+   "projectId": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_code": "CR38",
+   "project_id": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_name": "Re-add",
+   "role": "Lead",
+   "role_id": null,
+   "roles": [
+    "Lead",
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "terminated",
+   "team_id": "",
+   "updated_at": "2026-11-03T16:35:55.161973Z",
+   "userId": "bc924951-36f1-4c1c-b8a1-6c2b77f49615",
+   "user_id": "bc924951-36f1-4c1c-b8a1-6c2b77f49615",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "role": "Lead",
+    "roles": [
+     "Lead",
+     "Artist"
+    ],
+    "status": "terminated",
+    "user_id": "bc924951-36f1-4c1c-b8a1-6c2b77f49615"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/4e638b90-c935-4d1c-914e-f61b48b86d59/members/"
+  },
+  "status": 201
+ },
+ "ids": {
+  "project": "4e638b90-c935-4d1c-914e-f61b48b86d59"
+ },
+ "lead_sees_project_after": {
+  "body": {
+   "approved_shots": 0,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "CR38",
+   "color_space": "ACEScg",
+   "coordinator_id": null,
+   "coordinator_name": "",
+   "created_at": "2026-11-03T16:35:55.074559Z",
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "id": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "in_progress_shots": 0,
+   "name": "Re-add",
+   "project_code": "CR38",
+   "resolution": "4096x2160 (4K DCI)",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor_id": null,
+   "supervisor_name": "",
+   "thumbnail_url": "",
+   "total_assets": 0,
+   "total_shots": 0,
+   "type": "Feature Film",
+   "updated_at": "2026-11-03T16:35:55.074580Z",
+   "uuid": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": [],
+   "workflow_type": "standard"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/4e638b90-c935-4d1c-914e-f61b48b86d59/"
+  },
+  "status": 200
+ },
+ "lead_sees_project_before": {
+  "body": {
+   "approved_shots": 0,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "CR38",
+   "color_space": "ACEScg",
+   "coordinator_id": null,
+   "coordinator_name": "",
+   "created_at": "2026-11-03T16:35:55.074559Z",
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "id": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "in_progress_shots": 0,
+   "name": "Re-add",
+   "project_code": "CR38",
+   "resolution": "4096x2160 (4K DCI)",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor_id": null,
+   "supervisor_name": "",
+   "thumbnail_url": "",
+   "total_assets": 0,
+   "total_shots": 0,
+   "type": "Feature Film",
+   "updated_at": "2026-11-03T16:35:55.074580Z",
+   "uuid": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": [],
+   "workflow_type": "standard"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/4e638b90-c935-4d1c-914e-f61b48b86d59/"
+  },
+  "status": 200
+ },
+ "leave_sees_project_after": {
+  "body": {
+   "approved_shots": 0,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "CR38",
+   "color_space": "ACEScg",
+   "coordinator_id": null,
+   "coordinator_name": "",
+   "created_at": "2026-11-03T16:35:55.074559Z",
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "id": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "in_progress_shots": 0,
+   "name": "Re-add",
+   "project_code": "CR38",
+   "resolution": "4096x2160 (4K DCI)",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor_id": null,
+   "supervisor_name": "",
+   "thumbnail_url": "",
+   "total_assets": 0,
+   "total_shots": 0,
+   "type": "Feature Film",
+   "updated_at": "2026-11-03T16:35:55.074580Z",
+   "uuid": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": [],
+   "workflow_type": "standard"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/4e638b90-c935-4d1c-914e-f61b48b86d59/"
+  },
+  "status": 200
+ },
+ "leave_sees_project_before": {
+  "body": {
+   "detail": "Not found.",
+   "error": {
+    "code": "not_found",
+    "request_id": "f0206fa9-2584-42b8-9d28-9ac419a6ba6d"
+   }
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/4e638b90-c935-4d1c-914e-f61b48b86d59/"
+  },
+  "status": 404
+ },
+ "readd_lead_user_only": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T16:35:55.176551Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "b5bbf7cc-6549-4fca-b4ab-b2c7de613336",
+   "name": "user@example.test",
+   "projectId": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_code": "CR38",
+   "project_id": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_name": "Re-add",
+   "role": "Artist",
+   "role_id": null,
+   "roles": [
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-03T16:35:55.516362Z",
+   "userId": "6da8c555-8515-439e-9a75-9959c2bfab64",
+   "user_id": "6da8c555-8515-439e-9a75-9959c2bfab64",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "user_id": "6da8c555-8515-439e-9a75-9959c2bfab64"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/4e638b90-c935-4d1c-914e-f61b48b86d59/members/"
+  },
+  "status": 200
+ },
+ "readd_lead_with_role": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T16:35:55.176551Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "b5bbf7cc-6549-4fca-b4ab-b2c7de613336",
+   "name": "user@example.test",
+   "projectId": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_code": "CR38",
+   "project_id": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_name": "Re-add",
+   "role": "Artist",
+   "role_id": null,
+   "roles": [
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-03T16:35:55.549261Z",
+   "userId": "6da8c555-8515-439e-9a75-9959c2bfab64",
+   "user_id": "6da8c555-8515-439e-9a75-9959c2bfab64",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "role": "Artist",
+    "user_id": "6da8c555-8515-439e-9a75-9959c2bfab64"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/4e638b90-c935-4d1c-914e-f61b48b86d59/members/"
+  },
+  "status": 200
+ },
+ "readd_leave_user_only": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T16:35:55.137701Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "4310c88c-ddfc-40c7-8bca-4fd11dda3347",
+   "name": "user@example.test",
+   "projectId": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_code": "CR38",
+   "project_id": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_name": "Re-add",
+   "role": "Artist",
+   "role_id": null,
+   "roles": [
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-03T16:35:55.444691Z",
+   "userId": "50a51342-979c-46d1-9a23-2ded09e673a4",
+   "user_id": "50a51342-979c-46d1-9a23-2ded09e673a4",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "user_id": "50a51342-979c-46d1-9a23-2ded09e673a4"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/4e638b90-c935-4d1c-914e-f61b48b86d59/members/"
+  },
+  "status": 200
+ },
+ "readd_suspended_user_only": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T16:35:55.113040Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "89671596-7d45-4a05-a259-388920113f3a",
+   "name": "user@example.test",
+   "projectId": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_code": "CR38",
+   "project_id": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_name": "Re-add",
+   "role": "Artist",
+   "role_id": null,
+   "roles": [
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-03T16:35:55.379585Z",
+   "userId": "5dca1f5d-ff51-4ced-95cb-55ca5261622d",
+   "user_id": "5dca1f5d-ff51-4ced-95cb-55ca5261622d",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "user_id": "5dca1f5d-ff51-4ced-95cb-55ca5261622d"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/4e638b90-c935-4d1c-914e-f61b48b86d59/members/"
+  },
+  "status": 200
+ },
+ "readd_terminated_user_only": {
+  "body": {
+   "avatar_url": null,
+   "client_id": "",
+   "created_at": "2026-11-03T16:35:55.161965Z",
+   "department": "",
+   "department_id": "",
+   "email": "user@example.test",
+   "id": "56b40a1e-6a63-47a9-90a3-2162a626696a",
+   "name": "user@example.test",
+   "projectId": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_code": "CR38",
+   "project_id": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "project_name": "Re-add",
+   "role": "Artist",
+   "role_id": null,
+   "roles": [
+    "Artist"
+   ],
+   "scope": "PROJECT",
+   "show_code": "",
+   "show_id": null,
+   "status": "active",
+   "team_id": "",
+   "updated_at": "2026-11-03T16:35:55.482347Z",
+   "userId": "bc924951-36f1-4c1c-b8a1-6c2b77f49615",
+   "user_id": "bc924951-36f1-4c1c-b8a1-6c2b77f49615",
+   "vendor_id": ""
+  },
+  "request": {
+   "body": {
+    "user_id": "bc924951-36f1-4c1c-b8a1-6c2b77f49615"
+   },
+   "method": "POST",
+   "path": "/api/organizations/projects/4e638b90-c935-4d1c-914e-f61b48b86d59/members/"
+  },
+  "status": 200
+ },
+ "suspended_sees_project_after": {
+  "body": {
+   "approved_shots": 0,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "CR38",
+   "color_space": "ACEScg",
+   "coordinator_id": null,
+   "coordinator_name": "",
+   "created_at": "2026-11-03T16:35:55.074559Z",
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "id": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "in_progress_shots": 0,
+   "name": "Re-add",
+   "project_code": "CR38",
+   "resolution": "4096x2160 (4K DCI)",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor_id": null,
+   "supervisor_name": "",
+   "thumbnail_url": "",
+   "total_assets": 0,
+   "total_shots": 0,
+   "type": "Feature Film",
+   "updated_at": "2026-11-03T16:35:55.074580Z",
+   "uuid": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": [],
+   "workflow_type": "standard"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/4e638b90-c935-4d1c-914e-f61b48b86d59/"
+  },
+  "status": 200
+ },
+ "suspended_sees_project_before": {
+  "body": {
+   "detail": "Not found.",
+   "error": {
+    "code": "not_found",
+    "request_id": "d51728f4-b841-4500-819d-54a19298086a"
+   }
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/4e638b90-c935-4d1c-914e-f61b48b86d59/"
+  },
+  "status": 404
+ },
+ "terminated_sees_project_after": {
+  "body": {
+   "approved_shots": 0,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "CR38",
+   "color_space": "ACEScg",
+   "coordinator_id": null,
+   "coordinator_name": "",
+   "created_at": "2026-11-03T16:35:55.074559Z",
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "id": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "in_progress_shots": 0,
+   "name": "Re-add",
+   "project_code": "CR38",
+   "resolution": "4096x2160 (4K DCI)",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor_id": null,
+   "supervisor_name": "",
+   "thumbnail_url": "",
+   "total_assets": 0,
+   "total_shots": 0,
+   "type": "Feature Film",
+   "updated_at": "2026-11-03T16:35:55.074580Z",
+   "uuid": "4e638b90-c935-4d1c-914e-f61b48b86d59",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": [],
+   "workflow_type": "standard"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/4e638b90-c935-4d1c-914e-f61b48b86d59/"
+  },
+  "status": 200
+ },
+ "terminated_sees_project_before": {
+  "body": {
+   "detail": "Not found.",
+   "error": {
+    "code": "not_found",
+    "request_id": "33310937-5d72-408d-8cfc-c84f4c8841d3"
+   }
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/4e638b90-c935-4d1c-914e-f61b48b86d59/"
+  },
+  "status": 404
+ }
+}

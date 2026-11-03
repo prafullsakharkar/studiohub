@@ -596,3 +596,40 @@ Each of the six settings viewsets (`categories`, `definitions`, `system-settings
 **Risk.** Low to medium: new route and one new write path, no migration, no change to the existing add. Removing or suspending is what the feature is for; it needs the same privilege as adding.
 
 **Applied (approved by the owner, 2026-11-02, "Approved CR-37", as written, including the self-protection guard, `POST` unchanged and the soft delete):** `PATCH` and `DELETE` on `projects/{id}/members/{member_id}/`, the update serializer, `ProjectMembershipService.update_member` / `remove_member`, contract C-54 and decision D-36 (`docs/production/`). Evidence, the one addition (a restored member no longer keeps the department it had) and the frontend are in `docs/sync/backend-cr-37-verification.md`: 25 backend tests, 16 of 16 source mutations caught, production/masterdata/audit/identity API tests 3,111 pass, a live test against the real backend.
+
+### CR-38: adding a person who is already a member reinstates them and demotes them (**bug**, **PROPOSED, awaiting approval**)
+
+Found in Phase 24 (§5 of `backend-cr-36-verification.md`), left alone in CR-36 and CR-37 ("`POST` unchanged"), and now written up with its own capture: `samples/production/_readd_flow.json`, `tools/test_capture_readd.py`.
+
+**Problem.** `POST projects/{id}/members/` is documented as an idempotent add, but for a person who is already on the project every field the request leaves out takes the serializer's default and the default **overwrites the stored value**: `status` becomes `active`, `role` becomes `Artist`, `roles` becomes `[role]` (`ProjectMembershipCreateSerializer`: `status` default `"active"`, `role` default `"Artist"`; the view: `roles = payload.roles or [payload.role or "Artist"]`; `add_member`: `membership.status = status or membership.status`, where `status` is never empty). So a call that means only "make sure this person is on the project" can:
+- **give project access back to someone an administrator suspended, put on leave or terminated**, and
+- **demote a Lead or Supervisor to Artist** and drop their other roles.
+
+Nothing in the request asks for either. Anyone who may manage members can do the same on purpose with `PATCH` (CR-37), so this is not a privilege problem: it is a side effect nobody asked for, and a quiet one (the answer is a normal `200`).
+
+**Evidence** (real responses, pytest test database; a Lead with `roles ["Lead","Artist"]`, each added with an explicit status, then added again with **only** `{"user_id": …}`):
+
+| Before | Request | After | Can the member open the project? |
+|---|---|---|---|
+| `suspended`, Lead, `["Lead","Artist"]` | `{"user_id": …}` | `200`, **`active`**, **`Artist`**, **`["Artist"]`** | `404` → **`200`** |
+| `on_leave`, same | same | `200`, **`active`**, `Artist`, `["Artist"]` | `404` → **`200`** |
+| `terminated`, same | same | `200`, **`active`**, `Artist`, `["Artist"]` | `404` → **`200`** |
+| `active`, Lead | same | `200`, `active`, **`Artist`**, `["Artist"]` | `200` |
+| `active`, Lead | `{"user_id": …, "role": "Artist"}` (what the frontend's add form sends) | `200`, `active`, `Artist`, `["Artist"]` | `200` |
+
+(`_readd_flow.json`: `add_*`, `readd_*_user_only`, `*_sees_project_before/after`, `readd_lead_with_role`. The earlier captures `other_readd_naive` and `readd_plain` show the same with a role sent.)
+
+**Minimal proposed diff** (backend only, no migration):
+1. `ProjectMembershipCreateSerializer`: no default for `status`, `role` and `scope` (the fields stay optional, and an omitted one is absent from `validated_data`).
+2. The view: `roles` is `payload["roles"]` when sent, else `[payload["role"]]` only when a role was sent, else `None`.
+3. `ProjectMembershipService.add_member`: `role`, `roles`, `scope`, `status` default to `None`. For an **existing** member only what the request names changes (it already does `x or membership.x`); for a **new** member the defaults are applied where the row is made (`status or "active"`, `role or "Artist"`, `roles or [role or "Artist"]`, `scope or "PROJECT"` already read that way). A **restored** (soft-deleted) membership still starts fresh, as today.
+4. Tests: a re-add naming only the person changes nothing for each of the four statuses and for a Lead; a role sent changes the role and roles (as before); a status sent changes the status; a new member still defaults to `active`/`Artist`/`["Artist"]`/`PROJECT`; a restored membership is fresh; the member's access (404/200) follows the status; the existing CR-36 and CR-37 tests stay green. Mutation-check each default.
+5. `docs/production/`: contract C-55 and decision D-37.
+
+**Why no frontend workaround.** The frontend can only avoid the side effect by reading the member list first and sending every stored value back (what `setMemberShow` did before CR-37). That is a race (the list can change between the read and the write), it is not available to any other client of the API, and the add form sends `role: "Artist"` on purpose, so the **role** half of the problem cannot be avoided by the form at all.
+
+**Compatibility.** An add of a **new** person is unchanged. An add of an existing person that names a role still replaces the role (and roles), as today, and one that names a `status` still sets it. What changes is only the unrequested overwrite. The frontend's add form keeps working; a person already on the project who is added again from the form keeps their status, and their role becomes whatever the form says (as before).
+
+**Risk.** Low: three small defaults and a view line, no migration, no new route. The behaviour change is the point of the request; a caller that relied on "add again reactivates them" must now send `"status": "active"` (or use `PATCH`, CR-37).
+
+**Decision asked of the owner:** approve CR-38 as written, change it, or leave it. Nothing in the backend has been changed for it.
