@@ -76,6 +76,10 @@ settings, including on/off, are managed **from the frontend**.
      password as an *unauthenticated* bind, which a server may report as success.
    - **Transport is verified.** `ldaps://` or StartTLS, the server certificate checked against the
      configured CA; a connect and a read timeout (default 5 seconds).
+     *Proposed amendment (CR-41, not approved):* for a directory whose TLS cannot be updated, the
+     configuration may allow static-RSA ciphers and name the certificate to expect when the server URI
+     is an address the certificate does not carry. The certificate is always checked; there is no
+     option to skip it.
    - **Attributes.** `entryUUID` (RFC 4530, stable across renames) is the subject; `uid`, `mail`,
      `givenName`, `sn` and `displayName` fill the account. Attribute names are part of the
      configuration.
