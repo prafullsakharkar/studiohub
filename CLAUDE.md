@@ -38,7 +38,7 @@ uv run basedpyright                              # type check (apps/, config/; m
 
 - Test DB: the database comes from the env file (`DB_*`). That DB role has no `CREATEDB`, so `pytest --create-db` fails. `transaction=True` tests flush every table in the configured DB, and `manage.py test` (`PreserveDatabaseTestRunner`) runs directly against it, so check the DB holds nothing you need before using either.
 - Pytest settings (`pyproject.toml`): `DJANGO_SETTINGS_MODULE=config.settings.testing`, `--reuse-db --strict-markers --import-mode=importlib --cov=apps`, tests discovered under `apps/**/tests`.
-- CI (`.github/workflows/ci.yml`) runs `ruff check`, `manage.py check`, then pytest against Postgres 17 with `DJANGO_ENV=testing`. Run those same three before finishing.
+- CI (`.github/workflows/ci.yml`) runs `ruff check`, `manage.py check`, then pytest against Postgres 18 with `DJANGO_ENV=testing`. Run those same three before finishing.
 - CI also runs a `frontend` job (Node 24, pnpm 10.12.1, from `frontend/`): `pnpm typecheck`, `pnpm exec biome check src --diagnostic-level=error`, `pnpm test`, `pnpm build`. The tests need no backend (every mock is a captured response); the browser role smoke and the live vitest files need a seeded backend and stay manual (`docs/sync/tools/run_role_smoke.sh`).
 - Docker workflow from repo root via `Makefile` (`make up|down|migrate|test|lint|check|shell`); compose files in `infrastructure/compose/` (`compose.yml` + `compose.dev|prod|test.yml`). `PROJECT_NAME` there is `vfx-platform`.
 

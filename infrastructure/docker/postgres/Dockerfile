@@ -1,4 +1,4 @@
-FROM postgres:17@sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f
+FROM postgres:18@sha256:3a4264520e121176619f54ff867d12774bc81e95e7b84db58d63bccdb6144b81
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
      postgresql-contrib \
