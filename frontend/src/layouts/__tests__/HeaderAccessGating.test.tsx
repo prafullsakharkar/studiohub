@@ -113,6 +113,14 @@ describe('Header admin option gating', () => {
     expect(screen.getByText('Theme & Accent Editor')).toBeTruthy();
   });
 
+  it('links the settings entries to the screens that exist, not to the retired /platform/admin URLs', async () => {
+    state.user = { ...state.user, is_superuser: true };
+    await renderHeader();
+    const link = (label: string) => screen.getByText(label).closest('a')?.getAttribute('href');
+    expect(link('Pipeline Settings')).toBe('/settings/system/values');
+    expect(link('Theme & Accent Editor')).toBe('/settings/system/themes');
+  });
+
   it('hides the API health HUD link without the platform grant', async () => {
     const { container } = await (async () => {
       const { Header } = await import('../Header');
