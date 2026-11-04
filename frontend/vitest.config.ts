@@ -47,7 +47,7 @@ export default defineConfig({
   define: { 'import.meta.env.VITE_API_URL': JSON.stringify('http://api.test') },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(import.meta.dirname, './src'),
     },
   },
 });
