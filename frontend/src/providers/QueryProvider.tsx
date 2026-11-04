@@ -2,12 +2,13 @@ import React, { useEffect } from 'react';
 import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from '@tanstack/react-query';
 import { logger } from '@/core/logging/logger';
 import { ApiError } from '@/api/errors/ApiError';
-import { normalizeError } from '@/api/errors/errorMapper';
+import { isRequestCancelled, normalizeError } from '@/api/errors/errorMapper';
 import { centralErrorHandler } from '@/core/api/error-handler';
 
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error, query) => {
+      if (isRequestCancelled(error)) return; // the page moved on; nothing failed
       const apiError = error instanceof ApiError ? error : normalizeError(error);
       const queryKey = JSON.stringify(query.queryKey);
       logger.error('ReactQuery', `Query Error [${queryKey}] (${apiError.status} - ${apiError.type}): ${apiError.message}`);
@@ -22,6 +23,7 @@ export const queryClient = new QueryClient({
   }),
   mutationCache: new MutationCache({
     onError: (error, _variables, _context, mutation) => {
+      if (isRequestCancelled(error)) return;
       const apiError = error instanceof ApiError ? error : normalizeError(error);
       const mutationKey = mutation.options.mutationKey ? JSON.stringify(mutation.options.mutationKey) : 'Anonymous Mutation';
       logger.error('ReactQuery', `Mutation Error [${mutationKey}] (${apiError.status} - ${apiError.type}): ${apiError.message}`);
@@ -38,6 +40,7 @@ export const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 2, // 2 minutes
       gcTime: 1000 * 60 * 10, // 10 minutes
       retry: (failureCount, error) => {
+        if (isRequestCancelled(error)) return false;
         const apiError = error instanceof ApiError ? error : normalizeError(error);
 
         // Non-retryable errors

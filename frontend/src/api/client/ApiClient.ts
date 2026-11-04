@@ -4,7 +4,7 @@ import { tokenStorage } from '@/core/auth/tokenStorage';
 import { refreshAccessToken } from '@/core/auth/sessionRefresh';
 import { normalizeApiPath } from './url';
 import { ApiError } from '@/api/errors/ApiError';
-import { mapHttpError } from '@/api/errors/errorMapper';
+import { isRequestCancelled, mapHttpError } from '@/api/errors/errorMapper';
 import { logger } from '@/core/logging/logger';
 import { DrfErrorResponse } from '@/types/common';
 
@@ -106,6 +106,8 @@ export class ApiClient implements IApiClient {
       try {
         return await requestFn();
       } catch (error: unknown) {
+        // The page gave up on this request: pass the abort on as it is (not a timeout, not a 401 to refresh).
+        if (isRequestCancelled(error, options?.signal)) throw error;
         const normalized = mapHttpError(error);
         if (!authenticated || !normalized.isSessionLoss || normalized.isAccountDisabled) throw normalized;
 
@@ -120,6 +122,7 @@ export class ApiClient implements IApiClient {
         return await requestFn();
       }
     } catch (error: unknown) {
+      if (isRequestCancelled(error, options?.signal)) throw error;
       const finalError = mapHttpError(error);
       // A 401 from login / MFA / password reset is a credential failure the form displays; it is
       // not an expired session, so it must not sign anyone out or toast "session expired".
