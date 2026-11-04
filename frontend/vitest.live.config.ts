@@ -30,5 +30,5 @@ export default defineConfig({
     // transform from an earlier run would keep calling a backend that is gone (vitest 5.0.5 reuses it).
     fsModuleCache: false,
   },
-  resolve: { alias: { '@': path.resolve(__dirname, './src') } },
+  resolve: { alias: { '@': path.resolve(import.meta.dirname, './src') } },
 });

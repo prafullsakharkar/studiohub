@@ -33,7 +33,12 @@ export const GlobalApiStatus: React.FC = () => {
       }, 10000);
     });
 
+    // A request that gets through clears the banner; without this it stayed until the browser's own
+    // `online` event or a manual reload, long after the API was back.
+    const unsubRecovered = centralErrorHandler.onRecovered(() => setIsOffline(!navigator.onLine));
+
     return () => {
+      unsubRecovered();
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       unsubNetwork();
