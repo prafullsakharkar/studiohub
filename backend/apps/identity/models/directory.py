@@ -33,6 +33,13 @@ class DirectoryConfiguration(models.Model):
 
     ca_certificate = models.TextField(blank=True, default="")
 
+    # For a directory whose TLS cannot be updated (CR-41); the certificate is always checked.
+    # Static-RSA AES-GCM suites beside Python's defaults (no forward secrecy).
+    tls_allow_legacy_ciphers = models.BooleanField(default=False)
+
+    # A name the certificate must carry when the server URI is an address it does not name.
+    tls_server_name = models.CharField(max_length=253, blank=True, default="")
+
     bind_dn = models.CharField(max_length=512, blank=True, default="")
 
     bind_password = models.TextField(blank=True, default="")

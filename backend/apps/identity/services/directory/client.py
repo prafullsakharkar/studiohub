@@ -22,6 +22,13 @@ logger = logging.getLogger(__name__)
 
 USERNAME_MAX_LENGTH = 255
 
+#: Python's default cipher list plus the static-RSA AES-GCM suites, for a directory that offers no
+#: forward-secret key exchange (CR-41). Only AES256-GCM-SHA384 and AES128-GCM-SHA256 are added.
+LEGACY_CIPHERS = (
+    "@SECLEVEL=2:ECDH+AESGCM:ECDH+CHACHA20:ECDH+AES:DHE+AES:kRSA+AESGCM"
+    ":!aNULL:!eNULL:!aDSS:!SHA1:!AESCCM"
+)
+
 
 class DirectoryUnavailable(Exception):
     """The directory could not be asked: no connection, a timeout, or the service bind failed."""
@@ -85,10 +92,14 @@ class DirectoryClient:
         if self._server is not None:
             return self._server
         config = self.config
+        # The certificate is always checked; the two options only widen the ciphers and add the
+        # name the certificate must carry when the URI is an address it does not name (CR-41).
         tls = Tls(
             validate=ssl.CERT_REQUIRED,
             version=ssl.PROTOCOL_TLS_CLIENT,
             ca_certs_data=config.ca_certificate or None,
+            ciphers=LEGACY_CIPHERS if config.tls_allow_legacy_ciphers else None,
+            valid_names=[config.tls_server_name] if config.tls_server_name else None,
         )
         return Server(
             config.server_uri,
