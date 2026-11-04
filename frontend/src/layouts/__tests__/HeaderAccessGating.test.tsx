@@ -80,9 +80,10 @@ describe('Header admin option gating', () => {
     };
   });
 
-  it('renders the static studio badge with no org-switching UI', async () => {
+  it('shows the project selection and no StudioHub badge or org-switching UI', async () => {
     await renderHeader();
-    expect(screen.getByTestId('studio-badge')).toBeTruthy();
+    expect(screen.getByTestId('proj-switcher')).toBeTruthy();
+    expect(screen.queryByTestId('studio-badge')).toBeNull();
     expect(screen.queryByTestId('org-switcher')).toBeNull();
   });
 
