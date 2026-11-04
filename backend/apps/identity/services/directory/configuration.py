@@ -9,6 +9,8 @@ recorded as a security event naming the fields, never a value of the password.
 
 from __future__ import annotations
 
+import ipaddress
+import re
 from typing import Any
 
 from django.conf import settings
@@ -24,12 +26,28 @@ from apps.identity.services.directory.client import (
     DirectoryUnavailable,
 )
 
+#: One DNS name (RFC 1123 labels). No wildcard: ldap3 accepts any certificate for the name "*".
+_LABEL = r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?"
+_HOSTNAME = re.compile(rf"(?=.{{1,253}}\Z){_LABEL}(?:\.{_LABEL})*")
+
+
+def _is_certificate_name(value: str) -> bool:
+    """A host name or an IP address, as a certificate names it; nothing that widens the match."""
+    try:
+        ipaddress.ip_address(value)
+    except ValueError:
+        return bool(_HOSTNAME.fullmatch(value))
+    return True
+
+
 #: Fields an administrator may change (the password separately: it is write-only).
 EDITABLE_FIELDS = (
     "enabled",
     "server_uri",
     "start_tls",
     "ca_certificate",
+    "tls_allow_legacy_ciphers",
+    "tls_server_name",
     "bind_dn",
     "user_search_base",
     "user_filter",
@@ -46,7 +64,16 @@ EDITABLE_FIELDS = (
 
 #: Changing any of these means the last connection test no longer describes the saved settings.
 CONNECTION_FIELDS = frozenset(
-    {"server_uri", "start_tls", "ca_certificate", "bind_dn", "bind_password", "user_search_base"}
+    {
+        "server_uri",
+        "start_tls",
+        "ca_certificate",
+        "tls_allow_legacy_ciphers",
+        "tls_server_name",
+        "bind_dn",
+        "bind_password",
+        "user_search_base",
+    }
 )
 
 
@@ -98,6 +125,11 @@ class DirectoryConfigurationService:
         elif cls._uses_plain_ldap(config):
             errors["start_tls"] = (
                 "A plain ldap:// server sends passwords in clear: turn on StartTLS or use ldaps://."
+            )
+        if config.tls_server_name and not _is_certificate_name(config.tls_server_name):
+            errors["tls_server_name"] = (
+                "A host name or IP address as the certificate names it, e.g. ldap or "
+                "ldap.studio.com; no wildcard, scheme, port or spaces."
             )
         if "{username}" not in config.user_filter:
             errors["user_filter"] = "The filter must contain {username}."

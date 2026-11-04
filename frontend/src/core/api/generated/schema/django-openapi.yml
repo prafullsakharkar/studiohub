@@ -37254,6 +37254,11 @@ components:
           type: boolean
         ca_certificate:
           type: string
+        tls_allow_legacy_ciphers:
+          type: boolean
+        tls_server_name:
+          type: string
+          maxLength: 253
         bind_dn:
           type: string
           maxLength: 512
@@ -38591,10 +38596,6 @@ components:
         email:
           type: string
           maxLength: 255
-        username:
-          type: string
-          writeOnly: true
-          maxLength: 255
         password:
           type: string
           writeOnly: true
@@ -38615,6 +38616,7 @@ components:
           format: uuid
           nullable: true
       required:
+      - email
       - password
     LoginAttemptCreate:
       type: object
@@ -42048,6 +42050,11 @@ components:
           type: boolean
         ca_certificate:
           type: string
+        tls_allow_legacy_ciphers:
+          type: boolean
+        tls_server_name:
+          type: string
+          maxLength: 253
         bind_dn:
           type: string
           maxLength: 512

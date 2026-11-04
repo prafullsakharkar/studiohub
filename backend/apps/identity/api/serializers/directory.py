@@ -38,6 +38,8 @@ class DirectoryConfigurationSerializer(serializers.ModelSerializer[DirectoryConf
             "server_uri",
             "start_tls",
             "ca_certificate",
+            "tls_allow_legacy_ciphers",
+            "tls_server_name",
             "bind_dn",
             "bind_password",
             "bind_password_set",
@@ -63,6 +65,7 @@ class DirectoryConfigurationSerializer(serializers.ModelSerializer[DirectoryConf
             "bind_dn": {"required": False, "allow_blank": True},
             "user_search_base": {"required": False, "allow_blank": True},
             "ca_certificate": {"required": False, "allow_blank": True, "trim_whitespace": False},
+            "tls_server_name": {"required": False, "allow_blank": True},
         }
 
     def get_bind_password_set(self, obj: DirectoryConfiguration) -> bool:
