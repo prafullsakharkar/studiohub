@@ -634,7 +634,7 @@ Nothing in the request asks for either. Anyone who may manage members can do the
 
 **Approved by the owner, 2026-11-03 ("Approved CR-38"), as written.** **Applied** as written on `sync/backend-cr-38` (report `backend-cr-38-verification.md`; contract C-55, decision D-37): 18 new tests, 11 of 11 mutations caught, 3,130 related tests pass. The captures before and after are `samples/production/_readd_flow.json` and `_readd_after_cr38_flow.json`.
 
-### CR-39: an account that owes a password change AND MFA enrollment can do neither (**bug**, **PROPOSED, awaiting approval**)
+### CR-39: an account that owes a password change AND MFA enrollment can do neither (**bug**, **APPLIED**, branch `sync/backend-cr-39`)
 
 Found when the owner signed in as the account `manage.py bootstrap` creates and got "Something went wrong" after changing the password. Captured with `tools/test_capture_restricted_both.py` (`samples/identity/_restricted_both_flow.json`) and reproduced in a browser against the live harness (`bootstrap` user).
 
@@ -672,4 +672,12 @@ An account that owes both can then change its password (which ends its sessions)
 
 **Risk.** Low: it widens the permitted endpoints only for accounts that owe two debts, which today are stuck, and only to the endpoints that settle a debt.
 
-**Decision asked of the owner:** approve CR-39 as written, change it, or leave it. Nothing in the backend has been changed for it.
+**Approved by the owner, 2026-11-04 ("Approved CR-39"). Applied on `sync/backend-cr-39`, narrower than the diff above.** I wrote the union (any debt's endpoints open) above, and building it showed it contradicts a rule the code already states and tests: `SEC-AUTH-06` says "the password is settled first when both are owed" and `test_the_password_is_settled_before_the_enrollment` requires MFA setup to be refused with `password_change_required` while the password is owed. So `enforce` now opens only the endpoints that settle the **first** debt (the order `pending()` returns):
+
+```python
+first = owed[0]
+if view_name not in _ALLOWED[first]:
+    raise RestrictedSession(first)
+```
+
+That removes the dead end with fewer open endpoints than the proposal: the account changes its password (which ends its sessions), signs in again owing MFA only, and enrols. The union is kept out on purpose, and a mutation that switches to it is caught by that existing test. Report: `backend-cr-39-verification.md`; `docs/identity/CONTRACTS.md` (SEC-AUTH-06) says it in one sentence; no ADR (the control still refuses everything except what settles the first debt).
