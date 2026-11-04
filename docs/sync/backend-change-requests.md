@@ -681,3 +681,30 @@ if view_name not in _ALLOWED[first]:
 ```
 
 That removes the dead end with fewer open endpoints than the proposal: the account changes its password (which ends its sessions), signs in again owing MFA only, and enrols. The union is kept out on purpose, and a mutation that switches to it is caught by that existing test. Report: `backend-cr-39-verification.md`; `docs/identity/CONTRACTS.md` (SEC-AUTH-06) says it in one sentence; no ADR (the control still refuses everything except what settles the first debt).
+
+### CR-40: sign in with an OpenLDAP username, switchable on and off; the first sign-in makes the account and the People record (**feature**, **PROPOSED**)
+
+Requested by the owner (2026-11-04). The design, and the owner's answers to its five open questions (OpenLDAP; username; application MFA applies; new users get Artist; fail closed), are in `docs/adr/ADR-0039-ldap-authentication.md`. Nothing is built yet.
+
+**Need.** Staff sign in with their directory username and password. An administrator can turn it off and on. The first successful sign-in creates the account and its People record, and every sign-in keeps the name and e-mail current.
+
+**What exists today** (read from the code, 2026-11-04): accounts are found by e-mail only (`AuthenticationSelector.get_user`; `User.USERNAME_FIELD = "email"`, no username column); `AuthenticationValidator.validate_login` makes one password-hash comparison per attempt and checks the account state after it; `AuthenticationService.login` then records the attempt, applies the MFA state and starts the session. A user made by `UserService` gets a People record after commit (DOM-MD-PER-10). There is no directory library in `pyproject.toml`.
+
+**Proposed change** (backend; one additive migration):
+
+| Work package | What |
+|---|---|
+| WP L.1 | Settings in `config/env.py` (`LDAP_ENABLED` default off, `LDAP_URI`, `LDAP_START_TLS`, `LDAP_CA_CERT`, `LDAP_BIND_DN`, `LDAP_BIND_PASSWORD`, `LDAP_USER_BASE_DN`, `LDAP_USER_FILTER`, attribute names, `LDAP_TIMEOUT_SECONDS`, `LDAP_DEFAULT_ROLE=artist`); deploy checks (plain `ldap://` without StartTLS, no certificate verification, empty service account); the runtime flag `identity.ldap_login` read through a provider registered by the settings app |
+| WP L.2 | `identity.ExternalIdentity` model and migration; `ldap3` dependency; a directory client (search then bind, filter escaping, empty password refused, timeouts) |
+| WP L.3 | Provisioning and refresh: create the `User` (unusable password, profile names), the identity row and the `artist` role once; refuse an entry with no `mail` and an e-mail that a local account already has; refresh name and e-mail on later sign-ins. The People record comes from DOM-MD-PER-10 |
+| WP L.4 | `AuthenticationService.login` chooses the check (ADR-0039 decision 2); the directory outage is recorded but does not count toward the lockout; change-password and reset refuse a directory user (`password_managed_by_directory`); `auth/me` gains `auth_source` |
+| WP L.5 | `manage.py ldap_sync [--dry-run]` (deactivate leavers, revoke their sessions, refresh names) and a command to link an existing local account to a directory entry on purpose; docs (`docs/identity/CONTRACTS.md` API and SEC rows, environment variables, the pre-deploy checklist) |
+| WP L.6 (frontend) | Hide change-password and reset for `auth_source: "ldap"`; the login field reads "Username or e-mail". A settings switch for the runtime flag if wanted |
+
+**Tests proposed:** with the master switch off, every existing login test is unchanged and no connection is attempted; with it on, against `ldap3`'s mock server: first sign-in creates one user, one identity, one People record and the Artist role; a second sign-in creates nothing and refreshes the name; wrong password, empty password, no entry, two entries, no `mail`, and an e-mail clash each fail with the generic error and the right ledger reason; an outage fails closed, is logged, and does not lock the account; a local account signs in while the directory is down; the runtime flag off refuses directory users and lets local ones in; MFA enrollment and challenge apply to a directory user; change-password and reset refuse one; `ldap_sync` deactivates a removed entry and revokes its sessions. A filter-injection username (`*)(uid=*`) matches nothing. One live run against an OpenLDAP container on the test harness. Mutation-check the empty-password refusal, the filter escaping, the outage-not-counted rule and the e-mail-clash refusal.
+
+**Why no frontend workaround.** Sign-in is decided by the server; the frontend cannot check a directory password.
+
+**Risk.** Medium: a new way in. Kept small by sharing every step after the password check, failing closed, never linking accounts by e-mail on its own, verified TLS only, and a master switch that defaults off. A trust-model change, so ADR-0039 is required (`CLAUDE.md`, identity hardening).
+
+**Waiting for:** the owner's approval of ADR-0039 and this CR.
