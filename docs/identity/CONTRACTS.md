@@ -199,6 +199,7 @@ ENABLED  ──locked (N failures)──► LOCKED (until locked_until)
 | DOM-MFA-05 | `MFA_MAX_FAILED_ATTEMPTS=5`, `MFA_LOCKOUT_MINUTES=15` are enforced with a single lockout implementation | `services/mfa/lockout.py` (WP 6.4) |
 | DOM-MFA-06 | Backup codes are single-use, hashed, expiring, and atomically consumed | Service/queryset (WP 6.5) |
 | DOM-MFA-07 | Enrollment is reachable over HTTP and activation requires a valid code | API (WP 6.1) |
+| DOM-MFA-08 | Who must use MFA (`MFAPolicyService.is_required`): superusers and staff; any account with `User.mfa_required` (set per account by an administrator); every account under `MFA_REQUIRE_ALL` **except directory accounts**, unless the directory configuration's `require_mfa` is on; every vendor or client project member, directory or local (TM-007). ADR-0039 decision 5, CR-40 | `services/mfa/policies.py` |
 | DOM-MFA-08 | MFA is required of superusers, staff, external (vendor/client) project members (`MFA_REQUIRE_EXTERNAL`, default on) and, when `MFA_REQUIRE_ALL` is set, everyone. A required user without a factor holds a restricted session (SEC-AUTH-06), not a full one | `MFAPolicyService.is_required`, `authentication/restrictions.py` (TM-007) |
 
 ### 2.8 Devices
@@ -264,6 +265,7 @@ The password is settled first when both are owed: until it is changed only its e
 | SEC-LOGIN-03 | A successful login creates a `UserSession`, records a `SecurityEvent(LOGIN_SUCCESS)` and a `LoginAttempt(success=True)` — WP 5.6 |
 | SEC-LOGIN-04 | An MFA-enabled user's password-only login yields **no** tokens and **no** active session; it yields a short-lived pre-auth challenge — WP 6.2 |
 | SEC-LOGIN-05 | Login honours IP blacklists (exact + CIDR) before password verification — WP 5.8 |
+| SEC-LOGIN-07 | **Directory sign-in (ADR-0039, CR-40).** A local account found by e-mail is checked with its local password, as before. Otherwise a directory username (an `ExternalIdentity`), or any name while directory sign-in is on, is checked by a search with the service account then a bind as the entry (the username escaped in the filter; an empty password refused before any bind); both paths cost one password-hash comparison and fail with the same generic body. A directory outage, or directory sign-in off, fails closed and is recorded (`ldap_unavailable`, `ldap_disabled`) but **does not count toward the lockout**. A local account is never linked to a directory entry by e-mail by itself (`ldap_email_conflict`; `manage.py ldap_link` does it on purpose); an entry without `mail` makes no account (`ldap_no_email`); a username now naming another entry is refused (`ldap_ambiguous`) |
 | SEC-LOGIN-06 | Throttle: `login` 30/min per client; `refresh` 60/min (`drf.py:38-41`). Throttle failure is fail-closed when the cache is unavailable (`ResilientScopedRateThrottle`). Authenticated endpoints that verify a password or second factor (change password, MFA enroll/verify/disable/recovery, credential issuing) use scope `sensitive`, 20/min per user, fail-closed (Phase 8). |
 
 ### 3.3 Authorization
@@ -302,6 +304,7 @@ The password is settled first when both are owed: until it is changed only its e
 | SEC-SEC-06 | OAuth provider/account tokens | Encrypted at rest if OAuth is retained (WP 7.8) |
 | SEC-SEC-07 | JWT signing key | From settings/env; never logged; rotation invalidates outstanding tokens by design |
 | SEC-SEC-08 | Logs | Passwords, tokens, secrets, full authorization headers are redacted; `SecurityEvent.metadata` must not carry secrets |
+| SEC-SEC-11 | Directory service password | Encrypted at rest with `DIRECTORY_ENCRYPTION_KEY` (`FieldCipher`, fail closed: no key, no saved password, no directory sign-in); write-only through the API (`bind_password_set` only); its changes are audited by field name, never value (ADR-0039) |
 | SEC-SEC-09 | Error responses | Never echo a secret or a stack trace (`handlers.py:322-326`) |
 
 **SEC-SEC-10 (dependency gate).** Encryption requires an approved crypto dependency. **DECIDED A1:** use `cryptography` (Fernet/AES-GCM) with a dedicated key supplied via env; **adding this dependency required written approval, given 2026-10-22; `cryptography` 50.0.2 is installed.** Implemented in WP 6.3. Operational: set `MFA_ENCRYPTION_KEY` (Fernet key) before deploying migration `0019`; losing the key makes existing MFA secrets unrecoverable, so back it up with the other secrets. Rotate by prepending a new key to the comma-separated list; drop the old key only after no row needs it.
@@ -374,14 +377,14 @@ These shapes are consumed by the frontend and **must not change** without a cont
 
 | ID | Method & path | Request | Response |
 |---|---|---|---|
-| API-AUTH-01 | `POST /auth/login/` | `{email, password}` (accepts `username` alias) | `200 {"tokens":{"access","refresh"},"user":FrontendUser}` |
+| API-AUTH-01 | `POST /auth/login/` | `{email, password}` (accepts `username` alias); `email` is an e-mail for a local account **or a directory username** (CR-40: no longer an e-mail field; a value with `@` must still be a valid e-mail) | `200 {"tokens":{"access","refresh"},"user":FrontendUser}` |
 | API-AUTH-02 | `POST /auth/refresh/` | `{refresh}` | `200 {"access","refresh"}` (rotated) |
 | API-AUTH-03 | `POST /auth/logout/` | `{refresh?}` | `200 {"detail"}` |
 | API-AUTH-04 | `GET /auth/me/` | — | `200 FrontendUser` |
 | API-AUTH-05 | `PATCH /auth/me/` | writable Profile fields | `200 FrontendUser` |
-| API-AUTH-06 | `POST /auth/change-password/` | `{old_password,new_password,...}` | `200 {"detail"}`; all sessions revoked |
+| API-AUTH-06 | `POST /auth/change-password/` | `{old_password,new_password,...}` | `200 {"detail"}`; all sessions revoked. A directory account: `400 password_managed_by_directory` (also for the admin reset; a forgot-password request issues no token, answered as for an unknown address) |
 
-`FrontendUser` fields (`api/serializers/frontend_user.py:186-200`): `id,email,first_name,last_name,full_name,avatar_url,role,permissions[],project_memberships[],is_active,is_staff,is_superuser,created_at,updated_at`.
+`FrontendUser` fields (`api/serializers/frontend_user.py`): `id,email,first_name,last_name,full_name,avatar_url,role,permissions[],project_memberships[],is_active,is_staff,is_superuser,must_change_password,auth_source,mfa_required,created_at,updated_at`. `auth_source` is `local` or `ldap`; `mfa_required` is the per-account requirement an administrator sets (CR-40).
 
 ### 4.3 Identity admin tree — `/api/v1/identity/*`
 
@@ -396,6 +399,8 @@ These shapes are consumed by the frontend and **must not change** without a cont
 | API-ID-05 | `/identity/security-events/` | **read + create only**; no update/delete (WP 5.4) |
 | API-ID-06 | `/identity/login-attempts/` | **read + create only**; scoped (WP 5.4/5.5) |
 | API-ID-07 | `/identity/ip-blacklist/` | CRUD + `activate/deactivate`; CIDR semantics (WP 5.8) |
+| API-ID-08 | `POST /identity/users/{id}/require-mfa/` | `{"required": bool}` → `200 {"mfa_required"}`; needs `identity.user.require_mfa` (platform-admin, org-admin) and the usual user-administration guard; audited. User rows carry `mfa_required` (read-only; a plain update does not set it) and `auth_source` (CR-40) |
+| API-ID-09 | `/identity/directory/` | `GET`, `PATCH` the one directory configuration; `POST directory/test-connection/` (service bind and a read of the search base; a pass is what allows `enabled: true` until a connection field changes), `POST directory/test-user/ {"username"}` (the entry's attributes that would be copied; never a user's password). All need `identity.directory.manage` (platform-admin only). `PATCH` refuses `ldap://` without `start_tls`, a filter without `{username}`, an unknown `default_role_code`, and `enabled: true` without a passing test; `bind_password` is write-only (absent keeps it, `""` clears it) (CR-40) |
 
 ### 4.4 RBAC tree — `/api/v1/{roles,groups,permissions}/`
 
