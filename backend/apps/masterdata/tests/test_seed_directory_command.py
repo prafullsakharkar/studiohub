@@ -1,4 +1,4 @@
-"""``seed_directory`` fills departments and positions, once, without touching what is already there."""
+"""``seed_directory`` fills the studio directory once, without touching what is already there."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import pytest
 from django.core.management import call_command
 
 from apps.masterdata.management.commands import seed_directory as data
-from apps.masterdata.models import Department, Position
+from apps.masterdata.models import Client, Department, Office, Position, Vendor
 
 pytestmark = pytest.mark.django_db
 
@@ -43,6 +43,8 @@ def test_running_again_creates_nothing():
 
     assert (Department.objects.count(), Position.objects.count()) == counts
     assert "departments: created 0" in output and "positions: created 0" in output
+    for kind in ("offices", "clients", "vendors"):
+        assert f"{kind}: created 0" in output
 
 
 def test_dry_run_changes_nothing_and_counts():
@@ -51,6 +53,10 @@ def test_dry_run_changes_nothing_and_counts():
     assert Department.objects.count() == 0 and Position.objects.count() == 0
     assert f"departments: would create {len(data.DEPARTMENTS)}" in output
     assert f"positions: would create {len(data.POSITIONS)}" in output
+    assert Office.objects.count() == Client.objects.count() == Vendor.objects.count() == 0
+    assert f"offices: would create {len(data.OFFICES)}" in output
+    assert f"clients: would create {len(data.CLIENTS)}" in output
+    assert f"vendors: would create {len(data.VENDORS)}" in output
 
 
 def test_rows_from_init_platform_are_kept_not_duplicated():
@@ -81,3 +87,46 @@ def test_a_position_deleted_by_hand_is_not_brought_back():
     run()
 
     assert not Position.objects.filter(code="POS-EDITOR").exists()
+
+
+def test_it_creates_every_office_client_and_vendor():
+    run()
+
+    assert set(Office.objects.values_list("code", flat=True)) == {o["code"] for o in data.OFFICES}
+    assert set(Client.objects.values_list("code", flat=True)) == {c["code"] for c in data.CLIENTS}
+    assert set(Vendor.objects.values_list("code", flat=True)) == {v["code"] for v in data.VENDORS}
+    assert Vendor.objects.get(code="VEN-CNV").status == "Under Review"
+    assert Client.objects.get(code="CLI-LAN").portal_access is False
+
+
+def test_no_seeded_office_takes_the_headquarters():
+    from apps.masterdata.services.organization import OfficeService
+
+    headquarters = OfficeService.create(
+        actor=None,
+        data={
+            "code": "OFF-HQ",
+            "name": "Studio Headquarters",
+            "office_type": "headquarters",
+            "timezone": "Asia/Kolkata",
+            "country": "India",
+            "city": "Mumbai",
+            "is_headquarters": True,
+        },
+    )
+
+    run()
+
+    assert list(Office.objects.filter(is_headquarters=True)) == [headquarters]
+
+
+def test_an_office_already_there_by_code_is_kept():
+    Office.objects.create(
+        code="off-mum", name="Our Mumbai", office_type="branch", timezone="UTC",
+        country="India", city="Mumbai",
+    )  # fmt: skip
+
+    run()
+
+    assert Office.all_objects.filter(code__iexact="OFF-MUM").count() == 1
+    assert Office.objects.get(code__iexact="OFF-MUM").name == "Our Mumbai"
