@@ -225,6 +225,20 @@ class TestRefusals:
         assert attempt.reason == "invalid_password"
         assert attempt.user is not None
 
+    def test_the_accounts_email_is_not_a_way_in(self, directory):
+        # An identifier that is an account's e-mail takes the local check (ADR-0039 implementation
+        # notes); a directory account has no usable local password, so its username is the only way.
+        configure()
+        directory.add("jdoe")
+        session("jdoe")
+        binds_before = len(directory.binds)
+
+        response = login("jdoe@studio.test", PASSWORD)
+
+        assert response.status_code == 401
+        assert len(directory.binds) == binds_before
+        assert _reason("jdoe@studio.test") == "invalid_password"
+
     def test_an_empty_password_is_refused_before_any_bind(self, directory, monkeypatch):
         configure()
         directory.add("jdoe")
