@@ -42,7 +42,7 @@ const type = async (label: RegExp | string, text: string) =>
 const click = (element: HTMLElement) => fireEvent.click(element);
 
 async function passwordStep() {
-  await type(/work email/i, 'mfa@example.test');
+  await type(/username or email/i, 'mfa@example.test');
   await type(/password/i, 'whatever-123');
   click(screen.getByRole('button', { name: /sign in to workspace/i }));
 }
@@ -124,10 +124,33 @@ describe('login without MFA', () => {
     expect(screen.queryByTestId('where')).toBeNull();
   });
 
+  it('signs in with a directory username: it is sent as the email field, unchanged (CR-40)', async () => {
+    const directory = loadSample('identity/_directory_flow.json');
+    const { calls } = mockFetch(() => reply(directory.login_directory_wrong_password));
+    renderAt('/login', <LoginPage />, '/login');
+    await type(/username or email/i, 'jdoe');
+    await type(/password/i, 'wrong');
+    click(screen.getByRole('button', { name: /sign in to workspace/i }));
+    expect(await screen.findByText('Invalid username or password.')).toBeTruthy();
+    expect(calls.find((c) => c.url.endsWith('/auth/login/'))?.body).toEqual({ email: 'jdoe', password: 'wrong' });
+  });
+
+  it('checks the address only when the identifier has an @ (the server answers the same way)', async () => {
+    const directory = loadSample('identity/_directory_flow.json');
+    expect(directory.login_bad_email.status).toBe(400);
+    const { calls } = mockFetch(() => ({}));
+    renderAt('/login', <LoginPage />, '/login');
+    await type(/username or email/i, 'a@b');
+    await type(/password/i, 'x');
+    click(screen.getByRole('button', { name: /sign in to workspace/i }));
+    expect(await screen.findByText('Please enter a valid email address')).toBeTruthy();
+    expect(calls.some((c) => c.url.endsWith('/auth/login/'))).toBe(false);
+  });
+
   it('starts with empty fields (no pre-filled demo credentials)', async () => {
     mockFetch(() => ({}));
     renderAt('/login', <LoginPage />, '/login');
-    expect(((await screen.findByLabelText(/work email/i)) as HTMLInputElement).value).toBe('');
+    expect(((await screen.findByLabelText(/username or email/i)) as HTMLInputElement).value).toBe('');
   });
 });
 

@@ -31,3 +31,9 @@ class LoginAttemptReason(models.TextChoices):
     USER_DELETED = "user_deleted", "User deleted"
     USER_LOCKED = "user_locked", "User locked"
     TOO_MANY_ATTEMPTS = "too_many_attempts", "Too many attempts"
+    # Directory (LDAP) sign-in, ADR-0039.
+    DIRECTORY_UNAVAILABLE = "ldap_unavailable", "Directory unavailable"
+    DIRECTORY_OFF = "ldap_disabled", "Directory sign-in off"
+    DIRECTORY_AMBIGUOUS = "ldap_ambiguous", "Directory: more than one entry"
+    DIRECTORY_NO_EMAIL = "ldap_no_email", "Directory entry has no e-mail"
+    DIRECTORY_EMAIL_CONFLICT = "ldap_email_conflict", "E-mail used by a local account"

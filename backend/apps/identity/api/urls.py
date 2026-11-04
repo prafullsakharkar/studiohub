@@ -22,6 +22,7 @@ from .views.authentication import (
     TrustedDeviceListAPIView,
     TrustedDeviceRevokeAPIView,
 )
+from .views.directory import DirectoryConfigurationViewSet
 from .views.mfa_compat import (
     MFAAdminResetView,
     MFAConfigView,
@@ -117,4 +118,20 @@ urlpatterns = router_urls + [
         name="mfa-recovery-codes-regenerate",
     ),
     path("mfa/admin/reset/<str:user_id>/", MFAAdminResetView.as_view(), name="mfa-admin-reset"),
+    # Directory (LDAP) settings (ADR-0039)
+    path(
+        "directory/",
+        DirectoryConfigurationViewSet.as_view({"get": "retrieve", "patch": "partial_update"}),
+        name="directory",
+    ),
+    path(
+        "directory/test-connection/",
+        DirectoryConfigurationViewSet.as_view({"post": "test_connection"}),
+        name="directory-test-connection",
+    ),
+    path(
+        "directory/test-user/",
+        DirectoryConfigurationViewSet.as_view({"post": "test_user"}),
+        name="directory-test-user",
+    ),
 ]

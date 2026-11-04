@@ -435,6 +435,34 @@ class RoleService(RbacGuardMixin, BusinessService):
 
     @classmethod
     @transaction.atomic
+    def grant_on_provisioning(cls, *, role, user):
+        """
+        The configured default role of an account made at its first directory sign-in (ADR-0039
+        decision 6). The system grants it, so there is no actor to check; it happens once, at
+        creation, and an administrator who later removes it is not overridden.
+        """
+        cls._guard_usable_role(role)
+
+        user_role = cls._activate_link(
+            UserRole,
+            lookup={"user": user, "role": role},
+        )
+
+        cls._audit(
+            actor=None,
+            event_type=SecurityEventType.ROLE_CHANGED,
+            description=f"Assigned role {role.name} to {user.email} at directory provisioning.",
+            metadata={
+                "action": "assign",
+                "origin": "directory",
+                "role_id": str(role.pk),
+                "user_id": str(user.pk),
+            },
+        )
+        return user_role
+
+    @classmethod
+    @transaction.atomic
     def unassign_user(cls, *, role, user, actor):
         cls._guard_usable_role(role)
         cls._guard_system_mutation(role, actor)

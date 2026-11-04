@@ -142,6 +142,10 @@ PERMISSION_SPECS: list[tuple[str, str, str]] = [
     ("identity.ip_blacklist.delete", "ip_blacklist", "delete"),
     ("identity.profile.delete", "profile", "delete"),
     ("identity.trusted_device.delete", "trusted_device", "delete"),
+    # ADR-0039: requiring MFA for one account (platform-admin and org-admin), and the directory
+    # (LDAP) connection with its service password (platform-admin only: full catalog).
+    ("identity.user.require_mfa", "user", "require_mfa"),
+    ("identity.directory.manage", "directory", "manage"),
 ]
 
 # Account lifecycle and read-only security ledgers: an organization administrator can activate,
@@ -155,6 +159,7 @@ IDENTITY_ADMIN_PERMISSIONS = [
     "identity.user.restore",
     "identity.user.reset_password",
     "identity.user.change_password",
+    "identity.user.require_mfa",
     "identity.security_event.view",
     "identity.login_history.view",
     "identity.login_attempt.view",

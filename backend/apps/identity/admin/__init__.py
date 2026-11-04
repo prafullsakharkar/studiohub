@@ -1,5 +1,6 @@
 from .api_key import *
 from .backup_code import *
+from .directory import *
 from .group import *
 from .group_member import *
 from .group_role import *

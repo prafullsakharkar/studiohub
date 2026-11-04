@@ -1,7 +1,8 @@
 # ADR-0039: Directory (LDAP) sign-in beside local accounts, configured from the application
 
-Status: **proposed** (2026-11-04, revised the same day), awaiting the owner's approval · Change
-request: CR-40 (`docs/sync/backend-change-requests.md`)
+Status: **accepted** (proposed and revised 2026-11-04; approved by the owner the same day: "approved
+CR-40") · Change request: CR-40 (`docs/sync/backend-change-requests.md`) · Implementation and
+evidence: `docs/sync/backend-cr-40-verification.md`
 
 ## Context
 
@@ -152,6 +153,20 @@ All platform-global, no organization column (ADR-0034). Additive migrations; no 
   user cannot reach the admin even with the role.
 - Turning directory sign-in off locks directory users out until it is turned back on; that is the
   intended "off".
+
+## Implementation notes (2026-11-04)
+
+- The login body keeps its one field, `email`, which now also takes a directory username; a value
+  with an `@` must still be a valid address. The check is chosen by the identifier
+  (`AuthenticationService._check_credentials`): an account's e-mail is checked locally, as before;
+  otherwise a linked directory username, or any name while directory sign-in is on, is checked
+  against the directory. A directory account therefore signs in with its username: its e-mail
+  meets an unusable local password and fails like any wrong password.
+- A directory sign-in spends one password-hash comparison even though it compares nothing, so the
+  two paths take the same time for an unknown name.
+- `UserSelector` shows other accounts only to staff and superusers, so an `org-admin` who is not
+  staff gets `404` on a person's `require-mfa`, as on every other account action there. Unchanged
+  here (the verification report lists it).
 
 ## Not decided here
 

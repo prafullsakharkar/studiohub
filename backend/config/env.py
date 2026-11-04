@@ -234,6 +234,21 @@ class Settings(BaseSettings):
     )
 
     ####################################################################
+    # Directory (LDAP) sign-in
+    ####################################################################
+
+    # Fernet key(s) (urlsafe base64, 32 bytes) protecting the directory service account's password
+    # at rest (ADR-0039). Comma-separated for rotation: the first key encrypts, every key decrypts.
+    # Empty: the password cannot be saved or read, so directory sign-in stays off (fails closed).
+    directory_encryption_key: SecretStr = Field(
+        default=SecretStr(""), alias="DIRECTORY_ENCRYPTION_KEY"
+    )
+
+    # Emergency off for directory sign-in, whatever the settings screen says (an operator who
+    # cannot reach the application). Local accounts are unaffected.
+    directory_login_force_off: bool = Field(default=False, alias="DIRECTORY_LOGIN_FORCE_OFF")
+
+    ####################################################################
     # Published file storage roots
     ####################################################################
 
@@ -378,6 +393,15 @@ class Settings(BaseSettings):
         return tuple(
             entry.strip()
             for entry in self.delivery_secret_key.get_secret_value().split(",")
+            if entry.strip()
+        )
+
+    @property
+    def directory_encryption_keys(self) -> tuple[str, ...]:
+        # A plain property, like mfa_encryption_keys: never in a dump or repr.
+        return tuple(
+            entry.strip()
+            for entry in self.directory_encryption_key.get_secret_value().split(",")
             if entry.strip()
         )
 

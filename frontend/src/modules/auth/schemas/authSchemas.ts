@@ -1,11 +1,13 @@
 import { z } from 'zod';
 
 export const loginSchema = z.object({
+  // A local account's e-mail or a directory (LDAP) username (CR-40). The server reads both from
+  // `email`; only a value that looks like an e-mail must be one.
   email: z
     .string()
     .trim()
-    .min(1, 'Email address is required')
-    .email('Please enter a valid email address'),
+    .min(1, 'Enter your username or email address')
+    .refine((value) => !value.includes('@') || z.string().email().safeParse(value).success, 'Please enter a valid email address'),
   // No length rule here: the backend applies its password policy when a password is *set*,
   // never when one is presented to sign in.
   password: z.string().min(1, 'Password is required'),

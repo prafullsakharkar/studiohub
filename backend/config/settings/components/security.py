@@ -93,6 +93,13 @@ MFA_ENCRYPTION_ENABLED = settings.mfa_encryption_enabled
 # Read only by apps.deliveries.passcode; an empty tuple fails closed.
 DELIVERY_SECRET_KEYS = settings.delivery_secret_keys
 
+# Fernet keys protecting the directory (LDAP) service password at rest (first encrypts, all
+# decrypt). Read only by apps.identity.services.directory.secret; an empty tuple fails closed.
+DIRECTORY_ENCRYPTION_KEYS = settings.directory_encryption_keys
+
+# True turns directory sign-in off whatever the settings screen says (ADR-0039).
+DIRECTORY_LOGIN_FORCE_OFF = settings.directory_login_force_off
+
 # HMAC pepper for API key / PAT digests (see apps.identity.api_keys.hashing).
 API_KEY_PEPPER = settings.api_key_pepper.get_secret_value()
 

@@ -1,0 +1,777 @@
+{
+ "change_password_directory_user": {
+  "body": {
+   "detail": "This account signs in through the directory; change the password there.",
+   "error": {
+    "code": "password_managed_by_directory",
+    "request_id": "1abba6cb-5af1-441f-ab9e-c920583207dd"
+   }
+  },
+  "request": {
+   "body": {
+    "confirm_password": "<redacted>",
+    "new_password": "<redacted>",
+    "old_password": "<redacted>"
+   },
+   "method": "POST",
+   "path": "/api/v1/auth/change-password/"
+  },
+  "status": 400
+ },
+ "get_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "1618af39-fd8b-4951-a78f-1b77c510c974"
+   }
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/identity/directory/"
+  },
+  "status": 403
+ },
+ "get_initial": {
+  "body": {
+   "attr_display_name": "displayName",
+   "attr_email": "mail",
+   "attr_first_name": "givenName",
+   "attr_last_name": "sn",
+   "attr_subject": "entryUUID",
+   "attr_username": "uid",
+   "bind_dn": "",
+   "bind_password_set": false,
+   "ca_certificate": "",
+   "default_role_code": "artist",
+   "enabled": false,
+   "encryption_key_set": true,
+   "forced_off": false,
+   "last_tested_at": null,
+   "require_mfa": false,
+   "server_uri": "",
+   "start_tls": false,
+   "timeout_seconds": 5,
+   "updated_at": "2026-11-04T11:15:50.621936Z",
+   "user_filter": "(&(objectClass=inetOrgPerson)(uid={username}))",
+   "user_search_base": ""
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/identity/directory/"
+  },
+  "status": 200
+ },
+ "get_org_admin": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "254038e2-9758-497f-9c10-43b72e863405"
+   }
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/identity/directory/"
+  },
+  "status": 403
+ },
+ "get_without_key": {
+  "body": {
+   "attr_display_name": "displayName",
+   "attr_email": "mail",
+   "attr_first_name": "givenName",
+   "attr_last_name": "sn",
+   "attr_subject": "entryUUID",
+   "attr_username": "uid",
+   "bind_dn": "cn=svc,dc=studio,dc=test",
+   "bind_password_set": true,
+   "ca_certificate": "",
+   "default_role_code": "artist",
+   "enabled": true,
+   "encryption_key_set": false,
+   "forced_off": false,
+   "last_tested_at": "2026-11-04T11:15:50.715301Z",
+   "require_mfa": false,
+   "server_uri": "ldaps://ldap.example.test",
+   "start_tls": false,
+   "timeout_seconds": 5,
+   "updated_at": "2026-11-04T11:15:50.725055Z",
+   "user_filter": "(&(objectClass=inetOrgPerson)(uid={username}))",
+   "user_search_base": "ou=people,dc=studio,dc=test"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/identity/directory/"
+  },
+  "status": 200
+ },
+ "login_bad_email": {
+  "body": {
+   "email": [
+    "Enter a valid email address."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "b8799e94-66c0-4978-9a51-a1956752e7eb"
+   }
+  },
+  "request": {
+   "body": {
+    "email": "a@b",
+    "password": "<redacted>"
+   },
+   "method": "POST",
+   "path": "/api/v1/auth/login/"
+  },
+  "status": 400
+ },
+ "login_blank_identifier": {
+  "body": {
+   "email": [
+    "This field may not be blank."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "3ff914ce-ed56-4b1c-8911-ee1ce2c3b854"
+   }
+  },
+  "request": {
+   "body": {
+    "email": "",
+    "password": "<redacted>"
+   },
+   "method": "POST",
+   "path": "/api/v1/auth/login/"
+  },
+  "status": 400
+ },
+ "login_directory_user": {
+  "body": {
+   "tokens": "<redacted>",
+   "user": {
+    "auth_source": "ldap",
+    "avatar_url": null,
+    "created_at": "2026-11-04T11:15:50.772710+00:00",
+    "email": "jdoe@studio.test",
+    "first_name": "Jane",
+    "full_name": "Jane Doe",
+    "id": "b0af3e56-b8d4-4eb3-9da9-69620fcb2c5f",
+    "is_active": true,
+    "is_staff": false,
+    "is_superuser": false,
+    "last_name": "Doe",
+    "mfa_required": false,
+    "must_change_password": false,
+    "permissions": [
+     "asset.view",
+     "delivery.view",
+     "episode.view",
+     "identity.user.view",
+     "media.create",
+     "media.view",
+     "note.create",
+     "playlist.view",
+     "project.view",
+     "publishing.view",
+     "review.view",
+     "schedule.create",
+     "schedule.view",
+     "sequence.view",
+     "shot.view",
+     "show.view",
+     "task.update",
+     "task.view",
+     "tasktemplate.view",
+     "timelog.create",
+     "timelog.update",
+     "timelog.view",
+     "track.view",
+     "version.create",
+     "version.view",
+     "workflow.view"
+    ],
+    "project_memberships": [],
+    "role": "Artist",
+    "updated_at": "2026-11-04T11:15:50.772717+00:00"
+   }
+  },
+  "status": 200
+ },
+ "login_directory_wrong_password": {
+  "body": {
+   "detail": "Invalid username or password.",
+   "error": {
+    "code": "authentication_failed",
+    "request_id": "b6e40dcd-b551-4283-b1af-b2696b3bccbc"
+   }
+  },
+  "request": {
+   "body": {
+    "email": "jdoe",
+    "password": "<redacted>"
+   },
+   "method": "POST",
+   "path": "/api/v1/auth/login/"
+  },
+  "status": 401
+ },
+ "me_after_require_mfa": {
+  "body": {
+   "code": "mfa_enrollment_required",
+   "detail": "Set up two-factor authentication before continuing.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "82a1072e-e039-4882-acc6-d862ae06a4d9"
+   }
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/"
+  },
+  "status": 403
+ },
+ "me_directory_user": {
+  "body": {
+   "auth_source": "ldap",
+   "avatar_url": null,
+   "created_at": "2026-11-04T11:15:50.772710+00:00",
+   "email": "jdoe@studio.test",
+   "first_name": "Jane",
+   "full_name": "Jane Doe",
+   "id": "b0af3e56-b8d4-4eb3-9da9-69620fcb2c5f",
+   "is_active": true,
+   "is_staff": false,
+   "is_superuser": false,
+   "last_name": "Doe",
+   "mfa_required": false,
+   "must_change_password": false,
+   "permissions": [
+    "asset.view",
+    "delivery.view",
+    "episode.view",
+    "identity.user.view",
+    "media.create",
+    "media.view",
+    "note.create",
+    "playlist.view",
+    "project.view",
+    "publishing.view",
+    "review.view",
+    "schedule.create",
+    "schedule.view",
+    "sequence.view",
+    "shot.view",
+    "show.view",
+    "task.update",
+    "task.view",
+    "tasktemplate.view",
+    "timelog.create",
+    "timelog.update",
+    "timelog.view",
+    "track.view",
+    "version.create",
+    "version.view",
+    "workflow.view"
+   ],
+   "project_memberships": [],
+   "role": "Artist",
+   "updated_at": "2026-11-04T11:15:50.772717+00:00"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/auth/me/"
+  },
+  "status": 200
+ },
+ "patch_bad_filter": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "363a2d5c-9dec-41b2-adb8-875f7cdcb24d"
+   },
+   "user_filter": [
+    "The filter must contain {username}."
+   ]
+  },
+  "request": {
+   "body": {
+    "user_filter": "(uid=*)"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/identity/directory/"
+  },
+  "status": 400
+ },
+ "patch_bad_role": {
+  "body": {
+   "default_role_code": [
+    "No active role has this code."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "5267791c-7f45-4bf2-a198-921c46da021f"
+   }
+  },
+  "request": {
+   "body": {
+    "default_role_code": "nope"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/identity/directory/"
+  },
+  "status": 400
+ },
+ "patch_connection": {
+  "body": {
+   "attr_display_name": "displayName",
+   "attr_email": "mail",
+   "attr_first_name": "givenName",
+   "attr_last_name": "sn",
+   "attr_subject": "entryUUID",
+   "attr_username": "uid",
+   "bind_dn": "cn=svc,dc=studio,dc=test",
+   "bind_password_set": true,
+   "ca_certificate": "",
+   "default_role_code": "artist",
+   "enabled": false,
+   "encryption_key_set": true,
+   "forced_off": false,
+   "last_tested_at": null,
+   "require_mfa": false,
+   "server_uri": "ldaps://ldap.example.test",
+   "start_tls": false,
+   "timeout_seconds": 5,
+   "updated_at": "2026-11-04T11:15:50.673919Z",
+   "user_filter": "(&(objectClass=inetOrgPerson)(uid={username}))",
+   "user_search_base": "ou=people,dc=studio,dc=test"
+  },
+  "request": {
+   "body": {
+    "bind_dn": "cn=svc,dc=studio,dc=test",
+    "bind_password": "<redacted>",
+    "server_uri": "ldaps://ldap.example.test",
+    "user_search_base": "ou=people,dc=studio,dc=test"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/identity/directory/"
+  },
+  "status": 200
+ },
+ "patch_enable": {
+  "body": {
+   "attr_display_name": "displayName",
+   "attr_email": "mail",
+   "attr_first_name": "givenName",
+   "attr_last_name": "sn",
+   "attr_subject": "entryUUID",
+   "attr_username": "uid",
+   "bind_dn": "cn=svc,dc=studio,dc=test",
+   "bind_password_set": true,
+   "ca_certificate": "",
+   "default_role_code": "artist",
+   "enabled": true,
+   "encryption_key_set": true,
+   "forced_off": false,
+   "last_tested_at": "2026-11-04T11:15:50.715301Z",
+   "require_mfa": false,
+   "server_uri": "ldaps://ldap.example.test",
+   "start_tls": false,
+   "timeout_seconds": 5,
+   "updated_at": "2026-11-04T11:15:50.725055Z",
+   "user_filter": "(&(objectClass=inetOrgPerson)(uid={username}))",
+   "user_search_base": "ou=people,dc=studio,dc=test"
+  },
+  "request": {
+   "body": {
+    "enabled": true
+   },
+   "method": "PATCH",
+   "path": "/api/v1/identity/directory/"
+  },
+  "status": 200
+ },
+ "patch_enable_untested": {
+  "body": {
+   "enabled": [
+    "Run a successful connection test first. To change the connection while sign-in is on, turn it off, save, test, then turn it on."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "e459769a-e7c1-4e59-b420-abbbf91b8d8f"
+   }
+  },
+  "request": {
+   "body": {
+    "enabled": true
+   },
+   "method": "PATCH",
+   "path": "/api/v1/identity/directory/"
+  },
+  "status": 400
+ },
+ "patch_password_without_key": {
+  "body": {
+   "detail": "The directory password cannot be stored or read: no encryption key is set.",
+   "error": {
+    "code": "directory_secret_unavailable",
+    "request_id": "76be17bb-8ddb-4c48-9faa-7b43240017c6"
+   }
+  },
+  "request": {
+   "body": {
+    "bind_password": "<redacted>"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/identity/directory/"
+  },
+  "status": 503
+ },
+ "patch_plain_ldap": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "7e2b481c-158a-42c4-81e0-ce0f6da1f917"
+   },
+   "start_tls": [
+    "A plain ldap:// server sends passwords in clear: turn on StartTLS or use ldaps://."
+   ]
+  },
+  "request": {
+   "body": {
+    "bind_dn": "cn=svc,dc=studio,dc=test",
+    "bind_password": "<redacted>",
+    "server_uri": "ldap://ldap.example.test",
+    "user_search_base": "ou=people,dc=studio,dc=test"
+   },
+   "method": "PATCH",
+   "path": "/api/v1/identity/directory/"
+  },
+  "status": 400
+ },
+ "require_mfa_artist": {
+  "body": {
+   "detail": "You do not have permission to perform this action.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "e88e75fa-e891-48d9-a8b7-730293d1e710"
+   }
+  },
+  "request": {
+   "body": {
+    "required": true
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/users/b0af3e56-b8d4-4eb3-9da9-69620fcb2c5f/require-mfa/"
+  },
+  "status": 403
+ },
+ "require_mfa_bad_value": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "2c934b1b-7d6e-49a1-b826-1bc4ae0e16e2"
+   },
+   "required": [
+    "Send true or false."
+   ]
+  },
+  "request": {
+   "body": {
+    "required": "yes"
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/users/b0af3e56-b8d4-4eb3-9da9-69620fcb2c5f/require-mfa/"
+  },
+  "status": 400
+ },
+ "require_mfa_off": {
+  "body": {
+   "mfa_required": false
+  },
+  "request": {
+   "body": {
+    "required": false
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/users/b0af3e56-b8d4-4eb3-9da9-69620fcb2c5f/require-mfa/"
+  },
+  "status": 200
+ },
+ "require_mfa_on": {
+  "body": {
+   "mfa_required": true
+  },
+  "request": {
+   "body": {
+    "required": true
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/users/b0af3e56-b8d4-4eb3-9da9-69620fcb2c5f/require-mfa/"
+  },
+  "status": 200
+ },
+ "require_mfa_org_admin_not_staff": {
+  "body": {
+   "detail": "No User matches the given query.",
+   "error": {
+    "code": "not_found",
+    "request_id": "ed65d040-96f6-4deb-805d-bb5886a117cb"
+   }
+  },
+  "request": {
+   "body": {
+    "required": true
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/users/b0af3e56-b8d4-4eb3-9da9-69620fcb2c5f/require-mfa/"
+  },
+  "status": 404
+ },
+ "reset_password_directory_user": {
+  "body": {
+   "detail": "This account signs in through the directory; change the password there.",
+   "error": {
+    "code": "password_managed_by_directory",
+    "request_id": "b518dc92-b05a-40a6-ac65-0cfe5c121a7c"
+   }
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/identity/users/b0af3e56-b8d4-4eb3-9da9-69620fcb2c5f/reset-password/"
+  },
+  "status": 400
+ },
+ "test_connection_down": {
+  "body": {
+   "detail": "The directory could not be reached, or the service account was refused.",
+   "ok": false
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/identity/directory/test-connection/"
+  },
+  "status": 200
+ },
+ "test_connection_ok": {
+  "body": {
+   "detail": "Connected and read the search base.",
+   "ok": true,
+   "tested_at": "2026-11-04T11:15:50.715301+00:00"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/identity/directory/test-connection/"
+  },
+  "status": 200
+ },
+ "test_user_blank": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "cf429c77-577b-4c94-8ebb-b756c9b605b3"
+   },
+   "username": [
+    "This field may not be blank."
+   ]
+  },
+  "request": {
+   "body": {
+    "username": ""
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/directory/test-user/"
+  },
+  "status": 400
+ },
+ "test_user_found": {
+  "body": {
+   "entry": {
+    "display_name": "Jane Doe",
+    "dn": "uid=jdoe,ou=people,dc=studio,dc=test",
+    "email": "jdoe@studio.test",
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "subject": "uuid-jdoe",
+    "username": "jdoe"
+   },
+   "found": true,
+   "ok": true,
+   "problems": []
+  },
+  "request": {
+   "body": {
+    "username": "jdoe"
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/directory/test-user/"
+  },
+  "status": 200
+ },
+ "test_user_missing": {
+  "body": {
+   "detail": "No entry matches this username.",
+   "found": false,
+   "ok": true
+  },
+  "request": {
+   "body": {
+    "username": "ghost"
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/directory/test-user/"
+  },
+  "status": 200
+ },
+ "test_user_no_mail": {
+  "body": {
+   "entry": {
+    "display_name": "",
+    "dn": "uid=nomail,ou=people,dc=studio,dc=test",
+    "email": "",
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "subject": "uuid-nomail",
+    "username": "nomail"
+   },
+   "found": true,
+   "ok": true,
+   "problems": [
+    "The entry has no e-mail, so no account can be made from it."
+   ]
+  },
+  "request": {
+   "body": {
+    "username": "nomail"
+   },
+   "method": "POST",
+   "path": "/api/v1/identity/directory/test-user/"
+  },
+  "status": 200
+ },
+ "user_detail_directory_user": {
+  "body": {
+   "auth_source": "ldap",
+   "created_at": "2026-11-04T11:15:50.772710Z",
+   "display_name": "Jane Doe",
+   "email": "jdoe@studio.test",
+   "full_name": "Jane Doe",
+   "id": "b0af3e56-b8d4-4eb3-9da9-69620fcb2c5f",
+   "is_active": true,
+   "is_email_verified": false,
+   "is_staff": false,
+   "last_seen": null,
+   "mfa_required": false,
+   "updated_at": "2026-11-04T11:15:50.772717Z",
+   "uuid": "b0af3e56-b8d4-4eb3-9da9-69620fcb2c5f"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/identity/users/b0af3e56-b8d4-4eb3-9da9-69620fcb2c5f/"
+  },
+  "status": 200
+ },
+ "user_detail_local_user": {
+  "body": {
+   "auth_source": "local",
+   "created_at": "2026-11-04T11:15:50.363357Z",
+   "display_name": "artist@example.test",
+   "email": "artist@example.test",
+   "full_name": "artist@example.test",
+   "id": "fca7a8d4-7f7a-494c-8bf3-5cf0caedd74b",
+   "is_active": true,
+   "is_email_verified": false,
+   "is_staff": false,
+   "last_seen": null,
+   "mfa_required": false,
+   "updated_at": "2026-11-04T11:15:50.363363Z",
+   "uuid": "fca7a8d4-7f7a-494c-8bf3-5cf0caedd74b"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/identity/users/fca7a8d4-7f7a-494c-8bf3-5cf0caedd74b/"
+  },
+  "status": 200
+ },
+ "users_list": {
+  "body": [
+   {
+    "auth_source": "local",
+    "created_at": "2026-11-04T11:15:50.352527Z",
+    "display_name": "platform.admin@example.test",
+    "email": "platform.admin@example.test",
+    "full_name": "platform.admin@example.test",
+    "id": "46137c04-1233-4b99-8efc-2f13d8e9c5be",
+    "is_active": true,
+    "is_email_verified": false,
+    "is_staff": true,
+    "last_seen": null,
+    "mfa_required": false,
+    "updated_at": "2026-11-04T11:15:50.352534Z",
+    "uuid": "46137c04-1233-4b99-8efc-2f13d8e9c5be"
+   },
+   {
+    "auth_source": "local",
+    "created_at": "2026-11-04T11:15:50.363357Z",
+    "display_name": "artist@example.test",
+    "email": "artist@example.test",
+    "full_name": "artist@example.test",
+    "id": "fca7a8d4-7f7a-494c-8bf3-5cf0caedd74b",
+    "is_active": true,
+    "is_email_verified": false,
+    "is_staff": false,
+    "last_seen": null,
+    "mfa_required": false,
+    "updated_at": "2026-11-04T11:15:50.363363Z",
+    "uuid": "fca7a8d4-7f7a-494c-8bf3-5cf0caedd74b"
+   },
+   {
+    "auth_source": "local",
+    "created_at": "2026-11-04T11:15:50.372911Z",
+    "display_name": "org.admin@example.test",
+    "email": "org.admin@example.test",
+    "full_name": "org.admin@example.test",
+    "id": "64eb6d8f-54e6-4bd0-8b5f-f11763a9ab86",
+    "is_active": true,
+    "is_email_verified": false,
+    "is_staff": false,
+    "last_seen": null,
+    "mfa_required": false,
+    "updated_at": "2026-11-04T11:15:50.372919Z",
+    "uuid": "64eb6d8f-54e6-4bd0-8b5f-f11763a9ab86"
+   },
+   {
+    "auth_source": "ldap",
+    "created_at": "2026-11-04T11:15:50.772710Z",
+    "display_name": "Jane Doe",
+    "email": "jdoe@studio.test",
+    "full_name": "Jane Doe",
+    "id": "b0af3e56-b8d4-4eb3-9da9-69620fcb2c5f",
+    "is_active": true,
+    "is_email_verified": false,
+    "is_staff": false,
+    "last_seen": null,
+    "mfa_required": false,
+    "updated_at": "2026-11-04T11:15:50.772717Z",
+    "uuid": "b0af3e56-b8d4-4eb3-9da9-69620fcb2c5f"
+   }
+  ],
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/identity/users/"
+  },
+  "status": 200
+ }
+}

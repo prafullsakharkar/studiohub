@@ -108,13 +108,15 @@ class AuthenticationService(
         )
 
         try:
-            cls.validator_class.validate_login(
+            user = cls._check_credentials(
                 username=username,
                 password=password,
                 user=user,
                 ip_address=ip_address,
             )
         except Exception as exc:
+            user = getattr(exc, "user", None) or user
+
             LoginAttemptService.record_failure(
                 username=username,
                 ip_address=ip_address,
@@ -166,6 +168,56 @@ class AuthenticationService(
             result["mfa_enrollment_required"] = True
 
         return result
+
+    @classmethod
+    def _check_credentials(
+        cls,
+        *,
+        username: str,
+        password: str,
+        user,
+        ip_address,
+    ):
+        """
+        The account the credentials prove, or a generic failure (ADR-0039 decision 2).
+
+        A local account found by e-mail: its password, exactly as before. Otherwise a directory
+        username, or any name while directory sign-in is on: the directory. Otherwise the same
+        unknown-user failure as always. Both paths cost one password-hash comparison.
+        """
+        from apps.identity.services.directory.sign_in import DirectorySignIn
+
+        identity = DirectorySignIn.identity_for(username) if user is None else None
+
+        if user is not None or not DirectorySignIn.applies(identity=identity):
+            cls.validator_class.validate_login(
+                username=username,
+                password=password,
+                user=user,
+                ip_address=ip_address,
+            )
+            return user
+
+        try:
+            cls.validator_class.validate_login_attempts(
+                username=username,
+                ip_address=ip_address,
+            )
+        except TooManyLoginAttempts as exc:
+            exc.user = identity.user if identity is not None else None  # pyright: ignore[reportAttributeAccessIssue]
+            raise
+
+        cls.validator_class.spend_password_check(password)
+
+        user = DirectorySignIn.authenticate(
+            username=username,
+            password=password,
+            identity=identity,
+        )
+
+        cls.validator_class.validate_account_state(user)
+
+        return user
 
     # ---------------------------------------------------------
     # MFA challenge

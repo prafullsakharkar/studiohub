@@ -158,6 +158,18 @@ describe('security', () => {
     expect(screen.getByRole('dialog')).toBeTruthy();
   });
 
+  it('a directory (LDAP) account is told to change its password in the directory, with no change link (CR-40)', async () => {
+    const ldapMe = loadSample<Record<string, Captured>>('identity/_directory_flow.json').me_directory_user.body as unknown as User;
+    mockFetch(mfaServer(false));
+    renderPage(<SecurityPage />, {}, ldapMe);
+    expect(await screen.findByText(/Change your password in the directory/)).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Change password' })).toBeNull();
+    cleanup();
+    mockFetch(mfaServer(false));
+    renderPage(<SecurityPage />);
+    expect(await screen.findByRole('link', { name: 'Change password' })).toBeTruthy();
+  });
+
   it('does not start an enrollment until the user asks (setup creates a pending secret)', async () => {
     const { calls } = mockFetch(mfaServer(false));
     renderPage(<SecurityPage />);
