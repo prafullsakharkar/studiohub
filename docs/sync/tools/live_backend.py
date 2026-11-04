@@ -13,6 +13,7 @@ It seeds (each exercises a different backend rule):
   artist   seeded `artist` role         -> ordinary user
   mfa      ordinary user, MFA enrolled  -> MFA login (TOTP + recovery codes)
   pwdue    ordinary user owing a password change
+  bootstrap superuser owing a password change AND MFA enrollment (the account `manage.py bootstrap` creates)
   delegate ordinary user holding `live-delegate` and `live-viewer` (Phase 2: RBAC admin without being a superuser)
   selfmfa  ordinary user without MFA (Phase 2: voluntary enrollment from My account)
   lead     holds the seeded `lead-artist` role, no MFA (Phase 6: approves time and shots)
@@ -46,6 +47,7 @@ PASSWORDS = {
     "artist": "Live-Artist-Pass!9",
     "mfa": "Live-Mfa-Pass!9",
     "pwdue": "Live-Pwdue-Pass!9",
+    "bootstrap": "Live-Bootstrap-Pass!9",
     "delegate": "Live-Delegate-Pass!9",
     "selfmfa": "Live-Selfmfa-Pass!9",
     "lead": "Live-Lead-Pass!9",
@@ -83,6 +85,8 @@ def test_serve(live_server, django_user_model):
     pwdue.is_active = True
     pwdue.save()
     Profile.objects.update_or_create(user=pwdue, defaults={"must_change_password": True})
+    bootstrap = users.create_superuser(email="bootstrap@example.test", password=PASSWORDS["bootstrap"])
+    Profile.objects.update_or_create(user=bootstrap, defaults={"must_change_password": True})
 
     from apps.identity.models import Permission, RolePermission
 

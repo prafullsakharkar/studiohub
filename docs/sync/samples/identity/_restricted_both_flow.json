@@ -1,0 +1,244 @@
+{
+ "both_change_password": {
+  "body": {
+   "code": "mfa_enrollment_required",
+   "detail": "Set up two-factor authentication before continuing.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "50154bd7-41e8-438f-941f-006d3a3c0396"
+   }
+  },
+  "request": {
+   "body": {
+    "confirm_password": "<redacted>",
+    "new_password": "<redacted>",
+    "old_password": "<redacted>"
+   },
+   "method": "POST",
+   "path": "/api/v1/auth/change-password/"
+  },
+  "status": 403
+ },
+ "both_login": {
+  "flags": {
+   "mfa_enrollment_required": true
+  },
+  "status": 200,
+  "user_must_change_password": true
+ },
+ "both_me": {
+  "body": {
+   "avatar_url": null,
+   "created_at": "2026-11-04T05:21:51.894878+00:00",
+   "email": "bootstrap@example.test",
+   "first_name": "",
+   "full_name": "bootstrap@example.test",
+   "id": "0188bb0f-bf57-4f5c-a7f9-035a2c2faa4f",
+   "is_active": true,
+   "is_staff": true,
+   "is_superuser": true,
+   "last_name": "",
+   "must_change_password": true,
+   "permissions": [
+    "project.create",
+    "project.view",
+    "project.update",
+    "project.delete",
+    "shot.create",
+    "shot.view",
+    "shot.update",
+    "shot.delete",
+    "shot.approve",
+    "asset.create",
+    "asset.view",
+    "asset.update",
+    "asset.delete",
+    "task.create",
+    "task.view",
+    "task.update",
+    "task.delete",
+    "review.create",
+    "review.view",
+    "review.approve",
+    "audit.view",
+    "settings.update",
+    "user.manage"
+   ],
+   "project_memberships": [],
+   "role": "",
+   "updated_at": "2026-11-04T05:21:51.894885+00:00"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/auth/me/"
+  },
+  "status": 200
+ },
+ "both_mfa_totp_setup": {
+  "body": {
+   "code": "password_change_required",
+   "detail": "Change your password before continuing.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "891ea3ce-ed34-4743-8509-27af54e5b329"
+   }
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/identity/mfa/totp/setup/"
+  },
+  "status": 403
+ },
+ "mfa_only_change_password": {
+  "body": {
+   "code": "mfa_enrollment_required",
+   "detail": "Set up two-factor authentication before continuing.",
+   "error": {
+    "code": "permission_denied",
+    "request_id": "4ab6d2aa-78bc-4bfe-bd34-fd45d1e4c1d1"
+   }
+  },
+  "request": {
+   "body": {
+    "confirm_password": "<redacted>",
+    "new_password": "<redacted>",
+    "old_password": "<redacted>"
+   },
+   "method": "POST",
+   "path": "/api/v1/auth/change-password/"
+  },
+  "status": 403
+ },
+ "mfa_only_login": {
+  "flags": {
+   "mfa_enrollment_required": true
+  },
+  "status": 200,
+  "user_must_change_password": false
+ },
+ "mfa_only_me": {
+  "body": {
+   "avatar_url": null,
+   "created_at": "2026-11-04T05:21:51.942946+00:00",
+   "email": "onlymfa@example.test",
+   "first_name": "",
+   "full_name": "onlymfa@example.test",
+   "id": "4929c22e-45d9-4e70-8515-f2baf0acf1e6",
+   "is_active": true,
+   "is_staff": true,
+   "is_superuser": true,
+   "last_name": "",
+   "must_change_password": false,
+   "permissions": [
+    "project.create",
+    "project.view",
+    "project.update",
+    "project.delete",
+    "shot.create",
+    "shot.view",
+    "shot.update",
+    "shot.delete",
+    "shot.approve",
+    "asset.create",
+    "asset.view",
+    "asset.update",
+    "asset.delete",
+    "task.create",
+    "task.view",
+    "task.update",
+    "task.delete",
+    "review.create",
+    "review.view",
+    "review.approve",
+    "audit.view",
+    "settings.update",
+    "user.manage"
+   ],
+   "project_memberships": [],
+   "role": "",
+   "updated_at": "2026-11-04T05:21:51.942960+00:00"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/auth/me/"
+  },
+  "status": 200
+ },
+ "mfa_only_mfa_totp_setup": {
+  "body": {
+   "qr": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAFoAQAAAABSnlx4AAACz0lEQVR4nO2bwW7EMAhEZ6r8/y9PDwzG20Olap3WbuhKWW/yDohaGAZC4Qd/Hz+Bm276z+kLYKxEAQQECgBFQAAIJbGR3afSF8KrIERBFBUhhv4HpN/Bnew+lYYEARAExZevUiwnQvvYfSp91VKEEMHEO1oglXfutuSBtBAujwsIKGP3L1vyb+kL8GYGQYXHI3Tb6w4mt1vyDBrKaKFvPonuY/ep9AW8ODzSwDmIT98b2X0wTRAAGQtKzOidgTzWnQ+uoRVpieOGGNFbsYYgu1ub2X0kDUmRaisz7ikHTybCfMfv9+kLDtfKQtIVZWxoCiOi9/5eRFMEHDrArDFDRMnDUr9iyTNoZZaNscNBMupN32afl6toEmJWNllOpmjF2PeMG1vZfSTtg/D1mEx5Kp6XXNXn5ds0J70kMr/QrTjUFPjUBFv/fp/GyLun3a3xcxZjOx9cQJdDMwMXJM0eL1G8/b2CthgoRdEeH6mk2XjK+y15Ck0BZMZvRKPBqTiz3aCud9bQlMYl8/BQwi1lYYhWW9l9Ki2WKCgnJ1ECWVKphtpWdp9K0/UlI4oAsmhiBYXuqXU8WUMrwzdDJuRYWKmy8++35Cl0yVLw8UhX9kS43FrKZnYfSDvZrhmUKR+v1DuTwn3sPphmFpKUE0Eoy0yKis3detUqWlQelRYJ3XDI4pOpqOxl95G0m2gYE2zVWZN3ddX1HU9W0LGRc9YHyjFZZNNYY0J2K7uPpK/MvEU7fTg7U5TpAN3H7lPpr72GMSObEuwLto/dp9LT8GuNetPCVZyZOYff/YYF9PR+Q7k7hzar8HQE38fuU+nX9xtiY4tTyZldtY7fS+i5YaahCHo5T8d2v3g5XbE84omDSJ6arX8voKf3SfxGWr2dlpJsPL3bkmfQ4/0cjpmI8Uv1xNd97D6VZvUsR54CjlOSqjSx88EF9JR//7ElTTe9nv4E9vLw7jZhPUIAAAAASUVORK5CYII=",
+   "qr_code": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAFoAQAAAABSnlx4AAACz0lEQVR4nO2bwW7EMAhEZ6r8/y9PDwzG20Olap3WbuhKWW/yDohaGAZC4Qd/Hz+Bm276z+kLYKxEAQQECgBFQAAIJbGR3afSF8KrIERBFBUhhv4HpN/Bnew+lYYEARAExZevUiwnQvvYfSp91VKEEMHEO1oglXfutuSBtBAujwsIKGP3L1vyb+kL8GYGQYXHI3Tb6w4mt1vyDBrKaKFvPonuY/ep9AW8ODzSwDmIT98b2X0wTRAAGQtKzOidgTzWnQ+uoRVpieOGGNFbsYYgu1ub2X0kDUmRaisz7ikHTybCfMfv9+kLDtfKQtIVZWxoCiOi9/5eRFMEHDrArDFDRMnDUr9iyTNoZZaNscNBMupN32afl6toEmJWNllOpmjF2PeMG1vZfSTtg/D1mEx5Kp6XXNXn5ds0J70kMr/QrTjUFPjUBFv/fp/GyLun3a3xcxZjOx9cQJdDMwMXJM0eL1G8/b2CthgoRdEeH6mk2XjK+y15Ck0BZMZvRKPBqTiz3aCud9bQlMYl8/BQwi1lYYhWW9l9Ki2WKCgnJ1ECWVKphtpWdp9K0/UlI4oAsmhiBYXuqXU8WUMrwzdDJuRYWKmy8++35Cl0yVLw8UhX9kS43FrKZnYfSDvZrhmUKR+v1DuTwn3sPphmFpKUE0Eoy0yKis3detUqWlQelRYJ3XDI4pOpqOxl95G0m2gYE2zVWZN3ddX1HU9W0LGRc9YHyjFZZNNYY0J2K7uPpK/MvEU7fTg7U5TpAN3H7lPpr72GMSObEuwLto/dp9LT8GuNetPCVZyZOYff/YYF9PR+Q7k7hzar8HQE38fuU+nX9xtiY4tTyZldtY7fS+i5YaahCHo5T8d2v3g5XbE84omDSJ6arX8voKf3SfxGWr2dlpJsPL3bkmfQ4/0cjpmI8Uv1xNd97D6VZvUsR54CjlOSqjSx88EF9JR//7ElTTe9nv4E9vLw7jZhPUIAAAAASUVORK5CYII=",
+   "secret": "P5UU6VC5ZKSJWXW5XUHYWBSWAUY4B32W",
+   "uri": "otpauth://totp/Atom%20VFX:onlymfa%40example.test?secret=P5UU6VC5ZKSJWXW5XUHYWBSWAUY4B32W&issuer=Atom%20VFX"
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/identity/mfa/totp/setup/"
+  },
+  "status": 200
+ },
+ "password_only_change_password": {
+  "body": {
+   "detail": "Password changed. All sessions have been signed out."
+  },
+  "request": {
+   "body": {
+    "confirm_password": "<redacted>",
+    "new_password": "<redacted>",
+    "old_password": "<redacted>"
+   },
+   "method": "POST",
+   "path": "/api/v1/auth/change-password/"
+  },
+  "status": 200
+ },
+ "password_only_login": {
+  "flags": {},
+  "status": 200,
+  "user_must_change_password": true
+ },
+ "password_only_me": {
+  "body": {
+   "avatar_url": null,
+   "created_at": "2026-11-04T05:21:51.928597+00:00",
+   "email": "onlypw@example.test",
+   "first_name": "",
+   "full_name": "onlypw@example.test",
+   "id": "9cbea0b1-7c31-49b2-a6c2-424f33077e35",
+   "is_active": true,
+   "is_staff": false,
+   "is_superuser": false,
+   "last_name": "",
+   "must_change_password": true,
+   "permissions": [],
+   "project_memberships": [],
+   "role": "",
+   "updated_at": "2026-11-04T05:21:51.929366+00:00"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/auth/me/"
+  },
+  "status": 200
+ },
+ "password_only_mfa_totp_setup": {
+  "body": {
+   "detail": "Session is no longer active.",
+   "error": {
+    "code": "session_expired",
+    "request_id": "30550e72-9d20-4e37-b2e5-209a9c9f5050"
+   }
+  },
+  "request": {
+   "body": {},
+   "method": "POST",
+   "path": "/api/v1/identity/mfa/totp/setup/"
+  },
+  "status": 401
+ }
+}
