@@ -4,7 +4,8 @@ What Identity owns about a linked person (DOM-MD-PER-03, DECISIONS D4).
 While a person is linked to a user, ``name`` and ``email`` come from Identity:
 ``User.email`` and the profile's display name (else first + last name). They are
 copied when the link is made and refreshed after commit whenever the user or the
-profile is saved (``signals/identity_sync.py``).
+profile is saved (``signals/identity_sync.py``). (Every user also gets a person when the
+user is created: DOM-MD-PER-10, ``services/user_person.py``.)
 """
 
 from __future__ import annotations

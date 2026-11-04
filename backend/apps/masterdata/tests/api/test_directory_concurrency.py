@@ -106,6 +106,8 @@ class TestHeadquartersRace:
 class TestLinkRace:
     def test_one_user_linked_to_two_people_at_once_has_one_winner(self, writer):
         user = UserFactory.create(email="shared@example.com")
+        # A new user already has a person of their own (DOM-MD-PER-10); remove it so the two can race for the user.
+        Person.all_objects.filter(user=user).delete()
         first, second = PersonFactory(), PersonFactory()
 
         def link(person):
