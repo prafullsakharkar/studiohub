@@ -8,6 +8,8 @@ Production deployments follow an immutable infrastructure approach where new app
 
 Every production deployment must be automated, repeatable, observable, and reversible.
 
+Before a new environment or release takes traffic, go through the [pre-deploy checklist](pre-deploy-checklist.md): it lists what `manage.py check --deploy` enforces and the secrets to generate.
+
 ---
 
 # Objectives
