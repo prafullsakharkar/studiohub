@@ -25,12 +25,14 @@ export const AuthenticatedRoute: React.FC<AuthenticatedRouteProps> = ({ children
   }
 
   // A restricted session can reach only the screen that settles what it owes (the backend answers
-  // everything else with 403). Password first, then MFA: the order the backend lists them in.
-  if ((shouldForcePasswordChange(user) || restriction === 'password_change') && location.pathname !== '/auth/change-password') {
-    return <Navigate to="/auth/change-password" state={{ from: location }} replace />;
-  }
+  // everything else with 403). Password first, then MFA: the order the backend lists them in. An account can owe both at once
+  // (the one `manage.py bootstrap` creates), so MFA is asked for only when no password change is owed: with two independent rules
+  // that account was sent back and forth between the two screens without end ("Maximum update depth exceeded").
+  const owesPassword = shouldForcePasswordChange(user) || restriction === 'password_change';
 
-  if (restriction === 'mfa_enrollment' && location.pathname !== '/auth/mfa-setup') {
+  if (owesPassword) {
+    if (location.pathname !== '/auth/change-password') return <Navigate to="/auth/change-password" state={{ from: location }} replace />;
+  } else if (restriction === 'mfa_enrollment' && location.pathname !== '/auth/mfa-setup') {
     return <Navigate to="/auth/mfa-setup" state={{ from: location }} replace />;
   }
 
