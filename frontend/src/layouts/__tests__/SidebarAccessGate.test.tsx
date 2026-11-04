@@ -101,4 +101,18 @@ describe('Sidebar direct navigation (org-free)', () => {
     // Deliveries requires delivery.view + page.project.deliveries: not granted.
     expect(screen.queryByRole('link', { name: /^Deliveries$/i })).toBeNull();
   });
+
+  it('shows the Shots entry without a made-up cut count', () => {
+    userSpy.mockReturnValue({
+      user: { ...baseUser, is_superuser: true },
+    });
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+    // The label used to carry a hardcoded "18 Cut" badge that no data backed.
+    expect(screen.getByRole('link', { name: /^Shots$/ })).toBeTruthy();
+    expect(screen.queryByText(/18\s*Cut/i)).toBeNull();
+  });
 });
