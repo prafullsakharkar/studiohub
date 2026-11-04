@@ -3,6 +3,17 @@ import { logger } from '@/core/logging/logger';
 import { DrfErrorResponse } from '@/types/common';
 
 /**
+ * Whether a request ended because the page abandoned it (a link was clicked, a list was left, a
+ * query was cancelled), not because the server failed. That is neither an error to show nor a
+ * failure to count. A real timeout is ky's `TimeoutError`, not an `AbortError`.
+ */
+export function isRequestCancelled(error: unknown, signal?: AbortSignal | null): boolean {
+  if (signal?.aborted) return true;
+  if (error instanceof ApiError) return isRequestCancelled(error.originalError);
+  return typeof error === 'object' && error !== null && (error as { name?: unknown }).name === 'AbortError';
+}
+
+/**
  * Enterprise HTTP & System Error Normalizer
  */
 export function mapHttpError(error: unknown): ApiError {
