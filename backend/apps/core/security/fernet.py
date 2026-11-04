@@ -12,11 +12,25 @@ The module imports no models, so model fields and migrations can use it.
 
 from __future__ import annotations
 
+import logging
+
 from cryptography.fernet import Fernet, InvalidToken, MultiFernet
 from django.conf import settings
 from rest_framework.exceptions import APIException
 
+logger = logging.getLogger(__name__)
+
 PREFIX = "enc:v1:"
+
+# Why a secret could not be used. Logged, never sent to the client: the response stays one generic
+# message. Each text says what to check and carries no value or key.
+REASONS = {
+    "no_key": "no key is configured",
+    "malformed_key": "a configured key is not a valid Fernet key",
+    "plaintext_at_rest": "the stored value is not encrypted but encryption is on (convert it)",
+    "undecryptable": "the stored value was made under another key or has been altered",
+    "not_encrypted": "the stored value is not encrypted, so it cannot be rekeyed",
+}
 
 
 class FieldCipher:
@@ -39,14 +53,25 @@ class FieldCipher:
         self.error = error
         self.enabled_setting = enabled_setting
 
+    def _fail(self, reason: str) -> APIException:
+        """The cipher's error, after logging why (the reason code and the setting names only)."""
+        logger.warning(
+            "%s: secret unavailable, %s [%s; key setting %s]",
+            self.error.__name__,
+            REASONS[reason],
+            reason,
+            self.keys_setting,
+        )
+        return self.error()
+
     def _cipher(self) -> MultiFernet:
         keys: tuple[str, ...] = tuple(getattr(settings, self.keys_setting, ()) or ())
         if not keys:
-            raise self.error()
+            raise self._fail("no_key")
         try:
             return MultiFernet([Fernet(key.encode()) for key in keys])
         except (ValueError, TypeError):
-            raise self.error() from None
+            raise self._fail("malformed_key") from None
 
     def enabled(self) -> bool:
         """Whether new secrets are encrypted (always, when there is no switch)."""
@@ -83,11 +108,11 @@ class FieldCipher:
         keys can be removed from the setting once every value has been rekeyed.
         """
         if not self.is_encrypted(stored):
-            raise self.error()
+            raise self._fail("not_encrypted")
         try:
             return PREFIX + self._cipher().rotate(stored[len(PREFIX) :].encode()).decode()
         except (InvalidToken, ValueError):
-            raise self.error() from None
+            raise self._fail("undecryptable") from None
 
     def decrypt(self, stored: str | None) -> str:
         """Decrypt a stored secret; refuses anything not encrypted by ``encrypt``."""
@@ -97,8 +122,8 @@ class FieldCipher:
             if not self.enabled():
                 return stored
             # With encryption on, a plaintext value at rest is never trusted or returned.
-            raise self.error()
+            raise self._fail("plaintext_at_rest")
         try:
             return self._cipher().decrypt(stored[len(PREFIX) :].encode()).decode()
         except (InvalidToken, ValueError):
-            raise self.error() from None
+            raise self._fail("undecryptable") from None

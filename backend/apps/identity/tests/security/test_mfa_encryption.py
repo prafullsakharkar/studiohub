@@ -185,6 +185,79 @@ class TestFailsClosed:
 
 
 @pytest.mark.django_db
+class TestTheLogSaysWhy:
+    """The client always gets the one generic 503; the log names the cause (reason code, never a value or key)."""
+
+    @pytest.fixture
+    def log(self, caplog):
+        caplog.set_level("WARNING", logger="apps.core.security.fernet")
+        return caplog
+
+    @staticmethod
+    def _reasons(log):
+        return [r.getMessage() for r in log.records if r.name == "apps.core.security.fernet"]
+
+    def test_no_key(self, settings, log):
+        settings.MFA_ENCRYPTION_KEYS = ()
+
+        with pytest.raises(crypto.SecretUnavailable):
+            crypto.encrypt(SECRET)
+
+        assert any("[no_key;" in m and "MFA_ENCRYPTION_KEYS" in m for m in self._reasons(log))
+
+    def test_a_malformed_key(self, settings, log):
+        settings.MFA_ENCRYPTION_KEYS = ("not-a-fernet-key",)
+
+        with pytest.raises(crypto.SecretUnavailable):
+            crypto.encrypt(SECRET)
+
+        assert any("[malformed_key;" in m for m in self._reasons(log))
+
+    def test_a_plaintext_value_while_encryption_is_on(self, log):
+        mfa = _mfa(SECRET)
+
+        with pytest.raises(crypto.SecretUnavailable):
+            UserMFA.objects.get(pk=mfa.pk)
+
+        messages = self._reasons(log)
+        assert any("[plaintext_at_rest;" in m and "convert it" in m for m in messages)
+        assert all(SECRET not in m for m in messages)
+
+    def test_another_key_or_a_tampered_value(self, settings, log):
+        mfa = _mfa()
+        mfa.totp_secret = SECRET
+        mfa.save()
+        stored = _raw_secret(mfa)
+        settings.MFA_ENCRYPTION_KEYS = (Fernet.generate_key().decode(),)
+        new_key = settings.MFA_ENCRYPTION_KEYS[0]
+
+        with pytest.raises(crypto.SecretUnavailable):
+            UserMFA.objects.get(pk=mfa.pk)
+
+        messages = self._reasons(log)
+        assert any("[undecryptable;" in m for m in messages)
+        assert all(stored not in m and new_key not in m and SECRET not in m for m in messages)
+
+    def test_rekeying_something_that_is_not_encrypted(self, log):
+        with pytest.raises(crypto.SecretUnavailable):
+            crypto.rekey(SECRET)
+
+        assert any("[not_encrypted;" in m for m in self._reasons(log))
+
+    def test_the_response_stays_generic(self, settings, log):
+        settings.MFA_ENCRYPTION_KEYS = ()
+        user = UserFactory.create(password=PASSWORD)
+        client = APIClient()
+        client.force_authenticate(user)
+
+        with pytest.raises(crypto.SecretUnavailable) as caught:
+            crypto.encrypt(SECRET)
+
+        assert str(caught.value.detail) == "Multi-factor authentication is temporarily unavailable."
+        assert "no key" not in str(caught.value.detail)
+
+
+@pytest.mark.django_db
 class TestKeyRotation:
     def test_old_secrets_stay_readable_and_new_writes_use_the_new_key(self, settings):
         old = settings.MFA_ENCRYPTION_KEYS[0]

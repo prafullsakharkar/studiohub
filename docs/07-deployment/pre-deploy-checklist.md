@@ -27,6 +27,8 @@ It does not connect to the database. It must exit 0. Two things are expected and
 | `core.W004` | `TRUSTED_PROXY_IPS` is empty (client IPs in logs, throttles and blocks would be the proxy's) | the proxy's address or network |
 | `core.W005` | `API_KEY_ACCEPT_LEGACY_HASH=true` | `false` in a new environment; true only while carrying old credentials over (`manage.py legacy_credentials`) |
 
+**When MFA answers 503 "temporarily unavailable"** the response is deliberately generic; the server log (logger `apps.core.security.fernet`, level WARNING) names the cause as a reason code: `no_key` and `malformed_key` (fix `MFA_ENCRYPTION_KEY`), `plaintext_at_rest` (a secret saved while encryption was off: run `manage.py mfa_encrypt_secrets`), `undecryptable` (made under another key, or altered: put the old key back in the key list, then `manage.py mfa_rekey`). The log carries the code and the setting name only, never a value or a key. The same applies to the delivery passcode (`DELIVERY_SECRET_KEYS`).
+
 `DELIVERY_SECRET_KEY` (a Fernet key, different from the MFA one) is not checked, but without it setting or reading a delivery passcode answers 503.
 
 The compose template `infrastructure/compose/.env.example` carries every variable above. (Until this checklist was written it lacked `MFA_ENCRYPTION_KEY`, `MFA_ENCRYPTION_ENABLED`, `DELIVERY_SECRET_KEY`, `API_KEY_PEPPER` and `API_KEY_ACCEPT_LEGACY_HASH`, so a deployment made from it failed this check on the first two errors.) Copy it to `infrastructure/compose/.env`, replace every `CHANGE_ME` (the Django secret key among them), and fill the three empty secrets (`MFA_ENCRYPTION_KEY`, `DELIVERY_SECRET_KEY`, `API_KEY_PEPPER`).
