@@ -682,9 +682,9 @@ if view_name not in _ALLOWED[first]:
 
 That removes the dead end with fewer open endpoints than the proposal: the account changes its password (which ends its sessions), signs in again owing MFA only, and enrols. The union is kept out on purpose, and a mutation that switches to it is caught by that existing test. Report: `backend-cr-39-verification.md`; `docs/identity/CONTRACTS.md` (SEC-AUTH-06) says it in one sentence; no ADR (the control still refuses everything except what settles the first debt).
 
-### CR-40: sign in with an OpenLDAP username, set up and switched from the application; the first sign-in makes the account and the People record (**feature**, **PROPOSED**)
+### CR-40: sign in with an OpenLDAP username, set up and switched from the application; the first sign-in makes the account and the People record (**feature**, **APPLIED**)
 
-Requested by the owner (2026-11-04), revised the same day (MFA off by default for directory users, required per user by an administrator; the settings managed from the frontend). The design and the owner's answers are in `docs/adr/ADR-0039-ldap-authentication.md`. Nothing is built yet.
+Requested by the owner (2026-11-04), revised the same day (MFA off by default for directory users, required per user by an administrator; the settings managed from the frontend). The design and the owner's answers are in `docs/adr/ADR-0039-ldap-authentication.md`. **Approved** by the owner on 2026-11-04 ("approved CR-40") and built on `sync/backend-cr-40-ldap`; evidence in `backend-cr-40-verification.md`.
 
 **Need.** Staff sign in with their directory username and password. A platform administrator sets the directory up and turns it on and off from a settings screen. The first successful sign-in creates the account and its People record, and every sign-in keeps the name and e-mail current. Directory users need no MFA unless an administrator requires it for them.
 
@@ -708,4 +708,4 @@ Requested by the owner (2026-11-04), revised the same day (MFA off by default fo
 
 **Risk.** Medium: a new way in, and a weaker MFA default for directory users than production has today (ADR-0039 decision 5, flagged for the owner). Kept small by sharing every step after the password check, failing closed, never linking accounts by e-mail on its own, verified TLS only, an encrypted write-only service password, and a server-side emergency off. A trust-model change, so ADR-0039 is required.
 
-**Waiting for:** the owner's approval of ADR-0039 and this CR, including the MFA default for directory users in production.
+**Applied:** ADR-0039 accepted; backend `a4983c98`, schema snapshot `c3a74f43`, frontend and docs on the same branch (`backend-cr-40-verification.md`). Not merged.
