@@ -115,4 +115,22 @@ describe('Sidebar direct navigation (org-free)', () => {
     expect(screen.getByRole('link', { name: /^Shots$/ })).toBeTruthy();
     expect(screen.queryByText(/18\s*Cut/i)).toBeNull();
   });
+
+  it('shows no hardcoded badge text on any entry', () => {
+    userSpy.mockReturnValue({
+      user: { ...baseUser, is_superuser: true },
+    });
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+    // Entries used to carry fixed badge text (RBAC, Live, USD/EXR, Aspera, 3 Dailies, ...) with no data behind it.
+    // An entry is now an icon and its label span, nothing else.
+    const links = screen.getAllByRole('link') as HTMLAnchorElement[];
+    expect(links.length).toBeGreaterThan(10);
+    for (const link of links) {
+      expect(link.querySelectorAll('span').length).toBeLessThanOrEqual(1);
+    }
+  });
 });
