@@ -1,10 +1,12 @@
 """
-Seed departments and positions with a typical VFX studio set (idempotent).
+Seed departments, positions, offices, clients and vendors with a typical VFX studio set
+(idempotent).
 
-Rows are created through the department and position services. A row whose code or name already
-exists (live or soft-deleted) is left as it is, never overwritten or brought back, so the command
-is safe to run again, after ``init_platform`` and after hand edits. Teams, offices and people are
-not touched.
+Rows are created through the masterdata services. A row whose code or name already exists (live or
+soft-deleted) is left as it is, never overwritten or brought back, so the command is safe to run
+again, after ``init_platform`` and after hand edits. No seeded office is the headquarters, so the
+one already named keeps that role. The clients and vendors are made-up companies with
+``example.com`` addresses. Teams, people and contracts are not touched.
 
 Usage:
   python manage.py seed_directory [--dry-run]
@@ -17,8 +19,9 @@ from typing import Any
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 
-from apps.masterdata.models import Department, Position
-from apps.masterdata.services.organization import DepartmentService, PositionService
+from apps.masterdata.models import Client, Department, Office, Position, Vendor
+from apps.masterdata.services.organization import DepartmentService, OfficeService, PositionService
+from apps.masterdata.services.partner import ClientService, VendorService
 
 # (code, name, department_type, description)
 DEPARTMENTS: list[tuple[str, str, str, str]] = [
@@ -73,6 +76,213 @@ POSITIONS: list[tuple[str, str, str, int, bool]] = [
     ("POS-ACCOUNTANT", "Accountant", "DEPT-FIN", 2, False),
 ]
 
+# Offices, with ``code`` and ``name`` first; never ``is_headquarters`` (see the module docstring).
+OFFICES: list[dict[str, Any]] = [
+    {
+        "code": "OFF-MUM",
+        "name": "Mumbai Studio",
+        "office_type": "headquarters",
+        "timezone": "Asia/Kolkata",
+        "country": "India",
+        "state": "Maharashtra",
+        "city": "Mumbai",
+        "working_hours": "10:00-19:00",
+    },
+    {
+        "code": "OFF-BLR",
+        "name": "Bengaluru Lab",
+        "office_type": "branch",
+        "timezone": "Asia/Kolkata",
+        "country": "India",
+        "state": "Karnataka",
+        "city": "Bengaluru",
+        "working_hours": "10:00-19:00",
+    },
+    {
+        "code": "OFF-HYD",
+        "name": "Hyderabad Studio",
+        "office_type": "branch",
+        "timezone": "Asia/Kolkata",
+        "country": "India",
+        "state": "Telangana",
+        "city": "Hyderabad",
+        "working_hours": "10:00-19:00",
+        "workstations_count": 120,
+        "render_nodes_count": 40,
+    },
+    {
+        "code": "OFF-PUN",
+        "name": "Pune Studio",
+        "office_type": "branch",
+        "timezone": "Asia/Kolkata",
+        "country": "India",
+        "state": "Maharashtra",
+        "city": "Pune",
+        "working_hours": "10:00-19:00",
+        "workstations_count": 80,
+        "render_nodes_count": 24,
+    },
+    {
+        "code": "OFF-LDN",
+        "name": "London Office",
+        "office_type": "client office",
+        "timezone": "Europe/London",
+        "country": "United Kingdom",
+        "city": "London",
+        "working_hours": "09:00-18:00",
+        "workstations_count": 12,
+    },
+    {
+        "code": "OFF-LA",
+        "name": "Los Angeles Office",
+        "office_type": "client office",
+        "timezone": "America/Los_Angeles",
+        "country": "United States",
+        "state": "California",
+        "city": "Los Angeles",
+        "working_hours": "09:00-18:00",
+        "workstations_count": 10,
+    },
+    {
+        "code": "OFF-VAN",
+        "name": "Vancouver Studio",
+        "office_type": "branch",
+        "timezone": "America/Vancouver",
+        "country": "Canada",
+        "state": "British Columbia",
+        "city": "Vancouver",
+        "working_hours": "09:00-18:00",
+        "workstations_count": 60,
+        "render_nodes_count": 20,
+    },
+]
+
+# Clients (made-up companies), with ``code`` and ``name`` first.
+CLIENTS: list[dict[str, Any]] = [
+    {
+        "code": "CLI-NPP",
+        "name": "Northpoint Pictures",
+        "studio_type": "Major Studio",
+        "contract_tier": "Premier Partner",
+        "contact_name": "Production Office",
+        "email": "vfx@northpoint.example.com",
+        "headquarters": "Los Angeles, United States",
+    },
+    {
+        "code": "CLI-HLS",
+        "name": "Harbour Light Studios",
+        "studio_type": "Major Studio",
+        "contract_tier": "Standard Producer",
+        "contact_name": "Post Production",
+        "email": "post@harbourlight.example.com",
+        "headquarters": "London, United Kingdom",
+    },
+    {
+        "code": "CLI-BRS",
+        "name": "Blue River Streaming",
+        "studio_type": "Streaming Platform",
+        "contract_tier": "Premier Partner",
+        "contact_name": "Originals Team",
+        "email": "originals@blueriver.example.com",
+        "headquarters": "Los Angeles, United States",
+    },
+    {
+        "code": "CLI-SMF",
+        "name": "Saffron Motion Films",
+        "studio_type": "Independent",
+        "contract_tier": "Standard Producer",
+        "contact_name": "Line Producer",
+        "email": "lineproducer@saffronmotion.example.com",
+        "headquarters": "Mumbai, India",
+    },
+    {
+        "code": "CLI-KTV",
+        "name": "Kestrel Television",
+        "studio_type": "Broadcaster",
+        "contract_tier": "Standard Producer",
+        "contact_name": "Drama Department",
+        "email": "drama@kestreltv.example.com",
+        "headquarters": "Toronto, Canada",
+    },
+    {
+        "code": "CLI-LAN",
+        "name": "Lantern Animation",
+        "studio_type": "Animation Studio",
+        "contract_tier": "Project Based",
+        "contact_name": "Studio Office",
+        "email": "studio@lantern.example.com",
+        "headquarters": "Vancouver, Canada",
+        "portal_access": False,
+    },
+]
+
+# Vendors (made-up companies), with ``code`` and ``name`` first.
+VENDORS: list[dict[str, Any]] = [
+    {
+        "code": "VEN-PIX",
+        "name": "Pixelgrain Roto",
+        "specialization": "Roto & Paint",
+        "security_tier": "Standard Studio NDA",
+        "nda_signed": True,
+        "rating": "4.60",
+        "location": "Pune, India",
+        "email": "bids@pixelgrain.example.com",
+    },
+    {
+        "code": "VEN-TRK",
+        "name": "Trackline Matchmove",
+        "specialization": "Matchmove",
+        "security_tier": "Standard Studio NDA",
+        "nda_signed": True,
+        "rating": "4.40",
+        "location": "Chennai, India",
+        "email": "hello@trackline.example.com",
+    },
+    {
+        "code": "VEN-EMB",
+        "name": "Ember FX House",
+        "specialization": "FX & Simulation",
+        "security_tier": "TPN Assessed",
+        "nda_signed": True,
+        "rating": "4.80",
+        "location": "Montreal, Canada",
+        "email": "studio@emberfx.example.com",
+        "bandwidth_gbps": "20",
+    },
+    {
+        "code": "VEN-CNV",
+        "name": "Canvas Paint Studio",
+        "specialization": "Paint & Cleanup",
+        "security_tier": "Standard Studio NDA",
+        "nda_signed": False,
+        "rating": "4.20",
+        "location": "Kolkata, India",
+        "status": "Under Review",
+        "email": "contact@canvaspaint.example.com",
+    },
+    {
+        "code": "VEN-STR",
+        "name": "Stereo Forge",
+        "specialization": "Stereo Conversion",
+        "security_tier": "TPN Assessed",
+        "nda_signed": True,
+        "rating": "4.50",
+        "location": "London, United Kingdom",
+        "email": "projects@stereoforge.example.com",
+    },
+    {
+        "code": "VEN-RND",
+        "name": "Rendernest Cloud",
+        "specialization": "Render Farm",
+        "security_tier": "TPN Assessed",
+        "nda_signed": True,
+        "rating": "4.70",
+        "location": "Hyderabad, India",
+        "email": "support@rendernest.example.com",
+        "bandwidth_gbps": "40",
+    },
+]
+
 
 def _taken(model: Any, code: str, name: str) -> bool:
     """Whether a live or soft-deleted row already has this code or name (case-insensitive)."""
@@ -80,7 +290,10 @@ def _taken(model: Any, code: str, name: str) -> bool:
 
 
 class Command(BaseCommand):
-    help = "Seed departments and positions with a typical VFX studio set. Idempotent."
+    help = (
+        "Seed departments, positions, offices, clients and vendors with a typical VFX studio set."
+        " Idempotent."
+    )
 
     def add_arguments(self, parser):
         parser.add_argument("--dry-run", action="store_true", help="Count what would be created.")
@@ -121,6 +334,24 @@ class Command(BaseCommand):
                 data["department"] = department.pk
             PositionService.create(actor=None, data=data)
 
+        offices = self._seed(Office, OfficeService, OFFICES, dry)
+        clients = self._seed(Client, ClientService, CLIENTS, dry)
+        vendors = self._seed(Vendor, VendorService, VENDORS, dry)
+
         verb = "would create" if dry else "created"
         self.stdout.write(f"departments: {verb} {departments}")
         self.stdout.write(f"positions: {verb} {positions}")
+        self.stdout.write(f"offices: {verb} {offices}")
+        self.stdout.write(f"clients: {verb} {clients}")
+        self.stdout.write(f"vendors: {verb} {vendors}")
+
+    @staticmethod
+    def _seed(model: Any, service: Any, rows: list[dict[str, Any]], dry: bool) -> int:
+        created = 0
+        for row in rows:
+            if _taken(model, row["code"], row["name"]):
+                continue
+            created += 1
+            if not dry:
+                service.create(actor=None, data=dict(row))
+        return created

@@ -281,6 +281,17 @@ describe('change password (real responses)', () => {
   };
   const me = (call: MockCall) => (path(call).endsWith('/auth/me/') ? reply(flow.restricted_me) : null);
 
+  it('a directory (LDAP) account gets the notice instead of the form (the server refuses it, CR-40)', async () => {
+    const directory = loadSample('identity/_directory_flow.json');
+    expect(directory.change_password_directory_user.body.error.code).toBe('password_managed_by_directory');
+    tokenStorage.setTokens({ access: 'a1', refresh: 'r1' });
+    const { calls } = mockFetch((c) => (path(c).endsWith('/auth/me/') ? reply(directory.me_directory_user) : { body: {} }));
+    renderChange();
+    expect(await screen.findByText(/Change your password in the directory/)).toBeTruthy();
+    expect(screen.queryByLabelText('Current password')).toBeNull();
+    expect(calls.some((c) => path(c).endsWith('/change-password/'))).toBe(false);
+  });
+
   it('checks the confirmation itself (the backend does not) before any request', async () => {
     tokenStorage.setTokens({ access: 'a1', refresh: 'r1' });
     const { calls } = mockFetch((c) => me(c) ?? { body: {} });

@@ -60,6 +60,12 @@ class PasswordResetService:
         if user is None:
             return None
 
+        from apps.identity.selectors.external_identity import ExternalIdentitySelector
+
+        if ExternalIdentitySelector.is_directory_user(user):
+            # The directory owns this password; answered like an unknown address (no disclosure).
+            return None
+
         # One live token per user: a second request invalidates the first.
         PasswordResetToken.objects.filter(
             user=user,

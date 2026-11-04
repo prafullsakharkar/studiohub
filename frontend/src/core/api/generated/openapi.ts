@@ -306,6 +306,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/organizations/projects/{project_id}/members/{member_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * @description ``PATCH`` / ``DELETE`` a member that is already on the project (CR-37). Managing members is as privileged as
+         *     adding them. Nobody may take their OWN membership off the project through here (a creator could lock themselves
+         *     out); a member bound to a show or a department never reaches this route (full project access is required).
+         */
+        delete: operations["organizations_projects_members_destroy"];
+        options?: never;
+        head?: never;
+        /**
+         * @description ``PATCH`` / ``DELETE`` a member that is already on the project (CR-37). Managing members is as privileged as
+         *     adding them. Nobody may take their OWN membership off the project through here (a creator could lock themselves
+         *     out); a member bound to a show or a department never reaches this route (full project access is required).
+         */
+        patch: operations["organizations_projects_members_partial_update"];
+        trace?: never;
+    };
+    "/api/organizations/projects/{project_id}/members/{member_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * @description ``PATCH`` / ``DELETE`` a member that is already on the project (CR-37). Managing members is as privileged as
+         *     adding them. Nobody may take their OWN membership off the project through here (a creator could lock themselves
+         *     out); a member bound to a show or a department never reaches this route (full project access is required).
+         */
+        delete: operations["organizations_projects_members_destroy_2"];
+        options?: never;
+        head?: never;
+        /**
+         * @description ``PATCH`` / ``DELETE`` a member that is already on the project (CR-37). Managing members is as privileged as
+         *     adding them. Nobody may take their OWN membership off the project through here (a creator could lock themselves
+         *     out); a member bound to a show or a department never reaches this route (full project access is required).
+         */
+        patch: operations["organizations_projects_members_partial_update_2"];
+        trace?: never;
+    };
     "/api/organizations/projects/{project_id}/notes": {
         parameters: {
             query?: never;
@@ -3630,6 +3682,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/identity/directory/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Root ViewSet for the project.
+         *
+         *     Every ViewSet should inherit from this class.
+         */
+        get: operations["v1_identity_directory_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * @description Root ViewSet for the project.
+         *
+         *     Every ViewSet should inherit from this class.
+         */
+        patch: operations["v1_identity_directory_partial_update"];
+        trace?: never;
+    };
+    "/api/v1/identity/directory/test-connection/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Root ViewSet for the project.
+         *
+         *     Every ViewSet should inherit from this class.
+         */
+        post: operations["v1_identity_directory_test_connection_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/identity/directory/test-user/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Root ViewSet for the project.
+         *
+         *     Every ViewSet should inherit from this class.
+         */
+        post: operations["v1_identity_directory_test_user_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/identity/email/resend/": {
         parameters: {
             query?: never;
@@ -4696,6 +4816,23 @@ export interface paths {
          *     public API surface.
          */
         post: operations["v1_identity_users_force_password_change_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/identity/users/{id}/require-mfa/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Require MFA for this account, or stop requiring it (ADR-0039 decision 5). */
+        post: operations["v1_identity_users_require_mfa_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -9843,6 +9980,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/settings/localizations/{id}/set-default/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Make this localization the one the app uses. */
+        post: operations["v1_settings_localizations_set_default_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings/localizations/default/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The localization the app uses (404 when none was made). Open to anyone signed in, like the feature flags. */
+        get: operations["v1_settings_localizations_default_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/settings/system-settings/": {
         parameters: {
             query?: never;
@@ -10011,6 +10182,40 @@ export interface paths {
         put?: never;
         /** @description Deactivate a theme. */
         post: operations["v1_settings_themes_deactivate_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings/themes/{id}/set-default/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Make this theme the one the app uses. */
+        post: operations["v1_settings_themes_set_default_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings/themes/default/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The theme the app uses (404 when none was made). Open to anyone signed in, like the feature flags. */
+        get: operations["v1_settings_themes_default_retrieve"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -11462,6 +11667,59 @@ export interface paths {
         put?: never;
         /** @description Legacy alias of ``check-existence/`` (kept for compatibility). */
         post: operations["v1_tasks_existence_check_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/team-memberships/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Who is in which team. Add (POST), remove (DELETE, a soft delete) and restore; never edited. */
+        get: operations["v1_team_memberships_list"];
+        put?: never;
+        /** @description Who is in which team. Add (POST), remove (DELETE, a soft delete) and restore; never edited. */
+        post: operations["v1_team_memberships_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/team-memberships/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Who is in which team. Add (POST), remove (DELETE, a soft delete) and restore; never edited. */
+        get: operations["v1_team_memberships_retrieve"];
+        put?: never;
+        post?: never;
+        /** @description Who is in which team. Add (POST), remove (DELETE, a soft delete) and restore; never edited. */
+        delete: operations["v1_team_memberships_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/team-memberships/{id}/restore/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Who is in which team. Add (POST), remove (DELETE, a soft delete) and restore; never edited. */
+        post: operations["v1_team_memberships_restore_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -13392,7 +13650,6 @@ export interface components {
              * @enum {string}
              */
             software?: "Maya" | "Houdini" | "Blender" | "ZBrush" | "Substance Painter" | "Unreal Engine 5" | "Solaris" | "Mari" | "";
-            /** Format: uri */
             thumbnail_url?: string;
             /**
              * Format: uuid
@@ -13464,9 +13721,7 @@ export interface components {
              */
             status?: "Not Started" | "In Progress" | "Pending Review" | "Approved" | "Retake" | "Archived";
             version?: string;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             turntable_video_url?: string;
             file_format?: string;
             poly_count?: number;
@@ -13558,9 +13813,7 @@ export interface components {
              */
             status?: "Not Started" | "In Progress" | "Pending Review" | "Approved" | "Retake" | "Archived";
             version?: string;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             turntable_video_url?: string;
             file_format?: string;
             poly_count?: number;
@@ -13687,7 +13940,6 @@ export interface components {
              * @enum {string}
              */
             software?: "Maya" | "Houdini" | "Blender" | "ZBrush" | "Substance Painter" | "Unreal Engine 5" | "Solaris" | "Mari" | "";
-            /** Format: uri */
             thumbnail_url?: string;
             /**
              * Format: uuid
@@ -14235,7 +14487,6 @@ export interface components {
             /** Format: uuid */
             project_id?: string | null;
             location?: string;
-            /** Format: uri */
             meeting_url?: string;
             /** @default false */
             is_all_day: boolean;
@@ -14303,10 +14554,7 @@ export interface components {
             is_all_day?: boolean;
             /** @description Event location */
             location?: string;
-            /**
-             * Format: uri
-             * @description Virtual meeting URL
-             */
+            /** @description Virtual meeting URL */
             meeting_url?: string;
             /** @description Internal notes */
             notes?: string;
@@ -14388,11 +14636,10 @@ export interface components {
             is_all_day?: boolean;
             /** @description Event location */
             location?: string;
-            /**
-             * Format: uri
-             * @description Virtual meeting URL
-             */
+            /** @description Virtual meeting URL */
             meeting_url?: string;
+            /** Format: uuid */
+            readonly project_id: string | null;
             readonly project_name: string;
             /**
              * Format: date-time
@@ -14431,7 +14678,6 @@ export interface components {
              */
             visibility?: "Private" | "Team" | "Organization" | "Public";
             location?: string;
-            /** Format: uri */
             meeting_url?: string;
             is_all_day?: boolean;
             notes?: string;
@@ -14492,6 +14738,7 @@ export interface components {
         ChangePassword: {
             old_password: string;
             new_password: string;
+            confirm_password?: string;
         };
         /** @description Mixed endpoint: ordinary fields for everyone, contact data and the billed total gated. */
         Client: {
@@ -14503,14 +14750,12 @@ export interface components {
             name: string;
             code: string;
             contact_name?: string;
-            /** Format: email */
             email?: string;
             phone?: string;
             studio_type?: string;
             contract_tier?: string;
             portal_access?: boolean;
             status?: string;
-            /** Format: uri */
             logo_url?: string;
             headquarters?: string;
             /** Format: decimal */
@@ -14541,7 +14786,6 @@ export interface components {
             client: string;
             name: string;
             role?: string;
-            /** Format: email */
             email?: string;
             phone?: string;
             timezone?: string;
@@ -14587,7 +14831,6 @@ export interface components {
              */
             status?: "Draft" | "Active";
             nda_signed?: boolean;
-            /** Format: uri */
             document_url?: string;
             /** Format: date-time */
             readonly activated_at: string | null;
@@ -14795,6 +15038,7 @@ export interface components {
              * @description Who signed the delivery off (internal approval)
              */
             readonly signed_off_by: string | null;
+            readonly signed_off_by_name: string;
             /** Format: date-time */
             readonly signed_off_at: string | null;
             /**
@@ -14802,6 +15046,7 @@ export interface components {
              * @description Who recorded the client's answer
              */
             readonly client_answered_by: string | null;
+            readonly client_answered_by_name: string;
             /** Format: date-time */
             readonly client_answered_at: string | null;
             readonly cancellation_reason: string;
@@ -14915,6 +15160,7 @@ export interface components {
              * @description Universally unique identifier.
              */
             readonly checked_by: string | null;
+            readonly checked_by_name: string;
             /** Format: date-time */
             readonly checked_at: string;
         };
@@ -15004,6 +15250,7 @@ export interface components {
              * @description Who signed the delivery off (internal approval)
              */
             readonly signed_off_by: string | null;
+            readonly signed_off_by_name: string;
             /** Format: date-time */
             readonly signed_off_at: string | null;
             /**
@@ -15011,6 +15258,7 @@ export interface components {
              * @description Who recorded the client's answer
              */
             readonly client_answered_by: string | null;
+            readonly client_answered_by_name: string;
             /** Format: date-time */
             readonly client_answered_at: string | null;
             readonly cancellation_reason: string;
@@ -15052,6 +15300,7 @@ export interface components {
              * @description Universally unique identifier.
              */
             readonly actor: string | null;
+            readonly actor_name: string;
             readonly reason: string;
             /**
              * @description * `` - Ordinary move
@@ -15250,6 +15499,42 @@ export interface components {
              * @description Last update timestamp.
              */
             readonly updated_at: string;
+        };
+        /**
+         * @description The configuration as the screen shows it. The service password is write-only: a read says
+         *     only whether one is set.
+         */
+        DirectoryConfiguration: {
+            enabled?: boolean;
+            server_uri?: string;
+            start_tls?: boolean;
+            ca_certificate?: string;
+            tls_allow_legacy_ciphers?: boolean;
+            tls_server_name?: string;
+            bind_dn?: string;
+            /** @description A new value sets it; an empty string clears it; leave it out to keep it. */
+            bind_password?: string;
+            readonly bind_password_set: boolean;
+            user_search_base?: string;
+            user_filter?: string;
+            attr_subject?: string;
+            attr_username?: string;
+            attr_email?: string;
+            attr_first_name?: string;
+            attr_last_name?: string;
+            attr_display_name?: string;
+            timeout_seconds?: number;
+            default_role_code?: string;
+            require_mfa?: boolean;
+            /** Format: date-time */
+            readonly last_tested_at: string | null;
+            readonly forced_off: boolean;
+            readonly encryption_key_set: boolean;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
+        DirectoryTestUser: {
+            username: string;
         };
         /**
          * @description Codes are stored upper case, unique per project whatever the case, and free of
@@ -15582,7 +15867,7 @@ export interface components {
              */
             status?: "enabled" | "disabled" | "scheduled" | "expired";
             /** @description Whether the feature is enabled */
-            is_enabled?: boolean;
+            readonly is_enabled: boolean;
             /** @description Percentage of users to enable this feature for */
             percentage?: number;
             /**
@@ -15968,8 +16253,10 @@ export interface components {
              * @description Start date of fiscal year (MM-DD)
              */
             fiscal_year_start?: string | null;
-            /** @description Whether this localization is active */
+            /** @description Whether this localization is available (several may be) */
             is_active?: boolean;
+            /** @description The one localization the app uses. At most one row is the default, it is always active, and only the set-default action moves it. */
+            readonly is_default: boolean;
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -15982,7 +16269,6 @@ export interface components {
             readonly updated_at: string;
         };
         Login: {
-            /** Format: email */
             email: string;
             password: string;
             /** Format: uuid */
@@ -16022,9 +16308,14 @@ export interface components {
              *     * `user_deleted` - User deleted
              *     * `user_locked` - User locked
              *     * `too_many_attempts` - Too many attempts
+             *     * `ldap_unavailable` - Directory unavailable
+             *     * `ldap_disabled` - Directory sign-in off
+             *     * `ldap_ambiguous` - Directory: more than one entry
+             *     * `ldap_no_email` - Directory entry has no e-mail
+             *     * `ldap_email_conflict` - E-mail used by a local account
              * @enum {string}
              */
-            reason?: "unknown_user" | "invalid_password" | "user_inactive" | "user_deleted" | "user_locked" | "too_many_attempts" | "";
+            reason?: "unknown_user" | "invalid_password" | "user_inactive" | "user_deleted" | "user_locked" | "too_many_attempts" | "ldap_unavailable" | "ldap_disabled" | "ldap_ambiguous" | "ldap_no_email" | "ldap_email_conflict" | "";
             /** Format: date-time */
             readonly attempted_at: string;
             /** Format: date-time */
@@ -16068,9 +16359,14 @@ export interface components {
              *     * `user_deleted` - User deleted
              *     * `user_locked` - User locked
              *     * `too_many_attempts` - Too many attempts
+             *     * `ldap_unavailable` - Directory unavailable
+             *     * `ldap_disabled` - Directory sign-in off
+             *     * `ldap_ambiguous` - Directory: more than one entry
+             *     * `ldap_no_email` - Directory entry has no e-mail
+             *     * `ldap_email_conflict` - E-mail used by a local account
              * @enum {string}
              */
-            reason?: "unknown_user" | "invalid_password" | "user_inactive" | "user_deleted" | "user_locked" | "too_many_attempts" | "";
+            reason?: "unknown_user" | "invalid_password" | "user_inactive" | "user_deleted" | "user_locked" | "too_many_attempts" | "ldap_unavailable" | "ldap_disabled" | "ldap_ambiguous" | "ldap_no_email" | "ldap_email_conflict" | "";
             /** Format: date-time */
             readonly attempted_at: string;
             /** Format: date-time */
@@ -16113,9 +16409,14 @@ export interface components {
              *     * `user_deleted` - User deleted
              *     * `user_locked` - User locked
              *     * `too_many_attempts` - Too many attempts
+             *     * `ldap_unavailable` - Directory unavailable
+             *     * `ldap_disabled` - Directory sign-in off
+             *     * `ldap_ambiguous` - Directory: more than one entry
+             *     * `ldap_no_email` - Directory entry has no e-mail
+             *     * `ldap_email_conflict` - E-mail used by a local account
              * @enum {string}
              */
-            reason?: "unknown_user" | "invalid_password" | "user_inactive" | "user_deleted" | "user_locked" | "too_many_attempts" | "";
+            reason?: "unknown_user" | "invalid_password" | "user_inactive" | "user_deleted" | "user_locked" | "too_many_attempts" | "ldap_unavailable" | "ldap_disabled" | "ldap_ambiguous" | "ldap_no_email" | "ldap_email_conflict" | "";
             /** Format: date-time */
             readonly attempted_at: string;
         };
@@ -16561,11 +16862,8 @@ export interface components {
             category?: string;
             file_format?: string;
             storage_tier?: string;
-            /** Format: uri */
             source_url?: string;
-            /** Format: uri */
             preview_url?: string;
-            /** Format: uri */
             thumbnail_url?: string;
             /** Format: decimal */
             file_size_mb?: string;
@@ -16595,11 +16893,8 @@ export interface components {
             category?: string;
             file_format?: string;
             storage_tier?: string;
-            /** Format: uri */
             source_url?: string;
-            /** Format: uri */
             preview_url?: string;
-            /** Format: uri */
             thumbnail_url?: string;
             /** Format: decimal */
             file_size_mb?: string;
@@ -16639,11 +16934,8 @@ export interface components {
             category?: string;
             file_format?: string;
             storage_tier?: string;
-            /** Format: uri */
             source_url?: string;
-            /** Format: uri */
             preview_url?: string;
-            /** Format: uri */
             thumbnail_url?: string;
             /** Format: decimal */
             file_size_mb?: string;
@@ -16667,11 +16959,8 @@ export interface components {
             category?: string;
             file_format?: string;
             storage_tier?: string;
-            /** Format: uri */
             source_url?: string;
-            /** Format: uri */
             preview_url?: string;
-            /** Format: uri */
             thumbnail_url?: string;
             /** Format: decimal */
             file_size_mb?: string;
@@ -16787,7 +17076,6 @@ export interface components {
             address?: string;
             postal_code?: string;
             phone?: string;
-            /** Format: email */
             email?: string;
             /**
              * Format: uuid
@@ -17381,6 +17669,21 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["Team"][];
         };
+        PaginatedTeamMembershipList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["TeamMembership"][];
+        };
         PaginatedTimelogListList: {
             /** @example 123 */
             count: number;
@@ -17560,9 +17863,7 @@ export interface components {
              */
             status?: "Not Started" | "In Progress" | "Pending Review" | "Approved" | "Retake" | "Archived";
             version?: string;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             turntable_video_url?: string;
             file_format?: string;
             poly_count?: number;
@@ -17664,7 +17965,6 @@ export interface components {
              * @enum {string}
              */
             software?: "Maya" | "Houdini" | "Blender" | "ZBrush" | "Substance Painter" | "Unreal Engine 5" | "Solaris" | "Mari" | "";
-            /** Format: uri */
             thumbnail_url?: string;
             /**
              * Format: uuid
@@ -17743,7 +18043,6 @@ export interface components {
              */
             visibility?: "Private" | "Team" | "Organization" | "Public";
             location?: string;
-            /** Format: uri */
             meeting_url?: string;
             is_all_day?: boolean;
             notes?: string;
@@ -17758,14 +18057,12 @@ export interface components {
             name?: string;
             code?: string;
             contact_name?: string;
-            /** Format: email */
             email?: string;
             phone?: string;
             studio_type?: string;
             contract_tier?: string;
             portal_access?: boolean;
             status?: string;
-            /** Format: uri */
             logo_url?: string;
             headquarters?: string;
             /** Format: decimal */
@@ -17796,7 +18093,6 @@ export interface components {
             client?: string;
             name?: string;
             role?: string;
-            /** Format: email */
             email?: string;
             phone?: string;
             timezone?: string;
@@ -17842,7 +18138,6 @@ export interface components {
              */
             status?: "Draft" | "Active";
             nda_signed?: boolean;
-            /** Format: uri */
             document_url?: string;
             /** Format: date-time */
             readonly activated_at?: string | null;
@@ -17961,6 +18256,39 @@ export interface components {
              * Format: date-time
              * @description Last update timestamp.
              */
+            readonly updated_at?: string;
+        };
+        /**
+         * @description The configuration as the screen shows it. The service password is write-only: a read says
+         *     only whether one is set.
+         */
+        PatchedDirectoryConfiguration: {
+            enabled?: boolean;
+            server_uri?: string;
+            start_tls?: boolean;
+            ca_certificate?: string;
+            tls_allow_legacy_ciphers?: boolean;
+            tls_server_name?: string;
+            bind_dn?: string;
+            /** @description A new value sets it; an empty string clears it; leave it out to keep it. */
+            bind_password?: string;
+            readonly bind_password_set?: boolean;
+            user_search_base?: string;
+            user_filter?: string;
+            attr_subject?: string;
+            attr_username?: string;
+            attr_email?: string;
+            attr_first_name?: string;
+            attr_last_name?: string;
+            attr_display_name?: string;
+            timeout_seconds?: number;
+            default_role_code?: string;
+            require_mfa?: boolean;
+            /** Format: date-time */
+            readonly last_tested_at?: string | null;
+            readonly forced_off?: boolean;
+            readonly encryption_key_set?: boolean;
+            /** Format: date-time */
             readonly updated_at?: string;
         };
         /** @description Base serializer for read operations. */
@@ -18094,7 +18422,7 @@ export interface components {
              */
             status?: "enabled" | "disabled" | "scheduled" | "expired";
             /** @description Whether the feature is enabled */
-            is_enabled?: boolean;
+            readonly is_enabled?: boolean;
             /** @description Percentage of users to enable this feature for */
             percentage?: number;
             /**
@@ -18331,8 +18659,10 @@ export interface components {
              * @description Start date of fiscal year (MM-DD)
              */
             fiscal_year_start?: string | null;
-            /** @description Whether this localization is active */
+            /** @description Whether this localization is available (several may be) */
             is_active?: boolean;
+            /** @description The one localization the app uses. At most one row is the default, it is always active, and only the set-default action moves it. */
+            readonly is_default?: boolean;
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -18588,11 +18918,8 @@ export interface components {
             category?: string;
             file_format?: string;
             storage_tier?: string;
-            /** Format: uri */
             source_url?: string;
-            /** Format: uri */
             preview_url?: string;
-            /** Format: uri */
             thumbnail_url?: string;
             /** Format: decimal */
             file_size_mb?: string;
@@ -18643,7 +18970,6 @@ export interface components {
             address?: string;
             postal_code?: string;
             phone?: string;
-            /** Format: email */
             email?: string;
             /**
              * Format: uuid
@@ -18807,7 +19133,6 @@ export interface components {
             timezone?: string;
             security_clearance?: string;
             availability_status?: string;
-            /** Format: email */
             email?: string;
             phone?: string;
             /** Format: date */
@@ -19556,7 +19881,6 @@ export interface components {
             start_date?: string | null;
             /** Format: date */
             delivery_date?: string | null;
-            /** Format: uri */
             thumbnail_url?: string;
             /** Format: decimal */
             budget_usd?: string;
@@ -19795,9 +20119,7 @@ export interface components {
             entity_code?: string;
             status?: string;
             readonly supervisor_verdict?: string;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             video_url?: string;
         };
         /** @description Base serializer for Identity models. */
@@ -20132,9 +20454,7 @@ export interface components {
             frame_out?: number;
             readonly frame_count?: number;
             handle_frames?: number;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             video_url?: string;
             readonly current_version?: string;
             readonly current_version_id?: string | null;
@@ -20188,9 +20508,7 @@ export interface components {
             frame_in?: number;
             frame_out?: number;
             handle_frames?: number;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             video_url?: string;
             readonly current_version?: string;
             readonly current_version_id?: string | null;
@@ -20235,7 +20553,6 @@ export interface components {
             start_date?: string | null;
             /** Format: date */
             delivery_date?: string | null;
-            /** Format: uri */
             thumbnail_url?: string;
             is_primary?: boolean;
         };
@@ -20250,7 +20567,6 @@ export interface components {
             publisher?: string;
             category?: string;
             description?: string;
-            /** Format: uri */
             website?: string;
             /**
              * @description * `active` - Active
@@ -20394,6 +20710,16 @@ export interface components {
         };
         /** @description Serializer for Tag update. */
         PatchedTagUpdate: {
+            /**
+             * Format: uuid
+             * @description Universally unique identifier.
+             */
+            readonly id?: string;
+            /**
+             * Format: uuid
+             * @description Return the UUID of the model (alias for id).
+             */
+            readonly uuid?: string;
             /** @description Tag name (lowercase, hyphenated) */
             name?: string;
             /** @description Description of what this tag represents */
@@ -20601,6 +20927,7 @@ export interface components {
             current_project_code?: string;
             color?: string;
             capacity?: number;
+            readonly member_count?: number;
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -20674,8 +21001,10 @@ export interface components {
             sidebar_collapsed?: boolean;
             /** @description Whether navbar is fixed at top */
             navbar_fixed?: boolean;
-            /** @description Whether this theme is active */
+            /** @description Whether this theme is available (several may be) */
             is_active?: boolean;
+            /** @description The one theme the app uses. At most one row is the default, it is always active, and only the set-default action moves it. */
+            readonly is_default?: boolean;
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -20803,6 +21132,9 @@ export interface components {
             readonly last_seen?: string | null;
             readonly display_name?: string;
             readonly full_name?: string;
+            readonly mfa_required?: boolean;
+            /** @enum {string} */
+            readonly auth_source?: "local" | "ldap";
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -20823,7 +21155,6 @@ export interface components {
             name?: string;
             code?: string;
             contact_name?: string;
-            /** Format: email */
             email?: string;
             specialization?: string;
             security_tier?: string;
@@ -20832,7 +21163,6 @@ export interface components {
             rating?: string;
             location?: string;
             status?: string;
-            /** Format: uri */
             logo_url?: string;
             /** Format: decimal */
             bandwidth_gbps?: string;
@@ -20863,7 +21193,6 @@ export interface components {
             vendor?: string;
             name?: string;
             role?: string;
-            /** Format: email */
             email?: string;
             phone?: string;
             timezone?: string;
@@ -20953,9 +21282,7 @@ export interface components {
             readonly is_published?: boolean;
             readonly is_hero?: boolean;
             readonly is_archived?: boolean;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             video_url?: string;
             notes?: string;
             tags?: unknown;
@@ -21128,7 +21455,6 @@ export interface components {
             timezone?: string;
             security_clearance?: string;
             availability_status?: string;
-            /** Format: email */
             email?: string;
             phone?: string;
             /** Format: date */
@@ -23935,7 +24261,6 @@ export interface components {
             start_date?: string | null;
             /** Format: date */
             delivery_date?: string | null;
-            /** Format: uri */
             thumbnail_url?: string;
             /** Format: decimal */
             budget_usd?: string;
@@ -24007,7 +24332,6 @@ export interface components {
             start_date?: string | null;
             /** Format: date */
             delivery_date?: string | null;
-            /** Format: uri */
             thumbnail_url?: string;
             total_shots?: number;
             approved_shots?: number;
@@ -24089,7 +24413,6 @@ export interface components {
             start_date?: string | null;
             /** Format: date */
             delivery_date?: string | null;
-            /** Format: uri */
             thumbnail_url?: string;
             total_shots?: number;
             approved_shots?: number;
@@ -24152,7 +24475,6 @@ export interface components {
             start_date?: string | null;
             /** Format: date */
             delivery_date?: string | null;
-            /** Format: uri */
             thumbnail_url?: string;
             /** Format: decimal */
             budget_usd?: string;
@@ -24231,6 +24553,8 @@ export interface components {
             name: string;
             /** @description Publish code */
             readonly code: string;
+            /** Format: uuid */
+            readonly version_id: string | null;
             /**
              * @description Entity type being published
              *
@@ -24315,6 +24639,8 @@ export interface components {
             name: string;
             /** @description Publish code */
             readonly code: string;
+            /** Format: uuid */
+            readonly project_id: string;
             /**
              * @description Entity type being published
              *
@@ -24925,9 +25251,7 @@ export interface components {
             entity_id?: string;
             entity_code?: string;
             status?: string;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             video_url?: string;
         };
         /**
@@ -24956,9 +25280,7 @@ export interface components {
             status?: string;
             supervisor_verdict?: string;
             readonly lead_reviewer_name: string;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             video_url?: string;
             readonly versions: string;
             readonly reviewers: string;
@@ -25005,9 +25327,7 @@ export interface components {
             status?: string;
             supervisor_verdict?: string;
             readonly lead_reviewer_name: string;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             video_url?: string;
             readonly versions: string;
             readonly reviewers: string;
@@ -25070,9 +25390,7 @@ export interface components {
             entity_code?: string;
             status?: string;
             readonly supervisor_verdict: string;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             video_url?: string;
         };
         /** @description Body of an action that an override permission may carry (reason mandatory when used). */
@@ -25773,9 +26091,7 @@ export interface components {
             frame_in?: number;
             frame_out?: number;
             handle_frames?: number;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             video_url?: string;
             readonly current_version: string;
             readonly current_version_id: string | null;
@@ -25829,9 +26145,7 @@ export interface components {
             frame_out?: number;
             readonly frame_count: number;
             handle_frames?: number;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             video_url?: string;
             readonly current_version: string;
             readonly current_version_id: string | null;
@@ -25892,9 +26206,7 @@ export interface components {
             frame_out?: number;
             readonly frame_count: number;
             handle_frames?: number;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             video_url?: string;
             readonly current_version: string;
             readonly current_version_id: string | null;
@@ -25948,9 +26260,7 @@ export interface components {
             frame_in?: number;
             frame_out?: number;
             handle_frames?: number;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             video_url?: string;
             readonly current_version: string;
             readonly current_version_id: string | null;
@@ -25995,7 +26305,6 @@ export interface components {
             start_date?: string | null;
             /** Format: date */
             delivery_date?: string | null;
-            /** Format: uri */
             thumbnail_url?: string;
             is_primary?: boolean;
         };
@@ -26024,7 +26333,6 @@ export interface components {
             start_date?: string | null;
             /** Format: date */
             delivery_date?: string | null;
-            /** Format: uri */
             thumbnail_url?: string;
             is_primary?: boolean;
             /**
@@ -26063,7 +26371,6 @@ export interface components {
             start_date?: string | null;
             /** Format: date */
             delivery_date?: string | null;
-            /** Format: uri */
             thumbnail_url?: string;
             is_primary?: boolean;
             /**
@@ -26108,7 +26415,6 @@ export interface components {
             start_date?: string | null;
             /** Format: date */
             delivery_date?: string | null;
-            /** Format: uri */
             thumbnail_url?: string;
             is_primary?: boolean;
         };
@@ -26128,7 +26434,6 @@ export interface components {
             publisher?: string;
             category?: string;
             description?: string;
-            /** Format: uri */
             website?: string;
             /**
              * @description * `active` - Active
@@ -26291,6 +26596,16 @@ export interface components {
         };
         /** @description Serializer for Tag creation. */
         TagCreate: {
+            /**
+             * Format: uuid
+             * @description Universally unique identifier.
+             */
+            readonly id: string;
+            /**
+             * Format: uuid
+             * @description Return the UUID of the model (alias for id).
+             */
+            readonly uuid: string;
             /** @description Tag name (lowercase, hyphenated) */
             name: string;
             /** @description Description of what this tag represents */
@@ -26394,6 +26709,16 @@ export interface components {
         };
         /** @description Serializer for Tag update. */
         TagUpdate: {
+            /**
+             * Format: uuid
+             * @description Universally unique identifier.
+             */
+            readonly id: string;
+            /**
+             * Format: uuid
+             * @description Return the UUID of the model (alias for id).
+             */
+            readonly uuid: string;
             /** @description Tag name (lowercase, hyphenated) */
             name: string;
             /** @description Description of what this tag represents */
@@ -26843,6 +27168,42 @@ export interface components {
             current_project_code?: string;
             color?: string;
             capacity?: number;
+            readonly member_count: number;
+            /**
+             * Format: date-time
+             * @description Object creation timestamp.
+             */
+            readonly created_at: string;
+            /**
+             * Format: date-time
+             * @description Last update timestamp.
+             */
+            readonly updated_at: string;
+        };
+        /** @description A person's membership of a team. The names are read-only conveniences (no second request). */
+        TeamMembership: {
+            /**
+             * Format: uuid
+             * @description Universally unique identifier.
+             */
+            readonly id: string;
+            /**
+             * Format: uuid
+             * @description Universally unique identifier.
+             */
+            team: string;
+            readonly team_name: string;
+            /**
+             * Format: uuid
+             * @description Universally unique identifier.
+             */
+            person: string;
+            readonly person_name: string;
+            readonly person_status: string;
+            /** @default  */
+            readonly person_department_name: string;
+            /** @default  */
+            readonly person_office_name: string;
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -26927,8 +27288,10 @@ export interface components {
             sidebar_collapsed?: boolean;
             /** @description Whether navbar is fixed at top */
             navbar_fixed?: boolean;
-            /** @description Whether this theme is active */
+            /** @description Whether this theme is available (several may be) */
             is_active?: boolean;
+            /** @description The one theme the app uses. At most one row is the default, it is always active, and only the set-default action moves it. */
+            readonly is_default: boolean;
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -27557,6 +27920,9 @@ export interface components {
             readonly last_seen: string | null;
             readonly display_name: string;
             readonly full_name: string;
+            readonly mfa_required: boolean;
+            /** @enum {string} */
+            readonly auth_source: "local" | "ldap";
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -27590,6 +27956,9 @@ export interface components {
             readonly last_seen: string | null;
             readonly display_name: string;
             readonly full_name: string;
+            readonly mfa_required: boolean;
+            /** @enum {string} */
+            readonly auth_source: "local" | "ldap";
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -27622,6 +27991,9 @@ export interface components {
             readonly last_seen: string | null;
             readonly display_name: string;
             readonly full_name: string;
+            readonly mfa_required: boolean;
+            /** @enum {string} */
+            readonly auth_source: "local" | "ldap";
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -27710,6 +28082,9 @@ export interface components {
             readonly last_seen: string | null;
             readonly display_name: string;
             readonly full_name: string;
+            readonly mfa_required: boolean;
+            /** @enum {string} */
+            readonly auth_source: "local" | "ldap";
             /**
              * Format: date-time
              * @description Object creation timestamp.
@@ -27738,7 +28113,6 @@ export interface components {
             name: string;
             code: string;
             contact_name?: string;
-            /** Format: email */
             email?: string;
             specialization?: string;
             security_tier?: string;
@@ -27747,7 +28121,6 @@ export interface components {
             rating?: string;
             location?: string;
             status?: string;
-            /** Format: uri */
             logo_url?: string;
             /** Format: decimal */
             bandwidth_gbps?: string;
@@ -27778,7 +28151,6 @@ export interface components {
             vendor: string;
             name: string;
             role?: string;
-            /** Format: email */
             email?: string;
             phone?: string;
             timezone?: string;
@@ -27899,9 +28271,7 @@ export interface components {
             readonly is_published: boolean;
             readonly is_hero: boolean;
             readonly is_archived: boolean;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             video_url?: string;
             source_file_url?: string;
             frame_range?: string;
@@ -27968,9 +28338,7 @@ export interface components {
             readonly published_by_id: string | null;
             is_hero?: boolean;
             readonly is_archived: boolean;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             video_url?: string;
             source_file_url?: string;
             frame_range?: string;
@@ -28053,9 +28421,7 @@ export interface components {
             readonly published_by_id: string | null;
             is_hero?: boolean;
             readonly is_archived: boolean;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             video_url?: string;
             source_file_url?: string;
             frame_range?: string;
@@ -28133,9 +28499,7 @@ export interface components {
             readonly is_published: boolean;
             readonly is_hero: boolean;
             readonly is_archived: boolean;
-            /** Format: uri */
             thumbnail_url?: string;
-            /** Format: uri */
             video_url?: string;
             notes?: string;
             tags?: unknown;
@@ -28623,6 +28987,90 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_members_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                member_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_members_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                member_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_members_destroy_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                member_id: string;
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    organizations_projects_members_partial_update_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                member_id: string;
                 project_id: string;
             };
             cookie?: never;
@@ -32538,14 +32986,23 @@ export interface operations {
     v1_deliveries_list: {
         parameters: {
             query?: {
+                client?: string;
+                client_id?: string;
+                client_status?: string;
+                delivery_method?: string;
+                destination?: string;
+                destination_id?: string;
                 /** @description Which field to use when ordering the results. */
                 ordering?: string;
                 /** @description A page number within the paginated result set. */
                 page?: number;
                 /** @description Number of results to return per page. */
                 page_size?: number;
+                project?: string;
+                project_id?: string;
                 /** @description A search term. */
                 search?: string;
+                status?: string;
             };
             header?: never;
             path?: never;
@@ -32788,10 +33245,19 @@ export interface operations {
     v1_deliveries_history_list: {
         parameters: {
             query?: {
+                client?: string;
+                client_id?: string;
+                client_status?: string;
+                delivery_method?: string;
+                destination?: string;
+                destination_id?: string;
                 /** @description Which field to use when ordering the results. */
                 ordering?: string;
+                project?: string;
+                project_id?: string;
                 /** @description A search term. */
                 search?: string;
+                status?: string;
             };
             header?: never;
             path: {
@@ -32858,10 +33324,19 @@ export interface operations {
     v1_deliveries_qc_list: {
         parameters: {
             query?: {
+                client?: string;
+                client_id?: string;
+                client_status?: string;
+                delivery_method?: string;
+                destination?: string;
+                destination_id?: string;
                 /** @description Which field to use when ordering the results. */
                 ordering?: string;
+                project?: string;
+                project_id?: string;
                 /** @description A search term. */
                 search?: string;
+                status?: string;
             };
             header?: never;
             path: {
@@ -34950,6 +35425,98 @@ export interface operations {
             };
         };
     };
+    v1_identity_directory_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DirectoryConfiguration"];
+                };
+            };
+        };
+    };
+    v1_identity_directory_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedDirectoryConfiguration"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedDirectoryConfiguration"];
+                "multipart/form-data": components["schemas"]["PatchedDirectoryConfiguration"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DirectoryConfiguration"];
+                };
+            };
+        };
+    };
+    v1_identity_directory_test_connection_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    v1_identity_directory_test_user_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DirectoryTestUser"];
+                "application/x-www-form-urlencoded": components["schemas"]["DirectoryTestUser"];
+                "multipart/form-data": components["schemas"]["DirectoryTestUser"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
     v1_identity_email_resend_create: {
         parameters: {
             query?: never;
@@ -36634,6 +37201,33 @@ export interface operations {
         };
     };
     v1_identity_users_force_password_change_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserList"];
+                "application/x-www-form-urlencoded": components["schemas"]["UserList"];
+                "multipart/form-data": components["schemas"]["UserList"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserList"];
+                };
+            };
+        };
+    };
+    v1_identity_users_require_mfa_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -43909,14 +44503,22 @@ export interface operations {
     v1_publishing_list: {
         parameters: {
             query?: {
+                dcc_tool?: string;
+                entity_type?: string;
+                job_status?: string;
                 /** @description Which field to use when ordering the results. */
                 ordering?: string;
                 /** @description A page number within the paginated result set. */
                 page?: number;
                 /** @description Number of results to return per page. */
                 page_size?: number;
+                project?: string;
+                project_id?: string;
                 /** @description A search term. */
                 search?: string;
+                status?: string;
+                version?: string;
+                version_id?: string;
             };
             header?: never;
             path?: never;
@@ -46043,10 +46645,17 @@ export interface operations {
     v1_scheduling_events_list: {
         parameters: {
             query?: {
+                end?: string;
+                event_type?: string;
                 /** @description Which field to use when ordering the results. */
                 ordering?: string;
+                project?: string;
+                project_id?: string;
                 /** @description A search term. */
                 search?: string;
+                start?: string;
+                status?: string;
+                visibility?: string;
             };
             header?: never;
             path?: never;
@@ -46358,10 +46967,16 @@ export interface operations {
     v1_scheduling_leaves_list: {
         parameters: {
             query?: {
+                end?: string;
+                leave_type?: string;
                 /** @description Which field to use when ordering the results. */
                 ordering?: string;
+                resource?: string;
+                resource_id?: string;
                 /** @description A search term. */
                 search?: string;
+                start?: string;
+                status?: string;
             };
             header?: never;
             path?: never;
@@ -46556,10 +47171,14 @@ export interface operations {
     v1_scheduling_milestones_list: {
         parameters: {
             query?: {
+                kind?: string;
                 /** @description Which field to use when ordering the results. */
                 ordering?: string;
+                project?: string;
+                project_id?: string;
                 /** @description A search term. */
                 search?: string;
+                status?: string;
             };
             header?: never;
             path?: never;
@@ -46802,10 +47421,18 @@ export interface operations {
     v1_scheduling_resources_list: {
         parameters: {
             query?: {
+                calendar?: string;
+                calendar_id?: string;
+                department?: string;
+                department_id?: string;
                 /** @description Which field to use when ordering the results. */
                 ordering?: string;
+                resource_type?: string;
                 /** @description A search term. */
                 search?: string;
+                status?: string;
+                team?: string;
+                team_id?: string;
             };
             header?: never;
             path?: never;
@@ -47000,10 +47627,15 @@ export interface operations {
     v1_scheduling_schedules_list: {
         parameters: {
             query?: {
+                event?: string;
                 /** @description Which field to use when ordering the results. */
                 ordering?: string;
+                resource?: string;
+                resource_id?: string;
                 /** @description A search term. */
                 search?: string;
+                status?: string;
+                task?: string;
             };
             header?: never;
             path?: never;
@@ -48394,6 +49026,52 @@ export interface operations {
             };
         };
     };
+    v1_settings_localizations_set_default_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Localization"];
+                "application/x-www-form-urlencoded": components["schemas"]["Localization"];
+                "multipart/form-data": components["schemas"]["Localization"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Localization"];
+                };
+            };
+        };
+    };
+    v1_settings_localizations_default_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Localization"];
+                };
+            };
+        };
+    };
     v1_settings_system_settings_list: {
         parameters: {
             query?: {
@@ -48779,6 +49457,52 @@ export interface operations {
                 "multipart/form-data": components["schemas"]["Theme"];
             };
         };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Theme"];
+                };
+            };
+        };
+    };
+    v1_settings_themes_set_default_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Theme"];
+                "application/x-www-form-urlencoded": components["schemas"]["Theme"];
+                "multipart/form-data": components["schemas"]["Theme"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Theme"];
+                };
+            };
+        };
+    };
+    v1_settings_themes_default_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -50412,6 +51136,272 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TaskList"];
+                };
+            };
+        };
+    };
+    v1_team_memberships_list: {
+        parameters: {
+            query?: {
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                /** @description Universally unique identifier. */
+                person?: string;
+                /** @description A search term. */
+                search?: string;
+                /** @description Universally unique identifier. */
+                team?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedTeamMembershipList"];
+                };
+            };
+            /** @description Authentication credentials were not provided. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    v1_team_memberships_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeamMembership"];
+                "application/x-www-form-urlencoded": components["schemas"]["TeamMembership"];
+                "multipart/form-data": components["schemas"]["TeamMembership"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamMembership"];
+                };
+            };
+            /** @description Validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorBody"];
+                };
+            };
+            /** @description Authentication credentials were not provided. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Missing permission. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Conflict: duplicate, dependants, illegal transition or overlap (see `error.code`). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    v1_team_memberships_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamMembership"];
+                };
+            };
+            /** @description Authentication credentials were not provided. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unknown or soft-deleted id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    v1_team_memberships_destroy: {
+        parameters: {
+            query?: {
+                /** @description `true` permanently deletes a row that is already soft-deleted (needs `masterdata.hard_delete`). Omitted or `false` soft-deletes. */
+                hard?: boolean;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Soft-deleted, or permanently deleted with `?hard=true`. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication credentials were not provided. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Missing permission. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unknown or soft-deleted id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Conflict: duplicate, dependants, illegal transition or overlap (see `error.code`). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    v1_team_memberships_restore_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamMembership"];
+                };
+            };
+            /** @description Validation failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorBody"];
+                };
+            };
+            /** @description Authentication credentials were not provided. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Missing permission. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unknown or soft-deleted id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Conflict: duplicate, dependants, illegal transition or overlap (see `error.code`). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
                 };
             };
         };

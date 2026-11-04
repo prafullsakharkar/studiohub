@@ -316,7 +316,7 @@ export const LoginPage: React.FC = () => {
               {/* Email */}
               <div className="space-y-1">
                 <label htmlFor="login-email-input" className="block text-[11px] font-semibold text-slate-300">
-                  Work Email Address
+                  Username or email
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
@@ -324,11 +324,14 @@ export const LoginPage: React.FC = () => {
                   </div>
                   <input
                     id="login-email-input"
-                    type="email"
+                    type="text"
+                    autoComplete="username"
+                    autoCapitalize="none"
+                    spellCheck={false}
                     {...register('email', {
                       onChange: clearBanner,
                     })}
-                    placeholder="name@studiohub.vfx"
+                    placeholder="jdoe or name@studiohub.vfx"
                     aria-invalid={Boolean(errors.email)}
                     className={`w-full pl-9 pr-3 py-2 rounded-xl bg-slate-950/80 border text-xs text-slate-100 placeholder-slate-500 focus:outline-hidden transition-all ${
                       errors.email

@@ -22,6 +22,20 @@ class LoginAttemptQuerySet(
             success=False,
         )
 
+    def counted_toward_lockout(self):
+        """
+        Failures that count toward the lockout: not those caused by the directory being down or
+        directory sign-in being off (ADR-0039 decision 9), so an outage does not lock people out.
+        """
+        from apps.identity.choices import LoginAttemptReason
+
+        return self.exclude(
+            reason__in=(
+                LoginAttemptReason.DIRECTORY_UNAVAILABLE,
+                LoginAttemptReason.DIRECTORY_OFF,
+            ),
+        )
+
     def for_username(
         self,
         username,

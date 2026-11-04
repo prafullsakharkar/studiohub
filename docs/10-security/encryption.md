@@ -38,8 +38,9 @@ For a managed database or cache, set `DB_SSLMODE`, `DB_SSLROOTCERT` and `REDIS_*
 ## At rest
 
 - **Encrypted by the application:** passwords (Django hashers), password-reset tokens, API keys and personal
-  access tokens (HMAC digests keyed by `API_KEY_PEPPER`), TOTP secrets (`MFA_ENCRYPTION_KEY`) and delivery
-  passcodes (`DELIVERY_SECRET_KEY`), both Fernet with rotation.
+  access tokens (HMAC digests keyed by `API_KEY_PEPPER`), TOTP secrets (`MFA_ENCRYPTION_KEY`), delivery
+  passcodes (`DELIVERY_SECRET_KEY`) and the directory (LDAP) service password (`DIRECTORY_ENCRYPTION_KEY`,
+  ADR-0039), all Fernet with rotation.
 - **Not encrypted by the application:** the other database rows, uploaded files (`media_volume`) and any
   backup. They rely on the storage underneath, so these volumes must be on encrypted storage:
   `postgres_data`, `redis_data`, `media_volume`, `tls_data` and `tls_ca` (private keys and the CA key).

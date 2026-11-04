@@ -31,12 +31,15 @@ It does not connect to the database. It must exit 0. Two things are expected and
 
 `DELIVERY_SECRET_KEY` (a Fernet key, different from the MFA one) is not checked, but without it setting or reading a delivery passcode answers 503.
 
+`DIRECTORY_ENCRYPTION_KEY` (another Fernet key) protects the directory (LDAP) service account's password (ADR-0039). It is only needed where directory sign-in is used: without it the password cannot be saved on Settings -> System -> Directory (LDAP) (503) and directory sign-in stays off; local accounts are unaffected. `DIRECTORY_LOGIN_FORCE_OFF=true` turns directory sign-in off whatever the screen says. Run `manage.py ldap_sync` on a schedule (it deactivates accounts whose entry is gone and changes nothing when the directory is down).
+
 The compose template `infrastructure/compose/.env.example` carries every variable above. (Until this checklist was written it lacked `MFA_ENCRYPTION_KEY`, `MFA_ENCRYPTION_ENABLED`, `DELIVERY_SECRET_KEY`, `API_KEY_PEPPER` and `API_KEY_ACCEPT_LEGACY_HASH`, so a deployment made from it failed this check on the first two errors.) Copy it to `infrastructure/compose/.env`, replace every `CHANGE_ME` (the Django secret key among them), and fill the three empty secrets (`MFA_ENCRYPTION_KEY`, `DELIVERY_SECRET_KEY`, `API_KEY_PEPPER`).
 
 ## 2. Database
 
 - **New environment:** [`../setup/BOOTSTRAP.md`](../setup/BOOTSTRAP.md): `manage.py bootstrap` migrates, seeds the reference data and creates the first superuser. Set `INITIAL_ADMIN_EMAIL` and `INITIAL_ADMIN_PASSWORD` (outside `local` and `testing` they are required). The account must change its password and enrol MFA at its first login.
 - **Existing environment (from 4.0.0 to 4.1.0):** back the database up, then `manage.py migrate`. Seven migrations are new; `masterdata.0002` fills team memberships from each person's primary team and `settings.0002` makes the earliest active theme and localization the defaults. Try it on a restored copy first when the data matters ([`migration-guide.md`](migration-guide.md)).
+- **From 4.1.x to the release with directory sign-in (CR-40):** one new migration, `identity.0003_directory_sign_in` (the directory configuration and account-link tables, `User.mfa_required`, new login-attempt reasons); additive, no existing row changes.
 - `manage.py makemigrations --check` must report no changes.
 
 ### PostgreSQL 17 to 18 (compose deployments)

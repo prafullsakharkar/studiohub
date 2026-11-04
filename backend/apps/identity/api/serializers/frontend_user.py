@@ -50,6 +50,12 @@ class MePatchSerializer(
         )
 
 
+def _auth_source(user) -> str:
+    from apps.identity.selectors.external_identity import ExternalIdentitySelector
+
+    return "ldap" if ExternalIdentitySelector.is_directory_user(user) else "local"
+
+
 def serialize_frontend_user(user, request=None) -> dict[str, Any]:
     """
     Serialize backend User into frontend User shape.
@@ -205,6 +211,10 @@ def serialize_frontend_user(user, request=None) -> dict[str, Any]:
         "must_change_password": bool(
             getattr(profile, "must_change_password", False),
         ),
+        # ADR-0039: how the account signs in (a directory password is changed in the directory),
+        # and whether an administrator requires MFA for it.
+        "auth_source": _auth_source(user),
+        "mfa_required": bool(getattr(user, "mfa_required", False)),
         "created_at": user.created_at.isoformat() if getattr(user, "created_at", None) else "",
         "updated_at": user.updated_at.isoformat() if getattr(user, "updated_at", None) else "",
     }

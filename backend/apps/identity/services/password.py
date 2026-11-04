@@ -39,6 +39,8 @@ class PasswordService:
         behalf of the user must use :meth:`change_password` instead.
         """
 
+        cls.refuse_directory_account(user)
+
         validate_password(new_password, user=user)
 
         cls._refuse_reuse(user, new_password)
@@ -82,6 +84,8 @@ class PasswordService:
         acting on the wrong account.
         """
 
+        cls.refuse_directory_account(user)
+
         if not check_password(
             old_password,
             user.password,
@@ -98,6 +102,15 @@ class PasswordService:
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
+
+    @classmethod
+    def refuse_directory_account(cls, user) -> None:
+        """A directory account has no password here to change or reset (ADR-0039 decision 8)."""
+        from apps.identity.exceptions.directory import PasswordManagedByDirectory
+        from apps.identity.selectors.external_identity import ExternalIdentitySelector
+
+        if ExternalIdentitySelector.is_directory_user(user):
+            raise PasswordManagedByDirectory()
 
     @classmethod
     def _history_count(cls) -> int:

@@ -1,5 +1,6 @@
 from .api_key import ApiKey
 from .backup_code import BackupCode
+from .directory import DirectoryConfiguration, ExternalIdentity
 from .group import Group
 from .group_member import GroupMember
 from .group_role import GroupRole
@@ -23,6 +24,8 @@ from .user_session import UserSession
 __all__ = (
     "ApiKey",
     "BackupCode",
+    "DirectoryConfiguration",
+    "ExternalIdentity",
     "Group",
     "GroupMember",
     "GroupRole",

@@ -134,6 +134,52 @@ class UserService(
         return result
 
     @classmethod
+    @transaction.atomic
+    def set_mfa_required(
+        cls,
+        instance,
+        *,
+        required: bool,
+        actor=None,
+    ):
+        """
+        Require MFA for one account, or stop requiring it (ADR-0039 decision 5). Turning it on
+        makes the account enrol at its next request (the restricted session); a factor already
+        enrolled keeps being asked for after it is turned off.
+        """
+        if instance.mfa_required == required:
+            return instance
+
+        instance.mfa_required = required
+
+        instance.save(
+            update_fields=[
+                "mfa_required",
+                "updated_at",
+            ],
+        )
+
+        from apps.identity.choices import SecurityEventType
+        from apps.identity.services.security_event import SecurityEventService
+
+        SecurityEventService.create(
+            user=instance,
+            event_type=SecurityEventType.SETTINGS_UPDATED,
+            description=(
+                "MFA required by an administrator."
+                if required
+                else "MFA no longer required by an administrator."
+            ),
+            metadata={
+                "area": "mfa_required",
+                "mfa_required": required,
+                "actor_id": str(actor.pk) if actor is not None else None,
+            },
+        )
+
+        return instance
+
+    @classmethod
     def reset_password(
         cls,
         instance,
@@ -141,6 +187,10 @@ class UserService(
         user=None,
     ):
         """Admin password reset: force a change on next login, revoke all."""
+        from apps.identity.services.password import PasswordService
+
+        PasswordService.refuse_directory_account(instance)
+
         profile, _ = Profile.objects.get_or_create(
             user=instance,
         )

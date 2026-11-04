@@ -134,7 +134,7 @@ const RecoveryCodes: React.FC = () => {
 
 export const SecurityPage: React.FC = () => {
   const queryClient = useQueryClient();
-  const { refreshUser } = useAuth();
+  const { user, refreshUser } = useAuth();
   const config = useQuery({ queryKey: mfaKeys.config, queryFn: () => mfaApi.config() });
   const [enrolling, setEnrolling] = useState(false);
   const [disabling, setDisabling] = useState(false);
@@ -148,10 +148,16 @@ export const SecurityPage: React.FC = () => {
   return (
     <div className="space-y-5">
       <Card title="Password">
-        <p className="text-xs text-slate-400">Changing your password signs you out of every device.</p>
-        <Link to="/auth/change-password" className="inline-block text-xs font-semibold text-cyan-300 hover:underline">
-          Change password
-        </Link>
+        {user?.auth_source === 'ldap' ? (
+          <p className="text-xs text-slate-400">You sign in with your studio directory (LDAP) account. Change your password in the directory; it cannot be changed here.</p>
+        ) : (
+          <>
+            <p className="text-xs text-slate-400">Changing your password signs you out of every device.</p>
+            <Link to="/auth/change-password" className="inline-block text-xs font-semibold text-cyan-300 hover:underline">
+              Change password
+            </Link>
+          </>
+        )}
       </Card>
 
       <Card title="Two-factor authentication">

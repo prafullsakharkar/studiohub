@@ -17,6 +17,9 @@ class UserPermissions:
     CHANGE_PASSWORD = "identity.user.change_password"
     RESET_PASSWORD = "identity.user.reset_password"
 
+    # Require MFA for one account (ADR-0039 decision 5).
+    REQUIRE_MFA = "identity.user.require_mfa"
+
     EXPORT = "identity.user.export"
     IMPORT = "identity.user.import"
 
@@ -86,3 +89,8 @@ class CredentialPermissions:
     # Administrative: see and revoke other users' API keys / PATs. Owners
     # manage their own credentials without any permission code.
     MANAGE = "identity.credential.manage"
+
+
+class DirectoryPermissions:
+    # The directory (LDAP) connection and its service password (ADR-0039 decision 3).
+    MANAGE = "identity.directory.manage"

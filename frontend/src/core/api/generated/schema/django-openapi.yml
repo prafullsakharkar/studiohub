@@ -356,6 +356,116 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/organizations/projects/{project_id}/members/{member_id}:
+    patch:
+      operationId: organizations_projects_members_partial_update
+      description: |-
+        ``PATCH`` / ``DELETE`` a member that is already on the project (CR-37). Managing members is as privileged as
+        adding them. Nobody may take their OWN membership off the project through here (a creator could lock themselves
+        out); a member bound to a show or a department never reaches this route (full project access is required).
+      parameters:
+      - in: path
+        name: member_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: organizations_projects_members_destroy
+      description: |-
+        ``PATCH`` / ``DELETE`` a member that is already on the project (CR-37). Managing members is as privileged as
+        adding them. Nobody may take their OWN membership off the project through here (a creator could lock themselves
+        out); a member bound to a show or a department never reaches this route (full project access is required).
+      parameters:
+      - in: path
+        name: member_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '204':
+          description: No response body
+  /api/organizations/projects/{project_id}/members/{member_id}/:
+    patch:
+      operationId: organizations_projects_members_partial_update_2
+      description: |-
+        ``PATCH`` / ``DELETE`` a member that is already on the project (CR-37). Managing members is as privileged as
+        adding them. Nobody may take their OWN membership off the project through here (a creator could lock themselves
+        out); a member bound to a show or a department never reaches this route (full project access is required).
+      parameters:
+      - in: path
+        name: member_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: organizations_projects_members_destroy_2
+      description: |-
+        ``PATCH`` / ``DELETE`` a member that is already on the project (CR-37). Managing members is as privileged as
+        adding them. Nobody may take their OWN membership off the project through here (a creator could lock themselves
+        out); a member bound to a show or a department never reaches this route (full project access is required).
+      parameters:
+      - in: path
+        name: member_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: project_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - organizations
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '204':
+          description: No response body
   /api/organizations/projects/{project_id}/notes:
     get:
       operationId: organizations_projects_notes_retrieve
@@ -5137,6 +5247,34 @@ paths:
       operationId: v1_deliveries_list
       description: ViewSet for DeliveryPackage.
       parameters:
+      - in: query
+        name: client
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: client_id
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: client_status
+        schema:
+          type: string
+      - in: query
+        name: delivery_method
+        schema:
+          type: string
+      - in: query
+        name: destination
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: destination_id
+        schema:
+          type: string
+          format: uuid
       - name: ordering
         required: false
         in: query
@@ -5155,10 +5293,24 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
+      - in: query
+        name: project
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: project_id
+        schema:
+          type: string
+          format: uuid
       - name: search
         required: false
         in: query
         description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
         schema:
           type: string
       tags:
@@ -5459,16 +5611,58 @@ paths:
       operationId: v1_deliveries_history_list
       description: Every status change of the delivery, oldest first.
       parameters:
+      - in: query
+        name: client
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: client_id
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: client_status
+        schema:
+          type: string
+      - in: query
+        name: delivery_method
+        schema:
+          type: string
+      - in: query
+        name: destination
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: destination_id
+        schema:
+          type: string
+          format: uuid
       - name: ordering
         required: false
         in: query
         description: Which field to use when ordering the results.
         schema:
           type: string
+      - in: query
+        name: project
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: project_id
+        schema:
+          type: string
+          format: uuid
       - name: search
         required: false
         in: query
         description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
         schema:
           type: string
       - in: path
@@ -5551,16 +5745,58 @@ paths:
       operationId: v1_deliveries_qc_list
       description: The checks of the delivery's latest QC run.
       parameters:
+      - in: query
+        name: client
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: client_id
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: client_status
+        schema:
+          type: string
+      - in: query
+        name: delivery_method
+        schema:
+          type: string
+      - in: query
+        name: destination
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: destination_id
+        schema:
+          type: string
+          format: uuid
       - name: ordering
         required: false
         in: query
         description: Which field to use when ordering the results.
         schema:
           type: string
+      - in: query
+        name: project
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: project_id
+        schema:
+          type: string
+          format: uuid
       - name: search
         required: false
         in: query
         description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
         schema:
           type: string
       - in: path
@@ -8224,6 +8460,110 @@ paths:
               schema:
                 $ref: '#/components/schemas/MFAVerify'
           description: ''
+  /api/v1/identity/directory/:
+    get:
+      operationId: v1_identity_directory_retrieve
+      description: |-
+        Root ViewSet for the project.
+
+        Every ViewSet should inherit from this class.
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DirectoryConfiguration'
+          description: ''
+    patch:
+      operationId: v1_identity_directory_partial_update
+      description: |-
+        Root ViewSet for the project.
+
+        Every ViewSet should inherit from this class.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDirectoryConfiguration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDirectoryConfiguration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDirectoryConfiguration'
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DirectoryConfiguration'
+          description: ''
+  /api/v1/identity/directory/test-connection/:
+    post:
+      operationId: v1_identity_directory_test_connection_create
+      description: |-
+        Root ViewSet for the project.
+
+        Every ViewSet should inherit from this class.
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/identity/directory/test-user/:
+    post:
+      operationId: v1_identity_directory_test_user_create
+      description: |-
+        Root ViewSet for the project.
+
+        Every ViewSet should inherit from this class.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DirectoryTestUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DirectoryTestUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DirectoryTestUser'
+        required: true
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
   /api/v1/identity/email/resend/:
     post:
       operationId: v1_identity_email_resend_create
@@ -10534,6 +10874,44 @@ paths:
         Uses the declarative ``serializer_map`` / ``permission_map`` contract and
         resolves detail routes by primary key (``pk`` URL kwarg), matching the
         public API surface.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserList'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserList'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserList'
+        required: true
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserList'
+          description: ''
+  /api/v1/identity/users/{id}/require-mfa/:
+    post:
+      operationId: v1_identity_users_require_mfa_create
+      description: Require MFA for this account, or stop requiring it (ADR-0039 decision
+        5).
       parameters:
       - in: path
         name: id
@@ -18365,6 +18743,18 @@ paths:
       description: ViewSet for PublishItem (export jobs). Every read and write is
         narrowed to the caller's projects.
       parameters:
+      - in: query
+        name: dcc_tool
+        schema:
+          type: string
+      - in: query
+        name: entity_type
+        schema:
+          type: string
+      - in: query
+        name: job_status
+        schema:
+          type: string
       - name: ordering
         required: false
         in: query
@@ -18383,12 +18773,36 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
+      - in: query
+        name: project
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: project_id
+        schema:
+          type: string
+          format: uuid
       - name: search
         required: false
         in: query
         description: A search term.
         schema:
           type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      - in: query
+        name: version
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: version_id
+        schema:
+          type: string
+          format: uuid
       tags:
       - v1
       security:
@@ -21738,16 +22152,46 @@ paths:
       operationId: v1_scheduling_events_list
       description: ViewSet for CalendarEvent.
       parameters:
+      - in: query
+        name: end
+        schema:
+          type: string
+      - in: query
+        name: event_type
+        schema:
+          type: string
       - name: ordering
         required: false
         in: query
         description: Which field to use when ordering the results.
         schema:
           type: string
+      - in: query
+        name: project
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: project_id
+        schema:
+          type: string
+          format: uuid
       - name: search
         required: false
         in: query
         description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: start
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      - in: query
+        name: visibility
         schema:
           type: string
       tags:
@@ -22126,16 +22570,44 @@ paths:
       operationId: v1_scheduling_leaves_list
       description: ViewSet for ResourceLeave.
       parameters:
+      - in: query
+        name: end
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: leave_type
+        schema:
+          type: string
       - name: ordering
         required: false
         in: query
         description: Which field to use when ordering the results.
         schema:
           type: string
+      - in: query
+        name: resource
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: resource_id
+        schema:
+          type: string
+          format: uuid
       - name: search
         required: false
         in: query
         description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: start
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: status
         schema:
           type: string
       tags:
@@ -22379,16 +22851,32 @@ paths:
 
         Writes follow the schedule codes for now; ``schedule.manage`` takes over in Phase 11.
       parameters:
+      - in: query
+        name: kind
+        schema:
+          type: string
       - name: ordering
         required: false
         in: query
         description: Which field to use when ordering the results.
         schema:
           type: string
+      - in: query
+        name: project
+        schema:
+          type: string
+      - in: query
+        name: project_id
+        schema:
+          type: string
       - name: search
         required: false
         in: query
         description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
         schema:
           type: string
       tags:
@@ -22697,10 +23185,34 @@ paths:
       operationId: v1_scheduling_resources_list
       description: ViewSet for Resource.
       parameters:
+      - in: query
+        name: calendar
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: calendar_id
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: department
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: department_id
+        schema:
+          type: string
+          format: uuid
       - name: ordering
         required: false
         in: query
         description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: query
+        name: resource_type
         schema:
           type: string
       - name: search
@@ -22709,6 +23221,20 @@ paths:
         description: A search term.
         schema:
           type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      - in: query
+        name: team
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: team_id
+        schema:
+          type: string
+          format: uuid
       tags:
       - v1
       security:
@@ -22946,18 +23472,42 @@ paths:
       operationId: v1_scheduling_schedules_list
       description: ViewSet for ResourceSchedule.
       parameters:
+      - in: query
+        name: event
+        schema:
+          type: string
+          format: uuid
       - name: ordering
         required: false
         in: query
         description: Which field to use when ordering the results.
         schema:
           type: string
+      - in: query
+        name: resource
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: resource_id
+        schema:
+          type: string
+          format: uuid
       - name: search
         required: false
         in: query
         description: A search term.
         schema:
           type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      - in: query
+        name: task
+        schema:
+          type: string
+          format: uuid
       tags:
       - v1
       security:
@@ -24939,6 +25489,61 @@ paths:
               schema:
                 $ref: '#/components/schemas/Localization'
           description: ''
+  /api/v1/settings/localizations/{id}/set-default/:
+    post:
+      operationId: v1_settings_localizations_set_default_create
+      description: Make this localization the one the app uses.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Localization'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Localization'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Localization'
+        required: true
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Localization'
+          description: ''
+  /api/v1/settings/localizations/default/:
+    get:
+      operationId: v1_settings_localizations_default_retrieve
+      description: The localization the app uses (404 when none was made). Open to
+        anyone signed in, like the feature flags.
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Localization'
+          description: ''
   /api/v1/settings/system-settings/:
     get:
       operationId: v1_settings_system_settings_list
@@ -25452,6 +26057,61 @@ paths:
             schema:
               $ref: '#/components/schemas/Theme'
         required: true
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Theme'
+          description: ''
+  /api/v1/settings/themes/{id}/set-default/:
+    post:
+      operationId: v1_settings_themes_set_default_create
+      description: Make this theme the one the app uses.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Theme'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Theme'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Theme'
+        required: true
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Theme'
+          description: ''
+  /api/v1/settings/themes/default/:
+    get:
+      operationId: v1_settings_themes_default_retrieve
+      description: The theme the app uses (404 when none was made). Open to anyone
+        signed in, like the feature flags.
+      tags:
+      - v1
       security:
       - sessionJWT: []
       - personalAccessToken: []
@@ -28319,6 +28979,268 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskList'
           description: ''
+  /api/v1/team-memberships/:
+    get:
+      operationId: v1_team_memberships_list
+      description: Who is in which team. Add (POST), remove (DELETE, a soft delete)
+        and restore; never edited.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: person
+        schema:
+          type: string
+          format: uuid
+        description: Universally unique identifier.
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: team
+        schema:
+          type: string
+          format: uuid
+        description: Universally unique identifier.
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTeamMembershipList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Authentication credentials were not provided.
+    post:
+      operationId: v1_team_memberships_create
+      description: Who is in which team. Add (POST), remove (DELETE, a soft delete)
+        and restore; never edited.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamMembership'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TeamMembership'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TeamMembership'
+        required: true
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamMembership'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorBody'
+          description: Validation failed.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Authentication credentials were not provided.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Missing permission.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: 'Conflict: duplicate, dependants, illegal transition or overlap
+            (see `error.code`).'
+  /api/v1/team-memberships/{id}/:
+    get:
+      operationId: v1_team_memberships_retrieve
+      description: Who is in which team. Add (POST), remove (DELETE, a soft delete)
+        and restore; never edited.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamMembership'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Authentication credentials were not provided.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Unknown or soft-deleted id.
+    delete:
+      operationId: v1_team_memberships_destroy
+      description: Who is in which team. Add (POST), remove (DELETE, a soft delete)
+        and restore; never edited.
+      parameters:
+      - in: query
+        name: hard
+        schema:
+          type: boolean
+        description: '`true` permanently deletes a row that is already soft-deleted
+          (needs `masterdata.hard_delete`). Omitted or `false` soft-deletes.'
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '204':
+          description: Soft-deleted, or permanently deleted with `?hard=true`.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Authentication credentials were not provided.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Missing permission.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Unknown or soft-deleted id.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: 'Conflict: duplicate, dependants, illegal transition or overlap
+            (see `error.code`).'
+  /api/v1/team-memberships/{id}/restore/:
+    post:
+      operationId: v1_team_memberships_restore_create
+      description: Who is in which team. Add (POST), remove (DELETE, a soft delete)
+        and restore; never edited.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+        required: true
+      tags:
+      - v1
+      security:
+      - sessionJWT: []
+      - personalAccessToken: []
+      - apiKey: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamMembership'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorBody'
+          description: Validation failed.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Authentication credentials were not provided.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Missing permission.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: Unknown or soft-deleted id.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+          description: 'Conflict: duplicate, dependants, illegal transition or overlap
+            (see `error.code`).'
   /api/v1/teams/:
     get:
       operationId: v1_teams_list
@@ -32809,9 +33731,12 @@ components:
             * `Mari` - Mari
           x-spec-enum-id: 955bedfad04eef0a
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         department:
           type: string
           format: uuid
@@ -32930,13 +33855,19 @@ components:
           type: string
           maxLength: 20
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         turntable_video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         file_format:
           type: string
           maxLength: 100
@@ -33134,13 +34065,19 @@ components:
           type: string
           maxLength: 20
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         turntable_video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         file_format:
           type: string
           maxLength: 100
@@ -33407,9 +34344,12 @@ components:
             * `Mari` - Mari
           x-spec-enum-id: 955bedfad04eef0a
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         department:
           type: string
           format: uuid
@@ -34305,8 +35245,11 @@ components:
           type: string
           maxLength: 255
         meeting_url:
-          type: string
-          format: uri
+          oneOf:
+          - type: string
+            format: uri
+          - type: string
+            maxLength: 0
         is_all_day:
           type: boolean
           default: false
@@ -34411,10 +35354,13 @@ components:
           description: Event location
           maxLength: 255
         meeting_url:
-          type: string
-          format: uri
           description: Virtual meeting URL
-          maxLength: 200
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
         notes:
           type: string
           description: Internal notes
@@ -34543,10 +35489,18 @@ components:
           description: Event location
           maxLength: 255
         meeting_url:
-          type: string
-          format: uri
           description: Virtual meeting URL
-          maxLength: 200
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+        project_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
         project_name:
           type: string
           readOnly: true
@@ -34565,6 +35519,7 @@ components:
       - end_time
       - event_type_display
       - id
+      - project_id
       - project_name
       - start_time
       - status_display
@@ -34618,8 +35573,11 @@ components:
           type: string
           maxLength: 255
         meeting_url:
-          type: string
-          format: uri
+          oneOf:
+          - type: string
+            format: uri
+          - type: string
+            maxLength: 0
         is_all_day:
           type: boolean
         notes:
@@ -34710,6 +35668,8 @@ components:
           type: string
         new_password:
           type: string
+        confirm_password:
+          type: string
       required:
       - new_password
       - old_password
@@ -34733,9 +35693,12 @@ components:
           type: string
           maxLength: 255
         email:
-          type: string
-          format: email
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         phone:
           type: string
           maxLength: 50
@@ -34751,9 +35714,12 @@ components:
           type: string
           maxLength: 30
         logo_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         headquarters:
           type: string
           maxLength: 255
@@ -34802,9 +35768,12 @@ components:
           type: string
           maxLength: 255
         email:
-          type: string
-          format: email
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         phone:
           type: string
           maxLength: 50
@@ -34882,9 +35851,12 @@ components:
         nda_signed:
           type: boolean
         document_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         activated_at:
           type: string
           format: date-time
@@ -35301,6 +36273,9 @@ components:
           description: Who signed the delivery off (internal approval)
           readOnly: true
           nullable: true
+        signed_off_by_name:
+          type: string
+          readOnly: true
         signed_off_at:
           type: string
           format: date-time
@@ -35312,6 +36287,9 @@ components:
           description: Who recorded the client's answer
           readOnly: true
           nullable: true
+        client_answered_by_name:
+          type: string
+          readOnly: true
         client_answered_at:
           type: string
           format: date-time
@@ -35350,6 +36328,7 @@ components:
       - client
       - client_answered_at
       - client_answered_by
+      - client_answered_by_name
       - client_name
       - client_notes
       - client_status
@@ -35374,6 +36353,7 @@ components:
       - sent_at
       - signed_off_at
       - signed_off_by
+      - signed_off_by_name
       - status
       - total_frames
       - total_size_bytes
@@ -35575,6 +36555,9 @@ components:
           description: Universally unique identifier.
           readOnly: true
           nullable: true
+        checked_by_name:
+          type: string
+          readOnly: true
         checked_at:
           type: string
           format: date-time
@@ -35583,6 +36566,7 @@ components:
       - check_name
       - checked_at
       - checked_by
+      - checked_by_name
       - detail
       - item
       - outcome
@@ -35743,6 +36727,9 @@ components:
           description: Who signed the delivery off (internal approval)
           readOnly: true
           nullable: true
+        signed_off_by_name:
+          type: string
+          readOnly: true
         signed_off_at:
           type: string
           format: date-time
@@ -35754,6 +36741,9 @@ components:
           description: Who recorded the client's answer
           readOnly: true
           nullable: true
+        client_answered_by_name:
+          type: string
+          readOnly: true
         client_answered_at:
           type: string
           format: date-time
@@ -35797,6 +36787,7 @@ components:
       - client
       - client_answered_at
       - client_answered_by
+      - client_answered_by_name
       - client_name
       - client_notes
       - client_status
@@ -35821,6 +36812,7 @@ components:
       - sent_at
       - signed_off_at
       - signed_off_by
+      - signed_off_by_name
       - skipped_versions
       - status
       - total_frames
@@ -35860,6 +36852,9 @@ components:
           description: Universally unique identifier.
           readOnly: true
           nullable: true
+        actor_name:
+          type: string
+          readOnly: true
         reason:
           type: string
           readOnly: true
@@ -35883,6 +36878,7 @@ components:
           readOnly: true
       required:
       - actor
+      - actor_name
       - at
       - from_status
       - id
@@ -36243,6 +37239,99 @@ components:
       - name
       - type
       - updated_at
+    DirectoryConfiguration:
+      type: object
+      description: |-
+        The configuration as the screen shows it. The service password is write-only: a read says
+        only whether one is set.
+      properties:
+        enabled:
+          type: boolean
+        server_uri:
+          type: string
+          maxLength: 512
+        start_tls:
+          type: boolean
+        ca_certificate:
+          type: string
+        tls_allow_legacy_ciphers:
+          type: boolean
+        tls_server_name:
+          type: string
+          maxLength: 253
+        bind_dn:
+          type: string
+          maxLength: 512
+        bind_password:
+          type: string
+          writeOnly: true
+          description: A new value sets it; an empty string clears it; leave it out
+            to keep it.
+        bind_password_set:
+          type: boolean
+          readOnly: true
+        user_search_base:
+          type: string
+          maxLength: 512
+        user_filter:
+          type: string
+          maxLength: 512
+        attr_subject:
+          type: string
+          maxLength: 64
+        attr_username:
+          type: string
+          maxLength: 64
+        attr_email:
+          type: string
+          maxLength: 64
+        attr_first_name:
+          type: string
+          maxLength: 64
+        attr_last_name:
+          type: string
+          maxLength: 64
+        attr_display_name:
+          type: string
+          maxLength: 64
+        timeout_seconds:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        default_role_code:
+          type: string
+          maxLength: 100
+        require_mfa:
+          type: boolean
+        last_tested_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        forced_off:
+          type: boolean
+          readOnly: true
+        encryption_key_set:
+          type: boolean
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - bind_password_set
+      - encryption_key_set
+      - forced_off
+      - last_tested_at
+      - updated_at
+    DirectoryTestUser:
+      type: object
+      properties:
+        username:
+          type: string
+          maxLength: 255
+      required:
+      - username
     EpisodeCreate:
       type: object
       description: |-
@@ -36861,6 +37950,7 @@ components:
             * `expired` - Expired
         is_enabled:
           type: boolean
+          readOnly: true
           description: Whether the feature is enabled
         percentage:
           type: integer
@@ -36906,6 +37996,7 @@ components:
       - created_at
       - created_by
       - id
+      - is_enabled
       - name
       - updated_at
       - updated_by
@@ -37475,7 +38566,12 @@ components:
           description: Start date of fiscal year (MM-DD)
         is_active:
           type: boolean
-          description: Whether this localization is active
+          description: Whether this localization is available (several may be)
+        is_default:
+          type: boolean
+          readOnly: true
+          description: The one localization the app uses. At most one row is the default,
+            it is always active, and only the set-default action moves it.
         created_at:
           type: string
           format: date-time
@@ -37490,6 +38586,7 @@ components:
       - code
       - created_at
       - id
+      - is_default
       - name
       - updated_at
       - uuid
@@ -37498,7 +38595,6 @@ components:
       properties:
         email:
           type: string
-          format: email
           maxLength: 255
         password:
           type: string
@@ -37557,6 +38653,11 @@ components:
           - user_deleted
           - user_locked
           - too_many_attempts
+          - ldap_unavailable
+          - ldap_disabled
+          - ldap_ambiguous
+          - ldap_no_email
+          - ldap_email_conflict
           - ''
           type: string
           description: |-
@@ -37566,7 +38667,12 @@ components:
             * `user_deleted` - User deleted
             * `user_locked` - User locked
             * `too_many_attempts` - Too many attempts
-          x-spec-enum-id: 0c034cc01d11e250
+            * `ldap_unavailable` - Directory unavailable
+            * `ldap_disabled` - Directory sign-in off
+            * `ldap_ambiguous` - Directory: more than one entry
+            * `ldap_no_email` - Directory entry has no e-mail
+            * `ldap_email_conflict` - E-mail used by a local account
+          x-spec-enum-id: b92ca777fbce2467
         attempted_at:
           type: string
           format: date-time
@@ -37628,6 +38734,11 @@ components:
           - user_deleted
           - user_locked
           - too_many_attempts
+          - ldap_unavailable
+          - ldap_disabled
+          - ldap_ambiguous
+          - ldap_no_email
+          - ldap_email_conflict
           - ''
           type: string
           description: |-
@@ -37637,7 +38748,12 @@ components:
             * `user_deleted` - User deleted
             * `user_locked` - User locked
             * `too_many_attempts` - Too many attempts
-          x-spec-enum-id: 0c034cc01d11e250
+            * `ldap_unavailable` - Directory unavailable
+            * `ldap_disabled` - Directory sign-in off
+            * `ldap_ambiguous` - Directory: more than one entry
+            * `ldap_no_email` - Directory entry has no e-mail
+            * `ldap_email_conflict` - E-mail used by a local account
+          x-spec-enum-id: b92ca777fbce2467
         attempted_at:
           type: string
           format: date-time
@@ -37698,6 +38814,11 @@ components:
           - user_deleted
           - user_locked
           - too_many_attempts
+          - ldap_unavailable
+          - ldap_disabled
+          - ldap_ambiguous
+          - ldap_no_email
+          - ldap_email_conflict
           - ''
           type: string
           description: |-
@@ -37707,7 +38828,12 @@ components:
             * `user_deleted` - User deleted
             * `user_locked` - User locked
             * `too_many_attempts` - Too many attempts
-          x-spec-enum-id: 0c034cc01d11e250
+            * `ldap_unavailable` - Directory unavailable
+            * `ldap_disabled` - Directory sign-in off
+            * `ldap_ambiguous` - Directory: more than one entry
+            * `ldap_no_email` - Directory entry has no e-mail
+            * `ldap_email_conflict` - E-mail used by a local account
+          x-spec-enum-id: b92ca777fbce2467
         attempted_at:
           type: string
           format: date-time
@@ -38518,17 +39644,26 @@ components:
           type: string
           maxLength: 50
         source_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         preview_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         file_size_mb:
           type: string
           format: decimal
@@ -38589,17 +39724,26 @@ components:
           type: string
           maxLength: 50
         source_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         preview_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         file_size_mb:
           type: string
           format: decimal
@@ -38673,17 +39817,26 @@ components:
           type: string
           maxLength: 50
         source_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         preview_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         file_size_mb:
           type: string
           format: decimal
@@ -38730,17 +39883,26 @@ components:
           type: string
           maxLength: 50
         source_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         preview_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         file_size_mb:
           type: string
           format: decimal
@@ -38941,9 +40103,12 @@ components:
           type: string
           maxLength: 30
         email:
-          type: string
-          format: email
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         manager:
           type: string
           format: uuid
@@ -39862,6 +41027,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Team'
+    PaginatedTeamMembershipList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamMembership'
     PaginatedTimelogListList:
       type: object
       required:
@@ -40157,13 +41345,19 @@ components:
           type: string
           maxLength: 20
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         turntable_video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         file_format:
           type: string
           maxLength: 100
@@ -40359,9 +41553,12 @@ components:
             * `Mari` - Mari
           x-spec-enum-id: 955bedfad04eef0a
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         department:
           type: string
           format: uuid
@@ -40478,8 +41675,11 @@ components:
           type: string
           maxLength: 255
         meeting_url:
-          type: string
-          format: uri
+          oneOf:
+          - type: string
+            format: uri
+          - type: string
+            maxLength: 0
         is_all_day:
           type: boolean
         notes:
@@ -40504,9 +41704,12 @@ components:
           type: string
           maxLength: 255
         email:
-          type: string
-          format: email
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         phone:
           type: string
           maxLength: 50
@@ -40522,9 +41725,12 @@ components:
           type: string
           maxLength: 30
         logo_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         headquarters:
           type: string
           maxLength: 255
@@ -40566,9 +41772,12 @@ components:
           type: string
           maxLength: 255
         email:
-          type: string
-          format: email
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         phone:
           type: string
           maxLength: 50
@@ -40640,9 +41849,12 @@ components:
         nda_signed:
           type: boolean
         document_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         activated_at:
           type: string
           format: date-time
@@ -40823,6 +42035,85 @@ components:
           format: date-time
           readOnly: true
           description: Last update timestamp.
+    PatchedDirectoryConfiguration:
+      type: object
+      description: |-
+        The configuration as the screen shows it. The service password is write-only: a read says
+        only whether one is set.
+      properties:
+        enabled:
+          type: boolean
+        server_uri:
+          type: string
+          maxLength: 512
+        start_tls:
+          type: boolean
+        ca_certificate:
+          type: string
+        tls_allow_legacy_ciphers:
+          type: boolean
+        tls_server_name:
+          type: string
+          maxLength: 253
+        bind_dn:
+          type: string
+          maxLength: 512
+        bind_password:
+          type: string
+          writeOnly: true
+          description: A new value sets it; an empty string clears it; leave it out
+            to keep it.
+        bind_password_set:
+          type: boolean
+          readOnly: true
+        user_search_base:
+          type: string
+          maxLength: 512
+        user_filter:
+          type: string
+          maxLength: 512
+        attr_subject:
+          type: string
+          maxLength: 64
+        attr_username:
+          type: string
+          maxLength: 64
+        attr_email:
+          type: string
+          maxLength: 64
+        attr_first_name:
+          type: string
+          maxLength: 64
+        attr_last_name:
+          type: string
+          maxLength: 64
+        attr_display_name:
+          type: string
+          maxLength: 64
+        timeout_seconds:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        default_role_code:
+          type: string
+          maxLength: 100
+        require_mfa:
+          type: boolean
+        last_tested_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        forced_off:
+          type: boolean
+          readOnly: true
+        encryption_key_set:
+          type: boolean
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
     PatchedEpisodeList:
       type: object
       description: Base serializer for read operations.
@@ -41058,6 +42349,7 @@ components:
             * `expired` - Expired
         is_enabled:
           type: boolean
+          readOnly: true
           description: Whether the feature is enabled
         percentage:
           type: integer
@@ -41383,7 +42675,12 @@ components:
           description: Start date of fiscal year (MM-DD)
         is_active:
           type: boolean
-          description: Whether this localization is active
+          description: Whether this localization is available (several may be)
+        is_default:
+          type: boolean
+          readOnly: true
+          description: The one localization the app uses. At most one row is the default,
+            it is always active, and only the set-default action moves it.
         created_at:
           type: string
           format: date-time
@@ -41797,17 +43094,26 @@ components:
           type: string
           maxLength: 50
         source_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         preview_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         file_size_mb:
           type: string
           format: decimal
@@ -41900,9 +43206,12 @@ components:
           type: string
           maxLength: 30
         email:
-          type: string
-          format: email
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         manager:
           type: string
           format: uuid
@@ -42165,9 +43474,12 @@ components:
           type: string
           maxLength: 32
         email:
-          type: string
-          format: email
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         phone:
           type: string
           maxLength: 20
@@ -43595,9 +44907,12 @@ components:
           format: date
           nullable: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         budget_usd:
           type: string
           format: decimal
@@ -43948,13 +45263,19 @@ components:
           type: string
           readOnly: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
     PatchedRole:
       type: object
       description: Base serializer for Identity models.
@@ -43973,9 +45294,12 @@ components:
           type: string
           maxLength: 150
         code:
-          type: string
-          maxLength: 100
-          pattern: ^[-a-zA-Z0-9_]+$
+          oneOf:
+          - type: string
+            maxLength: 100
+            pattern: ^[-a-zA-Z0-9_]+$
+          - type: string
+            maxLength: 0
         description:
           type: string
         parent:
@@ -44498,13 +45822,19 @@ components:
           maximum: 2147483647
           minimum: 0
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         current_version:
           type: string
           readOnly: true
@@ -44602,13 +45932,19 @@ components:
           maximum: 2147483647
           minimum: 0
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         current_version:
           type: string
           readOnly: true
@@ -44688,9 +46024,12 @@ components:
           format: date
           nullable: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         is_primary:
           type: boolean
     PatchedSoftware:
@@ -44716,9 +46055,12 @@ components:
         description:
           type: string
         website:
-          type: string
-          format: uri
-          maxLength: 200
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
         status:
           enum:
           - active
@@ -44924,6 +46266,16 @@ components:
       type: object
       description: Serializer for Tag update.
       properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Universally unique identifier.
+        uuid:
+          type: string
+          format: uuid
+          description: Return the UUID of the model (alias for id).
+          readOnly: true
         name:
           type: string
           description: Tag name (lowercase, hyphenated)
@@ -45304,6 +46656,9 @@ components:
           type: integer
           maximum: 2147483647
           minimum: 0
+        member_count:
+          type: integer
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -45420,7 +46775,12 @@ components:
           description: Whether navbar is fixed at top
         is_active:
           type: boolean
-          description: Whether this theme is active
+          description: Whether this theme is available (several may be)
+        is_default:
+          type: boolean
+          readOnly: true
+          description: The one theme the app uses. At most one row is the default,
+            it is always active, and only the set-default action moves it.
         created_at:
           type: string
           format: date-time
@@ -45641,6 +47001,15 @@ components:
         full_name:
           type: string
           readOnly: true
+        mfa_required:
+          type: boolean
+          readOnly: true
+        auth_source:
+          enum:
+          - local
+          - ldap
+          type: string
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -45669,9 +47038,12 @@ components:
           type: string
           maxLength: 255
         email:
-          type: string
-          format: email
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         specialization:
           type: string
           maxLength: 100
@@ -45691,9 +47063,12 @@ components:
           type: string
           maxLength: 30
         logo_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         bandwidth_gbps:
           type: string
           format: decimal
@@ -45735,9 +47110,12 @@ components:
           type: string
           maxLength: 255
         email:
-          type: string
-          format: email
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         phone:
           type: string
           maxLength: 50
@@ -45884,13 +47262,19 @@ components:
           type: boolean
           readOnly: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         notes:
           type: string
         tags: {}
@@ -46187,9 +47571,12 @@ components:
           type: string
           maxLength: 32
         email:
-          type: string
-          format: email
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         phone:
           type: string
           maxLength: 20
@@ -51663,9 +53050,12 @@ components:
           format: date
           nullable: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         budget_usd:
           type: string
           format: decimal
@@ -51786,9 +53176,12 @@ components:
           format: date
           nullable: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         total_shots:
           type: integer
           maximum: 2147483647
@@ -51949,9 +53342,12 @@ components:
           format: date
           nullable: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         total_shots:
           type: integer
           maximum: 2147483647
@@ -52088,9 +53484,12 @@ components:
           format: date
           nullable: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         budget_usd:
           type: string
           format: decimal
@@ -52234,6 +53633,11 @@ components:
           type: string
           readOnly: true
           description: Publish code
+        version_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
         entity_type:
           enum:
           - Shot
@@ -52371,6 +53775,7 @@ components:
       - status
       - updated_at
       - validation_results
+      - version_id
     PublishFail:
       type: object
       description: 'Body of the fail action: why the export failed (stored as the
@@ -52398,6 +53803,10 @@ components:
           type: string
           readOnly: true
           description: Publish code
+        project_id:
+          type: string
+          format: uuid
+          readOnly: true
         entity_type:
           enum:
           - Shot
@@ -52512,6 +53921,7 @@ components:
       - is_success
       - job_status
       - name
+      - project_id
       - retry_count
       - source_file
       - status
@@ -53519,13 +54929,19 @@ components:
           type: string
           maxLength: 30
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
       required:
       - id
       - title
@@ -53578,13 +54994,19 @@ components:
           type: string
           readOnly: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         versions:
           type: string
           readOnly: true
@@ -53677,13 +55099,19 @@ components:
           type: string
           readOnly: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         versions:
           type: string
           readOnly: true
@@ -53806,13 +55234,19 @@ components:
           type: string
           readOnly: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
       required:
       - supervisor_verdict
       - title
@@ -53865,9 +55299,12 @@ components:
           type: string
           maxLength: 150
         code:
-          type: string
-          maxLength: 100
-          pattern: ^[-a-zA-Z0-9_]+$
+          oneOf:
+          - type: string
+            maxLength: 100
+            pattern: ^[-a-zA-Z0-9_]+$
+          - type: string
+            maxLength: 0
         description:
           type: string
         parent:
@@ -55064,13 +56501,19 @@ components:
           maximum: 2147483647
           minimum: 0
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         current_version:
           type: string
           readOnly: true
@@ -55180,13 +56623,19 @@ components:
           maximum: 2147483647
           minimum: 0
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         current_version:
           type: string
           readOnly: true
@@ -55318,13 +56767,19 @@ components:
           maximum: 2147483647
           minimum: 0
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         current_version:
           type: string
           readOnly: true
@@ -55440,13 +56895,19 @@ components:
           maximum: 2147483647
           minimum: 0
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         current_version:
           type: string
           readOnly: true
@@ -55532,9 +56993,12 @@ components:
           format: date
           nullable: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         is_primary:
           type: boolean
       required:
@@ -55590,9 +57054,12 @@ components:
           format: date
           nullable: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         is_primary:
           type: boolean
         created_at:
@@ -55662,9 +57129,12 @@ components:
           format: date
           nullable: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         is_primary:
           type: boolean
         created_at:
@@ -55747,9 +57217,12 @@ components:
           format: date
           nullable: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         is_primary:
           type: boolean
       required:
@@ -55792,9 +57265,12 @@ components:
         description:
           type: string
         website:
-          type: string
-          format: uri
-          maxLength: 200
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
         status:
           enum:
           - active
@@ -56095,6 +57571,16 @@ components:
       type: object
       description: Serializer for Tag creation.
       properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Universally unique identifier.
+        uuid:
+          type: string
+          format: uuid
+          description: Return the UUID of the model (alias for id).
+          readOnly: true
         name:
           type: string
           description: Tag name (lowercase, hyphenated)
@@ -56110,7 +57596,9 @@ components:
           type: boolean
           description: Whether this is a system-generated tag
       required:
+      - id
       - name
+      - uuid
     TagDetail:
       type: object
       description: Serializer for Tag detail.
@@ -56245,6 +57733,16 @@ components:
       type: object
       description: Serializer for Tag update.
       properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Universally unique identifier.
+        uuid:
+          type: string
+          format: uuid
+          description: Return the UUID of the model (alias for id).
+          readOnly: true
         name:
           type: string
           description: Tag name (lowercase, hyphenated)
@@ -56260,7 +57758,9 @@ components:
           type: boolean
           description: Whether this is a system-generated tag
       required:
+      - id
       - name
+      - uuid
     TaskCreate:
       type: object
       description: |-
@@ -57176,6 +58676,9 @@ components:
           type: integer
           maximum: 2147483647
           minimum: 0
+        member_count:
+          type: integer
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -57191,7 +58694,64 @@ components:
       - created_at
       - department
       - id
+      - member_count
       - name
+      - updated_at
+    TeamMembership:
+      type: object
+      description: A person's membership of a team. The names are read-only conveniences
+        (no second request).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Universally unique identifier.
+        team:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+        team_name:
+          type: string
+          readOnly: true
+        person:
+          type: string
+          format: uuid
+          description: Universally unique identifier.
+        person_name:
+          type: string
+          readOnly: true
+        person_status:
+          type: string
+          readOnly: true
+        person_department_name:
+          type: string
+          readOnly: true
+          default: ''
+        person_office_name:
+          type: string
+          readOnly: true
+          default: ''
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Object creation timestamp.
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Last update timestamp.
+      required:
+      - created_at
+      - id
+      - person
+      - person_department_name
+      - person_name
+      - person_office_name
+      - person_status
+      - team
+      - team_name
       - updated_at
     TemplateItemInput:
       type: object
@@ -57321,7 +58881,12 @@ components:
           description: Whether navbar is fixed at top
         is_active:
           type: boolean
-          description: Whether this theme is active
+          description: Whether this theme is available (several may be)
+        is_default:
+          type: boolean
+          readOnly: true
+          description: The one theme the app uses. At most one row is the default,
+            it is always active, and only the set-default action moves it.
         created_at:
           type: string
           format: date-time
@@ -57336,6 +58901,7 @@ components:
       - code
       - created_at
       - id
+      - is_default
       - name
       - updated_at
       - uuid
@@ -58485,6 +60051,15 @@ components:
         full_name:
           type: string
           readOnly: true
+        mfa_required:
+          type: boolean
+          readOnly: true
+        auth_source:
+          enum:
+          - local
+          - ldap
+          type: string
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -58499,6 +60074,7 @@ components:
           type: string
           writeOnly: true
       required:
+      - auth_source
       - created_at
       - display_name
       - email
@@ -58506,6 +60082,7 @@ components:
       - id
       - is_email_verified
       - last_seen
+      - mfa_required
       - password
       - updated_at
       - uuid
@@ -58545,6 +60122,15 @@ components:
         full_name:
           type: string
           readOnly: true
+        mfa_required:
+          type: boolean
+          readOnly: true
+        auth_source:
+          enum:
+          - local
+          - ldap
+          type: string
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -58556,6 +60142,7 @@ components:
           readOnly: true
           description: Last update timestamp.
       required:
+      - auth_source
       - created_at
       - display_name
       - email
@@ -58563,6 +60150,7 @@ components:
       - id
       - is_email_verified
       - last_seen
+      - mfa_required
       - updated_at
       - uuid
     UserList:
@@ -58601,6 +60189,15 @@ components:
         full_name:
           type: string
           readOnly: true
+        mfa_required:
+          type: boolean
+          readOnly: true
+        auth_source:
+          enum:
+          - local
+          - ldap
+          type: string
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -58612,6 +60209,7 @@ components:
           readOnly: true
           description: Last update timestamp.
       required:
+      - auth_source
       - created_at
       - display_name
       - email
@@ -58619,6 +60217,7 @@ components:
       - id
       - is_email_verified
       - last_seen
+      - mfa_required
       - updated_at
       - uuid
     UserMe:
@@ -58759,6 +60358,15 @@ components:
         full_name:
           type: string
           readOnly: true
+        mfa_required:
+          type: boolean
+          readOnly: true
+        auth_source:
+          enum:
+          - local
+          - ldap
+          type: string
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -58770,6 +60378,7 @@ components:
           readOnly: true
           description: Last update timestamp.
       required:
+      - auth_source
       - created_at
       - display_name
       - email
@@ -58777,6 +60386,7 @@ components:
       - id
       - is_email_verified
       - last_seen
+      - mfa_required
       - updated_at
       - uuid
     ValidationErrorBody:
@@ -58808,9 +60418,12 @@ components:
           type: string
           maxLength: 255
         email:
-          type: string
-          format: email
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         specialization:
           type: string
           maxLength: 100
@@ -58830,9 +60443,12 @@ components:
           type: string
           maxLength: 30
         logo_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         bandwidth_gbps:
           type: string
           format: decimal
@@ -58881,9 +60497,12 @@ components:
           type: string
           maxLength: 255
         email:
-          type: string
-          format: email
-          maxLength: 254
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
         phone:
           type: string
           maxLength: 50
@@ -59082,13 +60701,19 @@ components:
           type: boolean
           readOnly: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         source_file_url:
           type: string
           maxLength: 500
@@ -59239,13 +60864,19 @@ components:
           type: boolean
           readOnly: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         source_file_url:
           type: string
           maxLength: 500
@@ -59420,13 +61051,19 @@ components:
           type: boolean
           readOnly: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         source_file_url:
           type: string
           maxLength: 500
@@ -59581,13 +61218,19 @@ components:
           type: boolean
           readOnly: true
         thumbnail_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         video_url:
-          type: string
-          format: uri
-          maxLength: 500
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
         notes:
           type: string
         tags: {}

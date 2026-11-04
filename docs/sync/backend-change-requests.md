@@ -681,3 +681,73 @@ if view_name not in _ALLOWED[first]:
 ```
 
 That removes the dead end with fewer open endpoints than the proposal: the account changes its password (which ends its sessions), signs in again owing MFA only, and enrols. The union is kept out on purpose, and a mutation that switches to it is caught by that existing test. Report: `backend-cr-39-verification.md`; `docs/identity/CONTRACTS.md` (SEC-AUTH-06) says it in one sentence; no ADR (the control still refuses everything except what settles the first debt).
+
+### CR-40: sign in with an OpenLDAP username, set up and switched from the application; the first sign-in makes the account and the People record (**feature**, **APPLIED**)
+
+Requested by the owner (2026-11-04), revised the same day (MFA off by default for directory users, required per user by an administrator; the settings managed from the frontend). The design and the owner's answers are in `docs/adr/ADR-0039-ldap-authentication.md`. **Approved** by the owner on 2026-11-04 ("approved CR-40") and built on `sync/backend-cr-40-ldap`; evidence in `backend-cr-40-verification.md`.
+
+**Need.** Staff sign in with their directory username and password. A platform administrator sets the directory up and turns it on and off from a settings screen. The first successful sign-in creates the account and its People record, and every sign-in keeps the name and e-mail current. Directory users need no MFA unless an administrator requires it for them.
+
+**What exists today** (read from the code, 2026-11-04): accounts are found by e-mail only (`AuthenticationSelector.get_user`; `User.USERNAME_FIELD = "email"`, no username column); `AuthenticationValidator.validate_login` makes one password-hash comparison per attempt; `AuthenticationService.login` then records the attempt, applies the MFA state and starts the session. `MFAPolicy.is_required` requires MFA of superusers, staff, external project members, and everyone when `MFA_REQUIRE_ALL` is on (the production default, ADR-0038); there is no per-user requirement. A user made by `UserService` gets a People record after commit (DOM-MD-PER-10). Per-account actions are on the person's page (`identity/components/AccountSection.tsx`, `api/identity/users.ts`). There is no directory library in `pyproject.toml`.
+
+**Proposed change** (backend and frontend; additive migrations):
+
+| Work package | What |
+|---|---|
+| WP L.1 | `identity.DirectoryConfiguration` (one row; service password encrypted with `DIRECTORY_ENCRYPTION_KEY` through `FieldCipher`, write-only); `GET`/`PATCH /api/v1/identity/directory/`, `POST …/test-connection/`, `POST …/test-user/`; permission `identity.directory.manage` (platform administrator); save refuses `ldap://` without StartTLS, enabling requires a passing connection test; changes audited without the secret; `DIRECTORY_LOGIN_FORCE_OFF` environment override; `ldap3` dependency |
+| WP L.2 | `identity.ExternalIdentity`; the directory client (search then bind, filter escaping, empty password refused, verified TLS, timeouts) |
+| WP L.3 | Provisioning and refresh: create the `User` (unusable password, profile names), the identity row and the default role (`artist`) once; refuse an entry with no `mail` and an e-mail a local account already has; refresh name and e-mail on later sign-ins. The People record comes from DOM-MD-PER-10 |
+| WP L.4 | `AuthenticationService.login` chooses the check (ADR-0039 decision 2); an outage is recorded but does not count toward the lockout; change-password and reset refuse a directory user (`password_managed_by_directory`); `auth/me` gains `auth_source` and `mfa_required` |
+| WP L.5 | Per-user MFA: `User.mfa_required`; `POST /api/v1/identity/users/{id}/require-mfa/ {"required": bool}` with `identity.user.require_mfa` (platform administrator and `org-admin`); `MFAPolicy.is_required` as in ADR-0039 decision 5 (the blanket rule skips directory users unless the configuration turns it on; the external-member rule stays for everyone) |
+| WP L.6 | `manage.py ldap_sync [--dry-run]` and a command to link an existing local account to a directory entry on purpose; docs (`docs/identity/CONTRACTS.md` API and SEC rows, the environment variables, the pre-deploy checklist) |
+| WP L.7 (frontend) | **Settings → System → Directory (LDAP)**: on/off, server, StartTLS, CA certificate, service account (password shown only as "set"), base, filter, attribute names, timeout, default role, "require MFA for directory users"; **Test connection** and **Test a username** with their results; route and sidebar entry gated by `identity.directory.manage`. On the person's account section: a **Require MFA** switch gated by `identity.user.require_mfa`, and an "LDAP" badge for directory accounts. Change-password and reset hidden for `auth_source: "ldap"`; the login field reads "Username or e-mail" |
+
+**Tests proposed:** with directory sign-in off or `DIRECTORY_LOGIN_FORCE_OFF` set, every existing login test is unchanged and no connection is attempted; with it on, against `ldap3`'s mock server: first sign-in creates one user, one identity, one People record and the Artist role; a second sign-in creates nothing and refreshes the name; wrong password, empty password, no entry, two entries, no `mail`, and an e-mail clash each fail with the generic error and the right ledger reason; an outage fails closed, is logged, and does not lock the account; a local account signs in while the directory is down. Configuration: the password is never returned or logged, saving `ldap://` without StartTLS is refused, enabling without a passing test is refused, someone without `identity.directory.manage` gets 403. MFA: a directory user is not asked for MFA with `MFA_REQUIRE_ALL` on; `require-mfa` makes them enrol at the next request; an org-admin may set it and an artist may not; a directory user who is a vendor or client member is still required. A filter-injection username (`*)(uid=*`) matches nothing. Frontend: unit tests from captured responses for the settings page and the switch; one live run against an OpenLDAP container on the test harness. Mutation-check the empty-password refusal, the filter escaping, the outage-not-counted rule, the e-mail-clash refusal, the write-only password and the MFA exemption.
+
+**Why no frontend workaround.** Sign-in and the MFA policy are decided by the server; the frontend cannot check a directory password or exempt anyone from MFA.
+
+**Risk.** Medium: a new way in, and a weaker MFA default for directory users than production has today (ADR-0039 decision 5, flagged for the owner). Kept small by sharing every step after the password check, failing closed, never linking accounts by e-mail on its own, verified TLS only, an encrypted write-only service password, and a server-side emergency off. A trust-model change, so ADR-0039 is required.
+
+**Applied:** ADR-0039 accepted; backend `a4983c98`, schema snapshot `c3a74f43`, frontend and docs on the same branch (`backend-cr-40-verification.md`). Merged into `develop` (`bfd304d0`).
+
+### CR-41: connect to a directory with older TLS while keeping the certificate check: allow static-RSA ciphers and name the certificate to expect (**feature**, **security**, **APPLIED**)
+
+Asked by the owner (2026-11-04): "write CR-41 for option B". Directory sign-in cannot reach the studio's OpenLDAP server. Skipping the certificate check (option C, what the studio's other clients do with `TLS_REQCERT never`) was considered and is **not** part of this CR. **Approved** by the owner on 2026-11-04 ("approved CR-41") and built on `sync/backend-cr-41-ldap-tls`; evidence in `backend-cr-41-verification.md`.
+
+**Evidence** (from the backend host 192.168.1.109 to `ldap://192.168.1.17` with StartTLS, 2026-11-04, no credentials sent; ldap3 2.9.1, OpenSSL 3.0.16):
+
+| Client TLS setting | Result |
+|---|---|
+| The app today (certificate checked, Python's default ciphers) | `SSLV3_ALERT_HANDSHAKE_FAILURE` |
+| Default ciphers, the server's certificate trusted, expected name `ldap` | `SSLV3_ALERT_HANDSHAKE_FAILURE` (the ciphers are the blocker) |
+| Static-RSA ciphers allowed, the server's certificate trusted, by IP only | refused: the certificate names `ldap`, not `192.168.1.17` |
+| **Static-RSA ciphers allowed, the server's certificate trusted, expected name `ldap`** | **StartTLS succeeds, certificate checked** |
+| The same with expected name `x` | refused (`doesn't match any name in ['192.168.1.17', 'x']`) |
+| The same with no certificate trusted | refused (`CERTIFICATE_VERIFY_FAILED: self-signed certificate`) |
+| Certificate check off, default ciphers (option C alone, for the record) | `SSLV3_ALERT_HANDSHAKE_FAILURE` |
+
+`openssl s_client -starttls ldap`: the server accepts TLS 1.2 with `AES256-GCM-SHA384` (static RSA key exchange) only; ECDHE, DHE and TLS 1.3 are refused. Python's default cipher list has no static-RSA suites. The server certificate is self-signed, `CN=ldap`, `subjectAltName DNS:ldap`, RSA 2048, SHA-256, valid to 2028-12-28.
+
+**The problem.** `DirectoryClient.server()` builds `Tls(validate=CERT_REQUIRED, version=PROTOCOL_TLS_CLIENT, ca_certs_data=…)` with Python's default ciphers and checks the certificate against the host in the server URI. The studio's server shares no cipher with that list, and its certificate does not carry the address the app is given.
+
+**Fix on the directory side, needing no change here** (still the cleanest): allow ECDHE in slapd (`olcTLSCipherSuite`), then use `ldap://ldap` with a hosts entry and paste the server's certificate in the CA field. This CR is for when the directory cannot be changed.
+
+**Proposed change** (additive migration `identity/0004`; both defaults keep today's behaviour exactly):
+
+| Part | What |
+|---|---|
+| 1. Older ciphers | `DirectoryConfiguration.tls_allow_legacy_ciphers` (boolean, default off). When on, Python's default cipher list plus `kRSA+AESGCM`: only `AES256-GCM-SHA384` and `AES128-GCM-SHA256` are added (built tighter than the `DEFAULT:kRSA` first proposed, which would also have added SHA-1 and CBC suites). The certificate check is unchanged |
+| 2. Expected certificate name | `DirectoryConfiguration.tls_server_name` (text, default empty). When set, the certificate must name it (`Tls(valid_names=[name])`, matched as well as the URI's host). The app still connects to the address in the server URI, so no hosts entry is needed. Empty means the URI's host only, as today. Refused on save: a value with spaces, `*` or a scheme |
+| 3. Connection fields | both are connection settings, so changing either clears the last successful test (turning sign-in on needs a new test), and every change is audited (`SETTINGS_UPDATED`, the fields named) |
+| 4. Frontend | in the Connection card: an "Allow older RSA ciphers (no forward secrecy)" checkbox and a "Certificate name" field, with hints and the server's validation messages; tests from captured responses |
+| 5. Docs | ADR-0039 decision 4 amended (the certificate is always checked; older ciphers and an expected name are options for a directory that cannot be updated); `CONTRACTS.md` API-ID-09 fields and SEC-SEC-11 |
+
+**Not proposed:** any way to switch the certificate check off.
+
+**Tests proposed:** with both defaults, the `Tls` arguments are exactly today's; each setting changes only its own argument; the expected name is passed alongside the URI host; a wrong expected name or an untrusted certificate is still refused (checked against a real TLS handshake in a local test server, not only the arguments); either change clears `last_tested_at` and is audited; validation of the name field. Mutation-check the defaults, the "clears the test" rule and that `validate` stays `CERT_REQUIRED`.
+
+**Risk.** Low to medium. The certificate is still checked, so the directory's identity is proven as today. Static-RSA key exchange loses forward secrecy only: someone who records sign-in traffic today and later obtains the LDAP server's private key could read the passwords in it. The expected-name field widens nothing by itself: the certificate must still chain to the trusted CA (here, the server's own certificate).
+
+**Why no frontend workaround.** The TLS connection is made by the backend.
+
+**Applied:** backend `06d99f00` (migration `identity/0004`), schema snapshot `6e5ad49c`, frontend `6c8b5b13`, docs on the same branch (`backend-cr-41-verification.md`). Not merged.
