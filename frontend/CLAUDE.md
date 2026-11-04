@@ -8,7 +8,7 @@ StudioHub is a comprehensive React-based studio management platform built with V
 
 **Tech Stack:**
 - **Frontend:** React 19, TypeScript 5.8
-- **Build Tool:** Vite 6
+- **Build Tool:** Vite 8
 - **Package Manager:** pnpm
 - **Styling:** Tailwind CSS 4, Emotion (MUI)
 - **Lint/format:** Biome (`pnpm exec biome check src`)
