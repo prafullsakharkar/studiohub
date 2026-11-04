@@ -15509,6 +15509,8 @@ export interface components {
             server_uri?: string;
             start_tls?: boolean;
             ca_certificate?: string;
+            tls_allow_legacy_ciphers?: boolean;
+            tls_server_name?: string;
             bind_dn?: string;
             /** @description A new value sets it; an empty string clears it; leave it out to keep it. */
             bind_password?: string;
@@ -16267,8 +16269,7 @@ export interface components {
             readonly updated_at: string;
         };
         Login: {
-            email?: string;
-            username?: string;
+            email: string;
             password: string;
             /** Format: uuid */
             organization?: string | null;
@@ -18266,6 +18267,8 @@ export interface components {
             server_uri?: string;
             start_tls?: boolean;
             ca_certificate?: string;
+            tls_allow_legacy_ciphers?: boolean;
+            tls_server_name?: string;
             bind_dn?: string;
             /** @description A new value sets it; an empty string clears it; leave it out to keep it. */
             bind_password?: string;
