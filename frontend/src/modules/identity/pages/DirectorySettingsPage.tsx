@@ -18,6 +18,8 @@ interface FormValues {
   server_uri: string;
   start_tls: boolean;
   ca_certificate: string;
+  tls_allow_legacy_ciphers: boolean;
+  tls_server_name: string;
   bind_dn: string;
   bind_password: string;
   clear_bind_password: boolean;
@@ -38,6 +40,8 @@ const toForm = (c: DirectoryConfiguration): FormValues => ({
   server_uri: c.server_uri ?? '',
   start_tls: c.start_tls ?? false,
   ca_certificate: c.ca_certificate ?? '',
+  tls_allow_legacy_ciphers: c.tls_allow_legacy_ciphers ?? false,
+  tls_server_name: c.tls_server_name ?? '',
   bind_dn: c.bind_dn ?? '',
   bind_password: '',
   clear_bind_password: false,
@@ -167,6 +171,18 @@ const SettingsForm: React.FC<{ config: DirectoryConfiguration; onChanged: (c: Di
         <Field id="dir-ca" label="CA certificate (PEM)" error={errors.ca_certificate?.message} hint="Leave empty to trust the server's system certificates.">
           <textarea id="dir-ca" rows={3} className={inputClass(Boolean(errors.ca_certificate))} {...text('ca_certificate')} />
         </Field>
+        <Field
+          id="dir-tls-name"
+          label="Certificate name"
+          error={errors.tls_server_name?.message}
+          hint="Only when the server address is not a name the certificate carries, e.g. the certificate says ldap and the server is an IP. Leave empty otherwise."
+        >
+          <input id="dir-tls-name" type="text" autoComplete="off" className={inputClass(Boolean(errors.tls_server_name))} {...text('tls_server_name')} />
+        </Field>
+        <Checkbox id="dir-legacy-ciphers" label="Allow older RSA ciphers (no forward secrecy)" error={errors.tls_allow_legacy_ciphers?.message} {...text('tls_allow_legacy_ciphers')} />
+        <p className="text-[11px] text-slate-500">
+          Only for a directory that offers no modern key exchange. The certificate is still checked; updating the directory's TLS is better.
+        </p>
         <Field id="dir-bind-dn" label="Service account DN" error={errors.bind_dn?.message}>
           <input id="dir-bind-dn" type="text" autoComplete="off" className={inputClass(Boolean(errors.bind_dn))} {...text('bind_dn')} />
         </Field>

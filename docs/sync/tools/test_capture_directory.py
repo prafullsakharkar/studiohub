@@ -88,6 +88,14 @@ def test_capture_directory(monkeypatch, settings):
     flow["patch_enable_untested"] = call(admin, "PATCH", DIRECTORY, {"enabled": True})
     flow["patch_bad_filter"] = call(admin, "PATCH", DIRECTORY, {"user_filter": "(uid=*)"})
     flow["patch_bad_role"] = call(admin, "PATCH", DIRECTORY, {"default_role_code": "nope"})
+    # CR-41: older TLS with the certificate still checked.
+    flow["patch_bad_server_name"] = call(admin, "PATCH", DIRECTORY, {"tls_server_name": "*"})
+    flow["patch_tls_options"] = call(
+        admin, "PATCH", DIRECTORY, {"tls_allow_legacy_ciphers": True, "tls_server_name": "ldap"}
+    )
+    flow["patch_tls_options_off"] = call(
+        admin, "PATCH", DIRECTORY, {"tls_allow_legacy_ciphers": False, "tls_server_name": ""}
+    )
     fake.down = True
     flow["test_connection_down"] = call(admin, "POST", TEST_CONNECTION, {})
     fake.down = False

@@ -107,6 +107,30 @@ describe('directory (LDAP) settings page', () => {
     expect(await screen.findByText('The filter must contain {username}.')).toBeTruthy();
   });
 
+  it('saves the older-TLS options (CR-41): older RSA ciphers and the certificate name', async () => {
+    const { calls } = mockFetch((call) => (call.method === 'PATCH' ? reply(flow.patch_tls_options) : reply(flow.get_initial)));
+    renderWith(admin, <DirectorySettingsPage />);
+    const ciphers = (await screen.findByLabelText('Allow older RSA ciphers (no forward secrecy)')) as HTMLInputElement;
+    expect(ciphers.checked).toBe(false);
+    expect((screen.getByLabelText('Certificate name') as HTMLInputElement).value).toBe('');
+    fireEvent.click(ciphers);
+    change('Certificate name', 'ldap');
+    fireEvent.click(screen.getByRole('button', { name: 'Save settings' }));
+    await waitFor(() => expect(writes(calls)).toHaveLength(1));
+    expect(writes(calls)[0].body).toMatchObject({ tls_allow_legacy_ciphers: true, tls_server_name: 'ldap' });
+    await waitFor(() => expect((screen.getByLabelText('Certificate name') as HTMLInputElement).value).toBe('ldap'));
+    expect((screen.getByLabelText('Allow older RSA ciphers (no forward secrecy)') as HTMLInputElement).checked).toBe(true);
+  });
+
+  it('shows the server’s refusal of a wildcard certificate name on the field', async () => {
+    mockFetch((call) => (call.method === 'PATCH' ? reply(flow.patch_bad_server_name) : reply(flow.get_initial)));
+    renderWith(admin, <DirectorySettingsPage />);
+    await screen.findByLabelText('Certificate name');
+    change('Certificate name', '*');
+    fireEvent.click(screen.getByRole('button', { name: 'Save settings' }));
+    expect(await screen.findByText(flow.patch_bad_server_name.body.tls_server_name[0])).toBeTruthy();
+  });
+
   it('turning sign-in on before a successful test shows why it was refused; after a test it turns on', async () => {
     let tested = false;
     const { calls } = mockFetch((call) => {
