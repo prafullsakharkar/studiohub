@@ -1,6 +1,5 @@
 import React from 'react';
-import { Activity, ArrowLeft, RefreshCw } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Activity, RefreshCw } from 'lucide-react';
 import { Button } from '@/shared/components/Button';
 import { HEALTH_PROBES, useApiHealth } from '../health/useApiHealth';
 import type { ProbeState } from '../health/useApiHealth';
@@ -23,11 +22,6 @@ export const ApiHealthPage: React.FC = () => {
     <div className="flex-1 flex flex-col min-h-0 bg-slate-950 text-slate-100 overflow-y-auto">
       <div className="bg-slate-900/90 border-b border-slate-800 px-6 py-4 shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Link to="/platform/admin">
-            <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}>
-              Platform Admin
-            </Button>
-          </Link>
           <div>
             <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
               <Activity className="w-5 h-5 text-cyan-400" />

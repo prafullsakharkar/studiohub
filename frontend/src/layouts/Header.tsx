@@ -15,8 +15,6 @@ import {
   Film,
   Sliders,
   Sparkles,
-  Building2,
-  Globe,
   ShieldCheck,
   HelpCircle,
   Compass,
@@ -111,7 +109,7 @@ export const Header: React.FC = () => {
   return (
     <>
       <header className="h-14 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-2 sm:px-3 lg:px-4 flex items-center justify-between gap-1.5 sm:gap-2 lg:gap-3 sticky top-0 z-30 select-none min-w-0 transition-colors duration-200">
-        {/* Left section: Mobile Toggle, Static Studio Badge & Project HUD */}
+        {/* Left section: Mobile Toggle & Project HUD */}
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 shrink overflow-visible">
           <button
             id="mobile-menu-btn"
@@ -121,27 +119,6 @@ export const Header: React.FC = () => {
           >
             <Menu className="w-4 h-4" />
           </button>
-
-          {/* Static Studio Badge (single-tenant: the active studio is shown,
-              never switched here — the org switching UI is gone). */}
-          <div
-            id="studio-badge"
-            data-testid="studio-badge"
-            className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border select-none bg-slate-950/80 border-slate-800/80 text-slate-200"
-            title="StudioHub"
-          >
-            <div className="w-5 h-5 rounded-md bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shrink-0 overflow-hidden shadow-2xs ring-1 ring-white/10">
-              <Building2 className="w-3 h-3" />
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="font-bold text-xs text-white truncate">StudioHub</span>
-              <span className="hidden lg:flex text-[9px] text-slate-400 truncate items-center gap-1 font-mono">
-                <Globe className="w-2.5 h-2.5 text-slate-500 shrink-0" />
-                <span className="truncate">VFX OS</span>
-              </span>
-            </div>
-          </div>
-          <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 hidden md:block shrink-0" />
 
           {/* Project Production Master Switcher */}
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 shrink">
@@ -324,7 +301,7 @@ export const Header: React.FC = () => {
                   </button>
                   {canViewSettings && (
                     <Link
-                      to="/platform/admin/pipeline"
+                      to="/settings/system/values"
                       onClick={() => setShowUserMenu(false)}
                       className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-300 hover:bg-slate-800 flex items-center justify-between cursor-pointer"
                     >
@@ -346,7 +323,7 @@ export const Header: React.FC = () => {
                   {canViewSettings && (
                   <Link
                     id="user-menu-theme-editor-btn"
-                    to="/platform/admin/theme"
+                    to="/settings/system/themes"
                     onClick={() => setShowUserMenu(false)}
                     className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-300 hover:bg-slate-800 flex items-center justify-between cursor-pointer"
                   >

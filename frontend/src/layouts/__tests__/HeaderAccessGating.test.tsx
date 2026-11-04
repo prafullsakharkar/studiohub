@@ -80,9 +80,10 @@ describe('Header admin option gating', () => {
     };
   });
 
-  it('renders the static studio badge with no org-switching UI', async () => {
+  it('shows the project selection and no StudioHub badge or org-switching UI', async () => {
     await renderHeader();
-    expect(screen.getByTestId('studio-badge')).toBeTruthy();
+    expect(screen.getByTestId('proj-switcher')).toBeTruthy();
+    expect(screen.queryByTestId('studio-badge')).toBeNull();
     expect(screen.queryByTestId('org-switcher')).toBeNull();
   });
 
@@ -111,6 +112,14 @@ describe('Header admin option gating', () => {
     await renderHeader();
     expect(screen.getByText('Pipeline Settings')).toBeTruthy();
     expect(screen.getByText('Theme & Accent Editor')).toBeTruthy();
+  });
+
+  it('links the settings entries to the screens that exist, not to the retired /platform/admin URLs', async () => {
+    state.user = { ...state.user, is_superuser: true };
+    await renderHeader();
+    const link = (label: string) => screen.getByText(label).closest('a')?.getAttribute('href');
+    expect(link('Pipeline Settings')).toBe('/settings/system/values');
+    expect(link('Theme & Accent Editor')).toBe('/settings/system/themes');
   });
 
   it('hides the API health HUD link without the platform grant', async () => {

@@ -271,16 +271,6 @@ export const Sidebar: React.FC = () => {
       title: 'PLATFORM',
       items: [
         {
-          id: 'platform-admin',
-          to: '/platform/admin',
-          label: 'Platform Admin',
-          icon: ShieldCheck,
-          pagePermission: 'page.platform_admin',
-          permissions: ['platform.admin.view'],
-          badge: 'MASTER',
-          badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30 font-bold',
-        },
-        {
           id: 'api-health',
           to: '/platform/health',
           label: 'API Health',

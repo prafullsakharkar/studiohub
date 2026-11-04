@@ -1,5 +1,6 @@
 """
-Keep a linked person's name and e-mail in step with Identity (DOM-MD-PER-03).
+Keep a linked person's name and e-mail in step with Identity (DOM-MD-PER-03), and give every new
+user a person (DOM-MD-PER-10).
 
 After commit, on every save of a ``User`` or ``Profile`` that touches a field Identity owns
 for the person. Saves that touch only other fields (``last_login`` on every login) do
@@ -14,6 +15,7 @@ from django.db import transaction
 from django.db.models.signals import post_save
 
 from apps.masterdata.services.identity_link import refresh_person_for_user
+from apps.masterdata.services.user_person import ensure_person_for_user
 
 _USER_FIELDS = frozenset({"email"})
 _PROFILE_FIELDS = frozenset({"first_name", "last_name", "display_name"})
@@ -24,9 +26,13 @@ def _relevant(update_fields: Any, owned: frozenset[str]) -> bool:
 
 
 def _user_saved(sender, instance, created, update_fields=None, **kwargs) -> None:
-    if created or not _relevant(update_fields, _USER_FIELDS):
-        return
     user_id = instance.pk
+    if created:
+        # Every user is linked to a person (DOM-MD-PER-10). After commit, so the profile exists.
+        transaction.on_commit(lambda: ensure_person_for_user(user_id))
+        return
+    if not _relevant(update_fields, _USER_FIELDS):
+        return
     transaction.on_commit(lambda: refresh_person_for_user(user_id))
 
 
