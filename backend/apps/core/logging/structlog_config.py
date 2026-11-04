@@ -46,11 +46,37 @@ def _shared_processors(*, with_level_filter=True):
     ]
 
 
-def _final_renderer(json_output):
+def _level_styles():
+    """
+    One colour per level so a line can be told apart at a glance: debug cyan, info green, warning
+    yellow, error bold red, critical bold on red (structlog's defaults draw debug like info).
+    """
+    dev = structlog.dev
+    error = dev.BRIGHT + dev.RED
+
+    return {
+        "debug": dev.CYAN,
+        "info": dev.GREEN,
+        "warn": dev.YELLOW,
+        "warning": dev.YELLOW,
+        "error": error,
+        "exception": error,
+        "critical": dev.BRIGHT + dev.RED_BACK,
+        "notset": dev.RED_BACK,
+    }
+
+
+def _final_renderer(json_output, *, colors=None):
     if json_output:
         return structlog.processors.JSONRenderer()
 
-    return structlog.dev.ConsoleRenderer(colors=False)
+    # Colours only for a person at a terminal; a pipe or a file gets plain text.
+    if colors is None:
+        colors = sys.stderr.isatty()
+
+    return structlog.dev.ConsoleRenderer(
+        colors=colors, level_styles=_level_styles() if colors else None
+    )
 
 
 def configure_structlog(*, json_output=None, level=None):
