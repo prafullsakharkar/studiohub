@@ -37,6 +37,22 @@ The compose template `infrastructure/compose/.env.example` carries every variabl
 - **Existing environment (from 4.0.0 to 4.1.0):** back the database up, then `manage.py migrate`. Seven migrations are new; `masterdata.0002` fills team memberships from each person's primary team and `settings.0002` makes the earliest active theme and localization the defaults. Try it on a restored copy first when the data matters ([`migration-guide.md`](migration-guide.md)).
 - `manage.py makemigrations --check` must report no changes.
 
+### PostgreSQL 17 to 18 (compose deployments)
+
+The `postgres` image is now 18 (`infrastructure/docker/postgres/Dockerfile`), and CI tests against 18. PostgreSQL 18 images keep the cluster under `/var/lib/postgresql/18/docker`, so `compose.yml` mounts `postgres_data` at `/var/lib/postgresql` (it was `/var/lib/postgresql/data`). A 17 cluster cannot be opened by 18, and files left in the old layout are not used. A new environment needs nothing. An existing one moves by dump and restore:
+
+```bash
+# with the OLD image still running
+docker compose exec -T postgres pg_dump -U "$DB_USER" -d "$DB_NAME" --no-owner > studiohub-pg17.sql
+docker compose down
+docker volume rm vfx-platform_postgres_data      # only after the dump is checked
+git pull && docker compose up -d --build postgres   # a fresh 18 cluster
+docker compose exec -T postgres psql -U "$DB_USER" -d "$DB_NAME" < studiohub-pg17.sql
+docker compose up -d
+```
+
+Take the dump with the variables from `.env`; check it is not empty before removing the volume. The test database already ran 18.6. Verified for this change: the image builds, a fresh volume initialises as 18.6 with `pg_trgm` and `unaccent` from `init.sql`, `btree_gist` 1.8 installs, and `healthcheck.sh` passes. The dump and restore above were **not** run against a real deployment.
+
 ## 3. After it is up
 
 - `GET /health/` answers.
