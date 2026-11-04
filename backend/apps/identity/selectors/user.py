@@ -1,5 +1,8 @@
 
+from django.db.models import Exists, OuterRef
+
 from apps.identity.models import (
+    ExternalIdentity,
     User,
 )
 from apps.identity.querysets.user import UserQuerySet
@@ -34,7 +37,10 @@ class UserSelector(
         themselves. Permission gates (``identity.user.view`` etc.) run
         before this queryset is consulted.
         """
-        qs = User.objects.get_queryset()
+        qs = User.objects.get_queryset().annotate(
+            # Read by the serializers' auth_source without one query per row (ADR-0039).
+            is_directory_account=Exists(ExternalIdentity.objects.filter(user=OuterRef("pk"))),
+        )
         if request is None:
             return qs
         user = getattr(request, "user", None)

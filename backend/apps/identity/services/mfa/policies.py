@@ -59,12 +59,32 @@ class MFAPolicyService:
         if cls.REQUIRE_STAFF_MFA and user.is_staff:
             return True
 
-        if cls.REQUIRE_MFA:
+        # An administrator required it for this account (ADR-0039 decision 5).
+        if getattr(user, "mfa_required", False):
+            return True
+
+        # The blanket rule covers local accounts; directory accounts only when the directory
+        # configuration says so (ADR-0039 decision 5: off by default for them).
+        if cls.REQUIRE_MFA and (not cls._is_directory_user(user) or cls._directory_requires_mfa()):
             return True
 
         # Read per call: an external (vendor/client) project member reaches pre-release content
         # from outside the studio, so a password alone is not enough (TPN review TM-007).
         return bool(getattr(settings, "MFA_REQUIRE_EXTERNAL", True)) and cls._is_external(user)
+
+    @staticmethod
+    def _is_directory_user(user) -> bool:
+        from apps.identity.selectors.external_identity import ExternalIdentitySelector
+
+        return ExternalIdentitySelector.is_directory_user(user)
+
+    @staticmethod
+    def _directory_requires_mfa() -> bool:
+        from apps.identity.models import DirectoryConfiguration
+
+        return DirectoryConfiguration.objects.filter(
+            pk=DirectoryConfiguration.SINGLETON_PK, require_mfa=True
+        ).exists()
 
     @staticmethod
     def _is_external(user) -> bool:

@@ -40,6 +40,11 @@ class User(EntityModel, AbstractBaseUser, PermissionsMixin):
         db_index=True,
     )
 
+    # An administrator requires MFA for this one account (ADR-0039 decision 5); off by default.
+    mfa_required = models.BooleanField(
+        default=False,
+    )
+
     objects: UserManager = UserManager()
 
     USERNAME_FIELD = "email"

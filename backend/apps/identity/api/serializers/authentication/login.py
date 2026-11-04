@@ -1,5 +1,7 @@
 from typing import Any
 
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.validators import validate_email
 from rest_framework import serializers
 
 from apps.identity.services.authentication import (
@@ -10,7 +12,9 @@ from apps.identity.services.authentication import (
 class LoginSerializer(
     serializers.Serializer[Any],
 ):
-    email = serializers.EmailField(
+    # An e-mail for a local account, or a directory username (ADR-0039); the field keeps its name
+    # for the existing clients, so it is no longer an EmailField.
+    email = serializers.CharField(
         max_length=255,
     )
 
@@ -40,6 +44,17 @@ class LoginSerializer(
         required=False,
         allow_null=True,
     )
+
+    def validate_email(self, value):
+        identifier = value.strip()
+
+        if "@" in identifier:
+            try:
+                validate_email(identifier)
+            except DjangoValidationError:
+                raise serializers.ValidationError("Enter a valid email address.") from None
+
+        return identifier
 
     def create(
         self,

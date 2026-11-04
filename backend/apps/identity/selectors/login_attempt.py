@@ -30,7 +30,13 @@ class LoginAttemptSelector(
         username,
         minutes=15,
     ):
-        return cls.get_queryset().failed().for_username(username).recent(minutes)
+        return (
+            cls.get_queryset()
+            .failed()
+            .counted_toward_lockout()
+            .for_username(username)
+            .recent(minutes)
+        )
 
     @classmethod
     def failed_attempts(

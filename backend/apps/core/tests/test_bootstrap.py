@@ -253,8 +253,9 @@ class TestFreshInitialMigrations:
             # 0002 only where apps depend on each other; audit's 0003 adds project scope and the
             # append-only triggers to tables that already exist in deployed databases (TM-011);
             # deliveries' 0003 changes a QC item foreign key to SET_NULL on tables that deployed
-            # databases already hold, so it cannot be folded into 0001 (CR-21).
-            limit = 3 if app in ("audit", "deliveries") else 2
+            # databases already hold, so it cannot be folded into 0001 (CR-21); identity's 0003 adds
+            # directory sign-in (ADR-0039, CR-40) to a users table deployed databases already hold.
+            limit = 3 if app in ("audit", "deliveries", "identity") else 2
             assert len(names) <= limit, (app, names)
 
     @pytest.mark.skipif(connection.vendor != "postgresql", reason="the extension is PostgreSQL's")

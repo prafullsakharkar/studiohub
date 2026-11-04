@@ -83,6 +83,7 @@ class UserViewSet(
         "reset_password": (UserPermissions.RESET_PASSWORD,),
         "force_password_change": (UserPermissions.UPDATE,),
         "revoke_sessions": (UserPermissions.UPDATE,),
+        "require_mfa": (UserPermissions.REQUIRE_MFA,),
     }
 
     #: detail actions that change another user's account; each is checked against the target
@@ -101,6 +102,7 @@ class UserViewSet(
             "reset_password",
             "force_password_change",
             "revoke_sessions",
+            "require_mfa",
         }
     )
 
@@ -423,5 +425,39 @@ class UserViewSet(
         return Response(
             {
                 "sessions": count,
+            },
+        )
+
+    @action(
+        detail=True,
+        methods=[
+            "post",
+        ],
+        url_path="require-mfa",
+    )
+    def require_mfa(
+        self,
+        request,
+        pk=None,
+    ):
+        """Require MFA for this account, or stop requiring it (ADR-0039 decision 5)."""
+        from rest_framework.exceptions import ValidationError
+
+        required = request.data.get("required")
+
+        if not isinstance(required, bool):
+            raise ValidationError({"required": ["Send true or false."]})
+
+        user = self.get_object()
+
+        UserService.set_mfa_required(
+            user,
+            required=required,
+            actor=request.user,
+        )
+
+        return Response(
+            {
+                "mfa_required": user.mfa_required,
             },
         )

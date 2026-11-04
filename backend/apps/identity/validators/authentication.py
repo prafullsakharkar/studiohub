@@ -130,6 +130,7 @@ class AuthenticationValidator(
         # recorded per-attempt for forensics) but does not gate the count.
         failed_attempts = (
             LoginAttempt.objects.failed()
+            .counted_toward_lockout()
             .for_username(username)
             .recent(cls.MAX_LOGIN_ATTEMPT_WINDOW_MINUTES)
             .count()
@@ -270,6 +271,33 @@ class AuthenticationValidator(
 
         if reason is not None:
             raise InvalidCredentials(reason=reason)
+
+    @classmethod
+    def spend_password_check(cls, password: str) -> None:
+        """
+        One comparison against the dummy hash, for a password checked elsewhere (the directory),
+        so that path costs what a local check costs.
+        """
+
+        check_password(password or "", cls._dummy_hash())
+
+    @classmethod
+    def validate_account_state(cls, user) -> None:
+        """The account-state half of ``validate_login``, for an account the directory proved."""
+
+        reason = None
+
+        if getattr(user, "is_deleted", False):
+            reason = "user_deleted"
+        elif not user.is_active:
+            reason = "user_inactive"
+        elif getattr(user, "is_locked", False):
+            reason = "user_locked"
+
+        if reason is not None:
+            exc = InvalidCredentials(reason=reason)
+            exc.user = user  # pyright: ignore[reportAttributeAccessIssue]
+            raise exc
 
     @classmethod
     def validate_logout(

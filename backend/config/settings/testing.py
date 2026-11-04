@@ -46,6 +46,9 @@ MFA_ENCRYPTION_KEYS = ("xKCk8KJf2A36NFV8Q5G6QNKpXUU74tK2oCBJrowYZCo=",)  # pyrig
 # operator's MFA_ENCRYPTION_ENABLED in whichever env file the run loaded.
 MFA_ENCRYPTION_ENABLED = True  # pyright: ignore[reportConstantRedefinition]
 
+# Test-only Fernet key for the directory service password; protects nothing real.
+DIRECTORY_ENCRYPTION_KEYS = ("q6WgVZ1zK0sYp8nJm3tR5uX7bD9fH2kL4cE6aG8iO0M=",)  # pyright: ignore[reportConstantRedefinition]
+
 # Test-only pepper for credential digests; protects nothing real.
 API_KEY_PEPPER = "test-only-api-key-pepper-0123456789abcdef"  # pyright: ignore[reportConstantRedefinition]
 
