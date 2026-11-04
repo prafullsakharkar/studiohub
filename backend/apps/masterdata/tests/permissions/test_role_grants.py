@@ -68,6 +68,8 @@ def test_org_admin_holds_exactly_this_set_overall():
         "identity.login_history.view",
         "identity.login_attempt.view",
         "identity.ip_blacklist.view",
+        # CR-40 (ADR-0039 decision 5): an organization administrator may require MFA of one account.
+        "identity.user.require_mfa",
     }
 
 
