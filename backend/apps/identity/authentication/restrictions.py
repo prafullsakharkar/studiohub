@@ -100,7 +100,14 @@ def _mfa_enrollment_owed(user: Any) -> bool:
 
 
 def enforce(request: Any, user: Any, token_payload: dict[str, Any]) -> None:
-    """Raise ``RestrictedSession`` unless the endpoint settles every debt the user has."""
+    """
+    Raise ``RestrictedSession`` unless the endpoint settles the FIRST debt the user has.
+
+    The debts are settled in order (password, then MFA enrollment). Requiring an endpoint to settle every debt at once left an
+    account that owes both (the superuser ``manage.py bootstrap`` creates) with nothing it could call but ``me`` and ``logout``:
+    the password change was refused for the MFA debt and MFA setup for the password debt (CR-39). Now only the first debt's
+    endpoints are open; the password change ends the sessions, and the next sign-in owes MFA enrollment only.
+    """
     owed = pending(user, token_payload)
 
     if not owed:
@@ -108,7 +115,7 @@ def enforce(request: Any, user: Any, token_payload: dict[str, Any]) -> None:
 
     match = getattr(request, "resolver_match", None)
     view_name = getattr(match, "view_name", "") or ""
+    first = owed[0]
 
-    for code in owed:
-        if view_name not in _ALLOWED[code]:
-            raise RestrictedSession(code)
+    if view_name not in _ALLOWED[first]:
+        raise RestrictedSession(first)

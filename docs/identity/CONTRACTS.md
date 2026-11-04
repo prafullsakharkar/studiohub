@@ -251,7 +251,7 @@ ENABLED  ──locked (N failures)──► LOCKED (until locked_until)
 | `password_change_required` | the token carries `must_change_password` (admin reset, bootstrapped account) | `auth/change-password`, `password/change` |
 | `mfa_enrollment_required` | policy requires MFA of the user and no factor is enabled | `mfa/config`, `mfa/totp/{setup,enable,verify}`, `mfa/recovery-codes*`, `auth/mfa/{enroll,verify,recovery*}` |
 
-The password is settled first when both are owed. PATs and API keys are not sessions and are not restricted.
+The password is settled first when both are owed: until it is changed only its endpoints (and `auth/me`, `logout`) are reachable, and every other endpoint answers `password_change_required`, MFA setup included. The change ends every session; the next sign-in owes MFA enrollment only (CR-39; before it, an account owing both could reach neither screen). PATs and API keys are not sessions and are not restricted.
 
 **SEC-AUTH-04.** Public auth endpoints (`login`, `refresh`, `forgot-password`, `resend-verification`) disable authentication and use scoped throttling (`api/views/auth_compat.py:48-52`).
 
