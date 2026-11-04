@@ -173,7 +173,6 @@ export const Sidebar: React.FC = () => {
           pagePermission: 'page.project.shots',
           permissions: ['shot.view'],
           hotkey: '3',
-          badge: '18 Cut',
         },
         {
           id: 'assets',
