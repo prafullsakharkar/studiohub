@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { tokenStorage } from '@/core/auth/tokenStorage';
 import { notify } from '@/core/notifications/notify';
 import { useServerForm } from '@/shared/forms/useServerForm';
+import { useAuth } from '../hooks/useAuth';
 import { authService } from '../services/AuthService';
 
 // The backend applies its password policy (12+ characters, not common, not all digits) and reports
@@ -32,6 +33,7 @@ const FIELDS: Array<{ name: keyof FormValues; label: string; autoComplete: strin
  */
 export const ChangePasswordPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const {
     register,
     submit,
@@ -46,6 +48,21 @@ export const ChangePasswordPage: React.FC = () => {
     notify.success('Your password was changed. Sign in with the new password.', { title: 'Password changed' });
     navigate('/login', { replace: true });
   });
+
+  if (user?.auth_source === 'ldap') {
+    // The server refuses it (`password_managed_by_directory`); say so before anyone types.
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-200 p-4">
+        <div className="w-full max-w-sm space-y-3">
+          <h1 className="text-xl font-semibold">Change your password</h1>
+          <p className="text-sm text-slate-400">You sign in with your studio directory (LDAP) account. Change your password in the directory; it cannot be changed here.</p>
+          <button type="button" onClick={() => navigate(-1)} className="text-sm font-semibold text-cyan-300 hover:underline">
+            Go back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-200 p-4">

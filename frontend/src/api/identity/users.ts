@@ -41,6 +41,8 @@ export const usersApi = {
   update: (id: string, patch: { is_staff?: boolean; is_active?: boolean }) => apiClient.patch<UserDetail>(`/api/v1/identity/users/${id}/`, patch),
   act: (id: string, action: UserAction) =>
     apiClient.post<{ detail?: string; sessions?: number }>(`/api/v1/identity/users/${id}/${USER_ACTIONS[action].path}/`, {}),
+  /** `POST …/require-mfa/` (`identity.user.require_mfa`, CR-40): two-factor sign-in for this account whatever the policy says. */
+  requireMfa: (id: string, required: boolean) => apiClient.post<{ mfa_required: boolean }>(`/api/v1/identity/users/${id}/require-mfa/`, { required }),
 };
 
 /** `POST /people/{id}/link-user/` and `/unlink-user/` (masterdata). 409 if the user is linked to another person. */

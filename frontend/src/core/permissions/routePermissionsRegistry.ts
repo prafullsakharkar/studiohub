@@ -510,6 +510,8 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
   '/settings/system/tags': { path: '/settings/system/tags', name: 'Tags', permissions: ['settings.view'] },
   '/settings/system/tags/new': { path: '/settings/system/tags/new', name: 'Create Tags', permissions: ['settings.manage'] },
   '/settings/system/tags/:id/edit': { path: '/settings/system/tags/:id/edit', name: 'Edit Tags', permissions: ['settings.manage'] },
+  // CR-40: the directory (LDAP) sign-in settings; identity's own permission, not settings.*.
+  '/settings/system/directory': { path: '/settings/system/directory', name: 'Directory (LDAP)', permissions: ['identity.directory.manage'] },
   '/settings': {
     path: '/settings',
     name: 'Settings',

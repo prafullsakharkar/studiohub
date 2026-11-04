@@ -45,6 +45,7 @@ const ACTION_COPY: Record<UserAction, { label: string; confirm: string; destruct
   revokeSessions: { label: 'Sign out everywhere', confirm: 'End every active session of this login?', destructive: true },
 };
 const ACTION_ORDER = Object.keys(ACTION_COPY) as UserAction[];
+const DIRECTORY_REFUSED = new Set<UserAction>(['resetPassword', 'forcePasswordChange']);
 
 const createSchema = z.object({
   email: z.string().trim().min(1, 'Enter an email address').email('Enter a valid email address'),
@@ -312,7 +313,18 @@ const Linked: React.FC<{ personId: string; userId: string; onChanged: () => Prom
     forcePasswordChange: useCan(USER_ACTIONS.forcePasswordChange.permission),
     revokeSessions: useCan(USER_ACTIONS.revokeSessions.permission),
   } satisfies Record<UserAction, boolean>;
-  const actions = ACTION_ORDER.filter((a) => allowed[a]);
+  const isDirectory = user.data?.auth_source === 'ldap';
+  // A directory account's password lives in the directory: the API refuses both (password_managed_by_directory).
+  const actions = ACTION_ORDER.filter((a) => allowed[a] && !(isDirectory && DIRECTORY_REFUSED.has(a)));
+  const canRequireMfa = useCan('identity.user.require_mfa');
+  const requireMfa = useMutation({
+    mutationFn: (required: boolean) => usersApi.requireMfa(userId, required),
+    onSuccess: async (result) => {
+      await refresh();
+      notify.success(result.mfa_required ? 'Two-factor sign-in is now required for this login.' : 'Two-factor sign-in is no longer required by this setting.');
+    },
+    onError: (error) => notify.error(errorText(error)),
+  });
   // The API lets an administrator deactivate or delete their own account (docs/sync Q-08); the UI does not.
   const SELF_LOCKED = new Set<UserAction>(['deactivate', 'suspend', 'archive']);
 
@@ -333,8 +345,25 @@ const Linked: React.FC<{ personId: string; userId: string; onChanged: () => Prom
               <div className="flex gap-2">
                 <Badge variant={user.data.is_active ? 'success' : 'warning'}>{user.data.is_active ? 'Active' : 'Inactive'}</Badge>
                 <Badge variant={user.data.is_email_verified ? 'info' : 'neutral'}>{user.data.is_email_verified ? 'Email verified' : 'Email unverified'}</Badge>
+                {isDirectory && <Badge variant="purple">Directory (LDAP)</Badge>}
+                {user.data.mfa_required && <Badge variant="cyan">Two-factor required</Badge>}
               </div>
             </div>
+            {isDirectory && <p className="text-[11px] text-slate-500">Signs in with the studio directory; its password is changed there, not here.</p>}
+
+            {canRequireMfa && (
+              <label htmlFor="account-require-mfa" className="flex items-center gap-2 text-xs text-slate-300">
+                <input
+                  id="account-require-mfa"
+                  type="checkbox"
+                  className="h-3.5 w-3.5 accent-cyan-500"
+                  checked={user.data.mfa_required}
+                  disabled={requireMfa.isPending}
+                  onChange={(e) => requireMfa.mutate(e.target.checked)}
+                />
+                Require two-factor sign-in for this login
+              </label>
+            )}
 
             {actions.length > 0 && (
               <div className="flex flex-wrap gap-2 pt-1">

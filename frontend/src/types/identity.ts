@@ -46,6 +46,10 @@ export interface User extends Partial<BaseEntity> {
   is_staff?: boolean;
   is_superuser?: boolean;
   must_change_password?: boolean;
+  /** `ldap`: the account signs in through the studio directory and its password is changed there (CR-40). */
+  auth_source?: 'local' | 'ldap';
+  /** An administrator requires MFA for this account (CR-40). */
+  mfa_required?: boolean;
   created_at?: string;
   updated_at?: string;
   project_memberships?: ProjectMembership[];
