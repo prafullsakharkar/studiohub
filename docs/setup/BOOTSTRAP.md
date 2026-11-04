@@ -46,6 +46,8 @@ uv run python manage.py bootstrap
 
 Every user, the bootstrap administrator included, gets a People record when the user is created (DOM-MD-PER-10), so the administrator shows in People straight away. Users that already existed before that rule are linked once with `uv run python manage.py link_users_to_people` (`--dry-run` only counts).
 
+The catalog tabs (software and versions, statuses, task, asset, shot, review and file types) start with a working set from `uv run python manage.py seed_catalog` (`--dry-run` only counts). It is idempotent: a row whose code or name already exists, live or deleted, is left as it is. `bootstrap` does not run it; run it once on a new development or demo database.
+
 `reset_database` drops the application role's tables and sequences in the `public` schema. It does not
 drop the database, the role's privileges or the installed extensions, so it works without `CREATEDB`.
 It stops unless the database name is repeated in `--yes-wipe`, prints the host, port and name it is about
