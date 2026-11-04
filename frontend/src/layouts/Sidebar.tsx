@@ -42,8 +42,6 @@ export interface NavItemConfig {
   permissions?: string[];
   requireAny?: boolean;
   hotkey?: string;
-  badge?: string;
-  badgeColor?: string;
 }
 
 export interface NavSectionConfig {
@@ -109,8 +107,6 @@ export const Sidebar: React.FC = () => {
           pagePermission: 'page.permissions',
           permissions: ['roles.view', 'security.view'],
           requireAny: true,
-          badge: 'RBAC',
-          badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30 font-mono',
         },
         {
           id: 'departments',
@@ -199,8 +195,6 @@ export const Sidebar: React.FC = () => {
           icon: Clock,
           pagePermission: 'page.project.timelogs',
           permissions: ['timelog.view', 'task.view'],
-          badge: 'Live',
-          badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
         },
         {
           id: 'versions',
@@ -209,7 +203,6 @@ export const Sidebar: React.FC = () => {
           icon: History,
           pagePermission: 'page.project.versions',
           permissions: ['version.view'],
-          badge: 'USD/EXR',
         },
         {
           id: 'publishing',
@@ -218,8 +211,6 @@ export const Sidebar: React.FC = () => {
           icon: UploadCloud,
           pagePermission: 'page.project.publishing',
           permissions: ['version.create', 'version.view'],
-          badge: 'DCC/USD',
-          badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
         },
         {
           id: 'deliveries',
@@ -228,8 +219,6 @@ export const Sidebar: React.FC = () => {
           icon: Send,
           pagePermission: 'page.project.deliveries',
           permissions: ['delivery.view'],
-          badge: 'Aspera',
-          badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
         },
         {
           id: 'reviews',
@@ -238,8 +227,6 @@ export const Sidebar: React.FC = () => {
           icon: PlaySquare,
           pagePermission: 'page.project.reviews',
           permissions: ['review.view'],
-          badge: '3 Dailies',
-          badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
           hotkey: '6',
         },
         {
@@ -249,8 +236,6 @@ export const Sidebar: React.FC = () => {
           icon: GitFork,
           pagePermission: 'page.project.workflow',
           permissions: ['workflow.view'],
-          badge: 'Canvas/Rules',
-          badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
           hotkey: '7',
         },
         {
@@ -260,8 +245,6 @@ export const Sidebar: React.FC = () => {
           icon: Calendar,
           pagePermission: 'page.project.schedule',
           permissions: ['schedule.view'],
-          badge: 'Gantt/Cap',
-          badgeColor: 'bg-pink-500/20 text-pink-300 border-pink-500/30 font-bold',
           hotkey: '8',
         },
       ],
@@ -289,8 +272,6 @@ export const Sidebar: React.FC = () => {
           pagePermission: 'page.audit_logs',
           permissions: ['audit.view', 'activity.view'],
           requireAny: true,
-          badge: 'Ledger',
-          badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
           hotkey: '7',
         },
         {
@@ -301,8 +282,6 @@ export const Sidebar: React.FC = () => {
           pagePermission: 'page.api_requests',
           permissions: ['api_requests.view', 'error_logs.view', 'change_logs.view', 'login_history.view'],
           requireAny: true,
-          badge: 'Telemetry',
-          badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
         },
         {
           id: 'jobs',
@@ -312,8 +291,6 @@ export const Sidebar: React.FC = () => {
           pagePermission: 'page.background_jobs',
           permissions: ['background_jobs.view', 'tracks.view'],
           requireAny: true,
-          badge: 'Worker',
-          badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
         },
       ],
     },
@@ -431,16 +408,6 @@ export const Sidebar: React.FC = () => {
                     >
                       <Icon className="w-4 h-4 shrink-0" />
                       {!isCollapsed && <span className="truncate text-xs leading-none">{item.label}</span>}
-                      {!isCollapsed && item.badge && (
-                        <span
-                          className={cn(
-                            'ml-auto px-1.5 py-0.5 text-[9px] font-mono font-bold rounded border leading-none shrink-0',
-                            item.badgeColor || 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
-                          )}
-                        >
-                          {item.badge}
-                        </span>
-                      )}
 
                       {/* Floating tooltip when collapsed */}
                       {isCollapsed && (
