@@ -633,3 +633,51 @@ Nothing in the request asks for either. Anyone who may manage members can do the
 **Risk.** Low: three small defaults and a view line, no migration, no new route. The behaviour change is the point of the request; a caller that relied on "add again reactivates them" must now send `"status": "active"` (or use `PATCH`, CR-37).
 
 **Approved by the owner, 2026-11-03 ("Approved CR-38"), as written.** **Applied** as written on `sync/backend-cr-38` (report `backend-cr-38-verification.md`; contract C-55, decision D-37): 18 new tests, 11 of 11 mutations caught, 3,130 related tests pass. The captures before and after are `samples/production/_readd_flow.json` and `_readd_after_cr38_flow.json`.
+
+### CR-39: an account that owes a password change AND MFA enrollment can do neither (**bug**, **APPLIED**, branch `sync/backend-cr-39`)
+
+Found when the owner signed in as the account `manage.py bootstrap` creates and got "Something went wrong" after changing the password. Captured with `tools/test_capture_restricted_both.py` (`samples/identity/_restricted_both_flow.json`) and reproduced in a browser against the live harness (`bootstrap` user).
+
+**Problem.** The bootstrapped superuser is created with `must_change_password` (so it owes a password change) and, being a superuser, also owes MFA enrollment. `identity/authentication/restrictions.py::enforce` lets an endpoint through only when it settles **every** debt the user has:
+
+```python
+for code in owed:
+    if view_name not in _ALLOWED[code]:
+        raise RestrictedSession(code)
+```
+
+`_ALLOWED[PASSWORD_CHANGE_REQUIRED]` holds the change-password endpoints and `_ALLOWED[MFA_ENROLLMENT_REQUIRED]` the MFA ones, so for an account that owes both the permitted set is only `me` and `logout`. The password change is refused for the MFA debt, and MFA setup is refused for the password debt. The first sign-in of the account the documentation tells you to create ends in a dead end. (`docs/setup/BOOTSTRAP.md` says the session "can reach only the endpoints that do those two things"; in fact it can reach neither.)
+
+**Evidence** (real responses, pytest test database; the same password for each, a session from `POST /auth/login/`):
+
+| Account | Login | `GET /auth/me/` | `POST /auth/change-password/` | `POST /identity/mfa/totp/setup/` |
+|---|---|---|---|---|
+| owes password **and** MFA (the bootstrap superuser) | `200`, `mfa_enrollment_required: true`, `must_change_password: true` | `200` | **`403 mfa_enrollment_required`** | **`403 password_change_required`** |
+| owes only the password | `200` | `200` | `200` ("All sessions have been signed out.") | `401` (the sessions ended, as designed) |
+| owes only MFA | `200`, `mfa_enrollment_required: true` | `200` | `403 mfa_enrollment_required` | `200` |
+
+**Minimal proposed diff** (backend, `restrictions.py`, no migration): permit an endpoint that settles **any** debt the user owes, and name the first debt (password before MFA, the order `pending()` already returns) in the refusal:
+
+```python
+allowed = frozenset().union(*(_ALLOWED[code] for code in owed))
+if view_name not in allowed:
+    raise RestrictedSession(owed[0])
+```
+
+An account that owes both can then change its password (which ends its sessions), sign in again owing only MFA, and enrol; or enrol first and change the password after. Everything else stays refused with `403` and a stable code, and an account that owes one debt behaves exactly as before.
+
+**Tests proposed:** an account owing both can call the change-password endpoint (`200`) and the MFA setup endpoint (`200`), and every other endpoint answers `403 password_change_required` (the first debt); an account owing one debt is unchanged (the three rows above); after the password change and a new sign-in the account owes only MFA. Mutation-check the union and the code reported. `docs/setup/BOOTSTRAP.md` is already worded for this and needs no change; `docs/identity/CONTRACTS.md` (SEC-AUTH-06) gets one sentence, no ADR (the control still denies everything except what settles a debt).
+
+**Why no frontend workaround.** The frontend cannot call endpoints the server refuses. It was also sending this account back and forth between the two screens without end (fixed separately in the frontend: password first, then MFA, which is also the order the backend reports); that stops the crash but leaves the dead end. The only way out today is outside the application (clear the flag in a shell).
+
+**Risk.** Low: it widens the permitted endpoints only for accounts that owe two debts, which today are stuck, and only to the endpoints that settle a debt.
+
+**Approved by the owner, 2026-11-04 ("Approved CR-39"). Applied on `sync/backend-cr-39`, narrower than the diff above.** I wrote the union (any debt's endpoints open) above, and building it showed it contradicts a rule the code already states and tests: `SEC-AUTH-06` says "the password is settled first when both are owed" and `test_the_password_is_settled_before_the_enrollment` requires MFA setup to be refused with `password_change_required` while the password is owed. So `enforce` now opens only the endpoints that settle the **first** debt (the order `pending()` returns):
+
+```python
+first = owed[0]
+if view_name not in _ALLOWED[first]:
+    raise RestrictedSession(first)
+```
+
+That removes the dead end with fewer open endpoints than the proposal: the account changes its password (which ends its sessions), signs in again owing MFA only, and enrols. The union is kept out on purpose, and a mutation that switches to it is caught by that existing test. Report: `backend-cr-39-verification.md`; `docs/identity/CONTRACTS.md` (SEC-AUTH-06) says it in one sentence; no ADR (the control still refuses everything except what settles the first debt).

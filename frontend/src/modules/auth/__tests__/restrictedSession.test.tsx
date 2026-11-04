@@ -90,9 +90,9 @@ describe('error classification (real responses)', () => {
 
 describe('AuthenticatedRoute', () => {
   const user = { id: 'u', email: 'u@x.test', is_active: true, permissions: [], project_memberships: [] } as unknown as User;
-  const renderAt = (restriction: Restriction | null, at = '/dashboard') =>
+  const renderAt = (restriction: Restriction | null, at = '/dashboard', mustChangePassword = false) =>
     render(
-      <AuthContext.Provider value={{ user, isAuthenticated: true, isLoading: false, restriction } as AuthContextValue}>
+      <AuthContext.Provider value={{ user: { ...user, must_change_password: mustChangePassword }, isAuthenticated: true, isLoading: false, restriction } as AuthContextValue}>
         <MemoryRouter initialEntries={[at]}>
           <Routes>
             <Route element={<AuthenticatedRoute />}>
@@ -116,6 +116,39 @@ describe('AuthenticatedRoute', () => {
     cleanup();
     renderAt('password_change');
     expect(screen.getByTestId('where').textContent).toBe('/auth/change-password');
+  });
+
+  // The first sign-in of the account `manage.py bootstrap` creates: the login answers `mfa_enrollment_required` and the user owes a
+  // password change at the same time. The two rules used to send it back and forth between the two screens without end ("Maximum
+  // update depth exceeded", an error page); password first, MFA after is the order the screens promise.
+  describe('an account that owes a password change AND MFA enrollment (the bootstrap admin)', () => {
+    it('goes to the password screen first, from anywhere, and stays there', () => {
+      renderAt('mfa_enrollment', '/dashboard', true);
+      expect(screen.getByTestId('where').textContent).toBe('/auth/change-password');
+    });
+
+    it('is taken from the MFA screen back to the password screen', () => {
+      renderAt('mfa_enrollment', '/auth/mfa-setup', true);
+      expect(screen.getByTestId('where').textContent).toBe('/auth/change-password');
+    });
+
+    it('can stay on the password screen it was sent to', () => {
+      renderAt('mfa_enrollment', '/auth/change-password', true);
+      expect(screen.getByTestId('where').textContent).toBe('/auth/change-password');
+    });
+
+    it('is sent on to MFA enrollment once the password is changed', () => {
+      renderAt('mfa_enrollment', '/dashboard', false);
+      expect(screen.getByTestId('where').textContent).toBe('/auth/mfa-setup');
+      cleanup();
+      renderAt('mfa_enrollment', '/auth/change-password', false);
+      expect(screen.getByTestId('where').textContent).toBe('/auth/mfa-setup');
+    });
+
+    it('is not sent to MFA enrollment while the session says only the password is owed', () => {
+      renderAt('password_change', '/auth/mfa-setup', true);
+      expect(screen.getByTestId('where').textContent).toBe('/auth/change-password');
+    });
   });
 });
 

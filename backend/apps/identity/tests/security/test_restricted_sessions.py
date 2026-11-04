@@ -228,6 +228,84 @@ class TestPasswordChangeIsEnforced:
         assert _code(client.get(reverse(SETUP))) == "password_change_required"
 
 
+@pytest.mark.django_db
+class TestAnAccountOwingBothCanSettleThemInOrder:
+    """CR-39: the superuser ``manage.py bootstrap`` creates owes a password change AND MFA enrollment. It used to be stuck."""
+
+    NEW = "Another-long-passphrase-7"
+
+    def _bootstrap_like(self):
+        user = _user(is_staff=True, is_superuser=True)
+        _flag(user)
+        return user
+
+    def _change(self, client, new=None):
+        new = new or self.NEW
+        return client.post(
+            reverse(CHANGE), {"old_password": PASSWORD, "new_password": new, "confirm_password": new}, format="json"
+        )
+
+    def test_the_login_says_both_are_owed(self):
+        _, body = _session(self._bootstrap_like())
+
+        assert body["mfa_enrollment_required"] is True
+        assert body["user"]["must_change_password"] is True
+
+    def test_the_password_can_be_changed_first(self):
+        client, _ = _session(self._bootstrap_like())
+
+        assert self._change(client).status_code == 200
+
+    def test_while_the_password_is_owed_everything_else_is_refused_with_its_code(self):
+        client, _ = _session(self._bootstrap_like())
+
+        assert client.get(reverse(ME)).status_code == 200
+        for target in (DATA, OPEN, reverse(SETUP)):
+            response = client.get(target)
+            assert response.status_code == 403, target
+            assert _code(response) == "password_change_required", target
+
+    def test_the_change_ends_the_session_and_the_next_one_owes_only_the_enrollment(self):
+        user = self._bootstrap_like()
+        client, _ = _session(user)
+        assert self._change(client).status_code == 200
+
+        assert client.get(reverse(ME)).status_code == 401  # signed out, as designed
+
+        fresh, body = _session_with(user, self.NEW)
+        assert body["mfa_enrollment_required"] is True
+        assert body["user"]["must_change_password"] is False
+        assert _code(fresh.get(DATA)) == "mfa_enrollment_required"
+        assert fresh.get(reverse(SETUP)).status_code == 200
+
+    def test_after_both_are_settled_the_account_works(self):
+        user = self._bootstrap_like()
+        client, _ = _session(user)
+        self._change(client)
+        fresh, _ = _session_with(user, self.NEW)
+
+        secret = fresh.get(reverse(SETUP)).json()["secret"]
+        assert fresh.post(reverse(ENABLE), {"code": TOTPService.current_code(secret)}, format="json").status_code == 200
+
+        assert fresh.get(OPEN).status_code == 200
+
+    def test_an_account_owing_only_mfa_still_cannot_change_its_password_first(self):
+        client, _ = _session(_user(is_staff=True))
+
+        refused = self._change(client)
+
+        assert refused.status_code == 403
+        assert _code(refused) == "mfa_enrollment_required"
+
+    def test_an_account_owing_only_the_password_is_unchanged(self):
+        user = _user()
+        _flag(user)
+        client, _ = _session(user)
+
+        assert _code(client.get(DATA)) == "password_change_required"
+        assert self._change(client).status_code == 200
+
+
 def _session_with(user, password):
     response = _login(user, password)
     assert response.status_code == 200, response.content
