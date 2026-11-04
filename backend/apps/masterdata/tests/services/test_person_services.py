@@ -336,8 +336,11 @@ class TestAudit:
     def test_link_and_unlink_are_audited_without_values(
         self, actor, django_capture_on_commit_callbacks
     ):
+        user = (
+            make_user()
+        )  # outside the block: its own on_commit (a person for the user) is not under test
         with django_capture_on_commit_callbacks(execute=True):
-            person = PersonService.link_user(actor=actor, person=PersonFactory(), user=make_user())
+            person = PersonService.link_user(actor=actor, person=PersonFactory(), user=user)
             PersonService.unlink_user(actor=actor, person=person)
         events = list(
             AuditLog.objects.filter(metadata__event__in=["PersonLinked", "PersonUnlinked"])
