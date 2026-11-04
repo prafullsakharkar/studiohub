@@ -20,7 +20,7 @@ const baseUser = {
 };
 
 describe('Sidebar access gate', () => {
-  it('does not show Platform Admin entries to a non-admin member', () => {
+  it('does not show platform entries to a non-admin member', () => {
     userSpy.mockReturnValue({
       user: {
         ...baseUser,
@@ -35,10 +35,10 @@ describe('Sidebar access gate', () => {
       </MemoryRouter>,
     );
     // nav no longer bypassed by labels: every item goes through permission evaluation
-    expect(screen.queryByRole('link', { name: /Platform Admin/i })).toBeNull();
+    expect(screen.queryByRole('link', { name: /API Health/i })).toBeNull();
   });
 
-  it('exposes Platform Admin to a true superuser', () => {
+  it('exposes the platform entries to a true superuser, and no Platform Admin link any more', () => {
     userSpy.mockReturnValue({
       user: {
         ...baseUser,
@@ -50,7 +50,8 @@ describe('Sidebar access gate', () => {
         <Sidebar />
       </MemoryRouter>,
     );
-    expect(screen.getByRole('link', { name: /Platform Admin/i })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /API Health/i })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: /Platform Admin/i })).toBeNull();
   });
 });
 
