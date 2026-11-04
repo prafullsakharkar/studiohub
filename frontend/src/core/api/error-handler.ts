@@ -16,6 +16,7 @@ class CentralErrorHandler {
   private forbiddenListeners: Set<ErrorEventCallback> = new Set();
   private networkFailureListeners: Set<ErrorEventCallback> = new Set();
   private serverFailureListeners: Set<ErrorEventCallback> = new Set();
+  private recoveredListeners: Set<() => void> = new Set();
   private restrictedListeners: Set<ErrorEventCallback> = new Set();
 
   private isHandlingAuthExpiry = false;
@@ -159,8 +160,11 @@ class CentralErrorHandler {
     }
   }
 
+  /** A request got through: the failure count restarts and whoever showed "connection lost" is told. */
   public recordSuccess(): void {
+    const hadFailures = this.consecutiveNetworkFailures > 0;
     this.consecutiveNetworkFailures = 0;
+    if (hadFailures) this.recoveredListeners.forEach((listener) => listener());
   }
 
   public getConsecutiveNetworkFailures(): number {
@@ -197,6 +201,12 @@ class CentralErrorHandler {
   public onNetworkFailure(callback: ErrorEventCallback): () => void {
     this.networkFailureListeners.add(callback);
     return () => this.networkFailureListeners.delete(callback);
+  }
+
+  /** The API answered again after network failures. Returns an unsubscribe. */
+  public onRecovered(callback: () => void): () => void {
+    this.recoveredListeners.add(callback);
+    return () => this.recoveredListeners.delete(callback);
   }
 
   public onServerFailure(callback: ErrorEventCallback): () => void {
