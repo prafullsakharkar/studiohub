@@ -710,9 +710,9 @@ Requested by the owner (2026-11-04), revised the same day (MFA off by default fo
 
 **Applied:** ADR-0039 accepted; backend `a4983c98`, schema snapshot `c3a74f43`, frontend and docs on the same branch (`backend-cr-40-verification.md`). Merged into `develop` (`bfd304d0`).
 
-### CR-41: connect to a directory with older TLS while keeping the certificate check: allow static-RSA ciphers and name the certificate to expect (**feature**, **security**, **PROPOSED**)
+### CR-41: connect to a directory with older TLS while keeping the certificate check: allow static-RSA ciphers and name the certificate to expect (**feature**, **security**, **APPLIED**)
 
-Asked by the owner (2026-11-04): "write CR-41 for option B". Directory sign-in cannot reach the studio's OpenLDAP server. Skipping the certificate check (option C, what the studio's other clients do with `TLS_REQCERT never`) was considered and is **not** part of this CR. Nothing is built.
+Asked by the owner (2026-11-04): "write CR-41 for option B". Directory sign-in cannot reach the studio's OpenLDAP server. Skipping the certificate check (option C, what the studio's other clients do with `TLS_REQCERT never`) was considered and is **not** part of this CR. **Approved** by the owner on 2026-11-04 ("approved CR-41") and built on `sync/backend-cr-41-ldap-tls`; evidence in `backend-cr-41-verification.md`.
 
 **Evidence** (from the backend host 192.168.1.109 to `ldap://192.168.1.17` with StartTLS, 2026-11-04, no credentials sent; ldap3 2.9.1, OpenSSL 3.0.16):
 
@@ -736,11 +736,11 @@ Asked by the owner (2026-11-04): "write CR-41 for option B". Directory sign-in c
 
 | Part | What |
 |---|---|
-| 1. Older ciphers | `DirectoryConfiguration.tls_allow_legacy_ciphers` (boolean, default off). When on, `Tls(ciphers="DEFAULT:kRSA")`: everything Python allows today, plus static-RSA suites. The certificate check is unchanged |
+| 1. Older ciphers | `DirectoryConfiguration.tls_allow_legacy_ciphers` (boolean, default off). When on, Python's default cipher list plus `kRSA+AESGCM`: only `AES256-GCM-SHA384` and `AES128-GCM-SHA256` are added (built tighter than the `DEFAULT:kRSA` first proposed, which would also have added SHA-1 and CBC suites). The certificate check is unchanged |
 | 2. Expected certificate name | `DirectoryConfiguration.tls_server_name` (text, default empty). When set, the certificate must name it (`Tls(valid_names=[name])`, matched as well as the URI's host). The app still connects to the address in the server URI, so no hosts entry is needed. Empty means the URI's host only, as today. Refused on save: a value with spaces, `*` or a scheme |
 | 3. Connection fields | both are connection settings, so changing either clears the last successful test (turning sign-in on needs a new test), and every change is audited (`SETTINGS_UPDATED`, the fields named) |
 | 4. Frontend | in the Connection card: an "Allow older RSA ciphers (no forward secrecy)" checkbox and a "Certificate name" field, with hints and the server's validation messages; tests from captured responses |
-| 5. Docs | ADR-0039 decision 4 amended (the certificate is always checked; older ciphers and an expected name are options for a directory that cannot be updated); `CONTRACTS.md` API-ID-08 fields; `docs/identity/` note on choosing them |
+| 5. Docs | ADR-0039 decision 4 amended (the certificate is always checked; older ciphers and an expected name are options for a directory that cannot be updated); `CONTRACTS.md` API-ID-09 fields and SEC-SEC-11 |
 
 **Not proposed:** any way to switch the certificate check off.
 
@@ -750,4 +750,4 @@ Asked by the owner (2026-11-04): "write CR-41 for option B". Directory sign-in c
 
 **Why no frontend workaround.** The TLS connection is made by the backend.
 
-**Waiting for:** the owner's approval.
+**Applied:** backend `06d99f00` (migration `identity/0004`), schema snapshot `6e5ad49c`, frontend `6c8b5b13`, docs on the same branch (`backend-cr-41-verification.md`). Not merged.
