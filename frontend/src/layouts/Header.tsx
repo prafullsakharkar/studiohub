@@ -324,7 +324,7 @@ export const Header: React.FC = () => {
                   </button>
                   {canViewSettings && (
                     <Link
-                      to="/platform/admin/pipeline"
+                      to="/settings/system/values"
                       onClick={() => setShowUserMenu(false)}
                       className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-300 hover:bg-slate-800 flex items-center justify-between cursor-pointer"
                     >
@@ -346,7 +346,7 @@ export const Header: React.FC = () => {
                   {canViewSettings && (
                   <Link
                     id="user-menu-theme-editor-btn"
-                    to="/platform/admin/theme"
+                    to="/settings/system/themes"
                     onClick={() => setShowUserMenu(false)}
                     className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-300 hover:bg-slate-800 flex items-center justify-between cursor-pointer"
                   >
