@@ -18,6 +18,7 @@ import { ProjectRoute } from './ProjectRoute';
 import { PermissionRoute } from './PermissionRoute';
 
 import { RoutePermissionGuard } from './RoutePermissionGuard';
+import { NoRoleGuard } from './NoRoleGuard';
 
 import { GuestRoute } from './GuestRoute';
 
@@ -172,7 +173,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/auth/change-password" element={<ChangePasswordPage />} />
         <Route path="/auth/mfa-setup" element={<MfaSetupPage />} />
 
-        <Route element={<RoutePermissionGuard><AppLayout /></RoutePermissionGuard>}>
+        <Route element={<NoRoleGuard><RoutePermissionGuard><AppLayout /></RoutePermissionGuard></NoRoleGuard>}>
 
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
