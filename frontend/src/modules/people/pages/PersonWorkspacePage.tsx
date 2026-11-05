@@ -9,14 +9,13 @@ import { EntityHistory } from '@/components/history/EntityHistory';
 import { AccountSection } from '@/modules/identity/components/AccountSection';
 import { DetailGrid } from '@/modules/directory/workspace/DetailGrid';
 import { WorkspaceShell, type WorkspaceTab } from '@/modules/directory/workspace/WorkspaceShell';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { PersonAssignmentsTab } from '../components/PersonAssignmentsTab';
 import { PersonDepartmentsTab } from '../components/PersonDepartmentsTab';
 import { PersonLifecycle } from '../components/PersonLifecycle';
 import { PersonSkillsTab } from '../components/PersonSkillsTab';
 import { PersonTeamsTab } from '../components/PersonTeamsTab';
 
-const STATUS_VARIANT = { active: 'success', draft: 'info', inactive: 'warning', archived: 'neutral' } as const;
 
 /** A referenced record by name, linked to its page; the API sends only the id (and, for three of them, the name). */
 function Named({ id, to, queryKey, load }: { id: string | null | undefined; to?: string; queryKey: readonly unknown[]; load: (id: string, signal?: AbortSignal) => Promise<{ name: string }> }) {
@@ -87,7 +86,7 @@ export const PersonWorkspacePage: React.FC = () => {
       isLoading={query.isLoading}
       error={query.error}
       onRetry={() => void query.refetch()}
-      record={person ? { title: person.full_name, icon: <User className="w-6 h-6" />, badges: <Badge variant={STATUS_VARIANT[person.status ?? 'active']}>{person.status ?? 'active'}</Badge>, subtitle: [person.department_name, person.office_name].filter(Boolean).join(' • ') } : null}
+      record={person ? { title: person.full_name, icon: <User className="w-6 h-6" />, badges: <StatusBadge status={person.status ?? 'active'} />, subtitle: [person.department_name, person.office_name].filter(Boolean).join(' • ') } : null}
       actions={person && <PersonLifecycle person={person} />}
       tabs={tabs}
     />

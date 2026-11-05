@@ -11,6 +11,7 @@ import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { VersionPicker } from '@/modules/production/review/pickers';
 import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { checkLabel, deliveryErrorMessage } from './errors';
 import { formatBytes, formatWhen, personLabel } from './format';
@@ -116,7 +117,6 @@ const ItemRow: React.FC<{ item: DeliveryItem; canRemove: boolean; onRemove: () =
 
 // ------------------------------------------------------------------------------------------------ checks
 
-const outcomeVariant = (outcome: string) => (outcome === 'pass' ? 'success' : outcome === 'fail' ? 'destructive' : 'neutral');
 
 export const DeliveryChecksPanel: React.FC<{ delivery: Delivery }> = ({ delivery }) => {
   const qc = useDeliveryQc(delivery.id);
@@ -134,12 +134,12 @@ export const DeliveryChecksPanel: React.FC<{ delivery: Delivery }> = ({ delivery
               <span className="font-normal text-slate-500">
                 {formatWhen(rows[0].checked_at)} · {personLabel(rows[0].checked_by_name, rows[0].checked_by)}
               </span>
-              {rows.some((r) => r.outcome === 'fail') && <Badge variant="destructive">Failed</Badge>}
+              {rows.some((r) => r.outcome === 'fail') && <StatusBadge status="Failed" />}
             </h3>
             <ul className="space-y-1">
               {rows.map((r, i) => (
                 <li key={`${r.check_name}-${r.item}-${i}`} className="flex flex-wrap items-center gap-2">
-                  <Badge variant={outcomeVariant(r.outcome)}>{r.outcome === 'not_checked' ? 'not checked' : r.outcome}</Badge>
+                  <StatusBadge status={r.outcome === 'not_checked' ? 'not checked' : r.outcome} />
                   <span className="text-slate-200">{checkLabel(r.check_name)}</span>
                   {r.item && <span className="text-slate-500">· {names.get(r.item) ?? 'an item'}</span>}
                   {r.detail && <span className="text-slate-400">· {r.detail}</span>}

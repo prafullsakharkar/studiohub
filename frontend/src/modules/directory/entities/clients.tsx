@@ -1,6 +1,6 @@
 import { clientsApi } from '@/api/masterdata/directory';
 import type { Client } from '@/api/masterdata/directory';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import type { DirectoryFormConfig, DirectoryListConfig } from '../types';
 
 export const clientsListConfig: DirectoryListConfig<Client> = {
@@ -23,7 +23,7 @@ export const clientsListConfig: DirectoryListConfig<Client> = {
     { header: 'Contacts', cell: (c) => c.contact_count },
     // total_billed_usd is hidden by the API from callers without masterdata.client.view_financial.
     { header: 'Billed (USD)', cell: (c) => (c.total_billed_usd === undefined ? '—' : String(c.total_billed_usd)) },
-    { header: 'Status', cell: (c) => <Badge variant={c.status === 'Active' ? 'success' : 'neutral'}>{c.status || '—'}</Badge> },
+    { header: 'Status', cell: (c) => <StatusBadge status={c.status || '—'} /> },
   ],
   exportColumns: [
     { header: 'Code', value: (c) => c.code },

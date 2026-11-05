@@ -8,9 +8,9 @@ import { EntityHistory } from '@/components/history/EntityHistory';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { useCan } from '@/core/permissions/useCan';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
-import { useBookingsListConfig, useLeavesListConfig, resourceStatusVariant } from './records';
+import { useBookingsListConfig, useLeavesListConfig } from './records';
 import { formatHours, formatRate } from './format';
 
 type TabId = 'details' | 'bookings' | 'leave' | 'changes';
@@ -74,7 +74,7 @@ export const ResourceWorkspace: React.FC = () => {
                 <p className="text-xs text-slate-400 mt-1">{[resource.resource_type_display, resource.department_name, resource.location].filter(Boolean).join(' · ')}</p>
               </div>
               <div className="flex flex-col items-start sm:items-end gap-2">
-                <Badge variant={resourceStatusVariant(resource.status)}>{resource.status}</Badge>
+                <StatusBadge status={resource.status} />
                 <div className="flex flex-wrap gap-2" role="toolbar" aria-label="Resource actions">
                   {canManage && (
                     <>

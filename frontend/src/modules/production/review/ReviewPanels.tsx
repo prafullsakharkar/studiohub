@@ -10,6 +10,7 @@ import { AuthContext } from '@/core/auth/AuthContext';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { MemberSelect } from '@/modules/production/work/pickers';
 import { VersionPicker } from './pickers';
@@ -71,7 +72,7 @@ export const ReviewVersionsPanel: React.FC<{ review: Review }> = ({ review }) =>
                   </Link>
                 </td>
                 <td className="py-1.5 pr-3">
-                  <Badge variant="outline">{v.status}</Badge>
+                  <StatusBadge status={v.status} />
                 </td>
                 <td className="py-1.5 text-right">
                   {canEdit && (
@@ -135,7 +136,7 @@ export const ReviewParticipantsPanel: React.FC<{ review: Review }> = ({ review }
                 <td className="py-1.5 pr-3">{p.name}</td>
                 <td className="py-1.5 pr-3">{p.role || '—'}</td>
                 <td className="py-1.5 pr-3">
-                  <Badge variant={p.verdict === 'Approved' ? 'success' : p.verdict === 'Pending Review' ? 'outline' : 'warning'}>{p.verdict}</Badge>
+                  <StatusBadge status={p.verdict} />
                   {p.verdict_notes && <span className="ml-2 text-slate-400">{p.verdict_notes}</span>}
                 </td>
                 <td className="py-1.5 text-right">
@@ -180,7 +181,7 @@ const CommentThread: React.FC<{ review: Review; comment: ReviewComment | ReviewR
       <div className="flex flex-wrap items-center gap-2 text-slate-400">
         <span className="font-semibold text-slate-200">{comment.author}</span>
         {comment.frame_number !== null && <Badge variant="outline">frame {comment.frame_number}</Badge>}
-        {comment.is_resolved && <Badge variant="success">Resolved</Badge>}
+        {comment.is_resolved && <StatusBadge status="Resolved" />}
         <time className="ml-auto text-[10px] font-mono" dateTime={comment.created_at}>
           {formatDateTime(comment.created_at, '')}
         </time>

@@ -4,11 +4,10 @@ import type { Timelog } from '@/api/production/work';
 import { AuthContext } from '@/core/auth/AuthContext';
 import { useCan } from '@/core/permissions/useCan';
 import type { DirectoryFormConfig, DirectoryListConfig, FieldDef, RowAction } from '@/modules/directory/types';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { formatHours, todayIso, toHours } from './format';
 import { TaskPicker } from './pickers';
 
-const statusVariant = (status: string) => (status === 'Approved' ? 'success' : status === 'Rejected' ? 'destructive' : 'outline');
 
 /**
  * Time logged against tasks. An artist sees only their own logs; a holder of `timelog.view_all` (leads,
@@ -50,7 +49,7 @@ export function useTimelogsListConfig(scope?: { projectId: string }): DirectoryL
         header: 'Status',
         cell: (row) => (
           <span className="inline-flex flex-col gap-0.5">
-            <Badge variant={statusVariant(row.status)}>{row.status}</Badge>
+            <StatusBadge status={row.status} />
             {row.status === 'Rejected' && row.rejection_reason && <span className="text-[11px] text-rose-300">{row.rejection_reason}</span>}
           </span>
         ),

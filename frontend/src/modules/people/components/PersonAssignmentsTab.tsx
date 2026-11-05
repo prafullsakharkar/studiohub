@@ -5,7 +5,7 @@ import type { Task } from '@/api/production/work';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { useCan } from '@/core/permissions/useCan';
 import { Table } from '@/modules/identity/components/ui';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Pagination } from '@/shared/components/Pagination';
 import { usePaginatedList } from '@/shared/data/usePaginatedList';
 
@@ -34,7 +34,7 @@ export const PersonAssignmentsTab: React.FC<{ userId: string | null | undefined;
               </td>
               <td className="px-4 py-2 text-slate-300">{task.project_name || '—'}</td>
               <td className="px-4 py-2">
-                <Badge variant="neutral">{task.status}</Badge>
+                <StatusBadge status={task.status} />
               </td>
               <td className="px-4 py-2 text-slate-300">{task.due_date ?? '—'}</td>
             </tr>

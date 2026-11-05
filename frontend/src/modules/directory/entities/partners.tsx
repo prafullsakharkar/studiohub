@@ -1,6 +1,7 @@
 import { clientContactsApi, clientContractsApi, vendorContactsApi, vendorContractsApi } from '@/api/masterdata/directory';
 import type { ClientContact, ClientContract, VendorContact, VendorContract } from '@/api/masterdata/directory';
 import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import type { FieldDef, RelatedRecordsConfig, RowAction } from '../types';
 
 const MANAGE = 'masterdata.directory.manage';
@@ -72,7 +73,7 @@ function contractActions(act: (id: string, action: string, body?: Record<string,
   return actions;
 }
 
-const statusBadge = (status?: string) => <Badge variant={status === 'Active' ? 'success' : status === 'Draft' ? 'info' : 'neutral'}>{status || '—'}</Badge>;
+const statusBadge = (status?: string) => <StatusBadge status={status || '—'} />;
 
 const contractFields = (moneyName: string, extra: ReadonlyArray<FieldDef>): FieldDef[] => [
   {

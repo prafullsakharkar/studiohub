@@ -7,35 +7,16 @@ import { EntityPicker } from '@/components/forms/EntityPicker';
 import type { BulkAction, DirectoryFormConfig, DirectoryListConfig, FieldDef } from '@/modules/directory/types';
 import { ClientPicker } from '@/modules/directory/pickers';
 import { ProjectPicker } from '@/modules/production/work/pickers';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { deliveryErrorMessage } from './errors';
 import { formatBytes, formatDay } from './format';
 
 const options = (values: ReadonlyArray<string>) => values.map((value) => ({ value, label: value }));
 
-export const deliveryStatusVariant = (status: string) => {
-  switch (status) {
-    case 'Approved':
-    case 'Completed':
-      return 'success';
-    case 'Rejected':
-      return 'destructive';
-    case 'Validating':
-      return 'info';
-    case 'Ready':
-      return 'cyan';
-    case 'Signed Off':
-      return 'purple';
-    case 'Submitted':
-      return 'warning';
-    default:
-      return 'neutral';
-  }
-};
-export const DeliveryStatusBadge = ({ status }: { status: string }) => <Badge variant={deliveryStatusVariant(status)}>{status}</Badge>;
+export const DeliveryStatusBadge = ({ status }: { status: string }) => <StatusBadge status={status} />;
 
 /** The client's answer is only worth a badge once there is one. */
-export const clientAnswer = (status: string) => (status === 'Approved' || status === 'Rejected' ? <Badge variant={status === 'Approved' ? 'success' : 'destructive'}>{status}</Badge> : '—');
+export const clientAnswer = (status: string) => (status === 'Approved' || status === 'Rejected' ? <StatusBadge status={status} /> : '—');
 
 export const DestinationPicker = ({ value, onChange, label = 'Destination', error }: { value: string | null | undefined; onChange: (id: string | null) => void; label?: string; error?: string }) => (
   <EntityPicker<DeliveryDestination> label={label} queryKey={destinationsApi.keys.all} fetchPage={destinationsApi.list} fetchOne={destinationsApi.get} getLabel={(d) => `${d.name} (${d.type})`} value={value} onChange={onChange} error={error} />

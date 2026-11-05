@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import { officesApi } from '@/api/masterdata/directory';
 import { EntityHistory } from '@/components/history/EntityHistory';
 import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { DetailGrid } from '@/modules/directory/workspace/DetailGrid';
 import { PeopleTab } from '@/modules/directory/workspace/PeopleTab';
 import { PersonLabel } from '@/modules/directory/workspace/PersonLabel';
@@ -62,7 +63,7 @@ export const OfficeWorkspacePage: React.FC = () => {
               icon: <Building className="w-6 h-6" />,
               badges: (
                 <>
-                  <Badge variant={office.is_active ? 'success' : 'neutral'}>{office.is_active ? 'Active' : 'Inactive'}</Badge>
+                  <StatusBadge status={office.is_active ? 'Active' : 'Inactive'} />
                   {office.is_headquarters && <Badge variant="info">Headquarters</Badge>}
                 </>
               ),

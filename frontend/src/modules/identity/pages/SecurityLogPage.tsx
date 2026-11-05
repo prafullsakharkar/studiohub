@@ -10,7 +10,7 @@ import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { useServerForm } from '@/shared/forms/useServerForm';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { Pagination } from '@/shared/components/Pagination';
 import { createQueryKeys } from '@/shared/data/queryKeys';
@@ -157,7 +157,7 @@ const IpBlacklist: React.FC = () => {
               <td className="px-4 py-2 text-slate-400">{entry.description || '—'}</td>
               <td className="px-4 py-2 text-slate-400">{entry.hit_count}</td>
               <td className="px-4 py-2">
-                <Badge variant={entry.is_active && !entry.expired ? 'error' : 'neutral'}>{entry.expired ? 'Expired' : entry.is_active ? 'Blocking' : 'Paused'}</Badge>
+                <StatusBadge status={entry.expired ? 'Expired' : entry.is_active ? 'Blocking' : 'Paused'} />
               </td>
               <td className="px-4 py-2 text-right space-x-2">
                 {canUpdate && (
@@ -272,7 +272,7 @@ export const SecurityLogPage: React.FC = () => {
                   <td className="px-4 py-2 text-slate-300">{l.login_type}</td>
                   <td className="px-4 py-2 text-slate-300">{l.login_method}</td>
                   <td className="px-4 py-2">
-                    <Badge variant={l.status === 'success' ? 'success' : 'error'}>{l.status}</Badge>
+                    <StatusBadge status={l.status} />
                   </td>
                   <td className="px-4 py-2 font-mono text-slate-400">{l.ip_address ?? '—'}</td>
                 </>
@@ -291,7 +291,7 @@ export const SecurityLogPage: React.FC = () => {
                   <td className="px-4 py-2 text-slate-400">{formatDate(a.attempted_at)}</td>
                   <td className="px-4 py-2 text-slate-300">{a.username}</td>
                   <td className="px-4 py-2">
-                    <Badge variant={a.success ? 'success' : 'error'}>{a.success ? 'Success' : 'Failed'}</Badge>
+                    <StatusBadge status={a.success ? 'Success' : 'Failed'} />
                   </td>
                   <td className="px-4 py-2 text-slate-400">{a.reason || '—'}</td>
                   <td className="px-4 py-2 font-mono text-slate-400">{a.ip_address ?? '—'}</td>

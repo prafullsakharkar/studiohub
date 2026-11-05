@@ -11,7 +11,7 @@ import { ConfirmDialog } from '@/components/system/ConfirmDialog';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { usePaginatedList } from '@/shared/data/usePaginatedList';
 import { StatusHistory } from './StatusHistory';
@@ -183,7 +183,7 @@ export const ShotAssetsPanel: React.FC<{ shot: Pick<Shot, 'id' | 'code' | 'proje
                 </td>
                 <td className="py-1.5 pr-3">{l.asset_category}</td>
                 <td className="py-1.5 pr-3">
-                  <Badge variant="outline">{l.asset_status}</Badge>
+                  <StatusBadge status={l.asset_status} />
                 </td>
                 <td className="py-1.5 pr-3">
                   {canLink ? <input type="number" min={1} aria-label={`Quantity of ${l.asset_code}`} defaultValue={l.quantity} onBlur={(e) => Number(e.target.value) > 0 && Number(e.target.value) !== l.quantity && quantity.mutate({ link: l, value: Number(e.target.value) })} className="w-16 bg-slate-950 border border-slate-800 rounded px-2 py-1" /> : l.quantity}

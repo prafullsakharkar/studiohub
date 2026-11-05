@@ -7,10 +7,9 @@ import type { Media, Review, Version } from '@/api/production/review';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { useCan } from '@/core/permissions/useCan';
 import { fetchAllRows } from '@/shared/data/listing';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { mediaName } from './media';
-import { reviewStatusVariant } from './reviews';
 import { versionBadges } from './versions';
 
 export interface EntityRef {
@@ -127,7 +126,7 @@ export const EntityReviewsTab: React.FC<{ entity: EntityRef }> = ({ entity }) =>
       { header: 'Review', cell: (r) => `${r.code} · ${r.title}` },
       { header: 'Versions', cell: (r) => r.versions.length },
       { header: 'People', cell: (r) => r.reviewers.length },
-      { header: 'Status', cell: (r) => <Badge variant={reviewStatusVariant(r.status)}>{r.status}</Badge> },
+      { header: 'Status', cell: (r) => <StatusBadge status={r.status} /> },
     ]}
     rowLink={(r) => `/reviews/${r.id}`}
     createTo={`/reviews/new?${prefill(entity)}`}

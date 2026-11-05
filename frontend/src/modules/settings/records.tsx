@@ -4,6 +4,7 @@ import { ApiError } from '@/api/errors/ApiError';
 import { choicesProblem, flagActionsFor, flagProblem, isHexColor, isValueDeletable, isValueEditable, isSelectType, WEEK_STARTS } from '@/api/settings/settingsFlow';
 import type { DirectoryFormConfig, DirectoryListConfig, FieldDef, RowAction } from '@/modules/directory/types';
 import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { withClientFilters } from '@/shared/data/clientFilters';
 import type { ClientFilterRule } from '@/shared/data/clientFilters';
 import { formatWhen } from '@/modules/deliveries/format';
@@ -69,7 +70,7 @@ export function useCategoriesListConfig(): DirectoryListConfig<SettingCategory> 
       { header: 'Category', cell: (row) => `${row.code} · ${row.name}` },
       { header: 'Icon', cell: (row) => row.icon || '—' },
       { header: 'Order', cell: (row) => row.order },
-      { header: 'State', cell: (row) => (row.is_active ? <Badge variant="success">Active</Badge> : <Badge variant="neutral">Inactive</Badge>) },
+      { header: 'State', cell: (row) => (row.is_active ? <StatusBadge status="Active" /> : <StatusBadge status="Inactive" />) },
     ],
   };
 }
@@ -128,7 +129,7 @@ export function useDefinitionsListConfig(): DirectoryListConfig<SettingDefinitio
       { header: 'Type', cell: (row) => row.data_type },
       { header: 'Default', cell: (row) => (row.default_value ? truncate(row.default_value, 30) : '—') },
       { header: 'Required', cell: (row) => (row.is_required ? 'Yes' : '—') },
-      { header: 'State', cell: (row) => (row.is_active ? <Badge variant="success">Active</Badge> : <Badge variant="neutral">Inactive</Badge>) },
+      { header: 'State', cell: (row) => (row.is_active ? <StatusBadge status="Active" /> : <StatusBadge status="Inactive" />) },
     ],
   };
 }
@@ -223,7 +224,6 @@ export const valueFormConfig: DirectoryFormConfig<SystemSetting> = {
 
 // -------------------------------------------------------------------------------------------- feature flags
 
-export const flagStatusVariant = (status: string) => (status === 'enabled' ? 'success' : status === 'scheduled' ? 'info' : status === 'expired' ? 'warning' : 'neutral');
 
 export function useFlagsListConfig(): DirectoryListConfig<FeatureFlag> {
   const rowActions = (row: FeatureFlag): RowAction[] =>
@@ -261,7 +261,7 @@ export function useFlagsListConfig(): DirectoryListConfig<FeatureFlag> {
       { header: 'Flag', cell: (row) => `${row.code} · ${row.name}` },
       { header: 'Type', cell: (row) => (row.feature_type === 'percentage' || row.feature_type === 'rollout' ? `${row.feature_type} ${row.percentage}%` : row.feature_type) },
       { header: 'Window', cell: (row) => (row.start_date || row.end_date ? `${row.start_date ? formatWhen(row.start_date) : '…'} – ${row.end_date ? formatWhen(row.end_date) : '…'}` : '—') },
-      { header: 'Status', cell: (row) => <Badge variant={flagStatusVariant(row.status)}>{row.status}</Badge> },
+      { header: 'Status', cell: (row) => <StatusBadge status={row.status} /> },
     ],
   };
 }
@@ -334,7 +334,7 @@ export function useThemesListConfig(): DirectoryListConfig<Theme> {
       { header: 'Primary', cell: (row) => swatch(row.primary_color) },
       { header: 'Background', cell: (row) => swatch(row.background_color) },
       { header: 'Font', cell: (row) => `${row.font_family} ${row.font_size}px` },
-      { header: 'State', cell: (row) => (row.is_default ? <Badge variant="info">Default</Badge> : row.is_active ? <Badge variant="success">Active</Badge> : <Badge variant="neutral">Inactive</Badge>) },
+      { header: 'State', cell: (row) => (row.is_default ? <Badge variant="info">Default</Badge> : row.is_active ? <StatusBadge status="Active" /> : <StatusBadge status="Inactive" />) },
     ],
   };
 }
@@ -420,7 +420,7 @@ export function useLocalizationsListConfig(): DirectoryListConfig<Localization> 
       { header: 'Time zone', cell: (row) => row.timezone },
       { header: 'Dates', cell: (row) => `${row.date_format} · ${row.time_format}` },
       { header: 'Currency', cell: (row) => `${row.currency_symbol} ${row.currency_code}`.trim() || '—' },
-      { header: 'State', cell: (row) => (row.is_default ? <Badge variant="info">Default</Badge> : row.is_active ? <Badge variant="success">Active</Badge> : <Badge variant="neutral">Inactive</Badge>) },
+      { header: 'State', cell: (row) => (row.is_default ? <Badge variant="info">Default</Badge> : row.is_active ? <StatusBadge status="Active" /> : <StatusBadge status="Inactive" />) },
     ],
   };
 }

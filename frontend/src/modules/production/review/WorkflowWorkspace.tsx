@@ -10,7 +10,7 @@ import { EntityHistory } from '@/components/history/EntityHistory';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 
 const text = (value: unknown) => (value === undefined || value === null || value === '' ? '—' : typeof value === 'object' ? JSON.stringify(value) : String(value));
@@ -61,7 +61,7 @@ export const WorkflowWorkspace: React.FC = () => {
                 </p>
               </div>
               <div role="toolbar" aria-label="Workflow actions" className="flex flex-wrap items-center gap-2">
-                {workflow.is_active ? <Badge variant="success">Active</Badge> : <Badge variant="neutral">Inactive</Badge>}
+                {workflow.is_active ? <StatusBadge status="Active" /> : <StatusBadge status="Inactive" />}
                 {canUpdate && (
                   <Button size="sm" variant="outline" disabled={busy} onClick={() => void run(() => (workflow.is_active ? workflowsApi.deactivate(workflow.id) : workflowsApi.activate(workflow.id)))}>
                     {workflow.is_active ? 'Deactivate' : 'Activate'}

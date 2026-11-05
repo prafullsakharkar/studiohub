@@ -13,7 +13,7 @@ import { Dialog } from '@/components/ui/Dialog';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { Table } from '@/modules/identity/components/ui';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { Pagination } from '@/shared/components/Pagination';
 import { usePaginatedList } from '@/shared/data/usePaginatedList';
@@ -66,7 +66,7 @@ export const TeamMembersTab: React.FC<{ teamId: string; teamName: string }> = ({
               <td className="px-4 py-2 text-slate-300">{m.person_department_name || '—'}</td>
               <td className="px-4 py-2 text-slate-300">{m.person_office_name || '—'}</td>
               <td className="px-4 py-2">
-                <Badge variant={m.person_status === 'active' ? 'success' : 'neutral'}>{m.person_status}</Badge>
+                <StatusBadge status={m.person_status} />
               </td>
               {canManage && (
                 <td className="px-4 py-2 text-right">

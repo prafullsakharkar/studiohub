@@ -3,7 +3,7 @@ import type { Workflow } from '@/api/production/review';
 import { projectsApi } from '@/api/production/structure';
 import { useCan } from '@/core/permissions/useCan';
 import type { DirectoryFormConfig, DirectoryListConfig, FieldDef, RowAction } from '@/modules/directory/types';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { ProjectPicker } from '@/modules/production/work/pickers';
 
 /** Activate or deactivate, and clone. A clone is inactive and repeats the code `<code>-COPY`; codes are not unique. */
@@ -51,7 +51,7 @@ export function useWorkflowsListConfig(scope?: { projectId: string }): Directory
       { header: 'Department', cell: (row) => row.department || '—' },
       { header: 'Nodes', cell: (row) => row.nodes.length },
       { header: 'Transitions', cell: (row) => row.transitions.length },
-      { header: 'State', cell: (row) => (row.is_active ? <Badge variant="success">Active</Badge> : <Badge variant="neutral">Inactive</Badge>) },
+      { header: 'State', cell: (row) => (row.is_active ? <StatusBadge status="Active" /> : <StatusBadge status="Inactive" />) },
     ],
     rowActions: (row) => workflowActions(row, { update: canUpdate, create: canCreate }),
   };
