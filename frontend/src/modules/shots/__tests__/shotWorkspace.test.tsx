@@ -181,7 +181,7 @@ describe('shot workspace', () => {
     mount();
     fireEvent.click(await screen.findByRole('tab', { name: 'Notes' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Add note' }));
-    fireEvent.change(await screen.findByLabelText('Subject'), { target: { value: 'Match the plate' } });
+    fireEvent.change(await screen.findByLabelText(/^Subject/), { target: { value: 'Match the plate' } });
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Add note' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST' && path(c).endsWith('/notes/'))).toBe(true));
     expect(calls.find((c) => c.method === 'POST')?.body).toMatchObject({ subject: 'Match the plate', entity_type: 'Shot', entity_id: shot.id, entity_code: shot.code, category: 'General' });

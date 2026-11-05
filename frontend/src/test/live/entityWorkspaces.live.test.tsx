@@ -83,7 +83,7 @@ describe('shot workspace on the wire', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: 'Notes' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Add note' }, T));
-    fireEvent.change(await screen.findByLabelText('Subject'), { target: { value: 'Match the plate' } });
+    fireEvent.change(await screen.findByLabelText(/^Subject/), { target: { value: 'Match the plate' } });
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Add note' }));
     await waitFor(async () => expect(await noteCount('Shot', fixture.shot, fixture.shotCode)).toBe(1), T);
     expect(await screen.findByText('Match the plate', {}, T)).toBeTruthy();
@@ -122,7 +122,7 @@ describe('asset workspace on the wire', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: 'Notes' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Add note' }, T));
-    fireEvent.change(await screen.findByLabelText('Subject'), { target: { value: 'Fix the rig' } });
+    fireEvent.change(await screen.findByLabelText(/^Subject/), { target: { value: 'Fix the rig' } });
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Add note' }));
     await waitFor(async () => expect(await noteCount('Asset', fixture.asset, fixture.assetCode)).toBe(1), T);
 
