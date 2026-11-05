@@ -91,17 +91,18 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
   // Focus on open
   useEffect(() => {
-    if (isOpen) {
-      setQuery('');
-      setSelectedIndex(0);
-      setActiveTab(initialMode);
-      setTimeout(() => {
-        // A dialog opened from the palette within these 50 ms already has focus: leave it there.
-        const holder = document.activeElement?.closest('[role="dialog"]');
-        if (holder && holder !== dialogRef.current) return;
-        inputRef.current?.focus();
-      }, 50);
-    }
+    if (!isOpen) return;
+    setQuery('');
+    setSelectedIndex(0);
+    setActiveTab(initialMode);
+    const t = setTimeout(() => {
+      // A dialog opened from the palette within these 50 ms already has focus: leave it there.
+      const holder = document.activeElement?.closest('[role="dialog"]');
+      if (holder && holder !== dialogRef.current) return;
+      inputRef.current?.focus();
+    }, 50);
+    // Closed or unmounted inside those 50 ms: do not touch the page afterwards (a test file ends and takes it away).
+    return () => clearTimeout(t);
   }, [isOpen, initialMode]);
 
   // Escape, the focus trap, the scroll lock and focus return, shared with Modal. Escape is left to a dialog opened
