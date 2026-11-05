@@ -24,7 +24,7 @@ class SystemSettingSelector(SettingsBaseSelector):
         request=None,
         view=None,
     ) -> QuerySet[SystemSetting]:
-        return cls.model.objects.all()
+        return cls.model.objects.select_related("setting")
     
     @classmethod
     def get_by_setting(cls, setting_code: str):

@@ -37,7 +37,7 @@ class UserSelector(
         themselves. Permission gates (``identity.user.view`` etc.) run
         before this queryset is consulted.
         """
-        qs = User.objects.get_queryset().annotate(
+        qs = User.objects.get_queryset().select_related("profile").annotate(
             # Read by the serializers' auth_source without one query per row (ADR-0039).
             is_directory_account=Exists(ExternalIdentity.objects.filter(user=OuterRef("pk"))),
         )
