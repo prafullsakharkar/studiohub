@@ -122,7 +122,7 @@ describe('shot workspace', () => {
     const select = (await screen.findByLabelText('Artist')) as HTMLSelectElement;
     await waitFor(() => expect(select.querySelectorAll('option').length).toBeGreaterThan(1));
     fireEvent.change(select, { target: { value: members[0].user_id } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'PATCH')).toBe(true));
     expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ assigned_artist: members[0].user_id });
   });
@@ -134,7 +134,7 @@ describe('shot workspace', () => {
     const select = (await screen.findByLabelText('Artist')) as HTMLSelectElement;
     await waitFor(() => expect(select.querySelectorAll('option').length).toBeGreaterThan(1));
     fireEvent.change(select, { target: { value: members[0].user_id } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(await screen.findByText(/Unknown user/)).toBeTruthy();
     expect(screen.getByLabelText('Artist')).toBeTruthy();
   });
@@ -147,7 +147,7 @@ describe('shot workspace', () => {
     const select = (await screen.findByLabelText('Artist')) as HTMLSelectElement;
     await waitFor(() => expect(select.querySelectorAll('option').length).toBeGreaterThan(1));
     fireEvent.change(select, { target: { value: '' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'PATCH')).toBe(true));
     expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({ assigned_artist: null });
   });

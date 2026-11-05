@@ -3,9 +3,8 @@ import type React from 'react';
 import { useState } from 'react';
 import { auditKeys } from '@/api/audit/audit';
 import { serverMessage } from '@/api/errors/serverMessage';
-import { Dialog } from '@/components/ui/Dialog';
 import { notify } from '@/core/notifications/notify';
-import { Button } from '@/shared/components/Button';
+import { FormDialog } from '@/shared/forms/FormDialog';
 import { MemberSelect } from './pickers';
 
 export interface AssignTarget {
@@ -30,40 +29,30 @@ export const AssignArtistDialog: React.FC<{
   onClose: () => void;
 }> = ({ target, save, queryKey, onClose }) => {
   const queryClient = useQueryClient();
-  const [userId, setUserId] = useState(target.assignedArtistId ?? '');
+  const initial = target.assignedArtistId ?? '';
+  const [userId, setUserId] = useState(initial);
   const [error, setError] = useState<string | undefined>();
   const [saving, setSaving] = useState(false);
+  const changed = userId !== initial;
+
+  const onSubmit = async () => {
+    if (!changed || saving) return;
+    setSaving(true);
+    try {
+      await save(userId || null);
+      await Promise.all([queryClient.invalidateQueries({ queryKey }), queryClient.invalidateQueries({ queryKey: auditKeys.all })]);
+      notify.success(userId ? 'Artist assigned.' : 'Artist removed.');
+      onClose();
+    } catch (e) {
+      setError(serverMessage(e));
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
-    <Dialog isOpen onClose={onClose} title={`Assign ${target.code}`} size="md">
-      <div className="space-y-4">
-        <MemberSelect projectId={target.projectId} value={userId} onChange={(id) => { setUserId(id); setError(undefined); }} label="Artist" error={error} />
-        <div className="flex justify-end gap-2">
-          <Button variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            isLoading={saving}
-            disabled={userId === (target.assignedArtistId ?? '')}
-            onClick={async () => {
-              setSaving(true);
-              try {
-                await save(userId || null);
-                await Promise.all([queryClient.invalidateQueries({ queryKey }), queryClient.invalidateQueries({ queryKey: auditKeys.all })]);
-                notify.success(userId ? 'Artist assigned.' : 'Artist removed.');
-                onClose();
-              } catch (e) {
-                setError(serverMessage(e));
-              } finally {
-                setSaving(false);
-              }
-            }}
-          >
-            Save
-          </Button>
-        </div>
-      </div>
-    </Dialog>
+    <FormDialog title={`Assign ${target.code}`} size="md" onClose={onClose} onSubmit={onSubmit} isSubmitting={saving} isDirty={changed} submitLabel="Save changes" submitDisabled={!changed}>
+      <MemberSelect projectId={target.projectId} value={userId} onChange={(id) => { setUserId(id); setError(undefined); }} label="Artist" error={error} />
+    </FormDialog>
   );
 };
