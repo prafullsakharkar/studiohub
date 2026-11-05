@@ -108,7 +108,7 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <header className="h-14 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-2 sm:px-3 lg:px-4 flex items-center justify-between gap-1.5 sm:gap-2 lg:gap-3 sticky top-0 z-30 select-none min-w-0 transition-colors duration-200">
+      <header className="h-14 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-2 sm:px-3 lg:px-4 flex items-center justify-between gap-1.5 sm:gap-2 lg:gap-3 sticky top-0 z-[35] select-none min-w-0 transition-colors duration-200">
         {/* Left section: Mobile Toggle & Project HUD */}
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 shrink overflow-visible">
           <button
