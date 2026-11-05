@@ -26,7 +26,7 @@ export interface FormDialogProps {
    * caller's own submit handler calls it after a save.
    */
   onClose: () => void;
-  /** The `submit(...)` of `useServerForm` (or any form submit handler). */
+  /** The `submit(...)` of `useServerForm`, or any async handler that saves (it needs no `preventDefault`). */
   onSubmit: (event?: React.BaseSyntheticEvent) => void | Promise<void>;
   isSubmitting: boolean;
   /** True when the user has typed something: closing then asks to discard. */
@@ -59,7 +59,15 @@ export const FormDialog: React.FC<FormDialogProps> = ({ title, subtitle, size = 
   return (
     <>
       <Dialog isOpen onClose={requestClose} title={title} subtitle={subtitle} size={size}>
-        <form noValidate data-autofocus onSubmit={onSubmit} className="space-y-4">
+        <form
+          noValidate
+          data-autofocus
+          onSubmit={(event) => {
+            event.preventDefault(); // a handler that is not `useServerForm`'s `submit` must not reload the page
+            void onSubmit(event);
+          }}
+          className="space-y-4"
+        >
           {intro}
           <FormBanner error={serverError} />
           {children}
