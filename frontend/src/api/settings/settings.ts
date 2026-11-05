@@ -260,8 +260,8 @@ export const themesApi = {
   activate: (id: string) => act<StatusAnswer>('themes', id, 'activate'),
   /** Refused (400) for the default theme: make another the default first. */
   deactivate: (id: string) => act<StatusAnswer>('themes', id, 'deactivate'),
-  /** The theme the app uses; 404 while none was made. Any signed-in user may read it. */
-  default: (signal?: AbortSignal) => apiClient.get<Theme>(`${V1}/themes/default/`, { signal }),
+  /** The theme the app uses; 404 while none was made (silent: that is not a failure to tell the user about). Any signed-in user may read it. */
+  default: (signal?: AbortSignal) => apiClient.get<Theme>(`${V1}/themes/default/`, { signal, silent: true }),
   /** Needs an active theme; the previous default stops being it. Answers `{status: 'default'}`. */
   setDefault: (id: string) => act<StatusAnswer>('themes', id, 'set-default'),
 };
@@ -271,7 +271,7 @@ export const localizationsApi = {
   /** Refused (400) for the default localization: make another the default first. */
   deactivate: (id: string) => act<StatusAnswer>('localizations', id, 'deactivate'),
   /** The localization the app uses; 404 while none was made. Any signed-in user may read it. */
-  default: (signal?: AbortSignal) => apiClient.get<Localization>(`${V1}/localizations/default/`, { signal }),
+  default: (signal?: AbortSignal) => apiClient.get<Localization>(`${V1}/localizations/default/`, { signal, silent: true }),
   /** Needs an active localization; the previous default stops being it. Answers `{status: 'default'}`. */
   setDefault: (id: string) => act<StatusAnswer>('localizations', id, 'set-default'),
 };

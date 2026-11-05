@@ -127,7 +127,7 @@ export class ApiClient implements IApiClient {
       // A 401 from login / MFA / password reset is a credential failure the form displays; it is
       // not an expired session, so it must not sign anyone out or toast "session expired".
       if (!(finalError.isAuthError && !authenticated)) {
-        centralErrorHandler.handleError(finalError, { source: 'ApiClient' });
+        centralErrorHandler.handleError(finalError, { source: 'ApiClient', silent: options?.silent });
       }
       throw finalError;
     }
