@@ -58,6 +58,15 @@ A throwaway spec (deleted, not committed) drove the real app against the real ba
 - "Clear all" then Save sent `{"vendor_ids": []}`; the stored list was empty.
 - **Found by the run, not caused by CR-42:** a saved project edit went to `/projects/undefined` and then `/forbidden`. The project PATCH answers without an `id` (the sample `projects_patch`, captured before CR-42, has none) and the form navigated to `saved.id`. After an edit the form now returns to the record opened. Test: serves the captured PATCH and checks which id the route receives (mutation-checked: with `saved.id` it fails). Backend unchanged.
 
+### 2c. Kept as a role-smoke spec
+
+The same flow is now `frontend/e2e/live/vendors.smoke.spec.ts` (the production administrator in the browser; setup and checks of what was stored go through the API as the MFA superuser, because the production administrator may not create vendors; it archives its project and deletes its vendors when it ends). Run it alone with `docs/sync/tools/run_role_smoke.sh e2e/live/vendors.smoke.spec.ts`: passes in about 16 seconds. Mutation-checked against the real backend, each mutation run alone:
+
+- the form returning to `saved.id` after an edit (the `/projects/undefined` bug) fails it at the wait for the project page;
+- the form sending the unchanged vendor list on every edit fails it at the check of what the save sent (`Received + 4`: the extra `vendor_ids`), in about 10 seconds.
+
+The page waits have their own 20-second timeout, so a regression fails in seconds, not at the 10-minute test limit (the first mutation run took the whole 10 minutes before that was added).
+
 ## 3. Notes and not done
 
 - **Seeded-user note:** the setup in the live run used the MFA superuser (`manager`): `admin` must enrol in two-factor authentication first, and the producer role may not create vendors (403).
