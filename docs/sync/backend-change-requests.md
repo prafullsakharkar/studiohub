@@ -791,3 +791,35 @@ Nothing in the backend reads `vendor_ids` (only the serializers, the model and t
 **Risk.** Low: one field type, one validator, one read-only computed field, no migration, no new route.
 
 **Approved** by the owner ("Approved", 2026-11-05) and applied as written, plus one addition: `seed_dev` wrote vendor codes into `vendor_ids` and now writes the vendors' ids (otherwise its projects would show no vendor names). Contract C-56, decision D-38.
+
+### CR-43: the project list runs two profile queries per project (**performance**, **PROPOSED**: not applied, awaiting approval)
+
+Found while writing the CR-42 list test (it expected 6 queries and counted 14); measured afterwards on a clean test database.
+
+**Problem.** `ProjectSelector.get_queryset` (`apps/production/selectors/project.py`) joins the two users with `select_related("supervisor", "coordinator")`, but `ProjectBaseSerializer.get_supervisor_name` and `get_coordinator_name` (`api/serializers/project/base.py`) then read `user.profile.display_name`. `profile` is the reverse one-to-one of `identity.UserProfile`, which `select_related` did not name, so each name costs its own query: two per project, on every list page and on every detail, create and update response that serializes the project.
+
+**Evidence** (real queries, pytest test database; a superuser; each project has its own supervisor and coordinator; `GET /api/v1/projects/`, queries counted with `CaptureQueriesContext`):
+
+| Projects on the page | All queries | Queries on `identity_profiles` |
+|---|---|---|
+| 1 | 5 | 2 |
+| 3 | 9 | 6 |
+| 6 | 15 | 12 |
+
+That is `3 + 2n`: a page of 25 (the default page size) costs about 53 queries, where 3 would do. The two profile queries are `SELECT … FROM identity_profiles WHERE user_id = …`, one for the supervisor and one for the coordinator. The answers are correct; only the number of queries is wrong.
+
+**Minimal proposed diff** (backend only, one line, no migration, no API change):
+
+```python
+return Project.objects.select_related("supervisor__profile", "coordinator__profile").all()
+```
+
+Tried on a scratch copy of the selector, then reverted (nothing is changed): the same three page sizes then cost **3 queries each**, with 0 on `identity_profiles`. A reverse one-to-one is joined by `select_related`, and a user with no profile reads as before (`getattr(user, "profile", None)` is `None`).
+
+1. Selector: the one line above.
+2. Test: a list of projects with different supervisors and coordinators runs in a constant number of queries (compare 1 against 6 rows), and the names are unchanged (display name when the profile has one, e-mail otherwise, empty when there is no user). Mutation-check: drop `__profile` and expect the test to fail.
+3. Other readers of the same selector (the detail, create and update responses) get the same saving. Whether other list endpoints have the same pattern has **not** been checked; this CR is only the project list.
+
+**Why no frontend workaround.** The queries happen on the server before the response is built; the client cannot make them cheaper (asking for a smaller page only hides it).
+
+**Compatibility.** None: the response is identical. **Risk.** Very low: one line; the join adds two columns' worth of rows already read today.
