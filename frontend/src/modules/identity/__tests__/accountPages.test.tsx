@@ -118,8 +118,8 @@ describe('security', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Generate new codes' }));
     const dialog = await screen.findByRole('dialog');
-    fireEvent.change(within(dialog).getByLabelText('Password'), { target: { value: 'pw-12345678901' } });
-    fireEvent.change(within(dialog).getByLabelText('Authentication code'), { target: { value: '123456' } });
+    fireEvent.change(within(dialog).getByLabelText(/^Password/), { target: { value: 'pw-12345678901' } });
+    fireEvent.change(within(dialog).getByLabelText(/^Authentication code/), { target: { value: '123456' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Generate' }));
 
     expect(await screen.findByText('aaaa-1111')).toBeTruthy();
@@ -135,8 +135,8 @@ describe('security', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Turn off' }));
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: /use a recovery code instead/i }));
-    fireEvent.change(within(dialog).getByLabelText('Password'), { target: { value: 'pw-12345678901' } });
-    fireEvent.change(within(dialog).getByLabelText('Recovery code'), { target: { value: 'abcd-efgh' } });
+    fireEvent.change(within(dialog).getByLabelText(/^Password/), { target: { value: 'pw-12345678901' } });
+    fireEvent.change(within(dialog).getByLabelText(/^Recovery code/), { target: { value: 'abcd-efgh' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Turn off' }));
 
     await waitFor(() => expect(calls.some((c) => path(c).endsWith('/totp/disable/'))).toBe(true));
@@ -150,8 +150,8 @@ describe('security', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Turn off' }));
     const dialog = await screen.findByRole('dialog');
-    fireEvent.change(within(dialog).getByLabelText('Password'), { target: { value: 'wrong' } });
-    fireEvent.change(within(dialog).getByLabelText('Authentication code'), { target: { value: '000000' } });
+    fireEvent.change(within(dialog).getByLabelText(/^Password/), { target: { value: 'wrong' } });
+    fireEvent.change(within(dialog).getByLabelText(/^Authentication code/), { target: { value: '000000' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Turn off' }));
 
     expect(await within(dialog).findByText('Invalid verification code.')).toBeTruthy();
