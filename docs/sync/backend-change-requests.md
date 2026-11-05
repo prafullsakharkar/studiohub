@@ -751,3 +751,43 @@ Asked by the owner (2026-11-04): "write CR-41 for option B". Directory sign-in c
 **Why no frontend workaround.** The TLS connection is made by the backend.
 
 **Applied:** backend `06d99f00` (migration `identity/0004`), schema snapshot `6e5ad49c`, frontend `6c8b5b13`, docs on the same branch (`backend-cr-41-verification.md`). Not merged.
+
+### CR-42: a project's vendors are unchecked text: any id is stored, and the names are whatever the client writes (**data integrity**, **PROPOSED**, branch `sync/cr-42-vendor-ids`)
+
+Found while planning the multi-select picker (`docs/frontend/component-migration-plan.md`, branch 2): the project form has no Vendors field, and the obvious one to give it is `vendor_ids`. Captured with `tools/test_capture_vendor_ids.py` (`samples/production/_vendor_ids_flow.json`).
+
+**Problem.** `Project.vendor_ids` and `Project.vendor_names` are plain `JSONField(default=list)` columns that the create and update serializers accept as sent. Nothing ties either to `masterdata.Vendor`:
+- an id that names no vendor, or is not even a string, is stored;
+- `vendor_names` is a second list the client writes; it does not follow the ids, so it goes stale when the ids change, when a vendor is renamed and when one is deleted;
+- deleting a vendor leaves its id on every project that lists it.
+
+Nothing in the backend reads `vendor_ids` (only the serializers, the model and the two seed commands mention it), and the project serializer hides both fields from external members (`EXTERNAL_HIDDEN_FIELDS`), so this is **not an access problem**: access is the project membership, checked by the backend. It is a data problem that a UI would make worse, because a picker would write ids and leave the names to drift.
+
+**Evidence** (real responses, pytest test database; a superuser, one vendor `NLR`):
+
+| Request | Answer | `vendor_ids` stored | `vendor_names` stored |
+|---|---|---|---|
+| `POST projects/` with `vendor_ids: [NLR, "not-a-vendor", "00000000-…"]`, `vendor_names: ["Somebody Else"]` | `201` | all three | `["Somebody Else"]` |
+| `PATCH` `vendor_ids: [NLR]` | `200` | `[NLR]` | still `["Somebody Else"]` |
+| `PATCH` `vendor_ids: [{"id": NLR}, 42]` | `200` | `[{"id": …}, 42]` | still `["Somebody Else"]` |
+| `PATCH` `vendor_ids: [NLR]`, then `DELETE vendors/NLR/` (`204`, then `404`) | `200` | still `[NLR]` | still `["Somebody Else"]` |
+
+(`_vendor_ids_flow.json`: `project_create_bad_ids`, `project_patch_ids_only`, `project_patch_not_strings`, `project_patch_real_id`, `vendor_delete`, `project_detail_after_vendor_delete`.)
+
+**Minimal proposed diff** (backend only, no migration):
+1. Project create and update serializers: `vendor_ids` becomes a list of UUIDs (`ListField(child=UUIDField())`, empty allowed, stored as strings as today). `validate_vendor_ids` refuses duplicates and any id that is not a vendor that exists and is not deleted, with a field error naming the id (`400`, `{"vendor_ids": ["Unknown vendor: …"]}`).
+2. `vendor_names` becomes read-only: computed on read from the vendors in `vendor_ids`, in that order, skipping one that no longer exists (deleted). Lists compute it for the whole page in one query (the project selector or the serializer context), not one query per project. The column stays (dropping it would be a migration; not proposed); the API no longer writes it.
+3. Rows that already hold bad ids are read as they are (their names skip what is not a vendor); the next write of `vendor_ids` must be valid. No data migration.
+4. `vendor_team_ids` is left alone: there is no vendor-team model for it to point at (only the seed commands write it). Not proposed here.
+5. Tests: unknown, deleted, malformed and duplicate ids are refused with the field error and change nothing; valid ids are stored; names follow the ids, a rename and a delete; a list of projects computes the names in a constant number of queries; external members still see neither field (`test_external_segregation.py` stays green). Mutation-check the validator and the "skip deleted" rule.
+6. Docs: `docs/production/` contract and decision entries; the OpenAPI snapshot the frontend generates from.
+
+**Then, frontend** (after this is applied): `EntityMultiPicker` (the kit's multi-select: chips in the field, checkmarks in the menu, search inside it, Load more), a `multi-entity` field kind in `modules/directory` (the form model learns lists of ids; an edit sends the list only when it changed), and a Vendors field on the project form. Tests from captured responses, mutation-checked.
+
+**Why no frontend workaround.** The frontend can offer only real vendors, but it cannot stop any other client from writing anything, and it cannot keep `vendor_names` right: a rename or a delete happens elsewhere, so only the server can compute the names. Building the picker on the current fields would store ids that no one checks and names that drift.
+
+**Compatibility.** A write with valid vendor ids is unchanged. A write that sends `vendor_names` is no longer an error and no longer stores it (DRF ignores a read-only field). The frontend sends neither field today. The seed commands write through the ORM and are unaffected. The only behaviour change is the refusal of ids that are not vendors.
+
+**Risk.** Low: one field type, one validator, one read-only computed field, no migration, no new route.
+
+**Not yet approved.**
