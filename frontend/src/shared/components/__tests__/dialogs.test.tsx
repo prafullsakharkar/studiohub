@@ -90,6 +90,20 @@ describe('command palette', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
+  it('does nothing 50 ms after it opened if it has been closed since (its focus timer is cancelled)', async () => {
+    const { CommandPalette } = await import('../CommandPalette');
+    const { unmount } = render(
+      <MemoryRouter>
+        <CommandPalette isOpen onClose={vi.fn()} />
+      </MemoryRouter>
+    );
+    unmount();
+    const read = vi.spyOn(Document.prototype, 'activeElement', 'get');
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(read).not.toHaveBeenCalled();
+    read.mockRestore();
+  });
+
   it('does not pull focus back from a dialog opened from it, even when that happens at once', async () => {
     await renderPalette();
     // The palette focuses its search box 50 ms after it opens; the dialog is opened before that.
