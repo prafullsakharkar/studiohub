@@ -1,52 +1,97 @@
-# StudioHub VFX Design System & UI Specifications
+# StudioHub Design System
 
-## 1. Design Philosophy
-StudioHub is designed for professional VFX artists, technical directors, and production managers who work in color-critical, high-density, multi-display studio environments.
+StudioHub is used by artists, coordinators and producers on dense, often multi-display, colour-critical desks. The
+interface is dark by default, compact, and keeps colour for meaning.
 
----
+The rules below are the component kit's (`spikes/mockups/`, the design canvas), the reference for new screens.
+Where the code does not follow them yet (selected states still drawn in indigo, statuses coloured by hand), the
+difference is listed in `docs/frontend/component-migration-plan.md` (on `design/component-kit`) and is being closed
+one branch at a time; the values given for components (`Button`, `StatusBadge`, `Modal`) are what the code does.
+The shared components themselves are listed in [`CANONICAL_COMPONENTS.md`](CANONICAL_COMPONENTS.md).
 
-## 2. Color Palette & Theming
+## 1. Colour
 
-### 2.1 Dark / High-Density Theme (Default)
-- **Backgrounds**: Slate-950 (`#020617`), Slate-900 (`#0f172a`), Slate-800 (`#1e293b`)
-- **Borders & Dividers**: Slate-800 (`#1e293b`), Slate-700/50 (`rgba(51, 65, 85, 0.5)`)
-- **Typography**:
-  - Primary Text: Slate-100 / White (`#f8fafc`)
-  - Muted Text: Slate-400 (`#94a3b8`)
-  - Micro Text: Slate-500 (`#64748b`)
-- **Accents**:
-  - Indigo / Blurple (`#6366f1`): Active selection, primary CTA
-  - Emerald (`#10b981`): Approved, Delivered, Online, Greenlight
-  - Amber (`#f59e0b`): In Progress, Pending Review, Farm Warning
-  - Rose (`#f43f5e`): Retake, Omitted, High Severity, Error
-  - Cyan (`#06b6d4`): OpenUSD Asset, USD Stage Layer, Technical Specs
+The theme is Tailwind's slate scale with a cyan → blue accent. The studio's default theme
+(`/settings/system/themes`) can replace the accent and the font: `ThemeProvider.applyStudioTheme` sets
+`--studio-accent-cyan`, `--studio-accent-blue` and `--studio-font-family`.
 
----
+| Role | Dark | Light |
+|---|---|---|
+| Page background | slate-950 | slate-50 |
+| Surfaces (cards, panels) | slate-900 | white |
+| Borders | slate-800 | slate-200 |
+| Text | slate-100, muted slate-400, micro slate-500 | slate-900 |
 
-## 3. Typography & Mathematical Scale
-- **Display & Headings**: Inter / Plus Jakarta Sans font pairing with Major Second (1.125) ratio for dense UI control.
-- **Monospace Elements**: JetBrains Mono / SF Mono for frame numbers (`1001-1120`), version codes (`v004`), color space tags (`ACEScg`), and timecodes (`01:14:22:18`).
-- **Baseline Readability**: Minimum font size 12px for dense data cells, 14px for body text, 16px-24px for headings.
+How colour is used:
 
----
+- **Cyan** marks what is active or selected: the current tab, the chosen page, a selected row, focus rings.
+- **The primary gradient** (`accent-gradient-primary`, cyan → blue) is the `Button` `primary` variant: the one main
+  action of a view. Use it once per view; other actions are `secondary`, `outline` or `ghost`.
+- **Indigo** is the brand (the logo tile, the product mark). It does not mean "selected" or "primary action".
+- **Status colours** come only from `StatusBadge` (below); do not colour a status by hand.
+- `danger` (rose) and `warning` (amber) buttons are for destructive or risky actions only.
 
-## 4. Component Standards
+## 2. Type
 
-### 4.1 Status Badges (`<StatusBadge />`)
-Standardized visual tokens for all production lifecycle states:
-- `Approved` → Emerald filled badge with checkmark icon
-- `In Progress` → Amber filled badge with clock/pulse
-- `Pending Review` → Indigo filled badge
-- `Ready to Start` → Sky blue badge
-- `Retake / Hold` → Rose badge with alert icon
+The font is the studio theme's (`--studio-font-family`), falling back to Tailwind's sans stack. Codes, frame ranges,
+versions and timecodes use the mono stack (`font-mono`).
 
-### 4.2 Data Grids & Tables
-- Sticky headers with fixed column widths.
-- Row-level hover states with keyboard up/down selection.
-- Dense padding (`py-2 px-3`) allowing 20+ rows per 1080p screen.
-- Inline status pickers and assignee avatars.
+| Size | Use |
+|---|---|
+| 11px | micro labels, badges, the text of an `xs` button |
+| 12px | dense table cells, `sm` buttons, captions |
+| 13px | body text in panels, `md` buttons, inputs |
+| 16px | section headings |
+| 20px | page titles |
 
-### 4.3 Modal & Drawer Standards
-- Modals centered with backdrop blur (`backdrop-blur-sm bg-black/60`).
-- Inspector Drawers slide from the right (`w-[480px]` or `w-[600px]`).
-- All drawers and modals respond to `ESC` and trap keyboard focus.
+## 3. Shape
+
+Radii: 6px (badges, chips; `rounded-md`), 8px (buttons, inputs; `rounded-lg`), 12px (cards, dialogs; `rounded-xl`),
+full (avatars, dots, pills).
+
+## 4. Controls
+
+Every control on one row has the same height:
+
+| Height | Where | `Button` size |
+|---|---|---|
+| 28px | grids, table rows, toolbars, filter bars | `sm` (12px text); `xs` is the same height with 11px text, for actions inside a table row |
+| 32px | the default | `md` (13px text) |
+| 36px | forms and dialogs | `lg` (14px text) |
+
+`Button` sets the height itself (`h-7` / `h-8` / `h-9`); do not add vertical padding or a height in `className`.
+It renders an `id` only when one is passed.
+
+## 5. Status badges (`StatusBadge`)
+
+`shared/components/StatusBadge` is the only place a status gets a colour: a tinted fill, a matching border and a
+dot. An unknown status renders in neutral slate. The current map:
+
+| Colour | Statuses |
+|---|---|
+| emerald | Approved, Delivered, Active, Completed |
+| sky | In Progress |
+| indigo | Ready |
+| slate | Not Started, Archived (and any status not in the map) |
+| violet | Pre-Production |
+| blue | Bidding |
+| amber | Internal Review, Pending Review, Pending |
+| purple | Supervisor Review |
+| cyan | Client Review |
+| rose | Retake, Failed |
+| orange | On Hold |
+| zinc | Omitted |
+
+`PriorityBadge` (same file) maps Critical (rose), Urgent (orange), High (amber), Medium (blue) and Low (slate).
+
+## 6. Tables
+
+- Sticky headers, fixed column widths, row hover.
+- Dense rows (`py-2 px-3`), about 20 rows on a 1080p screen.
+- Row actions are `xs` or `sm` buttons, or icon buttons of the same height.
+
+## 7. Dialogs and drawers
+
+- Dialogs use `Modal` (`shared/components/Modal`): centred, a `slate-950/80` backdrop with blur, 12px corners, a
+  name, Escape to close, focus trapped and returned. Do not draw a `fixed inset-0` overlay by hand.
+- Inspector drawers slide from the right (`w-[480px]` or `w-[600px]`).

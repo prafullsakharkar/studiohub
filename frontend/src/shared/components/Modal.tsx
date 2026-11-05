@@ -133,7 +133,7 @@ export const Modal: React.FC<ModalProps> = ({
             tabIndex={-1}
             id={id}
             className={cn(
-              'relative w-full z-10 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden',
+              'relative w-full z-10 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden',
               sizeClasses[size] || sizeClasses.md,
               className
             )}
