@@ -4,6 +4,7 @@ import { EntityPicker } from '@/components/forms/EntityPicker';
 import { ClientPicker } from '@/modules/directory/pickers';
 import type { DirectoryFormConfig, DirectoryListConfig, FieldDef, RelatedRecordsConfig } from '@/modules/directory/types';
 import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 
 const opts = (values: readonly string[]) => values.map((v) => ({ value: v, label: v }));
 const MANAGE_PROJECT = 'project.update';
@@ -34,7 +35,7 @@ export const projectsListConfig: DirectoryListConfig<Project> = {
     { header: 'Client', cell: (p) => p.client_name || '—' },
     { header: 'Shots', cell: (p) => `${p.approved_shots}/${p.total_shots}` },
     { header: 'Delivery', cell: (p) => p.delivery_date ?? '—' },
-    { header: 'Status', cell: (p) => <Badge variant={p.status === 'Approved' ? 'success' : p.status === 'On Hold' ? 'warning' : 'info'}>{p.status}</Badge> },
+    { header: 'Status', cell: (p) => <StatusBadge status={p.status} /> },
   ],
   exportColumns: [
     { header: 'Code', value: (p) => p.code },

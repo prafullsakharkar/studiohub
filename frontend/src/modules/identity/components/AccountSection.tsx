@@ -19,6 +19,7 @@ import { useAuth } from '@/modules/auth';
 import { fetchAllRows } from '@/shared/data/listing';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { Field, FormBanner, formatDate, inputClass } from './ui';
 import { errorText } from '../errorText';
@@ -343,7 +344,7 @@ const Linked: React.FC<{ personId: string; userId: string; onChanged: () => Prom
                 <p className="text-[11px] text-slate-500">Last seen {formatDate(user.data.last_seen)}</p>
               </div>
               <div className="flex gap-2">
-                <Badge variant={user.data.is_active ? 'success' : 'warning'}>{user.data.is_active ? 'Active' : 'Inactive'}</Badge>
+                <StatusBadge status={user.data.is_active ? 'Active' : 'Inactive'} />
                 <Badge variant={user.data.is_email_verified ? 'info' : 'neutral'}>{user.data.is_email_verified ? 'Email verified' : 'Email unverified'}</Badge>
                 {isDirectory && <Badge variant="purple">Directory (LDAP)</Badge>}
                 {user.data.mfa_required && <Badge variant="cyan">Two-factor required</Badge>}

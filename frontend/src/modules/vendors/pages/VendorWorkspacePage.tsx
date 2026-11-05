@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 import { vendorsApi } from '@/api/masterdata/directory';
 import { EntityHistory } from '@/components/history/EntityHistory';
 import { safeWebUrl } from '@/shared/utils/safeUrl';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { DetailGrid } from '@/modules/directory/workspace/DetailGrid';
 import { RecordActions } from '@/modules/directory/workspace/RecordActions';
 import { WorkspaceShell, type WorkspaceTab } from '@/modules/directory/workspace/WorkspaceShell';
@@ -67,7 +67,7 @@ export const VendorWorkspacePage: React.FC = () => {
       isLoading={query.isLoading}
       error={query.error}
       onRetry={() => void query.refetch()}
-      record={vendor ? { title: vendor.name, code: vendor.code, icon: <Briefcase className="w-6 h-6" />, badges: <Badge variant={vendor.status === 'Active' ? 'success' : 'neutral'}>{vendor.status || '—'}</Badge>, subtitle: vendor.location } : null}
+      record={vendor ? { title: vendor.name, code: vendor.code, icon: <Briefcase className="w-6 h-6" />, badges: <StatusBadge status={vendor.status || '—'} />, subtitle: vendor.location } : null}
       actions={
         vendor && (
           <RecordActions

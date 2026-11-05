@@ -15,8 +15,7 @@ import { useCan } from '@/core/permissions/useCan';
 import { Button } from '@/shared/components/Button';
 import { StatusHistory } from '@/modules/production/work/StatusHistory';
 import { useReviewWrite, ReviewActivityPanel, ReviewAnnotationsPanel, ReviewCommentsPanel, ReviewNotesPanel, ReviewParticipantsPanel, ReviewVersionsPanel } from './ReviewPanels';
-import { reviewStatusVariant } from './reviews';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 
 type TabId = 'versions' | 'participants' | 'comments' | 'notes' | 'annotations' | 'activity' | 'status' | 'changes';
 
@@ -133,7 +132,7 @@ export const ReviewWorkspace: React.FC = () => {
                 {review.description && <p className="mt-2 text-sm text-slate-300 whitespace-pre-wrap">{review.description}</p>}
               </div>
               <div className="flex flex-col items-start sm:items-end gap-2">
-                <Badge variant={reviewStatusVariant(review.status)}>{review.status}</Badge>
+                <StatusBadge status={review.status} />
                 <ReviewActions review={review} />
                 {canEdit && (
                   <Link to={`/reviews/${review.id}/edit`} className="text-xs text-cyan-300 hover:underline">

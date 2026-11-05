@@ -24,7 +24,7 @@ Domain behaviour stays in `src/modules/<module>/`.
 | Component | Source | Notes |
 |---|---|---|
 | `Button` | `shared/components/Button` | primary / secondary / outline / ghost / danger |
-| `Badge`, `StatusBadge` | `shared/components/Badge`, `shared/components/StatusBadge` | production status and priority mapping |
+| `Badge`, `StatusBadge` | `shared/components/Badge`, `shared/components/StatusBadge` | every status goes through `StatusBadge` (colour by meaning, `DESIGN_SYSTEM.md` §5); `Badge` is for tags; `PriorityBadge` for priority |
 | `Card` | `shared/components/Card` | |
 | `SearchInput` | `shared/components/SearchInput` | debounced |
 | `Pagination` | `shared/components/Pagination` | DRF-style controls |

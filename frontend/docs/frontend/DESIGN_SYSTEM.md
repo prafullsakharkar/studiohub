@@ -4,7 +4,7 @@ StudioHub is used by artists, coordinators and producers on dense, often multi-d
 interface is dark by default, compact, and keeps colour for meaning.
 
 The rules below are the component kit's (`spikes/mockups/`, the design canvas), the reference for new screens.
-Where the code does not follow them yet (selected states still drawn in indigo, statuses coloured by hand), the
+Where the code does not follow them yet (selected states still drawn in indigo), the
 difference is listed in `docs/frontend/component-migration-plan.md` (on `design/component-kit`) and is being closed
 one branch at a time; the values given for components (`Button`, `StatusBadge`, `Modal`) are what the code does.
 The shared components themselves are listed in [`CANONICAL_COMPONENTS.md`](CANONICAL_COMPONENTS.md).
@@ -65,22 +65,25 @@ It renders an `id` only when one is passed.
 ## 5. Status badges (`StatusBadge`)
 
 `shared/components/StatusBadge` is the only place a status gets a colour: a tinted fill, a matching border and a
-dot. An unknown status renders in neutral slate. The current map:
+dot, in both themes. The colour follows what the status means, not which record it belongs to, so "Rejected" looks
+the same on a delivery, a review and a leave request. The text is the status as the API sends it (or `label`, e.g.
+"Comp: Approved" on a shot's pipeline). Case, `_` and `-` do not matter (`in_progress` is In Progress).
 
-| Colour | Statuses |
-|---|---|
-| emerald | Approved, Delivered, Active, Completed |
-| sky | In Progress |
-| indigo | Ready |
-| slate | Not Started, Archived (and any status not in the map) |
-| violet | Pre-Production |
-| blue | Bidding |
-| amber | Internal Review, Pending Review, Pending |
-| purple | Supervisor Review |
-| cyan | Client Review |
-| rose | Retake, Failed |
-| orange | On Hold |
-| zinc | Omitted |
+| Tone | Colour | Statuses |
+|---|---|---|
+| done | emerald | Approved, Completed, Delivered, Active, Enabled, Exported, Registered, Verified, Pass, Success, Available, Resolved, Conformed, Published, Final, Done |
+| running | sky | In Progress, Started, Running, Validating, Exporting, In Review, Booked, Scheduled, WIP |
+| ready | indigo | Ready, Validated |
+| waiting | amber | Pending, Pending Review, Internal Review, Submitted, Queued, Open, On Leave, Postponed, Deprecated |
+| failed | rose | Rejected, Retake, Failed, Fail, Revoked, Mismatch, Missing, Overbooked, Blocking |
+| held | orange | On Hold |
+| idle | slate | Not Started, Draft, Archived, Closed, Inactive, Disabled, Blocked, Cancelled, Expired, Terminated, Unavailable, Muted, Paused, Declared, Not Checked, and any status not listed |
+| omitted | zinc | Omitted |
+| (stage) | blue / violet / purple / cyan | Bidding / Pre-Production / Signed Off, Supervisor Review / Client Review |
+
+A test (`StatusBadge.test.tsx`) reads every status enum in `openapi.ts` and fails on one that is not listed, so a
+new backend status gets a colour on purpose. Tags that are not statuses (Default, System, Primary, a type, a count)
+use `Badge`.
 
 `PriorityBadge` (same file) maps Critical (rose), Urgent (orange), High (amber), Medium (blue) and Low (slate).
 

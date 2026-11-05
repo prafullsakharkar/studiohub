@@ -4,7 +4,7 @@ import { peopleApi } from '@/api/masterdata/directory';
 import type { Person } from '@/api/masterdata/directory';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { Table } from '@/modules/identity/components/ui';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Pagination } from '@/shared/components/Pagination';
 import { usePaginatedList } from '@/shared/data/usePaginatedList';
 
@@ -39,7 +39,7 @@ export const PeopleTab: React.FC<PeopleTabProps> = ({ field, parentId, parentNam
               <td className="px-4 py-2 text-slate-300">{person.team_name || '—'}</td>
               <td className="px-4 py-2 text-slate-300">{person.office_name || '—'}</td>
               <td className="px-4 py-2">
-                <Badge variant={person.status === 'active' ? 'success' : 'neutral'}>{person.status ?? '—'}</Badge>
+                <StatusBadge status={person.status ?? '—'} />
               </td>
             </tr>
           ))}

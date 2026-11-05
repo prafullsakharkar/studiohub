@@ -5,28 +5,12 @@ import { isJobDeletable, isJobEditable } from '@/api/publishing/publishingFlow';
 import type { DirectoryFormConfig, DirectoryListConfig, FieldDef } from '@/modules/directory/types';
 import { VersionPicker } from '@/modules/production/review/pickers';
 import { ProjectPicker } from '@/modules/production/work/pickers';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 
 const options = (values: ReadonlyArray<string>) => values.map((value) => ({ value, label: value }));
 
 /** The job’s real state (`job_status`); the legacy `status` word calls both Validated and Exported “Published”. */
-export const jobStatusVariant = (status: string) => {
-  switch (status) {
-    case 'Exported':
-      return 'success';
-    case 'Failed':
-      return 'destructive';
-    case 'Validating':
-      return 'info';
-    case 'Validated':
-      return 'cyan';
-    case 'Exporting':
-      return 'warning';
-    default:
-      return 'neutral';
-  }
-};
-export const JobStatusBadge = ({ status }: { status: string }) => <Badge variant={jobStatusVariant(status)}>{status}</Badge>;
+export const JobStatusBadge = ({ status }: { status: string }) => <StatusBadge status={status} />;
 
 /** `scope`: the list of one project (its tab); the project is then fixed, not a column or a filter. */
 export function usePublishListConfig(scope?: { projectId: string }): DirectoryListConfig<PublishRow> {

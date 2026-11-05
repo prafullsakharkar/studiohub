@@ -1,10 +1,8 @@
 import type React from 'react';
 import type { Shot } from '@/api/production/work';
 import { DetailGrid } from '@/modules/directory/workspace/DetailGrid';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { safeWebUrl } from '@/shared/utils/safeUrl';
-
-const stageVariant = (status: string) => (/approved|complete|final|done/i.test(status) ? 'success' : /progress|review|wip/i.test(status) ? 'info' : 'neutral');
 
 /** A shot's own fields as the API sends them; a stage or link the shot does not have is left out, not invented. */
 export const ShotOverview: React.FC<{ shot: Shot }> = ({ shot }) => {
@@ -36,9 +34,7 @@ export const ShotOverview: React.FC<{ shot: Shot }> = ({ shot }) => {
           <ul className="flex flex-wrap gap-2">
             {stages.map(([stage, status]) => (
               <li key={stage}>
-                <Badge variant={stageVariant(status)}>
-                  {stage}: {status}
-                </Badge>
+                <StatusBadge status={status} label={`${stage}: ${status}`} />
               </li>
             ))}
           </ul>

@@ -1,7 +1,7 @@
 import { automationKeys, automationsApi } from '@/api/production/review';
 import type { AutomationRule } from '@/api/production/review';
 import type { DirectoryFormConfig, DirectoryListConfig, FieldDef } from '@/modules/directory/types';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { ProjectPicker } from '@/modules/production/work/pickers';
 
 /** The form is flat; the rule's trigger is an object. These two layers translate. */
@@ -40,7 +40,7 @@ export function useAutomationsListConfig(): DirectoryListConfig<AutomationRule> 
       { header: 'When', cell: (row) => `${row.trigger.entity_type || 'Anything'} · ${row.trigger.event || '—'}` },
       { header: 'Then', cell: (row) => (row.actions.length ? `${row.actions.length} action${row.actions.length === 1 ? '' : 's'}` : '—') },
       { header: 'Runs', cell: (row) => row.execution_count },
-      { header: 'State', cell: (row) => (row.is_active ? <Badge variant="success">Enabled</Badge> : <Badge variant="neutral">Disabled</Badge>) },
+      { header: 'State', cell: (row) => (row.is_active ? <StatusBadge status="Enabled" /> : <StatusBadge status="Disabled" />) },
     ],
   };
 }

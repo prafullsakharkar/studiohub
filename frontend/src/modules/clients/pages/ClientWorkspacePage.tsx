@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 import { clientsApi } from '@/api/masterdata/directory';
 import { EntityHistory } from '@/components/history/EntityHistory';
 import { useCan } from '@/core/permissions/useCan';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { DetailGrid } from '@/modules/directory/workspace/DetailGrid';
 import { ProjectsOfClient } from '@/modules/directory/workspace/ProjectsOfClient';
 import { RecordActions } from '@/modules/directory/workspace/RecordActions';
@@ -67,7 +67,7 @@ export const ClientWorkspacePage: React.FC = () => {
       isLoading={query.isLoading}
       error={query.error}
       onRetry={() => void query.refetch()}
-      record={client ? { title: client.name, code: client.code, icon: <Building2 className="w-6 h-6" />, badges: <Badge variant={client.status === 'Active' ? 'success' : 'neutral'}>{client.status || '—'}</Badge>, subtitle: client.headquarters } : null}
+      record={client ? { title: client.name, code: client.code, icon: <Building2 className="w-6 h-6" />, badges: <StatusBadge status={client.status || '—'} />, subtitle: client.headquarters } : null}
       actions={
         client && (
           <RecordActions
