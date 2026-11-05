@@ -6,6 +6,8 @@ from apps.core.api.serializers.base import BaseReadSerializer
 from apps.production.models import Project
 from apps.production.selectors.base import ProductionBaseSelector
 
+from .vendors import ProjectPageSerializer, VendorNamesField
+
 # What an external (vendor/client) member must not read from the project record: money, progress
 # totals, the client's people, the other vendors, and the studio's own supervisors.
 EXTERNAL_HIDDEN_FIELDS = (
@@ -35,6 +37,7 @@ class ProjectSerializer(BaseReadSerializer[Any]):
     coordinator_name = serializers.SerializerMethodField()
     project_code = serializers.CharField(source="code", read_only=True)
     client_name = serializers.CharField(read_only=True)
+    vendor_names = VendorNamesField()
 
     class Meta:
         model = Project
@@ -75,6 +78,7 @@ class ProjectSerializer(BaseReadSerializer[Any]):
             "updated_at",
         )
         read_only_fields = ("id", "uuid", "created_at", "updated_at")
+        list_serializer_class = ProjectPageSerializer
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

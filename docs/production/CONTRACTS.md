@@ -390,3 +390,14 @@ Frontend change list: the members panel gets a status select, a Remove action an
 | C-55 | the same (a blank `role`, `status` or `scope`) | Counted as the default. | Counts as not named. |
 
 A caller that relied on "add again reactivates them" must send `"status": "active"`, or use `PATCH …/members/{member_id}/` (C-54).
+
+## CR-42 — a project's vendors
+
+| ID | Endpoint | Before | After |
+|---|---|---|---|
+| C-56 | `POST /api/v1/projects/`, `PATCH`/`PUT /api/v1/projects/{id}/` (`vendor_ids`) | Any JSON was stored as sent: ids that name no vendor, objects, numbers, the same id twice. | A list of vendor UUIDs, each a vendor that exists and is not deleted, each once, stored as strings in the order given; an empty list clears them. Otherwise `400` with one message per bad id under `vendor_ids` (`Unknown vendor: <id>`, `Vendor listed twice: <id>`; a value that is not a UUID gets DRF's per-index `{"0": ["Must be a valid UUID."]}`) and nothing is stored. |
+| C-56 | the same (`vendor_names`) | Stored as sent; it did not follow the ids. | Read-only: ignored on write (no error). |
+| C-56 | every project read (list, detail, write responses) | `vendor_names` was what the last client wrote. | The names of the vendors in `vendor_ids`, in that order, read from the vendors: a rename shows at once; a deleted vendor, or an older stored id that is not a vendor, is skipped (its id stays in `vendor_ids` until the next write). A page of projects reads all its vendors in one query. External members still see neither field (`EXTERNAL_HIDDEN_FIELDS`). |
+
+A client that edits the vendors of a project whose list holds a vendor deleted since must send the list without it (the old id is refused like any unknown one). Evidence: `docs/sync/samples/production/_vendor_ids_flow.json` (before) and `_vendor_ids_cr42_flow.json` (after).
+

@@ -1,0 +1,415 @@
+{
+  "vendor_create": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/vendors/",
+      "body": {
+        "name": "Northlight Roto",
+        "code": "NLR"
+      }
+    },
+    "status": 201,
+    "body": {
+      "id": "a9cbb3ef-f288-40ef-bbc7-8a83f410f822",
+      "name": "Northlight Roto",
+      "code": "NLR",
+      "contact_name": "",
+      "email": "",
+      "specialization": "Roto & Paint",
+      "security_tier": "Standard Studio NDA",
+      "nda_signed": false,
+      "rating": "4.50",
+      "location": "",
+      "status": "Approved Partner",
+      "logo_url": "",
+      "bandwidth_gbps": "10.00",
+      "bandwidth_link": "",
+      "contact_count": 0,
+      "created_at": "2026-11-05T06:59:01.059015Z",
+      "updated_at": "2026-11-05T06:59:01.059023Z"
+    }
+  },
+  "project_create_bad_ids": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/projects/",
+      "body": {
+        "code": "CR42",
+        "name": "Vendor ids",
+        "workflow_type": "standard",
+        "type": "Feature Film",
+        "vendor_ids": [
+          "a9cbb3ef-f288-40ef-bbc7-8a83f410f822",
+          "not-a-vendor",
+          "00000000-0000-0000-0000-000000000000"
+        ],
+        "vendor_names": [
+          "Somebody Else"
+        ]
+      }
+    },
+    "status": 201,
+    "body": {
+      "id": "9e0e3132-d741-4d8b-ae55-1d6acd8d1d9e",
+      "uuid": "9e0e3132-d741-4d8b-ae55-1d6acd8d1d9e",
+      "code": "CR42",
+      "name": "Vendor ids",
+      "description": "",
+      "type": "Feature Film",
+      "status": "In Progress",
+      "workflow_type": "standard",
+      "fps": "24.000",
+      "resolution": "4096x2160 (4K DCI)",
+      "aspect_ratio": "2.39:1",
+      "color_space": "ACEScg",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "",
+      "budget_usd": "0.00",
+      "supervisor": null,
+      "coordinator": null,
+      "client_id": "",
+      "client_name": "",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "vendor_ids": [
+        "a9cbb3ef-f288-40ef-bbc7-8a83f410f822",
+        "not-a-vendor",
+        "00000000-0000-0000-0000-000000000000"
+      ],
+      "vendor_names": [
+        "Somebody Else"
+      ],
+      "vendor_team_ids": []
+    }
+  },
+  "project_detail_after_create": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/9e0e3132-d741-4d8b-ae55-1d6acd8d1d9e/",
+      "body": null
+    },
+    "status": 200,
+    "body": {
+      "id": "9e0e3132-d741-4d8b-ae55-1d6acd8d1d9e",
+      "uuid": "9e0e3132-d741-4d8b-ae55-1d6acd8d1d9e",
+      "code": "CR42",
+      "project_code": "CR42",
+      "name": "Vendor ids",
+      "description": "",
+      "type": "Feature Film",
+      "status": "In Progress",
+      "workflow_type": "standard",
+      "fps": "24.000",
+      "resolution": "4096x2160 (4K DCI)",
+      "aspect_ratio": "2.39:1",
+      "color_space": "ACEScg",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "",
+      "total_shots": 0,
+      "approved_shots": 0,
+      "in_progress_shots": 0,
+      "total_assets": 0,
+      "budget_usd": "0.00",
+      "supervisor_id": null,
+      "supervisor_name": "",
+      "coordinator_id": null,
+      "coordinator_name": "",
+      "client_id": "",
+      "client_name": "",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "vendor_ids": [
+        "a9cbb3ef-f288-40ef-bbc7-8a83f410f822",
+        "not-a-vendor",
+        "00000000-0000-0000-0000-000000000000"
+      ],
+      "vendor_names": [
+        "Somebody Else"
+      ],
+      "vendor_team_ids": [],
+      "created_at": "2026-11-05T06:59:01.079882Z",
+      "updated_at": "2026-11-05T06:59:01.079889Z"
+    }
+  },
+  "project_patch_ids_only": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/projects/9e0e3132-d741-4d8b-ae55-1d6acd8d1d9e/",
+      "body": {
+        "vendor_ids": [
+          "a9cbb3ef-f288-40ef-bbc7-8a83f410f822"
+        ]
+      }
+    },
+    "status": 200,
+    "body": {
+      "code": "CR42",
+      "name": "Vendor ids",
+      "description": "",
+      "type": "Feature Film",
+      "status": "In Progress",
+      "fps": "24.000",
+      "resolution": "4096x2160 (4K DCI)",
+      "aspect_ratio": "2.39:1",
+      "color_space": "ACEScg",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "",
+      "budget_usd": "0.00",
+      "supervisor": null,
+      "coordinator": null,
+      "client_id": "",
+      "client_name": "",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "vendor_ids": [
+        "a9cbb3ef-f288-40ef-bbc7-8a83f410f822"
+      ],
+      "vendor_names": [
+        "Somebody Else"
+      ],
+      "vendor_team_ids": []
+    }
+  },
+  "project_patch_not_strings": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/projects/9e0e3132-d741-4d8b-ae55-1d6acd8d1d9e/",
+      "body": {
+        "vendor_ids": [
+          {
+            "id": "a9cbb3ef-f288-40ef-bbc7-8a83f410f822"
+          },
+          42
+        ]
+      }
+    },
+    "status": 200,
+    "body": {
+      "code": "CR42",
+      "name": "Vendor ids",
+      "description": "",
+      "type": "Feature Film",
+      "status": "In Progress",
+      "fps": "24.000",
+      "resolution": "4096x2160 (4K DCI)",
+      "aspect_ratio": "2.39:1",
+      "color_space": "ACEScg",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "",
+      "budget_usd": "0.00",
+      "supervisor": null,
+      "coordinator": null,
+      "client_id": "",
+      "client_name": "",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "vendor_ids": [
+        {
+          "id": "a9cbb3ef-f288-40ef-bbc7-8a83f410f822"
+        },
+        42
+      ],
+      "vendor_names": [
+        "Somebody Else"
+      ],
+      "vendor_team_ids": []
+    }
+  },
+  "project_patch_real_id": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/projects/9e0e3132-d741-4d8b-ae55-1d6acd8d1d9e/",
+      "body": {
+        "vendor_ids": [
+          "a9cbb3ef-f288-40ef-bbc7-8a83f410f822"
+        ]
+      }
+    },
+    "status": 200,
+    "body": {
+      "code": "CR42",
+      "name": "Vendor ids",
+      "description": "",
+      "type": "Feature Film",
+      "status": "In Progress",
+      "fps": "24.000",
+      "resolution": "4096x2160 (4K DCI)",
+      "aspect_ratio": "2.39:1",
+      "color_space": "ACEScg",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "",
+      "budget_usd": "0.00",
+      "supervisor": null,
+      "coordinator": null,
+      "client_id": "",
+      "client_name": "",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "vendor_ids": [
+        "a9cbb3ef-f288-40ef-bbc7-8a83f410f822"
+      ],
+      "vendor_names": [
+        "Somebody Else"
+      ],
+      "vendor_team_ids": []
+    }
+  },
+  "vendor_delete": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/vendors/a9cbb3ef-f288-40ef-bbc7-8a83f410f822/",
+      "body": null
+    },
+    "status": 204,
+    "body": {
+      "_non_json": null,
+      "_len": 0
+    }
+  },
+  "vendor_detail_after_delete": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/vendors/a9cbb3ef-f288-40ef-bbc7-8a83f410f822/",
+      "body": null
+    },
+    "status": 404,
+    "body": {
+      "detail": "No Vendor matches the given query.",
+      "error": {
+        "code": "not_found",
+        "request_id": "e2a5adf2-b92b-444b-b1e1-28f5fc7c24f9"
+      }
+    }
+  },
+  "project_detail_after_vendor_delete": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/9e0e3132-d741-4d8b-ae55-1d6acd8d1d9e/",
+      "body": null
+    },
+    "status": 200,
+    "body": {
+      "id": "9e0e3132-d741-4d8b-ae55-1d6acd8d1d9e",
+      "uuid": "9e0e3132-d741-4d8b-ae55-1d6acd8d1d9e",
+      "code": "CR42",
+      "project_code": "CR42",
+      "name": "Vendor ids",
+      "description": "",
+      "type": "Feature Film",
+      "status": "In Progress",
+      "workflow_type": "standard",
+      "fps": "24.000",
+      "resolution": "4096x2160 (4K DCI)",
+      "aspect_ratio": "2.39:1",
+      "color_space": "ACEScg",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "",
+      "total_shots": 0,
+      "approved_shots": 0,
+      "in_progress_shots": 0,
+      "total_assets": 0,
+      "budget_usd": "0.00",
+      "supervisor_id": null,
+      "supervisor_name": "",
+      "coordinator_id": null,
+      "coordinator_name": "",
+      "client_id": "",
+      "client_name": "",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "vendor_ids": [
+        "a9cbb3ef-f288-40ef-bbc7-8a83f410f822"
+      ],
+      "vendor_names": [
+        "Somebody Else"
+      ],
+      "vendor_team_ids": [],
+      "created_at": "2026-11-05T06:59:01.079882Z",
+      "updated_at": "2026-11-05T06:59:01.131446Z"
+    }
+  },
+  "summary": {
+    "vendor_create": {
+      "status": 201
+    },
+    "project_create_bad_ids": {
+      "status": 201,
+      "vendor_ids": [
+        "a9cbb3ef-f288-40ef-bbc7-8a83f410f822",
+        "not-a-vendor",
+        "00000000-0000-0000-0000-000000000000"
+      ],
+      "vendor_names": [
+        "Somebody Else"
+      ],
+      "vendor_team_ids": []
+    },
+    "project_detail_after_create": {
+      "status": 200,
+      "vendor_ids": [
+        "a9cbb3ef-f288-40ef-bbc7-8a83f410f822",
+        "not-a-vendor",
+        "00000000-0000-0000-0000-000000000000"
+      ],
+      "vendor_names": [
+        "Somebody Else"
+      ],
+      "vendor_team_ids": []
+    },
+    "project_patch_ids_only": {
+      "status": 200,
+      "vendor_ids": [
+        "a9cbb3ef-f288-40ef-bbc7-8a83f410f822"
+      ],
+      "vendor_names": [
+        "Somebody Else"
+      ],
+      "vendor_team_ids": []
+    },
+    "project_patch_not_strings": {
+      "status": 200,
+      "vendor_ids": [
+        {
+          "id": "a9cbb3ef-f288-40ef-bbc7-8a83f410f822"
+        },
+        42
+      ],
+      "vendor_names": [
+        "Somebody Else"
+      ],
+      "vendor_team_ids": []
+    },
+    "project_patch_real_id": {
+      "status": 200,
+      "vendor_ids": [
+        "a9cbb3ef-f288-40ef-bbc7-8a83f410f822"
+      ],
+      "vendor_names": [
+        "Somebody Else"
+      ],
+      "vendor_team_ids": []
+    },
+    "vendor_delete": {
+      "status": 204
+    },
+    "vendor_detail_after_delete": {
+      "status": 404
+    },
+    "project_detail_after_vendor_delete": {
+      "status": 200,
+      "vendor_ids": [
+        "a9cbb3ef-f288-40ef-bbc7-8a83f410f822"
+      ],
+      "vendor_names": [
+        "Somebody Else"
+      ],
+      "vendor_team_ids": []
+    }
+  }
+}
