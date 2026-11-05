@@ -3,6 +3,8 @@ import { Options as KyOptions } from 'ky';
 export interface RequestOptions extends Omit<KyOptions, 'searchParams'> {
   params?: Record<string, string | number | boolean | undefined | null>;
   skipAuth?: boolean;
+  /** The caller expects this request may fail, or shows the failure itself: it is logged, but raises no toast. */
+  silent?: boolean;
   timeout?: number;
   retry?: number;
 }

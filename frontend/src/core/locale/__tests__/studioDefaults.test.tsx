@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { tokenStorage } from '@/core/auth/tokenStorage';
+import { notify } from '@/core/notifications/notify';
 import { ThemeProvider, useThemeMode } from '@/providers/ThemeProvider';
 import { mockFetch } from '@/test/fetchMock';
 import type { MockCall, MockReply } from '@/test/fetchMock';
@@ -91,12 +92,16 @@ describe('the studio’s default localization', () => {
 
   it('keeps the browser’s formats when no default has been chosen yet (404) and still lets the screens render', async () => {
     answers = { theme: flow.themes_default_none as Captured, locale: flow.locales_default_none as Captured };
+    const toasts = vi.spyOn(notify, 'fromError');
     mockFetch(server);
     mount();
     await waitFor(() => expect(screen.getByTestId('state').textContent).toBe('settled'));
     expect(getStudioLocale()).toBeNull();
     expect(screen.getByTestId('when').textContent).toBe(new Date(2026, 10, 3, 14, 7).toLocaleString());
     expect(font()).toBe('');
+    // A missing default is not an error to tell the user about: no "Request Failed" toast (a studio with none set is normal).
+    expect(toasts).not.toHaveBeenCalled();
+    toasts.mockRestore();
   });
 
   it('keeps the browser’s formats when the body is not a localization', async () => {
