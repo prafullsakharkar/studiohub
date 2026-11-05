@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { tokenStorage } from '@/core/auth/tokenStorage';
 import { notify } from '@/core/notifications/notify';
+import { Button } from '@/shared/components/Button';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { useAuth } from '../hooks/useAuth';
 import { authService } from '../services/AuthService';
@@ -102,9 +103,9 @@ export const ChangePasswordPage: React.FC = () => {
           </div>
         ))}
 
-        <button type="submit" disabled={isSubmitting} className="w-full p-2 rounded bg-indigo-600 disabled:opacity-50">
+        <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
           {isSubmitting ? 'Saving…' : 'Change password'}
-        </button>
+        </Button>
       </form>
     </div>
   );

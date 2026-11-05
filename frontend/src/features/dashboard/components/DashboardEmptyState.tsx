@@ -2,6 +2,7 @@ import React from 'react';
 import { Film, FolderPlus, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { StudioOverview } from './StudioOverview';
+import { PRIMARY_FILL } from '@/shared/utils/kitStyles';
 
 export interface DashboardEmptyStateProps {
   onSelectProjectPrompt?: () => void;
@@ -30,7 +31,7 @@ export const DashboardEmptyState: React.FC<DashboardEmptyStateProps> = () => {
       <div className="flex items-center gap-3">
         <Link
           to="/projects"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors shadow-lg shadow-indigo-600/20"
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-colors ${PRIMARY_FILL}`}
         >
           <FolderPlus className="w-4 h-4" />
           Browse Projects Catalog

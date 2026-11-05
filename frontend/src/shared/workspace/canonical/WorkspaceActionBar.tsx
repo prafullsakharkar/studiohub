@@ -6,6 +6,7 @@ import { WorkspaceOverflowMenu } from './WorkspaceOverflowMenu';
 import { Modal } from '@/shared/components/Modal';
 import { Button } from '@/shared/components/Button';
 import { cn } from '@/shared/utils/cn';
+import { PRIMARY_FILL } from '@/shared/utils/kitStyles';
 
 export interface WorkspaceActionBarProps {
   actions: WorkspaceAction[];
@@ -71,8 +72,7 @@ export const WorkspaceActionBar: React.FC<WorkspaceActionBarProps> = ({
             'bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-800 hover:border-slate-700';
 
           if (isPrimary) {
-            variantClasses =
-              'bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm shadow-indigo-500/25 border border-indigo-500/40';
+            variantClasses = PRIMARY_FILL;
           } else if (isDanger) {
             variantClasses =
               'bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 hover:border-rose-700';

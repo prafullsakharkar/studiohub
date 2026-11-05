@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { usePageLayoutStore, type LayoutDensity, ContainerWidth, type PreferredViewMode } from '@/core/layout/usePageLayoutStore';
 import { cn } from '@/shared/utils/cn';
+import { SELECTED } from '@/shared/utils/kitStyles';
 
 export const LayoutDensityControl: React.FC<{ className?: string; buttonVariant?: 'compact' | 'standard' }> = ({ 
   className,
@@ -119,7 +120,7 @@ export const LayoutDensityControl: React.FC<{ className?: string; buttonVariant?
                   className={cn(
                     'py-1.5 px-2 rounded-lg text-center font-medium transition-all text-[11px] flex flex-col items-center justify-center gap-0.5 cursor-pointer',
                     density === d.id
-                      ? 'bg-indigo-600 text-white font-semibold shadow-xs'
+                      ? cn(SELECTED, 'border border-transparent')
                       : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800/80'
                   )}
                   title={d.desc}
@@ -141,7 +142,7 @@ export const LayoutDensityControl: React.FC<{ className?: string; buttonVariant?
                 className={cn(
                   'py-1.5 px-2 rounded-lg text-center font-medium transition-all text-[11px] flex items-center justify-center gap-1.5 cursor-pointer',
                   containerWidth === 'full'
-                    ? 'bg-indigo-600 text-white font-semibold shadow-xs'
+                    ? cn(SELECTED, 'border border-transparent')
                     : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800/80'
                 )}
               >
@@ -153,7 +154,7 @@ export const LayoutDensityControl: React.FC<{ className?: string; buttonVariant?
                 className={cn(
                   'py-1.5 px-2 rounded-lg text-center font-medium transition-all text-[11px] flex items-center justify-center gap-1.5 cursor-pointer',
                   containerWidth === 'contained'
-                    ? 'bg-indigo-600 text-white font-semibold shadow-xs'
+                    ? cn(SELECTED, 'border border-transparent')
                     : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800/80'
                 )}
               >
@@ -166,7 +167,7 @@ export const LayoutDensityControl: React.FC<{ className?: string; buttonVariant?
           {/* Sticky Header Setting */}
           <div className="flex items-center justify-between py-1 px-1 bg-slate-950/50 rounded-lg border border-slate-800/60">
             <div className="flex items-center gap-1.5 text-[11px] text-slate-300">
-              <Pin className={cn("w-3 h-3", headerSticky ? "text-indigo-400" : "text-slate-500")} />
+              <Pin className={cn("w-3 h-3", headerSticky ? "text-cyan-400" : "text-slate-500")} />
               <span>Sticky Header Bar</span>
             </div>
             <button
@@ -175,7 +176,7 @@ export const LayoutDensityControl: React.FC<{ className?: string; buttonVariant?
               className={cn(
                 "px-2 py-0.5 rounded text-[10px] font-mono font-medium transition-colors cursor-pointer",
                 headerSticky
-                  ? "bg-indigo-600/30 text-indigo-300 border border-indigo-500/40"
+                  ? SELECTED
                   : "bg-slate-800 text-slate-400 hover:text-slate-200"
               )}
             >
@@ -199,7 +200,7 @@ export const LayoutDensityControl: React.FC<{ className?: string; buttonVariant?
                     className={cn(
                       'py-1.5 px-1.5 rounded-lg text-center transition-all text-[10px] flex flex-col items-center justify-center gap-1 cursor-pointer truncate',
                       isSelected
-                        ? 'bg-indigo-600 text-white font-semibold shadow-xs'
+                        ? cn(SELECTED, 'border border-transparent')
                         : 'bg-slate-950 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800/80'
                     )}
                     title={`Default view mode: ${v.label}`}
