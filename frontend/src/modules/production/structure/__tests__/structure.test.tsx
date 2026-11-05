@@ -143,6 +143,66 @@ describe('project form', () => {
   });
 });
 
+describe('project form: vendors (CR-42)', () => {
+  const cr42 = loadSample<Record<string, Captured>>('production/_vendor_ids_cr42_flow.json');
+  const vendors = loadSample<Record<string, Captured>>('masterdata/vendors.json');
+  // A project whose vendor "Ember FX" was deleted after it was added: the API still lists the id.
+  const saved = cr42.project_detail_after_vendor_delete.body as { id: string; name: string; vendor_ids: string[] };
+  const [northId, deletedId] = [cr42.vendor_rename_north.body.id as string, cr42.vendor_create_ember.body.id as string];
+  const server = (c: MockCall): MockReply => {
+    const p = path(c);
+    if (c.method === 'PATCH') return reply(cr42.project_patch_live_only);
+    if (p === `/api/v1/projects/${saved.id}/`) return reply(cr42.project_detail_after_vendor_delete);
+    if (p === '/api/v1/vendors/') return reply(vendors.list_admin);
+    if (p === `/api/v1/vendors/${northId}/`) return reply(cr42.vendor_rename_north);
+    if (p === `/api/v1/vendors/${deletedId}/`) return reply(vendors.detail_404);
+    return { body: { count: 0, next: null, previous: null, results: [] } };
+  };
+  const editRoute = <Route path="/projects/:id/edit" element={<DirectoryFormPage config={projectsFormConfig} />} />;
+  const chips = () => within(screen.getByRole('list', { name: 'Chosen vendors' })).queryAllByRole('listitem').map((li) => li.textContent);
+
+  it('shows the saved vendors by name; a deleted one is "Unknown vendor"', async () => {
+    mockFetch(server);
+    renderAt(`/projects/${saved.id}/edit`, superuser, editRoute);
+    await waitFor(() => expect(chips()).toEqual(['Unknown vendor', 'Northlight Studios']));
+    expect(saved.vendor_ids).toEqual([deletedId, northId]); // the saved order is kept
+  });
+
+  it('removing the unknown vendor sends the live ids only (the API refuses a deleted one)', async () => {
+    const { calls } = mockFetch(server);
+    renderAt(`/projects/${saved.id}/edit`, superuser, editRoute);
+    await waitFor(() => expect(chips()).toContain('Unknown vendor'));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Unknown vendor' }));
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'PATCH')).toBe(true));
+    expect(calls.find((c) => c.method === 'PATCH')!.body).toEqual({ vendor_ids: [northId] });
+  });
+
+  it('an edit that leaves the vendors alone does not send them', async () => {
+    const { calls } = mockFetch(server);
+    renderAt(`/projects/${saved.id}/edit`, superuser, editRoute);
+    await waitFor(() => expect(chips()).toContain('Unknown vendor'));
+    fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Renamed' } });
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'PATCH')).toBe(true));
+    expect(calls.find((c) => c.method === 'PATCH')!.body).toEqual({ name: 'Renamed' });
+  });
+
+  it('a new project sends the vendors picked, in order', async () => {
+    const { calls } = mockFetch((c) => (c.method === 'POST' ? reply(flow.projects_create_duplicate) : server(c)));
+    renderAt('/projects/new', superuser, <Route path="/projects/new" element={<DirectoryFormPage config={projectsFormConfig} />} />);
+    fireEvent.change(await screen.findByLabelText(/^Name/), { target: { value: 'Gamma' } });
+    fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: 'GAMMA' } });
+    const { menu } = await openPicker('Vendors');
+    const [first, second] = vendors.list_admin.body.results as { id: string; name: string }[];
+    fireEvent.click(await within(menu).findByRole('option', { name: second.name }));
+    fireEvent.click(within(menu).getByRole('option', { name: first.name }));
+    fireEvent.click(screen.getByRole('button', { name: /create project/i }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
+    expect(calls.find((c) => c.method === 'POST')!.body).toMatchObject({ vendor_ids: [second.id, first.id] });
+  });
+});
+
 describe('project children and panels', () => {
   it('sequences: lists this project’s sequences, and the episode picker offers only this project’s episodes', async () => {
     const episodes = { count: 1, next: null, previous: null, results: flow.episodes_list.body.results };

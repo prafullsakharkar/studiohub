@@ -12,6 +12,15 @@ export interface EntityFieldRenderProps {
   error?: string;
 }
 
+/** Several foreign keys on a form (a project's vendors): the page renders an EntityMultiPicker. */
+export interface MultiEntityFieldRenderProps {
+  values: Record<string, string | boolean>;
+  /** The chosen ids, in order. */
+  value: string[];
+  onChange: (ids: string[]) => void;
+  error?: string;
+}
+
 /** Shared by every field: render it only for callers holding this backend permission (e.g. sensitive person fields). */
 export interface FieldGate {
   permission?: string;
@@ -39,6 +48,8 @@ export type FieldDef = FieldGate &
     /** A JSON document typed as text: validated on the form, sent parsed, shown pretty-printed. Blank sends an empty array or object. */
     | { kind: 'json'; name: string; label: string; shape: 'array' | 'object'; required?: boolean; hint?: string }
     | { kind: 'entity'; name: string; label: string; required?: boolean; render: (props: EntityFieldRenderProps) => React.ReactNode }
+    /** Several foreign keys. The form holds the ids joined by commas (ids hold none); the wire gets the list, and an edit sends it only when it changed. */
+    | { kind: 'multi-entity'; name: string; label: string; required?: boolean; render: (props: MultiEntityFieldRenderProps) => React.ReactNode }
   );
 
 export interface ListColumn<T> {

@@ -53,6 +53,7 @@ Domain behaviour stays in `src/modules/<module>/`.
 | `useServerForm` | `shared/forms/useServerForm` | a `useForm` that puts a 400's field errors on the inputs and the rest in a banner |
 | `serverErrors` | `shared/forms/serverErrors` | the mapping |
 | `EntityPicker` | `components/forms/EntityPicker` | combobox over a typed, paginated list: the search box sits inside the menu (server-side, 300 ms debounce), Load more pages, keyboard ↑ ↓ Enter Esc; tests drive it with `pickEntity` / `openPicker` from `test/picker` |
+| `EntityMultiPicker` | `components/forms/EntityMultiPicker` | the same menu for several records (`pickerParts`: shared list, keys and menu): chips in the field with a remove button each, checkmarks in the menu, the menu stays open on a toggle, Backspace in an empty search removes the last chip, "Clear all". A chosen id off the loaded pages is fetched by id (`fetchOne`); one that no longer exists is an amber "unknown" chip that can only be removed. In directory forms: the `multi-entity` field kind (the form holds the ids comma-joined; an edit sends the list only when it changed). First use: a project's vendors (`VendorMultiPicker`) |
 | `DirectoryFormPage` | `modules/directory/DirectoryFormPage` | a create/edit page from a config; prefills from URL search params by field name |
 | `FieldInputs`, `pickers` | `modules/directory/FieldInputs`, `modules/directory/pickers` | the input kinds a config can use |
 | `formModel` | `modules/directory/formModel` | config → values, payload and validation |
