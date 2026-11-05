@@ -8,10 +8,10 @@ import { z } from 'zod';
 import { rolesApi, roleKeys } from '@/api/identity/rbac';
 import type { Role } from '@/api/identity/rbac';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
-import { Dialog } from '@/components/ui/Dialog';
 import { useCan } from '@/core/permissions/useCan';
 import { notify } from '@/core/notifications/notify';
 import { usePaginatedList } from '@/shared/data/usePaginatedList';
+import { FormDialog } from '@/shared/forms/FormDialog';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { Badge } from '@/shared/components/Badge';
 import { StatusBadge } from '@/shared/components/StatusBadge';
@@ -43,27 +43,20 @@ const createSchema = z.object({
 });
 type CreateValues = z.infer<typeof createSchema>;
 
-const CreateRoleDialog: React.FC<{ isOpen: boolean; onClose: () => void; onCreated: (role: Role) => void }> = ({ isOpen, onClose, onCreated }) => {
+const CreateRoleForm: React.FC<{ onClose: () => void; onCreated: (role: Role) => void }> = ({ onClose, onCreated }) => {
   const queryClient = useQueryClient();
   const {
     register,
     submit,
-    reset,
     serverError,
     clearServerError,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useServerForm<CreateValues>({ resolver: zodResolver(createSchema), defaultValues: { name: '', code: '', description: '', priority: 40 } });
 
   const create = useMutation({
     mutationFn: rolesApi.create,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: roleKeys.all }),
   });
-
-  const close = () => {
-    reset();
-    clearServerError();
-    onClose();
-  };
 
   const onSubmit = submit(async (values) => {
     const role = await create.mutateAsync({
@@ -73,44 +66,35 @@ const CreateRoleDialog: React.FC<{ isOpen: boolean; onClose: () => void; onCreat
       priority: values.priority as Role['priority'],
     });
     notify.success(`Role "${role.name}" was created.`);
-    reset();
     onCreated(role);
   });
 
   return (
-    <Dialog isOpen={isOpen} onClose={close} title="New role" size="md">
-      <form noValidate onSubmit={onSubmit} className="space-y-4">
-        <FormBanner error={serverError} />
-        <Field id="role-name" label="Name" error={errors.name?.message}>
-          <input id="role-name" className={inputClass(Boolean(errors.name))} {...register('name', { onChange: clearServerError })} />
-        </Field>
-        <Field id="role-code" label="Code" error={errors.code?.message} hint="Unique and permanent: it cannot be changed after the role is created.">
-          <input id="role-code" className={inputClass(Boolean(errors.code))} {...register('code', { onChange: clearServerError })} />
-        </Field>
-        <Field id="role-priority" label="Level" error={errors.priority?.message}>
-          <select id="role-priority" className={inputClass(Boolean(errors.priority))} {...register('priority', { valueAsNumber: true })}>
-            {PRIORITIES.map((p) => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field id="role-description" label="Description" error={errors.description?.message}>
-          <textarea id="role-description" rows={3} className={inputClass(Boolean(errors.description))} {...register('description')} />
-        </Field>
-        <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="ghost" onClick={close}>
-            Cancel
-          </Button>
-          <Button type="submit" variant="primary" isLoading={isSubmitting}>
-            Create role
-          </Button>
-        </div>
-      </form>
-    </Dialog>
+    <FormDialog title="New role" onClose={onClose} onSubmit={onSubmit} isSubmitting={isSubmitting} isDirty={isDirty} serverError={serverError} submitLabel="Create role">
+      <Field id="role-name" label="Name *" error={errors.name?.message}>
+        <input id="role-name" className={inputClass(Boolean(errors.name))} {...register('name', { onChange: clearServerError })} />
+      </Field>
+      <Field id="role-code" label="Code *" error={errors.code?.message} hint="Unique and permanent: it cannot be changed after the role is created.">
+        <input id="role-code" className={inputClass(Boolean(errors.code))} {...register('code', { onChange: clearServerError })} />
+      </Field>
+      <Field id="role-priority" label="Level" error={errors.priority?.message}>
+        <select id="role-priority" className={inputClass(Boolean(errors.priority))} {...register('priority', { valueAsNumber: true })}>
+          {PRIORITIES.map((p) => (
+            <option key={p.value} value={p.value}>
+              {p.label}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <Field id="role-description" label="Description" error={errors.description?.message}>
+        <textarea id="role-description" rows={3} className={inputClass(Boolean(errors.description))} {...register('description')} />
+      </Field>
+    </FormDialog>
   );
 };
+
+/** Mounted only while open, so every open starts from an empty form. */
+const CreateRoleDialog: React.FC<{ isOpen: boolean; onClose: () => void; onCreated: (role: Role) => void }> = ({ isOpen, onClose, onCreated }) => (isOpen ? <CreateRoleForm onClose={onClose} onCreated={onCreated} /> : null);
 
 export const RolesPage: React.FC = () => {
   const navigate = useNavigate();
