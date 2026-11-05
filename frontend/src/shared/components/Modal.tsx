@@ -1,8 +1,9 @@
 import type React from 'react';
-import { useEffect, useRef, useId } from 'react';
+import { useRef, useId } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
+import { useDialogLayer } from './useDialogLayer';
 
 export interface ModalProps {
   id?: string;
@@ -16,20 +17,6 @@ export interface ModalProps {
   className?: string;
   showCloseButton?: boolean;
 }
-
-/**
- * Open dialogs, oldest first. Only the top one handles Escape and Tab, so a dialog opened from a dialog closes alone.
- * The top one is the newest that holds no other open dialog: React runs a child's effects before its parent's, so a
- * dialog rendered open inside another one registers first.
- */
-type OpenDialog = { el: () => HTMLElement | null };
-const openDialogs: OpenDialog[] = [];
-const topDialog = (): OpenDialog | undefined =>
-  openDialogs.filter((d) => !openDialogs.some((other) => other !== d && Boolean(d.el()?.contains(other.el())))).at(-1);
-
-const FOCUSABLE =
-  'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-const focusableIn = (root: HTMLElement | null): HTMLElement[] => (root ? Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)) : []);
 
 const sizeClasses: Record<string, string> = {
   sm: 'max-w-md',
@@ -54,64 +41,9 @@ export const Modal: React.FC<ModalProps> = ({
   showCloseButton = true,
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<Element | null>(null);
   const titleId = useId();
 
-  // The latest onClose, so callers can pass an inline function without re-running the open/close effect.
-  const onCloseRef = useRef(onClose);
-  useEffect(() => {
-    onCloseRef.current = onClose;
-  });
-
-  // Everything that happens while the dialog is open, undone when it closes OR unmounts while open.
-  useEffect(() => {
-    if (!isOpen) return;
-    const token: OpenDialog = { el: () => dialogRef.current };
-    openDialogs.push(token);
-    triggerRef.current = document.activeElement;
-    const isTop = () => topDialog() === token;
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      // A dialog opened from inside this one handles the keys while it is open.
-      if (!isTop()) return;
-      if (e.key === 'Escape') {
-        onCloseRef.current();
-        return;
-      }
-      if (e.key === 'Tab') {
-        const focusable = focusableIn(dialogRef.current);
-        if (focusable.length === 0) {
-          e.preventDefault();
-          return;
-        }
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        } else if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        }
-      }
-    };
-    document.addEventListener('keydown', onKeyDown);
-    document.body.style.overflow = 'hidden';
-    // Initial focus: first control, else the dialog itself.
-    const t = setTimeout(() => (focusableIn(dialogRef.current)[0] ?? dialogRef.current)?.focus(), 0);
-
-    return () => {
-      clearTimeout(t);
-      document.removeEventListener('keydown', onKeyDown);
-      openDialogs.splice(openDialogs.indexOf(token), 1);
-      // The page scrolls again only when the last open dialog has gone.
-      if (openDialogs.length === 0) document.body.style.overflow = '';
-      // Return focus to what opened the dialog.
-      const trigger = triggerRef.current;
-      triggerRef.current = null;
-      if (trigger instanceof HTMLElement && trigger.isConnected) trigger.focus();
-    };
-  }, [isOpen]);
+  useDialogLayer({ isOpen, onClose, containerRef: dialogRef });
 
   return (
     <AnimatePresence>
