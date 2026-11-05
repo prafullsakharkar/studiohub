@@ -201,7 +201,7 @@ describe('access tokens', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /new token/i }));
     const dialog = await screen.findByRole('dialog');
-    fireEvent.change(within(dialog).getByLabelText('Name'), { target: { value: 'CI token' } });
+    fireEvent.change(within(dialog).getByLabelText(/^Name/), { target: { value: 'CI token' } });
     fireEvent.click(within(dialog).getByRole('button', { name: /create token/i }));
 
     expect(await within(dialog).findByText('Choose at least one permission.')).toBeTruthy();
@@ -215,7 +215,7 @@ describe('access tokens', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /new token/i }));
     const dialog = await screen.findByRole('dialog');
-    fireEvent.change(within(dialog).getByLabelText('Name'), { target: { value: 'CI token' } });
+    fireEvent.change(within(dialog).getByLabelText(/^Name/), { target: { value: 'CI token' } });
     fireEvent.click(within(dialog).getByLabelText('asset.create'));
     fireEvent.click(within(dialog).getByLabelText('asset.delete'));
     fireEvent.click(within(dialog).getByRole('button', { name: /create token/i }));
