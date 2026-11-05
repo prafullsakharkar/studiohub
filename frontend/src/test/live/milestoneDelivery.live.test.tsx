@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { deliveriesApi } from '@/api/deliveries/deliveries';
@@ -10,6 +10,7 @@ import { DirectoryFormPage } from '@/modules/directory/DirectoryFormPage';
 import { authService } from '@/modules/auth/services/AuthService';
 import { milestoneFormConfig } from '@/modules/scheduling/records';
 import { live } from './liveBackend';
+import { openPicker } from '@/test/picker';
 
 /**
  * A delivery milestone names its delivery through a picker (Phase 27), against a REAL backend: the picker lists the project's
@@ -61,10 +62,10 @@ describe('the milestone form’s delivery picker', () => {
     fireEvent.change(await screen.findByLabelText(/^Name/, undefined, T), { target: { value: `Reel due ${uid}` } });
     fireEvent.change(screen.getByLabelText(/^Due/), { target: { value: '2027-04-01' } });
     fireEvent.change(screen.getByLabelText('Kind'), { target: { value: 'delivery' } });
-    const picker = (await screen.findByLabelText(/^Delivery/, undefined, T)) as HTMLSelectElement;
-    await waitFor(() => expect(Array.from(picker.options).map((o) => o.textContent)).toContain(fixture.secondLabel), T);
-    expect(Array.from(picker.options).map((o) => o.textContent)).toContain(fixture.firstLabel);
-    fireEvent.change(picker, { target: { value: fixture.second } });
+    const { menu } = await openPicker(/^Delivery/, T);
+    expect(await within(menu).findByRole('option', { name: fixture.secondLabel }, T)).toBeTruthy();
+    expect(within(menu).getByRole('option', { name: fixture.firstLabel })).toBeTruthy();
+    fireEvent.click(within(menu).getByRole('option', { name: fixture.secondLabel }));
     fireEvent.click(screen.getByRole('button', { name: /create milestone/i }));
     await screen.findByText('Milestones list', undefined, T);
     const made = (await milestonesApi.list({ project_id: live.dlv.project, search: `Reel due ${uid}` })).results.find((m) => m.name === `Reel due ${uid}`);
@@ -75,8 +76,8 @@ describe('the milestone form’s delivery picker', () => {
   it('shows the saved delivery on edit and gives it up when the milestone becomes a general one', async () => {
     await signIn('producer');
     render(tree(`/m/${fixture.milestone}/edit`, '/m/:id/edit'));
-    const picker = (await screen.findByLabelText(/^Delivery/, undefined, T)) as HTMLSelectElement;
-    await waitFor(() => expect(picker.value).toBe(fixture.second), T);
+    const field = await screen.findByLabelText(/^Delivery/, { selector: 'button' }, T);
+    await waitFor(() => expect(field.textContent).toContain(fixture.secondLabel), T);
     fireEvent.change(screen.getByLabelText('Kind'), { target: { value: 'general' } });
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
     await screen.findByText('Milestones list', undefined, T);

@@ -19,6 +19,7 @@ import { filesFormConfig, useFilesListConfig } from '../files';
 import { publishFormConfig, usePublishListConfig } from '../jobs';
 import { PublishWorkspace } from '../PublishWorkspace';
 import { rootsFormConfig } from '../registry';
+import { pickEntity } from '@/test/picker';
 
 type Captured = { status: number; body: any };
 const flow = loadSample<Record<string, Captured>>('publishing/_flow.json');
@@ -222,8 +223,7 @@ describe('export job list and form', () => {
   it('a new job names a project and a tool; the version is optional; without one the shot or asset is asked for', async () => {
     const { calls } = mockFetch((c) => (c.method === 'POST' ? { status: 201, body: flow.jobs_create.body } : { status: 200, body: { count: 1, next: null, previous: null, results: [{ id: 'p-1', code: 'PUB', name: 'Publishing' }] } }));
     renderAt('/publishing/new', producer, <Route path="/publishing/new" element={<DirectoryFormPage config={publishFormConfig} />} />);
-    await screen.findByRole('option', { name: /PUB/ });
-    fireEvent.change(await screen.findByLabelText(/^Project/), { target: { value: 'p-1' } });
+    await pickEntity(/^Project/, /PUB/);
     expect(screen.getByLabelText('Shot or asset code')).toBeTruthy(); // no version chosen
     fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Comp export' } });
     fireEvent.change(screen.getByLabelText(/^DCC tool/), { target: { value: 'Nuke' } });
@@ -325,9 +325,7 @@ describe('published files', () => {
       return emptyPage;
     });
     renderAt('/publishing/files/new', producer, <Route path="/publishing/files/new" element={<DirectoryFormPage config={filesFormConfig} />} />);
-    await screen.findByRole('option', { name: new RegExp(root.code) });
-    await screen.findByRole('option', { name: /PV0001/ });
-    fireEvent.change(await screen.findByLabelText(/^Storage root/), { target: { value: root.id } });
+    await pickEntity(/^Storage root/, new RegExp(root.code));
     fireEvent.change(screen.getByLabelText(/^Path under the root/), { target: { value: 'show/SH010/plate.exr' } });
     fireEvent.change(screen.getByLabelText(/^Size/), { target: { value: '1024' } });
     fireEvent.change(screen.getByLabelText(/^SHA-256/), { target: { value: 'a'.repeat(64) } });
@@ -335,7 +333,7 @@ describe('published files', () => {
     expect(await screen.findByText(/Choose a published version/)).toBeTruthy();
     expect(writes(calls)).toHaveLength(0);
 
-    fireEvent.change(screen.getByLabelText(/^Published version/), { target: { value: 'v-1' } });
+    await pickEntity(/^Published version/, /PV0001/);
     fireEvent.click(screen.getByRole('button', { name: /create published file/i }));
     await waitFor(() => expect(writes(calls)).toHaveLength(1));
     expect(path(writes(calls)[0])).toBe('/api/v1/publishing/files/');

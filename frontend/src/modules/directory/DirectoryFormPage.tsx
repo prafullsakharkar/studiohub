@@ -76,7 +76,8 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
     }
     await Promise.all([queryClient.invalidateQueries({ queryKey: config.queryKey }), queryClient.invalidateQueries({ queryKey: auditKeys.all })]); // a write adds a history entry
     notify.success(`${config.noun[0].toUpperCase()}${config.noun.slice(1)} ${editing ? 'saved' : 'created'}.`);
-    navigate(config.afterSavePath ? config.afterSavePath(saved) : `${config.basePath}/${saved.id}`, { replace: true });
+    // An update may answer without the id (a project's PATCH does): after an edit the record is the one opened.
+    navigate(config.afterSavePath ? config.afterSavePath(saved) : `${config.basePath}/${editing ? id : saved.id}`, { replace: true });
   });
 
   return (

@@ -15,6 +15,7 @@ import { loadSample } from '@/test/samples';
 import type { User } from '@/types/identity';
 import { DeliveryWorkspace } from '../DeliveryWorkspace';
 import { deliveriesFormConfig, useDeliveriesListConfig } from '../deliveries';
+import { pickEntity } from '@/test/picker';
 
 type Captured = { status: number; body: any };
 const flow = loadSample<Record<string, Captured>>('deliveries/_flow.json');
@@ -254,9 +255,7 @@ describe('delivery workspace: items, passcode and facts', () => {
     const d = flow.detail_draft.body;
     open(supervisor, d, (c) => (c.method === 'POST' ? reply(flow.add_unpublished) : c.url.includes('/versions/') ? { status: 200, body: { count: 1, next: null, previous: null, results: [{ id: 'v-x', code: 'DV9999', version_number: 'v001', entity_code: '' }] } } : undefined));
     await ready(d.code);
-    const select = await screen.findByLabelText('Add a published version');
-    await waitFor(() => expect(within(select).getAllByRole('option').length).toBeGreaterThan(1));
-    fireEvent.change(select, { target: { value: 'v-x' } });
+    await pickEntity('Add a published version', 'DV9999 · v001');
     fireEvent.click(screen.getByRole('button', { name: 'Add version' }));
     await waitFor(() => expect(useNotificationStore.getState().notifications.map((n) => n.message)).toContain('That version is not published. Publish it first.'));
   });
@@ -381,8 +380,7 @@ describe('delivery form', () => {
   it('a new delivery names its project and sends the due day as a time; blank optional fields are left to the server', async () => {
     const { calls } = mockFetch((c) => (c.method === 'POST' ? { status: 201, body: flow.create.body } : projects));
     renderAt('/deliveries/new', supervisor, formRoute);
-    await screen.findByRole('option', { name: new RegExp(project.code) });
-    fireEvent.change(await screen.findByLabelText(/^Project/), { target: { value: project.id } });
+    await pickEntity(/^Project/, new RegExp(project.code));
     fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Reel 1 turnover' } });
     fireEvent.change(screen.getByLabelText('Due date'), { target: { value: '2026-12-01' } });
     fireEvent.click(screen.getByRole('button', { name: /create delivery/i }));

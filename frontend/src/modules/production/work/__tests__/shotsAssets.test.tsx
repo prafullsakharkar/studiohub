@@ -14,6 +14,7 @@ import type { User } from '@/types/identity';
 import { useAssetsListConfig } from '../assets';
 import { EntityTasksPanel, ShotAssetsPanel } from '../panels';
 import { useShotsListConfig } from '../shots';
+import { pickEntity } from '@/test/picker';
 
 type Captured = { status: number; body: any };
 const flow = loadSample<Record<string, Captured>>('production/_work_flow.json');
@@ -201,8 +202,7 @@ describe('workspace panels', () => {
     renderAt('/x', lead, <Route path="/x" element={<ShotAssetsPanel shot={{ id: shot.id, code: shot.code, project_id: shot.project_id }} />} />);
     await screen.findByText(new RegExp(link.asset_code));
 
-    await screen.findByRole('option', { name: new RegExp(assetRow.code) });
-    fireEvent.change(screen.getByLabelText('Link an asset'), { target: { value: assetRow.id } });
+    await pickEntity('Link an asset', new RegExp(assetRow.code));
     fireEvent.click(screen.getByRole('button', { name: 'Link asset' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
     expect(calls.find((c) => c.method === 'POST')!.body).toEqual({ asset_id: assetRow.id });

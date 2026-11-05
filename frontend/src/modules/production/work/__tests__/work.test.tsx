@@ -15,6 +15,7 @@ import { loadSample } from '@/test/samples';
 import type { User } from '@/types/identity';
 import { tasksFormConfig, useTasksListConfig } from '../tasks';
 import { timelogsFormConfig, useTimelogsListConfig } from '../timelogs';
+import { pickEntity } from '@/test/picker';
 
 type Captured = { status: number; body: any };
 const flow = loadSample<Record<string, Captured>>('production/_work_flow.json');
@@ -224,9 +225,8 @@ describe('forms', () => {
     fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: 'T900' } });
     fireEvent.change(screen.getByLabelText(/^Title/), { target: { value: 'Comp the walk' } });
     fireEvent.change(screen.getByLabelText('About'), { target: { value: 'Shot' } });
-    fireEvent.change(await screen.findByLabelText(/^Project/), { target: { value: projectRow.id } });
-    await screen.findByRole('option', { name: new RegExp(shot.code) }); // the picker lists the project's shots once a project is chosen
-    fireEvent.change(screen.getByLabelText(/^Shot/), { target: { value: shot.id } });
+    await pickEntity(/^Project/, new RegExp(projectRow.code));
+    await pickEntity(/^Shot/, new RegExp(shot.code)); // the picker lists the project's shots once a project is chosen
     fireEvent.click(screen.getByRole('button', { name: /create task/i }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
     const body = calls.find((c) => c.method === 'POST')!.body as Record<string, unknown>;

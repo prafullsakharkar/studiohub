@@ -1,0 +1,589 @@
+{
+  "vendor_create_north": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/vendors/",
+      "body": {
+        "name": "Northlight Roto",
+        "code": "NLR"
+      }
+    },
+    "status": 201,
+    "body": {
+      "id": "611eec15-0855-4da2-ad73-a4817e1d4de4",
+      "name": "Northlight Roto",
+      "code": "NLR",
+      "contact_name": "",
+      "email": "",
+      "specialization": "Roto & Paint",
+      "security_tier": "Standard Studio NDA",
+      "nda_signed": false,
+      "rating": "4.50",
+      "location": "",
+      "status": "Approved Partner",
+      "logo_url": "",
+      "bandwidth_gbps": "10.00",
+      "bandwidth_link": "",
+      "contact_count": 0,
+      "created_at": "2026-11-05T08:31:42.774371Z",
+      "updated_at": "2026-11-05T08:31:42.774380Z"
+    }
+  },
+  "vendor_create_ember": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/vendors/",
+      "body": {
+        "name": "Ember FX",
+        "code": "EMB"
+      }
+    },
+    "status": 201,
+    "body": {
+      "id": "c41baaf8-21a6-492d-a9b4-0a46fd2ac8a3",
+      "name": "Ember FX",
+      "code": "EMB",
+      "contact_name": "",
+      "email": "",
+      "specialization": "Roto & Paint",
+      "security_tier": "Standard Studio NDA",
+      "nda_signed": false,
+      "rating": "4.50",
+      "location": "",
+      "status": "Approved Partner",
+      "logo_url": "",
+      "bandwidth_gbps": "10.00",
+      "bandwidth_link": "",
+      "contact_count": 0,
+      "created_at": "2026-11-05T08:31:42.790106Z",
+      "updated_at": "2026-11-05T08:31:42.790113Z"
+    }
+  },
+  "project_create_unknown_id": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/projects/",
+      "body": {
+        "code": "CR42",
+        "name": "Vendor ids",
+        "workflow_type": "standard",
+        "type": "Feature Film",
+        "vendor_ids": [
+          "611eec15-0855-4da2-ad73-a4817e1d4de4",
+          "00000000-0000-0000-0000-000000000000"
+        ]
+      }
+    },
+    "status": 400,
+    "body": {
+      "vendor_ids": [
+        "Unknown vendor: 00000000-0000-0000-0000-000000000000"
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "2ed07cd6-90a2-4174-992a-aba6e0853de5"
+      }
+    }
+  },
+  "project_create_duplicate_id": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/projects/",
+      "body": {
+        "code": "CR42",
+        "name": "Vendor ids",
+        "workflow_type": "standard",
+        "type": "Feature Film",
+        "vendor_ids": [
+          "611eec15-0855-4da2-ad73-a4817e1d4de4",
+          "611eec15-0855-4da2-ad73-a4817e1d4de4"
+        ]
+      }
+    },
+    "status": 400,
+    "body": {
+      "vendor_ids": [
+        "Vendor listed twice: 611eec15-0855-4da2-ad73-a4817e1d4de4"
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "880ea114-41f6-4c7b-8e69-1abd78cbbfe9"
+      }
+    }
+  },
+  "project_create_not_a_uuid": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/projects/",
+      "body": {
+        "code": "CR42",
+        "name": "Vendor ids",
+        "workflow_type": "standard",
+        "type": "Feature Film",
+        "vendor_ids": [
+          "not-a-vendor"
+        ]
+      }
+    },
+    "status": 400,
+    "body": {
+      "vendor_ids": {
+        "0": [
+          "Must be a valid UUID."
+        ]
+      },
+      "error": {
+        "code": "validation_error",
+        "request_id": "153651d9-010d-43c4-b058-271f92bbac10"
+      }
+    }
+  },
+  "project_create": {
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/projects/",
+      "body": {
+        "code": "CR42",
+        "name": "Vendor ids",
+        "workflow_type": "standard",
+        "type": "Feature Film",
+        "vendor_ids": [
+          "c41baaf8-21a6-492d-a9b4-0a46fd2ac8a3",
+          "611eec15-0855-4da2-ad73-a4817e1d4de4"
+        ],
+        "vendor_names": [
+          "Somebody Else"
+        ]
+      }
+    },
+    "status": 201,
+    "body": {
+      "id": "1d20b9c2-daf0-4cef-a215-d85dce1a55f3",
+      "uuid": "1d20b9c2-daf0-4cef-a215-d85dce1a55f3",
+      "code": "CR42",
+      "name": "Vendor ids",
+      "description": "",
+      "type": "Feature Film",
+      "status": "In Progress",
+      "workflow_type": "standard",
+      "fps": "24.000",
+      "resolution": "4096x2160 (4K DCI)",
+      "aspect_ratio": "2.39:1",
+      "color_space": "ACEScg",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "",
+      "budget_usd": "0.00",
+      "supervisor": null,
+      "coordinator": null,
+      "client_id": "",
+      "client_name": "",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "vendor_ids": [
+        "c41baaf8-21a6-492d-a9b4-0a46fd2ac8a3",
+        "611eec15-0855-4da2-ad73-a4817e1d4de4"
+      ],
+      "vendor_names": [
+        "Ember FX",
+        "Northlight Roto"
+      ],
+      "vendor_team_ids": []
+    }
+  },
+  "project_list": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/",
+      "body": null
+    },
+    "status": 200,
+    "body": {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": "1d20b9c2-daf0-4cef-a215-d85dce1a55f3",
+          "uuid": "1d20b9c2-daf0-4cef-a215-d85dce1a55f3",
+          "code": "CR42",
+          "project_code": "CR42",
+          "name": "Vendor ids",
+          "description": "",
+          "type": "Feature Film",
+          "status": "In Progress",
+          "workflow_type": "standard",
+          "fps": "24.000",
+          "resolution": "4096x2160 (4K DCI)",
+          "aspect_ratio": "2.39:1",
+          "color_space": "ACEScg",
+          "start_date": null,
+          "delivery_date": null,
+          "thumbnail_url": "",
+          "total_shots": 0,
+          "approved_shots": 0,
+          "in_progress_shots": 0,
+          "total_assets": 0,
+          "budget_usd": "0.00",
+          "supervisor_id": null,
+          "supervisor_name": "",
+          "coordinator_id": null,
+          "coordinator_name": "",
+          "client_id": "",
+          "client_name": "",
+          "client_contact_id": "",
+          "client_contact_name": "",
+          "vendor_ids": [
+            "c41baaf8-21a6-492d-a9b4-0a46fd2ac8a3",
+            "611eec15-0855-4da2-ad73-a4817e1d4de4"
+          ],
+          "vendor_names": [
+            "Ember FX",
+            "Northlight Roto"
+          ],
+          "vendor_team_ids": [],
+          "created_at": "2026-11-05T08:31:42.819578Z",
+          "updated_at": "2026-11-05T08:31:42.819585Z"
+        }
+      ]
+    }
+  },
+  "vendor_rename_north": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/vendors/611eec15-0855-4da2-ad73-a4817e1d4de4/",
+      "body": {
+        "name": "Northlight Studios"
+      }
+    },
+    "status": 200,
+    "body": {
+      "id": "611eec15-0855-4da2-ad73-a4817e1d4de4",
+      "name": "Northlight Studios",
+      "code": "NLR",
+      "contact_name": "",
+      "email": "",
+      "specialization": "Roto & Paint",
+      "security_tier": "Standard Studio NDA",
+      "nda_signed": false,
+      "rating": "4.50",
+      "location": "",
+      "status": "Approved Partner",
+      "logo_url": "",
+      "bandwidth_gbps": "10.00",
+      "bandwidth_link": "",
+      "contact_count": 0,
+      "created_at": "2026-11-05T08:31:42.774371Z",
+      "updated_at": "2026-11-05T08:31:42.842879Z"
+    }
+  },
+  "project_detail_after_rename": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/1d20b9c2-daf0-4cef-a215-d85dce1a55f3/",
+      "body": null
+    },
+    "status": 200,
+    "body": {
+      "id": "1d20b9c2-daf0-4cef-a215-d85dce1a55f3",
+      "uuid": "1d20b9c2-daf0-4cef-a215-d85dce1a55f3",
+      "code": "CR42",
+      "project_code": "CR42",
+      "name": "Vendor ids",
+      "description": "",
+      "type": "Feature Film",
+      "status": "In Progress",
+      "workflow_type": "standard",
+      "fps": "24.000",
+      "resolution": "4096x2160 (4K DCI)",
+      "aspect_ratio": "2.39:1",
+      "color_space": "ACEScg",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "",
+      "total_shots": 0,
+      "approved_shots": 0,
+      "in_progress_shots": 0,
+      "total_assets": 0,
+      "budget_usd": "0.00",
+      "supervisor_id": null,
+      "supervisor_name": "",
+      "coordinator_id": null,
+      "coordinator_name": "",
+      "client_id": "",
+      "client_name": "",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "vendor_ids": [
+        "c41baaf8-21a6-492d-a9b4-0a46fd2ac8a3",
+        "611eec15-0855-4da2-ad73-a4817e1d4de4"
+      ],
+      "vendor_names": [
+        "Ember FX",
+        "Northlight Studios"
+      ],
+      "vendor_team_ids": [],
+      "created_at": "2026-11-05T08:31:42.819578Z",
+      "updated_at": "2026-11-05T08:31:42.819585Z"
+    }
+  },
+  "vendor_delete_ember": {
+    "request": {
+      "method": "DELETE",
+      "path": "/api/v1/vendors/c41baaf8-21a6-492d-a9b4-0a46fd2ac8a3/",
+      "body": null
+    },
+    "status": 204,
+    "body": {
+      "_non_json": null,
+      "_len": 0
+    }
+  },
+  "project_detail_after_vendor_delete": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/projects/1d20b9c2-daf0-4cef-a215-d85dce1a55f3/",
+      "body": null
+    },
+    "status": 200,
+    "body": {
+      "id": "1d20b9c2-daf0-4cef-a215-d85dce1a55f3",
+      "uuid": "1d20b9c2-daf0-4cef-a215-d85dce1a55f3",
+      "code": "CR42",
+      "project_code": "CR42",
+      "name": "Vendor ids",
+      "description": "",
+      "type": "Feature Film",
+      "status": "In Progress",
+      "workflow_type": "standard",
+      "fps": "24.000",
+      "resolution": "4096x2160 (4K DCI)",
+      "aspect_ratio": "2.39:1",
+      "color_space": "ACEScg",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "",
+      "total_shots": 0,
+      "approved_shots": 0,
+      "in_progress_shots": 0,
+      "total_assets": 0,
+      "budget_usd": "0.00",
+      "supervisor_id": null,
+      "supervisor_name": "",
+      "coordinator_id": null,
+      "coordinator_name": "",
+      "client_id": "",
+      "client_name": "",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "vendor_ids": [
+        "c41baaf8-21a6-492d-a9b4-0a46fd2ac8a3",
+        "611eec15-0855-4da2-ad73-a4817e1d4de4"
+      ],
+      "vendor_names": [
+        "Northlight Studios"
+      ],
+      "vendor_team_ids": [],
+      "created_at": "2026-11-05T08:31:42.819578Z",
+      "updated_at": "2026-11-05T08:31:42.819585Z"
+    }
+  },
+  "project_patch_deleted_vendor": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/projects/1d20b9c2-daf0-4cef-a215-d85dce1a55f3/",
+      "body": {
+        "vendor_ids": [
+          "611eec15-0855-4da2-ad73-a4817e1d4de4",
+          "c41baaf8-21a6-492d-a9b4-0a46fd2ac8a3"
+        ]
+      }
+    },
+    "status": 400,
+    "body": {
+      "vendor_ids": [
+        "Unknown vendor: c41baaf8-21a6-492d-a9b4-0a46fd2ac8a3"
+      ],
+      "error": {
+        "code": "validation_error",
+        "request_id": "55d98ba8-a578-4409-a9d7-74da22982b8e"
+      }
+    }
+  },
+  "project_patch_live_only": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/projects/1d20b9c2-daf0-4cef-a215-d85dce1a55f3/",
+      "body": {
+        "vendor_ids": [
+          "611eec15-0855-4da2-ad73-a4817e1d4de4"
+        ]
+      }
+    },
+    "status": 200,
+    "body": {
+      "code": "CR42",
+      "name": "Vendor ids",
+      "description": "",
+      "type": "Feature Film",
+      "status": "In Progress",
+      "fps": "24.000",
+      "resolution": "4096x2160 (4K DCI)",
+      "aspect_ratio": "2.39:1",
+      "color_space": "ACEScg",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "",
+      "budget_usd": "0.00",
+      "supervisor": null,
+      "coordinator": null,
+      "client_id": "",
+      "client_name": "",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "vendor_ids": [
+        "611eec15-0855-4da2-ad73-a4817e1d4de4"
+      ],
+      "vendor_names": [
+        "Northlight Studios"
+      ],
+      "vendor_team_ids": []
+    }
+  },
+  "project_patch_clear": {
+    "request": {
+      "method": "PATCH",
+      "path": "/api/v1/projects/1d20b9c2-daf0-4cef-a215-d85dce1a55f3/",
+      "body": {
+        "vendor_ids": []
+      }
+    },
+    "status": 200,
+    "body": {
+      "code": "CR42",
+      "name": "Vendor ids",
+      "description": "",
+      "type": "Feature Film",
+      "status": "In Progress",
+      "fps": "24.000",
+      "resolution": "4096x2160 (4K DCI)",
+      "aspect_ratio": "2.39:1",
+      "color_space": "ACEScg",
+      "start_date": null,
+      "delivery_date": null,
+      "thumbnail_url": "",
+      "budget_usd": "0.00",
+      "supervisor": null,
+      "coordinator": null,
+      "client_id": "",
+      "client_name": "",
+      "client_contact_id": "",
+      "client_contact_name": "",
+      "vendor_ids": [],
+      "vendor_names": [],
+      "vendor_team_ids": []
+    }
+  },
+  "summary": {
+    "vendor_create_north": {
+      "status": 201
+    },
+    "vendor_create_ember": {
+      "status": 201
+    },
+    "project_create_unknown_id": {
+      "status": 400,
+      "vendor_ids": [
+        "Unknown vendor: 00000000-0000-0000-0000-000000000000"
+      ],
+      "vendor_names": null,
+      "vendor_team_ids": null
+    },
+    "project_create_duplicate_id": {
+      "status": 400,
+      "vendor_ids": [
+        "Vendor listed twice: 611eec15-0855-4da2-ad73-a4817e1d4de4"
+      ],
+      "vendor_names": null,
+      "vendor_team_ids": null
+    },
+    "project_create_not_a_uuid": {
+      "status": 400,
+      "vendor_ids": {
+        "0": [
+          "Must be a valid UUID."
+        ]
+      },
+      "vendor_names": null,
+      "vendor_team_ids": null
+    },
+    "project_create": {
+      "status": 201,
+      "vendor_ids": [
+        "c41baaf8-21a6-492d-a9b4-0a46fd2ac8a3",
+        "611eec15-0855-4da2-ad73-a4817e1d4de4"
+      ],
+      "vendor_names": [
+        "Ember FX",
+        "Northlight Roto"
+      ],
+      "vendor_team_ids": []
+    },
+    "project_list": {
+      "status": 200
+    },
+    "vendor_rename_north": {
+      "status": 200
+    },
+    "project_detail_after_rename": {
+      "status": 200,
+      "vendor_ids": [
+        "c41baaf8-21a6-492d-a9b4-0a46fd2ac8a3",
+        "611eec15-0855-4da2-ad73-a4817e1d4de4"
+      ],
+      "vendor_names": [
+        "Ember FX",
+        "Northlight Studios"
+      ],
+      "vendor_team_ids": []
+    },
+    "vendor_delete_ember": {
+      "status": 204
+    },
+    "project_detail_after_vendor_delete": {
+      "status": 200,
+      "vendor_ids": [
+        "c41baaf8-21a6-492d-a9b4-0a46fd2ac8a3",
+        "611eec15-0855-4da2-ad73-a4817e1d4de4"
+      ],
+      "vendor_names": [
+        "Northlight Studios"
+      ],
+      "vendor_team_ids": []
+    },
+    "project_patch_deleted_vendor": {
+      "status": 400,
+      "vendor_ids": [
+        "Unknown vendor: c41baaf8-21a6-492d-a9b4-0a46fd2ac8a3"
+      ],
+      "vendor_names": null,
+      "vendor_team_ids": null
+    },
+    "project_patch_live_only": {
+      "status": 200,
+      "vendor_ids": [
+        "611eec15-0855-4da2-ad73-a4817e1d4de4"
+      ],
+      "vendor_names": [
+        "Northlight Studios"
+      ],
+      "vendor_team_ids": []
+    },
+    "project_patch_clear": {
+      "status": 200,
+      "vendor_ids": [],
+      "vendor_names": [],
+      "vendor_team_ids": []
+    }
+  }
+}

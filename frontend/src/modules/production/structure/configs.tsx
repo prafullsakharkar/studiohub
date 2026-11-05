@@ -1,7 +1,7 @@
 import { PROJECT_STATUSES, PROJECT_TYPES, PROJECT_WORKFLOWS, TRACK_TYPES, episodesApi, projectsApi, sequencesApi, showsApi, tracksApi } from '@/api/production/structure';
 import type { EditorialTrack, Episode, Project, Sequence, Show } from '@/api/production/structure';
 import { EntityPicker } from '@/components/forms/EntityPicker';
-import { ClientPicker } from '@/modules/directory/pickers';
+import { ClientPicker, VendorMultiPicker } from '@/modules/directory/pickers';
 import type { DirectoryFormConfig, DirectoryListConfig, FieldDef, RelatedRecordsConfig } from '@/modules/directory/types';
 import { Badge } from '@/shared/components/Badge';
 import { StatusBadge } from '@/shared/components/StatusBadge';
@@ -66,6 +66,7 @@ export const projectsFormConfig: DirectoryFormConfig<Project> = {
     { kind: 'select', name: 'workflow_type', label: 'Workflow', options: opts(PROJECT_WORKFLOWS), hint: 'Episodic projects have episodes; standard ones do not.' },
     { kind: 'select', name: 'status', label: 'Status', options: opts(PROJECT_STATUSES) },
     { kind: 'entity', name: 'client_id', label: 'Client', render: (p) => <ClientPicker {...p} value={p.value || null} onChange={(id) => p.onChange(id ?? '')} /> },
+    { kind: 'multi-entity', name: 'vendor_ids', label: 'Vendors', render: (p) => <VendorMultiPicker value={p.value} onChange={p.onChange} error={p.error} hint="The partner studios on this project. Only vendors that exist can be chosen." /> },
     { kind: 'textarea', name: 'description', label: 'Description' },
     { kind: 'date', name: 'start_date', label: 'Start date' },
     { kind: 'date', name: 'delivery_date', label: 'Delivery date' },

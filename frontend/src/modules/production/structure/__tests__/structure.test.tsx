@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type React from 'react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useParams } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthContext } from '@/core/auth/AuthContext';
 import type { AuthContextValue } from '@/core/auth/AuthContext';
@@ -15,6 +15,7 @@ import { loadSample } from '@/test/samples';
 import type { User } from '@/types/identity';
 import { projectsFormConfig, projectsListConfig, sequencesConfig } from '../configs';
 import { MembersPanel, NotesPanel, OverviewPanel } from '../panels';
+import { openPicker } from '@/test/picker';
 
 type Captured = { status: number; body: any };
 const flow = loadSample<Record<string, Captured>>('production/_structure_flow.json');
@@ -27,6 +28,9 @@ const path = (c: MockCall) => new URL(c.url).pathname;
 const q = (c: MockCall) => Object.fromEntries(new URL(c.url).searchParams);
 const PID = flow.projects_list.body.results[0].id as string;
 const project = flow.projects_list.body.results[0] as { id: string; name: string; code: string };
+
+/** Shows which record the route opened. */
+const Opened = () => <div>{`opened ${useParams().id}`}</div>;
 
 function renderAt(initial: string, user: User, routes: React.ReactNode) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
@@ -134,11 +138,89 @@ describe('project form', () => {
     expect(refreshUser).toHaveBeenCalledTimes(1);
   });
 
+  it('after saving an edit it returns to the project (a project’s PATCH answers without an id)', async () => {
+    expect('id' in flow.projects_patch.body).toBe(false); // as captured from the backend
+    const { calls } = mockFetch((c) => (c.method === 'PATCH' ? reply(flow.projects_patch) : { body: flow.projects_detail.body }));
+    renderAt(
+      `/projects/${PID}/edit`,
+      superuser,
+      <>
+        <Route path="/projects/:id/edit" element={<DirectoryFormPage config={projectsFormConfig} />} />
+        <Route path="/projects/:id" element={<Opened />} />
+      </>
+    );
+    await waitFor(() => expect((screen.getByLabelText(/^Name/) as HTMLInputElement).value).toBe(project.name));
+    fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: `${project.name} 2` } });
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+    expect(await screen.findByText(`opened ${PID}`)).toBeTruthy();
+    expect(calls.some((c) => c.method === 'PATCH' && path(c) === `/api/v1/projects/${PID}/`)).toBe(true);
+  });
+
   it('the workflow cannot be changed once the project exists', async () => {
     mockFetch(() => ({ body: flow.projects_detail.body }));
     renderAt(`/projects/${PID}/edit`, superuser, <Route path="/projects/:id/edit" element={<DirectoryFormPage config={projectsFormConfig} />} />);
     await waitFor(() => expect((screen.getByLabelText(/^Name/) as HTMLInputElement).value).toBe(project.name));
     expect((screen.getByLabelText('Workflow') as HTMLSelectElement).disabled).toBe(true);
+  });
+});
+
+describe('project form: vendors (CR-42)', () => {
+  const cr42 = loadSample<Record<string, Captured>>('production/_vendor_ids_cr42_flow.json');
+  const vendors = loadSample<Record<string, Captured>>('masterdata/vendors.json');
+  // A project whose vendor "Ember FX" was deleted after it was added: the API still lists the id.
+  const saved = cr42.project_detail_after_vendor_delete.body as { id: string; name: string; vendor_ids: string[] };
+  const [northId, deletedId] = [cr42.vendor_rename_north.body.id as string, cr42.vendor_create_ember.body.id as string];
+  const server = (c: MockCall): MockReply => {
+    const p = path(c);
+    if (c.method === 'PATCH') return reply(cr42.project_patch_live_only);
+    if (p === `/api/v1/projects/${saved.id}/`) return reply(cr42.project_detail_after_vendor_delete);
+    if (p === '/api/v1/vendors/') return reply(vendors.list_admin);
+    if (p === `/api/v1/vendors/${northId}/`) return reply(cr42.vendor_rename_north);
+    if (p === `/api/v1/vendors/${deletedId}/`) return reply(vendors.detail_404);
+    return { body: { count: 0, next: null, previous: null, results: [] } };
+  };
+  const editRoute = <Route path="/projects/:id/edit" element={<DirectoryFormPage config={projectsFormConfig} />} />;
+  const chips = () => within(screen.getByRole('list', { name: 'Chosen vendors' })).queryAllByRole('listitem').map((li) => li.textContent);
+
+  it('shows the saved vendors by name; a deleted one is "Unknown vendor"', async () => {
+    mockFetch(server);
+    renderAt(`/projects/${saved.id}/edit`, superuser, editRoute);
+    await waitFor(() => expect(chips()).toEqual(['Unknown vendor', 'Northlight Studios']));
+    expect(saved.vendor_ids).toEqual([deletedId, northId]); // the saved order is kept
+  });
+
+  it('removing the unknown vendor sends the live ids only (the API refuses a deleted one)', async () => {
+    const { calls } = mockFetch(server);
+    renderAt(`/projects/${saved.id}/edit`, superuser, editRoute);
+    await waitFor(() => expect(chips()).toContain('Unknown vendor'));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Unknown vendor' }));
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'PATCH')).toBe(true));
+    expect(calls.find((c) => c.method === 'PATCH')!.body).toEqual({ vendor_ids: [northId] });
+  });
+
+  it('an edit that leaves the vendors alone does not send them', async () => {
+    const { calls } = mockFetch(server);
+    renderAt(`/projects/${saved.id}/edit`, superuser, editRoute);
+    await waitFor(() => expect(chips()).toContain('Unknown vendor'));
+    fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Renamed' } });
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'PATCH')).toBe(true));
+    expect(calls.find((c) => c.method === 'PATCH')!.body).toEqual({ name: 'Renamed' });
+  });
+
+  it('a new project sends the vendors picked, in order', async () => {
+    const { calls } = mockFetch((c) => (c.method === 'POST' ? reply(flow.projects_create_duplicate) : server(c)));
+    renderAt('/projects/new', superuser, <Route path="/projects/new" element={<DirectoryFormPage config={projectsFormConfig} />} />);
+    fireEvent.change(await screen.findByLabelText(/^Name/), { target: { value: 'Gamma' } });
+    fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: 'GAMMA' } });
+    const { menu } = await openPicker('Vendors');
+    const [first, second] = vendors.list_admin.body.results as { id: string; name: string }[];
+    fireEvent.click(await within(menu).findByRole('option', { name: second.name }));
+    fireEvent.click(within(menu).getByRole('option', { name: first.name }));
+    fireEvent.click(screen.getByRole('button', { name: /create project/i }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
+    expect(calls.find((c) => c.method === 'POST')!.body).toMatchObject({ vendor_ids: [second.id, first.id] });
   });
 });
 
@@ -155,7 +237,9 @@ describe('project children and panels', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Add sequence' }));
     const dialog = await screen.findByRole('dialog');
-    await within(dialog).findByRole('option', { name: /EP150/ });
+    const { menu } = await openPicker(/^Episode/);
+    expect(dialog.contains(menu)).toBe(true);
+    await within(menu).findByRole('option', { name: /EP150/ });
     expect(calls.some((c) => path(c) === '/api/v1/episodes/' && q(c).project === PID)).toBe(true);
   });
 

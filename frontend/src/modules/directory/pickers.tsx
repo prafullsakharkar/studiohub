@@ -3,6 +3,7 @@ import { departmentKeys, departmentsApi } from '@/api/masterdata/departments';
 import type { Department } from '@/api/masterdata/departments';
 import { clientsApi, officesApi, peopleApi, positionsApi, teamsApi, vendorsApi } from '@/api/masterdata/directory';
 import type { Client, Office, Person, Position, Team, Vendor } from '@/api/masterdata/directory';
+import { EntityMultiPicker } from '@/components/forms/EntityMultiPicker';
 import { EntityPicker } from '@/components/forms/EntityPicker';
 
 export interface PickerProps {
@@ -37,4 +38,18 @@ export const ClientPicker: React.FC<PickerProps> = ({ label = 'Client', ...p }) 
 );
 export const VendorPicker: React.FC<PickerProps> = ({ label = 'Vendor', ...p }) => (
   <EntityPicker<Vendor> label={label} queryKey={vendorsApi.keys.all} fetchPage={vendorsApi.list} fetchOne={vendorsApi.get} getLabel={(v) => v.name} {...p} />
+);
+
+export interface MultiPickerProps {
+  value: ReadonlyArray<string>;
+  onChange: (ids: string[]) => void;
+  label?: string;
+  hint?: string;
+  disabled?: boolean;
+  error?: string;
+}
+
+/** Several vendors (a project's): a vendor deleted since shows as "Unknown vendor", to be removed before saving. */
+export const VendorMultiPicker: React.FC<MultiPickerProps> = ({ label = 'Vendors', ...p }) => (
+  <EntityMultiPicker<Vendor> label={label} queryKey={vendorsApi.keys.all} fetchPage={vendorsApi.list} fetchOne={vendorsApi.get} getLabel={(v) => v.name} unknownLabel="Unknown vendor" {...p} />
 );

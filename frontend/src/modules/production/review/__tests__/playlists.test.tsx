@@ -14,6 +14,7 @@ import { useNotificationStore } from '@/shared/stores/useNotificationStore';
 import type { User } from '@/types/identity';
 import { PlaylistWorkspace } from '../PlaylistWorkspace';
 import { usePlaylistsListConfig } from '../playlists';
+import { pickEntity } from '@/test/picker';
 
 type Captured = { status: number; body: any };
 const flow = loadSample<Record<string, Captured>>('production/_review_flow.json');
@@ -88,9 +89,7 @@ describe('playlist workspace', () => {
     const add = screen.getByRole('button', { name: 'Add version' }) as HTMLButtonElement;
     expect(add.disabled).toBe(true); // nothing chosen
     const versionId = flow.versions_list.body.results[0].id as string;
-    const select = await screen.findByLabelText('Add a version');
-    await waitFor(() => expect(within(select).getAllByRole('option').length).toBeGreaterThan(1));
-    fireEvent.change(select, { target: { value: versionId } });
+    await pickEntity('Add a version', new RegExp(`^${flow.versions_list.body.results[0].code as string} `));
     fireEvent.click(add);
     await waitFor(() => expect(posts(calls)).toHaveLength(1));
     expect(path(posts(calls)[0])).toBe(`/api/v1/playlists/${detail.id}/add-entry/`);

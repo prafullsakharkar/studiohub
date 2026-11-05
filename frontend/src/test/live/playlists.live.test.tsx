@@ -11,6 +11,7 @@ import { tokenStorage } from '@/core/auth/tokenStorage';
 import { authService } from '@/modules/auth/services/AuthService';
 import { PlaylistWorkspacePage } from '@/modules/playlists';
 import { freshTotp, live } from './liveBackend';
+import { pickEntity } from '@/test/picker';
 
 /**
  * Phase 7 against a REAL backend: a playlist is built and shared. An artist makes two versions; a lead creates the
@@ -72,17 +73,15 @@ describe('playlist built and shared', () => {
     render(tree(pages, `/playlists/${playlist.id}`));
     await entriesList().catch(() => screen.findByText(/No entries yet/, {}, { timeout: 20000 }));
 
-    const addVersion = async (id: string) => {
-      const select = await screen.findByLabelText('Add a version', {}, { timeout: 20000 });
-      await waitFor(() => expect([...(select as HTMLSelectElement).options].some((o) => o.value === id)).toBe(true), { timeout: 15000 });
-      fireEvent.change(select, { target: { value: id } });
+    const addVersion = async (v: { code: string; version_number: string }) => {
+      await pickEntity('Add a version', `${v.code} · ${v.version_number}`, { timeout: 20000 });
       fireEvent.click(screen.getByRole('button', { name: 'Add version' }));
     };
-    await addVersion(v1.id);
+    await addVersion(v1);
     await waitFor(async () => expect((await playlistsApi.get(playlist.id)).entries).toHaveLength(1), { timeout: 15000 });
     fireEvent.click(screen.getByRole('button', { name: 'Add placeholder' }));
     await waitFor(async () => expect((await playlistsApi.get(playlist.id)).entries).toHaveLength(2), { timeout: 15000 });
-    await addVersion(v2.id);
+    await addVersion(v2);
     await waitFor(async () => expect((await playlistsApi.get(playlist.id)).entries).toHaveLength(3), { timeout: 15000 });
 
     // order: v1, placeholder, v2 → move the last one up
