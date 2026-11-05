@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, MoreHorizontal, Check } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
+import { SELECTED, SELECTED_UNDERLINE } from '@/shared/utils/kitStyles';
 
 export interface TabItem<T = string> {
   id: T;
@@ -179,7 +180,7 @@ export function ScrollableTabs<T extends string = string>({
           'flex items-center font-medium border-b-2 transition-all shrink-0 whitespace-nowrap',
           sizeClasses,
           isActive
-            ? 'border-indigo-500 text-indigo-300 font-semibold'
+            ? SELECTED_UNDERLINE
             : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'
         );
 
@@ -206,7 +207,7 @@ export function ScrollableTabs<T extends string = string>({
           'flex items-center font-medium rounded-lg transition-all shrink-0 whitespace-nowrap',
           sizeClasses,
           isActive
-            ? 'bg-indigo-950/40 text-indigo-300 border border-indigo-500/30'
+            ? SELECTED
             : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
         );
 
@@ -216,7 +217,7 @@ export function ScrollableTabs<T extends string = string>({
           'flex items-center font-semibold rounded-xl transition-all shrink-0 whitespace-nowrap font-mono tracking-tight',
           sizeClasses,
           isActive
-            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+            ? SELECTED
             : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
         );
     }
@@ -292,7 +293,7 @@ export function ScrollableTabs<T extends string = string>({
                 <span
                   className={cn(
                     'px-1.5 py-0.5 rounded-md text-[10px] font-mono leading-none font-bold',
-                    tab.badgeColor || (isActive ? 'bg-white/20 text-white' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20')
+                    tab.badgeColor || (isActive ? 'bg-cyan-500/20 text-cyan-700 dark:text-cyan-200' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20')
                   )}
                 >
                   {tab.badge}
@@ -325,7 +326,7 @@ export function ScrollableTabs<T extends string = string>({
             className={cn(
               'p-1.5 rounded-lg border transition-all shadow-sm',
               isDropdownOpen
-                ? 'bg-indigo-600 text-white border-indigo-500'
+                ? 'bg-cyan-950/40 text-cyan-300 border-cyan-500/30'
                 : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
             )}
             title="All tabs list"
@@ -355,7 +356,7 @@ export function ScrollableTabs<T extends string = string>({
                       className={cn(
                         'w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-mono text-left transition-all',
                         isActive
-                          ? 'bg-indigo-600 text-white font-semibold'
+                          ? SELECTED
                           : 'text-slate-300 hover:bg-slate-800 hover:text-white',
                         tab.disabled && 'opacity-40 cursor-not-allowed'
                       )}

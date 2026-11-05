@@ -81,6 +81,7 @@ import { ProjectPlaylistsTab } from './project-tabs/ProjectPlaylistsTab';
 import { ProjectWorkflowTab } from './project-tabs/ProjectWorkflowTab';
 import { ProjectTimelogsTab } from './project-tabs/ProjectTimelogsTab';
 import { ProjectCalendarTab } from './project-tabs/ProjectCalendarTab';
+import { SELECTED } from '@/shared/utils/kitStyles';
 
 export type ProjectTabId =
   | 'overview'
@@ -530,7 +531,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
                       onClick={() => handleSwitchProject(p)}
                       className={`w-full text-left p-2 rounded-lg text-xs flex items-center justify-between transition-colors cursor-pointer ${
                         isCurrent
-                          ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
+                          ? SELECTED
                           : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
                       }`}
                     >

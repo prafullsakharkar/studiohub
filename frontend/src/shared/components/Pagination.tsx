@@ -6,6 +6,7 @@ import {
   ChevronsRight,
 } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
+import { SELECTED } from '@/shared/utils/kitStyles';
 
 export interface PaginationProps {
   id?: string;
@@ -145,7 +146,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                 className={cn(
                   'min-w-[28px] h-7 px-2 rounded text-xs font-medium transition-colors',
                   isActive
-                    ? 'bg-indigo-600 text-white'
+                    ? SELECTED
                     : 'text-slate-300 hover:bg-slate-800'
                 )}
               >

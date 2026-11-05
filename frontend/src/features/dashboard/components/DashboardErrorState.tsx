@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangle, RefreshCw, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { PRIMARY_FILL } from '@/shared/utils/kitStyles';
 
 export interface DashboardErrorStateProps {
   error: Error | null;
@@ -31,7 +32,7 @@ export const DashboardErrorState: React.FC<DashboardErrorStateProps> = ({ error,
         <button
           type="button"
           onClick={onRetry}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors shadow-lg shadow-indigo-600/20 cursor-pointer"
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${PRIMARY_FILL}`}
         >
           <RefreshCw className="w-4 h-4" />
           Retry Telemetry Query
