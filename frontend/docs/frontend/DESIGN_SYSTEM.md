@@ -4,9 +4,9 @@ StudioHub is used by artists, coordinators and producers on dense, often multi-d
 interface is dark by default, compact, and keeps colour for meaning.
 
 The rules below are the component kit's (`spikes/mockups/`, the design canvas), the reference for new screens.
-Where the code does not follow them yet (selected states still drawn in indigo), the
-difference is listed in `docs/frontend/component-migration-plan.md` (on `design/component-kit`) and is being closed
-one branch at a time; the values given for components (`Button`, `StatusBadge`, `Modal`) are what the code does.
+Where the code does not follow them yet, the difference is listed in `docs/frontend/component-migration-plan.md`
+(on `design/component-kit`) and is being closed one branch at a time; the values given for components (`Button`,
+`StatusBadge`, `Modal`) are what the code does.
 The shared components themselves are listed in [`CANONICAL_COMPONENTS.md`](CANONICAL_COMPONENTS.md).
 
 ## 1. Colour
@@ -24,10 +24,12 @@ The theme is Tailwind's slate scale with a cyan → blue accent. The studio's de
 
 How colour is used:
 
-- **Cyan** marks what is active or selected: the current tab, the chosen page, a selected row, focus rings.
-- **The primary gradient** (`accent-gradient-primary`, cyan → blue) is the `Button` `primary` variant: the one main
+- **Cyan** marks what is active or selected: the current tab, the chosen page, a selected row, focus rings. Use
+  `SELECTED` / `SELECTED_UNDERLINE` from `shared/utils/kitStyles.ts`.
+- **The primary gradient** (`PRIMARY_FILL`, cyan → blue) is the `Button` `primary` variant: the one main
   action of a view. Use it once per view; other actions are `secondary`, `outline` or `ghost`.
-- **Indigo** is the brand (the logo tile, the product mark). It does not mean "selected" or "primary action".
+- **Indigo** is the brand (the logo tile, the product mark, project codes). It does not mean "selected" or
+  "primary action"; a test fails on a solid `bg-indigo-600` outside `layouts/`.
 - **Status colours** come only from `StatusBadge` (below); do not colour a status by hand.
 - `danger` (rose) and `warning` (amber) buttons are for destructive or risky actions only.
 
