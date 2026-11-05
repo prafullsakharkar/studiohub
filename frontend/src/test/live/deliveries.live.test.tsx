@@ -10,6 +10,7 @@ import { tokenStorage } from '@/core/auth/tokenStorage';
 import { authService } from '@/modules/auth/services/AuthService';
 import { DeliveriesPage, DeliveryWorkspacePage } from '@/modules/deliveries';
 import { freshTotp, live } from './liveBackend';
+import { pickEntity } from '@/test/picker';
 
 /**
  * Phase 8 against a REAL backend, with the roles the studio seeds. A supervisor prepares a delivery; they cannot
@@ -82,9 +83,7 @@ describe('a delivery from draft to completed', () => {
     render(tree(pages, `/deliveries/${delivery.id}`));
     await heading(detail.code);
     for (const v of versions.slice(0, 2)) {
-      const select = await screen.findByLabelText('Add a published version', {}, { timeout: 20000 });
-      await waitFor(() => expect([...(select as HTMLSelectElement).options].some((o) => o.value === v.id)).toBe(true), { timeout: 15000 });
-      fireEvent.change(select, { target: { value: v.id } });
+      await pickEntity('Add a published version', `${v.code} · ${v.version_number}`, { timeout: 20000 });
       fireEvent.click(screen.getByRole('button', { name: 'Add version' }));
       await waitFor(async () => expect((await deliveriesApi.get(delivery.id)).versions.some((i) => i.version_id === v.id)).toBe(true), { timeout: 15000 });
     }

@@ -52,7 +52,7 @@ Domain behaviour stays in `src/modules/<module>/`.
 |---|---|---|
 | `useServerForm` | `shared/forms/useServerForm` | a `useForm` that puts a 400's field errors on the inputs and the rest in a banner |
 | `serverErrors` | `shared/forms/serverErrors` | the mapping |
-| `EntityPicker` | `components/forms/EntityPicker` | search-as-you-type picker over a typed list |
+| `EntityPicker` | `components/forms/EntityPicker` | combobox over a typed, paginated list: the search box sits inside the menu (server-side, 300 ms debounce), Load more pages, keyboard ↑ ↓ Enter Esc; tests drive it with `pickEntity` / `openPicker` from `test/picker` |
 | `DirectoryFormPage` | `modules/directory/DirectoryFormPage` | a create/edit page from a config; prefills from URL search params by field name |
 | `FieldInputs`, `pickers` | `modules/directory/FieldInputs`, `modules/directory/pickers` | the input kinds a config can use |
 | `formModel` | `modules/directory/formModel` | config → values, payload and validation |

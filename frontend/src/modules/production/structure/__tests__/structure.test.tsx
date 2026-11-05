@@ -15,6 +15,7 @@ import { loadSample } from '@/test/samples';
 import type { User } from '@/types/identity';
 import { projectsFormConfig, projectsListConfig, sequencesConfig } from '../configs';
 import { MembersPanel, NotesPanel, OverviewPanel } from '../panels';
+import { openPicker } from '@/test/picker';
 
 type Captured = { status: number; body: any };
 const flow = loadSample<Record<string, Captured>>('production/_structure_flow.json');
@@ -155,7 +156,9 @@ describe('project children and panels', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Add sequence' }));
     const dialog = await screen.findByRole('dialog');
-    await within(dialog).findByRole('option', { name: /EP150/ });
+    const { menu } = await openPicker(/^Episode/);
+    expect(dialog.contains(menu)).toBe(true);
+    await within(menu).findByRole('option', { name: /EP150/ });
     expect(calls.some((c) => path(c) === '/api/v1/episodes/' && q(c).project === PID)).toBe(true);
   });
 

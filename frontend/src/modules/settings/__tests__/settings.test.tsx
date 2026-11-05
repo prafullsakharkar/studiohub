@@ -15,6 +15,7 @@ import type { User } from '@/types/identity';
 import { categoryFormConfig, definitionFormConfig, flagFormConfig, localizationFormConfig, tagFormConfig, themeFormConfig, useCategoriesListConfig, useFlagsListConfig, useLocalizationsListConfig, useThemesListConfig, useValuesListConfig, valueFormConfig } from '../records';
 import { SystemNav } from '../SystemNav';
 import { useFeatureFlag } from '../useFeatureFlag';
+import { pickEntity } from '@/test/picker';
 
 type Captured = { status: number; body: any };
 const flow = loadSample<Record<string, Captured>>('settings/_flow.json');
@@ -240,7 +241,7 @@ describe('definitions', () => {
     const { calls } = mockFetch((c) => (c.method === 'POST' ? reply(flow.definitions_create_select) : { status: 200, body: { count: 1, next: null, previous: null, results: [{ id: 'c-1', code: 'workflow', name: 'Pipeline' }] } }));
     renderAt('/settings/system/definitions/new', admin, <Route path="/settings/system/definitions/new" element={<Form />} />);
     await fill('select', '["Deadline", "Tractor"]');
-    fireEvent.change(await screen.findByLabelText(/^Category/), { target: { value: 'c-1' } });
+    await pickEntity(/^Category/, 'Pipeline (workflow)');
     fireEvent.click(screen.getByRole('button', { name: /create setting definition/i }));
     expect(await screen.findByText(/not a plain string/)).toBeTruthy();
     expect(writes(calls)).toHaveLength(0);

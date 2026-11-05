@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type React from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -12,6 +12,7 @@ import type { MockCall, MockReply } from '@/test/fetchMock';
 import { loadSample } from '@/test/samples';
 import type { User } from '@/types/identity';
 import { MilestoneDeliveryField, milestoneFormConfig } from '../records';
+import { openPicker, pickEntity } from '@/test/picker';
 
 /** The parts of the captured bodies these tests read: a milestone, a page of deliveries, or a validation error. */
 interface Body {
@@ -102,11 +103,11 @@ describe('the milestone form’s delivery', () => {
     fireEvent.change(screen.getByLabelText(/^Due/), { target: { value: '2027-03-01' } });
     expect(screen.queryByLabelText(/^Delivery/)).toBeNull(); // the general kind names none
     fireEvent.change(screen.getByLabelText('Kind'), { target: { value: 'delivery' } });
-    const picker = (await screen.findByLabelText(/^Delivery/)) as HTMLSelectElement;
-    await waitFor(() => expect(Array.from(picker.options).map((o) => o.textContent)).toContain(`${reel(1).code} · ${reel(1).name}`));
-    expect(Array.from(picker.options).map((o) => o.textContent)).toContain(`${reel(2).code} · ${reel(2).name}`);
+    const { menu } = await openPicker(/^Delivery/);
+    expect(await within(menu).findByRole('option', { name: `${reel(1).code} · ${reel(1).name}` })).toBeTruthy();
+    expect(within(menu).getByRole('option', { name: `${reel(2).code} · ${reel(2).name}` })).toBeTruthy();
     expect(calls.some((c) => path(c) === projectRoute)).toBe(true);
-    fireEvent.change(picker, { target: { value: reel(1).id } });
+    fireEvent.click(within(menu).getByRole('option', { name: `${reel(1).code} · ${reel(1).name}` }));
     fireEvent.click(screen.getByRole('button', { name: /create milestone/i }));
     await waitFor(() => expect(writes(calls)).toHaveLength(1));
     expect(writes(calls)[0].body).toMatchObject({ project_id: ids.project, name: 'Reel 1 due', kind: 'delivery', delivery_package_id: reel(1).id });
@@ -136,9 +137,9 @@ describe('the milestone form’s delivery', () => {
   it('shows the saved delivery on edit, and a different one is sent alone', async () => {
     const { calls } = mockFetch(server(flow.patch_other_delivery));
     mount(`/m/${flow.detail.body.id}/edit`, planner, <DirectoryFormPage config={milestoneFormConfig} />, '/m/:id/edit');
-    const picker = (await screen.findByLabelText(/^Delivery/)) as HTMLSelectElement;
-    await waitFor(() => expect(picker.value).toBe(reel(1).id));
-    fireEvent.change(picker, { target: { value: reel(2).id } });
+    const field = await screen.findByLabelText(/^Delivery/, { selector: 'button' });
+    await waitFor(() => expect(field.textContent).toContain(`${reel(1).code} · ${reel(1).name}`));
+    await pickEntity(/^Delivery/, `${reel(2).code} · ${reel(2).name}`);
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
     await waitFor(() => expect(writes(calls)).toHaveLength(1));
     expect(writes(calls)[0].method).toBe('PATCH');

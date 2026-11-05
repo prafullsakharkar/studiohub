@@ -17,6 +17,7 @@ import { automationsFormConfig, useAutomationsListConfig } from '../automations'
 import { mediaFormConfig, useMediaListConfig } from '../media';
 import { useWorkflowsListConfig, workflowsFormConfig } from '../workflows';
 import { useReviewsListConfig } from '../reviews';
+import { pickEntity } from '@/test/picker';
 
 type Captured = { status: number; body: any };
 const flow = loadSample<Record<string, Captured>>('production/_review_flow.json');
@@ -121,8 +122,7 @@ describe('workflow form', () => {
   it('refuses nodes that are not a JSON array before sending anything, then sends them parsed', async () => {
     const { calls } = mockFetch((c) => (c.method === 'POST' ? reply(flow.workflows_create) : projects));
     renderAt('/workflows/new', supervisor, route);
-    await screen.findByRole('option', { name: new RegExp(project.code) });
-    fireEvent.change(await screen.findByLabelText(/^Project/), { target: { value: project.id } });
+    await pickEntity(/^Project/, new RegExp(project.code));
     fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: 'CF9' } });
     fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Comp flow' } });
     for (const [bad, message] of [['{oops', 'Nodes is not valid JSON.'], ['{"id":"n1"}', 'Nodes must be a JSON array.']]) {
@@ -166,8 +166,7 @@ describe('automation rules', () => {
     fireEvent.change(screen.getByLabelText('On'), { target: { value: 'Version' } });
     fireEvent.change(screen.getByLabelText('Only when'), { target: { value: '{"status":"Approved"}' } });
     fireEvent.change(screen.getByLabelText('Actions'), { target: { value: '[{"type":"notify","target":"lead"}]' } });
-    await screen.findByRole('option', { name: new RegExp(project.code) });
-    fireEvent.change(await screen.findByLabelText(/^Project/), { target: { value: project.id } });
+    await pickEntity(/^Project/, new RegExp(project.code));
     fireEvent.click(screen.getByRole('button', { name: /create automation rule/i }));
     await waitFor(() => expect(posts(calls)).toHaveLength(1));
     const body = posts(calls)[0].body as Record<string, unknown>;
@@ -231,8 +230,7 @@ describe('media', () => {
   it('a new media item sends the project and the shot or asset it is attached to', async () => {
     const { calls } = mockFetch((c) => (c.method === 'POST' ? reply(flow.media_create) : projects));
     renderAt('/media/new', artist, <Route path="/media/new" element={<DirectoryFormPage config={mediaFormConfig} />} />);
-    await screen.findByRole('option', { name: new RegExp(project.code) });
-    fireEvent.change(await screen.findByLabelText(/^Project/), { target: { value: project.id } });
+    await pickEntity(/^Project/, new RegExp(project.code));
     fireEvent.change(screen.getByLabelText('Type'), { target: { value: 'Video' } });
     fireEvent.change(screen.getByLabelText('Preview link'), { target: { value: 'https://example.test/ref.mp4' } });
     fireEvent.click(screen.getByRole('button', { name: /create media item/i }));
