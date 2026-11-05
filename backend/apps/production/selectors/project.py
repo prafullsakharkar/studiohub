@@ -29,9 +29,7 @@ class ProjectSelector(ProductionBaseSelector):
 
     @classmethod
     def get_queryset(cls, *, request=None, view=None) -> QuerySet[Project]:
-        return Project.objects.select_related(
-            "supervisor", "coordinator"
-        ).all()
+        return Project.objects.select_related("supervisor__profile", "coordinator__profile").all()
 
     @classmethod
     def resolve_visible(cls, request, value: Any) -> Project | None:

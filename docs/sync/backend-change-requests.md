@@ -792,7 +792,7 @@ Nothing in the backend reads `vendor_ids` (only the serializers, the model and t
 
 **Approved** by the owner ("Approved", 2026-11-05) and applied as written, plus one addition: `seed_dev` wrote vendor codes into `vendor_ids` and now writes the vendors' ids (otherwise its projects would show no vendor names). Contract C-56, decision D-38.
 
-### CR-43: the project list runs two profile queries per project (**performance**, **PROPOSED**: not applied, awaiting approval)
+### CR-43: the project list runs two profile queries per project (**performance**, **APPLIED**, branch `sync/cr-43-project-profiles`; verification `backend-cr-43-verification.md`)
 
 Found while writing the CR-42 list test (it expected 6 queries and counted 14); measured afterwards on a clean test database.
 
@@ -823,3 +823,5 @@ Tried on a scratch copy of the selector, then reverted (nothing is changed): the
 **Why no frontend workaround.** The queries happen on the server before the response is built; the client cannot make them cheaper (asking for a smaller page only hides it).
 
 **Compatibility.** None: the response is identical. **Risk.** Very low: one line; the join adds two columns' worth of rows already read today.
+
+**Approved** by the owner ("approved CR-43") and applied as written: the one line in `ProjectSelector.get_queryset`, no other backend file changed. Tests in `apps/production/tests/test_cr43_project_list_queries.py`.
