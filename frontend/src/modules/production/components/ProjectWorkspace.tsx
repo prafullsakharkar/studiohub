@@ -183,9 +183,9 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
   initialTab = 'overview',
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<ProjectTabId>(
-    (searchParams.get('tab') as ProjectTabId) || initialTab
-  );
+  // The URL is the only source of the active tab. A copy in state lagged the URL by a render, and the
+  // sync effect then flipped the tab back to the old one before forward again (the tab flicker).
+  const activeTab = ((searchParams.get('tab') as ProjectTabId) || initialTab) as ProjectTabId;
 
   // Context Stack for Non-Linear Navigation
   const [contextEpisode, setContextEpisode] = useState<string | null>(
@@ -220,14 +220,6 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
     projectId: project.id,
   };
 
-  // Sync tab changes with URL parameters
-  useEffect(() => {
-    const urlTab = searchParams.get('tab') as ProjectTabId;
-    if (urlTab && urlTab !== activeTab) {
-      setActiveTab(urlTab);
-    }
-  }, [searchParams, activeTab]);
-
   // Close switcher on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -240,7 +232,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
   }, []);
 
   const handleTabChange = (newTab: ProjectTabId) => {
-    setActiveTab(newTab);
+    if (newTab === activeTab) return;
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       next.set('tab', newTab);
@@ -250,7 +242,6 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
 
   const handleNavigateTabWithContext = (tabId: string, filterContext?: any) => {
     const targetTab = tabId as ProjectTabId;
-    setActiveTab(targetTab);
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       next.set('tab', targetTab);
@@ -296,24 +287,14 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
     })).filter((section) => section.tabs.length > 0);
   }, [user, project]);
 
-  const [activeCategory, setActiveCategory] = useState<string>(() => {
-    const tabParam = (searchParams.get('tab') as ProjectTabId) || initialTab;
-    if (tabParam) {
-      const foundSection = PROJECT_WORKSPACE_SECTIONS.find((s) => s.tabs.some((t) => t.id === tabParam));
-      if (foundSection) return foundSection.id;
-    }
-    return PROJECT_WORKSPACE_SECTIONS[0].id;
-  });
-
-  useEffect(() => {
-    const foundSection = visibleSections.find((s) => s.tabs.some((t) => t.id === activeTab));
-    if (foundSection && foundSection.id !== activeCategory) {
-      setActiveCategory(foundSection.id);
-    }
-  }, [activeTab, visibleSections, activeCategory]);
+  // The section is whichever one holds the active tab; derived, not stored, for the same reason as the tab.
+  const activeCategory = (
+    visibleSections.find((s) => s.tabs.some((t) => t.id === activeTab)) ||
+    PROJECT_WORKSPACE_SECTIONS.find((s) => s.tabs.some((t) => t.id === activeTab)) ||
+    PROJECT_WORKSPACE_SECTIONS[0]
+  ).id;
 
   const handleCategoryClick = (sectionId: string) => {
-    setActiveCategory(sectionId);
     const targetSection = visibleSections.find((s) => s.id === sectionId);
     if (targetSection && targetSection.tabs.length > 0) {
       handleTabChange(targetSection.tabs[0].id);

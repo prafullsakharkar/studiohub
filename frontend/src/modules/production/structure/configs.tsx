@@ -56,6 +56,8 @@ export const projectsFormConfig: DirectoryFormConfig<Project> = {
   update: (id, patch) => projectsApi.update(id, patch as never),
   // An episodic project creates its first episode and takes episodes; the workflow cannot change afterwards.
   immutableOnEdit: ['workflow_type'],
+  // The backend makes the creator a member (ProjectViewSet._add_creator_membership); the detail route needs that membership.
+  refreshSessionOnCreate: true,
   fields: [
     { kind: 'text', name: 'name', label: 'Name', required: true },
     { kind: 'text', name: 'code', label: 'Code', required: true, hint: 'Unique, for example ALPHA.' },
