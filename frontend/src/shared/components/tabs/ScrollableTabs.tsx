@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, MoreHorizontal, Check } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
 
@@ -66,9 +66,24 @@ export function ScrollableTabs<T extends string = string>({
     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 2);
   }, []);
 
+  // Identity of the tab set: a parent section swaps every pill while this component stays mounted.
+  const tabsKey = visibleTabs.map((tab) => tab.id).join('|');
+  const lastTabsKey = useRef<string | null>(null);
+
+  // A new tab set is laid out before paint: back to the start, active pill in view, overflow measured.
+  // Done in an effect after paint (and with the container's smooth scrolling), the old scroll position
+  // and the previous set's arrows showed for a frame and the new pills slid in: the flicker.
+  useLayoutEffect(() => {
+    const el = scrollContainerRef.current;
+    if (el && lastTabsKey.current !== tabsKey) {
+      el.scrollTo?.({ left: 0, behavior: 'instant' });
+      activeTabRef.current?.scrollIntoView?.({ behavior: 'instant', block: 'nearest', inline: 'nearest' });
+    }
+    checkScroll();
+  }, [tabsKey, checkScroll]);
+
   // Set up listeners for resize and scroll bounds
   useEffect(() => {
-    checkScroll();
     const el = scrollContainerRef.current;
     if (!el) return;
 
@@ -80,10 +95,13 @@ export function ScrollableTabs<T extends string = string>({
       resizeObserver.disconnect();
       window.removeEventListener('resize', checkScroll);
     };
-  }, [checkScroll, visibleTabs.length]);
+  }, [checkScroll]);
 
-  // Auto-scroll active tab into view
+  // Auto-scroll active tab into view (animated only within the same tab set)
   useEffect(() => {
+    const setChanged = lastTabsKey.current !== tabsKey;
+    lastTabsKey.current = tabsKey;
+    if (setChanged) return;
     if (activeTabRef.current && scrollContainerRef.current) {
       activeTabRef.current.scrollIntoView({
         behavior: 'smooth',
@@ -93,7 +111,7 @@ export function ScrollableTabs<T extends string = string>({
       const timer = setTimeout(checkScroll, 300);
       return () => clearTimeout(timer);
     }
-  }, [activeTab, checkScroll]);
+  }, [activeTab, tabsKey, checkScroll]);
 
   // Close dropdown on outside click
   useEffect(() => {

@@ -22,7 +22,8 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
-  const user = useContext(AuthContext)?.user ?? null;
+  const auth = useContext(AuthContext);
+  const user = auth?.user ?? null;
   // Fields behind a permission (sensitive person data, client financials) are rendered, validated and sent only for callers who hold it.
   const fields = useMemo(() => config.fields.filter((f) => !f.permission || evaluateAccess(user, f.permission, {})), [config.fields, user]);
   const schema = useMemo(() => buildSchema(fields), [fields]);
@@ -65,6 +66,14 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
       payload[field.name] = wireValue(field, values[field.name]);
     }
     const saved = editing ? await config.update(id as string, payload) : await config.create(payload);
+    // The server made the caller a member of what they just created; /auth/me must say so before the detail route checks it.
+    if (!editing && config.refreshSessionOnCreate) {
+      try {
+        await auth?.refreshUser();
+      } catch {
+        // The record is saved; a failed reload must not turn that into an error. The next /auth/me catches up.
+      }
+    }
     await Promise.all([queryClient.invalidateQueries({ queryKey: config.queryKey }), queryClient.invalidateQueries({ queryKey: auditKeys.all })]); // a write adds a history entry
     notify.success(`${config.noun[0].toUpperCase()}${config.noun.slice(1)} ${editing ? 'saved' : 'created'}.`);
     navigate(config.afterSavePath ? config.afterSavePath(saved) : `${config.basePath}/${saved.id}`, { replace: true });
