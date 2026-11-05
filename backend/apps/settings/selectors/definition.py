@@ -24,7 +24,7 @@ class SettingDefinitionSelector(SettingsBaseSelector):
         request=None,
         view=None,
     ) -> QuerySet[SettingDefinition]:
-        return cls.model.objects.all()
+        return cls.model.objects.select_related("category")
     
     @classmethod
     def get_by_code(cls, code: str):

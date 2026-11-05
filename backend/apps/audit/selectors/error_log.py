@@ -25,7 +25,7 @@ class ErrorLogSelector(AuditBaseSelector):
         view=None,
     ) -> QuerySet[ErrorLog]:
         return cls._scope_by_request(
-            cls.model.objects.all(),
+            cls.model.objects.select_related("user__profile"),
             request=request,
         )
     
