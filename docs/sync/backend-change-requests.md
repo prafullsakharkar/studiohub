@@ -825,3 +825,37 @@ Tried on a scratch copy of the selector, then reverted (nothing is changed): the
 **Compatibility.** None: the response is identical. **Risk.** Very low: one line; the join adds two columns' worth of rows already read today.
 
 **Approved** by the owner ("approved CR-43") and applied as written: the one line in `ProjectSelector.get_queryset`, no other backend file changed. Tests in `apps/production/tests/test_cr43_project_list_queries.py`.
+
+### CR-44: nine more list endpoints run one to two queries per row (**performance**, **PROPOSED**: not applied, awaiting approval)
+
+The follow-up CR-43 named: "other list endpoints may read a related record the same way the project list did". Surveyed with a throwaway pytest (not committed) that, for every list route that has a test factory, counted the queries of `GET` at 1 row and again at 6 rows (real queries, pytest test database, a superuser; each row made by its factory, so each has its own related rows). **46 endpoints were measured; 37 cost the same number of queries at 1 and 6 rows. These nine grow with the row count.** Tables hit by the repeated queries were read from the captured SQL.
+
+**Evidence** (queries at 1 row, at 6 rows, per added row; the request-log insert the API makes on every request is one of the queries and is constant):
+
+| Endpoint | 1 row | 6 rows | Per row | Repeated queries hit |
+|---|---|---|---|---|
+| `audit/activities/` | 4 | 14 | 2.0 | `identity_users`, `identity_profiles` |
+| `audit/audit-logs/` | 4 | 14 | 2.0 | `identity_users`, `identity_profiles` |
+| `audit/change-logs/` | 5 | 15 | 2.0 | `identity_users`, `identity_profiles` |
+| `audit/error-logs/` | 5 | 15 | 2.0 | `identity_users`, `identity_profiles` |
+| `audit/tracks/` | 5 | 15 | 2.0 | `identity_users`, `identity_profiles` |
+| `audit/api-requests/` | 5 | 17 (7 rows) | about 2.4 | `identity_users`, `identity_profiles` |
+| `identity/users/` | 4 | 9 | 1.0 | `identity_profiles` |
+| `settings/definitions/` | 3 | 8 | 1.0 | `settings_categories` |
+| `settings/system-settings/` | 3 | 8 | 1.0 | `settings_definitions` |
+
+At the default page size (25) the audit lists cost about 54 queries and the other three about 28, where 3 or 4 would do. The answers are correct; only the number of queries is wrong. A related record that is read without `select_related` is fetched once per row, whether or not rows share it, so this does not depend on how many distinct users the data has.
+
+**Constant, not a problem** (9 queries at 1 row and 6, so the cost does not grow with rows): `production/reviews/`. Not part of this CR.
+
+**Minimal proposed diff** (backend only, no migration, no API change; the same shape as the CR-43 fix, which took the project list from `3 + 2n` queries to 3). **This diff has not been tried** on these endpoints the way CR-43's was; the relation paths below follow from the tables seen in the captured SQL and are confirmed when it is applied, each by its own count test:
+1. The audit selectors (`apps/audit/selectors/`: activity, audit log, change log, error log, track, API request): add `select_related("user__profile")` (the user and the profile that names them) to the queryset each one returns, keeping the project scoping they apply today.
+2. `UserViewSet` (`apps/identity/api/viewsets/user.py`, `queryset = User.objects.all()`) or its selector: add `select_related("profile")`.
+3. `SettingDefinitionSelector`: add `select_related("category")`. `SystemSettingSelector`: add `select_related("definition")`.
+4. Tests: for each endpoint, one row and six rows cost the same number of queries, and the response is unchanged (compare a name or label before and after). Mutation-check: drop the `select_related` and expect the count test to fail.
+
+**Not measured** (no test factory, or a different shape): deliveries, publishing and scheduling lists (no factories), automation rules and task templates, the platform master-data lists, API keys, personal access tokens, trusted devices, the admin session list, the flat aliases (`audit/`, `activity/`), and any list with filters, search or ordering applied (only the unfiltered first page was counted). A survey of those needs factories first; this CR does not claim they are fine.
+
+**Why no frontend workaround.** The queries run on the server before the response is built; asking for a smaller page only hides the growth.
+
+**Compatibility.** None: responses are identical. **Risk.** Low: `select_related` additions on the selectors, one count test per endpoint. The audit lists are the largest tables in a running studio, so the count matters most there.
