@@ -1,15 +1,15 @@
 import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
-import { AlertCircle, ChevronLeft, Layers, Save } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Layers } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { DEPARTMENT_TYPES, departmentKeys, departmentsApi } from '@/api/masterdata/departments';
 import type { DepartmentInput } from '@/api/masterdata/departments';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { fetchAllRows, listFetcher } from '@/shared/data/listing';
-import { Button } from '@/shared/components/Button';
-import { Card, CardBody } from '@/shared/components/Card';
+import { Field, inputClass } from '@/shared/forms/FormParts';
+import { FormPage } from '@/shared/forms/FormPage';
 import type { Department } from '@/api/masterdata/departments';
 import { useCreateDepartment, useUpdateDepartment } from '../hooks/useDepartmentList';
 
@@ -25,11 +25,6 @@ const schema = z.object({
   software_stack: z.string(),
 });
 type FormValues = z.infer<typeof schema>;
-
-const inputClass = (invalid: boolean) =>
-  `w-full bg-slate-950 border rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-hidden focus:border-indigo-500 ${
-    invalid ? 'border-rose-500' : 'border-slate-800'
-  }`;
 
 const peopleFetcher = listFetcher<{ id: string; full_name: string }>('/api/v1/people/');
 
@@ -79,124 +74,72 @@ export const DepartmentForm: React.FC<{ department?: Department }> = ({ departme
     navigate(`/departments/${saved.id}`);
   });
 
-  const field = (name: keyof FormValues) => ({ ...register(name, { onChange: clearServerError }), 'aria-invalid': Boolean(errors[name]) });
-  const error = (name: keyof FormValues) =>
-    errors[name]?.message ? (
-      <p role="alert" className="mt-1 text-[11px] text-rose-400">
-        {errors[name]?.message}
-      </p>
-    ) : null;
+  const text = (name: keyof FormValues) => register(name, { onChange: clearServerError });
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 flex-1 min-h-0 animate-in fade-in duration-200">
-      <div className="flex items-center gap-3 pb-4 border-b border-slate-800">
-        <Link to={department ? `/departments/${department.id}` : '/departments'}>
-          <Button size="xs" variant="outline" leftIcon={<ChevronLeft className="w-3.5 h-3.5" />}>
-            Departments
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-lg font-bold text-white flex items-center gap-2">
-            <Layers className="w-5 h-5 text-indigo-400" />
-            {department ? `Edit ${department.name}` : 'New department'}
-          </h1>
-          <p className="text-xs text-slate-400">A functional division of the studio, its manager and its toolchain.</p>
+    <FormPage
+      title={department ? `Edit ${department.name}` : 'New department'}
+      description="A functional division of the studio, its manager and its toolchain."
+      icon={<Layers />}
+      editing={Boolean(department)}
+      backTo={department ? `/departments/${department.id}` : '/departments'}
+      backLabel="Departments"
+      onSubmit={onSubmit}
+      isSubmitting={isSubmitting}
+      serverError={serverError}
+      submitLabel={department ? 'Save changes' : 'Create department'}
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Field id="dept-name" label="Name *" error={errors.name?.message}>
+          <input id="dept-name" type="text" placeholder="e.g. Lighting & LookDev" className={inputClass(Boolean(errors.name))} {...text('name')} />
+        </Field>
+        <Field id="dept-code" label="Code *" error={errors.code?.message}>
+          <input id="dept-code" type="text" placeholder="e.g. DEPT-LGT" className={`${inputClass(Boolean(errors.code))} font-mono`} {...text('code')} />
+        </Field>
+        <Field id="dept-type" label="Type *" error={errors.department_type?.message}>
+          <select id="dept-type" className={inputClass(Boolean(errors.department_type))} {...text('department_type')}>
+            {DEPARTMENT_TYPES.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field id="dept-parent" label="Parent department" error={errors.parent?.message}>
+          <select id="dept-parent" className={inputClass(Boolean(errors.parent))} {...text('parent')}>
+            <option value="">None (top level)</option>
+            {(departments.data ?? []).map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name} [{d.code}]
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field id="dept-manager" label="Manager" error={errors.manager?.message}>
+          <select id="dept-manager" className={inputClass(Boolean(errors.manager))} {...text('manager')}>
+            <option value="">No manager assigned</option>
+            {(people.data ?? []).map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.full_name}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field id="dept-color" label="Accent color" error={errors.color?.message}>
+          <input id="dept-color" type="text" className={`${inputClass(Boolean(errors.color))} font-mono`} {...text('color')} />
+        </Field>
+        <div className="sm:col-span-2">
+          <Field id="dept-stack" label="Software stack (comma-separated)">
+            <input id="dept-stack" type="text" placeholder="Houdini, Katana, USD, RenderMan" className={inputClass(false)} {...text('software_stack')} />
+          </Field>
+        </div>
+        <div className="sm:col-span-2">
+          <Field id="dept-description" label="Description" error={errors.description?.message}>
+            <textarea id="dept-description" rows={3} className={inputClass(Boolean(errors.description))} {...text('description')} />
+          </Field>
         </div>
       </div>
-
-      <Card>
-        <CardBody>
-          <form noValidate onSubmit={onSubmit} className="space-y-4">
-            {(serverError?.banner || serverError?.details.length) && (
-              <div role="alert" className="flex items-start gap-2 rounded-lg border border-rose-800/70 bg-rose-950/60 p-3 text-xs text-rose-200">
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" />
-                <div className="space-y-1">
-                  {serverError?.banner && <p>{serverError.banner}</p>}
-                  {serverError?.details.map((line) => (
-                    <p key={line}>{line}</p>
-                  ))}
-                  {serverError?.requestId && <p className="font-mono text-[10px] text-rose-300/70">Ref: {serverError.requestId}</p>}
-                </div>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="dept-name" className="block text-xs font-mono text-slate-400 mb-1">Name *</label>
-                <input id="dept-name" type="text" placeholder="e.g. Lighting & LookDev" className={inputClass(Boolean(errors.name))} {...field('name')} />
-                {error('name')}
-              </div>
-              <div>
-                <label htmlFor="dept-code" className="block text-xs font-mono text-slate-400 mb-1">Code *</label>
-                <input id="dept-code" type="text" placeholder="e.g. DEPT-LGT" className={`${inputClass(Boolean(errors.code))} font-mono`} {...field('code')} />
-                {error('code')}
-              </div>
-              <div>
-                <label htmlFor="dept-type" className="block text-xs font-mono text-slate-400 mb-1">Type *</label>
-                <select id="dept-type" className={inputClass(Boolean(errors.department_type))} {...field('department_type')}>
-                  {DEPARTMENT_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-                {error('department_type')}
-              </div>
-              <div>
-                <label htmlFor="dept-parent" className="block text-xs font-mono text-slate-400 mb-1">Parent department</label>
-                <select id="dept-parent" className={inputClass(Boolean(errors.parent))} {...field('parent')}>
-                  <option value="">None (top level)</option>
-                  {(departments.data ?? []).map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name} [{d.code}]
-                    </option>
-                  ))}
-                </select>
-                {error('parent')}
-              </div>
-              <div>
-                <label htmlFor="dept-manager" className="block text-xs font-mono text-slate-400 mb-1">Manager</label>
-                <select id="dept-manager" className={inputClass(Boolean(errors.manager))} {...field('manager')}>
-                  <option value="">No manager assigned</option>
-                  {(people.data ?? []).map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.full_name}
-                    </option>
-                  ))}
-                </select>
-                {error('manager')}
-              </div>
-              <div>
-                <label htmlFor="dept-color" className="block text-xs font-mono text-slate-400 mb-1">Accent color</label>
-                <input id="dept-color" type="text" className={`${inputClass(Boolean(errors.color))} font-mono`} {...field('color')} />
-                {error('color')}
-              </div>
-              <div className="sm:col-span-2">
-                <label htmlFor="dept-stack" className="block text-xs font-mono text-slate-400 mb-1">Software stack (comma-separated)</label>
-                <input id="dept-stack" type="text" placeholder="Houdini, Katana, USD, RenderMan" className={inputClass(false)} {...field('software_stack')} />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="dept-description" className="block text-xs font-mono text-slate-400 mb-1">Description</label>
-              <textarea id="dept-description" rows={3} className={inputClass(Boolean(errors.description))} {...field('description')} />
-              {error('description')}
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-              <Link to="/departments">
-                <Button variant="outline" size="sm" type="button">
-                  Cancel
-                </Button>
-              </Link>
-              <Button variant="primary" size="sm" type="submit" isLoading={isSubmitting} leftIcon={<Save className="w-4 h-4" />}>
-                {department ? 'Save changes' : 'Create department'}
-              </Button>
-            </div>
-          </form>
-        </CardBody>
-      </Card>
-    </div>
+    </FormPage>
   );
 };
 
