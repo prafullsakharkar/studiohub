@@ -89,4 +89,13 @@ describe('command palette', () => {
     await waitFor(() => expect(screen.queryByRole('dialog', { name: /Studio Keyboard Shortcuts/ })).toBeNull());
     expect(onClose).not.toHaveBeenCalled();
   });
+
+  it('does not pull focus back from a dialog opened from it, even when that happens at once', async () => {
+    await renderPalette();
+    // The palette focuses its search box 50 ms after it opens; the dialog is opened before that.
+    fireEvent.click(within(screen.getByRole('dialog', { name: 'Command palette' })).getByRole('button', { name: /Shortcuts/ }));
+    const shortcuts = await screen.findByRole('dialog', { name: /Studio Keyboard Shortcuts/ });
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(shortcuts.contains(document.activeElement)).toBe(true);
+  });
 });

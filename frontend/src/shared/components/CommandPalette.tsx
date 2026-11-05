@@ -87,19 +87,25 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isDbInspectorOpen, setIsDbInspectorOpen] = useState(false);
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+
   // Focus on open
   useEffect(() => {
     if (isOpen) {
       setQuery('');
       setSelectedIndex(0);
       setActiveTab(initialMode);
-      setTimeout(() => inputRef.current?.focus(), 50);
+      setTimeout(() => {
+        // A dialog opened from the palette within these 50 ms already has focus: leave it there.
+        const holder = document.activeElement?.closest('[role="dialog"]');
+        if (holder && holder !== dialogRef.current) return;
+        inputRef.current?.focus();
+      }, 50);
     }
   }, [isOpen, initialMode]);
 
   // Escape, the focus trap, the scroll lock and focus return, shared with Modal. Escape is left to a dialog opened
   // from the palette (shortcuts, quick actions) while one is open, so it closes that dialog and not the palette.
-  const dialogRef = useRef<HTMLDivElement>(null);
   useDialogLayer({ isOpen, onClose, containerRef: dialogRef });
 
   // Handle Action launch helper
