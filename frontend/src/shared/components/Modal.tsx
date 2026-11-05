@@ -1,8 +1,9 @@
 import type React from 'react';
-import { useEffect, useCallback, useRef, useId } from 'react';
+import { useRef, useId } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
+import { useDialogLayer } from './useDialogLayer';
 
 export interface ModalProps {
   id?: string;
@@ -40,70 +41,9 @@ export const Modal: React.FC<ModalProps> = ({
   showCloseButton = true,
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<Element | null>(null);
   const titleId = useId();
 
-  const getFocusable = (): HTMLElement[] => {
-    const root = dialogRef.current;
-    if (!root) return [];
-    return Array.from(
-      root.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      ),
-    );
-  };
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-        return;
-      }
-      if (e.key === 'Tab') {
-        const focusable = getFocusable();
-        if (focusable.length === 0) {
-          e.preventDefault();
-          return;
-        }
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        } else if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        }
-      }
-    },
-    [onClose]
-  );
-
-  useEffect(() => {
-    if (isOpen) {
-      triggerRef.current = document.activeElement;
-      document.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
-      // Initial focus: first control, else the dialog itself.
-      const t = setTimeout(() => {
-        const focusable = getFocusable();
-        (focusable[0] ?? dialogRef.current)?.focus();
-      }, 0);
-      return () => clearTimeout(t);
-    }
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen, handleKeyDown]);
-
-  // Return focus to the trigger when the dialog closes.
-  useEffect(() => {
-    if (!isOpen && triggerRef.current instanceof HTMLElement) {
-      triggerRef.current.focus();
-      triggerRef.current = null;
-    }
-  }, [isOpen]);
+  useDialogLayer({ isOpen, onClose, containerRef: dialogRef });
 
   return (
     <AnimatePresence>

@@ -29,7 +29,8 @@ Domain behaviour stays in `src/modules/<module>/`.
 | `SearchInput` | `shared/components/SearchInput` | debounced |
 | `Pagination` | `shared/components/Pagination` | DRF-style controls |
 | `Dialog` | `components/ui/Dialog` | focus trap, ESC, overlay |
-| `Modal` | `shared/components/Modal` | the simple modal most screens use |
+| `Modal` | `shared/components/Modal` | the modal every dialog uses (`Dialog` wraps it): named, Escape, focus trap and return, page scroll locked; a dialog opened from a dialog closes alone. Do not draw a `fixed inset-0` overlay by hand |
+| `useDialogLayer` | `shared/components/useDialogLayer` | `Modal`'s open-dialog behaviour for a dialog with its own layout (the command palette) |
 | `SmartImg` | `components/ui/SmartImg` | image with a fallback |
 | `EmptyState`, `LoadingSpinner` | `shared/components/EmptyState`, `shared/components/LoadingSpinner` | |
 | `ScrollableTabs` | `shared/components/tabs/ScrollableTabs` | |

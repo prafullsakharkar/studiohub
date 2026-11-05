@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Button } from '@/shared/components/Button';
+import { Modal } from '@/shared/components/Modal';
 import { BulkOperationEngine } from './BulkOperationEngine';
 
 export interface GridColumn {
@@ -276,59 +277,38 @@ export const BulkImportGrid: React.FC<BulkImportGridProps> = ({
         </div>
       </div>
 
-      {/* Paste Modal */}
-      {pasteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-          <div className="bg-slate-900 border border-slate-700 rounded-xl p-5 max-w-xl w-full shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <FileSpreadsheet className="w-5 h-5 text-indigo-400" />
-                <h4 className="font-bold text-white text-base">Paste TSV / CSV Data</h4>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPasteModalOpen(false)}
-                className="text-slate-400 hover:text-white"
-              >
-                ✕
-              </button>
-            </div>
-
-            <p className="text-xs text-slate-400">
-              Copy rows from Excel, Google Sheets, or a CSV file and paste them below.
-              Tab and comma separated values will be mapped automatically.
-            </p>
-
-            <textarea
-              rows={8}
-              value={pastedRawText}
-              onChange={(e) => setPastedRawText(e.target.value)}
-              placeholder={`Code\tName\tFrame In\tFrame Out\nNK_010_010\tHero Dive\t1001\t1120\nNK_010_020\tAlley Pursuit\t1001\t1080`}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs font-mono text-slate-200 focus:ring-1 focus:ring-indigo-500"
-            />
-
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={() => setPasteModalOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="primary"
-                onClick={handleApplyPaste}
-                disabled={!pastedRawText.trim()}
-              >
-                Import Rows
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Paste dialog: opened from inside a bulk dialog, so Escape closes only this one (Modal nests). */}
+      <Modal
+        isOpen={pasteModalOpen}
+        onClose={() => setPasteModalOpen(false)}
+        size="lg"
+        title={
+          <span className="flex items-center gap-2">
+            <FileSpreadsheet className="w-5 h-5 text-indigo-400" aria-hidden="true" />
+            Paste TSV / CSV Data
+          </span>
+        }
+        subtitle="Copy rows from Excel, Google Sheets, or a CSV file and paste them below. Tab and comma separated values will be mapped automatically."
+        footer={
+          <>
+            <Button type="button" size="sm" variant="ghost" onClick={() => setPasteModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" size="sm" variant="primary" onClick={handleApplyPaste} disabled={!pastedRawText.trim()}>
+              Import Rows
+            </Button>
+          </>
+        }
+      >
+        <textarea
+          rows={8}
+          aria-label="Rows to paste"
+          value={pastedRawText}
+          onChange={(e) => setPastedRawText(e.target.value)}
+          placeholder={`Code\tName\tFrame In\tFrame Out\nNK_010_010\tHero Dive\t1001\t1120\nNK_010_020\tAlley Pursuit\t1001\t1080`}
+          className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs font-mono text-slate-200 focus:ring-1 focus:ring-indigo-500"
+        />
+      </Modal>
     </div>
   );
 };
