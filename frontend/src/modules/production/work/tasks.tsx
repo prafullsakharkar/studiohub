@@ -189,6 +189,7 @@ export const tasksFormFields: ReadonlyArray<FieldDef> = [
 
 export const tasksFormConfig: DirectoryFormConfig<Task> = {
   noun: 'task',
+  listTitle: 'Tasks',
   basePath: '/tasks',
   queryKey: tasksApi.keys.lists(),
   fields: tasksFormFields,

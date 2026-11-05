@@ -36,6 +36,7 @@ export const clientsListConfig: DirectoryListConfig<Client> = {
 
 export const clientsFormConfig: DirectoryFormConfig<Client> = {
   noun: 'client',
+  listTitle: 'Clients',
   basePath: '/clients',
   queryKey: clientsApi.keys.all,
   get: clientsApi.get,

@@ -35,6 +35,7 @@ export const teamsListConfig: DirectoryListConfig<Team> = {
 
 export const teamsFormConfig: DirectoryFormConfig<Team> = {
   noun: 'team',
+  listTitle: 'Teams',
   basePath: '/teams',
   queryKey: teamsApi.keys.all,
   get: teamsApi.get,

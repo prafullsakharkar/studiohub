@@ -50,6 +50,7 @@ export const projectsListConfig: DirectoryListConfig<Project> = {
 
 export const projectsFormConfig: DirectoryFormConfig<Project> = {
   noun: 'project',
+  listTitle: 'Projects',
   basePath: '/projects',
   queryKey: projectsApi.keys.all,
   get: projectsApi.get,

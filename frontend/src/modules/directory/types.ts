@@ -141,6 +141,8 @@ export interface RowAction {
 
 export interface DirectoryFormConfig<T extends { id: string }> {
   noun: string;
+  /** The list's name, for the back button: "Clients". */
+  listTitle: string;
   basePath: string;
   queryKey: readonly unknown[];
   fields: ReadonlyArray<FieldDef>;

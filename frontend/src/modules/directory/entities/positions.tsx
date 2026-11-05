@@ -34,6 +34,7 @@ export const positionsListConfig: DirectoryListConfig<Position> = {
 
 export const positionsFormConfig: DirectoryFormConfig<Position> = {
   noun: 'position',
+  listTitle: 'Positions',
   basePath: '/positions',
   afterSavePath: () => '/positions',
   queryKey: positionsApi.keys.all,

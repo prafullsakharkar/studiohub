@@ -117,6 +117,7 @@ const toWire = (input: Record<string, unknown>): Record<string, unknown> => {
 
 export const deliveriesFormConfig: DirectoryFormConfig<Delivery> = {
   noun: 'delivery',
+  listTitle: 'Deliveries',
   basePath: '/deliveries',
   queryKey: deliveriesApi.keys.lists(),
   fields: deliveriesFormFields,

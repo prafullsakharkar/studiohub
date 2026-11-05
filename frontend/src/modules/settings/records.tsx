@@ -84,6 +84,7 @@ export const categoryFormFields: ReadonlyArray<FieldDef> = [
 ];
 export const categoryFormConfig: DirectoryFormConfig<SettingCategory> = {
   noun: 'category',
+  listTitle: 'Setting categories',
   basePath: '/settings/system/categories',
   queryKey: categoriesApi.keys.lists(),
   fields: categoryFormFields,
@@ -149,6 +150,7 @@ export const definitionFormFields: ReadonlyArray<FieldDef> = [
 ];
 export const definitionFormConfig: DirectoryFormConfig<SettingDefinition> = {
   noun: 'setting definition',
+  listTitle: 'Setting definitions',
   basePath: '/settings/system/definitions',
   queryKey: definitionsApi.keys.lists(),
   fields: definitionFormFields,
@@ -213,6 +215,7 @@ export const valueFormFields: ReadonlyArray<FieldDef> = [
 ];
 export const valueFormConfig: DirectoryFormConfig<SystemSetting> = {
   noun: 'setting',
+  listTitle: 'System settings',
   basePath: '/settings/system/values',
   queryKey: systemSettingsApi.keys.lists(),
   fields: valueFormFields,
@@ -281,6 +284,7 @@ const checkFlag = (input: Record<string, unknown>) => {
 };
 export const flagFormConfig: DirectoryFormConfig<FeatureFlag> = {
   noun: 'feature flag',
+  listTitle: 'Feature flags',
   basePath: '/settings/system/flags',
   queryKey: featureFlagsApi.keys.lists(),
   fields: flagFormFields,
@@ -370,6 +374,7 @@ const checkColors = (input: Record<string, unknown>) => {
 };
 export const themeFormConfig: DirectoryFormConfig<Theme> = {
   noun: 'theme',
+  listTitle: 'Themes',
   basePath: '/settings/system/themes',
   queryKey: themesApi.keys.lists(),
   fields: themeFormFields,
@@ -439,6 +444,7 @@ export const localizationFormFields: ReadonlyArray<FieldDef> = [
 ];
 export const localizationFormConfig: DirectoryFormConfig<Localization> = {
   noun: 'localization',
+  listTitle: 'Localizations',
   basePath: '/settings/system/localizations',
   queryKey: localizationsApi.keys.lists(),
   fields: localizationFormFields,
@@ -482,6 +488,7 @@ export const tagFormFields: ReadonlyArray<FieldDef> = [
 ];
 export const tagFormConfig: DirectoryFormConfig<Tag> = {
   noun: 'tag',
+  listTitle: 'Tags',
   basePath: '/settings/system/tags',
   queryKey: tagsApi.keys.lists(),
   fields: tagFormFields,

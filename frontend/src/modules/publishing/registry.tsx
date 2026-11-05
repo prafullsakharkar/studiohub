@@ -47,6 +47,7 @@ export const rootsFormFields: ReadonlyArray<FieldDef> = [
 
 export const rootsFormConfig: DirectoryFormConfig<StorageRoot> = {
   noun: 'storage root',
+  listTitle: 'Storage roots',
   basePath: '/publishing/storage-roots',
   queryKey: storageRootsApi.keys.lists(),
   fields: rootsFormFields,
@@ -98,6 +99,7 @@ export const publishDestinationsFormFields: ReadonlyArray<FieldDef> = [
 
 export const publishDestinationsFormConfig: DirectoryFormConfig<PublishDestination> = {
   noun: 'destination',
+  listTitle: 'Publish destinations',
   basePath: '/publishing/destinations',
   queryKey: publishDestinationsApi.keys.lists(),
   fields: publishDestinationsFormFields,

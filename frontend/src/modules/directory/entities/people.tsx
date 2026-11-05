@@ -54,6 +54,7 @@ const SENSITIVE = 'masterdata.person.view_sensitive';
 
 export const peopleFormConfig: DirectoryFormConfig<Person> = {
   noun: 'person',
+  listTitle: 'People',
   basePath: '/people',
   queryKey: peopleApi.keys.all,
   get: peopleApi.get,
