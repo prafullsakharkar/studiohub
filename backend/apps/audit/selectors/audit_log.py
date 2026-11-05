@@ -26,7 +26,7 @@ class AuditLogSelector(AuditBaseSelector):
         view=None,
     ) -> QuerySet[AuditLog]:
         return cls._scope_by_request(
-            cls.model.objects.all(),
+            cls.model.objects.select_related("actor__profile"),
             request=request,
         )
     
