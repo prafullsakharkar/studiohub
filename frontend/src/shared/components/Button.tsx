@@ -4,6 +4,7 @@ import { cn } from '../utils/cn';
 import { Loader2 } from 'lucide-react';
 import { usePermissionControl, type PermissionControlMode } from '@/core/permissions/PermissionControl';
 import type { PermissionKey } from '@/types/identity';
+import { PRIMARY_FILL } from '../utils/kitStyles';
 
 export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'role'> {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline' | 'warning';
@@ -101,7 +102,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variantStyles = {
     primary:
-      'accent-gradient-primary accent-gradient-primary-hover text-white font-medium shadow-md shadow-cyan-500/20 border border-white/20 focus:ring-cyan-500/50',
+      `${PRIMARY_FILL} font-medium focus:ring-cyan-500/50`,
     secondary:
       'bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-800 border border-slate-300 shadow-2xs focus:ring-cyan-500/50 dark:bg-slate-900/90 dark:hover:bg-slate-800 dark:active:bg-slate-750 dark:text-slate-200 dark:border-slate-700/80 dark:hover:border-slate-600',
     outline:
