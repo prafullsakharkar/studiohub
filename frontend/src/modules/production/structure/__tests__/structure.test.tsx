@@ -109,6 +109,31 @@ describe('project form', () => {
     expect(calls.find((c) => c.method === 'POST')!.body).toMatchObject({ name: 'Alpha 2', code: 'ALPHA', type: 'Episodic Series', workflow_type: 'episodic' });
   });
 
+  it('reloads the session after a create, so the creator’s new membership is known before the detail route checks it', async () => {
+    const refreshUser = vi.fn().mockResolvedValue(undefined);
+    mockFetch((c) => (c.method === 'POST' ? { status: 201, body: flow.projects_detail.body } : { body: { count: 0, next: null, previous: null, results: [] } }));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+    render(
+      <QueryClientProvider client={client}>
+        <AuthContext.Provider value={{ user: superuser, refreshUser } as unknown as AuthContextValue}>
+          <MemoryRouter initialEntries={['/projects/new']}>
+            <Routes>
+              <Route path="/projects/new" element={<DirectoryFormPage config={projectsFormConfig} />} />
+              <Route path="/projects/:id" element={<div>project detail</div>} />
+            </Routes>
+          </MemoryRouter>
+        </AuthContext.Provider>
+      </QueryClientProvider>
+    );
+
+    fireEvent.change(await screen.findByLabelText(/^Name/), { target: { value: 'Beta' } });
+    fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: 'BETA' } });
+    fireEvent.click(screen.getByRole('button', { name: /create project/i }));
+
+    expect(await screen.findByText('project detail')).toBeTruthy();
+    expect(refreshUser).toHaveBeenCalledTimes(1);
+  });
+
   it('the workflow cannot be changed once the project exists', async () => {
     mockFetch(() => ({ body: flow.projects_detail.body }));
     renderAt(`/projects/${PID}/edit`, superuser, <Route path="/projects/:id/edit" element={<DirectoryFormPage config={projectsFormConfig} />} />);

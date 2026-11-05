@@ -140,6 +140,11 @@ export interface DirectoryFormConfig<T extends { id: string }> {
   afterSavePath?: (saved: T) => string;
   /** Fields that cannot change after creation (the backend rejects them), shown read-only on edit. */
   immutableOnEdit?: ReadonlyArray<string>;
+  /**
+   * Creating this record gives the caller a membership on the server (a project's creator becomes a member).
+   * The session is reloaded after a create so the detail page's membership check sees it.
+   */
+  refreshSessionOnCreate?: boolean;
 }
 
 /** A list of child records inside a parent's workspace (a client's contacts, a vendor's contracts). */
