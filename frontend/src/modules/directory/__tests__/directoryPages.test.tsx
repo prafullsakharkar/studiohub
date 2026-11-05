@@ -211,6 +211,17 @@ describe('clients, vendors and people', () => {
     expect(calls.find((c) => c.method === 'POST')!.body).toMatchObject({ name: 'Acme Pictures', code: 'ACME', portal_access: false });
   });
 
+  it('a record form looks like the department form: back to the list, titled card, two-column fields', async () => {
+    mockFetch(() => ({ body: {} }));
+    renderAt('/clients/new', superuser, <Route path="/clients/new" element={<DirectoryFormPage config={clientsFormConfig} />} />);
+    const name = await screen.findByLabelText(/^Name/);
+    expect(screen.getByRole('link', { name: /Clients/ }).getAttribute('href')).toBe('/clients');
+    expect(screen.getByRole('heading', { level: 1, name: 'New client' })).toBeTruthy();
+    expect(name.closest('.grid')?.className).toContain('sm:grid-cols-2');
+    const footer = within(name.closest('form') as HTMLFormElement).getAllByRole('button').map((b) => b.textContent);
+    expect(footer.slice(-2)).toEqual(['Cancel', 'Create client']);
+  });
+
   it('vendor create does not submit while name and code are missing', async () => {
     const { calls } = mockFetch(() => ({ body: {} }));
     renderAt('/vendors/new', superuser, <Route path="/vendors/new" element={<DirectoryFormPage config={vendorsFormConfig} />} />);
