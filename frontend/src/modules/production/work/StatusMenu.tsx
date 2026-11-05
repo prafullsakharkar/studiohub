@@ -8,7 +8,7 @@ import type { WorkflowEntity } from '@/api/production/statusFlow';
 import { AuthContext } from '@/core/auth/AuthContext';
 import { evaluateAccess } from '@/core/permissions/access';
 import { notify } from '@/core/notifications/notify';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 
 export interface StatusMenuProps {
   entity: WorkflowEntity;
@@ -31,7 +31,7 @@ export const StatusMenu: React.FC<StatusMenuProps> = ({ entity, status, name, ca
   const user = useContext(AuthContext)?.user ?? null;
   const [busy, setBusy] = useState(false);
   const moves = nextStatuses(entity, status).filter((to) => to !== 'Archived' && (!ENTERING_PERMISSION[entity]?.[to] || evaluateAccess(user, ENTERING_PERMISSION[entity]?.[to] as string, {})));
-  if (!canChange || moves.length === 0) return <Badge variant="outline">{status}</Badge>;
+  if (!canChange || moves.length === 0) return <StatusBadge status={status} />;
 
   const onChange = async (next: string) => {
     if (!next || next === status) return;

@@ -790,7 +790,7 @@ class Command(BaseCommand):
                     "coordinator": user_by_email.get(item.get("coordinator_email", "")),
                     "client_id": client.code if client else "",
                     "client_name": client.name if client else "",
-                    "vendor_ids": [v.code for v in vendors],
+                    "vendor_ids": [str(v.pk) for v in vendors],
                     "vendor_names": [v.name for v in vendors],
                 },
             )

@@ -1,9 +1,10 @@
 import { PROJECT_STATUSES, PROJECT_TYPES, PROJECT_WORKFLOWS, TRACK_TYPES, episodesApi, projectsApi, sequencesApi, showsApi, tracksApi } from '@/api/production/structure';
 import type { EditorialTrack, Episode, Project, Sequence, Show } from '@/api/production/structure';
 import { EntityPicker } from '@/components/forms/EntityPicker';
-import { ClientPicker } from '@/modules/directory/pickers';
+import { ClientPicker, VendorMultiPicker } from '@/modules/directory/pickers';
 import type { DirectoryFormConfig, DirectoryListConfig, FieldDef, RelatedRecordsConfig } from '@/modules/directory/types';
 import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 
 const opts = (values: readonly string[]) => values.map((v) => ({ value: v, label: v }));
 const MANAGE_PROJECT = 'project.update';
@@ -34,7 +35,7 @@ export const projectsListConfig: DirectoryListConfig<Project> = {
     { header: 'Client', cell: (p) => p.client_name || '—' },
     { header: 'Shots', cell: (p) => `${p.approved_shots}/${p.total_shots}` },
     { header: 'Delivery', cell: (p) => p.delivery_date ?? '—' },
-    { header: 'Status', cell: (p) => <Badge variant={p.status === 'Approved' ? 'success' : p.status === 'On Hold' ? 'warning' : 'info'}>{p.status}</Badge> },
+    { header: 'Status', cell: (p) => <StatusBadge status={p.status} /> },
   ],
   exportColumns: [
     { header: 'Code', value: (p) => p.code },
@@ -65,6 +66,7 @@ export const projectsFormConfig: DirectoryFormConfig<Project> = {
     { kind: 'select', name: 'workflow_type', label: 'Workflow', options: opts(PROJECT_WORKFLOWS), hint: 'Episodic projects have episodes; standard ones do not.' },
     { kind: 'select', name: 'status', label: 'Status', options: opts(PROJECT_STATUSES) },
     { kind: 'entity', name: 'client_id', label: 'Client', render: (p) => <ClientPicker {...p} value={p.value || null} onChange={(id) => p.onChange(id ?? '')} /> },
+    { kind: 'multi-entity', name: 'vendor_ids', label: 'Vendors', render: (p) => <VendorMultiPicker value={p.value} onChange={p.onChange} error={p.error} hint="The partner studios on this project. Only vendors that exist can be chosen." /> },
     { kind: 'textarea', name: 'description', label: 'Description' },
     { kind: 'date', name: 'start_date', label: 'Start date' },
     { kind: 'date', name: 'delivery_date', label: 'Delivery date' },

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DashboardProjectMetadata } from '../types';
+import { PRIMARY_FILL } from '@/shared/utils/kitStyles';
 ;
 
 export interface DashboardHeaderProps {
@@ -190,7 +191,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           {/* View Production Matrix */}
           <Link
             to="/shots"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/90 hover:bg-indigo-600 border border-indigo-500/30 text-white text-xs font-medium transition-colors shadow-lg shadow-indigo-600/20"
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${PRIMARY_FILL}`}
           >
             <Layers className="w-3.5 h-3.5" />
             Shot Matrix

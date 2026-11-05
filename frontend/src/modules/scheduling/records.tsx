@@ -10,6 +10,7 @@ import { DepartmentPicker, OfficePicker, TeamPicker } from '@/modules/directory/
 import type { DirectoryFormConfig, DirectoryListConfig, FieldDef, RowAction } from '@/modules/directory/types';
 import { ProjectPicker } from '@/modules/production/work/pickers';
 import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { formatDay, formatMoment, formatRange, formatRate } from './format';
 import { CalendarPicker, ProjectDeliveryPicker, ResourcePicker, UserPicker } from './pickers';
 
@@ -19,11 +20,6 @@ const resourceFilter = { key: 'resource_id', label: 'Resource', optionsFrom: { q
 
 // -------------------------------------------------------------------------------------------- badges
 
-export const resourceStatusVariant = (status: string) => (status === 'Active' ? 'success' : status === 'On Leave' ? 'warning' : 'neutral');
-export const leaveStatusVariant = (status: string) => (status === 'Approved' ? 'success' : status === 'Rejected' ? 'destructive' : status === 'Pending' ? 'warning' : 'neutral');
-export const bookingStatusVariant = (status: string) => (status === 'Booked' ? 'info' : status === 'Blocked' ? 'neutral' : status === 'Overbooked' ? 'destructive' : 'success');
-export const milestoneStatusVariant = (status: string) => (status === 'Completed' ? 'success' : status === 'In Progress' ? 'info' : 'neutral');
-export const eventStatusVariant = (status: string) => (status === 'Completed' ? 'success' : status === 'In Progress' ? 'info' : status === 'Cancelled' ? 'destructive' : status === 'Postponed' ? 'warning' : 'neutral');
 
 // -------------------------------------------------------------------------------------------- resources
 
@@ -56,7 +52,7 @@ export function useResourcesListConfig(): DirectoryListConfig<ResourceRow> {
       { header: 'Calendar', cell: (row) => row.calendar_name || 'Default' },
       { header: 'Capacity', cell: (row) => `${row.capacity_hours_per_week} h/week`, sortField: 'capacity_hours_per_week' },
       ...(canSeeRates ? [{ header: 'Rate', cell: (row: ResourceRow) => formatRate(row.hourly_rate_usd), sortField: 'hourly_rate_usd' }] : []),
-      { header: 'Status', cell: (row) => <Badge variant={resourceStatusVariant(row.status)}>{row.status}</Badge> },
+      { header: 'Status', cell: (row) => <StatusBadge status={row.status} /> },
     ],
     exportColumns: [
       { header: 'Code', value: (r) => r.code },
@@ -136,7 +132,7 @@ export function useBookingsListConfig(scope?: { resourceId: string }): Directory
     columns: [
       { header: 'Resource', cell: (row) => `${row.resource_code} · ${row.resource_name}` },
       { header: 'When', cell: (row) => formatRange(row.start_time, row.end_time), sortField: 'start_time' },
-      { header: 'Status', cell: (row) => <Badge variant={bookingStatusVariant(row.status)}>{row.status}</Badge> },
+      { header: 'Status', cell: (row) => <StatusBadge status={row.status} /> },
       { header: 'Notes', cell: (row) => row.notes || '—' },
     ],
   };
@@ -203,7 +199,7 @@ export function useLeavesListConfig(): DirectoryListConfig<Leave> {
       { header: 'To', cell: (row) => formatDay(row.end_date) },
       { header: 'Working days', cell: (row) => row.total_days },
       { header: 'Reason', cell: (row) => row.reason || '—' },
-      { header: 'Status', cell: (row) => <Badge variant={leaveStatusVariant(row.status)}>{row.status}</Badge> },
+      { header: 'Status', cell: (row) => <StatusBadge status={row.status} /> },
     ],
   };
 }
@@ -365,7 +361,7 @@ export function useMilestonesListConfig(scope?: { projectId: string }): Director
       ...(scope ? [] : [{ header: 'Project', cell: (row: Milestone) => `${row.project_code} · ${row.project_name}` }]),
       { header: 'Due', cell: (row) => formatDay(row.due_date), sortField: 'due_date' },
       { header: 'Kind', cell: (row) => row.kind },
-      { header: 'Status', cell: (row) => <Badge variant={milestoneStatusVariant(row.status)}>{row.status}</Badge> },
+      { header: 'Status', cell: (row) => <StatusBadge status={row.status} /> },
       { header: 'Completed', cell: (row) => (row.completed_at ? formatMoment(row.completed_at) : '—') },
     ],
   };
@@ -460,7 +456,7 @@ export function useEventsListConfig(scope?: { projectId: string }): DirectoryLis
       { header: 'Type', cell: (row) => row.event_type_display || row.event_type },
       ...(scope ? [] : [{ header: 'Project', cell: (row: CalendarEventRow) => row.project_name || '—' }]),
       { header: 'Where', cell: (row) => row.location || '—' },
-      { header: 'Status', cell: (row) => <Badge variant={eventStatusVariant(row.status)}>{row.status}</Badge> },
+      { header: 'Status', cell: (row) => <StatusBadge status={row.status} /> },
     ],
   };
 }

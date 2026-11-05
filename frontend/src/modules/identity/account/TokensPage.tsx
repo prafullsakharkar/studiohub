@@ -8,7 +8,7 @@ import { ConfirmDialog } from '@/components/system/ConfirmDialog';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { Dialog } from '@/components/ui/Dialog';
 import { useAuth } from '@/modules/auth';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { Field, FormBanner, Table, formatDate, inputClass } from '../components/ui';
 import { useServerForm } from '@/shared/forms/useServerForm';
@@ -215,7 +215,7 @@ export const TokensPage: React.FC = () => {
               <td className="px-4 py-2 text-slate-400">{formatDate(c.last_used_at)}</td>
               <td className="px-4 py-2 text-slate-400">{c.expires_at ? formatDate(c.expires_at) : 'Never'}</td>
               <td className="px-4 py-2">
-                <Badge variant={c.revoked_at ? 'neutral' : c.is_active ? 'success' : 'warning'}>{c.revoked_at ? 'Revoked' : c.is_active ? 'Active' : 'Inactive'}</Badge>
+                <StatusBadge status={c.revoked_at ? 'Revoked' : c.is_active ? 'Active' : 'Inactive'} />
               </td>
               <td className="px-4 py-2 text-right space-x-3">
                 {!c.revoked_at && (

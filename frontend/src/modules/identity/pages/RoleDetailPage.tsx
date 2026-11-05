@@ -9,6 +9,7 @@ import { ConfirmDialog } from '@/components/system/ConfirmDialog';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { Field, PageShell, Table, formatDate, inputClass } from '../components/ui';
 import { roleQuery, useAfterAccessChange, usePermissionsIndex, useUsersIndex } from '../hooks/useIdentityData';
@@ -270,7 +271,7 @@ export const RoleDetailPage: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
               <span className="font-mono text-slate-300">{role.data.code}</span>
               {role.data.is_system && <Badge variant="purple">System</Badge>}
-              <Badge variant={role.data.is_active === false ? 'neutral' : 'success'}>{role.data.is_active === false ? 'Inactive' : 'Active'}</Badge>
+              <StatusBadge status={role.data.is_active === false ? 'Inactive' : 'Active'} />
             </div>
 
               <div role="tablist" aria-label="Role sections" className="flex gap-1 border-b border-slate-800">

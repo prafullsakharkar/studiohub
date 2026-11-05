@@ -3,7 +3,7 @@ import type React from 'react';
 import { Link } from 'react-router-dom';
 import { projectsApi } from '@/api/production/structure';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { fetchAllRows } from '@/shared/data/listing';
 
 /**
@@ -29,9 +29,7 @@ export const ProjectsOfClient: React.FC<{ clientName: string }> = ({ clientName 
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-sm text-white">{project.name}</span>
                   {project.code && <span className="px-1.5 rounded bg-sky-950 font-mono text-[10px] font-bold text-sky-300 border border-sky-500/30">{project.code}</span>}
-                  <Badge variant="outline" className="ml-auto">
-                    {project.status}
-                  </Badge>
+                  <StatusBadge status={project.status} className="ml-auto" />
                 </div>
               </Link>
             </li>

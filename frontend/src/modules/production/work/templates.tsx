@@ -16,7 +16,7 @@ import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import type { DirectoryListConfig } from '@/modules/directory/types';
 import { Field, FormBanner, inputClass } from '@/modules/identity/components/ui';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { listFetcher } from '@/shared/data/listing';
 import { useServerForm } from '@/shared/forms/useServerForm';
@@ -52,7 +52,7 @@ export function useTemplatesListConfig(): DirectoryListConfig<TaskTemplate> {
       { header: 'For', cell: (row) => row.entity_type },
       { header: 'Scope', cell: (row) => (row.scope === 'studio' ? 'Studio' : `Project ${row.project_code}`) },
       { header: 'Tasks', cell: (row) => row.items.map((i) => i.name).join(', ') || '—' },
-      { header: 'State', cell: (row) => (row.is_active ? <Badge variant="success">Active</Badge> : <Badge variant="outline">Inactive</Badge>) },
+      { header: 'State', cell: (row) => (row.is_active ? <StatusBadge status="Active" /> : <StatusBadge status="Inactive" />) },
     ],
   };
 }

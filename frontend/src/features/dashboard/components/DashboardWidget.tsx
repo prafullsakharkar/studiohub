@@ -36,6 +36,7 @@ import {
   getTaskFigures,
   getTaskStatusDistribution,
 } from '../utils/dashboardMetrics';
+import { SELECTED } from '@/shared/utils/kitStyles';
 
 export interface DashboardWidgetProps {
   summary?: DashboardSummaryKpis;
@@ -145,7 +146,7 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
             onClick={() => setActiveTab('health')}
             className={`px-2.5 py-1 rounded text-xs font-medium transition-all flex items-center gap-1.5 ${
               activeTab === 'health'
-                ? 'bg-indigo-600 text-white shadow-sm'
+                ? SELECTED
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
             }`}
           >
@@ -157,7 +158,7 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
             onClick={() => setActiveTab('tasks')}
             className={`px-2.5 py-1 rounded text-xs font-medium transition-all flex items-center gap-1.5 ${
               activeTab === 'tasks'
-                ? 'bg-indigo-600 text-white shadow-sm'
+                ? SELECTED
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
             }`}
           >
@@ -169,7 +170,7 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
             onClick={() => setActiveTab('velocity')}
             className={`px-2.5 py-1 rounded text-xs font-medium transition-all flex items-center gap-1.5 ${
               activeTab === 'velocity'
-                ? 'bg-indigo-600 text-white shadow-sm'
+                ? SELECTED
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
             }`}
           >

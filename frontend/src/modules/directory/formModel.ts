@@ -18,6 +18,12 @@ export function fromLocalInput(text: string): string {
   return Number.isNaN(d.getTime()) ? text : d.toISOString();
 }
 
+/** The ids of a `multi-entity` field, from the comma-joined text the form holds. */
+export const splitIds = (value: string | boolean | undefined): string[] => (typeof value === 'string' && value !== '' ? value.split(',') : []);
+
+/** The comma-joined text a `multi-entity` field holds, from a list of ids. */
+export const joinIds = (ids: ReadonlyArray<unknown>): string => ids.map(String).join(',');
+
 export const blank = (field: FieldDef): string | boolean => field.initial ?? (field.kind === 'checkbox' ? false : '');
 
 /** Whether a field takes part in the form right now (see `visibleWhen`). */
@@ -44,7 +50,7 @@ export function buildSchema(fields: ReadonlyArray<FieldDef>) {
       if (field.kind === 'checkbox' || !isVisible(field, values as Values)) continue;
       const value = String(values[field.name] ?? '').trim();
       if (field.required && value === '') {
-        ctx.addIssue({ code: 'custom', path: [field.name], message: field.kind === 'entity' || field.kind === 'select' ? `Choose a ${field.label.toLowerCase()}.` : `Enter ${field.label.toLowerCase()}.` });
+        ctx.addIssue({ code: 'custom', path: [field.name], message: field.kind === 'multi-entity' ? `Choose ${field.label.toLowerCase()}.` : field.kind === 'entity' || field.kind === 'select' ? `Choose a ${field.label.toLowerCase()}.` : `Enter ${field.label.toLowerCase()}.` });
       } else if (field.kind === 'json' && value !== '') {
         const problem = jsonProblem(field.shape, value);
         if (problem) ctx.addIssue({ code: 'custom', path: [field.name], message: `${field.label} ${problem}` });
@@ -59,6 +65,7 @@ export function buildSchema(fields: ReadonlyArray<FieldDef>) {
 export function wireValue(field: FieldDef, value: string | boolean): unknown {
   if (field.kind === 'checkbox') return value;
   if (field.kind === 'json') return value === '' ? (field.shape === 'array' ? [] : {}) : JSON.parse(String(value));
+  if (field.kind === 'multi-entity') return splitIds(value);
   if (value === '') return field.kind === 'number' || field.kind === 'date' || field.kind === 'datetime' || field.kind === 'entity' ? null : '';
   if (field.kind === 'datetime') return fromLocalInput(String(value));
   return field.kind === 'number' ? Number(value) : value;
@@ -70,6 +77,7 @@ export const fromRow = (fields: ReadonlyArray<FieldDef>, row: Record<string, unk
       const value = row[f.rowKey ?? f.name];
       if (f.kind === 'json') return [f.name, value === null || value === undefined ? '' : JSON.stringify(value, null, 2)];
       if (f.kind === 'datetime') return [f.name, typeof value === 'string' ? toLocalInput(value) : ''];
+      if (f.kind === 'multi-entity') return [f.name, Array.isArray(value) ? joinIds(value) : ''];
       return [f.name, f.kind === 'checkbox' ? Boolean(value) : value === null || value === undefined ? '' : String(value)];
     })
   );

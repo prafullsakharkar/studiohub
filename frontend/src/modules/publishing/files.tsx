@@ -8,14 +8,12 @@ import { useCan } from '@/core/permissions/useCan';
 import { formatBytes } from '@/modules/deliveries/format';
 import type { DirectoryFormConfig, DirectoryListConfig, FieldDef, RowAction } from '@/modules/directory/types';
 import { VersionPicker } from '@/modules/production/review/pickers';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 
 const options = (values: ReadonlyArray<string>) => values.map((value) => ({ value, label: value }));
 
-export const fileStatusVariant = (status: string) => (status === 'Registered' ? 'success' : status === 'Revoked' ? 'destructive' : 'warning');
-export const checksumVariant = (state: string) => (state === 'verified' ? 'success' : state === 'mismatch' || state === 'missing' ? 'destructive' : 'neutral');
-export const FileStatusBadge = ({ status }: { status: string }) => <Badge variant={fileStatusVariant(status)}>{status}</Badge>;
-export const ChecksumBadge = ({ state }: { state: string }) => <Badge variant={checksumVariant(state)}>{state}</Badge>;
+export const FileStatusBadge = ({ status }: { status: string }) => <StatusBadge status={status} />;
+export const ChecksumBadge = ({ state }: { state: string }) => <StatusBadge status={state} />;
 
 /** A frame range reads as `1001–1096`; a single file as nothing. */
 export const frames = (f: Pick<PublishedFile, 'frame_start' | 'frame_end'>) => (f.frame_start !== null && f.frame_end !== null ? `${f.frame_start}–${f.frame_end}` : '');

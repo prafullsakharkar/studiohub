@@ -2,6 +2,7 @@ import { DESTINATION_TYPES, destinationsApi } from '@/api/deliveries/deliveries'
 import type { DeliveryDestination } from '@/api/deliveries/deliveries';
 import type { DirectoryFormConfig, DirectoryListConfig, FieldDef } from '@/modules/directory/types';
 import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 
 export function useDestinationsListConfig(): DirectoryListConfig<DeliveryDestination> {
   return {
@@ -26,7 +27,7 @@ export function useDestinationsListConfig(): DirectoryListConfig<DeliveryDestina
       { header: 'Region', cell: (row) => row.storage_region || '—' },
       { header: 'Credentials', cell: (row) => (row.credentials_configured ? <Badge variant="success">Set up</Badge> : <Badge variant="neutral">Not set up</Badge>) },
       { header: 'Default', cell: (row) => (row.is_default ? <Badge variant="info">Default</Badge> : '—') },
-      { header: 'State', cell: (row) => (row.is_active ? <Badge variant="success">Active</Badge> : <Badge variant="neutral">Inactive</Badge>) },
+      { header: 'State', cell: (row) => (row.is_active ? <StatusBadge status="Active" /> : <StatusBadge status="Inactive" />) },
     ],
   };
 }

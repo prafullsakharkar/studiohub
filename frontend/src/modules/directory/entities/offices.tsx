@@ -1,6 +1,7 @@
 import { officesApi } from '@/api/masterdata/directory';
 import type { Office } from '@/api/masterdata/directory';
 import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import type { DirectoryFormConfig, DirectoryListConfig } from '../types';
 
 export const officesListConfig: DirectoryListConfig<Office> = {
@@ -29,7 +30,7 @@ export const officesListConfig: DirectoryListConfig<Office> = {
       cell: (o) => (
         <span className="space-x-1">
           {o.is_headquarters && <Badge variant="purple">HQ</Badge>}
-          <Badge variant={o.is_active === false ? 'neutral' : 'success'}>{o.is_active === false ? 'Inactive' : 'Active'}</Badge>
+          <StatusBadge status={o.is_active === false ? 'Inactive' : 'Active'} />
         </span>
       ),
     },

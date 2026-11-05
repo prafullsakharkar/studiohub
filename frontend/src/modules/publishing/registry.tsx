@@ -2,9 +2,10 @@ import { DESTINATION_PROTOCOLS, DESTINATION_TYPES, publishDestinationsApi, stora
 import type { PublishDestination, StorageRoot } from '@/api/publishing/publishing';
 import type { DirectoryFormConfig, DirectoryListConfig, FieldDef } from '@/modules/directory/types';
 import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 
 const options = (values: ReadonlyArray<string>) => values.map((value) => ({ value, label: value }));
-const active = (on: boolean) => (on ? <Badge variant="success">Active</Badge> : <Badge variant="neutral">Inactive</Badge>);
+const active = (on: boolean) => (on ? <StatusBadge status="Active" /> : <StatusBadge status="Inactive" />);
 
 // ------------------------------------------------------------------------------------------- storage roots
 

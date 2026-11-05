@@ -12,6 +12,7 @@ import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { Field, FormBanner, formatDate, inputClass } from '@/modules/identity/components/ui';
 import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { fetchAllRows } from '@/shared/data/listing';
 import { useServerForm } from '@/shared/forms/useServerForm';
@@ -117,7 +118,7 @@ export const EntityNotesTab: React.FC<{ target: NoteTarget }> = ({ target }) => 
                 <span className="font-semibold text-slate-200">{n.subject}</span>
                 <span className="flex items-center gap-2">
                   <Badge variant="neutral">{n.category}</Badge>
-                  <Badge variant={n.status === 'Open' ? 'info' : 'neutral'}>{n.status}</Badge>
+                  <StatusBadge status={n.status} />
                   <time dateTime={n.created_at} className="font-mono text-[10px] text-slate-500">
                     {formatDate(n.created_at)}
                   </time>

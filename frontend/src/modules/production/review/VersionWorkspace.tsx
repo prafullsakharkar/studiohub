@@ -10,12 +10,11 @@ import { ConfirmDialog } from '@/components/system/ConfirmDialog';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { StatusHistory } from '@/modules/production/work/StatusHistory';
 import { StatusMenu } from '@/modules/production/work/StatusMenu';
 import { PlaylistPicker } from './pickers';
-import { reviewStatusVariant } from './reviews';
 import { versionActions, versionBadges } from './versions';
 import { formatDateTime } from '@/core/locale/studioLocale';
 
@@ -60,7 +59,7 @@ const VersionReviews: React.FC<{ version: Version }> = ({ version }) => {
               <Link to={`/reviews/${r.id}`} className="font-semibold text-cyan-300 hover:underline">
                 {r.code} · {r.title}
               </Link>
-              <Badge variant={reviewStatusVariant(r.status)}>{r.status}</Badge>
+              <StatusBadge status={r.status} />
             </li>
           ))}
         </ul>

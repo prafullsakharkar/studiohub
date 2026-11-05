@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { logger } from '@/core/logging/logger';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { PRIMARY_FILL } from '@/shared/utils/kitStyles';
 
 interface Props {
   children: ReactNode;
@@ -117,7 +118,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </button>
               <button
                 type="button"
-                className="inline-flex items-center justify-center gap-1.5 font-medium transition-all duration-150 rounded-lg px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-950/50 active:scale-95"
+                className={`inline-flex items-center justify-center gap-1.5 font-medium transition-all duration-150 rounded-lg px-4 py-2 text-sm active:scale-95 ${PRIMARY_FILL}`}
                 onClick={this.handleReload}
               >
                 <RefreshCw className="w-4 h-4" />

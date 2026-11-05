@@ -4,12 +4,11 @@ import { REVIEW_STATUSES, reviewsApi } from '@/api/production/review';
 import type { Review } from '@/api/production/review';
 import { projectsApi } from '@/api/production/structure';
 import type { DirectoryFormConfig, DirectoryListConfig, FieldDef } from '@/modules/directory/types';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { AssetPicker, ProjectPicker, ShotPicker } from '@/modules/production/work/pickers';
 
 const options = (values: ReadonlyArray<string>) => values.map((value) => ({ value, label: value }));
 
-export const reviewStatusVariant = (status: string) => (status === 'Approved' ? 'success' : status === 'Rejected' || status === 'Retake' ? 'destructive' : status === 'Closed' ? 'neutral' : 'outline');
 
 export function useReviewsListConfig(scope?: { projectId: string }): DirectoryListConfig<Review> {
   return {
@@ -40,7 +39,7 @@ export function useReviewsListConfig(scope?: { projectId: string }): DirectoryLi
       { header: 'For', cell: (row) => `${row.entity_type} ${row.entity_code}`.trim() || '—' },
       { header: 'Versions', cell: (row) => row.versions.length },
       { header: 'People', cell: (row) => row.reviewers.length },
-      { header: 'Status', sortField: 'status', cell: (row) => <Badge variant={reviewStatusVariant(row.status)}>{row.status}</Badge> },
+      { header: 'Status', sortField: 'status', cell: (row) => <StatusBadge status={row.status} /> },
     ],
   };
 }

@@ -12,7 +12,6 @@ export const Badge: React.FC<BadgeProps> = ({
   className,
   variant = 'neutral',
   size = 'sm',
-  id,
   ...props
 }) => {
   const base =
@@ -39,7 +38,6 @@ export const Badge: React.FC<BadgeProps> = ({
 
   return (
     <span
-      id={id || `badge-${Math.random().toString(36).substring(2, 9)}`}
       className={cn(base, sizes[size], variants[variant], className)}
       {...props}
     >

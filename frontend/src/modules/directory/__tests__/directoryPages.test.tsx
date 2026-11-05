@@ -16,6 +16,7 @@ import { clientsFormConfig } from '../entities/clients';
 import { peopleFormConfig, peopleListConfig } from '../entities/people';
 import { teamsFormConfig, teamsListConfig } from '../entities/teams';
 import { vendorsFormConfig } from '../entities/vendors';
+import { pickEntity } from '@/test/picker';
 
 type Captured = { status: number; body: any };
 const teams = loadSample<Record<string, Captured>>('masterdata/teams.json');
@@ -145,8 +146,7 @@ describe('DirectoryFormPage', () => {
 
     fireEvent.change(await screen.findByLabelText(/^Name/), { target: { value: 'Layout' } });
     fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: 'LAY' } });
-    await screen.findByRole('option', { name: dept.name });
-    fireEvent.change(screen.getByLabelText(/^Department/), { target: { value: dept.id } });
+    await pickEntity(/^Department/, dept.name);
     fireEvent.click(screen.getByRole('button', { name: /create team/i }));
 
     expect((await screen.findAllByText('This field is required.')).length).toBeGreaterThanOrEqual(3);
@@ -162,8 +162,7 @@ describe('DirectoryFormPage', () => {
 
     fireEvent.change(await screen.findByLabelText(/^Name/), { target: { value: 'Layout' } });
     fireEvent.change(screen.getByLabelText(/^Code/), { target: { value: 'LAY' } });
-    await screen.findByRole('option', { name: dept.name });
-    fireEvent.change(screen.getByLabelText(/^Department/), { target: { value: dept.id } });
+    await pickEntity(/^Department/, dept.name);
     fireEvent.click(screen.getByRole('button', { name: /create team/i }));
 
     expect(await screen.findByText('team page')).toBeTruthy();

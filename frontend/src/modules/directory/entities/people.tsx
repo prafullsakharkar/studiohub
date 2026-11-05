@@ -2,11 +2,10 @@ import { PERSON_STATUSES, peopleApi } from '@/api/masterdata/directory';
 import type { Person } from '@/api/masterdata/directory';
 import { departmentKeys, departmentsApi } from '@/api/masterdata/departments';
 import { officesApi, teamsApi } from '@/api/masterdata/directory';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import type { DirectoryFormConfig, DirectoryListConfig } from '../types';
 import { DepartmentPicker, OfficePicker, PositionPicker, TeamPicker } from '../pickers';
 
-const statusVariant = (status: Person['status']) => (status === 'active' ? 'success' : status === 'archived' ? 'neutral' : status === 'inactive' ? 'warning' : 'info');
 
 export const peopleListConfig: DirectoryListConfig<Person> = {
   title: 'People',
@@ -33,7 +32,7 @@ export const peopleListConfig: DirectoryListConfig<Person> = {
     { header: 'Department', cell: (p) => p.department_name || '—' },
     { header: 'Team', cell: (p) => p.team_name || '—' },
     { header: 'Office', cell: (p) => p.office_name || '—' },
-    { header: 'Status', cell: (p) => <Badge variant={statusVariant(p.status)}>{p.status ?? 'active'}</Badge> },
+    { header: 'Status', cell: (p) => <StatusBadge status={p.status ?? 'active'} /> },
   ],
   rowActions: (p) => {
     const name = p.full_name || p.name;

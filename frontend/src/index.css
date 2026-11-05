@@ -815,7 +815,9 @@ html.light .timeline-connector {
   background-image: linear-gradient(to right, var(--studio-accent-cyan, #06b6d4), var(--studio-accent-blue, #3b82f6)) !important;
 }
 
-.accent-gradient-primary-hover:hover {
+/* The hover lives on the same class: a separate `accent-gradient-primary-hover` class was dropped by tailwind-merge
+   (`cn`), which reads both as the same `accent-*` utility and kept only the last, so the gradient never showed. */
+.accent-gradient-primary:hover {
   filter: brightness(1.1);
 }
 

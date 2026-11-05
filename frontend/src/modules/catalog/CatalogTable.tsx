@@ -16,6 +16,7 @@ import type { FieldDef } from '@/modules/directory/types';
 import { FormBanner, Table } from '@/modules/identity/components/ui';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { SearchInput } from '@/shared/components/SearchInput';
 
@@ -152,7 +153,7 @@ export function CatalogTable<Row extends CatalogRowBase>(props: CatalogTableProp
                 </td>
               ))}
               <td className="px-4 py-2 space-x-1">
-                <Badge variant={row.status === 'archived' ? 'neutral' : 'success'}>{row.status}</Badge>
+                <StatusBadge status={row.status} />
                 {row.is_system && <Badge variant="purple">System</Badge>}
               </td>
               <td className="px-4 py-2 text-right space-x-3 whitespace-nowrap">

@@ -2,6 +2,7 @@ import { auditApi, auditKeys } from '@/api/audit/audit';
 import type { ActivityEntry, ApiRequestLog, AuditLogEntry, BackgroundJob, ChangeLog, ErrorLog, TrackEvent } from '@/api/audit/audit';
 import { ChangeDiff } from '@/components/history/EntityHistory';
 import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import type { LogListConfig } from './LogListPage';
 import { formatDateTime } from '@/core/locale/studioLocale';
 
@@ -143,7 +144,7 @@ export const backgroundJobsConfig: LogListConfig<BackgroundJob> = {
   columns: [
     { header: 'Created', cell: (r) => when(r.created_at) },
     { header: 'Type', cell: (r) => r.job_type },
-    { header: 'Status', cell: (r) => <Badge variant={r.status === 'failed' ? 'error' : r.status === 'completed' ? 'success' : r.status === 'cancelled' ? 'neutral' : 'info'}>{r.status}</Badge> },
+    { header: 'Status', cell: (r) => <StatusBadge status={r.status} /> },
     { header: 'Progress', cell: (r) => `${r.progress}%` },
     { header: 'Worker', cell: (r) => r.worker_id || '—' },
   ],
@@ -171,7 +172,7 @@ export const errorLogsConfig: LogListConfig<ErrorLog> = {
     { header: 'Severity', cell: (r) => <Badge variant={sevVariant(r.severity)}>{r.severity}</Badge> },
     { header: 'Type', cell: (r) => r.error_type },
     { header: 'Message', cell: (r) => <span className="line-clamp-1">{r.message}</span> },
-    { header: 'Resolved', cell: (r) => (r.resolved ? <Badge variant="success">Resolved</Badge> : <Badge variant="warning">Open</Badge>) },
+    { header: 'Resolved', cell: (r) => (r.resolved ? <StatusBadge status="Resolved" /> : <StatusBadge status="Open" />) },
   ],
   detail: (r) => json(r),
   actions: [{ label: 'Resolve', when: (r) => !r.resolved, confirm: () => 'Mark this error as resolved?', run: (r) => auditApi.errorLogs.resolve(r.id) }],

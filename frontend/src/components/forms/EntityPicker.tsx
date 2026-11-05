@@ -1,10 +1,10 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { useId, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { ChevronDown } from 'lucide-react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type React from 'react';
-import { mapHttpError } from '@/api/errors/errorMapper';
 import type { PageFetcher } from '@/shared/data/listing';
-import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
 import { cn } from '@/shared/utils/cn';
+import { listDomId, PickerListError, PickerMenu, useActiveOption, useCloseOnOutsidePress, usePickerList } from './pickerParts';
 
 export interface EntityPickerProps<T extends { id: string }> {
   label: string;
@@ -25,12 +25,13 @@ export interface EntityPickerProps<T extends { id: string }> {
   className?: string;
 }
 
-const PAGE_SIZE = 25;
-
 /**
- * Pick a related record from a server-side list: type to search (debounced, server-side), "Load more"
- * follows the pagination, and the saved value shows its label even when it is not on the first page.
+ * Pick a related record from a server-side list. A combobox: the field shows the chosen record; opening it
+ * shows a menu whose search box (debounced, server-side) has focus, with "Load more" following the
+ * pagination at the end of the list. The saved value shows its label even when it is not on the first page.
+ * Keyboard: ↓/Enter/Space open, ↑/↓ move, Enter picks, Escape closes (and does not close a dialog around it).
  * Used wherever a form holds a foreign key (department, team, office, client, vendor, person, …).
+ * Several records: EntityMultiPicker.
  */
 export function EntityPicker<T extends { id: string }>({
   label,
@@ -48,20 +49,16 @@ export function EntityPicker<T extends { id: string }>({
   className,
 }: EntityPickerProps<T>): React.ReactElement {
   const id = useId();
-  const [search, setSearch] = useState('');
-  const debounced = useDebouncedValue(search.trim(), 300);
+  const labelId = `${id}-label`;
+  const valueId = `${id}-value`;
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
-  const list = useInfiniteQuery({
-    queryKey: [...queryKey, 'picker', debounced, filters],
-    initialPageParam: 1,
-    queryFn: ({ pageParam, signal }) => fetchPage({ page: pageParam, page_size: PAGE_SIZE, ...(debounced ? { search: debounced } : {}), ...filters }, signal),
-    getNextPageParam: (last, all) => (last.next ? all.length + 1 : undefined),
-    staleTime: 30_000,
-    // A disabled picker (waiting for the project to be chosen) must not list everything meanwhile.
-    enabled: !disabled,
-  });
-
-  const items = useMemo(() => list.data?.pages.flatMap((p) => p.results) ?? [], [list.data]);
+  const picker = usePickerList({ queryKey, fetchPage, filters, disabled });
+  const { items, debounced } = picker;
   const selectedOnPage = items.find((item) => item.id === value);
 
   // The saved value may not be on the loaded pages: fetch just that record for its label.
@@ -71,53 +68,100 @@ export function EntityPicker<T extends { id: string }>({
     enabled: Boolean(value && !selectedOnPage && fetchOne),
     staleTime: 60_000,
   });
-  const selectedItem = selectedOnPage ?? selected.data;
+  // Keep the label of the chosen record while a search hides it from the list.
+  const [chosen, setChosen] = useState<T | null>(null);
+  const selectedItem = selectedOnPage ?? selected.data ?? (chosen && chosen.id === value ? chosen : undefined);
 
-  const options = selectedItem && !selectedOnPage ? [selectedItem, ...items] : items;
+  // With no search typed, a saved record that is not on the loaded pages is listed first.
+  const options = selectedItem && !selectedOnPage && !debounced ? [selectedItem, ...items] : items;
+  const { current, setActive, onKey } = useActiveOption(options.length, debounced);
+
+  const close = (refocus: boolean) => {
+    setOpen(false);
+    picker.setSearch('');
+    if (refocus) triggerRef.current?.focus();
+  };
+  const openMenu = () => {
+    if (disabled) return;
+    setOpen(true);
+    setActive(Math.max(0, options.findIndex((o) => o.id === value)));
+  };
+  const pick = (item: T | null) => {
+    setChosen(item);
+    onChange(item ? item.id : null);
+    close(true);
+  };
+
+  // Search has focus when the menu opens; a click outside closes it (so opening another picker closes this one).
+  useEffect(() => {
+    if (open) searchRef.current?.focus();
+  }, [open]);
+  useCloseOnOutsidePress(open, rootRef, () => close(false));
+
+  const onTriggerKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openMenu();
+    }
+  };
+  const onSearchKey = (e: React.KeyboardEvent) =>
+    onKey(e, { enter: (index) => pick(options[index]), escape: () => close(true), tab: () => close(false) });
+
+  const shownLabel = selectedItem ? getLabel(selectedItem) : value ? (selected.isLoading ? 'Loading…' : 'Unknown record') : placeholder;
 
   return (
-    <div className={cn('space-y-1', className)}>
-      <label htmlFor={`${id}-select`} className="block text-xs font-mono text-slate-400">
+    <div ref={rootRef} className={cn('relative space-y-1', className)}>
+      <span id={labelId} className="block text-xs font-mono text-slate-400">
         {label}
         {required ? ' *' : ''}
-      </label>
-      <input
-        aria-label={`Search ${label.toLowerCase()}`}
-        placeholder="Search…"
-        value={search}
-        disabled={disabled}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-hidden focus:border-indigo-500"
-      />
-      <select
-        id={`${id}-select`}
-        value={value ?? ''}
-        disabled={disabled}
+      </span>
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={open ? listDomId(id) : undefined}
+        aria-labelledby={`${labelId} ${valueId}`}
         aria-invalid={Boolean(error)}
-        onChange={(e) => onChange(e.target.value || null)}
-        className={cn('w-full bg-slate-950 border rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-hidden focus:border-indigo-500', error ? 'border-rose-500' : 'border-slate-800')}
+        disabled={disabled}
+        onClick={() => (open ? close(false) : openMenu())}
+        onKeyDown={onTriggerKey}
+        className={cn(
+          'w-full h-8 flex items-center gap-2 bg-slate-950 border rounded-lg px-3 text-xs text-left focus:outline-hidden focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed',
+          error ? 'border-rose-500' : open ? 'border-indigo-500' : 'border-slate-800'
+        )}
       >
-        <option value="">{list.isLoading ? 'Loading…' : placeholder}</option>
-        {options.map((item) => (
-          <option key={item.id} value={item.id}>
-            {getLabel(item)}
-          </option>
-        ))}
-        {value && !selectedItem && <option value={value}>{selected.isLoading ? 'Loading…' : 'Unknown record'}</option>}
-      </select>
-      {list.error && (
-        <p role="alert" className="text-[11px] text-rose-400">
-          {mapHttpError(list.error).userMessage}{' '}
-          <button type="button" className="underline" onClick={() => void list.refetch()}>
-            Retry
-          </button>
-        </p>
+        <span id={valueId} className={cn('flex-1 min-w-0 truncate', selectedItem ? 'text-slate-200' : 'text-slate-500')}>
+          {shownLabel}
+        </span>
+        <ChevronDown aria-hidden="true" className={cn('w-3.5 h-3.5 shrink-0 text-slate-400 transition-transform', open && 'rotate-180')} />
+      </button>
+
+      {open && (
+        <PickerMenu
+          baseId={id}
+          label={label}
+          picker={picker}
+          options={options}
+          getLabel={getLabel}
+          isSelected={(item) => item.id === value}
+          current={current}
+          setActive={setActive}
+          onPick={pick}
+          onSearchKey={onSearchKey}
+          searchRef={searchRef}
+          listRef={listRef}
+          footer={
+            value && (
+              <button type="button" onClick={() => pick(null)} className="ml-auto text-slate-400 hover:text-slate-200 hover:underline">
+                Clear
+              </button>
+            )
+          }
+        />
       )}
-      {list.hasNextPage && (
-        <button type="button" disabled={list.isFetchingNextPage} onClick={() => void list.fetchNextPage()} className="text-[11px] text-cyan-300 hover:underline">
-          {list.isFetchingNextPage ? 'Loading…' : 'Load more'}
-        </button>
-      )}
+
+      {!open && <PickerListError picker={picker} />}
       {error && (
         <p role="alert" className="text-[11px] text-rose-400">
           {error}

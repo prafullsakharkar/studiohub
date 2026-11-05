@@ -11,7 +11,7 @@ import { useCurrentUser } from '@/core/auth/useCurrentUser';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { Field, FormBanner, Table, formatDate, inputClass } from '@/modules/identity/components/ui';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { fetchAllRows } from '@/shared/data/listing';
 import { useServerForm } from '@/shared/forms/useServerForm';
@@ -227,7 +227,7 @@ export const MembersPanel: React.FC<{ projectId: string }> = ({ projectId }) => 
                     ))}
                   </select>
                 ) : (
-                  <Badge variant={m.status === 'active' ? 'success' : 'neutral'}>{m.status}</Badge>
+                  <StatusBadge status={m.status} />
                 )}
               </td>
               <td className="px-4 py-2 text-slate-400">{formatDate(m.created_at)}</td>

@@ -2,6 +2,7 @@ import type React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowUpRight, ExternalLink, PanelRightOpen } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
+import { PRIMARY_FILL } from '@/shared/utils/kitStyles';
 
 export interface WorkspaceOpenButtonProps {
   id?: string;
@@ -48,7 +49,7 @@ export const WorkspaceOpenButton: React.FC<WorkspaceOpenButtonProps> = ({
 
   const variantClasses = {
     primary:
-      'bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm shadow-indigo-500/20 border border-indigo-500/30',
+      PRIMARY_FILL,
     secondary:
       'bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-slate-100 border border-slate-800 hover:border-slate-700',
     outline:

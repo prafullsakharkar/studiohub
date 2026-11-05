@@ -14,6 +14,7 @@ import { notify } from '@/core/notifications/notify';
 import { usePaginatedList } from '@/shared/data/usePaginatedList';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { Pagination } from '@/shared/components/Pagination';
 import { SearchInput } from '@/shared/components/SearchInput';
@@ -154,7 +155,7 @@ export const RolesPage: React.FC = () => {
               <td className="px-4 py-2 capitalize text-slate-300">{role.scope}</td>
               <td className="px-4 py-2 space-x-1">
                 {role.is_system && <Badge variant="purple">System</Badge>}
-                <Badge variant={role.is_active === false ? 'neutral' : 'success'}>{role.is_active === false ? 'Inactive' : 'Active'}</Badge>
+                <StatusBadge status={role.is_active === false ? 'Inactive' : 'Active'} />
               </td>
             </tr>
           ))}

@@ -13,6 +13,7 @@ import { mockFetch } from '@/test/fetchMock';
 import type { MockCall, MockReply } from '@/test/fetchMock';
 import { loadSample } from '@/test/samples';
 import type { User } from '@/types/identity';
+import { pickEntity } from '@/test/picker';
 
 type Captured = { status: number; body: any };
 const clients = loadSample<Record<string, Captured>>('masterdata/clients.json');
@@ -146,8 +147,7 @@ describe('team workspace: members are team memberships', () => {
     expect(path(calls.find((c) => c.method === 'DELETE') as MockCall)).toBe(`/api/v1/team-memberships/${members[0].id}/`);
 
     fireEvent.click(await screen.findByRole('button', { name: 'Add member' }));
-    await screen.findByRole('option', { name: secondPerson.full_name });
-    fireEvent.change(screen.getByLabelText(/^Person/), { target: { value: secondPerson.id } });
+    await pickEntity(/^Person/, secondPerson.full_name);
     fireEvent.click(screen.getByRole('button', { name: 'Add to team' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
     expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ team: team.id, person: secondPerson.id });
@@ -159,8 +159,7 @@ describe('team workspace: members are team memberships', () => {
     mount(<TeamWorkspacePage />, `/teams/${team.id}`, '/teams/:id');
     fireEvent.click(await screen.findByRole('tab', { name: 'Members' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Add member' }));
-    await screen.findByRole('option', { name: secondPerson.full_name });
-    fireEvent.change(screen.getByLabelText(/^Person/), { target: { value: secondPerson.id } });
+    await pickEntity(/^Person/, secondPerson.full_name);
     fireEvent.click(screen.getByRole('button', { name: 'Add to team' }));
     expect(await screen.findByText(/already a member/)).toBeTruthy();
   });

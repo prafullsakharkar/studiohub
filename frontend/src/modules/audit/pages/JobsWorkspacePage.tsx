@@ -4,6 +4,7 @@ import { useAuth } from '@/modules/auth';
 import { cn } from '@/shared/utils/cn';
 import { BackgroundJobsPage } from './BackgroundJobsPage';
 import { TracksPage } from './TracksPage';
+import { SELECTED } from '@/shared/utils/kitStyles';
 
 const TABS = [
   { id: 'background-jobs', label: 'Background Jobs', permission: 'background_jobs.view' },
@@ -36,7 +37,7 @@ export const JobsWorkspacePage: React.FC = () => {
             onClick={() => setTab(tab.id)}
             className={cn(
               'px-3.5 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap text-xs',
-              active === tab.id ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              active === tab.id ? SELECTED : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
             )}
           >
             {tab.label}

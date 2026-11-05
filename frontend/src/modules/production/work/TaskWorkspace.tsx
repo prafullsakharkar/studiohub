@@ -7,7 +7,7 @@ import type { Task } from '@/api/production/work';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { EntityHistory } from '@/components/history/EntityHistory';
 import { useCan } from '@/core/permissions/useCan';
-import { Badge } from '@/shared/components/Badge';
+import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { usePaginatedList } from '@/shared/data/usePaginatedList';
 import { StatusHistory } from './StatusHistory';
@@ -51,7 +51,7 @@ const TaskTime: React.FC<{ taskId: string }> = ({ taskId }) => {
               <td className="py-1.5 pr-3">{log.person_name || '—'}</td>
               <td className="py-1.5 pr-3">{formatHours(log.duration_hours)}</td>
               <td className="py-1.5 pr-3">
-                <Badge variant={log.status === 'Approved' ? 'success' : log.status === 'Rejected' ? 'destructive' : 'outline'}>{log.status}</Badge>
+                <StatusBadge status={log.status} />
                 {log.status === 'Rejected' && log.rejection_reason && <span className="ml-2 text-rose-300">{log.rejection_reason}</span>}
               </td>
               <td className="py-1.5">{log.notes || '—'}</td>
