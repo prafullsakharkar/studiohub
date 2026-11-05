@@ -55,7 +55,7 @@ describe('project workspace on the wire', () => {
     fireEvent.click(await screen.findByRole('button', { name: /Duplicate/ }, T));
     fireEvent.change(await screen.findByDisplayValue(`${source.name} (Copy)`), { target: { value: 'Duplicated project' } });
     fireEvent.change(screen.getByDisplayValue(`${source.code}_CLONE`), { target: { value: `D${uid}` } });
-    fireEvent.click(screen.getByRole('button', { name: 'Duplicate Project' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Duplicate project' }));
 
     expect(await screen.findByRole('heading', { name: 'Duplicated project' }, T)).toBeTruthy();
     const copy = (await fetchAllRows(projectsApi.list, { search: `D${uid}` })).find((p) => p.code === `D${uid}`);
