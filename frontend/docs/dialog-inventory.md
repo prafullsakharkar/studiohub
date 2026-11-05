@@ -1,6 +1,6 @@
 # Dialog inventory (Phase 1)
 
-Status: **draft for review**. Read-only; no code changed. Paths relative to `frontend/`. Reference = the Catalog
+Status: **inventory as of Phase 1; migration result per row in the last column**. The columns describe the code before the migration. Paths relative to `frontend/`. Reference = the Catalog
 `RowDialog` described in `dialog-standard.md`.
 
 Search method: grep of `src` (excluding tests) for `<Dialog`, `<Modal`, `useServerForm`, `useForm`,
@@ -96,3 +96,18 @@ is an extension of the standard.
 5. Page forms (`DirectoryFormPage`, `CreateDepartmentPage`, `TaskTemplateForm`): reuse the same footer/banner/submit pieces
    only; the shell stays a page.
 6. Skip: bulk managers, command-palette modals (pending D3), auth, profile, LDAP settings.
+
+## Migration status
+
+| Entity | Status |
+|---|---|
+| Catalog (reference) | on `FormDialog` |
+| Related records (8 configs) | on `FormDialog` |
+| Log time, Add note | on `FormDialog` |
+| New role, New group, New API token / key | on `FormDialog` |
+| Reauthenticate | on `FormDialog` |
+| Add team member, Assign artist | on `FormDialog` (no RHF; local state) |
+| Duplicate project | on `FormDialog`, own file `CloneProjectDialog.tsx` |
+| 37 record pages (`DirectoryFormPage`) | on `FormPage` |
+| Department form, task template form | on `FormPage` |
+| Bulk managers, command-palette modals, secret dialog, inline forms | skipped (see `dialog-standard.md`) |

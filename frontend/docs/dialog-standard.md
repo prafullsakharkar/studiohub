@@ -1,6 +1,6 @@
 # Dialog standard (Phase 0: the Catalog reference)
 
-Status: **draft for review**. Read-only discovery; no code changed. Every rule below is derived from the Catalog
+Status: **Phase 0 spec, now implemented (see "As built" at the end)**. The sections below describe the Catalog as it was before the work. Every rule below is derived from the Catalog
 dialogs. Where the Catalog does *not* do something the brief asks for, that is listed under
 [Gaps in the reference](#gaps-in-the-reference-need-a-decision) and is **not** written as a rule yet.
 
@@ -183,3 +183,61 @@ are full pages** (`/tasks/new`, `/projects/:id/edit`, and so on) rendered by one
 `CreateDepartmentPage` and `TaskTemplateForm`. Turning them into dialogs changes routes, links, `afterSavePath`
 navigation and URL prefill (`?project=…`), which the ground rules forbid. See `dialog-inventory.md` for the list and the
 options.
+
+---
+
+## As built (Phases 2-3)
+
+Decisions taken: **D1 (a)** dialogs and pages stay what they are, and share the same pieces; **D2** the three missing
+behaviours live once in the shared shell and so also apply to the Catalog; **D3** the command-palette modals are
+untouched (they do not call the API; report separately); **D4** form dialogs are `lg`, one- or two-field ones `sm`/`md`.
+The page forms take the department form's look.
+
+### Dialog rules, additions to the 14 above
+
+15. Build it on `FormDialog` (`shared/forms/FormDialog`); wording from `formDialogCopy` (`New <noun>`, `Create <noun>`,
+    `Save changes`, `<Noun> created.` / `<Noun> saved.`). Action dialogs keep their verb title (`Log time on T-1`, `Assign SH010`).
+16. Mount it only while open. A component with an `isOpen` prop renders `isOpen ? <Form/> : null`; there is no manual `reset()`.
+17. Closing (Cancel, X, Escape, backdrop) is ignored while a save runs, and asks "Discard changes?" when the form is dirty.
+    Success closes through the dialog's own `onClose` and never asks. Pass anything outside the form that counts as a change
+    (a checklist, a picker) into `isDirty`.
+18. Focus starts on the first field (`data-autofocus` on the form, honoured by `useDialogLayer`).
+19. `useServerForm.submit` drops a submit that arrives while one is running.
+20. Required fields carry ` *`; tests find fields with `/^Name/`, not the exact label.
+
+### Page rules (department form is the reference)
+
+21. A create/edit page is a `FormPage`: back button (`ChevronLeft` + the list's name) to the list, `h1` with an indigo icon
+    (plus / pencil, or the entity's own), one description line, one `Card`, `FormBanner`, the fields, then the footer.
+22. Fields sit in a two-column grid from `sm` up; text areas, JSON and multi-record fields span both (`FieldInputs grid`).
+23. Footer is `FormActions layout="page"`: ruled, right-aligned, outlined `Cancel` (a link back to the list) then the
+    primary `Save changes` / `Create <noun>` with a save icon.
+24. Success navigates as before (`afterSavePath`); the page never closes itself.
+25. Every `DirectoryFormConfig` names its list (`listTitle`) for the back button.
+
+### Behaviour differences from before (Catalog and others)
+
+- Catalog: closing a typed-in form asks to discard; Cancel/X/Escape/backdrop do nothing while saving; focus lands on the
+  first field, not on the X. The DOM is otherwise identical (diffed create and edit dialogs: only `data-autofocus` differs).
+- Related records (contacts, contracts, shows, episodes, sequences, tracks): `Add <noun>` / `added.` became
+  `New <noun>` / `Create <noun>` / `created.`; the trigger button on the list still says `Add <noun>`.
+- Assign artist: `Save` is now `Save changes`; it is a real form (Enter submits).
+- Duplicate project: failures show on the field or in the dialog (was a toast); `Duplicate Project` is `Duplicate project`;
+  it starts from the suggested name on every open (the old state outlived the dialog).
+- Role, group, token, reauth, note: required labels now end in ` *`.
+- Department page: errors use the shared banner (the request reference shows for 5xx only).
+- Record pages: now full width in a card with a header, and two columns (were a single `max-w-2xl` column with a left footer).
+
+### Not migrated, and why
+
+- Bulk import wizards (shots, assets, tasks): a multi-step grid, not a form dialog.
+- Command-palette modals (`ActionDispatcherModals.tsx`): no API call behind "Create"/"Assign"/"Archive"/"Restore"/"Change status";
+  a product decision, not a style one.
+- "Copy your secret now" (`TokensPage`): display-only and deliberately cannot be dismissed.
+- Inline forms (project members and notes panels, IP rules, create/link login), LDAP settings, profile, auth screens: not dialogs or entity pages.
+
+### Follow-ups
+
+- `RecordActions`/`DirectoryListPage` row-action prompts ask for a date or text with their own markup; they could use `FormDialog`.
+- Inline forms could offer a "dirty" guard on navigation; none does today.
+- Nothing yet guards navigation away from a dirty record page (`useBlocker`); the dialogs are guarded, the pages are not.
