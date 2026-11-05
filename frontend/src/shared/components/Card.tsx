@@ -12,7 +12,6 @@ export const Card: React.FC<CardProps> = ({
   className,
   variant = 'default',
   hoverable = false,
-  id,
   ...props
 }) => {
   const base =
@@ -33,7 +32,6 @@ export const Card: React.FC<CardProps> = ({
 
   return (
     <div
-      id={id || `card-${Math.random().toString(36).substring(2, 9)}`}
       className={cn(base, variants[variant], hover, className)}
       {...props}
     >
