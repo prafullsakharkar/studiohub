@@ -1,9 +1,11 @@
 /**
  * Button follows the kit's control heights (28 in grids and toolbars, 32 by default, 36 in forms and dialogs) and
- * renders no id unless the caller gives one (it used to make up a random id, a new one on every render).
+ * renders no id unless the caller gives one; so do Card and Badge (they used to make up a random id, a new one on
+ * every render).
  */
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { Badge } from '../Badge';
 import { Button } from '../Button';
 import { Card } from '../Card';
 
@@ -41,11 +43,14 @@ describe('Button', () => {
   });
 });
 
-describe('Card', () => {
+describe.each([
+  ['Card', (id?: string) => <Card id={id}>Body</Card>],
+  ['Badge', (id?: string) => <Badge id={id}>Body</Badge>],
+] as const)('%s', (_name, make) => {
   it('has no id unless one is given', () => {
-    const { container, rerender } = render(<Card>Body</Card>);
+    const { container, rerender } = render(make());
     expect((container.firstChild as HTMLElement).hasAttribute('id')).toBe(false);
-    rerender(<Card id="summary">Body</Card>);
+    rerender(make('summary'));
     expect((container.firstChild as HTMLElement).id).toBe('summary');
   });
 });
