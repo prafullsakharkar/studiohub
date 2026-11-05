@@ -137,8 +137,11 @@ describe('the studio’s default theme', () => {
     mockFetch(server);
     mount();
     await waitFor(() => expect(screen.getByTestId('mode').textContent).toBe('light'));
-    expect(cyan()).toBe(lightTheme.primary_color);
-    expect(blue()).toBe(lightTheme.secondary_color);
+    // The colours are written to the page by an effect that runs after the mode shows: wait for them, do not read them at once.
+    await waitFor(() => {
+      expect(cyan()).toBe(lightTheme.primary_color);
+      expect(blue()).toBe(lightTheme.secondary_color);
+    });
     // A default is not a choice: nothing is saved in the browser.
     expect(localStorage.getItem('studiohub-theme-mode')).toBeNull();
     expect(localStorage.getItem('studiohub-theme-accents')).toBeNull();
