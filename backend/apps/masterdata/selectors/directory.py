@@ -8,7 +8,9 @@ no-op (project narrowing only).
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import Any
+from uuid import UUID
 
 from django.db.models import Count, Q, QuerySet
 
@@ -131,6 +133,25 @@ class ClientSelector(_PartnerSelector):
 
 class VendorSelector(_PartnerSelector):
     model = Vendor
+
+    @classmethod
+    def names_by_id(cls, ids: Iterable[object]) -> dict[str, str]:
+        """
+        ``{id: name}`` of the live (not soft-deleted) vendors among ``ids``, in one query.
+
+        An id that is not a UUID, or names no live vendor, is left out (CR-42: a project's
+        ``vendor_names`` and the check of its ``vendor_ids``).
+        """
+        wanted: set[UUID] = set()
+        for ref in ids:
+            try:
+                wanted.add(UUID(str(ref)))
+            except ValueError:
+                continue
+        if not wanted:
+            return {}
+        rows = Vendor.objects.filter(pk__in=wanted).values_list("pk", "name")
+        return {str(pk): name for pk, name in rows}
 
 
 class _OwnedSelector(BaseSelector):

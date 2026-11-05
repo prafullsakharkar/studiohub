@@ -19898,8 +19898,8 @@ export interface components {
             client_name?: string;
             client_contact_id?: string;
             client_contact_name?: string;
-            vendor_ids?: unknown;
-            vendor_names?: unknown;
+            vendor_ids?: string[];
+            readonly vendor_names?: string[];
             vendor_team_ids?: unknown;
         };
         /**
@@ -24278,8 +24278,8 @@ export interface components {
             client_name?: string;
             client_contact_id?: string;
             client_contact_name?: string;
-            vendor_ids?: unknown;
-            vendor_names?: unknown;
+            vendor_ids?: string[];
+            readonly vendor_names: string[];
             vendor_team_ids?: unknown;
         };
         /** @description Base serializer for read operations. */
@@ -24350,7 +24350,7 @@ export interface components {
             client_contact_id?: string;
             client_contact_name?: string;
             vendor_ids?: unknown;
-            vendor_names?: unknown;
+            readonly vendor_names: string[];
             vendor_team_ids?: unknown;
             /**
              * Format: date-time
@@ -24431,7 +24431,7 @@ export interface components {
             client_contact_id?: string;
             client_contact_name?: string;
             vendor_ids?: unknown;
-            vendor_names?: unknown;
+            readonly vendor_names: string[];
             vendor_team_ids?: unknown;
             /**
              * Format: date-time
@@ -24492,8 +24492,8 @@ export interface components {
             client_name?: string;
             client_contact_id?: string;
             client_contact_name?: string;
-            vendor_ids?: unknown;
-            vendor_names?: unknown;
+            vendor_ids?: string[];
+            readonly vendor_names: string[];
             vendor_team_ids?: unknown;
         };
         /** @description Body of an action that an override permission may carry (reason mandatory when used). */

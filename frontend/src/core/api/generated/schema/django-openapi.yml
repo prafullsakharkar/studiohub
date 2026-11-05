@@ -44939,8 +44939,16 @@ components:
         client_contact_name:
           type: string
           maxLength: 255
-        vendor_ids: {}
-        vendor_names: {}
+        vendor_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        vendor_names:
+          type: array
+          items:
+            type: string
+          readOnly: true
         vendor_team_ids: {}
     PatchedPublishUpdate:
       type: object
@@ -53082,14 +53090,23 @@ components:
         client_contact_name:
           type: string
           maxLength: 255
-        vendor_ids: {}
-        vendor_names: {}
+        vendor_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        vendor_names:
+          type: array
+          items:
+            type: string
+          readOnly: true
         vendor_team_ids: {}
       required:
       - code
       - id
       - name
       - uuid
+      - vendor_names
     ProjectDetail:
       type: object
       description: Base serializer for read operations.
@@ -53231,7 +53248,11 @@ components:
           type: string
           maxLength: 255
         vendor_ids: {}
-        vendor_names: {}
+        vendor_names:
+          type: array
+          items:
+            type: string
+          readOnly: true
         vendor_team_ids: {}
         created_at:
           type: string
@@ -53256,6 +53277,7 @@ components:
       - supervisor_name
       - updated_at
       - uuid
+      - vendor_names
     ProjectList:
       type: object
       description: Base serializer for read operations.
@@ -53397,7 +53419,11 @@ components:
           type: string
           maxLength: 255
         vendor_ids: {}
-        vendor_names: {}
+        vendor_names:
+          type: array
+          items:
+            type: string
+          readOnly: true
         vendor_team_ids: {}
         created_at:
           type: string
@@ -53422,6 +53448,7 @@ components:
       - supervisor_name
       - updated_at
       - uuid
+      - vendor_names
     ProjectUpdate:
       type: object
       description: Base serializer for write operations.
@@ -53516,12 +53543,21 @@ components:
         client_contact_name:
           type: string
           maxLength: 255
-        vendor_ids: {}
-        vendor_names: {}
+        vendor_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        vendor_names:
+          type: array
+          items:
+            type: string
+          readOnly: true
         vendor_team_ids: {}
       required:
       - code
       - name
+      - vendor_names
     PromoteVersion:
       type: object
       description: Body of an action that an override permission may carry (reason

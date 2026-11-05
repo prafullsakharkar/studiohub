@@ -1,11 +1,15 @@
-
 from typing import Any
 
 from apps.core.api.serializers.base import BaseWriteSerializer
 from apps.production.models import Project
 
+from .vendors import VendorIdsField, VendorNamesField
+
 
 class ProjectUpdateSerializer(BaseWriteSerializer[Any]):
+    vendor_ids = VendorIdsField()
+    vendor_names = VendorNamesField()
+
     class Meta:
         model = Project
         fields = (

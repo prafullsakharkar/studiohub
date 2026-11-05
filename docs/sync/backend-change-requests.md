@@ -752,7 +752,7 @@ Asked by the owner (2026-11-04): "write CR-41 for option B". Directory sign-in c
 
 **Applied:** backend `06d99f00` (migration `identity/0004`), schema snapshot `6e5ad49c`, frontend `6c8b5b13`, docs on the same branch (`backend-cr-41-verification.md`). Not merged.
 
-### CR-42: a project's vendors are unchecked text: any id is stored, and the names are whatever the client writes (**data integrity**, **PROPOSED**, branch `sync/cr-42-vendor-ids`)
+### CR-42: a project's vendors are unchecked text: any id is stored, and the names are whatever the client writes (**data integrity**, **APPLIED**, branch `sync/cr-42-vendor-ids`; verification `backend-cr-42-verification.md`)
 
 Found while planning the multi-select picker (`docs/frontend/component-migration-plan.md`, branch 2): the project form has no Vendors field, and the obvious one to give it is `vendor_ids`. Captured with `tools/test_capture_vendor_ids.py` (`samples/production/_vendor_ids_flow.json`).
 
@@ -790,4 +790,4 @@ Nothing in the backend reads `vendor_ids` (only the serializers, the model and t
 
 **Risk.** Low: one field type, one validator, one read-only computed field, no migration, no new route.
 
-**Not yet approved.**
+**Approved** by the owner ("Approved", 2026-11-05) and applied as written, plus one addition: `seed_dev` wrote vendor codes into `vendor_ids` and now writes the vendors' ids (otherwise its projects would show no vendor names). Contract C-56, decision D-38.
