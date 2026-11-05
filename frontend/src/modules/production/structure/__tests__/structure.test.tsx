@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type React from 'react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useParams } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthContext } from '@/core/auth/AuthContext';
 import type { AuthContextValue } from '@/core/auth/AuthContext';
@@ -28,6 +28,9 @@ const path = (c: MockCall) => new URL(c.url).pathname;
 const q = (c: MockCall) => Object.fromEntries(new URL(c.url).searchParams);
 const PID = flow.projects_list.body.results[0].id as string;
 const project = flow.projects_list.body.results[0] as { id: string; name: string; code: string };
+
+/** Shows which record the route opened. */
+const Opened = () => <div>{`opened ${useParams().id}`}</div>;
 
 function renderAt(initial: string, user: User, routes: React.ReactNode) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
@@ -133,6 +136,24 @@ describe('project form', () => {
 
     expect(await screen.findByText('project detail')).toBeTruthy();
     expect(refreshUser).toHaveBeenCalledTimes(1);
+  });
+
+  it('after saving an edit it returns to the project (a project’s PATCH answers without an id)', async () => {
+    expect('id' in flow.projects_patch.body).toBe(false); // as captured from the backend
+    const { calls } = mockFetch((c) => (c.method === 'PATCH' ? reply(flow.projects_patch) : { body: flow.projects_detail.body }));
+    renderAt(
+      `/projects/${PID}/edit`,
+      superuser,
+      <>
+        <Route path="/projects/:id/edit" element={<DirectoryFormPage config={projectsFormConfig} />} />
+        <Route path="/projects/:id" element={<Opened />} />
+      </>
+    );
+    await waitFor(() => expect((screen.getByLabelText(/^Name/) as HTMLInputElement).value).toBe(project.name));
+    fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: `${project.name} 2` } });
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+    expect(await screen.findByText(`opened ${PID}`)).toBeTruthy();
+    expect(calls.some((c) => c.method === 'PATCH' && path(c) === `/api/v1/projects/${PID}/`)).toBe(true);
   });
 
   it('the workflow cannot be changed once the project exists', async () => {
