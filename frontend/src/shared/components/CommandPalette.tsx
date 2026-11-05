@@ -42,6 +42,7 @@ import { type CommandItem, type EntityType } from '@/types/common';
 import type { PermissionKey } from '@/types/identity';
 import { ActionDispatcherModal, type ActionModalType } from './ActionDispatcherModals';
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
+import { useDialogLayer } from './useDialogLayer';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -96,21 +97,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     }
   }, [isOpen, initialMode]);
 
-  // Global Escape key handler when Command Palette is open
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        e.stopPropagation();
-        onClose();
-      }
-    };
-
-    window.addEventListener('keydown', handleGlobalKeyDown, true);
-    return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
-  }, [isOpen, onClose]);
+  // Escape, the focus trap, the scroll lock and focus return, shared with Modal. Escape is left to a dialog opened
+  // from the palette (shortcuts, quick actions) while one is open, so it closes that dialog and not the palette.
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogLayer({ isOpen, onClose, containerRef: dialogRef });
 
   // Handle Action launch helper
   const openAction = (type: ActionModalType, targetEntityType: EntityType = 'shot') => {
@@ -595,6 +585,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         onClick={onClose}
       >
         <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Command palette"
+          tabIndex={-1}
           className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-150 ring-1 ring-slate-700/50"
           onClick={(e) => e.stopPropagation()}
         >
@@ -604,6 +599,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             <input
               ref={inputRef}
               type="text"
+              aria-label="Search commands and pages"
               placeholder="Search commands, pages, and system actions..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
