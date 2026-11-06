@@ -5,7 +5,7 @@ import { assetsApi, shotsApi, tasksApi } from '@/api/production/work';
 import { tokenStorage } from '@/core/auth/tokenStorage';
 import { columnsFor, sequenceBulkSpec, shotBulkSpec, taskBulkSpec } from '@/modules/production/bulk/specs';
 import { toCreateItems } from '@/modules/production/bulk/rows';
-import { currentRows, exampleRows, templateParents } from '@/modules/production/bulk/template';
+import { exampleRows, templateParents } from '@/modules/production/bulk/template';
 import { authService } from '@/modules/auth/services/AuthService';
 import { freshTotp, live } from './liveBackend';
 
@@ -89,7 +89,7 @@ describe('limits', () => {
 });
 
 describe('Load template', () => {
-  it('the create examples of an episodic project pass the check as they are; an update loads the rows by code', async () => {
+  it('the create examples of an episodic project pass the check as they are', async () => {
     const episodic = (await projectsApi.create({ code: `E${uid}`, name: 'Bulk template', workflow_type: 'episodic' })).id;
     const check = async (spec: typeof sequenceBulkSpec) => {
       const columns = columnsFor(spec, { episodic: true, mode: 'create' });
@@ -102,14 +102,6 @@ describe('Load template', () => {
     const tasks = await check(taskBulkSpec);
     expect(tasks.errors).toEqual([]);
     expect(statuses(tasks)).toEqual(['created', 'created', 'created']);
-
-    const current = await currentRows(shotBulkSpec, columnsFor(shotBulkSpec, { episodic: true, mode: 'update' }), episodic, true);
-    expect(current.total).toBe(3);
-    expect(current.rows.map((r) => [r.code, r.sequence, r.episode])).toEqual([
-      ['SQ010_0100', 'SQ010', 'EP101'],
-      ['SQ010_0200', 'SQ010', 'EP101'],
-      ['SQ010_0300', 'SQ010', 'EP101'],
-    ]);
   });
 });
 

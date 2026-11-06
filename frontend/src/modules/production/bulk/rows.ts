@@ -1,12 +1,11 @@
 import { BULK_MAX_ITEMS } from '@/api/production/bulkRoutes';
-import type { BulkBatchResponse, BulkCreateRow, BulkUpdateRow } from '@/api/production/bulkRoutes';
-import { toCsv } from '@/shared/data/exportAll';
+import type { BulkBatchResponse, BulkCreateRow } from '@/api/production/bulkRoutes';
 import { headerKey, parseDelimited } from '@/shared/utils/csv';
 import type { BulkColumn } from './specs';
 
 /**
  * Rows of a bulk file or paste, keyed by column `header`, and what they become on the wire (CR-48). An empty cell means
- * "not given": a create leaves the field to its default, an update leaves it as it is.
+ * "not given": a create leaves the field to its default.
  */
 export type SheetRow = Record<string, unknown>;
 
@@ -79,38 +78,6 @@ const codeOf = (row: SheetRow, columns: readonly BulkColumn[]) => {
 export const toCreateItems = (rows: readonly SheetRow[], columns: readonly BulkColumn[]): BulkCreateRow[] =>
   rows.map((row) => ({ code: codeOf(row, columns), action: 'create', data: fieldsOf(row, columns) }));
 
-export const toUpdateItems = (rows: readonly SheetRow[], columns: readonly BulkColumn[]): BulkUpdateRow[] =>
-  rows.map((row) => ({ code: codeOf(row, columns), ...fieldsOf(row, columns) }));
-
-/**
- * Update rows less what "Load template" filled in and was left as it was: a cell equal to the loaded value is dropped
- * (so it is not written again) and a row with no other change is not sent. Rows not in `loaded` are kept whole.
- */
-export function changedRows(rows: readonly SheetRow[], columns: readonly BulkColumn[], loaded: ReadonlyMap<string, SheetRow>): SheetRow[] {
-  return rows.flatMap((row) => {
-    const before = loaded.get(codeOf(row, columns));
-    if (!before) return [row];
-    const next: SheetRow = {};
-    let changed = false;
-    for (const column of columns) {
-      const value = String(row[column.header] ?? '').trim();
-      if (column.key === 'code') next[column.header] = row[column.header];
-      else if (value && value !== String(before[column.header] ?? '').trim()) {
-        next[column.header] = value;
-        changed = true;
-      }
-    }
-    return changed ? [next] : [];
-  });
-}
-
-/** Rows by their code, as `changedRows` looks them up. */
-export const byCode = (rows: readonly SheetRow[], columns: readonly BulkColumn[]): Map<string, SheetRow> =>
-  new Map(rows.map((row) => [codeOf(row, columns), row]));
-
-/** The header row of a bulk file, for "Download template". */
-export const templateCsv = (columns: readonly BulkColumn[]): string => toCsv<SheetRow>([], columns.map((c) => ({ header: c.header, value: () => '' })));
-
 /** The CSV column an error names; none for a whole-row reason or for the row's `id` (a key, not a column). */
 const columnOf = (field: string | null, labels: ReadonlyMap<string, string>): string | null =>
   !field || field === 'id' ? null : (labels.get(field) ?? field);
@@ -139,34 +106,4 @@ export function rowReports(response: BulkBatchResponse, columns: readonly BulkCo
     report.messages.push(field ? `${field}: ${error.message}` : error.message);
   }
   return reports;
-}
-
-export type OutcomeCounts = Record<RowOutcome, number>;
-
-/** How many rows each outcome has, for the summary above the rows. */
-export const countOutcomes = (reports: readonly RowReport[]): OutcomeCounts =>
-  reports.reduce<OutcomeCounts>((counts, r) => ({ ...counts, [r.outcome]: counts[r.outcome] + 1 }), { create: 0, update: 0, skip: 0, error: 0 });
-
-/** The refused rows as a CSV: row number (1 is the first row under the header), code, column and message. */
-export function errorReportCsv(response: BulkBatchResponse, rows: readonly SheetRow[], columns: readonly BulkColumn[]): string {
-  const labels = new Map(columns.map((c) => [c.key, c.header]));
-  return toCsv(response.errors, [
-    { header: 'row', value: (e) => e.row + 1 },
-    { header: 'code', value: (e) => codeOf(rows[e.row] ?? {}, columns) },
-    { header: 'column', value: (e) => columnOf(e.field, labels) ?? '' },
-    { header: 'message', value: (e) => e.message },
-  ]);
-}
-
-/** Every sent row as a CSV log: row number, code, outcome (stored or not) and the reasons. */
-export function logCsv(reports: readonly RowReport[], rows: readonly SheetRow[], columns: readonly BulkColumn[], committed: boolean): string {
-  return toCsv(
-    reports.map((report, index) => ({ report, index })),
-    [
-      { header: 'row', value: (r) => r.index + 1 },
-      { header: 'code', value: (r) => codeOf(rows[r.index] ?? {}, columns) },
-      { header: 'outcome', value: (r) => (r.report.outcome === 'error' ? 'error' : committed ? r.report.status : 'not stored') },
-      { header: 'message', value: (r) => r.report.messages.join(' ') },
-    ]
-  );
 }

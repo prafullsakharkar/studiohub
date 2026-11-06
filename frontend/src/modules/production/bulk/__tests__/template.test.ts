@@ -4,7 +4,7 @@ import { mockFetch } from '@/test/fetchMock';
 import type { MockCall, MockReply } from '@/test/fetchMock';
 import { loadSample } from '@/test/samples';
 import { columnsFor, shotBulkSpec, taskBulkSpec } from '../specs';
-import { currentRows, exampleRows, templateParents } from '../template';
+import { exampleRows, templateParents } from '../template';
 
 /** "Load template" (CR-48): the parents an example takes, and the current rows of an update. Captured answers only. */
 type Captured = { status: number; body: unknown };
@@ -60,16 +60,5 @@ describe('templateParents', () => {
     });
     const [row] = exampleRows(taskBulkSpec, columnsFor(taskBulkSpec, { episodic: false, mode: 'create' }), await templateParents(taskBulkSpec, 'P', false));
     expect(row).toMatchObject({ code: 'TASK010', entity_type: 'Shot', entity: 'SHOT000', task_type: '' });
-  });
-});
-
-describe('currentRows', () => {
-  it('the project\'s rows with parents by code, at most 500', async () => {
-    const { calls } = mockFetch((c) => (path(c) === '/api/v1/shots/' ? shots.list_admin : empty));
-    const current = await currentRows(shotBulkSpec, columnsFor(shotBulkSpec, { episodic: false, mode: 'update' }), 'P', false);
-    expect(new URL(calls[0].url).searchParams.get('page_size')).toBe('500');
-    expect(new URL(calls[0].url).searchParams.get('project')).toBe('P');
-    expect(current.total).toBe(2);
-    expect(current.rows[0]).toEqual({ code: 'SHOT000', name: 'Shot 0', description: '', sequence: 'SEQ000', frame_in: '1001', frame_out: '1100', handle_frames: '8', status: 'Not Started' });
   });
 });

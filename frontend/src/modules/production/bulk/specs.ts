@@ -1,7 +1,6 @@
 import { assetBatch, assetBulk, sequenceBatch, sequenceBulk, shotBatch, shotBulk, taskBatch, taskBulk } from '@/api/production/bulkRoutes';
 import type { BulkBatchRoutes } from '@/api/production/bulkRoutes';
 import { sequencesApi } from '@/api/production/structure';
-import type { PageFetcher } from '@/shared/data/listing';
 import type { BulkEntityService } from '@/shared/hooks/useBulkEntity';
 import { ASSET_CATEGORIES, ASSET_STATUSES, SHOT_STATUSES, TASK_ENTITY_TYPES, TASK_PRIORITIES, TASK_STATUSES, assetsApi, shotsApi, tasksApi } from '@/api/production/work';
 
@@ -46,8 +45,6 @@ export interface BulkTemplate {
   example: (n: number, parents: TemplateParents) => Record<string, string>;
 }
 
-export type BulkMode = 'create' | 'update';
-
 export interface BulkSpec {
   /** `sequence`, used in file names and sentences. */
   noun: string;
@@ -56,11 +53,8 @@ export interface BulkSpec {
   /** The routes the staged "Bulk add" manager uses: check-existence, and bulk-create with a create / skip / recover per item. */
   staged: BulkEntityService<object>;
   createPermission: string;
-  updatePermission: string;
   /** Invalidated after a batch is stored. */
   queryKey: readonly unknown[];
-  /** The list route, for "Load template" on an update (the project's current rows). */
-  list: PageFetcher<object>;
   columns: readonly BulkColumn[];
   template: BulkTemplate;
 }
@@ -85,9 +79,7 @@ export const sequenceBulkSpec: BulkSpec = {
   routes: sequenceBatch,
   staged: sequenceBulk,
   createPermission: 'sequence.create',
-  updatePermission: 'sequence.update',
   queryKey: sequencesApi.keys.all,
-  list: sequencesApi.list,
   columns: [code, name, description, episode, frameIn, frameOut, { key: 'status', header: 'status', label: 'Status', type: 'text', options: STRUCTURE_STATUSES }],
   template: {
     needs: ['episode'],
@@ -101,9 +93,7 @@ export const shotBulkSpec: BulkSpec = {
   routes: shotBatch,
   staged: shotBulk,
   createPermission: 'shot.create',
-  updatePermission: 'shot.update',
   queryKey: shotsApi.keys.all,
-  list: shotsApi.list,
   columns: [
     code,
     name,
@@ -136,9 +126,7 @@ export const assetBulkSpec: BulkSpec = {
   routes: assetBatch,
   staged: assetBulk,
   createPermission: 'asset.create',
-  updatePermission: 'asset.update',
   queryKey: assetsApi.keys.all,
-  list: assetsApi.list,
   columns: [
     code,
     { ...name, required: true },
@@ -165,9 +153,7 @@ export const taskBulkSpec: BulkSpec = {
   routes: taskBatch,
   staged: taskBulk,
   createPermission: 'task.create',
-  updatePermission: 'task.update',
   queryKey: tasksApi.keys.all,
-  list: tasksApi.list,
   columns: [
     code,
     { key: 'title', header: 'title', label: 'Title', type: 'text', required: true },

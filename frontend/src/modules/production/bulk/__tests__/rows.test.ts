@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { BulkBatchResponse } from '@/api/production/bulkRoutes';
 import { loadSample } from '@/test/samples';
-import { errorReportCsv, readRows, rowReports, templateCsv, toCreateItems, toUpdateItems } from '../rows';
+import { readRows, rowReports, toCreateItems } from '../rows';
 import { assetBulkSpec, columnsFor, sequenceBulkSpec, shotBulkSpec, taskBulkSpec } from '../specs';
 
 type Captured = { status: number; body: any; request: { body: any } };
@@ -20,11 +20,6 @@ describe('columns per project', () => {
     expect(update).not.toContain('entity_type');
     expect(update).not.toContain('entity_id');
     expect(columnsFor(taskBulkSpec, { episodic: false, mode: 'create' }).map((c) => c.key)).toContain('entity_id');
-  });
-
-  it('the template is the header row', () => {
-    expect(templateCsv(sequences(false))).toBe('code,name,description,frame_in,frame_out,status\r\n');
-    expect(templateCsv(sequences(true))).toBe('code,name,description,episode,frame_in,frame_out,status\r\n');
   });
 });
 
@@ -72,13 +67,6 @@ describe('items on the wire', () => {
     ]);
   });
 
-  it('update: the code as the key and only the filled-in fields', () => {
-    expect(toUpdateItems(rows, columns)).toEqual([
-      { code: 'SQ020', name: 'Chase', episode_id: 'EP101', frame_in: 1001, frame_out: 'abc' },
-      { code: 'SQ030' },
-    ]);
-  });
-
   it('the captured dry runs were sent in this shape', () => {
     const captured = flow.sequences_create_dry_run_ok.request.body;
     expect(captured.items[0]).toEqual({ code: 'SQ020', action: 'create', data: { name: 'Chase' } });
@@ -89,7 +77,6 @@ describe('items on the wire', () => {
 describe('reports from a captured dry run', () => {
   const response = flow.sequences_create_dry_run_errors.body as BulkBatchResponse;
   const columns = sequences(false);
-  const rows = flow.sequences_create_dry_run_errors.request.body.items.map((item: { code: string }) => ({ code: item.code }));
 
   it('per row: the outcome and the backend reasons with the CSV column', () => {
     expect(rowReports(response, columns)).toEqual([
@@ -104,16 +91,5 @@ describe('reports from a captured dry run', () => {
   it('an unknown row names no column: its id is a key', () => {
     const update = flow.sequences_update_dry_run.body as BulkBatchResponse;
     expect(rowReports(update, sequences(false, 'update'))[1]).toEqual({ outcome: 'error', status: 'not_found', messages: ['Sequence not found.'] });
-  });
-
-  it('the error report numbers rows from 1 under the header', () => {
-    expect(errorReportCsv(response, rows, columns).split('\r\n')).toEqual([
-      'row,code,column,message',
-      '1,SQ010,code,A record with this code already exists.',
-      '3,SQ040,code,Duplicate code within batch.',
-      '4,BAD CODE,code,A code cannot contain spaces or slashes.',
-      '5,SQ050,frame_out,Must not be before frame_in.',
-      '',
-    ]);
   });
 });
