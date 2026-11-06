@@ -276,7 +276,7 @@ export const StagedBulkManager: React.FC<StagedBulkManagerProps> = ({ spec, proj
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-xs text-slate-300 font-mono">
-                Columns: {columns.map((c) => `${c.header}${c.required ? ' (required)' : ''}`).join(', ')}. Parents are written by code. Each new code gets {projectCodePrefix(projectCode)} in front ({projectCodePrefix(projectCode)}SQ0010 for SQ0010).
+                Columns: {columns.map((c) => `${c.header}${c.required ? ' (required)' : ''}`).join(', ')}. Parents are written by code. Each new code gets {projectCodePrefix(projectCode)} in front of what you type.
               </p>
               <label className="flex items-center gap-2 text-xs font-mono text-slate-300">
                 <span>CSV file</span>

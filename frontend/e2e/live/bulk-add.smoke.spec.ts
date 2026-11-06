@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import type { Page } from '@playwright/test';
 import { freshTotp } from '../../src/test/live/liveBackend';
-import { expect, live, signIn, test, watch } from './fixtures';
+import { expect, live, open, signIn, test, watch } from './fixtures';
 
 /**
  * The create forms and the staged "Bulk add" (v4.4.0), through the browser against the real backend, as the MFA superuser:
@@ -60,7 +60,7 @@ test('create forms and Bulk add: prefix, required sequence, CSV, update, existin
   await page.getByRole('button', { name: 'Maybe later' }).click({ timeout: 10_000 }).catch(() => undefined);
 
   // ---- 1. New sequence: the project's code is shown in front and sent.
-  await page.goto(`/sequences/new?project=${pid}`);
+  await open(page, `/sequences/new?project=${pid}`, 'journey');
   await expect(page.getByLabel('Code prefix')).toHaveText(`${CODE}_`);
   await page.getByLabel('Code *', { exact: true }).fill('sq0010');
   await page.getByLabel(/^Name/).fill('Opening');
@@ -71,7 +71,7 @@ test('create forms and Bulk add: prefix, required sequence, CSV, update, existin
   await expect.poll(async () => (await stored('sequences', `${CODE}_SQ0010`))?.name).toBe('Opening');
 
   // ---- 2. New shot: a sequence is required, then chosen from the picker.
-  await page.goto(`/shots/new?project=${pid}`);
+  await open(page, `/shots/new?project=${pid}`, 'journey');
   await expect(page.getByLabel('Code prefix')).toHaveText(`${CODE}_`);
   await page.getByLabel('Code *', { exact: true }).fill('sh010');
   await page.getByRole('button', { name: 'Create shot' }).click();
@@ -87,7 +87,7 @@ test('create forms and Bulk add: prefix, required sequence, CSV, update, existin
   await expect.poll(async () => (await stored('shots', `${CODE}_SH010`))?.sequence_code).toBe(`${CODE}_SQ0010`);
 
   // ---- 3. Bulk add sequences: upload a CSV; one exists already, one is new, one is a batch duplicate.
-  await page.goto('/sequences');
+  await open(page, '/sequences', 'journey');
   await chooseProject(page);
   await page.getByRole('button', { name: 'Bulk add sequences' }).click();
   await page.getByLabel('CSV file').setInputFiles(csv('code,name,description\nSQ0010,,Re-cut\nSQ0020,Chase,\nSQ0020,Again,\n'));
@@ -126,7 +126,7 @@ test('create forms and Bulk add: prefix, required sequence, CSV, update, existin
   await page.keyboard.press('Escape');
 
   // ---- 5. Bulk add assets and tasks.
-  await page.goto('/assets');
+  await open(page, '/assets', 'journey');
   await chooseProject(page);
   await page.getByRole('button', { name: 'Bulk add assets' }).click();
   await page.getByLabel('CSV file').setInputFiles(csv('code,name,category\nHERO,Hero,Character\nROCK,,Prop\n'));
@@ -144,7 +144,7 @@ test('create forms and Bulk add: prefix, required sequence, CSV, update, existin
   await expect.poll(async () => (await stored('assets', `${CODE}_HERO`))?.name).toBe('Hero');
   expect(await stored('assets', `${CODE}_ROCK`)).toBeUndefined();
 
-  await page.goto('/tasks');
+  await open(page, '/tasks', 'journey');
   await chooseProject(page);
   await page.getByRole('button', { name: 'Bulk add tasks' }).click();
   await page.getByLabel('CSV file').setInputFiles(csv(`code,title,entity_type,entity\nT100,Model hero,Asset,${CODE}_HERO\nT200,Nothing,Shot,NOPE\n`));
@@ -161,7 +161,7 @@ test('create forms and Bulk add: prefix, required sequence, CSV, update, existin
   await expect.poll(async () => (await stored('tasks', `${CODE}_T100`))?.entity_code).toBe(`${CODE}_HERO`);
 
   // ---- 6. Bulk add shots: the sequence is required and found as typed or with the prefix.
-  await page.goto('/shots');
+  await open(page, '/shots', 'journey');
   await chooseProject(page);
   await page.getByRole('button', { name: 'Bulk add shots' }).click();
   await page.getByRole('button', { name: /Clear/i }).first().click();

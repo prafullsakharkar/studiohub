@@ -42,6 +42,9 @@ export function useBulkEntity<T>(options: UseBulkEntityOptions<T>) {
 
   const { singular: Label, plural, restoreDestination = 'active library', titledOps = true, creationNoun = 'Staging' } = labels;
 
+  /** "1 sequence", "2 sequences": the singular label is the capitalised one, the plural is already lower case. */
+  const noun = (count: number) => (count === 1 ? Label.toLowerCase() : plural);
+
   const title = (op: string) => (titledOps ? `Bulk ${Label} ${op} Complete` : `Bulk ${op} Complete`);
 
   const invalidate = (op: 'create' | 'update' | 'archive' | 'restore') => {
@@ -67,7 +70,7 @@ export function useBulkEntity<T>(options: UseBulkEntityOptions<T>) {
         addNotification({
           type: 'success',
           title: `Bulk ${Label} ${creationNoun} Complete`,
-          message: `Successfully processed ${createdCount + recoveredCount} ${plural} (${createdCount} created, ${recoveredCount} recovered).`,
+          message: `Successfully processed ${createdCount + recoveredCount} ${noun(createdCount + recoveredCount)} (${createdCount} created, ${recoveredCount} recovered).`,
         });
       } else {
         addNotification({
@@ -87,7 +90,7 @@ export function useBulkEntity<T>(options: UseBulkEntityOptions<T>) {
       addNotification({
         type: 'info',
         title: title('Update'),
-        message: `Updated ${resp.summary.updatedCount} ${plural} successfully.`,
+        message: `Updated ${resp.summary.updatedCount} ${noun(resp.summary.updatedCount)} successfully.`,
       });
     },
   });
@@ -99,7 +102,7 @@ export function useBulkEntity<T>(options: UseBulkEntityOptions<T>) {
       addNotification({
         type: 'warning',
         title: title('Archive'),
-        message: `Archived ${resp.summary?.archivedCount || 0} ${plural}.`,
+        message: `Archived ${resp.summary?.archivedCount || 0} ${noun(resp.summary?.archivedCount || 0)}.`,
       });
     },
   });
@@ -111,7 +114,7 @@ export function useBulkEntity<T>(options: UseBulkEntityOptions<T>) {
       addNotification({
         type: 'success',
         title: title('Restore'),
-        message: `Restored ${resp.summary?.restoredCount || 0} ${plural} to ${restoreDestination}.`,
+        message: `Restored ${resp.summary?.restoredCount || 0} ${noun(resp.summary?.restoredCount || 0)} to ${restoreDestination}.`,
       });
     },
   });

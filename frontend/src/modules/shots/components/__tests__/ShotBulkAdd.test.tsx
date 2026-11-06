@@ -14,6 +14,9 @@ vi.mock('../bulk/ShotBulkManager', () => ({
   },
 }));
 
+import { AuthContext } from '@/core/auth/AuthContext';
+import type { AuthContextValue } from '@/core/auth/AuthContext';
+import type { User } from '@/types/identity';
 import { ShotBulkAdd } from '../ShotBulkAdd';
 
 type Captured = { status: number; body: any };
@@ -23,6 +26,7 @@ const episodic = structure.projects_detail.body as { id: string; code: string };
 const standard = work.setup_project.body as { id: string; code: string; workflow_type: string };
 const episodes = structure.episodes_list.body.results as Array<{ id: string; code: string; name: string }>;
 const sequences = structure.sequences_list.body.results as Array<{ id: string; code: string; episode_id: string | null }>;
+const superuser = loadSample('identity/_auth_flow.json').me_admin.body as unknown as User;
 const path = (c: MockCall) => new URL(c.url).pathname;
 const page = (results: unknown[]) => ({ status: 200, body: { count: results.length, next: null, previous: null, results } });
 
@@ -30,7 +34,9 @@ function renderIt(projectId: string) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   render(
     <QueryClientProvider client={client}>
-      <ShotBulkAdd projectId={projectId} />
+      <AuthContext.Provider value={{ user: superuser, refreshUser: vi.fn() } as unknown as AuthContextValue}>
+        <ShotBulkAdd projectId={projectId} />
+      </AuthContext.Provider>
     </QueryClientProvider>
   );
 }
