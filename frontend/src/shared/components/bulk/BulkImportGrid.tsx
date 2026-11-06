@@ -30,6 +30,8 @@ interface BulkImportGridProps {
   onChange: (rows: Record<string, any>[]) => void;
   sampleRows?: Record<string, any>[];
   className?: string;
+  /** Takes pasted text instead of the built-in parser (the caller checks the header row and reports problems). */
+  onPaste?: (text: string) => void;
 }
 
 export const BulkImportGrid: React.FC<BulkImportGridProps> = ({
@@ -38,6 +40,7 @@ export const BulkImportGrid: React.FC<BulkImportGridProps> = ({
   onChange,
   sampleRows,
   className = '',
+  onPaste,
 }) => {
   const [pasteModalOpen, setPasteModalOpen] = useState(false);
   const [pastedRawText, setPastedRawText] = useState('');
@@ -80,6 +83,12 @@ export const BulkImportGrid: React.FC<BulkImportGridProps> = ({
 
   const handleApplyPaste = () => {
     if (!pastedRawText.trim()) return;
+    if (onPaste) {
+      onPaste(pastedRawText);
+      setPastedRawText('');
+      setPasteModalOpen(false);
+      return;
+    }
     const parsed = BulkOperationEngine.parseInput(
       pastedRawText,
       columns[0]?.key || 'code',
@@ -184,11 +193,11 @@ export const BulkImportGrid: React.FC<BulkImportGridProps> = ({
                 </tr>
               ) : (
                 rows.map((row, rIdx) => {
-                  // Check frame validation if applicable
-                  const frameIn = row.frame_in !== undefined ? Number(row.frame_in) : undefined;
-                  const frameOut = row.frame_out !== undefined ? Number(row.frame_out) : undefined;
+                  // A frame range must not run backwards (the backend allows first == last).
+                  const frameIn = row.frame_in !== undefined && row.frame_in !== '' ? Number(row.frame_in) : undefined;
+                  const frameOut = row.frame_out !== undefined && row.frame_out !== '' ? Number(row.frame_out) : undefined;
                   const hasFrameError =
-                    frameIn !== undefined && frameOut !== undefined && frameOut <= frameIn;
+                    frameIn !== undefined && frameOut !== undefined && frameOut < frameIn;
 
                   return (
                     <tr

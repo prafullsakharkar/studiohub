@@ -2,6 +2,9 @@ import { projectsApi } from '@/api/production/structure';
 import { episodesApi, sequencesApi } from '@/api/production/structure';
 import type { Episode, Project, Sequence } from '@/api/production/structure';
 import type { BulkAction, DirectoryFormConfig, DirectoryListConfig, FieldDef } from '@/modules/directory/types';
+import { BulkMenu } from '../bulk/BulkMenu';
+import { editFieldsAction } from '../bulk/editFields';
+import { STRUCTURE_STATUSES, sequenceBulkSpec } from '../bulk/specs';
 import { isEpisodicProject } from '../projectWorkflow';
 import { EpisodePicker, ProjectPicker } from '../work/pickers';
 import { EpisodicOnly, episodeColumn, episodeFilter, useEpisodicProjectIds } from '../work/episodic';
@@ -11,8 +14,7 @@ import { EpisodicOnly, episodeColumn, episodeFilter, useEpisodicProjectIds } fro
  * filter, like Shots. Episodes exist only on episodic projects, so the Episodes list offers only those (CR-47).
  */
 
-/** `ProductionStatus` of the backend (constants/shot.py), without Archived: that is the Archived view. */
-const STATUSES = ['Not Started', 'In Progress', 'Pending Review', 'Approved', 'Retake'] as const;
+const STATUSES = STRUCTURE_STATUSES;
 const options = (values: ReadonlyArray<string>) => values.map((value) => ({ value, label: value }));
 
 const projectFilter = (keep?: (p: Project) => boolean) => ({
@@ -136,7 +138,8 @@ export function useSequencesListConfig(scope?: { projectId: string }): Directory
       { header: 'Frame out', value: (r) => r.frame_out },
       { header: 'Status', value: (r) => r.status },
     ],
-    bulk: { actions: [archiveAction('sequence', sequencesApi.bulkArchive)] },
+    headerExtra: (filters) => <BulkMenu spec={sequenceBulkSpec} projectId={filters.project_id ? String(filters.project_id) : undefined} />,
+    bulk: { actions: [archiveAction('sequence', sequencesApi.bulkArchive), editFieldsAction(sequenceBulkSpec, episodic)] },
   };
 }
 

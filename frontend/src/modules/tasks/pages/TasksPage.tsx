@@ -28,10 +28,11 @@ const TaskListView: React.FC = () => {
     <DirectoryListPage
       config={{
         ...config,
-        headerExtra: () => (
+        headerExtra: (filters) => (
           <>
             <ViewLink to="/tasks?view=board">Board</ViewLink>
             {canSeeTemplates && <ViewLink to="/task-templates">Templates</ViewLink>}
+            {config.headerExtra?.(filters)}
           </>
         ),
       }}

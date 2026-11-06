@@ -10,6 +10,9 @@ import type { BulkAction, DirectoryFormConfig, DirectoryListConfig, FieldDef } f
 import { Badge } from '@/shared/components/Badge';
 import { useTimerStore } from '@/shared/stores/useTimerStore';
 import { useContext } from 'react';
+import { BulkMenu } from '../bulk/BulkMenu';
+import { editFieldsAction } from '../bulk/editFields';
+import { taskBulkSpec } from '../bulk/specs';
 import { LogTimeDialog } from './LogTimeDialog';
 import { StatusMenu } from './StatusMenu';
 import { formatHours } from './format';
@@ -100,7 +103,8 @@ export function useTasksListConfig(scope?: { projectId: string }): DirectoryList
       { header: 'Estimated hours', value: (r) => r.estimated_hours },
       { header: 'Logged hours', value: (r) => r.logged_hours },
     ],
-    bulk: { actions: bulkTaskActions() },
+    headerExtra: (filters) => <BulkMenu spec={taskBulkSpec} projectId={filters.project_id ? String(filters.project_id) : undefined} />,
+    bulk: { actions: [...bulkTaskActions(), editFieldsAction(taskBulkSpec)] },
   };
 }
 

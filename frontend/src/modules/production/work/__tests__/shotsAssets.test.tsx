@@ -111,7 +111,10 @@ describe('shots list', () => {
     const { calls } = mockFetch(() => reply(flow.shots_list));
     renderAt('/shots', lead, route(shot.project_id));
     await screen.findByRole('link', { name: `${shot.code} · ${shot.name}` });
-    expect(q(calls[0]).project_id).toBe(shot.project_id);
+    // The list's requests (the Bulk menu also reads the project).
+    const lists = calls.filter((c) => path(c) === '/api/v1/shots/');
+    expect(lists.length).toBeGreaterThan(0);
+    for (const call of lists) expect(q(call).project_id).toBe(shot.project_id);
     expect(screen.queryByLabelText('Filter by project')).toBeNull();
   });
 

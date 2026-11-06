@@ -4,6 +4,9 @@ import type { Shot } from '@/api/production/work';
 import { useCan } from '@/core/permissions/useCan';
 import type { BulkAction, DirectoryFormConfig, DirectoryListConfig, FieldDef, RowAction } from '@/modules/directory/types';
 import { Badge } from '@/shared/components/Badge';
+import { BulkMenu } from '../bulk/BulkMenu';
+import { editFieldsAction } from '../bulk/editFields';
+import { shotBulkSpec } from '../bulk/specs';
 import { EpisodicOnly, episodeColumn, episodeFilter, useEpisodicProjectIds } from './episodic';
 import { StatusMenu } from './StatusMenu';
 import { EpisodePicker, MemberSelect, ProjectPicker, SequencePicker } from './pickers';
@@ -72,7 +75,8 @@ export function useShotsListConfig(scope?: { projectId: string }): DirectoryList
     ],
     rowActions: (row): RowAction[] =>
       canRename ? [{ label: 'Rename code', confirm: `Rename ${row.code}. Use this once versions exist: the code is in published file names, and the server rewrites it everywhere.`, askText: { label: 'New code', required: true }, run: (_date, code) => shotsApi.renameCode(row.id, code as string) }] : [],
-    bulk: { actions: bulkShotActions },
+    headerExtra: (filters) => <BulkMenu spec={shotBulkSpec} projectId={filters.project_id ? String(filters.project_id) : undefined} />,
+    bulk: { actions: [...bulkShotActions, editFieldsAction(shotBulkSpec, episodic)] },
   };
 }
 

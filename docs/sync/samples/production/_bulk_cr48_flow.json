@@ -1,0 +1,1490 @@
+{
+ "assets_create_dry_run": {
+  "body": {
+   "atomic": true,
+   "committed": false,
+   "dry_run": true,
+   "errors": [
+    {
+     "field": "asset_type_id",
+     "message": "Unknown asset type.",
+     "row": 1
+    },
+    {
+     "field": "name",
+     "message": "This field is required.",
+     "row": 2
+    }
+   ],
+   "failed": 2,
+   "operation_id": "1e9a7f1576064bfa9a6f0d9668c9a1ec",
+   "partial_success": true,
+   "processed": 3,
+   "results": [
+    {
+     "actionTaken": "created",
+     "code": "HERO",
+     "error": null,
+     "id": null,
+     "index": 0,
+     "status": "created",
+     "success": true
+    },
+    {
+     "actionTaken": "failed",
+     "code": null,
+     "error": {
+      "asset_type_id": [
+       "Unknown asset type."
+      ]
+     },
+     "id": null,
+     "index": 1,
+     "status": "invalid",
+     "success": false
+    },
+    {
+     "actionTaken": "failed",
+     "code": null,
+     "error": {
+      "name": [
+       "This field is required."
+      ]
+     },
+     "id": null,
+     "index": 2,
+     "status": "invalid",
+     "success": false
+    }
+   ],
+   "successful": 1,
+   "summary": {
+    "createdCount": 1,
+    "duplicateCount": 0,
+    "existingCount": 0,
+    "failedCount": 2,
+    "invalidCount": 2,
+    "newCount": 0,
+    "recoveredCount": 0,
+    "skippedCount": 0,
+    "softDeletedCount": 0,
+    "total": 3,
+    "updatedCount": 0
+   },
+   "timestamp": "2026-11-06T08:20:25.146487+00:00"
+  },
+  "request": {
+   "body": {
+    "atomic": true,
+    "dry_run": true,
+    "items": [
+     {
+      "action": "create",
+      "code": "HERO",
+      "data": {
+       "category": "Character",
+       "name": "Hero"
+      }
+     },
+     {
+      "action": "create",
+      "code": "PROP1",
+      "data": {
+       "asset_type_id": "NOPE",
+       "name": "Prop"
+      }
+     },
+     {
+      "action": "create",
+      "code": "PROP2",
+      "data": {}
+     }
+    ],
+    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+   },
+   "method": "POST",
+   "path": "/api/v1/assets/bulk-create/"
+  },
+  "status": 200
+ },
+ "episodes_of_episodic": {
+  "body": {
+   "count": 1,
+   "next": null,
+   "previous": null,
+   "results": [
+    {
+     "air_date": null,
+     "code": "EP101",
+     "created_at": "2026-11-06T08:20:24.600215Z",
+     "deleted_at": null,
+     "delivery_date": null,
+     "description": "",
+     "duration_frames": null,
+     "episode_number": 1,
+     "frame_in": 1001,
+     "frame_out": 1100,
+     "id": "da42f213-0abf-4078-9343-e99ec6c09705",
+     "is_deleted": false,
+     "metadata": {},
+     "name": "Episode 1",
+     "project_code": "EPIC",
+     "project_id": "d1ad6b53-1015-41fa-b9a3-659fb88709c2",
+     "project_name": "Episodic",
+     "season_number": 1,
+     "show_id": null,
+     "status": "Not Started",
+     "updated_at": "2026-11-06T08:20:24.600222Z",
+     "uuid": "da42f213-0abf-4078-9343-e99ec6c09705"
+    }
+   ]
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/episodes/?project=d1ad6b53-1015-41fa-b9a3-659fb88709c2"
+  },
+  "status": 200
+ },
+ "projects_detail_episodic": {
+  "body": {
+   "approved_shots": 0,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "EPIC",
+   "color_space": "ACEScg",
+   "coordinator_id": null,
+   "coordinator_name": "",
+   "created_at": "2026-11-06T08:20:24.594068Z",
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "id": "d1ad6b53-1015-41fa-b9a3-659fb88709c2",
+   "in_progress_shots": 0,
+   "name": "Episodic",
+   "project_code": "EPIC",
+   "resolution": "4096x2160 (4K DCI)",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor_id": null,
+   "supervisor_name": "",
+   "thumbnail_url": "",
+   "total_assets": 0,
+   "total_shots": 0,
+   "type": "Feature Film",
+   "updated_at": "2026-11-06T08:20:24.594075Z",
+   "uuid": "d1ad6b53-1015-41fa-b9a3-659fb88709c2",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": [],
+   "workflow_type": "episodic"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/d1ad6b53-1015-41fa-b9a3-659fb88709c2/"
+  },
+  "status": 200
+ },
+ "projects_detail_standard": {
+  "body": {
+   "approved_shots": 0,
+   "aspect_ratio": "2.39:1",
+   "budget_usd": "0.00",
+   "client_contact_id": "",
+   "client_contact_name": "",
+   "client_id": "",
+   "client_name": "",
+   "code": "STD",
+   "color_space": "ACEScg",
+   "coordinator_id": null,
+   "coordinator_name": "",
+   "created_at": "2026-11-06T08:20:24.576166Z",
+   "delivery_date": null,
+   "description": "",
+   "fps": "24.000",
+   "id": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+   "in_progress_shots": 0,
+   "name": "Standard",
+   "project_code": "STD",
+   "resolution": "4096x2160 (4K DCI)",
+   "start_date": null,
+   "status": "In Progress",
+   "supervisor_id": null,
+   "supervisor_name": "",
+   "thumbnail_url": "",
+   "total_assets": 0,
+   "total_shots": 0,
+   "type": "Feature Film",
+   "updated_at": "2026-11-06T08:20:24.576176Z",
+   "uuid": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+   "vendor_ids": [],
+   "vendor_names": [],
+   "vendor_team_ids": [],
+   "workflow_type": "standard"
+  },
+  "request": {
+   "body": null,
+   "method": "GET",
+   "path": "/api/v1/projects/30c72d8e-efd1-437d-b204-6e7765a1ec42/"
+  },
+  "status": 200
+ },
+ "sequences_create_atomic_fails": {
+  "body": {
+   "atomic": true,
+   "committed": false,
+   "dry_run": false,
+   "errors": [
+    {
+     "field": "code",
+     "message": "A code cannot contain spaces or slashes.",
+     "row": 1
+    }
+   ],
+   "failed": 1,
+   "operation_id": "4d2438c686b4485ea513d5a745c8e3d9",
+   "partial_success": true,
+   "processed": 2,
+   "results": [
+    {
+     "actionTaken": "created",
+     "code": "SQ060",
+     "error": null,
+     "id": null,
+     "index": 0,
+     "status": "created",
+     "success": true
+    },
+    {
+     "actionTaken": "failed",
+     "code": null,
+     "error": {
+      "code": [
+       "A code cannot contain spaces or slashes."
+      ]
+     },
+     "id": null,
+     "index": 1,
+     "status": "invalid",
+     "success": false
+    }
+   ],
+   "successful": 1,
+   "summary": {
+    "createdCount": 1,
+    "duplicateCount": 0,
+    "existingCount": 0,
+    "failedCount": 1,
+    "invalidCount": 1,
+    "newCount": 0,
+    "recoveredCount": 0,
+    "skippedCount": 0,
+    "softDeletedCount": 0,
+    "total": 2,
+    "updatedCount": 0
+   },
+   "timestamp": "2026-11-06T08:20:24.888180+00:00"
+  },
+  "request": {
+   "body": {
+    "atomic": true,
+    "dry_run": false,
+    "items": [
+     {
+      "action": "create",
+      "code": "SQ060",
+      "data": {}
+     },
+     {
+      "action": "create",
+      "code": "BAD/CODE",
+      "data": {}
+     }
+    ],
+    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+   },
+   "method": "POST",
+   "path": "/api/v1/sequences/bulk-create/"
+  },
+  "status": 200
+ },
+ "sequences_create_bad_flag": {
+  "body": {
+   "dry_run": [
+    "Must be true or false."
+   ],
+   "error": {
+    "code": "validation_error",
+    "request_id": "a62a1a1f-3425-4da6-93bd-0279db517083"
+   }
+  },
+  "request": {
+   "body": {
+    "dry_run": "maybe",
+    "items": [
+     {
+      "action": "create",
+      "code": "SQ080",
+      "data": {}
+     }
+    ],
+    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+   },
+   "method": "POST",
+   "path": "/api/v1/sequences/bulk-create/"
+  },
+  "status": 400
+ },
+ "sequences_create_commit": {
+  "body": {
+   "atomic": true,
+   "committed": true,
+   "dry_run": false,
+   "errors": [],
+   "failed": 0,
+   "operation_id": "5a7497ad1c2b44638cb657ba4c5dc647",
+   "partial_success": false,
+   "processed": 2,
+   "results": [
+    {
+     "actionTaken": "created",
+     "code": "SQ020",
+     "entity": {
+      "code": "SQ020",
+      "created_at": "2026-11-06T08:20:24.845258Z",
+      "deleted_at": null,
+      "department": "",
+      "description": "",
+      "episode_id": null,
+      "frame_in": 1001,
+      "frame_out": 1100,
+      "id": "da2bfe14-35b4-4a67-887b-098a30ae6336",
+      "is_deleted": false,
+      "lead_artist": null,
+      "lead_artist_id": null,
+      "lead_artist_name": "",
+      "metadata": {},
+      "name": "Chase",
+      "project_code": "STD",
+      "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+      "project_name": "Standard",
+      "shots_count": 0,
+      "show_id": null,
+      "status": "Not Started",
+      "tags": [],
+      "updated_at": "2026-11-06T08:20:24.845264Z",
+      "uuid": "da2bfe14-35b4-4a67-887b-098a30ae6336"
+     },
+     "error": null,
+     "id": "da2bfe14-35b4-4a67-887b-098a30ae6336",
+     "index": 0,
+     "status": "created",
+     "success": true
+    },
+    {
+     "actionTaken": "created",
+     "code": "SQ030",
+     "entity": {
+      "code": "SQ030",
+      "created_at": "2026-11-06T08:20:24.855592Z",
+      "deleted_at": null,
+      "department": "",
+      "description": "",
+      "episode_id": null,
+      "frame_in": 1001,
+      "frame_out": 1100,
+      "id": "528a2af0-82b6-4883-abf0-ee8bf95eeaea",
+      "is_deleted": false,
+      "lead_artist": null,
+      "lead_artist_id": null,
+      "lead_artist_name": "",
+      "metadata": {},
+      "name": "",
+      "project_code": "STD",
+      "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+      "project_name": "Standard",
+      "shots_count": 0,
+      "show_id": null,
+      "status": "Not Started",
+      "tags": [],
+      "updated_at": "2026-11-06T08:20:24.855599Z",
+      "uuid": "528a2af0-82b6-4883-abf0-ee8bf95eeaea"
+     },
+     "error": null,
+     "id": "528a2af0-82b6-4883-abf0-ee8bf95eeaea",
+     "index": 1,
+     "status": "created",
+     "success": true
+    }
+   ],
+   "successful": 2,
+   "summary": {
+    "createdCount": 2,
+    "duplicateCount": 0,
+    "existingCount": 0,
+    "failedCount": 0,
+    "invalidCount": 0,
+    "newCount": 0,
+    "recoveredCount": 0,
+    "skippedCount": 0,
+    "softDeletedCount": 0,
+    "total": 2,
+    "updatedCount": 0
+   },
+   "timestamp": "2026-11-06T08:20:24.857924+00:00"
+  },
+  "request": {
+   "body": {
+    "atomic": true,
+    "dry_run": false,
+    "items": [
+     {
+      "action": "create",
+      "code": "SQ020",
+      "data": {
+       "name": "Chase"
+      }
+     },
+     {
+      "action": "create",
+      "code": "SQ030",
+      "data": {}
+     }
+    ],
+    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+   },
+   "method": "POST",
+   "path": "/api/v1/sequences/bulk-create/"
+  },
+  "status": 200
+ },
+ "sequences_create_dry_run_errors": {
+  "body": {
+   "atomic": true,
+   "committed": false,
+   "dry_run": true,
+   "errors": [
+    {
+     "field": "code",
+     "message": "A record with this code already exists.",
+     "row": 0
+    },
+    {
+     "field": "code",
+     "message": "Duplicate code within batch.",
+     "row": 2
+    },
+    {
+     "field": "code",
+     "message": "A code cannot contain spaces or slashes.",
+     "row": 3
+    },
+    {
+     "field": "frame_out",
+     "message": "Must not be before frame_in.",
+     "row": 4
+    }
+   ],
+   "failed": 4,
+   "operation_id": "f81b59f6127e4339954e776abb4409da",
+   "partial_success": true,
+   "processed": 5,
+   "results": [
+    {
+     "actionTaken": "failed",
+     "code": "SQ010",
+     "error": null,
+     "id": "d68eb94a-9581-4a69-8d3a-68a9a1287a76",
+     "index": 0,
+     "status": "exists",
+     "success": false,
+     "suggestedAction": "skip"
+    },
+    {
+     "actionTaken": "created",
+     "code": "SQ040",
+     "error": null,
+     "id": null,
+     "index": 1,
+     "status": "created",
+     "success": true
+    },
+    {
+     "actionTaken": "failed",
+     "code": null,
+     "error": "Duplicate code within batch.",
+     "id": null,
+     "index": 2,
+     "status": "duplicate",
+     "success": false
+    },
+    {
+     "actionTaken": "failed",
+     "code": null,
+     "error": {
+      "code": [
+       "A code cannot contain spaces or slashes."
+      ]
+     },
+     "id": null,
+     "index": 3,
+     "status": "invalid",
+     "success": false
+    },
+    {
+     "actionTaken": "failed",
+     "code": null,
+     "error": {
+      "frame_out": [
+       "Must not be before frame_in."
+      ]
+     },
+     "id": null,
+     "index": 4,
+     "status": "invalid",
+     "success": false
+    }
+   ],
+   "successful": 1,
+   "summary": {
+    "createdCount": 1,
+    "duplicateCount": 1,
+    "existingCount": 1,
+    "failedCount": 4,
+    "invalidCount": 2,
+    "newCount": 0,
+    "recoveredCount": 0,
+    "skippedCount": 0,
+    "softDeletedCount": 0,
+    "total": 5,
+    "updatedCount": 0
+   },
+   "timestamp": "2026-11-06T08:20:24.825159+00:00"
+  },
+  "request": {
+   "body": {
+    "atomic": true,
+    "dry_run": true,
+    "items": [
+     {
+      "action": "create",
+      "code": "SQ010",
+      "data": {}
+     },
+     {
+      "action": "create",
+      "code": "SQ040",
+      "data": {}
+     },
+     {
+      "action": "create",
+      "code": "SQ040",
+      "data": {}
+     },
+     {
+      "action": "create",
+      "code": "BAD CODE",
+      "data": {}
+     },
+     {
+      "action": "create",
+      "code": "SQ050",
+      "data": {
+       "frame_in": 1100,
+       "frame_out": 1001
+      }
+     }
+    ],
+    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+   },
+   "method": "POST",
+   "path": "/api/v1/sequences/bulk-create/"
+  },
+  "status": 200
+ },
+ "sequences_create_dry_run_ok": {
+  "body": {
+   "atomic": true,
+   "committed": false,
+   "dry_run": true,
+   "errors": [],
+   "failed": 0,
+   "operation_id": "d2b7601c881a468ea135e258abc6ba14",
+   "partial_success": false,
+   "processed": 2,
+   "results": [
+    {
+     "actionTaken": "created",
+     "code": "SQ020",
+     "error": null,
+     "id": null,
+     "index": 0,
+     "status": "created",
+     "success": true
+    },
+    {
+     "actionTaken": "created",
+     "code": "SQ030",
+     "error": null,
+     "id": null,
+     "index": 1,
+     "status": "created",
+     "success": true
+    }
+   ],
+   "successful": 2,
+   "summary": {
+    "createdCount": 2,
+    "duplicateCount": 0,
+    "existingCount": 0,
+    "failedCount": 0,
+    "invalidCount": 0,
+    "newCount": 0,
+    "recoveredCount": 0,
+    "skippedCount": 0,
+    "softDeletedCount": 0,
+    "total": 2,
+    "updatedCount": 0
+   },
+   "timestamp": "2026-11-06T08:20:24.784830+00:00"
+  },
+  "request": {
+   "body": {
+    "atomic": true,
+    "dry_run": true,
+    "items": [
+     {
+      "action": "create",
+      "code": "SQ020",
+      "data": {
+       "name": "Chase"
+      }
+     },
+     {
+      "action": "create",
+      "code": "SQ030",
+      "data": {
+       "frame_in": 1001,
+       "frame_out": 1100
+      }
+     }
+    ],
+    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+   },
+   "method": "POST",
+   "path": "/api/v1/sequences/bulk-create/"
+  },
+  "status": 200
+ },
+ "sequences_create_episodic_dry_run": {
+  "body": {
+   "atomic": true,
+   "committed": false,
+   "dry_run": true,
+   "errors": [
+    {
+     "field": "episode_id",
+     "message": "An episode is required for sequences on episodic projects.",
+     "row": 1
+    }
+   ],
+   "failed": 1,
+   "operation_id": "67fbe86899b640adb99035a92ed44c46",
+   "partial_success": true,
+   "processed": 2,
+   "results": [
+    {
+     "actionTaken": "created",
+     "code": "SQA",
+     "error": null,
+     "id": null,
+     "index": 0,
+     "status": "created",
+     "success": true
+    },
+    {
+     "actionTaken": "failed",
+     "code": null,
+     "error": {
+      "episode_id": [
+       "An episode is required for sequences on episodic projects."
+      ]
+     },
+     "id": null,
+     "index": 1,
+     "status": "invalid",
+     "success": false
+    }
+   ],
+   "successful": 1,
+   "summary": {
+    "createdCount": 1,
+    "duplicateCount": 0,
+    "existingCount": 0,
+    "failedCount": 1,
+    "invalidCount": 1,
+    "newCount": 0,
+    "recoveredCount": 0,
+    "skippedCount": 0,
+    "softDeletedCount": 0,
+    "total": 2,
+    "updatedCount": 0
+   },
+   "timestamp": "2026-11-06T08:20:24.944139+00:00"
+  },
+  "request": {
+   "body": {
+    "atomic": true,
+    "dry_run": true,
+    "items": [
+     {
+      "action": "create",
+      "code": "SQA",
+      "data": {
+       "episode_id": "EP101"
+      }
+     },
+     {
+      "action": "create",
+      "code": "SQB",
+      "data": {}
+     }
+    ],
+    "project_id": "d1ad6b53-1015-41fa-b9a3-659fb88709c2"
+   },
+   "method": "POST",
+   "path": "/api/v1/sequences/bulk-create/"
+  },
+  "status": 200
+ },
+ "sequences_create_over_limit": {
+  "body": {
+   "error": {
+    "code": "validation_error",
+    "request_id": "9db51084-e700-4d3c-8b94-91f52a107759"
+   },
+   "items": [
+    "At most 500 items per request."
+   ]
+  },
+  "request": {
+   "body": {
+    "atomic": true,
+    "dry_run": true,
+    "items": "<501 items>",
+    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+   },
+   "method": "POST",
+   "path": "/api/v1/sequences/bulk-create/"
+  },
+  "status": 400
+ },
+ "sequences_create_skip_invalid": {
+  "body": {
+   "atomic": false,
+   "committed": true,
+   "dry_run": false,
+   "errors": [
+    {
+     "field": "code",
+     "message": "A code cannot contain spaces or slashes.",
+     "row": 1
+    }
+   ],
+   "failed": 1,
+   "operation_id": "179114fe014847f8815b580e95451c9b",
+   "partial_success": true,
+   "processed": 2,
+   "results": [
+    {
+     "actionTaken": "created",
+     "code": "SQ070",
+     "entity": {
+      "code": "SQ070",
+      "created_at": "2026-11-06T08:20:24.908013Z",
+      "deleted_at": null,
+      "department": "",
+      "description": "",
+      "episode_id": null,
+      "frame_in": 1001,
+      "frame_out": 1100,
+      "id": "ec3259eb-ab01-4276-a772-333d53a2d8c4",
+      "is_deleted": false,
+      "lead_artist": null,
+      "lead_artist_id": null,
+      "lead_artist_name": "",
+      "metadata": {},
+      "name": "",
+      "project_code": "STD",
+      "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+      "project_name": "Standard",
+      "shots_count": 0,
+      "show_id": null,
+      "status": "Not Started",
+      "tags": [],
+      "updated_at": "2026-11-06T08:20:24.908019Z",
+      "uuid": "ec3259eb-ab01-4276-a772-333d53a2d8c4"
+     },
+     "error": null,
+     "id": "ec3259eb-ab01-4276-a772-333d53a2d8c4",
+     "index": 0,
+     "status": "created",
+     "success": true
+    },
+    {
+     "actionTaken": "failed",
+     "code": null,
+     "error": {
+      "code": [
+       "A code cannot contain spaces or slashes."
+      ]
+     },
+     "id": null,
+     "index": 1,
+     "status": "invalid",
+     "success": false
+    }
+   ],
+   "successful": 1,
+   "summary": {
+    "createdCount": 1,
+    "duplicateCount": 0,
+    "existingCount": 0,
+    "failedCount": 1,
+    "invalidCount": 1,
+    "newCount": 0,
+    "recoveredCount": 0,
+    "skippedCount": 0,
+    "softDeletedCount": 0,
+    "total": 2,
+    "updatedCount": 0
+   },
+   "timestamp": "2026-11-06T08:20:24.913362+00:00"
+  },
+  "request": {
+   "body": {
+    "atomic": false,
+    "dry_run": false,
+    "items": [
+     {
+      "action": "create",
+      "code": "SQ070",
+      "data": {}
+     },
+     {
+      "action": "create",
+      "code": "BAD/CODE",
+      "data": {}
+     }
+    ],
+    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+   },
+   "method": "POST",
+   "path": "/api/v1/sequences/bulk-create/"
+  },
+  "status": 200
+ },
+ "sequences_update_commit": {
+  "body": {
+   "atomic": true,
+   "committed": true,
+   "dry_run": false,
+   "errors": [],
+   "failed": 0,
+   "operation_id": "7792877fb80949cb992a893bd8669e81",
+   "partial_success": false,
+   "processed": 2,
+   "results": [
+    {
+     "actionTaken": "updated",
+     "code": "SQ010",
+     "entity": {
+      "code": "SQ010",
+      "created_at": "2026-11-06T08:20:24.713164Z",
+      "deleted_at": null,
+      "department": "",
+      "description": "Re-cut",
+      "episode_id": null,
+      "frame_in": 1001,
+      "frame_out": 1100,
+      "id": "d68eb94a-9581-4a69-8d3a-68a9a1287a76",
+      "is_deleted": false,
+      "lead_artist": null,
+      "lead_artist_id": null,
+      "lead_artist_name": "",
+      "metadata": {},
+      "name": "Opening",
+      "project_code": "STD",
+      "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+      "project_name": "Standard",
+      "shots_count": 1,
+      "show_id": null,
+      "status": "Not Started",
+      "tags": [],
+      "updated_at": "2026-11-06T08:20:25.009959Z",
+      "uuid": "d68eb94a-9581-4a69-8d3a-68a9a1287a76"
+     },
+     "error": null,
+     "id": "d68eb94a-9581-4a69-8d3a-68a9a1287a76",
+     "index": 0,
+     "status": "updated",
+     "success": true
+    },
+    {
+     "actionTaken": "updated",
+     "code": "SQ020",
+     "entity": {
+      "code": "SQ020",
+      "created_at": "2026-11-06T08:20:24.845258Z",
+      "deleted_at": null,
+      "department": "",
+      "description": "",
+      "episode_id": null,
+      "frame_in": 1001,
+      "frame_out": 1100,
+      "id": "da2bfe14-35b4-4a67-887b-098a30ae6336",
+      "is_deleted": false,
+      "lead_artist": null,
+      "lead_artist_id": null,
+      "lead_artist_name": "",
+      "metadata": {},
+      "name": "Chase",
+      "project_code": "STD",
+      "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+      "project_name": "Standard",
+      "shots_count": 0,
+      "show_id": null,
+      "status": "In Progress",
+      "tags": [],
+      "updated_at": "2026-11-06T08:20:25.018125Z",
+      "uuid": "da2bfe14-35b4-4a67-887b-098a30ae6336"
+     },
+     "error": null,
+     "id": "da2bfe14-35b4-4a67-887b-098a30ae6336",
+     "index": 1,
+     "status": "updated",
+     "success": true
+    }
+   ],
+   "successful": 2,
+   "summary": {
+    "createdCount": 0,
+    "duplicateCount": 0,
+    "existingCount": 0,
+    "failedCount": 0,
+    "invalidCount": 0,
+    "newCount": 0,
+    "recoveredCount": 0,
+    "skippedCount": 0,
+    "softDeletedCount": 0,
+    "total": 2,
+    "updatedCount": 2
+   },
+   "timestamp": "2026-11-06T08:20:25.021148+00:00"
+  },
+  "request": {
+   "body": {
+    "atomic": true,
+    "dry_run": false,
+    "items": [
+     {
+      "code": "sq010",
+      "description": "Re-cut"
+     },
+     {
+      "code": "SQ020",
+      "status": "In Progress"
+     }
+    ],
+    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+   },
+   "method": "POST",
+   "path": "/api/v1/sequences/bulk-update/"
+  },
+  "status": 200
+ },
+ "sequences_update_dry_run": {
+  "body": {
+   "atomic": true,
+   "committed": false,
+   "dry_run": true,
+   "errors": [
+    {
+     "field": "id",
+     "message": "Sequence not found.",
+     "row": 1
+    }
+   ],
+   "failed": 1,
+   "operation_id": "d6ce05e9da654fb6a25b6386e17e43dd",
+   "partial_success": true,
+   "processed": 2,
+   "results": [
+    {
+     "actionTaken": "updated",
+     "code": "SQ010",
+     "entity": {
+      "code": "SQ010",
+      "created_at": "2026-11-06T08:20:24.713164Z",
+      "deleted_at": null,
+      "department": "",
+      "description": "Re-cut",
+      "episode_id": null,
+      "frame_in": 1001,
+      "frame_out": 1100,
+      "id": "d68eb94a-9581-4a69-8d3a-68a9a1287a76",
+      "is_deleted": false,
+      "lead_artist": null,
+      "lead_artist_id": null,
+      "lead_artist_name": "",
+      "metadata": {},
+      "name": "Opening",
+      "project_code": "STD",
+      "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+      "project_name": "Standard",
+      "shots_count": 1,
+      "show_id": null,
+      "status": "Not Started",
+      "tags": [],
+      "updated_at": "2026-11-06T08:20:24.983224Z",
+      "uuid": "d68eb94a-9581-4a69-8d3a-68a9a1287a76"
+     },
+     "error": null,
+     "id": "d68eb94a-9581-4a69-8d3a-68a9a1287a76",
+     "index": 0,
+     "status": "updated",
+     "success": true
+    },
+    {
+     "actionTaken": "failed",
+     "code": "NOPE",
+     "error": "Sequence not found.",
+     "id": null,
+     "index": 1,
+     "status": "not_found",
+     "success": false
+    }
+   ],
+   "successful": 1,
+   "summary": {
+    "createdCount": 0,
+    "duplicateCount": 0,
+    "existingCount": 0,
+    "failedCount": 1,
+    "invalidCount": 0,
+    "newCount": 0,
+    "recoveredCount": 0,
+    "skippedCount": 0,
+    "softDeletedCount": 0,
+    "total": 2,
+    "updatedCount": 1
+   },
+   "timestamp": "2026-11-06T08:20:24.986447+00:00"
+  },
+  "request": {
+   "body": {
+    "atomic": true,
+    "dry_run": true,
+    "items": [
+     {
+      "code": "SQ010",
+      "description": "Re-cut"
+     },
+     {
+      "code": "NOPE",
+      "name": "x"
+     }
+    ],
+    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+   },
+   "method": "POST",
+   "path": "/api/v1/sequences/bulk-update/"
+  },
+  "status": 200
+ },
+ "sequences_update_ids": {
+  "body": {
+   "atomic": true,
+   "committed": true,
+   "dry_run": false,
+   "errors": [],
+   "failed": 0,
+   "operation_id": "2ad6701252a3459487b17de18453be4f",
+   "partial_success": false,
+   "processed": 1,
+   "results": [
+    {
+     "actionTaken": "updated",
+     "code": "SQ010",
+     "entity": {
+      "code": "SQ010",
+      "created_at": "2026-11-06T08:20:24.713164Z",
+      "deleted_at": null,
+      "department": "",
+      "description": "Re-cut",
+      "episode_id": null,
+      "frame_in": 1001,
+      "frame_out": 1100,
+      "id": "d68eb94a-9581-4a69-8d3a-68a9a1287a76",
+      "is_deleted": false,
+      "lead_artist": null,
+      "lead_artist_id": null,
+      "lead_artist_name": "",
+      "metadata": {},
+      "name": "Opening",
+      "project_code": "STD",
+      "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42",
+      "project_name": "Standard",
+      "shots_count": 1,
+      "show_id": null,
+      "status": "Pending Review",
+      "tags": [],
+      "updated_at": "2026-11-06T08:20:25.040872Z",
+      "uuid": "d68eb94a-9581-4a69-8d3a-68a9a1287a76"
+     },
+     "error": null,
+     "id": "d68eb94a-9581-4a69-8d3a-68a9a1287a76",
+     "index": 0,
+     "status": "updated",
+     "success": true
+    }
+   ],
+   "successful": 1,
+   "summary": {
+    "createdCount": 0,
+    "duplicateCount": 0,
+    "existingCount": 0,
+    "failedCount": 0,
+    "invalidCount": 0,
+    "newCount": 0,
+    "recoveredCount": 0,
+    "skippedCount": 0,
+    "softDeletedCount": 0,
+    "total": 1,
+    "updatedCount": 1
+   },
+   "timestamp": "2026-11-06T08:20:25.043779+00:00"
+  },
+  "request": {
+   "body": {
+    "atomic": true,
+    "changes": {
+     "status": "Pending Review"
+    },
+    "dry_run": false,
+    "ids": [
+     "d68eb94a-9581-4a69-8d3a-68a9a1287a76"
+    ]
+   },
+   "method": "POST",
+   "path": "/api/v1/sequences/bulk-update/"
+  },
+  "status": 200
+ },
+ "sequences_update_ids_refused": {
+  "body": {
+   "atomic": true,
+   "committed": false,
+   "dry_run": false,
+   "errors": [
+    {
+     "field": "status",
+     "message": "\"Nope\" is not a valid choice.",
+     "row": 0
+    }
+   ],
+   "failed": 1,
+   "operation_id": "a8a88e202e5a4689b5eedf325da92cb3",
+   "partial_success": false,
+   "processed": 1,
+   "results": [
+    {
+     "actionTaken": "failed",
+     "code": null,
+     "error": {
+      "status": [
+       "\"Nope\" is not a valid choice."
+      ]
+     },
+     "id": null,
+     "index": 0,
+     "status": "invalid",
+     "success": false
+    }
+   ],
+   "successful": 0,
+   "summary": {
+    "createdCount": 0,
+    "duplicateCount": 0,
+    "existingCount": 0,
+    "failedCount": 1,
+    "invalidCount": 1,
+    "newCount": 0,
+    "recoveredCount": 0,
+    "skippedCount": 0,
+    "softDeletedCount": 0,
+    "total": 1,
+    "updatedCount": 0
+   },
+   "timestamp": "2026-11-06T08:20:25.058362+00:00"
+  },
+  "request": {
+   "body": {
+    "atomic": true,
+    "changes": {
+     "status": "Nope"
+    },
+    "dry_run": false,
+    "ids": [
+     "d68eb94a-9581-4a69-8d3a-68a9a1287a76"
+    ]
+   },
+   "method": "POST",
+   "path": "/api/v1/sequences/bulk-update/"
+  },
+  "status": 200
+ },
+ "sequences_update_not_bulk_updatable": {
+  "body": {
+   "atomic": true,
+   "committed": false,
+   "dry_run": true,
+   "errors": [
+    {
+     "field": "metadata",
+     "message": "This field cannot be changed in bulk.",
+     "row": 0
+    }
+   ],
+   "failed": 1,
+   "operation_id": "75f8ea5a669a49b2b5d24983d1d67eec",
+   "partial_success": false,
+   "processed": 1,
+   "results": [
+    {
+     "actionTaken": "failed",
+     "code": null,
+     "error": {
+      "metadata": [
+       "This field cannot be changed in bulk."
+      ]
+     },
+     "id": "d68eb94a-9581-4a69-8d3a-68a9a1287a76",
+     "index": 0,
+     "status": "invalid",
+     "success": false
+    }
+   ],
+   "successful": 0,
+   "summary": {
+    "createdCount": 0,
+    "duplicateCount": 0,
+    "existingCount": 0,
+    "failedCount": 1,
+    "invalidCount": 1,
+    "newCount": 0,
+    "recoveredCount": 0,
+    "skippedCount": 0,
+    "softDeletedCount": 0,
+    "total": 1,
+    "updatedCount": 0
+   },
+   "timestamp": "2026-11-06T08:20:25.070098+00:00"
+  },
+  "request": {
+   "body": {
+    "atomic": true,
+    "dry_run": true,
+    "items": [
+     {
+      "code": "SQ010",
+      "metadata": {
+       "a": 1
+      }
+     }
+    ],
+    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+   },
+   "method": "POST",
+   "path": "/api/v1/sequences/bulk-update/"
+  },
+  "status": 200
+ },
+ "shots_create_dry_run": {
+  "body": {
+   "atomic": true,
+   "committed": false,
+   "dry_run": true,
+   "errors": [
+    {
+     "field": "sequence_id",
+     "message": "Unknown sequence for the selected project.",
+     "row": 1
+    }
+   ],
+   "failed": 1,
+   "operation_id": "51253e1f901e44eb845f8751a2ebf1c6",
+   "partial_success": true,
+   "processed": 2,
+   "results": [
+    {
+     "actionTaken": "created",
+     "code": "SH020",
+     "error": null,
+     "id": null,
+     "index": 0,
+     "status": "created",
+     "success": true
+    },
+    {
+     "actionTaken": "failed",
+     "code": null,
+     "error": {
+      "sequence_id": [
+       "Unknown sequence for the selected project."
+      ]
+     },
+     "id": null,
+     "index": 1,
+     "status": "invalid",
+     "success": false
+    }
+   ],
+   "successful": 1,
+   "summary": {
+    "createdCount": 1,
+    "duplicateCount": 0,
+    "existingCount": 0,
+    "failedCount": 1,
+    "invalidCount": 1,
+    "newCount": 0,
+    "recoveredCount": 0,
+    "skippedCount": 0,
+    "softDeletedCount": 0,
+    "total": 2,
+    "updatedCount": 0
+   },
+   "timestamp": "2026-11-06T08:20:25.103465+00:00"
+  },
+  "request": {
+   "body": {
+    "atomic": true,
+    "dry_run": true,
+    "items": [
+     {
+      "action": "create",
+      "code": "SH020",
+      "data": {
+       "frame_in": 1001,
+       "frame_out": 1050,
+       "sequence_id": "SQ010"
+      }
+     },
+     {
+      "action": "create",
+      "code": "SH030",
+      "data": {
+       "sequence_id": "SQ999"
+      }
+     }
+    ],
+    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+   },
+   "method": "POST",
+   "path": "/api/v1/shots/bulk-create/"
+  },
+  "status": 200
+ },
+ "tasks_create_dry_run": {
+  "body": {
+   "atomic": true,
+   "committed": false,
+   "dry_run": true,
+   "errors": [
+    {
+     "field": "entity_id",
+     "message": "Unknown shot.",
+     "row": 1
+    }
+   ],
+   "failed": 1,
+   "operation_id": "3d26f38f3c9d4a84b4de414239bf436e",
+   "partial_success": true,
+   "processed": 2,
+   "results": [
+    {
+     "actionTaken": "created",
+     "code": "COMP010",
+     "error": null,
+     "id": null,
+     "index": 0,
+     "status": "created",
+     "success": true
+    },
+    {
+     "actionTaken": "failed",
+     "code": null,
+     "error": {
+      "entity_id": [
+       "Unknown shot."
+      ]
+     },
+     "id": null,
+     "index": 1,
+     "status": "invalid",
+     "success": false
+    }
+   ],
+   "successful": 1,
+   "summary": {
+    "createdCount": 1,
+    "duplicateCount": 0,
+    "existingCount": 0,
+    "failedCount": 1,
+    "invalidCount": 1,
+    "newCount": 0,
+    "recoveredCount": 0,
+    "skippedCount": 0,
+    "softDeletedCount": 0,
+    "total": 2,
+    "updatedCount": 0
+   },
+   "timestamp": "2026-11-06T08:20:25.184596+00:00"
+  },
+  "request": {
+   "body": {
+    "atomic": true,
+    "dry_run": true,
+    "items": [
+     {
+      "action": "create",
+      "code": "COMP010",
+      "data": {
+       "entity_id": "SH010",
+       "entity_type": "Shot",
+       "title": "Comp"
+      }
+     },
+     {
+      "action": "create",
+      "code": "COMP020",
+      "data": {
+       "entity_id": "SH999",
+       "entity_type": "Shot",
+       "title": "Comp"
+      }
+     }
+    ],
+    "project_id": "30c72d8e-efd1-437d-b204-6e7765a1ec42"
+   },
+   "method": "POST",
+   "path": "/api/v1/tasks/bulk-create/"
+  },
+  "status": 200
+ }
+}
