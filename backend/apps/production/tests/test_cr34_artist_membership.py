@@ -5,13 +5,18 @@ from __future__ import annotations
 import pytest
 
 from apps.identity.tests.factories import UserFactory
-from apps.production.models import ProjectMembership
+from apps.production.models import ProjectMembership, Sequence
 from apps.production.tests.factories import AssetFactory, ProjectFactory, ShotFactory
 
 pytestmark = pytest.mark.django_db
 
 API = "/api/v1"
 KINDS = ("shots", "assets")
+
+
+def _sequence_id(project):
+    sequence, _ = Sequence.objects.get_or_create(project=project, code=f"{project.code}_SQ")
+    return str(sequence.pk)
 
 
 @pytest.fixture
@@ -94,12 +99,14 @@ class TestAssigningAnArtist:
         stranger = UserFactory.create()
         body = {
             "project": str(project.pk),
-            "code": "NEW-1",
+            "code": f"{project.code}_NEW-1",
             "name": "New",
             "assigned_artist": str(stranger.pk),
         }
         if kind == "assets":
             body["category"] = "Prop"
+        else:
+            body["sequence_id"] = _sequence_id(project)
         assert staff_client.post(f"{API}/{kind}/", body, format="json").status_code == 400
 
     def test_an_artist_who_left_the_project_does_not_block_other_edits(
@@ -121,11 +128,14 @@ class TestAssigningAnArtist:
 
 @pytest.mark.parametrize("kind", KINDS)
 class TestBulkWrites:
-    def _items(self, kind, artist, code):
+    def _items(self, kind, artist, code, project):
+        # A new code starts with the project's and a new shot has a sequence (CR-49).
         data = {"name": "Bulk", "assigned_artist": str(artist.pk)}
         if kind == "assets":
             data["category"] = "Prop"
-        return {"code": code, "data": data}
+        else:
+            data["sequence_id"] = _sequence_id(project)
+        return {"code": f"{project.code}_{code}", "data": data}
 
     def test_bulk_create_refuses_a_non_member_artist_and_accepts_a_member(
         self, staff_client, project, member, kind
@@ -136,8 +146,8 @@ class TestBulkWrites:
             {
                 "project_id": str(project.pk),
                 "items": [
-                    self._items(kind, member, "BULK-OK"),
-                    self._items(kind, stranger, "BULK-NO"),
+                    self._items(kind, member, "BULK-OK", project),
+                    self._items(kind, stranger, "BULK-NO", project),
                 ],
             },
             format="json",

@@ -310,7 +310,7 @@ class TestTaskAssignment:
         member = _user((), project_a)
         user = _user(self.CODES, project_a)
         client = _client(user)
-        body = {"project_id": str(project_a.id), "title": "Comp", "code": "T-NEW"}
+        body = {"project_id": str(project_a.id), "title": "Comp", "code": "XREFA_T-NEW"}
 
         assert (
             client.post(

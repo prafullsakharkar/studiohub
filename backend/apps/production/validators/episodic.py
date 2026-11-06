@@ -17,6 +17,7 @@ from rest_framework.exceptions import ValidationError
 from apps.production.constants import ProjectWorkflowType
 
 EPISODES_NOT_USED = "Episodes are not used on standard projects."
+SEQUENCE_REQUIRED = "A shot needs a sequence."
 
 
 def is_episodic(project: Any) -> bool:
@@ -72,6 +73,27 @@ def apply_sequence_episode_rule(data: dict[str, Any], *, project: Any, creating:
 
 
 def apply_shot_episode_chain(data: dict[str, Any], *, project: Any, instance: Any = None) -> None:
+    """
+    The episode/sequence chain of a shot (D-12), and its sequence on create (CR-49, D-43).
+
+    A new shot belongs to a sequence of its project; an existing one that has none may still be
+    edited. The sequence error is reported together with the chain's own (a new shot with neither
+    a sequence nor an episode learns about both in one answer).
+    """
+    problems: dict[str, Any] = {}
+    try:
+        _apply_shot_episode_chain(data, project=project, instance=instance)
+    except ValidationError as exc:
+        problems = (
+            dict(exc.detail) if isinstance(exc.detail, dict) else {"non_field_errors": exc.detail}
+        )
+    if project is not None and instance is None and data.get("sequence") is None:
+        problems.setdefault("sequence_id", [SEQUENCE_REQUIRED])
+    if problems:
+        raise ValidationError(problems)
+
+
+def _apply_shot_episode_chain(data: dict[str, Any], *, project: Any, instance: Any = None) -> None:
     """
     The episode/sequence chain of a shot (D-12).
 

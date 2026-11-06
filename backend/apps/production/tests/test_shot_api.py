@@ -64,7 +64,7 @@ class TestShotEpisodeChainCreate:
         project, _episode = _setup_episodic(staff_user)
         payload = {
             "project_id": str(project.id),
-            "code": "SH001",
+            "code": "EPSHOW_SH001",
             "name": "No Episode",
         }
         response = staff_client.post(
@@ -74,7 +74,7 @@ class TestShotEpisodeChainCreate:
         )
         assert response.status_code == 400
         assert "episode_id" in response.json()
-        assert not Shot.objects.filter(code="SH001").exists()
+        assert not Shot.objects.filter(code="EPSHOW_SH001").exists()
 
     def test_episodic_project_rejects_blank_episode(self, staff_client, staff_user):
         project, _episode = _setup_episodic(staff_user)
@@ -83,7 +83,7 @@ class TestShotEpisodeChainCreate:
             {
                 "project_id": str(project.id),
                 "episode_id": "",
-                "code": "SH002",
+                "code": "EPSHOW_SH002",
             },
             format="json",
         )
@@ -101,13 +101,13 @@ class TestShotEpisodeChainCreate:
             {
                 "project_id": str(project.id),
                 "episode_id": str(foreign_episode.id),
-                "code": "SH003",
+                "code": "EPSHOW_SH003",
             },
             format="json",
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "episode_id" in response.json()
-        assert not Shot.objects.filter(code="SH003").exists()
+        assert not Shot.objects.filter(code="EPSHOW_SH003").exists()
 
     def test_unknown_episode_rejected(self, staff_client, staff_user):
         project, _episode = _setup_episodic(staff_user)
@@ -116,7 +116,7 @@ class TestShotEpisodeChainCreate:
             {
                 "project_id": str(project.id),
                 "episode_id": str(uuid.uuid4()),
-                "code": "SH004",
+                "code": "EPSHOW_SH004",
             },
             format="json",
         )
@@ -125,18 +125,20 @@ class TestShotEpisodeChainCreate:
 
     def test_episodic_create_with_episode_succeeds(self, staff_client, staff_user):
         project, episode = _setup_episodic(staff_user)
+        sequence = SequenceFactory.create(project=project, episode=episode, code="EPSHOW_SQ010")
         response = staff_client.post(
             _list_url(),
             {
                 "project_id": str(project.id),
                 "episode_id": str(episode.id),
-                "code": "SH005",
+                "sequence_id": str(sequence.id),
+                "code": "EPSHOW_SH005",
                 "name": "Hooked Up",
             },
             format="json",
         )
         assert response.status_code == status.HTTP_201_CREATED, response.data
-        shot = Shot.objects.get(code="SH005", project=project)
+        shot = Shot.objects.get(code="EPSHOW_SH005", project=project)
         assert shot.episode_id == episode.id
         # Read serializers expose episode_id (write alias is write-only).
         detail = staff_client.get(_detail_url(shot))
@@ -144,17 +146,19 @@ class TestShotEpisodeChainCreate:
 
     def test_episode_code_reference_resolves(self, staff_client, staff_user):
         project, episode = _setup_episodic(staff_user)
+        SequenceFactory.create(project=project, episode=episode, code="EPSHOW_SQ020")
         response = staff_client.post(
             _list_url(),
             {
                 "project_id": project.code,
                 "episode_id": episode.code.lower(),
-                "code": "SH006",
+                "sequence_id": "epshow_sq020",
+                "code": "EPSHOW_SH006",
             },
             format="json",
         )
         assert response.status_code == status.HTTP_201_CREATED, response.data
-        assert Shot.objects.get(code="SH006", project=project).episode_id == episode.id
+        assert Shot.objects.get(code="EPSHOW_SH006", project=project).episode_id == episode.id
 
     def test_unknown_sequence_id_rejected(self, staff_client, staff_user):
         project, episode = _setup_episodic(staff_user)
@@ -164,13 +168,13 @@ class TestShotEpisodeChainCreate:
                 "project_id": str(project.id),
                 "episode_id": str(episode.id),
                 "sequence_id": str(uuid.uuid4()),
-                "code": "SH007",
+                "code": "EPSHOW_SH007",
             },
             format="json",
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "sequence_id" in response.json()
-        assert not Shot.objects.filter(code="SH007").exists()
+        assert not Shot.objects.filter(code="EPSHOW_SH007").exists()
 
     def test_sequence_from_other_project_rejected(self, staff_client, staff_user):
         project, episode = _setup_episodic(staff_user)
@@ -184,7 +188,7 @@ class TestShotEpisodeChainCreate:
                 "project_id": str(project.id),
                 "episode_id": str(episode.id),
                 "sequence_id": str(foreign_sequence.id),
-                "code": "SH008",
+                "code": "EPSHOW_SH008",
             },
             format="json",
         )
@@ -202,12 +206,12 @@ class TestShotEpisodeChainCreate:
                 "project_id": str(project.id),
                 "episode_id": str(episode.id),
                 "sequence_id": str(sequence.id),
-                "code": "SH009",
+                "code": "EPSHOW_SH009",
             },
             format="json",
         )
         assert response.status_code == status.HTTP_201_CREATED, response.data
-        shot = Shot.objects.get(code="SH009", project=project)
+        shot = Shot.objects.get(code="EPSHOW_SH009", project=project)
         assert shot.sequence_code == "SQ010"
         assert response.data["sequence_code"] == "SQ010"
 
@@ -217,19 +221,63 @@ class TestShotEpisodeChainCreate:
             code="STD01", workflow_type="standard"
         )
         _member(staff_user, project)
+        sequence = SequenceFactory.create(project=project, code="STD01_SQ010")
         response = staff_client.post(
             _list_url(),
             {
                 "project_id": str(project.id),
-                "code": "SH010",
+                "sequence_id": str(sequence.id),
+                "code": "STD01_SH010",
                 "name": "Legacy Free Form",
             },
             format="json",
         )
         assert response.status_code == status.HTTP_201_CREATED, response.data
-        shot = Shot.objects.get(code="SH010", project=project)
+        shot = Shot.objects.get(code="STD01_SH010", project=project)
         assert shot.episode_id is None
-        assert shot.sequence_id is None and shot.sequence_code == ""
+        assert shot.sequence_id == sequence.id and shot.sequence_code == "STD01_SQ010"
+
+    def test_a_new_shot_needs_a_sequence(self, staff_client, staff_user):
+        """CR-49: a new shot belongs to a sequence of its project, on a standard project too."""
+        project = ProjectFactory.create(code="STD02", workflow_type="standard")
+        _member(staff_user, project)
+        for body in ({}, {"sequence_id": ""}, {"sequence_id": "  "}):
+            response = staff_client.post(
+                _list_url(),
+                {"project_id": str(project.id), "code": "STD02_SH010", **body},
+                format="json",
+            )
+            assert response.status_code == status.HTTP_400_BAD_REQUEST, body
+            assert response.json()["sequence_id"] == ["A shot needs a sequence."], body
+        assert not Shot.objects.filter(project=project).exists()
+
+    def test_the_missing_sequence_is_reported_with_the_missing_episode(self, staff_client, staff_user):
+        project, _episode = _setup_episodic(staff_user)
+        response = staff_client.post(
+            _list_url(),
+            {"project_id": str(project.id), "code": "EPSHOW_SH011"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert {"episode_id", "sequence_id"} <= set(response.json())
+
+    def test_a_sequence_that_does_not_exist_is_a_400_on_sequence_id_only(self, staff_client, staff_user):
+        project = ProjectFactory.create(code="STD03", workflow_type="standard")
+        _member(staff_user, project)
+        response = staff_client.post(
+            _list_url(),
+            {"project_id": str(project.id), "code": "STD03_SH010", "sequence_id": "NOPE"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.json()["sequence_id"] == ["Unknown sequence for the selected project."]
+
+    def test_a_shot_that_has_no_sequence_can_still_be_edited(self, staff_client, staff_user):
+        project = ProjectFactory.create(code="STD04", workflow_type="standard")
+        _member(staff_user, project)
+        shot = ShotFactory.create(project=project, code="LEGACY1", sequence=None)
+        response = staff_client.patch(_detail_url(shot), {"name": "Renamed"}, format="json")
+        assert response.status_code == status.HTTP_200_OK, response.data
 
 
 class TestShotEpisodeChainUpdate:

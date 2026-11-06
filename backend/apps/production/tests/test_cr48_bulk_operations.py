@@ -67,7 +67,12 @@ def _batches():
 
 @pytest.fixture
 def project():
-    return ProjectFactory(workflow_type="standard")
+    # New codes start with the project's code (CR-49): the tests below name them bare through `_code`.
+    return ProjectFactory(code="CRBO", workflow_type="standard")
+
+
+def _code(project, code):
+    return f"{project.code}_{code}"
 
 
 @pytest.fixture
@@ -78,7 +83,10 @@ def client(admin_user):
 def _sequences(project, *codes, **fields):
     return {
         "project_id": str(project.pk),
-        "items": [{"code": code, "data": {"name": code.title(), **fields}} for code in codes],
+        "items": [
+            {"code": _code(project, code), "data": {"name": code.title(), **fields}}
+            for code in codes
+        ],
     }
 
 
@@ -97,7 +105,7 @@ class TestDryRun:
         assert not _batches().exists()
 
     def test_create_reports_what_would_fail(self, client, project):
-        SequenceFactory(project=project, code="SQA")
+        SequenceFactory(project=project, code=_code(project, "SQA"))
         body = _post(
             client,
             "sequences/bulk-create/",
@@ -153,17 +161,17 @@ class TestAtomic:
         assert not _batches().exists()
 
     def test_an_existing_code_fails_the_batch_unless_the_row_says_skip(self, client, project):
-        SequenceFactory(project=project, code="SQA")
+        SequenceFactory(project=project, code=_code(project, "SQA"))
         payload = _sequences(project, "SQA", "SQB")
         body = _post(client, "sequences/bulk-create/", {**payload, "atomic": True})
         assert body["committed"] is False
-        assert not Sequence.all_objects.filter(code="SQB").exists()
+        assert not Sequence.all_objects.filter(code=_code(project, "SQB")).exists()
 
         payload["items"][0]["action"] = "skip"
         body = _post(client, "sequences/bulk-create/", {**payload, "atomic": True})
         assert [row["status"] for row in body["results"]] == ["skipped", "created"]
         assert body["committed"] is True
-        assert Sequence.objects.filter(project=project, code="SQB").exists()
+        assert Sequence.objects.filter(project=project, code=_code(project, "SQB")).exists()
 
     def test_a_clean_batch_is_stored_with_one_audit_row(self, client, project, admin_user):
         body = _post(
@@ -217,7 +225,7 @@ class TestPartial:
         assert [row["status"] for row in body["results"]] == ["created", "invalid"]
         assert body["committed"] is True
         assert body["dry_run"] is False and body["atomic"] is False
-        assert Sequence.objects.filter(project=project, code="SQA").exists()
+        assert Sequence.objects.filter(project=project, code=_code(project, "SQA")).exists()
         assert _batches().get().metadata["counts"]["failed"] == 1
 
     def test_a_batch_that_writes_nothing_leaves_no_audit_row(self, client, project):
@@ -321,11 +329,11 @@ class TestParentsByCode:
             {
                 "project_id": str(project.pk),
                 "atomic": True,
-                "items": [{"code": "SH010", "data": {"sequence_id": "sq010"}}],
+                "items": [{"code": _code(project, "SH010"), "data": {"sequence_id": "sq010"}}],
             },
         )
         assert body["committed"] is True
-        assert Shot.objects.get(project=project, code="SH010").sequence_id == sequence.pk
+        assert Shot.objects.get(project=project, code=_code(project, "SH010")).sequence_id == sequence.pk
 
     def test_an_unknown_parent_is_a_row_error_and_nothing_is_stored(self, client, project):
         SequenceFactory(project=project, code="SQ010")
@@ -336,8 +344,8 @@ class TestParentsByCode:
                 "project_id": str(project.pk),
                 "atomic": True,
                 "items": [
-                    {"code": "SH010", "data": {"sequence_id": "SQ010"}},
-                    {"code": "SH020", "data": {"sequence_id": "SQ999"}},
+                    {"code": _code(project, "SH010"), "data": {"sequence_id": "SQ010"}},
+                    {"code": _code(project, "SH020"), "data": {"sequence_id": "SQ999"}},
                 ],
             },
         )
@@ -352,7 +360,7 @@ class TestParentsByCode:
             "shots/bulk-create/",
             {
                 "project_id": str(project.pk),
-                "items": [{"code": "SH010", "data": {"sequence_id": "SQ010"}}],
+                "items": [{"code": _code(project, "SH010"), "data": {"sequence_id": "SQ010"}}],
             },
         )
         assert body["results"][0]["status"] == "invalid"

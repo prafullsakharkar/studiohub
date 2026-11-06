@@ -23,6 +23,7 @@ from apps.production.models import ProjectMembership
 from apps.production.tests.factories import (
     ProjectFactory,
     ReviewFactory,
+    SequenceFactory,
     ShotFactory,
     TaskFactory,
     TimelogFactory,
@@ -136,7 +137,8 @@ class TestShot:
         assert _patch(approver, self.path(shot), {"client_approved": True}).status_code == 200
 
     def test_create_cannot_start_approved(self, project):
-        body = {"project_id": str(project.id), "code": "S9", "name": "New"}
+        sequence = SequenceFactory.create(project=project, code="PRIV01_SQ")
+        body = {"project_id": str(project.id), "code": "PRIV01_S9", "name": "New", "sequence_id": str(sequence.id)}
         plain = _user(project, "shot.view", "shot.create")
         approver = _user(project, "shot.view", "shot.create", "shot.approve")
 

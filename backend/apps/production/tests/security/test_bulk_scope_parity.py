@@ -180,16 +180,25 @@ class TestRowsInReach:
 class TestShowFiling:
     def test_bulk_create_files_the_row_under_the_callers_show(self, world):
         client = _client(_member(world["project"], show=world["show_a"]))
+        code, sequence = self._new(world, "NEW1")
         body = _post(
             client,
             "shots/bulk-create/",
-            {"items": [{"project_id": str(world["project"].pk), "code": "NEW1"}]},
+            {"items": [{"project_id": str(world["project"].pk), "code": code, "sequence_id": sequence}]},
         )
         assert body["results"][0]["status"] == "created"
-        assert Shot.objects.get(code="NEW1").show_id == world["show_a"].pk
+        assert Shot.objects.get(code=code).show_id == world["show_a"].pk
+
+    @staticmethod
+    def _new(world, bare):
+        """A new code starts with the project's and a new shot has a sequence (CR-49)."""
+        project = world["project"]
+        sequence = SequenceFactory(project=project, code=f"{project.code}_SQ_{bare}")
+        return f"{project.code}_{bare}", str(sequence.pk)
 
     def test_bulk_create_into_another_show_is_refused(self, world):
         client = _client(_member(world["project"], show=world["show_a"]))
+        code, sequence = self._new(world, "NEW2")
         body = _post(
             client,
             "shots/bulk-create/",
@@ -197,14 +206,15 @@ class TestShowFiling:
                 "items": [
                     {
                         "project_id": str(world["project"].pk),
-                        "code": "NEW2",
+                        "code": code,
+                        "sequence_id": sequence,
                         "show_id": str(world["show_b"].pk),
                     }
                 ]
             },
         )
         assert body["results"][0]["status"] == "invalid"
-        assert not Shot.all_objects.filter(code="NEW2").exists()
+        assert not Shot.all_objects.filter(code=code).exists()
 
     def test_bulk_update_does_not_move_a_shot_to_another_show_even_for_a_full_member(self, world):
         # CR-48: the show decides who sees a row, so it is not bulk-updatable; the single route moves it.

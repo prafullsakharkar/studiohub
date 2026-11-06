@@ -100,8 +100,8 @@ class TestBulkCreateContract:
             data={
                 "project_id": str(project.id),
                 "items": [
-                    {"code": "BLK01", "action": "create", "data": {"name": "Bulk One"}},
-                    {"code": "BLK02", "action": "skip", "data": {"name": "Bulk Two"}},
+                    {"code": f"{project.code}_BLK01", "action": "create", "data": {"name": "Bulk One"}},
+                    {"code": f"{project.code}_BLK02", "action": "skip", "data": {"name": "Bulk Two"}},
                 ],
             },
             format="json",
@@ -118,8 +118,8 @@ class TestBulkCreateContract:
         assert resp.data["processed"] == 2
         assert resp.data["failed"] == 0
         actions = {item["code"]: item["actionTaken"] for item in resp.data["results"]}
-        assert actions == {"BLK01": "created", "BLK02": "skipped"}
-        assert resp.data["results"][0]["entity"]["code"] == "BLK01"
+        assert actions == {f"{project.code}_BLK01": "created", f"{project.code}_BLK02": "skipped"}
+        assert resp.data["results"][0]["entity"]["code"] == f"{project.code}_BLK01"
 
     def test_recover_action_restores_soft_deleted(self, staff_client, staff_user):
         from apps.core.services.soft_delete import SoftDeleteService
@@ -146,11 +146,18 @@ class TestBulkCreateContract:
     def test_shot_bulk_create_react_form(self, staff_client, staff_user):
         project = ProjectFactory.create()
         _member(staff_user, project)
+        sequence = SequenceFactory.create(project=project)
         resp = staff_client.post(
             reverse("api:v1:production:shot-bulk-create"),
             data={
                 "project_id": str(project.id),
-                "items": [{"code": "SHBLK01", "action": "create", "data": {"name": "S"}}],
+                "items": [
+                    {
+                        "code": f"{project.code}_SHBLK01",  # a new code starts with the project's (CR-49)
+                        "action": "create",
+                        "data": {"name": "S", "sequence_id": str(sequence.id)},
+                    }
+                ],
             },
             format="json",
         )
@@ -165,7 +172,7 @@ class TestBulkCreateContract:
             data={
                 "project_id": str(project.id),
                 "items": [
-                    {"code": "TSKBLK01", "action": "create", "data": {"title": "T"}}
+                    {"code": f"{project.code}_TSKBLK01", "action": "create", "data": {"title": "T"}}
                 ],
             },
             format="json",
@@ -180,7 +187,7 @@ class TestBulkCreateContract:
             reverse("api:v1:production:asset-bulk-create"),
             data={
                 "project_id": str(project.id),
-                "items": [{"code": "ASTBLK01", "action": "create", "data": {"name": "A"}}],
+                "items": [{"code": f"{project.code}_ASTBLK01", "action": "create", "data": {"name": "A"}}],
             },
             format="json",
         )

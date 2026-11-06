@@ -60,7 +60,7 @@ class TestEpisodeCreateAndScopedList:
         )
         assert r.status_code == status.HTTP_201_CREATED, r.data
         assert r.data["name"] == "Pilot"
-        assert r.data["code"] == "EP101"
+        assert r.data["code"] == "MS1_EP101"  # a derived code gets the project's prefix (CR-49)
 
         list_r = staff_client.get(
             f"{_list_url()}?project_id={project.id}",
@@ -91,7 +91,7 @@ class TestEpisodeCreateAndScopedList:
             format="json",
         )
         assert r.status_code == status.HTTP_201_CREATED, r.data
-        assert r.data["code"] == "EP103"
+        assert r.data["code"] == f"{project.code}_EP103"
         assert r.data["season_number"] == 1
 
     def test_list_filter_by_project_id_excludes_other_projects(
@@ -260,4 +260,4 @@ class TestProjectWorkflowTypeGating:
             format="json",
         )
         assert r.status_code == status.HTTP_201_CREATED, r.data
-        assert r.data["code"] == "EP102"
+        assert r.data["code"] == f"{project.code}_EP102"
