@@ -372,3 +372,14 @@ formats, and the final summary.
    pattern), removing the old code in its own commit. Alternative: keep both.
 6. **Order.** Recommended: ship CR-46 (the scope fix) as its own commit and verification first,
    since it's a live defect, then continue with 1b.
+
+## 9. Outcome
+
+All six recommendations were approved ("Approved", 2026-11-06) and built in that order on `feature/episodic-bulk`:
+CR-46 `cd774091`, CR-47 `b7a4c692`, the nav and pages `0a6e8a03`, CR-48 `2a18c908` (backend) and `7d993c96`
+(frontend), the old Bulk add managers removed in `374b8307`. Verification: `docs/sync/backend-cr-46-48-verification.md`.
+Contracts C-57 to C-62, decisions D-39 to D-42, the CSV formats in `docs/README.md`.
+
+Two points went beyond the plan: bulk update refuses a field outside the whitelist per row instead of dropping it, and
+a row named by code that the caller cannot see answers `not_found` without an id. Deferred: an async job for more than
+500 rows; people (assignee, reviewer) by e-mail in a CSV; the Bulk menu on a project's Sequences tab.

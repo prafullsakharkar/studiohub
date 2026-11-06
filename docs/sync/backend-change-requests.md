@@ -905,7 +905,7 @@ Frontend after approval: the form lists every login, marks the ones that belong 
 
 **Approved** by the owner ("approve CR-45") and applied as written, with the proposed diff and no alternative: `move` on `link-user` (`LinkUserSerializer`, `PersonViewSet.link_user`, `PersonService.link_user`), contract DOM-MD-PER-11, the committed OpenAPI schema and its TypeScript types (`LinkUser.move`). Tests: `test_person_services.py` (move, refusal without `move`, the e-mail clash after an unlink, a person that already has a login, a login nobody holds, audit), `test_organization_api.py` (move, permission, boolean), `test_directory_concurrency.py` (two moves leave one holder); mutation-checked (keep the e-mail, ignore `move`, `move` on by default, no unlink event: each fails a test). Masterdata app: 1,248 passed.
 
-### CR-46: bulk routes see and write more than the single routes allow (**security**, **IN PROGRESS**, branch `feature/episodic-bulk`)
+### CR-46: bulk routes see and write more than the single routes allow (**security**, **APPLIED**, `cd774091` on `feature/episodic-bulk`)
 
 Found in the Phase 0 discovery of the episodic/bulk work (`docs/episodic-bulk-discovery.md` §2.4, probed on the pytest database).
 
@@ -913,18 +913,18 @@ Found in the Phase 0 discovery of the episodic/bulk work (`docs/episodic-bulk-di
 
 **Diff.** Bulk update/archive/restore resolve each id through `get_queryset()` (the `tasks/bulk-status` pattern); out-of-scope ids report `not_found`. A `prepare_update(instance, data)` hook holds what `perform_update` checks and is called by both. Bulk create runs the show resolution per item. `check-existence` reports `EXISTS` without `existing_entity` for a row the caller cannot see. Response shapes unchanged.
 
-**Approved** by the owner ("Approved", Phase 0 plan, 2026-11-06).
+**Approved** by the owner ("Approved", Phase 0 plan, 2026-11-06). Applied as written; Verification: `docs/sync/backend-cr-46-48-verification.md`.
 
-### CR-47: episodes only on episodic projects (**feature**, **IN PROGRESS**, branch `feature/episodic-bulk`)
+### CR-47: episodes only on episodic projects (**feature**, **APPLIED**, `b7a4c692` on `feature/episodic-bulk`)
 
 **Problem.** Only episode create is refused on a standard project (400); list, detail, update and archive answer 200 for episodes left on standard projects by seeds, the admin or legacy data. The D-12 rules live in the sequence and shot viewsets only.
 
 **Diff.** The episode queryset is limited to `project__workflow_type="episodic"` (404 on detail/update/archive/bulk for a standard project's episode, an empty list for its project); create keeps its 400. The D-12 rules move into `validators/episodic.py`, called by single and bulk writes. `report_production_data` lists episodes on standard projects and standard-project sequences/shots that point at one. No migration; no data is changed.
 
-**Approved** by the owner ("Approved", Phase 0 plan, 2026-11-06).
+**Approved** by the owner ("Approved", Phase 0 plan, 2026-11-06). Applied as written; Verification: `docs/sync/backend-cr-46-48-verification.md`.
 
-### CR-48: bulk create/update with dry run, all-or-nothing, code matching and limits (**feature**, **IN PROGRESS**, branch `feature/episodic-bulk`)
+### CR-48: bulk create/update with dry run, all-or-nothing, code matching and limits (**feature**, **APPLIED**, `2a18c908` on `feature/episodic-bulk`)
 
 **Diff (additive).** `bulk-create` / `bulk-update` accept `dry_run: true` (the real path inside a transaction that is rolled back) and `atomic: true` (any failed row rolls back the batch). Bulk update matches by `id` or by `code` within the batch's `project_id`. Parents resolve by code inside the project. A per-entity whitelist of bulk-updatable fields. At most 500 items per request (400 above). Each result row keeps `error` and the response adds `errors: [{row, field, message}]`. One `AuditLog` row per committed batch. Without the new flags the routes behave as today.
 
-**Approved** by the owner ("Approved", Phase 0 plan, 2026-11-06).
+**Approved** by the owner ("Approved", Phase 0 plan, 2026-11-06). Applied as written, with two additions found while building it: bulk update refuses a field outside the whitelist per row ("This field cannot be changed in bulk.") instead of ignoring it, and a row named by code that the caller cannot see answers `not_found` without an id. Verification: `docs/sync/backend-cr-46-48-verification.md`.
