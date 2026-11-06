@@ -235,8 +235,7 @@ The page forms take the department form's look.
 ### Not migrated, and why
 
 - Bulk import wizards (shots, assets, tasks): a multi-step grid, not a form dialog.
-- Command-palette modals (`ActionDispatcherModals.tsx`): no API call behind "Create"/"Assign"/"Archive"/"Restore"/"Change status";
-  a product decision, not a style one.
+- Command-palette modals (`ActionDispatcherModals.tsx`): **removed** (branch `fix/command-palette-actions`). They called no API behind "Create"/"Assign"/"Archive"/"Restore"/"Change status". The Create commands now open the real create pages (`/clients/new`, `/tasks/new`, …); the commands that need a chosen record (assign, archive, restore, change status, approve a review) and "Create Sequence" (sequences are made inside a project) are gone.
 - "Copy your secret now" (`TokensPage`): display-only and deliberately cannot be dismissed.
 - Inline forms (project members and notes panels, IP rules, create/link login), LDAP settings, profile, auth screens: not dialogs or entity pages.
 
