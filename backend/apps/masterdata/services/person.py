@@ -230,7 +230,12 @@ class PersonService(DirectoryService[Person]):
         return cls.update(actor=actor, instance=person, data={"status": LifecycleStatus.ACTIVE})
 
     @classmethod
-    def link_user(cls, *, actor: Any, person: Person, user: Any) -> Person:
+    def link_user(cls, *, actor: Any, person: Person, user: Any, move: bool = False) -> Person:
+        """
+        Link ``person`` to ``user``. A user with a person of its own is refused (409); with ``move`` (CR-45) that
+        person is unlinked in the same transaction and loses its e-mail, which belongs to the login and moves with
+        it, so the second check below still holds. It stays a person, without a login, nothing archived or deleted.
+        """
         User = get_user_model()
         with transaction.atomic():
             locked = cls._lock(person)
@@ -241,8 +246,17 @@ class PersonService(DirectoryService[Person]):
                 raise ValidationError({"user": ["Choose an existing, active user."]})
             # Lock the user so two concurrent links of one user serialize.
             target = User.objects.select_for_update().get(pk=target.pk)
-            if Person.objects.filter(user=target).exclude(pk=locked.pk).exists():
-                raise MasterdataConflict("This user is already linked to another person.")
+            holder = (
+                Person.objects.select_for_update().filter(user=target).exclude(pk=locked.pk).first()
+            )
+            if holder is not None:
+                if not move:
+                    raise MasterdataConflict("This user is already linked to another person.")
+                holder.user = None  # pyright: ignore[reportAttributeAccessIssue]
+                holder.email = ""
+                holder.updated_by = actor_or_none(actor)  # pyright: ignore[reportAttributeAccessIssue]
+                holder.save()
+                cls._event(records.PersonUnlinked, holder, actor)
             copied = identity_values(target)
             email = copied.get("email")
             if email and Person.objects.filter(email__iexact=email).exclude(pk=locked.pk).exists():

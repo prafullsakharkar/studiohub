@@ -421,6 +421,8 @@ class VendorContractSerializer(_ContractSerializer):
 
 class LinkUserSerializer(serializers.Serializer[dict[str, Any]]):
     user = serializers.UUIDField()
+    # CR-45: take the login from the person that has it (that person keeps its record, loses the login and its e-mail).
+    move = serializers.BooleanField(default=False)
 
 
 class DeactivateSerializer(serializers.Serializer[dict[str, Any]]):
