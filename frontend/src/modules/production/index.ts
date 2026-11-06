@@ -7,3 +7,4 @@ export { ProjectsPage } from './pages/ProjectsPage';
 export { ShowRedirectPage } from './pages/ShowRedirectPage';
 export { useActiveProjectIsEpisodic, useProjectIsEpisodic } from './hooks/useProjectIsEpisodic';
 export { isEpisodicProject } from './projectWorkflow';
+export { EpisodeFormPage, EpisodesPage, SequenceFormPage, SequencesPage } from './pages/StructurePages';

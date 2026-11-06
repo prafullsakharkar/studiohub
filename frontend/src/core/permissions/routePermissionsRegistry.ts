@@ -215,6 +215,38 @@ export const ROUTE_PERMISSIONS_REGISTRY: Record<string, RoutePermissionMetadata>
     permissions: ['project.view'],
     requiresProjectMembership: true,
   },
+  '/episodes': {
+    path: '/episodes',
+    name: 'Episodes',
+    pagePermission: 'page.project.episodes',
+    permissions: ['episode.view'],
+  },
+  '/episodes/new': {
+    path: '/episodes/new',
+    name: 'Create Episode',
+    permissions: ['episode.create'],
+  },
+  '/episodes/:id/edit': {
+    path: '/episodes/:id/edit',
+    name: 'Edit Episode',
+    permissions: ['episode.update'],
+  },
+  '/sequences': {
+    path: '/sequences',
+    name: 'Sequences',
+    pagePermission: 'page.project.sequences',
+    permissions: ['sequence.view'],
+  },
+  '/sequences/new': {
+    path: '/sequences/new',
+    name: 'Create Sequence',
+    permissions: ['sequence.create'],
+  },
+  '/sequences/:id/edit': {
+    path: '/sequences/:id/edit',
+    name: 'Edit Sequence',
+    permissions: ['sequence.update'],
+  },
   '/shots': {
     path: '/shots',
     name: 'Shots',

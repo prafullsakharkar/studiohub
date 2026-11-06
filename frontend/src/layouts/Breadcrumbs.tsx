@@ -9,7 +9,9 @@ export const Breadcrumbs: React.FC = () => {
   const routeNameMap: Record<string, string> = {
     dashboard: 'Studio Home',
     projects: 'Productions',
-    shots: 'Shots & Sequences',
+    episodes: 'Episodes',
+    sequences: 'Sequences',
+    shots: 'Shots',
     assets: 'Asset Library',
     tasks: 'Task Board',
     reviews: 'Screening Room',

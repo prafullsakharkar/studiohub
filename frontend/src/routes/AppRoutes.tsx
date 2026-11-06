@@ -124,6 +124,10 @@ const AssetWorkspacePage = lazyNamed(() => import('@/modules/assets'), 'AssetWor
 const VersionFormPage = lazyNamed(() => import('@/modules/versions'), 'VersionFormPage');
 const VersionsListPage = lazyNamed(() => import('@/modules/versions'), 'VersionsListPage');
 const VersionWorkspacePage = lazyNamed(() => import('@/modules/versions'), 'VersionWorkspacePage');
+const EpisodeFormPage = lazyNamed(() => import('@/modules/production'), 'EpisodeFormPage');
+const EpisodesPage = lazyNamed(() => import('@/modules/production'), 'EpisodesPage');
+const SequenceFormPage = lazyNamed(() => import('@/modules/production'), 'SequenceFormPage');
+const SequencesPage = lazyNamed(() => import('@/modules/production'), 'SequencesPage');
 const ShotFormPage = lazyNamed(() => import('@/modules/shots'), 'ShotFormPage');
 const ShotsPage = lazyNamed(() => import('@/modules/shots'), 'ShotsPage');
 const ShotWorkspacePage = lazyNamed(() => import('@/modules/shots'), 'ShotWorkspacePage');
@@ -336,6 +340,19 @@ export const AppRoutes: React.FC = () => {
             <Route path="/projects/:id/edit" element={<ProjectFormPage />} />
 
           </Route>
+
+          {/* Episodes only on an episodic project (EpisodicGate answers not-found otherwise); sequences everywhere. */}
+          <Route path="/episodes" element={<EpisodesPage />} />
+
+          <Route path="/episodes/new" element={<EpisodeFormPage />} />
+
+          <Route path="/episodes/:id/edit" element={<EpisodeFormPage />} />
+
+          <Route path="/sequences" element={<SequencesPage />} />
+
+          <Route path="/sequences/new" element={<SequenceFormPage />} />
+
+          <Route path="/sequences/:id/edit" element={<SequenceFormPage />} />
 
           <Route path="/shots" element={<ShotsPage />} />
 
