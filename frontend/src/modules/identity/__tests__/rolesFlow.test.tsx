@@ -99,14 +99,31 @@ describe('roles list', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /new role/i }));
     const dialog = await screen.findByRole('dialog');
-    fireEvent.change(within(dialog).getByLabelText('Name'), { target: { value: 'Reviewer' } });
-    fireEvent.change(within(dialog).getByLabelText('Code'), { target: { value: 'reviewer' } });
+    fireEvent.change(within(dialog).getByLabelText(/^Name/), { target: { value: 'Reviewer' } });
+    fireEvent.change(within(dialog).getByLabelText(/^Code/), { target: { value: 'reviewer' } });
     fireEvent.click(within(dialog).getByRole('button', { name: /create role/i }));
 
     // Navigation to /access/roles/:id is proven by the detail page asking for THAT role.
     await waitFor(() => expect(calls.some((c) => path(c) === '/api/v1/roles/new-role-id/')).toBe(true));
     const post = calls.find((c) => c.method === 'POST')!;
     expect(post.body).toMatchObject({ name: 'Reviewer', code: 'reviewer', priority: 40 });
+  });
+
+  it('reopens the New role dialog empty after a half-filled one is discarded', async () => {
+    mockFetch(() => reply(flow.roles_list));
+    renderAt('/access/roles', superuser);
+    await screen.findByRole('link', { name: 'Platform Admin' });
+
+    fireEvent.click(screen.getByRole('button', { name: /new role/i }));
+    let dialog = await screen.findByRole('dialog', { name: 'New role' });
+    fireEvent.change(within(dialog).getByLabelText(/^Name/), { target: { value: 'Half' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    fireEvent.click(within(await screen.findByRole('dialog', { name: 'Discard changes?' })).getByRole('button', { name: 'Discard changes' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+
+    fireEvent.click(screen.getByRole('button', { name: /new role/i }));
+    dialog = await screen.findByRole('dialog', { name: 'New role' });
+    expect((within(dialog).getByLabelText(/^Name/) as HTMLInputElement).value).toBe('');
   });
 
   it('puts a duplicate-code error from the server on the Code field', async () => {
@@ -116,8 +133,8 @@ describe('roles list', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /new role/i }));
     const dialog = await screen.findByRole('dialog');
-    fireEvent.change(within(dialog).getByLabelText('Name'), { target: { value: 'Reviewer 2' } });
-    fireEvent.change(within(dialog).getByLabelText('Code'), { target: { value: 'reviewer' } });
+    fireEvent.change(within(dialog).getByLabelText(/^Name/), { target: { value: 'Reviewer 2' } });
+    fireEvent.change(within(dialog).getByLabelText(/^Code/), { target: { value: 'reviewer' } });
     fireEvent.click(within(dialog).getByRole('button', { name: /create role/i }));
 
     expect(await within(dialog).findByText(/already exists/i)).toBeTruthy();

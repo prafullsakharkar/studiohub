@@ -3,14 +3,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type React from 'react';
 import { useContext, useEffect, useMemo, useRef } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { evaluateAccess } from '@/core/permissions/access';
 import { AuthContext } from '@/core/auth/AuthContext';
-import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { notify } from '@/core/notifications/notify';
+import { FormPage } from '@/shared/forms/FormPage';
+import { formDialogCopy } from '@/shared/forms/FormDialog';
 import { useServerForm } from '@/shared/forms/useServerForm';
-import { Button } from '@/shared/components/Button';
-import { FormBanner } from '@/modules/identity/components/ui';
 import { FieldInputs } from './FieldInputs';
 import { type Values, blank, buildSchema, fromRow, isVisible, wireValue } from './formModel';
 import type { DirectoryFormConfig, FieldDef } from './types';
@@ -19,6 +18,7 @@ import type { DirectoryFormConfig, FieldDef } from './types';
 export function DirectoryFormPage<T extends { id: string }>({ config }: { config: DirectoryFormConfig<T> }): React.ReactElement {
   const { id } = useParams();
   const editing = Boolean(id);
+  const copy = formDialogCopy(config.noun, editing);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
@@ -36,7 +36,7 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
     reset,
     serverError,
     clearServerError,
-    formState: { errors, isSubmitting, dirtyFields },
+    formState: { errors, isSubmitting, isDirty, dirtyFields },
   } = useServerForm<Values>({ resolver: zodResolver(schema) as never, defaultValues: Object.fromEntries(fields.map((f) => [f.name, !editing && searchParams.get(f.name) !== null ? (searchParams.get(f.name) as string) : blank(f)])) });
   // A new record can be pre-filled from the address (`/tasks/new?project=…&entity_type=Shot`): a parameter named like a field fills it.
 
@@ -75,32 +75,26 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
       }
     }
     await Promise.all([queryClient.invalidateQueries({ queryKey: config.queryKey }), queryClient.invalidateQueries({ queryKey: auditKeys.all })]); // a write adds a history entry
-    notify.success(`${config.noun[0].toUpperCase()}${config.noun.slice(1)} ${editing ? 'saved' : 'created'}.`);
+    notify.success(copy.saved);
     // An update may answer without the id (a project's PATCH does): after an edit the record is the one opened.
     navigate(config.afterSavePath ? config.afterSavePath(saved) : `${config.basePath}/${editing ? id : saved.id}`, { replace: true });
   });
 
   return (
-    <div className="p-4 sm:p-6 space-y-5 flex-1 min-h-0 w-full max-w-2xl">
-      <div className="pb-3 border-b border-slate-800">
-        <h1 className="text-xl font-bold text-white tracking-tight">{editing ? `Edit ${config.noun}` : `New ${config.noun}`}</h1>
-      </div>
-      <QueryBoundary isLoading={editing && row.isLoading} error={editing ? row.error : null} onRetry={() => void row.refetch()} entityName={config.noun}>
-        <form noValidate onSubmit={onSubmit} className="space-y-4">
-          <FormBanner error={serverError} />
-          <FieldInputs fields={fields} editing={editing} immutableOnEdit={config.immutableOnEdit} register={register} control={control} errors={errors} clearServerError={clearServerError} />
-          <div className="flex gap-2 pt-2">
-            <Button type="submit" variant="primary" isLoading={isSubmitting}>
-              {editing ? 'Save changes' : `Create ${config.noun}`}
-            </Button>
-            <Link to={config.basePath}>
-              <Button type="button" variant="ghost">
-                Cancel
-              </Button>
-            </Link>
-          </div>
-        </form>
-      </QueryBoundary>
-    </div>
+    <FormPage
+      title={copy.title}
+      description={editing ? `Change the details of this ${config.noun}.` : `Fill in the details to create a ${config.noun}.`}
+      editing={editing}
+      backTo={config.basePath}
+      backLabel={config.listTitle}
+      onSubmit={onSubmit}
+      isSubmitting={isSubmitting}
+      isDirty={isDirty}
+      serverError={serverError}
+      submitLabel={copy.submitLabel}
+      loading={{ isLoading: editing && row.isLoading, error: editing ? row.error : null, onRetry: () => void row.refetch(), entityName: config.noun }}
+    >
+      <FieldInputs grid fields={fields} editing={editing} immutableOnEdit={config.immutableOnEdit} register={register} control={control} errors={errors} clearServerError={clearServerError} />
+    </FormPage>
   );
 }

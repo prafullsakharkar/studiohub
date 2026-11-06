@@ -191,6 +191,42 @@ describe('DirectoryFormPage', () => {
     await screen.findByText('office page');
     expect(calls.find((c) => c.method === 'PATCH')!.body).toEqual({ city: 'Pune', workstations_count: null });
   });
+
+  it('the edit page leaves an untouched record at once and asks before dropping a change', async () => {
+    const office = offices.detail_admin.body as Record<string, any>;
+    mockFetch(() => ({ body: office }));
+    renderAt(
+      `/offices/${office.id}/edit`,
+      superuser,
+      <>
+        <Route path="/offices/:id/edit" element={<DirectoryFormPage config={officesFormConfig} />} />
+        <Route path="/offices" element={<div>offices list</div>} />
+      </>
+    );
+    await waitFor(() => expect((screen.getByLabelText(/^Name/) as HTMLInputElement).value).toBe(office.name));
+    fireEvent.change(screen.getByLabelText(/^City/), { target: { value: 'Pune' } });
+    fireEvent.click(screen.getByRole('link', { name: 'Cancel' }));
+    expect(await screen.findByRole('dialog', { name: 'Discard changes?' })).toBeTruthy();
+    expect(screen.queryByText('offices list')).toBeNull();
+    fireEvent.click(within(screen.getByRole('dialog', { name: 'Discard changes?' })).getByRole('button', { name: 'Discard changes' }));
+    expect(await screen.findByText('offices list')).toBeTruthy();
+  });
+
+  it('a prefilled edit form is not dirty: Cancel goes straight back', async () => {
+    const office = offices.detail_admin.body as Record<string, any>;
+    mockFetch(() => ({ body: office }));
+    renderAt(
+      `/offices/${office.id}/edit`,
+      superuser,
+      <>
+        <Route path="/offices/:id/edit" element={<DirectoryFormPage config={officesFormConfig} />} />
+        <Route path="/offices" element={<div>offices list</div>} />
+      </>
+    );
+    await waitFor(() => expect((screen.getByLabelText(/^Name/) as HTMLInputElement).value).toBe(office.name));
+    fireEvent.click(screen.getByRole('link', { name: 'Cancel' }));
+    expect(await screen.findByText('offices list')).toBeTruthy();
+  });
 });
 
 describe('clients, vendors and people', () => {
@@ -209,6 +245,17 @@ describe('clients, vendors and people', () => {
     fireEvent.click(screen.getByRole('button', { name: /create client/i }));
     await screen.findByText('client page');
     expect(calls.find((c) => c.method === 'POST')!.body).toMatchObject({ name: 'Acme Pictures', code: 'ACME', portal_access: false });
+  });
+
+  it('a record form looks like the department form: back to the list, titled card, two-column fields', async () => {
+    mockFetch(() => ({ body: {} }));
+    renderAt('/clients/new', superuser, <Route path="/clients/new" element={<DirectoryFormPage config={clientsFormConfig} />} />);
+    const name = await screen.findByLabelText(/^Name/);
+    expect(screen.getByRole('link', { name: /Clients/ }).getAttribute('href')).toBe('/clients');
+    expect(screen.getByRole('heading', { level: 1, name: 'New client' })).toBeTruthy();
+    expect(name.closest('.grid')?.className).toContain('sm:grid-cols-2');
+    const footer = within(name.closest('form') as HTMLFormElement).getAllByRole('button').map((b) => b.textContent);
+    expect(footer.slice(-2)).toEqual(['Cancel', 'Create client']);
   });
 
   it('vendor create does not submit while name and code are missing', async () => {

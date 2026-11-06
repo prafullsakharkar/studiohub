@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthContext } from '@/core/auth/AuthContext';
@@ -14,6 +14,7 @@ import { ProjectWorkspacePage } from '../pages/ProjectWorkspacePage';
 
 type Captured = { status: number; body: any; request?: { method: string; path: string; body: any } };
 const flow = loadSample<Record<string, Captured>>('production/_workspaces_flow.json');
+const structure = loadSample<Record<string, Captured>>('production/_structure_flow.json');
 const auth = loadSample('identity/_auth_flow.json');
 const superuser = auth.me_admin.body as unknown as User;
 
@@ -109,6 +110,17 @@ describe('project workspace', () => {
     expect(del && path(del)).toBe(`/api/v1/projects/${project.id}/`);
   });
 
+  it('a refused duplicate puts the server reason on the Code field and keeps the dialog open', async () => {
+    mockFetch((c) => (path(c) === '/api/v1/projects/' && c.method === 'POST' ? { status: structure.projects_create_duplicate.status, body: structure.projects_create_duplicate.body } : server(c)));
+    mount();
+    await screen.findByRole('heading', { name: project.name });
+    fireEvent.click(await screen.findByRole('button', { name: /Duplicate/ }));
+    const dialog = await screen.findByRole('dialog', { name: 'Duplicate project' });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Duplicate project' }));
+    expect(await within(dialog).findByText(/already exists/i)).toBeTruthy();
+    expect(screen.queryByRole('dialog', { name: 'Duplicate project' })).toBeTruthy();
+  });
+
   it('duplicates with the settings only (the request the server accepted) and opens the new project', async () => {
     mockFetch(server);
     mount();
@@ -116,7 +128,7 @@ describe('project workspace', () => {
     fireEvent.click(await screen.findByRole('button', { name: /Duplicate/ }));
     fireEvent.change(await screen.findByDisplayValue(`${project.name} (Copy)`), { target: { value: cloned.name } });
     fireEvent.change(screen.getByDisplayValue(`${project.code}_CLONE`), { target: { value: cloned.code } });
-    fireEvent.click(screen.getByRole('button', { name: 'Duplicate Project' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Duplicate project' }));
     await waitFor(() => expect(calls.some((c) => c.method === 'POST')).toBe(true));
     const post = calls.find((c) => c.method === 'POST')!;
     const captured = flow.project_clone_settings.request!.body as Record<string, unknown>;

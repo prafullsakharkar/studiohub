@@ -87,6 +87,7 @@ export const publishFormFields: ReadonlyArray<FieldDef> = [
 
 export const publishFormConfig: DirectoryFormConfig<Publish> = {
   noun: 'export job',
+  listTitle: 'Publishing',
   basePath: '/publishing',
   queryKey: publishApi.keys.lists(),
   fields: publishFormFields,

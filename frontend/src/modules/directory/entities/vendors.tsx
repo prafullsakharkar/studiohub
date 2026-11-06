@@ -35,6 +35,7 @@ export const vendorsListConfig: DirectoryListConfig<Vendor> = {
 
 export const vendorsFormConfig: DirectoryFormConfig<Vendor> = {
   noun: 'vendor',
+  listTitle: 'Vendors',
   basePath: '/vendors',
   queryKey: vendorsApi.keys.all,
   get: vendorsApi.get,

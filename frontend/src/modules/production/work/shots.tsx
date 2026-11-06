@@ -87,6 +87,7 @@ export const shotsFormFields: ReadonlyArray<FieldDef> = [
 
 export const shotsFormConfig: DirectoryFormConfig<Shot> = {
   noun: 'shot',
+  listTitle: 'Shots',
   basePath: '/shots',
   queryKey: shotsApi.keys.lists(),
   fields: shotsFormFields,

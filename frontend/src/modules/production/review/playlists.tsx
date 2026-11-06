@@ -49,6 +49,7 @@ export const playlistsFormFields: ReadonlyArray<FieldDef> = [
 // Entries are never part of the form: after creation they change only through add-entry, remove-entry and reorder.
 export const playlistsFormConfig: DirectoryFormConfig<Playlist> = {
   noun: 'playlist',
+  listTitle: 'Playlists',
   basePath: '/playlists',
   queryKey: playlistsApi.keys.lists(),
   fields: playlistsFormFields,

@@ -4,21 +4,21 @@ import { Plus, Trash2 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { Controller, useFieldArray } from 'react-hook-form';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { z } from 'zod';
 import { auditKeys } from '@/api/audit/audit';
 import { serverMessage } from '@/api/errors/serverMessage';
 import { projectsApi } from '@/api/production/structure';
 import { TEMPLATE_ENTITY_TYPES, taskTemplatesApi } from '@/api/production/work';
 import type { TaskTemplate } from '@/api/production/work';
-import { QueryBoundary } from '@/components/system/QueryBoundary';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import type { DirectoryListConfig } from '@/modules/directory/types';
-import { Field, FormBanner, inputClass } from '@/modules/identity/components/ui';
+import { Field, inputClass } from '@/modules/identity/components/ui';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { listFetcher } from '@/shared/data/listing';
+import { FormPage } from '@/shared/forms/FormPage';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { ProjectPicker } from './pickers';
 
@@ -118,7 +118,7 @@ export const TaskTemplateForm: React.FC = () => {
     reset,
     serverError,
     clearServerError,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useServerForm<Values>({ resolver: zodResolver(schema), defaultValues: { name: '', description: '', entity_type: 'Shot', project_id: '', is_active: true, items: [] } });
   const items = useFieldArray({ control, name: 'items' });
 
@@ -147,26 +147,34 @@ export const TaskTemplateForm: React.FC = () => {
   });
 
   return (
-    <div className="p-4 sm:p-6 space-y-5 flex-1 min-h-0 w-full max-w-2xl">
-      <div className="pb-3 border-b border-slate-800">
-        <h1 className="text-xl font-bold text-white tracking-tight">{editing ? 'Edit template' : 'New template'}</h1>
-      </div>
-      <QueryBoundary isLoading={editing && row.isLoading} error={editing ? row.error : null} onRetry={() => void row.refetch()} entityName="template">
-        <form noValidate onSubmit={onSubmit} className="space-y-4">
-          <FormBanner error={serverError} />
-          <Field id="tpl-name" label="Name *" error={errors.name?.message}>
-            <input id="tpl-name" className={inputClass(Boolean(errors.name))} {...register('name', { onChange: clearServerError })} />
-          </Field>
-          <Field id="tpl-for" label="For *" error={errors.entity_type?.message}>
-            <select id="tpl-for" className={inputClass(Boolean(errors.entity_type))} {...register('entity_type')}>
-              {TEMPLATE_ENTITY_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </Field>
-          {!editing && (
+    <FormPage
+      title={editing ? 'Edit template' : 'New template'}
+      description="The tasks a shot or asset gets when the template is applied."
+      editing={editing}
+      backTo="/task-templates"
+      backLabel="Task templates"
+      onSubmit={onSubmit}
+      isSubmitting={isSubmitting}
+      isDirty={isDirty}
+      serverError={serverError}
+      submitLabel={editing ? 'Save changes' : 'Create template'}
+      loading={{ isLoading: editing && row.isLoading, error: editing ? row.error : null, onRetry: () => void row.refetch(), entityName: 'template' }}
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Field id="tpl-name" label="Name *" error={errors.name?.message}>
+          <input id="tpl-name" className={inputClass(Boolean(errors.name))} {...register('name', { onChange: clearServerError })} />
+        </Field>
+        <Field id="tpl-for" label="For *" error={errors.entity_type?.message}>
+          <select id="tpl-for" className={inputClass(Boolean(errors.entity_type))} {...register('entity_type')}>
+            {TEMPLATE_ENTITY_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+        </Field>
+        {!editing && (
+          <div className="sm:col-span-2">
             <Controller
               control={control}
               name="project_id"
@@ -177,59 +185,50 @@ export const TaskTemplateForm: React.FC = () => {
                 </div>
               )}
             />
-          )}
+          </div>
+        )}
+        <div className="sm:col-span-2">
           <Field id="tpl-desc" label="Description" error={errors.description?.message}>
             <textarea id="tpl-desc" rows={2} className={inputClass(false)} {...register('description')} />
           </Field>
-          <label className="flex items-center gap-2 text-xs text-slate-300">
-            <input type="checkbox" {...register('is_active')} /> Active
-          </label>
+        </div>
+      </div>
+      <label className="flex items-center gap-2 text-xs text-slate-300">
+        <input type="checkbox" {...register('is_active')} /> Active
+      </label>
 
-          <fieldset className="space-y-2">
-            <legend className="text-xs font-mono text-slate-400">Tasks this template creates</legend>
-            {items.fields.map((field, index) => (
-              <div key={field.id} className="space-y-1">
-              <div className="grid grid-cols-[1fr_1fr_6rem_auto] gap-2 items-start">
-                <select aria-label={`Task type ${index + 1}`} className={inputClass(Boolean(errors.items?.[index]?.task_type_id))} {...register(`items.${index}.task_type_id`, { onChange: clearServerError })}>
-                  <option value="">Task type…</option>
-                  {(types.data?.results ?? []).map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name}
-                    </option>
-                  ))}
-                </select>
-                <input aria-label={`Task name ${index + 1}`} placeholder="Task name" className={inputClass(Boolean(errors.items?.[index]?.name))} {...register(`items.${index}.name`, { onChange: clearServerError })} />
-                <input aria-label={`Bid hours ${index + 1}`} type="number" min={0} step="0.5" placeholder="Hours" className={inputClass(false)} {...register(`items.${index}.default_bid_hours`)} />
-                <button type="button" aria-label={`Remove task ${index + 1}`} className="p-2 text-rose-400 hover:text-rose-300" onClick={() => items.remove(index)}>
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-              {(errors.items?.[index]?.task_type_id?.message || errors.items?.[index]?.name?.message) && (
-                <p role="alert" className="text-[11px] text-rose-400">
-                  {errors.items?.[index]?.task_type_id?.message ?? errors.items?.[index]?.name?.message}
-                </p>
-              )}
-              </div>
-            ))}
-            <Button type="button" size="sm" variant="outline" leftIcon={<Plus className="w-3.5 h-3.5" />} onClick={() => items.append({ task_type_id: '', name: '', default_bid_hours: '' })}>
-              Add a task
-            </Button>
-          </fieldset>
-
-          {editing && row.data?.scope === 'studio' && canCreate && <CopyToProject template={row.data} onCopied={(copy) => navigate(`/task-templates/${copy.id}/edit`)} />}
-
-          <div className="flex gap-2 pt-2">
-            <Button type="submit" variant="primary" isLoading={isSubmitting}>
-              {editing ? 'Save changes' : 'Create template'}
-            </Button>
-            <Link to="/task-templates">
-              <Button type="button" variant="ghost">
-                Cancel
-              </Button>
-            </Link>
+      <fieldset className="space-y-2">
+        <legend className="text-xs font-mono text-slate-400">Tasks this template creates</legend>
+        {items.fields.map((field, index) => (
+          <div key={field.id} className="space-y-1">
+          <div className="grid grid-cols-[1fr_1fr_6rem_auto] gap-2 items-start">
+            <select aria-label={`Task type ${index + 1}`} className={inputClass(Boolean(errors.items?.[index]?.task_type_id))} {...register(`items.${index}.task_type_id`, { onChange: clearServerError })}>
+              <option value="">Task type…</option>
+              {(types.data?.results ?? []).map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+            <input aria-label={`Task name ${index + 1}`} placeholder="Task name" className={inputClass(Boolean(errors.items?.[index]?.name))} {...register(`items.${index}.name`, { onChange: clearServerError })} />
+            <input aria-label={`Bid hours ${index + 1}`} type="number" min={0} step="0.5" placeholder="Hours" className={inputClass(false)} {...register(`items.${index}.default_bid_hours`)} />
+            <button type="button" aria-label={`Remove task ${index + 1}`} className="p-2 text-rose-400 hover:text-rose-300" onClick={() => items.remove(index)}>
+              <Trash2 className="w-4 h-4" />
+            </button>
           </div>
-        </form>
-      </QueryBoundary>
-    </div>
+          {(errors.items?.[index]?.task_type_id?.message || errors.items?.[index]?.name?.message) && (
+            <p role="alert" className="text-[11px] text-rose-400">
+              {errors.items?.[index]?.task_type_id?.message ?? errors.items?.[index]?.name?.message}
+            </p>
+          )}
+          </div>
+        ))}
+        <Button type="button" size="sm" variant="outline" leftIcon={<Plus className="w-3.5 h-3.5" />} onClick={() => items.append({ task_type_id: '', name: '', default_bid_hours: '' })}>
+          Add a task
+        </Button>
+      </fieldset>
+
+      {editing && row.data?.scope === 'studio' && canCreate && <CopyToProject template={row.data} onCopied={(copy) => navigate(`/task-templates/${copy.id}/edit`)} />}
+    </FormPage>
   );
 };

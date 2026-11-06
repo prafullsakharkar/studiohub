@@ -2,18 +2,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import type React from 'react';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { auditKeys } from '@/api/audit/audit';
 import { InputError } from '@/api/errors/serverMessage';
 import { ConfirmDialog } from '@/components/system/ConfirmDialog';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
-import { Dialog } from '@/components/ui/Dialog';
 import { AuthContext } from '@/core/auth/AuthContext';
 import { notify } from '@/core/notifications/notify';
 import { evaluateAccess } from '@/core/permissions/access';
 import { useCan } from '@/core/permissions/useCan';
-import { FormBanner, Table } from '@/modules/identity/components/ui';
+import { Table } from '@/modules/identity/components/ui';
 import { usePaginatedList } from '@/shared/data/usePaginatedList';
+import { FormDialog, formDialogCopy } from '@/shared/forms/FormDialog';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { Button } from '@/shared/components/Button';
 import { Pagination } from '@/shared/components/Pagination';
@@ -25,21 +25,17 @@ function RecordDialog<T extends { id: string }>({ config, parentId, row, onClose
   const queryClient = useQueryClient();
   const user = useContext(AuthContext)?.user ?? null;
   const editing = row !== null;
+  const copy = formDialogCopy(config.noun, editing);
   const fields = useMemo(() => config.fields.filter((f) => !f.permission || evaluateAccess(user, f.permission, {})), [config.fields, user]);
   const schema = useMemo(() => buildSchema(fields), [fields]);
   const {
     register,
     control,
     submit,
-    reset,
     serverError,
     clearServerError,
-    formState: { errors, isSubmitting, dirtyFields },
-  } = useServerForm<Values>({ resolver: zodResolver(schema) as never, defaultValues: Object.fromEntries(fields.map((f) => [f.name, blank(f)])) });
-
-  useEffect(() => {
-    if (row) reset(fromRow(fields, row as unknown as Record<string, unknown>));
-  }, [row, fields, reset]);
+    formState: { errors, isSubmitting, isDirty, dirtyFields },
+  } = useServerForm<Values>({ resolver: zodResolver(schema) as never, defaultValues: row ? fromRow(fields, row as unknown as Record<string, unknown>) : Object.fromEntries(fields.map((f) => [f.name, blank(f)])) });
 
   const onSubmit = submit(async (values) => {
     const payload: Record<string, unknown> = editing ? {} : { [config.parentField]: parentId };
@@ -51,25 +47,14 @@ function RecordDialog<T extends { id: string }>({ config, parentId, row, onClose
     if (editing) await config.update((row as T).id, payload);
     else await config.create(payload);
     await Promise.all([queryClient.invalidateQueries({ queryKey: config.queryKey }), queryClient.invalidateQueries({ queryKey: auditKeys.all })]); // a write adds a history entry
-    notify.success(`${config.noun[0].toUpperCase()}${config.noun.slice(1)} ${editing ? 'saved' : 'added'}.`);
+    notify.success(copy.saved);
     onClose();
   });
 
   return (
-    <Dialog isOpen onClose={onClose} title={editing ? `Edit ${config.noun}` : `Add ${config.noun}`} size="lg">
-      <form noValidate onSubmit={onSubmit} className="space-y-4">
-        <FormBanner error={serverError} />
-        <FieldInputs fields={fields} parentId={parentId} editing={editing} immutableOnEdit={config.immutableOnEdit} register={register} control={control} errors={errors} clearServerError={clearServerError} />
-        <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" variant="primary" isLoading={isSubmitting}>
-            {editing ? 'Save changes' : `Add ${config.noun}`}
-          </Button>
-        </div>
-      </form>
-    </Dialog>
+    <FormDialog title={copy.title} onClose={onClose} onSubmit={onSubmit} isSubmitting={isSubmitting} isDirty={isDirty} serverError={serverError} submitLabel={copy.submitLabel}>
+      <FieldInputs fields={fields} parentId={parentId} editing={editing} immutableOnEdit={config.immutableOnEdit} register={register} control={control} errors={errors} clearServerError={clearServerError} />
+    </FormDialog>
   );
 }
 

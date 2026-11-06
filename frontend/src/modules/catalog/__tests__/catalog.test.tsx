@@ -126,6 +126,24 @@ describe('catalog', () => {
     expect(post.body).toEqual({ name: 'Matchmove', code: 'mm' });
   });
 
+  it('asks before discarding a half-filled form, and closes an untouched one at once', async () => {
+    const { calls } = mockFetch(() => bare(taskTypes.list_admin));
+    renderAt('/platform/catalog/task-types', superuser);
+    await screen.findByText(tasks[0].name);
+
+    fireEvent.click(screen.getByRole('button', { name: /new task type/i }));
+    fireEvent.click(within(await screen.findByRole('dialog', { name: 'New task type' })).getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+
+    fireEvent.click(screen.getByRole('button', { name: /new task type/i }));
+    const dialog = await screen.findByRole('dialog', { name: 'New task type' });
+    fireEvent.change(within(dialog).getByLabelText(/^Name/), { target: { value: 'Matchmove' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Close dialog' }));
+    fireEvent.click(within(await screen.findByRole('dialog', { name: 'Discard changes?' })).getByRole('button', { name: 'Discard changes' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(calls.some((c) => c.method === 'POST')).toBe(false);
+  });
+
   it('software rows open their versions list from the nested route', async () => {
     const sw = (software.list_admin.body.items as Array<{ id: string; name: string }>)[0];
     const { calls } = mockFetch((c) => (path(c).endsWith('/versions') ? { body: [] } : bare(software.list_admin)));

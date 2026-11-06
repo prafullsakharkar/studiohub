@@ -91,6 +91,7 @@ export function timelogsFormFields(): ReadonlyArray<FieldDef> {
 
 export const timelogsFormConfig: DirectoryFormConfig<Timelog> = {
   noun: 'time log',
+  listTitle: 'Time logs',
   basePath: '/timelogs',
   queryKey: timelogsApi.keys.lists(),
   fields: timelogsFormFields(),

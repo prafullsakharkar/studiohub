@@ -157,8 +157,8 @@ describe('MFA from My account, then a sign-in that needs the challenge', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Generate new codes' }, { timeout: 15000 }));
     let dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: /use a recovery code instead/i }));
-    fireEvent.change(within(dialog).getByLabelText('Password'), { target: { value: live.users.selfmfa.password } });
-    fireEvent.change(within(dialog).getByLabelText('Recovery code'), { target: { value: codes[0] } });
+    fireEvent.change(within(dialog).getByLabelText(/^Password/), { target: { value: live.users.selfmfa.password } });
+    fireEvent.change(within(dialog).getByLabelText(/^Recovery code/), { target: { value: codes[0] } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Generate' }));
     const fresh = await screen.findByLabelText('New recovery codes', {}, { timeout: 15000 });
     const freshCodes = [...fresh.querySelectorAll('li')].map((li) => li.textContent as string);
@@ -170,8 +170,8 @@ describe('MFA from My account, then a sign-in that needs the challenge', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Turn off' }, { timeout: 15000 }));
     dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: /use a recovery code instead/i }));
-    fireEvent.change(within(dialog).getByLabelText('Password'), { target: { value: live.users.selfmfa.password } });
-    fireEvent.change(within(dialog).getByLabelText('Recovery code'), { target: { value: freshCodes[0] } });
+    fireEvent.change(within(dialog).getByLabelText(/^Password/), { target: { value: live.users.selfmfa.password } });
+    fireEvent.change(within(dialog).getByLabelText(/^Recovery code/), { target: { value: freshCodes[0] } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Turn off' }));
     expect(await screen.findByRole('button', { name: 'Turn on' }, { timeout: 15000 })).toBeTruthy();
     void totp;

@@ -61,6 +61,7 @@ export const automationsFormFields: ReadonlyArray<FieldDef> = [
 
 export const automationsFormConfig: DirectoryFormConfig<AutomationRuleRow> = {
   noun: 'automation rule',
+  listTitle: 'Automation rules',
   basePath: '/automations',
   queryKey: automationKeys.lists(),
   fields: automationsFormFields,

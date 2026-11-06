@@ -81,6 +81,7 @@ export const resourceFormFields: ReadonlyArray<FieldDef> = [
 
 export const resourceFormConfig: DirectoryFormConfig<Resource> = {
   noun: 'resource',
+  listTitle: 'Resources',
   basePath: '/scheduling/resources',
   queryKey: resourcesApi.keys.lists(),
   fields: resourceFormFields,
@@ -148,6 +149,7 @@ export const bookingFormFields: ReadonlyArray<FieldDef> = [
 
 export const bookingFormConfig: DirectoryFormConfig<Booking> = {
   noun: 'booking',
+  listTitle: 'Bookings',
   basePath: '/scheduling/bookings',
   queryKey: bookingsApi.keys.lists(),
   fields: bookingFormFields,
@@ -214,6 +216,7 @@ export const leaveFormFields: ReadonlyArray<FieldDef> = [
 
 export const leaveFormConfig: DirectoryFormConfig<Leave> = {
   noun: 'leave request',
+  listTitle: 'Leave',
   basePath: '/scheduling/leaves',
   queryKey: leavesApi.keys.lists(),
   fields: leaveFormFields,
@@ -264,6 +267,7 @@ export const holidayFormFields: ReadonlyArray<FieldDef> = [
 
 export const holidayFormConfig: DirectoryFormConfig<Holiday> = {
   noun: 'holiday',
+  listTitle: 'Holidays',
   basePath: '/scheduling/holidays',
   queryKey: holidaysApi.keys.lists(),
   fields: holidayFormFields,
@@ -322,6 +326,7 @@ export const calendarFormFields: ReadonlyArray<FieldDef> = [
 
 export const calendarFormConfig: DirectoryFormConfig<WorkCalendar> = {
   noun: 'work calendar',
+  listTitle: 'Work calendars',
   basePath: '/scheduling/calendars',
   queryKey: calendarsApi.keys.lists(),
   fields: calendarFormFields,
@@ -407,6 +412,7 @@ export const milestoneFormFields: ReadonlyArray<FieldDef> = [
 
 export const milestoneFormConfig: DirectoryFormConfig<Milestone> = {
   noun: 'milestone',
+  listTitle: 'Milestones',
   basePath: '/scheduling/milestones',
   queryKey: milestonesApi.keys.lists(),
   fields: milestoneFormFields,
@@ -478,6 +484,7 @@ export const eventFormFields: ReadonlyArray<FieldDef> = [
 
 export const eventFormConfig: DirectoryFormConfig<CalendarEvent> = {
   noun: 'event',
+  listTitle: 'Events',
   basePath: '/scheduling/events',
   queryKey: eventsApi.keys.lists(),
   fields: eventFormFields,

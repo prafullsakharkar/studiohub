@@ -51,6 +51,10 @@ Domain behaviour stays in `src/modules/<module>/`.
 
 | Piece | Source | Notes |
 |---|---|---|
+| `FormDialog` | `shared/forms/FormDialog` | the create/edit dialog: `Dialog` > `<form noValidate>` with banner, fields, Cancel / submit footer. Closing is ignored while saving, a typed-in form asks "Discard changes?", focus starts on the first field. Mount it only while open. `formDialogCopy(noun, editing)` gives the title, button and toast wording |
+| `FormPage` | `shared/forms/FormPage` | the create/edit page, in the look of the department form: back button, icon + title + line, one card, two-column grid (`FieldInputs grid`), ruled footer. Used by `DirectoryFormPage`, the department form and the task-template form |
+| `FormActions` | `shared/forms/FormActions` | Cancel + primary footer for `FormDialog` (`dialog`) and `FormPage` (`page`) |
+| `Field`, `inputClass`, `FormBanner` | `shared/forms/FormParts` | label + input + hint/error, the input class, the server-error banner (re-exported by `modules/identity/components/ui`) |
 | `useServerForm` | `shared/forms/useServerForm` | a `useForm` that puts a 400's field errors on the inputs and the rest in a banner |
 | `serverErrors` | `shared/forms/serverErrors` | the mapping |
 | `EntityPicker` | `components/forms/EntityPicker` | combobox over a typed, paginated list: the search box sits inside the menu (server-side, 300 ms debounce), Load more pages, keyboard ↑ ↓ Enter Esc; tests drive it with `pickEntity` / `openPicker` from `test/picker` |

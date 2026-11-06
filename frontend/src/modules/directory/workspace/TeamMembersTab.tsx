@@ -9,7 +9,6 @@ import { peopleApi, teamMembershipsApi } from '@/api/masterdata/directory';
 import type { TeamMembership } from '@/api/masterdata/directory';
 import { ConfirmDialog } from '@/components/system/ConfirmDialog';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
-import { Dialog } from '@/components/ui/Dialog';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { Table } from '@/modules/identity/components/ui';
@@ -17,9 +16,39 @@ import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { Pagination } from '@/shared/components/Pagination';
 import { usePaginatedList } from '@/shared/data/usePaginatedList';
+import { FormDialog } from '@/shared/forms/FormDialog';
 import { PersonPicker } from '../pickers';
 
 const MANAGE = 'masterdata.directory.manage';
+
+/** Pick a person and add them to the team. Mounted only while open. */
+const AddMemberDialog: React.FC<{ teamId: string; teamName: string; onDone: () => Promise<unknown>; onClose: () => void }> = ({ teamId, teamName, onDone, onClose }) => {
+  const [picked, setPicked] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const onSubmit = async () => {
+    if (!picked || saving) return;
+    setSaving(true);
+    try {
+      await teamMembershipsApi.create({ team: teamId, person: picked });
+      await onDone();
+      notify.success(`Added to ${teamName}.`);
+      onClose();
+    } catch (e) {
+      setError(serverMessage(e));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <FormDialog title={`Add a member to ${teamName}`} size="md" onClose={onClose} onSubmit={onSubmit} isSubmitting={saving} isDirty={picked !== null} submitLabel="Add to team" submitDisabled={!picked}>
+      <PersonPicker label="Person" required value={picked} onChange={(id) => { setPicked(id); setError(null); }} error={error ?? undefined} />
+      <p className="text-xs text-slate-400">A person can be in several teams; adding them here does not take them out of another.</p>
+    </FormDialog>
+  );
+};
 
 /**
  * The members of a team: `GET /team-memberships/?team=<id>`. A person can be in several teams, so adding a
@@ -31,17 +60,10 @@ export const TeamMembersTab: React.FC<{ teamId: string; teamName: string }> = ({
   const canManage = useCan(MANAGE);
   const list = usePaginatedList<TeamMembership>({ queryKey: [...teamMembershipsApi.keys.lists(), 'of-team', teamId], fetchPage: teamMembershipsApi.list, ordering: 'created_at', filters: { team: teamId } });
   const [adding, setAdding] = useState(false);
-  const [picked, setPicked] = useState<string | null>(null);
-  const [addError, setAddError] = useState<string | null>(null);
   const [removing, setRemoving] = useState<TeamMembership | null>(null);
 
   // A membership is a person's, too: refresh the people lists and the history along with the memberships.
   const refresh = () => Promise.all([teamMembershipsApi.keys.all, peopleApi.keys.all, auditKeys.all].map((queryKey) => queryClient.invalidateQueries({ queryKey })));
-  const close = () => {
-    setAdding(false);
-    setPicked(null);
-    setAddError(null);
-  };
 
   return (
     <div className="space-y-4">
@@ -81,36 +103,7 @@ export const TeamMembersTab: React.FC<{ teamId: string; teamName: string }> = ({
         <Pagination currentPage={list.page} totalCount={list.count} pageSize={list.pageSize} totalPages={list.pageCount} onPageChange={list.setPage} onPageSizeChange={list.setPageSize} itemLabel="members" />
       </QueryBoundary>
 
-      {adding && (
-        <Dialog isOpen onClose={close} title={`Add a member to ${teamName}`} size="md">
-          <div className="space-y-4">
-            <PersonPicker label="Person" required value={picked} onChange={(id) => { setPicked(id); setAddError(null); }} error={addError ?? undefined} />
-            <p className="text-xs text-slate-400">A person can be in several teams; adding them here does not take them out of another.</p>
-            <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={close}>
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                disabled={!picked}
-                onClick={async () => {
-                  if (!picked) return;
-                  try {
-                    await teamMembershipsApi.create({ team: teamId, person: picked });
-                    await refresh();
-                    notify.success(`Added to ${teamName}.`);
-                    close();
-                  } catch (error) {
-                    setAddError(serverMessage(error));
-                  }
-                }}
-              >
-                Add to team
-              </Button>
-            </div>
-          </div>
-        </Dialog>
-      )}
+      {adding && <AddMemberDialog teamId={teamId} teamName={teamName} onDone={refresh} onClose={() => setAdding(false)} />}
 
       <ConfirmDialog
         isOpen={removing !== null}

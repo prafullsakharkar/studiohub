@@ -110,6 +110,7 @@ export const versionsFormFields: ReadonlyArray<FieldDef> = [
 
 export const versionsFormConfig: DirectoryFormConfig<Version> = {
   noun: 'version',
+  listTitle: 'Versions',
   basePath: '/versions',
   queryKey: versionsApi.keys.lists(),
   fields: versionsFormFields,

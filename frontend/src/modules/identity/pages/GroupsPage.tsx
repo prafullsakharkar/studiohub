@@ -8,10 +8,10 @@ import { z } from 'zod';
 import { groupKeys, groupsApi } from '@/api/identity/rbac';
 import type { Group } from '@/api/identity/rbac';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
-import { Dialog } from '@/components/ui/Dialog';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
 import { usePaginatedList } from '@/shared/data/usePaginatedList';
+import { FormDialog } from '@/shared/forms/FormDialog';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { Badge } from '@/shared/components/Badge';
 import { Button } from '@/shared/components/Button';
@@ -31,15 +31,14 @@ const createSchema = z.object({
 });
 type CreateValues = z.infer<typeof createSchema>;
 
-const CreateGroupDialog: React.FC<{ isOpen: boolean; onClose: () => void; onCreated: (group: Group) => void }> = ({ isOpen, onClose, onCreated }) => {
+const CreateGroupForm: React.FC<{ onClose: () => void; onCreated: (group: Group) => void }> = ({ onClose, onCreated }) => {
   const queryClient = useQueryClient();
   const {
     register,
     submit,
-    reset,
     serverError,
     clearServerError,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useServerForm<CreateValues>({ resolver: zodResolver(createSchema), defaultValues: { name: '', code: '', description: '' } });
 
   const create = useMutation({
@@ -47,44 +46,29 @@ const CreateGroupDialog: React.FC<{ isOpen: boolean; onClose: () => void; onCrea
     onSuccess: () => queryClient.invalidateQueries({ queryKey: groupKeys.all }),
   });
 
-  const close = () => {
-    reset();
-    clearServerError();
-    onClose();
-  };
-
   const onSubmit = submit(async (values) => {
     const group = await create.mutateAsync({ name: values.name, code: values.code, description: values.description || undefined });
     notify.success(`Group "${group.name}" was created.`);
-    reset();
     onCreated(group);
   });
 
   return (
-    <Dialog isOpen={isOpen} onClose={close} title="New group" size="md">
-      <form noValidate onSubmit={onSubmit} className="space-y-4">
-        <FormBanner error={serverError} />
-        <Field id="group-name" label="Name" error={errors.name?.message}>
-          <input id="group-name" className={inputClass(Boolean(errors.name))} {...register('name', { onChange: clearServerError })} />
-        </Field>
-        <Field id="group-code" label="Code" error={errors.code?.message} hint="Unique and permanent: it cannot be changed after the group is created.">
-          <input id="group-code" className={inputClass(Boolean(errors.code))} {...register('code', { onChange: clearServerError })} />
-        </Field>
-        <Field id="group-description" label="Description" error={errors.description?.message}>
-          <textarea id="group-description" rows={3} className={inputClass(Boolean(errors.description))} {...register('description')} />
-        </Field>
-        <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="ghost" onClick={close}>
-            Cancel
-          </Button>
-          <Button type="submit" variant="primary" isLoading={isSubmitting}>
-            Create group
-          </Button>
-        </div>
-      </form>
-    </Dialog>
+    <FormDialog title="New group" onClose={onClose} onSubmit={onSubmit} isSubmitting={isSubmitting} isDirty={isDirty} serverError={serverError} submitLabel="Create group">
+      <Field id="group-name" label="Name *" error={errors.name?.message}>
+        <input id="group-name" className={inputClass(Boolean(errors.name))} {...register('name', { onChange: clearServerError })} />
+      </Field>
+      <Field id="group-code" label="Code *" error={errors.code?.message} hint="Unique and permanent: it cannot be changed after the group is created.">
+        <input id="group-code" className={inputClass(Boolean(errors.code))} {...register('code', { onChange: clearServerError })} />
+      </Field>
+      <Field id="group-description" label="Description" error={errors.description?.message}>
+        <textarea id="group-description" rows={3} className={inputClass(Boolean(errors.description))} {...register('description')} />
+      </Field>
+    </FormDialog>
   );
 };
+
+/** Mounted only while open, so every open starts from an empty form. */
+const CreateGroupDialog: React.FC<{ isOpen: boolean; onClose: () => void; onCreated: (group: Group) => void }> = ({ isOpen, onClose, onCreated }) => (isOpen ? <CreateGroupForm onClose={onClose} onCreated={onCreated} /> : null);
 
 export const GroupsPage: React.FC = () => {
   const navigate = useNavigate();

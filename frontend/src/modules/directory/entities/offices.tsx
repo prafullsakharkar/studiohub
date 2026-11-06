@@ -48,6 +48,7 @@ export const officesListConfig: DirectoryListConfig<Office> = {
 
 export const officesFormConfig: DirectoryFormConfig<Office> = {
   noun: 'office',
+  listTitle: 'Offices',
   basePath: '/offices',
   queryKey: officesApi.keys.all,
   get: officesApi.get,

@@ -7,14 +7,14 @@ import { z } from 'zod';
 import { auditKeys } from '@/api/audit/audit';
 import { NOTE_CATEGORIES, projectScopedApi } from '@/api/production/structure';
 import { QueryBoundary } from '@/components/system/QueryBoundary';
-import { Dialog } from '@/components/ui/Dialog';
 import { notify } from '@/core/notifications/notify';
 import { useCan } from '@/core/permissions/useCan';
-import { Field, FormBanner, formatDate, inputClass } from '@/modules/identity/components/ui';
+import { Field, formatDate, inputClass } from '@/modules/identity/components/ui';
 import { Badge } from '@/shared/components/Badge';
 import { StatusBadge } from '@/shared/components/StatusBadge';
 import { Button } from '@/shared/components/Button';
 import { fetchAllRows } from '@/shared/data/listing';
+import { FormDialog } from '@/shared/forms/FormDialog';
 import { useServerForm } from '@/shared/forms/useServerForm';
 
 export interface NoteTarget {
@@ -37,7 +37,7 @@ const AddNoteDialog: React.FC<{ target: NoteTarget; onClose: () => void }> = ({ 
     submit,
     serverError,
     clearServerError,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useServerForm<Values>({ resolver: zodResolver(schema), defaultValues: { subject: '', body: '', category: 'General' } });
 
   const onSubmit = submit(async (values) => {
@@ -56,34 +56,23 @@ const AddNoteDialog: React.FC<{ target: NoteTarget; onClose: () => void }> = ({ 
   });
 
   return (
-    <Dialog isOpen onClose={onClose} title={`Add a note on ${target.code}`} size="md">
-      <form noValidate onSubmit={onSubmit} className="space-y-4">
-        <FormBanner error={serverError} />
-        <Field id="note-category" label="Category">
-          <select id="note-category" className={inputClass()} {...register('category')}>
-            {NOTE_CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field id="note-subject" label="Subject" error={errors.subject?.message}>
-          <input id="note-subject" className={inputClass(Boolean(errors.subject))} {...register('subject', { onChange: clearServerError })} />
-        </Field>
-        <Field id="note-body" label="Note">
-          <textarea id="note-body" rows={4} className={inputClass()} {...register('body')} />
-        </Field>
-        <div className="flex justify-end gap-2">
-          <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" variant="primary" isLoading={isSubmitting}>
-            Add note
-          </Button>
-        </div>
-      </form>
-    </Dialog>
+    <FormDialog title={`Add a note on ${target.code}`} onClose={onClose} onSubmit={onSubmit} isSubmitting={isSubmitting} isDirty={isDirty} serverError={serverError} submitLabel="Add note">
+      <Field id="note-category" label="Category">
+        <select id="note-category" className={inputClass()} {...register('category')}>
+          {NOTE_CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <Field id="note-subject" label="Subject *" error={errors.subject?.message}>
+        <input id="note-subject" className={inputClass(Boolean(errors.subject))} {...register('subject', { onChange: clearServerError })} />
+      </Field>
+      <Field id="note-body" label="Note">
+        <textarea id="note-body" rows={4} className={inputClass()} {...register('body')} />
+      </Field>
+    </FormDialog>
   );
 };
 
