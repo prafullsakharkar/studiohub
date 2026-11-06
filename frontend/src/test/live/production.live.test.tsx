@@ -15,6 +15,7 @@ import { RelatedRecords } from '@/modules/directory/RelatedRecords';
 import { ProjectWorkspacePage } from '@/modules/production/pages/ProjectWorkspacePage';
 import { projectsFormConfig, projectsListConfig, sequencesConfig } from '@/modules/production/structure/configs';
 import { MembersPanel, NotesPanel, OverviewPanel } from '@/modules/production/structure/panels';
+import { pickEntity } from '@/test/picker';
 import { freshTotp, live } from './liveBackend';
 
 /** Phase 5 against a REAL backend. Run on a fresh live_backend.py seed. */
@@ -124,8 +125,7 @@ describe('members, structure and notes, end to end', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Create sequence' }));
     expect(await within(dialog).findByText(/An episode is required for sequences on episodic projects/, {}, { timeout: 15000 })).toBeTruthy();
 
-    await within(dialog).findByRole('option', { name: new RegExp(episode.code) }, { timeout: 15000 });
-    fireEvent.change(within(dialog).getByLabelText(/^Episode/), { target: { value: episode.id } });
+    await pickEntity(/^Episode/, new RegExp(episode.code), { timeout: 15000 }); // Episode is an EntityPicker: open it, choose the option
     fireEvent.click(within(dialog).getByRole('button', { name: 'Create sequence' }));
     await waitFor(async () => expect((await sequencesApi.list({ project: project.id })).results.map((s) => s.code)).toEqual(['SQ010']), { timeout: 15000 });
 
