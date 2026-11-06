@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { assetBatch, sequenceBatch, shotBatch, taskBatch } from '@/api/production/bulkRoutes';
+import { assetBatch, sequenceBatch, shotBatch, shotBulk, taskBatch } from '@/api/production/bulkRoutes';
 import { projectsApi } from '@/api/production/structure';
 import { assetsApi, shotsApi, tasksApi } from '@/api/production/work';
 import { tokenStorage } from '@/core/auth/tokenStorage';
@@ -112,3 +112,26 @@ describe('Load template', () => {
     ]);
   });
 });
+
+describe('the Bulk add shots manager (the staged one shots kept)', () => {
+  it('check-existence, create, skip and recover per item, as the manager sends them', async () => {
+    const code = `SM${uid}1`;
+    type Existence = { items: Array<{ code: string; state: string }> };
+    type Created = { results: Array<{ status: string; success: boolean }>; summary: Record<string, number> };
+    const state = async () => ((await shotBulk.checkExistence({ project_id: project, codes: [code] } as never)) as unknown as Existence).items[0].state;
+    expect(await state()).toBe('NEW');
+
+    const created = (await shotBulk.bulkCreate({ project_id: project, items: [{ code, action: 'create', data: { name: 'Staged' } }, { code: `SM${uid}2`, action: 'skip', data: {} }] } as never)) as unknown as Created;
+    expect(created.results.map((r) => r.status)).toEqual(['created', 'skipped']);
+    expect(created.summary).toMatchObject({ createdCount: 1, skippedCount: 1 });
+    expect(await state()).toBe('EXISTS');
+
+    const row = (await shotsApi.list({ project, search: code })).results[0];
+    await shotsApi.bulkArchive([row.id]);
+    expect(await state()).toBe('SOFT_DELETED');
+    const recovered = (await shotBulk.bulkCreate({ project_id: project, items: [{ code, action: 'recover', data: {} }] } as never)) as unknown as Created;
+    expect(recovered.results[0]).toMatchObject({ status: 'recovered', success: true });
+    expect((await shotsApi.get(row.id)).code).toBe(code);
+  });
+});
+

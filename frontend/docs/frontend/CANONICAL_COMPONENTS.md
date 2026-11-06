@@ -10,7 +10,7 @@
 | Directory | Owns | Must not contain |
 |---|---|---|
 | `components/ui`, `components/forms`, `components/history`, `components/system` | Pieces used by more than one module | Domain rules, routes |
-| `shared/components` | Visual primitives and shared screens' parts (Button, Modal, Pagination, the bulk grid, tabs) | Data fetching for a particular record |
+| `shared/components` | Visual primitives and shared screens' parts (Button, Modal, Pagination, the bulk grid and the shot bulk manager's screens, tabs) | Data fetching for a particular record |
 | `shared/workspace/canonical` | The chrome of a record workspace (header, action bar, overflow menu, shell) | Business rules |
 | `shared/data`, `shared/forms`, `shared/hooks` | List fetching, server-error forms, small hooks | Components |
 | `modules/directory` | The list, form and workspace machinery for records that are *configs* | Anything specific to one record type (that goes in `entities/`) |
@@ -74,7 +74,8 @@ Domain behaviour stays in `src/modules/<module>/`.
 | `DirectoryListPage` | `modules/directory/DirectoryListPage` | a list screen from a config (filters, columns, row actions, archive/restore) |
 | `RelatedRecords` | `modules/directory/RelatedRecords` | the records that point at this one, with a server-side count |
 | `EntityHistory` | `components/history/EntityHistory` | the record's audit history |
-| bulk grid | `shared/components/bulk/BulkImportGrid.tsx` | editable rows with a paste dialog; the caller parses pasted text (`onPaste`). Bulk create/update of production entities: `modules/production/bulk/` (`BulkMenu`, `BulkImportDialog`, `editFieldsAction`, CR-48) |
+| bulk grid | `shared/components/bulk/BulkImportGrid.tsx` | editable rows with a paste dialog; the caller parses pasted text (`onPaste`), else the built-in parser; `sampleRows` adds "Load Template". Bulk create/update of sequences, assets and tasks: `modules/production/bulk/` (`BulkMenu`, `BulkImportDialog`, CR-48); "Edit fields" on selected rows (`editFieldsAction`) for all four |
+| shot bulk manager's screens | `shared/components/bulk/` | validation summary, resolve, archived recovery, preview, result; types in `bulk/types.ts`; used by `modules/shots/components/bulk/ShotBulkManager` |
 | delimited text | `shared/utils/csv.ts` | RFC 4180 parse (`parseDelimited`); write with `toCsv` / `downloadCsv` (`shared/data/exportAll.ts`) |
 
 ## Record workspace chrome
@@ -109,4 +110,4 @@ Domain behaviour stays in `src/modules/<module>/`.
 |---|---|
 | `cn` | `shared/utils/cn` |
 | `safeWebUrl` | `shared/utils/safeUrl` (only http(s) becomes an `href`) |
-| `useDebouncedValue`, `useKeyboardNavigation` | `shared/hooks/` |
+| `useDebouncedValue`, `useKeyboardNavigation`, `useBulkEntity` | `shared/hooks/` |
