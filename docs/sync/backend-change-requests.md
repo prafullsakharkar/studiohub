@@ -861,3 +861,46 @@ At the default page size (25) the audit lists cost about 54 queries and the othe
 **Compatibility.** None: responses are identical. **Risk.** Low: `select_related` additions on the selectors, one count test per endpoint. The audit lists are the largest tables in a running studio, so the count matters most there.
 
 **Approved** by the owner ("CR-44: approve") and applied as written, with the two relation names above. Nine one-line selector changes, no other backend file.
+
+### CR-45: a login cannot be moved from one person to another: `link-user` refuses it, and no other call does it (**feature**, **PROPOSED**, awaiting approval)
+
+Found while verifying the "Or link an existing login" form on a person's Account tab, against the throwaway live backend (`identityAdmin.live.test.tsx`, "offers only logins that can be linked").
+
+**Problem.** Since DOM-MD-PER-10 (`4735c265`, `masterdata/services/user_person.ensure_person_for_user`) every user gets a person when it is created, so a login is never "free". `PersonService.link_user` (`masterdata/services/person.py`) then refuses to attach a login to a second person in two ways:
+
+1. `Person.objects.filter(user=target).exclude(pk=locked.pk).exists()` raises `409 "This user is already linked to another person."` while the login still has its own person.
+2. After `unlink-user` frees it, linking copies the login's e-mail onto the person (`identity_values`), and `Person.objects.filter(email__iexact=email).exclude(pk=locked.pk).exists()` raises `409 "Another person already uses this e-mail address."`, because the person it was unlinked from keeps that e-mail.
+
+So the only supported move is back to the same person. An administrator who made a person first and later wants it to own an existing login (made by another route, for example directory sign-in, ADR-0039, or a login created before the person) has no way to do it.
+
+**Evidence** (real backend, factory-seeded, `manager` superuser; live test output, 2026-11-06):
+
+| Step | Response |
+|---|---|
+| `POST /identity/users/` (login A) | 201; the server also makes person PA and links it |
+| `POST /people/{PB}/link-user/ {user: A}` for another person PB | 409 `This user is already linked to another person.` |
+| `POST /people/{PA}/unlink-user/`, then the same link to PB | 409 `Another person already uses this e-mail address.` |
+| the same link back to PA | 200 (the e-mail is PA's own) |
+
+**What the frontend does meanwhile** (no backend change, shipped in `1ebbee6e`): the form offers only a login that belongs to no person and whose e-mail no other person uses, and says "No existing login can be linked to this person" when none qualifies. "Create login" works because the server adopts an unlinked person by e-mail (the form first gives the person the login's e-mail).
+
+**Minimal proposed diff** (backend only, no migration; the route and its permission stay, one optional field is added):
+
+`POST /people/{id}/link-user/` accepts `{"user": "<uuid>", "move": true}` (default `false`: today's behaviour, unchanged). With `move`, inside the one existing `transaction.atomic()`:
+
+1. If this person already has a login: `409` as today ("unlink first").
+2. If the login is linked to another person P: unlink it from P and **clear P's e-mail** (the e-mail belongs to the login and moves with it, which is what keeps the second check true). P stays a person, without a login and without an e-mail; nothing is archived or deleted.
+3. Link the login to this person (copying name and e-mail from Identity, as today).
+4. Publish `PersonUnlinked` for P and `PersonLinked` for this person, so both show in the history.
+
+Without `move`, a login that has its own person still gets the same 409 (no silent merge). The permission stays `masterdata.person.update`.
+
+Tests: moving a login from PA to PB leaves PA unlinked with no e-mail and PB linked with the login's e-mail; `move` against a person that already has a login is refused; without `move` the two 409s stay; both events are published; concurrent moves of one login serialise (the user row is already locked). Mutation-check: drop the e-mail clearing and expect the second check to fail.
+
+Frontend after approval: the form lists every login, marks the ones that belong to another person, and asks for confirmation ("<Person> will be left without a login and without an e-mail address") before sending `move: true`.
+
+**Why no frontend workaround.** It would take three calls (`unlink-user` on P, clear P's e-mail with a PATCH, `link-user`), not atomic and not one history entry. A failure after the first leaves a login with no person; after the second, a person whose e-mail was wiped for nothing. The frontend cannot make them atomic.
+
+**Compatibility.** None: `move` is optional and defaults to the current behaviour. **Risk.** Low to medium: it deliberately empties another person's e-mail, so the confirmation text and the audit entries matter. **Alternatives.** (a) Do nothing: moving a login stays impossible, and the form stays as it is now. (b) Make `unlink-user` clear the e-mail, so unlink + link works without `move`: smaller, but it changes an existing action for everyone.
+
+**Status.** Proposed; not approved, nothing changed in the backend.

@@ -5,7 +5,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 
 const state = {
   user: null as any,
@@ -47,11 +47,14 @@ const PLAIN_MEMBER = {
   memberships: [] as any[],
 };
 
-async function renderPalette() {
+const Where = () => <span data-testid="where">{useLocation().pathname}</span>;
+
+async function renderPalette(onClose: () => void = () => undefined) {
   const { CommandPalette } = await import('../CommandPalette');
   const view = render(
-    <MemoryRouter>
-      <CommandPalette isOpen onClose={() => undefined} />
+    <MemoryRouter initialEntries={['/']}>
+      <CommandPalette isOpen onClose={onClose} />
+      <Where />
     </MemoryRouter>
   );
   return { view, CommandPalette };
@@ -97,5 +100,41 @@ describe('CommandPalette access scoping', () => {
     expect(screen.queryByText('Recent Activity')).toBeNull();
     fireEvent.click(screen.getByText(/Commands \(/));
     expect(screen.getByText('Open Activity & Audit Hub')).toBeTruthy();
+  });
+});
+
+describe('CommandPalette create commands', () => {
+  beforeEach(() => {
+    state.user = SUPERUSER;
+  });
+
+  it.each([
+    ['Create Client', '/clients/new'],
+    ['Create Vendor', '/vendors/new'],
+    ['Add Person', '/people/new'],
+    ['Create Department', '/departments/new'],
+    ['Create Team', '/teams/new'],
+    ['Create Office', '/offices/new'],
+    ['Create Project', '/projects/new'],
+    ['Create Shot', '/shots/new'],
+    ['Create Asset', '/assets/new'],
+    ['Create Task', '/tasks/new'],
+    ['Submit Version', '/versions/new'],
+    ['Create Delivery Package', '/deliveries/new'],
+  ])('%s opens the real create page and closes the palette', async (title, path) => {
+    const onClose = vi.fn();
+    await renderPalette(onClose);
+    fireEvent.click(screen.getByText(/Commands \(/));
+    fireEvent.click(screen.getByText(title));
+    expect(screen.getByTestId('where').textContent).toBe(path);
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('offers no command that only pretended to act (assign, archive, restore, change status, approve, sequence)', async () => {
+    await renderPalette();
+    fireEvent.click(screen.getByText(/Commands \(/));
+    for (const title of ['Assign Project', 'Assign Team', 'Archive Entity', 'Restore Entity', 'Change Status', 'Approve Review Item', 'Create Sequence']) {
+      expect(screen.queryByText(title)).toBeNull();
+    }
   });
 });
