@@ -63,22 +63,25 @@ const NoLogin: React.FC<{ personId: string; personEmail?: string; onLinked: () =
   const canCreate = useCan('identity.user.create');
   const canLink = useCan('people.update');
   const users = useUsersIndex();
-  // Linking copies the login's e-mail onto the person, so a login can be linked here only when it has no person of its own
-  // (every login gets one when it is created, DOM-MD-PER-10; unlinking frees it) and no OTHER person uses its e-mail (the
-  // person it was unlinked from keeps it). The user list says neither; the people list does.
+  // The people list says what the user list does not: which person has a login, and which e-mail addresses are taken.
+  // A login with no person of its own is linked as it is, unless ANOTHER person uses its e-mail (the one it was unlinked from
+  // keeps it; neither a link nor a move can take it from there). A login that has a person is MOVED (CR-45): that person is
+  // left without a login and without an e-mail, so it is offered with who has it and asks first.
   const peopleIndex = useQuery({
     queryKey: [...peopleApi.keys.all, 'login-links'],
     queryFn: async ({ signal }) => {
       const rows = await fetchAllRows(peopleApi.list, {}, { signal });
       return {
-        owners: new Set(rows.map((p) => p.user).filter(Boolean) as string[]),
+        ownerOf: new Map(rows.filter((p) => p.user).map((p) => [String(p.user), { id: p.id, name: String(p.name ?? '') }] as const)),
         emails: new Set(rows.filter((p) => p.id !== personId && p.email).map((p) => String(p.email).toLowerCase())),
       };
     },
     enabled: canLink,
     staleTime: 60_000,
   });
-  const linkable = peopleIndex.isError ? users.users : users.users.filter((u) => !peopleIndex.data?.owners.has(u.id) && !peopleIndex.data?.emails.has(u.email.toLowerCase())); // if the people list cannot be read, offer all and let the server refuse
+  const ownerOf = (userId: string) => peopleIndex.data?.ownerOf.get(userId);
+  const linkable = peopleIndex.isError ? users.users : users.users.filter((u) => ownerOf(u.id) !== undefined || !peopleIndex.data?.emails.has(u.email.toLowerCase())); // if the people list cannot be read, offer all and let the server refuse
+  const [moving, setMoving] = useState<{ userId: string; email: string; from: string } | null>(null);
   const [orphan, setOrphan] = useState<{ id: string; email: string } | null>(null);
   const [linkError, setLinkError] = useState<string | null>(null);
   const [existingId, setExistingId] = useState('');
@@ -164,22 +167,25 @@ const NoLogin: React.FC<{ personId: string; personEmail?: string; onLinked: () =
           className="space-y-3 max-w-md rounded-xl border border-slate-800 bg-slate-900/60 p-4"
           onSubmit={(e) => {
             e.preventDefault();
-            if (existingId) link.mutate(existingId);
+            if (!existingId) return;
+            const holder = ownerOf(existingId);
+            if (holder) setMoving({ userId: existingId, email: users.byId.get(existingId)?.email ?? '', from: holder.name });
+            else link.mutate(existingId);
           }}
         >
           <h4 className="text-xs font-bold text-white">Or link an existing login</h4>
           {peopleIndex.isLoading ? (
             <p className="text-xs text-slate-500">Looking for logins that are not linked to a person…</p>
           ) : linkable.length === 0 ? (
-            <p className="text-xs text-slate-400">No existing login can be linked to this person: each one belongs to a person already, or shares an e-mail address with another person. Create a new login above.</p>
+            <p className="text-xs text-slate-400">No existing login can be linked to this person: each one uses an e-mail address that another person without a login still holds. Create a new login above.</p>
           ) : (
             <>
-              <Field id="link-existing" label="User" hint="Logins that belong to no person and whose e-mail no other person uses.">
+              <Field id="link-existing" label="User" hint="A login that belongs to another person is moved here: that person is left without a login.">
                 <select id="link-existing" className={inputClass()} value={existingId} onChange={(e) => setExistingId(e.target.value)}>
                   <option value="">Choose a user…</option>
                   {linkable.map((u) => (
                     <option key={u.id} value={u.id}>
-                      {u.email}
+                      {ownerOf(u.id) ? `${u.email} (now ${ownerOf(u.id)?.name || 'another person'})` : u.email}
                     </option>
                   ))}
                 </select>
@@ -197,6 +203,19 @@ const NoLogin: React.FC<{ personId: string; personEmail?: string; onLinked: () =
         </form>
       )}
 
+      <ConfirmDialog
+        isOpen={moving !== null}
+        title="Move this login?"
+        message={moving ? `${moving.email} belongs to ${moving.from || 'another person'}. Moving it to this person leaves ${moving.from || 'that person'} without a login and without an e-mail address; the record itself stays.` : ''}
+        confirmLabel="Move login"
+        destructive
+        onConfirm={async () => {
+          if (!moving) return;
+          await personLinkApi.link(personId, moving.userId, true);
+          await onLinked();
+        }}
+        onClose={() => setMoving(null)}
+      />
       {!canCreate && !canLink && <p className="text-xs text-slate-500">You do not have permission to create or link logins.</p>}
     </div>
   );
