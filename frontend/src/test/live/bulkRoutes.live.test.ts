@@ -3,6 +3,9 @@ import { assetBatch, sequenceBatch, shotBatch, taskBatch } from '@/api/productio
 import { projectsApi } from '@/api/production/structure';
 import { assetsApi, shotsApi, tasksApi } from '@/api/production/work';
 import { tokenStorage } from '@/core/auth/tokenStorage';
+import { columnsFor, sequenceBulkSpec, shotBulkSpec, taskBulkSpec } from '@/modules/production/bulk/specs';
+import { toCreateItems } from '@/modules/production/bulk/rows';
+import { currentRows, exampleRows, templateParents } from '@/modules/production/bulk/template';
 import { authService } from '@/modules/auth/services/AuthService';
 import { freshTotp, live } from './liveBackend';
 
@@ -82,5 +85,30 @@ describe('limits', () => {
   it('more than 500 items is a 400 for the whole request', async () => {
     const items = Array.from({ length: 501 }, (_, n) => ({ code: `SQ${n}`, action: 'create' as const, data: {} }));
     await expect(sequenceBatch.create(project, items, { dry_run: true, atomic: true })).rejects.toMatchObject({ status: 400 });
+  });
+});
+
+describe('Load template', () => {
+  it('the create examples of an episodic project pass the check as they are; an update loads the rows by code', async () => {
+    const episodic = (await projectsApi.create({ code: `E${uid}`, name: 'Bulk template', workflow_type: 'episodic' })).id;
+    const check = async (spec: typeof sequenceBulkSpec) => {
+      const columns = columnsFor(spec, { episodic: true, mode: 'create' });
+      const rows = exampleRows(spec, columns, await templateParents(spec, episodic, true));
+      return spec.routes.create(episodic, toCreateItems(rows, columns), { dry_run: false, atomic: true });
+    };
+    // Sequences under the project's first episode, then shots under the first sequence and its episode.
+    expect(await check(sequenceBulkSpec)).toMatchObject({ committed: true, errors: [] });
+    expect(await check(shotBulkSpec)).toMatchObject({ committed: true, errors: [] });
+    const tasks = await check(taskBulkSpec);
+    expect(tasks.errors).toEqual([]);
+    expect(statuses(tasks)).toEqual(['created', 'created', 'created']);
+
+    const current = await currentRows(shotBulkSpec, columnsFor(shotBulkSpec, { episodic: true, mode: 'update' }), episodic, true);
+    expect(current.total).toBe(3);
+    expect(current.rows.map((r) => [r.code, r.sequence, r.episode])).toEqual([
+      ['SQ010_0100', 'SQ010', 'EP101'],
+      ['SQ010_0200', 'SQ010', 'EP101'],
+      ['SQ010_0300', 'SQ010', 'EP101'],
+    ]);
   });
 });

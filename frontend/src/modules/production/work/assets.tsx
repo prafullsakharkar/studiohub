@@ -67,7 +67,7 @@ export function useAssetsListConfig(scope?: { projectId: string }): DirectoryLis
     ],
     rowActions: (row): RowAction[] =>
       canRename ? [{ label: 'Rename code', confirm: `Rename ${row.code}. Use this once versions exist: the code is in published file names.`, askText: { label: 'New code', required: true }, run: (_date, code) => assetsApi.renameCode(row.id, code as string) }] : [],
-    headerExtra: (filters) => <BulkMenu spec={assetBulkSpec} projectId={filters.project_id ? String(filters.project_id) : undefined} />,
+    headerExtra: (filters) => <BulkMenu spec={assetBulkSpec} projectId={filters.project_id ? String(filters.project_id) : undefined} locked={Boolean(scope)} />,
     bulk: { actions: [...bulkAssetActions, editFieldsAction(assetBulkSpec)] },
   };
 }

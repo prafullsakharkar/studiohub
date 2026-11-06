@@ -103,7 +103,7 @@ export function useTasksListConfig(scope?: { projectId: string }): DirectoryList
       { header: 'Estimated hours', value: (r) => r.estimated_hours },
       { header: 'Logged hours', value: (r) => r.logged_hours },
     ],
-    headerExtra: (filters) => <BulkMenu spec={taskBulkSpec} projectId={filters.project_id ? String(filters.project_id) : undefined} />,
+    headerExtra: (filters) => <BulkMenu spec={taskBulkSpec} projectId={filters.project_id ? String(filters.project_id) : undefined} locked={Boolean(scope)} />,
     bulk: { actions: [...bulkTaskActions(), editFieldsAction(taskBulkSpec)] },
   };
 }

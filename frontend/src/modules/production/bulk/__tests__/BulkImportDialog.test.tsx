@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthContext } from '@/core/auth/AuthContext';
 import type { AuthContextValue } from '@/core/auth/AuthContext';
 import { tokenStorage } from '@/core/auth/tokenStorage';
+import { useProductionStore } from '@/core/production/useProductionStore';
 import { DirectoryListPage } from '@/modules/directory/DirectoryListPage';
 import { mockFetch } from '@/test/fetchMock';
 import type { MockCall, MockReply } from '@/test/fetchMock';
@@ -23,8 +24,8 @@ const auth = loadSample('identity/_auth_flow.json');
 const superuser = auth.me_admin.body as unknown as User;
 const artist = auth.me_artist.body as unknown as User;
 
-const standard = bulk.projects_detail_standard.body as { id: string; code: string };
-const episodic = bulk.projects_detail_episodic.body as { id: string; code: string };
+const standard = bulk.projects_detail_standard.body as { id: string; code: string; name: string };
+const episodic = bulk.projects_detail_episodic.body as { id: string; code: string; name: string };
 const rows = structure.sequences_list_after_bulk.body.results as Array<{ id: string; code: string; name: string }>;
 
 const path = (c: MockCall) => new URL(c.url).pathname;
@@ -40,15 +41,17 @@ function server(answer: (c: MockCall) => Captured) {
     if (p === `/api/v1/projects/${episodic.id}/`) return reply(bulk.projects_detail_episodic);
     if (p === '/api/v1/projects/') return { status: 200, body: { count: 2, next: null, previous: null, results: [standard, episodic] } };
     if (p === '/api/v1/sequences/') return reply(structure.sequences_list_after_bulk);
+    if (p === '/api/v1/episodes/') return reply(bulk.episodes_of_episodic);
     return { status: 200, body: { count: 0, next: null, previous: null, results: [] } };
   };
 }
 
-function List({ projectId }: { projectId: string }) {
-  return <DirectoryListPage config={useSequencesListConfig({ projectId })} />;
+/** A project's Sequences tab (`projectId`), or the Sequences page of the Production nav (none). */
+function List({ projectId }: { projectId?: string }) {
+  return <DirectoryListPage config={useSequencesListConfig(projectId ? { projectId } : undefined)} />;
 }
 
-function renderList(projectId: string, user: User = superuser) {
+function renderList(projectId: string | undefined, user: User = superuser) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   render(
     <QueryClientProvider client={client}>
@@ -66,6 +69,7 @@ beforeEach(() => {
   localStorage.clear();
   tokenStorage.setTokens({ access: 'a', refresh: 'r' });
   blobs.length = 0;
+  useProductionStore.setState({ activeProjectId: null });
   vi.stubGlobal('URL', Object.assign(URL, { createObjectURL: (b: Blob) => (blobs.push(b), 'blob:x'), revokeObjectURL: vi.fn() }));
 });
 afterEach(() => {
@@ -77,7 +81,10 @@ afterEach(() => {
 async function openBulk(entry: 'create' | 'update') {
   fireEvent.click(await screen.findByRole('button', { name: /^Bulk/ }));
   fireEvent.click(await screen.findByText(`Bulk ${entry} sequences…`));
-  return screen.findByRole('dialog');
+  const dialog = await screen.findByRole('dialog');
+  // The inputs come once the project is read.
+  await within(dialog).findByLabelText('CSV file');
+  return dialog;
 }
 
 function upload(dialog: HTMLElement, text: string) {
@@ -95,9 +102,8 @@ describe('Bulk menu', () => {
   });
 
   it('is not offered without the sequence create and update codes', async () => {
-    const { calls } = mockFetch(server(() => bulk.sequences_create_dry_run_ok));
+    mockFetch(server(() => bulk.sequences_create_dry_run_ok));
     renderList(standard.id, artist);
-    await waitFor(() => expect(calls.some((c) => path(c) === `/api/v1/projects/${standard.id}/`)).toBe(true));
     await screen.findByRole('table', { name: 'Sequences' });
     expect(screen.queryByRole('button', { name: /^Bulk/ })).toBeNull();
   });
@@ -115,6 +121,8 @@ describe('Bulk menu', () => {
     mockFetch(server(() => bulk.sequences_create_dry_run_ok));
     renderList(standard.id);
     let dialog = await openBulk('create');
+    // On a project's tab the project is fixed.
+    expect(within(dialog).queryByRole('button', { name: /^Project/ })).toBeNull();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Download template' }));
     expect(await blobs[0].text()).toBe('code,name,description,frame_in,frame_out,status\r\n');
     cleanup();
@@ -248,5 +256,99 @@ describe('Edit fields on the selected rows', () => {
   it('a refused edit changes nothing and keeps the dialog open with the reason', async () => {
     const { dialog } = await editStatus(bulk.sequences_update_ids_refused, 'Approved');
     expect(await within(dialog).findByText('Nothing changed: 1 of 1 rows were refused (status: "Nope" is not a valid choice.).')).toBeTruthy();
+  });
+});
+
+describe('on the Sequences page of the Production nav (no project tab)', () => {
+  const pick = async (dialog: HTMLElement, project: { code: string }) => {
+    fireEvent.click(within(dialog).getByRole('button', { name: /^Project/ }));
+    fireEvent.click(await screen.findByRole('option', { name: new RegExp(`^${project.code} ·`) }));
+  };
+
+  it('the dialog starts on the active project and another can be chosen', async () => {
+    mockFetch(server(() => bulk.sequences_create_dry_run_ok));
+    useProductionStore.setState({ activeProjectId: standard.id });
+    renderList(undefined);
+    const dialog = await openBulk('create');
+    expect(within(dialog).getByText(`Bulk create sequences · ${standard.code}`)).toBeTruthy();
+
+    await pick(dialog, episodic);
+    const next = await screen.findByRole('dialog', { name: new RegExp(episodic.code) });
+    fireEvent.click(await within(next).findByRole('button', { name: 'Download template' }));
+    expect(await blobs[0].text()).toBe('code,name,description,episode,frame_in,frame_out,status\r\n');
+  });
+
+  it('without an active project nothing is taken until a project is chosen', async () => {
+    mockFetch(server(() => bulk.sequences_create_dry_run_ok));
+    renderList(undefined);
+    fireEvent.click(await screen.findByRole('button', { name: /^Bulk/ }));
+    fireEvent.click(await screen.findByText('Bulk create sequences…'));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('Choose the project the sequences belong to.')).toBeTruthy();
+    expect(within(dialog).queryByLabelText('CSV file')).toBeNull();
+    await pick(dialog, standard);
+    expect(await within(await screen.findByRole('dialog')).findByLabelText('CSV file')).toBeTruthy();
+  });
+
+  it('a project the caller may not write in is refused in the dialog', async () => {
+    mockFetch(server(() => bulk.sequences_create_dry_run_ok));
+    useProductionStore.setState({ activeProjectId: standard.id });
+    renderList(undefined, { ...artist, permissions: [...artist.permissions, 'sequence.create'], project_memberships: [{ project_id: standard.id, status: 'active' }] } as unknown as User);
+    const dialog = await openBulk('create');
+    await pick(dialog, episodic);
+    const next = await screen.findByRole('dialog', { name: new RegExp(episodic.code) });
+    expect((await within(next).findByRole('alert')).textContent).toBe(`You cannot create sequences in ${episodic.code}.`);
+    expect(within(next).queryByLabelText('CSV file')).toBeNull();
+  });
+});
+
+describe('Load template', () => {
+  it('on a create fills example rows with the project\'s own episode, and they are checked as they are', async () => {
+    const { calls } = mockFetch(server(() => bulk.sequences_create_episodic_dry_run));
+    renderList(episodic.id);
+    const dialog = await openBulk('create');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Load template' }));
+    expect(await within(dialog).findByDisplayValue('SQ030')).toBeTruthy();
+    expect(calls.some((c) => c.method === 'GET' && path(c) === '/api/v1/episodes/' && new URL(c.url).searchParams.get('project') === episodic.id)).toBe(true);
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Check rows' }));
+    await waitFor(() => expect(posts(calls, 'bulk-create')).toHaveLength(1));
+    const items = (posts(calls, 'bulk-create')[0].body as { items: Array<{ code: string }> }).items;
+    expect(items[0]).toEqual({
+      code: 'SQ010',
+      action: 'create',
+      data: { name: 'Sequence 010', episode_id: 'EP101', frame_in: 1001, frame_out: 1048, status: 'Not Started' },
+    });
+    expect(items.map((i) => i.code)).toEqual(['SQ010', 'SQ020', 'SQ030']);
+  });
+
+  it('on an update loads the project\'s rows and sends only the cells that were changed', async () => {
+    const { calls } = mockFetch(server(() => bulk.sequences_update_dry_run));
+    renderList(standard.id);
+    const dialog = await openBulk('update');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Load template' }));
+    const description = await within(dialog).findByDisplayValue('Cold open');
+    const list = calls.find((c) => c.method === 'GET' && path(c) === '/api/v1/sequences/' && new URL(c.url).searchParams.get('page_size') === '500');
+    expect(new URL(list?.url ?? 'http://x').searchParams.get('project')).toBe(standard.id);
+    expect(within(dialog).getByText("The project's 1 sequences. Change the cells to update; rows left as they are are not sent.")).toBeTruthy();
+
+    // Nothing changed: nothing is sent.
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Check rows' }));
+    expect(await within(dialog).findByText('No cell differs from the loaded rows: there is nothing to update.')).toBeTruthy();
+    expect(posts(calls, 'bulk-update')).toHaveLength(0);
+
+    fireEvent.change(description, { target: { value: 'Re-cut' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Check rows' }));
+    await waitFor(() => expect(posts(calls, 'bulk-update')).toHaveLength(1));
+    expect(posts(calls, 'bulk-update')[0].body).toEqual({ project_id: standard.id, dry_run: true, atomic: true, items: [{ code: 'SQ010', description: 'Re-cut' }] });
+  });
+
+  it('is offered only on an empty grid', async () => {
+    mockFetch(server(() => bulk.sequences_create_dry_run_ok));
+    renderList(standard.id);
+    const dialog = await openBulk('create');
+    upload(dialog, 'code\nSQ020\n');
+    await within(dialog).findByDisplayValue('SQ020');
+    expect((within(dialog).getByRole('button', { name: 'Load template' }) as HTMLButtonElement).disabled).toBe(true);
   });
 });

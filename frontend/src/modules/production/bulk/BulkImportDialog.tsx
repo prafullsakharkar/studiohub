@@ -9,19 +9,25 @@ import type { GridColumn } from '@/shared/components/bulk/BulkImportGrid';
 import { Button } from '@/shared/components/Button';
 import { Modal } from '@/shared/components/Modal';
 import { downloadCsv } from '@/shared/data/exportAll';
-import { MAX_FILE_BYTES, errorReportCsv, readRows, rowReports, templateCsv, toCreateItems, toUpdateItems } from './rows';
+import { MAX_FILE_BYTES, byCode, changedRows, errorReportCsv, readRows, rowReports, templateCsv, toCreateItems, toUpdateItems } from './rows';
 import type { RowOutcome, SheetRow } from './rows';
 import { columnsFor } from './specs';
 import type { BulkSpec } from './specs';
+import { currentRows, exampleRows, templateParents } from './template';
 
 export type BulkMode = 'create' | 'update';
 
 interface BulkImportDialogProps {
   spec: BulkSpec;
   mode: BulkMode;
-  projectId: string;
-  projectCode: string;
+  /** The project the rows go to; until there is one only `projectPicker` is shown. */
+  projectId?: string;
+  projectCode?: string;
   episodic: boolean;
+  /** Where the project is chosen, when the list is not on one project. */
+  projectPicker?: React.ReactNode;
+  /** Why the chosen project cannot take the rows (no permission there); nothing else is shown. */
+  blocked?: string;
   onClose: () => void;
 }
 
@@ -38,7 +44,7 @@ const OUTCOME_CLASS: Record<RowOutcome, string> = {
  * checked first by a dry run on the backend (the same serializers, validators and scope as a single write), the outcome
  * is shown per row, and only then stored. By default all or nothing; "Skip invalid rows" stores the others.
  */
-export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ spec, mode, projectId, projectCode, episodic, onClose }) => {
+export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ spec, mode, projectId, projectCode, episodic, projectPicker, blocked, onClose }) => {
   const queryClient = useQueryClient();
   const columns = useMemo(() => columnsFor(spec, { episodic, mode }), [spec, episodic, mode]);
   const gridColumns: GridColumn[] = columns.map((c) => ({ key: c.header, label: c.header, type: c.type === 'number' ? 'number' : 'text', required: c.required, placeholder: c.type === 'date' ? 'YYYY-MM-DD' : undefined }));
@@ -49,16 +55,56 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ spec, mode, 
   const [skipInvalid, setSkipInvalid] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
+  /** The rows "Load template" put in an update, by code: cells left as loaded are not sent. */
+  const [loaded, setLoaded] = useState<Map<string, SheetRow> | null>(null);
+  /** The rows the check was sent for (an update from a loaded template leaves out the unchanged ones). */
+  const [sent, setSent] = useState<SheetRow[]>([]);
+  const [note, setNote] = useState<string | null>(null);
 
   const verb = mode === 'create' ? 'Create' : 'Update';
-  const title = `Bulk ${mode} ${spec.plural} · ${projectCode}`;
-  const fileStem = `${projectCode.toLowerCase()}-${spec.plural}-${mode}`;
+  const title = projectCode ? `Bulk ${mode} ${spec.plural} · ${projectCode}` : `Bulk ${mode} ${spec.plural}`;
+  const fileStem = `${(projectCode ?? 'project').toLowerCase()}-${spec.plural}-${mode}`;
+
+  const fill = (next: SheetRow[], from: Map<string, SheetRow> | null) => {
+    setRows(next);
+    setLoaded(from);
+    setCheck(null);
+  };
 
   const take = (text: string) => {
     const read = readRows(text, columns);
     setProblems(read.problems);
-    setRows(read.problems.length ? [] : read.rows);
-    setCheck(null);
+    setNote(null);
+    fill(read.problems.length ? [] : read.rows, null);
+  };
+
+  const loadTemplate = async () => {
+    if (!projectId) return;
+    setBusy(true);
+    setFailure(null);
+    setProblems([]);
+    setNote(null);
+    try {
+      if (mode === 'create') {
+        fill(exampleRows(spec, columns, await templateParents(spec, projectId, episodic)), null);
+        setNote('Example rows: change the codes and names, then check them.');
+      } else {
+        const current = await currentRows(spec, columns, projectId, episodic);
+        if (current.rows.length === 0) setProblems([`The project has no ${spec.plural} yet.`]);
+        else {
+          fill(current.rows, byCode(current.rows, columns));
+          setNote(
+            current.total > current.rows.length
+              ? `The first ${formatNumber(current.rows.length)} of ${formatNumber(current.total)} ${spec.plural}. Change the cells to update; rows left as they are are not sent.`
+              : `The project's ${formatNumber(current.rows.length)} ${spec.plural}. Change the cells to update; rows left as they are are not sent.`
+          );
+        }
+      }
+    } catch (error) {
+      setFailure(serverMessage(error));
+    } finally {
+      setBusy(false);
+    }
   };
 
   const onFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,19 +118,28 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ spec, mode, 
     take(await file.text());
   };
 
-  const send = async (dryRun: boolean) => {
+  const send = async (dryRun: boolean, batch: SheetRow[], project: string) => {
     const options = { dry_run: dryRun, atomic: dryRun ? true : !skipInvalid };
     return mode === 'create'
-      ? spec.routes.create(projectId, toCreateItems(rows, columns), options)
-      : spec.routes.update(projectId, toUpdateItems(rows, columns), options);
+      ? spec.routes.create(project, toCreateItems(batch, columns), options)
+      : spec.routes.update(project, toUpdateItems(batch, columns), options);
   };
 
   const run = async (dryRun: boolean) => {
+    if (!projectId) return;
+    const batch = dryRun ? (loaded ? changedRows(rows, columns, loaded) : rows) : sent;
+    if (batch.length === 0) {
+      setProblems(['No cell differs from the loaded rows: there is nothing to update.']);
+      return;
+    }
     setBusy(true);
     setFailure(null);
     try {
-      const response = await send(dryRun);
-      if (dryRun) setCheck(response);
+      const response = await send(dryRun, batch, projectId);
+      if (dryRun) {
+        setSent(batch);
+        setCheck(response);
+      }
       else {
         setResult(response);
         if (response.committed) await queryClient.invalidateQueries({ queryKey: spec.queryKey });
@@ -135,12 +190,13 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ spec, mode, 
         )}
 
         {result ? (
-          <ResultView spec={spec} result={result} onReport={() => downloadCsv(`${fileStem}-errors.csv`, errorReportCsv(result, rows, columns))} />
+          <ResultView spec={spec} result={result} onReport={() => downloadCsv(`${fileStem}-errors.csv`, errorReportCsv(result, sent, columns))} />
         ) : check ? (
           <>
             <p>
               {formatNumber(writable)} of {formatNumber(reports.length)} rows can be {mode === 'create' ? 'created' : 'updated'}
               {failed ? `; ${formatNumber(failed)} cannot.` : '.'} Nothing has been stored yet.
+              {sent.length < rows.length ? ` ${formatNumber(rows.length - sent.length)} unchanged rows are left out.` : ''}
             </p>
             <div className="max-h-80 overflow-auto border border-slate-800 rounded-lg">
               <table aria-label="Checked rows" className="w-full text-left text-xs font-mono">
@@ -157,7 +213,7 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ spec, mode, 
                     // biome-ignore lint/suspicious/noArrayIndexKey: rows have no other identity; the list does not reorder
                     <tr key={index}>
                       <td className="px-3 py-1.5 text-slate-500">{index + 1}</td>
-                      <td className="px-3 py-1.5">{String(rows[index]?.code ?? '')}</td>
+                      <td className="px-3 py-1.5">{String(sent[index]?.code ?? '')}</td>
                       <td className={`px-3 py-1.5 ${OUTCOME_CLASS[report.outcome]}`}>{OUTCOME_LABEL[report.outcome]}</td>
                       <td className="px-3 py-1.5 text-slate-300">{report.messages.join(' ')}</td>
                     </tr>
@@ -172,12 +228,21 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ spec, mode, 
               </label>
             )}
             {failed > 0 && (
-              <Button size="sm" variant="outline" onClick={() => downloadCsv(`${fileStem}-errors.csv`, errorReportCsv(check, rows, columns))}>
+              <Button size="sm" variant="outline" onClick={() => downloadCsv(`${fileStem}-errors.csv`, errorReportCsv(check, sent, columns))}>
                 Download error report
               </Button>
             )}
           </>
         ) : (
+          <>
+            {projectPicker && <div className="max-w-sm">{projectPicker}</div>}
+            {blocked ? (
+              <p role="alert" className="text-rose-300">
+                {blocked}
+              </p>
+            ) : !projectId ? (
+              <p className="text-slate-400">Choose the project the {spec.plural} belong to.</p>
+            ) : (
           <>
             <div className="flex flex-wrap items-center gap-3">
               <label className="flex items-center gap-2">
@@ -187,7 +252,17 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ spec, mode, 
               <Button size="sm" variant="outline" onClick={() => downloadCsv(`${fileStem}-template.csv`, templateCsv(columns))}>
                 Download template
               </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={loadTemplate}
+                disabled={busy || rows.length > 0}
+                title={rows.length > 0 ? 'Clear the grid first' : mode === 'create' ? 'Fill the grid with example rows' : `Fill the grid with the project's ${spec.plural}`}
+              >
+                Load template
+              </Button>
             </div>
+            {note && <p className="text-xs text-slate-300">{note}</p>}
             <p className="text-xs text-slate-400">
               Columns: {columns.map((c) => `${c.header}${c.required ? ' (required)' : ''}`).join(', ')}. Parents are written by code. An empty cell
               {mode === 'update' ? ' leaves the field as it is' : ' takes the default'}. At most 500 rows at a time.
@@ -202,9 +277,15 @@ export const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ spec, mode, 
             <BulkImportGrid columns={gridColumns} rows={rows} onChange={(next) => {
                 setRows(next);
                 setCheck(null);
+                if (next.length === 0) {
+                  setLoaded(null);
+                  setNote(null);
+                }
               }}
               onPaste={take}
             />
+          </>
+            )}
           </>
         )}
       </div>

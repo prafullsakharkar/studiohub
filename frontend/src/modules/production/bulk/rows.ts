@@ -82,6 +82,32 @@ export const toCreateItems = (rows: readonly SheetRow[], columns: readonly BulkC
 export const toUpdateItems = (rows: readonly SheetRow[], columns: readonly BulkColumn[]): BulkUpdateRow[] =>
   rows.map((row) => ({ code: codeOf(row, columns), ...fieldsOf(row, columns) }));
 
+/**
+ * Update rows less what "Load template" filled in and was left as it was: a cell equal to the loaded value is dropped
+ * (so it is not written again) and a row with no other change is not sent. Rows not in `loaded` are kept whole.
+ */
+export function changedRows(rows: readonly SheetRow[], columns: readonly BulkColumn[], loaded: ReadonlyMap<string, SheetRow>): SheetRow[] {
+  return rows.flatMap((row) => {
+    const before = loaded.get(codeOf(row, columns));
+    if (!before) return [row];
+    const next: SheetRow = {};
+    let changed = false;
+    for (const column of columns) {
+      const value = String(row[column.header] ?? '').trim();
+      if (column.key === 'code') next[column.header] = row[column.header];
+      else if (value && value !== String(before[column.header] ?? '').trim()) {
+        next[column.header] = value;
+        changed = true;
+      }
+    }
+    return changed ? [next] : [];
+  });
+}
+
+/** Rows by their code, as `changedRows` looks them up. */
+export const byCode = (rows: readonly SheetRow[], columns: readonly BulkColumn[]): Map<string, SheetRow> =>
+  new Map(rows.map((row) => [codeOf(row, columns), row]));
+
 /** The header row of a bulk file, for "Download template". */
 export const templateCsv = (columns: readonly BulkColumn[]): string => toCsv<SheetRow>([], columns.map((c) => ({ header: c.header, value: () => '' })));
 

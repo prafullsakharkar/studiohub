@@ -138,7 +138,7 @@ export function useSequencesListConfig(scope?: { projectId: string }): Directory
       { header: 'Frame out', value: (r) => r.frame_out },
       { header: 'Status', value: (r) => r.status },
     ],
-    headerExtra: (filters) => <BulkMenu spec={sequenceBulkSpec} projectId={filters.project_id ? String(filters.project_id) : undefined} />,
+    headerExtra: (filters) => <BulkMenu spec={sequenceBulkSpec} projectId={filters.project_id ? String(filters.project_id) : undefined} locked={Boolean(scope)} />,
     bulk: { actions: [archiveAction('sequence', sequencesApi.bulkArchive), editFieldsAction(sequenceBulkSpec, episodic)] },
   };
 }
