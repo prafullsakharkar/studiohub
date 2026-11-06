@@ -425,21 +425,25 @@ class BulkActionsMixin:
     # Bulk update
     # ------------------------------------------------------------------
 
-    @action(detail=False, methods=["post", "patch"], url_path="bulk-update")
-    def bulk_update(self, request, *args, **kwargs):
-        data = request.data or {}
+    def _bulk_update_items_from_request(self):
+        """The update items of a request: ``{ids, changes}``, a bare list, or ``{items}``."""
+        data = self.request.data or {}
         if isinstance(data, dict) and ("ids" in data or "changes" in data):
             ids = data.get("ids", [])
             changes = dict(data.get("changes") or {})
             if not isinstance(ids, list):
                 raise ValidationError({"ids": "Must be a list."})
-            items = [{"id": item_id, **changes} for item_id in ids]
-        elif isinstance(data, list):
-            items = data
-        else:
-            items = data.get("items", [])
-            if not isinstance(items, list):
-                raise ValidationError({"items": "Must be a list."})
+            return [{"id": item_id, **changes} for item_id in ids]
+        if isinstance(data, list):
+            return data
+        items = data.get("items", [])
+        if not isinstance(items, list):
+            raise ValidationError({"items": "Must be a list."})
+        return items
+
+    @action(detail=False, methods=["post", "patch"], url_path="bulk-update")
+    def bulk_update(self, request, *args, **kwargs):
+        items = self._bulk_update_items_from_request()
         results = self.service_class.bulk_update(
             items,
             organization=self._organization(),

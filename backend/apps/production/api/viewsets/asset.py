@@ -29,6 +29,21 @@ class AssetViewSet(RenameCodeMixin, ProductionEntityViewSet, ProductionBulkMixin
     filterset_class = AssetFilterSet
     detail_serializer_class = AssetDetailSerializer
 
+    # CR-48: what bulk-update may change; never project, code, show, ownership or approval fields.
+    bulk_update_fields = (
+        "name",
+        "description",
+        "status",
+        "asset_type_id",
+        "category",
+        "department",
+        "team",
+        "assigned_artist",
+        "software",
+        "file_format",
+        "tags",
+    )
+
     serializer_map = {
         "list": AssetListSerializer,
         "retrieve": AssetDetailSerializer,

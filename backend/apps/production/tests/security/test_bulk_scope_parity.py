@@ -206,7 +206,8 @@ class TestShowFiling:
         assert body["results"][0]["status"] == "invalid"
         assert not Shot.all_objects.filter(code="NEW2").exists()
 
-    def test_bulk_update_moves_a_shot_to_a_show_for_a_full_member(self, world):
+    def test_bulk_update_does_not_move_a_shot_to_another_show_even_for_a_full_member(self, world):
+        # CR-48: the show decides who sees a row, so it is not bulk-updatable; the single route moves it.
         client = _client(_member(world["project"]))
         inside = world["inside"]
         body = _post(
@@ -214,9 +215,12 @@ class TestShowFiling:
             "shots/bulk-update/",
             {"items": [{"id": str(inside.pk), "show_id": str(world["show_b"].pk)}]},
         )
-        assert body["results"][0]["status"] == "updated"
+        assert body["results"][0]["status"] == "invalid"
+        assert body["errors"] == [
+            {"row": 0, "field": "show_id", "message": "This field cannot be changed in bulk."}
+        ]
         inside.refresh_from_db()
-        assert inside.show_id == world["show_b"].pk
+        assert inside.show_id != world["show_b"].pk
 
     def test_bulk_update_cannot_move_a_shot_out_of_the_callers_show(self, world):
         client = _client(_member(world["project"], show=world["show_a"]))

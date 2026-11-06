@@ -40,6 +40,19 @@ class ShotViewSet(
     filterset_class = ShotFilterSet
     detail_serializer_class = ShotDetailSerializer
 
+    # CR-48: what bulk-update may change; never project, code, show, ownership or approval fields.
+    bulk_update_fields = (
+        "name",
+        "description",
+        "status",
+        "sequence_id",
+        "episode_id",
+        "frame_in",
+        "frame_out",
+        "handle_frames",
+        "assigned_artist",
+    )
+
     serializer_map = {
         "list": ShotListSerializer,
         "retrieve": ShotDetailSerializer,

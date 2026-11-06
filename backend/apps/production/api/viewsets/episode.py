@@ -22,6 +22,19 @@ class EpisodeViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright: 
     filterset_class = EpisodeFilterSet
     detail_serializer_class = EpisodeDetailSerializer
 
+    # CR-48: what bulk-update may change; never project, code, show, ownership or approval fields.
+    bulk_update_fields = (
+        "name",
+        "description",
+        "status",
+        "season_number",
+        "episode_number",
+        "frame_in",
+        "frame_out",
+        "air_date",
+        "delivery_date",
+    )
+
     serializer_map = {
         "list": EpisodeListSerializer,
         "retrieve": EpisodeDetailSerializer,

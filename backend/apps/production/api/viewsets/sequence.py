@@ -21,6 +21,18 @@ class SequenceViewSet(ProductionEntityViewSet, ProductionBulkMixin):  # pyright:
     filterset_class = SequenceFilterSet
     detail_serializer_class = SequenceDetailSerializer
 
+    # CR-48: what bulk-update may change; never project, code, show, ownership or approval fields.
+    bulk_update_fields = (
+        "name",
+        "description",
+        "status",
+        "episode_id",
+        "frame_in",
+        "frame_out",
+        "department",
+        "tags",
+    )
+
     serializer_map = {
         "list": SequenceListSerializer,
         "retrieve": SequenceDetailSerializer,
