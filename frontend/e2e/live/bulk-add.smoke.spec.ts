@@ -34,11 +34,12 @@ const pill = (page: Page, label: RegExp) => page.getByRole('dialog').getByRole('
 const hasValue = (page: Page, value: string) =>
   expect.poll(() => page.getByRole('dialog').locator('input').evaluateAll((inputs, wanted) => inputs.some((input) => (input as HTMLInputElement).value === wanted), value)).toBe(true);
 
-async function chooseProject(page: Page) {
+async function chooseProjectByCode(page: Page, code: string) {
   const select = page.getByLabel('Filter by project');
-  await expect(select.locator('option', { hasText: CODE })).toHaveCount(1);
-  await select.selectOption({ label: CODE });
+  await expect(select.locator('option', { hasText: code })).toHaveCount(1);
+  await select.selectOption({ label: code });
 }
+const chooseProject = (page: Page) => chooseProjectByCode(page, CODE);
 
 // A click that cannot land (a covered button, a renamed control) must fail in seconds, not hold the run for minutes.
 test.use({ actionTimeout: 30_000 });
@@ -183,6 +184,50 @@ test('create forms and Bulk add: prefix, required sequence, CSV, update, existin
   expect(await stored('shots', `${CODE}_SH0200`)).toBeUndefined();
 
   // Nothing above should have drawn a server error or an uncaught page error.
+  expect(seen.serverErrors, seen.serverErrors.join('\n')).toEqual([]);
+  expect(seen.pageErrors, seen.pageErrors.join('\n')).toEqual([]);
+});
+
+/**
+ * CR-50: the shots that belong to no sequence (the seeded LIVEDLV shots stand in for the ones the old Bulk add shots screen
+ * left that way) are found with the Shots list's "Without a sequence" filter and filled in with Edit fields, as the manager.
+ */
+test('shots without a sequence: filter, tick, Edit fields > Sequence', async ({ page }) => {
+  test.setTimeout(300_000);
+  const seen = watch(page);
+  const first = await api(null, 'POST', '/api/v1/auth/login/', { email: live.users.manager.email, password: live.users.manager.password });
+  const login = await api(null, 'POST', '/api/v1/auth/mfa/challenge/', { challenge: first.body.challenge, code: await freshTotp(live.manager.secret) });
+  expect(login.status, JSON.stringify(login.body)).toBe(200);
+  const admin: string = login.body.tokens.access;
+  const dlv = live.dlv.project;
+  const count = async (has: 'true' | 'false') => (await api(admin, 'GET', `/api/v1/shots/?project_id=${dlv}&has_sequence=${has}&page_size=100`)).body.count as number;
+
+  const loose = await count('false');
+  expect(loose, 'the seeded shots have no sequence').toBeGreaterThanOrEqual(4);
+  expect(await count('true')).toBe(0);
+  const home = await api(admin, 'POST', '/api/v1/sequences/', { project: dlv, code: 'LIVEDLV_HOME', name: 'Home' });
+  expect(home.status, JSON.stringify(home.body)).toBe(201);
+
+  await signIn(page, 'manager');
+  await page.getByRole('button', { name: 'Maybe later' }).click({ timeout: 10_000 }).catch(() => undefined);
+  await open(page, '/shots', 'cleanup');
+  await chooseProjectByCode(page, 'LIVEDLV');
+  await page.getByLabel('Filter by sequences').selectOption('false');
+  await expect(page.getByText(`${loose} Matching`)).toBeVisible();
+  await snap(page, '14-shots-without-a-sequence');
+
+  await page.getByLabel('Select all on this page').check();
+  await page.getByRole('toolbar', { name: 'Actions for the selected rows' }).getByRole('button', { name: 'Edit fields' }).click();
+  await page.getByLabel('Change Sequence (code)').check();
+  await page.getByLabel('Sequence (code)', { exact: true }).fill('LIVEDLV_HOME');
+  await snap(page, '15-edit-fields-sequence');
+  await page.getByRole('dialog').getByRole('button', { name: 'Edit fields' }).click();
+
+  await expect.poll(() => count('false'), { timeout: 30_000 }).toBe(0);
+  expect(await count('true')).toBe(loose);
+  await expect(page.getByText('No shots found')).toBeVisible();
+  await snap(page, '16-shots-all-in-a-sequence');
+
   expect(seen.serverErrors, seen.serverErrors.join('\n')).toEqual([]);
   expect(seen.pageErrors, seen.pageErrors.join('\n')).toEqual([]);
 });

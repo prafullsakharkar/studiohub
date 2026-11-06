@@ -24,6 +24,9 @@ class ShotFilterSet(BaseFilterSet):
     sequence = django_filters.CharFilter(field_name="sequence__code", lookup_expr="iexact")
     # Id of the sequence, or its code (any case); unknown values return nothing.
     sequence_id = django_filters.CharFilter(method="filter_sequence_id")
+    # CR-50: ``has_sequence=false`` lists the shots that belong to no sequence (the ones made before a new shot needed
+    # one, D-43), ``true`` the ones that do. Absent or not a boolean means no filter (django-filter skips the method).
+    has_sequence = django_filters.BooleanFilter(method="filter_has_sequence")
     code = django_filters.CharFilter(field_name="code", lookup_expr="iexact")
 
     class Meta:
@@ -55,6 +58,9 @@ class ShotFilterSet(BaseFilterSet):
             return queryset.filter(sequence_id=UUID(str(value)))
         except ValueError:
             return queryset.filter(sequence__code__iexact=str(value).strip())
+
+    def filter_has_sequence(self, queryset, name, value):
+        return queryset.filter(sequence__isnull=not value)
 
     def filter_search(self, queryset, name, value):
         if not value:
