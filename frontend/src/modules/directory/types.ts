@@ -38,6 +38,13 @@ export interface FieldGate {
   initial?: string | boolean;
   /** The row property that holds the saved value when it is not the write name (a write takes `project`, a read has `project_id`). */
   rowKey?: string;
+  /**
+   * A text field whose value, on a NEW record, starts with the chosen project's code (`TST_`): the form shows the prefix
+   * beside the input, the user types the rest, and the code is sent with the prefix. An edit shows the saved code as it is.
+   */
+  projectPrefix?: boolean;
+  /** Required while creating; an existing record that lacks the value can still be saved (a legacy shot with no sequence). */
+  requiredOnCreate?: boolean;
 }
 
 export type FieldDef = FieldGate &
@@ -57,6 +64,8 @@ export interface ListColumn<T> {
   cell: (row: T) => React.ReactNode;
   /** Backend `ordering` field; makes the header clickable. Must be one the route supports. */
   sortField?: string;
+  /** Show the column only while this holds for the active filters (the Episode column only for an episodic project). */
+  visible?: (filters: Record<string, unknown>) => boolean;
 }
 
 export interface ListFilter {
@@ -65,8 +74,10 @@ export interface ListFilter {
   label: string;
   /** Fixed choices. */
   options?: ReadonlyArray<{ value: string; label: string }>;
-  /** Or choices loaded from another list route (all rows, e.g. every department). */
-  optionsFrom?: { queryKey: readonly unknown[]; fetchPage: PageFetcher<{ id: string }>; getLabel: (row: never) => string };
+  /** Or choices loaded from another list route (all rows, e.g. every department). `params` narrows them by the active filters (the chosen project's episodes). */
+  optionsFrom?: { queryKey: readonly unknown[]; fetchPage: PageFetcher<{ id: string }>; getLabel: (row: never) => string; params?: (filters: Record<string, unknown>) => Record<string, string>; /** Offer only these rows (no server filter for it: only episodic projects). */ keep?: (row: never) => boolean };
+  /** Offer the filter only while this holds for the active filters; a hidden filter is cleared. */
+  visible?: (filters: Record<string, unknown>) => boolean;
 }
 
 export interface DirectoryListConfig<T extends { id: string }> {

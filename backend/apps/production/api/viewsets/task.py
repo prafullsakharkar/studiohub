@@ -36,6 +36,24 @@ class TaskViewSet(StatusHistoryMixin, ProductionEntityViewSet, ProductionBulkMix
     filterset_class = TaskFilterSet
     detail_serializer_class = TaskDetailSerializer
 
+    # CR-48: what bulk-update may change; never project, code, show, ownership or approval fields.
+    bulk_update_fields = (
+        "title",
+        "description",
+        "status",
+        "assignee",
+        "reviewer",
+        "due_date",
+        "priority",
+        "estimated_hours",
+        "department",
+        "department_id",
+        "task_type_id",
+        "team",
+        "software",
+        "tags",
+    )
+
     serializer_map = {
         "list": TaskListSerializer,
         "retrieve": TaskDetailSerializer,

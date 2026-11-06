@@ -10,6 +10,9 @@ import {
 } from 'lucide-react';
 import type { Shot } from '@/api/production/work';
 import { EntityResolutionItem, BulkOperationSummary, BulkOperationResponse, ResolutionUserAction, EntityResolutionState } from '@/shared/components/bulk/types';
+import { shotBatch } from '@/api/production/bulkRoutes';
+import { withProjectPrefix } from '@/modules/production/codePrefix';
+import { mergeBulkResponses } from '@/shared/components/bulk/mergeResponses';
 import { useBulkShots } from '../../hooks/useBulkShots';
 import { BulkImportGrid, GridColumn } from '@/shared/components/bulk/BulkImportGrid';
 import { BulkValidationSummary } from '@/shared/components/bulk/BulkValidationSummary';
@@ -66,6 +69,8 @@ interface ShotBulkManagerProps {
   episodeCode?: string;
   episodes?: BulkEpisodeRef[];
   sequences?: BulkSequenceRef[];
+  /** Every sequence code of the project, when known: a shot whose sequence is not among them is refused at Validate (a shot needs an existing sequence). */
+  sequenceCodes?: string[];
   isEpisodic?: boolean;
   onCreateEpisode?: (input: BulkEpisodeCreateInput) => Promise<BulkCreatedEpisode | undefined>;
   onCreateSequence?: (input: BulkSequenceCreateInput) => Promise<BulkCreatedSequence | undefined>;
@@ -231,6 +236,34 @@ export interface BulkShotPayloadContext {
   episodeLookup?: Record<string, BulkEpisodeRef | undefined>;
 }
 
+/** The fields a bulk update may set on a shot (the backend refuses any other writable one, per row). */
+const SHOT_UPDATE_FIELDS = ['name', 'status', 'frame_in', 'frame_out', 'handle_frames'] as const;
+
+/**
+ * Update items for the rows set to "Update Existing Entity": the code and the cells the row filled in. A cell left empty
+ * leaves the shot's value as it is, so neither the default sequence nor the default episode is applied here.
+ */
+export function buildBulkShotUpdates(
+  resolutionItems: EntityResolutionItem<Shot>[],
+  ctx: { episodeLookup?: Record<string, BulkEpisodeRef | undefined> } = {}
+): Array<Record<string, unknown>> {
+  return resolutionItems
+    .filter((it) => it.userAction === 'update_existing')
+    .map((it) => {
+      const row = (it.proposedData ?? {}) as Record<string, unknown>;
+      const update: Record<string, unknown> = { code: it.code };
+      for (const field of SHOT_UPDATE_FIELDS) {
+        const value = row[field];
+        if (value !== undefined && value !== null && String(value).trim() !== '') update[field] = value;
+      }
+      const sequence = trimmedOrUndefined(row.sequence_code);
+      if (sequence) update.sequence_id = sequence;
+      const episode = normalizeEpisodeRef(row.episode_id, ctx.episodeLookup);
+      if (episode) update.episode_id = episode;
+      return update;
+    });
+}
+
 export function buildBulkShotItems(
   resolutionItems: EntityResolutionItem<Shot>[],
   ctx: BulkShotPayloadContext
@@ -238,12 +271,15 @@ export function buildBulkShotItems(
   return resolutionItems
     .filter((it) => it.userAction === 'create' || it.userAction === 'recover' || it.userAction === 'skip')
     .map((it) => {
+      // The backend links a shot through `sequence_id` (an id or the sequence's code); `sequence_code` is read-only there and
+      // is dropped, which left every bulk-made shot without its sequence.
+      const { sequence_code: typedSequence, ...proposed } = (it.proposedData ?? {}) as Record<string, unknown>;
       const baseData = {
-        ...it.proposedData,
+        ...proposed,
         project_id: ctx.projectId,
         project_code: ctx.projectCode,
-        sequence_code: (it.proposedData as any)?.sequence_code || ctx.defaultSequenceCode,
-      } as Partial<Shot>;
+        sequence_id: String(typedSequence || ctx.defaultSequenceCode || '').trim(),
+      } as unknown as Partial<Shot>;
       if (!ctx.isEpisodic) {
         return {
           code: it.code,
@@ -288,11 +324,14 @@ export const ShotBulkManager: React.FC<ShotBulkManagerProps> = ({
   episodeCode,
   episodes,
   sequences,
+  sequenceCodes,
   isEpisodic,
   onCreateEpisode,
   onCreateSequence,
 }) => {
-  const { checkExistence, bulkCreate, isCheckingExistence, isBulkCreating } = useBulkShots();
+  const { checkExistence, bulkCreate, bulkUpdate, isCheckingExistence, isBulkCreating } = useBulkShots();
+  const [reviewError, setReviewError] = useState('');
+  const [isReviewing, setIsReviewing] = useState(false);
 
   const isEpisodicMode = isEpisodic ?? Boolean(episodeId || episodeCode);
   const gridColumns = getShotBulkGridColumns(isEpisodicMode);
@@ -429,7 +468,15 @@ export const ShotBulkManager: React.FC<ShotBulkManagerProps> = ({
 
   // Step 1 -> Step 2: Validate against backend
   const handleValidateGrid = async () => {
-    const cleanedRows = rows.filter((r) => r.code && r.code.trim().length > 0);
+    // A shot's code starts with the project's (`TST_SH010`); its sequence is the project's own, found as typed or with the prefix.
+    const known = sequenceCodes ? new Map([...sequenceCodes, ...localSequences.map((s) => s.code)].map((c) => [c.toUpperCase(), c])) : undefined;
+    const cleanedRows = rows
+      .filter((r) => r.code && r.code.trim().length > 0)
+      .map((r) => {
+        const typed = String(r.sequence_code ?? '').trim();
+        const sequence = known ? (known.get(typed.toUpperCase()) ?? known.get(withProjectPrefix(projectCode, typed))) : undefined;
+        return { ...r, code: withProjectPrefix(projectCode, r.code), ...(sequence ? { sequence_code: sequence } : {}) };
+      });
     if (cleanedRows.length === 0) return;
 
     // Analyze duplicates and check frame numbers locally
@@ -442,6 +489,15 @@ export const ShotBulkManager: React.FC<ShotBulkManagerProps> = ({
 
     const validatedItems = initialItems.map((item) => {
       const data = item.proposedData as any;
+      if (known) {
+        const sequence = String(data?.sequence_code ?? '').trim();
+        const problem = !sequence
+          ? 'A shot needs a sequence.'
+          : !known.has(sequence.toUpperCase())
+            ? `Sequence ${sequence} does not exist in this project. Create it first.`
+            : undefined;
+        if (problem) return { ...item, state: 'INVALID' as const, errors: [problem], userAction: 'skip' as const };
+      }
       if (data?.frame_in !== undefined && data?.frame_out !== undefined) {
         const frameCheck = BulkOperationEngine.validateFrameRanges(data.frame_in, data.frame_out);
         if (!frameCheck.valid) {
@@ -569,16 +625,58 @@ export const ShotBulkManager: React.FC<ShotBulkManagerProps> = ({
         episodeLookup,
       });
 
-      const resp = await bulkCreate({
-        project_id: projectId,
-        items: itemsToProcess,
-      });
+      const updates = buildBulkShotUpdates(resolutionItems, { episodeLookup });
+      const created = itemsToProcess.length > 0 ? await bulkCreate({ project_id: projectId, items: itemsToProcess }) : undefined;
+      // The create call is stored by now: a failing update call is reported per row, not as a failed run.
+      let updated: BulkOperationResponse<Shot> | undefined;
+      if (updates.length > 0) {
+        try {
+          updated = await bulkUpdate({ project_id: projectId, items: updates, dry_run: false, atomic: false } as never);
+        } catch (updateError: any) {
+          const message = updateError?.message || 'The update was refused.';
+          const results = updates.map((u, index) => ({ index, code: String(u.code), success: false, actionTaken: 'failed', error: message }));
+          updated = { summary: { total: results.length, failedCount: results.length } as BulkOperationSummary, results, partial_success: false };
+        }
+      }
+      const parts = [created, updated].filter((part): part is BulkOperationResponse<Shot> => Boolean(part));
+      const resp = parts.length === 1 ? parts[0] : mergeBulkResponses(...parts);
 
       setOperationResponse(resp);
       setStep('RESULT');
       onSuccess?.();
     } catch (err) {
       console.error('Execution error:', err);
+    }
+  };
+
+  /** To the preview; first a dry run of the rows set to update, so the backend's refusals are errors now. */
+  const handleReview = async () => {
+    const updates = buildBulkShotUpdates(resolutionItems, { episodeLookup });
+    if (updates.length === 0) {
+      setStep('PREVIEW');
+      return;
+    }
+    setReviewError('');
+    setIsReviewing(true);
+    try {
+      const dry = await shotBatch.update(projectId, updates, { dry_run: true, atomic: false });
+      const refused = new Map<string, string[]>();
+      updates.forEach((u, index) => {
+        if (dry.results[index]?.success !== false) return;
+        refused.set(String(u.code), dry.errors.filter((e) => e.row === index).map((e) => (e.field && e.field !== 'id' ? `${e.field}: ${e.message}` : e.message)));
+      });
+      if (refused.size === 0) {
+        setStep('PREVIEW');
+        return;
+      }
+      setResolutionItems((prev) =>
+        prev.map((it) => (refused.has(it.code) ? { ...it, state: 'INVALID' as const, userAction: 'skip' as const, errors: refused.get(it.code)?.length ? refused.get(it.code) : ['The backend refused this update.'] } : it))
+      );
+      setReviewError(`${refused.size} row${refused.size === 1 ? '' : 's'} cannot be updated; ${refused.size === 1 ? 'it is' : 'they are'} under Validation Errors and will be skipped. Review again to continue.`);
+    } catch (err: any) {
+      setReviewError(err?.message || 'The update could not be checked.');
+    } finally {
+      setIsReviewing(false);
     }
   };
 
@@ -746,6 +844,11 @@ export const ShotBulkManager: React.FC<ShotBulkManagerProps> = ({
                 onRemoveItem={handleRemoveItem}
               />
 
+              {reviewError && (
+                <p role="alert" className="text-sm text-rose-300">
+                  {reviewError}
+                </p>
+              )}
               <div className="flex items-center justify-between pt-4 border-t border-slate-800">
                 <Button size="sm" variant="secondary" onClick={() => setStep('GRID')}>
                   Back to Grid
@@ -753,11 +856,11 @@ export const ShotBulkManager: React.FC<ShotBulkManagerProps> = ({
                 <Button
                   size="sm"
                   variant="primary"
-                  onClick={() => setStep('PREVIEW')}
-                  disabled={resolutionItems.length === 0}
+                  onClick={handleReview}
+                  disabled={resolutionItems.length === 0 || isReviewing}
                   className="flex items-center gap-1.5"
                 >
-                  <span>Review Execution Preview</span>
+                  <span>{isReviewing ? 'Checking updates…' : 'Review Execution Preview'}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Button>
               </div>

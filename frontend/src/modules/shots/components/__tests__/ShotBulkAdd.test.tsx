@@ -68,16 +68,17 @@ describe('bulk add shots: production wiring of the grid manager', () => {
     expect(props.projectId).toBe(episodic.id);
     expect(props.isEpisodic).toBe(true);
     expect(props.episodes).toEqual(episodes.map((e) => ({ id: e.id, code: e.code, name: e.name })));
+    expect(props.sequenceCodes).toEqual(sequences.map((s) => s.code)); // a shot needs one of these
     expect(props.sequences).toEqual(sequences.map((s) => ({ id: s.id, code: s.code, episode_id: s.episode_id ?? undefined })));
 
     const createdEpisode = await props.onCreateEpisode({ project_id: episodic.id, code: 'EP102', name: 'Second' });
     const episodePost = calls.find((c) => c.method === 'POST' && path(c) === '/api/v1/episodes/')!;
-    expect(episodePost.body).toMatchObject({ project: episodic.id, code: 'EP102', name: 'Second', season_number: 1, episode_number: episodes.length + 1 });
+    expect(episodePost.body).toMatchObject({ project: episodic.id, code: `${episodic.code}_EP102`, name: 'Second', season_number: 1, episode_number: episodes.length + 1 });
     expect(createdEpisode).toMatchObject({ id: 'ep-new', code: 'EP102' });
 
     const createdSequence = await props.onCreateSequence({ project_id: episodic.id, episode_id: episodes[0].id, code: 'sq020' });
     const sequencePost = calls.find((c) => c.method === 'POST' && path(c) === '/api/v1/sequences/')!;
-    expect(sequencePost.body).toEqual({ project: episodic.id, episode_id: episodes[0].id, code: 'SQ020' }); // codes are upper case
+    expect(sequencePost.body).toEqual({ project: episodic.id, episode_id: episodes[0].id, code: `${episodic.code}_SQ020` }); // upper case, with the project's code in front
     expect(createdSequence).toMatchObject({ id: 'seq-new' });
   });
 

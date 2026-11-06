@@ -1,11 +1,31 @@
-import { projectsApi } from '@/api/production/structure';
+import { useQuery } from '@tanstack/react-query';
+import { projectsApi, sequencesApi } from '@/api/production/structure';
 import { SHOT_STATUSES, shotsApi } from '@/api/production/work';
 import type { Shot } from '@/api/production/work';
 import { useCan } from '@/core/permissions/useCan';
 import type { BulkAction, DirectoryFormConfig, DirectoryListConfig, FieldDef, RowAction } from '@/modules/directory/types';
 import { Badge } from '@/shared/components/Badge';
+import { editFieldsAction } from '../bulk/editFields';
+import { shotBulkSpec } from '../bulk/specs';
+import { EpisodicOnly, episodeColumn, episodeFilter, useEpisodicProjectIds } from './episodic';
 import { StatusMenu } from './StatusMenu';
 import { EpisodePicker, MemberSelect, ProjectPicker, SequencePicker } from './pickers';
+
+/** A shot belongs to a sequence: pick one of the project's, and say so when the project has none yet. */
+const ShotSequenceField: React.FC<{ projectId: string; value: string; onChange: (id: string) => void; error?: string }> = ({ projectId, value, onChange, error }) => {
+  const sequences = useQuery({ queryKey: [...sequencesApi.keys.all, 'any', projectId], queryFn: ({ signal }) => sequencesApi.list({ project: projectId, page_size: 1 }, signal), enabled: Boolean(projectId) });
+  const none = Boolean(projectId) && sequences.data?.count === 0;
+  return (
+    <div className="space-y-1">
+      <SequencePicker label="Sequence *" value={value} onChange={(id) => onChange(id ?? '')} filters={{ project: projectId }} disabled={!projectId} error={error} />
+      {none && (
+        <p role="alert" className="text-xs text-rose-300">
+          This project has no sequences. Create the sequence first; every shot belongs to one.
+        </p>
+      )}
+    </div>
+  );
+};
 
 const options = (values: ReadonlyArray<string>) => values.map((value) => ({ value, label: value }));
 
@@ -27,6 +47,7 @@ const bulkShotActions: ReadonlyArray<BulkAction> = [
 export function useShotsListConfig(scope?: { projectId: string }): DirectoryListConfig<Shot> {
   const canUpdate = useCan('shot.update');
   const canRename = useCan('production.code.rename');
+  const episodic = useEpisodicProjectIds();
   return {
     title: 'Shots',
     noun: 'shot',
@@ -47,10 +68,12 @@ export function useShotsListConfig(scope?: { projectId: string }): DirectoryList
     createQuery: scope ? `project=${scope.projectId}` : undefined,
     filters: [
       { key: 'project_id', label: 'Project', optionsFrom: { queryKey: projectsApi.keys.all, fetchPage: projectsApi.list as never, getLabel: ((p: { code: string }) => p.code) as never } },
+      episodeFilter(episodic),
       { key: 'status', label: 'Status', options: options(SHOT_STATUSES.filter((s) => s !== 'Archived')) },
     ],
     columns: [
       { header: 'Shot', cell: (row) => `${row.code}${row.name ? ` · ${row.name}` : ''}`, sortField: 'code' },
+      episodeColumn<Shot>(episodic),
       { header: 'Sequence', cell: (row) => row.sequence_code || '—' },
       { header: 'Frames', cell: (row) => `${row.frame_in}–${row.frame_out} (${row.frame_count})` },
       { header: 'Artist', cell: (row) => row.assigned_artist_name || '—' },
@@ -68,16 +91,21 @@ export function useShotsListConfig(scope?: { projectId: string }): DirectoryList
     ],
     rowActions: (row): RowAction[] =>
       canRename ? [{ label: 'Rename code', confirm: `Rename ${row.code}. Use this once versions exist: the code is in published file names, and the server rewrites it everywhere.`, askText: { label: 'New code', required: true }, run: (_date, code) => shotsApi.renameCode(row.id, code as string) }] : [],
-    bulk: { actions: bulkShotActions },
+    bulk: { actions: [...bulkShotActions, editFieldsAction(shotBulkSpec, episodic)] },
   };
 }
 
 export const shotsFormFields: ReadonlyArray<FieldDef> = [
   { kind: 'entity', name: 'project', rowKey: 'project_id', label: 'Project', required: true, render: (p) => <ProjectPicker label="Project *" value={p.value} onChange={(id) => p.onChange(id ?? '')} error={p.error} /> },
-  { kind: 'text', name: 'code', label: 'Code', required: true, maxLength: 30, hint: 'Upper case, no spaces or slashes. Once a version exists, change it with Rename code.' },
+  { kind: 'text', name: 'code', label: 'Code', required: true, maxLength: 30, projectPrefix: true, hint: 'Upper case, no spaces or slashes. Once a version exists, change it with Rename code.' },
   { kind: 'text', name: 'name', label: 'Name', maxLength: 255 },
-  { kind: 'entity', name: 'sequence_id', rowKey: 'sequence_id', label: 'Sequence', render: (p) => <SequencePicker label="Sequence" value={p.value} onChange={(id) => p.onChange(id ?? '')} filters={{ project: String(p.values.project ?? '') }} disabled={!p.values.project} error={p.error} /> },
-  { kind: 'entity', name: 'episode_id', rowKey: 'episode_id', label: 'Episode', render: (p) => <EpisodePicker label="Episode (required on episodic projects)" value={p.value} onChange={(id) => p.onChange(id ?? '')} filters={{ project: String(p.values.project ?? '') }} disabled={!p.values.project} error={p.error} /> },
+  { kind: 'entity', name: 'sequence_id', rowKey: 'sequence_id', label: 'Sequence', requiredOnCreate: true, render: (p) => <ShotSequenceField projectId={String(p.values.project ?? '')} value={p.value} onChange={p.onChange} error={p.error} /> },
+  { kind: 'entity', name: 'episode_id', rowKey: 'episode_id', label: 'Episode', render: (p) => (
+      // Only an episodic project has episodes, and there every shot needs one (CR-47).
+      <EpisodicOnly projectId={String(p.values.project ?? '')}>
+        <EpisodePicker label="Episode *" value={p.value} onChange={(id) => p.onChange(id ?? '')} filters={{ project: String(p.values.project ?? '') }} error={p.error} />
+      </EpisodicOnly>
+    ) },
   { kind: 'number', name: 'frame_in', label: 'Frame in' },
   { kind: 'number', name: 'frame_out', label: 'Frame out' },
   { kind: 'number', name: 'handle_frames', label: 'Handle frames' },

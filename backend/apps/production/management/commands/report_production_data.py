@@ -12,6 +12,9 @@ is left:
 * sequences of episodic projects that have no episode, and why (their shots span several
   episodes, or they have none), and shots whose episode differs from their sequence's
   (DECISIONS D-12)
+* episodes of standard projects, and sequences or shots of standard projects that point at an
+  episode: the API no longer serves those episodes (CR-47); nothing is changed, they are listed so
+  someone can decide (DECISIONS D-39)
 * how the legacy ``is_archived`` flag and the soft delete overlap on the five models that have
   both (information only, not a finding). "Flag only" is what migration 0031 soft-deletes, so
   run this before migrating; after it, 0 is expected (DECISIONS D-25)
@@ -161,6 +164,23 @@ def shots_out_of_step_with_sequence():
         .values_list("pk", "code", "sequence__code")
     )
     return [(str(pk), code, sequence_code) for pk, code, sequence_code in rows]
+
+
+def episodes_on_standard_projects():
+    """``[(episode id, project id, code)]`` for episodes of projects that are not episodic (soft-deleted included)."""
+    rows = Episode.all_objects.exclude(project__workflow_type=ProjectWorkflowType.EPISODIC)
+    return [(str(pk), project_id, code) for pk, project_id, code in rows.values_list("pk", "project_id", "code")]
+
+
+def standard_records_with_episode():
+    """``[(model, id, code)]`` for sequences and shots of standard projects that point at an episode."""
+    found = []
+    for model in (Sequence, Shot):
+        rows = model.all_objects.filter(episode__isnull=False).exclude(
+            project__workflow_type=ProjectWorkflowType.EPISODIC
+        )
+        found += [(model.__name__, str(pk), code) for pk, code in rows.values_list("pk", "code")]
+    return found
 
 
 ARCHIVE_FLAG_TABLES = (
@@ -443,6 +463,18 @@ class Command(BaseCommand):
         for pk, code, sequence_code in stray[:50]:
             findings += 1
             self.stdout.write(f"  shot {code} {pk} (sequence {sequence_code})")
+
+        stranded = episodes_on_standard_projects()
+        self.stdout.write(f"Episodes of standard projects (not served by the API): {len(stranded)}")
+        for pk, project_id, code in stranded[:50]:
+            findings += 1
+            self.stdout.write(f"  episode {code} {pk} project={project_id}")
+
+        linked = standard_records_with_episode()
+        self.stdout.write(f"Sequences and shots of standard projects with an episode: {len(linked)}")
+        for name, pk, code in linked[:50]:
+            findings += 1
+            self.stdout.write(f"  {name.lower()} {code} {pk}")
 
         parents = bad_asset_parents()
         self.stdout.write(f"Assets with a bad parent: {len(parents)}")

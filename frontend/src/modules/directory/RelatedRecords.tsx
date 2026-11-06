@@ -17,6 +17,8 @@ import { FormDialog, formDialogCopy } from '@/shared/forms/FormDialog';
 import { useServerForm } from '@/shared/forms/useServerForm';
 import { Button } from '@/shared/components/Button';
 import { Pagination } from '@/shared/components/Pagination';
+import { useProjectCode } from '@/modules/production/hooks/useProjectCode';
+import { withProjectPrefix } from '@/modules/production/codePrefix';
 import { FieldInputs } from './FieldInputs';
 import { type Values, blank, buildSchema, fromRow, wireValue } from './formModel';
 import type { RelatedRecordsConfig, RowAction } from './types';
@@ -27,7 +29,9 @@ function RecordDialog<T extends { id: string }>({ config, parentId, row, onClose
   const editing = row !== null;
   const copy = formDialogCopy(config.noun, editing);
   const fields = useMemo(() => config.fields.filter((f) => !f.permission || evaluateAccess(user, f.permission, {})), [config.fields, user]);
-  const schema = useMemo(() => buildSchema(fields), [fields]);
+  const schema = useMemo(() => buildSchema(fields, editing), [fields, editing]);
+  // The code of a new episode or sequence on a project's tab starts with the project's.
+  const { projectCode, code: codeOfProject } = useProjectCode(parentId, !editing && config.parentField === 'project' && fields.some((f) => f.kind === 'text' && f.projectPrefix));
   const {
     register,
     control,
@@ -42,7 +46,8 @@ function RecordDialog<T extends { id: string }>({ config, parentId, row, onClose
     for (const field of fields) {
       if (editing && (!(dirtyFields as Record<string, unknown>)[field.name] || config.immutableOnEdit?.includes(field.name))) continue;
       if (!editing && values[field.name] === '' && field.kind !== 'checkbox') continue;
-      payload[field.name] = wireValue(field, values[field.name]);
+      const wire = wireValue(field, values[field.name]);
+      payload[field.name] = !editing && field.kind === 'text' && field.projectPrefix ? withProjectPrefix(await codeOfProject(), wire) : wire;
     }
     if (editing) await config.update((row as T).id, payload);
     else await config.create(payload);
@@ -53,7 +58,7 @@ function RecordDialog<T extends { id: string }>({ config, parentId, row, onClose
 
   return (
     <FormDialog title={copy.title} onClose={onClose} onSubmit={onSubmit} isSubmitting={isSubmitting} isDirty={isDirty} serverError={serverError} submitLabel={copy.submitLabel}>
-      <FieldInputs fields={fields} parentId={parentId} editing={editing} immutableOnEdit={config.immutableOnEdit} register={register} control={control} errors={errors} clearServerError={clearServerError} />
+      <FieldInputs fields={fields} projectCode={projectCode} parentId={parentId} editing={editing} immutableOnEdit={config.immutableOnEdit} register={register} control={control} errors={errors} clearServerError={clearServerError} />
     </FormDialog>
   );
 }

@@ -904,3 +904,45 @@ Frontend after approval: the form lists every login, marks the ones that belong 
 **Compatibility.** None: `move` is optional and defaults to the current behaviour. **Risk.** Low to medium: it deliberately empties another person's e-mail, so the confirmation text and the audit entries matter. **Alternatives.** (a) Do nothing: moving a login stays impossible, and the form stays as it is now. (b) Make `unlink-user` clear the e-mail, so unlink + link works without `move`: smaller, but it changes an existing action for everyone.
 
 **Approved** by the owner ("approve CR-45") and applied as written, with the proposed diff and no alternative: `move` on `link-user` (`LinkUserSerializer`, `PersonViewSet.link_user`, `PersonService.link_user`), contract DOM-MD-PER-11, the committed OpenAPI schema and its TypeScript types (`LinkUser.move`). Tests: `test_person_services.py` (move, refusal without `move`, the e-mail clash after an unlink, a person that already has a login, a login nobody holds, audit), `test_organization_api.py` (move, permission, boolean), `test_directory_concurrency.py` (two moves leave one holder); mutation-checked (keep the e-mail, ignore `move`, `move` on by default, no unlink event: each fails a test). Masterdata app: 1,248 passed.
+
+### CR-46: bulk routes see and write more than the single routes allow (**security**, **APPLIED**, `cd774091` on `feature/episodic-bulk`)
+
+Found in the Phase 0 discovery of the episodic/bulk work (`docs/episodic-bulk-discovery.md` §2.4, probed on the pytest database).
+
+**Problem.** `BulkOperationService.bulk_update`, `bulk_archive` and `bulk_restore` find rows with `_allowed_project_ids` (any active membership), not with the viewset's `get_queryset()`. A member bound to a show, one naming a department, and an external (vendor/client) member get 404 on a single PATCH of a record outside their reach, and 200 "updated" on `bulk-update` of the same record. `check-existence` returns the full `existing_entity` of an out-of-scope row. Bulk create skips `_resolve_show` / `_with_default_show` (a show-bound member's bulk-created shot has no show and drops out of their view), and bulk update skips `perform_update` (`guard_mutable`, the D-12 episode/sequence chain, `_resolve_show`): any item carrying `episode_id` or `show_id` is a 500.
+
+**Diff.** Bulk update/archive/restore resolve each id through `get_queryset()` (the `tasks/bulk-status` pattern); out-of-scope ids report `not_found`. A `prepare_update(instance, data)` hook holds what `perform_update` checks and is called by both. Bulk create runs the show resolution per item. `check-existence` reports `EXISTS` without `existing_entity` for a row the caller cannot see. Response shapes unchanged.
+
+**Approved** by the owner ("Approved", Phase 0 plan, 2026-11-06). Applied as written; Verification: `docs/sync/backend-cr-46-48-verification.md`.
+
+### CR-47: episodes only on episodic projects (**feature**, **APPLIED**, `b7a4c692` on `feature/episodic-bulk`)
+
+**Problem.** Only episode create is refused on a standard project (400); list, detail, update and archive answer 200 for episodes left on standard projects by seeds, the admin or legacy data. The D-12 rules live in the sequence and shot viewsets only.
+
+**Diff.** The episode queryset is limited to `project__workflow_type="episodic"` (404 on detail/update/archive/bulk for a standard project's episode, an empty list for its project); create keeps its 400. The D-12 rules move into `validators/episodic.py`, called by single and bulk writes. `report_production_data` lists episodes on standard projects and standard-project sequences/shots that point at one. No migration; no data is changed.
+
+**Approved** by the owner ("Approved", Phase 0 plan, 2026-11-06). Applied as written; Verification: `docs/sync/backend-cr-46-48-verification.md`.
+
+### CR-48: bulk create/update with dry run, all-or-nothing, code matching and limits (**feature**, **APPLIED**, `2a18c908` on `feature/episodic-bulk`)
+
+**Diff (additive).** `bulk-create` / `bulk-update` accept `dry_run: true` (the real path inside a transaction that is rolled back) and `atomic: true` (any failed row rolls back the batch). Bulk update matches by `id` or by `code` within the batch's `project_id`. Parents resolve by code inside the project. A per-entity whitelist of bulk-updatable fields. At most 500 items per request (400 above). Each result row keeps `error` and the response adds `errors: [{row, field, message}]`. One `AuditLog` row per committed batch. Without the new flags the routes behave as today.
+
+**Approved** by the owner ("Approved", Phase 0 plan, 2026-11-06). Applied as written, with two additions found while building it: bulk update refuses a field outside the whitelist per row ("This field cannot be changed in bulk.") instead of ignoring it, and a row named by code that the caller cannot see answers `not_found` without an id. Verification: `docs/sync/backend-cr-46-48-verification.md`.
+
+### CR-49: new production codes start with the project code; a new shot needs a sequence (**feature**, **PENDING** approval, nothing applied)
+
+Asked by the owner (2026-11-06): "while creating any production entity the code should start with project code (SQ0010 → TST_SQ0010) … for creating a shot the sequence is compulsory, and if it does not exist it should show an error". Decisions this changes: D-10 ("Nothing stricter is imposed (no pattern…): that needs a decision of its own") and D-11 / Q3 ("A shot may have no sequence").
+
+**Done in the frontend already (no backend change).** The create forms (episode, sequence, shot, asset, task, and the project tabs' Add episode / Add sequence) show `TST_` beside the code input and send `TST_<typed>`; Bulk add (all four entities) adds it to every code at Validate; a shot form needs a sequence and says so when the project has none; Bulk add shots refuses a row whose sequence is not one of the project's. Existing records keep their codes; the prefix is only for new ones.
+
+**Problem.** Only the UI enforces it. `POST /shots/` (or `bulk-create`, or an import script) still accepts `SH010` and a shot with no sequence, so the studio's naming and "every shot has a sequence" hold only for people who use this screen.
+
+**Minimal diff (create only, nothing existing is touched).**
+1. `NormalizedCodeMixin.validate_code` on create, and the bulk-create item check: the code must start with `<PROJECT.CODE>_` (any case; stored upper case), else 400 `code: "Codes in project TST start with TST_."`. Applies to episode, sequence, shot, asset and task. Update, `rename-code` and bulk update by code are unchanged (so every existing record can still be edited).
+2. The server-made codes carry it too: an episode left blank becomes `TST_EP101`; bulk `code_prefix: "SH"` numbers `TST_SH0010`, `TST_SH0020` … (the series is counted on the full prefix).
+3. `Shot` create (single and bulk) without a sequence: 400 `sequence_id: "A shot needs a sequence."`; a code or id that is not a sequence of the project keeps today's "not found" error. A shot that has none keeps working on update.
+4. D-10 / D-11 are rewritten, `CONTRACTS.md` gets the rule, seeds and factories use prefixed codes, `report_production_data` lists existing codes without the prefix and shots without a sequence (read-only).
+
+**Why no frontend workaround.** None can bind another client: the rule is the server's to enforce. The frontend part above is already shipped and keeps working whether or not this is approved.
+
+**Compatibility.** Breaking for any API client or script that creates un-prefixed codes or sequence-less shots (they get a 400). Existing data is untouched. **Risk.** Medium: every test and fixture that creates records by code changes; the code length limits (shots 30) now include the prefix. **Alternatives.** (a) Frontend only, as now. (b) An opt-in project setting (`enforce_code_prefix`, default off), so projects choose; costs a column, a migration and a UI switch.

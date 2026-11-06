@@ -7,6 +7,7 @@ import {
   getBulkEpisodicPrompt,
   applyBulkSequenceCreate,
   buildBulkShotItems,
+  buildBulkShotUpdates,
   ShotBulkManager,
 } from '../ShotBulkManager';
 
@@ -474,5 +475,97 @@ describe('bulk shot creation on episodic projects', () => {
     expect(items[0].data.episode_code).toBeUndefined();
     expect(items[0].data.episode_name).toBeUndefined();
     expect('episode_id' in items[0].data).toBe(false);
+  });
+});
+
+describe('bulk shots: the project code in front, and a sequence that exists', () => {
+  // The grid starts with four sample shots in sequences NK_010 (three rows) and NK_020 (one).
+  it('asks about codes with the project code in front, and a shot whose sequence is not the project\'s is a validation error', async () => {
+    render(<ShotBulkManager projectId="proj-101" projectCode="NEB01" sequenceCodes={['NEB01_NK_010']} isOpen onClose={() => undefined} />);
+    fireEvent.click(screen.getByRole('button', { name: /Validate/ }));
+
+    await waitFor(() => expect(mockBulk.checkExistence).toHaveBeenCalled());
+    // NK_010 is found as the project's NEB01_NK_010; the NK_020 shot is refused, so it is not even asked about.
+    expect(mockBulk.checkExistence.mock.calls[0][0]).toMatchObject({ project_id: 'proj-101', codes: ['NEB01_NK_010_030', 'NEB01_NK_010_040', 'NEB01_NK_010_099'] });
+    const errors = await waitFor(() => {
+      const pill = screen.getAllByRole('button').find((b) => /Validation Errors\s*1/.test(b.textContent ?? ''));
+      expect(pill).toBeTruthy();
+      return pill as HTMLElement;
+    });
+    fireEvent.click(errors);
+    expect(screen.getByText('Sequence NK_020 does not exist in this project. Create it first.')).toBeInTheDocument();
+  });
+
+  it('a shot with no sequence is refused too', async () => {
+    render(<ShotBulkManager projectId="proj-101" projectCode="NEB01" sequenceCodes={[]} defaultSequenceCode="" isOpen onClose={() => undefined} />);
+    fireEvent.click(screen.getByRole('button', { name: /Validate/ }));
+    await waitFor(() => expect(screen.getAllByText(/Sequence NK_0\d0 does not exist in this project/).length).toBeGreaterThan(0));
+    expect(mockBulk.checkExistence).toHaveBeenCalledWith(expect.objectContaining({ codes: [] }));
+  });
+
+  it('without the project\'s sequence list nothing is checked here (the backend still refuses an unknown sequence)', async () => {
+    render(<ShotBulkManager projectId="proj-101" projectCode="NEB01" isOpen onClose={() => undefined} />);
+    fireEvent.click(screen.getByRole('button', { name: /Validate/ }));
+    await waitFor(() => expect(mockBulk.checkExistence).toHaveBeenCalled());
+    expect(screen.queryByText(/does not exist in this project/)).not.toBeInTheDocument();
+  });
+});
+
+describe('bulk shots: the sequence is sent as sequence_id', () => {
+  const ctx = { projectId: 'proj-101', projectCode: 'NEB01', defaultSequenceCode: 'NEB01_010', isEpisodic: false };
+  const item = (proposedData: Record<string, unknown>) => ({ code: 'NEB01_SH010', state: 'NEW', userAction: 'create', proposedData }) as any;
+
+  it('a typed sequence goes as sequence_id (the backend drops sequence_code, so the shot kept no sequence)', () => {
+    const [sent] = buildBulkShotItems([item({ code: 'NEB01_SH010', sequence_code: 'NEB01_SQ010', name: 'Opening' })], ctx);
+    expect(sent.data).toMatchObject({ sequence_id: 'NEB01_SQ010', name: 'Opening', project_id: 'proj-101' });
+    expect('sequence_code' in sent.data).toBe(false);
+  });
+
+  it('a row with no sequence falls back to the default sequence', () => {
+    const [sent] = buildBulkShotItems([item({ code: 'NEB01_SH010' })], ctx);
+    expect((sent.data as any).sequence_id).toBe('NEB01_010');
+  });
+
+  it('episodic payloads carry it too', () => {
+    const [sent] = buildBulkShotItems([item({ code: 'NEB01_SH010', sequence_code: 'NEB01_SQ010' })], { ...ctx, isEpisodic: true, bulkDefaultEpisodeId: 'ep-1', episodesById: { 'ep-1': { id: 'ep-1', code: 'EP101' } } });
+    expect(sent.data).toMatchObject({ sequence_id: 'NEB01_SQ010', episode_id: 'ep-1' });
+    expect('sequence_code' in sent.data).toBe(false);
+  });
+});
+
+describe('bulk shots: Update Existing Entity', () => {
+  const row = (state: string, userAction: string, proposedData: Record<string, unknown>) => ({ code: String(proposedData.code), state, userAction, proposedData }) as any;
+
+  it('sends the code and the cells the row filled in, with the sequence as sequence_id', () => {
+    const updates = buildBulkShotUpdates([
+      row('EXISTS', 'update_existing', { code: 'NEB01_SH010', name: 'Recut', sequence_code: 'NEB01_SQ010', status: 'In Progress', frame_in: 1001, frame_out: 1100, handle_frames: 8, priority: 'High', notes: 'x', department: 'FX' }),
+    ]);
+    // Priority, notes and department are not shot fields the backend updates in bulk: they are not sent.
+    expect(updates).toEqual([{ code: 'NEB01_SH010', name: 'Recut', status: 'In Progress', frame_in: 1001, frame_out: 1100, handle_frames: 8, sequence_id: 'NEB01_SQ010' }]);
+  });
+
+  it('leaves an empty cell as it is: no name, no sequence, no default episode', () => {
+    const updates = buildBulkShotUpdates([row('EXISTS', 'update_existing', { code: 'NEB01_SH010', name: '', sequence_code: '', frame_in: '', frame_out: 1100 })]);
+    expect(updates).toEqual([{ code: 'NEB01_SH010', frame_out: 1100 }]);
+  });
+
+  it('only rows set to update are updated', () => {
+    const updates = buildBulkShotUpdates([
+      row('EXISTS', 'skip', { code: 'A', name: 'x' }),
+      row('NEW', 'create', { code: 'B', name: 'y' }),
+      row('SOFT_DELETED', 'recover', { code: 'C', name: 'z' }),
+      row('EXISTS', 'update_existing', { code: 'D', name: 'w' }),
+    ]);
+    expect(updates.map((u) => u.code)).toEqual(['D']);
+  });
+
+  it('an episode typed on the row goes as episode_id (a code is looked up)', () => {
+    const updates = buildBulkShotUpdates([row('EXISTS', 'update_existing', { code: 'D', episode_id: 'EP101' })], { episodeLookup: { EP101: { id: 'ep-1', code: 'EP101' } } });
+    expect(updates).toEqual([{ code: 'D', episode_id: 'ep-1' }]);
+  });
+
+  it('the create call does not carry a row set to update', () => {
+    const items = buildBulkShotItems([row('EXISTS', 'update_existing', { code: 'D', name: 'w' }), row('NEW', 'create', { code: 'E', name: 'v' })], { projectId: 'p', projectCode: 'NEB01', defaultSequenceCode: 'S', isEpisodic: false });
+    expect(items.map((i) => i.code)).toEqual(['E']);
   });
 });

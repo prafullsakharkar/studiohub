@@ -64,7 +64,13 @@ export async function exportAll<T>(options: ExportAllOptions<T>): Promise<Export
   }
 
   const rows = await fetchAllRows(fetchPage, filters, { signal, onProgress });
-  const blob = new Blob(['﻿', toCsv(rows, columns)], { type: 'text/csv;charset=utf-8' });
+  downloadCsv(filename, toCsv(rows, columns));
+  return { rows: rows.length, cancelled: false };
+}
+
+/** Hands `csv` to the browser as a download (with a BOM, so spreadsheet apps read it as UTF-8). */
+export function downloadCsv(filename: string, csv: string): void {
+  const blob = new Blob(['﻿', csv], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   try {
     const link = document.createElement('a');
@@ -76,5 +82,4 @@ export async function exportAll<T>(options: ExportAllOptions<T>): Promise<Export
   } finally {
     URL.revokeObjectURL(url);
   }
-  return { rows: rows.length, cancelled: false };
 }

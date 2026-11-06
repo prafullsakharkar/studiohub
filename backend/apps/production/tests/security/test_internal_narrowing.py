@@ -82,7 +82,8 @@ def _version(project, task, code):
 
 @pytest.fixture
 def world(db):
-    project = ProjectFactory()
+    # Episodic, so its episodes are served (CR-47).
+    project = ProjectFactory(workflow_type="episodic")
     show_a, show_b = ShowFactory(project=project), ShowFactory(project=project)
 
     shot_a1 = ShotFactory(project=project, show=show_a)
@@ -306,7 +307,12 @@ class TestCreatingIntoYourShow:
 
         response = client.post(
             "/api/v1/shots/",
-            {"project_id": str(world["project"].pk), "code": "NEW010", "name": "New"},
+            {
+                "project_id": str(world["project"].pk),
+                "code": "NEW010",
+                "name": "New",
+                "episode_id": str(world["episodes"][0].pk),
+            },
             format="json",
         )
 

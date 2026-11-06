@@ -2,6 +2,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type React from 'react';
 import { useState } from 'react';
 import { episodesApi, projectsApi, sequencesApi } from '@/api/production/structure';
+import { isEpisodicProject } from '@/modules/production';
+import { withProjectPrefix } from '@/modules/production/codePrefix';
 import { Button } from '@/shared/components/Button';
 import { fetchAllRows } from '@/shared/data/listing';
 import { ShotBulkManager } from './bulk/ShotBulkManager';
@@ -16,18 +18,18 @@ export const ShotBulkAdd: React.FC<{ projectId: string | undefined; onDone?: () 
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const project = useQuery({ queryKey: projectsApi.keys.detail(projectId ?? ''), queryFn: ({ signal }) => projectsApi.get(projectId as string, signal), enabled: Boolean(projectId) });
-  const isEpisodic = project.data?.workflow_type === 'episodic';
+  const isEpisodic = isEpisodicProject(project.data);
   const episodes = useQuery({ queryKey: [...episodesApi.keys.lists(), 'all', projectId], queryFn: ({ signal }) => fetchAllRows(episodesApi.list, { project: projectId as string }, { signal }), enabled: Boolean(projectId) && isEpisodic });
-  const sequences = useQuery({ queryKey: [...sequencesApi.keys.lists(), 'all', projectId], queryFn: ({ signal }) => fetchAllRows(sequencesApi.list, { project: projectId as string }, { signal }), enabled: Boolean(projectId) && isEpisodic });
+  const sequences = useQuery({ queryKey: [...sequencesApi.keys.lists(), 'all', projectId], queryFn: ({ signal }) => fetchAllRows(sequencesApi.list, { project: projectId as string }, { signal }), enabled: Boolean(projectId) });
   if (!projectId) return null;
 
   const onCreateEpisode = async (input: { project_id: string; code: string; name: string }) => {
-    const created = await episodesApi.create({ project: input.project_id, code: input.code, name: input.name, season_number: 1, episode_number: (episodes.data?.length ?? 0) + 1 } as never);
+    const created = await episodesApi.create({ project: input.project_id, code: withProjectPrefix(project.data?.code, input.code), name: input.name, season_number: 1, episode_number: (episodes.data?.length ?? 0) + 1 } as never);
     await queryClient.invalidateQueries({ queryKey: episodesApi.keys.all });
     return { id: created.id, code: created.code, name: created.name };
   };
   const onCreateSequence = async (input: { project_id: string; episode_id: string; code: string }) => {
-    const created = await sequencesApi.create({ project: input.project_id, episode_id: input.episode_id, code: input.code.toUpperCase() });
+    const created = await sequencesApi.create({ project: input.project_id, episode_id: input.episode_id, code: withProjectPrefix(project.data?.code, input.code) });
     await queryClient.invalidateQueries({ queryKey: sequencesApi.keys.all });
     return { id: created.id, code: created.code, episode_id: created.episode_id ?? input.episode_id };
   };
@@ -43,6 +45,7 @@ export const ShotBulkAdd: React.FC<{ projectId: string | undefined; onDone?: () 
           projectCode={project.data.code}
           defaultSequenceCode={`${project.data.code}_010`}
           isOpen
+          sequenceCodes={sequences.data?.map((seq) => seq.code)}
           {...(isEpisodic
             ? {
                 isEpisodic: true,

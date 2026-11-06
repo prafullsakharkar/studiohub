@@ -1,6 +1,6 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
-from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 from apps.core.api.pagination import StandardPagination
@@ -19,17 +19,15 @@ from apps.production.api.viewsets.base import ProductionEntityViewSet
 from apps.production.api.viewsets.bulk import ProductionBulkMixin
 from apps.production.api.viewsets.rename_code import RenameCodeMixin
 from apps.production.api.viewsets.status_history import StatusHistoryMixin
-from apps.production.constants import ProjectWorkflowType
 from apps.production.constants.permissions import AssetPermissions, CodePermissions, ShotPermissions
 from apps.production.constants.shot import ShotStatus
-from apps.production.models import Asset, Episode
+from apps.production.models import Asset
 from apps.production.selectors.base import ProductionBaseSelector
-from apps.production.selectors.episode import EpisodeSelector
-from apps.production.selectors.sequence import SequenceSelector
 from apps.production.selectors.shot import ShotSelector
 from apps.production.selectors.shot_asset import ShotAssetSelector
 from apps.production.services.shot import ShotService
 from apps.production.services.shot_asset import ShotAssetService
+from apps.production.validators.episodic import apply_shot_episode_chain
 from apps.production.validators.references import require_assignable_artist
 
 
@@ -41,6 +39,19 @@ class ShotViewSet(
     pagination_class = StandardPagination
     filterset_class = ShotFilterSet
     detail_serializer_class = ShotDetailSerializer
+
+    # CR-48: what bulk-update may change; never project, code, show, ownership or approval fields.
+    bulk_update_fields = (
+        "name",
+        "description",
+        "status",
+        "sequence_id",
+        "episode_id",
+        "frame_in",
+        "frame_out",
+        "handle_frames",
+        "assigned_artist",
+    )
 
     serializer_map = {
         "list": ShotListSerializer,
@@ -102,82 +113,15 @@ class ShotViewSet(
         require_assignable_artist(project, data, instance)
 
     def prepare_create(self, serializer, project):
-        self._enforce_episode_sequence_chain(serializer, project=project, instance=None)
-
-    def perform_update(self, serializer):
-        instance = self.get_object()
-        self._enforce_episode_sequence_chain(
-            serializer, project=instance.project, instance=instance
-        )
-        super().perform_update(serializer)
-
-    def _enforce_episode_sequence_chain(self, serializer, *, project, instance=None):
-        """
-        Resolve + validate the episode/sequence chain against ``project``.
-
-        Frontend contract (mirrors the mock adapter's episodic rules):
-          * ``episode_id``/``sequence_id`` arrive as raw reference strings
-            (UUID, code, or mock id) via the write-serializer aliases;
-          * episodic projects REQUIRE an episode — missing or cleared
-            episode on an episodic shot is a 400 ``episode_id`` error;
-          * the episode is resolved inside the target project (codes repeat
-            across projects); a foreign or unknown episode is "Unknown episode.";
-          * a supplied ``sequence_id`` (id or code) must resolve to a sequence of the
-            target project; the shot then points at it;
-          * a shot follows the episode of its sequence when the sequence has one: an
-            episode that differs is a 400, an omitted one is taken from the sequence.
-            An older mismatch is left alone until the shot is moved (see the report).
-
-        Errors use the standard DRF field-mapping shape, never a new
-        contract. ``sequence_ref`` never reaches ``save()``.
-        """
         data = serializer.validated_data if isinstance(serializer.validated_data, dict) else {}
-        episode_supplied = "episode" in data
-        raw_episode = data.get("episode") if episode_supplied else None
-        raw_sequence = data.pop("sequence_ref", None)
-        sequence_supplied = raw_sequence is not None
+        self._enforce_episode_sequence_chain(data, project=project, instance=None)
 
-        if project is None:
-            return
+    def prepare_update(self, instance, data):
+        self._enforce_episode_sequence_chain(data, project=instance.project, instance=instance)
 
-        sequence = instance.sequence if instance is not None else None
-        if sequence_supplied:
-            text = str(raw_sequence or "").strip()
-            if text:
-                sequence = SequenceSelector.resolve_in_project(project, text)
-                if sequence is None:
-                    raise ValidationError(
-                        {"sequence_id": ["Unknown sequence for the selected project."]}
-                    )
-                data["sequence"] = sequence
-            else:
-                sequence = None
-                data["sequence"] = None
-
-        episode = None
-        if episode_supplied:
-            if isinstance(raw_episode, Episode) or str(raw_episode or "").strip():
-                episode = EpisodeSelector.resolve_in_project(project, raw_episode)
-                if episode is None:
-                    raise ValidationError({"episode_id": ["Unknown episode."]})
-            data["episode"] = episode
-        elif instance is not None:
-            episode = instance.episode
-
-        # A shot follows the episode of its sequence (D-12). A sequence with no episode
-        # (older rows, standard projects) leaves the shot's own episode as it is.
-        if sequence is not None and sequence.episode_id is not None:  # pyright: ignore[reportAttributeAccessIssue]
-            if episode_supplied and episode is not None and episode.pk != sequence.episode_id:  # pyright: ignore[reportAttributeAccessIssue]
-                raise ValidationError(
-                    {"episode_id": ["The episode must be the episode of the sequence."]}
-                )
-            if episode is None or sequence_supplied:
-                data["episode"] = episode = sequence.episode
-
-        if project.workflow_type == ProjectWorkflowType.EPISODIC and episode is None:
-            raise ValidationError(
-                {"episode_id": ["An episode is required for shots on episodic projects."]}
-            )
+    def _enforce_episode_sequence_chain(self, data, *, project, instance=None):
+        """The episode/sequence chain of a shot (D-12; ``validators/episodic.py``)."""
+        apply_shot_episode_chain(data, project=project, instance=instance)
 
     @extend_schema(responses=ShotAssetSerializer(many=True))
     @action(detail=True, methods=["get"], url_path="assets")

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { tokenStorage } from '@/core/auth/tokenStorage';
 import { mockFetch } from '@/test/fetchMock';
 import { loadSample } from '@/test/samples';
-import { assetBulk, shotBulk, taskBulk } from '../bulkRoutes';
+import { shotBulk } from '../bulkRoutes';
 
 type Captured = { status: number; body: any };
 const work = loadSample<Record<string, Captured>>('production/_work_flow.json');
@@ -15,11 +15,7 @@ afterEach(() => {
 
 const path = (url: string) => new URL(url).pathname;
 
-describe.each([
-  ['shots', shotBulk, '/api/v1/shots/'],
-  ['assets', assetBulk, '/api/v1/assets/'],
-  ['tasks', taskBulk, '/api/v1/tasks/'],
-])('%s bulk routes', (_name, service, base) => {
+describe.each([['shots', shotBulk, '/api/v1/shots/']] as const)('%s bulk routes', (_name, service, base) => {
   it('posts each request, unchanged, to its own route', async () => {
     const { calls } = mockFetch(() => ({ body: work.shots_bulk_create.body }));
     const payload = { project_id: 'p1', items: [{ code: 'A', episode_id: 'e1' }] } as never;

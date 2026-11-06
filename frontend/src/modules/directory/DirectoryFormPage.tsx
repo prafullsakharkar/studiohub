@@ -3,10 +3,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type React from 'react';
 import { useContext, useEffect, useMemo, useRef } from 'react';
+import { useWatch } from 'react-hook-form';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { evaluateAccess } from '@/core/permissions/access';
 import { AuthContext } from '@/core/auth/AuthContext';
 import { notify } from '@/core/notifications/notify';
+import { useProjectCode } from '@/modules/production/hooks/useProjectCode';
+import { withProjectPrefix } from '@/modules/production/codePrefix';
 import { FormPage } from '@/shared/forms/FormPage';
 import { formDialogCopy } from '@/shared/forms/FormDialog';
 import { useServerForm } from '@/shared/forms/useServerForm';
@@ -26,7 +29,7 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
   const user = auth?.user ?? null;
   // Fields behind a permission (sensitive person data, client financials) are rendered, validated and sent only for callers who hold it.
   const fields = useMemo(() => config.fields.filter((f) => !f.permission || evaluateAccess(user, f.permission, {})), [config.fields, user]);
-  const schema = useMemo(() => buildSchema(fields), [fields]);
+  const schema = useMemo(() => buildSchema(fields, editing), [fields, editing]);
   const row = useQuery({ queryKey: [...config.queryKey, 'detail', id], queryFn: ({ signal }) => config.get(id as string, signal), enabled: editing });
 
   const {
@@ -38,6 +41,10 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
     clearServerError,
     formState: { errors, isSubmitting, isDirty, dirtyFields },
   } = useServerForm<Values>({ resolver: zodResolver(schema) as never, defaultValues: Object.fromEntries(fields.map((f) => [f.name, !editing && searchParams.get(f.name) !== null ? (searchParams.get(f.name) as string) : blank(f)])) });
+  // A field with `projectPrefix` (the code of a sequence, shot, asset, task) starts with the chosen project's code.
+  const prefixed = !editing && fields.some((f) => f.kind === 'text' && f.projectPrefix);
+  const chosenProject = String(useWatch({ control, name: 'project' }) ?? '');
+  const { projectCode, code: codeOfChosenProject } = useProjectCode(chosenProject, prefixed);
   // A new record can be pre-filled from the address (`/tasks/new?project=…&entity_type=Shot`): a parameter named like a field fills it.
 
   // Fill the form ONCE per record. A background refetch (window focus, an invalidation after another
@@ -63,7 +70,8 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
       if (!isVisible(field, values)) continue;
       if (!editing && values[field.name] === '' && field.kind !== 'checkbox') continue; // leave optional blanks to the server defaults
       if (editing && config.immutableOnEdit?.includes(field.name)) continue;
-      payload[field.name] = wireValue(field, values[field.name]);
+      const wire = wireValue(field, values[field.name]);
+      payload[field.name] = !editing && field.kind === 'text' && field.projectPrefix ? withProjectPrefix(await codeOfChosenProject(), wire) : wire;
     }
     const saved = editing ? await config.update(id as string, payload) : await config.create(payload);
     // The server made the caller a member of what they just created; /auth/me must say so before the detail route checks it.
@@ -94,7 +102,7 @@ export function DirectoryFormPage<T extends { id: string }>({ config }: { config
       submitLabel={copy.submitLabel}
       loading={{ isLoading: editing && row.isLoading, error: editing ? row.error : null, onRetry: () => void row.refetch(), entityName: config.noun }}
     >
-      <FieldInputs grid fields={fields} editing={editing} immutableOnEdit={config.immutableOnEdit} register={register} control={control} errors={errors} clearServerError={clearServerError} />
+      <FieldInputs grid projectCode={projectCode} fields={fields} editing={editing} immutableOnEdit={config.immutableOnEdit} register={register} control={control} errors={errors} clearServerError={clearServerError} />
     </FormPage>
   );
 }

@@ -10,7 +10,7 @@
 | Directory | Owns | Must not contain |
 |---|---|---|
 | `components/ui`, `components/forms`, `components/history`, `components/system` | Pieces used by more than one module | Domain rules, routes |
-| `shared/components` | Visual primitives and shared screens' parts (Button, Modal, Pagination, bulk screens, tabs) | Data fetching for a particular record |
+| `shared/components` | Visual primitives and shared screens' parts (Button, Modal, Pagination, the bulk grid and the shot bulk manager's screens, tabs) | Data fetching for a particular record |
 | `shared/workspace/canonical` | The chrome of a record workspace (header, action bar, overflow menu, shell) | Business rules |
 | `shared/data`, `shared/forms`, `shared/hooks` | List fetching, server-error forms, small hooks | Components |
 | `modules/directory` | The list, form and workspace machinery for records that are *configs* | Anything specific to one record type (that goes in `entities/`) |
@@ -74,7 +74,10 @@ Domain behaviour stays in `src/modules/<module>/`.
 | `DirectoryListPage` | `modules/directory/DirectoryListPage` | a list screen from a config (filters, columns, row actions, archive/restore) |
 | `RelatedRecords` | `modules/directory/RelatedRecords` | the records that point at this one, with a server-side count |
 | `EntityHistory` | `components/history/EntityHistory` | the record's audit history |
-| bulk screens | `shared/components/bulk/` | preview, resolve, result, validation; types in `bulk/types.ts` |
+| bulk grid | `shared/components/bulk/BulkImportGrid.tsx` | editable rows with a paste dialog; the caller parses pasted text (`onPaste`), else the built-in parser; `sampleRows` adds "Load Template". "Bulk add" of sequences, assets and tasks: `modules/production/bulk/StagedBulkManager` (the shot manager's steps, driven by `specs.ts`); "Edit fields" on selected rows (`editFieldsAction`) for all four |
+| project code in front of a new code | `modules/production/codePrefix.ts` (`withProjectPrefix`), `hooks/useProjectCode.ts`; the form field option `projectPrefix` (and `requiredOnCreate`) in `modules/directory/types.ts`, used by `DirectoryFormPage`, `RelatedRecords` and both Bulk add managers | `TST_` beside the code input, added once on save (D-43; the backend does not enforce it, CR-49 pending) |
+| shot bulk manager's screens | `shared/components/bulk/` | validation summary, resolve, archived recovery, preview, result; types in `bulk/types.ts`; used by `ShotBulkManager` and `StagedBulkManager` |
+| delimited text | `shared/utils/csv.ts` | RFC 4180 parse (`parseDelimited`); write with `toCsv` / `downloadCsv` (`shared/data/exportAll.ts`) |
 
 ## Record workspace chrome
 

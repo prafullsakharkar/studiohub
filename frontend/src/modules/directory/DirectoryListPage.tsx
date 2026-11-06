@@ -19,14 +19,16 @@ import { SearchInput } from '@/shared/components/SearchInput';
 import type { BulkAction, DirectoryListConfig, ListFilter, RowAction } from './types';
 import { formatNumber } from '@/core/locale/studioLocale';
 
-function FilterSelect({ filter, value, onChange }: { filter: ListFilter; value: string; onChange: (value: string) => void }) {
+function FilterSelect({ filter, value, onChange, filters }: { filter: ListFilter; value: string; onChange: (value: string) => void; filters: Record<string, unknown> }) {
+  const params = filter.optionsFrom?.params?.(filters);
   const loaded = useQuery({
-    queryKey: [...(filter.optionsFrom?.queryKey ?? ['none']), 'filter-options'],
-    queryFn: ({ signal }) => fetchAllRows((filter.optionsFrom as NonNullable<ListFilter['optionsFrom']>).fetchPage, {}, { signal }),
+    queryKey: [...(filter.optionsFrom?.queryKey ?? ['none']), 'filter-options', ...(params ? [params] : [])],
+    queryFn: ({ signal }) => fetchAllRows((filter.optionsFrom as NonNullable<ListFilter['optionsFrom']>).fetchPage, params ?? {}, { signal }),
     enabled: Boolean(filter.optionsFrom),
     staleTime: 60_000,
   });
-  const options = filter.options ?? (loaded.data ?? []).map((row) => ({ value: row.id, label: (filter.optionsFrom as NonNullable<ListFilter['optionsFrom']>).getLabel(row as never) }));
+  const from = filter.optionsFrom;
+  const options = filter.options ?? (loaded.data ?? []).filter((row) => !from?.keep || from.keep(row as never)).map((row) => ({ value: row.id, label: (from as NonNullable<ListFilter['optionsFrom']>).getLabel(row as never) }));
   return (
     <select aria-label={`Filter by ${filter.label.toLowerCase()}`} value={value} onChange={(e) => onChange(e.target.value)} className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200">
       <option value="">All {filter.label.toLowerCase()}</option>
@@ -67,6 +69,13 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
   const bulkActions = canManage && !inArchive ? (config.bulk?.actions ?? []).filter((a) => !a.available || a.available(list.filters)) : [];
   const toggle = (id: string) => setSelected((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   const filtered = Boolean(list.search || Object.values(list.filters).some(Boolean));
+  const columns = config.columns.filter((column) => !column.visible || column.visible(list.filters));
+  const shownFilters = (config.filters ?? []).filter((filter) => !(config.scope && filter.key in config.scope) && (!filter.visible || filter.visible(list.filters)));
+  // A filter that is no longer offered (the project changed to a standard one) must not keep narrowing the list.
+  const hiddenKey = (config.filters ?? []).filter((filter) => filter.visible && !filter.visible(list.filters) && list.filters[filter.key]).map((filter) => filter.key).join(',');
+  useEffect(() => {
+    for (const key of hiddenKey ? hiddenKey.split(',') : []) list.setFilter(key, '');
+  }, [hiddenKey, list.setFilter]);
 
   const runExport = async () => {
     if (!config.exportColumns) return;
@@ -107,8 +116,8 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
           {config.searchable !== false && (
             <SearchInput placeholder={config.searchPlaceholder} value={list.search} onChange={(e) => list.setSearch(e.target.value)} onClear={() => list.setSearch('')} aria-label={`Search ${config.title.toLowerCase()}`} className="w-56" />
           )}
-          {config.filters?.filter((filter) => !(config.scope && filter.key in config.scope)).map((filter) => (
-            <FilterSelect key={filter.key} filter={filter} value={String(list.filters[filter.key] ?? '')} onChange={(value) => list.setFilter(filter.key, value)} />
+          {shownFilters.map((filter) => (
+            <FilterSelect key={filter.key} filter={filter} filters={list.filters} value={String(list.filters[filter.key] ?? '')} onChange={(value) => list.setFilter(filter.key, value)} />
           ))}
           {config.archived && (
             <select aria-label="Show" value={view} onChange={(e) => setView(e.target.value as 'active' | 'archived')} className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200">
@@ -162,7 +171,7 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
                     <input type="checkbox" aria-label="Select all on this page" checked={list.rows.length > 0 && list.rows.every((r) => selected.has(r.id))} onChange={(e) => setSelected(e.target.checked ? new Set(list.rows.map((r) => r.id)) : new Set())} />
                   </th>
                 )}
-                {config.columns.map((column) => {
+                {columns.map((column) => {
                   const active = column.sortField && list.sortState?.field === column.sortField ? list.sortState : null;
                   return (
                     <th key={column.header} scope="col" aria-sort={active ? (active.direction === 'asc' ? 'ascending' : 'descending') : undefined} className="px-4 py-2 font-semibold">
@@ -188,7 +197,7 @@ export function DirectoryListPage<T extends { id: string }>({ config }: { config
                       <input type="checkbox" aria-label={`Select ${config.rowName(row)}`} checked={selected.has(row.id)} onChange={() => toggle(row.id)} />
                     </td>
                   )}
-                  {config.columns.map((column, index) => (
+                  {columns.map((column, index) => (
                     <td key={column.header} className="px-4 py-2 text-slate-300">
                       {index === 0 ? (
                         (config.rowLink ? config.rowLink(row) : `${config.basePath}/${row.id}`) === null ? (
